@@ -184,6 +184,41 @@ describe("one role per application", () => {
     expect(body.membership).toEqual({ letterVersion: LETTER.version });
     // No payment anywhere on the application: nothing posted names money.
     expect(JSON.stringify(body)).not.toMatch(/contribution|amount|payment|dues/i);
+    // Shaping the role is optional: no suggestion written, none sent (control for the test below).
+    expect(body.pieceSuggestions).toBeUndefined();
+  });
+
+  it("SHAPE THE ROLE: a suggestion written on a piece of the role card travels with the application (Rye, 14 Nov 2026)", async () => {
+    await applyFor();
+    await completeAll();
+    const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
+    fireEvent.click(within(shape).getByText("Open the role card"));
+    const bar = await waitFor(() => {
+      const el = shape.querySelector('[data-piece-bar="purpose"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
+      return el;
+    });
+    // The card inside an application carries no Apply act of its own.
+    expect(shape.querySelector("[data-apply-role]")).toBeNull();
+    // An arrow key inside the card moves the card's piece, never the application's step.
+    const stepBefore = shown();
+    fireEvent.keyDown(shape.querySelector("[data-piece-next]") as HTMLElement, { key: "ArrowRight" });
+    expect(shown()).toEqual(stepBefore);
+    expect((shape.querySelector('[data-piece="purpose"]') as HTMLElement).hidden).toBe(true);
+    fireEvent.keyDown(shape.querySelector("[data-role-pieces]") as HTMLElement, { key: "ArrowLeft" });
+    expect((shape.querySelector('[data-piece="purpose"]') as HTMLElement).hidden).toBe(false);
+    fireEvent.click(within(bar).getByText("Something's missing"));
+    fireEvent.change(within(bar).getByLabelText("What is missing from this piece?"), { target: { value: "Who keeps the key when I am away." } });
+    fireEvent.click(within(bar).getByText("Add to my application"));
+    expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
+    expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
+    // The piece's chip on the rail carries a dot, and the words wait in the draft on this device.
+    expect(shape.querySelector('[data-piece-tab="purpose"] [data-piece-marked]')).toBeTruthy();
+    expect(shape.querySelector('[data-piece-tab="domain"] [data-piece-marked]')).toBeNull();
+    await waitFor(() => expect(Object.values({ ...window.localStorage }).join(" ")).toContain("Who keeps the key when I am away."));
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.pieceSuggestions).toEqual([{ roleId: "r-gate", piece: "purpose", kind: "missing", text: "Who keeps the key when I am away." }]);
   });
 });
 

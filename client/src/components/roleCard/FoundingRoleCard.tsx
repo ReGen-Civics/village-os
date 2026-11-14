@@ -103,6 +103,10 @@ export interface FoundingRoleCardProps {
   wide: boolean;
   /** Something under each piece (the applicant's suggestions). */
   after?: (key: string) => ReactNode;
+  /** Open every piece at once. */
+  allPieces?: boolean;
+  /** How many suggestions each piece carries, for the dot on its rail chip. */
+  marks?: (key: string) => number;
 }
 
 export default function FoundingRoleCard(p: FoundingRoleCardProps) {
@@ -309,7 +313,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         )}
       </header>
       <div className="min-w-0 p-5 @lg:p-7">
-        <RolePieces pieces={pieces} level={lifted ? 3 : 4} after={p.after} />
+        <RolePieces pieces={pieces} level={lifted ? 3 : 4} after={p.after} initialAll={p.allPieces} marks={p.marks} />
       </div>
     </div>
     </div>
