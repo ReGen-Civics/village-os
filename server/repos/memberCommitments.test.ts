@@ -46,6 +46,15 @@ describe.skipIf(!testDbConfigured())("commitment percent against a real schema",
     expect(Number(count.n)).toBe(3);
   });
 
+  it("keeps a split across roles on the same row, and a word with none reads as not split", async () => {
+    const split = [{ roleId: "r-host", share: 70 }, { roleId: "r-well", share: 30 }];
+    await recordCommitment(pool, "m-wren", { pct: 50, period: "season", fromDate: "2026-11-01", note: null, split });
+    await recordCommitment(pool, "m-wren", { pct: 40, period: "moon", fromDate: "2026-11-02", note: null });
+    const history = await commitmentHistory(pool, "m-wren");
+    expect(history.map((h) => h.split ?? null)).toEqual([null, split]);
+    expect((await commitmentNow(pool, "m-wren", "2026-11-01"))?.split).toEqual(split);
+  });
+
   it("the word that holds today is the latest on or before it; a later day waits", async () => {
     await recordCommitment(pool, "m-wren", { pct: 80, period: "season", fromDate: "2026-09-01", note: null });
     await recordCommitment(pool, "m-wren", { pct: 40, period: "moon", fromDate: "2026-11-01", note: null });

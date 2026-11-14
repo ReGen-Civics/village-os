@@ -38,8 +38,8 @@ function memberPool() {
       sql.push(text);
       if (text.includes("FROM `member_time_zones`")) return [[], []];
       if (text.startsWith("INSERT INTO `member_commitments`")) {
-        const [user_id, pct, from_date, period_kind, note] = params;
-        rows.push({ id: next++, user_id, pct, from_date, period_kind, note, created_at: new Date("2026-11-12T10:00:00Z") });
+        const [user_id, pct, from_date, period_kind, note, split_json] = params;
+        rows.push({ id: next++, user_id, pct, from_date, period_kind, note, split_json, created_at: new Date("2026-11-12T10:00:00Z") });
         return [{ insertId: next - 1, affectedRows: 1 }, []];
       }
       if (text.includes("FROM `member_commitments`")) {
@@ -85,6 +85,35 @@ describe("a member's commitment on the routes", () => {
     for (const body of [{ pct: 0 }, { pct: 150 }, { pct: "lots" }, { pct: 50, period: "year" }, { pct: 50, fromDate: "2020-01-01" }]) {
       const r = await call("POST /api/me/commitment", { body });
       expect(r.status, JSON.stringify(body)).toBe(400);
+      expect(typeof r.body.error).toBe("string");
+    }
+    expect(rows).toEqual([]);
+  });
+
+  it("keeps a split across roles on the same word, and reads it back", async () => {
+    const { call, rows } = mountCommitment();
+    const split = [{ roleId: "r-host", share: 60 }, { roleId: "r-well", share: 40 }];
+    const r = await call("POST /api/me/commitment", { body: { pct: 50, period: "season", split } });
+    expect(r.status).toBe(200);
+    expect(r.body.now).toMatchObject({ pct: 50, split });
+    expect(rows).toHaveLength(1);
+    expect(JSON.parse(rows[0].split_json)).toEqual(split);
+    const plain = await call("POST /api/me/commitment", { body: { pct: 30 } });
+    expect(plain.body.now.split).toBeNull();
+    expect(rows[1].split_json).toBeNull();
+  });
+
+  it("refuses a split that does not add up to the whole, or names a role twice, and stores nothing", async () => {
+    const { call, rows } = mountCommitment();
+    for (const split of [
+      [{ roleId: "r-host", share: 60 }, { roleId: "r-well", share: 30 }],
+      [{ roleId: "r-host", share: 50 }, { roleId: "r-host", share: 50 }],
+      [{ roleId: "r-host", share: 100.5 }],
+      [{ roleId: "", share: 100 }],
+      "half",
+    ]) {
+      const r = await call("POST /api/me/commitment", { body: { pct: 50, split } });
+      expect(r.status, JSON.stringify(split)).toBe(400);
       expect(typeof r.body.error).toBe("string");
     }
     expect(rows).toEqual([]);
