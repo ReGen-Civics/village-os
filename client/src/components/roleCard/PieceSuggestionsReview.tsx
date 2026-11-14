@@ -7,11 +7,15 @@
  * ranks them, and no AI reads them (coordinator, 14 Nov). A role the village no longer lists still
  * shows its suggestions, grouped by piece.
  */
+import { lazy, Suspense } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { PIECE_KEYS, PIECE_NAMES, type PieceKey, type PieceSuggestion } from "@shared/pieceSuggestions";
-import FullRoleCard from "./FullRoleCard";
 import { SuggestionLine } from "./ShapeTheRole";
 import { useOrgSeats } from "./useOrgSeat";
+
+// The card loads only when it is opened, so the pages that mount this keep their own chunks and the
+// first page never gains the card's imports (guard-boot-set, 14 Nov).
+const FullRoleCard = lazy(() => import("./FullRoleCard"));
 
 function Lines({ list }: { list: PieceSuggestion[] }) {
   return (
@@ -43,8 +47,8 @@ export default function PieceSuggestionsReview({ suggestions, roles }: { suggest
         const name = roles.find((r) => r.id === roleId)?.name ?? null;
         if (found && found !== "missing") {
           return (
+            <Suspense key={roleId} fallback={<Lines list={mine} />}>
             <FullRoleCard
-              key={roleId}
               seat={found.seat}
               circleName={found.circleName}
               register="founding"
@@ -56,6 +60,7 @@ export default function PieceSuggestionsReview({ suggestions, roles }: { suggest
                 return here.length ? <Lines list={here} /> : null;
               }}
             />
+            </Suspense>
           );
         }
         return (

@@ -10,12 +10,15 @@
  * Lives in its own file so ProposeARole.tsx only mounts it (coordinator, 14 Nov: that page sits at the
  * file-lines gate).
  */
-import { useId, useState } from "react";
+import { lazy, Suspense, useId, useState } from "react";
 import { ChevronDown, PencilLine, Plus, Sprout, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { SUGGESTION_KINDS, SUGGESTION_LIMITS, SUGGESTION_WORDS, type PieceKey, type PieceSuggestion, type SuggestionKind } from "@shared/pieceSuggestions";
-import FullRoleCard from "./FullRoleCard";
 import { useOrgSeats } from "./useOrgSeat";
+
+// The card loads only when it is opened, so the pages that mount this keep their own chunks and the
+// first page never gains the card's imports (guard-boot-set, 14 Nov).
+const FullRoleCard = lazy(() => import("./FullRoleCard"));
 
 export type { PieceSuggestion };
 
@@ -145,7 +148,9 @@ export default function ShapeTheRole({ roleId, value, onChange }: { roleId: stri
       {open && (
         <div className="mt-4">
           {found && found !== "missing" ? (
-            <FullRoleCard seat={found.seat} circleName={found.circleName} register="founding" noAct after={(piece) => <PieceBar roleId={roleId} piece={piece as PieceKey} value={value} onChange={onChange} />} />
+            <Suspense fallback={<p className="text-muted-foreground" role="status">{t({ message: "Opening the role card…", context: "shape the role" })}</p>}>
+              <FullRoleCard seat={found.seat} circleName={found.circleName} register="founding" noAct after={(piece) => <PieceBar roleId={roleId} piece={piece as PieceKey} value={value} onChange={onChange} />} />
+            </Suspense>
           ) : found === "missing" ? (
             <p className="text-muted-foreground">{t({ message: "The role card could not be read just now. Your application still goes without it.", context: "shape the role" })}</p>
           ) : (
