@@ -63,7 +63,9 @@ export default function RolePieces({ pieces, level, after, initial = 0 }: { piec
     if (e.key === "ArrowRight") go(i + 1);
     else if (e.key === "ArrowLeft") go(i - 1);
     else return;
+    // The card has used the key: a host that also walks on arrows (the application's steps) must not.
     e.preventDefault();
+    e.stopPropagation();
   };
   const next = pieces[i + 1];
 
