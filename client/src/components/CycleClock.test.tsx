@@ -100,7 +100,7 @@ describe("CycleClock", () => {
  * WHEN ALLOWANCES REFILL IS A MOON AND A DATE, NEVER A COUNTDOWN (batch 157,
  * C4 Q4). The November 2026 moon in a UTC-6 village runs 9 November to
  * 7 December, its full moon is on 24 November and the next new moon falls on
- * 8 December (the calendar's own reading, moonSpiral.test.ts).
+ * 8 December (the calendar's own reading, moonSpiralGeometry.test.ts).
  */
 describe("the refill line", () => {
   const november = () => {

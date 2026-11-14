@@ -44,7 +44,7 @@ import MoonSpiral from "@/components/calendar/MoonSpiral";
 import DayStrip from "@/components/calendar/DayStrip";
 import MoonTurnings from "@/components/calendar/MoonTurnings";
 import CalendarNotes, { notesUnderMoon, usePhoneWidth } from "@/components/calendar/CalendarNotes";
-import { moonDays } from "@/components/calendar/moonSpiral";
+import { moonDays } from "@/components/calendar/moonSpiralGeometry";
 import GatheringEmailSettings from "@/components/comms/GatheringEmailSettings";
 // Village Comms (5.8, 5.9): a visitor's guest door, and the host's recap after it begins.
 import GuestRsvpForm from "@/components/comms/GuestRsvpForm";
