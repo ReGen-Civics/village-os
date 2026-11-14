@@ -200,6 +200,13 @@ describe("one role per application", () => {
     });
     // The card inside an application carries no Apply act of its own.
     expect(shape.querySelector("[data-apply-role]")).toBeNull();
+    // An arrow key inside the card moves the card's piece, never the application's step.
+    const stepBefore = shown();
+    fireEvent.keyDown(shape.querySelector("[data-piece-next]") as HTMLElement, { key: "ArrowRight" });
+    expect(shown()).toEqual(stepBefore);
+    expect((shape.querySelector('[data-piece="purpose"]') as HTMLElement).hidden).toBe(true);
+    fireEvent.keyDown(shape.querySelector("[data-role-pieces]") as HTMLElement, { key: "ArrowLeft" });
+    expect((shape.querySelector('[data-piece="purpose"]') as HTMLElement).hidden).toBe(false);
     fireEvent.click(within(bar).getByText("Something's missing"));
     fireEvent.change(within(bar).getByLabelText("What is missing from this piece?"), { target: { value: "Who keeps the key when I am away." } });
     fireEvent.click(within(bar).getByText("Add to my application"));
