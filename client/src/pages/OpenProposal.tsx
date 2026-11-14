@@ -76,6 +76,8 @@ export interface ServedOpenProposal {
   why: string;
   aim: string;
   confirmedOn: string | null;
+  /** Kept although our confirmation email failed (server/lib/openProposalKept.ts): the words, and what it means for an account with the address. */
+  addressUnconfirmed?: { words: string; account: string | null } | null;
   decidedOn: string | null;
   decided: string | null;
   consent: ConsentOut;
@@ -315,6 +317,12 @@ export default function OpenProposal() {
             <div className="min-w-0 space-y-8">
             <header>
               <p className="text-sm font-semibold text-notice">{p.statusWords}</p>
+              {p.addressUnconfirmed && (
+                <p role="note" className="mt-2 rounded-xl border-2 border-notice/40 bg-card px-4 py-3 text-sm font-medium text-foreground" data-address-unconfirmed="">
+                  {p.addressUnconfirmed.words}
+                  {p.addressUnconfirmed.account ? ` ${p.addressUnconfirmed.account}` : ""}
+                </p>
+              )}
               <h1 className="mt-1 font-display text-3xl font-bold text-foreground">
                 {p.agent
                   ? <AgentHeading name={p.agent.name} roles={p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone).join(", ")} />

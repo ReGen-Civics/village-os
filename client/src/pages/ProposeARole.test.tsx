@@ -650,6 +650,31 @@ describe("the sent threshold", () => {
   });
 });
 
+describe("kept, though our confirmation email failed (Rye, 14 Nov 2026)", () => {
+  it("says we have it in honest words, offers the status page shown once, and asks nobody to check their email", async () => {
+    const address = "rowan@gmail.com";
+    await applyFor("r-gate", FORM, { status: 200, body: { sent: true, kept: true, email: address, message: OPEN_WORDS.keptNotSent(address), statusPath: "/application-status/op-1?token=s3cret" } });
+    await completeAll();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: address } });
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "We have your application" })).toBeTruthy();
+    expect(screen.getByText(OPEN_WORDS.keptNotSent(address))).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Follow your application/ }).getAttribute("href")).toBe("/application-status/op-1?token=s3cret");
+    expect(document.querySelector('[data-threshold="kept"]')).toBeTruthy();
+    // Nothing to open in an inbox, and no "check your email".
+    expect(screen.queryByRole("heading", { name: "Check your email" })).toBeNull();
+    expect(document.querySelector("[data-inbox-link]")).toBeNull();
+  });
+
+  it("a status path that is not the applicant's own page is not offered", async () => {
+    await applyFor("r-gate", FORM, { status: 200, body: { sent: true, kept: true, statusPath: "https://elsewhere.example/x" } });
+    await completeAll();
+    sendNow();
+    await screen.findByRole("heading", { name: "We have your application" });
+    expect(document.querySelector("[data-status-link]")).toBeNull();
+  });
+});
+
 describe("the confirmation link", () => {
   it("confirms, and says it is with us", async () => {
     window.history.pushState({}, "", "/propose-a-role/confirm?token=abc");

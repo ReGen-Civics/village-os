@@ -32,6 +32,8 @@ interface DeskProposal {
   why: string;
   aim: string;
   confirmedAt: string | null;
+  /** Kept although our confirmation email failed: the words to show beside it, or null. */
+  addressUnconfirmed?: string | null;
 }
 
 interface Desk {
@@ -207,7 +209,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
         <section className="grid gap-3">
           <h3 className="text-sm font-semibold text-gray-900">Confirmed proposals</h3>
           {desk.proposals.length === 0 ? (
-            <p className="text-sm text-gray-500">None yet. A proposal shows here once its sender confirms their email.</p>
+            <p className="text-sm text-gray-500">None yet. A proposal shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
           ) : (
             desk.proposals.map((p) => (
               <article key={p.id} className="grid gap-2 rounded-lg border border-gray-200 p-3 text-sm" data-open-proposal-row={p.id}>
@@ -215,6 +217,11 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                   {p.name ?? "Name taken off"} <span className="font-normal text-gray-600">{p.email}</span>
                   {p.via && <span className="font-normal text-gray-500"> (through the link for {p.via})</span>}
                 </p>
+                {p.addressUnconfirmed && (
+                  <p role="note" className="break-words font-semibold text-notice" data-address-unconfirmed="">
+                    {p.addressUnconfirmed}
+                  </p>
+                )}
                 <ul className="grid gap-1">
                   {p.roles.map((r) => (
                     <li key={r.roleId} className="break-words text-gray-800">

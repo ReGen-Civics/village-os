@@ -35,6 +35,37 @@ export interface StoredOpenProposal {
   decidedAt: Date | null;
   /** The decision in words and the authority it was made under, once decided (part B). */
   decision: OpenDecision;
+  /** Kept although its confirmation email did not go: the address is not confirmed yet. Null for every other proposal. */
+  addressUnconfirmed: AddressUnconfirmed | null;
+}
+
+/**
+ * KEPT WHEN THE CONFIRMATION EMAIL DID NOT GO (Rye, 14 Nov 2026: "we still get
+ * the application even if the email is broken"). The proposal is confirmed at
+ * once, and this note rides in the body, beside the decision, so it needs no
+ * migration: when it was kept and, once one has gone, when its confirmation
+ * email went. No `sentAt` means one is still owed. Cleared when the address opens its link.
+ */
+export interface AddressUnconfirmed {
+  since: Date;
+  /** True until a confirmation email has gone to the address: no `sentAt` yet. */
+  owed: boolean;
+  /** When a confirmation email went, if one has. Absent from the body until then, never a JSON null. */
+  sentAt: Date | null;
+}
+
+const dateOr = (v: unknown): Date | null => {
+  if (typeof v !== "string" || !v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+function addressUnconfirmedOf(raw: unknown): AddressUnconfirmed | null {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>).addressUnconfirmed : null;
+  if (!o || typeof o !== "object") return null;
+  const n = o as Record<string, unknown>;
+  const sentAt = dateOr(n.sentAt);
+  return { since: dateOr(n.since) ?? new Date(0), owed: !sentAt, sentAt };
 }
 
 const COLUMNS =
@@ -77,6 +108,7 @@ function rowOf(r: any): StoredOpenProposal {
     confirmedAt: fromSeconds(r.confirmed_s),
     decidedAt: fromSeconds(r.decided_s),
     decision: decisionOf(json(r.body_json)),
+    addressUnconfirmed: addressUnconfirmedOf(json(r.body_json)),
   };
 }
 
@@ -167,17 +199,24 @@ export async function rewriteTerm(db: Db, id: string, term: { startsOn: string; 
  * Confirm the proposal a token's hash names: only an unconfirmed one made after
  * `notBefore`, and only once, because the hash is cleared as it is used. The
  * proposal it confirmed, or null.
+ *
+ * `addressUnconfirmed`: the server confirms it itself because its confirmation
+ * email did not go, and the note that says so is written in the same UPDATE,
+ * so the proposal is never confirmed without it.
  */
-export async function confirmOpenProposal(db: Db, confirmHash: string, notBefore: Date, now: Date): Promise<StoredOpenProposal | null> {
+export async function confirmOpenProposal(db: Db, confirmHash: string, notBefore: Date, now: Date, opts: { addressUnconfirmed?: boolean } = {}): Promise<StoredOpenProposal | null> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT id FROM open_role_proposals WHERE confirm_hash = ? AND status = 'unconfirmed' AND created_at > ? LIMIT 1",
     [confirmHash, notBefore],
   );
   const id = rows[0]?.id ? String(rows[0].id) : null;
   if (!id) return null;
+  const note = opts.addressUnconfirmed
+    ? ", body_json = JSON_SET(COALESCE(body_json, JSON_OBJECT()), '$.addressUnconfirmed', JSON_OBJECT('since', ?))"
+    : "";
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ?, confirm_hash = NULL WHERE id = ? AND status = 'unconfirmed' AND confirm_hash = ?",
-    [now, id, confirmHash],
+    `UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ?, confirm_hash = NULL${note} WHERE id = ? AND status = 'unconfirmed' AND confirm_hash = ?`,
+    opts.addressUnconfirmed ? [now, now.toISOString(), id, confirmHash] : [now, id, confirmHash],
   );
   if (Number(result.affectedRows ?? 0) !== 1) return null;
   return readOpenProposal(db, id);
@@ -239,10 +278,71 @@ export async function deleteOpenProposal(db: Db, id: string): Promise<void> {
   await db.query("DELETE FROM open_role_proposals WHERE id = ? AND status = 'unconfirmed'", [id]);
 }
 
-/** Delete every proposal still unconfirmed that was made before `before`. How many went. */
+/**
+ * Delete every proposal still unconfirmed that was made before `before`. How many went.
+ * A proposal kept because its confirmation email did not go is confirmed, so it is never
+ * one of these; the note is checked here too, so no path that leaves one unconfirmed loses it.
+ */
 export async function deleteUnconfirmedBefore(db: Db, before: Date): Promise<number> {
-  const [result] = await db.query<ResultSetHeader>("DELETE FROM open_role_proposals WHERE status = 'unconfirmed' AND created_at < ?", [before]);
+  const [result] = await db.query<ResultSetHeader>(
+    "DELETE FROM open_role_proposals WHERE status = 'unconfirmed' AND created_at < ? AND JSON_EXTRACT(COALESCE(body_json, JSON_OBJECT()), '$.addressUnconfirmed') IS NULL",
+    [before],
+  );
   return Number(result.affectedRows ?? 0);
+}
+
+/**
+ * The kept proposals whose address is still owed a confirmation email: still
+ * waiting on the village, made after `since`, not anonymised, an address still
+ * on the row, oldest first. The tidy job tries each again every hour.
+ */
+export async function owedConfirmations(db: Db, since: Date, limit = 50): Promise<StoredOpenProposal[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status = 'confirmed' AND created_at > ? AND anonymised_at IS NULL AND email IS NOT NULL ` +
+      "AND JSON_EXTRACT(body_json, '$.addressUnconfirmed') IS NOT NULL AND JSON_EXTRACT(body_json, '$.addressUnconfirmed.sentAt') IS NULL ORDER BY created_at, id LIMIT ?",
+    [since, Math.max(1, Math.trunc(limit))],
+  );
+  return rows.map(rowOf);
+}
+
+/**
+ * A new confirmation link for a kept proposal, before its email goes: only the
+ * hash is kept, and it replaces any earlier one. True when written.
+ */
+export async function setKeptConfirmHash(db: Db, id: string, confirmHash: string): Promise<boolean> {
+  const [result] = await db.query<ResultSetHeader>(
+    "UPDATE open_role_proposals SET confirm_hash = ? WHERE id = ? AND anonymised_at IS NULL AND JSON_EXTRACT(body_json, '$.addressUnconfirmed') IS NOT NULL",
+    [confirmHash, id],
+  );
+  return Number(result.affectedRows ?? 0) === 1;
+}
+
+/** The confirmation email to a kept proposal went: nothing more is owed, and when it went is kept. */
+export async function noteKeptConfirmationSent(db: Db, id: string, at: Date): Promise<void> {
+  await db.query(
+    "UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.addressUnconfirmed.sentAt', ?) " +
+      "WHERE id = ? AND JSON_EXTRACT(body_json, '$.addressUnconfirmed') IS NOT NULL",
+    [at.toISOString(), id],
+  );
+}
+
+/** The kept proposal a confirmation link's hash names, whatever its status, or null. */
+export async function keptByConfirmHash(db: Db, confirmHash: string): Promise<StoredOpenProposal | null> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE confirm_hash = ? AND status <> 'unconfirmed' AND anonymised_at IS NULL ` +
+      "AND JSON_EXTRACT(body_json, '$.addressUnconfirmed') IS NOT NULL LIMIT 1",
+    [confirmHash],
+  );
+  return rows[0] ? rowOf(rows[0]) : null;
+}
+
+/** The address of a kept proposal opened its link: the note goes, and the hash with it, once. True when this call did. */
+export async function confirmKeptAddress(db: Db, id: string, confirmHash: string): Promise<boolean> {
+  const [result] = await db.query<ResultSetHeader>(
+    "UPDATE open_role_proposals SET confirm_hash = NULL, body_json = JSON_REMOVE(body_json, '$.addressUnconfirmed') WHERE id = ? AND confirm_hash = ? AND JSON_EXTRACT(body_json, '$.addressUnconfirmed') IS NOT NULL",
+    [id, confirmHash],
+  );
+  return Number(result.affectedRows ?? 0) === 1;
 }
 
 /** Take the name and address off every declined or withdrawn proposal decided before `before`. How many. */

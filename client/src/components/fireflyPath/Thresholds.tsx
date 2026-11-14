@@ -38,6 +38,10 @@ export interface SentNote {
   to: string;
   at: Date;
   replyDays: number | null;
+  /** Kept although our confirmation email failed (server/lib/openProposalKept.ts): the application is in, the address not confirmed yet. */
+  kept?: boolean;
+  /** The applicant's own status page, shown once here when no email could carry it. Only an address of its own. */
+  statusPath?: string | null;
 }
 
 export function prefersStill(): boolean {
@@ -250,7 +254,53 @@ export function ConfirmedHeading({ title }: { title: string }) {
  * route for it, so "fix the address" sends a fresh proposal, and one nobody
  * confirms is deleted on its own.
  */
+/**
+ * KEPT, THOUGH OUR EMAIL FAILED (Rye, 14 Nov 2026: "we still get the
+ * application even if the email is broken"). No inbox to open and nothing to
+ * confirm yet: the application is in, we say so, and the status page is
+ * offered here because no email could carry it.
+ */
+function KeptThreshold({ sent, roles }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"] }) {
+  const { t } = useLingui();
+  return (
+    <Shell wide>
+      <div data-hides-fab-phone="" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start" data-threshold="kept">
+        <section aria-live="polite" className={`${CARD} grid gap-5`}>
+          <div className="flex justify-center lg:justify-start">
+            <Vesica met={false} size="lg" label={t({ message: "You and the village, about to meet", context: "open proposal sent drawing" })} names={[t({ message: "You", context: "open proposal sent drawing" }), t({ message: "The village", context: "open proposal sent drawing" })]} />
+          </div>
+          <ConfirmedHeading title={t({ message: "We have your application", context: "open proposal kept" })} />
+          <p className={LEDE}>{sent.message}</p>
+          {sent.statusPath && (
+            <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">
+              <Fireflies block className="w-full sm:w-auto">
+                <a href={sent.statusPath} className={`${BUTTON} w-full sm:w-auto`} data-status-link="">
+                  {t({ message: "Follow your application", context: "founding application confirm" })}
+                  <ArrowRight className="size-5" aria-hidden="true" />
+                </a>
+              </Fireflies>
+            </div>
+          )}
+          {sent.statusPath && <p className={HINT}>{t({ message: "Keep this link: we couldn't email it to you. Keep it to yourself too: it is how we know it is you.", context: "open proposal kept" })}</p>}
+          <div className="grid gap-2">
+            <h2 className={EYEBROW}>{t({ message: "What comes next", context: "open proposal sent" })}</h2>
+            <NextForRoles roles={roles} />
+          </div>
+        </section>
+        <aside className="grid gap-4">
+          <WhileYouWait />
+        </aside>
+      </div>
+    </Shell>
+  );
+}
+
 export function SentThreshold({ sent, roles, onFixAddress }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void }) {
+  if (sent.kept) return <KeptThreshold sent={sent} roles={roles} />;
+  return <CheckEmailThreshold sent={sent} roles={roles} onFixAddress={onFixAddress} />;
+}
+
+function CheckEmailThreshold({ sent, roles, onFixAddress }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void }) {
   const { t } = useLingui();
   const whatComesNext = useWhatComesNext();
   const inbox = inboxFor(sent.to);

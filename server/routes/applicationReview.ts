@@ -28,6 +28,7 @@
 import type { Express } from "express";
 import { kindOfRef, REVIEW_WORDS } from "../../shared/applicationReview";
 import { DECIDE_WORDS, OPEN_PROPOSAL_ID, openProposalHref } from "../../shared/openProposalDecide";
+import { OPEN_WORDS } from "../../shared/openProposals";
 import { applicationHref } from "../../shared/seatApplications";
 import {
   hasRecused,
@@ -251,6 +252,8 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const own = await accountFor(deps.members, p.email);
     if (deciders.some((h) => h !== own)) return res.status(409).json({ error: "someone_can_adopt", message: "A holder of the power to fill roles can adopt this at its page, so it does not go to a vote." });
     if (!own) return res.status(409).json({ error: "needs_an_account", message: "A vote is cast on a member, and this person has no account yet. It can go to the village once they have one." });
+    // Kept when our confirmation email failed (server/lib/openProposalKept.ts): the account is only the address's once the address answers.
+    if (p.addressUnconfirmed) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     const placed = await placeOnRoles(decide, { account: own, proposal: p, adopterId: actorId, authority: "village-vote", adopt: false });
     if (!placed.ok) return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
     res.json({ success: true, application: { id: placed.applicationId, href: applicationHref(placed.applicationId) }, next: "Send it to the village from its application page.", back: openProposalHref(p.id) });

@@ -9,7 +9,8 @@
  *   - Files come as one multipart post, are checked by their own bytes, and
  *     land in the proposal's private folder before its row is written.
  *   - A refused file keeps nothing: no row, no folder.
- *   - A confirmation that did not go keeps nothing, files included.
+ *   - A confirmation that did not go KEEPS the application, files included
+ *     (Rye, 14 Nov 2026), and the tidy job never removes them for it.
  *   - The tidy job: files go with a proposal never confirmed in 48 hours, and
  *     links and files go with the name and address at 90 days.
  */
@@ -180,13 +181,22 @@ describe.skipIf(!configured)("a proposal's links and files at the intake, on a r
     expect(await folders()).toEqual(before);
   });
 
-  it("keeps nothing, files included, when the confirmation email did not go", async () => {
+  it("keeps the application, files included, when the confirmation email did not go, and the tidy job keeps them", async () => {
     const before = await folders();
     state.answer = { status: "failed", error: "provider down" } as any;
     const r = await postFiles(proposal(), [{ name: "cv.pdf", bytes: PDF }]);
-    expect(r.status).toBe(503);
-    expect(await readOpenProposal(pool, lastId())).toBeNull();
-    expect(await folders()).toEqual(before);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    expect(r.body).toMatchObject({ sent: true, kept: true });
+    const id = lastId();
+    const row = await readOpenProposal(pool, id);
+    expect(row).toMatchObject({ status: "confirmed", addressUnconfirmed: { owed: true } });
+    expect(row?.body.files?.map((f) => f.name)).toEqual(["cv.pdf"]);
+    expect(await folders()).toEqual([...before, id].sort());
+    // Days later, the sweep for the never confirmed runs: the row and its folder stay.
+    await q("UPDATE open_role_proposals SET created_at = ? WHERE id = ?", [new Date(Date.now() - 3 * 24 * 60 * 60_000), id]);
+    await tidyOpenProposals(pool, new Date(), dir);
+    expect(await readOpenProposal(pool, id)).toMatchObject({ status: "confirmed" });
+    expect(await folders()).toContain(id);
   });
 
   it("the tidy job: files go with a proposal never confirmed in 48 hours, and links and files go with the name and address at 90 days", async () => {
