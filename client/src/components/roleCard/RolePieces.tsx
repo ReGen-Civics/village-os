@@ -33,7 +33,7 @@ export interface RolePiece {
 type Level = 2 | 3 | 4;
 const HEADING: Record<Level, "h2" | "h3" | "h4"> = { 2: "h2", 3: "h3", 4: "h4" };
 
-export default function RolePieces({ pieces, level, after, initial = 0, initialAll = false }: { pieces: RolePiece[]; level: Level; after?: (key: string) => ReactNode; initial?: number; initialAll?: boolean }) {
+export default function RolePieces({ pieces, level, after, marks, initial = 0, initialAll = false }: { pieces: RolePiece[]; level: Level; after?: (key: string) => ReactNode; marks?: (key: string) => number; initial?: number; initialAll?: boolean }) {
   const { t } = useLingui();
   const base = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [at, setAt] = useState(Math.min(Math.max(initial, 0), Math.max(pieces.length - 1, 0)));
@@ -90,6 +90,12 @@ export default function RolePieces({ pieces, level, after, initial = 0, initialA
                     >
                       <Icon className="size-4" aria-hidden="true" />
                       {p.tab}
+                      {(marks?.(p.key) ?? 0) > 0 && (
+                        <>
+                          <span className={`size-2 rounded-full ${here ? "bg-background" : "bg-notice"}`} aria-hidden="true" data-piece-marked="" />
+                          <span className="sr-only">{t({ message: `, ${marks?.(p.key) ?? 0} suggestions`, context: "role card rail: how many suggestions a piece carries" })}</span>
+                        </>
+                      )}
                     </button>
                   </li>
                 );

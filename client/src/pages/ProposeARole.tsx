@@ -316,7 +316,7 @@ export default function ProposeARole() {
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
       setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct });
-      setRampUp(d.rampUp);
+      setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
       setReached(d.reached);
@@ -331,9 +331,9 @@ export default function ProposeARole() {
     writeStoredJson(
       "local",
       draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical }, new Date()),
+      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical, pieceSuggestions }, new Date()),
     );
-  }, [roleId, draftFor, link, sent, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical]);
+  }, [roleId, draftFor, link, sent, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
   useEffect(() => {

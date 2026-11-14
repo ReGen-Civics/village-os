@@ -138,9 +138,11 @@ export interface FullRoleCardProps {
   noAct?: boolean;
   /** Open every piece at once (a decider reads the suggestions beside all of them). */
   allPieces?: boolean;
+  /** How many suggestions each piece carries, for the dot on its rail chip. */
+  marks?: (pieceKey: string) => number;
 }
 
-export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false }: FullRoleCardProps) {
+export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t } = useLingui();
@@ -278,6 +280,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
           wide={wide}
           after={after}
           allPieces={allPieces}
+          marks={marks}
         />
         {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 px-5 pb-5">{act}</div>}
         {footer}

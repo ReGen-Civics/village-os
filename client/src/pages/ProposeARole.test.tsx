@@ -212,6 +212,10 @@ describe("one role per application", () => {
     fireEvent.click(within(bar).getByText("Add to my application"));
     expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
     expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
+    // The piece's chip on the rail carries a dot, and the words wait in the draft on this device.
+    expect(shape.querySelector('[data-piece-tab="purpose"] [data-piece-marked]')).toBeTruthy();
+    expect(shape.querySelector('[data-piece-tab="domain"] [data-piece-marked]')).toBeNull();
+    await waitFor(() => expect(Object.values({ ...window.localStorage }).join(" ")).toContain("Who keeps the key when I am away."));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.pieceSuggestions).toEqual([{ roleId: "r-gate", piece: "purpose", kind: "missing", text: "Who keeps the key when I am away." }]);

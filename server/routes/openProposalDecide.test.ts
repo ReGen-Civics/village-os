@@ -52,7 +52,7 @@ import { makeInviteDoor } from "../lib/inviteDoor";
 import { openProposalsWaitingOn } from "../lib/openProposalDecide";
 import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { runSeasonTurn } from "../lib/seasonTurn";
-import { readOpenProposal } from "../repos/openProposals";
+import { anonymiseOpenProposal, readOpenProposal } from "../repos/openProposals";
 import { OPEN_WORDS } from "../../shared/openProposals";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
@@ -561,6 +561,11 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const mo = await page(id, MO.id);
       expect(mo.body.proposal.pieceSuggestions).toBeNull();
       expect(JSON.stringify(mo.body)).not.toContain("dawn rota");
+      // They show how one person thinks, so they go with the name and the address when it is anonymised.
+      expect(await anonymiseOpenProposal(pool, id, new Date())).toBe(true);
+      const after = await readOpenProposal(pool, id);
+      expect(after?.body.pieceSuggestions).toBeUndefined();
+      expect(after?.body.why).toBe("I live up the road and the gate is always shut.");
     });
 
     it("SHAPE THE ROLE: a proposal sent without suggestions reads as none (an older form still works)", async () => {

@@ -22,6 +22,7 @@ const STATE = {
   terms: { answers: {}, commitmentPct: 50 },
   rampUp: true,
   practical: { timeZone: "America/Costa_Rica", windows: ["weekday-mornings"], earliestStart: "2026-12-01" },
+  pieceSuggestions: [{ roleId: "r-gate", piece: "purpose" as const, kind: "deliver" as const, text: "A dawn rota, every week." }],
 };
 
 describe("the saved draft", () => {
