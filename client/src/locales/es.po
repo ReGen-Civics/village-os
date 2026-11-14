@@ -1077,6 +1077,11 @@ msgstr ""
 #~ msgid "Propose for these {pickCount} roles"
 #~ msgstr "Proponerme para estos {pickCount} roles"
 
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "open proposal kept"
+msgid "Keep this link: we couldn't email it to you. Keep it to yourself too: it is how we know it is you."
+msgstr ""
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "I can't come after all"
@@ -7167,6 +7172,11 @@ msgctxt "role draft, founding roles live on /roles"
 msgid "Looking for a founding role?"
 msgstr "¿Buscas un rol fundador?"
 
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "open proposal kept"
+msgid "We have your application"
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, open a path's editor"
 msgid "Change"
@@ -10888,6 +10898,11 @@ msgstr ""
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
+msgstr ""
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application kept"
+msgid "We have your application. Our confirmation email didn't go out, so we'll write to you at {sentTo} soon."
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
