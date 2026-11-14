@@ -52,7 +52,7 @@ import { makeInviteDoor } from "../lib/inviteDoor";
 import { openProposalsWaitingOn } from "../lib/openProposalDecide";
 import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { runSeasonTurn } from "../lib/seasonTurn";
-import { readOpenProposal } from "../repos/openProposals";
+import { anonymiseOpenProposal, readOpenProposal } from "../repos/openProposals";
 import { OPEN_WORDS } from "../../shared/openProposals";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
@@ -530,6 +530,47 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       // Nor does any letter or notice the proposal sent.
       expect(JSON.stringify(state.sent)).not.toContain("Projector");
       expect(JSON.stringify(state.notices)).not.toContain("Projector");
+    });
+
+    it("SHAPE THE ROLE: deciders read the applicant's suggestions on each piece, word for word; a member who does not decide reads none", async () => {
+      const before = state.sent.length;
+      const res = await fetch(`${base}/api/open-proposals`, { // module-review-ok: a test calling its own local server, never an outside host
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: "Rowan Field",
+          email: "shape1@example.test",
+          roles: [{ roleId: gate, note: "I open gates for a living." }],
+          why: "I live up the road and the gate is always shut.",
+          aim: "The gate opens at dawn every day.",
+          pieceSuggestions: [
+            { roleId: gate, piece: "accountabilities", kind: "deliver", text: "A dawn rota, posted every Sunday." },
+            { roleId: gate, piece: "purpose", kind: "missing", text: "Who the gate keeps out, and why." },
+            { roleId: "not-a-role-i-picked", piece: "purpose", kind: "change", text: "Dropped: a role this application does not pick." },
+          ],
+        }),
+      });
+      expect(res.status, await res.clone().text()).toBe(200);
+      const id = state.sent[before].idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(state.sent[before]) }, null)).status).toBe(200);
+      const decider = await page(id, FOUNDER.id);
+      expect(decider.body.proposal.pieceSuggestions).toEqual([
+        { roleId: gate, piece: "accountabilities", kind: "deliver", text: "A dawn rota, posted every Sunday." },
+        { roleId: gate, piece: "purpose", kind: "missing", text: "Who the gate keeps out, and why." },
+      ]);
+      const mo = await page(id, MO.id);
+      expect(mo.body.proposal.pieceSuggestions).toBeNull();
+      expect(JSON.stringify(mo.body)).not.toContain("dawn rota");
+      // They show how one person thinks, so they go with the name and the address when it is anonymised.
+      expect(await anonymiseOpenProposal(pool, id, new Date())).toBe(true);
+      const after = await readOpenProposal(pool, id);
+      expect(after?.body.pieceSuggestions).toBeUndefined();
+      expect(after?.body.why).toBe("I live up the road and the gate is always shut.");
+    });
+
+    it("SHAPE THE ROLE: a proposal sent without suggestions reads as none (an older form still works)", async () => {
+      const { id } = await confirmed("shape2@example.test");
+      expect((await page(id, FOUNDER.id)).body.proposal.pieceSuggestions).toEqual([]);
     });
 
     it("ABOUT YOU: a holder of the power reads none of their own proposal's references", async () => {

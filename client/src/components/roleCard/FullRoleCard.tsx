@@ -42,6 +42,7 @@ import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
 import { Fireflies } from "@/components/journey/nature";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import EditRoleButton from "@/components/roleEdit/EditRoleButton";
+import FoundingRoleCard from "./FoundingRoleCard";
 import RootsSlot from "./RootsSlot";
 import { useWide } from "./useWide";
 import { readRoleCard, type RoleCardAnswer } from "./roleCardApi";
@@ -131,9 +132,17 @@ export interface FullRoleCardProps {
    * page's h1 (the founding team leading /roles), so the outline never skips a level (axe heading-order).
    */
   lifted?: boolean;
+  /** Something under each piece of the founding card (the applicant's suggestions). */
+  after?: (pieceKey: string) => ReactNode;
+  /** No Apply act: the card is read inside an application or by the people deciding one. */
+  noAct?: boolean;
+  /** Open every piece at once (a decider reads the suggestions beside all of them). */
+  allPieces?: boolean;
+  /** How many suggestions each piece carries, for the dot on its rail chip. */
+  marks?: (pieceKey: string) => number;
 }
 
-export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false }: FullRoleCardProps) {
+export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t } = useLingui();
@@ -177,7 +186,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
   const commitmentPct: number | null = Number.isInteger(seat?.card?.commitmentPct) ? (seat.card.commitmentPct as number) : null;
   const commitment = commitmentPct !== null ? null : asText(seat.timeCommitment);
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
-  const apply = mayApply(seat);
+  const apply = !noAct && mayApply(seat);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
@@ -190,57 +199,99 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
     </Fireflies>
   ) : null;
 
-  // THE OFFER RAIL (design pass D-03, 12 Nov 2026): on the founding card the pay, the commitment and the
-  // one act sit together in the sticky column, so a desktop reader meets Apply beside the words, never
-  // 1,500px down. Only what the card holds is drawn: no ceiling written, no ceiling line.
-  const offer = founding ? (
-    <section className="rounded-2xl border border-notice/50 bg-card p-5 shadow-sm" data-testid="offer-rail">
-      {pay && (
-        <div data-testid="pay-shape">
-          <H4 className={EYEBROW}>{SECTION_WORDS.payShape}</H4>
-          {pay.ceiling && <p className="mt-2 font-display text-2xl leading-snug text-card-foreground" data-testid="pay-ceiling">{pay.ceiling}</p>}
-          {pay.shape.length > 0 && (
-            <ul className="mt-4 grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
-              {pay.shape.map((sh) => (
-                <li key={sh.label} className="min-w-0 rounded-xl border border-border bg-muted px-3 py-2">
-                  <span className="block break-words text-xs capitalize text-muted-foreground" data-testid="pay-tile-label">{sh.label}</span>
-                  <span className="block font-display text-2xl text-card-foreground">{sh.pct}%</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {pay.split && <p className={`mt-3 ${HINT}`} data-testid="pay-split">{pay.split}</p>}
-          {pay.atRisk && <p className="mt-3 text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-          {pay.note && <p className="mt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-note">{pay.note}</p>}
-        </div>
+  // THE POINT OF PAY, drawn once: in the founding card it is the "How rewards work" piece, whose
+  // heading is the piece's own, so the block carries none. Only what the card holds is drawn: no
+  // ceiling written, no ceiling line.
+  const payBlock = pay ? (
+    <div className="flex flex-col gap-3" data-testid="pay-shape">
+      {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+      {pay.shape.length > 0 && (
+        <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
+          {pay.shape.map((sh) => (
+            <li key={sh.label} className="min-w-0 rounded-xl border border-border bg-muted px-3 py-2">
+              <span className="block break-words text-xs capitalize text-muted-foreground" data-testid="pay-tile-label">{sh.label}</span>
+              <span className="block font-display text-2xl text-card-foreground">{sh.pct}%</span>
+            </li>
+          ))}
+        </ul>
       )}
-      {(commitmentPct !== null || commitment) && (
-        <dl className={`${pay ? "mt-4 " : ""}border-t border-border pt-3 text-sm`}>
-          <div className="flex items-baseline justify-between gap-3">
-            <dt className="text-muted-foreground">{W.timeCommitment}</dt>
-            <dd className="text-right text-card-foreground">{commitmentPct !== null ? `${commitmentPct}%` : commitment}</dd>
-          </div>
-        </dl>
-      )}
-      {wide && act && (
-        <div className="mt-5">
-          {act}
-          <p className={`mt-2 text-center ${HINT}`}>{t({ message: "Six steps. No account needed.", context: "full role card, under the one act" })}</p>
-        </div>
-      )}
-    </section>
+      {pay.split && <p className="leading-relaxed text-card-foreground" data-testid="pay-split">{pay.split}</p>}
+      {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
+      {pay.note && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-note">{pay.note}</p>}
+    </div>
   ) : null;
 
-  const side = founding ? (
-    <div className="flex flex-col gap-5">
-      {offer}
-      {/* The rail says the commitment, so the details below leave it out (each concept once, QA2-16). */}
-      <RoleCardParams seat={params?.card ? { ...params, card: { ...params.card, commitmentPct: undefined } } : params} />
-    </div>
-  ) : (
+  // On the founding card the companion sits under a piece's heading, one level further down.
+  const CompanionH = founding ? (lifted ? "h4" : "h5") : H4;
+  const companion =
+    sections && (sections.aiSupport || sections.aiCompanion) ? (
+      <section data-testid="ai-support">
+        <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}>{SECTION_WORDS.aiSupport}</CompanionH>
+        <div className="mt-2 flex items-start gap-3 text-card-foreground">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full border border-notice/50">
+            <AnimalIcon name={sections.aiCompanion} />
+          </span>
+          <div>
+            {sections.aiCompanion && <p className="font-semibold">{sections.aiCompanion}</p>}
+            {sections.aiSupport && <p className="leading-relaxed">{sections.aiSupport}</p>}
+          </div>
+        </div>
+      </section>
+    ) : null;
+
+  const footer = (
+    <footer className={`flex flex-wrap items-center justify-between gap-3 border-t border-border ${founding ? "px-5 py-4 sm:px-7" : "mt-6 pt-4"}`}>
+      <p className={HINT} data-testid="last-edited">
+        {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}
+      </p>
+      {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
+    </footer>
+  );
+
+  // THE FOUNDING CARD, PIECE BY PIECE (Rye, 14 Nov 2026; FoundingRoleCard.tsx): the role as a seat on
+  // the left with the one act, its words one piece at a time on the right.
+  if (founding) {
+    // The founding card's own heading is one level below the title, so its companion heading is too.
+    return (
+      <article
+        aria-labelledby={labelledBy}
+        aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
+        className="sheet-night overflow-hidden rounded-2xl border border-notice/40 bg-card shadow-sm"
+        data-full-role-card={id}
+        data-register={register}
+      >
+        <FoundingRoleCard
+          seat={seat}
+          circleName={circleName}
+          sections={sections}
+          params={params}
+          lifted={lifted}
+          aim={aim}
+          existsWhile={existsWhile}
+          words={words}
+          bringMe={bringMe}
+          notMine={notMine}
+          holding={holding}
+          commitmentPct={commitmentPct}
+          commitment={commitment}
+          pay={payBlock}
+          companion={companion}
+          act={act}
+          wide={wide}
+          after={after}
+          allPieces={allPieces}
+          marks={marks}
+        />
+        {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 px-5 pb-5">{act}</div>}
+        {footer}
+      </article>
+    );
+  }
+
+  const side = (
     <div className="flex flex-col gap-5">
       {pay && (
-        <section className={`rounded-xl border ${founding ? "border-notice/50" : "border-border"} bg-card p-4`} data-testid="pay-shape">
+        <section className="rounded-xl border border-border bg-card p-4" data-testid="pay-shape">
           <H4 className="font-display text-lg text-card-foreground">{SECTION_WORDS.payShape}</H4>
           {pay.ceiling && <p className="mt-2 font-display text-xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
           {pay.split && <p className="mt-2 leading-relaxed text-card-foreground" data-testid="pay-split">{pay.split}</p>}

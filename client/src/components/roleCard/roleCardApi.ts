@@ -7,6 +7,7 @@
 import { gameFetch } from "@/lib/gameApi";
 import { NO_VILLAGE_PAY, readSections, villagePayFrom, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { DEFAULT_OTHER_WAYS, otherWaysOf, type OtherWays } from "@shared/otherWays";
+import type { FilledTeamRole } from "@shared/foundingTeam";
 
 export interface FoundingTeamAnswer {
   on: boolean;
@@ -18,6 +19,8 @@ export interface FoundingTeamAnswer {
   villagePay: VillagePay;
   /** The "Other ways to join" tiles (shared/otherWays.ts), the defaults when the read fails. */
   otherWays: OtherWays;
+  /** The current team beside the open roles (Rye, 14 Nov 2026): the founding circles' filled roles, holders by first name when the village shows names. */
+  team: FilledTeamRole[];
 }
 
 export interface RoleCardAnswer {
@@ -29,7 +32,15 @@ export interface RoleCardAnswer {
   mayEdit: boolean;
 }
 
-const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS };
+const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [] };
+
+/** The team as the server sent it, read again so a bad row draws nothing. */
+function teamOf(v: unknown): FilledTeamRole[] {
+  if (!Array.isArray(v)) return [];
+  return v
+    .filter((r: any) => r && typeof r.id === "string" && typeof r.name === "string" && r.name.trim())
+    .map((r: any) => ({ id: r.id, name: r.name.trim(), holders: Array.isArray(r.holders) ? r.holders.filter((h: unknown): h is string => typeof h === "string" && !!h.trim()) : [] }));
+}
 
 /** The village's pay block as the server sent it, read again here so a bad answer draws nothing. */
 function payOf(v: any): VillagePay {
@@ -53,7 +64,7 @@ export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
       const read = readSections(d?.sections?.[id]);
       if (read.ok) sections[id] = read.value;
     }
-    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays) };
+    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team) };
   } catch {
     return OFF;
   }
