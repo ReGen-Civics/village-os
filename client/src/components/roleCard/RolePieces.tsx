@@ -33,11 +33,11 @@ export interface RolePiece {
 type Level = 2 | 3 | 4;
 const HEADING: Record<Level, "h2" | "h3" | "h4"> = { 2: "h2", 3: "h3", 4: "h4" };
 
-export default function RolePieces({ pieces, level, after, initial = 0 }: { pieces: RolePiece[]; level: Level; after?: (key: string) => ReactNode; initial?: number }) {
+export default function RolePieces({ pieces, level, after, initial = 0, initialAll = false }: { pieces: RolePiece[]; level: Level; after?: (key: string) => ReactNode; initial?: number; initialAll?: boolean }) {
   const { t } = useLingui();
   const base = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [at, setAt] = useState(Math.min(Math.max(initial, 0), Math.max(pieces.length - 1, 0)));
-  const [all, setAll] = useState(false);
+  const [all, setAll] = useState(initialAll);
   const [seen, setSeen] = useState<Set<number>>(() => new Set([at]));
   const moved = useRef(false);
   const headings = useRef<Array<HTMLElement | null>>([]);
