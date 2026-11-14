@@ -147,24 +147,24 @@ export default function RolePieces({ pieces, level, after, initial = 0 }: { piec
       </div>
 
       {!all && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-border pt-4 sm:gap-3">
           <button
             type="button"
             onClick={() => go(i - 1)}
             disabled={i === 0}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-border px-4 py-2 font-semibold text-card-foreground disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-border px-3 py-2 font-semibold text-card-foreground disabled:opacity-40 sm:gap-2 sm:px-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <ChevronLeft className="size-4" aria-hidden="true" />
             {t({ message: "Back", context: "role card: the previous piece" })}
           </button>
-          <span className="text-sm tabular-nums text-muted-foreground" aria-live="polite">
+          <span className="text-center text-sm tabular-nums text-muted-foreground" aria-live="polite">
             {t({ message: `${i + 1} of ${pieces.length}`, context: "role card: which piece is open, out of how many" })}
           </span>
           {next ? (
             <button
               type="button"
               onClick={() => go(i + 1)}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-notice bg-notice/15 px-4 py-2 text-left font-semibold text-card-foreground hover:bg-notice/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-notice bg-notice/15 px-3 py-2 text-left font-semibold sm:gap-2 sm:px-4 text-card-foreground hover:bg-notice/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               data-piece-next=""
             >
               {t({ message: `Next: ${next.tab}`, context: "role card: the next piece, by its short name" })}
