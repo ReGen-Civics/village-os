@@ -940,7 +940,7 @@ msgstr "Meeting today: {names}."
 msgid "They aligned with the membership letter when they proposed."
 msgstr "They aligned with the membership letter when they proposed."
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
 msgid "The time this covers"
 msgstr "The time this covers"
@@ -1537,6 +1537,11 @@ msgstr "The reading above is the first one of {name}."
 msgctxt "a suggestion being sent"
 msgid "Sending…"
 msgstr "Sending…"
+
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "Work and value"
+msgstr "Work and value"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -2199,7 +2204,7 @@ msgctxt "role editor"
 msgid "Minutes"
 msgstr "Minutes"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
 msgid "This season"
 msgstr "This season"
@@ -2227,6 +2232,11 @@ msgstr "Its words name a member here, so they cannot be taken as they are."
 msgctxt "quest editor"
 msgid "Posted. The price was not recorded beside the rule, so set it on the pricing desk."
 msgstr "Posted. The price was not recorded beside the rule, so set it on the pricing desk."
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: how the parts work"
+msgid "Give each role a part of your {total}%. The parts add up to 100%."
+msgstr "Give each role a part of your {total}%. The parts add up to 100%."
 
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgid "Your suggestion is open. It is listed under Adopt, with your name and today's date, until it is decided."
@@ -2474,6 +2484,11 @@ msgstr "No open quests grow this yet. Suggest one you feel this village is missi
 #~ msgid "First task: {quest}"
 #~ msgstr "First task: {quest}"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "Keeping the village running"
+msgstr "Keeping the village running"
+
 #: client/src/components/modules/BuilderJourney.tsx
 msgctxt "module library, builder section"
 msgid "Copy it into the AI you build with, then add what your module should do."
@@ -2539,7 +2554,7 @@ msgctxt "circle picker"
 msgid "Forming"
 msgstr "Forming"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: after saving"
 msgid "Saved. The open work and roles now fit this."
 msgstr "Saved. The open work and roles now fit this."
@@ -3031,6 +3046,11 @@ msgstr "1 change is in a draft, waiting to be published."
 msgid "You hold the village's story, so you can write these lines. Anyone can read them, signed in or not."
 msgstr "You hold the village's story, so you can write these lines. Anyone can read them, signed in or not."
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "Talk and share"
+msgstr "Talk and share"
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Nothing ticked can be taken together"
@@ -3344,6 +3364,11 @@ msgctxt "pricing desk"
 msgid "{0} open claims keep the price they were taken at."
 msgstr "{0} open claims keep the price they were taken at."
 
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: roles paid on separate agreements"
+msgid "Your roles are paid on separate agreements. Say how your time falls between them. Pay does not read this yet. The village is still deciding how it will."
+msgstr "Your roles are paid on separate agreements. Say how your time falls between them. Pay does not read this yet. The village is still deciding how it will."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Delete this change request? This cannot be undone."
 msgstr "Delete this change request? This cannot be undone."
@@ -3582,9 +3607,9 @@ msgid "Show all {0} goals"
 msgstr "Show all {0} goals"
 
 #: client/src/components/commitment/CommitmentField.tsx
-msgctxt "commitment field: heading"
-msgid "How much can you give right now?"
-msgstr "How much can you give right now?"
+#~ msgctxt "commitment field: heading"
+#~ msgid "How much can you give right now?"
+#~ msgstr "How much can you give right now?"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "No round is open yet. When the pot's holder opens one, ideas are welcome here."
@@ -3841,6 +3866,11 @@ msgctxt "role lists, opens the new role from a card dialog"
 msgid "New role from a card"
 msgstr "New role from a card"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "Places and gatherings"
+msgstr "Places and gatherings"
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook cover, a line for names"
 msgid "Filled in by"
@@ -3911,6 +3941,11 @@ msgstr "Apply"
 msgctxt "settlement close date missing"
 msgid "date not recorded"
 msgstr "date not recorded"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment on the roles card: the note and history disclosure"
+msgid "A note, and what you said before"
+msgstr "A note, and what you said before"
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Promised reply time, in hours"
@@ -4098,6 +4133,11 @@ msgstr "The agent confirms"
 #~ msgctxt "open proposal stone"
 #~ msgid "Send"
 #~ msgstr "Send"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: button"
+msgid "Split evenly"
+msgstr "Split evenly"
 
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgctxt "heading of the canvas baseline view"
@@ -4321,7 +4361,7 @@ msgctxt "founding application review"
 msgid "Commitment: {commitment}%"
 msgstr "Commitment: {commitment}%"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
 msgid "Percent you can give"
 msgstr "Percent you can give"
@@ -4504,6 +4544,11 @@ msgstr "Nothing yet"
 #: client/src/components/review/SeraMember.tsx
 msgid "{agent} suggests {n} small changes for the chart"
 msgstr "{agent} suggests {n} small changes for the chart"
+
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "Decide together"
+msgstr "Decide together"
 
 #: client/src/components/governance/SeasonGoalField.tsx
 msgid "Loading the season's goals…"
@@ -5034,7 +5079,7 @@ msgstr "The note:"
 msgid "When you can usually meet (optional)"
 msgstr "When you can usually meet (optional)"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
 msgid "This week"
 msgstr "This week"
@@ -5099,6 +5144,11 @@ msgstr "How do I…"
 msgctxt "role editor: who can hold a role"
 msgid "An agent"
 msgstr "An agent"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment field: one earlier word"
+msgid "{was}% from {from}, {span}"
+msgstr "{was}% from {from}, {span}"
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "a live role takes the name an outside service sent"
@@ -5819,9 +5869,9 @@ msgstr "What it is for"
 #~ msgstr "We write to you with what comes next."
 
 #: client/src/components/commitment/CommitmentField.tsx
-msgctxt "commitment field: before a first word"
-msgid "Say it as a percent of yourself. The open work and the roles you see will fit it. Only you see this."
-msgstr "Say it as a percent of yourself. The open work and the roles you see will fit it. Only you see this."
+#~ msgctxt "commitment field: before a first word"
+#~ msgid "Say it as a percent of yourself. The open work and the roles you see will fit it. Only you see this."
+#~ msgstr "Say it as a percent of yourself. The open work and the roles you see will fit it. Only you see this."
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Apply with my pick"
@@ -6075,6 +6125,11 @@ msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} waiting"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: a kind of power"
+msgid "People and roles"
+msgstr "People and roles"
+
 #: client/src/components/roleEdit/CharacterTags.tsx
 #~ msgctxt "role editor characters"
 #~ msgid "Characters it suits"
@@ -6254,6 +6309,11 @@ msgstr "Live now"
 msgctxt "circles map, today card"
 msgid "Today on the map"
 msgstr "Today on the map"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: every role is paid through one agreement"
+msgid "Your roles share one pay, so there is nothing you need to split. Splitting your time is only for your own planning."
+msgstr "Your roles share one pay, so there is nothing you need to split. Splitting your time is only for your own planning."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Sign in to see what your village is weighing."
@@ -7172,7 +7232,7 @@ msgstr "Off now. The connector does only what it did before."
 msgid "Last written by {0} on {1}"
 msgstr "Last written by {0} on {1}"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: the period a member's word covers"
 msgid "This moon"
 msgstr "This moon"
@@ -8989,9 +9049,9 @@ msgstr "The door is open: this role is looking for someone"
 #~ msgstr "If we don't seat you, we cover it."
 
 #: client/src/components/commitment/CommitmentField.tsx
-msgctxt "commitment field: one earlier word"
-msgid "{pct}% from {from}, {period}"
-msgstr "{pct}% from {from}, {period}"
+#~ msgctxt "commitment field: one earlier word"
+#~ msgid "{pct}% from {from}, {period}"
+#~ msgstr "{pct}% from {from}, {period}"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgctxt "ai agents approval"
@@ -9372,7 +9432,7 @@ msgctxt "approval inbox"
 msgid "Decided"
 msgstr "Decided"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
 msgid "Save"
 msgstr "Save"
@@ -10555,6 +10615,11 @@ msgctxt "notebook row kind, size and date"
 msgid "{0}, {1}, added {2}"
 msgstr "{0}, {1}, added {2}"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: the powers heading"
+msgid "What you can do"
+msgstr "What you can do"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You confirm your email within 48 hours. Nothing reaches the village before you do."
 #~ msgstr "You confirm your email within 48 hours. Nothing reaches the village before you do."
@@ -11121,9 +11186,9 @@ msgid "Cancel"
 msgstr "Cancel"
 
 #: client/src/components/commitment/CommitmentField.tsx
-msgctxt "commitment field: the history"
-msgid "What you said before"
-msgstr "What you said before"
+#~ msgctxt "commitment field: the history"
+#~ msgid "What you said before"
+#~ msgstr "What you said before"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -11181,6 +11246,11 @@ msgctxt "site header"
 msgid "Sign in or join"
 msgstr "Sign in or join"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: opens every power, grouped"
+msgid "Show me everything"
+msgstr "Show me everything"
+
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the circle that hears an appeal against an exit"
 msgid "Appeals go to:"
@@ -11233,6 +11303,11 @@ msgstr "{witness} finished Quest to witness"
 msgctxt "funding round stage"
 msgid "Ideas welcome until the pot's holder sets the next stage"
 msgstr "Ideas welcome until the pot's holder sets the next stage"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: the disclosure"
+msgid "Split your time across roles (optional)"
+msgstr "Split your time across roles (optional)"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page: hide the roles beyond the reader's percent"
@@ -12284,6 +12359,11 @@ msgctxt "admin quests: the percent of a person a quest asks"
 msgid "Commitment it asks (%)"
 msgstr "Commitment it asks (%)"
 
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: the parts are whole"
+msgid "The parts add up to 100%."
+msgstr "The parts add up to 100%."
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Changed"
@@ -12823,7 +12903,7 @@ msgctxt "first fourteen days strip, the day that is today"
 msgid "today"
 msgstr "today"
 
-#: client/src/components/commitment/CommitmentField.tsx
+#: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field"
 msgid "A note for yourself (optional)"
 msgstr "A note for yourself (optional)"
@@ -12886,6 +12966,11 @@ msgstr "Our review: we read every application, and write to you by {by}, with an
 msgctxt "role access state"
 msgid "Not needed"
 msgstr "Not needed"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment on the roles card: what holds now"
+msgid "One percent for all your roles together. You said {nowPct}% from {nowFrom}. Only you see this."
+msgstr "One percent for all your roles together. You said {nowPct}% from {nowFrom}. Only you see this."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -13191,6 +13276,11 @@ msgctxt "role pay"
 msgid "Saved"
 msgstr "Saved"
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: the standing groups heading"
+msgid "Groups you are in"
+msgstr "Groups you are in"
+
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor, pay shape total"
 msgid "The shares add up to {total}%."
@@ -13352,6 +13442,11 @@ msgstr "Word any setting for this proposal. Each save is a new revision, the app
 msgctxt "agent paths"
 msgid "Search the paths"
 msgstr "Search the paths"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment on the roles card: heading"
+msgid "How much you give"
+msgstr "How much you give"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -13673,6 +13768,11 @@ msgstr "Step {n} of 4: {words}"
 #: client/src/components/governance/TermsEight.tsx
 msgid "This is about energy and attention, never hours. You can change it later."
 msgstr "This is about energy and attention, never hours. You can change it later."
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: no agreement covers the roles"
+msgid "No pay agreement covers these roles yet, so a split is only for your own planning."
+msgstr "No pay agreement covers these roles yet, so a split is only for your own planning."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -14059,6 +14159,11 @@ msgctxt "sera answers"
 msgid "1 pay change is left out. Pay is set by a person."
 msgstr "1 pay change is left out. Pay is set by a person."
 
+#: client/src/components/profile/ProgressionPowers.tsx
+msgctxt "progression: why these powers come first"
+msgid "First what your roles and groups hand you, then what opened most recently."
+msgstr "First what your roles and groups hand you, then what opened most recently."
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Ask to share it"
 msgstr "Ask to share it"
@@ -14150,6 +14255,11 @@ msgctxt "start a new change request"
 msgid "A new change request"
 msgstr "A new change request"
 
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment on the roles card: before a first word"
+msgid "One percent of yourself, for all your roles together. The open work and the roles you see will fit it. Only you see this."
+msgstr "One percent of yourself, for all your roles together. The open work and the roles you see will fit it. Only you see this."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "Serves the season goal: {goalWords}"
@@ -14158,6 +14268,11 @@ msgstr "Serves the season goal: {goalWords}"
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "Each column needs an answer. \"Nobody yet\" is an answer."
 msgstr "Each column needs an answer. \"Nobody yet\" is an answer."
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: a role's part of the whole person"
+msgid "{ofYou}% of you"
+msgstr "{ofYou}% of you"
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgid "What the canvas says about it"
@@ -14378,9 +14493,9 @@ msgid "Start as {0}"
 msgstr "Start as {0}"
 
 #: client/src/components/commitment/CommitmentField.tsx
-msgctxt "commitment field: what holds now"
-msgid "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
-msgstr "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
+#~ msgctxt "commitment field: what holds now"
+#~ msgid "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
+#~ msgstr "You said {nowPct}% from {nowFrom}. Change it whenever life changes."
 
 #: client/src/components/gratitude/WallEntryCard.tsx
 msgctxt "thanks thread: the vesica, read aloud"
@@ -14608,6 +14723,11 @@ msgstr "{0} has no goals set yet, so there is nothing to pick here. Your goal is
 msgctxt "about you reference"
 msgid "How you know them"
 msgstr "How you know them"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: the parts are not whole"
+msgid "The parts add up to {splitSum}%. Make them 100% to save."
+msgstr "The parts add up to {splitSum}%. Make them 100% to save."
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft tray"
