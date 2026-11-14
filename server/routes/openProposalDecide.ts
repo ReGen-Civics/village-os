@@ -56,7 +56,7 @@
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
 import { membershipAlignedFor } from "../lib/applicationMembership";
-import { identityKey } from "../../shared/openProposals";
+import { identityKey, OPEN_WORDS } from "../../shared/openProposals";
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
@@ -393,6 +393,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         why: p.body.why,
         aim: p.body.aim,
         confirmedOn: p.confirmedAt ? civilDateKey(p.confirmedAt, tz()) : null,
+        // Kept although our confirmation email failed (Rye, 14 Nov 2026): said to everyone who reads the page.
+        addressUnconfirmed: p.addressUnconfirmed ? { words: OPEN_WORDS.addressUnconfirmed, account: !!may.own && !p.body.agent ? OPEN_WORDS.addressUnconfirmedAccount : null } : null,
         decidedOn: p.decidedAt ? civilDateKey(p.decidedAt, tz()) : null,
         decided: p.decision.words,
         // Answers close with the decision, so nobody reads that they may still give one.
@@ -410,7 +412,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
           holdsThePower,
           own: !!may.own && may.own === viewerId,
           // While our review waits, its two answers stand in place of adopt and decline.
-          mayAdopt: open && may.ok && !former && !reviewing,
+          mayAdopt: open && may.ok && !former && !reviewing && !(p.addressUnconfirmed && may.own && !p.body.agent),
           mayDecline: open && may.ok && !reviewing,
           mayReview: reviewing && may.ok,
           formerMember: former,
@@ -513,6 +515,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.status !== "confirmed") return res.status(409).json({ error: DECIDE_WORDS.decided, status: p.status });
     const may = await deciding(p, actorId);
     if (!may.ok) return res.status(may.status).json(may.body);
+    // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
+    if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     /*
      * AN AGENT'S PROPOSAL (0374): deciding stays human, and seating an agent is
      * its own power. An agent account never adopts, and the adopter needs

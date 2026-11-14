@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { CONSENT_WORDS, type ConsentState } from "@shared/roleProposalConsent";
 import { DECIDE_WORDS, DOOR } from "@shared/openProposalDecide";
+import { OPEN_WORDS } from "@shared/openProposals";
 import { consentOf } from "@/test/roleProposalFixture";
 
 const ID = "op-0123456789abcdef0123";
@@ -287,6 +288,20 @@ describe("the open proposal page", () => {
     expect(await screen.findByText(DECIDE_WORDS.formerMember)).toBeTruthy();
     expect(screen.queryByRole("button", { name: DECIDE_WORDS.adopt })).toBeNull();
     expect(screen.getByRole("button", { name: DECIDE_WORDS.decline })).toBeTruthy();
+  });
+
+  it("kept though our confirmation email failed: everyone who reads it is told the address is not confirmed, and what that means for an account", async () => {
+    answer = () => json({ proposal: served({ addressUnconfirmed: { words: OPEN_WORDS.addressUnconfirmed, account: OPEN_WORDS.addressUnconfirmedAccount } }) });
+    render(<OpenProposal />);
+    await heading();
+    const note = document.querySelector("[data-address-unconfirmed]") as HTMLElement;
+    expect(note.textContent).toBe(`${OPEN_WORDS.addressUnconfirmed} ${OPEN_WORDS.addressUnconfirmedAccount}`);
+    cleanup();
+    // CONTROL: a proposal whose address confirmed carries no note.
+    answer = () => json({ proposal: served() });
+    render(<OpenProposal />);
+    await heading();
+    expect(document.querySelector("[data-address-unconfirmed]")).toBeNull();
   });
 
   it("a visitor is told it is for members, with a way to sign in back here", async () => {
