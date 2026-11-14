@@ -4,7 +4,7 @@
  * A single-line input cuts a sentence off at the edge of the screen. This
  * stays at least 44px tall, wraps long words, and grows to the text.
  */
-import { useLayoutEffect, useRef, type TextareaHTMLAttributes } from "react";
+import { useEffect, useLayoutEffect, useRef, type TextareaHTMLAttributes } from "react";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 
@@ -23,12 +23,28 @@ export default function GrowingField({
   mic?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
+  // A box drawn inside a hidden step measures 0: it keeps its rows until it is shown, then fits.
+  const fit = () => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
+    if (el.scrollHeight > 0) el.style.height = `${el.scrollHeight}px`;
+  };
+  useLayoutEffect(fit, [value]);
+  // Shown, or its width changed: fit again. Only a width change counts, so fitting never feeds itself.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let width = el.clientWidth;
+    const watch = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fit();
+    });
+    watch.observe(el);
+    return () => watch.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const box = (
     <textarea
       ref={ref}

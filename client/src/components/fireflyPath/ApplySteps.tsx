@@ -28,6 +28,7 @@ import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
+import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import type { DraftableGoal } from "@shared/seraDrafts";
 import { PLACEHOLDER_PARTS, shareWords, type FoundingSetup } from "@shared/foundingApplication";
@@ -205,13 +206,13 @@ export function ValueItems({
                 <label htmlFor={`${prefix}-${i}-title`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "What you will bring", context: "founding application value" })}
                 </label>
-                <input id={`${prefix}-${i}-title`} maxLength={GOAL_LIMITS.title} value={g.title} onChange={(e) => set(i, { title: e.target.value, seraDraft: false })} className={`${FIELD} py-3`} />
+                <MicInput id={`${prefix}-${i}-title`} maxLength={GOAL_LIMITS.title} value={g.title} onChange={(title) => set(i, { title, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               <div>
                 <label htmlFor={`${prefix}-${i}-done`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "How we will know it is done", context: "founding application value" })}
                 </label>
-                <input id={`${prefix}-${i}-done`} maxLength={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(e) => set(i, { doneWhen: e.target.value, seraDraft: false })} className={`${FIELD} py-3`} />
+                <MicInput id={`${prefix}-${i}-done`} maxLength={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => set(i, { doneWhen, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               {goals.length > 0 && (
                 <div>

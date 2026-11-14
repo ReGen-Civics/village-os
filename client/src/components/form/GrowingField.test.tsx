@@ -24,6 +24,14 @@ describe("a sentence field grows", () => {
     expect((box as HTMLTextAreaElement).value).toBe(LONG);
   });
 
+  it("keeps its rows while it cannot be measured, as inside a hidden step", () => {
+    // jsdom measures every box at 0, as a browser measures one inside a hidden pane. It used to be pinned at 0px and drawn one line tall once shown.
+    render(<GrowingField aria-label="Why" minRows={7} value="" onChange={() => {}} />);
+    const box = screen.getByLabelText("Why") as HTMLTextAreaElement;
+    expect(box.style.height).not.toBe("0px");
+    expect(box.rows).toBe(7);
+  });
+
   it("draws This role exists while, and Time, as growing fields", () => {
     expect(EDIT_FIELDS.find((f) => f.field === "existsWhile")?.multiline).toBe(true);
     expect(EDIT_FIELDS.find((f) => f.field === "timeCommitment")?.multiline).toBe(true);

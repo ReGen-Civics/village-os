@@ -40,7 +40,8 @@
  * WHAT IS KEPT, said on the form in one line (sheet 19i): never confirmed, deleted after 48 hours;
  * declined, its name and address go after 90 days (docs/ARCHITECTURE.md, 3.9).
  */
-import { goalsToFirstMoon } from "@/components/openProposal/RoleCardBridge";
+import GrowingField from "@/components/form/GrowingField";
+import MicInput from "@/components/form/MicInput";
 import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -70,13 +71,12 @@ import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OP
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { EMPTY_TERMS_STEP, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
-import { Practicalities, SeasonServes, browserTimeZone, type Practical } from "@/components/openProposal/RoleCardBridge";
+import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import { ABOUT_PANES, AboutPanes, CompensationShape, EnterHint, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
-/** The link in the confirmation email lives with the other threshold; App.tsx and the tests still find it here. */
-export { ConfirmProposal } from "@/components/fireflyPath/Thresholds";
+export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -828,7 +828,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <textarea id="propose-why" required rows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -848,7 +848,7 @@ export default function ProposeARole() {
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
                     {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
                   </label>
-                  <input id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={(e) => setSelfKnowledge(e.target.value)} className={FIELD} {...invalid("selfKnowledge")} />
+                  <MicInput id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>
                   <Beside id="propose-problem-selfKnowledge" message={problemOn("selfKnowledge")} />
                 </div>
@@ -872,7 +872,7 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <input id="propose-aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={(e) => setAim(e.target.value)} className={FIELD} {...invalid("aim")} />
+                <MicInput id="propose-aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
                   {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim.slice(0, OPEN_AIM_MAX)); setMarks((m) => ({ ...m, aim: r.aim!.slice(0, OPEN_AIM_MAX) })); } }} />}
