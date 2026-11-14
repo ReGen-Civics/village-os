@@ -9,18 +9,16 @@
  * heading. No moss and no game words here. One role is open at a time, so the
  * one firefly cluster sits on that card's one act, "Apply for this role".
  *
- * Phone and desktop: on a phone each role is a full-width row, and opening one
- * puts its card directly under it, one thing at a time. From lg the rows sit
- * in a column beside the open card, so a reader moves between the roles
- * without losing the card they are reading.
+ * THE TEAM AS POSITIONS (Rye, 14 Nov 2026, FoundingLineup.tsx): the open roles
+ * are drawn as a team sheet by default, or as a formation, and the chosen
+ * role's card opens below, piece by piece. A phone opens on the team alone,
+ * one thing at a time; a desktop opens on the first role's card.
  */
 import { useId, useState } from "react";
-import { ChevronRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
+import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
-import { roleArtFor } from "@shared/roleDraft";
-import ArtImage from "@/components/roleDraft/ArtImage";
+import FoundingLineup, { type FilledRole, type LineupView } from "./FoundingLineup";
 import FullRoleCard from "./FullRoleCard";
 import { useWide } from "./useWide";
 
@@ -47,13 +45,47 @@ export interface FoundingRole {
  * `lead`: the section opens the page (design pass M1 and D-04, 12 Nov 2026). Its heading is then the
  * page's h1, and on a phone the spacing is tighter so the role rows sit in the first screen.
  */
-export default function FoundingTeam({ roles, initialOpen = null, villagePay = null, lead = false }: { roles: FoundingRole[]; initialOpen?: string | null; villagePay?: VillagePay | null; lead?: boolean }) {
+const VIEW_KEY = "founding-team-view";
+function readView(): LineupView {
+  try {
+    return window.localStorage.getItem(VIEW_KEY) === "formation" ? "formation" : "sheet";
+  } catch {
+    return "sheet";
+  }
+}
+
+const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+export default function FoundingTeam({
+  roles,
+  initialOpen = null,
+  villagePay = null,
+  lead = false,
+  filled = [],
+}: {
+  roles: FoundingRole[];
+  initialOpen?: string | null;
+  villagePay?: VillagePay | null;
+  lead?: boolean;
+  /** The filled roles of the founding circle, holders as the village shows them to this reader. */
+  filled?: FilledRole[];
+}) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
   const Heading = lead ? "h1" : "h2";
   const wide = useWide();
   // A phone opens on the list, one thing at a time; a desktop opens on the first role beside it.
   const [open, setOpen] = useState<string | null>(initialOpen);
+  // The team sheet by default (Rye, 14 Nov); a reader's own choice is remembered on this device.
+  const [view, setViewState] = useState<LineupView>(readView);
+  const setView = (v: LineupView) => {
+    setViewState(v);
+    try {
+      window.localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // A browser that keeps nothing still switches; it only forgets.
+    }
+  };
   // `open` is null until a reader chooses, and "" once a phone reader closes the open row.
   const shown = open === null ? (wide ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
   if (roles.length === 0) return null;
@@ -73,52 +105,31 @@ export default function FoundingTeam({ roles, initialOpen = null, villagePay = n
       </div>
 
       <div className={`${lead ? "mt-5" : "mt-10"} grid gap-6 sm:mt-10`}>
-        {/* Piece by piece (Rye, 14 Nov): on a desktop the roles sit in a row above the open card, so
-            the card has the page's whole width for its seat column and its pieces. */}
-        <ul className="grid gap-3 lg:flex lg:flex-wrap" aria-label={t({ message: "The founding roles", context: "founding team list" })}>
-          {roles.map((r) => {
-            const id = String(r.seat.id);
-            const here = shown === id;
-            return (
-              <li key={id}>
-                <button
-                  type="button"
-                  aria-expanded={here}
-                  aria-controls={`${headingId}-card`}
-                  onClick={() => setOpen(here && !wide ? "" : id)}
-                  className={`flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left lg:min-h-0 lg:w-auto lg:rounded-full lg:py-1.5 lg:pl-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice/10" : "border-border bg-card hover:border-notice/60"}`}
-                  data-founding-role={id}
-                >
-                  <ArtImage portrait src={roleArtFor({ archetypes: Array.isArray(r.seat.archetypes) ? r.seat.archetypes.map(String) : [], raw: r.seat })} className="relative size-11 shrink-0 rounded-full border border-notice/50" imgClassName="object-top" />
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-lg leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>
-                    {(r.circleName || r.sections?.paid) && (
-                      <span className="mt-0.5 block text-xs text-muted-foreground">
-                        {[r.circleName, r.sections?.paid ? SECTION_WORDS.paid : null].filter(Boolean).join(" · ")}
-                      </span>
-                    )}
-                  </span>
-                  <ChevronRight className={`size-5 shrink-0 text-notice transition-transform lg:hidden ${here && !wide ? "rotate-90" : ""}`} aria-hidden="true" />
-                </button>
-                {/* A phone reads the open card right under its row. */}
-                {here && !wide && (
-                  <div className="mt-3" id={`${headingId}-card`}>
-                    <FullRoleCard seat={r.seat} circleName={r.circleName} sections={r.sections} villagePay={villagePay} register="founding" lifted={lead} />
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-        {wide && (
-        <div id={`${headingId}-card`}>
+        {/* The team as positions (Rye, 14 Nov): a team sheet by default, a formation on request.
+            Choosing a role opens its card below, piece by piece. */}
+        <FoundingLineup
+          roles={roles}
+          filled={filled}
+          view={view}
+          onView={setView}
+          shown={shown}
+          cardId={`${headingId}-card`}
+          onOpen={(id) => {
+            setOpen(shown === id && !wide ? "" : id);
+            if (shown === id) return;
+            requestAnimationFrame(() => {
+              const card = document.getElementById(`${headingId}-card`);
+              if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "start", behavior: reducedMotion() ? "auto" : "smooth" });
+            });
+          }}
+        />
+        <div id={`${headingId}-card`} className="scroll-mt-24">
           {current ? (
             <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
-          ) : (
+          ) : wide ? (
             <p className="rounded-2xl border border-dashed border-notice/40 p-8 text-muted-foreground">{t({ message: "Choose a role to read it in full.", context: "founding team, no role open" })}</p>
-          )}
+          ) : null}
         </div>
-        )}
       </div>
     </section>
   );

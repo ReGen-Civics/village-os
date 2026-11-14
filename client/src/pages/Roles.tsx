@@ -563,6 +563,13 @@ export default function Roles() {
   const featuredReach = rolesWithinReach(featured, (f) => ({ commitmentPct: f.seat?.card?.commitmentPct ?? null, commitmentRequired: f.seat?.card?.commitmentRequired === true }), memberPct);
   const featuredHidden = featuredReach.beyond.filter((f) => String(f.seat?.id) !== linked);
   const featuredVisible = showBeyond ? featured : featured.filter((f) => !featuredHidden.includes(f));
+  // The rest of the founding circle, for the team view (Rye, 14 Nov): the roles someone already holds
+  // in the circles the founding roles sit in, holders named only as /api/org names them to this reader.
+  const featuredIds = new Set(featured.map((f) => String(f.seat.id)));
+  const foundingCircles = new Set(featured.map((f) => f.seat.circleId).filter(Boolean));
+  const foundingFilled = (roles ?? [])
+    .filter((r) => !featuredIds.has(r.id) && r.circleId && foundingCircles.has(r.circleId) && r.raw?.listed !== false && !r.isExample && (r.status === "filled" || r.status === "partial" || (r.holders?.length ?? 0) > 0))
+    .map((r) => ({ id: r.id, name: r.name, holders: r.holders ?? [] }));
   const beyondCount = reach.beyond.filter((r) => r.id !== linked).length + featuredHidden.length;
   const directory = showBeyond ? rooted : rooted.filter((r) => r.id === linked || !reach.beyond.includes(r));
   const rootsOffered = roots.available && byRoots.tagged;
@@ -655,7 +662,7 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={foundingFilled} />}
               {otherWaysSection}
             </>
           )}

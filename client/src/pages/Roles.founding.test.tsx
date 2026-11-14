@@ -134,6 +134,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  window.localStorage.clear();
 });
 
 const renderRoles = () =>
@@ -433,6 +434,63 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(Array.from(domain.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["The model", "The books", "The close"]);
     const tiles = within(card).getByTestId("words-accountabilities");
     expect(Array.from(tiles.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["Payment flowsreconcile the two channels", "Keep the books"]);
+  });
+});
+
+describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
+  it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Cordon" }] }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    expect(within(section).getByRole("button", { name: "Team sheet" }).getAttribute("aria-pressed")).toBe("true");
+    expect(within(sheet).getAllByText("Open role")).toHaveLength(2);
+    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").textContent).toContain("Human Operations Steward (Rye)"));
+    // Positions, never players: no rating, score or rank anywhere in the team view.
+    expect(section.textContent).not.toMatch(/rating|score|rank/i);
+  });
+  it("names no holder to a reader the village shows no names to (control: the role still shows, filled)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [] }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const filled = await within(section).findByTestId("filled-roles");
+    expect(filled.textContent).toContain("Human Operations Steward");
+    expect(filled.textContent).not.toContain("(");
+  });
+  it("one circle, domains not sub-circles: each open role shows the domains it holds, in both views (Rye, 14 Nov 2026)", async () => {
+    org.roles[0] = seat("finance", "Lead Finance Steward", { domain: "The whole financial picture: the financial model and its change log; tax and entity questions, with legal; and, as the circle grows, a bookkeeper." });
+    // A circle grown from a lead in the chart draws nothing here.
+    org.circles.push({ id: "events", name: "Events circle", purpose: "", status: "forming", grownFromOrgRoleId: "land" });
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    const held = () => Array.from(section.querySelectorAll("[data-domains-held] li")).map((li) => li.textContent);
+    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions"]);
+    expect(sheet.textContent).toContain("Domains they hold");
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    const formation = within(section).getByTestId("formation");
+    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions"]);
+    // Nothing implies hiring or building a circle.
+    expect(section.textContent).not.toMatch(/Events circle|circles? (they|it) will grow|circles to grow|Grows/i);
+    // Choosing a lead opens its card below, piece by piece.
+    fireEvent.click(within(formation).getByRole("button", { name: /Lead Finance Steward/ }));
+    await waitFor(() => expect(section.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
+  });
+  it("remembers the reader's choice of view on this device, and opens on the team sheet otherwise", async () => {
+    renderRoles();
+    let section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    cleanup();
+    renderRoles();
+    section = await screen.findByRole("region", { name: "Join the founding team" });
+    expect(within(section).getByRole("button", { name: "Formation" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("a role whose domain is prose shows no domain chips (control: nothing invented)", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    await within(section).findByTestId("team-sheet");
+    expect(section.querySelector("[data-domains-held]")).toBeNull();
   });
 });
 
