@@ -13,7 +13,6 @@ import SendTokensCard from "@/components/SendTokensCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
 import TimeZoneField from "@/components/TimeZoneField";
-import CommitmentField from "@/components/commitment/CommitmentField";
 import SeasonSummarySection from "@/components/seasonSummary/SeasonSummarySection";
 import MaturityLadder from "@/components/profile/MaturityLadder";
 import PowersMap from "@/components/profile/PowersMap";
@@ -549,12 +548,7 @@ export default function Profile() {
               <GuideChoiceCard />
             </div>
 
-            {/* HOW MUCH CAN YOU GIVE (0383): a quiet percent the open work and roles fit to. Only this member sees it. */}
-            {user && (
-              <div className={tabOf("today")}>
-                <CommitmentField />
-              </div>
-            )}
+            {/* HOW MUCH YOU GIVE (0383) moved onto the Your roles card (RolesCommitment), off the front of the page (Rye, 14 Nov 2026). */}
 
             {/* ASKED OF YOU: what other members asked this member, and what they asked (shared/memberAsks.ts). */}
             <div id="waiting" className={`scroll-mt-28 ${tabOf("today")}`}>

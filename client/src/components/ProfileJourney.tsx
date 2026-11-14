@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
-import { TrendingUp, Heart, ScrollText, ShieldCheck, Users } from "lucide-react";
+import { TrendingUp, Heart, ScrollText } from "lucide-react";
+import ProgressionPowers from "@/components/profile/ProgressionPowers";
 import { authToken, useGameConfig } from "@/lib/gameApi";
 import { pageVarsFrom } from "@shared/pageContent/vars";
 import { useTokenNameLower } from "@/hooks/useTokenNames";
@@ -320,63 +321,14 @@ export default function ProfileJourney() {
             <h2 className="text-2xl font-display font-bold text-card-foreground">Your Progression</h2>
           </div>
 
-          {(prog.roles ?? []).length > 0 && (
-            /*
-              GROUPS, NOT THE WORK ROLES.
-
-              These chips are the standing groups. "Your roles" on the same
-              page is the work a member is doing for the village. Calling both
-              "roles you hold" made an empty work list contradict a full group list.
-            */
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-dash-gold-lit">
-              Groups you are in
-            </p>
-          )}
-          {/*
-            THE HEADING LABELS THE ROLE CHIPS AND STOPPED THERE.
-
-            It was written above a container holding BOTH the role chips and
-            the capability chips, so a member with one role and eleven
-            capabilities read "Roles you hold" over twelve pills, eleven of
-            which are not roles. A screen reader hears the heading and then
-            twelve items under it. Splitting the containers is the fix; a
-            heading is a promise about what follows it.
-          */}
-          {(prog.roles ?? []).length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {(prog.roles ?? []).map((r: { id: string; name: string }) => (
-                <span key={r.id} title={r.id} className="inline-flex items-center gap-1 text-xs bg-muted text-notice border border-notice/60 px-2.5 py-1 rounded-full font-medium">
-                  <Users className="w-3 h-3" aria-hidden="true" /> {r.name}
-                </span>
-              ))}
-            </div>
-          )}
-          {(prog.capabilities?.length > 0) && (
-            <div className="flex flex-wrap gap-2 mb-5">
-              {/* THE ROLE'S OWN NAME, which the seed has always carried.
-                  This ran `prettySource` over the ID and printed
-                  "Founders-Circle", because a prettifier can title-case an
-                  id and can never learn where the words break. The payload
-                  sends `{ id, name }` now, so the chip reads the name a
-                  founder typed and the id stays as the title for the one
-                  reader who wants it. */}
-
-              {/* WHAT A MEMBER CAN DO, IN WORDS. These rendered the raw keys,
-                  in monospace, under a heading promising to say what somebody
-                  had unlocked: eleven chips reading `map.viewPeople` and
-                  `forum.post` at a person who has never seen a capability key
-                  and never should. `capabilityLabel` is the same function the
-                  stage-crossing line two blocks down already uses for exactly
-                  this, so the page held the answer and used it in one place
-                  out of two. The key stays as the title, for the one reader
-                  who wants it. */}
-              {(prog.capabilities ?? []).map((c: string) => (
-                <span key={c} className="inline-flex items-center gap-1 text-xs bg-teal-deep/10 text-foreground px-2.5 py-1 rounded-full" title={c}>
-                  <ShieldCheck className="w-3 h-3" /> {capabilityLabel(c)}
-                </span>
-              ))}
-            </div>
-          )}
+          {/* Groups, then the top powers as tiles and "Show me everything" grouped by kind (Rye, 14 Nov 2026).
+              The labels are the member's own words (capabilityLabel), never the raw keys. */}
+          <ProgressionPowers
+            groups={prog.roles ?? []}
+            held={prog.capabilities ?? []}
+            catalogue={prog.capabilityCatalogue ?? []}
+            history={prog.history ?? []}
+          />
 
           <TheSigning signing={prog.signing} />
 

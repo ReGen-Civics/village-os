@@ -1,0 +1,18 @@
+-- 9999 (the integrator renumbers): a member's commitment, split across roles.
+--
+-- Rye, 14 Nov 2026: one total commitment for all of a member's roles, and an
+-- optional split of that total across each role ("of that 50% of my total
+-- time what % of my time would go to each of my roles").
+--
+--   member_commitments.split_json   NULL: not split. Else a JSON list of
+--                                   { roleId, share }, whole percents of the
+--                                   total that add up to 100
+--                                   (readCommitmentSplit, shared/commitment.ts).
+--
+-- The split rides on the same row as the total, so the history stays one
+-- dated record and there is one source of truth. Store and display only:
+-- nothing that pays reads it (server/lib/commitmentBoundary.test.ts).
+--
+-- EXPAND ONLY. One nullable column on a table whose writers name their own
+-- columns, so the previous release keeps inserting and reading unchanged.
+ALTER TABLE `member_commitments` ADD COLUMN `split_json` TEXT NULL;
