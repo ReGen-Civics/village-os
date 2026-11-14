@@ -84,3 +84,61 @@ export function withFoundingRoles(text: string, names: readonly string[]): strin
     .join(" ")
     .trim();
 }
+
+/** A seating as the team view reads it. */
+export interface TeamSeating {
+  orgRoleId: string;
+  userId: string | null;
+  displayName: string | null;
+  isExample: boolean;
+  isAgent: boolean;
+  endedAt?: Date | string | null;
+  lapsed?: boolean;
+}
+
+export interface TeamCandidate extends FoundingCandidate {
+  name: string;
+  circleId: string | null;
+}
+
+/** One role of the current team: its name, and its holders' first names when the village shows names. */
+export interface FilledTeamRole {
+  id: string;
+  name: string;
+  holders: string[];
+}
+
+/**
+ * THE CURRENT TEAM BESIDE THE OPEN ROLES (Rye, 14 Nov 2026: "we can show this to anyone so they can
+ * see the current team").
+ *
+ * The roles someone holds now in the circles the founding roles sit in, each named with its
+ * holders' first names, in the chart's order. A filled role shows here even when the village keeps it
+ * out of the open-roles listing, because "listed" is about finding a role to apply for and this is
+ * the team as it stands. Never an example, an ended role, an ended or lapsed seating, or a role only
+ * a software agent holds. `firstNameOf` answers null when the village keeps names hidden from this
+ * reader; the role is still shown, with no names.
+ */
+export function foundingTeamFilled(
+  featured: readonly Pick<TeamCandidate, "id" | "circleId">[],
+  roles: readonly TeamCandidate[],
+  seatings: readonly TeamSeating[],
+  firstNameOf: (s: TeamSeating) => string | null,
+): FilledTeamRole[] {
+  const circles = new Set(featured.map((f) => f.circleId).filter((c): c is string => !!c));
+  const featuredIds = new Set(featured.map((f) => f.id));
+  const live = seatings.filter((s) => !s.isExample && !s.endedAt && !s.lapsed);
+  const out: FilledTeamRole[] = [];
+  for (const r of roles) {
+    if (featuredIds.has(r.id) || !r.circleId || !circles.has(r.circleId) || r.active === false || r.isExample === true) continue;
+    const people = live.filter((s) => s.orgRoleId === r.id && !s.isAgent);
+    if (people.length === 0) continue;
+    const holders: string[] = [];
+    for (const s of people) {
+      const n = firstNameOf(s);
+      if (n && !holders.includes(n)) holders.push(n);
+    }
+    out.push({ id: r.id, name: r.name, holders });
+  }
+  return out;
+}

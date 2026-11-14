@@ -36,7 +36,9 @@ import type { Pool } from "mysql2/promise";
 import type { PublishDeps } from "../lib/orgDraftDecide";
 import { ORG_DECIDE, publishDoorFor, publishOrgDraft, draftReadiness, type PublishDoor } from "../lib/orgDraftDecide";
 import { addChange, createDraft, getDraft, withdrawDraft } from "../lib/orgDrafts";
-import { listOrgRoles, type OrgRole } from "../lib/orgChart";
+import { listOrgAssignments, listOrgRoles, type OrgRole } from "../lib/orgChart";
+import { firstNameOf } from "../lib/peopleLock";
+import { usersRepo } from "../repos/users";
 import { ROLE_WORD_FIELDS } from "../lib/roleProposals";
 import { editorState, labelOf, listingProblems, revertEdit, roleHistory, saveRoleEdit, suggestionFor, type EditorState } from "../lib/roleEdit";
 import { liveParameterKeys } from "../lib/roleParameterColumns";
@@ -58,7 +60,7 @@ import type { PaySettings } from "../../shared/seatSettings";
 import crypto from "node:crypto";
 import { boolVar, stringVar } from "../lib/variables";
 import { isListed } from "../../shared/roleListing";
-import { foundingRoles } from "../../shared/foundingTeam";
+import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
 import { hasSections, villagePayFrom, type RoleCardSections } from "../../shared/roleCardSections";
 import { lastEditedOf, sectionsFor, sectionsForMany } from "../lib/roleCardSections";
@@ -137,7 +139,24 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     const roles = on ? await listOrgRoles(g.getPool()) : [];
     const featured = foundingRoles(on, stringVar("org.founding_team_roles"), roles);
     const sections = await sectionsForMany(g.getPool(), featured.map((r) => r.id));
+    // The current team beside the open roles (Rye, 14 Nov 2026): the filled roles of the founding
+    // circles, for anyone, holders by first name only where the village shows its people publicly.
+    let team: ReturnType<typeof foundingTeamFilled> = [];
+    if (featured.length > 0) {
+      const namesShown = boolVar("org.public_people");
+      const seatings = await listOrgAssignments(g.getPool());
+      const users = usersRepo(g.getPool());
+      const firstNames = new Map<string, string | null>();
+      if (namesShown) {
+        for (const id of Array.from(new Set(seatings.map((s) => s.userId).filter((x): x is string => !!x)))) {
+          const u = await users.byId(id);
+          firstNames.set(id, u ? firstNameOf(u.name) || null : null);
+        }
+      }
+      team = foundingTeamFilled(featured, roles, seatings, (s) => (!namesShown ? null : s.userId ? (firstNames.get(s.userId) ?? null) : s.displayName ? firstNameOf(s.displayName) || null : null));
+    }
     res.set("Cache-Control", "no-store").json({
+      team,
       on: on && featured.length > 0,
       roleIds: featured.map((r) => r.id),
       // Each featured role's name, so a page that speaks of the founding team (the steward page's
