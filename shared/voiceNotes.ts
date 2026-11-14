@@ -18,8 +18,11 @@
  *   - and in every case 90 days after the decision, including for somebody who
  *     joined: their written application stays, their voice goes.
  *
- * NO AI HEARS IT. The audio reaches no assistant, agent tool or prompt. It is
- * served by one door, to the deciders, as the files are.
+ * THE KEPT RECORDING REACHES NO ASSISTANT, agent tool or prompt. It is served
+ * by one door, to the deciders, as the files are. The LIVE sound is heard by
+ * the browser's speech service while they talk (Google's in Chrome, Apple's
+ * in Safari; see MicButton), which is how the words are written down; the
+ * card says so.
  *
  * A RECORDING IS WHAT ITS BYTES SAY: WebM, Ogg or MP4 audio, read from the
  * first bytes, never from the name or the browser's word for it.
@@ -102,7 +105,7 @@ export const VOICE_WORDS = {
   skip: "Skip, I'll type",
   reopen: "Talk to us instead",
   heardLabel: "What we heard, in your words",
-  heardHint: "Your browser's speech service writes this down as you talk. Fix anything it got wrong.",
+  heardHint: "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong.",
   consent: "Keep my voice note with my application. The people who decide will listen to it.",
   kept: "Only the people who decide your application hear it. We delete it with your application, and at the latest 90 days after we decide.",
   notKept: "Without the tick, your recording stays on this device and is not sent.",
