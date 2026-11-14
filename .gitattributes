@@ -54,3 +54,10 @@ PLAN_TO_A.md export-ignore
 # file whose only difference is its line endings (R130), for trees made
 # before this line.
 drizzle/*.sql text eol=lf
+
+# scripts/release-train.mjs is run as an executable and starts with a shebang.
+# core.autocrlf=true on Windows checkouts turned its first line into
+# `#!/usr/bin/env node\r`, and releaseTrain.test.ts then failed locally with
+# "SyntaxError: Invalid or unexpected token" before any test ran (CI passed).
+# The repo already stores it LF; this keeps every checkout LF too.
+scripts/release-train.mjs text eol=lf

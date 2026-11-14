@@ -2,7 +2,7 @@
  * THE MOON, DRAWN AS A GOLDEN SPIRAL OF DAYS (Phase C, decision 3): the
  * calendar's glance. The new moon sits at the centre with tonight's moon
  * drawn as itself, and each day of the moon is a seed further out along the
- * golden spiral (`moonSpiral.ts` holds the maths and its tests).
+ * golden spiral (`moonSpiralGeometry.ts` holds the maths and its tests).
  *
  * What each mark means, and nothing else:
  *   - the days already walked this moon are a quiet living green;
@@ -26,7 +26,7 @@ import { useLingui } from "@lingui/react/macro";
 import { litPath, readLunation } from "@/components/natural/moonGeometry";
 import { moonPhase } from "@shared/lunar";
 import type { CivilDay } from "./calendarTime";
-import { goldenSpiralDays, stepDay, type MoonDay, type MoonOfDays } from "./moonSpiral";
+import { goldenSpiralDays, stepDay, type MoonDay, type MoonOfDays } from "./moonSpiralGeometry";
 
 const WIDE_QUERY = "(min-width: 1024px)";
 
