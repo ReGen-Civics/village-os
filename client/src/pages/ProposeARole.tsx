@@ -520,11 +520,13 @@ export default function ProposeARole() {
       // Sent: the draft has done its work.
       removeStored("local", draftKey(roleId, link));
       const sentTo = email.trim();
+      const kept = data?.kept === true; // Kept though our confirmation email failed (server/lib/openProposalKept.ts): said honestly.
       setSent({
-        message: t({ message: `Check ${sentTo}. We sent a link to confirm it's you. Your application reaches us once you open it.`, context: "founding application sent" }),
+        message: kept ? t({ message: `We have your application. Our confirmation email didn't go out, so we'll write to you at ${sentTo} soon.`, context: "founding application kept" }) : t({ message: `Check ${sentTo}. We sent a link to confirm it's you. Your application reaches us once you open it.`, context: "founding application sent" }),
         to: sentTo,
         at: new Date(),
         replyDays: typeof data?.replyDays === "number" ? data.replyDays : null,
+        ...(kept ? { kept, statusPath: typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null } : {}),
       });
       window.scrollTo?.({ top: 0 });
     } catch {
