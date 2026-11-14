@@ -4,7 +4,8 @@
  *
  * Each finished spoken phrase is appended to what is written, cut at the
  * field's own length limit so speech can never send more than typing could.
- * Where the browser cannot listen, MicButton draws nothing and the field is
+ * The browser's speech service does the listening (MicButton says where the
+ * sound goes). Where the browser cannot listen, MicButton draws nothing and the field is
  * the plain input it was.
  */
 import type { InputHTMLAttributes } from "react";
