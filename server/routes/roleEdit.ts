@@ -455,6 +455,8 @@ function parameterLines(state: EditorState, roles: readonly OrgRole[]): Record<s
   if (p.heldBy) put("heldBy", [p.heldBy]);
   if (typeof p.commitmentPct === "number") put("commitmentPct", [`${p.commitmentPct}%`]);
   if (p.commitmentRequired !== undefined) put("commitmentRequired", [p.commitmentRequired ? "Required" : "Flexible"]);
+  if (typeof p.commitmentMin === "number") put("commitmentMin", [`${p.commitmentMin}%`]);
+  if (typeof p.commitmentTarget === "number") put("commitmentTarget", [`${p.commitmentTarget}%`]);
   if (p.recruiting !== undefined) put("recruiting", [p.recruiting ? "Open" : "Closed"]);
   if (p.track) put("track", [p.track]);
   if (p.whereWorked) put("whereWorked", [p.whereWorked]);

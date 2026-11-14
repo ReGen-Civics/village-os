@@ -22,6 +22,7 @@ import { capabilityDecision, type Capability, type CapabilityCtx } from "../../s
 import type { SubjectCloser } from "../lib/applyDue";
 import { addChange, createDraft, publishDraft } from "../lib/orgDrafts";
 import { register } from "./orgDraftDecide";
+import { listOrgRoles } from "../lib/orgChart";
 import { liveParameterKeys } from "../lib/roleParameterColumns";
 
 const configured = testDbConfigured();
@@ -260,6 +261,26 @@ describe.skipIf(!configured)("Edit this role", () => {
       expect((await call("POST", `/api/org/role-edit/${id}/history/${edit.draftId}/revert`, "holder-1")).status).toBe(200);
       const [[back]]: any = await pool.query("SELECT track, conversations, conversation_mode, booking_url FROM org_roles WHERE id = ?", [id]); // module-review-ok: a test reading the table it asserts on
       expect([back.track, back.conversations, back.conversation_mode, back.booking_url]).toEqual([null, null, null, null]);
+    });
+  });
+
+  describe("the commitment range (Rye, 14 Nov 2026)", () => {
+    beforeEach(() => {
+      holders = new Set(["holder-1"]);
+    });
+    it("writes the least one person may propose and what the role needs in all, reads them back on the role, refuses out of range, and puts them back", async () => {
+      const { id } = await seedRole();
+      const saved = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { commitmentMin: 30, commitmentTarget: 300 } });
+      expect(saved.status, JSON.stringify(saved.json)).toBe(200);
+      const role = (await listOrgRoles(pool)).find((r) => r.id === id);
+      expect([role?.commitmentMin, role?.commitmentTarget]).toEqual([30, 300]);
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { commitmentMin: 0 } })).status).toBe(400);
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { commitmentTarget: 1001 } })).status).toBe(400);
+      const h = await call("GET", `/api/org/role-edit/${id}/history`, "holder-1");
+      const edit = h.json.entries.find((e: any) => e.fromEditor);
+      expect((await call("POST", `/api/org/role-edit/${id}/history/${edit.draftId}/revert`, "holder-1")).status).toBe(200);
+      const back = (await listOrgRoles(pool)).find((r) => r.id === id);
+      expect([back?.commitmentMin, back?.commitmentTarget]).toEqual([null, null]);
     });
   });
 
