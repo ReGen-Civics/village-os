@@ -34,6 +34,8 @@ interface DeskProposal {
   confirmedAt: string | null;
   /** Kept although our confirmation email failed: the words to show beside it, or null. */
   addressUnconfirmed?: string | null;
+  /** How many recordings of their voice they sent with their tick (shared/voiceNotes.ts). Heard on its page. */
+  voiceNotes?: number;
 }
 
 interface Desk {
@@ -232,6 +234,11 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 </ul>
                 <p className="whitespace-pre-line break-words text-gray-800">{p.why}</p>
                 {p.aim && <p className="break-words text-gray-600">Aim: {p.aim}</p>}
+                {(p.voiceNotes ?? 0) > 0 && (
+                  <p className="font-medium text-foreground" data-voice-sent="">
+                    {t({ message: "They sent a voice note. Listen to it on its page.", context: "admin open proposals" })}
+                  </p>
+                )}
                 <a href={`/open-proposals/${encodeURIComponent(p.id)}`} className="inline-flex min-h-10 items-center gap-1.5 font-medium text-teal-deep underline underline-offset-2">
                   Open its page, where the circle answers and it is decided
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />

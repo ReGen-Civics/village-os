@@ -20,6 +20,7 @@
 
 /** The village's public link. */
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
+import { storedVoiceOf, type StoredVoice } from "./voiceNotes";
 import { applicantSteps, cleanNote, isApplicantLanguage, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { termOf, type OpenProposalTerm } from "./openProposalTerm";
 import { cardOf, parseCard, type OpenProposalCard } from "./openProposalCard";
@@ -177,6 +178,12 @@ export interface OpenProposalBody {
    * (shared/pieceSuggestions.ts). For the deciders, read-only, beside each piece; never given to an AI.
    */
   pieceSuggestions?: PieceSuggestion[];
+  /**
+   * The applicant's voice note, kept only with their tick (shared/voiceNotes.ts): the recordings and the
+   * words the browser heard. For the deciders only, never to an AI. Removed when the proposal is
+   * anonymised, and 90 days after the decision in every case.
+   */
+  voice?: StoredVoice;
 }
 
 export interface OpenProposalInput {
@@ -223,6 +230,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
     ...(o.rampUp === true ? { rampUp: true as const } : {}),
     ...(text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) ? { selfKnowledge: text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) } : {}),
     ...(pieceSuggestionsOf(o.pieceSuggestions).length ? { pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions) } : {}),
+    ...(storedVoiceOf(o.voice) ? { voice: storedVoiceOf(o.voice) as StoredVoice } : {}),
   };
 }
 

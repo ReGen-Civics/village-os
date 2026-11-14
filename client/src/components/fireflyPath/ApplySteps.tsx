@@ -413,6 +413,7 @@ export function aboutPaneOf(field: string | null): number {
     case "name":
     case "email":
     case "why":
+    case "voice":
       return 0;
     case "checkConsent":
     case "references":
