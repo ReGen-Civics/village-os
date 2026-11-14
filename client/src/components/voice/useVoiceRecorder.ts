@@ -3,8 +3,10 @@
  *
  * MediaRecorder keeps the sound; while it runs, the browser's own speech
  * engine (the same one MicButton uses) writes down what it hears, shown live.
- * Nothing leaves the device here: the recording and its words are handed to
- * the page, which sends them only with the applicant's tick.
+ * The recording stays on the device here and goes to the village only with
+ * the applicant's tick. The live sound is heard by the browser's speech
+ * service to write the words down (Google's in Chrome, Apple's in Safari;
+ * MicButton says more).
  *
  * PHONES. iPhone Safari records MP4 and Android Chrome WebM; both have a speech
  * engine. Some phones cannot record and transcribe from one microphone at

@@ -4,10 +4,17 @@
  * is a chat with the assistant, this button sits beside the send button.
  *
  * Web Speech API underneath: tap to talk, each finished phrase is appended
- * to the draft through onText, tap again to stop. The browser does the
- * transcription with its own engine; where the API is absent (Firefox, some
- * webviews) the button renders nothing and typing works as it always did —
- * a mic that cannot listen must not be shown.
+ * to the draft through onText, tap again to stop. Where the API is absent
+ * (Firefox, some webviews) the button renders nothing and typing works as it
+ * always did — a mic that cannot listen must not be shown.
+ *
+ * WHERE THE SOUND GOES. This village's server never receives the audio, only
+ * the text the person keeps. But the BROWSER'S speech service does the
+ * transcription, and in most browsers that is a cloud service: Chrome and
+ * Android send the audio to Google, Safari to Apple (on-device for some
+ * languages), Edge to Microsoft. Never describe this button as private or
+ * say the speech is "sent nowhere"; say the browser's speech service turns it
+ * into text.
  */
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";

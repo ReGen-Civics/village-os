@@ -7,8 +7,9 @@
  * bring; the browser's speech engine writes down what it hears, and they can
  * correct it. "Skip, I'll type" is always there and the form needs none of it.
  *
- * THE TICK DECIDES WHAT IS SENT. Unticked, the recordings and the words stay on
- * this device. Ticked, they go with the application for the people who decide
+ * THE TICK DECIDES WHAT THE VILLAGE GETS. Unticked, the recordings and the
+ * words stay on this device (the browser's speech service still hears the live
+ * sound to write the words down, and the card says whose it is). Ticked, they go with the application for the people who decide
  * it (shared/voiceNotes.ts says who hears it and how long it is kept). Like
  * files, recordings are never saved in the device draft.
  *

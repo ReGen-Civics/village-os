@@ -10,8 +10,9 @@
  *   </VoiceArea>
  *
  * Two things appear, and the box itself is untouched:
- *   - the mic (MicButton, the browser's own speech engine; nothing is sent to
- *     a server), in the box's corner. Each finished phrase is added to the end
+ *   - the mic (MicButton): the browser's speech service turns speech into text
+ *     (Google's in Chrome, Apple's in Safari; this village's server gets only the
+ *     text), in the box's corner. Each finished phrase is added to the end
  *     of what is there. It draws nothing where the browser cannot listen.
  *   - "Talk it out" (with `talk`), under the box, for a signed-in member: a
  *     short conversation with their own guide, Maia or Sera, that ends in a
