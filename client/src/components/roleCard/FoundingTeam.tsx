@@ -18,7 +18,7 @@ import { useId, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
-import FoundingLineup, { type FilledRole, type GrowingCircle, type LineupView } from "./FoundingLineup";
+import FoundingLineup, { type FilledRole, type LineupView } from "./FoundingLineup";
 import FullRoleCard from "./FullRoleCard";
 import { useWide } from "./useWide";
 
@@ -62,7 +62,6 @@ export default function FoundingTeam({
   villagePay = null,
   lead = false,
   filled = [],
-  circles = [],
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -70,8 +69,6 @@ export default function FoundingTeam({
   lead?: boolean;
   /** The filled roles of the founding circle, holders as the village shows them to this reader. */
   filled?: FilledRole[];
-  /** The village's circles, for the ones each lead will grow. */
-  circles?: GrowingCircle[];
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -113,7 +110,6 @@ export default function FoundingTeam({
         <FoundingLineup
           roles={roles}
           filled={filled}
-          circles={circles}
           view={view}
           onView={setView}
           shown={shown}
