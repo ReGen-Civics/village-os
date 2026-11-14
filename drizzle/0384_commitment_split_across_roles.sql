@@ -1,4 +1,4 @@
--- 9999 (the integrator renumbers): a member's commitment, split across roles.
+-- 0384: a member's commitment, split across roles.
 --
 -- Rye, 14 Nov 2026: one total commitment for all of a member's roles, and an
 -- optional split of that total across each role ("of that 50% of my total
