@@ -202,7 +202,7 @@ describe("Join the founding team", () => {
       expect(within(card).getByRole("heading", { name: h })).toBeTruthy();
     }
     const pay = within(card).getByTestId("pay-shape");
-    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month");
+    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. To be decided in the onboarding process.");
     expect(within(pay).getByTestId("pay-at-risk").textContent).toBe(VILLAGE_PAY.atRisk);
     expect(within(pay).getByTestId("pay-note").textContent).toBe(VILLAGE_PAY.note);
@@ -282,7 +282,7 @@ describe("the two pay lines on the card", () => {
   it("split unset: only the ceiling line, with the footer kept", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: SECTIONS, lastEdited: null, showPayRanges: false, villagePay: { shape: [], atRisk: VILLAGE_PAY.atRisk, note: VILLAGE_PAY.note }, mayEdit: false });
     const section = await open();
-    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month"));
+    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(section).queryByTestId("pay-split")).toBeNull();
     expect(within(section).getByTestId("pay-at-risk")).toBeTruthy();
   });
@@ -291,7 +291,7 @@ describe("the two pay lines on the card", () => {
     const village = { shape: [{ label: "cash", pct: 60 }, { label: "equity", pct: 40 }, { label: long, pct: 0 }], atRisk: VILLAGE_PAY.atRisk, note: "*The total shown is the full band available for this role." };
     roleCard = (id: string) => ({ roleId: id, sections: SECTIONS, lastEdited: null, showPayRanges: false, villagePay: village, mayEdit: false });
     const section = await open();
-    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month*"));
+    await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     const tiles = within(section).getByTestId("pay-tiles");
     expect(Array.from(tiles.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash60%", "equity40%", `${long}0%`]);
     expect(within(section).getByTestId("pay-split").textContent).toBe(`Default split: 60% cash, 40% equity, 0% ${long}. To be decided in the onboarding process.`);
@@ -416,10 +416,29 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const card = await open();
     fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
-    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month"));
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
     expect(Array.from(within(piece).getByTestId("pay-tiles").querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash40%", "equity55%", "village credits5%"]);
     expect(within(piece).getByTestId("pay-split").textContent).toContain("To be decided in the onboarding process.");
+  });
+  it("a role that can be shared says the range, that the proposal sets the pay, the pay at 50%, and the footnote (Rye, 14 Nov 2026)", async () => {
+    org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentMin: 30, commitmentTarget: 100 } });
+    const card = await open();
+    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
+    expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, this role pays up to $4,500 a month.");
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*The full band, at 100% commitment. Your first moon starts lower and is tied to what you deliver.");
+    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("30% to 100% (100% is the whole role)");
+  });
+  it("a role offered whole says nothing about sharing (control)", async () => {
+    const card = await open();
+    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
+    expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("At ");
   });
   it("shows only the split when no ceiling is written", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payCeiling: null }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
@@ -456,6 +475,16 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     await waitFor(() => expect(within(section).getByTestId("filled-roles").textContent).toContain("Governance Facilitator (Rye)"));
     // The directory never lists it: it is the team, not a role to apply for.
     expect(screen.queryByRole("heading", { level: 3, name: "Governance Facilitator" })).toBeNull();
+  });
+
+  it("shows how full each open role is: held and open, and covered past 100% (Rye, 14 Nov 2026)", async () => {
+    founding = { ...founding, fill: { finance: { heldPct: 50, targetPct: 100, openPct: 50, covered: false }, land: { heldPct: 120, targetPct: 100, openPct: 0, covered: true } } };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    await waitFor(() => expect(Array.from(sheet.querySelectorAll("[data-fill-meter]")).map((m) => m.textContent)).toEqual(["120% held · covered", "50% held · 50% open"]));
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    expect(within(section).getByTestId("formation").querySelectorAll("[data-fill-meter]")).toHaveLength(2);
   });
 
   it("names no holder to a reader the village shows no names to (control: the role still shows, filled)", async () => {

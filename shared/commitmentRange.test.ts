@@ -11,7 +11,7 @@ describe("the commitment range (Rye, 14 Nov 2026)", () => {
   });
   it("offers choices from the role's minimum to 100, in steps of 10; no minimum is the whole role only (ruling 2)", () => {
     expect(commitmentChoices(30)).toEqual([30, 40, 50, 60, 70, 80, 90, 100]);
-    expect(commitmentChoices(35)).toEqual([35, 40, 50, 60, 70, 80, 90, 100]);
+    expect(commitmentChoices(35)).toEqual([40, 50, 60, 70, 80, 90, 100]);
     expect(commitmentChoices(null)).toEqual([100]);
     expect(rangeMin(undefined)).toBe(100);
   });

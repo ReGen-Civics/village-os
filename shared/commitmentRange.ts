@@ -72,11 +72,10 @@ export function rangeMin(min: number | null | undefined): number {
   return typeof min === "number" && Number.isInteger(min) && min >= 1 && min <= 100 ? min : 100;
 }
 
-/** The choices a person picks from: the minimum, then each step of 10 above it, to 100. */
+/** The choices a person picks from: each step of 10 from the minimum (rounded up to a step) to 100, the steps the terms accept. */
 export function commitmentChoices(min: number | null | undefined): number[] {
-  const lo = rangeMin(min);
-  const out = [lo];
-  for (let v = (Math.floor(lo / COMMITMENT_STEP) + 1) * COMMITMENT_STEP; v <= 100; v += COMMITMENT_STEP) out.push(v);
+  const out: number[] = [];
+  for (let v = Math.ceil(rangeMin(min) / COMMITMENT_STEP) * COMMITMENT_STEP; v <= 100; v += COMMITMENT_STEP) out.push(v);
   return out;
 }
 
@@ -124,6 +123,9 @@ export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   }
   return { ok: true, value: null };
 }
+
+/** The refusal for a commitment below what the role takes from one person. */
+export const belowMinimum = (min: number): string => `This role takes proposals from ${min}% to 100%. Choose ${min}% or more.`;
 
 /** An ask as stored, read tolerantly. */
 export function payAskOf(raw: unknown): PayAsk | null {

@@ -236,6 +236,10 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     await setVar("org.founding_team", "true");
     await setVar("org.public_people", "true");
     expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: ["Ana"] }]);
+    // How full each role is (Rye, 14 Nov 2026): the open lead holds nothing yet; the filled role is covered by a holder with no stated share.
+    const fill = (await call("GET", "/api/org/founding-team", null)).json.fill;
+    expect(fill[lead.id]).toEqual({ heldPct: 0, targetPct: 100, openPct: 100, covered: false });
+    expect(fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
     // CONTROL: a village that keeps its people for members still shows the role, with no name.
     await setVar("org.public_people", "false");
     expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: [] }]);

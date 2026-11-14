@@ -38,6 +38,7 @@ import { ORG_DECIDE, publishDoorFor, publishOrgDraft, draftReadiness, type Publi
 import { addChange, createDraft, getDraft, withdrawDraft } from "../lib/orgDrafts";
 import { listOrgAssignments, listOrgRoles, type OrgRole } from "../lib/orgChart";
 import { firstNameOf } from "../lib/peopleLock";
+import { roleFillsFor } from "../lib/roleFill";
 import { usersRepo } from "../repos/users";
 import { ROLE_WORD_FIELDS } from "../lib/roleProposals";
 import { editorState, labelOf, listingProblems, revertEdit, roleHistory, saveRoleEdit, suggestionFor, type EditorState } from "../lib/roleEdit";
@@ -155,8 +156,11 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       }
       team = foundingTeamFilled(featured, roles, seatings, (s) => (!namesShown ? null : s.userId ? (firstNames.get(s.userId) ?? null) : s.displayName ? firstNameOf(s.displayName) || null : null));
     }
+    // How full each role is (Rye, 14 Nov 2026, ruling 4): what its holders give in all against what it needs.
+    const fill = featured.length > 0 ? Object.fromEntries(await roleFillsFor(g.getPool(), [...featured, ...roles.filter((r) => team.some((m) => m.id === r.id))])) : {};
     res.set("Cache-Control", "no-store").json({
       team,
+      fill,
       on: on && featured.length > 0,
       roleIds: featured.map((r) => r.id),
       // Each featured role's name, so a page that speaks of the founding team (the steward page's
