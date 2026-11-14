@@ -12,7 +12,8 @@
  *      $13,000 a month is up to $6,500.
  *   2. Each role sets the least one person may propose (`commitmentMin`).
  *   3. The pay ask is optional: a monthly amount, or "negotiate on the first
- *      call if chosen". The contract sets the amount, at or under the ceiling.
+ *      call if chosen". A contractor may propose more or less than the suggested price, above
+ *      the full band too (Rye, 14 Nov 2026); the contract sets the amount.
  *   4. A role may fill beyond 100%. Each role has a target total commitment
  *      (`commitmentTarget`, 100 unless set, 300 for three whole people). It
  *      stays open while what its holders give is below the target.
@@ -29,12 +30,16 @@ export const COMMITMENT_TARGET_MAX = 1000;
 /** The choices a person picks from, in steps of 10 (the seat settings' steps). */
 export const COMMITMENT_STEP = 10;
 
+/** The longest "why this price" line. */
+export const PRICE_WHY_MAX = 600;
+
 export type RangeRead<T> = { ok: true; value: T } | { ok: false; problem: string };
 
 export const RANGE_WORDS = {
   min: "The least commitment one person may propose is a whole percent from 1 to 100.",
   target: `The commitment a role needs in all is a whole percent from 1 to ${COMMITMENT_TARGET_MAX}.`,
   askAmount: "Write the monthly amount you would ask as a whole number, like 6500.",
+  askWhy: `Keep why this price to ${PRICE_WHY_MAX} characters.`,
 } as const;
 
 /**
@@ -125,17 +130,34 @@ export function fillWords(f: RoleFill): string {
   return f.covered ? `${f.heldPct}% held · covered` : `${f.heldPct}% held · ${f.openPct}% open`;
 }
 
-/** The applicant's optional pay ask (ruling 3): a monthly amount, or "negotiate on the first call if chosen". */
-export type PayAsk = { kind: "amount"; monthly: number } | { kind: "negotiate" };
+/**
+ * The applicant's optional pay ask (ruling 3): a monthly amount, or "negotiate on the first call if chosen",
+ * with an optional line on why. As a contractor they may propose more or less than the suggested price
+ * (Rye, 14 Nov 2026: "they can suggest a price higher or lower (to be more competitive as a proposal)
+ * than the suggested price"), above the full role's band included. The contract decides the amount.
+ */
+export type PayAsk = { kind: "amount"; monthly: number; why?: string } | { kind: "negotiate"; why?: string };
+
+/** The difference a proposed price makes on the suggested one, as a whole percent: +8, -15, 0. */
+export function priceDifferencePct(suggested: number, proposed: number): number | null {
+  if (!Number.isFinite(suggested) || suggested <= 0 || !Number.isFinite(proposed) || proposed <= 0) return null;
+  return Math.round(((proposed - suggested) / suggested) * 100);
+}
+
+/** "+8%", "-15%", "0%". */
+export const signedPct = (n: number): string => (n > 0 ? `+${n}%` : `${n}%`);
 
 /** An ask as the form sent it. Absent is no ask; an amount must be a whole positive number. */
 export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   if (raw === null || raw === undefined) return { ok: true, value: null };
   const o = typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate" } };
+  const whyRaw = typeof o.why === "string" ? o.why.trim() : "";
+  if (whyRaw.length > PRICE_WHY_MAX) return { ok: false, problem: RANGE_WORDS.askWhy };
+  const why = whyRaw ? { why: whyRaw } : {};
+  if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate", ...why } };
   if (o.kind === "amount") {
     const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" ? digitsOf(o.monthly, 9) : NaN;
-    return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n } } : { ok: false, problem: RANGE_WORDS.askAmount };
+    return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n, ...why } } : { ok: false, problem: RANGE_WORDS.askAmount };
   }
   return { ok: true, value: null };
 }

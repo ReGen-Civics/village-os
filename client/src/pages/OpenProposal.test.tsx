@@ -186,14 +186,18 @@ describe("the open proposal page", () => {
     answer = () =>
       json({
         proposal: served({
-          commitment: { pct: 50, ask: { kind: "amount", monthly: 6000 }, roles: [{ roleId: "role-gate", full: { amount: 13000, currency: "USD", per: "month" }, atCommitment: 6500, heldPct: 40, targetPct: 100, withThisPct: 90 }] },
+          commitment: { pct: 50, ask: { kind: "amount", monthly: 7000, why: "Two of my changes add a monthly legal review." }, suggestionCount: 4, roles: [{ roleId: "role-gate", full: { amount: 13000, currency: "USD", per: "month" }, atCommitment: 6500, heldPct: 40, targetPct: 100, withThisPct: 90 }] },
         }),
       });
     render(<OpenProposal />);
     await heading();
     const box = await screen.findByTestId("commitment-review");
     expect(box.querySelector("[data-commitment-pct]")?.textContent).toBe("50%");
-    expect(box.querySelector("[data-pay-ask-shown]")?.textContent).toBe("$6,000 a month");
+    expect(box.querySelector("[data-pay-ask-shown]")?.textContent).toBe("$7,000 a month");
+    // Suggested, proposed and the difference, the reason and the count of role-card changes (Rye, 14 Nov 2026).
+    expect(box.querySelector("[data-price-compare]")?.textContent).toBe("Suggested $6,500 a month; they propose $7,000 (+8%).");
+    expect(box.querySelector("[data-price-why]")?.textContent).toContain("Two of my changes add a monthly legal review.");
+    expect(box.querySelector("[data-suggestion-count]")?.textContent).toBe("They suggested 4 changes to the role card.");
     expect(box.querySelector("[data-commitment-ceiling]")?.textContent).toBe("At 50%, the role pays up to $6,500 a month (the full role: $13,000).");
     expect(box.querySelector("[data-commitment-coverage]")?.textContent).toBe("Held now: 40% of 100%. With this application: 90% of 100%.");
     // Facts only: nothing ranks or scores anyone.

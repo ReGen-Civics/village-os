@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ceilingAt, commitmentChoices, digitsOf, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
 
 describe("the commitment range (Rye, 14 Nov 2026)", () => {
   it("pays straight proportional to the full band: 50% of $13,000 is up to $6,500 (ruling 1)", () => {
@@ -55,5 +55,21 @@ describe("reading digits without a slow pattern (CodeQL js/polynomial-redos)", (
     expect(readCommitmentTarget(long).ok).toBe(false);
     expect(readPayAsk({ kind: "amount", monthly: long }).ok).toBe(false);
     expect(Date.now() - started).toBeLessThan(100);
+  });
+});
+
+describe("the price a contractor proposes (Rye, 14 Nov 2026)", () => {
+  it("keeps a price above or below the suggestion, with an optional why", () => {
+    expect(readPayAsk({ kind: "amount", monthly: 7000, why: "  Two of my changes add work.  " })).toEqual({ ok: true, value: { kind: "amount", monthly: 7000, why: "Two of my changes add work." } });
+    expect(readPayAsk({ kind: "amount", monthly: 20000 })).toEqual({ ok: true, value: { kind: "amount", monthly: 20000 } });
+    expect(readPayAsk({ kind: "negotiate", why: "Depends on the first moon." })).toEqual({ ok: true, value: { kind: "negotiate", why: "Depends on the first moon." } });
+    expect(readPayAsk({ kind: "amount", monthly: 7000, why: "x".repeat(PRICE_WHY_MAX + 1) }).ok).toBe(false);
+  });
+  it("says the difference on the suggested price as a whole signed percent", () => {
+    expect(priceDifferencePct(6500, 7000)).toBe(8);
+    expect(priceDifferencePct(6500, 5525)).toBe(-15);
+    expect(priceDifferencePct(6500, 6500)).toBe(0);
+    expect(priceDifferencePct(0, 7000)).toBeNull();
+    expect([signedPct(8), signedPct(-15), signedPct(0)]).toEqual(["+8%", "-15%", "0%"]);
   });
 });
