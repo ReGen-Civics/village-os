@@ -53,6 +53,7 @@
  * feature is one ordered read with a limit. That is why `getPool` is in the
  * slice.
  */
+import { stampCardEdit } from "../lib/roleCardSections";
 import type { Express, Response } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { hasCapability } from "../../shared/capabilities";
@@ -1027,6 +1028,8 @@ export function register(app: Express, deps: Deps): void {
     if (valued.valueMinor !== undefined || valued.valueTokens !== undefined || valued.cashMinor !== undefined) changes.push("what the role is worth and pays updated");
     const ok = await updateOrgRole(getPool(), req.params.id, req.body ?? {}, valued);
     if (ok && changes.length) {
+      // "Last edited" moves with an admin's or an agent's write, as with the role editor's.
+      await stampCardEdit(getPool(), req.params.id, (await authedUser(req))?.id ?? null).catch((e) => console.error("[org] the card's last edit was not recorded", e));
       await recordEvent(getPool(), {
         kind: "org", text: `${role.name}: ${changes.join("; ")}`,
         actorUserId: (await authedUser(req))?.id ?? null,
