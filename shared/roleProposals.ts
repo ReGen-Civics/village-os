@@ -128,6 +128,9 @@ export const NOT_ROLE_WORDS: ReadonlySet<string> = new Set([
   // the card's other parameters; a number and a switch, never words a member proposes (batch 158).
   "commitmentPct",
   "commitmentRequired",
+  // A role's commitment range (Rye, 14 Nov 2026): set where roles are edited, never proposed by a member.
+  "commitmentMin",
+  "commitmentTarget",
   // 0060: the building on the land the seat lives in. Structure, set where seats are placed (map lane R1).
   "structureKey",
   "circleName",

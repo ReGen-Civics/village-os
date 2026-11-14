@@ -36,6 +36,9 @@ function formPatch(key: string, after: unknown): Record<string, unknown> {
       return { [key]: after === true };
     case "commitmentPct":
       return { commitmentPct: typeof after === "number" ? String(after) : "" };
+    case "commitmentMin":
+    case "commitmentTarget":
+      return { [key]: typeof after === "number" ? String(after) : "" };
     case "track":
     case "heldBy":
     case "conversationMode":
