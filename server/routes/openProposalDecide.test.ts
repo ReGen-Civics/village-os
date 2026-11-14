@@ -53,6 +53,7 @@ import { openProposalsWaitingOn } from "../lib/openProposalDecide";
 import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { runSeasonTurn } from "../lib/seasonTurn";
 import { readOpenProposal } from "../repos/openProposals";
+import { OPEN_WORDS } from "../../shared/openProposals";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 import { foundingSetupFrom, FOUNDING_KEYS } from "../../shared/foundingApplication";
@@ -72,6 +73,8 @@ const HAS = { id: "u-has", name: "Rowan Field", email: "rowan-has@example.test" 
 const HIGH = { id: "u-high", name: "Hal Pine", email: "hal@example.test" };
 /** An account whose exit was resolved and who was never admitted again: a former member. */
 const LEFT = { id: "u-left", name: "Lee Gone", email: "left@example.test" };
+/** An account whose address sends an application while our email is down: kept, the address not confirmed. */
+const KEPT = { id: "u-kept", name: "Kit Wren", email: "kit-kept@example.test" };
 
 describe.skipIf(!configured)("open role proposals, the decision, on a real schema", () => {
   let db: TestDb;
@@ -103,7 +106,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     pool = testPool(db, { connectionLimit: 6 });
     fileDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-decide-files-"));
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
     await users.update(HIGH.id, (u: any) => {
       u.stageGranted = "co-creator";
     });
@@ -791,6 +794,30 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
   });
 
   describe("adopting, for an address with an account", () => {
+    it("a kept application whose address has an account is never adopted onto it while the address is not confirmed (Rye, 14 Nov 2026)", async () => {
+      state.answer = { status: "failed", messageId: null };
+      const r = await call("POST", "/api/open-proposals", {
+        name: KEPT.name,
+        email: KEPT.email,
+        roles: [{ roleId: well, note: "I keep wells." }],
+        why: "I live up the road and the well needs care.",
+        aim: "The well runs clean all season.",
+      }, null);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body.kept).toBe(true);
+      const id = state.sent[state.sent.length - 1].idempotencyKey.split(":")[1];
+      state.answer = { status: "sent", messageId: "m-1" };
+      // The page says so to whoever reads it, and what it means for the account.
+      const shown = await page(id, FOUNDER.id);
+      expect(shown.body.proposal.addressUnconfirmed).toEqual({ words: OPEN_WORDS.addressUnconfirmed, account: OPEN_WORDS.addressUnconfirmedAccount });
+      expect(shown.body.proposal.you.mayAdopt).toBe(false);
+      const adopt = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(adopt.status).toBe(409);
+      expect(adopt.body).toEqual({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
+      expect(await q("SELECT id FROM seat_applications WHERE candidate_user_id = ?", [KEPT.id])).toEqual([]);
+      expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
+    });
+
     it("gives it the roles for the target season, with no invitation, and admits nobody before the Love Letter", async () => {
       const { id } = await confirmed(HAS.email, [well]);
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);

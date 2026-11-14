@@ -25,8 +25,11 @@
  * A proposal is written UNCONFIRMED and the address is sent a link, as an
  * essential email through the one mail door. Until that link is opened the
  * proposal is visible to nobody, notifies nobody, and is deleted after 48
- * hours by the tidy job. A send that does not go deletes the row at once and
- * says so: a proposal nobody can confirm is not kept. The gates on the way in
+ * hours by the tidy job. A send that does not go KEEPS the application (Rye,
+ * 14 Nov 2026: "we still get the application even if the email is broken"):
+ * it is confirmed by us, marked "email address not confirmed", and the email
+ * is tried again every hour (server/lib/openProposalKept.ts). Once kept it is
+ * never deleted for being unconfirmed. The gates on the way in
  * are the honeypot field, a cap per connection and a cap per address; there is
  * no CAPTCHA (sheet 19i).
  *
@@ -56,7 +59,6 @@ import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { emailKeyOf } from "../../shared/comms/address";
 import { civilDateKey } from "../../shared/lunar";
 import {
-  confirmLetter,
   OPEN_ANONYMISE_DAYS,
   OPEN_CONFIRM_HOURS,
   OPEN_NAME_MAX,
@@ -66,7 +68,6 @@ import {
   OPEN_GLOBAL_HOURLY,
   ipBucket,
   limiterAddressKey,
-  safeGreeting,
   APPLY_EMAIL_WORDS,
   stepsAfterSubmit,
   stepsAsLines,
@@ -84,7 +85,8 @@ import { alignAtApplication, carryToAccount, type SigningDoor } from "../lib/app
 import { currentLetter } from "../lib/membershipLetter";
 import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
 import { inApplicationTransaction } from "../repos/seatApplications";
-import { OPEN_INVITE_PREFIX, openInviteId, replyPromise } from "../../shared/openProposalDecide";
+import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
+import { confirmationEmail, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
 import { inviteById } from "../repos/memberInvites";
 import { dbDocument } from "../repos/store-db";
 import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposalDecide";
@@ -145,13 +147,8 @@ export const OPEN_SETTINGS_KEY = "open-proposals";
 export const TIDY_JOB = "open-proposals-tidy";
 const TIDY_EVERY_MS = 60 * 60_000;
 
-/** A send the provider took, or one already taken under the same key. */
-const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
-
 const hashOf = (token: string): string => crypto.createHash("sha256").update(token).digest("hex");
 const newToken = (): string => crypto.randomBytes(24).toString("base64url");
-/** The greeting's name: a stranger typed it, so only a plain name is repeated (shared/openProposals.ts, safeGreeting). */
-const firstNameOf = (name: string): string | null => safeGreeting(name);
 
 /** Every try from one connection, refused or accepted, per hour. A flood stopper, far above what an honest session needs. */
 const OPEN_TRIES_HOURLY = 60;
@@ -182,6 +179,56 @@ export function register(app: Express, deps: Deps): void {
   };
 
   const tellApplicant = makeApplicantTeller({ getPool, members: deps.members, notify: deps.notify, postEmail, projectName, siteUrl: site });
+  /** What a confirmation email is written with (server/lib/openProposalKept.ts). */
+  const letters = { siteUrl: site, projectName, escapeHtml };
+
+  /**
+   * THE CONFIRMATION EMAIL DID NOT GO, AND THE APPLICATION IS KEPT (Rye, 14 Nov
+   * 2026). Confirmed by us with the note "address not confirmed", in the
+   * transaction that asks the circle; the admins told in the bell, never by
+   * email; the applicant answered 200 in honest words, with their status page.
+   * The membership letter and the account bell wait for the address to answer
+   * (server/lib/openProposalKept.ts says why).
+   */
+  async function keepUnsent(res: Response, k: { id: string; email: string; token: string; status: PostResult["status"] }) {
+    const at = now();
+    // No address in the log: the id and the mail door's answer are enough to find it.
+    console.error(`[open-proposals] the confirmation email for ${k.id} did not go (${k.status}); the application is kept, marked not confirmed`);
+    const kept = await confirmAndAsk(decide, hashOf(k.token), new Date(0), at, { addressUnconfirmed: true });
+    if (!kept) {
+      // The row it names is gone: there is nothing to keep, so say so as before.
+      if (deps.proposalFileDir) await removeProposalFiles(deps.proposalFileDir, k.id);
+      return res.status(503).json({ error: OPEN_WORDS.notSent });
+    }
+    try {
+      await tellTheCircle(decide, kept);
+    } catch (e) {
+      console.error("[open-proposals] the circle could not all be told about a kept application", e);
+    }
+    try {
+      await deps.notifyAdmins("governance", OPEN_WORDS.keptAlertTitle, `op:${k.id}:email-failed:admins`, openProposalHref(k.id));
+    } catch (e) {
+      console.error("[open-proposals] the admins could not be told about a kept application", e);
+    }
+    const statusPath = kept.review?.statusToken ? `/application-status/${encodeURIComponent(k.id)}?token=${encodeURIComponent(kept.review.statusToken)}` : null;
+    return res.json({ sent: true, kept: true, email: k.email, message: OPEN_WORDS.keptNotSent(k.email), statusPath, replyDays: numberVar("org.applicant_reply_days") });
+  }
+
+  /**
+   * A KEPT APPLICATION'S ADDRESS ANSWERS the link the tidy job sent later. The
+   * note goes, once; the link works for the same 48 hours from when it went.
+   * Only then is the membership letter carried and the account told.
+   */
+  async function keptAddressAnswers(confirmHash: string, at: Date): Promise<store.StoredOpenProposal | null> {
+    const pool = getPool();
+    const p = await store.keptByConfirmHash(pool, confirmHash);
+    const sentAt = p?.addressUnconfirmed?.sentAt;
+    if (!p || !sentAt || at.getTime() - sentAt.getTime() > OPEN_CONFIRM_HOURS * 60 * 60_000) return null;
+    if (!(await store.confirmKeptAddress(pool, p.id, confirmHash))) return null;
+    await alignedAtApplication(p, at);
+    await tellApplicant(p.id, "confirmed");
+    return p;
+  }
 
   /** The switch, read fresh: one small row, and an admin who just flipped it sees it at once. */
   async function settings(): Promise<OpenProposalSettings> {
@@ -417,34 +464,10 @@ export function register(app: Express, deps: Deps): void {
     }
 
     const byId = new Map(roles.map((r) => [r.id, r.name]));
-    const words = confirmLetter({
-      firstName: firstNameOf(name),
-      village: projectName(),
-      roleNames: proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean),
-      link: `${site()}/propose-a-role/confirm?token=${encodeURIComponent(token)}`,
-      lang: locale,
-      // The form is for a listed role: an application (Phase A vocabulary).
-      kind: "application",
-      ...(t.term ? { when: wordsIn(locale).confirm.thisMoon(wordsIn(locale).day(t.term.startsOn), wordsIn(locale).day(t.term.endsOn)) } : {}),
-    });
-    const sent = await postEmail({
-      idempotencyKey: `open-proposal:${id}:confirm`,
-      kind: "essential",
-      origin: "open_proposal.confirm",
-      to: { email, ...(firstNameOf(name) ? { name: firstNameOf(name) as string } : {}) },
-      subject: words.subject,
-      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${words.text
-        .split("\n\n")
-        .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
-        .join("")}</body></html>`,
-      text: words.text,
-    });
-    if (!WENT.has(sent.status)) {
-      // Nobody can confirm a proposal whose link never went, so it is not kept.
-      await store.deleteOpenProposal(pool, id);
-      if (fileDir) await removeProposalFiles(fileDir, id);
-      return res.status(503).json({ error: OPEN_WORDS.notSent });
-    }
+    const roleNames = proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean);
+    // A mail door that throws is a send that did not go: the application is kept all the same.
+    const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
+    if (!WENT.has(sent.status)) return keepUnsent(res, { id, email, token, status: sent.status });
     // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
     res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays: numberVar("org.applicant_reply_days") });
   }
@@ -479,7 +502,15 @@ export function register(app: Express, deps: Deps): void {
     const at = now();
     // Confirmed, and the circle asked, in one transaction (part B). A used, old or unknown token asks nobody.
     const confirmed = token && token.length <= 100 ? await confirmAndAsk(decide, hashOf(token), new Date(at.getTime() - OPEN_CONFIRM_HOURS * 60 * 60_000), at) : null;
-    if (!confirmed) return res.status(410).json({ error: OPEN_WORDS.confirmGone });
+    if (!confirmed) {
+      // A kept application's later link (server/lib/openProposalKept.ts): the address is confirmed, the application was already in.
+      const kept = token && token.length <= 100 ? await keptAddressAnswers(hashOf(token), at) : null;
+      if (!kept) return res.status(410).json({ error: OPEN_WORDS.confirmGone });
+      const lang = languageOf(kept);
+      const replyDays = numberVar("org.applicant_reply_days");
+      const steps = stepsAfterSubmit(lang, replyDays);
+      return res.json({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null, locale: lang, replyDays, ...(steps.length ? { steps } : {}) });
+    }
     await alignedAtApplication(confirmed.proposal, at);
     try {
       await tellTheCircle(decide, confirmed);
@@ -548,6 +579,8 @@ export function register(app: Express, deps: Deps): void {
         term: p.body.term ?? null,
         createdAt: p.createdAt,
         confirmedAt: p.confirmedAt,
+        // Kept although our confirmation email failed (Rye, 14 Nov 2026): flagged, never hidden.
+        addressUnconfirmed: p.addressUnconfirmed ? OPEN_WORDS.addressUnconfirmed : null,
       })),
     });
   });
@@ -591,7 +624,12 @@ export function register(app: Express, deps: Deps): void {
 
   // ── The tidy job (sheet 19i) ──────────────────────────────────────────────
 
-  registerJob(TIDY_JOB, TIDY_EVERY_MS, async () => tidyOpenProposals(getPool(), now(), deps.proposalFileDir));
+  registerJob(TIDY_JOB, TIDY_EVERY_MS, async () => {
+    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir);
+    // The kept applications' confirmation emails, tried again (server/lib/openProposalKept.ts).
+    const again = await retryOwedConfirmations({ ...letters, getPool, postEmail }, now());
+    return again.tried ? `${tidied}, ${again.went} of ${again.tried} owed confirmation emails sent` : tidied;
+  });
 
   // ── The decision (part B) ─────────────────────────────────────────────────
 

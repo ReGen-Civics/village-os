@@ -153,18 +153,23 @@ export interface Confirmed {
  * the circles the proposed roles sit in, in the order the proposal names them,
  * once each, the proposer's own account excluded. Their 2 business days run
  * from now. Null when the token confirms nothing: used, run out, or unknown.
+ *
+ * `addressUnconfirmed`: the intake confirms it itself because the confirmation
+ * email did not go (Rye, 14 Nov 2026), and the proposal carries the note that
+ * says so (server/repos/openProposals.ts, `AddressUnconfirmed`).
  */
 export async function confirmAndAsk(
   deps: Pick<DecideDeps, "getPool" | "members" | "calendar"> & Pick<ReviewDeps, "consentAfterInterviews" | "reviewFirst">,
   confirmHash: string,
   notBefore: Date,
   at: Date,
+  opts: { addressUnconfirmed?: boolean } = {},
 ): Promise<Confirmed | null> {
   const pool = deps.getPool();
   const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
   const closesAt = consentClosesAt(at, deps.calendar().timezone || "UTC");
   return inTransaction(pool, async (conn) => {
-    const proposal = await store.confirmOpenProposal(conn, confirmHash, notBefore, at);
+    const proposal = await store.confirmOpenProposal(conn, confirmHash, notBefore, at, opts);
     if (!proposal) return null;
     const own = await ownAccountOf(deps.members, proposal);
     const circles: string[] = [];

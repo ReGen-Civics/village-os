@@ -11,7 +11,11 @@
  *     Only live roles in live circles are offered, never an example.
  *   - NOTHING UNCONFIRMED REACHES A PERSON: a proposal is kept unconfirmed and
  *     the address gets one essential email with a link; the desk lists only
- *     confirmed proposals; a send that did not go keeps nothing.
+ *     confirmed proposals.
+ *   - A SEND THAT DID NOT GO KEEPS THE APPLICATION (Rye, 14 Nov 2026): 200 in
+ *     honest words, confirmed by us and marked "address not confirmed", the
+ *     admins told in the bell, never deleted by the tidy job, the email tried
+ *     again every hour until it goes, and its link clears the mark.
  *   - The link confirms once, and not after 48 hours.
  *   - The gates on the way in: the honeypot, a cap per connection and per
  *     address, and every field checked, with the field named.
@@ -31,6 +35,7 @@ import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
 import { readOpenProposal } from "../repos/openProposals";
+import { retryOwedConfirmations } from "../lib/openProposalKept";
 import { rewriteTermsOffer } from "../repos/seatApplications";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
@@ -65,6 +70,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     sent: [] as OutgoingEmail[],
     answer: { status: "sent", messageId: "m-1" } as PostResult,
     clock: null as Date | null,
+    /** What the admins were told in the bell. */
+    admins: [] as Array<{ type: string; title: string; dedupeKey: string; link?: string }>,
   };
 
   /** The limiter's counts, per bucket, while `state.counting` is on. */
@@ -113,7 +120,9 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       now: () => state.clock ?? new Date(),
       // What the confirm step reads to ask the circle (part B, server/routes/openProposalDecide.test.ts pins it).
       notify: async () => ({ fresh: true }),
-      notifyAdmins: async () => undefined,
+      notifyAdmins: async (type: string, title: string, dedupeKey: string, link?: string) => {
+        state.admins.push({ type, title, dedupeKey, link });
+      },
       members: usersRepo(pool),
       liveHoldersOf: async () => [],
       rolesCarrying: () => [],
@@ -147,6 +156,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     state.sent.length = 0;
     state.answer = { status: "sent", messageId: "m-1" };
     state.clock = null;
+    state.admins.length = 0;
     await q("DELETE FROM app_config WHERE config_key = 'open-proposals'");
   });
 
@@ -335,13 +345,101 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect((await readOpenProposal(pool, late.id))?.status).toBe("unconfirmed");
     });
 
-    it("a confirmation that did not go keeps nothing, and says so", async () => {
-      state.answer = { status: "skipped", messageId: null, reason: "not_configured" };
+    it("a confirmation that did not go KEEPS the application, marked, and says so honestly (Rye, 14 Nov 2026)", async () => {
+      state.answer = { status: "failed", messageId: null, reason: "provider said 403" };
       const before = (await q("SELECT COUNT(*) AS n FROM open_role_proposals"))[0].n;
-      const r = await call("POST", "/api/open-proposals", proposal({ email: "nowhere@example.test" }));
-      expect(r.status).toBe(503);
-      expect(r.body.error).toBe(OPEN_WORDS.notSent);
-      expect((await q("SELECT COUNT(*) AS n FROM open_role_proposals"))[0].n).toBe(before);
+      const r = await call("POST", "/api/open-proposals", proposal({ email: "outage@example.test" }));
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body).toMatchObject({ sent: true, kept: true, email: "outage@example.test", message: OPEN_WORDS.keptNotSent("outage@example.test") });
+      expect(r.body.message).toBe("We have your application. Our confirmation email didn't go out, so we'll write to you at outage@example.test soon.");
+      // The status page is offered on screen, since no email carried it.
+      expect(r.body.statusPath).toEqual(expect.stringMatching(/^\/application-status\/op-[0-9a-f]+\?token=/));
+      expect((await q("SELECT COUNT(*) AS n FROM open_role_proposals"))[0].n).toBe(before + 1);
+      const id = state.sent[0].idempotencyKey.split(":")[1];
+      const row = await readOpenProposal(pool, id);
+      expect(row).toMatchObject({ status: "confirmed", name: "Rowan Field", email: "outage@example.test" });
+      expect(row?.addressUnconfirmed).toMatchObject({ owed: true, sentAt: null });
+      // The admins hear it in the bell, never by email: only the one confirmation email was tried.
+      expect(state.admins).toContainEqual({ type: "governance", title: OPEN_WORDS.keptAlertTitle, dedupeKey: `op:${id}:email-failed:admins`, link: `/open-proposals/${id}` });
+      expect(state.sent).toHaveLength(1);
+      // The desk sees it like any received application, flagged.
+      state.viewer = ADMIN;
+      const seen = (await call("GET", "/api/admin/open-proposals")).body.proposals.find((p: any) => p.id === id);
+      expect(seen).toMatchObject({ name: "Rowan Field", email: "outage@example.test", addressUnconfirmed: OPEN_WORDS.addressUnconfirmed });
+      // CONTROL: a proposal confirmed the usual way carries no flag.
+      state.viewer = null;
+      state.answer = { status: "sent", messageId: "m-2" };
+      const plain = await send({ email: "plain-confirm@example.test" });
+      await call("POST", "/api/open-proposals/confirm", { token: plain.token });
+      expect((await readOpenProposal(pool, plain.id))?.addressUnconfirmed).toBeNull();
+    });
+
+    /** What the tidy job's retry is handed: this suite's fake mail door. */
+    const retryDeps = () => ({
+      getPool: () => pool,
+      postEmail: async (email: OutgoingEmail) => {
+        state.sent.push(email);
+        return state.answer;
+      },
+      siteUrl: () => ORIGIN,
+      projectName: () => "Test Village",
+      escapeHtml,
+    });
+
+    it("a kept application is never deleted by the tidy job, is tried again every hour, and its later link clears the mark", async () => {
+      state.answer = { status: "skipped", messageId: null, reason: "not_configured" };
+      const r = await call("POST", "/api/open-proposals", proposal({ email: "later@example.test" }));
+      expect(r.status).toBe(200);
+      const id = state.sent[0].idempotencyKey.split(":")[1];
+
+      // Days old, and the 48-hour sweep runs: it is kept.
+      await q("UPDATE open_role_proposals SET created_at = ? WHERE id = ?", [new Date(Date.now() - 3 * 24 * 60 * 60_000), id]);
+      await tidyOpenProposals(pool, new Date());
+      expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
+
+      // The email is still down: tried, still owed.
+      state.sent.length = 0;
+      expect(await retryOwedConfirmations(retryDeps(), new Date())).toMatchObject({ went: 0 });
+      expect(state.sent.filter((m) => m.to.email === "later@example.test")).toHaveLength(1);
+      expect((await readOpenProposal(pool, id))?.addressUnconfirmed?.owed).toBe(true);
+
+      // It is back: the email goes, under a key of its own, saying we already have it.
+      state.answer = { status: "sent", messageId: "m-3" };
+      state.sent.length = 0;
+      await retryOwedConfirmations(retryDeps(), new Date());
+      const mail = state.sent.find((m) => m.to.email === "later@example.test") as OutgoingEmail;
+      expect(mail.idempotencyKey).toMatch(new RegExp(`^open-proposal:${id}:confirm-again:`));
+      expect(mail.text).toContain("We already have your application.");
+      expect((await readOpenProposal(pool, id))?.addressUnconfirmed).toMatchObject({ owed: false, sentAt: expect.any(Date) });
+      // Sent once: the next hour sends it nothing more.
+      state.sent.length = 0;
+      await retryOwedConfirmations(retryDeps(), new Date());
+      expect(state.sent.filter((m) => m.to.email === "later@example.test")).toHaveLength(0);
+
+      // A retry that went never exposes it to the sweep: still kept, still confirmed.
+      await tidyOpenProposals(pool, new Date());
+      expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
+
+      // The address opens the later link: confirmed, the application was already in, and the mark goes.
+      const ok = await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) });
+      expect(ok.status, JSON.stringify(ok.body)).toBe(200);
+      expect(ok.body).toMatchObject({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null });
+      expect(await readOpenProposal(pool, id)).toMatchObject({ status: "confirmed", addressUnconfirmed: null });
+      // Once: the same link again is refused.
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) })).status).toBe(410);
+    });
+
+    it("a kept application's later link runs out after 48 hours, and the application stays kept", async () => {
+      state.answer = { status: "failed", messageId: null };
+      await call("POST", "/api/open-proposals", proposal({ email: "slow@example.test" }));
+      const id = state.sent[0].idempotencyKey.split(":")[1];
+      state.answer = { status: "sent", messageId: "m-4" };
+      state.sent.length = 0;
+      await retryOwedConfirmations(retryDeps(), new Date());
+      const mail = state.sent.find((m) => m.to.email === "slow@example.test") as OutgoingEmail;
+      state.clock = new Date(Date.now() + 49 * 60 * 60_000);
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) })).status).toBe(410);
+      expect(await readOpenProposal(pool, id)).toMatchObject({ status: "confirmed", addressUnconfirmed: { owed: false } });
     });
   });
 

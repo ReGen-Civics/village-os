@@ -346,6 +346,10 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
   subject(village: string): string;
   applied(roles: string, village: string, when: string | null): string;
   ask: string;
+  /** The ask in a confirmation email sent later, to an application we kept when the first one failed. */
+  keptAsk: string;
+  /** The link's line in that later email: ignoring it never loses the application. */
+  keptValidFor(hours: number): string;
   statusSubject: string;
   statusText(link: string, replyPromise: string): string;
 }> = {
@@ -353,6 +357,8 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     subject: (v) => `Confirm your application to ${v}`,
     applied: (roles, v, when) => `You applied for ${roles} in ${v}${when ? ` for ${when}` : ""}.`,
     ask: "Confirm it's you, and your application reaches us:",
+    keptAsk: "We already have your application. Our first email to you didn't go out, so please confirm this address is yours:",
+    keptValidFor: (h) => `The link works for ${h} hours. If you didn't apply, you can ignore this email.`,
     statusSubject: "Where your application is",
     statusText: (link, promise) => `Your application is with us. Follow where it is, who acts next and by when:\n\n${link}\n\n${promise} Keep this link to yourself: it is how we know it is you.`,
   },
@@ -360,6 +366,8 @@ export const APPLY_EMAIL_WORDS: Record<ApplicantLanguage, {
     subject: (v) => `Confirma tu solicitud a ${v}`,
     applied: (roles, v, when) => `Postulaste a ${roles} en ${v}${when ? ` para ${when}` : ""}.`,
     ask: "Confirma que eres tú, y tu solicitud nos llega:",
+    keptAsk: "Ya tenemos tu solicitud. Nuestro primer correo no salió, así que confirma que esta dirección es tuya:", // check: "correo" for email
+    keptValidFor: (h) => `El enlace funciona durante ${h} horas. Si no postulaste, puedes ignorar este correo.`,
     statusSubject: "Dónde está tu solicitud",
     statusText: (link, promise) => `Tu solicitud está con nosotros. Sigue dónde está, quién actúa ahora y para cuándo:\n\n${link}\n\n${promise} Guarda este enlace para ti: es la forma en que sabemos que eres tú.`,
   },
@@ -395,7 +403,7 @@ export function stepsAsLines(steps: readonly StepAfterSubmit[]): string {
  * The email that asks the address to confirm. Nothing else reaches anybody until it is answered. `when` is already in the reader's language.
  * `kind: "application"` (the form for a listed role) says application; a proposal for a new role keeps its own words.
  */
-export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal" }): { subject: string; text: string } {
+export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const a = i.kind === "application" ? APPLY_EMAIL_WORDS[isApplicantLanguage(i.lang) ? i.lang : "en"] : null;
   const roles = w.list(i.roleNames) || w.aRole;
@@ -406,10 +414,10 @@ export function confirmLetter(i: { firstName: string | null; village: string; ro
       "",
       a ? a.applied(roles, i.village, i.when ?? null) : w.confirm.proposed(roles, i.village, i.when ?? null),
       "",
-      a ? a.ask : w.confirm.ask,
+      a ? (i.kept ? a.keptAsk : a.ask) : w.confirm.ask,
       i.link,
       "",
-      w.confirm.validFor(OPEN_CONFIRM_HOURS),
+      a && i.kept ? a.keptValidFor(OPEN_CONFIRM_HOURS) : w.confirm.validFor(OPEN_CONFIRM_HOURS),
       "",
       w.confirm.aiDrafts,
       "",
@@ -451,6 +459,19 @@ export const OPEN_WORDS = {
   needAim: "Say your aim in this role, in a line.",
   tooLong: (what: string, max: number) => `${what} is too long. Keep it under ${max} characters.`,
   notSent: "We couldn't send the confirmation email just now. Try again later.",
+  /**
+   * The confirmation email did not go, and the application is kept anyway (Rye, 14 Nov 2026:
+   * "we still get the application even if the email is broken"). Said to the applicant, as a success.
+   */
+  keptNotSent: (email: string) => `We have your application. Our confirmation email didn't go out, so we'll write to you at ${email} soon.`,
+  /** Beside a kept application, for the people who review it and the desk. */
+  addressUnconfirmed: "Email address not confirmed. Our confirmation email to it failed, so we don't know yet that the address is theirs.",
+  /** A kept application's address matches an account here: nobody is placed on that account until the address answers. */
+  addressUnconfirmedAccount: "This address belongs to an account here and isn't confirmed yet, because our confirmation email to it failed. It can be adopted onto that account once the address is confirmed.",
+  /** In the bell, to the admins, when an application is kept because its confirmation email failed. */
+  keptAlertTitle: "An application came in, but its confirmation email failed. We kept it, marked as not confirmed, and will try the email again every hour.",
+  /** A kept application's address opened the link sent later. */
+  addressConfirmed: "Thanks, your email address is confirmed. We already had your application.",
   /** The sending connection already had its five accepted proposals this hour. Refused tries never count toward it. */
   tooMany: "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection.",
   /** Many tries in a short while, valid or not: the generous outer bucket. */
