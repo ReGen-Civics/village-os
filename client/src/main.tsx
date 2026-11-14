@@ -114,8 +114,12 @@ createRoot(document.getElementById("root")!).render(<App />);
  * registration failure is a missing optimisation and must never be an error a
  * member sees. Served over http in dev, where browsers refuse to register on
  * anything but localhost; the catch covers that too.
+ *
+ * Not on /reset, whose job is to unregister every worker: registering there
+ * after `load` could put one back behind it on a slow phone. The home page it
+ * lands on registers the current one again.
  */
-if ("serviceWorker" in navigator) {
+if ("serviceWorker" in navigator && window.location.pathname !== "/reset") {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
       /* No caching this visit. The site is unaffected. */

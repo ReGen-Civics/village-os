@@ -11,6 +11,7 @@
 import { useEffect, useState } from "react";
 import { Trans } from "@lingui/react/macro";
 import { CARD, H2, HINT, LINK, NOTE, WORLD } from "@/components/journey/look";
+import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import { resetDevice, type ResetResult } from "@/lib/deviceReset";
 
 /** Long enough to read one line, short enough that nobody wonders what to do. */
@@ -34,7 +35,11 @@ export default function Reset() {
   }, []);
 
   return (
-    <main className={`${WORLD} flex w-full items-center justify-center px-4 py-10`}>
+    <main className={`${WORLD} flex w-full flex-col px-4 pb-10`}>
+      {/* The language selector (spec i18n US2): this page renders without the
+          shell. The choice also lives in a cookie, so the reset keeps it. */}
+      <PageLanguageBar tone="onSheet" className="pt-3" />
+      <div className="flex flex-1 items-center justify-center py-4 sm:py-10">
       <div className={`${CARD} w-full max-w-md text-center`}>
         <h1 className={H2}>
           <Trans>A fresh start for this device</Trans>
@@ -58,6 +63,7 @@ export default function Reset() {
             </a>
           </p>
         )}
+      </div>
       </div>
     </main>
   );
