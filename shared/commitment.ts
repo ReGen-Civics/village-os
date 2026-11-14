@@ -78,6 +78,8 @@ export interface MemberCommitment {
   note: string | null;
   /** When it was said, an ISO instant. */
   saidAt: string | null;
+  /** How the member splits this total across their roles, or null when they have not. Optional: a server before the split sends none. */
+  split?: RoleSplitShare[] | null;
 }
 
 /** What a member sends to say what they can give now. */
@@ -86,6 +88,8 @@ export interface CommitmentInput {
   period: CommitmentPeriod;
   fromDate: string;
   note: string | null;
+  /** Optional shares of the total across the member's roles, adding to 100. */
+  split?: RoleSplitShare[] | null;
 }
 
 /**
@@ -115,7 +119,9 @@ export function readCommitmentInput(body: unknown, today: string): CommitmentRea
     if (t.length > COMMITMENT_NOTE_MAX) return { ok: false, problem: COMMITMENT_WORDS.note };
     note = t || null;
   }
-  return { ok: true, value: { pct: pct.value, period: period.value, fromDate, note } };
+  const split = readCommitmentSplit(o.split);
+  if (!split.ok) return split;
+  return { ok: true, value: { pct: pct.value, period: period.value, fromDate, note, ...(split.value ? { split: split.value } : {}) } };
 }
 
 /**
@@ -203,4 +209,140 @@ export function rolesWithinReach<T>(roles: readonly T[], askOf: (role: T) => Rol
   const beyond: T[] = [];
   for (const r of roles) (roleBeyondReach(askOf(r), memberPct) ? beyond : shown).push(r);
   return { shown, beyond };
+}
+
+// ── Splitting the total across roles (Rye, 14 Nov 2026) ─────────────────────
+//
+//   "a way to then further decide (of that 50% of my total time what % of my
+//   time would go to each of my roles - this is optional and will affect pay
+//   if roles are paid differently, in my case they're all folded into 1 pay,
+//   but other roles may be different)"
+//
+// ONE SOURCE OF TRUTH. The split rides on the member's word (the same
+// `member_commitments` row as the total, column `split_json`), so saying a new
+// total and splitting it are one act and one dated entry in the history.
+//
+// SHARES OF THE TOTAL, adding to 100. "Of my 50%, 60% goes to Hosting" is
+// stored as `{ roleId, share: 60 }`; the page also shows it as a part of the
+// whole person (60% of 50% is 30% of you) with `shareOfYou`.
+//
+// STILL OUTSIDE PAY. The wall in this file's header holds for the split too:
+// `commitmentBoundary.test.ts` keeps every pay path from reading it.
+// TODO(commitment-split-pay): where a member's roles are paid apart (two or
+// more agreements in force), the split is meant to weight their pay. That
+// waits for the lead to say how (see `rolePayFold` below and the PR's
+// question); until then it is shown and kept, and pays nothing.
+
+/** The most roles one split names. A member holds a handful; this is a guard, never a cap anyone meets. */
+export const SPLIT_MAX_ROLES = 12;
+
+/** One role's part of the member's total, as a whole percent of that total. */
+export interface RoleSplitShare {
+  roleId: string;
+  share: number;
+}
+
+export const SPLIT_WORDS = {
+  shape: "A split names each role once, with a whole percent from 0 to 100.",
+  sum: "The parts of a split add up to 100% of what you give.",
+  many: `A split names at most ${SPLIT_MAX_ROLES} roles.`,
+} as const;
+
+/**
+ * A split from a body or a stored column: null for "not split", else a list
+ * of roles with whole percents from 0 to 100 that add up to exactly 100.
+ * Each role is named once. A stored string is parsed first.
+ */
+export function readCommitmentSplit(raw: unknown): CommitmentRead<RoleSplitShare[] | null> {
+  let v = raw;
+  if (v === null || v === undefined || v === "") return { ok: true, value: null };
+  if (typeof v === "string") {
+    try {
+      v = JSON.parse(v);
+    } catch {
+      return { ok: false, problem: SPLIT_WORDS.shape };
+    }
+  }
+  if (!Array.isArray(v)) return { ok: false, problem: SPLIT_WORDS.shape };
+  if (v.length === 0) return { ok: true, value: null };
+  if (v.length > SPLIT_MAX_ROLES) return { ok: false, problem: SPLIT_WORDS.many };
+  const out: RoleSplitShare[] = [];
+  const seen = new Set<string>();
+  for (const item of v) {
+    const o = item && typeof item === "object" ? (item as Record<string, unknown>) : null;
+    const roleId = typeof o?.roleId === "string" ? o.roleId.trim() : "";
+    const share = o?.share;
+    if (!roleId || roleId.length > 64 || seen.has(roleId)) return { ok: false, problem: SPLIT_WORDS.shape };
+    if (typeof share !== "number" || !Number.isInteger(share) || share < 0 || share > 100) return { ok: false, problem: SPLIT_WORDS.shape };
+    seen.add(roleId);
+    out.push({ roleId, share });
+  }
+  if (out.reduce((s, x) => s + x.share, 0) !== 100) return { ok: false, problem: SPLIT_WORDS.sum };
+  return { ok: true, value: out };
+}
+
+/** The tolerant reading of a stored split: anything unreadable is "not split". */
+export function storedCommitmentSplit(raw: unknown): RoleSplitShare[] | null {
+  const r = readCommitmentSplit(raw);
+  return r.ok ? r.value : null;
+}
+
+/** A role's share of the total, as a part of the whole person: 60% of 50% is 30. Rounded to a whole percent. */
+export function shareOfYou(totalPct: number, share: number): number {
+  return Math.round((totalPct * share) / 100);
+}
+
+/**
+ * An even split across these roles, whole percents adding to 100: the first
+ * roles take the remainder, so three roles read 34, 33, 33.
+ */
+export function evenSplit(roleIds: readonly string[]): RoleSplitShare[] {
+  const n = roleIds.length;
+  if (n === 0) return [];
+  const base = Math.floor(100 / n);
+  let extra = 100 - base * n;
+  return roleIds.map((roleId) => {
+    const share = base + (extra > 0 ? 1 : 0);
+    if (extra > 0) extra -= 1;
+    return { roleId, share };
+  });
+}
+
+/**
+ * A saved split, kept only while it still names exactly the roles held now.
+ * A role handed back or newly taken makes the old split stale: the page then
+ * offers a fresh one, and never shows parts for a role the member left.
+ */
+export function splitForRoles(split: readonly RoleSplitShare[] | null | undefined, heldRoleIds: readonly string[]): RoleSplitShare[] | null {
+  if (!split || split.length === 0) return null;
+  const held = new Set(heldRoleIds);
+  if (split.length !== held.size || split.some((s) => !held.has(s.roleId))) return null;
+  return heldRoleIds.map((id) => split.find((s) => s.roleId === id) as RoleSplitShare);
+}
+
+/**
+ * HOW A MEMBER'S ROLES ARE PAID, read off the agreements they came through.
+ *
+ * Pay is recorded once per application in force, never once per role
+ * (`linesFromTerms`, shared/moonRecap.ts): an application covering three
+ * roles is one pay line that names all three. So:
+ *
+ *   together  every role held came through the same one agreement: one pay,
+ *             and a split changes nothing anyone is paid (Rye's case).
+ *   apart     the roles came through two or more agreements, each paid on
+ *             its own terms: a split is where the member says how their time
+ *             falls between them.
+ *   none      no agreement covers any role held (seated directly, or not yet
+ *             seated through an application): no pay line reads the roles.
+ *
+ * Fewer than two roles is never "apart". This reads ids only; it never sees
+ * an amount.
+ */
+export type RolePayFold = "together" | "apart" | "none";
+
+export function rolePayFold(seats: ReadonlyArray<{ heldThrough?: string | null }>): RolePayFold {
+  const through = new Set(seats.map((s) => s.heldThrough).filter((x): x is string => typeof x === "string" && x.length > 0));
+  if (through.size === 0) return "none";
+  if (through.size === 1 || seats.length < 2) return "together";
+  return "apart";
 }
