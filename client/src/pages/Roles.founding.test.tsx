@@ -449,6 +449,15 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     // Positions, never players: no rating, score or rank anywhere in the team view.
     expect(section.textContent).not.toMatch(/rating|score|rank/i);
   });
+  it("shows anyone the current team the server sends, unlisted roles included, as Role (FirstName) (Rye, 14 Nov 2026)", async () => {
+    founding = { ...founding, team: [{ id: "facilitator", name: "Governance Facilitator", holders: ["Rye"] }] };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    await waitFor(() => expect(within(section).getByTestId("filled-roles").textContent).toContain("Governance Facilitator (Rye)"));
+    // The directory never lists it: it is the team, not a role to apply for.
+    expect(screen.queryByRole("heading", { level: 3, name: "Governance Facilitator" })).toBeNull();
+  });
+
   it("names no holder to a reader the village shows no names to (control: the role still shows, filled)", async () => {
     org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [] }));
     renderRoles();
