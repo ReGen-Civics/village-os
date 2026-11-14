@@ -31,7 +31,7 @@ type LucideIcon = typeof Compass;
 /** Lines as tiles: a "Lead: rest" line gets its lead as the tile's title. */
 function Tiles({ lines, icon: Icon }: { lines: string[]; icon: LucideIcon }) {
   return (
-    <ul className="grid gap-2.5 sm:grid-cols-2">
+    <ul className="grid gap-2.5 @2xl:grid-cols-2">
       {lines.map((l, k) => {
         const s = splitLine(l);
         return (
@@ -63,7 +63,7 @@ function Rhythm({ lines }: { lines: string[] }) {
       {lines.map((l, k) => {
         const s = splitLine(l);
         return (
-          <li key={k} className="grid gap-1 border-t border-border pt-3 first:border-t-0 first:pt-0 sm:grid-cols-[8rem_minmax(0,1fr)] sm:gap-4">
+          <li key={k} className="grid gap-1 border-t border-border pt-3 first:border-t-0 first:pt-0 @xl:grid-cols-[8rem_minmax(0,1fr)] @xl:gap-4">
             <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-notice">
               {s.title && <CalendarDays className="size-3.5" aria-hidden="true" />}
               {s.title ?? ""}
@@ -205,7 +205,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
       icon: UserRound,
       title: t({ message: "Who we hope for", context: "founding card piece heading" }),
       body: (
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid gap-5 @4xl:grid-cols-2">
           {bg.length > 0 && (
             <div data-testid="ideal-background">
               <Sub as={SubH}>{SECTION_WORDS.idealBackground}</Sub>
@@ -219,7 +219,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             </div>
           )}
           {p.bringMe.length > 0 && (
-            <div data-testid="words-bringMe" className="lg:col-span-2">
+            <div data-testid="words-bringMe" className="@4xl:col-span-2">
               <Sub as={SubH}>{W.bringMe}</Sub>
               <Tiles lines={p.bringMe} icon={Handshake} />
             </div>
@@ -246,7 +246,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
       body: (
         <div className="flex flex-col gap-5">
           {p.holding.length > 0 && (
-            <dl className="grid gap-3 sm:grid-cols-3" data-testid="holding-well">
+            <dl className="grid gap-3 @2xl:grid-cols-3" data-testid="holding-well">
               {p.holding.map((h) => (
                 <div key={h.key} className="rounded-xl border border-border bg-muted p-3.5">
                   <dt className="text-sm font-semibold text-notice">{h.heading}</dt>
@@ -268,9 +268,12 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   }
 
   return (
-    <div className="grid lg:grid-cols-[19rem_minmax(0,1fr)]">
-      <header className="flex flex-col gap-4 border-b border-border bg-muted/40 p-5 sm:p-6 lg:border-b-0 lg:border-r">
-        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-4 lg:grid-cols-1">
+    // Laid out by the CARD's width, never the screen's (container queries): the same card sits across
+    // the page on /roles, in an application's narrow column and on a decider's page.
+    <div className="@container">
+    <div className="grid @4xl:grid-cols-[19rem_minmax(0,1fr)]">
+      <header className="flex flex-col gap-4 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
+        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-4 @4xl:grid-cols-1">
           <div className="relative aspect-[4/5] max-w-full overflow-hidden rounded-2xl border border-notice/40">
             <ArtImage portrait src={art} className="absolute inset-0" imgClassName="object-top motion-safe:transition-transform motion-safe:duration-[2000ms] motion-safe:hover:scale-105" />
             {open && (
@@ -307,9 +310,10 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
           </div>
         )}
       </header>
-      <div className="min-w-0 p-5 sm:p-7">
+      <div className="min-w-0 p-5 @lg:p-7">
         <RolePieces pieces={pieces} level={lifted ? 3 : 4} after={p.after} initialAll={p.allPieces} />
       </div>
+    </div>
     </div>
   );
 }
