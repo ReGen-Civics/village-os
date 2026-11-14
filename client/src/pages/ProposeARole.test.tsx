@@ -211,6 +211,7 @@ describe("one role per application", () => {
     fireEvent.change(within(bar).getByLabelText("What is missing from this piece?"), { target: { value: "Who keeps the key when I am away." } });
     fireEvent.click(within(bar).getByText("Add to my application"));
     expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
+    expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.pieceSuggestions).toEqual([{ roleId: "r-gate", piece: "purpose", kind: "missing", text: "Who keeps the key when I am away." }]);

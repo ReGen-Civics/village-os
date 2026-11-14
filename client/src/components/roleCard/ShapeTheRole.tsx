@@ -137,7 +137,9 @@ export default function ShapeTheRole({ roleId, value, onChange }: { roleId: stri
       </button>
       {count > 0 && (
         <p className="mt-2 text-sm text-notice" role="status">
-          {t({ message: `${count} suggestions travel with your application.`, context: "shape the role count" })}
+          {count === 1
+            ? t({ message: "1 suggestion travels with your application.", context: "shape the role count, one" })
+            : t({ message: `${count} suggestions travel with your application.`, context: "shape the role count, several" })}
         </p>
       )}
       {open && (
