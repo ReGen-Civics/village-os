@@ -2,7 +2,11 @@
  * "How much can you give right now?" (0383, lane E1).
  *
  *   GET  /api/me/commitment   { now: MemberCommitment | null, history: MemberCommitment[] }
- *   POST /api/me/commitment   { pct: 1..100, period?: season|moon|week, fromDate?: YYYY-MM-DD, note? }
+ *   POST /api/me/commitment   { pct: 1..100, period?: season|moon|week, fromDate?: YYYY-MM-DD, note?, split?: [{ roleId, share }] }
+ *
+ * `split` is optional: shares of the total across the member's roles, whole
+ * percents adding to 100 (Rye, 14 Nov 2026). The page offers only the roles
+ * the member holds, and drops a saved split once those change.
  *
  * Private to the signed-in member: it only ever answers for them, and there is
  * no route that reads another member's word. A POST is a new row in the

@@ -40,7 +40,36 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
-## 1.3.0 (not yet tagged)
+## 1.3.1 (2026-11-14)
+
+### What changed for your village
+
+- **A role application is kept even when its confirmation email cannot be sent.** Before, a failed email threw the application away and told the applicant to try later. Now it is kept and reaches the deciders marked "email address not confirmed", the applicant is told it arrived, admins get a notice in the app, and the confirmation is tried again every hour for a week.
+- **One commitment across all your roles.** The profile's Your roles card now holds how much of yourself you give, as one percentage, with an optional split across your roles. The split is shown and saved; it does not change pay in this release.
+- **Your Progression is shorter.** It shows six powers first, with an icon for each kind, and the rest under "Show me everything".
+- **A role card's "Last edited" now moves** when an admin or an agent edits the card.
+- Developers on Windows can build and typecheck again (a file-name clash was renamed).
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+This release adds 1 database migration(s). Each runs by itself when the new image starts, before the village answers anyone. Before the image is published, release.yml checks that the previous release can still run over the schema they produce (docs/RELEASING.md):
+
+- `0384_commitment_split_across_roles.sql`
+
+### Merged pull requests
+
+- #1234 Batch 151: admin and agent role writes move Last edited
+- #1236 Batch 159: profile commitment split + Progression top six (migration 0384)
+- #1233 Fix the Windows build: rename moonSpiral.ts, keep release-train.mjs LF
+- #1228 Batch 150: keep a role application when its confirmation email fails
+
+---
+
+## 1.3.0 (2026-11-13)
 
 **Village OS moved to the ReGen Civics organisation, and nine new modules
 arrived.** The code is now at github.com/ReGen-Civics/village-os, and the

@@ -17,6 +17,10 @@
  * A READER BELOW THE MEMBER RUNG is told before the wizard, never at its
  * Review step: the same sentence and the same rule MySeason uses (red team U5).
  *
+ * HOW MUCH YOU GIVE sits under the roles it is about (RolesCommitment): one
+ * percent for all of them, and an optional split across them. It left Today
+ * on Rye's word (14 Nov 2026), "not front and center on the profile".
+ *
  * Its own file because Profile.tsx sits under the file-lines ratchet.
  */
 import { useCallback, useEffect, useState } from "react";
@@ -27,6 +31,7 @@ import { fetchApplications, type ServedApplication } from "@/components/governan
 import { OPEN_STATUSES } from "@shared/seatApplications";
 import { applySeatsHref } from "@shared/seatApplyLinks";
 import { civilDayWords } from "@shared/seasonPlans";
+import RolesCommitment from "@/components/commitment/RolesCommitment";
 
 export const YOUR_ROLES_WORDS = {
   heading: "Your roles",
@@ -125,6 +130,8 @@ export default function YourRolesSection() {
               ))}
             </ul>
           )}
+          {/* How much you give, across all these roles, and the optional split (Rye, 14 Nov 2026). */}
+          <RolesCommitment seats={held} />
           {mayApply ? (
             <>
               <p className="mt-4 text-muted-foreground">{YOUR_ROLES_WORDS.applyLine}</p>

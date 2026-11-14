@@ -12,7 +12,7 @@
  */
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 import type { Queryable } from "./memberTasks";
-import { commitmentOn, readCommitmentPeriod, storedCommitmentPct, type CommitmentInput, type MemberCommitment } from "../../shared/commitment";
+import { commitmentOn, readCommitmentPeriod, storedCommitmentPct, storedCommitmentSplit, type CommitmentInput, type MemberCommitment } from "../../shared/commitment";
 
 /** The most a history read returns; a member who changes weekly fills it in about four years. */
 export const HISTORY_LIMIT = 200;
@@ -33,14 +33,16 @@ function rowToCommitment(r: RowDataPacket): MemberCommitment | null {
     period: period.value,
     note: r.note == null || String(r.note).trim() === "" ? null : String(r.note),
     saidAt: r.created_at == null ? null : r.created_at instanceof Date ? r.created_at.toISOString() : new Date(String(r.created_at)).toISOString(),
+    split: storedCommitmentSplit(r.split_json),
   };
 }
 
-/** Say a new commitment. Always an INSERT: the earlier word stays in the history. */
+/** Say a new commitment, with its split across roles if any. Always an INSERT: the earlier word stays in the history. */
 export async function recordCommitment(db: Queryable, userId: string, c: CommitmentInput): Promise<number> {
+  const split = c.split && c.split.length > 0 ? JSON.stringify(c.split) : null;
   const [r] = await db.query<ResultSetHeader>(
-    "INSERT INTO `member_commitments` (`user_id`, `pct`, `from_date`, `period_kind`, `note`) VALUES (?, ?, ?, ?, ?)",
-    [userId, c.pct, c.fromDate, c.period, c.note],
+    "INSERT INTO `member_commitments` (`user_id`, `pct`, `from_date`, `period_kind`, `note`, `split_json`) VALUES (?, ?, ?, ?, ?, ?)",
+    [userId, c.pct, c.fromDate, c.period, c.note, split],
   );
   return Number(r.insertId);
 }
@@ -48,7 +50,7 @@ export async function recordCommitment(db: Queryable, userId: string, c: Commitm
 /** The member's history, newest first (later from-date, then later word). */
 export async function commitmentHistory(db: Queryable, userId: string): Promise<MemberCommitment[]> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `id`, `pct`, `from_date`, `period_kind`, `note`, `created_at` FROM `member_commitments` WHERE `user_id` = ? ORDER BY `from_date` DESC, `id` DESC LIMIT ?",
+    "SELECT `id`, `pct`, `from_date`, `period_kind`, `note`, `split_json`, `created_at` FROM `member_commitments` WHERE `user_id` = ? ORDER BY `from_date` DESC, `id` DESC LIMIT ?",
     [userId, HISTORY_LIMIT],
   );
   return rows.map(rowToCommitment).filter((c): c is MemberCommitment => c !== null);
@@ -57,7 +59,7 @@ export async function commitmentHistory(db: Queryable, userId: string): Promise<
 /** The word that holds on `today` (year-month-day), or null when none does yet. */
 export async function commitmentNow(db: Queryable, userId: string, today: string): Promise<MemberCommitment | null> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `id`, `pct`, `from_date`, `period_kind`, `note`, `created_at` FROM `member_commitments` WHERE `user_id` = ? AND `from_date` <= ? ORDER BY `from_date` DESC, `id` DESC LIMIT 1",
+    "SELECT `id`, `pct`, `from_date`, `period_kind`, `note`, `split_json`, `created_at` FROM `member_commitments` WHERE `user_id` = ? AND `from_date` <= ? ORDER BY `from_date` DESC, `id` DESC LIMIT 1",
     [userId, today],
   );
   const read = rows.map(rowToCommitment).filter((c): c is MemberCommitment => c !== null);
