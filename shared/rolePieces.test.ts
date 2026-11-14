@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitDomain, splitLine } from "./rolePieces";
+import { domainsHeld, splitDomain, splitLine } from "./rolePieces";
 
 describe("splitLine", () => {
   it("turns a short lead and a colon into a titled tile", () => {
@@ -32,5 +32,18 @@ describe("splitDomain", () => {
   it("leaves prose whole (control: no semicolons, no split)", () => {
     const text = "Everything that becomes physical on the land, from permits to homes.";
     expect(splitDomain(text)).toEqual({ lead: text, parts: [] });
+  });
+});
+
+describe("domainsHeld", () => {
+  it("names each part of a listed domain, cut at its first comma outside brackets, and leaves out growing a circle", () => {
+    const d = "How the story is told: storytelling, brand and the content calendar; social media; the permitting sequence (including the D1 and water permits), wells and roads; and, as the circle grows, the team that holds each of these.";
+    expect(domainsHeld(d)).toEqual(["Storytelling", "Social media", "The permitting sequence (including the D1 and water permits)"]);
+  });
+  it("draws nothing for a domain written as prose (control: no list, no chips)", () => {
+    expect(domainsHeld("Everything that becomes physical on the land.")).toEqual([]);
+  });
+  it("keeps to the most it is asked for", () => {
+    expect(domainsHeld("Money: a; b; c; d; e; f", 4)).toEqual(["A", "B", "C", "D"]);
   });
 });

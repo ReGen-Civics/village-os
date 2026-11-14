@@ -662,7 +662,7 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} circles={circles} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} />}
               {otherWaysSection}
             </>
           )}

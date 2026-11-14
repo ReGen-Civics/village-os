@@ -54,3 +54,28 @@ export function splitDomain(domain: string): SplitDomain {
     .map((p) => p.charAt(0).toUpperCase() + p.slice(1));
   return parts.length > 1 ? { lead, parts } : { lead: text, parts: [] };
 }
+
+/**
+ * THE DOMAINS A ROLE HOLDS, short (Rye, 14 Nov 2026: "Domains they hold ... right now they're just doing
+ * the work of those domains"). The domain's parts, each cut at its first comma outside brackets, so
+ * "the shared ownership and fundraising structure, shaped with legal" reads "The shared ownership and
+ * fundraising structure". A part about growing a circle is left out: growing a circle is not part of
+ * the work the founding team is asked to do now, and the team view never implies it.
+ */
+export function domainsHeld(domain: string, max = 4): string[] {
+  const cut = (p: string): string => {
+    let depth = 0;
+    for (let i = 0; i < p.length; i++) {
+      const c = p[i];
+      if (c === "(") depth++;
+      else if (c === ")") depth = Math.max(0, depth - 1);
+      else if (c === "," && depth === 0) return p.slice(0, i).trim();
+    }
+    return p.trim();
+  };
+  return splitDomain(domain)
+    .parts.filter((p) => !/\bcircles?\b/i.test(p))
+    .map(cut)
+    .filter(Boolean)
+    .slice(0, max);
+}
