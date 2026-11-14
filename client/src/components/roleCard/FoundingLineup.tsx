@@ -21,6 +21,7 @@
 import { useId } from "react";
 import { ArrowRight, LayoutList, Plus, Target, UserRound } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
+import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { roleWithHolders } from "@shared/roleHolderLabel";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
@@ -138,7 +139,8 @@ export default function FoundingLineup({ roles, filled, circles, view, onView, s
               const id = String(r.seat.id);
               const here = shown === id;
               const grows = growsFrom(id, circles);
-              const facts = [r.circleName, typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null, grows.length ? t({ message: `Grows ${grows.length} circles`, context: "team sheet fact" }) : null].filter((x): x is string => !!x);
+              const where = roleCardView(r.seat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
+              const facts = [r.circleName, typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null, where, grows.length ? t({ message: `Grows ${grows.length} circles`, context: "team sheet fact" }) : null].filter((x): x is string => !!x);
               return (
                 <li key={id} className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-2xl border p-3 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 ${here ? "border-notice bg-notice/10" : "border-notice/50 bg-card"}`}>
                   <ArtImage portrait src={artOf(r.seat)} className="relative size-14 rounded-xl border border-notice/40 sm:size-[4.5rem]" imgClassName="object-top" />
