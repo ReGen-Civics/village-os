@@ -45,6 +45,15 @@ export interface FoundingRole {
  * `lead`: the section opens the page (design pass M1 and D-04, 12 Nov 2026). Its heading is then the
  * page's h1, and on a phone the spacing is tighter so the role rows sit in the first screen.
  */
+const VIEW_KEY = "founding-team-view";
+function readView(): LineupView {
+  try {
+    return window.localStorage.getItem(VIEW_KEY) === "formation" ? "formation" : "sheet";
+  } catch {
+    return "sheet";
+  }
+}
+
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function FoundingTeam({
@@ -70,7 +79,16 @@ export default function FoundingTeam({
   const wide = useWide();
   // A phone opens on the list, one thing at a time; a desktop opens on the first role beside it.
   const [open, setOpen] = useState<string | null>(initialOpen);
-  const [view, setView] = useState<LineupView>("sheet");
+  // The team sheet by default (Rye, 14 Nov); a reader's own choice is remembered on this device.
+  const [view, setViewState] = useState<LineupView>(readView);
+  const setView = (v: LineupView) => {
+    setViewState(v);
+    try {
+      window.localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // A browser that keeps nothing still switches; it only forgets.
+    }
+  };
   // `open` is null until a reader chooses, and "" once a phone reader closes the open row.
   const shown = open === null ? (wide ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
   if (roles.length === 0) return null;

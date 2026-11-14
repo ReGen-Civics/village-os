@@ -134,6 +134,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  window.localStorage.clear();
 });
 
 const renderRoles = () =>
@@ -467,6 +468,16 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     fireEvent.click(within(formation).getByRole("button", { name: /Lead Finance Steward/ }));
     await waitFor(() => expect(section.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
   });
+  it("remembers the reader's choice of view on this device, and opens on the team sheet otherwise", async () => {
+    renderRoles();
+    let section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    cleanup();
+    renderRoles();
+    section = await screen.findByRole("region", { name: "Join the founding team" });
+    expect(within(section).getByRole("button", { name: "Formation" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
   it("draws no grown circle the chart does not hold (control: nothing invented)", async () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
