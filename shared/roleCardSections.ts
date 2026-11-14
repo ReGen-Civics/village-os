@@ -265,6 +265,12 @@ export function sameSections(a: RoleCardSections, b: RoleCardSections): boolean 
 /** The stored document's shape: one entry per role id. */
 export interface SectionsDoc {
   roles: Record<string, { sections: RoleCardSections; edited?: SectionsEdit | null }>;
+  /**
+   * The newest write to each role card's own words or details made outside the
+   * role editor: an admin's, or an agent's through the admin connector
+   * (PUT /api/admin/org/roles/:id). Read with the other two for "Last edited".
+   */
+  cardEdits?: Record<string, SectionsEdit>;
 }
 
 export const SECTIONS_DOC_KEY = "role-card-sections";
@@ -279,6 +285,15 @@ export function sectionsFromDoc(doc: unknown, roleId: string): { sections: RoleC
   const ed = e.edited && typeof e.edited === "object" ? (e.edited as Record<string, unknown>) : null;
   const edited = ed && typeof ed.at === "string" ? { by: typeof ed.by === "string" ? ed.by : null, at: ed.at } : null;
   return { sections: read.ok ? read.value : { ...EMPTY_SECTIONS }, edited };
+}
+
+/** A role's newest card write outside the role editor, or null. Never throws. */
+export function cardEditOf(doc: unknown, roleId: string): SectionsEdit | null {
+  const edits = doc && typeof doc === "object" && !Array.isArray(doc) ? (doc as { cardEdits?: unknown }).cardEdits : null;
+  const e = edits && typeof edits === "object" && !Array.isArray(edits) ? (edits as Record<string, unknown>)[roleId] : null;
+  if (!e || typeof e !== "object") return null;
+  const o = e as Record<string, unknown>;
+  return typeof o.at === "string" && !Number.isNaN(Date.parse(o.at)) ? { by: typeof o.by === "string" ? o.by : null, at: o.at } : null;
 }
 
 /** The newer of two edits, for "last edited by". */
