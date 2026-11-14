@@ -5,15 +5,17 @@
  * written only by the role editor's save, through the editor's own gate
  * (server/routes/roleEdit.ts).
  *
- * "Last edited by" is the newer of two things: the newest published edit to
- * the role's words or details (its draft history) and the newest save of these
- * sections. The person is named by first name, and only to a reader the
+ * "Last edited by" is the newest of three things: the newest published edit to
+ * the role's words or details (its draft history), the newest save of these
+ * sections, and the newest write to the card's words outside the editor (an
+ * admin's or an agent's, `stampCardEdit`, kept in the same document). The person is named by first name, and only to a reader the
  * village lets read names (`peopleShown`); everyone else reads the day alone.
  */
 import type { Pool } from "mysql2/promise";
 import { dbDocument } from "../repos/store-db";
 import { firstNames, roleDraftRows } from "../repos/roleEditHistory";
 import {
+  cardEditOf,
   newerEdit,
   sameSections,
   sectionsFromDoc,
@@ -22,6 +24,28 @@ import {
   type SectionsDoc,
   type SectionsEdit,
 } from "../../shared/roleCardSections";
+
+/** The document as stored, every key kept. */
+async function loadRaw(pool: Pool): Promise<Record<string, unknown>> {
+  const doc = dbDocument<SectionsDoc & Record<string, unknown>>(pool, SECTIONS_DOC_KEY, { roles: {} });
+  await doc.load();
+  const v = doc.get();
+  return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+}
+
+/**
+ * Record that a role card's words or details were written outside the role
+ * editor (PUT /api/admin/org/roles/:id: an admin, or an agent acting as one),
+ * so "Last edited" moves with it. Keeps every other key of the document.
+ */
+export async function stampCardEdit(pool: Pool, roleId: string, userId: string | null, now = new Date()): Promise<void> {
+  const doc = dbDocument<SectionsDoc & Record<string, unknown>>(pool, SECTIONS_DOC_KEY, { roles: {} });
+  await doc.load();
+  const held = (doc.get() ?? { roles: {} }) as SectionsDoc & Record<string, unknown>;
+  const edits = held.cardEdits && typeof held.cardEdits === "object" && !Array.isArray(held.cardEdits) ? { ...held.cardEdits } : {};
+  edits[roleId] = { by: userId, at: now.toISOString() };
+  await doc.put({ ...held, roles: held.roles ?? {}, cardEdits: edits });
+}
 
 async function loadDoc(pool: Pool): Promise<SectionsDoc> {
   const doc = dbDocument<SectionsDoc & Record<string, unknown>>(pool, SECTIONS_DOC_KEY, { roles: {} });
@@ -68,10 +92,11 @@ export interface LastEdited {
 
 /** Who last changed this role's card, and when: its newest live edit or its newest sections save. */
 export async function lastEditedOf(pool: Pool, roleId: string, opts: { peopleShown: boolean }): Promise<LastEdited | null> {
-  const [rows, mine] = await Promise.all([roleDraftRows(pool, roleId, 1), sectionsFor(pool, roleId)]);
+  const [rows, raw] = await Promise.all([roleDraftRows(pool, roleId, 1), loadRaw(pool)]);
   const top = rows.find((r) => r.status === "published" && r.publishedAt);
   const fromDraft: SectionsEdit | null = top && top.publishedAt ? { by: top.publishedBy, at: new Date(top.publishedAt).toISOString() } : null;
-  const newest = newerEdit(fromDraft, mine.edited);
+  const mine = sectionsFromDoc(raw, roleId);
+  const newest = newerEdit(newerEdit(fromDraft, mine.edited), cardEditOf(raw, roleId));
   if (!newest) return null;
   let by: string | null = null;
   if (opts.peopleShown && newest.by) by = (await firstNames(pool, [newest.by])).get(newest.by) || null;
