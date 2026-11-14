@@ -259,6 +259,8 @@ const FundingRounds = lazyPage(() => import("./pages/FundingRounds"));
 const Sessions = lazyPage(() => import("./pages/Sessions"));
 const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
 const SessionSeason = lazyPage(() => import("./pages/SessionSeason"));
+// A fresh start for one device, by a link we hand to a stuck member (lib/deviceReset.ts).
+const Reset = lazyPage(() => import("./pages/Reset"));
 
 /**
  * Shown while a page chunk arrives: the breathing leaf and a few words
@@ -456,6 +458,7 @@ function Router() {
       <Route path="/sessions/season" component={SessionSeason} />
       <Route path="/sessions/:id" component={SessionRoom} />
       <Route path="/work-with-us" component={WorkWithUs} />
+      <Route path="/reset" component={Reset} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

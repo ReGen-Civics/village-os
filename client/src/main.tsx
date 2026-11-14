@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { fetchConfigCached } from "./lib/gameApi";
 import { listenForThemeChanges } from "./lib/liveTheme";
+import { installStaleChunkRecovery } from "./lib/staleChunk";
 import "./index.css";
 
 /**
@@ -99,6 +100,9 @@ warmFirstScreenFonts();
 fetchConfigCached();
 // A Look saved in Admin re-themes open pages without a reload (lib/liveTheme.ts).
 listenForThemeChanges();
+
+// A page that outlived a deploy reloads itself once for the new build (lib/staleChunk.ts).
+installStaleChunkRecovery();
 
 createRoot(document.getElementById("root")!).render(<App />);
 
