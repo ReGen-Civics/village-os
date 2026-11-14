@@ -37,9 +37,25 @@ export const RANGE_WORDS = {
   askAmount: "Write the monthly amount you would ask as a whole number, like 6500.",
 } as const;
 
+/**
+ * Digits only, read without a backtracking pattern (CodeQL js/polynomial-redos on #1243): the text is
+ * capped first, trimmed, an optional trailing "%" taken off, and then every character must be a digit.
+ */
+export function digitsOf(raw: string, maxDigits: number, percent = false): number {
+  if (raw.length > maxDigits + 32) return NaN;
+  let t = raw.trim();
+  if (percent && t.endsWith("%")) t = t.slice(0, -1).trimEnd();
+  if (t.length === 0 || t.length > maxDigits) return NaN;
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i);
+    if (c < 48 || c > 57) return NaN;
+  }
+  return Number(t);
+}
+
 const whole = (raw: unknown): number => {
   if (typeof raw === "number") return Number.isInteger(raw) ? raw : NaN;
-  if (typeof raw === "string" && /^\s*\d{1,4}\s*%?\s*$/.test(raw)) return Number(raw.replace(/[%\s]/g, ""));
+  if (typeof raw === "string") return digitsOf(raw, 4, true);
   return NaN;
 };
 
@@ -118,7 +134,7 @@ export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   const o = typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate" } };
   if (o.kind === "amount") {
-    const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" && /^\s*\d{1,9}\s*$/.test(o.monthly) ? Number(o.monthly) : NaN;
+    const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" ? digitsOf(o.monthly, 9) : NaN;
     return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n } } : { ok: false, problem: RANGE_WORDS.askAmount };
   }
   return { ok: true, value: null };

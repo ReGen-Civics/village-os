@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ceilingAt, commitmentChoices, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { ceilingAt, commitmentChoices, digitsOf, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
 
 describe("the commitment range (Rye, 14 Nov 2026)", () => {
   it("pays straight proportional to the full band: 50% of $13,000 is up to $6,500 (ruling 1)", () => {
@@ -38,5 +38,22 @@ describe("the commitment range (Rye, 14 Nov 2026)", () => {
     expect(readPayAsk({ kind: "amount", monthly: -5 }).ok).toBe(false);
     expect(readPayAsk(undefined)).toEqual({ ok: true, value: null });
     expect(payAskOf({ kind: "amount", monthly: "lots" })).toBeNull();
+  });
+});
+
+describe("reading digits without a slow pattern (CodeQL js/polynomial-redos)", () => {
+  it("reads a percent or an amount with spaces around it", () => {
+    expect(digitsOf(" 30 % ", 4, true)).toBe(30);
+    expect(digitsOf("6500", 9)).toBe(6500);
+    expect(digitsOf("65 00", 9)).toBeNaN();
+    expect(digitsOf("%", 4, true)).toBeNaN();
+  });
+  it("answers at once for a long run of tabs and spaces, and refuses it", () => {
+    const long = "\t".repeat(100_000) + "1" + " ".repeat(100_000) + "x";
+    const started = Date.now();
+    expect(readCommitmentMin(long).ok).toBe(false);
+    expect(readCommitmentTarget(long).ok).toBe(false);
+    expect(readPayAsk({ kind: "amount", monthly: long }).ok).toBe(false);
+    expect(Date.now() - started).toBeLessThan(100);
   });
 });
