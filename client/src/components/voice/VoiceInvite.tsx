@@ -22,6 +22,7 @@ import GrowingField from "@/components/form/GrowingField";
 import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
 import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
+import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
 
 export interface VoiceTake {
   blob: Blob;
@@ -62,7 +63,7 @@ export function applicationRequest(proposal: Record<string, unknown>, files: rea
   return { method: "POST", body: fd };
 }
 
-export function VoiceInvite({ value, onChange }: { value: VoiceState; onChange: (next: VoiceState) => void }) {
+export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; onChange: (next: VoiceState) => void; drafting?: VoiceDrafting }) {
   const { t } = useLingui();
   const id = useId();
   const [support] = useState(voiceSupport);
@@ -161,6 +162,7 @@ export function VoiceInvite({ value, onChange }: { value: VoiceState; onChange: 
           </label>
           <GrowingField id={`${id}-heard`} minRows={3} maxLength={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
           <p className={HINT}>{VOICE_WORDS.heardHint}</p>
+          {drafting && !recorder.recording && <VoiceDrafts heard={value.transcript} drafting={drafting} />}
         </div>
       )}
 

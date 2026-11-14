@@ -794,7 +794,8 @@ export default function ProposeARole() {
               {heading(1)}
               <AboutPanes names={paneNames} now={pane} />
               <div hidden={pane !== 0} data-about-pane="0" className="grid gap-8">
-              <VoiceInvite value={voice} onChange={setVoice} />
+              <VoiceInvite value={voice} onChange={setVoice} drafting={{ roleId: role.id, link: link || undefined, empty: { why: !why.trim(), aim: !aim.trim(), story: !about.story.trim(), items: filledItems.length === 0 },
+                onUse: (d) => { if (d.why) setWhy(d.why); if (d.aim) setAim(d.aim); if (d.story) setAbout((a) => ({ ...a, story: d.story! })); if (d.items) setItems((now) => placeDraftGoals(now, d.items!.map((g) => ({ ...BLANK_GOAL, ...g })), GOAL_LIMITS.max)); } }} />
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="propose-name" className={`mb-2 block ${LABEL}`}>
