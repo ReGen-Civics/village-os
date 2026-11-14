@@ -7,7 +7,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { civilDayFor, type CivilDay } from "./calendarTime";
-import { moonDays } from "./moonSpiral";
+import { moonDays } from "./moonSpiralGeometry";
 import MoonSpiral from "./MoonSpiral";
 import DayStrip from "./DayStrip";
 import MoonTurnings from "./MoonTurnings";

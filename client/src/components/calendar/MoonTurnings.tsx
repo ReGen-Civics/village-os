@@ -8,7 +8,7 @@ import { useLingui } from "@lingui/react/macro";
 import { litPath } from "@/components/natural/moonGeometry";
 import { CARD } from "@/components/journey/look";
 import type { CivilDay } from "./calendarTime";
-import type { MoonOfDays } from "./moonSpiral";
+import type { MoonOfDays } from "./moonSpiralGeometry";
 
 export interface MoonTurningsProps {
   moon: MoonOfDays;

@@ -19,6 +19,7 @@
  */
 
 /** The village's public link. */
+import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
 import { applicantSteps, cleanNote, isApplicantLanguage, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { termOf, type OpenProposalTerm } from "./openProposalTerm";
 import { cardOf, parseCard, type OpenProposalCard } from "./openProposalCard";
@@ -171,6 +172,11 @@ export interface OpenProposalBody {
    * for the person's own profile; the decider routes never serve it.
    */
   selfKnowledge?: string;
+  /**
+   * What the applicant would change, finds missing or would deliver on each piece of the role card
+   * (shared/pieceSuggestions.ts). For the deciders, read-only, beside each piece; never given to an AI.
+   */
+  pieceSuggestions?: PieceSuggestion[];
 }
 
 export interface OpenProposalInput {
@@ -216,6 +222,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
     ...(knowUsOf(o.knowUs).length ? { knowUs: knowUsOf(o.knowUs) } : {}),
     ...(o.rampUp === true ? { rampUp: true as const } : {}),
     ...(text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) ? { selfKnowledge: text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) } : {}),
+    ...(pieceSuggestionsOf(o.pieceSuggestions).length ? { pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions) } : {}),
   };
 }
 
@@ -283,7 +290,11 @@ export function parseOpenProposal(
   const knowUs = knowUsOf(o.knowUs).filter((l) => listed.has(l));
   const selfKnowledge = text(o.selfKnowledge, SELF_KNOWLEDGE_MAX);
   if (selfKnowledge.length > SELF_KNOWLEDGE_MAX) return { ok: false, field: "selfKnowledge", error: OPEN_WORDS.tooLong("Human Design or Gene Keys", SELF_KNOWLEDGE_MAX) };
+  // What they would make of the role card, piece by piece (Rye, 14 Nov 2026): optional, for the roles picked.
+  const suggested = parsePieceSuggestions(o.pieceSuggestions, new Set(roles.map((r) => r.roleId)));
+  if (!suggested.ok) return { ok: false, field: "pieceSuggestions", error: suggested.error };
   const own = {
+    ...(suggested.value.length ? { pieceSuggestions: suggested.value } : {}),
     ...(knowUs.length ? { knowUs } : {}),
     ...(o.rampUp === true ? { rampUp: true as const } : {}),
     ...(selfKnowledge ? { selfKnowledge } : {}),

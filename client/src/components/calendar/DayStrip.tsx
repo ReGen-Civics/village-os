@@ -12,7 +12,7 @@ import { useEffect, useRef } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import type { CivilDay } from "./calendarTime";
-import type { MoonDay } from "./moonSpiral";
+import type { MoonDay } from "./moonSpiralGeometry";
 
 export interface DayStripProps {
   days: MoonDay[];

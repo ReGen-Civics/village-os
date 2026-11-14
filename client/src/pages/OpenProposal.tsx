@@ -29,6 +29,8 @@ import { AttachedView, type ServedAttachments } from "@/components/openProposal/
 import { useLingui } from "@lingui/react/macro";
 import { APPLICANT_NOTE_MAX } from "@shared/applicantWords";
 import { CardSideBySide } from "@/components/openProposal/RoleCardBridge";
+import PieceSuggestionsReview from "@/components/roleCard/PieceSuggestionsReview";
+import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
 import TermsWeOffer, { OpenTalksWarning, type ServedDeciderOffer } from "@/components/openProposal/TermsWeOffer";
 import { useCallback, useEffect, useState } from "react";
@@ -73,6 +75,8 @@ export interface ServedOpenProposal {
   card?: Parameters<typeof CardSideBySide>[0]["card"];
   /** The membership letter, aligned with at application or from their account (Rye's answer 8). */
   membership?: { aligned: boolean };
+  /** What the applicant would make of each role card's pieces (shared/pieceSuggestions.ts): deciders only, else null. */
+  pieceSuggestions?: PieceSuggestion[] | null;
   why: string;
   aim: string;
   confirmedOn: string | null;
@@ -371,6 +375,8 @@ export default function OpenProposal() {
               </h2>
               <CardSideBySide roles={p.roles} card={p.card ?? null} membershipAligned={!!p.membership?.aligned} />
             </section>}
+            {/* Beside each piece of the role card, what they would change, find missing or deliver (Rye, 14 Nov 2026). */}
+            {!p.agent && <PieceSuggestionsReview suggestions={p.pieceSuggestions} roles={p.roles} />}
 
             {/* An agent is offered no pay, allowance or commitment (verify B153, B8): a person's terms never show for one. */}
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} />}
