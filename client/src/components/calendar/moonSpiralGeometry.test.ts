@@ -7,7 +7,7 @@
 import { describe, expect, it } from "vitest";
 import type { CalendarItem } from "@shared/gatherings";
 import { addDays, civilDayFor } from "./calendarTime";
-import { GOLDEN_B, PHI, goldenRadius, goldenSpiralDays, moonDays, stepDay } from "./moonSpiral";
+import { GOLDEN_B, PHI, goldenRadius, goldenSpiralDays, moonDays, stepDay } from "./moonSpiralGeometry";
 
 const TZ = "America/Costa_Rica";
 const day = (y: number, m: number, d: number) => civilDayFor(y, m, d, TZ);
