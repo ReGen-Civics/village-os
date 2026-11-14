@@ -19,6 +19,8 @@ import { ChevronRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
+import { roleArtFor } from "@shared/roleDraft";
+import ArtImage from "@/components/roleDraft/ArtImage";
 import FullRoleCard from "./FullRoleCard";
 import { useWide } from "./useWide";
 
@@ -70,8 +72,10 @@ export default function FoundingTeam({ roles, initialOpen = null, villagePay = n
         </p>
       </div>
 
-      <div className={`${lead ? "mt-5" : "mt-10"} grid gap-6 sm:mt-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10`}>
-        <ul className="grid gap-3 self-start lg:sticky lg:top-28" aria-label={t({ message: "The founding roles", context: "founding team list" })}>
+      <div className={`${lead ? "mt-5" : "mt-10"} grid gap-6 sm:mt-10`}>
+        {/* Piece by piece (Rye, 14 Nov): on a desktop the roles sit in a row above the open card, so
+            the card has the page's whole width for its seat column and its pieces. */}
+        <ul className="grid gap-3 lg:flex lg:flex-wrap" aria-label={t({ message: "The founding roles", context: "founding team list" })}>
           {roles.map((r) => {
             const id = String(r.seat.id);
             const here = shown === id;
@@ -82,9 +86,10 @@ export default function FoundingTeam({ roles, initialOpen = null, villagePay = n
                   aria-expanded={here}
                   aria-controls={`${headingId}-card`}
                   onClick={() => setOpen(here && !wide ? "" : id)}
-                  className={`flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice/10" : "border-border bg-card hover:border-notice/60"}`}
+                  className={`flex min-h-16 w-full items-center gap-3 rounded-xl border px-4 py-3 text-left lg:min-h-0 lg:w-auto lg:rounded-full lg:py-1.5 lg:pl-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice/10" : "border-border bg-card hover:border-notice/60"}`}
                   data-founding-role={id}
                 >
+                  <ArtImage portrait src={roleArtFor({ archetypes: Array.isArray(r.seat.archetypes) ? r.seat.archetypes.map(String) : [], raw: r.seat })} className="relative size-11 shrink-0 rounded-full border border-notice/50" imgClassName="object-top" />
                   <span className="min-w-0 flex-1">
                     <span className="block font-display text-lg leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>
                     {(r.circleName || r.sections?.paid) && (
@@ -93,7 +98,7 @@ export default function FoundingTeam({ roles, initialOpen = null, villagePay = n
                       </span>
                     )}
                   </span>
-                  <ChevronRight className={`size-5 shrink-0 text-notice transition-transform ${here && !wide ? "rotate-90" : ""}`} aria-hidden="true" />
+                  <ChevronRight className={`size-5 shrink-0 text-notice transition-transform lg:hidden ${here && !wide ? "rotate-90" : ""}`} aria-hidden="true" />
                 </button>
                 {/* A phone reads the open card right under its row. */}
                 {here && !wide && (

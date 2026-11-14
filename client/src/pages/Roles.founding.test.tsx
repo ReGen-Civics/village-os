@@ -187,6 +187,8 @@ describe("Join the founding team", () => {
       return el;
     });
     await waitFor(() => expect(within(card).getByTestId("last-edited").textContent).toBe("Last edited by Mara on 11 November 2026"));
+    // Piece by piece (Rye, 14 Nov): every piece is in the page, and one button opens them all.
+    fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
     expect(within(card).getByTestId("paid-role-line").textContent).toBe("This is a paid role");
     expect(within(card).getByRole("heading", { name: "Ideal background" })).toBeTruthy();
     expect(within(card).getByRole("heading", { name: "Qualities we're looking for" })).toBeTruthy();
@@ -373,30 +375,64 @@ describe("design pass M1: the founding team leads the page", () => {
   });
 });
 
-describe("design pass D-03: the offer rail on the founding card", () => {
+describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03 offer rail)", () => {
   const open = async () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
     return waitFor(() => {
-      const el = section.querySelector('[data-testid="offer-rail"]') as HTMLElement | null;
-      if (!el) throw new Error("no rail yet");
+      const el = section.querySelector('[data-full-role-card="finance"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
       return el;
     });
   };
-  it("holds the ceiling, the shares as tiles, the split line and the commitment together", async () => {
+  it("keeps the role, its facts and the one act together in the seat column, beside the pieces", async () => {
     org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentPct: 100 } });
-    const rail = await open();
-    await waitFor(() => expect(within(rail).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month"));
-    expect(Array.from(within(rail).getByTestId("pay-tiles").querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash40%", "equity55%", "village credits5%"]);
-    expect(within(rail).getByTestId("pay-split").textContent).toContain("To be decided in the onboarding process.");
-    expect(rail.textContent).toContain("100%");
+    const card = await open();
+    const header = card.querySelector("header") as HTMLElement;
+    expect(within(header).getByTestId("open-seat").textContent).toBe("Open role");
+    expect(within(header).getByTestId("card-facts").textContent).toContain("100%");
+    expect(within(header).getByTestId("card-facts").textContent).toContain("Paid contractor");
+    // One act: in the seat column on a desktop, riding the bottom of the screen on a phone (jsdom is narrow).
+    expect(within(card).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
+    // Each concept once: the details under "How you're chosen" leave out the track the facts say.
+    expect(within(card).getByTestId("role-card-params").textContent).not.toContain("Paid contractor");
+  });
+  it("opens on the purpose, one piece at a time, and steps through the rest", async () => {
+    const card = await open();
+    const visible = () => Array.from(card.querySelectorAll<HTMLElement>("[data-piece]")).filter((el) => !el.hidden).map((el) => el.dataset.piece);
+    expect(visible()).toEqual(["purpose"]);
+    fireEvent.click(within(card).getByRole("button", { name: /Next: Looks after/ }));
+    expect(visible()).toEqual(["domain"]);
+    fireEvent.click(within(card).getByRole("button", { name: "Back" }));
+    expect(visible()).toEqual(["purpose"]);
+    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    expect(visible()).toEqual(["rewards"]);
+    fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
+    expect(visible().length).toBeGreaterThan(5);
+  });
+  it("holds the ceiling, the shares as tiles and the split line in the rewards piece", async () => {
+    const card = await open();
+    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
+    await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Total compensation up to $9,000 a month"));
+    expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
+    expect(Array.from(within(piece).getByTestId("pay-tiles").querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash40%", "equity55%", "village credits5%"]);
+    expect(within(piece).getByTestId("pay-split").textContent).toContain("To be decided in the onboarding process.");
   });
   it("shows only the split when no ceiling is written", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payCeiling: null }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
-    const rail = await open();
-    await waitFor(() => expect(within(rail).getByTestId("pay-split")).toBeTruthy());
-    expect(within(rail).queryByTestId("pay-ceiling")).toBeNull();
+    const card = await open();
+    await waitFor(() => expect(within(card).getByTestId("pay-split")).toBeTruthy());
+    expect(within(card).queryByTestId("pay-ceiling")).toBeNull();
+  });
+  it("splits a domain written as a list into its parts and a 'Lead: rest' line into a titled tile, word for word", async () => {
+    org.roles[0] = seat("finance", "Lead Finance Steward", { domain: "The money: the model; the books; and the close.", accountabilities: ["Payment flows: reconcile the two channels", "Keep the books"] });
+    const card = await open();
+    const domain = within(card).getByTestId("words-domain");
+    expect(Array.from(domain.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["The model", "The books", "The close"]);
+    const tiles = within(card).getByTestId("words-accountabilities");
+    expect(Array.from(tiles.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["Payment flowsreconcile the two channels", "Keep the books"]);
   });
 });
 
