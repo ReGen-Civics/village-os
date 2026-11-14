@@ -20,6 +20,7 @@ import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/
 import { capabilityDecision, type Capability, type CapabilityCtx } from "../../shared/capabilities";
 import type { SubjectCloser } from "../lib/applyDue";
 import { addChange, createDraft, publishDraft } from "../lib/orgDrafts";
+import { seatHolder } from "../lib/orgChart";
 import { register } from "./orgDraftDecide";
 import { loadVariables } from "../lib/variables";
 
@@ -214,5 +215,30 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     expect(on.json.names).toEqual({ [b.id]: `Reader ${b.id.split("-").pop()}`, [a.id]: `Reader ${a.id.split("-").pop()}` });
     await setVar("org.founding_team", null);
     expect((await call("GET", "/api/org/founding-team", null)).json.names).toEqual({});
+  });
+
+  it("shows anyone the current team: the founding circle's filled roles, unlisted ones too, holders by first name only while names are public", async () => {
+    const lead = await seedRole();
+    // Two more roles in the lead's circle: one filled and unlisted, one filled by an agent alone.
+    const made = await createDraft(pool, { title: "Team", createdBy: "admin-1", sourceKind: "human", openCap: null });
+    if (!made.ok) throw new Error(made.error);
+    const ops = `${lead.id}-ops`;
+    const bot = `${lead.id}-bot`;
+    for (const [id, name, extra] of [[ops, "Operations Steward", { listed: false }], [bot, "Secretary", {}]] as const) {
+      const r = await addChange(pool, made.id, { op: "create_seat", orgRoleId: id, payload: { name, circleId: lead.circle, aim: "a", domain: "d", ...extra } });
+      if (!r.ok) throw new Error(r.error);
+    }
+    const pub = await publishDraft(pool, made.id, "admin-1", null);
+    if (!pub.ok) throw new Error(pub.error);
+    await seatHolder(pool, ops, { displayName: "Ana Lima" });
+    await seatHolder(pool, bot, { displayName: "AI Secretary", isAgent: true } as any);
+    await setVar("org.founding_team_roles", lead.id);
+    await setVar("org.founding_team", "true");
+    await setVar("org.public_people", "true");
+    expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: ["Ana"] }]);
+    // CONTROL: a village that keeps its people for members still shows the role, with no name.
+    await setVar("org.public_people", "false");
+    expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: [] }]);
+    for (const k of ["org.public_people", "org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
   });
 });

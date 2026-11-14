@@ -151,6 +151,44 @@ describe("the open proposal page", () => {
     expect(screen.queryByRole("heading", { name: "Links and files" })).toBeNull();
   });
 
+  it("SHAPE THE ROLE: a decider reads each suggestion under the piece of the role card it is about, read-only (Rye, 14 Nov 2026)", async () => {
+    const gateSeat = { id: "role-gate", name: "Gate Keeper", circleId: "land", state: "open", aim: "The gate is open when it should be.", accountabilities: ["Open the gate at dawn"], archetypes: [], card: {} };
+    const base = (globalThis.fetch as unknown as (u: string, i?: unknown) => Promise<Response>);
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init?: unknown) => (url === "/api/org" ? json({ roles: [gateSeat], circles: [{ id: "land", name: "Land Circle" }] }) : base(url, init))));
+    answer = () =>
+      json({
+        proposal: served({
+          pieceSuggestions: [
+            { roleId: "role-gate", piece: "accountabilities", kind: "deliver", text: "A dawn rota, posted every Sunday." },
+            { roleId: "role-gate", piece: "purpose", kind: "missing", text: "Who the gate keeps out, and why." },
+          ],
+        }),
+      });
+    render(<OpenProposal />);
+    await heading();
+    const review = await screen.findByTestId("piece-suggestions-review");
+    const card = await waitFor(() => {
+      const el = review.querySelector('[data-full-role-card="role-gate"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
+      return el;
+    });
+    // Every piece open, and each suggestion inside the piece it is about.
+    const delivers = card.querySelector('[data-piece="accountabilities"]') as HTMLElement;
+    expect(delivers.hidden).toBe(false);
+    expect(delivers.textContent).toContain("A dawn rota, posted every Sunday.");
+    expect((card.querySelector('[data-piece="purpose"]') as HTMLElement).textContent).toContain("Who the gate keeps out, and why.");
+    // Read-only: nothing to add or remove, and no Apply act on a card read by the people deciding.
+    expect(within(review).queryByRole("button", { name: /Remove this suggestion|I'd change this/ })).toBeNull();
+    expect(within(review).queryByRole("link", { name: /Apply for this role/ })).toBeNull();
+  });
+
+  it("SHAPE THE ROLE: nothing is drawn when the reader is served no suggestions (control)", async () => {
+    answer = () => json({ proposal: served({ pieceSuggestions: null }) });
+    render(<OpenProposal />);
+    await heading();
+    expect(screen.queryByTestId("piece-suggestions-review")).toBeNull();
+  });
+
   it("an asked holder consents on the proposal's own route", async () => {
     answer = () => json({ proposal: served({}, "open", { asked: true, answer: null, mayAnswer: true }) });
     render(<OpenProposal />);

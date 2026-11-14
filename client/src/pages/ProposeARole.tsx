@@ -34,15 +34,14 @@
  * name shows on the gold rule, Enter moves on, and the arrow keys walk the
  * steps whenever the caret is not in a field.
  *
- * Sending asks the address to confirm; nothing reaches the village until it
- * does (server/routes/openProposals.ts). The sent and confirmed thresholds
- * are components/fireflyPath/Thresholds.tsx.
+ * Sending asks the address to confirm; nothing reaches the village until it does
+ * (server/routes/openProposals.ts; thresholds: components/fireflyPath/Thresholds.tsx).
  *
- * WHAT IS KEPT, said on the form in one line (sheet 19i): an application never
- * confirmed is deleted after 48 hours, and a declined one loses its name and
- * address after 90 days (docs/ARCHITECTURE.md, 3.9).
+ * WHAT IS KEPT, said on the form in one line (sheet 19i): never confirmed, deleted after 48 hours;
+ * declined, its name and address go after 90 days (docs/ARCHITECTURE.md, 3.9).
  */
 import { goalsToFirstMoon } from "@/components/openProposal/RoleCardBridge";
+import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
 import type { ProposalLink } from "@shared/proposalAttachments";
@@ -225,6 +224,7 @@ export default function ProposeARole() {
   const [email, setEmail] = useState("");
   const [hp, setHp] = useState("");
   const [selfKnowledge, setSelfKnowledge] = useState("");
+  const [pieceSuggestions, setPieceSuggestions] = useState<PieceSuggestion[]>([]);
   const [rampUp, setRampUp] = useState(false);
   const [sending, setSending] = useState(false);
   /** Every problem found on the last press of Continue or Send, each with the field it is on (audit M1). */
@@ -316,7 +316,7 @@ export default function ProposeARole() {
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
       setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct });
-      setRampUp(d.rampUp);
+      setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
       setReached(d.reached);
@@ -331,9 +331,9 @@ export default function ProposeARole() {
     writeStoredJson(
       "local",
       draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical }, new Date()),
+      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical, pieceSuggestions }, new Date()),
     );
-  }, [roleId, draftFor, link, sent, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical]);
+  }, [roleId, draftFor, link, sent, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
   useEffect(() => {
@@ -493,7 +493,7 @@ export default function ProposeARole() {
         locale: i18n.locale,
         ...(membership.kind === "aligned" ? { membership: { letterVersion: membership.letterVersion } } : {}),
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
-        ...aboutYouBody(about),
+        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}),
       };
       // With files, the application goes as one field of a multipart post (server/routes/openProposals.ts).
       let request: RequestInit;
@@ -897,6 +897,7 @@ export default function ProposeARole() {
                 }
               />
               <Beside id="propose-problem-card" message={problemOn("card") ?? problemOn("serves")} />
+              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} />
             </section>
 
             {/* STEP 4: the terms. Commitment and the eight settings, the ramp-up, and the shape of compensation. */}
