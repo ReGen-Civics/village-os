@@ -163,7 +163,7 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
             <ChevronLeft className="size-4" aria-hidden="true" />
             {t({ message: "Back", context: "role card: the previous piece" })}
           </button>
-          <span className="text-center text-sm tabular-nums text-muted-foreground" aria-live="polite">
+          <span className="sr-only text-center text-sm tabular-nums text-muted-foreground @md:not-sr-only" aria-live="polite">
             {t({ message: `${i + 1} of ${pieces.length}`, context: "role card: which piece is open, out of how many" })}
           </span>
           {next ? (

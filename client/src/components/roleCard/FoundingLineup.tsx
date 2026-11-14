@@ -230,16 +230,25 @@ export default function FoundingLineup({ roles, filled, view, onView, shown, onO
                 </li>
               );
             })}
-            {filled.map((f) => (
-              <li key={f.id} className="flex w-40 flex-col items-center gap-2 text-center" data-filled-role={f.id}>
-                <span className="relative grid size-24 place-items-center rounded-full border-2 border-muted-foreground/60 bg-card text-muted-foreground">
-                  <UserRound className="size-9" aria-hidden="true" />
-                  <span className="absolute -bottom-2 rounded-full border border-border bg-background px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest">{t({ message: "Filled", context: "formation: someone holds this role" })}</span>
-                </span>
-                <span className="mt-2 text-sm font-semibold leading-snug text-card-foreground">{filledLabel(f)}</span>
-              </li>
-            ))}
           </ul>
+          {filled.length > 0 && (
+            <>
+              <p className="relative mb-5 mt-10 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+                {t({ message: "Holding it now", context: "formation: the roles held now" })}
+              </p>
+              <ul className="relative grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
+                {filled.map((f) => (
+                  <li key={f.id} className="flex w-full max-w-40 flex-col items-center gap-2 text-center" data-filled-role={f.id}>
+                    <span className="relative grid size-16 place-items-center rounded-full border-2 border-muted-foreground/60 bg-card text-muted-foreground sm:size-20">
+                      <UserRound className="size-7" aria-hidden="true" />
+                      <span className="absolute -bottom-2 rounded-full border border-border bg-background px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest">{t({ message: "Filled", context: "formation: someone holds this role" })}</span>
+                    </span>
+                    <span className="mt-2 text-sm font-semibold leading-snug text-card-foreground">{filledLabel(f)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
       <p className="text-sm text-muted-foreground">
