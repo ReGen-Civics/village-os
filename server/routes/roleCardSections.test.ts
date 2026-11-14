@@ -21,6 +21,7 @@ import { capabilityDecision, type Capability, type CapabilityCtx } from "../../s
 import type { SubjectCloser } from "../lib/applyDue";
 import { addChange, createDraft, publishDraft } from "../lib/orgDrafts";
 import { seatHolder } from "../lib/orgChart";
+import { insertApplication } from "../repos/seatApplications";
 import { register } from "./orgDraftDecide";
 import { loadVariables } from "../lib/variables";
 
@@ -240,6 +241,27 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     const fill = (await call("GET", "/api/org/founding-team", null)).json.fill;
     expect(fill[lead.id]).toEqual({ heldPct: 0, targetPct: 100, openPct: 100, covered: false });
     expect(fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
+    // A holder seated through a seat application whose terms state a commitment holds that share (Rye, 14 Nov 2026).
+    await insertApplication(pool, {
+      id: `${lead.id}-app`,
+      candidateUserId: "u-shared",
+      proposedBy: "u-shared",
+      seatIds: [lead.id],
+      note: null,
+      deliverables: null,
+      settings: { clocks: { commitmentPct: 50 } } as any,
+      settingsHash: "h",
+      termEndsAt: new Date("2027-01-01T00:00:00Z"),
+      termSeasonId: null,
+      termFollowsSeason: false,
+      startsAt: null,
+      status: "adopted",
+    });
+    await seatHolder(pool, lead.id, { displayName: "Ines Shared", applicationId: `${lead.id}-app` });
+    const shared = (await call("GET", "/api/org/founding-team", null)).json.fill;
+    expect(shared[lead.id]).toEqual({ heldPct: 50, targetPct: 100, openPct: 50, covered: false });
+    // CONTROL: the holder with no stated share still holds the whole of the other role.
+    expect(shared[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
     // CONTROL: a village that keeps its people for members still shows the role, with no name.
     await setVar("org.public_people", "false");
     expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: [] }]);
