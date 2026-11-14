@@ -13,6 +13,25 @@
  *      fit helpers in its own source;
  *   3. the history is append only: its repo holds no UPDATE and no REPLACE.
  *
+ * NARROWED ONCE (Rye, 14 Nov 2026, answer A): when a member's roles are paid
+ * through separate applications, each role's pay scales by its share of their
+ * time, from the split, and a Treasurer confirms the scaled amounts at End of
+ * Moon before anything is paid. That needs the split on the invoice, so there
+ * is exactly one door through this wall, and the tests below hold its shape:
+ *
+ *   - the door is server/lib/splitForPay.ts, and the walk stops there: any
+ *     other way from a pay path into the history still fails rule 1;
+ *   - only server/lib/moonRecap.ts (the moon frame the invoice is drawn from)
+ *     opens the door;
+ *   - the door takes one binding from the history, `splitOn`, and `splitOn`
+ *     selects `split_json` alone, so the percent a member gives, the period,
+ *     the note and the history never reach pay;
+ *   - rules 2 and 3 are unchanged.
+ * What keeps the split from paying on its own is not this file: Finance
+ * approval refuses a scaled invoice until it is confirmed
+ * (`splitUnconfirmed`, server/lib/moonReview.ts; tested in
+ * server/lib/moonReviewSplit.test.ts).
+ *
  * Controls keep the walk honest: the subject list is not empty, the walk does
  * find the history from the quests routes that are known to reach it, and the
  * text check does fire on a source that names a column.
@@ -24,6 +43,10 @@ import { describe, expect, it } from "vitest";
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
 const HISTORY_REPO = path.join(ROOT, "server", "repos", "memberCommitments.ts");
 const HISTORY_ROUTES = path.join(ROOT, "server", "routes", "memberCommitment.ts");
+/** The one narrowed door (Rye, 14 Nov 2026): it hands the split, and only the split, to the moon invoice. */
+const SPLIT_DOOR = path.join(ROOT, "server", "lib", "splitForPay.ts");
+/** The one file allowed to open it. */
+const SPLIT_DOOR_USER = path.join(ROOT, "server", "lib", "moonRecap.ts");
 
 const SUBJECT = /(ledger|econom|settle|settlement|exchange|payment|payout|redemption|mint|faucet|treasury|swap|cyclePool|gratitude-cycles|contributionPay|admission|vouches|dryRun|workPay|cashOwed)/i;
 const SUBJECT_DIRS = ["server/lib", "server/routes", "server/repos", "shared", "shared/dryRun"];
@@ -61,12 +84,13 @@ function resolve(from: string, spec: string): string | null {
   return null;
 }
 
-function chainTo(entry: string, targets: ReadonlySet<string>): string[] | null {
+function chainTo(entry: string, targets: ReadonlySet<string>, stopAt: ReadonlySet<string> = new Set([SPLIT_DOOR])): string[] | null {
   const seen = new Set<string>([entry]);
   const queue: Array<{ file: string; chain: string[] }> = [{ file: entry, chain: [entry] }];
   while (queue.length > 0) {
     const { file, chain } = queue.shift()!;
     if (targets.has(file)) return chain;
+    if (stopAt.has(file)) continue;
     let src: string;
     try {
       src = fs.readFileSync(file, "utf8");
@@ -121,6 +145,43 @@ describe("nothing that pays reads a commitment", () => {
   it("no module that moves value names a commitment column, the history or the fit helpers", () => {
     const named = list.map((f) => ({ f: path.relative(ROOT, f), names: namesIn(codeOf(f)) })).filter((x) => x.names.length);
     expect(named).toEqual([]);
+  });
+
+  it("control: without the door, the walk does reach the history from a pay path, through the door", () => {
+    const chain = chainTo(path.join(ROOT, "server", "routes", "cashOwed.ts"), history, new Set());
+    expect(chain).not.toBeNull();
+    expect(chain).toContain(SPLIT_DOOR);
+  });
+
+  it("only the moon frame opens the split door", () => {
+    const openers: string[] = [];
+    const walk = (dir: string) => {
+      for (const name of fs.readdirSync(dir)) {
+        const file = path.join(dir, name);
+        if (name === "node_modules" || name.startsWith(".")) continue;
+        if (fs.statSync(file).isDirectory()) walk(file);
+        else if (isSource(name) && file !== SPLIT_DOOR) {
+          for (const m of fs.readFileSync(file, "utf8").matchAll(IMPORT)) {
+            if (resolve(file, m[1] ?? m[2] ?? m[3]) === SPLIT_DOOR) openers.push(path.relative(ROOT, file));
+          }
+        }
+      }
+    };
+    for (const dir of ["server", "shared", "client/src"]) walk(path.join(ROOT, dir));
+    expect(Array.from(new Set(openers))).toEqual([path.relative(ROOT, SPLIT_DOOR_USER)]);
+  });
+
+  it("the door takes only `splitOn` from the history, and `splitOn` selects the split alone", () => {
+    const door = codeOf(SPLIT_DOOR);
+    const fromHistory = Array.from(door.matchAll(/import\s*(type\s*)?\{([^}]*)\}\s*from\s*["']([^"']+)["']/g))
+      .filter((m) => resolve(SPLIT_DOOR, m[3]) && history.has(resolve(SPLIT_DOOR, m[3]) as string))
+      .flatMap((m) => m[2].split(",").map((s) => s.trim()).filter(Boolean));
+    expect(fromHistory).toEqual(["splitOn"]);
+    expect(door).not.toMatch(/import\s*\*\s*as/);
+    const repo = codeOf(HISTORY_REPO);
+    const body = repo.slice(repo.indexOf("export async function splitOn"), repo.indexOf("export async function forgetCommitments"));
+    const selects = Array.from(body.matchAll(/SELECT\s+([^"]*?)\s+FROM/g)).map((m) => m[1]);
+    expect(selects).toEqual(["`split_json`"]);
   });
 
   it("the history is append only: its repo never updates or replaces a row", () => {
