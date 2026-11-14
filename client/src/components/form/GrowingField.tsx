@@ -19,7 +19,7 @@ export default function GrowingField({
   value: string;
   onChange: (value: string) => void;
   minRows?: number;
-  /** The voice button in the box's corner (MicButton; the browser's own speech engine). On unless the page says otherwise. */
+  /** The voice button in the box's corner (MicButton; the browser's speech service turns speech into text, see MicButton for where it goes). On unless the page says otherwise. */
   mic?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
