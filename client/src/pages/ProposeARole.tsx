@@ -42,7 +42,7 @@
  */
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
-import { EMPTY_VOICE, VoiceInvite, applicationRequest, type VoiceState } from "@/components/voice/VoiceInvite";
+import { EMPTY_VOICE, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -103,7 +103,7 @@ interface FormRole {
 type FormState =
   | { kind: "loading" }
   | { kind: "closed"; message: string }
-  | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup }
+  | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup; clips: VoiceClipLimits }
   | { kind: "failed" };
 
 /** One thing to fix before sending: the field's name, the words, and where to look for it on the page. */
@@ -276,7 +276,7 @@ export default function ProposeARole() {
         const roles: FormRole[] = Array.isArray(d?.roles) ? d.roles : [];
         setForm(
           d?.open
-            ? { kind: "open", village: String(d.village ?? ""), season: d.season ?? null, term: termOf(d.term) ?? null, goals: Array.isArray(d.goals) ? d.goals : [], roles, setup: foundingSetupOf(d.founding) }
+            ? { kind: "open", village: String(d.village ?? ""), season: d.season ?? null, term: termOf(d.term) ?? null, goals: Array.isArray(d.goals) ? d.goals : [], roles, setup: foundingSetupOf(d.founding), clips: clipLimitsOf(d.voice) }
             : { kind: "closed", message: String(d?.message ?? OPEN_WORDS.closed) },
         );
         if (d?.open) {
@@ -763,6 +763,7 @@ export default function ProposeARole() {
           <aside className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
             <StepTrail labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
           </aside>
+          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips}>
           <form
             ref={formRef}
             onSubmit={submit}
@@ -824,7 +825,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <GrowingField id="propose-why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -868,7 +869,7 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <MicInput id="propose-aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
+                <MicInput id="propose-aim" clip="aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
                   {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim.slice(0, OPEN_AIM_MAX)); setMarks((m) => ({ ...m, aim: r.aim!.slice(0, OPEN_AIM_MAX) })); } }} />}
@@ -982,6 +983,7 @@ export default function ProposeARole() {
               )}
             </div>
           </form>
+          </VoiceClipsProvider>
 
           {/* A desk has the width: the role stays beside the step. */}
           <aside className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">

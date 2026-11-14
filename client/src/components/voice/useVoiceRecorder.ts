@@ -62,7 +62,7 @@ export interface FinishedTake {
 
 export type RecorderProblem = "blocked" | "noMic" | null;
 
-export function useVoiceRecorder(onTake: (take: FinishedTake) => void) {
+export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSeconds: number = VOICE_NOTE_MAX_SECONDS) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [live, setLive] = useState("");
@@ -79,6 +79,8 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void) {
   const hearing = useRef(true);
   const onTakeRef = useRef(onTake);
   onTakeRef.current = onTake;
+  const limit = useRef(maxSeconds);
+  limit.current = maxSeconds;
 
   const release = () => {
     if (timer.current !== null) window.clearInterval(timer.current);
@@ -192,7 +194,7 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void) {
       if (e.data && e.data.size > 0) chunks.push(e.data);
     };
     r.onstop = () => {
-      const seconds = Math.max(1, Math.min(VOICE_NOTE_MAX_SECONDS, Math.round((Date.now() - began.current) / 1000)));
+      const seconds = Math.max(1, Math.min(limit.current, Math.round((Date.now() - began.current) / 1000)));
       const words = `${finals.current}${interim.current ? ` ${interim.current}` : ""}`.trim();
       release();
       const blob = new Blob(chunks, { type: r.mimeType || type || "audio/webm" });
@@ -209,7 +211,7 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void) {
     timer.current = window.setInterval(() => {
       const s = (Date.now() - began.current) / 1000;
       setElapsed(s);
-      if (s >= VOICE_NOTE_MAX_SECONDS) stop();
+      if (s >= limit.current) stop();
     }, 250);
     listen();
     // eslint-disable-next-line react-hooks/exhaustive-deps

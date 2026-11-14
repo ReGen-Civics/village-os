@@ -3,7 +3,7 @@
  * it is, what a form may send, and how a stored part reads.
  */
 import { describe, expect, it } from "vitest";
-import { VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, parseSentVoice, storedVoiceOf, voiceKindOfType, voiceLength, voiceNoteKind } from "./voiceNotes";
+import { VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, clipFieldLabel, clipLimitsOf, isClipField, parseSentVoice, storedVoiceOf, voiceKindOfType, voiceLength, voiceNoteKind } from "./voiceNotes";
 
 const bytes = (...head: number[]) => new Uint8Array([...head, ...new Array(16).fill(0)]);
 
@@ -51,5 +51,36 @@ describe("a stored voice part", () => {
     expect(storedVoiceOf({ consent: true, notes: [{ ...note, id: "../etc/passwd" }], transcript: "" })).toBeNull();
     expect(storedVoiceOf({ consent: true, notes: [{ ...note, kind: "exe" }], transcript: "Hi" })).toEqual({ consent: true, notes: [], transcript: "Hi" });
     expect(storedVoiceOf(null)).toBeNull();
+  });
+});
+
+describe("clips beside answers (Rye, 14 Nov 2026)", () => {
+  const limits = { max: 2, seconds: 60 };
+  it("takes one clip per known answer, within the village's count and length", () => {
+    const ok = parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 31.6, words: " I keep gates. " }, { field: "value-2-done", seconds: 12, words: "" }] }, 0, 2, limits);
+    expect(ok).toEqual({ ok: true, value: { consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 32, words: "I keep gates." }, { field: "value-2-done", seconds: 12, words: "" }] } });
+    expect(parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 5 }, { field: "aim", seconds: 5 }, { field: "story", seconds: 5 }] }, 0, 3, limits)).toEqual({ ok: false, error: VOICE_WORDS.tooManyClips(2) });
+    expect(parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 90 }] }, 0, 1, limits)).toEqual({ ok: false, error: VOICE_WORDS.clipTooLong(60) });
+    expect(parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "../etc", seconds: 5 }] }, 0, 1, limits)).toEqual({ ok: false, error: VOICE_WORDS.wrongType });
+    expect(parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 5 }, { field: "why", seconds: 5 }] }, 0, 2, limits)).toEqual({ ok: false, error: VOICE_WORDS.wrongType });
+    // Bytes and descriptions must agree; and no clip goes without the tick.
+    expect(parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [] }, 0, 1, limits)).toEqual({ ok: false, error: VOICE_WORDS.tooManyClips(2) });
+    expect(parseSentVoice(undefined, 0, 1, limits)).toEqual({ ok: false, error: VOICE_WORDS.needConsent });
+    expect(parseSentVoice({ consent: false, seconds: [], transcript: "", clips: [{ field: "why", seconds: 5 }] }, 0, 1, limits)).toEqual({ ok: false, error: VOICE_WORDS.needConsent });
+  });
+
+  it("knows the answers a clip may belong to, names them for deciders, and holds the settings to the ceilings", () => {
+    for (const f of ["why", "aim", "story", "based", "languages", "suggestion", "value-1-title", "value-12-done", "term-clocks", "reference-3"]) expect(isClipField(f), f).toBe(true);
+    for (const f of ["selfKnowledge", "name", "email", "value-13-title", "reference-4", "term-", "WHY", ""]) expect(isClipField(f), f).toBe(false);
+    expect(clipFieldLabel("value-2-done")).toBe("Value 2: how we will know it is done");
+    expect(clipLimitsOf({ max: 12, seconds: 60 })).toEqual({ max: 12, seconds: 60 });
+    expect(clipLimitsOf({ max: 99, seconds: 999 })).toEqual({ max: 24, seconds: 180 });
+    expect(clipLimitsOf({ max: 0, seconds: 1 })).toEqual({ max: 0, seconds: 10 });
+    expect(clipLimitsOf(undefined)).toEqual({ max: 12, seconds: 60 });
+  });
+
+  it("reads stored clips back, dropping any that are not well formed", () => {
+    const clip = { id: "pv-0123456789abcdef", kind: "m4a", field: "aim", seconds: 20, size: 100, sha256: "b".repeat(64), words: "Seed." };
+    expect(storedVoiceOf({ consent: true, notes: [], transcript: "", clips: [clip, { ...clip, field: "email" }] })).toEqual({ consent: true, notes: [], transcript: "", clips: [clip] });
   });
 });

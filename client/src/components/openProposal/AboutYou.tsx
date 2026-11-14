@@ -111,20 +111,20 @@ export function AboutYouFacts({
           <label htmlFor={`${idPrefix}-based`} className={LABEL}>
             {t({ message: "Where you are based (optional)", context: "about you" })}
           </label>
-          <MicInput id={`${idPrefix}-based`} maxLength={ABOUT_BASED_MAX} value={value.based} onChange={(based) => onChange({ ...value, based })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-based`} clip="based" maxLength={ABOUT_BASED_MAX} value={value.based} onChange={(based) => onChange({ ...value, based })} className={fieldClass} />
         </div>
         <div>
           <label htmlFor={`${idPrefix}-languages`} className={LABEL}>
             {t({ message: "Languages you work in (optional)", context: "about you" })}
           </label>
-          <MicInput id={`${idPrefix}-languages`} maxLength={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(languages) => onChange({ ...value, languages })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-languages`} clip="languages" maxLength={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(languages) => onChange({ ...value, languages })} className={fieldClass} />
         </div>
       </div>
       <div>
         <label htmlFor={`${idPrefix}-story`} className={LABEL}>
           {t({ message: "Your story with us, in a line (optional)", context: "about you" })}
         </label>
-        <MicInput id={`${idPrefix}-story`} maxLength={ABOUT_STORY_MAX} value={value.story} onChange={(story) => onChange({ ...value, story })} className={fieldClass} />
+        <MicInput id={`${idPrefix}-story`} clip="story" maxLength={ABOUT_STORY_MAX} value={value.story} onChange={(story) => onChange({ ...value, story })} className={fieldClass} />
         {storyAssist && <div className="mt-2 grid gap-2">{storyAssist}</div>}
       </div>
     </div>
@@ -173,6 +173,7 @@ export function ReferencesBlock({
             autoComplete="off"
             value={r.how}
             onChange={(how) => setRow(i, { ...r, how })}
+            clip={`reference-${i + 1}`}
             className={fieldClass}
           />
           <input

@@ -6,7 +6,8 @@
  */
 import { useEffect, useLayoutEffect, useRef, type TextareaHTMLAttributes } from "react";
 import MicButton from "@/components/MicButton";
-import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import { spokenInto } from "@/components/form/MicInput";
+import { ClipBar } from "@/components/voice/VoiceClips";
 
 export default function GrowingField({
   value,
@@ -14,6 +15,7 @@ export default function GrowingField({
   minRows = 2,
   className = "",
   mic = true,
+  clip,
   ...rest
 }: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> & {
   value: string;
@@ -21,6 +23,8 @@ export default function GrowingField({
   minRows?: number;
   /** The voice button in the box's corner (MicButton; the browser's speech service turns speech into text, see MicButton for where it goes). On unless the page says otherwise. */
   mic?: boolean;
+  /** The answer's key for a voice clip beside it (components/voice/VoiceClips.tsx); drawn only inside the application's clip provider. */
+  clip?: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   // A box drawn inside a hidden step measures 0: it keeps its rows until it is shown, then fits.
@@ -55,11 +59,16 @@ export default function GrowingField({
       {...rest}
     />
   );
-  if (!mic) return box;
+  const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
+  const clipBar = clip ? <ClipBar field={clip} onWords={said} /> : null;
+  if (!mic) return clipBar ? <div>{box}{clipBar}</div> : box;
   return (
-    <div className="relative">
-      {box}
-      <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={(chunk) => onChange(appendSpoken(value, chunk))} />
+    <div>
+      <div className="relative">
+        {box}
+        <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={said} />
+      </div>
+      {clipBar}
     </div>
   );
 }

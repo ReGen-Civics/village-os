@@ -141,6 +141,7 @@ export default function TermsEight({
                   aria-label={t`What you would like to talk about: ${labels[k]}`}
                   placeholder={t`A note, if you like`}
                   minRows={2}
+                  clip={`term-${k}`}
                   maxLength={TERM_NOTE_MAX}
                   value={answer.note}
                   onChange={(note) => setAnswer(k, { choice: "talk", note })}

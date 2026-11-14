@@ -46,7 +46,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   let base = "";
   let gate = "";
   let dir = "";
-  const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult };
+  const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult, admin: false };
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
   beforeAll(async () => {
@@ -61,7 +61,9 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       getPool: () => pool,
       overLimit: async () => false,
       clientIp: () => "203.0.113.9",
+      // Admin's applications panel: the desk holds intake.moderate when the case says so.
       guardCapability: async (_req: any, res: any) => {
+        if (state.admin) return true;
         res.status(401).json({ error: "auth_required" });
         return false;
       },
@@ -105,6 +107,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   beforeEach(() => {
     state.sent.length = 0;
     state.answer = { status: "sent", messageId: "m-1" };
+    state.admin = false;
   });
 
   let n = 0;
@@ -119,6 +122,15 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
 
   const postJson = async (body: unknown) => {
     const res = await fetch(`${base}/api/open-proposals`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); // module-review-ok: a test calling its own local server
+    return { status: res.status, body: (await res.json()) as any };
+  };
+
+  const postClips = async (body: unknown, takes: Array<{ name: string; bytes: Buffer }>, clips: Array<{ name: string; bytes: Buffer }>) => {
+    const fd = new FormData();
+    fd.append("proposal", JSON.stringify(body));
+    for (const f of takes) fd.append("voice", new Blob([f.bytes]), f.name);
+    for (const f of clips) fd.append("clips", new Blob([f.bytes]), f.name);
+    const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
     return { status: res.status, body: (await res.json()) as any };
   };
 
@@ -204,5 +216,71 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     // CONTROL: a decision ten days old keeps its voice note.
     expect((await readOpenProposal(pool, recent))?.body.voice?.notes).toHaveLength(1);
     expect((await fs.promises.readdir(path.join(dir, recent))).filter((f) => f.startsWith("pv-"))).toHaveLength(1);
+  });
+  describe("clips beside answers (Rye, 14 Nov 2026)", () => {
+    const withClips = (clips: Array<{ field: string; seconds: number; words: string }>) => ({ voice: { consent: true, seconds: [30], transcript: "", clips } });
+
+    it("tells the form the village's limits, and keeps each clip with its answer and words, beside the main note", async () => {
+      const form = await fetch(`${base}/api/open-proposals/form`).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
+      expect(form.voice).toEqual({ max: 12, seconds: 60 });
+      const r = await postClips(
+        proposal(withClips([{ field: "why", seconds: 24, words: "I keep the gate." }, { field: "value-1-title", seconds: 9, words: "A seed swap." }])),
+        [{ name: "voice-1.webm", bytes: WEBM }],
+        [{ name: "why.m4a", bytes: MP4 }, { name: "value-1-title.webm", bytes: WEBM }],
+      );
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      const id = lastId();
+      const voice = (await readOpenProposal(pool, id))?.body.voice;
+      expect(voice?.notes).toHaveLength(1);
+      expect(voice?.clips?.map((c) => [c.field, c.kind, c.seconds, c.words])).toEqual([
+        ["why", "m4a", 24, "I keep the gate."],
+        ["value-1-title", "webm", 9, "A seed swap."],
+      ]);
+      const onDisk = (await fs.promises.readdir(path.join(dir, id))).sort();
+      expect(onDisk).toEqual([...voice!.notes, ...voice!.clips!].map((n) => `${n.id}.${n.kind}`).sort());
+    });
+
+    it("refuses clips without the tick, past the village's count, or for an answer the form does not have, keeping nothing", async () => {
+      const before = await folders();
+      const unticked = await postClips(proposal(), [], [{ name: "why.webm", bytes: WEBM }]);
+      expect(unticked).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
+      const thirteen = Array.from({ length: 13 }, (_, i) => ({ field: i < 12 ? `value-${i + 1}-title` : "why", seconds: 5, words: "" }));
+      const many = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: thirteen } }), [], thirteen.map((c) => ({ name: `${c.field}.webm`, bytes: WEBM })));
+      expect(many).toEqual({ status: 400, body: { error: VOICE_WORDS.tooManyClips(12), field: "voice" } });
+      const odd = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "email", seconds: 5, words: "" }] } }), [], [{ name: "email.webm", bytes: WEBM }]);
+      expect(odd.status).toBe(400);
+      const html = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "aim", seconds: 5, words: "" }] } }), [], [{ name: "aim.webm", bytes: HTML }]);
+      expect(html).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType, field: "voice" } });
+      expect(await folders()).toEqual(before);
+    });
+
+    it("Admin's applications panel plays the main note and each clip to the desk, and to nobody else", async () => {
+      await postClips(proposal(withClips([{ field: "aim", seconds: 12, words: "Seed for all." }])), [{ name: "voice-1.webm", bytes: WEBM }], [{ name: "aim.webm", bytes: WEBM }]);
+      const id = lastId();
+      await q("UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ? WHERE id = ?", [new Date(), id]);
+      state.admin = true;
+      const desk = await fetch(`${base}/api/admin/open-proposals`).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
+      const row = desk.proposals.find((p: any) => p.id === id);
+      expect(row.voice.notes).toHaveLength(1);
+      expect(row.voice.clips).toEqual([expect.objectContaining({ field: "aim", label: "Their aim in this role", seconds: 12, words: "Seed for all." })]);
+      const play = await fetch(`${base}${row.voice.clips[0].href}`); // module-review-ok: a test calling its own local server
+      expect(play.status).toBe(200);
+      expect(Buffer.from(await play.arrayBuffer()).equals(WEBM)).toBe(true);
+      expect(play.headers.get("content-type")).toBe("audio/webm");
+      expect(play.headers.get("cache-control")).toBe("private, no-store");
+      expect((await fetch(`${base}${row.voice.notes[0].href}`)).status).toBe(200); // module-review-ok: a test calling its own local server
+      expect((await fetch(`${base}${row.voice.notes[0].href.replace(/pv-[0-9a-f]+$/, "pv-0000000000000000")}`)).status).toBe(404); // module-review-ok: a test calling its own local server
+      state.admin = false;
+      expect((await fetch(`${base}${row.voice.clips[0].href}`)).status).toBe(401); // module-review-ok: a test calling its own local server
+    });
+
+    it("the tidy job takes the clips with the main note, 90 days after the decision", async () => {
+      await postClips(proposal(withClips([{ field: "why", seconds: 12, words: "" }])), [{ name: "voice-1.webm", bytes: WEBM }], [{ name: "why.webm", bytes: WEBM }]);
+      const id = lastId();
+      await q("UPDATE open_role_proposals SET status = 'adopted', confirmed_at = ?, decided_at = ? WHERE id = ?", [new Date(), new Date(Date.now() - 91 * 24 * 60 * 60_000), id]);
+      await tidyOpenProposals(pool, new Date(), dir);
+      expect((await readOpenProposal(pool, id))?.body.voice).toBeUndefined();
+      expect((await fs.promises.readdir(path.join(dir, id))).filter((f) => f.startsWith("pv-"))).toEqual([]);
+    });
   });
 });

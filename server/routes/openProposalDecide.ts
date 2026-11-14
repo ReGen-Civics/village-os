@@ -102,7 +102,7 @@ import * as store from "../repos/openProposals";
 import { asksFor, type StoredAsk } from "../repos/roleProposals";
 import { PROPOSAL_FILE_ID, PROPOSAL_FILE_TYPES, proposalFileHref } from "../../shared/proposalAttachments";
 import { readProposalFile, readVoiceNote } from "../lib/proposalFiles";
-import { VOICE_NOTE_ID, VOICE_NOTE_TYPES, voiceNoteHref } from "../../shared/voiceNotes";
+import { VOICE_NOTE_ID, VOICE_NOTE_TYPES, clipFieldLabel, voiceNoteHref } from "../../shared/voiceNotes";
 import { seatsWithCircles } from "../repos/seatApplications";
 import { baseOf, deciderOffer, loadSubject, saveOffer } from "../lib/counterOffer";
 import { OFFER_WORDS, openTalks, OFFER_LABELS } from "../../shared/counterOffer";
@@ -344,7 +344,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const pieceSuggestions = decidesIt(may, asks, viewerId) ? (p.body.pieceSuggestions ?? []) : null;
     // Their voice note (Rye, 14 Nov 2026), kept only with their tick: the same gate as the files, never to an AI, gone 90 days after the decision.
     const voice = decidesIt(may, asks, viewerId) && p.body.voice
-      ? { notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, size: n.size, href: voiceNoteHref(p.id, n.id) })), transcript: p.body.voice.transcript }
+      ? {
+          notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, size: n.size, href: voiceNoteHref(p.id, n.id) })),
+          transcript: p.body.voice.transcript,
+          // Clips beside answers (Rye, 14 Nov 2026), each with the answer it belongs to and the words heard while it ran.
+          clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: voiceNoteHref(p.id, c.id) })),
+        }
       : null;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
     // An agent is never offered a person's pay, allowance or commitment (audit B8a), so its page carries no terms.
@@ -481,7 +486,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const p = await found(req, res);
     if (!p) return;
     const noteId = String(req.params.noteId ?? "");
-    const note = VOICE_NOTE_ID.test(noteId) ? (p.body.voice?.notes ?? []).find((n) => n.id === noteId) : undefined;
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(p.body.voice?.notes ?? []), ...(p.body.voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
     const asks = (await asksFor(getPool(), [p.id])).get(p.id) ?? [];
     if (!note || !deps.proposalFileDir || !decidesIt(await deciding(p, viewerId), asks, viewerId)) return res.status(404).json(MISSING);
     const bytes = await readVoiceNote(deps.proposalFileDir, p.id, note);
