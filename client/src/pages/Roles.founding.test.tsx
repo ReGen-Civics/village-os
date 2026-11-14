@@ -436,6 +436,45 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
   });
 });
 
+describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
+  it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Cordon" }] }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    expect(within(section).getByRole("button", { name: "Team sheet" }).getAttribute("aria-pressed")).toBe("true");
+    expect(within(sheet).getAllByText("Open role")).toHaveLength(2);
+    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").textContent).toContain("Human Operations Steward (Rye)"));
+    // Positions, never players: no rating, score or rank anywhere in the team view.
+    expect(section.textContent).not.toMatch(/rating|score|rank/i);
+  });
+  it("names no holder to a reader the village shows no names to (control: the role still shows, filled)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [] }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const filled = await within(section).findByTestId("filled-roles");
+    expect(filled.textContent).toContain("Human Operations Steward");
+    expect(filled.textContent).not.toContain("(");
+  });
+  it("switches to the formation, where each lead stands before the circles the chart says it grows", async () => {
+    org.circles.push({ id: "events", name: "Events circle", purpose: "", status: "proposed", grownFromOrgRoleId: "land" });
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    const formation = within(section).getByTestId("formation");
+    expect(formation.textContent).toContain("Events circle");
+    // Choosing a lead opens its card below, piece by piece.
+    fireEvent.click(within(formation).getByRole("button", { name: /Lead Finance Steward/ }));
+    await waitFor(() => expect(section.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
+  });
+  it("draws no grown circle the chart does not hold (control: nothing invented)", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    expect(within(section).getByTestId("formation").textContent).not.toContain("Grows");
+  });
+});
+
 describe("verify 2.2: the admin view", () => {
   it("a steward sees what a visitor sees, and the unlisted roles behind one switch", async () => {
     founding = { on: false, roleIds: [], sections: {}, showPayRanges: false, villagePay: VILLAGE_PAY };
