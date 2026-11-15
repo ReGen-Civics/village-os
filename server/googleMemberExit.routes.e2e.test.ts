@@ -158,7 +158,9 @@ async function confirmWithGoogle(action: string, who: { sub: string; email: stri
   const name = `village_confirm_${action}`;
   const raw = trip.setCookies.find((c) => c.startsWith(`${name}=`)) ?? "";
   expect(raw, "HttpOnly, so no script on the page can read it").toContain("HttpOnly");
-  expect(raw, "sent only to the routes that spend it").toContain("Path=/api/profile");
+  // Path=/ because a `__Host-` cookie must have it on https (R041). It is HttpOnly
+  // and lives minutes, and only the profile routes ever read it.
+  expect(raw, "Path=/, which a __Host- cookie requires").toContain("Path=/;");
   const value = cookieValue(trip.setCookies, name);
   expect(value).toBeTruthy();
   return value;

@@ -1053,6 +1053,10 @@ describe.skipIf(!DB_CONFIGURED)("a village that joins by invitation, at the Goog
     const res = await fetch(`${BASE}/api/auth/google/start?invite=${encodeURIComponent(invite)}`, { redirect: "manual" }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
     expect(res.status).toBe(302);
     const location = new URL(res.headers.get("location")!);
+    // Keep this start's binder, as the browser would, so `callback` sends it (R215).
+    lastBinder = (res.headers.getSetCookie?.() ?? [])
+      .map((c) => /(?:^|;\s*)village_oauth_bind=([^;]*)/.exec(c)?.[1])
+      .find((v) => v && v.length > 0) ?? "";
     return { state: location.searchParams.get("state")!, nonce: location.searchParams.get("nonce")! };
   }
 
