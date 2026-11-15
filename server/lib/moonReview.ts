@@ -37,7 +37,7 @@ import crypto from "node:crypto";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import {
   APPROVAL_REFUSALS, APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, CONFIRM_OWN_ROUTE_REFUSED, INVOICE_APPROVE_CAPABILITY,
-  LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, WORK_APPROVE_CAPABILITY,
+  LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, SELF_CONFIRMED_WORDS, WORK_APPROVE_CAPABILITY, payChangeConfirmRefusal, payChangeConfirmers,
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
   financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
@@ -541,6 +541,13 @@ async function approveOne(
   if (splitUnconfirmed(linesOf(invoice))) return { refusal: APPROVAL_REFUSALS.splitUnconfirmed };
   // Nor off a Treasurer's proposed amount until a Treasurer has confirmed it, after the member's reply.
   if (adjustUnconfirmed(linesOf(invoice))) return { refusal: ADJUST_REFUSALS.unconfirmed };
+  // A range amount Finance set is confirmed, by this approval, by someone other than who set it,
+  // when two or more may confirm (P1-4, P2-1). With one, they approve their own figure, marked.
+  const rangeSet = linesOf(invoice).some((l) => l.basis === "range" && l.finalMinor !== null);
+  const setters = rangeSet ? (await store.reviewEventsFor(pool, recap.id)).filter((e) => e.kind === "amount_set" && e.actor_user_id).map((e) => String(e.actor_user_id)) : [];
+  const otherSets = payChangeConfirmRefusal(actorId, setters, payChangeConfirmers(holders, recap.userId));
+  if (otherSets) return { refusal: otherSets };
+  const ownRange = setters.includes(actorId);
 
   const items = await store.itemsOf(pool, recap.id);
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
@@ -563,6 +570,7 @@ async function approveOne(
     const total = invoiceTotals(owed.lines)[0];
     await event(conn, { kind: "invoice_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: total?.minor ?? null, currency: total?.currency ?? null, hash, selfApproved: decision.selfApproved });
     if (decision.selfApproved) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_APPROVED_WORDS });
+    if (ownRange) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_CONFIRMED_WORDS });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);
@@ -687,8 +695,16 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
   if (!lines.every(splitHolds)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
   // The same for a proposed amount (Rye, 14 Nov 2026): one Confirm covers both, and changes no amount.
   if (lines.some((l) => l.adjust && l.adjust.adjustedMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
+  // A proposed amount is confirmed by someone other than its proposer when two or more may confirm (P1-4, P2-1).
+  const proposers = lines.flatMap((l) => (l.adjust ? [l.adjust.proposedBy] : []));
+  const confirmers = payChangeConfirmers(await approverPool(deps.keyHolders), invoice.userId);
+  const other = payChangeConfirmRefusal(actorId, proposers, confirmers);
+  if (other) return refuse(403, other);
+  const alone = proposers.includes(actorId);
   const at = now().toISOString();
-  const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at);
+  const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at).map((l) =>
+    alone && l.adjust && l.adjust.proposedBy === actorId ? { ...l, adjust: { ...l.adjust, confirmedAlone: true as const } } : l,
+  );
   const scaled = invoiceTotals(confirmed)[0];
   const conn = await pool.getConnection();
   try {
@@ -696,7 +712,7 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
     // Only the lines read above: a resend or a proposal in between leaves nothing stamped (QA F2).
     if ((await store.setInvoiceLinesIfUnchanged(conn, invoice.id, invoice.linesJson, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("moved");
     if (hasSplit) await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
-    if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
+    if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null, ...(alone ? { selfApproved: true, note: SELF_CONFIRMED_WORDS } : {}) });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);

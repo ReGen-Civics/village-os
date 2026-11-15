@@ -1448,8 +1448,25 @@ export interface LineSplit {
    * there (Rye, 15 Nov 2026). The Treasurer sees it and still confirms the line.
    */
   capped?: true;
+  /**
+   * Set when the member's split changed during the moon (Rye, 15 Nov 2026,
+   * P1-3): each split's days, from its first day in the moon, and what it gave
+   * this line. The amount is weighted by those days, never the last day's split
+   * alone; `givenPct` and `sharePct` above are then the day-weighted figures.
+   */
+  periods?: SplitDays[];
   confirmedBy: string | null;
   confirmedAt: string | null;
+}
+
+/** One stretch of a moon under one split, as a line reads it. */
+export interface SplitDays {
+  fromDay: string;
+  days: number;
+  /** What this split gave the line, as a part of the whole person; null when no split applied on those days (pay was the terms). */
+  givenPct: number | null;
+  /** This stretch's part of the line's amount: its scaled pay for its days, rounded on its own. */
+  scaledMinor: number;
 }
 
 export const SPLIT_PAY_WORDS = {
@@ -1461,6 +1478,8 @@ export const SPLIT_PAY_WORDS = {
   capped: `Capped at ${ROLE_PAY_CAP_PCT}%`,
   cappedNote: `The split gave this role more time than it was priced at, so it pays ${ROLE_PAY_CAP_PCT}% of its terms, the most a role pays.`,
   scaled: "After the split",
+  weighted: (n: number) => `weighted by the days each of your ${n} splits held this moon`,
+  periodLine: (fromDay: string, days: number, givenPct: number | null) => (givenPct === null ? `From ${fromDay}, ${days} days at the terms` : `From ${fromDay}, ${days} days at ${givenPct}%`),
   waiting: "A Treasurer confirms the split before this is paid.",
   confirmed: "The split is confirmed.",
   confirm: "Confirm the split",
@@ -1554,6 +1573,54 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
       amountMinor: scaledMinor,
       basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}: ${moneyWords(scaledMinor, l.currency)}${capped ? `, ${SPLIT_PAY_WORDS.capped.toLowerCase()}` : ""}`,
       split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, ...(capped ? { capped: true as const } : {}), confirmedBy: null, confirmedAt: null },
+    };
+  });
+}
+
+/** One stretch of a moon under one word: the split and its total from `fromDay`, for `days` days. */
+export interface SplitPeriod {
+  fromDay: string;
+  days: number;
+  split: RoleSplitShare[] | null;
+  givenPct: number | null;
+}
+
+/**
+ * SCALE PAY BY EVERY SPLIT THE MOON HELD, WEIGHTED BY ITS DAYS (Rye, 15 Nov
+ * 2026, P1-3). A member who changes their split mid-moon is paid each split
+ * for the days it was in place, never the last day's split for the whole moon:
+ *
+ *   scaled = sum over the splits of (that split's scaled amount x its days) / the moon's days
+ *
+ * Each stretch is scaled by `scaleBySplit`, so every fail-closed rule and the
+ * cap hold per stretch, and a stretch with no split that applies pays the
+ * terms for its days. Rounded once, at the end. With one stretch this is
+ * `scaleBySplit` exactly. A Treasurer still confirms every scaled line.
+ */
+export function scaleBySplitDays(lines: readonly InvoiceLine[], periods: readonly SplitPeriod[], heldRoleIds: readonly string[], pricedPct: Readonly<Record<string, number>>): InvoiceLine[] {
+  const live = periods.filter((p) => p.days > 0);
+  if (live.length === 0) return lines.map((l) => ({ ...l }));
+  if (live.length === 1) return scaleBySplit(lines, live[0].split, heldRoleIds, { totalPct: live[0].givenPct, pricedPct });
+  const each = live.map((p) => scaleBySplit(lines, p.split, heldRoleIds, { totalPct: p.givenPct, pricedPct }));
+  const totalDays = live.reduce((n, p) => n + p.days, 0);
+  return lines.map((l, i) => {
+    const scaled = each.map((e) => e[i]);
+    if (!scaled.some((x) => x.split) || l.amountMinor === null || !l.currency) return { ...l };
+    const exact = scaled.reduce((n, x, k) => n + (x.amountMinor ?? 0) * live[k].days, 0) / totalDays;
+    const scaledMinor = Math.round(exact);
+    const pricedPct = scaled.find((x) => x.split)!.split!.pricedPct as number;
+    const tenth = (n: number) => Math.round(n * 10) / 10;
+    // A stretch at the terms gave the line its priced commitment.
+    const givenPct = tenth(scaled.reduce((n, x, k) => n + (x.split?.givenPct ?? pricedPct) * live[k].days, 0) / totalDays);
+    const splitDays = scaled.reduce((n, x, k) => n + (x.split ? live[k].days : 0), 0);
+    const sharePct = tenth(scaled.reduce((n, x, k) => n + (x.split ? x.split.sharePct * live[k].days : 0), 0) / splitDays);
+    const capped = scaled.some((x) => x.split?.capped);
+    const periodsOut: SplitDays[] = live.map((p, k) => ({ fromDay: p.fromDay, days: p.days, givenPct: scaled[k].split?.givenPct ?? null, scaledMinor: Math.round(((scaled[k].amountMinor ?? 0) * p.days) / totalDays) }));
+    return {
+      ...l,
+      amountMinor: scaledMinor,
+      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}, ${SPLIT_PAY_WORDS.weighted(live.length)}: ${moneyWords(scaledMinor, l.currency)}${capped ? `, ${SPLIT_PAY_WORDS.capped.toLowerCase()}` : ""}`,
+      split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, ...(capped ? { capped: true as const } : {}), periods: periodsOut, confirmedBy: null, confirmedAt: null },
     };
   });
 }
@@ -1856,7 +1923,32 @@ export const APPROVAL_REFUSALS = {
   noSplit: "Nothing on this invoice is scaled by a split.",
   ownConfirm: "Nobody confirms their own pay. Another person holding the cash power confirms it.",
   amountsChanged: "An amount on this invoice changed after you read it. Open it again, check each amount, then confirm.",
+  otherConfirms: "Someone other than the person who changed this amount confirms it.",
 } as const;
+
+/** What the line, the event and the desk say when the one person who could confirm a change confirmed their own. */
+export const SELF_CONFIRMED_WORDS = "Confirmed by the person who changed it, the only one who could";
+
+/**
+ * WHO MAY CONFIRM A CHANGE TO A MEMBER'S PAY (Rye, 15 Nov 2026, P1-4 and P2-1):
+ * every live holder of the cash power, and every holder of approve-alone
+ * ("founders and stewards hold that power too until they give it away"),
+ * never the member themselves.
+ */
+export function payChangeConfirmers(pool: Pick<ApproverPool, "pay" | "alone">, memberUserId: string): string[] {
+  return Array.from(new Set([...pool.pay, ...pool.alone])).filter((u) => u !== memberUserId);
+}
+
+/**
+ * A changed amount (a Treasurer's proposed amount, or a range amount Finance
+ * set) is confirmed by someone other than whoever changed it, when two or more
+ * people may confirm. With only one, they confirm their own change, and it is
+ * marked (`SELF_CONFIRMED_WORDS`). Null when this confirm may stand.
+ */
+export function payChangeConfirmRefusal(actorId: string, changedBy: readonly string[], confirmers: readonly string[]): string | null {
+  if (!changedBy.includes(actorId)) return null;
+  return confirmers.length >= 2 ? APPROVAL_REFUSALS.otherConfirms : null;
+}
 
 export const FINANCE_REFUSALS = {
   unconfirmed: "The pay route is not confirmed yet. Another person holding the cash power confirms it.",
