@@ -24,6 +24,18 @@ import { sourceHash, translationsFor, type ContentTranslationRow } from "../repo
 
 export const LOCALE_HEADER = "x-village-locale";
 
+/**
+ * A swapped answer differs by the reader's language, so no cache may hand one
+ * reader's language to another: never stored (`no-store`), and keyed on the
+ * header for any cache that keys at all (`Vary`). Docs/PROVISIONING.md §9b's
+ * Cloudflare rule caches only `/api/i18n/catalog/.../part/` and passes the
+ * rest of `/api/` through, so it never sees these.
+ */
+export function noSharedCache(res: { set: (k: string, v: string) => unknown }): void {
+  res.set("Cache-Control", "no-store");
+  res.set("Vary", "X-Village-Locale");
+}
+
 /** The locale a reader asked for, when it is one this village translates into. Null reads the English. */
 export function readerLocale(req: { get?: (h: string) => string | undefined; headers?: Record<string, unknown> }): string | null {
   const raw = req.get ? req.get(LOCALE_HEADER) : (req.headers?.[LOCALE_HEADER] as string | undefined);
