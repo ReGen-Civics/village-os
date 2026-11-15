@@ -9,21 +9,27 @@
  * The Treasurer's desk adds `ProposeAmount`: an amount for one pay line and a
  * reason the member reads. `AdjustBreakdown` shows a proposal on its line.
  */
-import { useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { exponentOf } from "@shared/money";
 import { ACCOMPLISHED_WORDS, adjustableLine, type AccomplishedView, type LineAdjust } from "@shared/accomplishedReview";
 import type { InvoiceLine } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import { Amount, ERROR, INPUT, LABEL, SMALL_BTN, useRoomView } from "./moonUi";
 
-export function AccomplishedBlock({ view }: { view: AccomplishedView }) {
+/**
+ * `level` is the block title's heading level, one below the heading it sits
+ * under: the member's invoice panel titles its parts with h4, and the Finance
+ * desk names each member with an h4, so the block is h5 there (a11y P2-15).
+ */
+export function AccomplishedBlock({ view, level = 5 }: { view: AccomplishedView; level?: 4 | 5 }) {
   const W = ACCOMPLISHED_WORDS;
+  const Heading = level === 4 ? "h4" : "h5";
   const room = useRoomView();
   const roles = view.tasks.byRole.filter((r) => r.count > 0).map((r) => `${r.name} ${r.count}`);
   if (view.tasks.outside > 0) roles.push(`${W.outside} ${view.tasks.outside}`);
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border p-3" data-testid="accomplished">
-      <p className="m-0 text-sm font-semibold text-foreground">{W.heading}</p>
+      <Heading className="m-0 text-sm font-semibold text-foreground">{W.heading}</Heading>
       <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
         <dt className="text-muted-foreground">{W.agreed}</dt>
         <dd className="m-0 text-foreground">
@@ -92,12 +98,26 @@ export function ProposeAmount({ invoiceId, lines, init, onDone }: { invoiceId: s
   const [figure, setFigure] = useState("");
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // An amount that is not a figure is the amount field's own error, tied to it (a11y P2-15).
+  const [amountBad, setAmountBad] = useState(false);
+  const amountRef = useRef<HTMLInputElement>(null);
+  const errorId = useId();
+  // Opening the form moves focus to the amount, so it never drops to the page (a11y P2-15).
+  useEffect(() => {
+    if (open) amountRef.current?.focus();
+  }, [open]);
   if (payLines.length === 0) return null;
   const line = payLines.find((l) => l.applicationId === app) ?? payLines[0];
   const send = async (withdraw: boolean) => {
     setError(null);
+    setAmountBad(false);
     const amountMinor = withdraw ? null : minorOf(figure, line.currency as string);
-    if (!withdraw && amountMinor === null) return setError(W.amount);
+    if (!withdraw && amountMinor === null) {
+      setAmountBad(true);
+      setError(W.amount);
+      amountRef.current?.focus();
+      return;
+    }
     const r = await api.adjustPay(invoiceId, { applicationId: line.applicationId, amountMinor, reason: reason.trim() }, init);
     if (!r.ok) return setError(r.error);
     await onDone();
@@ -115,7 +135,15 @@ export function ProposeAmount({ invoiceId, lines, init, onDone }: { invoiceId: s
       ) : <p className="m-0 text-sm font-medium text-foreground">{line.roleNames.join(", ")}</p>}
       <label className={LABEL}>
         {W.amount} ({line.currency})
-        <input inputMode="decimal" value={figure} onChange={(e) => setFigure(e.target.value)} className={INPUT} />
+        <input
+          ref={amountRef}
+          inputMode="decimal"
+          value={figure}
+          onChange={(e) => setFigure(e.target.value)}
+          className={INPUT}
+          aria-invalid={amountBad || undefined}
+          aria-describedby={error ? errorId : undefined}
+        />
       </label>
       <label className={LABEL}>
         {W.reason}
@@ -125,7 +153,7 @@ export function ProposeAmount({ invoiceId, lines, init, onDone }: { invoiceId: s
         <button type="button" className={SMALL_BTN} disabled={!reason.trim() || !figure.trim()} onClick={() => void send(false)}>{W.send}</button>
         {line.adjust ? <button type="button" className={SMALL_BTN} disabled={!reason.trim()} onClick={() => void send(true)}>{W.withdraw}</button> : null}
       </div>
-      {error ? <p role="alert" className={ERROR}>{error}</p> : null}
+      {error ? <p id={errorId} role="alert" className={ERROR}>{error}</p> : null}
     </div>
   );
 }
