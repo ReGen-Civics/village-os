@@ -1274,6 +1274,15 @@ export interface CapabilityCtx {
   roleCapabilities: readonly string[];
   /** Capabilities granted by the member's active badges. Default []. */
   badgeCapabilities?: readonly string[];
+  /**
+   * The part of `badgeCapabilities` that comes from awards a VILLAGE VOTE made
+   * (a carried `badge_grant` ballot stamps its award; R157). On a key the
+   * village holds, step 4 reads only this list: an award an administrator or
+   * the earned engine made before the handover stops carrying the power the
+   * moment the village takes it on, because moving a power the village holds
+   * is the village's decision. Absent reads as none, so it fails closed.
+   */
+  badgeVoteCapabilities?: readonly string[];
   /** Capabilities DENIED by active warning badges. Default []. */
   badgeDenies?: readonly string[];
   isAdmin?: boolean;
@@ -1361,7 +1370,8 @@ export interface CapabilityDecision {
  *   3. roleCapabilities  -> true.  Appointments.
  *   4. badgeCapabilities -> true.  Earned/granted badges, ON A KEY
  *      `BADGE_GRANTABLE` lets a badge reach. A badge naming the steward's
- *      seat grants nothing (Rye, 2026-09-23: seats only).
+ *      seat grants nothing (Rye, 2026-09-23: seats only). On a key the
+ *      village holds, only an award a village vote made counts (R157).
  *   5. stage unlock      -> true.  The ladder everyone climbs.
  *   6. otherwise false.
  *
@@ -1509,7 +1519,10 @@ export function capabilityDecision(cap: Capability, ctx: CapabilityCtx): Capabil
   // check is FIRST in the condition so the ungrantable key is refused before
   // the row is even consulted: there is no state of the badge table that
   // makes this step answer yes for the steward's seat.
-  if (isBadgeGrantable(cap) && (ctx.badgeCapabilities ?? []).includes(cap)) return decided(true, "badge");
+  // On a key the village holds, only an award a village vote made counts
+  // (R157): an award from before the handover does not keep the power.
+  const badgeGrants = villageHolds ? (ctx.badgeVoteCapabilities ?? []) : (ctx.badgeCapabilities ?? []);
+  if (isBadgeGrantable(cap) && badgeGrants.includes(cap)) return decided(true, "badge");
   const unlockStage = ctx.stageUnlockOverrides?.[cap] ?? STAGE_UNLOCKS[cap];
   if (unlockStage && unlockStage !== "none") {
     const needed = ctx.stageIndexOf(unlockStage);

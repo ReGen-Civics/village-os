@@ -3140,6 +3140,7 @@ const holderReads: HolderReads = {
   badgeRows: () => badgeCapabilityRows(getPool()),
   roleHolders: loadPowerHoldings,
   roles: loadRoles,
+  villageHeld: () => villageHeldCapabilities(getPool()),
 };
 const liveHoldersOf = (capability: string): Promise<string[]> => liveHoldersNow(holderReads, capability);
 const powerAssignGate = makePowerAssignGate({ authedUser, capabilityCtx, liveHoldersOf });
@@ -3162,6 +3163,7 @@ async function capabilityCtx(user: any) {
   // badges module is on. Off = zero queries, zero effect: the gate is
   // byte-identical to its pre-badges self.
   let badgeCapabilities: string[] = [];
+  let badgeVoteCapabilities: string[] = [];
   let badgeDenies: string[] = [];
   if (effectiveLifecycle("badges") !== "off") {
     // 0050: a badge declared `seasonal` grants nothing while its season is
@@ -3170,6 +3172,7 @@ async function capabilityCtx(user: any) {
     // enforces on its own side.
     const grants = await badgeGrantsFor(getPool(), user.id, await dormantBadgeIds());
     badgeCapabilities = grants.capabilities;
+    badgeVoteCapabilities = grants.voteCapabilities;
     badgeDenies = grants.denies;
   }
   return {
@@ -3177,6 +3180,8 @@ async function capabilityCtx(user: any) {
     stageIndexOf: stageIndex,
     roleCapabilities: agent ? [] : roleCapabilitiesFor(user.id),
     badgeCapabilities: agent ? [] : badgeCapabilities,
+    // R157: on a key the village holds, only an award a vote made counts.
+    badgeVoteCapabilities: agent ? [] : badgeVoteCapabilities,
     badgeDenies,
     stageUnlockOverrides: stageUnlockOverridesFromVars(),
     // Admins pass every capability gate (shared/capabilities.ts honors this):
