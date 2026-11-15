@@ -8110,8 +8110,8 @@ msgstr ""
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor, qualities hint, the focus line"
-msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
-msgstr "Escribe {FOCUS_TOKEN} en una línea propia para decir cuánta dedicación pide el rol: la tarjeta dice que es su trabajo principal desde {FOCUS_MAIN_WORK_PCT}% y una parte principal de su trabajo por debajo."
+msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card picks the words for the commitment it shows, in steps from 10% to 100%."
+msgstr "Escribe {FOCUS_TOKEN} en una línea propia para decir cuánta dedicación pide el rol: la tarjeta elige las palabras para el compromiso que muestra, en pasos del 10% al 100%."
 
 #: client/src/components/openWork/statusWords.ts
 msgctxt "open work board: status mark, a quest done this moon"
@@ -14370,13 +14370,6 @@ msgctxt "role card fact: a role offered whole"
 msgid "Full commitment (100%)"
 msgstr "Compromiso completo (100%)"
 
-# needs-native-review: new words, 12 Nov 2026
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/focusLine.ts
-msgctxt "role card quality, 60% and above"
-msgid "Fully focused: {village} is your main work"
-msgstr "Plena dedicación: {village} es tu trabajo principal"
-
 #: client/src/components/Layout.tsx
 #, fuzzy
 #~ msgid "Close menu"
@@ -14924,12 +14917,6 @@ msgstr "y"
 msgctxt "time zone field"
 msgid "Save"
 msgstr "Guardar"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/focusLine.ts
-msgctxt "role card quality, below 60%"
-msgid "Focused: {village} is a main part of your work"
-msgstr "Dedicación: {village} es una parte principal de tu trabajo"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -16965,3 +16952,39 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 10%"
+msgid "On your mind: {village} gets a dedicated work block once a week"
+msgstr "En tu mente: {village} recibe un bloque de trabajo dedicado una vez por semana"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 30%"
+msgid "Steady: {village} gets about a day and a half of your week"
+msgstr "Constante: {village} recibe alrededor de un día y medio de tu semana"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 50%"
+msgid "Focused: {village} is a main part of your work, about half your week"
+msgstr "Dedicación: {village} es una parte principal de tu trabajo, cerca de la mitad de tu semana"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 60%"
+msgid "Fully focused: {village} is your main work"
+msgstr "Plena dedicación: {village} es tu trabajo principal"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 80%"
+msgid "Deeply committed: {village} is your main work, about four days a week"
+msgstr "Compromiso profundo: {village} es tu trabajo principal, unos cuatro días por semana"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, 100%"
+msgid "All in: {village} is your full-time work"
+msgstr "Entrega total: {village} es tu trabajo de tiempo completo"
