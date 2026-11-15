@@ -7,13 +7,15 @@
  * pay.
  */
 import { useLingui } from "@lingui/react/macro";
-import type { PayAsk } from "@shared/commitmentRange";
+import { priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
 export interface CommitmentReviewData {
   pct: number | null;
   ask: PayAsk | null;
+  /** How many changes they suggested to the role card. */
+  suggestionCount?: number;
   roles: Array<{ roleId: string; full: PayCeiling | null; atCommitment: number | null; heldPct: number; targetPct: number; withThisPct: number }>;
 }
 
@@ -37,13 +39,37 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <dd className="mt-0.5 font-display text-2xl text-foreground" data-commitment-pct="">{data.pct !== null ? `${data.pct}%` : t({ message: "Not chosen", context: "open proposal: commitment" })}</dd>
         </div>
         <div>
-          <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their ask", context: "open proposal: the pay ask" })}</dt>
+          <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their price", context: "open proposal: the pay ask" })}</dt>
           <dd className="mt-0.5 text-foreground" data-pay-ask-shown="">
             {askWords ??
               (data.ask?.kind === "amount" ? t({ message: `${moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")} a month`, context: "open proposal: the pay ask, an amount" }) : "")}
           </dd>
         </div>
       </dl>
+      {(() => {
+        // Suggested, proposed and the difference, in plain numbers (Rye, 14 Nov 2026). Nothing judges the price.
+        const r = data.roles.find((x) => x.full && x.atCommitment !== null);
+        if (!r || !r.full || r.atCommitment === null || data.ask?.kind !== "amount") return null;
+        const diff = priceDifferencePct(r.atCommitment, data.ask.monthly);
+        return (
+          <p className="text-sm text-foreground" data-price-compare="">
+            {t({ message: `Suggested ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per}; they propose ${moneyWords(data.ask.monthly, r.full.currency)} (${signedPct(diff ?? 0)}).${data.ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""}`, context: "open proposal: suggested and proposed price" })}
+          </p>
+        );
+      })()}
+      {data.ask?.why && (
+        <div data-price-why="">
+          <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Why this price", context: "open proposal: the pay ask" })}</p>
+          <p className="mt-0.5 whitespace-pre-wrap break-words text-foreground">{data.ask.why}</p>
+        </div>
+      )}
+      {(data.suggestionCount ?? 0) > 0 && (
+        <p className="text-sm text-muted-foreground" data-suggestion-count="">
+          {data.suggestionCount === 1
+            ? t({ message: "They suggested 1 change to the role card.", context: "open proposal: suggestions count, one" })
+            : t({ message: `They suggested ${data.suggestionCount} changes to the role card.`, context: "open proposal: suggestions count, several" })}
+        </p>
+      )}
       <ul className="grid gap-2">
         {data.roles.map((r) => {
           const name = roles.find((x) => x.id === r.roleId)?.name ?? r.roleId;
@@ -62,7 +88,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           );
         })}
       </ul>
-      <p className="text-xs text-muted-foreground">{t({ message: "The contract sets the pay, at or under what the role pays at their commitment.", context: "open proposal: commitment footnote" })}</p>
+      <p className="text-xs text-muted-foreground">{t({ message: "The contract sets the pay. As a contractor they may propose more or less than the suggested price.", context: "open proposal: commitment footnote" })}</p>
     </section>
   );
 }

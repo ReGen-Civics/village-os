@@ -905,7 +905,7 @@ export default function ProposeARole() {
               {heading(3)}
               <section aria-label={labels[3]} tabIndex={-1} className="grid scroll-mt-24 gap-4 outline-none" data-terms-section="">
                 <TermsEight
-                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null }]}
+                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null, suggestions: pieceSuggestions.length }]}
                   value={termsStep}
                   onChange={setTermsStep}
                   problem={problemOn("terms")}
