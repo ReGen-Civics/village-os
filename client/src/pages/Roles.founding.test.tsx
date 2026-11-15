@@ -13,7 +13,7 @@
  *     visitor sees, and the rest behind one switch.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
@@ -618,5 +618,53 @@ describe("verify 2.2: the admin view", () => {
     fireEvent.click(await screen.findByRole("button", { name: "See all roles" }));
     await screen.findByRole("heading", { level: 3, name: "Lead Finance Steward" });
     expect(screen.queryByRole("checkbox", { name: /roles visitors do not see/ })).toBeNull();
+  });
+});
+
+describe("a founding team that would not load (performance QA sweep, resilience P2-6)", () => {
+  it("says so with a way to ask again, instead of silently dropping the founding team", async () => {
+    let tries = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+        if (u === "/api/org") return reply(org);
+        if (u === "/api/org/founding-team") {
+          tries += 1;
+          return tries === 1 ? reply({ error: "boom" }, 500) : reply(founding);
+        }
+        if (u === "/api/season") return reply({ current: null });
+        return reply([], 404);
+      }),
+    );
+    renderRoles();
+    expect(await screen.findByText("We couldn't load the founding team just now.")).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "Join the founding team" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("region", { name: "Join the founding team" })).toBeTruthy();
+    expect(screen.queryByText("We couldn't load the founding team just now.")).toBeNull();
+    expect(tries).toBe(2);
+  });
+
+  it("shows a loading line while the founding team is on its way, and no notice for a team that is simply off (control)", async () => {
+    let answer: (v: unknown) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+        if (u === "/api/org") return reply(org);
+        if (u === "/api/org/founding-team") return new Promise((done) => { answer = () => done(reply({ on: false, roleIds: [] })); });
+        if (u === "/api/season") return reply({ current: null });
+        return reply([], 404);
+      }),
+    );
+    renderRoles();
+    const status = document.querySelector("[data-founding-status]") as HTMLElement;
+    await waitFor(() => expect(status.textContent).toContain("Loading roles"));
+    await act(async () => answer(null));
+    await waitFor(() => expect(status.textContent).toBe(""));
+    expect(screen.queryByText("We couldn't load the founding team just now.")).toBeNull();
   });
 });

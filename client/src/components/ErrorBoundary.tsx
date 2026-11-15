@@ -1,8 +1,8 @@
-import { isChunkLoadError, reloadOnceForStaleChunk } from "@/lib/staleChunk";
+import { isChunkLoadError, isOnline, reloadOnceForStaleChunk } from "@/lib/staleChunk";
 import { cn } from "@/lib/utils";
 import { Trans } from "@lingui/react/macro";
 import { AlertTriangle, RotateCcw } from "lucide-react";
-import { Component, ReactNode } from "react";
+import { Component, ReactNode, useState } from "react";
 
 interface Props {
   children: ReactNode;
@@ -19,6 +19,8 @@ interface State {
    */
   stale?: boolean;
   reloading?: boolean;
+  /** The chunk failed while the browser was offline: no reload, the offline card (resilience P2-4). */
+  offline?: boolean;
 }
 
 /**
@@ -26,6 +28,41 @@ interface State {
  * did not bring it back on its own. Plain words and one button; the link is
  * for the rare device that stays stuck (pages/Reset.tsx).
  */
+/**
+ * THE OFFLINE CARD. A page chunk that failed while the browser was offline is
+ * not an old build, so nothing reloads (a reload would land on the browser's
+ * own offline page). The member reconnects and taps try again; the boundary is
+ * keyed on the address, so going back also brings the last page back.
+ */
+export function OfflineCard() {
+  const [stillOffline, setStillOffline] = useState(false);
+  return (
+    <div className="relative sheet-night flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <div className="flex w-full max-w-md flex-col items-center rounded-2xl border border-border bg-card p-6 text-center shadow-sm sm:p-8">
+        <h2 role="alert" className="font-display text-2xl font-bold text-card-foreground mb-3">
+          <Trans context="offline card: the device has no connection">You're offline</Trans>
+        </h2>
+        <p className="text-base leading-relaxed text-muted-foreground mb-6">
+          <Trans>We'll keep your answers. When you're back online, tap try again.</Trans>
+        </p>
+        <button
+          type="button"
+          onClick={() => (isOnline() ? window.location.reload() : setStillOffline(true))}
+          className="jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-notice px-5 py-2 font-semibold text-background hover:bg-notice/90 cursor-pointer"
+        >
+          <RotateCcw size={16} aria-hidden="true" />
+          <Trans context="offline card: load the page again">Try again</Trans>
+        </button>
+        {stillOffline && (
+          <p role="status" className="mt-4 text-sm text-muted-foreground">
+            <Trans>Still offline. Check your connection.</Trans>
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function StaleBuildCard() {
   return (
     <div className="relative sheet-night flex min-h-screen items-center justify-center bg-background px-4 py-10">
@@ -63,11 +100,16 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     // One reload for a page that outlived a deploy; the card if that already happened.
-    if (isChunkLoadError(error)) this.setState({ reloading: reloadOnceForStaleChunk() });
+    // Offline, a missing chunk is the connection, not the build: no reload, the offline card.
+    if (isChunkLoadError(error)) {
+      if (!isOnline()) this.setState({ reloading: false, offline: true });
+      else this.setState({ reloading: reloadOnceForStaleChunk() });
+    }
   }
 
   render() {
     if (this.state.hasError && this.state.stale) {
+      if (this.state.offline) return <OfflineCard />;
       // While the reload happens, the plain ground: a card flashing for a
       // moment before the page goes away would only alarm.
       if (this.state.reloading !== false) return <div className="min-h-screen bg-background" />;

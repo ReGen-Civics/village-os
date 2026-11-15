@@ -15,7 +15,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ModuleProvider } from "./modules/ModuleProvider";
 import { chooseLanding, getPreference, recordVisit, wasMapAvailable } from "./lib/landing";
 import { brochurePage, storyPageShown, useBrochurePages } from "./lib/brochure";
-import { useGameConfig } from "./lib/gameApi";
+import { useConfigFailed, useGameConfig } from "./lib/gameApi";
+import ConfigUnavailable from "./components/ConfigUnavailable";
 import { LocaleRoot } from "@/i18n/LocaleRoot";
 
 /**
@@ -49,16 +50,19 @@ function useLanding(): "home" | "map" {
  * The brochure home belongs to the brochure pages (shared/brochure.ts): a
  * village that serves them gets it, and every other village gets the neutral
  * welcome page. Nothing renders until the switch is known, so neither one
- * flashes on the other's village.
+ * flashes on the other's village, and when the config could not be read at
+ * all the "try again" card stands in for the blank (resilience P1-1).
  */
 function LandingRoute() {
   const landing = useLanding();
   const brochure = useBrochurePages();
+  const configFailed = useConfigFailed();
   const [, navigate] = useLocation();
   useEffect(() => {
     if (landing === "map") navigate("/map", { replace: true });
   }, [landing, navigate]);
-  if (landing !== "home" || brochure === null) return null;
+  if (landing !== "home") return null;
+  if (brochure === null) return configFailed ? <ConfigUnavailable /> : null;
   return brochure ? <Home /> : <VillageWelcome />;
 }
 

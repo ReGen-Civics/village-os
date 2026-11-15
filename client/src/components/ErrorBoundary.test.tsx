@@ -5,7 +5,7 @@
  * ordinary error page.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { i18n } from "@lingui/core";
 import { I18nProvider } from "@lingui/react";
 import ErrorBoundary from "./ErrorBoundary";
@@ -66,5 +66,27 @@ describe("ErrorBoundary and a page that outlived a deploy", () => {
     mount(new Error("something else"));
     expect(reload).not.toHaveBeenCalled();
     expect(screen.getByRole("alert").textContent).toContain("This page didn't load");
+  });
+});
+
+describe("a chunk that fails while offline (performance QA sweep, resilience P2-4)", () => {
+  it("does not reload, and says the device is offline instead of claiming an update", () => {
+    const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false);
+    mount(stale());
+    expect(reload).not.toHaveBeenCalled();
+    expect(window.sessionStorage.getItem(RELOAD_MARKER)).toBeNull();
+    expect(screen.getByRole("alert").textContent).toBe("You're offline");
+    expect(screen.getByText("We'll keep your answers. When you're back online, tap try again.")).toBeTruthy();
+    expect(screen.queryByText("We just updated the site")).toBeNull();
+
+    // Still offline: the button says so and reloads nothing.
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(reload).not.toHaveBeenCalled();
+    expect(screen.getByRole("status").textContent).toBe("Still offline. Check your connection.");
+
+    // Back online: the same button loads the page again.
+    online.mockReturnValue(true);
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 });

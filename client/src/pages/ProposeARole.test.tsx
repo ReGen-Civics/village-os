@@ -1086,3 +1086,36 @@ describe("design G2: the desk and the panes", () => {
     expect(paneNow()).toBe(2);
   });
 });
+
+describe("a form that would not load (performance QA sweep, resilience P2-6)", () => {
+  it("a 500 says the page did not load, with a way to ask again, never \"Not open right now\"", async () => {
+    let tries = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (String(url).startsWith("/api/open-proposals/form")) {
+          tries += 1;
+          if (tries === 1) return new Response(JSON.stringify({ error: "boom" }), { status: 500, headers: { "content-type": "application/json" } });
+          return new Response(JSON.stringify(FORM), { status: 200, headers: { "content-type": "application/json" } });
+        }
+        if (String(url).startsWith("/api/membership-letter")) return new Response(JSON.stringify(LETTER), { status: 200, headers: { "content-type": "application/json" } });
+        return new Response(JSON.stringify({ alignments: [] }), { status: 200, headers: { "content-type": "application/json" } });
+      }),
+    );
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate");
+    render(<ProposeARole />);
+    expect((await screen.findByRole("alert")).textContent).toMatch(/didn't load/);
+    expect(screen.queryByText("Not open right now")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await screen.findByRole("heading", { level: 1, name: /^Apply: / });
+    expect(tries).toBe(2);
+  });
+
+  it("a village that closed it still says so (control)", async () => {
+    serve({ open: false, message: "Closed until spring." });
+    window.history.pushState({}, "", "/propose-a-role");
+    render(<ProposeARole />);
+    expect(await screen.findByText("Not open right now")).toBeTruthy();
+    expect(screen.getByText("Closed until spring.")).toBeTruthy();
+  });
+});

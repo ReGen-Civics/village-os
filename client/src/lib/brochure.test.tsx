@@ -19,8 +19,12 @@ import { Route, Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
 const config = { current: null as null | { brochurePages?: boolean; brochureHidden?: string[] } };
+// `failed`: every try at the config failed (lib/gameApi.ts, resilience P1-1).
+const configFailed = { current: false };
 vi.mock("@/lib/gameApi", () => ({
   useGameConfig: () => config.current,
+  useConfigFailed: () => configFailed.current,
+  retryGameConfig: async () => null,
 }));
 // Who is signed in, for the member's door (the Love Letter). Undefined is no auth provider at all, as before.
 const auth = { current: undefined as undefined | { user: null | { id: string }; loading: boolean } };
@@ -40,12 +44,22 @@ function mount(loader: () => Promise<{ default: () => ReactElement }>) {
 describe("a brochure page", () => {
   beforeEach(() => {
     config.current = null;
+    configFailed.current = false;
   });
 
   it("renders nothing while the switch is unknown, and loads no page code", () => {
     const loader = vi.fn(async () => ({ default: () => <h1>The first village's story</h1> }));
     const { container } = mount(loader);
     expect(container.textContent).toBe("");
+    expect(loader).not.toHaveBeenCalled();
+  });
+
+  it("shows the try-again card, never a blank page, once the config could not be read (resilience P1-1)", () => {
+    configFailed.current = true;
+    const loader = vi.fn(async () => ({ default: () => <h1>The first village's story</h1> }));
+    mount(loader);
+    expect(screen.getByText("We couldn't reach the village just now")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
     expect(loader).not.toHaveBeenCalled();
   });
 

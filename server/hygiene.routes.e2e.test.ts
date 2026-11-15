@@ -302,8 +302,9 @@ describe.skipIf(!DB_CONFIGURED)("a path that looks like a file fails like one", 
     }
   });
 
-  it("answers 404 for a missing file, never the shell with a 200", async () => {
+  it("answers 404 for a missing file, never the shell with a 200, and never cacheable", async () => {
     for (const route of [
+      "/assets/index-zzz-previous-build.js",
       "/images/modules/zzz-does-not-exist.webp",
       "/images/avatars/zzz-does-not-exist.webp",
       "/images/nope",
@@ -314,6 +315,8 @@ describe.skipIf(!DB_CONFIGURED)("a path that looks like a file fails like one", 
       const res = await fetch(BASE + route); // module-review-ok: the test client dialling its own in-process server on localhost, as every e2e suite does
       expect(res.status, `${route} is a missing file`).toBe(404);
       expect(res.headers.get("content-type") ?? "").toMatch(/text\/plain/);
+      // A CDN must not keep the miss: the file may exist a moment later (resilience P2-5).
+      expect(res.headers.get("cache-control"), `${route} miss must not be cached`).toBe("no-store");
       expect(await res.text(), `${route} must not be answered with the app`).not.toContain(SHELL);
     }
   });

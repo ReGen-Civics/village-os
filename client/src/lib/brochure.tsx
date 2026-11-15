@@ -12,7 +12,8 @@
 import { lazy, useCallback, type ComponentType } from "react";
 import { useLocation } from "wouter";
 import NotFound from "@/pages/NotFound";
-import { useGameConfig, type PublicGameConfig } from "./gameApi";
+import ConfigUnavailable from "@/components/ConfigUnavailable";
+import { useConfigFailed, useGameConfig, type PublicGameConfig } from "./gameApi";
 import { brochurePathServed, isBrochurePath, isMemberDoor, servedTo } from "@shared/brochure";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 
@@ -84,9 +85,11 @@ export function brochurePage(loader: () => Promise<{ default: ComponentType<any>
   const Page = lazy(loader);
   return function BrochureRoute(props: any) {
     const config = useGameConfig();
+    const configFailed = useConfigFailed();
     const [location] = useLocation();
     const auth = useOptionalAuth();
-    if (!config) return null;
+    // The config would not load: the "try again" card, never a blank page (resilience P1-1).
+    if (!config) return configFailed ? <ConfigUnavailable /> : null;
     const door = isMemberDoor(location);
     // A member's door waits for the session, so a signed-in member is never shown not-found first.
     if (door && auth?.loading) return null;
