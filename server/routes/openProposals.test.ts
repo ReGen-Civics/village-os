@@ -38,7 +38,6 @@ import { readOpenProposal } from "../repos/openProposals";
 import { retryOwedConfirmations } from "../lib/openProposalKept";
 import { rewriteTermsOffer } from "../repos/seatApplications";
 import { usersRepo } from "../repos/users";
-import { loadVariables } from "../lib/variables";
 import { register, tidyOpenProposals } from "./openProposals";
 
 const configured = testDbConfigured();
@@ -229,6 +228,27 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect(JSON.stringify(r.body)).not.toContain(dormant);
     });
 
+    it("step 1's acts (Rye, 15 Nov 2026): the village's links, none where it wrote none, and /steward for the new", async () => {
+      // Read here, not imported above, so this file's import list stays as it was.
+      const { loadVariables } = await import("../lib/variables");
+      const setVar = async (key: string, value: string | null) => {
+        if (value === null) await q("DELETE FROM game_variables WHERE config_key = ?", [key]);
+        else await q("INSERT INTO game_variables (config_key, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", [key, value]);
+        await loadVariables(pool);
+      };
+      const none = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
+      expect(none).toEqual({ recording: null, call: { href: null, next: null }, tour: { href: null, next: null }, potluck: { href: null, next: null }, stewardPath: "/steward" });
+      await setVar("org.founding_recording_link", "https://video.example.test/last-call");
+      await setVar("org.founding_tour_link", "https://book.example.test/tour");
+      try {
+        const l = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
+        expect(l).toMatchObject({ recording: "https://video.example.test/last-call", tour: { href: "https://book.example.test/tour", next: null }, potluck: { href: null } });
+      } finally {
+        await setVar("org.founding_recording_link", null);
+        await setVar("org.founding_tour_link", null);
+      }
+    });
+
     it("the governance module off closes it, and no next season says so", async () => {
       state.governance = "off";
       expect((await call("GET", "/api/open-proposals/form")).body).toEqual({ open: false, message: OPEN_WORDS.closed });
@@ -283,25 +303,6 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect(r.body.founding.firstCycle).toMatch(/either side may/);
       // Shares only: never a range, a minimum or an amount.
       expect(JSON.stringify(r.body.founding)).not.toMatch(/\$|USD|minimum|budget/i);
-    });
-
-    it("step 1's acts (Rye, 15 Nov 2026): the village's links, none where it wrote none, and /steward for the new", async () => {
-      const setVar = async (key: string, value: string | null) => {
-        if (value === null) await q("DELETE FROM game_variables WHERE config_key = ?", [key]);
-        else await q("INSERT INTO game_variables (config_key, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", [key, value]);
-        await loadVariables(pool);
-      };
-      const none = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
-      expect(none).toEqual({ recording: null, call: { href: null, next: null }, tour: { href: null, next: null }, potluck: { href: null, next: null }, stewardPath: "/steward" });
-      await setVar("org.founding_recording_link", "https://video.example.test/last-call");
-      await setVar("org.founding_tour_link", "https://book.example.test/tour");
-      try {
-        const l = (await call("GET", "/api/open-proposals/form")).body.founding.knowUsLinks;
-        expect(l).toMatchObject({ recording: "https://video.example.test/last-call", tour: { href: "https://book.example.test/tour", next: null }, potluck: { href: null } });
-      } finally {
-        await setVar("org.founding_recording_link", null);
-        await setVar("org.founding_tour_link", null);
-      }
     });
 
     it("keeps the ticks for ways the village lists, drops any other, and keeps the ramp-up and Human Design or Gene Keys", async () => {
