@@ -322,12 +322,27 @@ describe.skipIf(!DB_CONFIGURED)("a path that looks like a file fails like one", 
   });
 
   it("still gives every real page the shell, a dotted profile handle included", async () => {
-    for (const route of ["/", "/investor", "/quests", "/profile/ada.lovelace", "/no-such-page"]) {
+    for (const route of ["/", "/investor", "/quests", "/profile/ada.lovelace"]) {
       const res = await fetch(BASE + route); // module-review-ok: the test client dialling its own in-process server on localhost, as every e2e suite does
       expect(res.status, `${route} is a page`).toBe(200);
       expect(res.headers.get("content-type") ?? "").toMatch(/text\/html/);
       expect(await res.text()).toContain(SHELL);
     }
+  });
+
+  it("answers an address no page draws with a 404, and still the shell, so a person sees Off the trail", async () => {
+    for (const route of ["/no-such-page", "/rolez", "/404"]) {
+      const res = await fetch(BASE + route); // module-review-ok: the test client dialling its own in-process server on localhost, as every e2e suite does
+      expect(res.status, route).toBe(404);
+      expect(res.headers.get("content-type") ?? "").toMatch(/text\/html/);
+      expect(await res.text()).toContain(SHELL);
+    }
+  });
+
+  it("sends /index.html to /, keeping the query, instead of the raw shell file", async () => {
+    const res = await fetch(BASE + "/index.html?from=old-link", { redirect: "manual" }); // module-review-ok: the test client dialling its own in-process server on localhost, as every e2e suite does
+    expect(res.status).toBe(301);
+    expect(res.headers.get("location")).toBe("/?from=old-link");
   });
 });
 

@@ -19,7 +19,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { LOCALES, PSEUDO_LOCALES, offeredLocaleTags, tierOf } from "@shared/i18nLocales";
 import { directionOf } from "@shared/i18nDirection";
@@ -89,13 +89,27 @@ export function register(app: Express, deps: Deps): void {
    * path, so no request can read outside dist/i18n/parts/<locale>.
    */
   const PART = /^[A-Za-z0-9_-]{6,32}$/;
+  /*
+   * WHAT A CDN MAY KEEP (page speed pass, 14 Nov 2026). A part is content
+   * addressed, so a found one is the same bytes forever: `public, immutable`
+   * for a year, for the browser and, once the edge is told these paths may be
+   * cached (docs/PROVISIONING.md, "If Cloudflare sits in front"), for the
+   * edge too. A MISS must never be kept. During a deploy the new bundle can
+   * ask the old instance for a part it does not have yet, and an edge that
+   * remembered that 404 would break every page awaiting the part for as long
+   * as it held it. So every refusal says `no-store`.
+   */
+  const refuse = (res: Response, status: number, error: string) => {
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(status).json({ error });
+  };
   const SPLIT_LOCALES = new Set(["en"]);
   const parts = new Map<string, string | null>();
   app.get("/api/i18n/catalog/:locale/part/:part", (req, res) => {
     const locale = String(req.params.locale ?? "");
     const part = String(req.params.part ?? "");
-    if (!PART.test(part)) return res.status(400).json({ error: "bad_part" });
-    if (!SPLIT_LOCALES.has(locale)) return res.status(404).json({ error: "no_parts_for_locale" });
+    if (!PART.test(part)) return refuse(res, 400, "bad_part");
+    if (!SPLIT_LOCALES.has(locale)) return refuse(res, 404, "no_parts_for_locale");
     const key = `${locale}/${part}`;
     if (!parts.has(key)) {
       let body: string | null = null;
@@ -106,7 +120,7 @@ export function register(app: Express, deps: Deps): void {
       }
       // Only a found part is remembered: a deploy can add parts, never change one.
       if (body !== null) parts.set(key, body);
-      else return res.status(404).json({ error: "no_such_part" });
+      else return refuse(res, 404, "no_such_part");
     }
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     res.type("application/json").send(parts.get(key));
