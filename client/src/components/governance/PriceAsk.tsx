@@ -110,6 +110,10 @@ export default function PriceAsk({
         </p>
       )}
       <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
+      {/* Across roles (QA-1115 Spanish applicant P1-2): each application is priced once, at its own commitment. */}
+      <p className={HINT} data-price-across-roles="">
+        {t({ message: "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role.", context: "price ask: more than one role" })}
+      </p>
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
           {summary}

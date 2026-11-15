@@ -77,7 +77,7 @@ import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
 import { sectionsForMany } from "../lib/roleCardSections";
-import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt } from "../../shared/commitmentRange";
+import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt, RANGE_WORDS } from "../../shared/commitmentRange";
 import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
@@ -526,6 +526,8 @@ export function register(app: Express, deps: Deps): void {
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
       const ask = parsed.value.body.payAsk;
       const ceiling = roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null;
+      // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
+      if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
       if (ceiling && ask?.kind === "amount") {
         if (askPeriod(ask) !== ceiling.per) return res.status(400).json({ error: askPeriodWrong(ceiling.per), field: "payAsk" });
         const at = typeof pct === "number" && pct > 0 ? pct : 100;

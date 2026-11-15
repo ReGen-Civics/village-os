@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CEILING_PERIODS } from "./roleCardSections";
-import { aboveCap, askAboveCap, capAt, ROLE_PAY_CAP_PCT, ASK_PERIODS, askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { aboveCap, askAboveCap, capAt, RANGE_WORDS, ROLE_PAY_CAP_PCT, ASK_PERIODS, askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
 
 describe("the 120% cap on a proposal (Rye, 15 Nov 2026)", () => {
   it("is 120% of the listed price at the commitment: $13,000 caps at $15,600 at 100%, $7,800 at 50%", () => {
@@ -26,6 +26,44 @@ describe("the 120% cap on a proposal (Rye, 15 Nov 2026)", () => {
   });
   it("says why in plain words", () => {
     expect(aboveCap("$7,800", 50)).toBe("Proposals for this role go up to $7,800 at 50%, 120% of its listed price. Choose a price at or below that.");
+  });
+});
+
+describe("price-ask attack cases (QA-1115 hostile edges)", () => {
+  it.each([
+    [{ kind: "amount", monthly: -5 }],
+    [{ kind: "amount", monthly: "NaN" }],
+    [{ kind: "amount", monthly: "5,000" }],
+    [{ kind: "amount", monthly: 0 }],
+    [{ kind: "amount", monthly: 1.5 }],
+    [{ kind: "amount", monthly: Infinity }],
+    [{ kind: "amount", monthly: Number.NaN }],
+    [{ kind: "amount", monthly: 100_000_001 }],
+  ])("refuses the figure %j", (ask) => expect(readPayAsk(ask)).toEqual({ ok: false, problem: RANGE_WORDS.askAmount }));
+  it("refuses a period it does not know, never reading it as a month", () => {
+    expect(readPayAsk({ kind: "amount", monthly: 50, per: "hour" })).toEqual({ ok: false, problem: RANGE_WORDS.askPeriod });
+    expect(readPayAsk({ kind: "amount", monthly: 50, per: null })).toEqual({ ok: false, problem: RANGE_WORDS.askPeriod });
+    // CONTROL: no period is a month, as asks were before they said; a known period is kept.
+    expect(readPayAsk({ kind: "amount", monthly: 50 })).toEqual({ ok: true, value: { kind: "amount", monthly: 50 } });
+    expect(readPayAsk({ kind: "amount", monthly: 50, per: "moon" })).toEqual({ ok: true, value: { kind: "amount", monthly: 50, per: "moon" } });
+  });
+  it("refuses negotiate sent with a figure, never dropping the figure without a word", () => {
+    expect(readPayAsk({ kind: "negotiate", monthly: 5000 })).toEqual({ ok: false, problem: RANGE_WORDS.askBoth });
+    expect(readPayAsk({ kind: "negotiate", monthly: "5000" })).toEqual({ ok: false, problem: RANGE_WORDS.askBoth });
+    expect(readPayAsk({ kind: "negotiate", why: "I'd like to talk" })).toEqual({ ok: true, value: { kind: "negotiate", why: "I'd like to talk" } });
+  });
+  it("refuses an ask that is present but is neither kind", () => {
+    for (const ask of [{ kind: "AMOUNT", monthly: 50 }, [1, 2], "5000", 5000, {}, { monthly: 5000 }]) {
+      expect(readPayAsk(ask), JSON.stringify(ask)).toEqual({ ok: false, problem: RANGE_WORDS.askShape });
+    }
+    // Absent is no ask.
+    expect(readPayAsk(undefined)).toEqual({ ok: true, value: null });
+    expect(readPayAsk(null)).toEqual({ ok: true, value: null });
+  });
+  it("an absurd figure the reader takes is still above the cap the route checks", () => {
+    const ask = readPayAsk({ kind: "amount", monthly: 100_000_000 });
+    expect(ask.ok).toBe(true);
+    expect(askAboveCap(ask.ok ? ask.value : null, 13000, 100)).toBe(true);
   });
 });
 
@@ -99,10 +137,10 @@ describe("the price a contractor proposes (Rye, 14 Nov 2026)", () => {
     expect(priceDifferencePct(6500, 6500)).toBe(0);
     expect(priceDifferencePct(0, 7000)).toBeNull();
   });
-  it("an ask keeps the period it was written in, and an unknown period is dropped (QA F7)", () => {
+  it("an ask keeps the period it was written in, and an unknown period is refused (QA F7; QA-1115 hostile edges)", () => {
     expect(readPayAsk({ kind: "amount", monthly: 78000, per: "year" })).toEqual({ ok: true, value: { kind: "amount", monthly: 78000, per: "year" } });
     expect(readPayAsk({ kind: "amount", monthly: 500, per: "moon" })).toEqual({ ok: true, value: { kind: "amount", monthly: 500, per: "moon" } });
-    expect(readPayAsk({ kind: "amount", monthly: 500, per: "fortnight" })).toEqual({ ok: true, value: { kind: "amount", monthly: 500 } });
+    expect(readPayAsk({ kind: "amount", monthly: 500, per: "fortnight" })).toEqual({ ok: false, problem: RANGE_WORDS.askPeriod });
     expect(askPeriod({})).toBe("month");
     expect(askPeriod({ per: "year" })).toBe("year");
     // The ask's periods are the ceiling's, written twice only to keep pay modules off seatSettings.

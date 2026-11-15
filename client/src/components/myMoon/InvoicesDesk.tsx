@@ -115,7 +115,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {inv.lines.map((l) => (
               <li key={l.key} className="flex flex-wrap justify-between gap-2 border-b border-border py-1">
-                <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{LINE_BASIS_WORDS[l.basis]}. {l.basisLine}</span></span>
+                <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{LINE_BASIS_WORDS[l.basis]}. {l.basisLine}{l.priceNote ? ` ${l.priceNote}` : ""}</span></span>
                 <Amount minor={l.amountMinor} currency={l.currency} />
                 {l.split ? <div className="w-full"><SplitBreakdown split={l.split} currency={l.currency} /></div> : null}
                 {l.adjust ? <div className="w-full"><AdjustBreakdown adjust={l.adjust} currency={l.currency} /></div> : null}

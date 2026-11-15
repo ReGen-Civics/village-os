@@ -1383,6 +1383,12 @@ export interface InvoiceLine {
   basis: LineBasis;
   /** The words a pay kind carries when it moves no cash: honorary, in-kind, deferred, none. */
   listedAs: string | null;
+  /**
+   * Where the terms' figure came from, when the contract says (its `pay.note`): an adopted application
+   * writes "From their price ask", the suggested price, or that it was "negotiate on the first call"
+   * (shared/contractPrice.ts, QA-1115 P0-1). Shown to the member and the Treasurer beside the line.
+   */
+  priceNote?: string;
   currency: string | null;
   /** The terms' amount, per `per`. */
   termsMinor: number | null;
@@ -1626,7 +1632,7 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
     } else if (pay && pay.currency && pay.kind === "fixed" && Number.isInteger(pay.amountMinor) && (pay.amountMinor as number) > 0) {
       const per = pay.per ?? "moon";
       const amount = pay.amountMinor as number;
-      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
+      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
     } else if (pay && pay.currency && pay.kind === "range" && Number.isInteger(pay.minMinor) && Number.isInteger(pay.maxMinor)) {
       const per = pay.per ?? "moon";
       const range = { minMinor: pay.minMinor as number, maxMinor: pay.maxMinor as number };

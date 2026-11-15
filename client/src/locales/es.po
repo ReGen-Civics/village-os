@@ -1756,6 +1756,107 @@ msgctxt "price popup: above the full band"
 msgid "That's above {0}, the most for the full role. You can still propose it."
 msgstr ""
 
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap on a proposal"
+msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap before a commitment is chosen"
+msgid "Proposals for the full role go up to {0}."
+msgstr "Las propuestas para el rol completo llegan hasta {0}."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#. placeholder {1}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the cap"
+msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+msgstr "Eso supera {0}, lo máximo que puede pedir una propuesta al {capPct}%: el {ROLE_PAY_CAP_PCT}% del precio sugerido. Elige {1} o menos."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review: the cap on a proposal"
+msgid "Proposals up to {0}"
+msgstr "Propuestas de hasta {0}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
+msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+msgstr "Propuestas de hasta {capFull} para el rol completo, el {ROLE_PAY_CAP_PCT}% del precio publicado. Al {at}%, hasta {capShare}."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal"
+msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Pay the contract will record"
+msgstr "La paga que registrará el contrato"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
+msgstr "Este rol no tiene precio publicado, así que al adoptarlo el contrato no registra paga. La escribe un Tesorero."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "From their price ask, at {pct}% commitment."
+msgstr "De su precio propuesto, con un compromiso del {pct}%."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "They chose to negotiate on the first call. This is the suggested price at {pct}% commitment until a price is agreed."
+msgstr "Eligió negociar en la primera llamada. Es el precio sugerido con un compromiso del {pct}% hasta que se acuerde un precio."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "The suggested price: the listed price at {pct}% commitment."
+msgstr "El precio sugerido: el precio publicado con un compromiso del {pct}%."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
+msgstr "Su propuesta superaba el {ROLE_PAY_CAP_PCT}% del precio publicado, así que se queda en ese tope."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "A Treasurer confirms each payment drawn from it."
+msgstr "Un Tesorero confirma cada pago que salga de ella."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: more than one role"
+msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
+msgstr "¿Postulas a más de un rol? Envía una solicitud para cada uno. Cada uno se paga según el compromiso que le des, y los precios se suman: dos roles al 50% pagan como un rol completo."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the full role's listed price"
+msgid "Listed price: {full} for the full role*"
+msgstr "Precio publicado: {full} por el rol completo*"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the one footnote"
+msgid "*At 100% commitment."
+msgstr "*Con un compromiso del 100%."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
 #~ msgid "Done when..."
@@ -16401,44 +16502,3 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap on a proposal"
-msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
-msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap before a commitment is chosen"
-msgid "Proposals for the full role go up to {0}."
-msgstr "Las propuestas para el rol completo llegan hasta {0}."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#. placeholder {1}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup: above the cap"
-msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
-msgstr "Eso supera {0}, lo máximo que puede pedir una propuesta al {capPct}%: el {ROLE_PAY_CAP_PCT}% del precio sugerido. Elige {1} o menos."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review: the cap on a proposal"
-msgid "Proposals up to {0}"
-msgstr "Propuestas de hasta {0}"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
-msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
-msgstr "Propuestas de hasta {capFull} para el rol completo, el {ROLE_PAY_CAP_PCT}% del precio publicado. Al {at}%, hasta {capShare}."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal"
-msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
-msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."

@@ -54,6 +54,10 @@ export const RANGE_WORDS = {
   target: `The commitment a role needs in all is a whole percent from 1 to ${COMMITMENT_TARGET_MAX}.`,
   askAmount: "Write the monthly amount you would ask as a whole number, like 6500.",
   askWhy: `Keep why this price to ${PRICE_WHY_MAX} characters.`,
+  askPeriod: "Choose a price for each month, moon or year.",
+  askBoth: "Choose a price or to negotiate on the first call, one of the two.",
+  askShape: "Choose a price, or to negotiate on the first call.",
+  askNoPrice: "This role lists no price yet, so choose to negotiate on the first call.",
 } as const;
 
 /**
@@ -210,20 +214,31 @@ export function priceDifferencePct(suggested: number, proposed: number): number 
 /** "+8%", "-15%", "0%". */
 export const signedPct = (n: number): string => (n > 0 ? `+${n}%` : `${n}%`);
 
-/** An ask as the form sent it. Absent is no ask; an amount must be a whole positive number. */
+/**
+ * An ask as the form sent it. Absent is no ask; an amount must be a whole positive number. Refused, never
+ * quietly dropped or reread (QA-1115 hostile edges, price-ask attacks): a present ask that is neither kind,
+ * "negotiate" sent with a figure, and a period the role cannot list. The cap is the route's to check, against
+ * the role's own band (`askAboveCap`).
+ */
 export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   if (raw === null || raw === undefined) return { ok: true, value: null };
-  const o = typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  if (typeof raw !== "object" || Array.isArray(raw)) return { ok: false, problem: RANGE_WORDS.askShape };
+  const o = raw as Record<string, unknown>;
   const whyRaw = typeof o.why === "string" ? o.why.trim() : "";
   if (whyRaw.length > PRICE_WHY_MAX) return { ok: false, problem: RANGE_WORDS.askWhy };
   const why = whyRaw ? { why: whyRaw } : {};
-  if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate", ...why } };
+  if (o.kind === "negotiate") {
+    // A figure typed beside "negotiate" is never dropped without a word.
+    if (o.monthly !== undefined && o.monthly !== null && o.monthly !== "") return { ok: false, problem: RANGE_WORDS.askBoth };
+    return { ok: true, value: { kind: "negotiate", ...why } };
+  }
   if (o.kind === "amount") {
     const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" ? digitsOf(o.monthly, 9) : NaN;
-    const per = (ASK_PERIODS as readonly unknown[]).includes(o.per) ? { per: o.per as AskPeriod } : {};
+    if (o.per !== undefined && !(ASK_PERIODS as readonly unknown[]).includes(o.per)) return { ok: false, problem: RANGE_WORDS.askPeriod };
+    const per = o.per !== undefined ? { per: o.per as AskPeriod } : {};
     return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n, ...per, ...why } } : { ok: false, problem: RANGE_WORDS.askAmount };
   }
-  return { ok: true, value: null };
+  return { ok: false, problem: RANGE_WORDS.askShape };
 }
 
 /** The refusal for an ask above the cap: the cap is given in the caller's money words. */

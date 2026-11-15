@@ -159,6 +159,14 @@ describe("no double cut (Rye, 15 Nov 2026)", () => {
     expect(over.map((l) => [l.amountMinor, l.split?.capped])).toEqual([[780_000, true], [390_000, undefined]]);
   });
 
+  it("a line from an adopted application carries where its price came from, for the member and the Treasurer (QA-1115 P0-1)", () => {
+    const note = "They chose to negotiate on the first call. This is the suggested price at 50% commitment until a price is agreed.";
+    const t = terms({ applicationId: "app-1", roleIds: ["r1"], roleNames: ["r1"], amount: 650_000, settings: { v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 650_000, per: "month", note }, clocks: { commitmentPct: 50 } } });
+    expect(linesFromTerms([t], MOON)[0].priceNote).toBe(note);
+    // A contract with no note carries none.
+    expect(linesFromTerms([priced("app-2", "r2", 50, 650_000)], MOON)[0].priceNote).toBeUndefined();
+  });
+
   it("a split that matches the priced commitments pays the terms exactly", () => {
     const t = [priced("app-1", "r1", 30, 300_000), priced("app-2", "r2", 70, 700_000)];
     expect(scale(t, [{ roleId: "r1", share: 30 }, { roleId: "r2", share: 70 }], 100).map((l) => l.amountMinor)).toEqual([300_000, 700_000]);
