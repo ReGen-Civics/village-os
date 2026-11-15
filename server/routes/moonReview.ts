@@ -30,7 +30,7 @@ import type { Capability } from "../../shared/capabilities";
 import { activeClock } from "../lib/gratitude-cycles";
 import { boundsForCycleId, type FrameDeps, type Moon } from "../lib/moonRecap";
 import {
-  approveInvoices, confirmRoute, confirmSplit, returnToMember, reviewQueue, reviewWork, roomPanel, setRange, voidOne,
+  adjustPay, approveInvoices, confirmRoute, confirmSplit, returnToMember, reviewQueue, reviewWork, roomPanel, setRange, voidOne,
 } from "../lib/moonReview";
 import type { Deps as MemberDeps } from "./moonRecaps";
 
@@ -95,6 +95,14 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
     const who = await reviewer(req, res);
     if (!who) return;
     const out = await confirmSplit(getPool(), who.uid, String(req.params.id ?? ""), reviewDeps);
+    if (!out.ok) return fail(res, out);
+    res.json(out.value);
+  });
+
+  app.post(MOON_ROUTES.adjustPay, async (req, res) => {
+    const who = await reviewer(req, res);
+    if (!who) return;
+    const out = await adjustPay(getPool(), who.uid, String(req.params.id ?? ""), req.body, reviewDeps);
     if (!out.ok) return fail(res, out);
     res.json(out.value);
   });

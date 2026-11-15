@@ -86,6 +86,7 @@ const ROUTES = [
   `POST ${MOON_ROUTES.approveInvoices}`,
   `POST ${MOON_ROUTES.setRange}`,
   `POST ${MOON_ROUTES.confirmSplit}`,
+  `POST ${MOON_ROUTES.adjustPay}`,
   `POST ${MOON_ROUTES.voidInvoice}`,
   `PUT ${MOON_ROUTES.confirmRoute}`,
   `GET ${MOON_ROUTES.room}`,

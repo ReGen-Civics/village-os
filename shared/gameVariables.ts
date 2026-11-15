@@ -2675,6 +2675,20 @@ export const VARIABLES: VariableDef[] = [
     default: "false",
   },
   {
+    // Rye, 14 Nov 2026: "paid on what we truly accomplished". The flag asks a
+    // person to look; it never moves money (shared/accomplishedReview.ts).
+    key: "moon_review.far_off_pct",
+    category: "The founding team",
+    label: "When a moon counts as far from what was agreed",
+    description:
+      "At the End of Moon review, each member's invoice shows what was agreed (their pay and their moon goals) beside what they delivered (goals done, and every task done, including tasks outside their roles). When the two are this far apart, the review flags it for the Treasurer: goal progress below 100 minus this percent, or this percent or more of the tasks done outside the member's roles. At the default of 25, that is goal progress under 75%, or a quarter of the work outside their roles, about one week in a four-week moon. The flag changes no pay. The Treasurer may propose a different amount with a reason, the member can reply, and nothing pays until the Treasurer confirms. Works with: the Treasurer's role, which holds the power to pay.",
+    type: "integer",
+    default: "25",
+    min: 5,
+    max: 100,
+    unit: "%",
+  },
+  {
     key: "org.pay_shape",
     category: "The founding team",
     label: "How rewards work, on every role card",

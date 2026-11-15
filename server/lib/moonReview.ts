@@ -56,7 +56,10 @@ import { memberUserIdRows, personRow, memberNoRows } from "../repos/liveSessions
 import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
 import {
-  draftLines, invoiceViewOf, linesOf, loadFrame, payersDoc, recapView, settingsDoc, summaryFor, type Frame, type FrameDeps, type Moon, type Outcome,
+  ACCOMPLISHED_WORDS, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
+} from "../../shared/accomplishedReview";
+import {
+  draftLines, farOffPct, invoiceViewOf, linesOf, loadFrame, payersDoc, recapView, settingsDoc, summaryFor, type Frame, type FrameDeps, type Moon, type Outcome,
 } from "./moonRecap";
 
 const newId = (prefix: string): string => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
@@ -177,7 +180,8 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
   if (b.rangeProposals && typeof b.rangeProposals === "object") {
     for (const [k, v] of Object.entries(b.rangeProposals as Record<string, unknown>)) if (Number.isInteger(v)) proposals[k] = v as number;
   }
-  const lines = draftLines(frame, moon.days, proposals, finals);
+  // A Treasurer's proposed amount carries from the void too, with the member's reply (Rye, 14 Nov 2026).
+  const lines = draftLines(frame, moon.days, proposals, finals, lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, parseAdjustReply(b.adjustReply));
   const routeKind = route?.route ?? "pending";
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const attestation = b.attestation === undefined || b.attestation === null ? null : parseAttestation(b.attestation, routeKind, moon.days);
@@ -382,7 +386,9 @@ export async function reviewQueue(pool: Pool, moon: Moon, reader: QueueReader, d
     const hash = await approvalHash(subjectOf(invoice, route, items));
     let cash: QueueRow["invoice"] = null;
     if (reader.cashView && invoice) {
-      const base = invoiceViewOf({ stored: invoice, terms: frame.terms, moon, route, payers, settings, today, summary: summaryFor({ stored: invoice, recap: r, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: moon.timeZone }) }) as InvoiceView;
+      // Agreed beside delivered: counts of the member's own goals and tasks, no score (Rye, 14 Nov 2026).
+      const compare = { goals: await store.goalsFor(pool, r.userId, moon.bounds.id), items, roles: frame.roles.map((x) => ({ roleId: x.roleId, name: x.name })), farOffPct: farOffPct() };
+      const base = invoiceViewOf({ stored: invoice, terms: frame.terms, compare, moon, route, payers, settings, today, summary: summaryFor({ stored: invoice, recap: r, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: moon.timeZone }) }) as InvoiceView;
       const payer = payers.payers.find((p) => p.key === invoice.payerKey) ?? null;
       const check = route ? financeApprovalRefusal({ route, settings, attestation: invoice.attestation, moonLastDay: moon.days.lastDay, expectedOn: invoice.expectedOn ?? today }) : null;
       cash = {
@@ -533,6 +539,8 @@ async function approveOne(
   if (check) return check;
   // Nothing pays off a member's split until a Treasurer has confirmed it (Rye, 14 Nov 2026).
   if (splitUnconfirmed(linesOf(invoice))) return { refusal: APPROVAL_REFUSALS.splitUnconfirmed };
+  // Nor off a Treasurer's proposed amount until a Treasurer has confirmed it, after the member's reply.
+  if (adjustUnconfirmed(linesOf(invoice))) return { refusal: ADJUST_REFUSALS.unconfirmed };
 
   const items = await store.itemsOf(pool, recap.id);
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
@@ -666,16 +674,23 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
   if (no) return refuse(403, no);
   if (invoice.status !== "waiting") return refuse(409, APPROVAL_REFUSALS.notWaiting);
   const lines = linesOf(invoice);
-  if (!lines.some((l) => l.split)) return refuse(400, APPROVAL_REFUSALS.noSplit);
+  const hasSplit = lines.some((l) => l.split);
+  const hasAdjust = lines.some((l) => l.adjust);
+  if (!hasSplit && !hasAdjust) return refuse(400, APPROVAL_REFUSALS.noSplit);
   // A scaled line whose amount no longer matches its split is not confirmed: the member resends.
   if (lines.some((l) => l.split && l.split.scaledMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
-  const confirmed = confirmSplitLines(lines, actorId, now().toISOString());
+  // The same for a proposed amount (Rye, 14 Nov 2026): one Confirm covers both, and changes no amount.
+  if (lines.some((l) => l.adjust && l.adjust.adjustedMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
+  if (hasAdjust && invoice.userId === actorId) return refuse(403, ADJUST_REFUSALS.ownPay);
+  const at = now().toISOString();
+  const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at);
   const scaled = invoiceTotals(confirmed)[0];
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     if ((await store.setInvoiceLines(conn, invoice.id, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("raced");
-    await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
+    if (hasSplit) await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
+    if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);
@@ -685,6 +700,65 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
     conn.release();
   }
   return { ok: true, value: { confirmed: invoice.id } };
+}
+
+/**
+ * A TREASURER PROPOSES A DIFFERENT AMOUNT (Rye, 14 Nov 2026: "paid on what we
+ * truly accomplished"). When the End of Moon review shows what was delivered
+ * far from what was agreed, someone who may act on the invoice for Finance
+ * proposes an amount for one pay line, with a reason the member reads. Any
+ * amount, up or down: work pay has no cap. Nobody proposes on their own pay.
+ * Allowances and listed lines never change.
+ *
+ * Like a range amount (`setRange`): the proposal is written on the line, the
+ * invoice is voided and the recap goes back to the member with the words, so
+ * they read it, may reply, and send again; the proposal carries from the void.
+ * Approval then refuses until a Treasurer confirms (`adjustUnconfirmed`).
+ * A null amount withdraws a proposal the same way, and pay is the terms again.
+ */
+export async function adjustPay(pool: Pool, actorId: string, invoiceId: string, body: unknown, deps: Pick<ReviewDeps, "keyHolders" | "notify">, now: () => Date = () => new Date()): Promise<Outcome<{ voided: string }>> {
+  const invoice = await store.invoiceById(pool, invoiceId);
+  if (!invoice) return refuse(404, "not_found");
+  if (invoice.userId === actorId) return refuse(403, ADJUST_REFUSALS.ownPay);
+  const no = await financeActor(pool, actorId, invoice, deps);
+  if (no) return refuse(403, no);
+  if (invoice.status !== "waiting") return refuse(409, APPROVAL_REFUSALS.notWaiting);
+  const input = parseAdjustInput(body);
+  if (!input.ok) return refuse(400, input.error);
+  const lines = linesOf(invoice);
+  const line = lines.find((l) => l.applicationId === input.applicationId && l.kind === "pay");
+  if (!line) return refuse(400, ADJUST_REFUSALS.noLine);
+  if (!adjustableLine(line)) return refuse(400, ADJUST_REFUSALS.notAdjustable);
+  const base = line.adjust ? line.adjust.baseMinor : (line.amountMinor as number);
+  const changed: InvoiceLine[] = lines.map((l) => {
+    if (l !== line) return l;
+    if (input.amountMinor === null) return { ...l, amountMinor: base, adjust: null };
+    return { ...l, adjust: { baseMinor: base, adjustedMinor: input.amountMinor, reason: input.reason, proposedBy: actorId, proposedAt: now().toISOString(), reply: null, confirmedBy: null, confirmedAt: null } };
+  });
+  const recap = await store.recapById(pool, invoice.recapId);
+  if (!recap) return refuse(404, "not_found");
+  const role = line.roleNames.join(", ");
+  const words = (input.amountMinor === null
+    ? `${ACCOMPLISHED_WORDS.withdrawn(role)}: ${input.reason}`
+    : ACCOMPLISHED_WORDS.returned(role, moneyWords(input.amountMinor, line.currency as string), input.reason)).slice(0, LIMITS.reviewNote);
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), invoice.totalMinor);
+    if ((await store.voidInvoice(conn, invoice.id)) !== 1) throw new Error("raced");
+    if (recap.status === "waiting") await store.returnRecap(conn, { id: recap.id, by: actorId, note: words, keepWork: true });
+    await event(conn, { kind: "pay_adjusted", recapId: recap.id, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: input.amountMinor, currency: line.currency, note: input.reason });
+    await event(conn, { kind: "void", recapId: recap.id, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, note: words });
+    await conn.commit();
+  } catch (e) {
+    await conn.rollback().catch(() => undefined);
+    if (e instanceof Error && e.message === "raced") return refuse(409, APPROVAL_REFUSALS.notWaiting);
+    throw e;
+  } finally {
+    conn.release();
+  }
+  await tell(deps, { userId: invoice.userId, title: NOTICE_WORDS.payAdjusted, kind: "pay_adjusted", recapId: recap.id, round: recap.round, actorUserId: actorId, body: words });
+  return { ok: true, value: { voided: invoice.id } };
 }
 
 /**
