@@ -276,7 +276,9 @@ function handoverSection(input: LaunchProposalDocInput): string[] {
   }
   return [
     ...heading,
-    `When this carries, the village holds these ${input.handover.length} powers, and only a village vote hands one back:`,
+    input.handover.length === 1
+      ? "When this carries, the village holds this power, and only a village vote hands it back:"
+      : `When this carries, the village holds these ${input.handover.length} powers, and only a village vote hands one back:`,
     "",
     ...input.handover.map((p) => `- ${p.title}: whoever holds it can ${p.consequence}.`),
     "",

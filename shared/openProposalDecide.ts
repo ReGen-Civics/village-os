@@ -148,6 +148,8 @@ export const DECIDE_WORDS = {
   adoptedEmailed: (days: number) => `Adopted. Their invitation went by email. It works once and lasts ${days} days. It is below as well, if they ask you for it.`,
   adoptedNotEmailed: (why: NotSentWhy) => `Adopted. ${NOT_SENT[why]} Copy their invitation below and send it to them yourself.`,
   adoptedAccount: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.",
+  // A proposal for this moon starts its seat the day it is adopted, so it never says "the season's first day" (launch rehearsal F12).
+  adoptedAccountMoon: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon.",
   accountTold: "They were told by email as well.",
   accountNotTold: (why: NotSentWhy) => `${NOT_SENT[why]} They see it in their notifications when they sign in.`,
   declinedEmailed: "Declined. A kind no went to them by email.",
