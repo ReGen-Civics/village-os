@@ -16,6 +16,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { VOICE_NOTE_MAX_SECONDS } from "@shared/voiceNotes";
+import { speechLang } from "@/lib/speechLang";
 
 const SR: any =
   typeof window !== "undefined" ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : undefined;
@@ -112,7 +113,7 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
   const listen = () => {
     if (!SR || !hearing.current || !on.current) return;
     const r = new SR();
-    r.lang = navigator.language || "en-US";
+    r.lang = speechLang();
     r.continuous = true;
     r.interimResults = true;
     r.onresult = (e: any) => {

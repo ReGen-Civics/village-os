@@ -28,6 +28,7 @@ export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
+import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
 import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
@@ -524,7 +525,7 @@ export function ProblemsList<P extends { field: string | null; message: string }
           return (
             <li key={`${p.field}-${i}`}>
               <button type="button" onClick={() => onShow(p)} className="min-h-11 text-left underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">
-                {stoneOfField(p.field) !== stone ? `${where}: ${p.message}` : p.message}
+                {stoneOfField(p.field) !== stone ? `${where}: ${applyWordT(p.message)}` : applyWordT(p.message)}
               </button>
             </li>
           );

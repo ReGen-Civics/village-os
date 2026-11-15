@@ -29,6 +29,7 @@ import { storedText } from "@/lib/safeStorage";
 import { isApplicantLanguage } from "@shared/applicantWords";
 import { OPEN_CONFIRM_HOURS, type StepAfterSubmit } from "@shared/openProposals";
 import { confirmBy, inboxFor, replyBy } from "./stones";
+import { applyWordT } from "./applyWordsT";
 
 const BUTTON = `${BTN_PRIMARY} py-3`;
 
@@ -186,7 +187,7 @@ export function ConfirmProposal() {
     return (
       <Shell>
         <Notice title={t`That link didn't work`}>
-          <p>{said.message}</p>
+          <p>{applyWordT(said.message)}</p>
           <a href="/propose-a-role" className={`${BUTTON} mt-6`}>
             {t({ message: "Apply again", context: "founding application confirm" })}
           </a>

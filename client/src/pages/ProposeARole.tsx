@@ -78,6 +78,7 @@ import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, ston
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import StoneBar from "@/components/fireflyPath/StoneBar";
 import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
+import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
 import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
@@ -236,7 +237,7 @@ export default function ProposeARole() {
   /** Every problem found on the last press of Continue or Send, each with the field it is on (audit M1). */
   const [problems, setProblems] = useState<FormProblem[]>([]);
   const error = problems[0] ?? null;
-  const problemOn = (field: string) => problems.find((p) => p.field === field)?.message ?? null;
+  const problemOn = (field: string) => { const m = problems.find((p) => p.field === field)?.message; return m ? applyWordT(m) : null; };
   const [sent, setSent] = useState<SentNote | null>(null);
   const [practical, setPractical] = useState<Practical>(() => ({ timeZone: browserTimeZone(), windows: [], earliestStart: "" }));
   /** The eight settings answered and the commitment chosen (components/governance/TermsEight.tsx). */
@@ -510,7 +511,7 @@ export default function ProposeARole() {
       if (!res.ok) {
         // A refusal (a rate limit's words among them) lands on its field's step; one with no field stays on Review & submit.
         const field = typeof data?.field === "string" ? data.field : null;
-        const p = { field, message: typeof data?.error === "string" ? data.error : OPEN_WORDS.notSent, target: targetFor(field) };
+        const p = { field, message: typeof data?.error === "string" ? data.error : notSentWords(), target: targetFor(field) };
         setProblems([p]);
         show(p);
         return;
@@ -528,7 +529,7 @@ export default function ProposeARole() {
       });
       window.scrollTo?.({ top: 0 });
     } catch {
-      setProblems([{ field: null, message: OPEN_WORDS.notSent, target: null }]);
+      setProblems([{ field: null, message: notSentWords(), target: null }]);
     } finally {
       setSending(false);
     }
@@ -597,7 +598,7 @@ export default function ProposeARole() {
     return (
       <Shell>
         <Notice title={t`Not open right now`}>
-          <p>{form.message}</p>
+          <p>{applyWordT(form.message)}</p>
         </Notice>
       </Shell>
     );
