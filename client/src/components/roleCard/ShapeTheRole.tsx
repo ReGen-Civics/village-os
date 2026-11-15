@@ -115,7 +115,7 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
   );
 }
 
-export default function ShapeTheRole({ roleId, value, onChange }: { roleId: string; value: PieceSuggestion[]; onChange: (next: PieceSuggestion[]) => void }) {
+export default function ShapeTheRole({ roleId, value, onChange, pct = null }: { roleId: string; value: PieceSuggestion[]; onChange: (next: PieceSuggestion[]) => void; pct?: number | null }) {
   const { t } = useLingui();
   const [open, setOpen] = useState(false);
   const seats = useOrgSeats(open && roleId ? [roleId] : []);
@@ -150,7 +150,7 @@ export default function ShapeTheRole({ roleId, value, onChange }: { roleId: stri
         <div className="mt-4">
           {found && found !== "missing" ? (
             <Suspense fallback={<p className="text-muted-foreground" role="status">{t({ message: "Opening the role card…", context: "shape the role" })}</p>}>
-              <FullRoleCard seat={found.seat} circleName={found.circleName} register="founding" noAct marks={(piece) => value.filter((s) => s.roleId === roleId && s.piece === piece).length} after={(piece) => <PieceBar roleId={roleId} piece={piece as PieceKey} value={value} onChange={onChange} />} />
+              <FullRoleCard seat={found.seat} circleName={found.circleName} register="founding" noAct commitmentChosen={pct} marks={(piece) => value.filter((s) => s.roleId === roleId && s.piece === piece).length} after={(piece) => <PieceBar roleId={roleId} piece={piece as PieceKey} value={value} onChange={onChange} />} />
             </Suspense>
           ) : found === "missing" ? (
             <p className="text-muted-foreground">{t({ message: "The role card could not be read just now. Your application still goes without it.", context: "shape the role" })}</p>

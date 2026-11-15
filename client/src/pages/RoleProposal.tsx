@@ -142,9 +142,9 @@ function useMoonOffer(): MoonOffer | null | "asking" {
 }
 
 function MoonOrSeason({ offer, onSeason }: { offer: MoonOffer; onSeason: () => void }) {
-  const { t } = useLingui();
-  const from = civilDayWords(offer.from);
-  const to = civilDayWords(offer.to);
+  const { t, i18n } = useLingui();
+  const from = civilDayWords(offer.from, i18n.locale);
+  const to = civilDayWords(offer.to, i18n.locale);
   const asked = typeof window === "undefined" ? null : new URLSearchParams(window.location.search).get("role");
   const href = asked && offer.roles.some((r) => r.id === asked) ? openProposalHref(asked) : openProposalHref();
   const count = offer.roles.length;
