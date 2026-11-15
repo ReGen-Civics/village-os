@@ -82,6 +82,21 @@ export const OAUTH_HANDOFF_TTL_MS = 2 * 60 * 1000;
 /** The one-time cookie the callback sets and the exchange consumes. */
 export const OAUTH_HANDOFF_COOKIE = "village_oauth_handoff";
 
+/**
+ * The cookie `start` sets in the browser that began the sign-in, whose hash the
+ * state carries (R215). The callback refuses a state whose hash this browser's
+ * cookie does not match. Without it the state proved only that THIS SERVER
+ * minted it, and anybody can mint one: start a sign-in, sign in at Google as
+ * yourself, and hand a victim the callback URL, and the victim's browser was
+ * signed in to your account.
+ */
+export const OAUTH_BIND_COOKIE = "village_oauth_bind";
+
+/** The binder's hash, as the state carries it. */
+export function oauthBindHash(binder: string): string {
+  return crypto.createHash("sha256").update(String(binder)).digest("hex");
+}
+
 export interface GoogleConfig {
   clientId: string;
   clientSecret: string;
@@ -182,6 +197,8 @@ export interface OAuthState {
    * plain word; the route decides whether it names a real action.
    */
   confirm: string | null;
+  /** sha256 of the binder cookie `start` set (R215), or null on a state minted without one. */
+  bind: string | null;
 }
 
 /** An invitation id in the shape `server/routes/invites.ts` mints, or null. */
@@ -194,10 +211,12 @@ function readInviteId(raw: unknown): string | null {
  * Mint the `state` parameter.
  *
  * State does two jobs. It carries the destination, and it is the login-CSRF
- * token: the callback accepts nothing this server did not mint inside the TTL,
- * so an attacker cannot drop a victim onto a callback URL holding their own
- * authorization code and quietly link the victim's browser to the attacker's
- * Google account.
+ * token together with the binder cookie (R215). A signature alone proves only
+ * that this server minted the state, and `start` mints one for anybody, so the
+ * state also carries the hash of a cookie set in the browser that pressed the
+ * button, and the callback refuses any other browser. That is what stops an
+ * attacker dropping a victim onto a callback URL holding the attacker's own
+ * authorization code.
  *
  * The nonce rides inside the SIGNED payload. A cookie would not survive a
  * browser that drops them across the Google hop, and this does. It is readable
@@ -215,7 +234,7 @@ export function makeOAuthState(
    * same day, the invitation and the confirmation, and a third field would have
    * taken a fifth. Both are optional and absent means an ordinary sign-in.
    */
-  opts: { invite?: string | null; confirm?: string | null } = {},
+  opts: { invite?: string | null; confirm?: string | null; bind?: string | null } = {},
 ): string {
   const payload = Buffer.from(
     JSON.stringify({
@@ -225,6 +244,7 @@ export function makeOAuthState(
       t: nowMs,
       invite: readInviteId(opts.invite) ?? "",
       ...(opts.confirm ? { confirm: opts.confirm } : {}),
+      ...(opts.bind ? { b: opts.bind } : {}),
     }),
   ).toString("base64url");
   return `${payload}.${signTokenPayload(secret, payload)}`;
@@ -251,6 +271,7 @@ export function readOAuthState(secret: string, state: string, nowMs: number = Da
       nonce: decoded.nonce,
       invite: readInviteId(decoded.invite),
       confirm: typeof decoded.confirm === "string" && decoded.confirm ? decoded.confirm : null,
+      bind: typeof decoded.b === "string" && /^[0-9a-f]{64}$/.test(decoded.b) ? decoded.b : null,
     };
   } catch {
     return null;

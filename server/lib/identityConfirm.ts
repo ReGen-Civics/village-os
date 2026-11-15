@@ -90,11 +90,23 @@ export function isConfirmAction(v: unknown): v is ConfirmAction {
 export const IDENTITY_CONFIRM_TTL_MS = 5 * 60 * 1000;
 
 /** Sent only to the routes that spend it. */
-export const IDENTITY_CONFIRM_COOKIE_PATH = "/api/profile";
+/** Path=/ because a `__Host-` cookie must have it (R041). The cookie is HttpOnly and lives minutes. */
+export const IDENTITY_CONFIRM_COOKIE_PATH = "/";
 
 /** One cookie per action, so confirming one never displaces the other. */
-export function confirmCookieName(action: ConfirmAction): string {
-  return `village_confirm_${action}`;
+/**
+ * A cookie name with the `__Host-` prefix on https (R041). A browser accepts a
+ * `__Host-` cookie only when it is Secure, has Path=/ and names no Domain, so a
+ * sibling subdomain (the hub, another hosted village) cannot plant one for this
+ * host. Plain http, local development, keeps the bare name, because a Secure
+ * cookie is dropped there.
+ */
+export function hostCookieName(base: string, secure: boolean): string {
+  return secure ? `__Host-${base}` : base;
+}
+
+export function confirmCookieName(action: ConfirmAction, secure = false): string {
+  return hostCookieName(`village_confirm_${action}`, secure);
 }
 
 /** Where each action's screen lives, for a return with no `next`. */
@@ -317,6 +329,8 @@ export interface IdentityGateDeps {
   googleAvailable(): boolean;
   members: { update(id: string, mutate: (m: any) => void): Promise<any | null> };
   now?(): number;
+  /** Whether this village serves its sign-in over https, which names its cookies `__Host-` (R041). */
+  cookiesSecure?(): boolean;
 }
 
 export type GateOutcome =
@@ -347,12 +361,13 @@ export function makeIdentityGate(deps: IdentityGateDeps) {
     const confirmWith = confirmWithFor(user, deps.authSecret, deps.googleAvailable());
     if (confirmWith === "none") return { ok: false, body: { error: NO_WAY_TO_CONFIRM, confirmWith } };
 
-    const cookie = confirmCookieName(action);
+    const secure = deps.cookiesSecure?.() ?? false;
+    const cookie = confirmCookieName(action, secure);
     const raw = readCookieValue(req.headers.cookie, cookie);
     if (!raw) return { ok: false, body: { error: googleRefusal(action), confirmWith } };
 
     const refuse = (error: string): GateOutcome => {
-      res.clearCookie(cookie, { path: IDENTITY_CONFIRM_COOKIE_PATH });
+      res.clearCookie(cookie, { path: IDENTITY_CONFIRM_COOKIE_PATH, secure });
       return { ok: false, body: { error, confirmWith } };
     };
     const read = readConfirmation(deps.authSecret, raw, now());
@@ -367,7 +382,7 @@ export function makeIdentityGate(deps: IdentityGateDeps) {
       spent = spendPending(m, action, claims.jti, now());
     });
     if (!spent) return refuse(CONFIRM_REFUSAL.spent);
-    res.clearCookie(cookie, { path: IDENTITY_CONFIRM_COOKIE_PATH });
+    res.clearCookie(cookie, { path: IDENTITY_CONFIRM_COOKIE_PATH, secure });
     return { ok: true, via: "google" };
   };
 }

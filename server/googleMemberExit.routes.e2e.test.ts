@@ -119,7 +119,9 @@ async function googleRoundTrip(query: string, who: { sub: string; email: string;
     name: who.name,
   };
   const state = location.searchParams.get("state")!;
-  const cb = await fetch(`${BASE}/api/auth/google/callback?code=a-code&state=${encodeURIComponent(state)}`, { redirect: "manual" }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
+  // The binder `start` set in this "browser", sent back as a browser would (R215).
+  const binder = (start.headers.getSetCookie?.() ?? []).map((c) => /(?:^|;\s*)village_oauth_bind=([^;]*)/.exec(c)?.[1]).find((v) => v && v.length > 0) ?? "";
+  const cb = await fetch(`${BASE}/api/auth/google/callback?code=a-code&state=${encodeURIComponent(state)}`, { redirect: "manual", headers: { cookie: `village_oauth_bind=${binder}` } }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
   expect(cb.status).toBe(302);
   return { location: cb.headers.get("location") ?? "", setCookies: cb.headers.getSetCookie?.() ?? [] };
 }
