@@ -1423,6 +1423,15 @@ export interface InvoiceLine {
 export interface LineSplit {
   /** The line's share of the member's time: the split's shares for the roles the line names, summed. */
   sharePct: number;
+  /**
+   * What the split gives this agreement, as a part of the whole person: the
+   * member's total times the share (50% of 100% is 50). Rounded to a tenth for
+   * display; the amount is worked from the exact figure. Absent on a line
+   * scaled before the no-double-cut ruling (Rye, 15 Nov 2026).
+   */
+  givenPct?: number;
+  /** The commitment the agreement was priced at (`clocks.commitmentPct` in its terms). */
+  pricedPct?: number;
   /** The amount the terms give, before the split. */
   baseMinor: number;
   /** The amount after the split, rounded once. Equals the line's `amountMinor`. */
@@ -1432,9 +1441,11 @@ export interface LineSplit {
 }
 
 export const SPLIT_PAY_WORDS = {
-  basis: (sharePct: number) => `${sharePct}% of your time goes to this, from your split`,
+  basis: (givenPct: number, pricedPct: number) => `Your split gives this ${givenPct}% of your time, and it was priced at ${pricedPct}%`,
   base: "Before the split",
   share: "Share of time",
+  given: "Your time given to it",
+  priced: "Priced at",
   scaled: "After the split",
   waiting: "A Treasurer confirms the split before this is paid.",
   confirmed: "The split is confirmed.",
@@ -1443,13 +1454,44 @@ export const SPLIT_PAY_WORDS = {
 } as const;
 
 /**
- * SCALE PAY BY THE MEMBER'S SPLIT (Rye, 14 Nov 2026, answer A). When a
- * member's roles are paid through separate applications, each pay line scales
- * by that line's share of the member's time, read from the split they set on
- * their roles card. A line naming two roles takes both roles' shares.
+ * What the split needs beside itself (Rye, 15 Nov 2026, "no double cut"): the
+ * member's total commitment, from the same dated word as the split, and the
+ * commitment each agreement was priced at, by application id.
+ */
+export interface SplitPricing {
+  totalPct: number | null;
+  pricedPct: Readonly<Record<string, number>>;
+}
+
+/** The commitment each agreement was priced at, from its terms (`clocks.commitmentPct`). Agreements that state none are left out. */
+export function pricedCommitments(terms: readonly Pick<TermsInForce, "applicationId" | "settings">[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const t of terms) {
+    const p = t.settings?.clocks?.commitmentPct;
+    if (typeof p === "number" && Number.isInteger(p) && p > 0 && p <= 100) out[t.applicationId] = p;
+  }
+  return out;
+}
+
+/**
+ * SCALE PAY BY THE MEMBER'S SPLIT (Rye, 14 Nov 2026, answer A; 15 Nov 2026,
+ * "no double cut"). When a member's roles are paid through separate
+ * applications, each pay line scales by the time the split gives it against
+ * the commitment its agreement was already priced at:
+ *
+ *   scaled = base x (total x share / 100) / priced
+ *
+ * An agreement's pay is already its price at its own commitment, so the
+ * member's commitment is applied once, never a second time. Two roles priced
+ * at 50% for 6,500.00 each, and a member who gives 100% split 50/50: each role
+ * gets 50% of them, its priced commitment, so each pays 6,500.00 (13,000.00
+ * in all). A line naming two roles takes both roles' shares. There is no cap:
+ * a split that gives an agreement more time than it was priced at pays more,
+ * and a Treasurer confirms every scaled line before anything pays.
  *
  * It fails closed, answering every line unchanged, when:
- *   - there is no split;
+ *   - there is no split, or no total commitment beside it;
+ *   - a pay line's agreement states no priced commitment;
  *   - the split does not name exactly the roles held, or its shares do not add
  *     up to 100 (`splitForRoles` and the sum below);
  *   - fewer than two applications carry pay: one pay is folded, nothing to split;
@@ -1461,8 +1503,10 @@ export const SPLIT_PAY_WORDS = {
  * It only proposes: each scaled line carries `split` with no confirmation, and
  * Finance approval refuses the invoice until a Treasurer confirms it.
  */
-export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly RoleSplitShare[] | null | undefined, heldRoleIds: readonly string[]): InvoiceLine[] {
+export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly RoleSplitShare[] | null | undefined, heldRoleIds: readonly string[], pricing: SplitPricing): InvoiceLine[] {
   const unchanged = lines.map((l) => ({ ...l }));
+  const total = pricing.totalPct;
+  if (typeof total !== "number" || !Number.isFinite(total) || total <= 0 || total > 100) return unchanged;
   const whole = splitForRoles(split ?? null, heldRoleIds);
   if (!whole || whole.reduce((s, x) => s + x.share, 0) !== 100) return unchanged;
   const pay = lines.filter((l) => l.kind === "pay" && l.basis !== "listed");
@@ -1473,17 +1517,22 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
   // shares no longer add to 100. Refuse the split: pay is the terms (QA F9).
   const named = pay.flatMap((l) => l.roleIds);
   if (new Set(named).size !== named.length) return unchanged;
+  // With no priced commitment the split cannot tell how much of the agreement it covers: pay is the terms.
+  const pricedOf = (l: InvoiceLine) => pricing.pricedPct[l.applicationId];
+  if (pay.some((l) => l.amountMinor !== null && !(l.basis === "range" && l.finalMinor !== null) && !(pricedOf(l) > 0))) return unchanged;
   return lines.map((l) => {
     if (l.kind !== "pay" || l.basis === "listed" || l.amountMinor === null || !l.currency) return { ...l };
     // A range figure Finance set is already Finance's decision for this line: the split never rescales it (QA F6).
     if (l.basis === "range" && l.finalMinor !== null) return { ...l };
     const sharePct = Math.min(100, l.roleIds.reduce((s, r) => s + (shareOf.get(r) as number), 0));
-    const scaledMinor = Math.round((l.amountMinor * sharePct) / 100);
+    const pricedPct = pricedOf(l);
+    const scaledMinor = Math.round((l.amountMinor * total * sharePct) / (100 * pricedPct));
+    const givenPct = Math.round((total * sharePct) / 10) / 10;
     return {
       ...l,
       amountMinor: scaledMinor,
-      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(sharePct)}: ${moneyWords(scaledMinor, l.currency)}`,
-      split: { sharePct, baseMinor: l.amountMinor, scaledMinor, confirmedBy: null, confirmedAt: null },
+      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}: ${moneyWords(scaledMinor, l.currency)}`,
+      split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, confirmedBy: null, confirmedAt: null },
     };
   });
 }

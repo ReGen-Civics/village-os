@@ -98,8 +98,10 @@ export interface ClockSettings {
   work?: (typeof WORK_CLOCKS)[number];
   /**
    * How much of a person's energy and attention the role gets in a week, 0 to 100 in steps of 10.
-   * 100 is full commitment, and each person manages their own workload. A planning signal that is
-   * stored and shown and read by no pay code (`shared/termsWords.boundary.test.ts`).
+   * 100 is full commitment, and each person manages their own workload. Pay reads it in one place:
+   * a member whose roles are paid apart and who splits their time has each agreement scaled
+   * against the commitment it was priced at here (`scaleBySplit`, shared/moonRecap.ts; Rye,
+   * 15 Nov 2026, "no double cut"), and a Treasurer confirms that before it pays.
    */
   commitmentPct?: number;
 }
