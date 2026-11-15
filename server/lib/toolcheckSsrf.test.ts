@@ -79,6 +79,16 @@ describe("the outbound address predicate", () => {
     expect(reservedAddress(ip)).toBeNull();
   });
 
+  // The documentation ranges are routed nowhere, so refusing them closes no
+  // SSRF, and the inbox and agent-key suites use https://192.0.2.10/ as their
+  // "public, never dialled" address. Allowed on purpose; see outboundAddress.ts.
+  it.each(["192.0.2.10", "198.51.100.7", "203.0.113.9", "2001:db8::1"])(
+    "allows the documentation address %s, which the suites dial as public",
+    (ip) => {
+      expect(reservedAddress(ip)).toBeNull();
+    },
+  );
+
   it("fails closed on anything that is not an address", () => {
     expect(reservedAddress("not-an-address")).not.toBeNull();
     expect(reservedAddress("1:2:3")).not.toBeNull();

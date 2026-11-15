@@ -86,6 +86,11 @@ export const INTERNAL = new Set([
   // sends a real email. A founder setting it would send the village's mail,
   // and its key, somewhere other than the provider.
   "RESEND_API_BASE",
+  // Set by the acceptance suite alone (server/loop.e2e.test.ts): it boots the
+  // built server with NODE_ENV=production and points it at a local RPC stub,
+  // which base-reads.ts refuses in production (R111) unless this is "1". A
+  // founder setting it would reopen loopback to an admin-typed RPC address.
+  "VILLAGE_E2E_LOOPBACK_RPC",
   // Read by server/lib/voiceClaim.ts, and NOT settings. That check reads them
   // to refuse a HYPHA_VOICE_WEBHOOK_SECRET that is a copy of some other
   // secret, and these two are names a deployment might carry from elsewhere.

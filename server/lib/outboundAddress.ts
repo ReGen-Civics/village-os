@@ -24,6 +24,14 @@ import net from "node:net";
 
 /**
  * The reserved IPv4 blocks, each returning the name of the block it matched.
+ *
+ * The DOCUMENTATION ranges (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 and
+ * 2001:db8::/32) are deliberately NOT refused. They are routed nowhere, so no
+ * internal service answers on them and refusing them closes no SSRF; and they
+ * are the suites' "public but never dialled" address, which is exactly what a
+ * test of the guard's ALLOW path needs. sitePull.ts's copy refused them; when
+ * this became the one predicate, the guarded-inbox and agent-key suites
+ * (which set https://192.0.2.10/... and expect it accepted) went red on it.
  */
 export function reservedIpv4(ip: string): string | null {
   const p = ip.split(".").map(Number);
@@ -38,11 +46,8 @@ export function reservedIpv4(ip: string): string | null {
   if (a === 172 && b >= 16 && b <= 31) return "the private 172.16.0.0/12 block";
   if (a === 192 && b === 168) return "the private 192.168.0.0/16 block";
   if (a === 192 && b === 0 && c === 0) return "the reserved 192.0.0.0/24 block";
-  if (a === 192 && b === 0 && c === 2) return "the documentation 192.0.2.0/24 block";
   if (a === 100 && b >= 64 && b <= 127) return "the carrier grade NAT 100.64.0.0/10 block";
   if (a === 198 && (b === 18 || b === 19)) return "the benchmarking 198.18.0.0/15 block";
-  if (a === 198 && b === 51 && c === 100) return "the documentation 198.51.100.0/24 block";
-  if (a === 203 && b === 0 && c === 113) return "the documentation 203.0.113.0/24 block";
   if (a >= 224 && a <= 239) return "the multicast 224.0.0.0/4 block";
   if (a >= 240) return "the reserved 240.0.0.0/4 block, which includes the broadcast address";
   return null;
@@ -120,7 +125,6 @@ export function reservedAddress(ip: string): string | null {
   if ((g[0] & 0xffc0) === 0xfe80) return "the link local fe80::/10 block";
   if ((g[0] & 0xffc0) === 0xfec0) return "the deprecated site local fec0::/10 block";
   if ((g[0] & 0xff00) === 0xff00) return "the IPv6 multicast ff00::/8 block";
-  if (g[0] === 0x2001 && g[1] === 0x0db8) return "the documentation 2001:db8::/32 block";
   if (g[0] === 0x0100 && g.slice(1, 4).every((n) => n === 0)) return "the discard-only 100::/64 block";
   return null;
 }
