@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.10 (2026-11-15)
+
+### What changed for your village
+
+- **People seated through a role application can now be paid.** When an application is adopted, its contract now records the price: the accepted ask, or the listed price if the person chose to negotiate, never above the cap. Before this, End of Moon had nothing to pay them.
+- **Roles show a cap at 120% of the listed price.** A role listed at $13,000 a month for the full role accepts proposals up to $15,600. The role card, the price popup and the review step show it, and the server refuses an ask above it. The same cap bounds a scaled End of Moon line, which the Treasurer still confirms.
+- **The application uses the same pay math as End of Moon.** Taking on several roles at different commitments shows each role's pay scaled once, never cut twice.
+- **No automatic role pay at the start of a month.** A seat paid through End of Moon is no longer owed its full role cash when a new month begins, with no Treasurer involved.
+- **Sturdier forms.** A broken request gets a clear error instead of a crash, hidden and look-alike characters are cleaned from applications, the same application is not kept twice, and odd price asks (negative, not a number, too large, or "negotiate" with an amount) are refused with a reason.
+- **Deleting an account also removes their words from pay records.** Amounts and dates stay as the payment record.
+- **Spanish on slow phones.** Spanish now applies even when it arrives late, and retries if it fails to load. The companion, voice consent and more screens are translated, and an offline error says so honestly.
+- **Clearer words** on role cards, the application and /steward, from a steelman review.
+
+### What you must do
+
+Nothing. Treasurers: lines capped at 120% are marked, so check them at End of Moon.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1310 Batch 173: QA fixes from the steelman and three new perspectives (#1298, #1299, #1300, #1302, #1303, #1304, #1305, #1306, #1307, #1308)
+- #1311 Batch 174: pay in the application, 120% cap, adoption writes pay, no settlement on End of Moon seats (#1301), Spanish when it loads late (#1309)
+
+---
+
 ## 1.3.9 (2026-11-15)
 
 ### What changed for your village
