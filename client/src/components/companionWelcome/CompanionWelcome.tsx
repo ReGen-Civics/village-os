@@ -40,6 +40,7 @@ import {
   type Persona,
   type WelcomePayload,
   type WelcomeStatus,
+  welcomeMoveRefused,
 } from "@shared/companionPersona";
 import { Bubble, Egg, FOCUS, INPUT, MIC_LINE, Pet, TINT_OF, burst, chip, confetti, refocus, send, useInertOutside, useSpeech } from "./welcomeKit";
 import { LensSheet, type SheetId } from "./LensSheet";
@@ -86,6 +87,8 @@ export interface CompanionWelcomeProps {
   /** Opens a phone tab, so the tour can find a section that lives on it. */
   onTab: (t: ProfileTab) => void;
   onClose: (status: WelcomeStatus, beat: number, companionName: string) => void;
+  /** The welcome was finished in another tab: the server kept it finished, so this one closes and reloads. */
+  onFinishedElsewhere?: () => void;
 }
 
 /**
@@ -96,7 +99,7 @@ export default function CompanionWelcome(props: CompanionWelcomeProps) {
   return createPortal(<Welcome {...props} />, document.body);
 }
 
-function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: CompanionWelcomeProps) {
+function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, onFinishedElsewhere }: CompanionWelcomeProps) {
   const { t } = useLingui();
   /** What a dial's position means in words, for a screen reader (aria-valuetext). */
   const dialText = (v: number, lowWord: string, highWord: string): string => {
@@ -150,7 +153,23 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
   const kind: PetKind = gk?.guideUses ? "star" : has("vedic") ? "sprout" : "ears";
   const mates = roles.map((r) => roleNames[r.id] || r.name).join(" and ");
 
-  const save = useCallback((b: number, status: WelcomeStatus) => void send("/api/me/companion-welcome", "PUT", { beat: b, status }), []);
+  // A finished welcome stays finished (H7, 15 Nov 2026). A replay of a finished
+  // welcome saves nothing but "done", and when another tab finished it while this
+  // one was open, the server refuses the step back with the finished state and
+  // this tab closes and reloads to it.
+  const finished = payload.state?.status === "done";
+  const save = useCallback(
+    (b: number, status: WelcomeStatus) => {
+      if (finished && status !== "done") return;
+      void send("/api/me/companion-welcome", "PUT", { beat: b, status }).then((r) => {
+        if (!r.ok && welcomeMoveRefused(r.json?.state ?? null, { status })) {
+          cancel();
+          onFinishedElsewhere?.();
+        }
+      });
+    },
+    [cancel, finished, onFinishedElsewhere],
+  );
   const patch = useCallback((id: string, body: Record<string, unknown>) => void send(`/api/me/companions/${id}`, "PATCH", body), []);
 
   const go = useCallback(
