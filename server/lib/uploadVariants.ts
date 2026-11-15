@@ -26,6 +26,38 @@ let held = 0;
 /** One encode per key at a time: a burst of first requests shares it. */
 const inFlight = new Map<string, Promise<Buffer>>();
 
+/*
+ * WHAT ONE REQUEST MAY COST (integrator review of the resize). A copy is made
+ * on a public, unauthenticated URL, so three ceilings bound it, and past any of
+ * them the route simply sends the original file, which costs only a read:
+ *   - a source over MAX_SOURCE_BYTES is never decoded;
+ *   - sharp refuses a source over MAX_INPUT_PIXELS (a small file can still
+ *     declare a huge canvas), and the route's catch sends the original;
+ *   - at most MAX_ENCODES encodes run at once and MAX_WAITING wait their turn;
+ *     a request beyond that gets the original instead of a place in line.
+ */
+export const MAX_SOURCE_BYTES = 15 * 1024 * 1024;
+export const MAX_INPUT_PIXELS = 40_000_000;
+export const MAX_ENCODES = 2;
+export const MAX_WAITING = 16;
+let encoding = 0;
+const waiting: Array<() => void> = [];
+
+/** A turn at the encoder, or null when the line is already full. */
+function takeTurn(): Promise<(() => void) | null> {
+  const release = () => {
+    const next = waiting.shift();
+    if (next) next();
+    else encoding -= 1;
+  };
+  if (encoding < MAX_ENCODES) {
+    encoding += 1;
+    return Promise.resolve(release);
+  }
+  if (waiting.length >= MAX_WAITING) return Promise.resolve(null);
+  return new Promise((resolve) => waiting.push(() => resolve(release)));
+}
+
 /** WebP at this quality: the copies are photographs drawn small, under a scrim or in a card. */
 const QUALITY = 72;
 
@@ -37,7 +69,7 @@ export function variantKey(file: string, stat: { size: number; mtimeMs: number }
 export async function renderVariant(input: Buffer | string, ask: UploadVariantAsk): Promise<Buffer> {
   const sharp = (await import("sharp")).default;
   const ratio = ask.crop ? UPLOAD_VARIANT_CROPS[ask.crop] : 0;
-  return sharp(input)
+  return sharp(input, { limitInputPixels: MAX_INPUT_PIXELS })
     .rotate()
     .resize({
       width: ask.width,
@@ -50,8 +82,15 @@ export async function renderVariant(input: Buffer | string, ask: UploadVariantAs
     .toBuffer();
 }
 
-/** The copy for this file and ask, from memory when it is there. */
-export async function uploadVariant(filePath: string, stat: { size: number; mtimeMs: number }, ask: UploadVariantAsk): Promise<Buffer> {
+/**
+ * The copy for this file and ask, from memory when it is there, or why the
+ * route should send the original instead: "too-large" is a lasting answer for
+ * that file, "busy" is this moment only (the encoder's line is full), so the
+ * route tells caches not to keep it. A source sharp refuses (too many pixels,
+ * not an image) rejects, and the route sends the original from its catch.
+ */
+export async function uploadVariant(filePath: string, stat: { size: number; mtimeMs: number }, ask: UploadVariantAsk): Promise<Buffer | "too-large" | "busy"> {
+  if (stat.size > MAX_SOURCE_BYTES) return "too-large";
   const key = variantKey(filePath, stat, ask);
   const hit = cache.get(key);
   if (hit) {
@@ -62,6 +101,8 @@ export async function uploadVariant(filePath: string, stat: { size: number; mtim
   }
   const pending = inFlight.get(key);
   if (pending) return pending;
+  const release = await takeTurn();
+  if (!release) return "busy";
   const job = renderVariant(filePath, ask)
     .then((bytes) => {
       cache.set(key, bytes);
@@ -73,7 +114,10 @@ export async function uploadVariant(filePath: string, stat: { size: number; mtim
       }
       return bytes;
     })
-    .finally(() => inFlight.delete(key));
+    .finally(() => {
+      inFlight.delete(key);
+      release();
+    });
   inFlight.set(key, job);
   return job;
 }

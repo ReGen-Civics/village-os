@@ -17451,14 +17451,20 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * original, so a wrong srcset shows up as a broken request in development.
      */
     const ask = parseUploadVariant(req.query as Record<string, unknown>);
+    let originalIsStandIn = false;
     if (ask === "refused") return res.status(400).json({ error: "That size is not offered" });
     if (ask && isResizableUpload(`/api/uploads/${safe}`)) {
       try {
+        // Too large to decode, or the encoder's line is full: the original below costs only a read.
         const bytes = await uploadVariant(filePath, await fs.promises.stat(filePath), ask);
-        res.type("image/webp");
-        res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
-        res.setHeader("Cache-Control", `${isMemberOwnedUpload(safe) ? "private" : "public"}, max-age=31536000, immutable`);
-        return res.send(bytes);
+        // A full line is this moment's answer, not this URL's: no cache may keep the original under the copy's address.
+        if (bytes === "busy") originalIsStandIn = true;
+        else if (bytes !== "too-large") {
+          res.type("image/webp");
+          res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
+          res.setHeader("Cache-Control", `${isMemberOwnedUpload(safe) ? "private" : "public"}, max-age=31536000, immutable`);
+          return res.send(bytes);
+        }
       } catch (e) {
         // A file sharp cannot read is still a file: hand over the original below.
         console.warn(`[uploads] no ${ask.width}px copy of ${safe}: ${(e as Error)?.message ?? e}`);
@@ -17501,6 +17507,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       res.setHeader("Content-Disposition", `attachment; filename="${safe}"`);
       res.setHeader("Cache-Control", "private, no-cache");
     }
+    if (originalIsStandIn) res.setHeader("Cache-Control", "no-store");
     res.sendFile(filePath);
   });
 
