@@ -16426,3 +16426,9 @@ msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la es
 msgctxt "founding application value"
 msgid "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
 msgstr "Las metas guían el trabajo, y el pago sigue a lo que entregas. Si un mes termina lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. Quien lleva la tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que lo confirme."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal, founding application"
+msgid "These are optional. Someone who lives far away may not have been able to come yet."
+msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
