@@ -16739,3 +16739,84 @@ msgstr "Habla en lugar de escribir"
 msgctxt "dialog corner button"
 msgid "Close"
 msgstr "Cerrar"
+
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, before it has a name"
+msgid "your companion"
+msgstr "tu compañero"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, the speaker before it has a name"
+msgid "Your companion"
+msgstr "Tu compañero"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "{name}? {name}! Oh, I love it. {name} it is. You can rename me any time."
+msgstr "¿{name}? ¡{name}! Ay, me encanta. Seré {name}. Puedes cambiarme el nombre cuando quieras."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstName}. I'll hatch once you've told me who to be. First: what's my name?"
+msgstr "¿Toc, toc? ¡Hola ahí dentro… digo, ahí fuera! Soy tu compañero, {firstName}. Saldré del cascarón cuando me digas quién ser. Primero: ¿cómo me llamo?"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable."
+msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. Todo es opcional, privado y se puede borrar."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
+msgstr "¡Eso es todo el lugar, {firstName}! Mi primera pregunta te espera en Tus compañeros. Llámame cuando quieras: siempre estoy en tu perfil."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Gene Keys and Human Design"
+msgstr "Gene Keys y Diseño Humano"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Vedic chart"
+msgstr "Carta védica"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Personality type"
+msgstr "Tipo de personalidad"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "In your own words"
+msgstr "En tus propias palabras"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Choose your birth date first."
+msgstr "Primero elige tu fecha de nacimiento."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Your Moon changed sign that day. Add your birth time so I can tell which."
+msgstr "Tu Luna cambió de signo ese día. Añade tu hora de nacimiento para que pueda saber cuál."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Tick the box to say yes first."
+msgstr "Primero marca la casilla para decir que sí."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be saved just now."
+msgstr "No se pudo guardar en este momento."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be changed just now."
+msgstr "No se pudo cambiar en este momento."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be deleted just now."
+msgstr "No se pudo borrar en este momento."
