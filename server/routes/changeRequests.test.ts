@@ -75,7 +75,7 @@ function memoryStore(): ChangeRequestStore & { rows: Map<string, ChangeRequestRo
 }
 
 const PEOPLE: Record<string, any> = {
-  "u-steward": { id: "u-steward", name: "Rye Cordon" },
+  "u-steward": { id: "u-steward", name: "Rye Ashby" },
   "u-ana": { id: "u-ana", name: "Ana Lopez" },
   "u-sol": { id: "u-sol", name: "Sol Rivera" },
   "u-guest": { id: "u-guest", name: "Gus Guest" },
