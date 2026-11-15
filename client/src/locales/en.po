@@ -2037,6 +2037,14 @@ msgctxt "open work: the goal thread, one"
 msgid "1 open quest grows {goalName}"
 msgstr "1 open quest grows {goalName}"
 
+#. placeholder {0}: money(value.monthly)
+#. placeholder {1}: askPeriod(value)
+#. placeholder {2}: savedDiff !== null ? ` (${signedPct(savedDiff)} on the suggestion)` : ""
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask summary"
+msgid "You propose {0} a {1}{2}."
+msgstr "You propose {0} a {1}{2}."
+
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgctxt "role draft discover"
 msgid "Birth time"
@@ -2634,9 +2642,9 @@ msgstr "Send"
 #. placeholder {0}: money(value.monthly)
 #. placeholder {1}: suggested ? ` (${signedPct(priceDifferencePct(suggested, value.monthly) ?? 0)} on the suggestion)` : ""
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask summary"
-msgid "You propose {0} a {per}{1}."
-msgstr "You propose {0} a {per}{1}."
+#~ msgctxt "price ask summary"
+#~ msgid "You propose {0} a {per}{1}."
+#~ msgstr "You propose {0} a {per}{1}."
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
@@ -6383,9 +6391,9 @@ msgstr "What it is for"
 
 #. placeholder {0}: moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: the pay ask, an amount"
-msgid "{0} a month"
-msgstr "{0} a month"
+#~ msgctxt "open proposal: the pay ask, an amount"
+#~ msgid "{0} a month"
+#~ msgstr "{0} a month"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft step"
@@ -6829,9 +6837,9 @@ msgstr "Loading…"
 #. placeholder {3}: signedPct(diff ?? 0)
 #. placeholder {4}: data.ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: suggested and proposed price"
-msgid "Suggested {0} a {1}; they propose {2} ({3}).{4}"
-msgstr "Suggested {0} a {1}; they propose {2} ({3}).{4}"
+#~ msgctxt "open proposal: suggested and proposed price"
+#~ msgid "Suggested {0} a {1}; they propose {2} ({3}).{4}"
+#~ msgstr "Suggested {0} a {1}; they propose {2} ({3}).{4}"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Adopted on {adoptedDay} by the village's vote."
@@ -12584,6 +12592,13 @@ msgctxt "a change was saved"
 msgid "Saved."
 msgstr "Saved."
 
+#. placeholder {0}: moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")
+#. placeholder {1}: askPeriod(data.ask)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask, an amount"
+msgid "{0} a {1}"
+msgstr "{0} a {1}"
+
 #: client/src/pages/FundingRounds.tsx
 msgid "Choose together which quests the season funds, within a pot."
 msgstr "Choose together which quests the season funds, within a pot."
@@ -15092,6 +15107,16 @@ msgstr "Shape the role (optional)"
 #: client/src/components/openProposal/MembershipAtApplication.tsx
 msgid "The membership letter didn't load. Reload the page to read it and align."
 msgstr "The membership letter didn't load. Reload the page to read it and align."
+
+#. placeholder {0}: moneyWords(r.atCommitment, r.full.currency)
+#. placeholder {1}: r.full.per
+#. placeholder {2}: moneyWords(ask.monthly, r.full.currency)
+#. placeholder {3}: diff !== null ? ` (${signedPct(diff)})` : ""
+#. placeholder {4}: ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: suggested and proposed price"
+msgid "Suggested {0} a {1}; they propose {2}{3}.{4}"
+msgstr "Suggested {0} a {1}; they propose {2}{3}.{4}"
 
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
