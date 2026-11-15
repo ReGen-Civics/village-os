@@ -355,14 +355,15 @@ describe("the season's goals, the first step", () => {
     expect(screen.getByText("Done")).toBeTruthy();
     const steps = screen.getAllByRole("listitem").map((li) => li.textContent ?? "").filter((x) => /goals$|Apply$/.test(x));
     expect(steps[0]).toMatch(/This season's goals/);
-    expect(screen.getByText(/what you would like to contribute each moon and this season/)).toBeTruthy();
+    expect(screen.getByText(/what you would like to contribute each month and this season/)).toBeTruthy();
   });
 });
 
 describe("a village whose proposals are for this moon", () => {
-  it("says the role runs to the next new moon, by its day", async () => {
+  it("says the role runs to its last day, by date, and never names the moon to an applicant", async () => {
     serve({ form: { ...OPEN_FORM, term: { kind: "moon", startsOn: "2026-11-09", endsOn: "2026-12-08" } } });
     render(<RoleDraft />);
-    expect(await screen.findByText(/Your role runs from adoption to the next new moon, 8 December 2026/)).toBeTruthy();
+    const line = await screen.findByText(/Your role runs from adoption to 8 December 2026. Each month you share what you'll bring the next month./);
+    expect(line.textContent).not.toMatch(/moon/i);
   });
 });

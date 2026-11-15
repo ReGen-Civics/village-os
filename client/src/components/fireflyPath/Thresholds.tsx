@@ -29,6 +29,7 @@ import { storedText } from "@/lib/safeStorage";
 import { isApplicantLanguage } from "@shared/applicantWords";
 import { OPEN_CONFIRM_HOURS, type StepAfterSubmit } from "@shared/openProposals";
 import { confirmBy, inboxFor, replyBy } from "./stones";
+import { AnotherRoleDoor } from "./RestoredNote";
 import { applyWordT } from "./applyWordsT";
 
 const BUTTON = `${BTN_PRIMARY} py-3`;
@@ -263,7 +264,7 @@ export function ConfirmedHeading({ title }: { title: string }) {
  * confirm yet: the application is in, we say so, and the status page is
  * offered here because no email could carry it.
  */
-function KeptThreshold({ sent, roles }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"] }) {
+function KeptThreshold({ sent, roles, onAnother }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onAnother?: () => void }) {
   const { t } = useLingui();
   return (
     <Shell wide>
@@ -288,6 +289,7 @@ function KeptThreshold({ sent, roles }: { sent: SentNote; roles: ComponentProps<
           <div className="grid gap-2">
             <h2 className={EYEBROW}>{t({ message: "What comes next", context: "open proposal sent" })}</h2>
             <NextForRoles roles={roles} />
+            {onAnother && <AnotherRoleDoor onChoose={onAnother} />}
           </div>
         </section>
         <aside className="grid gap-4">
@@ -298,12 +300,13 @@ function KeptThreshold({ sent, roles }: { sent: SentNote; roles: ComponentProps<
   );
 }
 
-export function SentThreshold({ sent, roles, onFixAddress }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void }) {
-  if (sent.kept) return <KeptThreshold sent={sent} roles={roles} />;
-  return <CheckEmailThreshold sent={sent} roles={roles} onFixAddress={onFixAddress} />;
+/** `onAnother`, when the village offers more than one role: a door to apply for another, which starts from what they wrote (fireflyPath/applyCarry.ts). */
+export function SentThreshold({ sent, roles, onFixAddress, onAnother }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void; onAnother?: () => void }) {
+  if (sent.kept) return <KeptThreshold sent={sent} roles={roles} onAnother={onAnother} />;
+  return <CheckEmailThreshold sent={sent} roles={roles} onFixAddress={onFixAddress} onAnother={onAnother} />;
 }
 
-function CheckEmailThreshold({ sent, roles, onFixAddress }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void }) {
+function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: SentNote; roles: ComponentProps<typeof NextForRoles>["roles"]; onFixAddress: () => void; onAnother?: () => void }) {
   const { t } = useLingui();
   const whatComesNext = useWhatComesNext();
   const inbox = inboxFor(sent.to);
@@ -357,6 +360,7 @@ function CheckEmailThreshold({ sent, roles, onFixAddress }: { sent: SentNote; ro
             </ol>
             {/* The steps after confirming, for the roles picked (Rye's answer 7): conversations in order, the booking link. */}
             <NextForRoles roles={roles} />
+            {onAnother && <AnotherRoleDoor onChoose={onAnother} />}
           </div>
           <p className={HINT}>{t({ message: "No email after a few minutes? Look in spam or promotions, or fix the address and send again. An application nobody confirms is deleted on its own.", context: "founding application sent" })}</p>
         </section>

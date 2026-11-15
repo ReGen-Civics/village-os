@@ -51,6 +51,9 @@ import { readRoleCard, type RoleCardAnswer } from "./roleCardApi";
 import { overlaySeat, overlaySections } from "@shared/contentTranslationOverlay";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { MachineTranslationMark } from "@/i18n/machineTranslation";
+import { withFocusLine } from "./focusLine";
+import { shownCommitment } from "@shared/focusLine";
+import { useVillageName } from "@/hooks/useVillageName";
 
 export type CardRegister = "founding" | "game";
 
@@ -145,9 +148,11 @@ export interface FullRoleCardProps {
   allPieces?: boolean;
   /** How many suggestions each piece carries, for the dot on its rail chip. */
   marks?: (pieceKey: string) => number;
+  /** The share the applicant chose, while they apply: the focus line follows it (shared/focusLine.ts). */
+  commitmentChosen?: number | null;
 }
 
-export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
@@ -163,13 +168,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     };
   }, [id, locale]);
 
+  const village = useVillageName("The village");
   // The card in the reader's language where it has been translated (Rye, 15 Nov 2026), English elsewhere.
   const translation = answer?.translation && answer.translation.locale === locale ? answer.translation : null;
   const seat = overlaySeat(givenSeat, translation);
   const machine = (translation?.machine.length ?? 0) > 0;
-  const sections = overlaySections(answer?.sections ?? given ?? null, translation);
+  const read = overlaySections(answer?.sections ?? given ?? null, translation);
   // How rewards work: the village's shape on every card, the card's own where it wrote one (lead, 11 Nov).
-  const pay = cardPay(sections, answer?.villagePay ?? givenPay ?? NO_VILLAGE_PAY);
+  const pay = cardPay(read, answer?.villagePay ?? givenPay ?? NO_VILLAGE_PAY);
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
   // keeps it hidden, and the card drops it again here so an older payload can never draw one.
   const showsRange = answer?.showPayRanges === true;
@@ -195,6 +201,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // free text is drawn only on a card whose terms name none.
   const commitmentPct: number | null = Number.isInteger(seat?.card?.commitmentPct) ? (seat.card.commitmentPct as number) : null;
   const commitment = commitmentPct !== null ? null : asText(seat.timeCommitment);
+  // The focus line (Rye, 15 Nov 2026): the qualities' token drawn for the commitment this card shows.
+  const focusPct = shownCommitment(commitmentChosen, seat?.card?.commitmentMin ?? null, commitmentPct);
+  const sections = read ? { ...read, qualities: withFocusLine(i18n, read.qualities, village, focusPct) } : null;
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
   const apply = !noAct && mayApply(seat);
   const last = answer?.lastEdited ?? null;

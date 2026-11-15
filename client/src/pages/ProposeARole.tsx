@@ -81,6 +81,8 @@ import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
 import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
+import { readCarry, writeCarry } from "@/components/fireflyPath/applyCarry";
+import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
@@ -261,7 +263,7 @@ export default function ProposeARole() {
   const [pane, setPane] = useState(0);
   /** The draft for this role has been read back (or there was none), so saving may begin. */
   const [draftFor, setDraftFor] = useState<string | null>(null);
-  const [restored, setRestored] = useState(false);
+  const [restored, setRestored] = useState<false | "draft" | "carry">(false);
   /** What to put the cursor on after the next draw: the step's heading, or a field with a problem. */
   const [aimAt, setAimAt] = useState<{ n: number; target: string | null } | null>(null);
   const touch = useRef<{ x: number; y: number; owned: boolean } | null>(null);
@@ -311,7 +313,15 @@ export default function ProposeARole() {
   useEffect(() => {
     if (form.kind !== "open" || !roleId || draftFor === roleId) return;
     const read = readStoredJson("local", draftKey(roleId, link));
-    const d = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
+    const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
+    // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
+    const carry = own ? null : readCarry(link, roleId, LAST_STONE);
+    const d = own ?? carry?.draft ?? null;
+    if (carry) {
+      // Straight on from a sent one, the page still holds the last role's answers: those, files, consents and agreements start fresh.
+      setAbout((a) => ({ ...a, references: [], consent: false })); setVoice({ ...EMPTY_VOICE, transcript: carry.transcript });
+      setWhy(""); setItems([{ ...BLANK_GOAL }]); setFiles([]); setAgreed({ nda: false }); setMembership({ kind: "none" });
+    }
     if (d) {
       setKnowUs(d.knowUs.filter((w) => form.setup.knowUs.includes(w)));
       if (d.why) setWhy(d.why);
@@ -328,7 +338,7 @@ export default function ProposeARole() {
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
       setReached(d.reached);
-      setRestored(true);
+      setRestored(own ? "draft" : "carry");
     }
     setDraftFor(roleId);
   }, [form, roleId, link, draftFor]);
@@ -516,8 +526,9 @@ export default function ProposeARole() {
         show(p);
         return;
       }
-      // Sent: the draft has done its work.
+      // Sent: the draft has done its work, and their own words wait for a next role (fireflyPath/applyCarry.ts).
       removeStored("local", draftKey(roleId, link));
+      writeCarry(link, { name, email, about, selfKnowledge, links, knowUs, items, marks, transcript: voice.transcript });
       const sentTo = email.trim();
       const kept = data?.kept === true; // Kept though our confirmation email failed (server/lib/openProposalKept.ts): said honestly.
       setSent({
@@ -604,7 +615,9 @@ export default function ProposeARole() {
     );
   }
   if (sent) {
-    return <SentThreshold sent={sent} roles={role ? [role] : []} onFixAddress={() => { setSent(null); goTo(stoneOfField("email"), { target: "#propose-email" }); }} />;
+    // Another role: back to the open roles; the next one starts from what they wrote here (fireflyPath/applyCarry.ts).
+    const another = form.roles.length > 1 ? () => { setSent(null); setRoleId(null); setStone(0); setReached(0); setRestored(false); showRoleInAddress(null); window.scrollTo?.({ top: 0 }); } : undefined;
+    return <SentThreshold sent={sent} roles={role ? [role] : []} onFixAddress={() => { setSent(null); goTo(stoneOfField("email"), { target: "#propose-email" }); }} onAnother={another} />;
   }
 
   // Only when a door sent the visitor here with `from`; a shared link stands on its own.
@@ -697,7 +710,7 @@ export default function ProposeARole() {
   const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}…` : s.trim());
   const notYet = t({ message: "Not written yet", context: "founding application review" });
   // The review reads the earliest start in plain words ("1 December 2026"), as the rest of the page says a day.
-  const startDay = practical.earliestStart ? civilDayWords(practical.earliestStart) : "";
+  const startDay = practical.earliestStart ? civilDayWords(practical.earliestStart, i18n.locale) : "";
   /** Review & submit: each step in a line, with a way back to it. */
   const review: Array<[number, string]> = [
     [0, ways === 0 ? t({ message: "Nothing to tick", context: "founding application review" }) : t({ message: `${ticked} of ${ways} done`, context: "founding application review" })],
@@ -751,11 +764,7 @@ export default function ProposeARole() {
             {setup.updatedNote}
           </p>
         )}
-        {restored && (
-          <p className="mt-2 text-sm text-foreground" data-draft-restored="">
-            {t({ message: "We kept your answers from last time. References, files and recordings are never saved, so add them again.", context: "founding application draft" })}
-          </p>
-        )}
+        {restored && <RestoredNote kind={restored} />}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
       </header>
 
@@ -898,7 +907,7 @@ export default function ProposeARole() {
                 }
               />
               <Beside id="propose-problem-card" message={problemOn("card") ?? problemOn("serves")} />
-              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} />
+              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} pct={commitment} />
             </section>
 
             {/* STEP 4: the terms. Commitment and the eight settings, the ramp-up, and the shape of compensation. */}
