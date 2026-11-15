@@ -1108,10 +1108,10 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
    * It asks every person on the roll, so "short of participation" is not an
    * answer until the window ends: closing it early as no quorum took the
    * vote from the three people who had not answered yet, and any admin could
-   * do it. It still closes early once a no is cast, because one no means it
+   * do it. Once everyone on the roll has answered there is nobody left to wait for. It still closes early once a no is cast, because one no means it
    * can no longer carry, and a pass waits for the clock below as every ballot's does.
    */
-  if (!expired && ballot.subjectType === VILLAGE_LAUNCH && outcome === "no_quorum" && Number(tallies.noW) === 0) {
+  if (!expired && ballot.subjectType === VILLAGE_LAUNCH && outcome === "no_quorum" && Number(tallies.noW) === 0 && (await voteCount(pool, ballot.id)) < Number(ballot.electorateCount)) {
     return {
       ok: false,
       error: "The launch vote asks everyone on the roll, so it runs its whole window and closes on the clock. People who have not answered yet still can.",
@@ -1361,11 +1361,8 @@ export async function withdrawBallot(pool: Pool, input: WithdrawBallotInput): Pr
    * launch hands over; after that it runs on the clock.
    */
   if (ballot.subjectType === VILLAGE_LAUNCH) {
-    const [others] = await pool.query<RowDataPacket[]>(
-      "SELECT COUNT(*) AS n FROM ballot_votes WHERE ballot_id = ? AND user_id <> ?",
-      [ballot.id, input.withdrawnBy],
-    );
-    if (Number(others[0]?.n ?? 0) > 0) {
+    const others = votes - ((await voteOf(pool, ballot.id, input.withdrawnBy)) ? 1 : 0);
+    if (others > 0) {
       return {
         ok: false,
         error: "Other people have voted on starting the Game, so it can no longer be called off. It runs its whole window and closes on the clock, or early once somebody votes no.",
