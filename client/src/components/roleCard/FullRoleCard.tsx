@@ -48,6 +48,9 @@ import FoundingRoleCard from "./FoundingRoleCard";
 import RootsSlot from "./RootsSlot";
 import { useWide } from "./useWide";
 import { readRoleCard, type RoleCardAnswer } from "./roleCardApi";
+import { overlaySeat, overlaySections } from "@shared/contentTranslationOverlay";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
 import { useVillageName } from "@/hooks/useVillageName";
@@ -149,23 +152,28 @@ export interface FullRoleCardProps {
   commitmentChosen?: number | null;
 }
 
-export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
-  const id = String(seat?.id ?? "");
+  const id = String(givenSeat?.id ?? "");
+  const { locale } = useLocale();
   const [answer, setAnswer] = useState<RoleCardAnswer | null>(null);
   useEffect(() => {
     let live = true;
     if (!id) return;
-    void readRoleCard(id).then((a) => live && setAnswer(a));
+    void readRoleCard(id, locale).then((a) => live && setAnswer(a));
     return () => {
       live = false;
     };
-  }, [id]);
+  }, [id, locale]);
 
   const village = useVillageName("The village");
-  const read = answer?.sections ?? given ?? null;
+  // The card in the reader's language where it has been translated (Rye, 15 Nov 2026), English elsewhere.
+  const translation = answer?.translation && answer.translation.locale === locale ? answer.translation : null;
+  const seat = overlaySeat(givenSeat, translation);
+  const machine = (translation?.machine.length ?? 0) > 0;
+  const read = overlaySections(answer?.sections ?? given ?? null, translation);
   // How rewards work: the village's shape on every card, the card's own where it wrote one (lead, 11 Nov).
   const pay = cardPay(read, answer?.villagePay ?? givenPay ?? NO_VILLAGE_PAY);
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
@@ -305,6 +313,11 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
         data-full-role-card={id}
         data-register={register}
       >
+        {machine && (
+          <div className="px-5 pt-4 sm:px-7">
+            <MachineTranslationMark />
+          </div>
+        )}
         <FoundingRoleCard
           seat={seat}
           circleName={circleName}
@@ -367,6 +380,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
         {/* "Paid" is said once, by "This is a paid role" under the title (QA2-16). */}
         {circleName && <p className={EYEBROW}>{circleName}</p>}
         {showTitle && <H3 className={founding ? "font-display text-3xl leading-tight text-card-foreground sm:text-4xl" : "font-display text-2xl text-card-foreground"}>{String(seat?.name ?? "")}</H3>}
+        {machine && <MachineTranslationMark />}
         {/* The roots it grows from, drawn by RootTags (RootsSlot.tsx). */}
         <RootsSlot roots={roots} />
         {sections?.paid && (

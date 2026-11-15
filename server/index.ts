@@ -257,6 +257,7 @@ import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry"
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
+import { noSharedCache, pageTranslation, readerLocale } from "./lib/contentTranslationRead";
 import { register as registerSessionCardRoutes } from "./routes/sessionCard";
 import { exportMemberSessions, register as registerLiveSessionsRoutes } from "./routes/liveSessions";
 import { register as registerSessionTasksRoutes } from "./routes/sessionTasks";
@@ -7858,6 +7859,22 @@ async function startServer() {
       );
     }
     res.json(section);
+  });
+
+  /**
+   * A page's words in the reader's language (Rye, 15 Nov 2026), for the page to lay over its English
+   * before `{words}` are filled. Only fresh translations of the words the page says now; a machine
+   * draft is named in `machine` so the page marks it. Binding pages (the pledge, the rights pages,
+   * the good neighbor agreement) never answer with a translation. Empty, never an error, for a page
+   * or a language with none, so a reader's page never loads red.
+   */
+  app.get("/api/content/:section/translation", async (req, res) => {
+    const section = String(req.params.section ?? "");
+    const locale = readerLocale(req);
+    noSharedCache(res);
+    if (!locale) return res.json({ translation: null });
+    const content = contentRepo.get() ?? {};
+    res.json({ translation: await pageTranslation(getPool(), section, content[section], locale) });
   });
 
   // Admin: Read All Content
