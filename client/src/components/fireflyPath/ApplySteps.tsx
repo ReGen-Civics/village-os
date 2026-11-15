@@ -103,7 +103,7 @@ export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>
   return (
     <div className="grid gap-10">
       <section aria-labelledby="choose-first" data-role-choice-first="">
-        <h2 id="choose-first" className="mb-4 font-display text-2xl leading-tight text-foreground">{t({ message: "Hiring first: the founding team", context: "founding application choose, founding roles heading" })}</h2>
+        <h2 id="choose-first" className="mb-4 font-display text-2xl leading-tight text-foreground">{t({ message: "Filling first: the founding team", context: "founding application choose, founding roles heading" })}</h2>
         <RoleDoors roles={first} onPick={onPick} />
       </section>
       <section aria-labelledby="choose-later" data-role-choice-later="">
@@ -315,7 +315,7 @@ export function CompensationShape({ setup }: { setup: FoundingSetup }) {
         <h3 id="comp-shape-h" className="font-display text-2xl text-card-foreground">
           {t({ message: "How compensation is shaped", context: "founding application compensation" })}
         </h3>
-        <p className={`mt-1 ${HINT}`}>{t({ message: "The shape of the whole, before any amount. Amounts come later, in conversation.", context: "founding application compensation" })}</p>
+        <p className={`mt-1 ${HINT}`}>{t({ message: "How your pay is split between cash, equity and credits. Your price is set above, by your proposal.", context: "founding application compensation" })}</p>
       </div>
       <dl className="grid grid-cols-3 gap-3">
         {shares.map((s) => (

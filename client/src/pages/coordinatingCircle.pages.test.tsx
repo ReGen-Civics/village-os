@@ -208,24 +208,18 @@ describe("/circles with nothing saved (a new village's starter words)", () => {
 });
 
 describe("/roles", () => {
-  it("names the village's own top circle where its circles nest under one", async () => {
+  it("says the Anchor Circle holds the whole village for now, and sends no one to build circles (Rye, 14 Nov 2026)", async () => {
     page(<Roles />);
     // The roles sit behind step one (the archetype pick) until "See all roles".
     await openAllRoles();
     await screen.findByRole("heading", { level: 3, name: "Water Keeper" });
 
-    expect(screen.getByText(/and links back to the Hearth Council\.$/)).toBeInTheDocument();
+    expect(document.querySelector("[data-anchor-only]")?.textContent).toBe(
+      "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them.",
+    );
     expect(document.body.textContent).not.toContain("General Coordinating Circle");
-  });
-
-  it("names no circle in a village whose circles are flat", async () => {
-    org = FLAT;
-    page(<Roles />);
-    // The roles sit behind step one (the archetype pick) until "See all roles".
-    await openAllRoles();
-    await screen.findByRole("heading", { level: 3, name: "Water Keeper" });
-
-    expect(screen.getByText("Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on).")).toBeInTheDocument();
     expect(document.body.textContent).not.toContain("links back to");
+    expect(document.body.textContent).not.toContain("the way a forest does");
+    expect(screen.queryByRole("link", { name: /Explore Our Circles/ })).toBeNull();
   });
 });

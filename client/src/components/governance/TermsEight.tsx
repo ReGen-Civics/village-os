@@ -79,12 +79,12 @@ export default function TermsEight({
   const ceiling = roles.length === 1 ? (roles[0].ceiling ?? null) : null;
   const labels: Record<TermKey, string> = {
     term: t({ message: "Term", context: "terms setting" }),
-    clocks: t({ message: "Clocks", context: "terms setting" }),
+    clocks: t({ message: "Time", context: "terms setting" }),
     rhythm: t({ message: "Rhythm", context: "terms setting" }),
     allowance: t({ message: "Allowance", context: "terms setting" }),
     bonus: t({ message: "Bonus", context: "terms setting" }),
     goals: t({ message: "Goals", context: "terms setting" }),
-    scoreboard: t({ message: "Scoreboard", context: "terms setting" }),
+    scoreboard: t({ message: "How we track progress", context: "terms setting" }),
     ending: t({ message: "Ending", context: "terms setting" }),
   };
   const several = roles.length > 1;

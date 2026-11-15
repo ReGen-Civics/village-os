@@ -516,7 +516,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
           ))}
         </div>
         <NameBox initial={personal?.name ?? ""} quiet={quiet} onSend={setNameNow} />
-        {!quiet ? <p className={fine}>{MIC_LINE}</p> : null}
+        {!quiet ? <p className={fine}>{t(MIC_LINE)}</p> : null}
       </>
     );
   } else if (beat === 2) {

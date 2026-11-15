@@ -101,7 +101,9 @@ export function bothZones(instant: Date | string, viewerSaved: string | null | u
 
 /** "Times are in America/Costa_Rica (CST)": the calendar's standing note. */
 export function zoneNote(timeZone: string): string {
-  return `Times are village time, ${timeZone.replace(/_/g, " ")} (${zoneShortName(timeZone)})`;
+  // "Costa Rica time (CST)", never the database name "America/Costa Rica" (applicant journey QA, 15 Nov 2026).
+  const place = timeZone.includes("/") ? timeZone.slice(timeZone.lastIndexOf("/") + 1).replace(/_/g, " ") : null;
+  return place ? `Times are village time: ${place} time (${zoneShortName(timeZone)})` : `Times are village time: ${timeZone} (${zoneShortName(timeZone)})`;
 }
 
 // ── Grids ───────────────────────────────────────────────────────────────────

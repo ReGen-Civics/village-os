@@ -4,7 +4,7 @@
  * row brings with it still wins.
  */
 import { describe, expect, it } from "vitest";
-import { GATHERING_DOT, kindColour } from "./calendarTime";
+import { GATHERING_DOT, kindColour, zoneNote } from "./calendarTime";
 
 /** WCAG relative luminance of a #rrggbb colour. */
 function lum(hex: string): number {
@@ -30,5 +30,14 @@ describe("the gathering dot", () => {
 
   it("keeps a row's own colour", () => {
     expect(kindColour({ kind: "gathering", colour: "#123456" } as never)).toBe("#123456");
+  });
+});
+
+describe("zoneNote", () => {
+  it("names the place, never the zone database's name (applicant journey QA, 15 Nov 2026)", () => {
+    expect(zoneNote("America/Costa_Rica")).toMatch(/^Times are village time: Costa Rica time \(.+\)$/);
+    expect(zoneNote("America/Costa_Rica")).not.toContain("America/");
+    expect(zoneNote("America/Argentina/Buenos_Aires")).toMatch(/^Times are village time: Buenos Aires time /);
+    expect(zoneNote("UTC")).toMatch(/^Times are village time: UTC/);
   });
 });

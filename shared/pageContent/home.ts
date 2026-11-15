@@ -95,7 +95,7 @@ export const HOME_PAGE: PageSpec = {
           default: [
             { name: "Align", description: "Discover our values" },
             { name: "Experience", description: "Visit & participate" },
-            { name: "Co-Create", description: "Join our circles" },
+            { name: "Co-Create", description: "Take a role or a quest" },
             { name: "Integrate", description: "Become a {member}" },
             { name: "Home", description: "Make it home" },
           ],
@@ -115,7 +115,7 @@ export const HOME_PAGE: PageSpec = {
           label: "Sentence under the heading",
           kind: "long",
           max: 160,
-          default: "Four ways into {village}. Pick the one that fits you today. You can add more later.",
+          default: "Pick the way in that fits you today. You can add more later.",
         },
       ],
       lists: [
@@ -141,7 +141,7 @@ export const HOME_PAGE: PageSpec = {
             {
               title: "Village Steward",
               subtitle: "Co-Creator",
-              description: "Hold a role, join a circle, and keep the whole village running.",
+              description: "Hold a role, take on quests, and keep the whole village running.",
             },
             {
               title: "Resident",

@@ -37,7 +37,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
-import { rewardWords } from "@shared/roleRewardWords";
+import { rewardWords } from "./rewardWords";
+import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
 import { Fireflies } from "@/components/journey/nature";
@@ -146,7 +147,7 @@ export interface FullRoleCardProps {
 export default function FullRoleCard({ seat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const id = String(seat?.id ?? "");
   const [answer, setAnswer] = useState<RoleCardAnswer | null>(null);
   useEffect(() => {
@@ -205,7 +206,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
   // ceiling written, no ceiling line.
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
-  const reward = sections?.payCeiling ? rewardWords(sections.payCeiling, seat?.card?.commitmentMin ?? null) : null;
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null) : null;
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
@@ -227,10 +228,31 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
           ))}
         </ul>
       )}
-      {pay.split && <p className="leading-relaxed text-card-foreground" data-testid="pay-split">{pay.split}</p>}
+      {pay.split && (() => {
+        // The tiles already show the split, so its "Default split: ..." words are for screen readers only (the tiles
+        // are aria-hidden); the card's own words after them stay in view (copy sweep, 15 Nov 2026: said once).
+        const own = sections?.paySplitNote ?? "";
+        const lead = pay.shape.length > 0 && own && pay.split.endsWith(` ${own}`) ? pay.split.slice(0, -(own.length + 1)) : null;
+        return (
+          <p className="leading-relaxed text-card-foreground" data-testid="pay-split">
+            {lead !== null ? (
+              <>
+                <span className="sr-only">{lead} </span>
+                {own}
+              </>
+            ) : pay.shape.length > 0 && !own ? (
+              <span className="sr-only">{pay.split}</span>
+            ) : (
+              pay.split
+            )}
+          </p>
+        );
+      })()}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
       {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
-      {pay.note && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}
+      {/* One footnote (copy sweep, 15 Nov 2026): with the ceiling's own footnote drawn, the village's note is not
+          drawn again; a note the card wrote itself still is. */}
+      {pay.note && (!reward || !!sections?.payNote) && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}
     </div>
   ) : null;
 
@@ -338,7 +360,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
         {/* The roots it grows from, drawn by RootTags (RootsSlot.tsx). */}
         <RootsSlot roots={roots} />
         {sections?.paid && (
-          <p className="font-semibold text-notice" data-testid="paid-role-line">{SECTION_WORDS.paid}</p>
+          <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>
         )}
       </header>
 

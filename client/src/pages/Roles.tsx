@@ -11,7 +11,6 @@ import { ArrowRight, Briefcase, ChevronDown, Link2 } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
 import { useEffect, useId, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
-import InfoTip from "@/components/InfoTip";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
 import { gameFetch, useSeason } from "@/lib/gameApi";
@@ -35,7 +34,6 @@ import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
-import { coordinatingCircle } from "@shared/coordinatingCircle";
 import FoundingTeam, { type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import FullRoleCard from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
@@ -524,14 +522,9 @@ export default function Roles() {
   // none. This line named "the General Coordinating Circle" to every village.
   // Held invisible until /api/org answers, so the sentence never grows a
   // clause in front of the reader.
-  const coordinator = coordinatingCircle(circles);
   const anchorId = anchorCircleId(circles);
-  const orgPending = roles === null && !failed;
   // A link to one role (?seat=) names that role in the page heading, not the whole page.
   const linkedName = linked ? ((roles ?? []) as Array<{ id: string; name: string }>).find((r) => r.id === linked)?.name ?? null : null;
-  const circlesHow = coordinator
-    ? t`Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on), and links back to the ${String(coordinator.name)}.`
-    : t`Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on).`;
 
   // Grouped by circle, in the order the village sorted its circles, with a
   // dormant circle's seats still listed under it.
@@ -711,15 +704,10 @@ export default function Roles() {
             <HeroHeading className={`${H1} mb-4`}>
               {linkedName ?? t({ message: `Roles and Circles`, context: "roles page" })}
             </HeroHeading>
-            {/* R46 enchant-first: the forest image carries the surface; the
-                sociocracy mechanics live in the three tooltips. */}
-            <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto sm:text-xl">
-              {t`The village organizes itself the way a forest does:`}{" "}
-              <InfoTip tip={t`Circles are sociocratic working groups with real authority over their own domain. Decisions inside a circle pass by consent or other circle-chosen processes.`}>{t({ message: `circles`, context: "roles page, intro word with a tooltip" })}</InfoTip>{" "}
-              {t`of care, each holding its own ground, and every`}{" "}
-              <InfoTip tip={t`A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person plays it for a season.`}>{t({ message: `role`, context: "roles page, intro word with a tooltip" })}</InfoTip>{" "}
-              {t`is a way to hold some of it with your own hands, by`}{" "}
-              <InfoTip tip={t`A decision moves forward when nobody holds a reasoned objection. Consent is quieter than consensus and faster than voting.`}>{t({ message: `consent`, context: "roles page, intro word with a tooltip" })}</InfoTip>.
+            {/* One circle for now (Rye, 14 Nov 2026, through the coordinator): the Anchor Circle holds the whole village.
+                Nothing here implies hiring or building circles. */}
+            <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto sm:text-xl" data-anchor-only="">
+              {t({ message: "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them.", context: "roles page intro, one circle for now" })}
             </p>
             <div className="mt-4 flex justify-center">
               <NewRoleFromCardButton onMade={() => window.location.reload()} />
@@ -761,16 +749,15 @@ export default function Roles() {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="mb-14 grid sm:grid-cols-3 gap-4"
+              className="mb-14 grid sm:grid-cols-2 gap-4"
             >
               {[
-                { label: t({ message: `Circles`, context: "roles page, how it works" }), description: circlesHow, pending: orgPending },
                 { label: t({ message: `Roles`, context: "roles page, how it works" }), description: t`Specific responsibilities inside a circle. One person can hold many roles. If a person leaves, the role stays and gets reassigned.` },
                 { label: t({ message: `Consent`, context: "roles page, how it works" }), description: t`Decisions move forward when no one has a reasoned objection that the proposal would cause harm or block the aim. Everyone loving them is not the bar.` },
               ].map((item) => (
                 <div key={item.label} className={TILE}>
                   <div className="text-sm font-bold text-foreground mb-1">{item.label}</div>
-                  <p className={`text-xs text-muted-foreground leading-relaxed${"pending" in item && item.pending ? " invisible" : ""}`}>{item.description}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
               ))}
             </m.div>
@@ -882,17 +869,6 @@ export default function Roles() {
             </m.div>
           </div>
 
-          <m.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 text-center"
-          >
-            <Link href="/circles" className={BTN_SECONDARY}>
-              {t({ message: `Explore Our Circles`, context: "roles page" })}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </m.div>
         </div>
       </section>
     </Layout>

@@ -493,7 +493,18 @@ export default function RoleDraft() {
               )}
               {load.kind === "ready" && shown.length === 0 && (
                 <p className="mt-6 text-muted-foreground">
-                  {roles.length === 0 ? t`No role is open right now. New roles open each season.` : t`No open role carries these characters yet. Every role is still open to you.`}
+                  {roles.length > 0 ? (
+                    t`No open role carries these characters yet. Every role is still open to you.`
+                  ) : load.founding ? (
+                    <span data-founding-open-instead="">
+                      {t({ message: "No other role is open right now. The founding roles are open:", context: "role draft, only the founding roles are open" })}{" "}
+                      <Link href="/roles" className={LINK}>
+                        {t({ message: "see the founding team.", context: "role draft, only the founding roles are open" })}
+                      </Link>
+                    </span>
+                  ) : (
+                    t`No role is open right now. New roles open each season.`
+                  )}
                 </p>
               )}
 
