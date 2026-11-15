@@ -88,7 +88,7 @@ import { currentLetter } from "../lib/membershipLetter";
 import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
 import { inApplicationTransaction } from "../repos/seatApplications";
 import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
-import { confirmationEmail, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
+import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
 import { inviteById } from "../repos/memberInvites";
 import { dbDocument } from "../repos/store-db";
 import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposalDecide";
@@ -104,6 +104,7 @@ import { languageForNewProposal, languageOf } from "../lib/applicantLanguage";
 import { wordsIn } from "../../shared/applicantWords";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import * as store from "../repos/openProposals";
+import { voiceViewerOf } from "../lib/voiceForViewer";
 import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
@@ -551,7 +552,14 @@ export function register(app: Express, deps: Deps): void {
     const roleNames = proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean);
     // A mail door that throws is a send that did not go: the application is kept all the same.
     const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
-    if (!WENT.has(sent.status)) return keepUnsent(res, { id, email, token, status: sent.status });
+    if (!WENT.has(sent.status)) {
+      if (keepsWhenUnsent(sent)) return keepUnsent(res, { id, email, token, status: sent.status });
+      // The address itself is refused (suppressed, malformed, expired): nobody can confirm it, so nothing is kept.
+      console.error(`[open-proposals] the confirmation email for ${id} was refused (${sent.status}${sent.reason ? `: ${sent.reason}` : ""}); the application is not kept`);
+      await store.deleteOpenProposal(pool, id);
+      if (fileDir) await removeProposalFiles(fileDir, id);
+      return res.status(503).json({ error: OPEN_WORDS.notSent });
+    }
     // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
     const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
     res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
@@ -645,6 +653,8 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/admin/open-proposals", async (req, res) => {
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const pool = getPool();
+    // Their voice plays here for the village's admins alone, never an agent (server/lib/voiceForViewer.ts).
+    const hearer = await voiceViewerOf(req, pool, await authedUser(req));
     const [s, links, waiting, roles] = await Promise.all([settings(), store.listOpenLinks(pool), store.listOpenProposals(pool, ["confirmed"]), offered()]);
     const roleName = new Map(roles.map((r) => [r.id, `${r.name} (${r.circle})`]));
     const linkLabel = new Map(links.map((l) => [l.id, l.label]));
@@ -668,7 +678,7 @@ export function register(app: Express, deps: Deps): void {
         // Kept although our confirmation email failed (Rye, 14 Nov 2026): flagged, never hidden.
         addressUnconfirmed: p.addressUnconfirmed ? OPEN_WORDS.addressUnconfirmed : null,
         // Their voice (Rye, 14 Nov 2026: "I want to be able to hear the applicants voice"), played here through the admin door below.
-        voice: p.body.voice
+        voice: hearer.admin && p.body.voice
           ? {
               notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, href: adminVoiceHref(p.id, n.id) })),
               clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: adminVoiceHref(p.id, c.id) })),
@@ -680,14 +690,16 @@ export function register(app: Express, deps: Deps): void {
 
   /*
    * ONE RECORDING OF AN APPLICANT'S VOICE, for Admin's applications panel (Rye,
-   * 14 Nov 2026). The same people who read the application there (intake.moderate)
-   * may hear it, a confirmed application only, as the panel lists. Inline audio the
+   * 14 Nov 2026). The village's admins may hear it (holding intake.moderate, and
+   * admin or founder, and a person: the consent tick names them; security sweep,
+   * 14 Nov 2026), a confirmed application only, as the panel lists. Inline audio the
    * panel fetches, never cached or indexed, sandboxed, checked against its fingerprint.
    */
   app.get("/api/admin/open-proposals/:id/voice/:noteId", async (req, res) => {
     res.setHeader("Cache-Control", "private, no-store");
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    if (!(await voiceViewerOf(req, getPool(), await authedUser(req))).admin) return res.status(404).json({ error: "not_found" });
     const id = String(req.params.id ?? "");
     const noteId = String(req.params.noteId ?? "");
     const p = /^op-[0-9a-f]{20}$/.test(id) ? await store.readOpenProposal(getPool(), id) : null;

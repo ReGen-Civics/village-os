@@ -123,6 +123,14 @@ export const ALWAYS_A_PERSON: ReadonlyArray<{ key: string; words: string; mode: 
     test: (_m, p) => /adopt|seat-?claims?|seatings?|publish|first-?repl|decision-?letter|letter-?drafts?|\/hold(s|ers)(\/|$)/i.test(p),
   },
   {
+    // An applicant's kept voice (Rye, 14 Nov 2026): no assistant or agent tool ever gets it, whatever the Anchor's
+    // approval opens (security sweep, 14 Nov 2026; shared/voiceNotes.ts). Before "personal", which a GET can pass.
+    key: "voice",
+    mode: "always",
+    words: "An applicant's voice recordings are only ever heard by a person.",
+    test: (_m, p) => /\/voice(\/|$)/i.test(p),
+  },
+  {
     // Applicant and member personal data (role journey L13, part B). Reads open only with the Anchor's approval of AI agents.
     key: "personal",
     mode: "personal",

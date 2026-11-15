@@ -110,6 +110,7 @@ import { OFFER_WORDS, openTalks, OFFER_LABELS } from "../../shared/counterOffer"
 import { AGENT_PROPOSAL_WORDS, scopeWords } from "../../shared/agentHolders";
 import { seatAdoptedAgent } from "../lib/agentRoleProposals";
 import { agentsWithReach, isAgentAccount } from "../repos/agentAccounts";
+import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
 
 export type DecideRouteDeps = Pick<
   AppDeps,
@@ -341,10 +342,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const founding = decidesIt(may, asks, viewerId) && !p.body.agent
       ? { knowUs: p.body.knowUs ?? [], rampUp: p.body.rampUp === true }
       : null;
+    // Never to an agent, whatever the "personal" rule opens to it (server/lib/voiceForViewer.ts).
+    const hearer = await voiceViewerOf(req, pool, viewer);
     // What the applicant would make of each role card's pieces (Rye, 14 Nov 2026): deciders only, read-only, never to an AI.
-    const pieceSuggestions = decidesIt(may, asks, viewerId) ? (p.body.pieceSuggestions ?? []) : null;
+    const pieceSuggestions = decidesIt(may, asks, viewerId) ? voiceForViewer(hearer, p.body.pieceSuggestions ?? []) : null;
     // Their voice note (Rye, 14 Nov 2026), kept only with their tick: the same gate as the files, never to an AI, gone 90 days after the decision.
-    const voice = decidesIt(may, asks, viewerId) && p.body.voice
+    const voice = decidesIt(may, asks, viewerId) && !hearer.agent && p.body.voice
       ? {
           notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, size: n.size, href: voiceNoteHref(p.id, n.id) })),
           transcript: p.body.voice.transcript,
@@ -493,6 +496,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const note = VOICE_NOTE_ID.test(noteId) ? [...(p.body.voice?.notes ?? []), ...(p.body.voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
     const asks = (await asksFor(getPool(), [p.id])).get(p.id) ?? [];
     if (!note || !deps.proposalFileDir || !decidesIt(await deciding(p, viewerId), asks, viewerId)) return res.status(404).json(MISSING);
+    // A person's ears only: never an agent's (server/lib/voiceForViewer.ts).
+    if ((await voiceViewerOf(req, getPool(), viewer)).agent) return res.status(404).json(MISSING);
     const bytes = await readVoiceNote(deps.proposalFileDir, p.id, note);
     if (!bytes) return res.status(404).json(MISSING);
     res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);

@@ -646,6 +646,37 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(JSON.stringify(mo.body)).not.toContain("six years");
     });
 
+    it("an agent never gets the voice, the words heard, or the thoughts on the pieces, even a decider's own agent (security sweep, 14 Nov 2026)", async () => {
+      const id = await withVoice("voice-agent@example.test");
+      await q("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.pieceSuggestions', JSON_ARRAY(JSON_OBJECT('roleId', 'r', 'piece', 'purpose', 'kind', 'change', 'text', 'Ring the bell twice'))) WHERE id = ?", [id]);
+      const href = (await page(id, FOUNDER.id)).body.proposal.voice.notes[0].href as string;
+      const viaConnector = async (path: string) => {
+        state.viewer = FOUNDER.id;
+        try {
+          return await fetch(`${base}${path}`, { headers: { "x-village-connector": "1" } }); // module-review-ok: a test calling its own local server
+        } finally {
+          state.viewer = null;
+        }
+      };
+      const shown = (await (await viaConnector(`/api/governance/open-proposals/${id}`)).json()) as any;
+      expect(shown.proposal.voice).toBeNull();
+      expect(shown.proposal.pieceSuggestions).toBeNull();
+      expect(JSON.stringify(shown)).not.toContain("six years");
+      expect(JSON.stringify(shown)).not.toContain("Ring the bell");
+      expect((await viaConnector(href)).status).toBe(404);
+      // An account marked as an agent's is refused the same way, without the header.
+      await q("UPDATE users SET is_agent = 1 WHERE id = ?", [ANA.id]);
+      try {
+        expect((await page(id, ANA.id)).body.proposal.voice).toBeNull();
+        expect((await listen(href, ANA.id)).status).toBe(404);
+      } finally {
+        await q("UPDATE users SET is_agent = NULL WHERE id = ?", [ANA.id]);
+      }
+      // CONTROL: the same founder, as a person, hears it and reads the pieces.
+      expect((await listen(href, FOUNDER.id)).status).toBe(200);
+      expect(JSON.stringify((await page(id, FOUNDER.id)).body.proposal.pieceSuggestions)).toContain("Ring the bell");
+    });
+
     it("the voice door plays the bytes kept, inline as audio, uncached, to a decider and nobody else", async () => {
       const id = await withVoice("voice2@example.test");
       const href = (await page(id, FOUNDER.id)).body.proposal.voice.notes[0].href as string;
@@ -964,6 +995,12 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(adopt.body).toEqual({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
       expect(await q("SELECT id FROM seat_applications WHERE candidate_user_id = ?", [KEPT.id])).toEqual([]);
       expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
+      // Nor is the account made the review's applicant, or told in its bell (security sweep, 14 Nov 2026):
+      // anyone can type anyone's address, so an unconfirmed match proves nothing.
+      const [step] = await q("SELECT detail_json FROM application_steps WHERE application_ref = ? AND kind = 'confirmed'", [id]);
+      const detail = typeof step.detail_json === "string" ? JSON.parse(step.detail_json) : step.detail_json;
+      expect(detail.applicantUserId).toBeNull();
+      expect(state.notices.filter((n: any) => n.userId === KEPT.id)).toEqual([]);
     });
 
     it("gives it the roles for the target season, with no invitation, and admits nobody before the Love Letter", async () => {

@@ -64,6 +64,7 @@ import { leftTheVillage } from "./formerMember";
 import type { InvitedArrival } from "./inviteDoor";
 import type { NotifyInput } from "./notify";
 import { isTombstone } from "./oauthAccounts";
+import { trustedAccountFor } from "./applicantAccount";
 import { listOrgRoles, type LapseContext } from "./orgChart";
 import { adoptApplication, seatsWithoutRoom, settleDepsOf, tellOutcome, wholeSecond, type FullSeat } from "./seatApplicationCloser";
 import { prepareApplication, writeApplicationOn } from "./seatApplicationWrite";
@@ -171,7 +172,8 @@ export async function confirmAndAsk(
   return inTransaction(pool, async (conn) => {
     const proposal = await store.confirmOpenProposal(conn, confirmHash, notBefore, at, opts);
     if (!proposal) return null;
-    const own = await ownAccountOf(deps.members, proposal);
+    // Trusted only: an address not yet confirmed links to no account here (server/lib/applicantAccount.ts).
+    const own = await trustedAccountFor(deps.members, proposal);
     const circles: string[] = [];
     for (const r of proposal.body.roles) {
       const c = circleOf.get(r.roleId);

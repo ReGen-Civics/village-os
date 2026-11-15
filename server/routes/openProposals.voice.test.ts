@@ -46,7 +46,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   let base = "";
   let gate = "";
   let dir = "";
-  const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult, admin: false };
+  const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult, admin: false, role: "admin" };
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
   beforeAll(async () => {
@@ -67,7 +67,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
         res.status(401).json({ error: "auth_required" });
         return false;
       },
-      authedUser: async () => null,
+      authedUser: async () => (state.admin ? { id: "u-desk", role: state.role } : null),
       commsPostOffice: { getPool: () => pool },
       deploymentOrigin: () => ORIGIN,
       projectName: () => "Test Village",
@@ -108,6 +108,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     state.sent.length = 0;
     state.answer = { status: "sent", messageId: "m-1" };
     state.admin = false;
+    state.role = "admin";
   });
 
   let n = 0;
@@ -270,6 +271,15 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       expect(play.headers.get("cache-control")).toBe("private, no-store");
       expect((await fetch(`${base}${row.voice.notes[0].href}`)).status).toBe(200); // module-review-ok: a test calling its own local server
       expect((await fetch(`${base}${row.voice.notes[0].href.replace(/pv-[0-9a-f]+$/, "pv-0000000000000000")}`)).status).toBe(404); // module-review-ok: a test calling its own local server
+      // An agent through the connector, holding the same desk, hears nothing (security sweep, 14 Nov 2026).
+      expect((await fetch(`${base}${row.voice.clips[0].href}`, { headers: { "x-village-connector": "1" } })).status).toBe(404); // module-review-ok: a test calling its own local server
+      const agentDesk = await fetch(`${base}/api/admin/open-proposals`, { headers: { "x-village-connector": "1" } }).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
+      expect(agentDesk.proposals.find((p: any) => p.id === id).voice).toBeNull();
+      // The consent tick names the deciders and the admins: a member who only holds intake.moderate hears nothing here.
+      state.role = "member";
+      expect((await fetch(`${base}${row.voice.clips[0].href}`)).status).toBe(404); // module-review-ok: a test calling its own local server
+      const moderator = await fetch(`${base}/api/admin/open-proposals`).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
+      expect(moderator.proposals.find((p: any) => p.id === id).voice).toBeNull();
       state.admin = false;
       expect((await fetch(`${base}${row.voice.clips[0].href}`)).status).toBe(401); // module-review-ok: a test calling its own local server
     });

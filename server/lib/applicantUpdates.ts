@@ -26,8 +26,7 @@ import { applicantUpdate, greetingName, UPDATE_EMAILS, type ApplicantUpdateKind 
 import * as proposals from "../repos/openProposals";
 import * as review from "../repos/applicationReview";
 import type { DecideDeps } from "./openProposalDecide";
-import { isExampleUser } from "./examples";
-import { isTombstone } from "./oauthAccounts";
+import { trustedAccountFor } from "./applicantAccount";
 import { numberVar } from "./variables";
 import { escapeHtml } from "./comms/mailer";
 import { languageOf } from "./applicantLanguage";
@@ -58,12 +57,6 @@ export interface UpdateFacts {
 
 export type TellApplicant = (ref: string, kind: ApplicantUpdateKind, facts?: UpdateFacts) => Promise<void>;
 
-/** The address's account here, when it is a real, present person (the same rule as openProposalDecide's, kept here so the files do not import each other). */
-async function accountFor(members: TellDeps["members"], email: string | null): Promise<string | null> {
-  if (!email) return null;
-  const m: any = await members.byEmail(email);
-  return m && !isExampleUser(m) && !isTombstone({ email: String(m.email ?? "") }) ? String(m.id) : null;
-}
 
 const keyOf = (ref: string, kind: ApplicantUpdateKind, part?: string) => `${ref}:update:${kind}${part ? `:${part}` : ""}`;
 
@@ -115,7 +108,8 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
         });
         if (!WENT.has(sent.status)) console.warn(`[open-proposals] the ${kind} update for ${ref} did not go by email: ${sent.status}`);
       }
-      const account = await accountFor(deps.members, p.email);
+      // The bell only for an account the proposal is trusted to be: never one matched on an address not yet confirmed.
+      const account = await trustedAccountFor(deps.members, p);
       if (account) await notifyAccount(deps, account, ref, kind, facts, words);
     } catch (e) {
       console.error(`[open-proposals] the ${kind} update for ${ref} was not sent`, e);
