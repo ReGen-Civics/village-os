@@ -174,6 +174,23 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     await setVar("org.public_people", null);
   });
 
+  it("a part of the sections changes that part alone, and the pay sections stay as they were (Rye, 15 Nov 2026)", async () => {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    const full = { ...SECTIONS, paySplitNote: "To be decided in onboarding.", payCeiling: { amount: 9000, currency: "USD", per: "month" } };
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: full })).status).toBe(200);
+    const part = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { idealBackground: ["Ideally, you studied finance or law"] } });
+    expect(part.status).toBe(200);
+    expect(part.json.state.sections).toMatchObject({
+      idealBackground: ["Ideally, you studied finance or law"],
+      qualities: SECTIONS.qualities,
+      aiCompanion: "Heron",
+      paid: true,
+      paySplitNote: "To be decided in onboarding.",
+      payCeiling: { amount: 9000, currency: "USD", per: "month" },
+    });
+  });
+
   it("refuses an amount on the pay in words, and writes nothing", async () => {
     const { id } = await seedRole();
     holders = new Set(["holder-1"]);

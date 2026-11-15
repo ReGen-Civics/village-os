@@ -3,7 +3,7 @@
  *
  * The link we hand to a member whose phone is stuck on an old version, or
  * holding something odd, when a reload has not fixed it. It clears what this
- * site keeps on the device and goes home:
+ * site keeps on the device:
  *
  *  - every service worker registered for this origin (client/public/sw.js is
  *    narrow on purpose, but an old one from an earlier build could still be
@@ -20,18 +20,27 @@
  *  - `village.journal.draft.<owner>` and `village.journal.outbox`, a journal
  *    sitting in progress and entries waiting to sync (components/journal);
  *  - any other key with "draft" in its name, so a draft added later is kept
- *    without anybody remembering this list (the work-with-us form's is one).
- *
- * Sign-in lives in localStorage too, so the member may need to sign in again.
- * The page says so.
+ *    without anybody remembering this list (the work-with-us form's is one);
+ *  - THE SIGN-IN (`TOKEN_KEY`, and `LEGACY_TOKEN_KEY` until it is moved).
+ *    /reset is a link anybody can send, so a reset that signed people out
+ *    would let anyone sign a member out with one link (security sweep on
+ *    #1245). Signing out is a separate tap on the page (`logout` in
+ *    contexts/AuthContext.tsx), which also ends the session on the server.
  *
  * Every step is wrapped: a browser that refuses one area must not stop the
  * others, and the page must still say what it did.
  */
 
+import { LEGACY_TOKEN_KEY, TOKEN_KEY } from "./gameApi";
+
+/** The keys that hold the sign-in, which the reset leaves in place. */
+export function isSignInKey(key: string): boolean {
+  return key === TOKEN_KEY || key === LEGACY_TOKEN_KEY;
+}
+
 /** A key the reset never removes. */
 export function isKeptKey(key: string): boolean {
-  return /draft/i.test(key) || key === "village.journal.outbox";
+  return /draft/i.test(key) || key === "village.journal.outbox" || isSignInKey(key);
 }
 
 export interface ResetResult {
@@ -39,8 +48,10 @@ export interface ResetResult {
   caches: number;
   /** Keys removed across both storage areas. */
   cleared: number;
-  /** Draft keys left in place. */
+  /** Draft keys left in place (the sign-in is not counted here). */
   kept: number;
+  /** A sign-in was on the device and is still there. */
+  signedIn: boolean;
 }
 
 export interface ResetEnv {
@@ -79,6 +90,10 @@ function clearArea(get: (() => Storage | null) | undefined, result: ResetResult)
       if (k !== null) keys.push(k);
     }
     for (const k of keys) {
+      if (isSignInKey(k)) {
+        result.signedIn = true;
+        continue;
+      }
       if (isKeptKey(k)) {
         result.kept++;
         continue;
@@ -96,7 +111,7 @@ function clearArea(get: (() => Storage | null) | undefined, result: ResetResult)
 }
 
 export async function resetDevice(env: ResetEnv = browserEnv()): Promise<ResetResult> {
-  const result: ResetResult = { workers: 0, caches: 0, cleared: 0, kept: 0 };
+  const result: ResetResult = { workers: 0, caches: 0, cleared: 0, kept: 0, signedIn: false };
 
   try {
     const regs = (await env.serviceWorker?.getRegistrations()) ?? [];

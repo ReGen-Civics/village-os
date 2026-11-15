@@ -21,6 +21,7 @@ import {
   LEAD_APPROVED_WRITES,
   leadApprovalSubject,
   leadApprovedBodyProblem,
+  leadApprovedEntry,
   LIFTABLE_RULES,
   mergePastedAgentPaths,
   parseAgentAdminPaths,
@@ -117,10 +118,10 @@ describe("with the opt-in on", () => {
     }
   });
 
-  it("saves the seed list, 89 paths, with every lead-approved write confirmed by the agent", () => {
+  it("saves the seed list, 90 paths, with every lead-approved write confirmed by the agent", () => {
     const r = parseAgentAdminPaths(seed, ON);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.paths).toHaveLength(89);
+    if (r.ok) expect(r.value.paths).toHaveLength(90);
   });
 
   it("never lifts erasure, money, members, personal data, secrets, accounts or agents", () => {
@@ -172,6 +173,21 @@ describe("the body half", () => {
     expect(leadApprovedBodyProblem("role_edit", "/api/org/role-edit/r-1", { ...approval, words: { aim: "x" }, parameters: { bookingUrl: "https://example.test" } })).toBeNull();
     expect(leadApprovedBodyProblem("role_edit", "/api/org/role-edit/r-1", { ...approval, pay: { kind: "cash" } })).toContain("pay");
     expect(leadApprovedBodyProblem("role_edit", "/api/org/role-edit/r-1", { ...approval, parameters: { budgetLine: "ops" } })).toContain("parameters.budgetLine");
+  });
+
+  it("lets the role editor take the card's word sections, and refuses its pay sections by name (Rye, 15 Nov 2026)", () => {
+    const p = "/api/org/role-edit/r-1";
+    expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { idealBackground: ["Ideally, you studied finance or law"], qualities: ["Calm"] } })).toBeNull();
+    expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { aiSupport: "A companion", aiCompanion: "Heron" } })).toBeNull();
+    for (const k of ["paid", "payShape", "payNote", "payCeiling", "paySplitNote", "somethingElse"]) {
+      expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: { qualities: ["x"], [k]: 1 } }), k).toContain(`sections.${k}`);
+    }
+    expect(leadApprovedBodyProblem("role_edit", p, { ...approval, sections: ["not", "an", "object"] })).toContain("sections");
+  });
+
+  it("lets a draft retire a role, and publishing it stays a person's (Rye, 15 Nov 2026)", () => {
+    expect(leadApprovedBodyProblem("role_draft", "/api/admin/org/drafts/d-1/changes", { ...approval, op: "rest_seat", orgRoleId: "r-old", payload: {} })).toBeNull();
+    expect(leadApprovedEntry("POST", "/api/admin/org/drafts/d-1/publish")).toBeNull();
   });
 
   it("lets a draft carry the terms' wording and refuses their money groups and other ops", () => {
@@ -324,6 +340,6 @@ describe("pasting a list in the panel", () => {
     expect(mergePastedAgentPaths(current, seed).ok).toBe(false);
     const on = mergePastedAgentPaths(current, seed, ON);
     expect(on.ok).toBe(true);
-    if (on.ok) expect(on.plan.merged).toHaveLength(89); // both paths on screen are on the seed list already
+    if (on.ok) expect(on.plan.merged).toHaveLength(90); // both paths on screen are on the seed list already
   });
 });
