@@ -1,0 +1,81 @@
+# Tell the villages that upgrade automatically that a release has published.
+#
+# A village that follows releases (its own deployment repository, with a
+# workflow that moves its pin) can be told the moment a release is ready,
+# instead of finding out on its own schedule. GitHub's schedules are best
+# effort: on 2026-11-14 the first village's hourly pin check fired five times
+# in 24 hours, never on its minute, with gaps up to 7h20m, so every upgrade
+# that day waited for a person.
+#
+# This runs when `release` completes. It sends nothing unless that run was a
+# TAG push and concluded success: built, booted, published, and pulled back
+# through the self-host smoke. A receiving workflow can therefore check the
+# same verdict and find it already final.
+#
+# SET UP, in Settings > Secrets and variables > Actions:
+#   variable RELEASE_NOTIFY_REPOS   the repositories to tell, comma separated,
+#                                   as owner/name
+#   secret   RELEASE_NOTIFY_TOKEN   a fine-grained token on exactly those
+#                                   repositories, Contents: Read and write
+#                                   (what GitHub asks of a repository_dispatch)
+# Without both, every run ends green with a notice and sends nothing.
+#
+# Each repository receives a repository_dispatch of type `village-os-release`
+# with client_payload {"version": "X.Y.Z", "tag": "vX.Y.Z", "commit": "<sha>"}.
+
+name: release-notify
+
+on:
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    if: >-
+      github.event.workflow_run.event == 'push'
+      && github.event.workflow_run.conclusion == 'success'
+      && startsWith(github.event.workflow_run.head_branch, 'v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Tell the following repositories
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_NOTIFY_TOKEN }}
+          REPOS: ${{ vars.RELEASE_NOTIFY_REPOS }}
+          TAG: ${{ github.event.workflow_run.head_branch }}
+          COMMIT: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          if [ -z "${REPOS}" ] || [ -z "${GH_TOKEN}" ]; then
+            msg="Release notices are not set up: the variable RELEASE_NOTIFY_REPOS and the secret RELEASE_NOTIFY_TOKEN are both needed. docs/RELEASING.md has the setup."
+            echo "::notice::${msg}"
+            { echo "### Release notice: not set up"; echo; echo "$msg"; } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::notice::${TAG} is a prerelease or not a release tag; nobody is told."
+            exit 0
+          fi
+          version="${TAG#v}"
+          failed=0
+          IFS=',' read -ra list <<< "$REPOS"
+          for repo in "${list[@]}"; do
+            repo="$(echo "$repo" | tr -d '[:space:]')"
+            [ -n "$repo" ] || continue
+            if gh api "repos/${repo}/dispatches" --method POST \
+                 -f event_type=village-os-release \
+                 -f "client_payload[version]=${version}" \
+                 -f "client_payload[tag]=${TAG}" \
+                 -f "client_payload[commit]=${COMMIT}" > /dev/null; then
+              echo "Told ${repo} about ${TAG}."
+              echo "- told ${repo} about ${TAG}" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "::error::Could not tell ${repo} about ${TAG}. Check that RELEASE_NOTIFY_TOKEN reaches it with Contents: Read and write."
+              failed=1
+            fi
+          done
+          exit "$failed"
