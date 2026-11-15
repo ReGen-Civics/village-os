@@ -5,6 +5,7 @@
  * member's token when there is one, so an editor reads an unlisted role too.
  */
 import { gameFetch } from "@/lib/gameApi";
+import { readRoleCardTranslation, type RoleCardTranslationWire } from "@shared/contentTranslationOverlay";
 import { NO_VILLAGE_PAY, readSections, villagePayFrom, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { DEFAULT_OTHER_WAYS, otherWaysOf, type OtherWays } from "@shared/otherWays";
 import type { FilledTeamRole } from "@shared/foundingTeam";
@@ -40,6 +41,8 @@ export interface RoleCardAnswer {
   showPayRanges: boolean;
   villagePay: VillagePay;
   mayEdit: boolean;
+  /** The card in the reader's language where it is translated (only when the card asked in one). */
+  translation: RoleCardTranslationWire | null;
 }
 
 const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [], fill: {} };
@@ -99,10 +102,13 @@ export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
   }
 }
 
-/** One role's founding sections and its last edit, or null when the read fails. */
-export async function readRoleCard(roleId: string): Promise<RoleCardAnswer | null> {
+/**
+ * One role's founding sections and its last edit, or null when the read fails. `locale` asks for the
+ * card's translation too: only a reader passes it, so an editor's read is always the English.
+ */
+export async function readRoleCard(roleId: string, locale: string | null = null): Promise<RoleCardAnswer | null> {
   try {
-    const r = await gameFetch(`/api/org/role-card/${encodeURIComponent(roleId)}`);
+    const r = await gameFetch(`/api/org/role-card/${encodeURIComponent(roleId)}`, locale && locale !== "en" ? { headers: { "X-Village-Locale": locale } } : {});
     if (!r.ok) return null;
     const d = await r.json();
     const read = d?.sections ? readSections(d.sections) : null;
@@ -114,6 +120,7 @@ export async function readRoleCard(roleId: string): Promise<RoleCardAnswer | nul
       showPayRanges: d?.showPayRanges === true,
       villagePay: payOf(d?.villagePay),
       mayEdit: d?.mayEdit === true,
+      translation: readRoleCardTranslation(d?.translation),
     };
   } catch {
     return null;
