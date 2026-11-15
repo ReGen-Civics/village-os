@@ -138,6 +138,10 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
             ? VOICE_WORDS.inviteBody
             : t({ message: "Tap the mic in any answer below to say it instead of typing it.", context: "voice note" })}
         </p>
+        {/* Voice is encouraged, never required (Rye, 14 Nov 2026), so a person who won't record is told so before they choose (steelman QA, 15 Nov 2026). */}
+        <p className="text-sm leading-relaxed text-muted-foreground" data-voice-optional="">
+          {t({ message: "Recording is optional. Typed answers are read with the same care and count just the same.", context: "voice note" })}
+        </p>
       </div>
 
       {value.takes.length > 0 && (

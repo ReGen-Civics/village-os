@@ -58,6 +58,8 @@ describe("the invitation", () => {
     Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({}) } });
     const { unmount } = render(<Card />);
     expect(screen.getByText(VOICE_WORDS.inviteTitle)).toBeTruthy();
+    // A person who won't record is told typing counts the same, before they choose (steelman QA, 15 Nov 2026).
+    expect(screen.getByText(/Typed answers are read with the same care/)).toBeTruthy();
     expect(screen.getByRole("button", { name: VOICE_WORDS.record })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.skip }));
     expect(screen.queryByText(VOICE_WORDS.inviteTitle)).toBeNull();
@@ -71,6 +73,8 @@ describe("the invitation", () => {
     expect(screen.getByText(VOICE_WORDS.notKept)).toBeTruthy();
     fireEvent.click(tick);
     expect(screen.getByText(VOICE_WORDS.kept)).toBeTruthy();
+    // The line under the tick names everyone the tick names: the deciders and the admins.
+    expect(VOICE_WORDS.kept).toMatch(/admins/);
     expect(screen.getByRole("button", { name: VOICE_WORDS.recordAnother })).toBeTruthy();
     // Having spoken, they are not offered to skip what they made; Remove takes a recording away.
     expect(screen.queryByRole("button", { name: VOICE_WORDS.skip })).toBeNull();
