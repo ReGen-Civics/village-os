@@ -24,8 +24,25 @@
  *
  * Pure: no pool, no clock.
  */
-import type { PayShare } from "./roleCardSections";
-import { moneyWords } from "./seatSettings";
+
+/**
+ * One share of a split, as the role card and the village setting write it (shared/roleCardSections.ts
+ * `PayShare`). Written here, never imported: a module that moves value stays clear of the seat settings
+ * model, which roleCardSections reaches (shared/seatSettings.boundary.test.ts).
+ */
+export interface PayShare {
+  label: string;
+  pct: number;
+}
+
+/** "US$3,900", "US$12.50": a minor amount in the line's currency, cents only when there are any. */
+function moneyWords(minor: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-GB", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(minor / 100);
+  } catch {
+    return `${(minor / 100).toLocaleString("en-GB")} ${currency}`;
+  }
+}
 
 export type RewardPart = "cash" | "equity" | "credits";
 
