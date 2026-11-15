@@ -549,10 +549,14 @@ export default function Roles() {
   // The header waits for both reads, so it never draws on top and then jumps below the founding team.
   const heroShown = founding !== null && (!founding.on || roles !== null || failed);
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
+  // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
+  // still open sits right under it as "opening next", applied for now and answered once the team is in.
+  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  const openingNextIds = new Set(openingNext.map((r) => r.id));
   const unlistedCount = (roles ?? []).filter((r) => r.raw?.listed === false).length;
   // Each role appears once: a featured role lives in the founding section. A linked seat is a
   // question about that seat, so it shows wherever it is.
-  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id)));
+  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id) && !openingNextIds.has(r.id)));
   // The roots filter hides only roles tagged with none of the reader's roots; a linked seat always shows.
   const byRoots = roots.apply(listedDirectory, (r) => (Array.isArray(r.raw?.archetypes) ? r.raw.archetypes : []));
   const rootKept = new Set(byRoots.shown.map((r) => r.id));
@@ -662,7 +666,20 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} fill={founding?.fill ?? {}} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} fill={founding?.fill ?? {}} laterCount={openingNext.length} />}
+              {openingNext.length > 0 && (
+                <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
+                  <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>
+                  <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {t({ message: "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk.", context: "roles page, roles after the founding team" })}
+                  </p>
+                  <div className="space-y-3">
+                    {openingNext.map((role, i) => (
+                      <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} arrive={linked === role.id} />
+                    ))}
+                  </div>
+                </section>
+              )}
               {otherWaysSection}
             </>
           )}

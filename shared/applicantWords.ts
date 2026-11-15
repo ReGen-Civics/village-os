@@ -34,7 +34,8 @@ export interface ApplicantMessages {
   keepStatusLink: string;
   /** The same pointer with the link itself in it, for a letter sent by a door that can mint one. */
   statusLinkLine(link: string): string;
-  replyPromise(days: number): string;
+  /** The village's reply promise. `null`: the application is for a role that opens after the founding team (shared/foundingTeam.ts). */
+  replyPromise(days: number | null): string;
   /** Introduces a decider's note in an email or a notice. */
   noteIntro: string;
   day(iso: string): string;
@@ -227,7 +228,8 @@ const en: ApplicantMessages = {
   aRole: "a role",
   keepStatusLink: "Your status page link is in the first email we sent you, so you can follow it any time.",
   statusLinkLine: (link) => `Your status page, to follow it any time: ${link}`,
-  replyPromise: (days) => `We reply within ${days} ${days === 1 ? "day" : "days"}.`,
+  replyPromise: (days) =>
+    days === null ? "We are filling our founding team first, so it may be a while before we reply. We will write to you as soon as we are ready to talk." : `We reply within ${days} ${days === 1 ? "day" : "days"}.`,
   noteIntro: "A note from us:",
   day: dayIn("en-GB"),
 
@@ -407,7 +409,10 @@ const es: ApplicantMessages = {
   aRole: "un rol",
   keepStatusLink: "El enlace a la página del estado de tu propuesta está en el primer correo que te enviamos, para que puedas seguirla cuando quieras.",
   statusLinkLine: (link) => `La página del estado de tu propuesta, para seguirla cuando quieras: ${link}`, // needs-native-review
-  replyPromise: (days) => `Respondemos en un plazo de ${days} ${days === 1 ? "día" : "días"}.`,
+  replyPromise: (days) =>
+    days === null
+      ? "Primero estamos completando nuestro equipo fundador, así que puede pasar un tiempo antes de que respondamos. Te escribiremos en cuanto estemos listos para conversar." // needs-native-review: new words, 14 Nov 2026
+      : `Respondemos en un plazo de ${days} ${days === 1 ? "día" : "días"}.`,
   noteIntro: "Una nota de parte nuestra:",
   day: dayIn("es"),
 
@@ -599,13 +604,13 @@ export type ApplicantStepKey = (typeof APPLICANT_STEP_KEYS)[number];
 export interface ApplicantStepWords {
   name: string;
   /** What happens at this step and roughly when. `days` is the village's reply promise (`org.applicant_reply_days`). */
-  when(days: number): string;
+  when(days: number | null): string;
 }
 
 export const APPLICANT_STEPS: Record<ApplicantLanguage, Record<ApplicantStepKey, ApplicantStepWords>> = {
   en: {
     received: { name: "Received", when: () => "Your application reaches us the moment you confirm your address." },
-    review: { name: "Our review", when: (days) => `Within ${days} ${days === 1 ? "day" : "days"}, we invite you to book conversation times or write to thank you.` },
+    review: { name: "Our review", when: (days) => days === null ? "Once our founding team is in place, we invite you to book conversation times or write to thank you." : `Within ${days} ${days === 1 ? "day" : "days"}, we invite you to book conversation times or write to thank you.` },
     invitation: { name: "Invitation", when: () => "An invitation by email lists the conversations in order, with how long each one is." },
     conversations: { name: "Conversations", when: () => "One after another with the roles you would work beside, usually within two weeks of the invitation." },
     decision: { name: "Decision", when: () => "The circle decides by consent, usually within a week of the last conversation." },
@@ -614,7 +619,7 @@ export const APPLICANT_STEPS: Record<ApplicantLanguage, Record<ApplicantStepKey,
   // needs-native-review
   es: {
     received: { name: "Recibida", when: () => "Tu postulación nos llega en cuanto confirmas tu correo." },
-    review: { name: "Nuestra revisión", when: (days) => `En un plazo de ${days} ${days === 1 ? "día" : "días"}, te invitamos a reservar horarios para las conversaciones o te escribimos para darte las gracias.` }, // needs-native-review: new words, 12 Nov 2026
+    review: { name: "Nuestra revisión", when: (days) => days === null ? "Cuando nuestro equipo fundador esté completo, te invitamos a reservar horarios para las conversaciones o te escribimos para darte las gracias." : `En un plazo de ${days} ${days === 1 ? "día" : "días"}, te invitamos a reservar horarios para las conversaciones o te escribimos para darte las gracias.` }, // needs-native-review: new words, 12 Nov 2026
     invitation: { name: "Invitación", when: () => "Una invitación por correo enumera las conversaciones en orden, con la duración de cada una." },
     conversations: { name: "Conversaciones", when: () => "Una tras otra con los roles con los que trabajarías, por lo general dentro de las dos semanas siguientes a la invitación." },
     decision: { name: "Decisión", when: () => "El círculo decide por consentimiento, por lo general dentro de la semana siguiente a la última conversación." },
@@ -623,7 +628,7 @@ export const APPLICANT_STEPS: Record<ApplicantLanguage, Record<ApplicantStepKey,
 };
 
 /** The steps in order, in one language, with the timing line filled in. */
-export function applicantSteps(lang: ApplicantLanguage | null | undefined, replyDays: number): Array<{ key: ApplicantStepKey; name: string; when: string }> {
+export function applicantSteps(lang: ApplicantLanguage | null | undefined, replyDays: number | null): Array<{ key: ApplicantStepKey; name: string; when: string }> {
   const table = APPLICANT_STEPS[lang && isApplicantLanguage(lang) ? lang : DEFAULT_APPLICANT_LANGUAGE];
   return APPLICANT_STEP_KEYS.map((key) => ({ key, name: table[key].name, when: table[key].when(replyDays) }));
 }

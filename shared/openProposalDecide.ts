@@ -586,7 +586,7 @@ export const UPDATE_EMAILS: Record<ApplicantUpdateKind, boolean> = {
 /** One update's title (the email's subject and the profile's headline) and its text. A decider's note rides under the text. */
 export function applicantUpdate(
   kind: ApplicantUpdateKind,
-  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyDays: number; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
+  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyDays: number | null; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
 ): { title: string; text: string } {
   const w = wordsIn(i.lang);
   const u = w.update;

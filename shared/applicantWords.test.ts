@@ -13,6 +13,24 @@ function shape(v: unknown, path = ""): string[] {
   return Object.entries(v as Record<string, unknown>).flatMap(([k, x]) => shape(x, path ? `${path}.${k}` : k));
 }
 
+describe("an application for a role that opens after the founding team (Rye, 14 Nov 2026)", () => {
+  it("is told the reply waits, in every language, and never handed a number of days", () => {
+    for (const lang of APPLICANT_LANGUAGES) {
+      const later = LANGUAGES[lang].replyPromise(null);
+      expect(later.length).toBeGreaterThan(20);
+      expect(later).not.toMatch(/\d/);
+      expect(later).not.toBe(LANGUAGES[lang].replyPromise(7));
+    }
+    expect(LANGUAGES.en.replyPromise(null)).toMatch(/founding team first/);
+    expect(LANGUAGES.en.replyPromise(7)).toBe("We reply within 7 days.");
+  });
+  it("its letter says the same", () => {
+    const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Riverbend", roleNames: ["Village Cook"], replyDays: null });
+    expect(letter.text).toContain(LANGUAGES.en.replyPromise(null));
+    expect(letter.text).not.toMatch(/within \d/);
+  });
+});
+
 describe("every applicant line exists in every language", () => {
   const source = shape(LANGUAGES.en);
   for (const lang of APPLICANT_LANGUAGES) {

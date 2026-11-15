@@ -38,6 +38,8 @@ export interface SentNote {
   to: string;
   at: Date;
   replyDays: number | null;
+  /** The roles applied for open after the founding team (Rye, 14 Nov 2026): the reply waits, and the page says so. */
+  afterFounding?: boolean;
   /** Kept although our confirmation email failed (server/lib/openProposalKept.ts): the application is in, the address not confirmed yet. */
   kept?: boolean;
   /** The applicant's own status page, shown once here when no email could carry it. Only an address of its own. */
@@ -319,6 +321,11 @@ function CheckEmailThreshold({ sent, roles, onFixAddress }: { sent: SentNote; ro
           </div>
           <ConfirmedHeading title={t({ message: "Check your email", context: "open proposal sent" })} />
           <p className={LEDE}>{sent.message}</p>
+          {sent.afterFounding && (
+            <p className="text-sm text-foreground" data-after-founding="">
+              {t({ message: "We are filling our founding team first, so it may be a while before we reply. We will write to you as soon as we are ready to talk.", context: "open proposal sent, later role" })}
+            </p>
+          )}
           <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">
             {inbox && (
               <Fireflies block className="w-full sm:w-auto">

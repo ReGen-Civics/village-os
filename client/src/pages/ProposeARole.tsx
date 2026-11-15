@@ -75,7 +75,7 @@ import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
-import { ABOUT_PANES, AboutPanes, CompensationShape, EnterHint, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
+import { ABOUT_PANES, AboutPanes, CompensationShape, EnterHint, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
@@ -98,6 +98,7 @@ interface FormRole {
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
   alwaysChecked?: boolean;
+  opensLater?: boolean; // opens after the founding team (Rye, 14 Nov 2026): OpensLaterNote
 }
 
 type FormState =
@@ -519,7 +520,7 @@ export default function ProposeARole() {
         message: kept ? t({ message: `We have your application. Our confirmation email didn't go out, so we'll write to you at ${sentTo} soon.`, context: "founding application kept" }) : t({ message: `Check ${sentTo}. We sent a link to confirm it's you. Your application reaches us once you open it.`, context: "founding application sent" }),
         to: sentTo,
         at: new Date(),
-        replyDays: typeof data?.replyDays === "number" ? data.replyDays : null,
+        replyDays: typeof data?.replyDays === "number" ? data.replyDays : null, afterFounding: data?.afterFounding === true,
         ...(kept ? { kept, statusPath: typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null } : {}),
       });
       window.scrollTo?.({ top: 0 });
@@ -741,6 +742,7 @@ export default function ProposeARole() {
         </p>
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
+        <OpensLaterNote show={role.opensLater} />
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
         {setup.updatedNote && (
           <p className="mt-2 text-sm text-foreground" data-updated-note="">
@@ -787,7 +789,7 @@ export default function ProposeARole() {
             {/* STEP 1: get to know us. Never locks. */}
             <section {...panel(0)}>
               {heading(0)}
-              <KnowUsStep ways={setup.knowUs} note={setup.knowUsNote} ticked={knowUs} onChange={setKnowUs} />
+              <KnowUsStep ways={setup.knowUs} note={setup.knowUsNote} ticked={knowUs} onChange={setKnowUs} links={setup.knowUsLinks} />
             </section>
 
             {/* STEP 2: about you. Who you are, why you and why now, your work, references, and Human Design or Gene Keys. */}

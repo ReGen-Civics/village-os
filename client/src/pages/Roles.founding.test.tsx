@@ -158,6 +158,32 @@ describe("Join the founding team", () => {
     expect(screen.queryByRole("heading", { level: 3, name: "Lead Finance Steward" })).toBeNull();
   });
 
+  it("hiring first (Rye, 14 Nov 2026): says the founding roles come first, and puts every other open role right under them as opening next, once", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const line = section.querySelector("[data-hiring-first]") as HTMLElement;
+    expect(line.textContent).toMatch(/We are hiring these roles first\. More roles open after them\./);
+    expect(within(line).getByRole("link", { name: "See the roles opening next" }).getAttribute("href")).toBe("#opening-next");
+    const next = await screen.findByRole("region", { name: "More roles, opening next" });
+    expect(next.id).toBe("opening-next");
+    expect(next.textContent).toMatch(/You are welcome to apply for any of these now\. It may be a while before we reply/);
+    expect(within(next).getByRole("heading", { level: 3, name: "Village Cook" })).toBeTruthy();
+    expect(within(next).queryByRole("heading", { level: 3, name: "Lead Finance Steward" })).toBeNull();
+    // Once on the page: the directory leaves it out.
+    fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
+    await screen.findByRole("heading", { level: 2, name: "All roles and circles" });
+    expect(screen.getAllByRole("heading", { level: 3, name: "Village Cook" })).toHaveLength(1);
+  });
+
+  it("with no other role open, the line stays and points nowhere, and no opening-next section draws (control)", async () => {
+    org.roles = org.roles.slice(0, 2);
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    expect(section.querySelector("[data-hiring-first]")?.textContent).toMatch(/We are hiring these roles first/);
+    expect(within(section).queryByRole("link", { name: "See the roles opening next" })).toBeNull();
+    expect(screen.queryByRole("region", { name: "More roles, opening next" })).toBeNull();
+  });
+
   it("keeps the page's outline whole while the founding team leads: no heading skips a level (axe heading-order)", async () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
@@ -361,8 +387,10 @@ describe("design pass M1: the founding team leads the page", () => {
     renderRoles();
     const h1 = await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    // Nothing of the game sits between the founding section and Other ways to join.
-    expect(h1.closest("[data-founding-team]")?.nextElementSibling?.matches("[data-other-ways]")).toBe(true);
+    // Nothing of the game sits between the founding section and Other ways to join: only the roles opening next.
+    const after = h1.closest("[data-founding-team]")?.nextElementSibling;
+    expect(after?.matches("[data-opening-next]")).toBe(true);
+    expect(after?.nextElementSibling?.matches("[data-other-ways]")).toBe(true);
     const other = screen.getByRole("region", { name: "Other ways to join" });
     const header = await screen.findByRole("heading", { level: 2, name: "Roles and Circles" });
     expect(other.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

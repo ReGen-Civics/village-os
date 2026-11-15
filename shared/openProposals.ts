@@ -416,7 +416,7 @@ export interface StepAfterSubmit {
  * confirmed page (`steps` on the confirm route's answer, drawn by
  * components/fireflyPath/Thresholds.tsx).
  */
-export function stepsAfterSubmit(lang: ApplicantLanguage | null | undefined, replyDays: number): StepAfterSubmit[] {
+export function stepsAfterSubmit(lang: ApplicantLanguage | null | undefined, replyDays: number | null): StepAfterSubmit[] {
   return applicantSteps(lang, replyDays);
 }
 

@@ -97,6 +97,8 @@ import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
 import { boolVar, numberVar, rawValue } from "../lib/variables";
 import { foundingSetupFrom, type FoundingSetup } from "../../shared/foundingApplication";
+import { knowUsLinksFrom, NO_KNOW_US_LINKS, type KnowUsLinks } from "../../shared/knowUsLinks";
+import { listCalendarItems } from "../lib/calendar";
 import { VARIABLES_BY_KEY } from "../../shared/gameVariables";
 import { languageForNewProposal, languageOf } from "../lib/applicantLanguage";
 import { wordsIn } from "../../shared/applicantWords";
@@ -106,6 +108,8 @@ import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
 import { isListed } from "../../shared/roleListing";
+import { opensAfterFounding } from "../../shared/foundingTeam";
+import { foundingIdsOf, replyDaysFor } from "../lib/foundingFirst";
 import { gateOf } from "../lib/roleCardProjection";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { writtenKeys } from "../../shared/termsWords";
@@ -215,7 +219,8 @@ export function register(app: Express, deps: Deps): void {
       console.error("[open-proposals] the admins could not be told about a kept application", e);
     }
     const statusPath = kept.review?.statusToken ? `/application-status/${encodeURIComponent(k.id)}?token=${encodeURIComponent(kept.review.statusToken)}` : null;
-    return res.json({ sent: true, kept: true, email: k.email, message: OPEN_WORDS.keptNotSent(k.email), statusPath, replyDays: numberVar("org.applicant_reply_days") });
+    const replyDays = await replyDaysFor(getPool(), kept.proposal.body.roles.map((r) => r.roleId));
+    return res.json({ sent: true, kept: true, email: k.email, message: OPEN_WORDS.keptNotSent(k.email), statusPath, replyDays, afterFounding: replyDays === null });
   }
 
   /**
@@ -277,6 +282,34 @@ export function register(app: Express, deps: Deps): void {
    */
   const founding = (): FoundingSetup => (deps.founding ? deps.founding() : foundingSetupFrom((key) => (VARIABLES_BY_KEY[key] ? rawValue(key) : "")));
 
+  /**
+   * Step 1's acts (Rye, 15 Nov 2026, shared/knowUsLinks.ts): the next public call, land tour and
+   * potluck on the calendar for the next 60 days, else the village's own links. A calendar that
+   * cannot be read leaves the village's links standing.
+   */
+  async function knowUsLinks(): Promise<KnowUsLinks> {
+    const at = now();
+    let events: Awaited<ReturnType<typeof listCalendarItems>> = [];
+    try {
+      events = await listCalendarItems(getPool(), {
+        from: at,
+        to: new Date(at.getTime() + 60 * 86_400_000),
+        viewer: { userId: null, isAdmin: false },
+        timezone: deps.seasonState()?.timezone || "UTC",
+        includeDrafts: false,
+        limit: 300,
+        now: at,
+      });
+    } catch (e) {
+      console.error("[open-proposals] the calendar could not be read for step 1's links", e);
+    }
+    try {
+      return knowUsLinksFrom((key) => (VARIABLES_BY_KEY[key] ? rawValue(key) : ""), events, at);
+    } catch {
+      return NO_KNOW_US_LINKS;
+    }
+  }
+
   /** Next season by the village's calendar: the first that starts after today, or null. */
   function nextSeason() {
     const state = deps.seasonState();
@@ -298,6 +331,8 @@ export function register(app: Express, deps: Deps): void {
     const nameOf = new Map(roles.map((r) => [r.id, r.name]));
     // Each role's pay ceiling for the full role, as its public card already shows it (Rye, 14 Nov 2026).
     const ceilings = await sectionsForMany(pool, roles.map((r) => r.id));
+    // Hiring the founding team first (Rye, 14 Nov 2026): every other listed role opens after it.
+    const foundingIds = foundingIdsOf(roles);
     return roles
       .filter((r) => r.active && !r.isExample && isListed(r) && r.circleId && live.has(r.circleId))
       .filter((r) => !needsCard || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
@@ -317,6 +352,8 @@ export function register(app: Express, deps: Deps): void {
         // The commitment range (Rye, 14 Nov 2026): the least one person may propose, and the full role's ceiling,
         // so the form offers only that range and says the most at each commitment. Display only.
         commitmentMin: r.commitmentMin ?? null,
+        // Applied for now, answered once the founding team is in place (shared/foundingTeam.ts).
+        opensLater: opensAfterFounding(foundingIds, [r.id]),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
         // The conversations in the role's order, as its public card shows them (role journey L5), so the
         // form and the board can say what happens next (role audit, 10 Nov 2026). The booking link is
@@ -365,7 +402,7 @@ export function register(app: Express, deps: Deps): void {
       voice: clipLimits(),
       ...(t ? {} : { message: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason }),
       roles: t ? await offered() : [],
-      founding: founding(),
+      founding: { ...founding(), knowUsLinks: await knowUsLinks() },
     });
   });
 
@@ -516,7 +553,8 @@ export function register(app: Express, deps: Deps): void {
     const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
     if (!WENT.has(sent.status)) return keepUnsent(res, { id, email, token, status: sent.status });
     // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
-    res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays: numberVar("org.applicant_reply_days") });
+    const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
+    res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
   }
 
   /**
@@ -554,9 +592,9 @@ export function register(app: Express, deps: Deps): void {
       const kept = token && token.length <= 100 ? await keptAddressAnswers(hashOf(token), at) : null;
       if (!kept) return res.status(410).json({ error: OPEN_WORDS.confirmGone });
       const lang = languageOf(kept);
-      const replyDays = numberVar("org.applicant_reply_days");
+      const replyDays = await replyDaysFor(getPool(), kept.body.roles.map((r) => r.roleId));
       const steps = stepsAfterSubmit(lang, replyDays);
-      return res.json({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null, locale: lang, replyDays, ...(steps.length ? { steps } : {}) });
+      return res.json({ confirmed: true, message: OPEN_WORDS.addressConfirmed, statusPath: null, locale: lang, replyDays, afterFounding: replyDays === null, ...(steps.length ? { steps } : {}) });
     }
     await alignedAtApplication(confirmed.proposal, at);
     try {
@@ -567,14 +605,16 @@ export function register(app: Express, deps: Deps): void {
     }
     // The applicant's own page: the step, who acts next, by when. The link is shown once and mailed; only its hash is kept.
     let statusPath: string | null = null;
+    // The village's days, or null while every role applied for opens after the founding team.
+    const replyDays = await replyDaysFor(getPool(), confirmed.proposal.body.roles.map((r) => r.roleId));
     if (confirmed.review?.statusToken) {
       statusPath = `/application-status/${encodeURIComponent(confirmed.proposal.id)}?token=${encodeURIComponent(confirmed.review.statusToken)}`;
       if (confirmed.proposal.email) {
         const lang = languageOf(confirmed.proposal);
         const apply = APPLY_EMAIL_WORDS[lang];
         // The steps after submit (lane A2's one list, through the slot in shared/openProposals.ts), when there are any.
-        const steps = stepsAsLines(stepsAfterSubmit(lang, numberVar("org.applicant_reply_days")));
-        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(numberVar("org.applicant_reply_days")))}${steps ? `\n\n${steps}` : ""}`;
+        const steps = stepsAsLines(stepsAfterSubmit(lang, replyDays));
+        const text = `${apply.statusText(`${site()}${statusPath}`, wordsIn(lang).replyPromise(replyDays))}${steps ? `\n\n${steps}` : ""}`;
         try {
           await postEmail({
             idempotencyKey: `open-proposal:${confirmed.proposal.id}:status`,
@@ -596,9 +636,8 @@ export function register(app: Express, deps: Deps): void {
     // Somebody who already has an account reads it on their profile too; the email above is theirs either way.
     await tellApplicant(confirmed.proposal.id, "confirmed");
     // The language the applicant proposed in, so the confirmed page can speak it, and the first-reply window to date the next step.
-    const replyDays = numberVar("org.applicant_reply_days");
     const steps = stepsAfterSubmit(languageOf(confirmed.proposal), replyDays);
-    res.json({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath, locale: languageOf(confirmed.proposal), replyDays, ...(steps.length ? { steps } : {}) });
+    res.json({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath, locale: languageOf(confirmed.proposal), replyDays, afterFounding: replyDays === null, ...(steps.length ? { steps } : {}) });
   });
 
   // ── The desk ──────────────────────────────────────────────────────────────

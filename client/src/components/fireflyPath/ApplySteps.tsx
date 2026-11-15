@@ -24,6 +24,7 @@
  */
 import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
+export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
@@ -32,6 +33,8 @@ import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import type { DraftableGoal } from "@shared/seraDrafts";
 import { PLACEHOLDER_PARTS, shareWords, type FoundingSetup } from "@shared/foundingApplication";
+import type { KnowUsLinks } from "@shared/knowUsLinks";
+import { KnowUsWays } from "./KnowUsWays";
 
 /** A gold rule, the register's one ornament. */
 export const GOLD_RULE = "border-t border-notice/40";
@@ -80,12 +83,40 @@ export function StepMark({ labels, now, reached, onGo }: { labels: readonly stri
   );
 }
 
-/** With no role named: the open roles, each one door. One application is for one role. */
-export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<{ id: string; name: string; circle: string; aim: string | null }>; onPick: (id: string) => void }) {
+type ChoiceRole = { id: string; name: string; circle: string; aim: string | null; opensLater?: boolean };
+
+/**
+ * With no role named: the open roles, each one door. One application is for one role.
+ *
+ * Hiring the founding team first (Rye, 14 Nov 2026): while some roles open after the
+ * founding team, the list is two, the founding roles first and then the roles opening
+ * next, with the line that says a reply to those waits.
+ */
+export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
   const { t } = useLingui();
   if (roles.length === 0) {
     return <p className={HINT}>{t({ message: "No role is open right now. Check back soon.", context: "founding application choose" })}</p>;
   }
+  const later = roles.filter((r) => r.opensLater === true);
+  const first = roles.filter((r) => r.opensLater !== true);
+  if (later.length === 0 || first.length === 0) return <RoleDoors roles={roles} onPick={onPick} />;
+  return (
+    <div className="grid gap-10">
+      <section aria-labelledby="choose-first" data-role-choice-first="">
+        <h2 id="choose-first" className="mb-4 font-display text-2xl leading-tight text-foreground">{t({ message: "Hiring first: the founding team", context: "founding application choose, founding roles heading" })}</h2>
+        <RoleDoors roles={first} onPick={onPick} />
+      </section>
+      <section aria-labelledby="choose-later" data-role-choice-later="">
+        <h2 id="choose-later" className="mb-2 font-display text-2xl leading-tight text-foreground">{t({ message: "Opening next", context: "founding application choose, later roles heading" })}</h2>
+        <p className="mb-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t({ message: "You are welcome to apply for these now. We are filling the founding team first, so it may be a while before we reply.", context: "founding application choose, later roles note" })}</p>
+        <RoleDoors roles={later} onPick={onPick} />
+      </section>
+    </div>
+  );
+}
+
+function RoleDoors({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
+  const { t } = useLingui();
   return (
     <ul className="grid gap-3" data-role-choice="">
       {roles.map((r) => (
@@ -105,11 +136,13 @@ export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<{ id: strin
 }
 
 /** Step 1: each way ticked by the applicant. The note shows while any is open, and the step never locks. */
-export function KnowUsStep({ ways, note, ticked, onChange }: { ways: readonly string[]; note: string; ticked: readonly string[]; onChange: (next: string[]) => void }) {
+export function KnowUsStep({ ways, note, ticked, onChange, links }: { ways: readonly string[]; note: string; ticked: readonly string[]; onChange: (next: string[]) => void; links?: KnowUsLinks }) {
   const { t } = useLingui();
   const open = ways.some((w) => !ticked.includes(w));
   return (
     <div className="grid gap-5">
+      {/* Each way as a link, the warm push and the Steward path fork (Rye, 15 Nov 2026). */}
+      <KnowUsWays links={links} />
       {ways.length > 0 ? (
         <fieldset className="grid gap-2" data-know-us="">
           <legend className={`mb-2 ${LABEL}`}>{t({ message: "Tick the ones you have done", context: "founding application know us" })}</legend>
