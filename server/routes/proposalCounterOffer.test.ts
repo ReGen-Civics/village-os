@@ -206,6 +206,8 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
 
   /** Send a proposal as somebody with no account, and answer its id and the confirmation token. */
   const send = async (email: string, roles: string[] = [gate]) => {
+    // One application per role per address while it waits (shared/applicationAgain.ts): each send here stands alone.
+    await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [email]);
     const before = state.sent.length;
     const r = await call("POST", "/api/open-proposals", {
       name: "Rowan Field",

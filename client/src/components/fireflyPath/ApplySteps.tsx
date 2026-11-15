@@ -28,6 +28,7 @@ export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
+import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
 import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
@@ -204,6 +205,10 @@ export function ValueItems({
       {/* What the items become (Rye, 14 Nov 2026): your proposal sets your pay, through this first moon's contract. */}
       <p className="font-semibold text-foreground" data-value-contract="">
         {t({ message: "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done.", context: "founding application value" })}
+      </p>
+      {/* Paid on what we truly accomplish (Rye, 14 Nov 2026), said where the contract is written, before anyone signs up to it (steelman QA, 15 Nov 2026). */}
+      <p className="text-sm leading-relaxed text-muted-foreground" data-value-pay-follows="">
+        {t({ message: "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.", context: "founding application value" })}
       </p>
       {goals.length > 0 ? (
         <div className={`${QUIET} grid gap-2`} data-season-goals="">
@@ -520,7 +525,7 @@ export function ProblemsList<P extends { field: string | null; message: string }
           return (
             <li key={`${p.field}-${i}`}>
               <button type="button" onClick={() => onShow(p)} className="min-h-11 text-left underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">
-                {stoneOfField(p.field) !== stone ? `${where}: ${p.message}` : p.message}
+                {stoneOfField(p.field) !== stone ? `${where}: ${applyWordT(p.message)}` : applyWordT(p.message)}
               </button>
             </li>
           );

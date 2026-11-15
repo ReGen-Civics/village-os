@@ -247,6 +247,11 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 {p.voice && (p.voice.notes.length > 0 || otherClips(p).length > 0) && (
                   <div className="grid gap-2 rounded-lg border border-border p-3" data-admin-voice="">
                     <p className="font-semibold text-foreground">{t({ message: "Their voice", context: "admin open proposals" })}</p>
+                    {/* The promise the deciders' page makes, here too: who hears it, how long it is kept, and that typing counts the same (steelman QA, 15 Nov 2026). */}
+                    <p className="text-sm text-muted-foreground" data-admin-voice-note="">
+                      {t({ message: "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision.", context: "admin open proposals" })}{" "}
+                      {t({ message: "Recording is optional, and many people type. Weigh typed answers the same as a recording.", context: "their voice, for deciders" })}
+                    </p>
                     {p.voice.notes.map((n, i) => (
                       <div key={n.id} className="grid gap-1">
                         <span className="text-sm text-foreground">{t({ message: `Recording ${i + 1}`, context: "admin open proposals" })}</span>

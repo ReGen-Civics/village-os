@@ -21,7 +21,8 @@
 import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Circle, Square, Trash2 } from "lucide-react";
 import { HINT } from "@/components/journey/look";
-import { DEFAULT_CLIP_LIMITS, VOICE_WORDS, isClipField, voiceLength, type VoiceClipLimits } from "@shared/voiceNotes";
+import { DEFAULT_CLIP_LIMITS, isClipField, voiceLength, type VoiceClipLimits } from "@shared/voiceNotes";
+import { clipsFullWords, voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport } from "./useVoiceRecorder";
 import { forField } from "@/components/form/fieldName";
 import type { VoiceState } from "./VoiceInvite";
@@ -62,47 +63,47 @@ export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onW
       if (gone) URL.revokeObjectURL(gone.url);
       return { ...v, clips: rest };
     });
-  const problem = recorder.problem === "blocked" ? VOICE_WORDS.micBlocked : recorder.problem === "noMic" ? VOICE_WORDS.noMic : null;
+  const problem = recorder.problem === "blocked" ? voiceWord("micBlocked") : recorder.problem === "noMic" ? voiceWord("noMic") : null;
   const btn = "inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-3 text-sm font-medium text-foreground hover:border-notice disabled:opacity-50";
 
   return (
     <div className="mt-2 grid gap-2" data-voice-clip={field}>
       <div className="flex flex-wrap items-center gap-2">
         {recorder.recording ? (
-          <button type="button" onClick={recorder.stop} aria-label={forField(VOICE_WORDS.clipStop, fieldName)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground" data-voice-clip-stop="">
+          <button type="button" onClick={recorder.stop} aria-label={forField(voiceWord("clipStop"), fieldName)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground" data-voice-clip-stop="">
             <Square className="size-3.5" aria-hidden="true" />
-            {VOICE_WORDS.clipStop}
+            {voiceWord("clipStop")}
             <span className="tabular-nums">
               {voiceLength(recorder.elapsed)} / {voiceLength(ctx.limits.seconds)}
             </span>
           </button>
         ) : (
-          <button type="button" onClick={() => void recorder.start()} disabled={full} aria-label={forField(mine ? VOICE_WORDS.clipAgain : VOICE_WORDS.clipRecord, fieldName)} className={btn} data-voice-clip-record="">
+          <button type="button" onClick={() => void recorder.start()} disabled={full} aria-label={forField(mine ? voiceWord("clipAgain") : voiceWord("clipRecord"), fieldName)} className={btn} data-voice-clip-record="">
             <Circle className="size-3.5 fill-destructive text-destructive" aria-hidden="true" />
-            {mine ? VOICE_WORDS.clipAgain : VOICE_WORDS.clipRecord}
+            {mine ? voiceWord("clipAgain") : voiceWord("clipRecord")}
           </button>
         )}
         {mine && !recorder.recording && (
           <>
-            <audio controls preload="metadata" src={mine.url} aria-label={forField(VOICE_WORDS.clipLabel, fieldName)} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
+            <audio controls preload="metadata" src={mine.url} aria-label={forField(voiceWord("clipLabel"), fieldName)} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
             <span className="text-sm tabular-nums text-muted-foreground">{voiceLength(mine.seconds)}</span>
-            <button type="button" onClick={remove} aria-label={forField(VOICE_WORDS.clipRemove, fieldName)} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
+            <button type="button" onClick={remove} aria-label={forField(voiceWord("clipRemove"), fieldName)} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
               <Trash2 className="size-4" aria-hidden="true" />
-              {VOICE_WORDS.clipRemove}
+              {voiceWord("clipRemove")}
             </button>
           </>
         )}
       </div>
       {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground">{recorder.live}</p>}
-      {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{VOICE_WORDS.noTranscribe}</p>}
+      {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{voiceWord("noTranscribe")}</p>}
       {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}
-      {full && <p className={HINT}>{VOICE_WORDS.clipsFull(ctx.limits.max)}</p>}
+      {full && <p className={HINT}>{clipsFullWords(ctx.limits.max)}</p>}
       {mine && !ctx.voice.consent && (
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm" data-voice-clip-consent="">
           <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={false} onChange={(e) => ctx.setVoice((v) => ({ ...v, consent: e.target.checked }))} />
           <span className="grid gap-0.5">
-            <span className="font-semibold text-foreground">{VOICE_WORDS.consent}</span>
-            <span className={HINT}>{VOICE_WORDS.notKept}</span>
+            <span className="font-semibold text-foreground">{voiceWord("consent")}</span>
+            <span className={HINT}>{voiceWord("notKept")}</span>
           </span>
         </label>
       )}

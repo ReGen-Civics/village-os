@@ -71,7 +71,9 @@ import {
   APPLY_EMAIL_WORDS,
   stepsAfterSubmit,
   stepsAsLines,
+  safeGreeting,
 } from "../../shared/openProposals";
+import { againLetter } from "../../shared/applicationAgain";
 import type { AppDeps } from "../lib/appDeps";
 import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
@@ -518,10 +520,11 @@ export function register(app: Express, deps: Deps): void {
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
     // A commitment below what the role takes from one person is refused, in words (Rye, 14 Nov 2026, ruling 2).
+    // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
     const pct = parsed.value.body.card?.commitmentPct;
     for (const picked of parsed.value.body.roles) {
       const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
-      if (typeof min === "number" && typeof pct === "number" && pct < min) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
+      if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
     }
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
@@ -565,6 +568,10 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit("open-proposal:global", OPEN_GLOBAL_HOURLY, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooBusy });
 
     const pool = getPool();
+    // The same application again while one for the same role waits (shared/applicationAgain.ts): nothing new is kept,
+    // the address alone is told, and the sender reads what any send reads. After the caps, so it spends what a send spends.
+    const waiting = await store.waitingFromAddress(pool, emailKey, proposal.roles.map((r) => r.roleId));
+    if (waiting) return answerAgain(res, { waiting, email, name, locale, roles });
     const id = `op-${crypto.randomBytes(10).toString("hex")}`;
     const token = newToken();
     // The files go on disk BEFORE the row, so a row never names a file that is not there.
@@ -595,6 +602,35 @@ export function register(app: Express, deps: Deps): void {
     // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
     const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
     res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
+  }
+
+  /**
+   * THE SAME APPLICATION SENT AGAIN (hostile-edges QA, 15 Nov 2026). The waiting one stands; one short email goes to
+   * the address, at most once a day for that application; the answer has the shape and words of an ordinary send, so
+   * the public form tells nobody whether an address has applied.
+   */
+  async function answerAgain(
+    res: Response,
+    a: { waiting: store.StoredOpenProposal; email: string; name: string; locale: Parameters<typeof againLetter>[0]["lang"]; roles: Array<{ id: string; name: string }> },
+  ) {
+    const byId = new Map(a.roles.map((r) => [r.id, r.name]));
+    const words = againLetter({ firstName: safeGreeting(a.name), roleNames: a.waiting.body.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean), lang: a.locale });
+    const sent = await postEmail({
+      idempotencyKey: `open-proposal:${a.waiting.id}:again:${now().toISOString().slice(0, 10)}`,
+      kind: "essential",
+      origin: "open_proposal.again",
+      to: { email: a.email },
+      subject: words.subject,
+      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${words.text
+        .split("\n\n")
+        .map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`)
+        .join("")}</body></html>`,
+      text: words.text,
+    }).catch((): PostResult => ({ status: "failed", messageId: null }));
+    console.log(`[open-proposals] ${a.waiting.id} was sent again while it waits; nothing new kept (${sent.status})`);
+    const replyDays = await replyDaysFor(getPool(), a.waiting.body.roles.map((r) => r.roleId));
+    if (WENT.has(sent.status)) return res.json({ sent: true, email: a.email, message: OPEN_WORDS.sent(a.email), replyDays, afterFounding: replyDays === null });
+    return res.json({ sent: true, kept: true, email: a.email, message: OPEN_WORDS.keptNotSent(a.email), statusPath: null, replyDays, afterFounding: replyDays === null });
   }
 
   /**

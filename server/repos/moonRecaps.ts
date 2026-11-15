@@ -872,8 +872,11 @@ export async function claimNudge(db: Queryable, userId: string, cycleId: string,
  * The erasure sweep's statements for a member. Words are cleared; amounts,
  * dates, numbers, bill refs and events stay, as `cash_owed` keeps them. The
  * pay route goes whole: it is nothing but the member's own declaration. Item
- * text is NOT NULL, so it becomes empty. `lines_json` carries item ids and
- * role names, never item text, so it is kept as it is.
+ * text is NOT NULL, so it becomes empty. `lines_json` carries item ids, role
+ * names and the arithmetic, which stay, and since the End of Moon review (14
+ * Nov 2026) a proposed amount's words: the Treasurer's reason about the member
+ * and the member's own reply. Those words go (`forgetLineWords`); the amounts,
+ * who proposed and who confirmed stay.
  */
 export async function forgetMoonReviews(db: Queryable, userId: string): Promise<number> {
   const uid = String(userId ?? "").trim();
@@ -893,6 +896,12 @@ export async function forgetMoonReviews(db: Queryable, userId: string): Promise<
     "UPDATE `moon_invoices` SET `from_json` = NULL, `attestation_json` = NULL, `funds_source` = NULL WHERE `user_id` = ?",
     [uid],
   );
+  const [lineRows] = await db.query<RowDataPacket[]>("SELECT `id`, `lines_json` FROM `moon_invoices` WHERE `user_id` = ?", [uid]);
+  for (const r of lineRows) {
+    const before = String(r.lines_json ?? "[]");
+    const after = forgetLineWords(before);
+    if (after !== before) await db.query("UPDATE `moon_invoices` SET `lines_json` = ? WHERE `id` = ?", [after, r.id]);
+  }
   await db.query("UPDATE `moon_review_events` SET `note` = NULL WHERE `user_id` = ?", [uid]);
   const [goals] = await db.query<ResultSetHeader>(
     "UPDATE `moon_goals` SET `text` = '', `done_when` = NULL, `let_go_reason` = NULL WHERE `user_id` = ?",
@@ -901,6 +910,27 @@ export async function forgetMoonReviews(db: Queryable, userId: string): Promise<
   const [routes] = await db.query<ResultSetHeader>("DELETE FROM `member_pay_routes` WHERE `user_id` = ?", [uid]);
   const [nudges] = await db.query<ResultSetHeader>("DELETE FROM `moon_nudges` WHERE `user_id` = ?", [uid]);
   return items.affectedRows + recaps.affectedRows + invoices.affectedRows + routes.affectedRows + goals.affectedRows + nudges.affectedRows;
+}
+
+/**
+ * An invoice's lines with a proposed amount's words taken out: the reason
+ * becomes empty and the reply null. Amounts, the proposer, the confirmer and
+ * the dates stay, as the record of what was paid. Lines that are not a list
+ * come back as they were.
+ */
+export function forgetLineWords(linesJson: string): string {
+  const lines = json<unknown>(linesJson, null);
+  if (!Array.isArray(lines)) return linesJson;
+  let changed = false;
+  const out = lines.map((l) => {
+    const adjust = l && typeof l === "object" ? (l as { adjust?: unknown }).adjust : null;
+    if (!adjust || typeof adjust !== "object") return l;
+    const a = adjust as { reason?: unknown; reply?: unknown };
+    if (a.reason === "" && (a.reply === null || a.reply === undefined)) return l;
+    changed = true;
+    return { ...(l as object), adjust: { ...a, reason: "", reply: null } };
+  });
+  return changed ? JSON.stringify(out) : linesJson;
 }
 
 /** The member's own data export: their recaps, items, invoices, route and events. */

@@ -86,6 +86,7 @@ export function VoiceHeard({ voice }: { voice: ServedVoice | null | undefined })
         {VOICE_WORDS.heardHeading}
       </h2>
       <p className="text-sm text-muted-foreground">{VOICE_WORDS.heardNote}</p>
+      <p className="text-sm text-muted-foreground" data-voice-weigh-same="">{t({ message: "Recording is optional, and many people type. Weigh typed answers the same as a recording.", context: "their voice, for deciders" })}</p>
       {voice.notes.length > 0 && (
         <ul className="grid gap-2">
           {voice.notes.map((note, i) => (

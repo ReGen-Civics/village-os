@@ -411,6 +411,10 @@ export default function OpenProposal() {
                         ? p.founding.knowUs.join(", ")
                         : t({ message: "None ticked yet.", context: "open proposal, founding application" })}
                     </dd>
+                    {/* The applicant was told these are optional (step 1), so the deciders are told the same (steelman QA, 15 Nov 2026). */}
+                    <dd className="mt-1 text-sm text-muted-foreground" data-founding-know-us-optional="">
+                      {t({ message: "These are optional. Someone who lives far away may not have been able to come yet.", context: "open proposal, founding application" })}
+                    </dd>
                   </div>
                 )}
                 {p.founding && (

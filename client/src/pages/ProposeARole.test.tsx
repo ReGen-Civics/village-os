@@ -408,6 +408,8 @@ describe("the six steps", () => {
     expect(stoneNow()).toBe("value");
     const goalsShown = document.querySelector("[data-season-goals]") as HTMLElement;
     for (const g of GOALS) expect(within(goalsShown).getByText(g.text)).toBeTruthy();
+    // Paid on what we truly accomplish, said where the contract is written (steelman QA, 15 Nov 2026).
+    expect(document.querySelector("[data-value-pay-follows]")?.textContent).toContain("nothing is paid until the Treasurer confirms");
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
     fireEvent.change(document.getElementById("value-r-gate-0-title") as HTMLInputElement, { target: { value: "Open the gate" } });
     pressNext();

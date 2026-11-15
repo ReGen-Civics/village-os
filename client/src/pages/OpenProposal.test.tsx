@@ -419,6 +419,8 @@ describe("the founding application, for the decider (design G2, D-08 and D-29)",
     expect(await screen.findByRole("heading", { level: 1, name: "Rowan applies for Gate Keeper" })).toBeTruthy();
     expect(document.querySelector("header")?.textContent).not.toMatch(/this moon|new moon|9 November/);
     expect(screen.getByText("Read it through, then answer.")).toBeTruthy();
+    // The ways to get to know us are optional for the applicant, and the deciders read that too (steelman QA, 15 Nov 2026).
+    expect(document.querySelector("[data-founding-know-us-optional]")?.textContent).toMatch(/These are optional/);
   });
 
   it("Invite to the conversations is the one gold act, and the not-invited letter is edged", async () => {
