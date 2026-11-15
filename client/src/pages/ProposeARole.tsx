@@ -40,6 +40,7 @@
  * WHAT IS KEPT, said on the form in one line (sheet 19i): never confirmed, deleted after 48 hours;
  * declined, its name and address go after 90 days (docs/ARCHITECTURE.md, 3.9).
  */
+import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
 import { EMPTY_VOICE, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
@@ -217,6 +218,7 @@ export default function ProposeARole() {
   const params = useParams<{ token?: string }>();
   const link = params.token ? decodeURIComponent(params.token) : "";
   const [form, setForm] = useState<FormState>({ kind: "loading" });
+  const [formTries, setFormTries] = useState(0); // bumped by "Try again" after a failed load
   const [roleId, setRoleId] = useState<string | null>(null);
   const [gone, setGone] = useState(false);
   const [knowUs, setKnowUs] = useState<string[]>([]);
@@ -272,7 +274,7 @@ export default function ProposeARole() {
     // The role a card's Apply link (or the draft board) named: the first the village still offers.
     const wanted = new URLSearchParams(window.location.search).getAll("role").map((r) => r.trim()).filter(Boolean);
     fetch(`/api/open-proposals/form${link ? `?link=${encodeURIComponent(link)}` : ""}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))) // closed is a 200 with open: false; a 500 is an outage (resilience P2-6)
       .then((d) => {
         const roles: FormRole[] = Array.isArray(d?.roles) ? d.roles : [];
         setForm(
@@ -287,7 +289,7 @@ export default function ProposeARole() {
         }
       })
       .catch(() => setForm({ kind: "failed" }));
-  }, [link]);
+  }, [link, formTries]);
 
   // R-Ikigai answers the person ticked on the draft board become their own words in "Why you", once, and only into an empty field.
   useEffect(() => {
@@ -586,9 +588,7 @@ export default function ProposeARole() {
   if (form.kind === "failed") {
     return (
       <Shell>
-        <p role="alert" className="text-foreground">
-          {t`This page didn't load. Check your connection and try again.`}
-        </p>
+        <LoadFailed onRetry={() => { setForm({ kind: "loading" }); setFormTries((n) => n + 1); }} />
       </Shell>
     );
   }

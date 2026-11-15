@@ -25562,13 +25562,21 @@ Send an empty drafts array when you are still listening. A role payload is {name
    *
    * The asset miss answers a constant: repeating the requested path is the
    * reflection CodeQL reports, and the status is what a caller needs anyway.
+   *
+   * Every file miss also says `Cache-Control: no-store`. Without a header the
+   * CDN in front kept the 404 for its default four hours (measured: MISS, then
+   * HIT with max-age 14400), so a file that arrived a moment later, the next
+   * deploy's chunk or an image just uploaded, went on answering 404 from the
+   * edge (performance QA sweep, resilience P2-5). `fileMiss` is the one answer
+   * all three file rules send.
    */
+  const fileMiss = (_req: express.Request, res: express.Response) => {
+    res.status(404).set("Cache-Control", "no-store").type("text/plain").send("Not found");
+  };
   app.all("/api/{*splat}", (req, res) => {
     res.status(404).json({ error: `No such endpoint: ${req.method} ${req.path}` });
   });
-  app.get("/assets/{*splat}", (_req, res) => {
-    res.status(404).type("text/plain").send("Not found");
-  });
+  app.get("/assets/{*splat}", fileMiss);
   /*
    * A PATH THAT LOOKS LIKE A FILE FAILS LIKE ONE.
    *
@@ -25583,12 +25591,10 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * still reaches its page. The body does not repeat the path: the caller
    * already knows it, and echoing it is a reflection CodeQL reports.
    */
-  app.get("/images/{*splat}", (_req, res) => {
-    res.status(404).type("text/plain").send("Not found");
-  });
+  app.get("/images/{*splat}", fileMiss);
   app.get("/:file", (req, res, next) => {
     if (!/\.[A-Za-z0-9]+$/.test(String(req.params.file))) return next();
-    res.status(404).type("text/plain").send("Not found");
+    fileMiss(req, res);
   });
 
   /*

@@ -64,6 +64,13 @@ export interface RecoveryEnv {
   store: () => MarkerStore | null;
   reload: () => void;
   now: () => number;
+  /**
+   * False when the browser knows it has no connection. Offline, a chunk that
+   * fails to arrive says nothing about the build, and a reload would land on
+   * the browser's own offline page and lose the page the member was on
+   * (performance QA sweep, resilience P2-4). Absent means online.
+   */
+  online?: () => boolean;
 }
 
 const browserEnv: RecoveryEnv = {
@@ -76,7 +83,17 @@ const browserEnv: RecoveryEnv = {
   },
   reload: () => window.location.reload(),
   now: () => Date.now(),
+  online: () => isOnline(),
 };
+
+/** False only when the browser says it is offline; a browser that cannot tell counts as online. */
+export function isOnline(): boolean {
+  try {
+    return typeof navigator === "undefined" || navigator.onLine !== false;
+  } catch {
+    return true;
+  }
+}
 
 let reloadPending = false;
 
@@ -91,6 +108,7 @@ export function isReloadPending(): boolean {
  */
 export function reloadOnceForStaleChunk(env: RecoveryEnv = browserEnv): boolean {
   if (reloadPending) return true;
+  if (env.online?.() === false) return false;
   try {
     const store = env.store();
     if (!store) return false;

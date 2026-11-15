@@ -417,6 +417,8 @@ export default function Roles() {
   const [seatCounts, setSeatCounts] = useState({ seats: 0, held: 0 });
   // The founding team section (org.founding_team). Null until read; a failed read is the section off.
   const [founding, setFounding] = useState<FoundingTeamAnswer | null>(null);
+  // Bumped by "Try again" after a failed read of the founding team.
+  const [foundingTries, setFoundingTries] = useState(0);
   // VERIFY 2.2: the server sends an unlisted role to a steward or an admin, with its chip. The
   // page used to list them all by default, so a founder checking "List only these" still saw
   // every role and read the update as not taken. Now the page shows what a visitor sees, and
@@ -428,7 +430,7 @@ export default function Roles() {
     return () => {
       live = false;
     };
-  }, []);
+  }, [foundingTries]);
   // Who may say what a seat is held for. The server refuses everybody else by
   // itself; this only decides whether the control is drawn.
   const { user } = useAuth();
@@ -663,6 +665,31 @@ export default function Roles() {
       {/* The sheet's world (docs/DESIGN_RULE.md): the same night ground and display face as the profile. */}
       <section className={`${WORLD} ${leads ? "pb-16 pt-4 sm:py-16" : "py-16"} sm:py-24`}>
         <div className="container">
+          {/* Until the founding team answers, the page says it is loading, and a failed read says so
+              with a way to ask again, instead of the founding team silently missing (resilience P2-6).
+              The region is there from first paint, so the change is what gets announced. */}
+          <div role="status" className="mx-auto max-w-4xl" data-founding-status="">
+            {founding === null && (
+              <p className="py-10 text-center text-muted-foreground">{t({ message: `Loading roles…`, context: "roles page" })}</p>
+            )}
+            {founding?.failed && (
+              <div className={`${TILE} mb-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between`}>
+                <p className="text-sm text-foreground">
+                  {t({ message: "We couldn't load the founding team just now.", context: "roles page: the founding team read failed" })}
+                </p>
+                <button
+                  type="button"
+                  className={BTN_SECONDARY}
+                  onClick={() => {
+                    setFounding(null);
+                    setFoundingTries((n) => n + 1);
+                  }}
+                >
+                  {t({ message: "Try again", context: "roles page: read the founding team again" })}
+                </button>
+              </div>
+            )}
+          </div>
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}

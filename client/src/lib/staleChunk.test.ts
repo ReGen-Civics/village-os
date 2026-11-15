@@ -98,3 +98,19 @@ describe("installStaleChunkRecovery", () => {
     expect(e.reload).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("offline is not an old build (performance QA sweep, resilience P2-4)", () => {
+  it("never reloads while the browser says it is offline, and leaves no marker", () => {
+    const store = memoryStore();
+    const e = { ...env(store), online: () => false };
+    expect(reloadOnceForStaleChunk(e)).toBe(false);
+    expect(e.reload).not.toHaveBeenCalled();
+    expect(store.getItem(RELOAD_MARKER)).toBeNull();
+  });
+
+  it("reloads once the connection is back (control)", () => {
+    const e = { ...env(memoryStore()), online: () => true };
+    expect(reloadOnceForStaleChunk(e)).toBe(true);
+    expect(e.reload).toHaveBeenCalledTimes(1);
+  });
+});
