@@ -120,6 +120,7 @@ import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
 import { VOICE_CLIPS_CEILING, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
 import { registerVoiceDraft } from "./openProposalVoiceDraft";
+import { limitState } from "../repos/rateHits";
 import { checkProposalFiles, checkVoiceClips, checkVoiceNotes, readVoiceNote, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceClips, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
 
 type Deps = Pick<
@@ -399,7 +400,7 @@ export function register(app: Express, deps: Deps): void {
   // ── The public side ───────────────────────────────────────────────────────
 
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
-  registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], overLimit, clientIp, ipBucket, villageName: projectName });
+  registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, villageName: projectName });
 
   app.get("/api/open-proposals/form", async (req, res) => {
     const d = await door(req.query.link);

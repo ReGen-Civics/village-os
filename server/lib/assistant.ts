@@ -117,6 +117,49 @@ export const MAX_MESSAGE_CHARS = 4000;
 export const ASSIST_BURST_PER_HOUR = 30;
 
 /**
+ * ONE ACCOUNT'S SHARE OF A SHARED DAY (security audit, 15 Nov 2026). A
+ * member-facing mode's day budget is the whole village's, so one free account
+ * asking all day could spend it for everybody. Each signed-in caller of a
+ * non-admin mode on the village or platform key also counts on a slice of
+ * their own, a quarter of the mode's day, checked before the shared bucket so
+ * a refused slice spends none of it. Admin modes are used by a few named
+ * people and keep the whole day; a member's own key pays its own allowance.
+ */
+export const USER_DAY_SHARE = 0.25;
+export const USER_DAY_SHARE_MIN = 5;
+export function userDaySlice(spec: ModeSpec): number {
+  return Math.max(USER_DAY_SHARE_MIN, Math.ceil(spec.dailyBudget * USER_DAY_SHARE));
+}
+
+/**
+ * The words when the limiter itself cannot be read. Every bucket in this file
+ * guards money spent upstream, so a count that could not be taken refuses the
+ * call (fails CLOSED), where the rest of the platform's limits fail open.
+ */
+export const LIMITS_UNREADABLE = "The guide cannot check its limits right now. Try again shortly.";
+export const SHARE_SPENT = "You have used your share of the guide for today. It rests until tomorrow.";
+
+/**
+ * CALLERS WITH NO ACCOUNT HAVE A DAY OF THEIR OWN (security audit, 15 Nov
+ * 2026). The public `proposal` mode's day is 250 calls, and every stranger on
+ * the visitor guide and the application's voice drafts drew on all of it, so
+ * a few addresses could spend the day a signed-in applicant or member then
+ * found empty. Together, callers with no account may spend this much of the
+ * mode's day, and one address (an IPv6 /64 counts as one) this much of that.
+ */
+export const ANON_DAY_SHARE: Partial<Record<AssistantMode, number>> = { proposal: 150 };
+export const ANON_PER_ADDRESS_DAY = 40;
+
+/** The day slices for a caller with no account on `mode`: their own address (`ipBucket` from shared/openProposals, so a /64 is one), then the strangers' pool. */
+export function anonymousDaySlices(mode: AssistantMode, address: string): Array<{ key: string; max: number }> {
+  const pool = ANON_DAY_SHARE[mode] ?? Math.ceil(ASSISTANT_MODES[mode].dailyBudget * 0.6);
+  return [
+    { key: `address:${address}`, max: Math.min(pool, ANON_PER_ADDRESS_DAY) },
+    { key: "anonymous", max: pool },
+  ];
+}
+
+/**
  * One place for the model id, which was pasted into five call sites and would
  * have drifted the first time anyone changed one of them. Per-mode overrides
  * belong in ASSISTANT_MODES when someone picks them against the current
@@ -173,6 +216,12 @@ export interface AssistantDeps {
   villageKey(): string;
   /** True when this bucket has already had `max` hits inside the window. */
   rateLimited(bucket: string, max: number, windowMs: number): Promise<boolean>;
+  /**
+   * The limiter's full answer, `unavailable` included. When wired, every
+   * bucket here reads it and refuses on `unavailable` (fail closed: these
+   * buckets guard spend). Absent, `rateLimited` is read as before.
+   */
+  limitState?(bucket: string, max: number, windowMs: number): Promise<"under" | "over" | "unavailable">;
   /** Injected for tests. Defaults to global fetch against the Anthropic endpoint. */
   fetchImpl?: typeof fetch;
   /**
@@ -189,6 +238,14 @@ let deps: AssistantDeps = {
   villageKey: () => "",
   rateLimited: async () => false,
 };
+
+/** One spend bucket: the limiter's answer, with a boolean-only limiter read as it always was. */
+async function spendGate(bucket: string, max: number, windowMs: number): Promise<"under" | "over" | "unavailable"> {
+  if (deps.limitState) return deps.limitState(bucket, max, windowMs);
+  return (await deps.rateLimited(bucket, max, windowMs)) ? "over" : "under";
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 export function wireAssistant(d: AssistantDeps): void {
   deps = d;
@@ -396,6 +453,14 @@ export interface AssistantRequest {
   /** That bucket's ceiling per hour. Absent, ASSIST_BURST_PER_HOUR. */
   burstPerHour?: number;
   /**
+   * Smaller day ceilings inside the mode's shared day, checked before it on
+   * each upstream call, each counted on `assistant-day:<mode>:slice:<key>`.
+   * The public surfaces name one for every caller with no account, so
+   * strangers together cannot spend what signed-in people use. Not read on a
+   * member's own key, which never touches the shared day.
+   */
+  daySlices?: Array<{ key: string; max: number }>;
+  /**
    * Who is asking, for the usage row. Null on the public surfaces.
    * `user_id` cannot be backfilled once rows exist, so it goes in from the
    * first row even though nothing enforces a per-user ceiling yet.
@@ -547,15 +612,20 @@ async function noteReply(source: KeySource, outcome: PlatformCallOutcome): Promi
  * The iteration ceiling is a LOCAL INTEGER and not a bucket. `overLimit`
  * catches its own database errors and returns false, so a loop that asked the
  * rate limiter where to stop would be unbounded for as long as MySQL hiccups.
+ *
+ * EVERY BUCKET HERE FAILS CLOSED (security audit, 15 Nov 2026). With
+ * `limitState` wired, a limiter that cannot be read refuses the call with
+ * LIMITS_UNREADABLE, because each bucket stands between a caller and money
+ * spent upstream. `overLimit` elsewhere still fails open for its own callers.
  */
 export async function callAssistant(req: AssistantRequest): Promise<AssistantResult> {
   const spec = ASSISTANT_MODES[req.mode];
   if (!spec) return { ok: false, status: 400, error: `unknown assistant mode: ${String(req.mode)}` };
 
   const burstKey = req.burstKey || `assist:${req.clientIp}`;
-  if (await deps.rateLimited(burstKey, req.burstPerHour ?? ASSIST_BURST_PER_HOUR, 60 * 60 * 1000)) {
-    return { ok: false, status: 429, error: "Slow down a moment, then keep going." };
-  }
+  const burst = await spendGate(burstKey, req.burstPerHour ?? ASSIST_BURST_PER_HOUR, 60 * 60 * 1000);
+  if (burst === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE };
+  if (burst === "over") return { ok: false, status: 429, error: "Slow down a moment, then keep going." };
 
   if (req.sera) return callSeraRoad(req, spec, req.sera);
 
@@ -604,11 +674,22 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
       // neither charges the mode's day bucket nor meets the platform cap. It
       // has its own allowance because this server is still the one making
       // the calls, and a runaway loop is a runaway loop whoever is billed.
-      if (await deps.rateLimited(`assistant-member-day:${req.userId ?? "anon"}:${today}`, MEMBER_KEY_DAILY_CAP, 24 * 60 * 60 * 1000)) {
-        return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
-      }
+      const mine = await spendGate(`assistant-member-day:${req.userId ?? "anon"}:${today}`, MEMBER_KEY_DAILY_CAP, DAY_MS);
+      if (mine === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE, ...spent() };
+      if (mine === "over") return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
     } else {
-      if (await deps.rateLimited(`assistant-day:${req.mode}:${today}`, spec.dailyBudget, 24 * 60 * 60 * 1000)) {
+      // The caller's own slices of the shared day come first, so a caller
+      // refused on theirs spends none of the village's.
+      const slices = [...(req.daySlices ?? [])];
+      if (req.userId && spec.audience !== "admin") slices.push({ key: `user:${req.userId}`, max: userDaySlice(spec) });
+      for (const slice of slices) {
+        const got = await spendGate(`assistant-day:${req.mode}:slice:${slice.key}:${today}`, slice.max, DAY_MS);
+        if (got === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE, ...spent() };
+        if (got === "over") return { ok: false, status: 429, error: SHARE_SPENT, ...spent() };
+      }
+      const day = await spendGate(`assistant-day:${req.mode}:${today}`, spec.dailyBudget, DAY_MS);
+      if (day === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE, ...spent() };
+      if (day === "over") {
         // Mid-loop this is not a partial answer, it is no answer: the last reply
         // was a tool request and carries no text. Refusing is the honest end.
         // Serving what we have would hand a caller their own fallback sentence
@@ -620,9 +701,10 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
       // smaller ceiling on top of the mode's own.
       if (resolved.source === "platform") {
         const cap = platformDailyCap();
-        if (cap === 0 || (await deps.rateLimited(`assistant-platform-day:${today}`, cap, 24 * 60 * 60 * 1000))) {
-          return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
-        }
+        if (cap === 0) return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
+        const borrowed = await spendGate(`assistant-platform-day:${today}`, cap, DAY_MS);
+        if (borrowed === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE, ...spent() };
+        if (borrowed === "over") return { ok: false, status: 503, error: "assistant-unavailable", ...spent() };
       }
     }
 
@@ -654,7 +736,9 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
         });
         if (!r.ok) {
           // The key never reaches a log line, whoever it belongs to.
-          console.error(`[assistant:${req.mode}] ${provider.id} error`, r.status, (await r.text()).slice(0, 300));
+          // Status and the provider's error type only: the body can echo what
+          // was sent (a voice transcript, a member's words), so it is never logged.
+          console.error(`[assistant:${req.mode}] ${provider.id} error`, r.status, await providerErrorType(r));
           await noteReply(resolved.source, { ok: false, status: String(r.status), detail: `${provider.id} answered ${r.status}` });
           return { ok: false, status: 502, error: "assistant-error", ...spent() };
         }
@@ -721,9 +805,9 @@ export async function callAssistant(req: AssistantRequest): Promise<AssistantRes
  */
 async function callSeraRoad(req: AssistantRequest, spec: ModeSpec, ask: SeraAsk): Promise<AssistantResult> {
   const today = new Date().toISOString().slice(0, 10);
-  if (await deps.rateLimited(`assistant-day:${req.mode}:${today}`, spec.dailyBudget, 24 * 60 * 60 * 1000)) {
-    return { ok: false, status: 503, error: "assistant-unavailable" };
-  }
+  const day = await spendGate(`assistant-day:${req.mode}:${today}`, spec.dailyBudget, DAY_MS);
+  if (day === "unavailable") return { ok: false, status: 503, error: LIMITS_UNREADABLE };
+  if (day === "over") return { ok: false, status: 503, error: "assistant-unavailable" };
   const prefetch = req.prefetch ?? [];
   const said = await ask(seraGuideQuestion({ system: req.system, prefetch, conversation: req.messages }));
   if (!said.ok) {
@@ -739,6 +823,21 @@ async function callSeraRoad(req: AssistantRequest, spec: ModeSpec, ask: SeraAsk)
     iterations: 1,
     toolsUsed: prefetch.map((p) => p.key),
   };
+}
+
+/**
+ * The provider's error TYPE from a refused call ("rate_limit_error"), read
+ * from the body and never the body itself. Anything that is not a short
+ * snake_case word reads "unknown", so no input the body echoed reaches a log.
+ */
+export async function providerErrorType(r: { text(): Promise<string> }): Promise<string> {
+  try {
+    const body = JSON.parse(await r.text());
+    const type = body?.error?.type ?? body?.type;
+    return typeof type === "string" && /^[a-z_]{1,40}$/.test(type) ? type : "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 /** Whether this deployment is currently spending the platform's key. */

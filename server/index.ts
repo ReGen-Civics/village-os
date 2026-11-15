@@ -753,8 +753,9 @@ import {
 } from "./lib/villageReaders";
 import {
   ASSISTANT_MODES, DEFAULT_ASSISTANT_MODEL, borrowingPlatformKey, callAssistant, parseJsonReply, sanitizeMessages,
-  assistantOwnKeyReadiness, wireAssistant, type AssistantResult,
+  anonymousDaySlices, assistantOwnKeyReadiness, wireAssistant, type AssistantResult,
 } from "./lib/assistant";
+import { ipBucket } from "../shared/openProposals";
 import { recordAssistantUsage, type AssistantPath } from "./lib/assistantUsage";
 import { renderWeeklyBrief } from "./lib/assistantTemplates";
 import { guardedFetchJson } from "./lib/toolcheck";
@@ -1694,6 +1695,9 @@ async function initStores(): Promise<void> {
     // and nothing else.
     villageKey: () => getEmailConfig().assistant_api_key || process.env.ANTHROPIC_API_KEY || "",
     rateLimited: (bucket, max, windowMs) => overLimit(bucket, max, windowMs),
+    // Every assistant bucket guards spend, so it reads the guard's third
+    // answer and refuses when the guard cannot check (fail closed; audit 15 Nov).
+    limitState: (bucket, max, windowMs) => limitState(getPool(), bucket, max, windowMs),
   });
   if (borrowingPlatformKey()) {
     console.log("[assistant] no village key set: running on the platform key, with its own smaller daily allowance");
@@ -16917,13 +16921,18 @@ Send an empty drafts array when you are still listening. A role payload is {name
       fence: fenceForPrompt,
     });
 
+    // Public intake. A signed-in caller counts on their own slice of the day
+    // (callAssistant adds it for a userId); a caller with no account counts on
+    // their address's and the strangers' slices, so strangers together cannot
+    // spend the day a signed-in applicant or member needs (audit, 15 Nov 2026).
+    const asker = await authedUser(req).catch(() => null);
+    const askerId = asker?.id ? String(asker.id) : null;
     const call = await callAssistant({
-      // Public intake. Nobody is signed in, so userId stays null: this is the
-      // one mode where a per-user ceiling could never mean anything.
-      mode: "proposal", system, messages, model: DEFAULT_ASSISTANT_MODEL, clientIp: clientIp(req), userId: null,
+      mode: "proposal", system, messages, model: DEFAULT_ASSISTANT_MODEL, clientIp: clientIp(req), userId: askerId,
+      ...(askerId ? {} : { daySlices: anonymousDaySlices("proposal", ipBucket(clientIp(req))) }),
     });
     // LANE Q: the write moved ABOVE the guard.
-    await noteAssistantUsage("proposal", DEFAULT_ASSISTANT_MODEL, call, null);
+    await noteAssistantUsage("proposal", DEFAULT_ASSISTANT_MODEL, call, askerId);
     if (!call.ok) return res.status(call.status).json({ error: call.error });
     const parsed = parseJsonReply<any>(call.text, {
       reply: call.text || "Tell me a little about what you'd like to bring to the village.",

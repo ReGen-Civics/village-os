@@ -7,10 +7,15 @@
  * ReGen's credentials only when someone with deploy access said it may, and
  * only up to a separate ceiling).
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ASSISTANT_MODES,
   ASSIST_BURST_PER_HOUR,
+  LIMITS_UNREADABLE,
+  SHARE_SPENT,
+  anonymousDaySlices,
+  providerErrorType,
+  userDaySlice,
   MAX_MESSAGE_CHARS,
   MAX_TURNS,
   assistantKeyOwner,
@@ -846,5 +851,158 @@ describe("what a REFUSED call already cost", () => {
     expect((r as any).error).toBe("assistant-error");
     expect((r as any).spent.iterations).toBe(1);
     expect((r as any).spent.usage.inputTokens).toBe(55);
+  });
+});
+
+/**
+ * The security audit of 15 Nov 2026: every assistant bucket guards money spent
+ * upstream, so it fails CLOSED when the limiter cannot be read; one account
+ * gets a share of a member mode's day, never all of it; strangers together
+ * get a slice of the public day, so they cannot spend what signed-in people
+ * use; and a provider's refusal is logged by status and type, never its body.
+ */
+function limiterHarness(opts: { villageKey?: string; state?: (bucket: string) => "under" | "over" | "unavailable"; errorBody?: string; httpStatus?: number } = {}) {
+  const buckets: Array<[string, number]> = [];
+  let posts = 0;
+  wireAssistant({
+    villageKey: () => opts.villageKey ?? "k",
+    rateLimited: async () => {
+      throw new Error("the boolean limiter must not be read once limitState is wired");
+    },
+    limitState: async (bucket, max) => {
+      buckets.push([bucket, max]);
+      return opts.state?.(bucket) ?? "under";
+    },
+    fetchImpl: (async () => {
+      posts++;
+      const status = opts.httpStatus ?? 200;
+      return {
+        ok: status < 400,
+        status,
+        json: async () => ({ content: [{ type: "text", text: '{"reply":"hello"}' }] }),
+        text: async () => opts.errorBody ?? "",
+      };
+    }) as unknown as typeof fetch,
+  });
+  return { buckets, posts: () => posts };
+}
+
+const undated = (b: string) => b.replace(/:\d{4}-\d{2}-\d{2}$/, "");
+
+describe("every spend bucket fails closed when the limiter cannot be read", () => {
+  it("the burst guard", async () => {
+    const h = limiterHarness({ state: (b) => (b.startsWith("assist:") ? "unavailable" : "under") });
+    expect(await callAssistant(req())).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("the mode's day budget", async () => {
+    const h = limiterHarness({ state: (b) => (b.startsWith("assistant-day:organize:") ? "unavailable" : "under") });
+    expect(await callAssistant(req())).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("the borrowed key's cap", async () => {
+    process.env.PLATFORM_ASSISTANT_KEY = "platform-key";
+    const h = limiterHarness({ villageKey: "", state: (b) => (b.startsWith("assistant-platform-day:") ? "unavailable" : "under") });
+    expect(await callAssistant(req())).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("a member's own key's allowance", async () => {
+    const h = limiterHarness({ state: (b) => (b.startsWith("assistant-member-day:") ? "unavailable" : "under") });
+    const r = await callAssistant(req({ mode: "member", userId: "u1", memberKey: { provider: "anthropic", key: "mine" } }));
+    expect(r).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("a caller's own slice of the day", async () => {
+    const h = limiterHarness({ state: (b) => (b.includes(":slice:") ? "unavailable" : "under") });
+    expect(await callAssistant(req({ mode: "member", userId: "u1" }))).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(h.posts()).toBe(0);
+  });
+
+  it("the Sera road's day budget", async () => {
+    const ask = vi.fn(async () => ({ ok: true as const, text: "hi" }));
+    limiterHarness({ state: (b) => (b.startsWith("assistant-day:") ? "unavailable" : "under") });
+    expect(await callAssistant(req({ sera: ask as any }))).toEqual({ ok: false, status: 503, error: LIMITS_UNREADABLE });
+    expect(ask).not.toHaveBeenCalled();
+  });
+
+  it("and calls through when every bucket reads", async () => {
+    const h = limiterHarness();
+    expect((await callAssistant(req())).ok).toBe(true);
+    expect(h.posts()).toBe(1);
+  });
+});
+
+describe("one account's share of a member mode's day", () => {
+  it("counts a signed-in caller on their own slice before the shared day, so a refused slice spends none of it", async () => {
+    const h = limiterHarness({ state: (b) => (b.includes(":slice:user:u-ana:") ? "over" : "under") });
+    const r = await callAssistant(req({ mode: "member", userId: "u-ana" }));
+    expect(r).toEqual({ ok: false, status: 429, error: SHARE_SPENT });
+    expect(h.buckets.map(([b]) => undated(b))).toEqual(["assist:10.0.0.1", "assistant-day:member:slice:user:u-ana"]);
+    expect(h.buckets[1][1]).toBe(userDaySlice(ASSISTANT_MODES.member));
+    expect(userDaySlice(ASSISTANT_MODES.member)).toBeLessThan(ASSISTANT_MODES.member.dailyBudget);
+    expect(h.posts()).toBe(0);
+  });
+
+  it("another account still has the day", async () => {
+    limiterHarness({ state: (b) => (b.includes(":slice:user:u-ana:") ? "over" : "under") });
+    expect((await callAssistant(req({ mode: "roleGuide", userId: "u-ben" }))).ok).toBe(true);
+  });
+
+  it("leaves the admin modes, used by a few named people, on the whole day", async () => {
+    const h = limiterHarness();
+    await callAssistant(req({ mode: "studio", userId: "u-founder" }));
+    expect(h.buckets.some(([b]) => b.includes(":slice:"))).toBe(false);
+  });
+});
+
+describe("strangers have a day of their own on the public mode", () => {
+  it("counts a caller with no account on their address and the strangers' pool, inside the mode's day", async () => {
+    const slices = anonymousDaySlices("proposal", "203.0.113.9");
+    expect(slices.map((s) => s.key)).toEqual(["address:203.0.113.9", "anonymous"]);
+    expect(slices[1].max).toBeLessThan(ASSISTANT_MODES.proposal.dailyBudget);
+    expect(slices[0].max).toBeLessThan(slices[1].max);
+    const h = limiterHarness();
+    await callAssistant(req({ mode: "proposal", daySlices: slices }));
+    expect(h.buckets.map(([b]) => undated(b))).toEqual([
+      "assist:10.0.0.1",
+      "assistant-day:proposal:slice:address:203.0.113.9",
+      "assistant-day:proposal:slice:anonymous",
+      "assistant-day:proposal",
+    ]);
+  });
+
+  it("once strangers have spent their pool, a signed-in caller still gets an answer", async () => {
+    const state = (b: string): "over" | "under" => (b.includes(":slice:anonymous:") ? "over" : "under");
+    limiterHarness({ state });
+    expect(await callAssistant(req({ mode: "proposal", daySlices: anonymousDaySlices("proposal", "198.51.100.1") }))).toEqual({ ok: false, status: 429, error: SHARE_SPENT });
+    limiterHarness({ state });
+    expect((await callAssistant(req({ mode: "proposal", userId: "u-applicant" }))).ok).toBe(true);
+  });
+});
+
+describe("a provider's refusal is logged by status and type, never its body", () => {
+  it("logs no word of what the body echoed", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      limiterHarness({ httpStatus: 400, errorBody: JSON.stringify({ type: "error", error: { type: "invalid_request_error", message: "I heard: my private voice transcript" } }) });
+      expect(await callAssistant(req())).toEqual({ ok: false, status: 502, error: "assistant-error" });
+      const logged = JSON.stringify(spy.mock.calls);
+      expect(logged).toContain("invalid_request_error");
+      expect(logged).toContain("400");
+      expect(logged).not.toContain("transcript");
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("reads a type only when it is a short word, and says unknown otherwise", async () => {
+    const r = (text: string) => ({ text: async () => text });
+    expect(await providerErrorType(r(JSON.stringify({ error: { type: "rate_limit_error" } })))).toBe("rate_limit_error");
+    expect(await providerErrorType(r(JSON.stringify({ error: { type: "my words here" } })))).toBe("unknown");
+    expect(await providerErrorType(r("<html>upstream said no</html>"))).toBe("unknown");
   });
 });

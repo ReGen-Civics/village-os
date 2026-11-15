@@ -157,7 +157,13 @@ export const DRAFT_AFTER_ADOPTION =
   "This document is waiting on the village's decision. Once the village adopts it, anyone can draft canvas words from it.";
 
 /** Said when no key is there to use. */
-export const NO_MODEL = "No model is connected here, so the words-only draft is the one there is. It sends nothing anywhere.";
+/** One account's model drafts on the village's key (audit, 15 Nov 2026). */
+export const MODEL_DRAFTS_PER_HOUR = 6;
+export const MODEL_DRAFTS_PER_DAY = 12;
+export const MODEL_DRAFTS_HOUR_SPENT = "That is a lot of model drafts for one hour. The words-only draft still works, and the model is back in a little while.";
+export const MODEL_DRAFTS_DAY_SPENT = "You have asked the model for a lot of drafts today. The words-only draft still works, and the model is back tomorrow.";
+
+export const NO_MODEL ="No model is connected here, so the words-only draft is the one there is. It sends nothing anywhere.";
 
 /** A draft held for filing expires after this long. */
 export const HELD_DRAFT_MS = 60 * 60 * 1000;
@@ -496,6 +502,17 @@ export function register(app: Express, deps: DocumentRouteDeps): void {
       });
     } else if (doc.modelConsentTo !== route.to) {
       return res.status(409).json({ error: "Say yes to where the text goes first.", needsConsent: true, disclosure: route.sentence });
+    }
+    // One account's model drafts on the village's key, an hour and a day
+    // (security audit, 15 Nov 2026): the shared `member` day is everybody's.
+    // A member's own key pays its own allowance in callAssistant.
+    if (!memberKey) {
+      if (await overLimit(`documents-model-draft:${me}`, MODEL_DRAFTS_PER_HOUR, 60 * 60 * 1000)) {
+        return res.status(429).json({ error: MODEL_DRAFTS_HOUR_SPENT });
+      }
+      if (await overLimit(`documents-model-draft-day:${me}`, MODEL_DRAFTS_PER_DAY, 24 * 60 * 60 * 1000)) {
+        return res.status(429).json({ error: MODEL_DRAFTS_DAY_SPENT });
+      }
     }
     const outcome = await draftModel({ pool, userId: me, clientIp: clientIp(req), title: doc.title, text: doc.body, memberKey });
     if (!outcome.ok) return res.status(outcome.status).json({ error: outcome.error });
