@@ -25,7 +25,8 @@ import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
 import { readOpenProposal } from "../repos/openProposals";
 import { usersRepo } from "../repos/users";
-import { register, tidyOpenProposals } from "./openProposals";
+import { ATTACHMENT_WORDS } from "../../shared/proposalAttachments";
+import { OPEN_UPLOAD_MAX_BYTES, OPEN_UPLOADS_AT_ONCE, register, tidyOpenProposals } from "./openProposals";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[openProposals.voice] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -238,6 +239,48 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       ]);
       const onDisk = (await fs.promises.readdir(path.join(dir, id))).sort();
       expect(onDisk).toEqual([...voice!.notes, ...voice!.clips!].map((n) => `${n.id}.${n.kind}`).sort());
+    });
+
+    /** A multipart post by hand: `length` is the Content-Length it claims (null sends it chunked), `send` the bytes it writes before waiting. */
+    const rawPost = (length: number | null, send: string) => {
+      const url = new URL(`${base}/api/open-proposals`);
+      const req = http.request({ host: url.hostname, port: url.port, path: url.pathname, method: "POST", headers: { "content-type": "multipart/form-data; boundary=xx", ...(length === null ? {} : { "content-length": String(length) }) } });
+      const answer = new Promise<{ status: number; body: any }>((resolve, reject) => {
+        req.on("response", (res) => {
+          let text = "";
+          res.on("data", (c) => (text += c));
+          res.on("end", () => resolve({ status: res.statusCode ?? 0, body: text ? JSON.parse(text) : null }));
+        });
+        req.on("error", reject);
+      });
+      req.write(send);
+      return { req, answer };
+    };
+    const PART = "--xx\r\nContent-Disposition: form-data; name=\"proposal\"\r\n\r\n{";
+
+    it("refuses a post over the upload's total, or with no length, before reading it, and reads only a few at once (security sweep, 14 Nov 2026)", async () => {
+      const before = await folders();
+      const big = rawPost(OPEN_UPLOAD_MAX_BYTES + 1, PART);
+      expect(await big.answer).toEqual({ status: 413, body: { error: ATTACHMENT_WORDS.uploadTooBig, field: "files" } });
+      big.req.destroy();
+      const chunked = rawPost(null, PART);
+      expect(await chunked.answer).toEqual({ status: 411, body: { error: ATTACHMENT_WORDS.uploadTooBig, field: "files" } });
+      chunked.req.destroy();
+      // Posts still sending their bytes hold every place; the next is turned away at once.
+      const slow = Array.from({ length: OPEN_UPLOADS_AT_ONCE }, () => rawPost(5000, PART));
+      await new Promise((r) => setTimeout(r, 300));
+      const next = rawPost(5000, PART);
+      expect(await next.answer).toEqual({ status: 503, body: { error: ATTACHMENT_WORDS.uploadBusy } });
+      next.req.destroy();
+      for (const s of slow) {
+        s.answer.catch(() => undefined);
+        s.req.destroy();
+      }
+      await new Promise((r) => setTimeout(r, 300));
+      // CONTROL: the places come back when those connections drop, and a real post goes through.
+      const r = await postVoice(proposal({ voice: { consent: true, seconds: [10], transcript: "" } }), [{ name: "voice-1.webm", bytes: WEBM }]);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect((await folders()).length).toBe(before.length + 1);
     });
 
     it("refuses clips without the tick, past the village's count, or for an answer the form does not have, keeping nothing", async () => {

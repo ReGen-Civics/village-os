@@ -32,6 +32,13 @@ import { VOICE_DRAFT_INPUT_MAX, VOICE_DRAFT_INPUT_MIN, VOICE_DRAFT_WORDS, type V
 /** Per connection an hour, and for the whole village a day (proposed; Rye decides the numbers). */
 export const VOICE_DRAFTS_PER_HOUR = 3;
 export const VOICE_DRAFTS_PER_DAY = 40;
+/**
+ * Per connection per day (security sweep, 14 Nov 2026): one connection cannot
+ * spend the village's 40 in a day by waiting out the hourly cap, so draining
+ * it takes many connections. Counted before the village's own cap, so a
+ * connection already refused spends none of it.
+ */
+export const VOICE_DRAFTS_PER_CONNECTION_DAY = 6;
 const HOUR_MS = 60 * 60 * 1000;
 const LIMITS = { why: OPEN_WHY_MAX, aim: OPEN_AIM_MAX, story: ABOUT_STORY_MAX, title: GOAL_LIMITS.title, doneWhen: GOAL_LIMITS.doneWhen };
 
@@ -60,6 +67,7 @@ export function registerVoiceDraft(app: Express, deps: VoiceDraftDeps): void {
     if (!role) return res.status(400).json({ error: VOICE_DRAFT_WORDS.pickRole });
     const bucket = deps.ipBucket(deps.clientIp(req));
     if (await deps.overLimit(`open-proposal:voice-draft:ip:${bucket}`, VOICE_DRAFTS_PER_HOUR, HOUR_MS)) return res.status(429).json({ error: VOICE_DRAFT_WORDS.tooMany });
+    if (await deps.overLimit(`open-proposal:voice-draft:daily-ip:${bucket}`, VOICE_DRAFTS_PER_CONNECTION_DAY, 24 * HOUR_MS)) return res.status(429).json({ error: VOICE_DRAFT_WORDS.tooMany });
     if (await deps.overLimit("open-proposal:voice-draft:day", VOICE_DRAFTS_PER_DAY, 24 * HOUR_MS)) return res.status(503).json({ error: VOICE_DRAFT_WORDS.unavailable });
 
     const call = await ask({

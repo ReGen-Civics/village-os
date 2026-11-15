@@ -162,6 +162,16 @@ const newToken = (): string => crypto.randomBytes(24).toString("base64url");
 const OPEN_TRIES_HOURLY = 60;
 /** Posts that carry files, per connection per hour, refused or accepted. */
 const OPEN_UPLOAD_TRIES_HOURLY = 30;
+/**
+ * THE WHOLE POST, AND HOW MANY AT ONCE (security sweep, 14 Nov 2026). Each part
+ * is capped by multer, but nothing capped their sum, and every byte is held in
+ * memory until the post is judged. A post with no length, or over 45 MB, is
+ * refused before a byte is read (three 10 MB files, three notes and the clips
+ * fit); and this server reads no more than four such posts at a time, so the
+ * most an upload can ever hold here is about 180 MB.
+ */
+export const OPEN_UPLOAD_MAX_BYTES = 45 * 1024 * 1024;
+export const OPEN_UPLOADS_AT_ONCE = 4;
 
 export function register(app: Express, deps: Deps): void {
   const { getPool, overLimit, clientIp, guardCapability, authedUser, deploymentOrigin, projectName, escapeHtml } = deps;
@@ -413,24 +423,46 @@ export function register(app: Express, deps: Deps): void {
    * before a byte reaches disk, and checked by their own first bytes
    * (shared/proposalAttachments.ts). A plain JSON post still works.
    */
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    defParamCharset: "utf8",
-    limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + VOICE_CLIPS_CEILING, fields: 1, fieldSize: 512 * 1024 },
-  }).fields([
-    { name: "files", maxCount: PROPOSAL_FILES_MAX },
-    { name: "voice", maxCount: VOICE_NOTES_MAX },
-    { name: "clips", maxCount: VOICE_CLIPS_CEILING },
-  ]);
+  // Clips are capped at the village's own count (org.voice_clips_max), read for each post, never at the platform ceiling.
+  const uploadFor = (clipsMax: number, clipCap = Math.max(1, Math.min(VOICE_CLIPS_CEILING, clipsMax))) =>
+    multer({
+      storage: multer.memoryStorage(),
+      defParamCharset: "utf8",
+      limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + clipCap, fields: 1, fieldSize: 512 * 1024 },
+    }).fields([
+      { name: "files", maxCount: PROPOSAL_FILES_MAX },
+      { name: "voice", maxCount: VOICE_NOTES_MAX },
+      // multer refuses a maxCount of 0, and a village with clips off is refused by parseSentVoice below.
+      { name: "clips", maxCount: clipCap },
+    ]);
+  let uploadsReading = 0;
 
   app.post("/api/open-proposals", async (req, res) => {
     if (!req.is("multipart/form-data")) return intake(req, res, req.body ?? {}, []);
     // Before any file is read: the per-connection cap on posts that carry files.
     // Generous on purpose: this counts every post that carries files, refused or not. The strict five an hour is counted in `intake`, on accepted proposals only.
     if (await overLimit(`open-proposal:upload:ip:${ipBucket(clientIp(req))}`, OPEN_UPLOAD_TRIES_HOURLY, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooManyTries });
-    upload(req, res, (err: any) => {
+    // Node reads exactly Content-Length bytes of a body that names one, so the header is the total. No length (chunked) is refused.
+    const length = Number(req.headers["content-length"] ?? NaN);
+    if (!Number.isFinite(length) || length > OPEN_UPLOAD_MAX_BYTES) {
+      res.setHeader("Connection", "close");
+      return res.status(Number.isFinite(length) ? 413 : 411).json({ error: ATTACHMENT_WORDS.uploadTooBig, field: "files" });
+    }
+    if (uploadsReading >= OPEN_UPLOADS_AT_ONCE) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
+    uploadsReading += 1;
+    let released = false;
+    const release = () => {
+      if (!released) uploadsReading -= 1;
+      released = true;
+    };
+    // Held until the answer is sent (or the connection drops), so the buffers are counted while they are in memory.
+    res.on("finish", release);
+    res.on("close", release);
+    const clipsMax = clipLimits().max;
+    uploadFor(clipsMax)(req, res, (err: any) => {
       if (err) {
         const code = String(err?.code ?? "");
+        if (err?.field === "clips" && code === "LIMIT_UNEXPECTED_FILE") return void res.status(400).json({ error: VOICE_WORDS.tooManyClips(clipsMax), field: "voice" });
         // A recording refused by the upload's own caps is named as the voice note's.
         if (err?.field === "voice" || err?.field === "clips") return void res.status(code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.tooMany, field: "voice" });
         const error = code === "LIMIT_FILE_SIZE" ? ATTACHMENT_WORDS.fileTooBig : code === "LIMIT_FILE_COUNT" || code === "LIMIT_UNEXPECTED_FILE" ? ATTACHMENT_WORDS.tooManyFiles : ATTACHMENT_WORDS.fileUnreadable;

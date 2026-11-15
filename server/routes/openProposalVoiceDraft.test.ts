@@ -48,6 +48,7 @@ describe("the door, over HTTP", () => {
   const state = {
     open: true,
     limited: new Set<string>(),
+    counted: [] as string[],
     asked: [] as AssistantRequest[],
     reply: { ok: true, text: JSON.stringify({ why: "I have run the seed library for six years.", aim: "A seed swap every new moon.", items: [{ title: "Start the seed swap", doneWhen: "One swap held" }] }) } as Partial<AssistantResult>,
   };
@@ -59,7 +60,10 @@ describe("the door, over HTTP", () => {
       door: async () => ({ open: state.open }),
       offered: async () => [ROLE],
       seasonGoals: async () => ["Grow the commons"],
-      overLimit: async (key) => [...state.limited].some((k) => key.startsWith(k)),
+      overLimit: async (key) => {
+        state.counted.push(key);
+        return [...state.limited].some((k) => key.startsWith(k));
+      },
       clientIp: () => "203.0.113.9",
       ipBucket: (ip) => ip,
       villageName: () => "Test Village",
@@ -80,6 +84,7 @@ describe("the door, over HTTP", () => {
   beforeEach(() => {
     state.open = true;
     state.limited.clear();
+    state.counted.length = 0;
     state.asked.length = 0;
   });
 
@@ -111,6 +116,12 @@ describe("the door, over HTTP", () => {
     expect(await post({ roleId: "r-nope", heard: HEARD })).toEqual({ status: 400, body: { error: VOICE_DRAFT_WORDS.pickRole } });
     state.limited.add("open-proposal:voice-draft:ip:");
     expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 429, body: { error: VOICE_DRAFT_WORDS.tooMany } });
+    state.limited.clear();
+    // One connection's day (security sweep, 14 Nov 2026): refused before the village's day is counted, so it spends none of it.
+    state.limited.add("open-proposal:voice-draft:daily-ip:");
+    state.counted.length = 0;
+    expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 429, body: { error: VOICE_DRAFT_WORDS.tooMany } });
+    expect(state.counted).toEqual(["open-proposal:voice-draft:ip:203.0.113.9", "open-proposal:voice-draft:daily-ip:203.0.113.9"]);
     state.limited.clear();
     state.limited.add("open-proposal:voice-draft:day");
     expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 503, body: { error: VOICE_DRAFT_WORDS.unavailable } });
