@@ -30,6 +30,7 @@ import { aboutOf, backgroundCheckOf, parseAboutYou, referencesOf, type Backgroun
 import { filesOf, linksOf, parseProposalLinks, type ProposalFile, type ProposalLink } from "./proposalAttachments";
 import type { TermKey } from "./termsWords";
 import { agentPartOf, type AgentProposalPart } from "./agentHolders";
+import { applicantText } from "./applicantText";
 
 export const OPEN_PROPOSAL_PATH = "/propose-a-role";
 
@@ -197,8 +198,12 @@ export interface OpenProposalInput {
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; field: string; error: string };
 
-/** Trimmed, and cut one past the cap so "too long" can still be told from "at the cap". `trim()`, never a regex: an anchored `\s+$` runs slow on a long run of spaces. */
-const text = (v: unknown, max: number): string => String(typeof v === "string" ? v : "").trim().slice(0, max + 1);
+/**
+ * Trimmed, and cut one past the cap so "too long" can still be told from "at the cap", with the characters that only
+ * hide or disguise text taken out and a field with nothing visible left read as empty (shared/applicantText.ts).
+ * `trim()` for the ends, never an anchored regex: `\s+$` runs slow on a long run of spaces.
+ */
+const text = (v: unknown, max: number): string => applicantText(v, max);
 
 /** A stored or sent membership alignment: a letter version, or nothing. */
 export function membershipOf(raw: unknown): { letterVersion: string } | null {
@@ -271,7 +276,8 @@ export function parseOpenProposal(
   },
 ): Parsed<OpenProposalInput> {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const name = text(o.name, OPEN_NAME_MAX);
+  // A name is one line: a newline or tab in it reads as a space.
+  const name = applicantText(o.name, OPEN_NAME_MAX, true);
   if (!name) return { ok: false, field: "name", error: OPEN_WORDS.needName };
   if (name.length > OPEN_NAME_MAX) return { ok: false, field: "name", error: OPEN_WORDS.tooLong("Your name", OPEN_NAME_MAX) };
   const email = ctx.address(String(o.email ?? ""));
