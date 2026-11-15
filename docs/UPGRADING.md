@@ -315,6 +315,43 @@ between first, and take the backup with particular care.
 
 ---
 
+## Verify the image signature
+
+Every published image is signed, and the release page for each version names
+its digest: the line that starts **Digest:** and reads
+`ghcr.io/regen-civics/village-os@sha256:...`. A tag such as `:1.4.0` or
+`:stable` is a name that can be moved; the digest is the image itself and
+cannot. So before you start a new version, check the signature, and then run
+the image by its digest rather than its tag.
+
+The signature is made without a private key (Sigstore's keyless signing): it
+proves the image was built and pushed by this project's own release workflow
+on GitHub, and nobody else can produce one that passes. Install
+[cosign](https://docs.sigstore.dev/cosign/system_config/installation/), put
+the digest from the release page in place of `sha256:...`, and run:
+
+```sh
+cosign verify ghcr.io/regen-civics/village-os@sha256:... \
+  --certificate-identity-regexp 'https://github.com/ReGen-Civics/village-os/.github/workflows/release.yml@.*' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+It prints the verified signature as JSON and exits 0. Anything else, an error
+or "no matching signatures", means do not run that image, and tell whoever
+supports the village.
+
+Then pin it. In `docker-compose.yml`, write the image with its digest:
+
+```yaml
+image: ghcr.io/regen-civics/village-os@sha256:...
+```
+
+A pinned village only changes when you change that line, which is the point:
+you upgrade by putting the next verified digest there, never because a tag
+moved underneath you.
+
+---
+
 ## Quick reference
 
 | Question | Answer |

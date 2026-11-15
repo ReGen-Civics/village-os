@@ -146,7 +146,7 @@ jobs:
           echo "publish=${publish} sha=${sha}"
           echo "${tags}"
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: github.event_name == 'push' && steps.decide.outputs.publish == 'true'
         with:
           ref: ${{ steps.decide.outputs.sha }}
@@ -264,7 +264,7 @@ jobs:
       # which is the polarity that makes this trustworthy.
       TEST_DATABASE_URL: mysql://root:ci-rollback@127.0.0.1:3306/mysql
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.plan.outputs.sha }}
           # The guard answers "what did the previous release have?" from git
@@ -293,10 +293,10 @@ jobs:
           fi
           echo "tag=${prev}" >> "$GITHUB_OUTPUT"
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         if: steps.prev.outputs.tag != ''
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         if: steps.prev.outputs.tag != ''
         with:
           node-version: 22
@@ -355,6 +355,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+      # R044: keyless signing and the provenance attestation. `id-token` lets
+      # this job ask GitHub's OIDC issuer for a short-lived identity that
+      # Sigstore binds to this workflow file; `attestations` lets it record the
+      # build provenance against the pushed digest. Only this job holds them.
+      id-token: write
+      attestations: write
+    outputs:
+      # The pushed digest, for the release notes. Tags move; this does not.
+      digest: ${{ steps.push.outputs.digest }}
     services:
       # An empty database, for the smoke test. Same tmpfs trick ci.yml uses:
       # boot is almost all DDL and a smoke database has nothing to survive a
@@ -374,17 +383,17 @@ jobs:
           --health-cmd "mysqladmin ping -h localhost -pci-smoke"
           --health-interval 5s --health-timeout 3s --health-retries 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # workflow_run checks out the default branch by default, so the
           # commit has to be named explicitly or edge would build main's tip
           # rather than the commit ci actually passed.
           ref: ${{ needs.plan.outputs.sha }}
 
-      - uses: docker/setup-buildx-action@v4
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Build
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           push: false
@@ -498,7 +507,7 @@ jobs:
         if: always()
         run: docker logs village || true
 
-      - uses: docker/login-action@v4
+      - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -506,7 +515,7 @@ jobs:
 
       - name: Push
         id: push
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           push: true
@@ -523,11 +532,39 @@ jobs:
           # Attestations turn the image into a multi-platform index carrying an
           # unknown/unknown entry. GHCR is fine with it; older self-hosted
           # docker and some mirrors are not, and this image is meant to be
-          # pullable by thirteen operators we do not control.
+          # pullable by thirteen operators we do not control. Provenance is
+          # still published (R044), by the attest step below, as a separate
+          # referrer in the registry that leaves this image's manifest alone.
           provenance: false
           # Every layer is already in this scope from the Build step above, so
           # this is an upload and not a second build.
           cache-from: type=gha,scope=release
+
+      # R044: sign what was pushed, by digest and never by tag, because a tag
+      # can be moved after the signature is made and a digest cannot. Keyless:
+      # there is no signing key to hold or leak. The certificate names this
+      # workflow file at this ref, and docs/UPGRADING.md ("Verify the image
+      # signature") is how an operator checks it.
+      - name: Install cosign
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+
+      - name: Sign the pushed digest
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          case "${DIGEST}" in
+            sha256:*) ;;
+            *) echo "::error::build-push-action reported no digest ('${DIGEST}'), so there is nothing to sign"; exit 1 ;;
+          esac
+          cosign sign --yes "ghcr.io/regen-civics/village-os@${DIGEST}"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ghcr.io/regen-civics/village-os
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
 
       - name: Say what shipped
         run: |
@@ -565,7 +602,7 @@ jobs:
       VERSION: ${{ needs.plan.outputs.version }}
       TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.plan.outputs.sha }}
           fetch-depth: 0
@@ -616,8 +653,14 @@ jobs:
           echo "KIT=${kit}.zip" >> "$GITHUB_ENV"
 
       - name: Release notes from CHANGELOG.md
+        env:
+          DIGEST: ${{ needs.image.outputs.digest }}
         run: |
           set -euo pipefail
+          case "${DIGEST}" in
+            sha256:*) ;;
+            *) echo "::error::the image job reported no digest ('${DIGEST}'), so the notes cannot name what was signed"; exit 1 ;;
+          esac
           awk -v v="${VERSION}" '
             $0 ~ "^## " v "( |$)" { on = 1; next }
             on && /^## / { exit }
@@ -632,6 +675,8 @@ jobs:
             echo "**Run it yourself:** download \`${KIT}\` below, unzip it, and open START_HERE.md, or give FOUNDER_SETUP_PROMPT.md to your own AI assistant."
             echo ""
             echo "**Image:** \`ghcr.io/regen-civics/village-os:${VERSION}\`"
+            echo ""
+            echo "**Digest:** \`ghcr.io/regen-civics/village-os@${DIGEST}\`. Pin this rather than the tag. It is signed with Sigstore keyless signing; docs/UPGRADING.md, section \"Verify the image signature\", shows how to check it."
           } >> notes.md
 
       - name: Publish the release
