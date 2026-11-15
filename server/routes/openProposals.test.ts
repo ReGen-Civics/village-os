@@ -627,6 +627,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     });
 
     it("ATTACK: the sender cannot choose the greeting's words, only a name", async () => {
+      // One application per role per address while it waits (shared/applicationAgain.ts): close this address's earlier ones first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", ["rowan@example.test"]);
       const { mail } = await send({ name: "evil.example/login Smith" });
       expect(mail.text.startsWith("Hi,\n")).toBe(true);
       expect(mail.text).not.toContain("evil.example");
@@ -816,6 +818,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
 
   describe("proposals for this moon (Rye, 9 Nov 2026)", () => {
     it("an admin switches public proposals to the moon; the form offers it, and a proposal carries its days and this season", async () => {
+      // One application per role per address while it waits (shared/applicationAgain.ts): close this address's earlier ones first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", ["rowan@example.test"]);
       state.viewer = ADMIN;
       const switched = await call("PUT", "/api/admin/open-proposals/settings", { term: "moon" });
       expect(switched.status).toBe(200);

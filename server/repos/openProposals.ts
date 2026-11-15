@@ -255,6 +255,19 @@ export async function adoptedForAddress(db: Db, emailKey: string): Promise<Store
   return rows.map(rowOf);
 }
 
+/**
+ * A confirmed application from this address (its folded key) still waiting for the village, for any of these
+ * roles; the oldest, or null (shared/applicationAgain.ts). Anonymised rows carry no key, so they never match.
+ */
+export async function waitingFromAddress(db: Db, emailKey: string, roleIds: readonly string[]): Promise<StoredOpenProposal | null> {
+  if (!emailKey || roleIds.length === 0) return null;
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status = 'confirmed' AND email_key = ? AND anonymised_at IS NULL ORDER BY created_at, id LIMIT 50`,
+    [emailKey],
+  );
+  return rows.map(rowOf).find((p) => p.body.roles.some((r) => roleIds.includes(r.roleId))) ?? null;
+}
+
 /** Every adopted proposal decided before `before` that still carries a name or an address. */
 export async function adoptedDecidedBefore(db: Db, before: Date): Promise<StoredOpenProposal[]> {
   const [rows] = await db.query<RowDataPacket[]>(
