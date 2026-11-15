@@ -903,6 +903,8 @@ export async function forgetMoonReviews(db: Queryable, userId: string): Promise<
     if (after !== before) await db.query("UPDATE `moon_invoices` SET `lines_json` = ? WHERE `id` = ?", [after, r.id]);
   }
   await db.query("UPDATE `moon_review_events` SET `note` = NULL WHERE `user_id` = ?", [uid]);
+  // Their own answer to a change in their token pay (drizzle/9999_moon_reward_reviews). The amounts stay: debts outlive erasure.
+  await db.query("UPDATE `moon_reward_reviews` SET `member_reply` = NULL WHERE `user_id` = ?", [uid]);
   const [goals] = await db.query<ResultSetHeader>(
     "UPDATE `moon_goals` SET `text` = '', `done_when` = NULL, `let_go_reason` = NULL WHERE `user_id` = ?",
     [uid],

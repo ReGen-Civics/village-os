@@ -44,6 +44,8 @@ import { preflight } from "../lib/saberraSync";
 import { askSera } from "../lib/moonRecapSera";
 import { importPack, nextGoals, putNextGoals, scoreOneGoal, sendInvoice, type KeyHolders } from "../lib/moonReview";
 import { registerReviewDoors } from "./moonReview";
+import { myRewards, replyToReward } from "../lib/moonRewardReview";
+import { PAY_BOARD_ROUTES } from "../../shared/moonRewardReview";
 import { activeClock } from "../lib/gratitude-cycles";
 import { recordEvent } from "../lib/events";
 import { accomplishmentsOf } from "../lib/sessionTasks";
@@ -318,6 +320,20 @@ export function register(app: Express, deps: Deps): void {
         return new Set(moons.flatMap((m) => m.items.map((a) => a.entryId)));
       },
     }));
+  });
+
+  // A member's own token pay from End of Moon, with any change a Treasurer or founder made and why (shared/moonRewardReview.ts).
+  app.get(PAY_BOARD_ROUTES.mine, async (req, res) => {
+    const uid = await member(req, res);
+    if (!uid) return;
+    res.json(await myRewards(getPool(), uid, { nameOf }));
+  });
+  app.post(PAY_BOARD_ROUTES.reply, async (req, res) => {
+    const uid = await writer(req, res);
+    if (!uid) return;
+    const out = await replyToReward(getPool(), uid, req.body, { notify: deps.notify });
+    if (!out.ok) return res.status(out.status).json({ error: out.error });
+    res.json(out.value);
   });
 
   registerReviewDoors(app, { ...deps, moonFor, nextCycleId, nameOf, frameDeps });

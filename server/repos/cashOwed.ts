@@ -182,6 +182,15 @@ export async function seatsOnCashRoles(pool: Pool): Promise<RowDataPacket[]> {
   return rows;
 }
 
+/** Every cash line written in [from, to), oldest first: the Treasurer's pay board reads one month (shared/moonRewardReview.ts). */
+export async function cashOwedRowsBetween(pool: Pool, from: Date, to: Date, limit = 2000): Promise<RowDataPacket[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM `cash_owed` WHERE `owed_at` >= ? AND `owed_at` < ? ORDER BY `owed_at` ASC, `id` ASC LIMIT ?",
+    [from, to, limit],
+  );
+  return rows;
+}
+
 /** How many of one member's rows are still unpaid: owed, or claimed and waiting. */
 export async function unpaidCashCountFor(pool: Pool, userId: string): Promise<number> {
   const [rows] = await pool.query<RowDataPacket[]>(

@@ -9,6 +9,9 @@
  *   POST /api/moon-review/invoices/:id/void            keeps it, marked Void
  *   PUT  /api/moon-review/pay-routes/:user/confirm     cash.pay, never one's own
  *   GET  /api/moon-review/rooms/:sessionId             members joined to that room; no amounts
+ *   GET  /api/moon-review/pay-board?month=YYYY-MM      cash.pay or approve-alone: every member's cash and token pay that month
+ *   POST /api/moon-review/rewards/adjust               change a token line up or down, with a reason
+ *   POST /api/moon-review/rewards/approve              approve token lines; after launch they issue at once
  *
  * Registered from server/routes/moonRecaps.ts, after the module gate is
  * mounted on `/api/moon-review`, so every door here is behind it.
@@ -23,6 +26,9 @@
  * `/api/cash-owed/transfers` (server/routes/cashOwed.ts).
  */
 import type { Express, Request, Response } from "express";
+import { PAY_BOARD_ROUTES, monthOf, readMonth } from "../../shared/moonRewardReview";
+import { adjustReward, approveRewards, payBoard } from "../lib/moonRewardReview";
+import { recordEvent } from "../lib/events";
 import {
   APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, INVOICE_APPROVE_CAPABILITY, MOON_ROUTES, WORK_APPROVE_CAPABILITY, moonDays,
 } from "../../shared/moonRecap";
@@ -119,6 +125,48 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
     const who = await reviewer(req, res);
     if (!who) return;
     const out = await confirmRoute(getPool(), who.uid, String(req.params.user ?? ""), reviewDeps);
+    if (!out.ok) return fail(res, out);
+    res.json(out.value);
+  });
+
+  /**
+   * THE TREASURER'S PAY BOARD (Rye, 15 Nov 2026). The door is the cash power or
+   * approve-alone, through the one gate; amounts are on it, so the work
+   * approver's key alone does not open it.
+   */
+  const payReviewer = async (req: Request, res: Response): Promise<string | null> => {
+    const who = await reviewer(req, res);
+    if (!who) return null;
+    if (who.cash || (await mayAct(req, APPROVE_ALONE_CAPABILITY as Capability)).ok) return who.uid;
+    res.status(403).json({ error: "review_key_required", message: "The pay board is for a Treasurer or a founder." });
+    return null;
+  };
+  const rewardDeps = {
+    keyHolders, notify, nameOf,
+    recordEvent: (e: Parameters<typeof recordEvent>[1]) => recordEvent(getPool(), e),
+  };
+
+  app.get(PAY_BOARD_ROUTES.board, async (req, res) => {
+    const uid = await payReviewer(req, res);
+    if (!uid) return;
+    const raw = (req.query as Record<string, unknown>)?.month;
+    const month = raw === undefined ? monthOf(new Date()) : readMonth(raw);
+    if (!month) return res.status(400).json({ error: "Give the month as YYYY-MM." });
+    res.json(await payBoard(getPool(), uid, month, { keyHolders, nameOf }));
+  });
+
+  app.post(PAY_BOARD_ROUTES.adjust, async (req, res) => {
+    const uid = await payReviewer(req, res);
+    if (!uid) return;
+    const out = await adjustReward(getPool(), uid, req.body, rewardDeps);
+    if (!out.ok) return fail(res, out);
+    res.json(out.value);
+  });
+
+  app.post(PAY_BOARD_ROUTES.approve, async (req, res) => {
+    const uid = await payReviewer(req, res);
+    if (!uid) return;
+    const out = await approveRewards(getPool(), uid, req.body, rewardDeps);
     if (!out.ok) return fail(res, out);
     res.json(out.value);
   });
