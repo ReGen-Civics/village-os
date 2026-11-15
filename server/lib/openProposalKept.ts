@@ -47,6 +47,22 @@ import * as store from "../repos/openProposals";
 /** A send the provider took, or one already taken under the same key. */
 export const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
 
+/** Why a skipped send may be a passing fault: the village's mail is not set up yet. */
+const NOT_SET_UP: ReadonlySet<string> = new Set(["not_configured", "no_api_key", "no_sender"]);
+
+/**
+ * WHEN A SEND THAT DID NOT GO KEEPS THE APPLICATION (security sweep, 14 Nov
+ * 2026). Only a fault on the village's side that can pass: the provider failed,
+ * the row is queued, or mail is not set up. An address the post office refuses
+ * (bounced, complained, erased, malformed) or a send that expired is the
+ * address, so the application is refused as before: keeping it would confirm
+ * an application to an address that can never answer.
+ */
+export function keepsWhenUnsent(sent: PostResult): boolean {
+  if (sent.status === "failed" || sent.status === "queued") return true;
+  return sent.status === "skipped" && NOT_SET_UP.has(String(sent.reason ?? ""));
+}
+
 /** How long the tidy job keeps trying the email for a kept application. After this it stays kept and flagged, and nobody is emailed. */
 export const KEPT_RETRY_DAYS = 7;
 

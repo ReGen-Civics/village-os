@@ -66,8 +66,7 @@ import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
 import { listOrgRoles } from "./orgChart";
 import { afterFounding, replyDaysFor } from "./foundingFirst";
-import { isExampleUser } from "./examples";
-import { isTombstone } from "./oauthAccounts";
+import { trustedAccountFor } from "./applicantAccount";
 import type { DecideDeps } from "./openProposalDecide";
 import { boolVar, numberVar, stringVar } from "./variables";
 import { verifyLink } from "./comms/links";
@@ -108,12 +107,6 @@ export function stayCloseProgram(): { name: string; href: string } | null {
 
 const ADOPTING_POWER = "org.seat";
 
-/** The address's account here, when it is a real, present person. The same rule as openProposalDecide's, kept here so the two files do not import each other. */
-async function accountFor(members: Pick<ReviewDeps["members"], "byEmail">, email: string | null): Promise<string | null> {
-  if (!email) return null;
-  const m: any = await members.byEmail(email);
-  return m && !isExampleUser(m) && !isTombstone({ email: String(m.email ?? "") }) ? String(m.id) : null;
-}
 
 /** The page an interviewer opens. */
 export const scorecardHref = (ref: string): string => (kindOfRef(ref) === "open" ? `${openProposalHref(ref)}#scorecards` : `/role-applications/${encodeURIComponent(ref)}#scorecards`);
@@ -242,7 +235,7 @@ export async function isApplicant(deps: ReviewDeps, ref: string, userId: string)
   if (d?.applicantUserId === userId) return true;
   if (kindOfRef(ref) !== "open") return false;
   const p = await proposals.readOpenProposal(pool, ref);
-  return !!p && (await accountFor(deps.members, p.email)) === userId;
+  return !!p && (await trustedAccountFor(deps.members, p)) === userId;
 }
 
 async function decided(db: Db, ref: string): Promise<boolean> {
@@ -331,7 +324,7 @@ export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<b
   const at = deps.now();
   const closesAt = consentClosesAt(at, deps.calendar().timezone || "UTC");
   const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
-  const own = await accountFor(deps.members, p.email);
+  const own = await trustedAccountFor(deps.members, p);
   const circles: string[] = [];
   for (const r of p.body.roles) {
     const c = circleOf.get(r.roleId);
