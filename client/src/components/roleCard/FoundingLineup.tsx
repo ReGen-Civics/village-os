@@ -130,7 +130,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
           type="button"
           aria-pressed={view === v}
           onClick={() => onView(v)}
-          className={`inline-flex min-h-10 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
+          className={`inline-flex min-h-11 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
         >
           <Icon className="size-4" aria-hidden="true" />
           {label}

@@ -275,7 +275,7 @@ export function parseOpenProposal(
   if (!name) return { ok: false, field: "name", error: OPEN_WORDS.needName };
   if (name.length > OPEN_NAME_MAX) return { ok: false, field: "name", error: OPEN_WORDS.tooLong("Your name", OPEN_NAME_MAX) };
   const email = ctx.address(String(o.email ?? ""));
-  if (!email) return { ok: false, field: "email", error: OPEN_WORDS.needEmail };
+  if (!email) return { ok: false, field: "email", error: String(o.email ?? "").trim() ? OPEN_WORDS.badEmail : OPEN_WORDS.needEmail };
   const picked = Array.isArray(o.roles) ? o.roles : [];
   if (picked.length === 0) return { ok: false, field: "roles", error: OPEN_WORDS.needRole };
   if (picked.length > OPEN_APPLY_ROLES) return { ok: false, field: "roles", error: OPEN_WORDS.tooManyRoles };
@@ -477,6 +477,8 @@ export const OPEN_WORDS = {
   // Refusals, each with what to do.
   needName: "Add your name.",
   needEmail: "Add an email address we can reach you at.",
+  /** An address was typed, and it is not one (applicant journey QA, 15 Nov 2026). */
+  badEmail: "That doesn't look like an email address. Check it, like name@example.com, and try again.",
   needRole: "Choose the role you are applying for.",
   tooManyRoles: "One application is for one role. Choose the role you are applying for, and apply for another one separately.",
   unknownRole: "One of those roles isn't open any more. Reload the page and pick again.",

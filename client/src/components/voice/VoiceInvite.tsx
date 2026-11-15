@@ -105,7 +105,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
   if (!support.record && !support.words) return null;
   if (value.skipped) {
     return (
-      <button type="button" onClick={() => onChange({ ...value, skipped: false })} className="justify-self-start text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-voice-reopen="">
+      <button type="button" onClick={() => onChange({ ...value, skipped: false })} className="inline-flex min-h-11 items-center justify-self-start text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-voice-reopen="">
         {VOICE_WORDS.reopen}
       </button>
     );
@@ -201,7 +201,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
       )}
 
       {!recorder.recording && !anything && (
-        <button type="button" onClick={() => onChange({ ...value, skipped: true })} className="justify-self-start text-sm font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground" data-voice-skip="">
+        <button type="button" onClick={() => onChange({ ...value, skipped: true })} className="inline-flex min-h-11 items-center justify-self-start text-sm font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground" data-voice-skip="">
           {VOICE_WORDS.skip}
         </button>
       )}

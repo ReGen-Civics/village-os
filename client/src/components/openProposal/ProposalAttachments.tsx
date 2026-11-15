@@ -28,9 +28,9 @@ import {
   type ProposalLink,
 } from "@shared/proposalAttachments";
 
-const FIELD = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const FIELD = "min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const SMALL_BUTTON =
-  "inline-flex items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "inline-flex min-h-11 items-center gap-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-semibold text-foreground hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /** The address bar's own prefix, the same in every language. */
 const HTTPS = "https://";

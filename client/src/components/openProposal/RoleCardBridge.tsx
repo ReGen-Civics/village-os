@@ -39,7 +39,7 @@ export function goalsToFirstMoon(goals: readonly ProposalGoal[]): FirstMoonGoal[
     .map((g) => ({ quest: g.title, doneWhen: g.doneWhen, ...(g.moves ? { moves: g.moves } : {}), ...(g.serves ? { serves: g.serves } : {}), ...(g.date ? { date: g.date } : {}) }));
 }
 
-const FIELD = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const FIELD = "min-h-11 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function RoleAsks({
   roleId,

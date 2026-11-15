@@ -85,7 +85,7 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
                       onClick={() => go(k)}
                       aria-current={here ? "step" : undefined}
                       aria-controls={`${base}-${p.key}`}
-                      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice text-background" : seen.has(k) ? "border-border text-card-foreground hover:border-notice/60" : "border-border/60 text-muted-foreground hover:border-notice/60"}`}
+                      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice text-background" : seen.has(k) ? "border-border text-card-foreground hover:border-notice/60" : "border-border/60 text-muted-foreground hover:border-notice/60"}`}
                       data-piece-tab={p.key}
                     >
                       <Icon className="size-4" aria-hidden="true" />
@@ -107,7 +107,7 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
           type="button"
           onClick={() => setAll((a) => !a)}
           aria-pressed={all}
-          className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 py-1 text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1 text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <Rows3 className="size-4" aria-hidden="true" />
           {all ? t({ message: "One piece at a time", context: "role card: back to the stepped view" }) : t({ message: "Show every piece", context: "role card: open every piece at once" })}
