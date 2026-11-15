@@ -18,7 +18,7 @@
  */
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { openBodyOf, OPEN_PROPOSAL_STATUSES, type OpenProposalBody, type OpenProposalStatus } from "../../shared/openProposals";
-import type { OpenDecision } from "../../shared/openProposalDecide";
+import { OPEN_INVITE_PREFIX, type OpenDecision } from "../../shared/openProposalDecide";
 
 type Db = Pool | PoolConnection;
 
@@ -264,10 +264,70 @@ export async function adoptedDecidedBefore(db: Db, before: Date): Promise<Stored
   return rows.map(rowOf);
 }
 
+/**
+ * WHAT ANONYMISING TAKES OFF A PROPOSAL'S BODY, one list for every path that
+ * anonymises (one proposal, the decided ones, the expired ones, and erasure),
+ * so a new personal field cannot be missed by one of them (security sweep,
+ * 14 Nov 2026: `$.selfKnowledge` and `$.payAsk` were missed by all three,
+ * `$.pieceSuggestions` by the expiry). The name, address and address key go
+ * with the row's own columns. `ANONYMISE_KEEPS` is what stays, and the test
+ * walks a body with every field filled against both lists.
+ */
+export const ANONYMISE_REMOVES = [
+  "$.card.timeZone",
+  "$.card.windows",
+  "$.card.earliestStart",
+  "$.links",
+  "$.files",
+  "$.references",
+  "$.backgroundCheck",
+  "$.about",
+  "$.note",
+  "$.pieceSuggestions",
+  "$.voice",
+  "$.selfKnowledge",
+  "$.payAsk",
+] as const;
+
+/** What anonymising leaves: the application's substance, with nothing that names or reaches the person. */
+export const ANONYMISE_KEEPS = ["roles", "why", "aim", "term", "card", "membership", "locale", "counterOffer", "agent", "knowUs", "rampUp"] as const;
+
+const REMOVE_PERSONAL = `JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), ${ANONYMISE_REMOVES.map((path) => `'${path}'`).join(", ")})`;
+
+/**
+ * A MEMBER'S OWN PUBLIC APPLICATIONS, for their erasure (security sweep, 14 Nov
+ * 2026): every one not yet anonymised made from their address, and every one
+ * whose invitation made or reached their account. Ids only.
+ */
+export async function openProposalsOfMember(db: Db, who: { emailKey: string; userId: string }): Promise<string[]> {
+  const ids = new Set<string>();
+  if (who.emailKey) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT id FROM open_role_proposals WHERE email_key = ? AND anonymised_at IS NULL", [who.emailKey]);
+    for (const r of rows) ids.add(String(r.id));
+  }
+  if (who.userId) {
+    const [invites] = await db.query<RowDataPacket[]>("SELECT id FROM member_invites WHERE used_by_user_id = ? AND id LIKE ?", [who.userId, `${OPEN_INVITE_PREFIX}%`]);
+    for (const r of invites) {
+      const id = String(r.id).slice(OPEN_INVITE_PREFIX.length);
+      if (id) ids.add(id);
+    }
+  }
+  return Array.from(ids).sort();
+}
+
+/** An application still waiting (unconfirmed or confirmed) is closed as withdrawn, before it is anonymised. True when this call closed it. */
+export async function withdrawForErasure(db: Db, id: string, now: Date): Promise<boolean> {
+  const [result] = await db.query<ResultSetHeader>(
+    "UPDATE open_role_proposals SET status = 'withdrawn', decided_at = ?, confirm_hash = NULL WHERE id = ? AND status IN ('unconfirmed', 'confirmed')",
+    [now, id],
+  );
+  return Number(result.affectedRows ?? 0) === 1;
+}
+
 /** Take the name and address off one proposal, once. True when this call did. */
 export async function anonymiseOpenProposal(db: Db, id: string, now: Date): Promise<boolean> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions', '$.voice'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? WHERE id = ? AND anonymised_at IS NULL",
+    "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", name = NULL, email = NULL, email_key = NULL, anonymised_at = ? WHERE id = ? AND anonymised_at IS NULL",
     [now, id],
   );
   return Number(result.affectedRows ?? 0) === 1;
@@ -348,7 +408,7 @@ export async function confirmKeptAddress(db: Db, id: string, confirmHash: string
 /** Take the name and address off every declined or withdrawn proposal decided before `before`. How many. */
 export async function anonymiseDecidedBefore(db: Db, before: Date, now: Date): Promise<number> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions', '$.voice'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
+    "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
       "WHERE status IN ('declined', 'withdrawn') AND decided_at < ? AND anonymised_at IS NULL",
     [now, before],
   );
@@ -363,7 +423,7 @@ export async function anonymiseDecidedBefore(db: Db, before: Date, now: Date): P
  */
 export async function expireUndecidedBefore(db: Db, before: Date, now: Date): Promise<number> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.voice'), status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
+    "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
       "WHERE status = 'confirmed' AND confirmed_at < ? AND anonymised_at IS NULL",
     [now, now, before],
   );

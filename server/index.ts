@@ -2953,7 +2953,7 @@ function withRoleHolderLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 /** The module-local singletons and the volume path the erasure sweep cannot import. */
-const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, notify };
+const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), notify };
 
 /** Role ids a member holds. */
 function roleIdsFor(userId: string): string[] {
