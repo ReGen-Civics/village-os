@@ -2741,6 +2741,14 @@ export const VARIABLES: VariableDef[] = [
       "We encourage you to do these, but if you haven't, you can still apply, especially if you've been invited to, or if you live far away and the next call is more than a week away, or if you feel you're an incredibly strong candidate.",
   },
   {
+    key: "org.newsletter_link",
+    category: "The founding team",
+    label: "Where to sign up for the newsletter",
+    description: "The roles opening after the founding team invite people to hear first about new ones: join a community call and sign up for the newsletter here. A page of this site or an https address. Empty: the newsletter is not mentioned.",
+    type: "text",
+    default: "",
+  },
+  {
     key: "org.founding_first_cycle",
     category: "The founding team",
     label: "What the first cycle looks like",
