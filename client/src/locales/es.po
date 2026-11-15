@@ -16401,3 +16401,9 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal, founding application"
+msgid "These are optional. Someone who lives far away may not have been able to come yet."
+msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
