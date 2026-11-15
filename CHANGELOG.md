@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.4 (2026-11-15)
+
+### What changed for your village
+
+- **Applications are voice-first.** Every free-text answer on the public role application has a mic. Applicants are invited to record a voice note (up to 3 of 5 minutes) and short clips beside each answer; with their consent the recordings are kept with the application and deciders can play them, on the decision page and in Admin's applications panel. Recordings are deleted with the application, and at the latest 90 days after the decision. The browser's own speech service turns speech into text.
+- **AI can draft the answers from what the applicant said.** Only the transcript is sent, never the audio. Drafts fill only empty answers, and nothing goes into the form until the applicant presses "Use this". The AI never judges or ranks anyone.
+- **A suggested price, and room to propose another.** The application suggests a monthly price from the role's band and the applicant's commitment. As a contractor, the applicant can take it, propose a higher or lower price with a reason, or choose to negotiate on the first call. Deciders see the suggestion, the proposal and the difference.
+- **Paid on what we truly accomplish.** Role holders are told plainly that goals guide the work and pay follows what is delivered. At the End of Moon the review shows what was agreed beside what was delivered (goals done and other tasks taken on), flags a large gap, and lets the Treasurer propose an adjusted amount with a reason. Nothing is paid until the Treasurer confirms.
+- **Fixes.** The founding team and role card read better on phones; a payer being added in End of Moon settings is no longer wiped when the saved list finishes loading.
+
+### What you must do
+
+Nothing. The new far-off dial (`moon_review.far_off_pct`) defaults to 25, and the clip limits default to 12 of 60 seconds; both can be changed in Admin.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1259 Batch 165: agreed vs delivered at End of Moon, proposed amount with a reason (Treasurer-confirmed)
+- #1257 Payers editor: seed drafts once per loaded document (a new payer is never wiped)
+- #1258 Batch 164: voice-first applications (mic, voice note, AI draft, per-answer clips)
+- #1254 Batch 163: suggested price and adjust popup
+- #1253 Batch 162: role-card layout fixes from the 1.3.2 live test
+
+---
+
 ## 1.3.3 (2026-11-14)
 
 ### What changed for your village
