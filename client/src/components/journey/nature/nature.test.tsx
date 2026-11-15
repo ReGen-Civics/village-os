@@ -87,6 +87,16 @@ describe("SeedOfLife", () => {
     expect(img.querySelectorAll(".nk-draw")).toHaveLength(0);
   });
 
+  it("is decoration when its label is empty: hidden, with no img role and no blank name", () => {
+    motion(false);
+    const { container } = render(<SeedOfLife total={7} walked={7} bloom size="fill" label="" />);
+    const svg = container.querySelector("svg")!;
+    expect(svg.getAttribute("aria-hidden")).toBe("true");
+    expect(svg.hasAttribute("role")).toBe(false);
+    expect(svg.hasAttribute("aria-label")).toBe(false);
+    expect(screen.queryByRole("img")).toBeNull();
+  });
+
   it("draws a circle once when it closes", () => {
     motion(false);
     const { rerender, container } = render(<SeedOfLife total={7} walked={2} label="path" />);
