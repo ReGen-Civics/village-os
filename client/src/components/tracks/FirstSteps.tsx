@@ -162,8 +162,10 @@ export default function FirstSteps({ section, heading, body, targets, showExcept
               </p>
             )}
           </div>
-          {/* A desktop keeps the path beside the steps: the seed as they are walked, and the exceptions line. */}
-          <aside className="hidden lg:block" aria-label={heading}>
+          {/* A desktop keeps the path beside the steps: the seed as they are walked, and the exceptions line.
+              A plain section, not an aside: an aside inside <main> is a complementary landmark that is not
+              top level (axe), and a label would only repeat the outer section's heading as a second region. */}
+          <section className="hidden lg:block">
             <div className={`${CARD} sticky top-24 flex flex-col items-center gap-5 text-center`}>
               <SeedOfLife total={shown} walked={Math.min(progress.doneCount, shown)} label={seedLabel} size="lg" />
               <p className={EYEBROW}>{seedLabel}</p>
@@ -173,7 +175,7 @@ export default function FirstSteps({ section, heading, body, targets, showExcept
                 </p>
               )}
             </div>
-          </aside>
+          </section>
         </div>
       </div>
     </section>

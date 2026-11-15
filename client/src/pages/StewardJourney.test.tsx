@@ -76,6 +76,13 @@ describe("/steward", () => {
     expect(screen.getAllByRole("heading", { name: "Get to know us" })).toHaveLength(1);
   });
 
+  it("puts no aside inside main: the desktop seed panel is a plain section (a11y sweep P2-14)", async () => {
+    const { container } = show();
+    await screen.findByText("Get to know us");
+    expect(container.querySelector("aside")).toBeNull();
+    expect(screen.queryByRole("complementary")).toBeNull();
+  });
+
   it("lists the three first steps in order, each tickable, with the exceptions line beside them", async () => {
     show();
     await screen.findByText("Get to know us");

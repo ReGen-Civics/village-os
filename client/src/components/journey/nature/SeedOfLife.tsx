@@ -89,7 +89,12 @@ export default function SeedOfLife({
       data-total={n}
       data-shape={flower ? "flower" : "seed"}
     >
-      <svg viewBox="0 0 100 100" role="img" aria-label={label} className="block size-full overflow-visible">
+      {/* An empty label means decoration (RewardBloom, Burst): hidden, with no img role and no blank name (axe svg-img-alt). */}
+      <svg
+        viewBox="0 0 100 100"
+        {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
+        className="block size-full overflow-visible"
+      >
         <circle cx={50} cy={50} r={lifeBoundary(n, r)} fill="none" className="text-border" stroke="currentColor" strokeOpacity={0.45} strokeWidth={0.8} />
         {centres.map((p, i) => {
           const state = circleState(i, done, now);
