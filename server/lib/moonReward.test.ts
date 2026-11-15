@@ -31,6 +31,7 @@ import { seedEconomy } from "./economySeed";
 import { CREDITS, EARNED_EQUITY, fromLedgerUnits, villageId } from "./economy";
 import { loadVariables, setVariable } from "./variables";
 import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards } from "./moonReward";
+import { rewardShareLine } from "../../shared/rewardShare";
 import { recordGameStart } from "./gameStart";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -175,7 +176,9 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
     const before = await issued();
     const sent = await sendAll();
-    expect(sent.totalMinor).toBe(650_000);
+    // The payer is billed the cash share (call 2, PAYER_IS_BILLED); the line keeps the whole reward.
+    expect(sent.totalMinor).toBe(390_000);
+    expect(sent.lines[0].amountMinor).toBe(650_000);
     expect(sent.lines[0].reward).toMatchObject({ from: "card", cashMinor: 390_000, equityUnits: 2600, creditsUnits: 0 });
     // The Treasurer's queue carries the same parts, before anything is approved.
     as("m-fin");
@@ -210,6 +213,26 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect((await settleLineRewards(pool, inv.id)).map((o) => o.outcome)).toEqual(["duplicate"]);
     expect(await issued()).toEqual(once);
     expect(await cashOwed()).toEqual([390_000]);
+  });
+
+  it("the contract's split comes first: what the card showed them when they applied", async () => {
+    await cardShape([{ label: "Cash", pct: 100 }]);
+    await q("UPDATE `seat_applications` SET `settings_json` = ? WHERE `id` = 'app-water'", [JSON.stringify({ v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 650_000, per: "moon", shape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] } })]); // module-review-ok: fixture SQL
+    const sent = await sendAll();
+    expect(sent.lines[0].reward).toMatchObject({ from: "contract", cashMinor: 390_000, equityUnits: 2600 });
+    expect((await approve()).body.approved).toHaveLength(1);
+    expect(await cashOwed()).toEqual([390_000]);
+  });
+
+  it("no split anywhere: all in cash, and the queue says so before anyone confirms", async () => {
+    const sent = await sendAll();
+    expect(sent.totalMinor).toBe(650_000);
+    expect(sent.lines[0].reward).toMatchObject({ from: "none", cashMinor: 650_000, equityUnits: 0, creditsUnits: 0 });
+    as("m-fin");
+    const row = await queueRow();
+    expect(rewardShareLine(row.invoice.lines[0].reward, "USD")).toBe("No split set: paid all in cash. Total reward US$6,500.");
+    expect((await approve()).body.approved).toHaveLength(1);
+    expect(await cashOwed()).toEqual([650_000]);
   });
 
   it("a 100%-cash village owes the whole line in cash and issues no token", async () => {

@@ -56,7 +56,7 @@ export async function shareLines<L extends InvoiceLine>(pool: Pool, lines: reado
     }
     // The first of the line's roles whose card writes a shape: one agreement, one split.
     const card = l.roleIds.map((id) => sections.get(id)?.payShape ?? []).find((s) => s.length > 0) ?? [];
-    out.push({ ...l, reward: shareLine(l.amountMinor, { card, village }, opts) });
+    out.push({ ...l, reward: shareLine(l.amountMinor, { contract: l.contractShape ?? [], card, village }, opts) });
   }
   return out;
 }

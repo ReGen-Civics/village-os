@@ -34,7 +34,7 @@ import {
   ATTESTATION_MISSING, EMPTY_SETTINGS, ITEM_TEXT_EMPTY, LIMITS, MOON_WORDS, NO_TERMS, PAYERS_DOC_KEY, EMPTY_PAYERS, PAY_ROUTES,
   RECAP_STATUS_WORDS, SERA_CLOSED_NOTE, SETTINGS_DOC_KEY, SUPPORT_LINE, attestationWords, auditTensions, billRef, billToOf,
   carriedTooOften, coverage, daysHeldIn, deliverableLines, endOfMoonFriday, goalScore, halfwayDay, heldDuring, invoiceDueOn,
-  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, pricedCommitments, scaleBySplit, moonDays, outsideRolesAudit,
+  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, billedTotals, itemDedupeKey, linesFromTerms, memberView, pricedCommitments, scaleBySplit, moonDays, outsideRolesAudit,
   parseItemFields, parseMoonReviewSettings, parsePayRouteInput, parsePayers, parseRoleAudit, payRouteWords, payerForRoute,
   THANKS_WORDS, parseThanks, periodWords, thanksDedupeKey, readingOf, recapEditable, routeChangeClearsConfirmation, scoreContextOf, seatCoverage, seatReadingOf, sendBy,
   setupGaps, taskScore, termsCarryMoney, waitingLine, waitingStage, workDueOn, workSummaryHtml, workSummaryText,
@@ -557,7 +557,7 @@ export function invoiceViewOf(input: {
   const lines = input.frame ? draftLines(input.frame, moon.days, {}, {}, input.adjusts ?? {}) : linesFromTerms(input.terms, moon.days);
   const route = input.route;
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
-  const totals = invoiceTotals(lines);
+  const totals = billedTotals(lines);
   const refusal = invoiceSendRefusal({
     route: route?.route ?? "pending", payer, lines, attestation: null, pilotAckVersion: route?.pilotAckVersion ?? null, memberNumber: null, externalInvoiceKey: null,
     settings: input.settings, payers,

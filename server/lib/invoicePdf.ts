@@ -15,6 +15,7 @@
  * details (the invoice says payment goes to the account Finance has on file).
  */
 import { exponentOf } from "../../shared/money";
+import { billedOfLine, earnedBesideLine, type LineReward } from "../../shared/rewardShare";
 
 const PAGE_W = 612;
 const PAGE_H = 792;
@@ -117,7 +118,7 @@ export interface InvoicePdfInput {
    */
   sender?: { villageName: string; codeName: string | null } | null;
   billTo: { legalName: string; address: string; taxId: string | null } | null;
-  lines: Array<{ roleNames: string[]; basisLine: string; amountMinor: number | null; currency: string | null; listedAs: string | null }>;
+  lines: Array<{ roleNames: string[]; basisLine: string; amountMinor: number | null; currency: string | null; listedAs: string | null; reward?: LineReward | null }>;
   currency: string | null;
   totalMinor: number | null;
   supportLine: string;
@@ -134,9 +135,12 @@ export function invoicePdfLines(v: InvoicePdfInput): string[][] {
   const to = v.billTo ? ["Bill to", v.billTo.legalName, ...v.billTo.address.split("\n"), ...(v.billTo.taxId ? [`Tax number: ${v.billTo.taxId}`] : [])] : [];
   const lines = [
     "Lines",
-    ...v.lines.map((l) => {
-      const amount = l.amountMinor !== null && l.currency ? moneyWords(l.amountMinor, l.currency) : (l.listedAs ?? "no amount");
-      return `${l.roleNames.join(", ")}: ${l.basisLine}: ${amount}`;
+    ...v.lines.flatMap((l) => {
+      // What the payer is billed for the line (P1-6, call 2), with what the village issues beside it.
+      const billed = billedOfLine(l);
+      const amount = billed !== null && l.currency ? moneyWords(billed, l.currency) : (l.listedAs ?? "no amount");
+      const beside = l.currency ? earnedBesideLine(l.reward, l.currency) : null;
+      return [`${l.roleNames.join(", ")}: ${l.basisLine}: ${amount}`, ...(beside ? [beside] : [])];
     }),
     ...(v.totalMinor !== null && v.currency ? [`Total: ${moneyWords(v.totalMinor, v.currency)}`] : []),
   ];

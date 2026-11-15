@@ -39,7 +39,7 @@ import {
   APPROVAL_REFUSALS, APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, CONFIRM_OWN_ROUTE_REFUSED, INVOICE_APPROVE_CAPABILITY,
   LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, WORK_APPROVE_CAPABILITY,
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
-  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, memberView, packMoonDates,
+  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, billedTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
   termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines, splitHolds, amountsMatch,
   type ApprovalStage, type ApprovalSubject, type ApproverKeys, type ApproverPool, type BulkApproveResponse, type FromBlock,
@@ -197,7 +197,8 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
   if (!route?.legalName) return refuse(400, "Fill in your legal name and address on your pay route before you send an invoice.");
   if (looksLikePaymentDetails(memberNumber as string)) return refuse(400, PAYMENT_DETAILS_REFUSED);
 
-  const totals = invoiceTotals(lines);
+  // The stored total is what the payer is billed (P1-6, call 2): the cash share, by PAYER_IS_BILLED.
+  const totals = billedTotals(lines);
   const from: FromBlock = { legalName: route.legalName, address: route.address ?? "" };
   const att = (attestation as { ok: true; value: MoonAttestation }).value;
   const conn = await pool.getConnection();
@@ -566,7 +567,7 @@ async function approveOne(
     }
     // The Earned Equity and Credits shares, owed from this commit on, keyed on the line (P1-6).
     await recordLineRewards(conn, { invoiceId: invoice.id, cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle, lines: owed.lines });
-    const total = invoiceTotals(owed.lines)[0];
+    const total = billedTotals(owed.lines)[0];
     await event(conn, { kind: "invoice_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: total?.minor ?? null, currency: total?.currency ?? null, hash, selfApproved: decision.selfApproved });
     if (decision.selfApproved) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_APPROVED_WORDS });
     await conn.commit();
@@ -697,7 +698,7 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
   if (lines.some((l) => l.adjust && l.adjust.adjustedMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
   const at = now().toISOString();
   const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at);
-  const scaled = invoiceTotals(confirmed)[0];
+  const scaled = billedTotals(confirmed)[0];
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -759,7 +760,7 @@ export async function adjustPay(pool: Pool, actorId: string, invoiceId: string, 
   try {
     await conn.beginTransaction();
     // The total follows the lines, so a withdrawn proposal leaves the record at the agreed amount (QA F11).
-    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), invoiceTotals(changed)[0]?.minor ?? invoice.totalMinor);
+    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), billedTotals(changed)[0]?.minor ?? invoice.totalMinor);
     if ((await store.voidInvoice(conn, invoice.id)) !== 1) throw new Error("raced");
     if (recap.status === "waiting") await store.returnRecap(conn, { id: recap.id, by: actorId, note: words, keepWork: true });
     await event(conn, { kind: "pay_adjusted", recapId: recap.id, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: input.amountMinor, currency: line.currency, note: input.reason });

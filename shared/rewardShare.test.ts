@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cashOfLine, partOfLabel, partsOfShape, rewardShareLine, shareLine } from "./rewardShare";
+import { billedOfLine, cashOfLine, earnedBesideLine, partOfLabel, partsOfShape, PAYER_IS_BILLED, rewardShareLine, shareLine } from "./rewardShare";
 
 const TOKENS = { equity: "earned-equity", credits: "credits" };
 const OPTS = { equityMeaningWritten: true, tokens: TOKENS };
@@ -14,6 +14,23 @@ describe("a role's price is its total reward, shared out (Rye, 15 Nov 2026, P1-6
   it("a 100%-cash village owes the whole line in cash, and so does a role with no split anywhere", () => {
     expect(shareLine(650_000, { card: [], village: shape(["Cash", 100]) }, OPTS)).toMatchObject({ from: "village", cashMinor: 650_000, equityUnits: 0, creditsUnits: 0 });
     expect(shareLine(650_000, { card: [], village: [] }, OPTS)).toMatchObject({ from: "none", cashMinor: 650_000, equityUnits: 0, creditsUnits: 0 });
+  });
+  it("the contract's split wins over the card's, and the card's over the village's (call 1)", () => {
+    expect(shareLine(100_000, { contract: shape(["Cash", 70], ["Credits", 30]), card: shape(["Cash", 100]), village: shape(["Cash", 100]) }, OPTS)).toMatchObject({ from: "contract", cashMinor: 70_000, creditsUnits: 300 });
+    // A contract split that does not read falls to the card's.
+    expect(shareLine(100_000, { contract: shape(["Bonus", 100]), card: shape(["Cash", 50], ["Equity", 50]), village: [] }, OPTS)).toMatchObject({ from: "card", equityUnits: 500 });
+  });
+  it("no split anywhere says so first: never the model's 0%-cash default", () => {
+    const r = shareLine(650_000, { card: [], village: [] }, OPTS)!;
+    expect(rewardShareLine(r, "USD")).toBe("No split set: paid all in cash. Total reward US$6,500.");
+  });
+  it("the payer is billed the cash share, with what the village issues beside it (call 2)", () => {
+    expect(PAYER_IS_BILLED).toBe("cash");
+    const r = shareLine(650_000, { card: shape(["Cash", 60], ["Equity", 40]), village: [] }, OPTS);
+    expect(billedOfLine({ amountMinor: 650_000, reward: r })).toBe(390_000);
+    expect(earnedBesideLine(r, "USD")).toBe("Also earned, nothing to pay: 2,600 Earned Equity, 0 Credits. Total reward US$6,500.");
+    // All in cash: nothing beside it.
+    expect(earnedBesideLine(shareLine(650_000, { card: [], village: [] }, OPTS), "USD")).toBeNull();
   });
   it("the card's split wins over the village's", () => {
     expect(shareLine(100_000, { card: shape(["Cash", 40], ["Equity", 55], ["Credits", 5]), village: shape(["Cash", 100]) }, OPTS)).toMatchObject({ from: "card", cashMinor: 40_000, equityUnits: 550, creditsUnits: 50 });

@@ -7,12 +7,14 @@
  * all cash: it is shared out, and only the cash share is owed as cash. Earned
  * Equity and Credits are issued through the ledger, once per line.
  *
- * Whose split, in order:
- *   1. the role card's own shape ("Cash 60, Equity 40"), `payShape`;
- *   2. the village's shape, the `org.pay_shape` setting;
- *   3. neither: the whole line is cash, as it was before 15 Nov, and the line
- *      says no split is written. Nothing invents one: the valuation model's
- *      default cash share is 0%, and a member would be owed no cash at all.
+ * Whose split, in order (the coordinator's call, 15 Nov 2026: "the split
+ * follows what the card showed the person"):
+ *   1. the contract's, `pay.shape`, written at adoption from what the card showed;
+ *   2. the role card's own shape ("Cash 60, Equity 40"), `payShape`;
+ *   3. the village's default, the `org.pay_shape` setting (the card's "Default split");
+ *   4. none of them: the whole line is cash, and the Treasurer's queue says
+ *      "No split set: paid all in cash." before they confirm. Never the
+ *      valuation model's default, whose cash share is 0%.
  * A shape whose labels do not all read as cash, equity or credits is passed
  * over, so a typo never pays a share somewhere nobody meant. A shape adding to
  * less than 100 gives the rest as Credits, and the line says so.
@@ -47,7 +49,7 @@ function moneyWords(minor: number, currency: string): string {
 export type RewardPart = "cash" | "equity" | "credits";
 
 /** Where a line's split came from. */
-export type RewardSplitFrom = "card" | "village" | "none";
+export type RewardSplitFrom = "contract" | "card" | "village" | "none";
 
 /** A line's total shared out, in the line's minor units (tokens at one per whole currency unit). */
 export interface LineReward {
@@ -95,21 +97,27 @@ export function partsOfShape(shape: readonly PayShare[]): { cash: number; equity
 const wholeShare = (totalMinor: number, pct: number): number => Math.floor((totalMinor * pct) / 100 / 100) * 100;
 
 /**
- * Share one line's total. `shapes` are the card's and the village's, tried in
- * that order; with neither, the whole line is cash. Null for a line with no
+ * Share one line's total. `shapes` are the contract's, the card's and the
+ * village's, tried in that order; with none, the whole line is cash. Null for a line with no
  * money. Cash takes what rounding leaves, so the three parts always add up to
  * the line, to the cent.
  */
 export function shareLine(
   totalMinor: number | null,
-  shapes: { card: readonly PayShare[]; village: readonly PayShare[] },
+  shapes: { contract?: readonly PayShare[]; card: readonly PayShare[]; village: readonly PayShare[] },
   opts: { equityMeaningWritten: boolean; tokens: { equity: string; credits: string } },
 ): LineReward | null {
   if (totalMinor === null || !Number.isInteger(totalMinor) || totalMinor <= 0) return null;
-  const card = partsOfShape(shapes.card);
-  const village = card ? null : partsOfShape(shapes.village);
-  const parts = card ?? village;
-  const from: RewardSplitFrom = card ? "card" : village ? "village" : "none";
+  const tried: Array<[RewardSplitFrom, readonly PayShare[]]> = [["contract", shapes.contract ?? []], ["card", shapes.card], ["village", shapes.village]];
+  let from: RewardSplitFrom = "none";
+  let parts: ReturnType<typeof partsOfShape> = null;
+  for (const [who, shape] of tried) {
+    parts = partsOfShape(shape);
+    if (parts) {
+      from = who;
+      break;
+    }
+  }
   const rest = parts ? parts.rest : 0;
   const equityUnits = parts ? wholeShare(totalMinor, parts.equity) / 100 : 0;
   const creditsUnits = parts ? wholeShare(totalMinor, parts.credits + parts.rest) / 100 : 0;
@@ -123,11 +131,32 @@ export function cashOfLine(line: { amountMinor: number | null; reward?: LineRewa
   return line.reward && line.reward.totalMinor === line.amountMinor ? line.reward.cashMinor : line.amountMinor;
 }
 
+/**
+ * WHAT THE PAYER IS BILLED (call 2, with Rye; the coordinator's suggestion, 15 Nov 2026): the cash share
+ * only, with Earned Equity and Credits listed beside it as earned with nothing to pay, since the village
+ * issues them. "total" bills the whole reward. One constant, so a ruling the other way is a one-line flip.
+ */
+export const PAYER_IS_BILLED: "cash" | "total" = "cash";
+
+/** What a payer is billed for one line: its cash share, or its whole amount, by `PAYER_IS_BILLED`. */
+export function billedOfLine(line: { amountMinor: number | null; reward?: LineReward | null }): number | null {
+  return PAYER_IS_BILLED === "cash" ? cashOfLine(line) : line.amountMinor;
+}
+
+/** "Also earned, nothing to pay: 2,600 Earned Equity, 0 Credits. Total reward US$6,500." Null when the payer is billed it all, or nothing was shared. */
+export function earnedBesideLine(r: LineReward | null | undefined, currency: string): string | null {
+  if (PAYER_IS_BILLED !== "cash" || !r || r.equityUnits + r.creditsUnits === 0) return null;
+  return `${REWARD_SHARE_WORDS.earnedBeside}: ${r.equityUnits.toLocaleString("en-US")} Earned Equity, ${r.creditsUnits.toLocaleString("en-US")} Credits. Total reward ${moneyWords(r.totalMinor, currency)}.`;
+}
+
 /** A whole percent of the total, for the words. */
 const pctOf = (part: number, total: number): number => (total > 0 ? Math.round((part * 100) / total) : 0);
 
 export const REWARD_SHARE_WORDS = {
-  from: { card: "by the role card's split", village: "by the village's split", none: "all in cash: no split is written for this role or the village" } satisfies Record<RewardSplitFrom, string>,
+  from: { contract: "by the split in their contract", card: "by the role card's split", village: "by the village's default split", none: "" } satisfies Record<RewardSplitFrom, string>,
+  /** The queue row, the invoice and the member's line say it first, before anyone confirms (the coordinator's call 1). */
+  none: "No split set: paid all in cash.",
+  earnedBeside: "Also earned, nothing to pay",
   held: "Earned Equity is owed until the village writes what it means (Admin, Tokens).",
 };
 
@@ -136,6 +165,7 @@ export const REWARD_SHARE_WORDS = {
  * Every part is said, a 0% one too, so a Treasurer can read the split back to the member.
  */
 export function rewardShareLine(r: LineReward, currency: string): string {
+  if (r.from === "none") return `${REWARD_SHARE_WORDS.none} Total reward ${moneyWords(r.totalMinor, currency)}.`;
   const t = r.totalMinor;
   const eq = r.equityUnits * 100;
   const cr = r.creditsUnits * 100;
