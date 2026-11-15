@@ -18,6 +18,8 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square } from "lucide-react";
+import { useLingui } from "@lingui/react/macro";
+import { speechLang } from "@/lib/speechLang";
 
 const SR: any =
   typeof window !== "undefined"
@@ -41,13 +43,12 @@ function policyAllowsMic(): boolean {
   }
 }
 
-/** What a refusal means to the person holding the phone, by the engine's error code. */
-function refusalText(code: string): string | null {
-  if (code === "not-allowed" || code === "service-not-allowed") {
-    return "The microphone is blocked for this site. Allow it in your browser settings to speak.";
-  }
-  if (code === "network") return "Speaking needs a connection. Typing works offline.";
-  if (code === "audio-capture") return "No microphone was found on this device.";
+/** The engine's error codes this button explains; any other is not said. */
+type Refusal = "blocked" | "network" | "noMic";
+function refusalOf(code: string): Refusal | null {
+  if (code === "not-allowed" || code === "service-not-allowed") return "blocked";
+  if (code === "network") return "network";
+  if (code === "audio-capture") return "noMic";
   return null;
 }
 
@@ -67,7 +68,8 @@ export default function MicButton({
 }) {
   const [listening, setListening] = useState(false);
   // The last refusal, said out loud on the button until the next try.
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<Refusal | null>(null);
+  const { t } = useLingui();
   const recRef = useRef<any>(null);
   // The latest onText without re-creating the recognizer mid-phrase.
   const onTextRef = useRef(onText);
@@ -85,7 +87,7 @@ export default function MicButton({
 
   const start = () => {
     const rec = new SR();
-    rec.lang = navigator.language || "en-US";
+    rec.lang = speechLang();
     rec.continuous = true;
     // Final results only: interim text fighting the member's own typing in
     // one input is worse than a beat of delay after each phrase.
@@ -102,7 +104,7 @@ export default function MicButton({
     rec.onend = () => setListening(false);
     rec.onerror = (e: any) => {
       setListening(false);
-      setProblem(refusalText(String(e?.error ?? "")));
+      setProblem(refusalOf(String(e?.error ?? "")));
     };
     recRef.current = rec;
     setProblem(null);
@@ -114,7 +116,16 @@ export default function MicButton({
     }
   };
 
-  const label = listening ? "Stop voice input" : problem ?? "Speak instead of typing";
+  // What a refusal means to the person holding the phone, in the language they read (Spanish phone QA, 15 Nov 2026).
+  const said =
+    problem === "blocked"
+      ? t({ message: "The microphone is blocked for this site. Allow it in your browser settings to speak.", context: "mic button refusal" })
+      : problem === "network"
+        ? t({ message: "Speaking needs a connection. Typing works offline.", context: "mic button refusal" })
+        : problem === "noMic"
+          ? t({ message: "No microphone was found on this device.", context: "mic button refusal" })
+          : null;
+  const label = listening ? t({ message: "Stop voice input", context: "mic button" }) : said ?? t({ message: "Speak instead of typing", context: "mic button" });
 
   // A title is invisible on a phone, so a refusal is also printed above the
   // button. Absolutely placed, so no call site's row changes shape.
@@ -139,7 +150,7 @@ export default function MicButton({
           role="status"
           className="absolute bottom-full right-0 mb-2 w-56 rounded-lg bg-stone-800 px-3 py-2 text-xs leading-snug text-white shadow-lg z-10"
         >
-          {problem}
+          {said}
         </span>
       )}
     </span>

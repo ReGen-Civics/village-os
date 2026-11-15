@@ -21,7 +21,8 @@ import { useLingui } from "@lingui/react/macro";
 import { Mic, Square, Trash2 } from "lucide-react";
 import GrowingField from "@/components/form/GrowingField";
 import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
-import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
+import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
+import { voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
 import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
 /** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
@@ -114,7 +115,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
   if (value.skipped) {
     return (
       <button type="button" onClick={() => onChange({ ...value, skipped: false })} className="inline-flex min-h-11 items-center justify-self-start text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-voice-reopen="">
-        {VOICE_WORDS.reopen}
+        {voiceWord("reopen")}
       </button>
     );
   }
@@ -125,17 +126,17 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
   };
   const anything = value.takes.length > 0 || value.transcript.trim() !== "" || Object.keys(value.clips).length > 0;
   const left = VOICE_NOTE_MAX_SECONDS - recorder.elapsed;
-  const problem = recorder.problem === "blocked" ? VOICE_WORDS.micBlocked : recorder.problem === "noMic" ? VOICE_WORDS.noMic : null;
+  const problem = recorder.problem === "blocked" ? voiceWord("micBlocked") : recorder.problem === "noMic" ? voiceWord("noMic") : null;
 
   return (
     <section aria-labelledby={`${id}-h`} tabIndex={-1} className="grid scroll-mt-24 gap-4 rounded-2xl border-2 border-notice/60 bg-card p-5 shadow-sm outline-none" data-voice-invite="">
       <div className="grid gap-2">
         <h3 id={`${id}-h`} className="font-display text-2xl leading-snug text-card-foreground">
-          {VOICE_WORDS.inviteTitle}
+          {voiceWord("inviteTitle")}
         </h3>
         <p className="text-base leading-relaxed text-muted-foreground">
           {support.record
-            ? VOICE_WORDS.inviteBody
+            ? voiceWord("inviteBody")
             : t({ message: "Tap the mic in any answer below to say it instead of typing it.", context: "voice note" })}
         </p>
       </div>
@@ -162,13 +163,13 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
           {recorder.recording ? (
             <button type="button" onClick={recorder.stop} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-destructive px-6 font-semibold text-destructive-foreground" data-voice-stop="">
               <Square className="size-4" aria-hidden="true" />
-              {VOICE_WORDS.stop}
+              {voiceWord("stop")}
             </button>
           ) : (
             value.takes.length < VOICE_NOTES_MAX && (
               <button type="button" onClick={() => void recorder.start()} className={`${value.takes.length ? BTN_SECONDARY : BTN_PRIMARY} min-h-12 justify-center`} data-voice-record="">
                 <Mic className="size-5" aria-hidden="true" />
-                {value.takes.length ? VOICE_WORDS.recordAnother : VOICE_WORDS.record}
+                {value.takes.length ? voiceWord("recordAnother") : voiceWord("record")}
               </button>
             )
           )}
@@ -180,19 +181,19 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
               </span>
             </p>
           )}
-          {recorder.recording && left <= 30 && <p className="text-sm font-medium text-foreground">{VOICE_WORDS.nearEnd}</p>}
+          {recorder.recording && left <= 30 && <p className="text-sm font-medium text-foreground">{voiceWord("nearEnd")}</p>}
           {/* Always drawn, so a screen reader is listening before the words change. */}
           <p className="sr-only" role="status" data-voice-said="">
             {recorder.recording
               ? left <= 30
-                ? VOICE_WORDS.nearEnd
+                ? voiceWord("nearEnd")
                 : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
               : stopped
                 ? t({ message: "Recording stopped. You can play it back below.", context: "voice note, read aloud" })
                 : ""}
           </p>
           {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground" data-voice-live="">{recorder.live}</p>}
-          {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{VOICE_WORDS.noTranscribe}</p>}
+          {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{voiceWord("noTranscribe")}</p>}
           {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}
         </div>
       )}
@@ -200,10 +201,10 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
       {anything && (
         <div className="grid gap-2">
           <label htmlFor={`${id}-heard`} className={LABEL}>
-            {VOICE_WORDS.heardLabel}
+            {voiceWord("heardLabel")}
           </label>
           <GrowingField id={`${id}-heard`} minRows={3} maxLength={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
-          <p className={HINT}>{VOICE_WORDS.heardHint}</p>
+          <p className={HINT}>{voiceWord("heardHint")}</p>
           {drafting && !recorder.recording && <VoiceDrafts heard={value.transcript} drafting={drafting} />}
         </div>
       )}
@@ -212,15 +213,15 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
         <label htmlFor={`${id}-keep`} className="flex min-h-11 cursor-pointer items-start gap-3" data-voice-consent="">
           <input id={`${id}-keep`} type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={value.consent} onChange={(e) => onChange({ ...value, consent: e.target.checked })} />
           <span className="grid gap-1">
-            <span className="font-semibold text-foreground">{VOICE_WORDS.consent}</span>
-            <span className={HINT}>{value.consent ? VOICE_WORDS.kept : VOICE_WORDS.notKept}</span>
+            <span className="font-semibold text-foreground">{voiceWord("consent")}</span>
+            <span className={HINT}>{value.consent ? voiceWord("kept") : voiceWord("notKept")}</span>
           </span>
         </label>
       )}
 
       {!recorder.recording && !anything && (
         <button type="button" onClick={() => onChange({ ...value, skipped: true })} className="inline-flex min-h-11 items-center justify-self-start text-sm font-medium text-muted-foreground underline underline-offset-2 hover:text-foreground" data-voice-skip="">
-          {VOICE_WORDS.skip}
+          {voiceWord("skip")}
         </button>
       )}
     </section>

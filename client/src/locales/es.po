@@ -16401,3 +16401,298 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "We love hearing your voice."
+msgstr "Nos encanta escuchar tu voz."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one."
+msgstr "Aprendemos mucho de cómo dices las cosas, y también leemos cada palabra. Si quieres, háblanos unos minutos: quién eres, por qué este rol y qué aportarías. Te ayudamos a convertir lo que digas en tus respuestas, y tú editas cada una."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite: start a recording"
+msgid "Record"
+msgstr "Grabar"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Record another"
+msgstr "Grabar otra"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Stop recording"
+msgstr "Detener la grabación"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Skip, I'll type"
+msgstr "Omitir, prefiero escribir"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Talk to us instead"
+msgstr "Mejor háblanos"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "What we heard, in your words"
+msgstr "Lo que escuchamos, en tus palabras"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong."
+msgstr "El servicio de voz de tu navegador convierte en texto lo que dices mientras hablas: el de Google en Chrome, el de Apple en Safari. Corrige lo que haya entendido mal."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them."
+msgstr "Guardar mis grabaciones de voz con mi solicitud. Las escucharán las personas que la deciden y quienes administran la aldea."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Only the people who decide your application hear them. We delete them with your application, and at the latest 90 days after we decide."
+msgstr "Solo las escuchan las personas que deciden tu solicitud. Las borramos con tu solicitud, y a más tardar 90 días después de decidir."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Without the tick, your recordings stay on this device and are not sent."
+msgstr "Sin la marca, tus grabaciones se quedan en este dispositivo y no se envían."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Record this answer"
+msgstr "Grabar esta respuesta"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Stop"
+msgstr "Detener"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Record again"
+msgstr "Grabar de nuevo"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Remove clip"
+msgstr "Quitar la grabación"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Your voice for this answer"
+msgstr "Tu voz para esta respuesta"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This phone can't write down your words while it records. Your recording is fine; use the mic on each answer for the text."
+msgstr "Este teléfono no puede escribir tus palabras mientras graba. Tu grabación está bien; usa el micrófono de cada respuesta para el texto."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "The microphone is blocked for this site. Allow it in your browser settings, or type your answers."
+msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador, o escribe tus respuestas."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "No microphone was found on this device. Typing works just as well."
+msgstr "No encontramos un micrófono en este dispositivo. Escribir funciona igual de bien."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "About 30 seconds left in this recording."
+msgstr "Quedan unos 30 segundos de esta grabación."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "You've recorded {max} clips, the most one application holds. Remove one to record another."
+msgstr "Grabaste {max} respuestas, el máximo que admite una solicitud. Quita una para grabar otra."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application, the send failed"
+msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device."
+msgstr "No pudimos enviar tu solicitud. Revisa tu conexión y envíala de nuevo: todo lo que escribiste sigue guardado en este dispositivo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This page isn't taking proposals right now."
+msgstr "Esta página no está recibiendo propuestas en este momento."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add your name."
+msgstr "Escribe tu nombre."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add an email address we can reach you at."
+msgstr "Escribe un correo donde podamos contactarte."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That doesn't look like an email address. Check it, like name@example.com, and try again."
+msgstr "Eso no parece un correo. Revísalo, como nombre@ejemplo.com, e inténtalo de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Choose the role you are applying for."
+msgstr "Elige el rol al que postulas."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One application is for one role. Choose the role you are applying for, and apply for another one separately."
+msgstr "Cada solicitud es para un rol. Elige el rol al que postulas, y postula a otro por separado."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One of those roles isn't open any more. Reload the page and pick again."
+msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "You picked the same role twice."
+msgstr "Elegiste el mismo rol dos veces."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Say why you, and why now."
+msgstr "Cuéntanos por qué tú, y por qué ahora."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Say your aim in this role, in a line."
+msgstr "Cuéntanos tu objetivo en este rol, en una línea."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We couldn't send the confirmation email just now. Try again later."
+msgstr "No pudimos enviar el correo de confirmación en este momento. Inténtalo más tarde."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That link has run out or was already used. Send your application again, and open the new link within 48 hours."
+msgstr "Ese enlace venció o ya se usó. Envía tu solicitud de nuevo, y abre el nuevo enlace dentro de 48 horas."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection."
+msgstr "Ya recibimos cinco propuestas desde esta conexión en la última hora, así que aún no podemos aceptar otra. No se pierde nada de lo que escribiste en esta página. Inténtalo de nuevo en una hora más o menos, o envíala desde otra conexión."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That's a lot of tries from this connection in a short while. Please wait about an hour and try again."
+msgstr "Son muchos intentos desde esta conexión en poco tiempo. Espera una hora más o menos e inténtalo de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This email address already has three proposals waiting today. Check your inbox for the confirmation links, or try again tomorrow."
+msgstr "Este correo ya tiene tres propuestas pendientes hoy. Busca los enlaces de confirmación en tu bandeja de entrada, o inténtalo mañana."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We're receiving a lot of proposals right now and can't send another confirmation email yet. Please try again in about an hour."
+msgstr "Estamos recibiendo muchas propuestas ahora mismo y aún no podemos enviar otro correo de confirmación. Inténtalo de nuevo en una hora más o menos."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That link has been opened many times from this connection. Please wait about an hour and try again."
+msgstr "Ese enlace se abrió muchas veces desde esta conexión. Espera una hora más o menos e inténtalo de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give each reference a name, how you know them, and an email or a phone number. Or clear the row."
+msgstr "Escribe para cada referencia un nombre, de dónde la conoces y un correo o un teléfono. O borra la fila."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give an email address or a phone number we can reach that reference on."
+msgstr "Escribe un correo o un teléfono donde podamos contactar a esa referencia."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add up to 3 references."
+msgstr "Agrega hasta 3 referencias."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "You added the same reference twice."
+msgstr "Agregaste la misma referencia dos veces."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick the box to say you agree to the background check, or give three references."
+msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da tres referencias."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "The words about the background check changed while you read them. Read them again and tick."
+msgstr "El texto sobre la verificación de antecedentes cambió mientras lo leías. Léelo de nuevo y marca la casilla."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Send up to 3 recordings."
+msgstr "Envía hasta 3 grabaciones."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One recording is too large. Record a shorter one."
+msgstr "Una grabación es demasiado grande. Graba una más corta."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Keep each recording under 5 minutes."
+msgstr "Que cada grabación dure menos de 5 minutos."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We couldn't read one of your recordings. Record it again."
+msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick that we may keep your voice note, or remove the recordings."
+msgstr "Marca que podemos guardar tu nota de voz, o quita las grabaciones."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Your files and recordings together are too large to send. Send fewer files, or record shorter answers."
+msgstr "Tus archivos y grabaciones juntos son demasiado grandes para enviarlos. Envía menos archivos, o graba respuestas más cortas."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We're receiving a lot of uploads right now. Please try again in a minute."
+msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en un minuto."
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "The microphone is blocked for this site. Allow it in your browser settings to speak."
+msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador para hablar."
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "Speaking needs a connection. Typing works offline."
+msgstr "Hablar necesita conexión. Escribir funciona sin conexión."
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "No microphone was found on this device."
+msgstr "No encontramos un micrófono en este dispositivo."
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button"
+msgid "Stop voice input"
+msgstr "Detener el dictado"
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button"
+msgid "Speak instead of typing"
+msgstr "Habla en lugar de escribir"
+
+#: client/src/components/ui/dialog.tsx
+msgctxt "dialog corner button"
+msgid "Close"
+msgstr "Cerrar"
