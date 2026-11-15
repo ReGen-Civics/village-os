@@ -10,7 +10,9 @@
  * (shared/commitmentRange.ts, ruling 1). A role offered at 100% only says nothing about sharing. Display only:
  * the contract sets the pay.
  */
-import type { I18n } from "@lingui/core";
+// A value import of the runtime, as client/src/lib/unsavedChanges.ts has: precompileEnglish compiles the messages of
+// a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
+import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { ceilingAt, rangeMin } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling } from "@shared/roleCardSections";
@@ -28,7 +30,7 @@ export interface RewardWords {
 export const exampleShare = (min: number | null | undefined): number => Math.max(rangeMin(min), 50);
 
 /** "$6,500 a month", "$78,000 a year", in the reader's language. */
-export function perPeriod(i18n: I18n, money: string, per: CeilingPeriod): string {
+export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPeriod): string {
   if (per === "year") return i18n._(msg({ message: `${money} a year`, context: "an amount for each year" }));
   if (per === "moon") return i18n._(msg({ message: `${money} a moon`, context: "an amount for each moon" }));
   return i18n._(msg({ message: `${money} a month`, context: "an amount for each month" }));
