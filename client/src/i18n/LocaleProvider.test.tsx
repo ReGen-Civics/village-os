@@ -2,9 +2,9 @@
 import { Trans } from "@lingui/react/macro";
 import { generateMessageId } from "@lingui/message-utils/generateMessageId";
 import { compileMessage } from "@lingui/message-utils/compileMessage";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LocaleProvider, useLocale, LOCALE_STORAGE_KEY } from "./LocaleProvider";
+import { CATALOG_RETRY_MS, LocaleProvider, useLocale, LOCALE_STORAGE_KEY } from "./LocaleProvider";
 
 /** A compiled catalog the way the server sends it: id -> compiled message. */
 function catalog(pairs: Record<string, string>) {
@@ -124,5 +124,125 @@ describe("LocaleProvider", () => {
       </LocaleProvider>,
     );
     expect(await screen.findByText(/Hola/)).toBeTruthy();
+  });
+
+  // A slow or flaky phone (Spanish phone QA, 15 Nov 2026): a whole visit used to stay in English.
+  describe("a late or failed catalog on a slow phone", () => {
+    function Page() {
+      return (
+        <>
+          <Hello />
+          <input aria-label="why" />
+          <button>next</button>
+        </>
+      );
+    }
+    const slow = () => {
+      let release: (v: unknown) => void = () => {};
+      const fetchCatalog = vi.fn(() => new Promise((r) => { release = r; }));
+      return { fetchCatalog, release: (v: unknown) => release(v) };
+    };
+
+    it("a late catalog is applied after a tap or a scroll: touching the page is not typing", async () => {
+      vi.useFakeTimers();
+      const c = slow();
+      render(
+        <LocaleProvider sources={{ browser: ["es"], villageDefault: null }} fetchCatalog={c.fetchCatalog as never} timeoutMs={1500}>
+          <Page />
+        </LocaleProvider>,
+      );
+      await act(async () => { vi.advanceTimersByTime(1500); });
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+      fireEvent.pointerDown(document.body);
+      fireEvent.scroll(window);
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      await act(async () => { c.release(catalog({ "Hello there": "Hola" })); });
+      expect(screen.getByText(/Hola/)).toBeTruthy();
+      expect(document.documentElement.lang).toBe("es");
+    });
+
+    it("after typing in a field, a late catalog waits for the next step, and the words typed stay", async () => {
+      vi.useFakeTimers();
+      const c = slow();
+      render(
+        <LocaleProvider sources={{ browser: ["es"], villageDefault: null }} fetchCatalog={c.fetchCatalog as never} timeoutMs={1500}>
+          <Page />
+        </LocaleProvider>,
+      );
+      await act(async () => { vi.advanceTimersByTime(1500); });
+      const field = screen.getByLabelText("why") as HTMLInputElement;
+      fireEvent.input(field, { target: { value: "Llevo diez años" } });
+      await act(async () => { c.release(catalog({ "Hello there": "Hola" })); });
+      // Held: nothing changes under a sentence being written.
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+      expect(document.documentElement.lang).toBe("en");
+      // The next step applies it.
+      await act(async () => { screen.getByText("next").click(); vi.advanceTimersByTime(0); });
+      expect(screen.getByText(/Hola/)).toBeTruthy();
+      expect(document.documentElement.lang).toBe("es");
+      expect(field.value).toBe("Llevo diez años");
+    });
+
+    it("a failed catalog is tried again with growing waits, and applied when it loads", async () => {
+      vi.useFakeTimers();
+      let calls = 0;
+      const fetchCatalog = vi.fn(async () => {
+        calls += 1;
+        if (calls < 3) throw new Error("offline");
+        return catalog({ "Hello there": "Hola" });
+      });
+      render(
+        <LocaleProvider sources={{ browser: ["es"], villageDefault: null }} fetchCatalog={fetchCatalog} timeoutMs={1500}>
+          <Page />
+        </LocaleProvider>,
+      );
+      await act(async () => {});
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+      expect(fetchCatalog).toHaveBeenCalledTimes(1);
+      await act(async () => { vi.advanceTimersByTime(CATALOG_RETRY_MS[0] - 1); });
+      expect(fetchCatalog).toHaveBeenCalledTimes(1);
+      await act(async () => { vi.advanceTimersByTime(1); });
+      expect(fetchCatalog).toHaveBeenCalledTimes(2);
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+      await act(async () => { vi.advanceTimersByTime(CATALOG_RETRY_MS[1]); });
+      expect(fetchCatalog).toHaveBeenCalledTimes(3);
+      expect(screen.getByText(/Hola/)).toBeTruthy();
+      expect(document.documentElement.lang).toBe("es");
+    });
+
+    it("coming back online tries again at once, without waiting out the backoff", async () => {
+      vi.useFakeTimers();
+      let up = false;
+      const fetchCatalog = vi.fn(async () => {
+        if (!up) throw new Error("offline");
+        return catalog({ "Hello there": "Hola" });
+      });
+      render(
+        <LocaleProvider sources={{ browser: ["es"], villageDefault: null }} fetchCatalog={fetchCatalog} timeoutMs={1500}>
+          <Page />
+        </LocaleProvider>,
+      );
+      await act(async () => {});
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+      up = true;
+      await act(async () => { window.dispatchEvent(new Event("online")); });
+      expect(fetchCatalog).toHaveBeenCalledTimes(2);
+      expect(screen.getByText(/Hola/)).toBeTruthy();
+    });
+
+    it("stops after the last wait: no endless loop while the phone stays offline", async () => {
+      vi.useFakeTimers();
+      const fetchCatalog = vi.fn(async () => { throw new Error("offline"); });
+      render(
+        <LocaleProvider sources={{ browser: ["es"], villageDefault: null }} fetchCatalog={fetchCatalog} timeoutMs={1500}>
+          <Page />
+        </LocaleProvider>,
+      );
+      await act(async () => {});
+      for (const wait of CATALOG_RETRY_MS) await act(async () => { vi.advanceTimersByTime(wait); });
+      await act(async () => { vi.advanceTimersByTime(10 * 60_000); });
+      expect(fetchCatalog).toHaveBeenCalledTimes(CATALOG_RETRY_MS.length + 1);
+      expect(screen.getByText(/Hello there/)).toBeTruthy();
+    });
   });
 });
