@@ -656,13 +656,17 @@ export default function Roles() {
   return (
     <Layout>
       {/* The sheet's world (docs/DESIGN_RULE.md): the same night ground and display face as the profile. */}
-      <section className={`${WORLD} ${leads ? "pb-16 pt-4 sm:py-16" : "py-16"} sm:py-24`}>
+      {/* Until the reads decide whether the founding team leads, the page keeps the leading
+          layout's top and holds the season's goals and the other ways back (page speed pass,
+          14 Nov 2026): it used to draw the other layout first, 48px more top with the goals
+          in view, and then push it all down and away, a layout shift of up to 0.99 on a phone. */}
+      <section className={`${WORLD} ${leads || !heroShown ? "pb-16 pt-4 sm:py-16" : "py-16"} sm:py-24`}>
         <div className="container">
           {/* Until the founding team answers, the page says it is loading, and a failed read says so
               with a way to ask again, instead of the founding team silently missing (resilience P2-6).
               The region is there from first paint, so the change is what gets announced. */}
           <div role="status" className="mx-auto max-w-4xl" data-founding-status="">
-            {founding === null && (
+            {!heroShown && !founding?.failed && (
               <p className="py-10 text-center text-muted-foreground">{t({ message: `Loading roles…`, context: "roles page" })}</p>
             )}
             {founding?.failed && (
@@ -760,9 +764,9 @@ export default function Roles() {
           </m.div>
           </>
           )}
-          {!leads && otherWaysSection}
+          {heroShown && !leads && otherWaysSection}
 
-          <SeasonGoals />
+          {heroShown && <SeasonGoals />}
           {featured.length === 0 && <ArchetypeStep allShown={showAll} onSeeAll={() => setShowAll(true)} />}
 
           <div className="max-w-4xl mx-auto">

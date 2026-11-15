@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import { linguiMacros } from "./client/src/i18n/linguiMacros";
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 import { defineConfig, type Plugin } from "vite";
 import {
   type ChunkFacts,
@@ -12,7 +13,7 @@ import {
   copyPartsIn,
 } from "./client/src/lib/routePreload";
 import { pointAtUnhintedFonts } from "./client/src/lib/unhintedFonts";
-import { allLazyInBoot, bootIntrudersMessage, lazyModulesInBoot, shortId, type BootChunkFacts } from "./client/src/lib/bootSet";
+import { allLazyInBoot, bootIntrudersMessage, judgeRoute, kb, lazyModulesInBoot, pageChunk, routeVerdictMessage, shortId, type BootChunkFacts, type RouteChunkFacts } from "./client/src/lib/bootSet";
 import { CopyCollector, splitLongCopy } from "./client/src/i18n/copySplit";
 import { splitArtifact, type SplitResult } from "./server/lib/groundsSplit";
 
@@ -289,6 +290,78 @@ function guardBootSet(): Plugin {
 }
 
 /**
+ * FAIL THE BUILD WHEN A KEY ROUTE'S FIRST VIEW CARRIES ANOTHER PAGE'S CODE, OR
+ * GROWS PAST ITS BUDGET.
+ *
+ * The boot rule above sees only what index.html loads. A visitor to /steward
+ * also waits on the page's chunk and its static imports, which route-preload.js
+ * asks for beside the bundle; client/src/lib/bootSet.ts (judgeRoute) has the
+ * rule and scripts/route-first-view.json the routes, their pages, their gzipped
+ * JS budgets and the modules already known to ride along (a ratchet: the list
+ * shrinks, never grows). ROUTE_VIEW_REPORT=1 prints every route's chunks and
+ * its foreign modules, passing or not.
+ */
+function guardRouteFirstViews(): Plugin {
+  return {
+    name: "guard-route-first-views",
+    apply: "build",
+    generateBundle(_options, bundle) {
+      const root = import.meta.dirname;
+      const file = path.resolve(root, "scripts", "route-first-view.json");
+      const spec = JSON.parse(fs.readFileSync(file, "utf8")) as { everyPage?: string[]; routes: Array<{ path: string; page: string; maxGzipKB: number; known?: string[] }> };
+      const chunks: RouteChunkFacts[] = [];
+      const gzip = new Map<string, number>();
+      const entries: string[] = [];
+      for (const out of Object.values(bundle)) {
+        if (out.type !== "chunk") continue;
+        chunks.push({ fileName: out.fileName, imports: out.imports, isEntry: out.isEntry, isDynamicEntry: out.isDynamicEntry, facadeModuleId: out.facadeModuleId, moduleIds: Object.keys(out.modules) });
+        gzip.set(out.fileName, zlib.gzipSync(out.code, { level: 9 }).length);
+        if (out.isEntry && out.facadeModuleId) entries.push(out.facadeModuleId);
+      }
+      const reachFrom = (starts: string[]): Set<string> => {
+        const seen = new Set<string>();
+        const stack = [...starts];
+        while (stack.length) {
+          const id = stack.pop() as string;
+          if (seen.has(id)) continue;
+          seen.add(id);
+          for (const dep of this.getModuleInfo(id)?.importedIds ?? []) stack.push(dep);
+        }
+        return seen;
+      };
+      const name = (id: string) => shortId(id, root);
+      const failures: string[] = [];
+      const everyPage: RouteChunkFacts[] = [];
+      for (const piece of spec.everyPage ?? []) {
+        const c = pageChunk(chunks, path.resolve(root, piece));
+        if (c) everyPage.push(c);
+        else failures.push(`everyPage: no lazy chunk stands for ${piece}, so no route's first view would count it. Fix scripts/route-first-view.json.`);
+      }
+      for (const r of spec.routes) {
+        const pageId = path.resolve(root, r.page);
+        const page = pageChunk(chunks, pageId);
+        // A renamed or eagerly imported page would make this route's check pass by measuring nothing.
+        if (!page) {
+          failures.push(`${r.path}: no lazy chunk stands for ${r.page}, so its first view cannot be measured. Fix scripts/route-first-view.json.`);
+          continue;
+        }
+        const v = judgeRoute({ route: r.path, chunks, page, everyPage, reach: reachFrom([...entries, page.facadeModuleId as string, ...everyPage.map((c) => c.facadeModuleId as string)]), known: new Set(r.known ?? []), maxGzipKB: r.maxGzipKB, gzipOf: (f) => gzip.get(f) ?? 0, name });
+        if (process.env.ROUTE_VIEW_REPORT) {
+          console.log(`\n[route-first-view] ${r.path}: ${kb(v.gzipBytes)} KB gzipped of ${r.maxGzipKB}, ${v.chunks.length} chunks: ${v.chunks.join(" ")}`);
+          for (const c of v.chunks) console.log(`  ${c} ${kb(gzip.get(c) ?? 0)} KB`);
+          console.log(`  foreign modules (${v.allForeign.length}): ${v.allForeign.join(" ")}`);
+        }
+        const gone = (r.known ?? []).filter((m) => !v.allForeign.includes(m));
+        if (gone.length) this.warn(`scripts/route-first-view.json: ${r.path} lists ${gone.length} module(s) that no longer ride its first view; remove them: ${gone.join(", ")}`);
+        const msg = routeVerdictMessage(v, root);
+        if (msg) failures.push(msg);
+      }
+      if (failures.length) this.error(failures.join("\n\n"));
+    },
+  };
+}
+
+/**
  * SMALL SHARED MODULES SHARE TWO LAZY CHUNKS.
  *
  * Rollup gives every shared module its own chunk, and CI charges every file a
@@ -331,7 +404,17 @@ let eagerModules: Set<string> | null = null;
 const PAGE_COPY = /shared[\\/]pageContent[\\/](team|circles|opportunities|masterPlan|loveLetter|training|howWeCreate)\.ts$/;
 /** A route page, and the size under which it rides the "smallpages" chunk below. */
 const SMALL_PAGE = /client[\\/]src[\\/]pages[\\/][^\\/]+\.tsx$/;
-const SMALL_PAGE_BYTES = 7500;
+/*
+ * 12000 since the page speed pass (14 Nov 2026), was 7500. Turning
+ * experimentalMinChunkSize off (below) cost the block-charged total about 250
+ * KB. Measured with this pass on 1.3.6: 7500 left it at 7416 KB of 7400 and
+ * 10000 at 7380; on main at 2b783b0, 10000 at 7392 and 12000 at 7332. The
+ * ceiling was not raised.
+ * The price is paid only on these small pages, none of them a key route: the
+ * group they share is about 125 KB raw (it was 43 KB), fetched on the first
+ * visit to any of them and from cache after.
+ */
+const SMALL_PAGE_BYTES = 12000;
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
 /**
@@ -347,6 +430,50 @@ type SmallGroup = (typeof SMALL_GROUPS)[number]["name"];
 /** Each module's group, worked out once per build like `eagerModules`. */
 const smallVerdicts = new Map<string, SmallGroup | null>();
 
+/*
+ * NEVER A GROUP MEMBER, 1: WHAT A KEY ROUTE DRAWS (page speed pass, 14 Nov 2026).
+ *
+ * A merged group is all or nothing: a page that statically imports one member
+ * downloads every member. The landing page and the steward page each needed a
+ * handful of small components, and for that they fetched the whole of "smallui"
+ * (77 KB gzipped, 12% of it run there): the voice recorder, the companion, the
+ * price ask and the role-card words among it, plus "smalls" and the chunks only
+ * its members needed, d3-interpolate among them.
+ *
+ * So nothing a key route's page reaches by static imports joins a group. The
+ * key routes are the ones scripts/route-first-view.json holds to a budget, and
+ * the guard-route-first-views plugin above fails the build when one of them
+ * carries a module neither it nor the entry imports. Those modules fall back
+ * to rollup's own chunking, which groups modules by the set of pages that load
+ * them and so never hands a page another page's code.
+ *
+ * A group member may still import one of these: what a key page reaches is a
+ * static closure, so none of it can import a group member back, and no chunk
+ * cycle can form.
+ *
+ * Tried and measured on the way here, so nobody has to again:
+ *   - one group per set of key pages ("smallui-Home-Roles"): the groups import
+ *     boot modules, rollup split the boot set from 10 files into 18 to serve
+ *     them, and the total rose to 7512 KB;
+ *   - leaving experimentalMinChunkSize on at 4096 (or 2048, 1024, 512): it
+ *     merged the freed small chunks into chunks index.html loads (the boot-set
+ *     guard refuses that) or into chunks /roles and /propose-a-role load, which
+ *     put 501 to 512 KB on /roles where this rule alone gives 362.
+ */
+const KEY_ROUTE_SPEC = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, "scripts", "route-first-view.json"), "utf8")) as { everyPage?: string[]; routes: Array<{ page: string }> };
+/** The key pages, and the lazy pieces the shell draws on every page (the root strip), as forward-slash paths. */
+const KEY_ROUTE_PAGES: string[] = [...KEY_ROUTE_SPEC.routes.map((r) => r.page), ...(KEY_ROUTE_SPEC.everyPage ?? [])].map((p) => path.resolve(import.meta.dirname, p).replace(/\\/g, "/"));
+/** Every module a key route's page reaches by static imports, worked out once per build like `eagerModules`. */
+let keyRouteModules: Set<string> | null = null;
+/*
+ * NEVER A GROUP MEMBER, 2: THE MICROPHONE AND THE COMPANION. They hold
+ * SpeechRecognition, MediaRecorder and getUserMedia, and the companion's
+ * persona and words, and only the pages that record or talk need them. In a
+ * group they ride every page that imports any other member, so they stay in
+ * their own chunks whichever page imports them.
+ */
+const SMALL_GROUP_NEVER = /components[\\/](?:voice|companion|companionWelcome)[\\/]|components[\\/](?:MicButton|form[\\/]MicInput)\.tsx$|shared[\\/](?:voiceNotes|companionPersona)\.ts$/;
+
 type ModuleInfoOf = (id: string) => { code?: string | null; importers: readonly string[]; importedIds: readonly string[] } | null;
 
 /**
@@ -356,7 +483,7 @@ type ModuleInfoOf = (id: string) => { code?: string | null; importers: readonly 
  * boot modules, or members of a group its own group may import. That last rule
  * keeps each group closed, so no chunk of ours can import it back.
  */
-function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>): SmallGroup | null {
+function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: ReadonlySet<string> = new Set()): SmallGroup | null {
   const known = smallVerdicts.get(id);
   if (known !== undefined) return known;
   // Provisionally none, so an import cycle settles as "not small" instead of looping.
@@ -368,13 +495,16 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>): Small
     !!m?.code &&
     m.code.length < SMALL_MODULE_BYTES &&
     !eager.has(id) &&
+    !key.has(id) &&
+    !SMALL_GROUP_NEVER.test(id) &&
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
     !m.importers.some((by) => NATURAL_KIT.test(by)) &&
     m.importedIds.every((dep) => {
-      if (dep.includes("node_modules") || eager.has(dep)) return true;
-      const of = smallGroupOf(dep, info, eager);
+      // What a key page reaches is a static closure, so none of it can import this module back.
+      if (dep.includes("node_modules") || eager.has(dep) || key.has(dep)) return true;
+      const of = smallGroupOf(dep, info, eager, key);
       return of !== null && (group.mayImport as readonly string[]).includes(of);
     });
   const verdict = ok ? group.name : null;
@@ -391,7 +521,7 @@ const longCopy = new CopyCollector();
 const LONG_COPY_PARTS = path.resolve(import.meta.dirname, "dist", "i18n", "parts", "en");
 
 export default defineConfig({
-  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet()],
+  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet(), guardRouteFirstViews()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -468,8 +598,15 @@ export default defineConfig({
          * 8192, 6408 and 657. 4096 buys 128 KB of the ceiling for 4 KB of
          * first load. The note above says why it is the weaker knob; take it
          * off the day the total has room without it.
+         *
+         * OFF AGAIN, 2026-11-14 (page speed pass). It merges a small chunk into
+         * whichever chunk is cheapest to load it with, without asking whether
+         * that chunk's other pages need it, so once the key routes' modules left
+         * the small groups (KEY_ROUTE_PAGES above) it folded them into the boot
+         * chunks and into chunks /roles loads: 512 KB gzipped on /roles where
+         * the rule alone gives 362. Off costs the block-charged total about 250
+         * KB; SMALL_PAGE_BYTES above won back what kept it under the ceiling.
          */
-        experimentalMinChunkSize: 4096,
         // Groups hold only what manualChunks names: see SMALL_MODULE_BYTES.
         onlyExplicitManualChunks: true,
         manualChunks: (id: string, { getModuleInfo, getModuleIds }) => {
@@ -510,6 +647,18 @@ export default defineConfig({
               for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
             }
           }
+          // What the key routes' pages reach statically joins no group: see KEY_ROUTE_PAGES above.
+          if (!keyRouteModules) {
+            keyRouteModules = new Set();
+            const stack = Array.from(getModuleIds()).filter((m) => KEY_ROUTE_PAGES.includes(m.split("?")[0].replace(/\\/g, "/")));
+            while (stack.length) {
+              const m = stack.pop() as string;
+              if (keyRouteModules.has(m)) continue;
+              keyRouteModules.add(m);
+              for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
+            }
+          }
+          const key = keyRouteModules;
           /*
            * THE PAGES' OWN COPY, one chunk (batch 158). Each brochure page's
            * words (shared/pageContent/<page>.ts) are a leaf module of 1 to 4 KB
@@ -517,18 +666,18 @@ export default defineConfig({
            * its own file and a whole 4 KB block. Grouped, they ride one file. Only
            * lazy ones: whatever the first page already carries stays where it is.
            */
-          if (PAGE_COPY.test(id) && !eagerModules.has(id)) return "page-copy";
+          if (PAGE_COPY.test(id) && !eagerModules.has(id) && !key.has(id)) return "page-copy";
           /*
            * SMALL LAZY PAGES, one chunk (batch 158). A route that is a few
            * hundred lines (the password pages, a short list) was its own 2 to 4
            * KB file and a whole 4 KB block. Nothing imports a page but the
            * router's React.lazy, so the group can never be imported back.
            */
-          if (SMALL_PAGE.test(id) && !eagerModules.has(id)) {
+          if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id)) {
             const code = getModuleInfo(id)?.code;
             if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
           }
-          return smallGroupOf(id, getModuleInfo, eagerModules) ?? undefined;
+          return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
         },
       },
     },
