@@ -5678,7 +5678,7 @@ $('attnBtn').onclick=()=>{const items=attnItems();if(!items.length)return toast(
    person listening:
 
      1  hosted signature voices   DARK today. See MV_HOSTED.
-     2  Kokoro, in this browser   the shipping voice, loaded on the first tap.
+     2  Kokoro, in this browser   REMOVED (R043). See MV_KOKORO.
      3  device speechSynthesis    the floor. No network, no download, no wait.
 
    READ IS THE DEFAULT AND THAT IS THE DESIGN. Sound is something a person
@@ -5702,20 +5702,26 @@ const MV_HOSTED={live:false,endpoint:'/api/map/tts',voice:'maia'};
 function mvHostedLive(){return !!(MV_HOSTED.live&&MV_HOSTED.endpoint)}
 window.mvHostedLive=mvHostedLive;
 
-/* TIER 2. Pinned to the version the site already ships (kokoro-js ^1.2.1) so
-   the two voices are the same voice. q8 on WASM keeps the one-time download
-   near 90 MB; fp32 on WebGPU avoids q8's artifacts where the device has it. */
-const MV_KOKORO={esm:'https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm',
-  model:'onnx-community/Kokoro-82M-v1.0-ONNX',voice:'af_bella',wait:12000};
+/* TIER 2, REMOVED (security finding R043). It was an in-browser neural voice:
+   on the first tap of "hear" it ran a dynamic import() of kokoro-js 1.2.1 from
+   cdn.jsdelivr.net, which then fetched about 90 MB of ONNX weights from
+   Hugging Face and its WASM runtime from a CDN. This page is served
+   same-origin at /grounds/, where the member's auth token sits in
+   localStorage, so that import ran third-party code with full reach of the
+   token on every page load that asked to hear Maia. Vendoring it was not a
+   fix worth its weight: the module drags in transformers.js and
+   onnxruntime-web, and the model still comes from another host at runtime.
+   The ladder now goes hosted (dark) to the device voice, which already
+   answered every line while the engine loaded and every line where it
+   failed, so "hear" still speaks. mvKokoroUsable() says no, and the names
+   stay because the walk and the journey tests reach for them.
+   `wait` stays as well: the walk adds it to a stop's ceiling. */
+const MV_KOKORO={voice:'af_bella',wait:12000};
 
 /* Every reason to not even try. file:// is first because that is where every
    QA suite runs: the gates stay offline, and a suite that measures requests
    keeps measuring the same one. */
-function mvKokoroUsable(){
-  if(location.protocol==='file:')return false;
-  if(typeof WebAssembly==='undefined')return false;
-  if(navigator.onLine===false)return false;
-  return true}
+function mvKokoroUsable(){return false}
 window.mvKokoroUsable=mvKokoroUsable;
 
 let MV_SEQ=0,MV_AUDIO=null,MV_URL=null,MV_KTTS=null,MV_KLOAD=null;
@@ -5789,13 +5795,10 @@ function mvKokoroReady(){
   if(!MV_KLOAD){
     MVOICE.engine='loading';mvPaint();
     MV_KLOAD=(async function(){try{
-      const m=await import(MV_KOKORO.esm);
-      const K=m&&(m.KokoroTTS||(m.default&&m.default.KokoroTTS));
-      if(!K)throw new Error('kokoro-js exposed no KokoroTTS');
-      const gpu=!!(navigator.gpu);
-      MV_KTTS=await K.from_pretrained(MV_KOKORO.model,
-        {dtype:gpu?'fp32':'q8',device:gpu?'webgpu':'wasm'});
-      MVOICE.engine='ready';mvPaint();return true}
+      /* R043: nothing is loaded from another origin any more. A caller that
+         gets here anyway (a test that forces mvKokoroUsable) lands on the
+         same fall-through a failed load always had: the device voice. */
+      throw new Error('the in-browser voice engine was removed (R043)')}
     catch(err){
       /* A warning, never a toast. Someone who asked to hear her still hears
          her, in the device voice, and has nothing to fix. */
