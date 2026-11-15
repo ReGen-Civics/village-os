@@ -1,4 +1,6 @@
+import { isChunkLoadError, reloadOnceForStaleChunk } from "@/lib/staleChunk";
 import { cn } from "@/lib/utils";
+import { Trans } from "@lingui/react/macro";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { Component, ReactNode } from "react";
 
@@ -9,6 +11,44 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  /**
+   * The error was a page chunk that did not arrive (lib/staleChunk.ts): the
+   * page outlived a deploy. `reloading` is true while the one automatic
+   * reload happens, false when it was not allowed and the card shows, and
+   * undefined for the moment before componentDidCatch decides.
+   */
+  stale?: boolean;
+  reloading?: boolean;
+}
+
+/**
+ * What a member sees when this page was opened before an update and a reload
+ * did not bring it back on its own. Plain words and one button; the link is
+ * for the rare device that stays stuck (pages/Reset.tsx).
+ */
+export function StaleBuildCard() {
+  return (
+    <div className="relative sheet-night flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <div className="flex w-full max-w-md flex-col items-center rounded-2xl border border-border bg-card p-6 text-center shadow-sm sm:p-8">
+        <h2 role="alert" className="font-display text-2xl font-bold text-card-foreground mb-3">
+          <Trans>We just updated the site</Trans>
+        </h2>
+        <p className="text-base leading-relaxed text-muted-foreground mb-6">
+          <Trans>Tap reload to get the new version.</Trans>
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="jw-btn inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-notice px-5 py-2 font-semibold text-background hover:bg-notice/90 cursor-pointer"
+        >
+          <RotateCcw size={16} />
+          <Trans context="update card: reload the page">Reload</Trans>
+        </button>
+        <a href="/reset" className="mt-5 text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground">
+          <Trans>Still stuck? Give this device a fresh start</Trans>
+        </a>
+      </div>
+    </div>
+  );
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -18,10 +58,22 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, stale: isChunkLoadError(error) };
+  }
+
+  componentDidCatch(error: Error) {
+    // One reload for a page that outlived a deploy; the card if that already happened.
+    if (isChunkLoadError(error)) this.setState({ reloading: reloadOnceForStaleChunk() });
   }
 
   render() {
+    if (this.state.hasError && this.state.stale) {
+      // While the reload happens, the plain ground: a card flashing for a
+      // moment before the page goes away would only alarm.
+      if (this.state.reloading !== false) return <div className="min-h-screen bg-background" />;
+      return <StaleBuildCard />;
+    }
+
     if (this.state.hasError) {
       return (
         <div className="flex items-center justify-center min-h-screen p-8 bg-background">

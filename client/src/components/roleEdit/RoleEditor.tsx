@@ -46,6 +46,9 @@ interface Form {
   /** The commitment the role asks (0383), a percent as typed; "" is not said. */
   commitmentPct: string;
   commitmentRequired: boolean;
+  /** The commitment range (Rye, 14 Nov 2026): the least one person may propose, and what the role needs in all; "" is not said. */
+  commitmentMin: string;
+  commitmentTarget: string;
   recruiting: boolean;
   track: string;
   whereWorked: string;
@@ -74,6 +77,8 @@ function formOf(s: EditorState): Form {
     heldBy: p.heldBy ?? "",
     commitmentPct: typeof p.commitmentPct === "number" ? String(p.commitmentPct) : "",
     commitmentRequired: p.commitmentRequired ?? false,
+    commitmentMin: typeof p.commitmentMin === "number" ? String(p.commitmentMin) : "",
+    commitmentTarget: typeof p.commitmentTarget === "number" ? String(p.commitmentTarget) : "",
     recruiting: p.recruiting ?? false,
     track: p.track ?? "",
     whereWorked: p.whereWorked ?? "",
@@ -102,6 +107,8 @@ function bodyOf(f: Form, s: EditorState): SaveBody {
   if (has("heldBy")) parameters.heldBy = f.heldBy || null;
   if (has("commitmentPct")) parameters.commitmentPct = f.commitmentPct.trim() ? Number(f.commitmentPct) : null;
   if (has("commitmentRequired")) parameters.commitmentRequired = f.commitmentRequired;
+  if (has("commitmentMin")) parameters.commitmentMin = f.commitmentMin.trim() ? Number(f.commitmentMin) : null;
+  if (has("commitmentTarget")) parameters.commitmentTarget = f.commitmentTarget.trim() ? Number(f.commitmentTarget) : null;
   if (has("track")) parameters.track = f.track || null;
   if (has("whereWorked")) parameters.whereWorked = f.whereWorked || null;
   if (has("languages")) parameters.languages = lines(f.languages);
@@ -330,6 +337,29 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
                 )}
               </div>
               <p className="mt-1 text-xs text-muted-foreground"><Trans context="role editor">A required role is hidden from members who say they can give less. Nothing that pays reads this.</Trans></p>
+            </Frame>
+          )}
+          {has("commitmentMin") && (
+            <Frame label={t({ message: "Shared or whole", context: "role editor: the commitment range" })} changed={form.commitmentMin !== start.commitmentMin || form.commitmentTarget !== start.commitmentTarget}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm">
+                  {t({ message: "Least one person may propose", context: "role editor: the commitment range" })}
+                  <span className="flex items-center gap-2">
+                    <input type="number" inputMode="numeric" min={1} max={100} step={5} className={`${INPUT} w-24`} value={form.commitmentMin} onChange={(e) => set("commitmentMin", e.target.value)} data-role-commitment-min="" />
+                    <span aria-hidden="true">%</span>
+                  </span>
+                </label>
+                {has("commitmentTarget") && (
+                  <label className="grid gap-1 text-sm">
+                    {t({ message: "What the role needs in all", context: "role editor: the commitment range" })}
+                    <span className="flex items-center gap-2">
+                      <input type="number" inputMode="numeric" min={1} max={1000} step={10} placeholder="100" className={`${INPUT} w-24`} value={form.commitmentTarget} onChange={(e) => set("commitmentTarget", e.target.value)} data-role-commitment-target="" />
+                      <span aria-hidden="true">%</span>
+                    </span>
+                  </label>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground"><Trans context="role editor">Blank least: the role is offered at 100% only. Blank in all: 100%. Set 300% when it needs three whole people. The role stays open until its holders give that much.</Trans></p>
             </Frame>
           )}
           <Frame label={t({ message: "Door", context: "role editor" })} changed={form.recruiting !== start.recruiting}>

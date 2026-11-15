@@ -7,7 +7,7 @@
  * no second journey, no ladder of levels and no intake form.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import fs from "node:fs";
 import path from "node:path";
 import { Router } from "wouter";
@@ -138,13 +138,18 @@ describe("/steward", () => {
   it("pins the same act in thumb reach while the band is ahead, and lets it go once the band is reached", async () => {
     const { act: flush } = await import("@testing-library/react");
     let report: (top: number, visible: boolean) => void = () => {};
+    // The page builds its observer in an effect, which on a loaded runner can land after the
+    // heading renders; a report sent before then reaches no one. Wait until it is watching.
+    let watching = false;
     vi.stubGlobal(
       "IntersectionObserver",
       class {
         constructor(cb: (entries: unknown[]) => void) {
           report = (top, visible) => cb([{ isIntersecting: visible, boundingClientRect: { top } }]);
         }
-        observe() {}
+        observe() {
+          watching = true;
+        }
         unobserve() {}
         disconnect() {}
         takeRecords() {
@@ -154,6 +159,7 @@ describe("/steward", () => {
     );
     show();
     await screen.findByText("The team that builds Hollow Oak");
+    await waitFor(() => expect(watching).toBe(true));
     flush(() => report(3000, false));
     expect(within(await screen.findByTestId("thumb-act")).getByRole("link")).toHaveAttribute("href", "/roles");
     flush(() => report(200, true));

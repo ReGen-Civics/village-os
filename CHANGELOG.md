@@ -40,6 +40,28 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.2 (2026-11-14)
+
+### What changed for your village
+
+- **Role cards you can explore piece by piece.** Each open role opens as a card that shows its purpose, what it looks after, what it delivers and how it rewards, one piece at a time, with an image and icons, or all at once.
+- **The founding team, at a glance.** The roles page shows the Anchor Circle as a team sheet, or as a formation, with each role's domains and which places are open. Anyone can see it; holders appear by first name only, while the village shows people publicly.
+- **Shape the role as you apply.** On each piece of a role card, an applicant can say what they would change, what is missing, or how they would deliver it. Their suggestions travel with the application, and deciders read them beside each piece.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1240 Batch 160: role cards (card, team sheet, founding team, per-piece suggestions)
+
+---
+
 ## 1.3.1 (2026-11-14)
 
 ### What changed for your village

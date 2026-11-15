@@ -63,6 +63,7 @@ import { characterTagsFrom } from "./orgChart";
 import { villageId } from "./economy";
 import { readHeldBy } from "../../shared/agentHolders";
 import { storedCommitmentPct } from "../../shared/commitment";
+import { storedCommitmentMin, storedCommitmentTarget } from "../../shared/commitmentRange";
 import { readSections, SECTION_WORDS, type RoleCardSections } from "../../shared/roleCardSections";
 import { saveSections, sectionsFor } from "./roleCardSections";
 
@@ -120,6 +121,8 @@ async function storedParameters(pool: Pool, roleId: string, live: readonly Param
     const v = row[PARAMETER_COLUMNS[k]];
     if (k === "alwaysChecked" || k === "commitmentRequired") out[k] = Number(v) === 1;
     else if (k === "commitmentPct") out[k] = storedCommitmentPct(v);
+    else if (k === "commitmentMin") out[k] = storedCommitmentMin(v);
+    else if (k === "commitmentTarget") out[k] = storedCommitmentTarget(v);
     else if (k === "heldBy") out[k] = readHeldBy(v);
     else if (k === "listed") out[k] = v === null || v === undefined ? true : Number(v) === 1;
     else if (k === "languages" || k === "villageGoals" || k === "selectionCriteria" || k === "accessBundle") out[k] = asList(v).map(String);

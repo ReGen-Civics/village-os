@@ -56,6 +56,8 @@ const PUBLIC_CARD_KEYS = [
   "heldBy", "agentMayHold",
   // 0383: whether the role needs its whole commitment, public like the percent beside it.
   "commitmentRequired",
+  // The commitment range (Rye, 14 Nov 2026): the least one person may propose and what the role needs in all, public like the percent.
+  "commitmentMin", "commitmentTarget",
 ].sort();
 
 describe("the public pay range", () => {

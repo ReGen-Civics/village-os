@@ -226,12 +226,15 @@ export function rolesWithinReach<T>(roles: readonly T[], askOf: (role: T) => Rol
 // stored as `{ roleId, share: 60 }`; the page also shows it as a part of the
 // whole person (60% of 50% is 30% of you) with `shareOfYou`.
 //
-// STILL OUTSIDE PAY. The wall in this file's header holds for the split too:
-// `commitmentBoundary.test.ts` keeps every pay path from reading it.
-// TODO(commitment-split-pay): where a member's roles are paid apart (two or
-// more agreements in force), the split is meant to weight their pay. That
-// waits for the lead to say how (see `rolePayFold` below and the PR's
-// question); until then it is shown and kept, and pays nothing.
+// PAY, THROUGH ONE CONFIRMED DOOR (Rye, 14 Nov 2026, answer A). Where a
+// member's roles are paid apart (two or more agreements in force), each
+// role's pay scales by its share of their time, from the split
+// (`scaleBySplit`, shared/moonRecap.ts). A Treasurer sees each line's base
+// pay, share and scaled amount at End of Moon and confirms them before
+// Finance approval can pass. One pay, no split, or a split that does not add
+// up to 100: pay is the terms, unchanged. The split reaches the invoice only
+// through server/lib/splitForPay.ts, the one door `commitmentBoundary.test.ts`
+// allows; the percent itself still reaches no pay path.
 
 /** The most roles one split names. A member holds a handful; this is a guard, never a cap anyone meets. */
 export const SPLIT_MAX_ROLES = 12;

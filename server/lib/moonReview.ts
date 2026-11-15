@@ -39,9 +39,9 @@ import {
   APPROVAL_REFUSALS, APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, CONFIRM_OWN_ROUTE_REFUSED, INVOICE_APPROVE_CAPABILITY,
   LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, WORK_APPROVE_CAPABILITY,
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
-  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, linesFromTerms, memberView, packMoonDates,
+  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
-  termsCarryMoney, validatePack, waitingStage,
+  termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines,
   type ApprovalStage, type ApprovalSubject, type ApproverKeys, type ApproverPool, type BulkApproveResponse, type FromBlock,
   type ImportPackResponse, type InvoiceLine, type PayRouteRecord, type InvoiceView, type MoonAttestation, type QueueResponse, type QueueRow,
   type RecapItem, type ReviewEventKind, type RoleAudit, type RoomResponse, type SendInvoiceResponse,
@@ -56,7 +56,7 @@ import { memberUserIdRows, personRow, memberNoRows } from "../repos/liveSessions
 import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
 import {
-  invoiceViewOf, linesOf, loadFrame, payersDoc, recapView, settingsDoc, summaryFor, type Frame, type FrameDeps, type Moon, type Outcome,
+  draftLines, invoiceViewOf, linesOf, loadFrame, payersDoc, recapView, settingsDoc, summaryFor, type Frame, type FrameDeps, type Moon, type Outcome,
 } from "./moonRecap";
 
 const newId = (prefix: string): string => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
@@ -177,7 +177,7 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
   if (b.rangeProposals && typeof b.rangeProposals === "object") {
     for (const [k, v] of Object.entries(b.rangeProposals as Record<string, unknown>)) if (Number.isInteger(v)) proposals[k] = v as number;
   }
-  const lines = linesFromTerms(frame.terms, moon.days, proposals, finals);
+  const lines = draftLines(frame, moon.days, proposals, finals);
   const routeKind = route?.route ?? "pending";
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const attestation = b.attestation === undefined || b.attestation === null ? null : parseAttestation(b.attestation, routeKind, moon.days);
@@ -531,6 +531,8 @@ async function approveOne(
   const settings = await settingsDoc(pool);
   const check = financeApprovalRefusal({ route, settings, attestation: invoice.attestation, moonLastDay: deps.lastDayOf(invoice.cycleId) ?? invoice.cycleId, expectedOn: req.expectedOn });
   if (check) return check;
+  // Nothing pays off a member's split until a Treasurer has confirmed it (Rye, 14 Nov 2026).
+  if (splitUnconfirmed(linesOf(invoice))) return { refusal: APPROVAL_REFUSALS.splitUnconfirmed };
 
   const items = await store.itemsOf(pool, recap.id);
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
@@ -645,6 +647,44 @@ export async function setRange(pool: Pool, actorId: string, invoiceId: string, b
   }
   await tell(deps, { userId: invoice.userId, title: NOTICE_WORDS.rangeChanged, kind: "amount_set", recapId: recap.id, round: recap.round, actorUserId: actorId });
   return { ok: true, value: { voided: invoice.id } };
+}
+
+/**
+ * A TREASURER CONFIRMS THE SPLIT (Rye, 14 Nov 2026, answer A). An invoice
+ * whose pay lines were scaled by the member's split of their time
+ * (`scaleBySplit`) cannot be approved until someone who may act on it for
+ * Finance has looked at each line's base pay, share and scaled amount and
+ * confirmed them here. Confirming stamps who and when on the scaled lines and
+ * changes no amount, so the approval hash, and the work approval bound to it,
+ * stand. To pay the terms unchanged instead, Finance returns or voids the
+ * invoice with a note, as for any other line it disagrees with.
+ */
+export async function confirmSplit(pool: Pool, actorId: string, invoiceId: string, deps: Pick<ReviewDeps, "keyHolders">, now: () => Date = () => new Date()): Promise<Outcome<{ confirmed: string }>> {
+  const invoice = await store.invoiceById(pool, invoiceId);
+  if (!invoice) return refuse(404, "not_found");
+  const no = await financeActor(pool, actorId, invoice, deps);
+  if (no) return refuse(403, no);
+  if (invoice.status !== "waiting") return refuse(409, APPROVAL_REFUSALS.notWaiting);
+  const lines = linesOf(invoice);
+  if (!lines.some((l) => l.split)) return refuse(400, APPROVAL_REFUSALS.noSplit);
+  // A scaled line whose amount no longer matches its split is not confirmed: the member resends.
+  if (lines.some((l) => l.split && l.split.scaledMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
+  const confirmed = confirmSplitLines(lines, actorId, now().toISOString());
+  const scaled = invoiceTotals(confirmed)[0];
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    if ((await store.setInvoiceLines(conn, invoice.id, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("raced");
+    await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
+    await conn.commit();
+  } catch (e) {
+    await conn.rollback().catch(() => undefined);
+    if (e instanceof Error && e.message === "raced") return refuse(409, APPROVAL_REFUSALS.notWaiting);
+    throw e;
+  } finally {
+    conn.release();
+  }
+  return { ok: true, value: { confirmed: invoice.id } };
 }
 
 /**
