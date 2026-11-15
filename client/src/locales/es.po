@@ -16432,3 +16432,14 @@ msgstr "Las metas guían el trabajo, y el pago sigue a lo que entregas. Si un me
 msgctxt "open proposal, founding application"
 msgid "These are optional. Someone who lives far away may not have been able to come yet."
 msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
+
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment"
+msgid "Your counter-offer"
+msgstr "Tu contraoferta"
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the ceiling at their commitment"
+msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
+msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."

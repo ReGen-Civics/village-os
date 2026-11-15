@@ -14,6 +14,8 @@ import { perPeriod } from "@/components/roleCard/rewardWords";
 
 export interface CommitmentReviewData {
   pct: number | null;
+  /** The commitment after a counter-offer changed it, when it differs: the one the figures below are worked at. */
+  offeredPct?: number | null;
   ask: PayAsk | null;
   /** How many changes they suggested to the role card. */
   suggestionCount?: number;
@@ -26,6 +28,9 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
   const priced = (n: number, currency: string, per: PayCeiling["per"]) => perPeriod(i18n, money(n, currency), per);
   if (!data) return null;
   const several = data.roles.length > 1;
+  // The figures below are worked at the commitment that would be signed (QA 15 Nov 2026): a counter-offer's, else theirs.
+  const countered = typeof data.offeredPct === "number" ? data.offeredPct : null;
+  const atPct = countered ?? data.pct;
   const askWords = !data.ask
     ? t({ message: "No ask given", context: "open proposal: the pay ask" })
     : data.ask.kind === "negotiate"
@@ -41,6 +46,12 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "They propose", context: "open proposal: commitment" })}</dt>
           <dd className="mt-0.5 font-display text-2xl text-foreground" data-commitment-pct="">{data.pct !== null ? `${data.pct}%` : t({ message: "Not chosen", context: "open proposal: commitment" })}</dd>
         </div>
+        {countered !== null && (
+          <div>
+            <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Your counter-offer", context: "open proposal: commitment" })}</dt>
+            <dd className="mt-0.5 font-display text-2xl text-foreground" data-commitment-offered="">{`${countered}%`}</dd>
+          </div>
+        )}
         <div>
           <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their price", context: "open proposal: the pay ask" })}</dt>
           <dd className="mt-0.5 text-foreground" data-pay-ask-shown="">
@@ -70,7 +81,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
               {several && <p className="font-semibold">{name}</p>}
               {r.full && r.atCommitment !== null && (
                 <p data-commitment-ceiling="">
-                  {t({ message: `At ${data.pct}%, the role pays up to ${priced(r.atCommitment, r.full.currency, r.full.per)} (the full role: ${money(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
+                  {t({ message: `At ${atPct}%, the role pays up to ${priced(r.atCommitment, r.full.currency, r.full.per)} (the full role: ${money(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
                 </p>
               )}
               {(() => {
