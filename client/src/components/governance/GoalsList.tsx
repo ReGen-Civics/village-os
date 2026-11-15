@@ -114,6 +114,9 @@ export default function GoalsList({
       <p className="text-sm text-muted-foreground">
         {t`These are your goals for your first moon. Once you are seated, we issue your tasks on your profile each moon. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the moon.`}
       </p>
+      <p className="text-sm text-muted-foreground" data-accomplished-pay="">
+        {t`Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.`}
+      </p>
       {assist}
       <ol className="grid gap-3" aria-label={t({ message: "Your goals", context: "proposal goals list" })}>
         {goals.map((g, i) => {
