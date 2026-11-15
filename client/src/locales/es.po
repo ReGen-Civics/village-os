@@ -360,6 +360,11 @@ msgctxt "agent paths, a pasted path that changes one already listed"
 msgid "Changes"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Say why you, and why now."
+msgstr "Cuéntanos por qué tú, y por qué ahora."
+
 #: client/src/components/notebook/NotebookExport.tsx
 msgctxt "canvas export button"
 msgid "Build it again"
@@ -597,6 +602,11 @@ msgstr "Qué significan las marcas"
 msgid "The village's own rows"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one."
+msgstr "Aprendemos mucho de cómo dices las cosas, y también leemos cada palabra. Si quieres, háblanos unos minutos: quién eres, por qué este rol y qué aportarías. Te ayudamos a convertir lo que digas en tus respuestas, y tú editas cada una."
+
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: where a member's words go"
 msgid "What you type here goes to {guide}, only to answer you."
@@ -743,6 +753,11 @@ msgstr ""
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgid "Where it stands today (circle one)"
 msgstr ""
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Your Moon changed sign that day. Add your birth time so I can tell which."
+msgstr "Tu Luna cambió de signo ese día. Añade tu hora de nacimiento para que pueda saber cuál."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Saved {name}. The week map above reads it now."
@@ -1329,6 +1344,11 @@ msgctxt "proposed changes"
 msgid "Remove"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Skip, I'll type"
+msgstr "Omitir, prefiero escribir"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Character"
@@ -1408,6 +1428,11 @@ msgstr ""
 msgid "The vote is open. <0>Read it and vote</0>."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Your files and recordings together are too large to send. Send fewer files, or record shorter answers."
+msgstr "Tus archivos y grabaciones juntos son demasiado grandes para enviarlos. Envía menos archivos, o graba respuestas más cortas."
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: recipient placeholder"
 msgid "Their @handle"
@@ -1465,6 +1490,11 @@ msgstr ""
 #: client/src/components/SaveBar.tsx
 msgid "You have changes waiting to be saved."
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "The words about the background check changed while you read them. Read them again and tick."
+msgstr "El texto sobre la verificación de antecedentes cambió mientras lo leías. Léelo de nuevo y marca la casilla."
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgctxt "valuation receipt"
@@ -1568,6 +1598,11 @@ msgstr ""
 msgctxt "role fill, one named holder"
 msgid "Held, still open"
 msgstr "Ocupado, aún abierto"
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "No microphone was found on this device."
+msgstr "No encontramos un micrófono en este dispositivo."
 
 #: client/src/components/map/TodayOnTheMap.tsx
 msgctxt "circles map, today card"
@@ -1793,6 +1828,11 @@ msgctxt "voice field purpose: join request"
 msgid "Why you want to join the village and what you hope to bring and find here."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We're receiving a lot of uploads right now. Please try again in a minute."
+msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en un minuto."
+
 #. placeholder {0}: i + 1
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -1835,6 +1875,11 @@ msgstr "Un día de esta luna (opcional)"
 msgctxt "founding application check"
 msgid "Say how we will know value {n} is done."
 msgstr "Di cómo sabremos que el aporte {n} está hecho."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Vedic chart"
+msgstr "Carta védica"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -1896,6 +1941,11 @@ msgstr "Un lugar tranquilo para empezar."
 msgid "The {careShown} role, and the {coverShown} role when they cannot."
 msgstr ""
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstName}. I'll hatch once you've told me who to be. First: what's my name?"
+msgstr "¿Toc, toc? ¡Hola ahí dentro… digo, ahí fuera! Soy tu compañero, {firstName}. Saldré del cascarón cuando me digas quién ser. Primero: ¿cómo me llamo?"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, close a path's editor"
 msgid "Done"
@@ -1924,6 +1974,11 @@ msgctxt "module library, builder section heading"
 msgid "Build a module"
 msgstr "Construye un módulo"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "No microphone was found on this device. Typing works just as well."
+msgstr "No encontramos un micrófono en este dispositivo. Escribir funciona igual de bien."
+
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: quick start button"
 msgid "Help me make it clearer"
@@ -1933,6 +1988,11 @@ msgstr "Ayúdame a que quede más claro"
 #~ msgctxt "role draft discover"
 #~ msgid "Draft this role"
 #~ msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Keep each recording under 5 minutes."
+msgstr "Que cada grabación dure menos de 5 minutos."
 
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -2202,6 +2262,11 @@ msgctxt "sera answers"
 msgid "It cannot be published yet: {0}."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We're receiving a lot of proposals right now and can't send another confirmation email yet. Please try again in about an hour."
+msgstr "Estamos recibiendo muchas propuestas ahora mismo y aún no podemos enviar otro correo de confirmación. Inténtalo de nuevo en una hora más o menos."
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "who may adopt a canvas suggestion"
 msgid "Who decides: {pen}"
@@ -2309,6 +2374,11 @@ msgctxt "role draft button"
 msgid "Full card"
 msgstr "Ficha completa"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Record again"
+msgstr "Grabar de nuevo"
+
 #. placeholder {0}: offer.roleCommitment
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The role asks {0}%"
@@ -2392,6 +2462,11 @@ msgstr "Explora los roles abiertos"
 msgctxt "open proposal attachments"
 msgid "Link {0}: web address"
 msgstr "Enlace {0}: dirección web"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add your name."
+msgstr "Escribe tu nombre."
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
@@ -2486,6 +2561,12 @@ msgstr ""
 msgctxt "commitment split: how the parts work"
 msgid "Give each role a part of your {total}%. The parts add up to 100%."
 msgstr "Dale a cada rol una parte de tu {total}%. Las partes suman 100%."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Only the people who decide your application and the village's admins hear them. We delete them with your application, and at the latest 90 days after we decide."
+msgstr "Solo las escuchan las personas que deciden tu solicitud y quienes administran la aldea. Las borramos con tu solicitud, y a más tardar 90 días después de decidir."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece heading"
@@ -2721,6 +2802,11 @@ msgstr ""
 msgctxt "proposed changes"
 msgid "Accepted by {0} on {1}"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One of those roles isn't open any more. Reload the page and pick again."
+msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
 
 #. placeholder {0}: failure.failed.length
 #: client/src/components/SaveBar.tsx
@@ -3321,6 +3407,11 @@ msgctxt "connector setup panel, what the connector is"
 msgid "The connector lets your Claude act for you in the village, and only with your approval in the chat. Every change it makes is recorded."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection."
+msgstr "Ya recibimos cinco propuestas desde esta conexión en la última hora, así que aún no podemos aceptar otra. No se pierde nada de lo que escribiste en esta página. Inténtalo de nuevo en una hora más o menos, o envíala desde otra conexión."
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Open it on its own page"
 msgstr ""
@@ -3328,6 +3419,11 @@ msgstr ""
 #: client/src/components/governance/TermsEight.tsx
 msgid "How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload."
 msgstr "Cuánta de tu energía y atención recibe este rol en una semana. 100 % es compromiso completo, y tú manejas tu propia carga de trabajo."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "{name}? {name}! Oh, I love it. {name} it is. You can rename me any time."
+msgstr "¿{name}? ¡{name}! Ay, me encanta. Seré {name}. Puedes cambiarme el nombre cuando quieras."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal"
@@ -3412,6 +3508,11 @@ msgstr ""
 msgctxt "progression: a kind of power"
 msgid "Talk and share"
 msgstr "Hablar y compartir"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "You picked the same role twice."
+msgstr "Elegiste el mismo rol dos veces."
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "team sheet: open this role's card"
@@ -3581,9 +3682,19 @@ msgstr ""
 #~ msgid "What I would bring in my first moon:"
 #~ msgstr "Lo que traería en mi primera luna:"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable."
+msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. Todo es opcional, privado y se puede borrar."
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "How this serves the village's purpose, in one line"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Talk to us instead"
+msgstr "Mejor háblanos"
 
 #: client/src/components/review/SeraActs.tsx
 #: client/src/components/review/SeraInDraft.tsx
@@ -4216,6 +4327,11 @@ msgctxt "new role from a card"
 msgid "Google Doc"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "You added the same reference twice."
+msgstr "Agregaste la misma referencia dos veces."
+
 #: client/src/components/review/SeraCompare.tsx
 msgctxt "sera compare"
 msgid "Read both in full"
@@ -4308,6 +4424,11 @@ msgctxt "funding rounds"
 msgid "Withdraw my pledge"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "What we heard, in your words"
+msgstr "Lo que escuchamos, en tus palabras"
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "team sheet: someone holds this role"
 msgid "Filled"
@@ -4327,6 +4448,11 @@ msgstr ""
 msgctxt "approved writes, the memory record"
 msgid "Waiting to send"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That link has been opened many times from this connection. Please wait about an hour and try again."
+msgstr "Ese enlace se abrió muchas veces desde esta conexión. Espera una hora más o menos e inténtalo de nuevo."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, who confirms"
@@ -4793,6 +4919,11 @@ msgctxt "companion welcome"
 msgid "Time zone where you were born"
 msgstr "Zona horaria donde naciste"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be deleted just now."
+msgstr "No se pudo borrar en este momento."
+
 #. placeholder {0}: season.name
 #. placeholder {1}: season.timezone
 #: client/src/components/canvas/CanvasSeason.tsx
@@ -4844,6 +4975,11 @@ msgstr "Porcentaje que puedes dar"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Every member reads this line beside the vote, and it stays on the record."
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One recording is too large. Record a shorter one."
+msgstr "Una grabación es demasiado grande. Graba una más corta."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: signed out"
@@ -5109,6 +5245,12 @@ msgstr ""
 msgid "Something hiccuped. Ask me that again?"
 msgstr ""
 
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment"
+msgid "Your counter-offer"
+msgstr "Tu contraoferta"
+
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Nobody else can sign this figure, so it goes to the village. Put the change in an org draft and put it to a vote."
 msgstr ""
@@ -5184,6 +5326,11 @@ msgctxt "founding application know us act"
 msgid "Join the next call"
 msgstr "Únete a la próxima llamada"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick that we may keep your voice note, or remove the recordings."
+msgstr "Marca que podemos guardar tu nota de voz, o quita las grabaciones."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "You have none yet. Gather several changes here and the village votes on them together."
 msgstr ""
@@ -5258,6 +5405,16 @@ msgstr "Las metas de la temporada a las que sirve"
 msgctxt "admin helper, opens an admin page"
 msgid "Open {label}"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This phone can't write down your words while it records. Your recording is fine; use the mic on each answer for the text."
+msgstr "Este teléfono no puede escribir tus palabras mientras graba. Tu grabación está bien; usa el micrófono de cada respuesta para el texto."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That's a lot of tries from this connection in a short while. Please wait about an hour and try again."
+msgstr "Son muchos intentos desde esta conexión en poco tiempo. Espera una hora más o menos e inténtalo de nuevo."
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, role link"
@@ -5354,6 +5511,11 @@ msgstr "Las caras van en orden alfabético, y nadie ve cuántos hilos tiene otra
 msgctxt "approval inbox"
 msgid "Sign in to see it"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Stop recording"
+msgstr "Detener la grabación"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks web: how to read it, desktop"
@@ -5667,6 +5829,11 @@ msgctxt "open proposal card window"
 msgid "Weekday evenings"
 msgstr "Noches entre semana"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One application is for one role. Choose the role you are applying for, and apply for another one separately."
+msgstr "Cada solicitud es para un rol. Elige el rol al que postulas, y postula a otro por separado."
+
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "What it should be"
 msgstr ""
@@ -5823,6 +5990,11 @@ msgstr ""
 msgid "Nothing offered for this role beyond their note."
 msgstr "No ofrece nada para este rol aparte de su nota."
 
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "Speaking needs a connection. Typing works offline."
+msgstr "Hablar necesita conexión. Escribir funciona sin conexión."
+
 #: client/src/components/review/SeraRows.tsx
 msgid "Its role comes with it, and leaving the circle out leaves it out too."
 msgstr ""
@@ -5896,6 +6068,11 @@ msgstr "Háblalo"
 msgctxt "price popup nudge, several"
 msgid "You suggested {suggestionCount} changes to the role. If they change the work, say how they change the price."
 msgstr "Sugeriste {suggestionCount} cambios al rol. Si cambian el trabajo, di cómo cambian el precio."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "In your own words"
+msgstr "En tus propias palabras"
 
 #. placeholder {0}: problems.length
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -6350,6 +6527,11 @@ msgstr "¿Planeas la próxima temporada? Proponer mis roles te deja cambiar cual
 msgid "Shape it into a quest. Once it says what it delivers and what it asks, it goes on the ballot."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application, the send failed"
+msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device."
+msgstr "No pudimos enviar tu solicitud. Revisa tu conexión y envíala de nuevo: todo lo que escribiste sigue guardado en este dispositivo."
+
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: sends your words"
 msgid "Send"
@@ -6475,6 +6657,11 @@ msgstr ""
 msgctxt "admin helper, proposal: current value"
 msgid "Now"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite: start a recording"
+msgid "Record"
+msgstr "Grabar"
 
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, the door when the week is empty"
@@ -6962,6 +7149,13 @@ msgctxt "who answered a note"
 msgid "{by} answered"
 msgstr ""
 
+#. placeholder {0}: priced(r.atCommitment, r.full.currency, r.full.per)
+#. placeholder {1}: money(r.full.amount, r.full.currency)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the ceiling at their commitment"
+msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
+msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "They have not chosen"
 msgstr "Todavía no ha elegido"
@@ -7003,6 +7197,11 @@ msgstr ""
 msgctxt "circle hearth, we meet"
 msgid "I'll be there"
 msgstr "Allí estaré"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Remove clip"
+msgstr "Quitar la grabación"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -7245,6 +7444,11 @@ msgstr ""
 #: client/src/pages/Governance.tsx
 msgid "The canvas is the <0>{0}</0>."
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add up to 3 references."
+msgstr "Agrega hasta 3 referencias."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "<0><1/>Print the canvas workbook</0> to talk {name} through on paper. The questions under \"Our questions to talk through\" on this card are there too."
@@ -7492,10 +7696,22 @@ msgstr "Me gustaría un inicio gradual"
 msgid "Vote on it again here"
 msgstr ""
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
+msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la escuchan. Se borra con la solicitud y, a más tardar, 90 días después de la decisión."
+
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks hint"
 msgid "Nothing changes until you tap."
 msgstr ""
+
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, before it has a name"
+msgid "your companion"
+msgstr "tu compañero"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -7754,6 +7970,11 @@ msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr ""
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, what the companion says"
+msgid "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
+msgstr "¡Eso es todo el lugar, {firstName}! Mi primera pregunta te espera en Tus compañeros. Llámame cuando quieras: siempre estoy en tu perfil."
+
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the named role a private intake reaches"
 msgid "{intakeRoleName} role"
@@ -7981,6 +8202,11 @@ msgctxt "voice field purpose: raise an objection"
 msgid "A risk or concern you see in this proposal and what could go wrong."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This email address already has three proposals waiting today. Check your inbox for the confirmation links, or try again tomorrow."
+msgstr "Este correo ya tiene tres propuestas pendientes hoy. Busca los enlaces de confirmación en tu bandeja de entrada, o inténtalo mañana."
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a suggestion is being declined"
 msgid "Declining"
@@ -8135,6 +8361,11 @@ msgctxt "decline a suggestion"
 msgid "Decline"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This page isn't taking proposals right now."
+msgstr "Esta página no está recibiendo propuestas en este momento."
+
 #. placeholder {0}: doc.ownerName
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row, who shared it"
@@ -8237,6 +8468,11 @@ msgctxt "founding application review: the notes on the role"
 msgid "{0} and {1} more"
 msgstr "{0} y {1} más"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Tick the box to say yes first."
+msgstr "Primero marca la casilla para decir que sí."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Facts updated since yesterday: {nFacts}"
@@ -8312,6 +8548,11 @@ msgstr ""
 msgctxt "admin helper panel"
 msgid "The helper runs on Claude, using an Anthropic key that belongs to your village. It turns on by itself as soon as the key is saved, and the key never comes back to your browser."
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "You've recorded {max} clips, the most one application holds. Remove one to record another."
+msgstr "Grabaste {max} respuestas, el máximo que admite una solicitud. Quita una para grabar otra."
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "If the village ever closes, its treasury and assets go somewhere. Name where before the village starts: the launch checklist waits for it, and every member reads it at /exit-policy. The platform works nothing out and moves nothing on closing. This is the village's written promise."
@@ -8481,6 +8722,12 @@ msgctxt "canvas block card button"
 msgid "Open this block"
 msgstr ""
 
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "We love hearing your voice."
+msgstr "Nos encanta escuchar tu voz."
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Places looking for a steward:"
 msgstr "Lugares que buscan quien los cuide:"
@@ -8583,6 +8830,11 @@ msgctxt "role fill"
 msgid "{held}% held · covered"
 msgstr "{held}% ocupado · cubierto"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add an email address we can reach you at."
+msgstr "Escribe un correo donde podamos contactarte."
+
 #. placeholder {0}: label[band]
 #: client/src/components/admin/AgeBandCorrection.tsx
 msgctxt "admin age band"
@@ -8608,6 +8860,11 @@ msgstr "Todavía no hay misiones publicadas. Publica la primera."
 #~ msgctxt "steward front door"
 #~ msgid "One moon"
 #~ msgstr "Una luna"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Record this answer"
+msgstr "Grabar esta respuesta"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -9251,6 +9508,12 @@ msgctxt "circles map, today card eyebrow"
 msgid "Today"
 msgstr "Hoy"
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application value"
+msgid "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
+msgstr "Las metas guían el trabajo, y el pago sigue a lo que entregas. Si un mes termina lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. Quien lleva la tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que lo confirme."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Putting a change to the whole village opens a vote every member is rung about, and this account does not open those yet. Say what you would change to whoever keeps the exit policy, or in the forum."
 msgstr ""
@@ -9662,6 +9925,11 @@ msgstr ""
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them."
+msgstr "Guardar mis grabaciones de voz con mi solicitud. Las escucharán las personas que la deciden y quienes administran la aldea."
+
 #: client/src/components/modules/BuilderJourney.tsx
 msgctxt "module library, copy failed"
 msgid "Your browser blocked copying. Select the text above and copy it."
@@ -9681,6 +9949,11 @@ msgstr ""
 msgctxt "founding application step"
 msgid "About you"
 msgstr "Sobre ti"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Say your aim in this role, in a line."
+msgstr "Cuéntanos tu objetivo en este rol, en una línea."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "button that removes a contact from the agreement"
@@ -9750,6 +10023,11 @@ msgstr ""
 msgctxt "proposed changes"
 msgid "Proposed changes"
 msgstr ""
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button"
+msgid "Speak instead of typing"
+msgstr "Habla en lugar de escribir"
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal, founding application"
@@ -10484,6 +10762,11 @@ msgctxt "funding rounds"
 msgid "Share an idea"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "About 30 seconds left in this recording."
+msgstr "Quedan unos 30 segundos de esta grabación."
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Other"
@@ -10493,6 +10776,11 @@ msgstr ""
 msgctxt "role editor card"
 msgid "That is not a role card. A role card starts with the line Role card v1."
 msgstr ""
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be changed just now."
+msgstr "No se pudo cambiar en este momento."
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a canvas suggestion was adopted"
@@ -10673,6 +10961,11 @@ msgctxt "applicant's application status, while you wait"
 msgid "Read the role again"
 msgstr "Volver a leer el rol"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We couldn't send the confirmation email just now. Try again later."
+msgstr "No pudimos enviar el correo de confirmación en este momento. Inténtalo más tarde."
+
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, menu button"
 msgid "Your settings"
@@ -10711,6 +11004,11 @@ msgstr ""
 #~ msgctxt "open proposal side by side"
 #~ msgid "(not picked)"
 #~ msgstr "(no elegida)"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "The microphone is blocked for this site. Allow it in your browser settings, or type your answers."
+msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador, o escribe tus respuestas."
 
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "voice field label: raise an objection"
@@ -10770,6 +11068,11 @@ msgstr ""
 msgctxt "sera answers"
 msgid "Keep ours for {n}"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick the box to say you agree to the background check, or give three references."
+msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da tres referencias."
 
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "There is not enough of your own writing to draft from yet. Add a few lines to \"Why you\" and try again."
@@ -11088,6 +11391,11 @@ msgctxt "open work: where a quest happens"
 msgid "Remote"
 msgstr "A distancia"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome, the speaker before it has a name"
+msgid "Your companion"
+msgstr "Tu compañero"
+
 #: client/src/components/path/NextAct.tsx
 msgctxt "your path, the next act"
 msgid "Read and align"
@@ -11180,6 +11488,11 @@ msgstr "Tu solicitud ya está con nosotros. Leemos cada palabra y te escribimos 
 #: client/src/components/governance/GoalsList.tsx
 msgid "they are planted and watered"
 msgstr "están sembrados y regados"
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button"
+msgid "Stop voice input"
+msgstr "Detener el dictado"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
@@ -11420,6 +11733,16 @@ msgstr ""
 msgctxt "funding rounds"
 msgid "Both counts agree."
 msgstr ""
+
+#: client/src/components/MicButton.tsx
+msgctxt "mic button refusal"
+msgid "The microphone is blocked for this site. Allow it in your browser settings to speak."
+msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador para hablar."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Personality type"
+msgstr "Tipo de personalidad"
 
 #: client/src/components/TakeCurrentPrice.tsx
 msgid "Your claim now pays the quest's new price."
@@ -11759,6 +12082,13 @@ msgstr "Día {day} de {of}"
 msgctxt "roles page, other ways to join"
 msgid "Live here one day? Start on the resident path."
 msgstr "¿Vivir aquí algún día? Empieza por el camino de residente."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/admin/OpenProposalsPanel.tsx
+#: client/src/components/voice/VoiceHeard.tsx
+msgctxt "their voice, for deciders"
+msgid "Recording is optional, and many people type. Weigh typed answers the same as a recording."
+msgstr "Grabar es opcional, y mucha gente escribe. Valora las respuestas escritas igual que una grabación."
 
 #. placeholder {0}: row.credited
 #. placeholder {1}: cycle.poolToken ?? ""
@@ -12156,6 +12486,11 @@ msgstr ""
 msgctxt "role listing panel heading"
 msgid "Listed roles"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Without the tick, your recordings stay on this device and are not sent."
+msgstr "Sin la marca, tus grabaciones se quedan en este dispositivo y no se envían."
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook block page, lines for the group's answer"
@@ -12616,6 +12951,11 @@ msgctxt "team sheet group"
 msgid "Open now"
 msgstr "Abiertos ahora"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong."
+msgstr "El servicio de voz de tu navegador convierte en texto lo que dices mientras hablas: el de Google en Chrome, el de Apple en Safari. Corrige lo que haya entendido mal."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "Moves: {moves}"
@@ -12724,6 +13064,11 @@ msgstr ""
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgid "Blank takes the file's name"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Stop"
+msgstr "Detener"
 
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
@@ -12940,6 +13285,11 @@ msgstr ""
 #~ msgid "{0} a {1}"
 #~ msgstr ""
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "That could not be saved just now."
+msgstr "No se pudo guardar en este momento."
+
 #: client/src/pages/FundingRounds.tsx
 msgid "Choose together which quests the season funds, within a pot."
 msgstr ""
@@ -13034,6 +13384,11 @@ msgstr ""
 #~ msgctxt "open proposal companion"
 #~ msgid "Tell us in a few lines why you, and why now. You can start with one of these."
 #~ msgstr "Cuéntanos en unas líneas por qué tú y por qué ahora. Puedes empezar con una de estas."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Record another"
+msgstr "Grabar otra"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Only Voice funds {title} ({cost})."
@@ -13453,6 +13808,16 @@ msgstr ""
 msgid "See them at the bottom of this page."
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Send up to 3 recordings."
+msgstr "Envía hasta 3 grabaciones."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Choose the role you are applying for."
+msgstr "Elige el rol al que postulas."
+
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "Read the village's exit policy"
 msgstr "Lee la política de salida de la aldea"
@@ -13564,6 +13929,12 @@ msgstr "un encuentro"
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "How it is decided (optional)"
 msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/pages/OpenProposal.tsx
+msgctxt "open proposal, founding application"
+msgid "These are optional. Someone who lives far away may not have been able to come yet."
+msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -13857,9 +14228,9 @@ msgstr "Solo te escribiremos sobre esta solicitud."
 #. placeholder {1}: priced(r.atCommitment, r.full.currency, r.full.per)
 #. placeholder {2}: money(r.full.amount, r.full.currency)
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: the ceiling at their commitment"
-msgid "At {0}%, the role pays up to {1} (the full role: {2})."
-msgstr "Al {0}%, el rol paga hasta {1} (el rol completo: {2})."
+#~ msgctxt "open proposal: the ceiling at their commitment"
+#~ msgid "At {0}%, the role pays up to {1} (the full role: {2})."
+#~ msgstr "Al {0}%, el rol paga hasta {1} (el rol completo: {2})."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall eyebrow"
@@ -13914,6 +14285,11 @@ msgstr "Obligatorio: el rol lo necesita todo"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "Once approved into a role, I will sign the village's confidentiality agreement (NDA) before I see any confidential records."
 #~ msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "We couldn't read one of your recordings. Record it again."
+msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
@@ -14695,6 +15071,11 @@ msgstr "Elegir"
 #~ msgid "Not ready for a role yet"
 #~ msgstr "Todavía no es momento para un rol"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give each reference a name, how you know them, and an email or a phone number. Or clear the row."
+msgstr "Escribe para cada referencia un nombre, de dónde la conoces y un correo o un teléfono. O borra la fila."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, switch step"
 msgid "Turn it on. It also needs the village's own Anthropic key on the server."
@@ -14823,6 +15204,12 @@ msgctxt "quest goal thread editor"
 msgid "Saved."
 msgstr "Guardado."
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Recording is optional. Typed answers are read with the same care and count just the same."
+msgstr "Grabar es opcional. Las respuestas escritas se leen con el mismo cuidado y cuentan igual."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "That suggestion was not kept."
 msgstr ""
@@ -14890,6 +15277,11 @@ msgstr "Luna llena"
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "Word any setting for this proposal. Each save is a new revision, the applicant sees what changed and answers it, and the history stays here."
 msgstr "Redacta cualquier ajuste para esta propuesta. Cada guardado es una nueva revisión, la persona que propone ve lo que cambió y responde, y el historial se queda aquí."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Choose your birth date first."
+msgstr "Primero elige tu fecha de nacimiento."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -15421,6 +15813,11 @@ msgctxt "funding round stage"
 msgid "Seed"
 msgstr ""
 
+#: client/src/components/ui/dialog.tsx
+msgctxt "dialog corner button"
+msgid "Close"
+msgstr "Cerrar"
+
 #. placeholder {0}: j.name
 #. placeholder {1}: j.cadence
 #. placeholder {2}: j.runsInSpan
@@ -15541,6 +15938,11 @@ msgstr "Su voz"
 msgctxt "open work: change your percent"
 msgid "Change it"
 msgstr "Cambiarlo"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give an email address or a phone number we can reach that reference on."
+msgstr "Escribe un correo o un teléfono donde podamos contactar a esa referencia."
 
 #. placeholder {0}: offer.history.length
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -15801,6 +16203,11 @@ msgctxt "approval inbox"
 msgid "Approve"
 msgstr ""
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That link has run out or was already used. Send your application again, and open the new link within 48 hours."
+msgstr "Ese enlace venció o ya se usó. Envía tu solicitud de nuevo, y abre el nuevo enlace dentro de 48 horas."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "Usual times: {windowList}"
@@ -15957,6 +16364,11 @@ msgctxt "circle hearth, linked circles"
 msgid "This circle sits within ours"
 msgstr "Este círculo está dentro del nuestro"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion lens sheet"
+msgid "Gene Keys and Human Design"
+msgstr "Gene Keys y Diseño Humano"
+
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "admin quest safety"
 msgid "Safety on site: age, badges and note"
@@ -16020,6 +16432,11 @@ msgstr "Tu rol va desde la adopción hasta la próxima luna nueva, {moonEnds}. E
 msgctxt "funding rounds"
 msgid "Round stages"
 msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "That doesn't look like an email address. Check it, like name@example.com, and try again."
+msgstr "Eso no parece un correo. Revísalo, como nombre@ejemplo.com, e inténtalo de nuevo."
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, label before the first task"
@@ -16307,6 +16724,11 @@ msgctxt "open work board heading"
 msgid "Open work"
 msgstr "Trabajo abierto"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice clip beside an answer"
+msgid "Your voice for this answer"
+msgstr "Tu voz para esta respuesta"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "while you wait"
 msgid "Meet the other roles"
@@ -16401,423 +16823,3 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/voice/VoiceInvite.tsx
-msgctxt "voice note"
-msgid "Recording is optional. Typed answers are read with the same care and count just the same."
-msgstr "Grabar es opcional. Las respuestas escritas se leen con el mismo cuidado y cuentan igual."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/voice/VoiceHeard.tsx
-#: client/src/components/admin/OpenProposalsPanel.tsx
-msgctxt "their voice, for deciders"
-msgid "Recording is optional, and many people type. Weigh typed answers the same as a recording."
-msgstr "Grabar es opcional, y mucha gente escribe. Valora las respuestas escritas igual que una grabación."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/admin/OpenProposalsPanel.tsx
-msgctxt "admin open proposals"
-msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
-msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la escuchan. Se borra con la solicitud y, a más tardar, 90 días después de la decisión."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application value"
-msgid "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
-msgstr "Las metas guían el trabajo, y el pago sigue a lo que entregas. Si un mes termina lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. Quien lleva la tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que lo confirme."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/pages/OpenProposal.tsx
-msgctxt "open proposal, founding application"
-msgid "These are optional. Someone who lives far away may not have been able to come yet."
-msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
-
-# needs-native-review: new words, 12 Nov 2026
-#: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: commitment"
-msgid "Your counter-offer"
-msgstr "Tu contraoferta"
-
-#: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: the ceiling at their commitment"
-msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
-msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
-
-# needs-native-review: new words, 12 Nov 2026
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "We love hearing your voice."
-msgstr "Nos encanta escuchar tu voz."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one."
-msgstr "Aprendemos mucho de cómo dices las cosas, y también leemos cada palabra. Si quieres, háblanos unos minutos: quién eres, por qué este rol y qué aportarías. Te ayudamos a convertir lo que digas en tus respuestas, y tú editas cada una."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite: start a recording"
-msgid "Record"
-msgstr "Grabar"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Record another"
-msgstr "Grabar otra"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Stop recording"
-msgstr "Detener la grabación"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Skip, I'll type"
-msgstr "Omitir, prefiero escribir"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Talk to us instead"
-msgstr "Mejor háblanos"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "What we heard, in your words"
-msgstr "Lo que escuchamos, en tus palabras"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong."
-msgstr "El servicio de voz de tu navegador convierte en texto lo que dices mientras hablas: el de Google en Chrome, el de Apple en Safari. Corrige lo que haya entendido mal."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them."
-msgstr "Guardar mis grabaciones de voz con mi solicitud. Las escucharán las personas que la deciden y quienes administran la aldea."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Only the people who decide your application and the village's admins hear them. We delete them with your application, and at the latest 90 days after we decide."
-msgstr "Solo las escuchan las personas que deciden tu solicitud y quienes administran la aldea. Las borramos con tu solicitud, y a más tardar 90 días después de decidir."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Without the tick, your recordings stay on this device and are not sent."
-msgstr "Sin la marca, tus grabaciones se quedan en este dispositivo y no se envían."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "Record this answer"
-msgstr "Grabar esta respuesta"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "Stop"
-msgstr "Detener"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "Record again"
-msgstr "Grabar de nuevo"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "Remove clip"
-msgstr "Quitar la grabación"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "Your voice for this answer"
-msgstr "Tu voz para esta respuesta"
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "This phone can't write down your words while it records. Your recording is fine; use the mic on each answer for the text."
-msgstr "Este teléfono no puede escribir tus palabras mientras graba. Tu grabación está bien; usa el micrófono de cada respuesta para el texto."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "The microphone is blocked for this site. Allow it in your browser settings, or type your answers."
-msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador, o escribe tus respuestas."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "No microphone was found on this device. Typing works just as well."
-msgstr "No encontramos un micrófono en este dispositivo. Escribir funciona igual de bien."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "About 30 seconds left in this recording."
-msgstr "Quedan unos 30 segundos de esta grabación."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice clip beside an answer"
-msgid "You've recorded {max} clips, the most one application holds. Remove one to record another."
-msgstr "Grabaste {max} respuestas, el máximo que admite una solicitud. Quita una para grabar otra."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application, the send failed"
-msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device."
-msgstr "No pudimos enviar tu solicitud. Revisa tu conexión y envíala de nuevo: todo lo que escribiste sigue guardado en este dispositivo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "This page isn't taking proposals right now."
-msgstr "Esta página no está recibiendo propuestas en este momento."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Add your name."
-msgstr "Escribe tu nombre."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Add an email address we can reach you at."
-msgstr "Escribe un correo donde podamos contactarte."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "That doesn't look like an email address. Check it, like name@example.com, and try again."
-msgstr "Eso no parece un correo. Revísalo, como nombre@ejemplo.com, e inténtalo de nuevo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Choose the role you are applying for."
-msgstr "Elige el rol al que postulas."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "One application is for one role. Choose the role you are applying for, and apply for another one separately."
-msgstr "Cada solicitud es para un rol. Elige el rol al que postulas, y postula a otro por separado."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "One of those roles isn't open any more. Reload the page and pick again."
-msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "You picked the same role twice."
-msgstr "Elegiste el mismo rol dos veces."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Say why you, and why now."
-msgstr "Cuéntanos por qué tú, y por qué ahora."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Say your aim in this role, in a line."
-msgstr "Cuéntanos tu objetivo en este rol, en una línea."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "We couldn't send the confirmation email just now. Try again later."
-msgstr "No pudimos enviar el correo de confirmación en este momento. Inténtalo más tarde."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "That link has run out or was already used. Send your application again, and open the new link within 48 hours."
-msgstr "Ese enlace venció o ya se usó. Envía tu solicitud de nuevo, y abre el nuevo enlace dentro de 48 horas."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "We've already received five proposals from this connection in the last hour, so we can't take another one yet. Nothing you wrote is lost on this page. Please try again in about an hour, or send from a different connection."
-msgstr "Ya recibimos cinco propuestas desde esta conexión en la última hora, así que aún no podemos aceptar otra. No se pierde nada de lo que escribiste en esta página. Inténtalo de nuevo en una hora más o menos, o envíala desde otra conexión."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "That's a lot of tries from this connection in a short while. Please wait about an hour and try again."
-msgstr "Son muchos intentos desde esta conexión en poco tiempo. Espera una hora más o menos e inténtalo de nuevo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "This email address already has three proposals waiting today. Check your inbox for the confirmation links, or try again tomorrow."
-msgstr "Este correo ya tiene tres propuestas pendientes hoy. Busca los enlaces de confirmación en tu bandeja de entrada, o inténtalo mañana."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "We're receiving a lot of proposals right now and can't send another confirmation email yet. Please try again in about an hour."
-msgstr "Estamos recibiendo muchas propuestas ahora mismo y aún no podemos enviar otro correo de confirmación. Inténtalo de nuevo en una hora más o menos."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "That link has been opened many times from this connection. Please wait about an hour and try again."
-msgstr "Ese enlace se abrió muchas veces desde esta conexión. Espera una hora más o menos e inténtalo de nuevo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Give each reference a name, how you know them, and an email or a phone number. Or clear the row."
-msgstr "Escribe para cada referencia un nombre, de dónde la conoces y un correo o un teléfono. O borra la fila."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Give an email address or a phone number we can reach that reference on."
-msgstr "Escribe un correo o un teléfono donde podamos contactar a esa referencia."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Add up to 3 references."
-msgstr "Agrega hasta 3 referencias."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "You added the same reference twice."
-msgstr "Agregaste la misma referencia dos veces."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Tick the box to say you agree to the background check, or give three references."
-msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da tres referencias."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "The words about the background check changed while you read them. Read them again and tick."
-msgstr "El texto sobre la verificación de antecedentes cambió mientras lo leías. Léelo de nuevo y marca la casilla."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Send up to 3 recordings."
-msgstr "Envía hasta 3 grabaciones."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "One recording is too large. Record a shorter one."
-msgstr "Una grabación es demasiado grande. Graba una más corta."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Keep each recording under 5 minutes."
-msgstr "Que cada grabación dure menos de 5 minutos."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "We couldn't read one of your recordings. Record it again."
-msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Tick that we may keep your voice note, or remove the recordings."
-msgstr "Marca que podemos guardar tu nota de voz, o quita las grabaciones."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "Your files and recordings together are too large to send. Send fewer files, or record shorter answers."
-msgstr "Tus archivos y grabaciones juntos son demasiado grandes para enviarlos. Envía menos archivos, o graba respuestas más cortas."
-
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "We're receiving a lot of uploads right now. Please try again in a minute."
-msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en un minuto."
-
-#: client/src/components/MicButton.tsx
-msgctxt "mic button refusal"
-msgid "The microphone is blocked for this site. Allow it in your browser settings to speak."
-msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador para hablar."
-
-#: client/src/components/MicButton.tsx
-msgctxt "mic button refusal"
-msgid "Speaking needs a connection. Typing works offline."
-msgstr "Hablar necesita conexión. Escribir funciona sin conexión."
-
-#: client/src/components/MicButton.tsx
-msgctxt "mic button refusal"
-msgid "No microphone was found on this device."
-msgstr "No encontramos un micrófono en este dispositivo."
-
-#: client/src/components/MicButton.tsx
-msgctxt "mic button"
-msgid "Stop voice input"
-msgstr "Detener el dictado"
-
-#: client/src/components/MicButton.tsx
-msgctxt "mic button"
-msgid "Speak instead of typing"
-msgstr "Habla en lugar de escribir"
-
-#: client/src/components/ui/dialog.tsx
-msgctxt "dialog corner button"
-msgid "Close"
-msgstr "Cerrar"
-
-# needs-native-review: new words, 12 Nov 2026
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, before it has a name"
-msgid "your companion"
-msgstr "tu compañero"
-
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, the speaker before it has a name"
-msgid "Your companion"
-msgstr "Tu compañero"
-
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, what the companion says"
-msgid "{name}? {name}! Oh, I love it. {name} it is. You can rename me any time."
-msgstr "¿{name}? ¡{name}! Ay, me encanta. Seré {name}. Puedes cambiarme el nombre cuando quieras."
-
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, what the companion says"
-msgid "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstName}. I'll hatch once you've told me who to be. First: what's my name?"
-msgstr "¿Toc, toc? ¡Hola ahí dentro… digo, ahí fuera! Soy tu compañero, {firstName}. Saldré del cascarón cuando me digas quién ser. Primero: ¿cómo me llamo?"
-
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, what the companion says"
-msgid "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable."
-msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. Todo es opcional, privado y se puede borrar."
-
-#: client/src/components/companionWelcome/CompanionWelcome.tsx
-msgctxt "companion welcome, what the companion says"
-msgid "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
-msgstr "¡Eso es todo el lugar, {firstName}! Mi primera pregunta te espera en Tus compañeros. Llámame cuando quieras: siempre estoy en tu perfil."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Gene Keys and Human Design"
-msgstr "Gene Keys y Diseño Humano"
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Vedic chart"
-msgstr "Carta védica"
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Personality type"
-msgstr "Tipo de personalidad"
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "In your own words"
-msgstr "En tus propias palabras"
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Choose your birth date first."
-msgstr "Primero elige tu fecha de nacimiento."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Your Moon changed sign that day. Add your birth time so I can tell which."
-msgstr "Tu Luna cambió de signo ese día. Añade tu hora de nacimiento para que pueda saber cuál."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "Tick the box to say yes first."
-msgstr "Primero marca la casilla para decir que sí."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "That could not be saved just now."
-msgstr "No se pudo guardar en este momento."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "That could not be changed just now."
-msgstr "No se pudo cambiar en este momento."
-
-#: client/src/components/companionWelcome/LensSheet.tsx
-msgctxt "companion lens sheet"
-msgid "That could not be deleted just now."
-msgstr "No se pudo borrar en este momento."
