@@ -55,9 +55,12 @@ describe("the Finance desk: agreed and delivered", () => {
     render(<InvoicesDeskView data={data([row([line()])])} init={{}} reload={async () => undefined} />);
     const box = screen.getByTestId("accomplished");
     expect(box.textContent).toContain(ACCOMPLISHED_WORDS.heading);
+    // The title is a heading, one below the member's name on the desk (a11y P2-15).
+    expect(screen.getByRole("heading", { level: 5, name: ACCOMPLISHED_WORDS.heading })).toBeTruthy();
     expect(screen.getByTestId("accomplished-sentence").textContent).toBe("Agreed: US$1,000 for 3 goals. Delivered: 1 of 3 goals done, plus 2 other tasks (1 outside your roles).");
-    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.under(75));
-    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.over(1, 2));
+    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.under(75, { done: 1, partly: 0, of: 3 }));
+    // Two tasks done is below the sample "over" reads, so it raises no line (QA F5).
+    expect(screen.getByTestId("far-off").textContent).not.toContain(ACCOMPLISHED_WORDS.over(1, 2));
   });
 
   it("sends a proposal with an amount and a reason to the adjust door", async () => {
@@ -68,6 +71,8 @@ describe("the Finance desk: agreed and delivered", () => {
     fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.propose }));
     const form = screen.getByTestId("propose-amount");
     const [amount, reason] = [form.querySelector("input")!, form.querySelector("textarea")!];
+    // Opening the form puts focus on the amount (a11y P2-15).
+    expect(document.activeElement).toBe(amount);
     fireEvent.change(amount, { target: { value: "1,250.00" } });
     fireEvent.change(reason, { target: { value: "Covered the kitchen for two weeks." } });
     fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.send }));
@@ -89,11 +94,31 @@ describe("the Finance desk: agreed and delivered", () => {
     fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.confirm }));
     await waitFor(() => expect(reload).toHaveBeenCalled());
     expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toContain(MOON_ROUTES.confirmSplit.replace(":id", "mv-1"));
+    // The confirm carries the amounts the Treasurer saw, so it refuses if one moved (QA F2).
+    expect(JSON.parse(String(((fetchMock.mock.calls[0] as unknown[])[1] as RequestInit).body))).toEqual({ amounts: { "app-1": 125000 } });
   });
 
   it("offers no confirm once the proposal is confirmed", () => {
     render(<InvoicesDeskView data={data([row([line(ADJ("2026-11-21T10:00:00Z"))])])} init={{}} reload={async () => undefined} />);
     expect(screen.queryByTestId("split-confirm")).toBeNull();
+  });
+});
+
+describe("the proposal form's amount error (a11y P2-15)", () => {
+  it("marks the amount invalid and ties the error to it", () => {
+    render(<InvoicesDeskView data={data([row([line()])])} init={{}} reload={async () => undefined} />);
+    fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.propose }));
+    const form = screen.getByTestId("propose-amount");
+    const amount = form.querySelector("input")!;
+    expect(amount.getAttribute("aria-invalid")).toBeNull();
+    fireEvent.change(amount, { target: { value: "lots" } });
+    fireEvent.change(form.querySelector("textarea")!, { target: { value: "Covered the kitchen." } });
+    fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.send }));
+    const alert = screen.getByRole("alert");
+    expect(alert.textContent).toBe(ACCOMPLISHED_WORDS.amount);
+    expect(amount.getAttribute("aria-invalid")).toBe("true");
+    expect(amount.getAttribute("aria-describedby")).toBe(alert.id);
+    expect(document.activeElement).toBe(amount);
   });
 });
 
@@ -103,6 +128,7 @@ describe("the member's own invoice", () => {
     const inv = { ...invoice({ status: "draft", lines, totalMinor: 125000 }), accomplished: view(lines) };
     render(<InvoicePanel data={myMoon({ invoice: inv as any })} cycleId="lunar-2026-10" editable reload={async () => undefined} />);
     expect(screen.getByTestId("accomplished")).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 4, name: ACCOMPLISHED_WORDS.heading })).toBeTruthy();
     expect(screen.getByTestId("line-adjust").textContent).toContain("Covered the kitchen for two weeks.");
     expect(screen.getByTestId("adjust-reply")).toBeTruthy();
   });

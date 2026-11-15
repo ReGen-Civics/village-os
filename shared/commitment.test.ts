@@ -27,6 +27,17 @@ describe("reading a percent", () => {
   it("refuses zero, over 100, fractions and words", () => {
     for (const v of [0, 101, 33.5, "half", -10, true]) expect(readCommitmentPct(v).ok, String(v)).toBe(false);
   });
+  it("reads the same text the old pattern did: spaces around, one percent sign", () => {
+    for (const [v, n] of [[" 50 ", 50], ["50 %", 50], ["\t75%\n", 75], ["007", 7]] as const) expect(readCommitmentPct(v), JSON.stringify(v)).toEqual({ ok: true, value: n });
+    for (const v of ["5 0", "50%%", "%50", "1000", "+5", "5e1", "٥٠", " ", "%"]) expect(readCommitmentPct(v).ok, JSON.stringify(v)).toBe(false);
+  });
+  it("refuses a long run of whitespace at once, with no slow pattern to feed (CodeQL js/polynomial-redos)", () => {
+    for (const evil of ["\t".repeat(200_000), " ".repeat(200_000) + "5", "\t".repeat(100_000) + "%" + "\t".repeat(100_000)]) {
+      const t0 = performance.now();
+      expect(readCommitmentPct(evil).ok).toBe(false);
+      expect(performance.now() - t0).toBeLessThan(100);
+    }
+  });
 });
 
 describe("a member's word", () => {

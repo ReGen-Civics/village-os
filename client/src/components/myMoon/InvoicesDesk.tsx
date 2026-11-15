@@ -29,6 +29,7 @@ import {
   QUEUE_WORDS,
   SELF_APPROVED_WORDS,
   SPLIT_PAY_WORDS,
+  seenAmountsOf,
   splitUnconfirmed,
   type BulkApproveResponse,
 } from "@shared/moonRecap";
@@ -61,7 +62,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
   const confirmIt = async () => {
     if (!inv.id) return;
     setError(null);
-    const r = await api.confirmSplit(inv.id, init);
+    const r = await api.confirmSplit(inv.id, seenAmountsOf(inv.lines), init);
     if (!r.ok) return setError(r.error);
     await onDone();
   };

@@ -94,7 +94,7 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
   app.post(MOON_ROUTES.confirmSplit, async (req, res) => {
     const who = await reviewer(req, res);
     if (!who) return;
-    const out = await confirmSplit(getPool(), who.uid, String(req.params.id ?? ""), reviewDeps);
+    const out = await confirmSplit(getPool(), who.uid, String(req.params.id ?? ""), req.body, reviewDeps);
     if (!out.ok) return fail(res, out);
     res.json(out.value);
   });

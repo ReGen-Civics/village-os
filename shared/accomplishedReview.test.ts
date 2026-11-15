@@ -4,7 +4,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  ACCOMPLISHED_WORDS, ADJUST_REFUSALS, FAR_OFF_DEFAULT, accomplishedComparison, adjustUnconfirmed, adjustsFrom, applyAdjusts, confirmAdjustLines,
+  ACCOMPLISHED_WORDS, ADJUST_REFUSALS, FAR_OFF_DEFAULT, FAR_OFF_MIN_GOALS, FAR_OFF_MIN_TASKS, accomplishedComparison, adjustUnconfirmed, adjustsFrom, applyAdjusts, confirmAdjustLines,
   farOffOf, parseAdjustInput, parseAdjustReply,
 } from "./accomplishedReview";
 import { linesFromTerms, scaleBySplit, type InvoiceLine, type MoonGoal, type RecapItem, type TermsInForce } from "./moonRecap";
@@ -66,12 +66,13 @@ describe("agreed beside delivered", () => {
 });
 
 describe("the far-off flag", () => {
-  const g = (d: number, p: number, c: number) => ({ done: d, partly: p, carried: c, letGo: 0, open: 0, total: d + p + c });
+  const g = (d: number, p: number, c: number, open = 0, letGo = 0) => ({ done: d, partly: p, carried: c, letGo, open, total: d + p + c + open + letGo });
   const t = (doneN: number, outside: number) => ({ done: doneN, outside });
 
   it("flags under when goal progress is below 100 minus the dial, and not exactly at the edge", () => {
     expect(farOffOf({ goals: g(3, 0, 1), tasks: t(0, 0) }, 25)).toBeNull(); // 75%: at the edge
-    expect(farOffOf({ goals: g(2, 1, 1), tasks: t(0, 0) }, 25)).toMatchObject({ under: true, over: false, lines: [ACCOMPLISHED_WORDS.under(75)] }); // 62.5%
+    expect(farOffOf({ goals: g(2, 1, 1), tasks: t(0, 0) }, 25)).toMatchObject({ under: true, over: false, lines: [ACCOMPLISHED_WORDS.under(75, { done: 2, partly: 1, of: 4 })] }); // 62.5%
+    expect(ACCOMPLISHED_WORDS.under(75, { done: 2, partly: 1, of: 4 })).toBe("Goal progress is under 75%: 2 of 4 goals done, 1 partly.");
   });
 
   it("flags over when the dial's share or more of the tasks done sat outside the roles, at the edge too", () => {
@@ -85,8 +86,22 @@ describe("the far-off flag", () => {
     expect(farOffOf({ goals: g(4, 0, 0), tasks: t(4, 1) }, 50)).toBeNull();
   });
 
-  it("never flags a side with nothing to count, and leaves let go and open goals out", () => {
-    expect(farOffOf({ goals: { done: 0, partly: 0, carried: 0, letGo: 3, open: 2, total: 5 }, tasks: t(0, 0) }, 25)).toBeNull();
+  it("counts a goal still open at End of Moon as not done, and leaves a goal let go out (QA F4)", () => {
+    // 1 done and 3 still open read 25%, not 100%.
+    expect(farOffOf({ goals: g(1, 0, 0, 3), tasks: t(0, 0) }, 25)).toMatchObject({ under: true, lines: [ACCOMPLISHED_WORDS.under(75, { done: 1, partly: 0, of: 4 })] });
+    // A goal let go by agreement is responsiveness, so it neither helps nor hurts.
+    expect(farOffOf({ goals: g(3, 0, 0, 0, 3), tasks: t(0, 0) }, 25)).toBeNull();
+    expect(farOffOf({ goals: g(0, 0, 0, 0, 5), tasks: t(0, 0) }, 25)).toBeNull();
+  });
+
+  it("needs a real sample before either side flags (QA F5)", () => {
+    expect(FAR_OFF_MIN_GOALS).toBe(2);
+    expect(FAR_OFF_MIN_TASKS).toBe(4);
+    expect(farOffOf({ goals: g(0, 1, 0), tasks: t(0, 0) }, 25)).toBeNull(); // one partly goal
+    expect(farOffOf({ goals: g(0, 0, 0), tasks: t(1, 1) }, 25)).toBeNull(); // one task, outside
+    expect(farOffOf({ goals: g(0, 0, 0), tasks: t(3, 3) }, 25)).toBeNull(); // three tasks, all outside
+    expect(farOffOf({ goals: g(0, 1, 1), tasks: t(0, 0) }, 25)).toMatchObject({ under: true }); // two scored goals
+    expect(farOffOf({ goals: g(0, 0, 0), tasks: t(4, 4) }, 25)).toMatchObject({ over: true, lines: [ACCOMPLISHED_WORDS.over(4, 4)] });
   });
 
   it("reads a dial outside 5 to 100 as the default, so a typo never hides the flag", () => {

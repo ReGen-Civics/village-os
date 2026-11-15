@@ -610,6 +610,18 @@ export async function setInvoiceLines(db: Queryable, id: string, linesJson: stri
   return res.affectedRows;
 }
 
+/**
+ * Write lines only if they are still exactly the lines the caller read (QA F2):
+ * a confirm stamps what the Treasurer saw, never lines that moved under them.
+ */
+export async function setInvoiceLinesIfUnchanged(db: Queryable, id: string, expectedJson: string, linesJson: string, totalMinor: number): Promise<number> {
+  const [res] = await db.query<ResultSetHeader>(
+    "UPDATE `moon_invoices` SET `lines_json` = ?, `total_minor` = ? WHERE `id` = ? AND `status` = 'waiting' AND `lines_json` = ?",
+    [linesJson, totalMinor, id, expectedJson],
+  );
+  return res.affectedRows;
+}
+
 /** Finance approval, bound to the hash. The caller has run `approvalDecision` and written the cash owed rows. */
 export async function setInvoiceApproved(db: Queryable, r: { id: string; by: string; hash: string; expectedOn: string; linesJson: string; fxRate: string | null; fxSource: string | null; fxDate: string | null } & ApprovalWidening): Promise<number> {
   const own = r.selfApproved ? 1 : 0;

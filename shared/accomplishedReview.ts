@@ -34,6 +34,13 @@ export const FAR_OFF_KEY = "moon_review.far_off_pct";
 export const FAR_OFF_DEFAULT = 25;
 export const FAR_OFF_MIN = 5;
 export const FAR_OFF_MAX = 100;
+/**
+ * The smallest sample either side of the flag reads (QA F5). One task done
+ * outside the roles, or one goal partly done, is a moon too small to call far
+ * off: under needs at least two scored goals, over at least four tasks done.
+ */
+export const FAR_OFF_MIN_GOALS = 2;
+export const FAR_OFF_MIN_TASKS = 4;
 
 // ── The Treasurer's proposed amount ─────────────────────────────────────────
 
@@ -156,22 +163,27 @@ export interface FarOff {
 /**
  * THE FLAG. With the dial at T percent:
  *   Under: goal progress (done, and half of partly, over the goals scored
- *          done, partly or carried) is below 100 - T percent.
+ *          done, partly, carried or still open) is below 100 - T percent.
+ *          At End of Moon a goal still open was not done, so it counts
+ *          (QA F4). A goal LET GO stays out: letting a goal go mid-moon, by
+ *          agreement, is the responsiveness Rye asked for, and the work it
+ *          freed shows up as other tasks done.
  *   Over:  T percent or more of the tasks done sat outside the member's roles.
- * Exactly at the edge is not flagged under, and is flagged over. Nothing to
- * count on a side never flags that side. A dial outside 5 to 100 is read as
- * the default, so the flag never vanishes on a typo.
+ * Exactly at the edge is not flagged under, and is flagged over. A side with
+ * fewer than FAR_OFF_MIN_GOALS scored goals or FAR_OFF_MIN_TASKS tasks done
+ * never flags. A dial outside 5 to 100 is read as the default, so the flag
+ * never vanishes on a typo. Each flag line carries the counts it read.
  */
 export function farOffOf(input: { goals: AccomplishedView["goals"]; tasks: Pick<AccomplishedView["tasks"], "done" | "outside"> }, dialPct: number): FarOff | null {
   const pct = Number.isInteger(dialPct) && dialPct >= FAR_OFF_MIN && dialPct <= FAR_OFF_MAX ? dialPct : FAR_OFF_DEFAULT;
-  const { done, partly, carried } = input.goals;
-  const den = done + partly + carried;
+  const { done, partly, carried, open } = input.goals;
+  const den = done + partly + carried + open;
   // done + partly/2 < (100 - pct)% of den, in half-points so nothing drifts.
-  const under = den > 0 && (done * 2 + partly) * 100 < (100 - pct) * den * 2;
-  const over = input.tasks.done > 0 && input.tasks.outside * 100 >= pct * input.tasks.done;
+  const under = den >= FAR_OFF_MIN_GOALS && (done * 2 + partly) * 100 < (100 - pct) * den * 2;
+  const over = input.tasks.done >= FAR_OFF_MIN_TASKS && input.tasks.outside * 100 >= pct * input.tasks.done;
   if (!under && !over) return null;
   const lines: string[] = [];
-  if (under) lines.push(ACCOMPLISHED_WORDS.under(100 - pct));
+  if (under) lines.push(ACCOMPLISHED_WORDS.under(100 - pct, { done, partly, of: den }));
   if (over) lines.push(ACCOMPLISHED_WORDS.over(input.tasks.outside, input.tasks.done));
   return { under, over, pct, lines };
 }
@@ -241,7 +253,7 @@ export const ACCOMPLISHED_WORDS = {
     [`${g.done} done`, `${g.partly} partly`, `${g.carried} carried`, g.letGo ? `${g.letGo} let go` : "", g.open ? `${g.open} still open` : ""].filter(Boolean).join(" · "),
   noGoals: "No moon goals were set.",
   farOff: "Far from the agreement. Worth a look before paying.",
-  under: (pct: number) => `Goal progress is under ${pct}%.`,
+  under: (pct: number, g: { done: number; partly: number; of: number }) => `Goal progress is under ${pct}%: ${g.done} of ${g.of} goals done${g.partly ? `, ${g.partly} partly` : ""}.`,
   over: (outside: number, done: number) => `${outside} of ${done} tasks done sat outside your roles.`,
   dialNote: (pct: number) => `"Far off" is ${pct}% either way, a village setting.`,
   facts: "These are counts of your own goals and tasks. People decide any change to pay.",

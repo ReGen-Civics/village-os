@@ -52,9 +52,30 @@ export const COMMITMENT_WORDS = {
  */
 export function readCommitmentPct(raw: unknown): CommitmentRead<number | null> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
-  const n = typeof raw === "number" ? raw : typeof raw === "string" && /^\s*\d{1,3}\s*%?\s*$/.test(raw) ? Number(raw.replace(/[%\s]/g, "")) : NaN;
+  const n = typeof raw === "number" ? raw : typeof raw === "string" ? pctDigits(raw) : NaN;
   if (!Number.isInteger(n) || n < 1 || n > 100) return { ok: false, problem: COMMITMENT_WORDS.pct };
   return { ok: true, value: n };
+}
+
+/** The longest text a percent is read from; anything longer is refused before it is looked at. */
+export const COMMITMENT_PCT_TEXT_MAX = 16;
+
+/**
+ * "50", " 50 % " to 50, with no regular expression (CodeQL js/polynomial-redos,
+ * read the way shared/commitmentRange.ts reads its numbers): cap the length,
+ * trim, strip one trailing %, trim again, then one to three digits, char by
+ * char. NaN for anything else.
+ */
+function pctDigits(raw: string): number {
+  if (raw.length > COMMITMENT_PCT_TEXT_MAX) return NaN;
+  let t = raw.trim();
+  if (t.endsWith("%")) t = t.slice(0, -1).trimEnd();
+  if (t.length < 1 || t.length > 3) return NaN;
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i);
+    if (c < 48 || c > 57) return NaN;
+  }
+  return Number(t);
 }
 
 /** The tolerant reading of a stored column: anything unreadable is "not said". */
@@ -293,6 +314,26 @@ export function storedCommitmentSplit(raw: unknown): RoleSplitShare[] | null {
 /** A role's share of the total, as a part of the whole person: 60% of 50% is 30. Rounded to a whole percent. */
 export function shareOfYou(totalPct: number, share: number): number {
   return Math.round((totalPct * share) / 100);
+}
+
+/**
+ * Every role's part of the whole person at once, whole percents that add up to
+ * the total (QA F11): rounding each alone shows 17, 17, 17 for 34, 33, 33 of
+ * 50%, which reads as 51%. Largest remainder: each role takes the floor, and
+ * the roles with the biggest remainders take the leftover points, ties to the
+ * earlier role.
+ */
+export function sharesOfYou(totalPct: number, split: readonly RoleSplitShare[]): Map<string, number> {
+  const raw = split.map((s, i) => ({ roleId: s.roleId, i, exact: (totalPct * s.share) / 100 }));
+  const out = new Map(raw.map((r) => [r.roleId, Math.floor(r.exact)]));
+  const target = Math.round(raw.reduce((sum, r) => sum + r.exact, 0));
+  let left = target - Array.from(out.values()).reduce((a, b) => a + b, 0);
+  for (const r of [...raw].sort((a, b) => b.exact - Math.floor(b.exact) - (a.exact - Math.floor(a.exact)) || a.i - b.i)) {
+    if (left <= 0) break;
+    out.set(r.roleId, (out.get(r.roleId) as number) + 1);
+    left -= 1;
+  }
+  return out;
 }
 
 /**
