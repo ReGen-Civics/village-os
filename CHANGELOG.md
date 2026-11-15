@@ -40,6 +40,29 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.11 (2026-11-15)
+
+### What changed for your village
+
+- **A second application starts from the first.** Someone applying to another role finds the form filled with what they wrote before (their details, value items, ways they got to know you, and the text of their voice notes, never the recordings or the price ask), with a line saying so. They can change anything.
+- **The focus line follows the commitment.** A village can write `{focus}` on its own line in a role's qualities. The card then reads "Fully focused: … is your main work" at 60% and above, and "Focused: … is a main part of your work" below, and it changes as the applicant moves their share. Cards without `{focus}` are unchanged.
+- **Spanish role picking.** On the role selection page the term date reads in the page's language, and the term line, season intro and commitment tip no longer mention the moon.
+
+### What you must do
+
+Nothing. To use the new focus line, replace a fixed focus line in a role's qualities with `{focus}`.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1314 Batch 175: Spanish role selection term dates and season intro (#1313)
+- #1322 Batch 176: a second application carries over the first (#1317), focus line follows the commitment (#1315)
+
+---
+
 ## 1.3.10 (2026-11-15)
 
 ### What changed for your village
