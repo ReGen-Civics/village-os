@@ -259,7 +259,13 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You'll take the suggested price.");
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
+    // Use this price says why it is off while no amount is written (applicant journey QA).
+    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "" } });
+    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
+    expect(dialog.querySelector("[data-price-needs-amount]")?.textContent).toBe("Enter a price above $0.");
     fireEvent.click(within(dialog).getByLabelText("Negotiate on the first call if chosen"));
+    expect(dialog.querySelector("[data-price-needs-amount]")).toBeNull();
     fireEvent.click(within(dialog).getByText("Use this price"));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
@@ -510,8 +516,8 @@ describe("the six steps", () => {
     pressNext();
     const why = screen.getByLabelText(OPEN_WORDS.whyLabel) as HTMLTextAreaElement;
     expect(why.placeholder).toBe("");
-    fireEvent.click(screen.getByRole("button", { name: "What I have built before:" }));
-    fireEvent.click(screen.getByRole("button", { name: "Why now:" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start with: What I have built before:" }));
+    fireEvent.click(screen.getByRole("button", { name: "Start with: Why now:" }));
     expect(why.value).toBe("What I have built before:\n\nWhy now: ");
   });
 
@@ -525,8 +531,62 @@ describe("the six steps", () => {
     expect(review.textContent).toContain("Rowan · The gate is always shut.");
     expect(review.textContent).toContain("1 value item. Aim: The gate opens at dawn.");
     expect(review.textContent).toContain("Commitment: 50%");
-    fireEvent.click(within(review).getAllByRole("button", { name: "Change" })[2]);
+    // Each Change says what it changes (a11y sweep P2-9).
+    expect(within(review).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual([
+      "Change Get to know us",
+      "Change About you",
+      "Change Your value",
+      "Change The terms",
+      "Change Your first day",
+    ]);
+    fireEvent.click(within(review).getByRole("button", { name: "Change Your value" }));
     expect(stoneNow()).toBe("value");
+  });
+
+  it("Review & submit also reads back the price and the notes on the role, each with its own Change (applicant journey QA, 15 Nov 2026)", async () => {
+    const PRICED = { ...FORM, roles: [{ ...FORM.roles[0], commitmentMin: 30, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, FORM.roles[1]] };
+    await applyFor("r-gate", PRICED);
+    await completeAll();
+    const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
+    fireEvent.click(within(shape).getByText("Open the role card"));
+    const bar = await waitFor(() => {
+      const el = shape.querySelector('[data-piece-bar="purpose"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
+      return el;
+    });
+    fireEvent.click(within(bar).getByText("Something's missing"));
+    fireEvent.change(within(bar).getByLabelText("What is missing from this piece?"), { target: { value: "A legal review each quarter." } });
+    fireEvent.click(within(bar).getByText("Add to my application"));
+    walk();
+    const review = document.querySelector("[data-review]") as HTMLElement;
+    const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
+    expect(price.textContent).toContain("Your price");
+    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
+    expect(notes.textContent).toContain("Your notes on the role (1)");
+    expect(notes.textContent).toContain("A legal review each quarter.");
+    fireEvent.click(within(review).getByRole("button", { name: "Change Your price" }));
+    expect(stoneNow()).toBe("terms");
+    // Closing the price popup puts focus back on the button that opened it (a11y sweep P1-4), never the page's body.
+    const adjust = document.querySelector("[data-adjust-price]") as HTMLElement;
+    fireEvent.click(adjust);
+    fireEvent.click(within(await screen.findByRole("dialog")).getByText("Cancel"));
+    await waitFor(() => expect(document.activeElement).toBe(adjust));
+  });
+
+  it("a malformed email stops the step with words that say so, by the server's own rule (applicant journey QA, 15 Nov 2026)", async () => {
+    await applyFor();
+    pressNext();
+    fillAbout();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@example" } });
+    pressNext();
+    expect(stoneNow()).toBe("about");
+    expect(document.querySelector("#propose-problem-email")?.textContent).toBe(OPEN_WORDS.badEmail);
+    // CONTROL: the same step with a real address moves on.
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@example.test" } });
+    pressNext();
+    expect(stoneNow()).not.toBe("about");
+    expect(posted).toHaveLength(0);
   });
 });
 

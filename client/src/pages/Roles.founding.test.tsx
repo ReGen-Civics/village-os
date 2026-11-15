@@ -269,6 +269,15 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
   });
 
+  it("opening a role moves focus to its card, where the eye goes (a11y sweep P1-3)", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
+    const slot = section.querySelector("[data-founding-card-slot]") as HTMLElement;
+    expect(slot.tabIndex).toBe(-1);
+    await waitFor(() => expect(document.activeElement).toBe(slot));
+  });
+
   it("a card that writes its own shares shows those in place of the village's", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payShape: [{ label: "cash", pct: 70 }, { label: "equity", pct: 30 }], payNote: "This role's own note." }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
     renderRoles();

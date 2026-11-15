@@ -54,11 +54,14 @@ export function StepMark({ labels, now, reached, onGo }: { labels: readonly stri
         {labels.map((label, i) => {
           const here = i === now;
           const open = i <= reached && !here;
-          const dot = here ? "size-4 bg-notice ring-4 ring-notice/25" : i <= reached ? "size-3.5 border-2 border-notice bg-background" : "size-3 border border-border bg-background";
+          // A step already walked carries a check, as the desk's trail does (applicant journey QA, 15 Nov 2026).
+          const dot = here ? "size-4 bg-notice ring-4 ring-notice/25" : open ? "grid size-5 place-items-center border-2 border-notice bg-background text-notice" : "size-3 border border-border bg-background";
           const inner = (
             <>
               <span className="flex h-11 items-center justify-center">
-                <span aria-hidden="true" className={`relative rounded-full ${dot}`} />
+                <span aria-hidden="true" className={`relative rounded-full ${dot}`} data-step-done={open ? "" : undefined}>
+                  {open && <Check className="size-3" strokeWidth={3} />}
+                </span>
               </span>
               <span className={`hidden text-center text-xs leading-snug lg:block ${here ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{label}</span>
             </>
@@ -553,17 +556,20 @@ export function EnterHint() {
 }
 
 /** Review & submit: each step in a line, with a way back to it. */
-export function ReviewLines({ review, labels, onChange }: { review: ReadonlyArray<[number, string]>; labels: readonly string[]; onChange: (i: number) => void }) {
+export function ReviewLines({ review, labels, onChange, extras = [] }: { review: ReadonlyArray<[number, string]>; labels: readonly string[]; onChange: (i: number) => void; extras?: ReadonlyArray<{ step: number; label: string; line: string }> }) {
   const { t } = useLingui();
+  // Each step's line, then the price and the notes on the role after the step they are made on (applicant journey QA).
+  const rows = review.flatMap(([i, line]) => [{ key: `s${i}`, step: i, label: labels[i], line }, ...extras.filter((x) => x.step === i).map((x, k) => ({ key: `x${i}-${k}`, ...x }))]);
   return (
     <ul className="grid gap-2" data-review="">
-      {review.map(([i, line]) => (
-        <li key={i} className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3">
+      {rows.map(({ key, step, label, line }) => (
+        <li key={key} className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3" data-review-row={key}>
           <span className="grid min-w-0">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">{labels[i]}</span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
             <span className="break-words text-sm text-foreground">{line}</span>
           </span>
-          <button type="button" onClick={() => onChange(i)} className="min-h-11 shrink-0 px-2 text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
+          {/* A name of its own for each, "Change About you" (a11y sweep P2-9): five buttons all called "Change" read as one. */}
+          <button type="button" onClick={() => onChange(step)} aria-label={t({ message: `Change ${label}`, context: "open proposal review, the button's full name" })} className="min-h-11 shrink-0 px-2 text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">
             {t({ message: "Change", context: "open proposal review" })}
           </button>
         </li>

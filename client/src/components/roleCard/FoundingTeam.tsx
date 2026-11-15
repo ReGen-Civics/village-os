@@ -137,10 +137,12 @@ export default function FoundingTeam({
             requestAnimationFrame(() => {
               const card = document.getElementById(`${headingId}-card`);
               if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "start", behavior: reducedMotion() ? "auto" : "smooth" });
+              // Focus follows the eye (a11y sweep P1-3): a keyboard or screen reader user lands on the card they opened.
+              card?.focus({ preventScroll: true });
             });
           }}
         />
-        <div id={`${headingId}-card`} className="scroll-mt-24">
+        <div id={`${headingId}-card`} tabIndex={-1} className="scroll-mt-24 focus:outline-none" data-founding-card-slot="">
           {current ? (
             <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
           ) : wide ? (

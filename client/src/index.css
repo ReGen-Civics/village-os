@@ -1149,6 +1149,14 @@ html:has(#sera-changes [data-sera-strip-on]) {
     display: none;
   }
 }
+/* That flow's own bar is sticky until a desk (lg), and taller than the tab bar it replaces: a focused field
+   stops above it, never under it (a11y sweep P1-2, 320 x 640). 6.5rem is the bar (a 44px act, its padding
+   and its 0.5rem lift) with room to read the field's label. */
+@media (width < 64rem) {
+  :root:has([data-hides-tabbar-phone]) {
+    scroll-padding-bottom: calc(6.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
 /*
  * A page with its own bar at the bottom of a phone (the whole-path page's
  * "resume") owns that edge the same way: the shortcuts button rides above it.

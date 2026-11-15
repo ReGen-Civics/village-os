@@ -9,7 +9,7 @@
  * negotiate on the first call, with an optional line on why. When they suggested changes to the role
  * card, the popup says so and asks how those change the price. The contract decides the amount.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { askPeriod, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
@@ -42,6 +42,12 @@ export default function PriceAsk({
 }) {
   const { t, i18n } = useLingui();
   const [open, setOpen] = useState(false);
+  // Focus goes back to the button that opened the popup (a11y sweep P1-4): the dialog is opened by state, not a trigger.
+  const adjustRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setOpen(false);
+    setTimeout(() => adjustRef.current?.focus(), 0);
+  };
   const suggested = pct && pct > 0 ? ceilingAt(ceiling.amount, pct) : null;
   const money = (n: number) => moneyWords(n, ceiling.currency, i18n.locale);
   /** "$6,500 a month", in the reader's language and the role's own period. */
@@ -66,7 +72,7 @@ export default function PriceAsk({
     if (choice === "suggested") onChange(null);
     else if (choice === "negotiate") onChange({ kind: "negotiate", ...withWhy });
     else if (typed > 0) onChange({ kind: "amount", monthly: typed, per, ...withWhy });
-    setOpen(false);
+    close();
   };
 
   const savedDiff = value?.kind === "amount" && suggested && askPeriod(value) === per ? priceDifferencePct(suggested, value.monthly) : null;
@@ -95,6 +101,7 @@ export default function PriceAsk({
         </p>
       )}
       <button
+        ref={adjustRef}
         type="button"
         onClick={start}
         className="inline-flex min-h-11 items-center gap-2 justify-self-start rounded-xl border border-notice px-4 font-semibold text-foreground hover:bg-notice/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -104,8 +111,14 @@ export default function PriceAsk({
         {t({ message: "Adjust the price", context: "price ask: open the popup" })}
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
+        <DialogContent
+          className="max-w-lg"
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            adjustRef.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{t({ message: "Your price", context: "price popup title" })}</DialogTitle>
             <DialogDescription>
@@ -172,14 +185,20 @@ export default function PriceAsk({
               <textarea id={`${idPrefix}-price-why`} rows={3} maxLength={PRICE_WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} />
             </div>
           )}
+          {choice === "amount" && typed <= 0 && (
+            <p id={`${idPrefix}-price-why-off`} className={HINT} data-price-needs-amount="">
+              {t({ message: `Enter a price above ${money(0)}.`, context: "price popup: why Use this price is off" })}
+            </p>
+          )}
           <DialogFooter>
-            <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-lg px-4 text-muted-foreground hover:text-foreground">
+            <button type="button" onClick={close} className="min-h-11 rounded-lg px-4 text-muted-foreground hover:text-foreground">
               {t({ message: "Cancel", context: "price popup" })}
             </button>
             <button
               type="button"
               onClick={save}
               disabled={choice === "amount" && typed <= 0}
+              aria-describedby={choice === "amount" && typed <= 0 ? `${idPrefix}-price-why-off` : undefined}
               className="min-h-11 rounded-lg border border-notice bg-notice px-4 font-semibold text-background disabled:opacity-40"
               data-save-price=""
             >

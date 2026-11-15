@@ -80,7 +80,7 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
               aria-expanded={open === k}
               aria-controls={`${id}-composer`}
               onClick={() => setOpen(open === k ? null : k)}
-              className={`inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40 ${open === k ? "border-notice bg-notice text-background" : "border-notice/50 bg-muted text-notice hover:border-notice"}`}
+              className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-40 ${open === k ? "border-notice bg-notice text-background" : "border-notice/50 bg-muted text-notice hover:border-notice"}`}
             >
               <Icon className="size-4" aria-hidden="true" />
               {SUGGESTION_WORDS.kind[k]}
@@ -95,10 +95,10 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
           </label>
           <GrowingField id={`${id}-text`} clip="suggestion" minRows={3} maxLength={SUGGESTION_LIMITS.text} value={draft} onChange={setDraft} className="rounded-lg border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-ring" />
           <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" onClick={() => setOpen(null)} className="min-h-10 rounded-lg px-3 text-sm text-muted-foreground hover:text-card-foreground">
+            <button type="button" onClick={() => setOpen(null)} className="min-h-11 rounded-lg px-3 text-sm text-muted-foreground hover:text-card-foreground">
               {t({ message: "Cancel", context: "shape the role" })}
             </button>
-            <button type="button" onClick={add} disabled={!draft.trim()} className="min-h-10 rounded-lg border border-notice bg-notice px-4 text-sm font-semibold text-background disabled:opacity-40">
+            <button type="button" onClick={add} disabled={!draft.trim()} className="min-h-11 rounded-lg border border-notice bg-notice px-4 text-sm font-semibold text-background disabled:opacity-40">
               {t({ message: "Add to my application", context: "shape the role" })}
             </button>
           </div>

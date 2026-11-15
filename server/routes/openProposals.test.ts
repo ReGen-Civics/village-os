@@ -637,7 +637,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     it.each([
       ["no name", { name: "  " }, "name", OPEN_WORDS.needName],
       ["no address", { email: "" }, "email", OPEN_WORDS.needEmail],
-      ["two addresses", { email: "a@example.test, b@example.test" }, "email", OPEN_WORDS.needEmail],
+      ["two addresses", { email: "a@example.test, b@example.test" }, "email", OPEN_WORDS.badEmail],
+      ["an address with no dot after the @", { email: "rowan@example" }, "email", OPEN_WORDS.badEmail],
       ["no role", { roles: [] }, "roles", OPEN_WORDS.needRole],
       // One role per application (the lead, 11 Nov 2026): two listed roles, each open, are still refused.
       ["two roles", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-well" }] }, "roles", OPEN_WORDS.tooManyRoles],
