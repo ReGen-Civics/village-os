@@ -76,6 +76,7 @@ import { canonicalJson } from "./canonicalJson";
 import { looksLikePaymentDetails, moneyWords, type SeatSettings } from "./seatSettings";
 import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
+import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
@@ -1382,6 +1383,12 @@ export interface InvoiceLine {
   basis: LineBasis;
   /** The words a pay kind carries when it moves no cash: honorary, in-kind, deferred, none. */
   listedAs: string | null;
+  /**
+   * Where the terms' figure came from, when the contract says (its `pay.note`): an adopted application
+   * writes "From their price ask", the suggested price, or that it was "negotiate on the first call"
+   * (shared/contractPrice.ts, QA-1115 P0-1). Shown to the member and the Treasurer beside the line.
+   */
+  priceNote?: string;
   currency: string | null;
   /** The terms' amount, per `per`. */
   termsMinor: number | null;
@@ -1434,8 +1441,13 @@ export interface LineSplit {
   pricedPct?: number;
   /** The amount the terms give, before the split. */
   baseMinor: number;
-  /** The amount after the split, rounded once. Equals the line's `amountMinor`. */
+  /** The amount after the split, rounded once, and held to the cap. Equals the line's `amountMinor`. */
   scaledMinor: number;
+  /**
+   * Set when the split would have paid more than ROLE_PAY_CAP_PCT of the terms, and the line was held
+   * there (Rye, 15 Nov 2026). The Treasurer sees it and still confirms the line.
+   */
+  capped?: true;
   confirmedBy: string | null;
   confirmedAt: string | null;
 }
@@ -1446,6 +1458,8 @@ export const SPLIT_PAY_WORDS = {
   share: "Share of time",
   given: "Your time given to it",
   priced: "Priced at",
+  capped: `Capped at ${ROLE_PAY_CAP_PCT}%`,
+  cappedNote: `The split gave this role more time than it was priced at, so it pays ${ROLE_PAY_CAP_PCT}% of its terms, the most a role pays.`,
   scaled: "After the split",
   waiting: "A Treasurer confirms the split before this is paid.",
   confirmed: "The split is confirmed.",
@@ -1485,9 +1499,13 @@ export function pricedCommitments(terms: readonly Pick<TermsInForce, "applicatio
  * member's commitment is applied once, never a second time. Two roles priced
  * at 50% for 6,500.00 each, and a member who gives 100% split 50/50: each role
  * gets 50% of them, its priced commitment, so each pays 6,500.00 (13,000.00
- * in all). A line naming two roles takes both roles' shares. There is no cap:
- * a split that gives an agreement more time than it was priced at pays more,
- * and a Treasurer confirms every scaled line before anything pays.
+ * in all). A line naming two roles takes both roles' shares. The formula is
+ * `payForTime` (shared/rolePayMath.ts), the one the application uses too.
+ *
+ * THE CAP (Rye, 15 Nov 2026, replacing "no cap" for role pay): a split that
+ * gives an agreement more time than it was priced at pays more, up to
+ * ROLE_PAY_CAP_PCT of its terms and no further. A line held there is marked
+ * `capped`, and a Treasurer confirms every scaled line before anything pays.
  *
  * It fails closed, answering every line unchanged, when:
  *   - there is no split, or no total commitment beside it;
@@ -1526,13 +1544,16 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
     if (l.basis === "range" && l.finalMinor !== null) return { ...l };
     const sharePct = Math.min(100, l.roleIds.reduce((s, r) => s + (shareOf.get(r) as number), 0));
     const pricedPct = pricedOf(l);
-    const scaledMinor = Math.round((l.amountMinor * total * sharePct) / (100 * pricedPct));
+    const exact = Math.round(payForTime(l.amountMinor, (total * sharePct) / 100, pricedPct));
+    const capMinor = Math.floor((l.amountMinor * ROLE_PAY_CAP_PCT) / 100);
+    const capped = exact > capMinor;
+    const scaledMinor = capped ? capMinor : exact;
     const givenPct = Math.round((total * sharePct) / 10) / 10;
     return {
       ...l,
       amountMinor: scaledMinor,
-      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}: ${moneyWords(scaledMinor, l.currency)}`,
-      split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, confirmedBy: null, confirmedAt: null },
+      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}: ${moneyWords(scaledMinor, l.currency)}${capped ? `, ${SPLIT_PAY_WORDS.capped.toLowerCase()}` : ""}`,
+      split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, ...(capped ? { capped: true as const } : {}), confirmedBy: null, confirmedAt: null },
     };
   });
 }
@@ -1611,7 +1632,7 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
     } else if (pay && pay.currency && pay.kind === "fixed" && Number.isInteger(pay.amountMinor) && (pay.amountMinor as number) > 0) {
       const per = pay.per ?? "moon";
       const amount = pay.amountMinor as number;
-      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
+      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
     } else if (pay && pay.currency && pay.kind === "range" && Number.isInteger(pay.minMinor) && Number.isInteger(pay.maxMinor)) {
       const per = pay.per ?? "moon";
       const range = { minMinor: pay.minMinor as number, maxMinor: pay.maxMinor as number };

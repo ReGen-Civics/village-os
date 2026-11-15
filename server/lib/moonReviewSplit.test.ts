@@ -29,6 +29,7 @@ import { APPROVAL_REFUSALS, MOON_ROUTES, seenAmountsOf } from "../../shared/moon
 import * as store from "../repos/moonRecaps";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
+import { oweRoleCycleCash } from "./cashOwed";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 const TZ = "America/Costa_Rica";
@@ -71,7 +72,7 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
   beforeAll(async () => {
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 6 });
-    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas"]) {
+    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas", "m-ash", "m-hand"]) {
       await q("INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `handle`) VALUES (?,?,?,'x',?)", [id, id.slice(2), `${id}@example.test`, id.slice(2)]); // module-review-ok: fixture SQL
     }
     await q("INSERT INTO `org_roles` (`id`, `name`, `accountabilities`) VALUES ('r-water', 'Water keeper', ?), ('r-garden', 'Garden keeper', ?)", [JSON.stringify(["Keep the water clean"]), JSON.stringify(["Tend the beds"])]); // module-review-ok: fixture SQL
@@ -206,6 +207,36 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
     expect(paid.body.approved).toEqual([row.invoice.id]);
     const owed = (await q("SELECT `amount_minor` FROM `cash_owed` ORDER BY `amount_minor`")).map((r: any) => Number(r.amount_minor)); // module-review-ok: fixture SQL
     expect(owed).toEqual([40000, 60000]);
+  });
+
+  it("settlement owes nothing at the start of a moon to two holders seated through applications, and the End of Moon invoice still approves (QA-1115 P0-2)", async () => {
+    // A $13,000 cash role, held by two people through adopted applications, and by one seated by hand.
+    await q("UPDATE `org_roles` SET `cash_minor` = 1300000, `cash_currency` = 'USD' WHERE `id` = 'r-water'"); // module-review-ok: fixture SQL
+    try {
+      await seat("apart");
+      await q( // module-review-ok: fixture SQL
+        "INSERT INTO `seat_applications` (`id`, `candidate_user_id`, `proposed_by`, `seat_ids`, `settings_json`, `settings_hash`, `term_ends_at`, `status`) VALUES ('app-ash', 'm-ash', 'm-ash', ?, ?, ?, '2027-06-01 00:00:00', 'adopted')",
+        [JSON.stringify(["a-ash"]), PAY, "0".repeat(64)],
+      );
+      await q( // module-review-ok: fixture SQL
+        "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `started_at`, `application_id`) VALUES ('a-ash', 'r-water', 'member', 'm-ash', 'm-ash', '2026-09-01 12:00:00', 'app-ash'), ('a-hand', 'r-water', 'member', 'm-hand', 'm-hand', '2026-09-01 12:00:00', NULL)",
+      );
+      // Settlement owes the hand-seated holder only (CONTROL: the door still works for seats with no application).
+      expect(await oweRoleCycleCash(pool, CYCLE)).toBe(1);
+      expect((await q("SELECT `user_id` FROM `cash_owed`")).map((r: any) => r.user_id)).toEqual(["m-hand"]); // module-review-ok: fixture SQL
+
+      // The member's End of Moon invoice is not blocked by a settlement row, and pays its terms once approved.
+      const sent = await sendAll();
+      expect(amounts(sent)).toEqual([["Garden keeper", 100000], ["Water keeper", 100000]]);
+      await approveWork();
+      const row = await queueRow();
+      const paid = await approveInvoice();
+      expect(paid.body.approved).toEqual([row.invoice.id]);
+      const owed = (await q("SELECT `user_id`, `amount_minor` FROM `cash_owed` WHERE `user_id` = 'm-wren' ORDER BY `amount_minor`")).map((r: any) => Number(r.amount_minor)); // module-review-ok: fixture SQL
+      expect(owed).toEqual([100000, 100000]);
+    } finally {
+      await q("UPDATE `org_roles` SET `cash_minor` = NULL, `cash_currency` = NULL WHERE `id` = 'r-water'"); // module-review-ok: fixture SQL
+    }
   });
 
   it("no split: pay is the terms, and there is nothing to confirm", async () => {

@@ -88,7 +88,7 @@ import type { SeatCalendar } from "../../shared/seatTerms";
 import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
-import { conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
+import { agreedOf, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
@@ -357,6 +357,12 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       : null;
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
     const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool), may.own ?? null) : null;
+    // The pay adopting would write into the contract, and where it comes from (QA-1115 P0-1). Deciders only.
+    const priced = commitment ? await (async () => {
+      const agreed = await agreedOf(pool, p);
+      const price = await contractPriceFor(pool, p, agreed);
+      return price ? { amountMinor: price.amountMinor, currency: price.currency, per: price.per, source: price.source, capped: price.capped, pct: typeof agreed.commitmentPct === "number" && agreed.commitmentPct > 0 ? agreed.commitmentPct : 100 } : null;
+    })() : undefined;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
     // An agent is never offered a person's pay, allowance or commitment (audit B8a), so its page carries no terms.
     const subject = !p.body.agent && decidesIt(may, asks, viewerId) ? await loadSubject(pool, p.id) : null;
@@ -425,6 +431,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         pieceSuggestions,
         voice,
         commitment,
+        ...(priced !== undefined ? { contractPrice: priced } : {}),
         offer,
         beforeAdopt,
         review,

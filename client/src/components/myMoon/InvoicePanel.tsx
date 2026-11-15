@@ -240,6 +240,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                   <span className="text-sm font-semibold text-foreground"><Amount minor={l.amountMinor} currency={l.currency} /></span>
                 </div>
                 <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
+                {l.priceNote && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-price-note">{l.priceNote}</p> : null}
                 {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
                 {l.adjust && !room ? <AdjustBreakdown adjust={l.adjust} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (
