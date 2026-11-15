@@ -38,7 +38,7 @@ afterAll(async () => {
   await new Promise<void>((done) => server.close(() => done()));
 });
 
-const send = (body: string, type = "application/json") => fetch(`${base}/echo`, { method: "POST", headers: { "content-type": type }, body });
+const send = (body: string, type = "application/json") => fetch(`${base}/echo`, { method: "POST", headers: { "content-type": type }, body }); // module-review-ok: a test calling its own local server, never an outside host
 
 describe("a body the JSON reader refuses", () => {
   it("answers a cut-off body 400 in words, never 500", async () => {
