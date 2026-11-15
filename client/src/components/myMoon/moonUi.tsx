@@ -77,6 +77,16 @@ export function SplitBreakdown({ split, currency }: { split: LineSplit; currency
         <dt>{SPLIT_PAY_WORDS.scaled}</dt>
         <dd className="m-0 text-right font-semibold text-foreground"><Amount minor={split.scaledMinor} currency={currency} /></dd>
       </dl>
+      {split.periods && split.periods.length > 1 ? (
+        <ul className="m-0 flex list-none flex-col gap-0.5 p-0" data-testid="line-split-periods">
+          {split.periods.map((p) => (
+            <li key={p.fromDay} className="flex justify-between gap-3">
+              <span>{SPLIT_PAY_WORDS.periodLine(p.fromDay, p.days, p.givenPct)}</span>
+              <span className="text-foreground"><Amount minor={p.scaledMinor} currency={currency} /></span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {split.capped ? (
         <p className="m-0 font-semibold text-foreground" data-testid="line-split-capped">
           {SPLIT_PAY_WORDS.capped}. {SPLIT_PAY_WORDS.cappedNote}

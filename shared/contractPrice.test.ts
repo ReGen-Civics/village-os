@@ -33,6 +33,17 @@ describe("the contract's price at adoption (QA-1115 P0-1)", () => {
     expect(contractPriceOf(null, 50, { kind: "amount", monthly: 7000 })).toBeNull();
     expect(contractPriceOf({ amount: 0, currency: "USD", per: "month" }, 50, null)).toBeNull();
   });
+  it("the pay group carries the split the card showed, and the terms reader keeps it; a bad split is refused", () => {
+    const group = payGroupOf({ ...contractPriceOf(BAND, 50, null)!, shape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] });
+    const read = parseSeatSettings({ v: 1, pay: group });
+    expect(read.ok, JSON.stringify(read)).toBe(true);
+    expect(read.ok && read.settings?.pay?.shape).toEqual([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    for (const shape of [[{ label: "Cash", pct: 80 }, { label: "Equity", pct: 40 }], [{ label: "", pct: 10 }], "Cash 60", [{ label: "Cash", pct: 1.5 }]]) {
+      expect(parseSeatSettings({ v: 1, pay: { ...group, shape } }).ok, JSON.stringify(shape)).toBe(false);
+    }
+    // No split on the price: none on the group.
+    expect("shape" in payGroupOf(contractPriceOf(BAND, 50, null)!)).toBe(false);
+  });
   it("the pay group is one the terms reader accepts, so End of Moon can invoice it", () => {
     const group = payGroupOf(contractPriceOf(BAND, 50, { kind: "negotiate" })!);
     const read = parseSeatSettings({ v: 1, pay: group });

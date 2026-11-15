@@ -135,7 +135,16 @@ export interface PaySettings {
   maxMinor?: number;
   per?: (typeof MONEY_PER)[number];
   note?: string;
+  /**
+   * The split the person was shown when they applied, written at adoption (the coordinator's call, 15 Nov
+   * 2026, P1-6): the card's own shares, else the village's default. End of Moon shares a line by it first.
+   * Each share is a label and a whole percent; they add to no more than 100. Absent: no split on the contract.
+   */
+  shape?: Array<{ label: string; pct: number }>;
 }
+
+/** How many shares a contract's split may carry, and how long a label may be: the role card's own limits. */
+export const PAY_SHAPE_LIMITS = { shares: 5, labelChars: 40 } as const;
 
 export const ALLOWANCE_KINDS = ["none", "flat", "reimbursed"] as const;
 export interface AllowanceSettings {
@@ -567,8 +576,25 @@ function readMoney(
 function readPay(r: Reader, raw: unknown): PaySettings | undefined {
   const g = r.group("pay", raw);
   if (!g) return undefined;
-  r.onlyKeys("pay", g, ["kind", "currency", "amountMinor", "minMinor", "maxMinor", "per", "note"]);
-  return readMoney(r, "pay", g, PAY_KINDS) as PaySettings | undefined;
+  r.onlyKeys("pay", g, ["kind", "currency", "amountMinor", "minMinor", "maxMinor", "per", "note", "shape"]);
+  const out = readMoney(r, "pay", g, PAY_KINDS) as PaySettings | undefined;
+  if (g.shape === undefined || g.shape === null) return out;
+  const given = g.shape;
+  const shares: Array<{ label: string; pct: number }> = [];
+  const bad = (): undefined => {
+    r.refuse("pay.shape", `A split is up to ${PAY_SHAPE_LIMITS.shares} shares, each a label and a whole percent, adding to no more than 100.`);
+    return undefined;
+  };
+  if (!Array.isArray(given) || given.length > PAY_SHAPE_LIMITS.shares) return bad() ?? out;
+  for (const item of given) {
+    const o = item && typeof item === "object" ? (item as Record<string, unknown>) : null;
+    const label = typeof o?.label === "string" ? o.label.trim() : "";
+    const pct = o?.pct;
+    if (!label || label.length > PAY_SHAPE_LIMITS.labelChars || looksLikePaymentDetails(label) || typeof pct !== "number" || !Number.isInteger(pct) || pct < 0 || pct > 100) return bad() ?? out;
+    shares.push({ label, pct });
+  }
+  if (shares.reduce((n, s) => n + s.pct, 0) > 100) return bad() ?? out;
+  return out && shares.length ? { ...out, shape: shares } : out;
 }
 
 function readAllowance(r: Reader, raw: unknown): AllowanceSettings | undefined {

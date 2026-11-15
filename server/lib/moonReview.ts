@@ -37,9 +37,9 @@ import crypto from "node:crypto";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import {
   APPROVAL_REFUSALS, APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, CONFIRM_OWN_ROUTE_REFUSED, INVOICE_APPROVE_CAPABILITY,
-  LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, WORK_APPROVE_CAPABILITY,
+  LIMITS, NOTICE_WORDS, PAYMENT_DETAILS_REFUSED, RECAP_ID, RECAP_STATUS_WORDS, SELF_APPROVED_WORDS, SELF_CONFIRMED_WORDS, WORK_APPROVE_CAPABILITY, payChangeConfirmRefusal, payChangeConfirmers,
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
-  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, memberView, packMoonDates,
+  financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, billedTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
   termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines, splitHolds, amountsMatch,
   type ApprovalStage, type ApprovalSubject, type ApproverKeys, type ApproverPool, type BulkApproveResponse, type FromBlock,
@@ -55,6 +55,7 @@ import { cashOwedRowsByIds } from "../repos/cashOwed";
 import { memberUserIdRows, personRow, memberNoRows } from "../repos/liveSessions";
 import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
+import { recordLineRewards, settleLineRewards, shareLines } from "./moonReward";
 import {
   ACCOMPLISHED_WORDS, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
 } from "../../shared/accomplishedReview";
@@ -181,7 +182,8 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
     for (const [k, v] of Object.entries(b.rangeProposals as Record<string, unknown>)) if (Number.isInteger(v)) proposals[k] = v as number;
   }
   // A Treasurer's proposed amount carries from the void too, with the member's reply (Rye, 14 Nov 2026).
-  const lines = draftLines(frame, moon.days, proposals, finals, lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, parseAdjustReply(b.adjustReply));
+  // Each pay line shared into its parts as it is sent, so the member and the Treasurer read them (P1-6, 15 Nov 2026).
+  const lines = await shareLines(pool, draftLines(frame, moon.days, proposals, finals, lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, parseAdjustReply(b.adjustReply)));
   const routeKind = route?.route ?? "pending";
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const attestation = b.attestation === undefined || b.attestation === null ? null : parseAttestation(b.attestation, routeKind, moon.days);
@@ -195,7 +197,8 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
   if (!route?.legalName) return refuse(400, "Fill in your legal name and address on your pay route before you send an invoice.");
   if (looksLikePaymentDetails(memberNumber as string)) return refuse(400, PAYMENT_DETAILS_REFUSED);
 
-  const totals = invoiceTotals(lines);
+  // The stored total is what the payer is billed (P1-6, call 2): the cash share, by PAYER_IS_BILLED.
+  const totals = billedTotals(lines);
   const from: FromBlock = { legalName: route.legalName, address: route.address ?? "" };
   const att = (attestation as { ok: true; value: MoonAttestation }).value;
   const conn = await pool.getConnection();
@@ -541,14 +544,23 @@ async function approveOne(
   if (splitUnconfirmed(linesOf(invoice))) return { refusal: APPROVAL_REFUSALS.splitUnconfirmed };
   // Nor off a Treasurer's proposed amount until a Treasurer has confirmed it, after the member's reply.
   if (adjustUnconfirmed(linesOf(invoice))) return { refusal: ADJUST_REFUSALS.unconfirmed };
+  // A range amount Finance set is confirmed, by this approval, by someone other than who set it,
+  // when two or more may confirm (P1-4, P2-1). With one, they approve their own figure, marked.
+  const rangeSet = linesOf(invoice).some((l) => l.basis === "range" && l.finalMinor !== null);
+  const setters = rangeSet ? (await store.reviewEventsFor(pool, recap.id)).filter((e) => e.kind === "amount_set" && e.actor_user_id).map((e) => String(e.actor_user_id)) : [];
+  const otherSets = payChangeConfirmRefusal(actorId, setters, payChangeConfirmers(holders, recap.userId));
+  if (otherSets) return { refusal: otherSets };
+  const ownRange = setters.includes(actorId);
 
   const items = await store.itemsOf(pool, recap.id);
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
-  const lines: InvoiceLine[] = linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) }));
+  // A line sent before its split was put on it, or whose amount moved since, is shared now (P1-6).
+  const lines: InvoiceLine[] = await shareLines(pool, linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) })));
+  const invoiceTitle = `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`;
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const owed = await oweApprovedRoleCash(conn, { cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle: `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`, lines });
+    const owed = await oweApprovedRoleCash(conn, { cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle, lines });
     if (!owed.ok) {
       await conn.rollback();
       return { refusal: rowExistsRefusal(owed.rowId) };
@@ -560,9 +572,12 @@ async function approveOne(
       await conn.rollback();
       return { refusal: APPROVAL_REFUSALS.notWaiting };
     }
-    const total = invoiceTotals(owed.lines)[0];
+    // The Earned Equity and Credits shares, owed from this commit on, keyed on the line (P1-6).
+    await recordLineRewards(conn, { invoiceId: invoice.id, cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle, lines: owed.lines });
+    const total = billedTotals(owed.lines)[0];
     await event(conn, { kind: "invoice_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: total?.minor ?? null, currency: total?.currency ?? null, hash, selfApproved: decision.selfApproved });
     if (decision.selfApproved) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_APPROVED_WORDS });
+    if (ownRange) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_CONFIRMED_WORDS });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);
@@ -570,6 +585,8 @@ async function approveOne(
   } finally {
     conn.release();
   }
+  // Then posted, each in its own transaction; before the launch vote they stay owed and are paid later.
+  await settleLineRewards(pool, invoice.id);
   await tell(deps, { userId: recap.userId, title: NOTICE_WORDS.approved, kind: "invoice_approved", recapId: recap.id, round: recap.round, actorUserId: actorId });
   if (decision.selfApproved) await tellReviewers(deps, recap, actorId);
   return null;
@@ -687,16 +704,24 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
   if (!lines.every(splitHolds)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
   // The same for a proposed amount (Rye, 14 Nov 2026): one Confirm covers both, and changes no amount.
   if (lines.some((l) => l.adjust && l.adjust.adjustedMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
+  // A proposed amount is confirmed by someone other than its proposer when two or more may confirm (P1-4, P2-1).
+  const proposers = lines.flatMap((l) => (l.adjust ? [l.adjust.proposedBy] : []));
+  const confirmers = payChangeConfirmers(await approverPool(deps.keyHolders), invoice.userId);
+  const other = payChangeConfirmRefusal(actorId, proposers, confirmers);
+  if (other) return refuse(403, other);
+  const alone = proposers.includes(actorId);
   const at = now().toISOString();
-  const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at);
-  const scaled = invoiceTotals(confirmed)[0];
+  const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at).map((l) =>
+    alone && l.adjust && l.adjust.proposedBy === actorId ? { ...l, adjust: { ...l.adjust, confirmedAlone: true as const } } : l,
+  );
+  const scaled = billedTotals(confirmed)[0];
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
     // Only the lines read above: a resend or a proposal in between leaves nothing stamped (QA F2).
     if ((await store.setInvoiceLinesIfUnchanged(conn, invoice.id, invoice.linesJson, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("moved");
     if (hasSplit) await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
-    if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
+    if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null, ...(alone ? { selfApproved: true, note: SELF_CONFIRMED_WORDS } : {}) });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);
@@ -751,7 +776,7 @@ export async function adjustPay(pool: Pool, actorId: string, invoiceId: string, 
   try {
     await conn.beginTransaction();
     // The total follows the lines, so a withdrawn proposal leaves the record at the agreed amount (QA F11).
-    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), invoiceTotals(changed)[0]?.minor ?? invoice.totalMinor);
+    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), billedTotals(changed)[0]?.minor ?? invoice.totalMinor);
     if ((await store.voidInvoice(conn, invoice.id)) !== 1) throw new Error("raced");
     if (recap.status === "waiting") await store.returnRecap(conn, { id: recap.id, by: actorId, note: words, keepWork: true });
     await event(conn, { kind: "pay_adjusted", recapId: recap.id, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: input.amountMinor, currency: line.currency, note: input.reason });

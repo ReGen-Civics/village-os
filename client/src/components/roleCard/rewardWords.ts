@@ -4,7 +4,7 @@
  *   "Up to $13,000 a month for the full role*"
  *   "Take on all of it, or part of it: we're open to proposals from 30% to 100%. ..."
  *   "Your proposal sets your pay. ... At 50%, the suggested price is $6,500 a month. You can propose more or less."
- *   "*At 100% commitment. Your first month starts lower and follows what you deliver. ..."
+ *   "*At 100% commitment. Your first month often starts lower and follows what you deliver. ..."
  *
  * The figure is the card's own ceiling (shared/roleCardSections.ts); the share is straight proportional
  * (shared/commitmentRange.ts, ruling 1). A role offered at 100% only says nothing about sharing. Display only:
@@ -15,7 +15,7 @@
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { capAt, ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
-import type { CeilingPeriod, PayCeiling } from "@shared/roleCardSections";
+import type { CeilingPeriod, PayCeiling, PayShare } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
 export interface RewardWords {
@@ -38,13 +38,19 @@ export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPerio
   return i18n._(msg({ message: `${money} a month`, context: "an amount for each month" }));
 }
 
+/** Does the split in force pay any of the reward in equity or credits? A share above 0% only. */
+export function paysInTokens(shape: readonly PayShare[] | null | undefined): boolean {
+  return (shape ?? []).some((s) => s.pct > 0 && /equity|credit/i.test(s.label));
+}
+
 /**
  * The headline is the LISTED price, with the cap beside it (steelman, 15 Nov 2026): "Up to" read as a ceiling
- * beside "you can propose more". The footnote's fine print is the village's own note (the card's, else the
- * village's `org.pay_shape_note`), and nothing else: no village is told its equity terms are still being
- * written, or that its first month starts lower, unless it says so itself.
+ * beside "you can propose more". The footnote (Rye, 15 Nov 2026): the commitment, "Your first month often
+ * starts lower and follows what you deliver." with no figure, because the amount is the applicant's to
+ * propose; the equity and credits clause only when the split in force (the card's, else the village's) pays a
+ * share above 0% in equity or credits; then the village's own note.
  */
-export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = ""): RewardWords {
+export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = []): RewardWords {
   const lo = rangeMin(min);
   const shared = lo < 100;
   const at = exampleShare(min);
@@ -69,6 +75,8 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
       : i18n._(msg({ message: `Proposals up to ${capFull}, ${ROLE_PAY_CAP_PCT}% of the listed price.`, context: "role card rewards: the cap on a proposal" })),
     footnote: [
       i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
+      i18n._(msg({ message: "Your first month often starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first month" })),
+      paysInTokens(shape) ? i18n._(msg({ message: "Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the footnote, equity and credits" })) : null,
       String(note ?? "").replace(/^\*\s*/, "").trim(),
     ]
       .filter(Boolean)

@@ -47,6 +47,8 @@ import { isCommitment, notesAsText, overallChoice } from "../../shared/termsWord
 import { baseOf } from "./counterOffer";
 import { contractPriceOf, payGroupOf, type ContractPrice } from "../../shared/contractPrice";
 import { sectionsForMany } from "./roleCardSections";
+import { cardPay, villagePayFrom } from "../../shared/roleCardSections";
+import { stringVar } from "./variables";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import { isVillageHeld, type Capability } from "../../shared/capabilities";
 import { civilDateKey } from "../../shared/lunar";
@@ -336,7 +338,12 @@ export async function contractPriceFor(db: Pool, proposal: store.StoredOpenPropo
   const ids = proposal.body.roles.map((r) => r.roleId);
   const sections = await sectionsForMany(db, ids);
   const ceiling = ids.map((id) => sections.get(id)?.payCeiling ?? null).find((c) => !!c) ?? null;
-  return contractPriceOf(ceiling, agreed.commitmentPct ?? null, proposal.body.payAsk ?? null);
+  const price = contractPriceOf(ceiling, agreed.commitmentPct ?? null, proposal.body.payAsk ?? null);
+  if (!price) return null;
+  // The split the card showed them, the card's "Default split": its own shares, else the village's (P1-6).
+  const role = ids.find((id) => sections.get(id)?.payCeiling) ?? ids[0];
+  const shown = cardPay(sections.get(role) ?? null, villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: "", note: "" }))?.shape ?? [];
+  return shown.length ? { ...price, shape: shown.map((s) => ({ label: s.label, pct: s.pct })) } : price;
 }
 
 /** The card's goals for the first moon as the application's list holds them. */

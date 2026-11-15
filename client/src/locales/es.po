@@ -4117,6 +4117,18 @@ msgstr ""
 msgctxt "role card rewards: the one footnote"
 msgid "*At 100% commitment."
 msgstr "*Con un compromiso del 100%."
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, the first month"
+msgid "Your first month often starts lower and follows what you deliver."
+msgstr "Tu primer mes suele empezar más bajo y sigue lo que entregas."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, equity and credits"
+msgid "Equity and credit terms are still being written and are subject to legal review."
+msgstr "Las condiciones de participación y créditos aún se están escribiendo y están sujetas a revisión legal."
+
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading on the change requests page"

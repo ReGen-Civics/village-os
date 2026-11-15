@@ -18,13 +18,22 @@
  *   no task data       no goals and no tasks done: no flag, pay is the terms,
  *                      nothing to confirm (fails closed)
  *
+ *   another confirms  with two or more who may confirm, a changed amount is
+ *                      confirmed by someone other than whoever changed it; with
+ *                      one, they confirm their own, marked (P1-4, 15 Nov 2026)
+ *   approve-alone      a holder of approve-alone may confirm a pay change, and
+ *                      counts as a confirmer (P2-1: "founders and stewards hold
+ *                      that power too until they give it away")
+ *   a range amount     the same rule holds for a range amount Finance set: the
+ *                      approval that confirms it is someone else's
+ *
  * Every person here is invented.
  */
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { LUNAR_CLOCK } from "../../shared/cycleClock";
-import { MOON_ROUTES, seenAmountsOf } from "../../shared/moonRecap";
+import { APPROVAL_REFUSALS, MOON_ROUTES, SELF_CONFIRMED_WORDS, seenAmountsOf } from "../../shared/moonRecap";
 import { ADJUST_REFUSALS } from "../../shared/accomplishedReview";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
@@ -46,6 +55,7 @@ const PAYERS = {
 const SETTINGS = { hostCountry: { code: "XX", name: "Hostland" }, pilotAck: { text: "This is a pilot.", version: "v1" }, taxForms: [], taxFormRoutes: [], holds: [] };
 const ATTEST = { workCountries: ["US"], daysInHostCountry: 0, statusUnchanged: true, servedAbroad: null, visitorEntryWork: false };
 const HOLDERS: Record<string, string[]> = { "moon.approve": ["m-ops"], "cash.pay": ["m-fin", "m-treas"] };
+const HOLDERS_AT_START = JSON.stringify(HOLDERS);
 const PAY = JSON.stringify({ v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 100000, per: "moon" } });
 
 describe.skipIf(!configured)("paid on what we truly accomplish, against a real schema", () => {
@@ -68,7 +78,7 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
   beforeAll(async () => {
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 6 });
-    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas"]) {
+    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas", "m-steward"]) {
       await q("INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `handle`) VALUES (?,?,?,'x',?)", [id, id.slice(2), `${id}@example.test`, id.slice(2)]); // module-review-ok: fixture SQL
     }
     await q("INSERT INTO `org_roles` (`id`, `name`, `accountabilities`) VALUES ('r-water', 'Water keeper', ?)", [JSON.stringify(["Keep the water clean"])]); // module-review-ok: fixture SQL
@@ -93,6 +103,9 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
 
   beforeEach(async () => {
     whoami = "m-wren";
+    // Each case sets who holds which key; every case starts from the same two Treasurers.
+    for (const k of Object.keys(HOLDERS)) delete HOLDERS[k];
+    Object.assign(HOLDERS, JSON.parse(HOLDERS_AT_START));
     for (const t of ["moon_recap_items", "moon_invoices", "moon_recaps", "moon_review_events", "member_pay_routes", "cash_owed", "app_config", "org_role_assignments", "seat_applications", "moon_goals"]) {
       await q(`DELETE FROM \`${t}\``); // module-review-ok: fixture SQL
     }
@@ -272,5 +285,66 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     const row = await queueRow();
     expect(row.invoice.accomplished).toMatchObject({ farOff: null, goals: { total: 0 }, tasks: { done: 0 } });
     expect((await approveInvoice()).body.approved).toEqual([sent.id]);
+  });
+
+  /** Recap and invoice sent, work approved, a Treasurer's proposal made by `by`, and the member's resend. */
+  const proposedBy = async (by: string) => {
+    await addItem("Fixed the pump", "r-water", true);
+    await sendRecap();
+    const first = await sendInvoice();
+    expect((await propose(by, first.id, { applicationId: "app-water", amountMinor: 90000, reason: "Fewer goals done." })).status).toBe(200);
+    await sendRecap();
+    const again = await sendInvoice();
+    await approveWork();
+    return again.id as string;
+  };
+
+  it("another confirms: with two Treasurers, the one who proposed cannot confirm their own amount", async () => {
+    const id = await proposedBy("m-fin");
+    expect(await confirm("m-fin", id)).toEqual({ status: 403, body: { error: APPROVAL_REFUSALS.otherConfirms } });
+    expect(await confirm("m-treas", id)).toEqual({ status: 200, body: { confirmed: id } });
+    const [row] = await q("SELECT `lines_json` FROM `moon_invoices` WHERE `id` = ?", [id]); // module-review-ok: fixture SQL
+    expect(JSON.parse(row.lines_json)[0].adjust).toMatchObject({ confirmedBy: "m-treas" });
+    expect(JSON.parse(row.lines_json)[0].adjust.confirmedAlone).toBeUndefined();
+  });
+
+  it("one who may confirm: they confirm their own proposal, and it is marked", async () => {
+    HOLDERS["cash.pay"] = ["m-fin"];
+    const id = await proposedBy("m-fin");
+    expect(await confirm("m-fin", id)).toEqual({ status: 200, body: { confirmed: id } });
+    const [row] = await q("SELECT `lines_json` FROM `moon_invoices` WHERE `id` = ?", [id]); // module-review-ok: fixture SQL
+    expect(JSON.parse(row.lines_json)[0].adjust).toMatchObject({ confirmedBy: "m-fin", confirmedAlone: true });
+    const [ev] = await q("SELECT `self_approved`, `note` FROM `moon_review_events` WHERE `kind` = 'adjust_confirmed'"); // module-review-ok: fixture SQL
+    expect([Number(ev.self_approved), ev.note]).toEqual([1, SELF_CONFIRMED_WORDS]);
+    expect((await approveInvoice("m-fin")).body.approved).toEqual([id]);
+  });
+
+  it("approve-alone holders may confirm a pay change, and count as confirmers (P2-1)", async () => {
+    HOLDERS["cash.pay"] = ["m-fin"];
+    HOLDERS["moon.approve_alone"] = ["m-steward"];
+    const id = await proposedBy("m-fin");
+    // Two may confirm now, the Treasurer and the steward, so the proposer cannot confirm their own.
+    expect(await confirm("m-fin", id)).toEqual({ status: 403, body: { error: APPROVAL_REFUSALS.otherConfirms } });
+    expect(await confirm("m-steward", id)).toEqual({ status: 200, body: { confirmed: id } });
+    // CONTROL: someone holding neither key still cannot.
+    HOLDERS["moon.approve_alone"] = [];
+    expect((await confirm("m-steward", id)).status).toBe(403);
+  });
+
+  it("a range amount Finance set is confirmed by someone other than who set it", async () => {
+    await q("UPDATE `seat_applications` SET `settings_json` = ? WHERE `id` = 'app-water'", [JSON.stringify({ v: 1, pay: { kind: "range", currency: "USD", minMinor: 80000, maxMinor: 120000, per: "moon" } })]); // module-review-ok: fixture SQL
+    await addItem("Fixed the pump", "r-water", true);
+    await sendRecap();
+    const first = await sendInvoice({ rangeProposals: { "app-water": 110000 } });
+    await approveWork();
+    as("m-fin");
+    expect((await call(`POST ${MOON_ROUTES.setRange}`, { params: { id: first.id }, body: { applicationId: "app-water", finalMinor: 95000, note: "What we agreed on the call." } })).status).toBe(200);
+    await sendRecap();
+    const again = await sendInvoice();
+    expect(again.lines[0]).toMatchObject({ basis: "range", finalMinor: 95000 });
+    await approveWork();
+    const mine = await approveInvoice("m-fin");
+    expect(mine.body.refused).toEqual([{ id: again.id, reason: APPROVAL_REFUSALS.otherConfirms }]);
+    expect((await approveInvoice("m-treas")).body.approved).toEqual([again.id]);
   });
 });

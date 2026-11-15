@@ -51,6 +51,8 @@ export const LEDGER_SOURCE_PAYS_A_CONTRIBUTION: Readonly<Record<string, boolean>
   role_cycle: true,
   gratitude_pool: true,
   proposal_accepted: true,
+  // An approved End of Moon line's Earned Equity and Credits shares (P1-6, server/lib/moonReward.ts).
+  moon_invoice_reward: true,
   library_intake: true,
   exchange_purchase: true,
   admin_mint: true,

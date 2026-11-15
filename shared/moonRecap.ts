@@ -78,6 +78,7 @@ import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
+import { billedOfLine, type LineReward } from "./rewardShare";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -1389,6 +1390,8 @@ export interface InvoiceLine {
    * (shared/contractPrice.ts, QA-1115 P0-1). Shown to the member and the Treasurer beside the line.
    */
   priceNote?: string;
+  /** The split the contract records (`pay.shape`): what the card showed when they applied. Shared out by it first (P1-6). */
+  contractShape?: Array<{ label: string; pct: number }>;
   currency: string | null;
   /** The terms' amount, per `per`. */
   termsMinor: number | null;
@@ -1424,6 +1427,15 @@ export interface InvoiceLine {
    * member sees it and may reply; approval refuses until a Treasurer confirms.
    */
   adjust?: LineAdjust | null;
+  /**
+   * The line's total shared into cash, Earned Equity and Credits (Rye, 15 Nov
+   * 2026, P1-6: a role's price is its TOTAL reward; shared/rewardShare.ts).
+   * Set on a pay line when the invoice is sent, and again at approval for a
+   * line whose amount moved. Only its cash share is owed as cash; the token
+   * shares are issued through the ledger once the invoice is approved. Absent
+   * on a line sent before 15 Nov, which is paid as it was, in cash.
+   */
+  reward?: LineReward | null;
 }
 
 /** What the split did to one line, and who confirmed it. */
@@ -1448,8 +1460,25 @@ export interface LineSplit {
    * there (Rye, 15 Nov 2026). The Treasurer sees it and still confirms the line.
    */
   capped?: true;
+  /**
+   * Set when the member's split changed during the moon (Rye, 15 Nov 2026,
+   * P1-3): each split's days, from its first day in the moon, and what it gave
+   * this line. The amount is weighted by those days, never the last day's split
+   * alone; `givenPct` and `sharePct` above are then the day-weighted figures.
+   */
+  periods?: SplitDays[];
   confirmedBy: string | null;
   confirmedAt: string | null;
+}
+
+/** One stretch of a moon under one split, as a line reads it. */
+export interface SplitDays {
+  fromDay: string;
+  days: number;
+  /** What this split gave the line, as a part of the whole person; null when no split applied on those days (pay was the terms). */
+  givenPct: number | null;
+  /** This stretch's part of the line's amount: its scaled pay for its days, rounded on its own. */
+  scaledMinor: number;
 }
 
 export const SPLIT_PAY_WORDS = {
@@ -1461,6 +1490,8 @@ export const SPLIT_PAY_WORDS = {
   capped: `Capped at ${ROLE_PAY_CAP_PCT}%`,
   cappedNote: `The split gave this role more time than it was priced at, so it pays ${ROLE_PAY_CAP_PCT}% of its terms, the most a role pays.`,
   scaled: "After the split",
+  weighted: (n: number) => `weighted by the days each of your ${n} splits held this moon`,
+  periodLine: (fromDay: string, days: number, givenPct: number | null) => (givenPct === null ? `From ${fromDay}, ${days} days at the terms` : `From ${fromDay}, ${days} days at ${givenPct}%`),
   waiting: "A Treasurer confirms the split before this is paid.",
   confirmed: "The split is confirmed.",
   confirm: "Confirm the split",
@@ -1558,6 +1589,54 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
   });
 }
 
+/** One stretch of a moon under one word: the split and its total from `fromDay`, for `days` days. */
+export interface SplitPeriod {
+  fromDay: string;
+  days: number;
+  split: RoleSplitShare[] | null;
+  givenPct: number | null;
+}
+
+/**
+ * SCALE PAY BY EVERY SPLIT THE MOON HELD, WEIGHTED BY ITS DAYS (Rye, 15 Nov
+ * 2026, P1-3). A member who changes their split mid-moon is paid each split
+ * for the days it was in place, never the last day's split for the whole moon:
+ *
+ *   scaled = sum over the splits of (that split's scaled amount x its days) / the moon's days
+ *
+ * Each stretch is scaled by `scaleBySplit`, so every fail-closed rule and the
+ * cap hold per stretch, and a stretch with no split that applies pays the
+ * terms for its days. Rounded once, at the end. With one stretch this is
+ * `scaleBySplit` exactly. A Treasurer still confirms every scaled line.
+ */
+export function scaleBySplitDays(lines: readonly InvoiceLine[], periods: readonly SplitPeriod[], heldRoleIds: readonly string[], pricedPct: Readonly<Record<string, number>>): InvoiceLine[] {
+  const live = periods.filter((p) => p.days > 0);
+  if (live.length === 0) return lines.map((l) => ({ ...l }));
+  if (live.length === 1) return scaleBySplit(lines, live[0].split, heldRoleIds, { totalPct: live[0].givenPct, pricedPct });
+  const each = live.map((p) => scaleBySplit(lines, p.split, heldRoleIds, { totalPct: p.givenPct, pricedPct }));
+  const totalDays = live.reduce((n, p) => n + p.days, 0);
+  return lines.map((l, i) => {
+    const scaled = each.map((e) => e[i]);
+    if (!scaled.some((x) => x.split) || l.amountMinor === null || !l.currency) return { ...l };
+    const exact = scaled.reduce((n, x, k) => n + (x.amountMinor ?? 0) * live[k].days, 0) / totalDays;
+    const scaledMinor = Math.round(exact);
+    const pricedPct = scaled.find((x) => x.split)!.split!.pricedPct as number;
+    const tenth = (n: number) => Math.round(n * 10) / 10;
+    // A stretch at the terms gave the line its priced commitment.
+    const givenPct = tenth(scaled.reduce((n, x, k) => n + (x.split?.givenPct ?? pricedPct) * live[k].days, 0) / totalDays);
+    const splitDays = scaled.reduce((n, x, k) => n + (x.split ? live[k].days : 0), 0);
+    const sharePct = tenth(scaled.reduce((n, x, k) => n + (x.split ? x.split.sharePct * live[k].days : 0), 0) / splitDays);
+    const capped = scaled.some((x) => x.split?.capped);
+    const periodsOut: SplitDays[] = live.map((p, k) => ({ fromDay: p.fromDay, days: p.days, givenPct: scaled[k].split?.givenPct ?? null, scaledMinor: Math.round(((scaled[k].amountMinor ?? 0) * p.days) / totalDays) }));
+    return {
+      ...l,
+      amountMinor: scaledMinor,
+      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(givenPct, pricedPct)}, ${SPLIT_PAY_WORDS.weighted(live.length)}: ${moneyWords(scaledMinor, l.currency)}${capped ? `, ${SPLIT_PAY_WORDS.capped.toLowerCase()}` : ""}`,
+      split: { sharePct, givenPct, pricedPct, baseMinor: l.amountMinor, scaledMinor, ...(capped ? { capped: true as const } : {}), periods: periodsOut, confirmedBy: null, confirmedAt: null },
+    };
+  });
+}
+
 /** Does any line still need a Treasurer: scaled by a split and not confirmed, or changed since? */
 export function splitUnconfirmed(lines: readonly InvoiceLine[]): boolean {
   return lines.some((l) => !!l.split && (!l.split.confirmedAt || !splitHolds(l)));
@@ -1632,7 +1711,7 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
     } else if (pay && pay.currency && pay.kind === "fixed" && Number.isInteger(pay.amountMinor) && (pay.amountMinor as number) > 0) {
       const per = pay.per ?? "moon";
       const amount = pay.amountMinor as number;
-      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
+      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), ...(pay.shape?.length ? { contractShape: pay.shape.map((s) => ({ ...s })) } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
     } else if (pay && pay.currency && pay.kind === "range" && Number.isInteger(pay.minMinor) && Number.isInteger(pay.maxMinor)) {
       const per = pay.per ?? "moon";
       const range = { minMinor: pay.minMinor as number, maxMinor: pay.maxMinor as number };
@@ -1672,6 +1751,17 @@ export function termsCarryMoney(terms: readonly TermsInForce[]): boolean {
     const a = t.settings?.allowance;
     return (!!p && (p.kind === "fixed" || p.kind === "range") && !!p.currency) || (!!a && a.kind === "flat" && !!a.currency);
   });
+}
+
+/**
+ * What the payer is billed, per currency: each line's cash share when the payer is billed cash only
+ * (`PAYER_IS_BILLED`, shared/rewardShare.ts), else its whole amount. The invoice's stored total, the
+ * PDF, the email and the queue read this; `invoiceTotals` stays the whole reward the work earned.
+ */
+export function billedTotals(lines: readonly InvoiceLine[]): Array<{ currency: string; minor: number }> {
+  const by = new Map<string, number>();
+  for (const l of lines) if (isPayableLine(l)) by.set(l.currency as string, (by.get(l.currency as string) ?? 0) + (billedOfLine(l) ?? 0));
+  return Array.from(by, ([currency, minor]) => ({ currency, minor })).sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
 /** The total, the sum of the rounded lines, per currency. */
@@ -1856,7 +1946,32 @@ export const APPROVAL_REFUSALS = {
   noSplit: "Nothing on this invoice is scaled by a split.",
   ownConfirm: "Nobody confirms their own pay. Another person holding the cash power confirms it.",
   amountsChanged: "An amount on this invoice changed after you read it. Open it again, check each amount, then confirm.",
+  otherConfirms: "Someone other than the person who changed this amount confirms it.",
 } as const;
+
+/** What the line, the event and the desk say when the one person who could confirm a change confirmed their own. */
+export const SELF_CONFIRMED_WORDS = "Confirmed by the person who changed it, the only one who could";
+
+/**
+ * WHO MAY CONFIRM A CHANGE TO A MEMBER'S PAY (Rye, 15 Nov 2026, P1-4 and P2-1):
+ * every live holder of the cash power, and every holder of approve-alone
+ * ("founders and stewards hold that power too until they give it away"),
+ * never the member themselves.
+ */
+export function payChangeConfirmers(pool: Pick<ApproverPool, "pay" | "alone">, memberUserId: string): string[] {
+  return Array.from(new Set([...pool.pay, ...pool.alone])).filter((u) => u !== memberUserId);
+}
+
+/**
+ * A changed amount (a Treasurer's proposed amount, or a range amount Finance
+ * set) is confirmed by someone other than whoever changed it, when two or more
+ * people may confirm. With only one, they confirm their own change, and it is
+ * marked (`SELF_CONFIRMED_WORDS`). Null when this confirm may stand.
+ */
+export function payChangeConfirmRefusal(actorId: string, changedBy: readonly string[], confirmers: readonly string[]): string | null {
+  if (!changedBy.includes(actorId)) return null;
+  return confirmers.length >= 2 ? APPROVAL_REFUSALS.otherConfirms : null;
+}
 
 export const FINANCE_REFUSALS = {
   unconfirmed: "The pay route is not confirmed yet. Another person holding the cash power confirms it.",

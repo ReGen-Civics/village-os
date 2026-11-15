@@ -286,7 +286,7 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(within(section).getByTestId("pay-split").textContent).toContain("70% cash, 30% equity"));
     expect(within(section).getByTestId("pay-shape").textContent).not.toContain("55%");
     // With a listed price, the card's own note is the footnote's fine print (steelman, 15 Nov 2026).
-    expect(within(section).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. This role's own note.");
+    expect(within(section).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first month often starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. This role's own note.");
     expect(within(section).queryByTestId("pay-note")).toBeNull();
   });
 });
@@ -488,9 +488,9 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
     // The 120% cap (Rye, 15 Nov 2026): for the full role, and at the example share.
     expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month for the full role, 120% of the listed price. At 50%, up to $5,400 a month.");
-    // The footnote's fine print is the village's own note, never platform words about equity or a first month (steelman, 15 Nov 2026).
-    expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. ${VILLAGE_PAY.note}`);
-    expect(piece.textContent).not.toContain("first month starts lower");
+    // The footnote (Rye, 15 Nov 2026): the first month with no figure, and the equity and credits clause because the
+    // village's split pays 55% in equity and 5% in credits; then the village's own note.
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. Your first month often starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. ${VILLAGE_PAY.note}`);
     // The cap sits beside the listed price, before the range.
     const order = Array.from(piece.querySelectorAll("[data-testid]")).map((e) => e.getAttribute("data-testid"));
     expect(order.indexOf("pay-cap-words")).toBe(order.indexOf("pay-ceiling") + 1);

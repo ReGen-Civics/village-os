@@ -67,7 +67,7 @@ export type MailOutcome = "sent" | "queued" | "failed" | "duplicate" | "no_inbox
 export function contentHashOf(v: InvoiceView): string {
   const canon = JSON.stringify([
     v.billRef, v.memberNumber, v.currency, v.totalMinor, v.from?.legalName ?? null, v.from?.address ?? null, v.billTo?.legalName ?? null,
-    v.lines.map((l) => [l.key, l.roleNames, l.amountMinor, l.currency, l.listedAs]),
+    v.lines.map((l) => [l.key, l.roleNames, l.amountMinor, l.currency, l.listedAs, ...(l.reward ? [l.reward.cashMinor, l.reward.equityUnits, l.reward.creditsUnits] : [])]),
   ]);
   return crypto.createHash("sha256").update(canon).digest("hex");
 }

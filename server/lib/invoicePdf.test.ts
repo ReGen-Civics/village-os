@@ -64,6 +64,15 @@ describe("the invoice PDF", () => {
     expect(text).toContain("Total: USD 1200.00");
     expect(text).toContain("Did (the) thing \\ well");
   });
+  it("bills a shared line's cash share, and lists what the village issues with nothing to pay (P1-6, call 2)", () => {
+    const reward = { from: "card" as const, totalMinor: 650000, cashMinor: 390000, equityUnits: 2600, creditsUnits: 0, tokens: { equity: "earned-equity", credits: "credits" }, equityHeld: false, restToCreditsPct: 0 };
+    const text = invoicePdfLines({ ...view, lines: [{ roleNames: ["Steward"], basisLine: "per moon", amountMinor: 650000, currency: "USD", listedAs: null, reward }], totalMinor: 390000 }).flat().join(String.fromCharCode(10));
+    expect(text).toContain("Steward: per moon: USD 3900.00");
+    expect(text).toContain("Also earned, nothing to pay: 2,600 Earned Equity, 0 Credits. Total reward US$6,500.");
+    expect(text).toContain("Total: USD 3900.00");
+    expect(text).not.toContain("USD 6500.00");
+  });
+
   it("wraps a long line instead of running off the page", () => {
     const lines = invoicePdfLines({ ...view, workSummary: "word ".repeat(60) });
     expect(Math.max(...lines.flat().map((l) => l.length))).toBeLessThanOrEqual(92);

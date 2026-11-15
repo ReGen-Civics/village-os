@@ -34,14 +34,14 @@ import {
   ATTESTATION_MISSING, EMPTY_SETTINGS, ITEM_TEXT_EMPTY, LIMITS, MOON_WORDS, NO_TERMS, PAYERS_DOC_KEY, EMPTY_PAYERS, PAY_ROUTES,
   RECAP_STATUS_WORDS, SERA_CLOSED_NOTE, SETTINGS_DOC_KEY, SUPPORT_LINE, attestationWords, auditTensions, billRef, billToOf,
   carriedTooOften, coverage, daysHeldIn, deliverableLines, endOfMoonFriday, goalScore, halfwayDay, heldDuring, invoiceDueOn,
-  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, pricedCommitments, scaleBySplit, moonDays, outsideRolesAudit,
+  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, billedTotals, itemDedupeKey, linesFromTerms, memberView, pricedCommitments, scaleBySplit, scaleBySplitDays, moonDays, outsideRolesAudit,
   parseItemFields, parseMoonReviewSettings, parsePayRouteInput, parsePayers, parseRoleAudit, payRouteWords, payerForRoute,
   THANKS_WORDS, parseThanks, periodWords, thanksDedupeKey, readingOf, recapEditable, routeChangeClearsConfirmation, scoreContextOf, seatCoverage, seatReadingOf, sendBy,
   setupGaps, taskScore, termsCarryMoney, waitingLine, waitingStage, workDueOn, workSummaryHtml, workSummaryText,
   type AssignmentRow, type FromBlock, type InvoiceLine, type InvoiceView, type ItemOrigin, type ItemResponse, type ItemState,
   type MemberMoonResponse, type MoonDays, type MoonReviewSettings, type PayRouteRecord, type MoonRef, type MyMoonResponse,
   type PayRouteResponse, type PayersDoc, type MoonGoal, type RecapItem, type RecapView, type RoleAudit, type RoleHeld, type SeasonGoalRef,
-  type SendRecapResponse, type SeraState, type TakeBackResponse, type TaskStatus, type TermsInForce, type ThanksEntry,
+  type SendRecapResponse, type SplitPeriod, type SeraState, type TakeBackResponse, type TaskStatus, type TermsInForce, type ThanksEntry,
 } from "../../shared/moonRecap";
 import { EMPTY_RHYTHM, RHYTHM_DOC_KEY, parseRhythm, type RhythmDoc } from "../../shared/moonRhythm";
 import type { CycleBounds, CycleClock } from "../../shared/cycleClock";
@@ -57,7 +57,7 @@ import { planVersions, moonLoadOf } from "../repos/seasonPlans";
 import { readApplications } from "../repos/seatApplications";
 import { dbDocument } from "../repos/store-db";
 import { heldTermsFor } from "./heldTerms";
-import { splitForPay } from "./splitForPay";
+import { splitForPay, splitPeriodsForPay } from "./splitForPay";
 import { accomplishedComparison, adjustsFrom, applyAdjusts, FAR_OFF_KEY, type AccomplishedView, type AdjustProposals } from "../../shared/accomplishedReview";
 import { numberVar } from "./variables";
 import { raiseTension, type TensionDeps } from "./roleTensions";
@@ -356,12 +356,23 @@ export interface Frame {
    * (Rye, 15 Nov 2026). Null or absent: pay is the terms, unchanged.
    */
   givenPct?: number | null;
+  /**
+   * Every split the moon held, with its days (Rye, 15 Nov 2026, P1-3). Present: pay is weighted by those
+   * days (`scaleBySplitDays`); `split` and `givenPct` stay the last day's, for what the member reads now.
+   */
+  splitPeriods?: SplitPeriod[];
 }
 
 /** The draft lines for a frame: the terms, scaled by the split where it applies. */
-export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split" | "givenPct">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}, adjusts: AdjustProposals = {}, reply: string | null = null): InvoiceLine[] {
+export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split" | "givenPct" | "splitPeriods">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}, adjusts: AdjustProposals = {}, reply: string | null = null): InvoiceLine[] {
   // A Treasurer's proposed amount sits on top of the split (Rye, 14 Nov 2026): its base is what terms and split gave.
-  return applyAdjusts(scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId), { totalPct: frame.givenPct ?? null, pricedPct: pricedCommitments(frame.terms) }), adjusts, reply);
+  const lines = linesFromTerms(frame.terms, days, proposals, finals);
+  const held = frame.roles.map((r) => r.roleId);
+  const priced = pricedCommitments(frame.terms);
+  const scaled = frame.splitPeriods
+    ? scaleBySplitDays(lines, frame.splitPeriods, held, priced)
+    : scaleBySplit(lines, frame.split ?? null, held, { totalPct: frame.givenPct ?? null, pricedPct: priced });
+  return applyAdjusts(scaled, adjusts, reply);
 }
 
 /** The season running on a day: the latest that has begun and not ended. */
@@ -399,6 +410,7 @@ export async function loadFrame(pool: Pool, userId: string, moon: Moon, deps: Fr
     ownGoals = (newest?.seasonalGoals ?? []).map((g) => String(g.title ?? "").trim()).filter(Boolean);
   }
   const word = await splitForPay(pool, userId, moon.days.lastDay);
+  const splitPeriods = await splitPeriodsForPay(pool, userId, moon.days);
   return {
     roles,
     seatings: held,
@@ -408,6 +420,7 @@ export async function loadFrame(pool: Pool, userId: string, moon: Moon, deps: Fr
     ownGoals,
     split: word.split,
     givenPct: word.givenPct,
+    splitPeriods,
   };
 }
 
@@ -557,7 +570,7 @@ export function invoiceViewOf(input: {
   const lines = input.frame ? draftLines(input.frame, moon.days, {}, {}, input.adjusts ?? {}) : linesFromTerms(input.terms, moon.days);
   const route = input.route;
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
-  const totals = invoiceTotals(lines);
+  const totals = billedTotals(lines);
   const refusal = invoiceSendRefusal({
     route: route?.route ?? "pending", payer, lines, attestation: null, pilotAckVersion: route?.pilotAckVersion ?? null, memberNumber: null, externalInvoiceKey: null,
     settings: input.settings, payers,
