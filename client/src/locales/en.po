@@ -2701,6 +2701,11 @@ msgctxt "save bar, a part of the page that did not save"
 msgid "This section"
 msgstr "This section"
 
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "founding application carried over"
+msgid "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
+msgstr "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The key was not replaced"
@@ -6984,6 +6989,11 @@ msgctxt "circle hearth, what we decided"
 msgid "What we decided"
 msgstr "What we decided"
 
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "open proposal sent"
+msgid "Your name, contact and what you wrote about yourself come with you, so you only add what is new for that role."
+msgstr "Your name, contact and what you wrote about yourself come with you, so you only add what is new for that role."
+
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "Read the card"
@@ -8095,6 +8105,11 @@ msgstr "Halfway between {low} and {high}"
 msgctxt "label of a practice's name"
 msgid "The practice"
 msgstr "The practice"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor, qualities hint, the focus line"
+msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
+msgstr "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
 
 #: client/src/components/openWork/statusWords.ts
 msgctxt "open work board: status mark, a quest done this moon"
@@ -9808,6 +9823,11 @@ msgstr "Which agent"
 #: client/src/pages/Roles.tsx
 #~ msgid "of care, each holding its own ground, and every"
 #~ msgstr "of care, each holding its own ground, and every"
+
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "open proposal sent"
+msgid "Apply for another role too"
+msgstr "Apply for another role too"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -14354,6 +14374,11 @@ msgctxt "role card fact: a role offered whole"
 msgid "Full commitment (100%)"
 msgstr "Full commitment (100%)"
 
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card quality, 60% and above"
+msgid "Fully focused: {village} is your main work"
+msgstr "Fully focused: {village} is your main work"
+
 #: client/src/components/Layout.tsx
 #~ msgid "Close menu"
 #~ msgstr "Close menu"
@@ -14901,6 +14926,11 @@ msgstr "and"
 msgctxt "time zone field"
 msgid "Save"
 msgstr "Save"
+
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card quality, below 60%"
+msgid "Focused: {village} is a main part of your work"
+msgstr "Focused: {village} is a main part of your work"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -16410,7 +16440,7 @@ msgctxt "quest editor"
 msgid "Kind of work"
 msgstr "Kind of work"
 
-#: client/src/pages/ProposeARole.tsx
+#: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "founding application draft"
 msgid "We kept your answers from last time. References, files and recordings are never saved, so add them again."
 msgstr "We kept your answers from last time. References, files and recordings are never saved, so add them again."
