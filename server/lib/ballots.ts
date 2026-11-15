@@ -1103,6 +1103,20 @@ export async function closeBallot(pool: Pool, input: CloseBallotInput): Promise<
    */
   const byMajority = reading === "no_quorum" && missDecidedByMajority(fallbackFactsOf(ballot));
   const outcome = byMajority ? evaluateBallot({ ...evaluation, majorityOfCast: true }) : reading;
+  /*
+   * THE LAUNCH VOTE RUNS ITS WHOLE WINDOW (launch rehearsal, 15 Nov 2026).
+   * It asks every person on the roll, so "short of participation" is not an
+   * answer until the window ends: closing it early as no quorum took the
+   * vote from the three people who had not answered yet, and any admin could
+   * do it. It still closes early once a no is cast, because one no means it
+   * can no longer carry, and a pass waits for the clock below as every ballot's does.
+   */
+  if (!expired && ballot.subjectType === VILLAGE_LAUNCH && outcome === "no_quorum" && Number(tallies.noW) === 0) {
+    return {
+      ok: false,
+      error: "The launch vote asks everyone on the roll, so it runs its whole window and closes on the clock. People who have not answered yet still can.",
+    };
+  }
   if (!expired && outcome === "passed") {
     /*
      * A BALLOT PASSES WHEN ITS WINDOW ENDS AND NEVER BEFORE (dispatcher lane).

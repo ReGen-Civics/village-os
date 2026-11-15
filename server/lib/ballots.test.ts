@@ -624,6 +624,25 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
     expect(closed.outcome).toBe("no_quorum");
     expect(closed.quorum).toBeCloseTo(100 / 3, 5);
   });
+
+  it("the launch vote runs its whole window: nobody closes it early as short of participation (launch rehearsal)", async () => {
+    const opened = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-early-close", unityPct: 100, quorumPct: 100 });
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
+    const id = opened.ballot.id;
+    expect((await castVote(pool, id, "u-a", "yes")).ok).toBe(true);
+    // Two of three have not answered, and the window is open: refused, even for a closer who may close early.
+    const early = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "Too slow.", closerMayCloseEarly: true });
+    expect(early.ok).toBe(false);
+    if (early.ok) return;
+    expect(early.error).toContain("runs its whole window");
+    // The control: one no means it can no longer carry, so it may still close early.
+    expect((await castVote(pool, id, "u-b", "no")).ok).toBe(true);
+    const failed = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "A no was cast.", closerMayCloseEarly: true });
+    expect(failed.ok).toBe(true);
+    if (!failed.ok) return;
+    expect(failed.outcome).not.toBe("passed");
+  });
 });
 
 /**
