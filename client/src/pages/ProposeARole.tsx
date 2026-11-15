@@ -898,7 +898,7 @@ export default function ProposeARole() {
                 }
               />
               <Beside id="propose-problem-card" message={problemOn("card") ?? problemOn("serves")} />
-              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} />
+              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} pct={commitment} />
             </section>
 
             {/* STEP 4: the terms. Commitment and the eight settings, the ramp-up, and the shape of compensation. */}
