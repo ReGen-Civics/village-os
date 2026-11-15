@@ -115,7 +115,7 @@ describe.skipIf(!configured)("translated village words, on a real schema", () =>
 
   it("never answers with a translation of a binding page", async () => {
     // Even a row written past the store's own refusal is not shown.
-    await pool.query(
+    await pool.query( // module-review-ok: a test planting the row the store itself refuses, to prove the reader still hides it
       "INSERT INTO content_translations (kind, ref_key, field, locale, text, source_hash, status) VALUES ('page_section', 'page-love-letter', 'a.b', 'es', 'x', ?, 'approved')",
       [sourceHash("x")],
     );
