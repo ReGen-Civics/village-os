@@ -12,6 +12,7 @@
  * form and the member door, so they cannot drift apart.
  */
 import { useLingui } from "@lingui/react/macro";
+import GrowingField from "@/components/form/GrowingField";
 import { commitmentChoices, type PayAsk } from "@shared/commitmentRange";
 import PriceAsk from "./PriceAsk";
 import type { PayCeiling } from "@shared/roleCardSections";
@@ -148,15 +149,17 @@ export default function TermsEight({
               </div>
             )}
             {written && answer?.choice === "talk" && (
-              <textarea
-                aria-label={t`What you would like to talk about: ${labels[k]}`}
-                placeholder={t`A note, if you like`}
-                rows={2}
-                maxLength={TERM_NOTE_MAX}
-                value={answer.note}
-                onChange={(e) => setAnswer(k, { choice: "talk", note: e.target.value })}
-                className={`${FIELD} sm:col-span-2 sm:col-start-2`}
-              />
+              <div className="sm:col-span-2 sm:col-start-2">
+                <GrowingField
+                  aria-label={t`What you would like to talk about: ${labels[k]}`}
+                  placeholder={t`A note, if you like`}
+                  minRows={2}
+                  maxLength={TERM_NOTE_MAX}
+                  value={answer.note}
+                  onChange={(note) => setAnswer(k, { choice: "talk", note })}
+                  className={FIELD}
+                />
+              </div>
             )}
             {k === "clocks" && (
               <div className={`${TILE} sm:col-span-2 sm:col-start-2`} data-commitment="">
