@@ -11,6 +11,7 @@
  */
 import { Plus, Trash2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { FOCUS_MAIN_WORK_PCT, FOCUS_TOKEN } from "@shared/focusLine";
 import { CEILING_PERIODS, EMPTY_SECTIONS, SECTION_LIMITS, SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
 import { INPUT, LEDE, PANEL, SECONDARY } from "@/components/roleProposal/parts";
 
@@ -110,6 +111,8 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
         <textarea className={AREA} value={value.qualities} onChange={(e) => set("qualities", e.target.value)} aria-label={SECTION_WORDS.qualities} />
         <p className="mt-1 text-xs text-muted-foreground">
           <Trans context="role editor, qualities hint">One quality per line. Up to {SECTION_LIMITS.lines} lines.</Trans>
+          {" "}
+          <Trans context="role editor, qualities hint, the focus line">Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below.</Trans>
         </p>
       </Field>
 
