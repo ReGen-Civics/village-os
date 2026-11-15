@@ -33,12 +33,67 @@ type Overrides = Record<string, string>;
 
 let overrides: Overrides = {};
 
-/** Boot-time load. Fail-loud: a server that cannot read its rules must not guess them. */
-export async function loadVariables(pool: Pool): Promise<void> {
+/** Every stored override, read from the table: the one read the boot load and the refresh share. */
+async function readOverrides(pool: Pool): Promise<Overrides> {
   const [rows] = await pool.query<RowDataPacket[]>("SELECT config_key, value FROM game_variables");
   const next: Overrides = {};
   for (const r of rows) next[String(r.config_key)] = String(r.value);
-  overrides = next;
+  return next;
+}
+
+/** Boot-time load. Fail-loud: a server that cannot read its rules must not guess them. */
+export async function loadVariables(pool: Pool): Promise<void> {
+  overrides = await readOverrides(pool);
+}
+
+/** Counts this process's own writes, so a refresh that read the table before one of them never undoes it. */
+let localWrites = 0;
+
+/**
+ * THE CACHE FOLLOWS THE TABLE, NOT ONLY THIS PROCESS'S OWN WRITES.
+ *
+ * The cache is loaded at boot and written through on change, and that was
+ * enough only while exactly one process ever wrote. It is not: during a deploy
+ * the previous release keeps serving, on the same database, for the whole of
+ * the new release's boot (migrations, seeds and the ledger walk run between
+ * the boot load and `listen`, minutes on a cold database). A dial saved in
+ * that window, by an admin or by an accepted proposal, lands in the table and
+ * in the OLD process's cache, and the new process serves the value it read
+ * before the save until it next restarts.
+ *
+ * So the table is re-read on a short interval and once more just before the
+ * server listens. A refresh that started before one of this process's own
+ * writes is dropped instead of applied, so it can never put back a value this
+ * process has just replaced; the next tick reads the table again. Never
+ * throws: a failed refresh keeps the cache it had.
+ */
+export async function refreshVariables(pool: Pool): Promise<boolean> {
+  const before = localWrites;
+  try {
+    const next = await readOverrides(pool);
+    if (localWrites !== before) return false;
+    overrides = next;
+    return true;
+  } catch (e) {
+    console.error("[variables] the refresh could not read game_variables; keeping the cache", e);
+    return false;
+  }
+}
+
+/** How often the cache re-reads the table: `VARIABLES_REFRESH_SECONDS`, 30 by default, 0 turns the interval off. */
+export function variablesRefreshSeconds(env: NodeJS.ProcessEnv = process.env): number {
+  const raw = String(env.VARIABLES_REFRESH_SECONDS ?? "").trim();
+  if (raw === "") return 30;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.min(Math.floor(n), 3600) : 30;
+}
+
+/** Start the interval, unref'd so it never holds a process open. Returns a stop function. */
+export function startVariablesRefresh(pool: Pool, seconds = variablesRefreshSeconds()): () => void {
+  if (seconds <= 0) return () => {};
+  const timer = setInterval(() => void refreshVariables(pool), seconds * 1000);
+  timer.unref?.();
+  return () => clearInterval(timer);
 }
 
 /** One variable, typed. Unknown keys throw, because a typo must not read as 0. */
@@ -281,6 +336,7 @@ export async function setVariable(
    * card's "This is right" button do anything at all, since it saves the value
    * already showing.
    */
+  localWrites++;
   if (value === def.default && !def.placeDependent) {
     await pool.query("DELETE FROM game_variables WHERE config_key = ?", [key]);
     delete overrides[key];
@@ -292,5 +348,7 @@ export async function setVariable(
     );
     overrides[key] = value;
   }
+  // Counted on both sides of the write, so a refresh whose read straddles it is dropped either way.
+  localWrites++;
   return { ok: true, key, value, previous };
 }

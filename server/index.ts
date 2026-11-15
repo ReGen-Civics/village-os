@@ -84,7 +84,7 @@ import {
   WIRED_BUT_HELD_BACK,
   type PowerHolder,
 } from "./lib/capabilityRegistry";
-import { allVariables, boolVar, loadVariables, numberVar, rawValue, setVariable, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
+import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
 import { climbLadder, freezeStandingAboveTheDoor, questsThatCarriedPastTheDoor, type LadderStage } from "./lib/admission";
@@ -25803,6 +25803,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // Arm the scheduler tick only now that every boot stage has succeeded and
   // every registerJob call above has run. See the note at the old call site.
   startScheduler(getPool());
+  // The dials a previous release saved while this one booted (server/lib/variables.ts, refreshVariables).
+  await refreshVariables(getPool());
+  startVariablesRefresh(getPool());
   server.listen(port, "0.0.0.0", () => {
     console.log(`[startup] Server listening on 0.0.0.0:${port}`);
   });
