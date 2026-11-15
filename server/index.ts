@@ -62,7 +62,6 @@ import { GPS_CHANGE } from "../shared/governingPurpose";
 import { pageContentProblem } from "../shared/pageContent";
 import { contentVersion } from "../shared/pageContent/resolve";
 import { sitePageMeta, siteWords, spliceMeta, trimTo } from "./lib/pageMeta";
-import { clientRouteMatcher } from "../shared/clientRoutes";
 import { pageVarsFrom } from "../shared/pageContent/vars";
 import { visitProgramProblem } from "../shared/visitProgram";
 import { greetingName, workWithUsAckEmail } from "./lib/workWithUsAck";
@@ -688,6 +687,7 @@ import {
 import { ensureInstanceIdentity, instanceIdentity, PLATFORM_VERSION, PRODUCT_NAME } from "./lib/identity";
 import { servedVillageSourceUrl, VILLAGE_SOURCE_URL_KEY } from "../shared/sourceUrl";
 import { brochureConfig, brochurePageServed, loadBrochurePages } from "./lib/brochurePages";
+import { clientRouteMatcher } from "../shared/clientRoutes";
 import { listDrafts, measureVisionMetrics, tierDraftWords, visionProgress } from "./lib/orgDrafts";
 import { DECIDES_BY, DOMAINS, HOW_CHOSEN, SHAPES } from "../shared/power";
 import { noteSeen, readSeen } from "./lib/sheetSeen"; import { displayCurrencyProblem } from "../shared/money";
@@ -25684,6 +25684,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       return () => true;
     }
   })();
+  // Only the status: the catch-all below still sends the shell, and res.send keeps a status already set.
+  app.get("/{*splat}", (req, res, next) => {
+    if (!isClientRoute(req.path)) res.status(404);
+    next();
+  });
 
   // Every page, `/` included (express.static above serves no index), gets the
   // shell with its stylesheet link versioned (server/routes/brandTheme.ts) and
@@ -25696,7 +25701,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       return res.status(500).send(`Server error: could not serve index.html from ${indexPath}`);
     }
     const meta = sitePageMeta(req.path, requestOrigin(req), mergedConfig(), contentRepo.get() ?? null, !brochurePageServed(req.path));
-    res.status(isClientRoute(req.path) ? 200 : 404).type("html").set("Cache-Control", "no-cache").send(withShellLocale(spliceMeta(shellWithTheme(shell, getBrand), meta), req, res));
+    res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(spliceMeta(shellWithTheme(shell, getBrand), meta), req, res));
   });
 
   /** `<html lang dir>` for this visitor (spec i18n R16): the cookie, their browser, the village default. */
