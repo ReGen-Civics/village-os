@@ -28,6 +28,7 @@ import { sectionsForMany } from "./roleCardSections";
 import { earnedEquityMeaningWritten } from "./valuationStore";
 import { stringVar } from "./variables";
 import { departedById } from "./departed";
+import { readGameStart } from "./gameStart";
 
 /** The ledger's `source` for a moon line's token shares. */
 export const MOON_REWARD_SOURCE = "moon_invoice_reward";
@@ -127,6 +128,19 @@ export async function settleLineRewards(pool: Pool, invoiceId: string): Promise<
  * moon claim. So the launch closer calls this once the Game has started.
  * Rows already posted move nothing, so calling it twice is safe.
  */
+/**
+ * The hourly retry of `settleOwedLineRewards`, once the Game has started (security lane review of
+ * #1331). The launch closer's sweep runs once: a transient error at the close, a `still_owed`
+ * outcome, or a share held until the village writes what Earned Equity means would otherwise
+ * never be tried again. Answers the scheduler's one-line summary.
+ */
+export async function retryOwedLineRewards(pool: Pool): Promise<string> {
+  if (!(await readGameStart(pool)).started) return "the Game has not started";
+  const out = await settleOwedLineRewards(pool);
+  const count = (o: SettleOutcome["outcome"]) => out.filter((x) => x.outcome === o).length;
+  return `${count("posted")} posted, ${count("still_owed")} still owed, ${count("refused")} refused`;
+}
+
 export async function settleOwedLineRewards(pool: Pool): Promise<SettleOutcome[]> {
   const out: SettleOutcome[] = [];
   for (const claimId of await owedClaimIdsOfSource(pool, MOON_REWARD_SOURCE)) out.push(...(await settleOwedForClaim(pool, claimId)));

@@ -30,7 +30,7 @@ import { loadTokenRegistry, memberAccount } from "./ledger";
 import { seedEconomy } from "./economySeed";
 import { CREDITS, EARNED_EQUITY, fromLedgerUnits, villageId } from "./economy";
 import { loadVariables, setVariable } from "./variables";
-import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards, settleOwedLineRewards } from "./moonReward";
+import { lineRewardClaimId, MOON_REWARD_SOURCE, retryOwedLineRewards, settleLineRewards, settleOwedLineRewards } from "./moonReward";
 import { rewardShareLine } from "../../shared/rewardShare";
 import { recordGameStart } from "./gameStart";
 
@@ -276,6 +276,21 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(2600);
     // Twice is safe: nothing is left owed.
     expect(await settleOwedLineRewards(pool)).toEqual([]);
+  });
+
+  it("the hourly retry waits for the Game, then pays what the close missed", async () => {
+    await q("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    const before = await issued();
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    expect(await retryOwedLineRewards(pool)).toBe("the Game has not started");
+    expect(await issued()).toEqual(before);
+    // The Game starts and the closer's own sweep never ran (an error at the close): the retry pays it.
+    await recordGameStart(pool, { ballotId: "b-launch", startedBy: "m-ops", note: "Launched for the test." });
+    expect(await retryOwedLineRewards(pool)).toBe("1 posted, 0 still owed, 0 refused");
+    expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(2600);
+    expect(await retryOwedLineRewards(pool)).toBe("0 posted, 0 still owed, 0 refused");
   });
 
   it("while Earned Equity's meaning is unwritten its share is held: not issued, not paid as cash", async () => {
