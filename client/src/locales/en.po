@@ -7115,6 +7115,11 @@ msgstr "{0}, open"
 #~ msgid "I accept the terms on offer."
 #~ msgstr "I accept the terms on offer."
 
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "formation: the roles held now"
+msgid "Holding it now"
+msgstr "Holding it now"
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Nobody has read {name} yet."
 msgstr "Nobody has read {name} yet."
