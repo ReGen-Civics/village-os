@@ -356,7 +356,16 @@ export const AGENT_WORDING_VARIABLES: readonly string[] = [
   "org.apply_needs_complete_card",
   "org.applicant_reply_days",
   "org.ccos_terms",
+  // The pay shape's footnote: words beside the shape, never the shape or an amount (Rye, 15 Nov 2026).
+  "org.pay_shape_note",
 ];
+
+/**
+ * The role card's word sections an agent may write through the role editor (Rye, 15 Nov 2026): the ideal
+ * background, the qualities and the Digital Companion's lines. The pay sections (paid, payShape, payNote,
+ * payCeiling, paySplitNote) stay a person's; the editor keeps them as they are when they are not sent.
+ */
+export const AGENT_SECTION_KEYS: readonly string[] = ["idealBackground", "qualities", "aiSupport", "aiCompanion"];
 
 export interface LeadApprovedEntry {
   kind: LeadApprovedKind;
@@ -412,7 +421,8 @@ const PERSON_ONLY_ROLE_KEYS = ["heldBy"];
 const MONEY_OR_POWER_KEY = /value|cash|pay|budget|funded|capabilit|power|grantsAdmin|admin|badge|veto/i;
 /** The terms-on-offer groups that record money (MONEY_GROUPS in shared/seatSettings.ts). */
 const TERMS_MONEY_GROUPS = ["pay", "allowance", "bonus"];
-const DRAFT_OPS = ["create_seat", "update_seat"];
+// Retiring a role is drafted too (Rye, 15 Nov 2026); publishing the draft stays a person's act (tier_c is not lifted).
+const DRAFT_OPS = ["create_seat", "update_seat", "rest_seat"];
 
 /** What the platform knows about the seat a seating or unseating reaches, read fresh at each call. */
 export interface LeadSeatFacts {
@@ -452,7 +462,7 @@ export const LEAD_APPROVAL_WORDS = {
   ungrantable:
     "This role carries a power a badge may never carry (the steward's veto and the break-glass among them), or it opens the admin panel. The village fills it by its own vote, and a person does it.",
   variable: "That game variable is not one an agent may set. A person sets it in Admin, Variables.",
-  draftOp: "An agent may draft a role's creation or its words. Other draft changes are a person's to make.",
+  draftOp: "An agent may draft a role's creation, its words or its retirement. Other draft changes are a person's to make.",
 } as const;
 
 /** The approval a seating or unseating carries, read and checked. */
@@ -510,9 +520,14 @@ export function leadApprovedBodyProblem(
       return bad.length ? `An agent writes a role's words and listing details. These stay a person's: ${bad.slice(0, 8).join(", ")}.` : null;
     }
     case "role_edit": {
-      const bad = keys.filter((k) => !["words", "parameters", "archetypes"].includes(k));
+      const bad = keys.filter((k) => !["words", "parameters", "archetypes", "sections"].includes(k));
       const params = b.parameters && typeof b.parameters === "object" && !Array.isArray(b.parameters) ? Object.keys(b.parameters) : [];
       bad.push(...params.filter((k) => MONEY_OR_POWER_KEY.test(k) || PERSON_ONLY_ROLE_KEYS.includes(k)).map((k) => `parameters.${k}`));
+      if (b.sections !== undefined) {
+        const s = b.sections && typeof b.sections === "object" && !Array.isArray(b.sections) ? Object.keys(b.sections) : null;
+        if (!s) bad.push("sections");
+        else bad.push(...s.filter((k) => !AGENT_SECTION_KEYS.includes(k)).map((k) => `sections.${k}`));
+      }
       return bad.length ? `An agent writes a role's words and listing details. These stay a person's: ${bad.slice(0, 8).join(", ")}.` : null;
     }
     case "role_draft": {

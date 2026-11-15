@@ -533,6 +533,12 @@
       "path": "/api/admin/variables/org.ccos_terms",
       "confirm": "agent",
       "label": "Set org.ccos_terms"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/admin/variables/org.pay_shape_note",
+      "confirm": "agent",
+      "label": "Set org.pay_shape_note"
     }
   ]
 }
