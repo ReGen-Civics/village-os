@@ -170,6 +170,8 @@ import { register as registerAgentCompanionRoutes } from "./routes/companion";
 import { register as registerOrganizeRoutes } from "./routes/organize";
 import { register as registerAdminHelperRoutes } from "./routes/adminHelper";
 import { register as registerFieldGuideRoutes } from "./routes/fieldGuide";
+import { register as registerContentTranslationRoutes } from "./routes/contentTranslations";
+import { readTranslationReply, translationMessage, translationSystemPrompt } from "./lib/contentTranslationDraft";
 import { orgStructureForHelper } from "./lib/adminHelperReaders";
 import { seraHelperAsk, seraHelperName } from "./lib/adminHelperSera";
 import { notebookForExport, register as registerVillageDocumentRoutes } from "./routes/villageDocuments";
@@ -258,6 +260,7 @@ import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry"
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
+import { noSharedCache, pageTranslation, readerLocale } from "./lib/contentTranslationRead";
 import { register as registerSessionCardRoutes } from "./routes/sessionCard";
 import { exportMemberSessions, register as registerLiveSessionsRoutes } from "./routes/liveSessions";
 import { register as registerSessionTasksRoutes } from "./routes/sessionTasks";
@@ -7861,6 +7864,22 @@ async function startServer() {
       );
     }
     res.json(section);
+  });
+
+  /**
+   * A page's words in the reader's language (Rye, 15 Nov 2026), for the page to lay over its English
+   * before `{words}` are filled. Only fresh translations of the words the page says now; a machine
+   * draft is named in `machine` so the page marks it. Binding pages (the pledge, the rights pages,
+   * the good neighbor agreement) never answer with a translation. Empty, never an error, for a page
+   * or a language with none, so a reader's page never loads red.
+   */
+  app.get("/api/content/:section/translation", async (req, res) => {
+    const section = String(req.params.section ?? "");
+    const locale = readerLocale(req);
+    noSharedCache(res);
+    if (!locale) return res.json({ translation: null });
+    const content = contentRepo.get() ?? {};
+    res.json({ translation: await pageTranslation(getPool(), section, content[section], locale) });
   });
 
   // Admin: Read All Content
@@ -17717,6 +17736,28 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerJournalRoutes(app, { authedUser, getPool, clientIp, overLimit, seasonState, projectName: notifyDeps.projectName, members, isPresent: notifyDeps.isPresent, claimsRepo, villageGuideName: () => getWorkWithUs().assistantName });
   // "Talk it out" beside long text boxes: the member's own guide helps draft (server/routes/fieldGuide.ts).
   registerFieldGuideRoutes(app, { authedUser, clientIp, overLimit, noteAssistantUsage, villageName: () => mergedConfig().project.name, villageGuideName: () => getWorkWithUs().assistantName });
+  // Translations of the village's own words: approve or improve, by the power that writes the English
+  // (server/routes/contentTranslations.ts). Machine drafts only with CONTENT_MACHINE_DRAFTS=on.
+  registerContentTranslationRoutes(app, {
+    guardCapability,
+    authedUser,
+    getPool,
+    overLimit,
+    contentSection: (section) => (contentRepo.get() ?? {})[section],
+    machineDraft: async ({ locale, items, userId, req }) => {
+      const call = await callAssistant({
+        mode: "translate",
+        system: translationSystemPrompt(locale, mergedConfig().project.name),
+        messages: [{ role: "user", content: translationMessage(items) }],
+        model: DEFAULT_ASSISTANT_MODEL,
+        clientIp: clientIp(req),
+        burstKey: `assist-translate:${userId}`,
+        userId,
+      });
+      await noteAssistantUsage("translate", DEFAULT_ASSISTANT_MODEL, call, userId);
+      return call.ok ? readTranslationReply(call.text, items) : null;
+    },
+  });
   registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });

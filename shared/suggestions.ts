@@ -197,6 +197,22 @@ export const ADMIN_EDIT_CONTROLS = {
     label: "where suggestions on each power go",
     passesPowers: false,
   },
+  /*
+   * TRANSLATIONS OF THE VILLAGE'S OWN WORDS (Rye, 6 and 15 Nov 2026): any
+   * member improves a translation; whoever holds the power that writes the
+   * English accepts it. The Accept calls `savePersonTranslation`, the write a
+   * holder's own improvement uses (server/routes/contentTranslations.ts).
+   */
+  role_card_translation: {
+    capability: "org.decide",
+    label: "a translation of a role card",
+    passesPowers: false,
+  },
+  page_translation: {
+    capability: "story.tell",
+    label: "a translation of a page's words",
+    passesPowers: false,
+  },
 } as const satisfies Record<string, AdminEditControlSpec>;
 
 export type AdminEditControlId = keyof typeof ADMIN_EDIT_CONTROLS;
