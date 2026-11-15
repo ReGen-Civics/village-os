@@ -461,7 +461,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
     expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
-    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.");
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.");
     // One footnote (copy sweep): the village's own note is not drawn beside it.
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
     expect(piece.textContent).not.toContain("full band");

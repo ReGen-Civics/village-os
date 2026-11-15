@@ -38,6 +38,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { rewardWords } from "./rewardWords";
+import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
 import { Fireflies } from "@/components/journey/nature";
@@ -359,7 +360,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
         {/* The roots it grows from, drawn by RootTags (RootsSlot.tsx). */}
         <RootsSlot roots={roots} />
         {sections?.paid && (
-          <p className="font-semibold text-notice" data-testid="paid-role-line">{SECTION_WORDS.paid}</p>
+          <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>
         )}
       </header>
 
