@@ -249,13 +249,15 @@ export function rolesWithinReach<T>(roles: readonly T[], askOf: (role: T) => Rol
 //
 // PAY, THROUGH ONE CONFIRMED DOOR (Rye, 14 Nov 2026, answer A). Where a
 // member's roles are paid apart (two or more agreements in force), each
-// role's pay scales by its share of their time, from the split
-// (`scaleBySplit`, shared/moonRecap.ts). A Treasurer sees each line's base
+// role's pay scales by the time the split gives it (the total times the
+// share) against the commitment its agreement was priced at, so the
+// commitment is applied once and never twice (Rye, 15 Nov 2026, "no double
+// cut"; `scaleBySplit`, shared/moonRecap.ts). A Treasurer sees each line's base
 // pay, share and scaled amount at End of Moon and confirms them before
 // Finance approval can pass. One pay, no split, or a split that does not add
 // up to 100: pay is the terms, unchanged. The split reaches the invoice only
 // through server/lib/splitForPay.ts, the one door `commitmentBoundary.test.ts`
-// allows; the percent itself still reaches no pay path.
+// allows, and the total crosses only beside a split.
 
 /** The most roles one split names. A member holds a handful; this is a guard, never a cap anyone meets. */
 export const SPLIT_MAX_ROLES = 12;

@@ -55,12 +55,13 @@ describe.skipIf(!testDbConfigured())("commitment percent against a real schema",
     expect((await commitmentNow(pool, "m-wren", "2026-11-01"))?.split).toEqual(split);
   });
 
-  it("the pay path's one read: the split alone, as it holds on a day, and the same word commitmentNow reads", async () => {
+  it("the pay path's one read: the split and the total it divides, as they hold on a day, and the same word commitmentNow reads", async () => {
     const split = [{ roleId: "r-host", share: 70 }, { roleId: "r-well", share: 30 }];
     await recordCommitment(pool, "m-wren", { pct: 50, period: "season", fromDate: "2026-10-01", note: "private", split });
     await recordCommitment(pool, "m-wren", { pct: 40, period: "moon", fromDate: "2026-12-01", note: null });
-    expect(await splitOn(pool, "m-wren", "2026-11-08")).toEqual(split);
+    expect(await splitOn(pool, "m-wren", "2026-11-08")).toEqual({ pct: 50, split });
     expect((await commitmentNow(pool, "m-wren", "2026-11-08"))?.split).toEqual(split);
+    // A plain word carries no split, so its percent never reaches pay.
     expect(await splitOn(pool, "m-wren", "2026-12-02")).toBeNull();
     expect(await splitOn(pool, "m-wren", "2026-09-01")).toBeNull();
     expect(await splitOn(pool, "m-other", "2026-11-08")).toBeNull();

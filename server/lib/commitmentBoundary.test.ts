@@ -24,8 +24,11 @@
  *   - only server/lib/moonRecap.ts (the moon frame the invoice is drawn from)
  *     opens the door;
  *   - the door takes one binding from the history, `splitOn`, and `splitOn`
- *     selects `split_json` alone, so the percent a member gives, the period,
- *     the note and the history never reach pay;
+ *     selects `pct` and `split_json` alone, answering null unless the word
+ *     carries a split, so the period, the note and the history never reach
+ *     pay, and the percent reaches it only beside a split. WIDENED ONCE (Rye,
+ *     15 Nov 2026, "no double cut"): the split is read against the commitment
+ *     each agreement was priced at, which needs the total it divides;
  *   - rules 2 and 3 are unchanged.
  * What keeps the split from paying on its own is not this file: Finance
  * approval refuses a scaled invoice until it is confirmed
@@ -171,7 +174,7 @@ describe("nothing that pays reads a commitment", () => {
     expect(Array.from(new Set(openers))).toEqual([path.relative(ROOT, SPLIT_DOOR_USER)]);
   });
 
-  it("the door takes only `splitOn` from the history, and `splitOn` selects the split alone", () => {
+  it("the door takes only `splitOn` from the history, and `splitOn` selects the split and its total alone", () => {
     const door = codeOf(SPLIT_DOOR);
     const fromHistory = Array.from(door.matchAll(/import\s*(type\s*)?\{([^}]*)\}\s*from\s*["']([^"']+)["']/g))
       .filter((m) => resolve(SPLIT_DOOR, m[3]) && history.has(resolve(SPLIT_DOOR, m[3]) as string))
@@ -181,7 +184,7 @@ describe("nothing that pays reads a commitment", () => {
     const repo = codeOf(HISTORY_REPO);
     const body = repo.slice(repo.indexOf("export async function splitOn"), repo.indexOf("export async function forgetCommitments"));
     const selects = Array.from(body.matchAll(/SELECT\s+([^"]*?)\s+FROM/g)).map((m) => m[1]);
-    expect(selects).toEqual(["`split_json`"]);
+    expect(selects).toEqual(["`pct`, `split_json`"]);
   });
 
   it("the history is append only: its repo never updates or replaces a row", () => {

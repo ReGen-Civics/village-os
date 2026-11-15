@@ -34,7 +34,7 @@ import {
   ATTESTATION_MISSING, EMPTY_SETTINGS, ITEM_TEXT_EMPTY, LIMITS, MOON_WORDS, NO_TERMS, PAYERS_DOC_KEY, EMPTY_PAYERS, PAY_ROUTES,
   RECAP_STATUS_WORDS, SERA_CLOSED_NOTE, SETTINGS_DOC_KEY, SUPPORT_LINE, attestationWords, auditTensions, billRef, billToOf,
   carriedTooOften, coverage, daysHeldIn, deliverableLines, endOfMoonFriday, goalScore, halfwayDay, heldDuring, invoiceDueOn,
-  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, scaleBySplit, moonDays, outsideRolesAudit,
+  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, pricedCommitments, scaleBySplit, moonDays, outsideRolesAudit,
   parseItemFields, parseMoonReviewSettings, parsePayRouteInput, parsePayers, parseRoleAudit, payRouteWords, payerForRoute,
   THANKS_WORDS, parseThanks, periodWords, thanksDedupeKey, readingOf, recapEditable, routeChangeClearsConfirmation, scoreContextOf, seatCoverage, seatReadingOf, sendBy,
   setupGaps, taskScore, termsCarryMoney, waitingLine, waitingStage, workDueOn, workSummaryHtml, workSummaryText,
@@ -350,12 +350,18 @@ export interface Frame {
    * pay is the terms, unchanged.
    */
   split?: RoleSplitShare[] | null;
+  /**
+   * The member's total commitment from the same dated word as the split, the
+   * one figure the split is read against so a role's pay is never cut twice
+   * (Rye, 15 Nov 2026). Null or absent: pay is the terms, unchanged.
+   */
+  givenPct?: number | null;
 }
 
 /** The draft lines for a frame: the terms, scaled by the split where it applies. */
-export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}, adjusts: AdjustProposals = {}, reply: string | null = null): InvoiceLine[] {
+export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split" | "givenPct">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}, adjusts: AdjustProposals = {}, reply: string | null = null): InvoiceLine[] {
   // A Treasurer's proposed amount sits on top of the split (Rye, 14 Nov 2026): its base is what terms and split gave.
-  return applyAdjusts(scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId)), adjusts, reply);
+  return applyAdjusts(scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId), { totalPct: frame.givenPct ?? null, pricedPct: pricedCommitments(frame.terms) }), adjusts, reply);
 }
 
 /** The season running on a day: the latest that has begun and not ended. */
@@ -392,6 +398,7 @@ export async function loadFrame(pool: Pool, userId: string, moon: Moon, deps: Fr
     const newest = filed[filed.length - 1];
     ownGoals = (newest?.seasonalGoals ?? []).map((g) => String(g.title ?? "").trim()).filter(Boolean);
   }
+  const word = await splitForPay(pool, userId, moon.days.lastDay);
   return {
     roles,
     seatings: held,
@@ -399,7 +406,8 @@ export async function loadFrame(pool: Pool, userId: string, moon: Moon, deps: Fr
     seasonId: season?.id ?? null,
     seasonGoals,
     ownGoals,
-    split: await splitForPay(pool, userId, moon.days.lastDay),
+    split: word.split,
+    givenPct: word.givenPct,
   };
 }
 

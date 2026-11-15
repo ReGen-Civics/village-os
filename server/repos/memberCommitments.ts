@@ -9,7 +9,8 @@
  *
  * Private to the member. Nothing that pays reads it (shared/commitment.ts),
  * with ONE narrowed door (Rye, 14 Nov 2026): `splitOn` hands the split, and
- * only the split, to server/lib/splitForPay.ts for the End of Moon invoice,
+ * the total it divides (Rye, 15 Nov 2026, "no double cut"), to
+ * server/lib/splitForPay.ts for the End of Moon invoice,
  * where a Treasurer confirms it before anything is paid.
  * It goes when the member is erased (`forgetCommitments`, server/lib/erasure.ts).
  */
@@ -70,16 +71,22 @@ export async function commitmentNow(db: Queryable, userId: string, today: string
 }
 
 /**
- * THE SPLIT ALONE, as it holds on `day`: the one read the pay path may make
- * (server/lib/splitForPay.ts). It selects `split_json` and nothing else, so
- * the percent, the period and the note never reach a pay path.
+ * THE SPLIT AND THE TOTAL IT DIVIDES, as they hold on `day`: the one read
+ * the pay path may make (server/lib/splitForPay.ts). It selects `pct` and
+ * `split_json` and nothing else, and answers null unless the word carries a
+ * split, so a plain percent, the period and the note never reach a pay path
+ * (Rye, 15 Nov 2026, "no double cut").
  */
-export async function splitOn(db: Queryable, userId: string, day: string): Promise<MemberCommitment["split"]> {
+export async function splitOn(db: Queryable, userId: string, day: string): Promise<{ pct: number; split: NonNullable<MemberCommitment["split"]> } | null> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `split_json` FROM `member_commitments` WHERE `user_id` = ? AND `from_date` <= ? ORDER BY `from_date` DESC, `id` DESC LIMIT 1",
+    "SELECT `pct`, `split_json` FROM `member_commitments` WHERE `user_id` = ? AND `from_date` <= ? ORDER BY `from_date` DESC, `id` DESC LIMIT 1",
     [userId, day],
   );
-  return rows.length === 0 ? null : storedCommitmentSplit(rows[0].split_json);
+  if (rows.length === 0) return null;
+  const split = storedCommitmentSplit(rows[0].split_json);
+  const pct = storedCommitmentPct(rows[0].pct);
+  // The total travels only beside a split: a plain word never reaches pay.
+  return split && pct !== null ? { pct, split } : null;
 }
 
 /** Erasure: the member's whole history goes with them. */
