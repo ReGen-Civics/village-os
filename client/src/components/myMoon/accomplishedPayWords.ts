@@ -16,6 +16,9 @@
  * reader's language where it is drawn (copy sweep, 15 Nov 2026): `t(WORDS.title)`.
  */
 
+// A value import of the runtime, as client/src/lib/unsavedChanges.ts has: precompileEnglish compiles the messages of
+// a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
+import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 
 export const ACCOMPLISHED_PAY_WORDS = {
@@ -34,3 +37,6 @@ export const ACCOMPLISHED_PAY_WORDS = {
   /** The toggle under the My moon header. */
   show: msg({ message: "How pay works", context: "how pay works, the toggle" }),
 } as const;
+
+/** One of the words, in the reader's language. */
+export const accomplishedPayLine = (key: keyof typeof ACCOMPLISHED_PAY_WORDS, i18n: I18n = appI18n): string => i18n._(ACCOMPLISHED_PAY_WORDS[key]);

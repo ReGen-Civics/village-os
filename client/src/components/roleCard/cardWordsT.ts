@@ -5,13 +5,15 @@
  * are the card's own lines from shared/: the English there stays the source a test and the server read, and
  * each one is said again here as a message, keyed by what it is, never matched on its words.
  */
-import type { I18n } from "@lingui/core";
+// A value import of the runtime, as client/src/lib/unsavedChanges.ts has: precompileEnglish compiles the messages of
+// a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
+import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import { readTrack, type Track } from "@shared/roleTracks";
 
 /** "This is a paid role" (SECTION_WORDS.paid). */
-export const paidRoleLine = (i18n: I18n): string => i18n._(msg({ message: "This is a paid role", context: "role card, under the title" }));
+export const paidRoleLine = (i18n: I18n = appI18n): string => i18n._(msg({ message: "This is a paid role", context: "role card, under the title" }));
 
 /** A track's label (TRACK_WORDS), or the stored words as they are when they name no track. */
 export function trackWords(i18n: I18n, raw: string): string {
