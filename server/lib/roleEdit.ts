@@ -294,9 +294,12 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
   // The founding sections are not a draft field either: they are the village's card data, saved beside the draft.
   let sections: RoleCardSections | null = null;
   if (body.sections !== undefined) {
-    const read = readSections(body.sections);
-    if (!read.ok) return bad(read.problem, 400, [read.field]);
     const held = (await sectionsFor(pool, roleId)).sections;
+    // A part of the sections changes that part alone (Rye, 15 Nov 2026): the agent connector sends only the
+    // word sections it may write, and the pay sections it may not touch stay as they are. The editor sends all.
+    const patch = body.sections && typeof body.sections === "object" && !Array.isArray(body.sections) ? { ...held, ...(body.sections as Record<string, unknown>) } : body.sections;
+    const read = readSections(patch);
+    if (!read.ok) return bad(read.problem, 400, [read.field]);
     if (JSON.stringify(held) !== JSON.stringify(read.value)) sections = read.value;
   }
 
