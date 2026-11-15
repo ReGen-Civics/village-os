@@ -76,6 +76,7 @@ import { canonicalJson } from "./canonicalJson";
 import { looksLikePaymentDetails, moneyWords, type SeatSettings } from "./seatSettings";
 import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
+import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -1409,6 +1410,13 @@ export interface InvoiceLine {
    * can be approved (`splitUnconfirmed`), so nothing pays off a split alone.
    */
   split?: LineSplit | null;
+  /**
+   * Set when a Treasurer proposed a different amount for this line at the End
+   * of Moon review, with a reason, because what was delivered was far from
+   * what was agreed (Rye, 14 Nov 2026; shared/accomplishedReview.ts). The
+   * member sees it and may reply; approval refuses until a Treasurer confirms.
+   */
+  adjust?: LineAdjust | null;
 }
 
 /** What the split did to one line, and who confirmed it. */
@@ -1949,7 +1957,7 @@ export const GUIDE_WORDS = { open: "Open the End of Moon guide" } as const;
 
 export const REVIEW_EVENT_KINDS = [
   "sent", "taken_back", "work_approved", "returned", "amount_set", "range_answered", "invoice_sent",
-  "invoice_approved", "paid", "void", "route_confirmed", "route_changed", "payers_changed", "settings_changed", "rhythm_changed", "self_approved", "imported", "split_confirmed",
+  "invoice_approved", "paid", "void", "route_confirmed", "route_changed", "payers_changed", "settings_changed", "rhythm_changed", "self_approved", "imported", "split_confirmed", "pay_adjusted", "adjust_confirmed",
 ] as const;
 export type ReviewEventKind = (typeof REVIEW_EVENT_KINDS)[number];
 
@@ -2747,6 +2755,7 @@ export const MOON_ROUTES = {
   setRange: "/api/moon-review/invoices/:id/range",
   voidInvoice: "/api/moon-review/invoices/:id/void",
   confirmSplit: "/api/moon-review/invoices/:id/confirm-split",
+  adjustPay: "/api/moon-review/invoices/:id/adjust",
   invoice: "/api/moon-review/invoices/:id",
   confirmRoute: "/api/moon-review/pay-routes/:user/confirm",
   payers: "/api/moon-review/payers",
@@ -2834,6 +2843,12 @@ export interface InvoiceView {
   workSummaryHtml: string | null;
   /** Why it cannot be sent yet, or null. */
   sendRefusal: string | null;
+  /**
+   * Agreed beside delivered (Rye, 14 Nov 2026): counts of the member's own
+   * goals and tasks, and the far-off flag. Facts only, no score. Absent where
+   * the caller did not read the goals.
+   */
+  accomplished?: AccomplishedView | null;
 }
 
 /** `GET /api/me/moon?cycle=`. The moon load shows to the member only. */
@@ -2936,6 +2951,8 @@ export interface SendInvoiceRequest {
   externalInvoiceKey?: string | null;
   /** A range line's proposed amount, per its `per`, by application id. */
   rangeProposals?: Record<string, number>;
+  /** The member's reply to a Treasurer's proposed amount, read before it is confirmed. */
+  adjustReply?: string | null;
 }
 
 export interface SendInvoiceResponse {
@@ -3187,6 +3204,7 @@ export const NOTICE_WORDS = {
   workApproved: "The work in your moon recap is approved.",
   approved: "Your moon recap is approved. Finance pays outside the platform and tells you once it is sent.",
   rangeChanged: "Finance set a new amount on your invoice. Reissue your own invoice and send it again.",
+  payAdjusted: "The Treasurer proposed a different amount on your invoice, with a reason. Read it, reply if you want, and send it again.",
   selfApprovedForReview: (name: string) => `${name} approved their own moon recap. It is open for review on the payouts desk.`,
   paid: (day: string) => paySentWords(day),
   reminder: (name: string) => `${name}'s moon recap is still waiting on your approval.`,
