@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 239 open and 50 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 244 open and 50 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 262 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 267 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-289 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 55 text, 6 longtext.
+294 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 60 text, 6 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 262 of them as soon as it is saved, and
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
 | The village's people | 19 | 18 | 1 |
-| The founding team | 13 | 13 | 0 |
+| The founding team | 18 | 18 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Companions | 2 | 2 | 0 |
@@ -294,6 +294,11 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The note under the pay shape | `org.pay_shape_note` | The founding team | text | blank | the whole village |
 | Ways to get to know us before applying | `org.founding_know_us` | The founding team | longtext | `Join a community call Visit the land Share a meal with us` | the whole village |
 | The note while a way to get to know us is not ticked | `org.founding_know_us_note` | The founding team | longtext | `We encourage you to do these, but if you haven't, you can still apply, especially if you've been invited to, or if you live far away and the next call is more than a week away, or if you feel you're an incredibly strong candidate.` | the whole village |
+| The last community call recording | `org.founding_recording_link` | The founding team | text | blank | the whole village |
+| Where to join the next community call | `org.founding_call_link` | The founding team | text | blank | the whole village |
+| Where to book a land tour | `org.founding_tour_link` | The founding team | text | blank | the whole village |
+| Where to find the next potluck | `org.founding_potluck_link` | The founding team | text | blank | the whole village |
+| Where someone completely new explores first | `org.founding_steward_path_link` | The founding team | text | blank | the whole village |
 | What the first cycle looks like | `org.founding_first_cycle` | The founding team | longtext | `Your first cycle is one month. At its end, either side may choose to stop there, with thanks.` | the whole village |
 | The first conversations after joining | `org.founding_first_conversations` | The founding team | longtext | blank | the whole village |
 | A note when the application changes | `org.founding_updated_note` | The founding team | text | blank | the whole village |
@@ -3698,7 +3703,7 @@ Off, no role card shows a pay range or an amount to visitors or members, whateve
 
 ## The founding team
 
-13 dials. 13 for the whole village.
+18 dials. 18 for the whole village.
 
 ### When a moon counts as far from what was agreed
 
@@ -3780,6 +3785,76 @@ Shown on the first step of the application whenever a way is not ticked yet. It 
 | Key | `org.founding_know_us_note` |
 | Type | longtext, free text, several lines, shown to members as plain words |
 | Default | `We encourage you to do these, but if you haven't, you can still apply, especially if you've been invited to, or if you live far away and the next call is more than a week away, or if you feel you're an incredibly strong candidate.` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The last community call recording
+
+Step 1 of the application offers "Watch the last recording" with this link, as the easiest first step. A page of this site or an https address. Empty: not offered.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.founding_recording_link` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Where to join the next community call
+
+Step 1 offers "Join the next call". The next public event titled community call or webinar is linked first, with its date; this link stands in when there is none. Empty: not offered.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.founding_call_link` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Where to book a land tour
+
+Step 1 offers "Book a land tour". The next public event titled land tour is linked first; this booking link stands in when there is none. Empty: not offered.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.founding_tour_link` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Where to find the next potluck
+
+Step 1 offers "Come to the next potluck". The next public event titled potluck is linked first, with its date and place; this link stands in when there is none. Empty: not offered.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.founding_potluck_link` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Where someone completely new explores first
+
+Step 1 says "Completely new here? Explore the Steward path first" with this link. A page of this site or an https address; empty means /steward.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.founding_steward_path_link` |
+| Type | text, free text, one line |
+| Default | blank |
 | Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
