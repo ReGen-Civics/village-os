@@ -332,6 +332,40 @@ describe("the six steps", () => {
     expect(document.body.textContent).not.toMatch(/\bquest|stone|moss|\bmoon\b/i);
   });
 
+  it("Get to know us: each way is a link in a new tab, the warm push, and the Steward path for the completely new (Rye, 15 Nov 2026)", async () => {
+    const knowUsLinks = {
+      recording: "https://video.example.test/last-call",
+      call: { href: "/events", next: { title: "Community Call", startsAt: "2099-01-08T17:00:00.000Z", place: null, href: "/events" } },
+      tour: { href: "https://book.example.test/tour", next: null },
+      potluck: { href: null, next: null },
+      stewardPath: "/steward",
+    };
+    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, knowUsLinks } });
+    const ways = document.querySelector("[data-know-us-ways]") as HTMLElement;
+    expect(ways.textContent).toMatch(/Most people haven't done these yet, and that's fine\. Watching the last recording is the easiest first step\./);
+    const acts = within(ways.querySelector("[data-know-us-acts]") as HTMLElement).getAllByRole("link");
+    expect(acts.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+      ["Watch the last recording", "https://video.example.test/last-call"],
+      ["Join the next call", "/events"],
+      ["Book a land tour", "https://book.example.test/tour"],
+    ]);
+    // No potluck link and no potluck event: no act, never a dead link.
+    expect(ways.textContent).not.toMatch(/potluck/);
+    // Every link opens in a new tab, so the draft stays.
+    for (const a of within(ways).getAllByRole("link")) expect([a.getAttribute("target"), a.getAttribute("rel")]).toEqual(["_blank", "noopener noreferrer"]);
+    const steward = within(ways).getByRole("link", { name: /Explore the Steward path first/ });
+    expect(steward.getAttribute("href")).toBe("/steward");
+    expect(ways.textContent).toMatch(/Already feel like a strong fit\? Carry on with your application\./);
+  });
+
+  it("with no links written, the push stays, no act is drawn, and the Steward path still is (control)", async () => {
+    await applyFor();
+    const ways = document.querySelector("[data-know-us-ways]") as HTMLElement;
+    expect(ways.querySelector("[data-know-us-acts]")).toBeNull();
+    expect(ways.textContent).not.toMatch(/recording/);
+    expect(within(ways).getByRole("link", { name: /Explore the Steward path first/ }).getAttribute("href")).toBe("/steward");
+  });
+
   it("Get to know us never locks: the note shows while a way is open, and Continue moves on with nothing ticked", async () => {
     await applyFor();
     expect(document.querySelector("[data-know-note]")?.textContent).toBe(SETUP.knowUsNote);
