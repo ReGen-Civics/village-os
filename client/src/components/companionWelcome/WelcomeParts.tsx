@@ -85,7 +85,7 @@ export function MoonPromise({
         <p className={KICKER}>
           <Trans context="companion welcome">End of Moon, how it adds up</Trans>
         </p>
-        <p className="m-0 text-[11.5px] text-muted-foreground">
+        <p className="m-0 text-xs text-muted-foreground">
           <Trans context="companion welcome">An example moon:</Trans>
         </p>
         {row("Goal tasks", "80%", "var(--color-dash-gold)", "4 of 5")}
@@ -98,7 +98,7 @@ export function MoonPromise({
         </p>
       </div>
       <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">
-        <span className="m-0 text-[11.5px] text-muted-foreground">
+        <span className="m-0 text-xs text-muted-foreground">
           <Trans context="companion welcome">Goals guide. Tasks show the truth.</Trans>
         </span>
         <button type="button" className={`${BTN_GOLD} !min-h-9 !px-3.5 !py-1.5 !text-[13px]`} onClick={onNext}>

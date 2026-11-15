@@ -3,7 +3,7 @@
  * it changes, who sees it, and the member's yes. Birth details for the Vedic
  * Moon stay in this component's memory and are never sent.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import MicButton from "@/components/MicButton";
@@ -51,6 +51,9 @@ export function LensSheet({
   onClose: () => void;
 }) {
   const { t } = useLingui();
+  // Focus moves into the sheet as it opens; the welcome puts it back on the lens that opened it.
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => box.current?.focus(), []);
   const [yes, setYes] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -140,7 +143,7 @@ export function LensSheet({
   const field = "flex flex-col gap-1 text-xs text-muted-foreground";
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={title} className="cw-up absolute inset-x-0 bottom-0 z-40 flex max-h-[86%] flex-col gap-2.5 overflow-y-auto rounded-t-[22px] border-t border-dash-gold-edge bg-card p-[18px] shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
+    <div ref={box} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className="cw-up outline-none absolute inset-x-0 bottom-0 z-40 flex max-h-[86%] flex-col gap-2.5 overflow-y-auto rounded-t-[22px] border-t border-dash-gold-edge bg-card p-[18px] shadow-[0_-20px_40px_rgba(0,0,0,0.5)]">
       <div className="flex items-center gap-2.5">
         <span className="grid size-[34px] shrink-0 place-items-center rounded-full font-display text-[15px] text-dash-gold-ink" style={{ background: GLYPH[id].color }} aria-hidden="true">
           {id === "gk" ? (gk?.profile ?? "GK") : id === "type" ? (enneagram || "◇") : GLYPH[id].mark}
@@ -193,7 +196,7 @@ export function LensSheet({
               {moon.nakshatra !== null ? t({ message: `Moon in ${RASHI[moon.rashi]}, ${NAKSHATRA[moon.nakshatra]}`, context: "companion welcome" }) : t({ message: `Moon in ${RASHI[moon.rashi]} (add your birth time for your nakshatra)`, context: "companion welcome" })}
             </p>
           ) : null}
-          <p className="m-0 text-[11.5px] text-muted-foreground">
+          <p className="m-0 text-xs text-muted-foreground">
             <Trans context="companion welcome">Worked out on this device. Your birth date, time and place are never sent or kept; only the Moon's sign and nakshatra are.</Trans>
           </p>
         </>
@@ -244,13 +247,13 @@ export function LensSheet({
             <textarea className={`${INPUT} min-h-20 py-2`} maxLength={400} value={own} placeholder={t({ message: `Night owl. Short messages. Love metaphors.`, context: "companion welcome" })} onChange={(e) => setOwn(e.target.value)} />
             <MicButton onText={(chunk) => setOwn((v) => `${v}${v && !v.endsWith(" ") ? " " : ""}${chunk}`.slice(0, 400))} className={MIC_CLASS} />
           </span>
-          <span className="text-[11.5px]">{MIC_LINE}</span>
+          <span className="text-xs">{MIC_LINE}</span>
         </label>
       ) : null}
 
       {say ? (
         <div className="rounded-[14px] border border-dash-edge bg-dash-raised px-3.5 py-3">
-          <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.12em] text-dash-gold">
+          <div className="mb-1 text-xs font-bold uppercase tracking-[0.12em] text-dash-gold">
             <Trans context="companion welcome">What {companionName} will do with it</Trans>
           </div>
           <p className="m-0 text-[15px] text-foreground">{say}</p>

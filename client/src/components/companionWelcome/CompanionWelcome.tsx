@@ -4,7 +4,7 @@
  * the Hatchery egg (direction C) for the first beats, and the Shoulder Guide
  * tour (direction B) on the real profile.
  *
- *   0 arrival      the moon ring fills, "Open the hatchery"
+ *   0 arrival      the moon ring fills; "Speak aloud" or "Quiet" (nothing is said until then)
  *   1 name         the egg talks; say, type or pick a name
  *   2 personality  a character, three dials, how I like to be helped, sound
  *   3 lenses       optional private ingredients dropped into the egg
@@ -41,7 +41,7 @@ import {
   type WelcomePayload,
   type WelcomeStatus,
 } from "@shared/companionPersona";
-import { Bubble, Egg, INPUT, MIC_LINE, Pet, TINT_OF, burst, chip, confetti, send, useSpeech } from "./welcomeKit";
+import { Bubble, Egg, FOCUS, INPUT, MIC_LINE, Pet, TINT_OF, burst, chip, confetti, refocus, send, useInertOutside, useSpeech } from "./welcomeKit";
 import { LensSheet, type SheetId } from "./LensSheet";
 import { MoonPromise, NameBox } from "./WelcomeParts";
 import "./companionWelcome.css";
@@ -98,6 +98,16 @@ export default function CompanionWelcome(props: CompanionWelcomeProps) {
 
 function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: CompanionWelcomeProps) {
   const { t } = useLingui();
+  /** What a dial's position means in words, for a screen reader (aria-valuetext). */
+  const dialText = (v: number, lowWord: string, highWord: string): string => {
+    const low = lowWord.toLowerCase();
+    const high = highWord.toLowerCase();
+    if (v <= 20) return lowWord;
+    if (v < 45) return t({ message: `Leaning ${low}`, context: "companion welcome" });
+    if (v <= 55) return t({ message: `Halfway between ${low} and ${high}`, context: "companion welcome" });
+    if (v < 80) return t({ message: `Leaning ${high}`, context: "companion welcome" });
+    return highWord;
+  };
   const personal = companions.find((c) => c.scope === "personal") ?? null;
   const engineName = personal?.chatEngine ?? t({ message: `your guide`, context: "companion welcome" });
   const roles = companions.filter((c) => c.scope === "role" && c.status !== "retired");
@@ -119,8 +129,18 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
   const motion = reduced ? "" : "cw-bob";
   const pop = reduced ? "" : "cw-pop";
   const stageRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const { speak, cancel } = useSpeech(persona.speak && !quiet, persona.character);
+  // Nothing is said aloud until the member has chosen: a screen reader is never
+  // talked over by a voice nobody asked for. The arrival asks first (Speak aloud or
+  // Quiet), and a welcome resumed before that choice asks again at the top.
+  const [voiceChosen, setVoiceChosen] = useState(Boolean(personal?.persona));
+  const chooseVoice = (aloud: boolean) => {
+    setPersona((p) => ({ ...p, speak: aloud }));
+    setQuiet(!aloud);
+    setVoiceChosen(true);
+  };
+  const { speak, cancel } = useSpeech(voiceChosen && persona.speak && !quiet, persona.character);
   const cname = name.trim() || "your companion";
   const tint = TINT_OF[persona.character];
   // The egg stays lilac until a character is picked (the approved Hatchery board).
@@ -151,6 +171,10 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
     },
     [beat, cancel, cname, onClose, save],
   );
+
+  // The egg stage is modal: the page behind it is inert. The tour is not, since
+  // it walks the real page.
+  useInertOutside(rootRef, beat !== 5);
 
   // Hold the page still behind the egg; the tour needs it free to scroll.
   useEffect(() => {
@@ -267,6 +291,27 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
     cancel();
     if (stop > 0) setStop(stop - 1);
   };
+  // Focus lives in the tour: on Next as it starts, and again whenever a stop
+  // change took the focused control away (Back is gone on the first stop).
+  const tourRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (beat !== 5) return;
+    const t = window.setTimeout(() => {
+      if (!tourRef.current?.contains(document.activeElement)) nextRef.current?.focus({ preventScroll: true });
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [beat, stop, stops]);
+
+  // A closed lens sheet hands focus back to the lens that opened it.
+  const sheetFrom = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (sheet === null && sheetFrom.current) {
+      refocus(sheetFrom.current);
+      sheetFrom.current = null;
+    }
+  }, [sheet]);
+
   const act = () => {
     if (spot) burst(spot.left + spot.width / 2, spot.top + Math.min(spot.height, 120) / 2);
     confetti(14);
@@ -290,29 +335,34 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
 
   // ── the frame every egg beat shares ──
   const topbar = (
-    <div className="absolute inset-x-3 top-2.5 z-30 flex items-center justify-between gap-2">
+    <div className="absolute inset-x-3 top-2.5 z-30 flex items-center justify-between gap-2" inert={sheet ? true : undefined}>
       <div className="flex gap-1" aria-label={t({ message: `Step ${beat + 1} of ${WELCOME_BEATS.length}`, context: "companion welcome" })} role="img">
         {WELCOME_BEATS.map((b, i) => (
           <i key={b} className={`block h-1 w-4 rounded-sm ${i <= beat ? "bg-dash-gold" : "bg-white/20"}`} />
         ))}
       </div>
       <div className="flex gap-1.5">
-        <button
-          type="button"
-          aria-pressed={quiet}
-          onClick={() => {
-            cancel();
-            setQuiet((q) => !q);
-          }}
-          className="min-h-8 whitespace-nowrap rounded-full border border-dash-edge bg-background/70 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground"
-        >
-          {quiet ? t({ message: `Quiet: on`, context: "companion welcome" }) : t({ message: `Quiet`, context: "companion welcome" })}
-        </button>
+        {/* Until the member has answered "Speak aloud or Quiet", that answer is the toggle. */}
+        {voiceChosen ? (
+          <button
+            type="button"
+            aria-pressed={quiet}
+            onClick={() => {
+              cancel();
+              // Leaving quiet brings the voice back with the mic.
+              if (quiet) setPersona((p) => ({ ...p, speak: true }));
+              setQuiet((q) => !q);
+            }}
+            className={`min-h-8 whitespace-nowrap rounded-full border border-dash-edge bg-background/70 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground ${FOCUS}`}
+          >
+            {quiet ? t({ message: `Quiet: on`, context: "companion welcome" }) : t({ message: `Quiet`, context: "companion welcome" })}
+          </button>
+        ) : null}
         {beat < 7 ? (
           <button
             type="button"
             onClick={() => leave("skipped")}
-            className="min-h-8 whitespace-nowrap rounded-full border border-dash-edge bg-background/70 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground"
+            className={`min-h-8 whitespace-nowrap rounded-full border border-dash-edge bg-background/70 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground ${FOCUS}`}
           >
             <Trans context="companion welcome">Skip for now</Trans>
           </button>
@@ -322,7 +372,23 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
   );
 
   const foot = (left: ReactNode, right: ReactNode) => <div className="mt-auto flex items-center justify-between gap-2 pt-1.5">{left}{right}</div>;
-  const fine = "m-0 text-[11.5px] leading-snug text-muted-foreground";
+  const fine = "m-0 text-xs leading-snug text-muted-foreground";
+
+  // Asked again at the top of a welcome resumed before the arrival's choice.
+  const voiceAsk =
+    !voiceChosen && beat > 0 ? (
+      <div role="group" aria-label={t({ message: `Should I speak aloud?`, context: "companion welcome" })} className="flex flex-wrap items-center gap-2 rounded-xl border border-dash-gold-edge bg-dash-raised p-2.5 text-xs text-foreground">
+        <span className="flex-1">
+          <Trans context="companion welcome">Should I speak aloud, or stay quiet and only write?</Trans>
+        </span>
+        <button type="button" className={`${BTN_GOLD} ${SMALL}`} onClick={() => chooseVoice(true)}>
+          <Trans context="companion welcome">Speak aloud</Trans>
+        </button>
+        <button type="button" className={`${BTN_LINE} ${SMALL}`} onClick={() => chooseVoice(false)}>
+          <Trans context="companion welcome">Quiet</Trans>
+        </button>
+      </div>
+    ) : null;
 
   // ── the tour renders over the real page ──
   if (beat === 5) {
@@ -333,12 +399,12 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
         <button
           type="button"
           onClick={() => leave("skipped")}
-          className="fixed right-3 top-3 z-[85] min-h-8 rounded-full border border-dash-edge bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground"
+          className={`fixed right-3 top-3 z-[85] min-h-8 rounded-full border border-dash-edge bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground hover:border-dash-gold hover:text-foreground ${FOCUS}`}
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 12px)" }}
         >
           <Trans context="companion welcome">Skip for now</Trans>
         </button>
-        <div role="dialog" aria-modal="false" aria-label={t({ message: `Profile tour`, context: "companion welcome" })} className="fixed inset-x-2.5 bottom-2.5 z-[80] mx-auto flex max-w-[460px] items-end gap-2" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}>
+        <div ref={tourRef} role="dialog" aria-modal="false" aria-label={t({ message: `Profile tour`, context: "companion welcome" })} className="fixed inset-x-2.5 bottom-2.5 z-[80] mx-auto flex max-w-[460px] items-end gap-2" style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 10px)" }}>
           <span key={wiggle} className={reduced ? "" : wiggle ? "cw-wiggle" : ""} style={{ transform: `rotate(${stop % 2 ? -6 : 6}deg)` }}>
             <Pet kind={kind} tint={tint} size={60} motion={motion} />
           </span>
@@ -349,9 +415,9 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
               ))}
             </div>
             {s ? (
-              <Bubble key={s.id} who={cname} text={s.say({ first: firstName, name: cname, mates })} speak={speak} quiet={quiet}>
+              <Bubble who={cname} text={s.say({ first: firstName, name: cname, mates })} speak={speak} quiet={quiet} live>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  <button type="button" onClick={act} className="inline-flex items-center gap-1.5 rounded-full border border-dash-gold bg-background px-3 py-1.5 text-xs font-semibold text-dash-gold-lit">
+                  <button type="button" onClick={act} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full border border-dash-gold bg-background px-3 py-1.5 text-xs font-semibold text-dash-gold-lit ${FOCUS}`}>
                     ✦ {s.act}
                   </button>
                   <span className="flex-1" />
@@ -360,7 +426,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
                       <Trans context="companion welcome">Back</Trans>
                     </button>
                   ) : null}
-                  <button type="button" className={`${BTN_GOLD} !min-h-9 !px-3 !py-1.5 !text-[13px]`} onClick={tourNext}>
+                  <button ref={nextRef} type="button" className={`${BTN_GOLD} !min-h-9 !px-3 !py-1.5 !text-[13px]`} onClick={tourNext}>
                     {stop < stops.length - 1 ? t({ message: `Next`, context: "companion welcome" }) : t({ message: `Done`, context: "companion welcome" })}
                   </button>
                 </div>
@@ -392,9 +458,34 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
         <p className="m-0 max-w-[30ch] text-sm text-muted-foreground">
           <Trans context="companion welcome">Every member gets a companion. Yours is still an egg. Let's find out who's inside.</Trans>
         </p>
-        <button type="button" className={`${BTN_GOLD} mt-[18px]`} onClick={next}>
-          <Trans context="companion welcome">Open the hatchery</Trans>
-        </button>
+        <p className="m-0 mt-[18px] max-w-[32ch] text-sm text-foreground">
+          <Trans context="companion welcome">Should I talk to you out loud, with your browser's own voice? Or stay quiet and only write?</Trans>
+        </p>
+        <div role="group" aria-label={t({ message: `How I talk to you`, context: "companion welcome" })} className="mt-3 flex flex-wrap justify-center gap-2.5">
+          <button
+            type="button"
+            className={BTN_GOLD}
+            onClick={() => {
+              chooseVoice(true);
+              next();
+            }}
+          >
+            <Trans context="companion welcome">Speak aloud</Trans>
+          </button>
+          <button
+            type="button"
+            className={BTN_LINE}
+            onClick={() => {
+              chooseVoice(false);
+              next();
+            }}
+          >
+            <Trans context="companion welcome">Quiet</Trans>
+          </button>
+        </div>
+        <p className={`${fine} mt-2 max-w-[32ch]`}>
+          <Trans context="companion welcome">Change it any time with Quiet at the top.</Trans>
+        </p>
       </div>
     );
   } else if (beat === 1) {
@@ -448,7 +539,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
                 setSample(CHARACTER_INFO[c].sample);
                 setPicked(true);
               }}
-              className={`min-h-16 rounded-[14px] border p-2.5 text-left ${persona.character === c ? "border-dash-gold bg-dash-raised shadow-[inset_0_0_0_1px_var(--color-dash-gold)]" : "border-dash-edge bg-card"}`}
+              className={`min-h-16 rounded-[14px] border p-2.5 text-left ${FOCUS} ${persona.character === c ? "border-dash-gold bg-dash-raised shadow-[inset_0_0_0_1px_var(--color-dash-gold)]" : "border-dash-edge bg-card"}`}
             >
               <b className="block font-display text-base font-normal text-dash-gold-lit">{CHARACTER_INFO[c].label}</b>
               <span className="block text-xs leading-snug text-muted-foreground">{CHARACTER_INFO[c].blurb}</span>
@@ -464,6 +555,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
               max={100}
               value={persona.dials[d.key]}
               aria-label={t({ message: `${d.low} to ${d.high}`, context: "companion welcome" })}
+              aria-valuetext={dialText(persona.dials[d.key], d.low, d.high)}
               className="w-full accent-[var(--color-dash-gold)]"
               onChange={(e) => setPersona((p) => ({ ...p, dials: { ...p.dials, [d.key]: Number(e.target.value) } }))}
             />
@@ -488,7 +580,14 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
             <Trans context="companion welcome">Voice:</Trans>
           </b>{" "}
           {quiet || !persona.speak ? t({ message: `I'll only write.`, context: "companion welcome" }) : t({ message: `I'll speak aloud with your browser's own voice.`, context: "companion welcome" })}{" "}
-          <button type="button" className="text-dash-gold-lit underline underline-offset-2" onClick={() => setPersona((p) => ({ ...p, speak: !p.speak }))}>
+          <button
+            type="button"
+            className={`rounded text-dash-gold-lit underline underline-offset-2 ${FOCUS}`}
+            onClick={() => {
+              setPersona((p) => ({ ...p, speak: !p.speak }));
+              setVoiceChosen(true);
+            }}
+          >
             {persona.speak ? t({ message: `Write only`, context: "companion welcome" }) : t({ message: `Speak aloud`, context: "companion welcome" })}
           </button>
           <Trans context="companion welcome">
@@ -508,11 +607,12 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
   } else if (beat === 3) {
     // Gene Keys and Human Design are two ingredients on the approved board, read from
     // one reading and one "let my guide use my lines" switch, so both open the same card.
-    const items: { key: string; id: SheetId; label: string; color: string; on: boolean }[] = [
+    // Human Design rides the Gene Keys switch, so it says so when that is on.
+    const items: { key: string; id: SheetId; label: string; color: string; on: boolean; shared?: boolean }[] = [
       ...(gk
         ? [
             { key: "gk", id: "gk" as const, label: "Gene Keys", color: "var(--color-dash-gold)", on: Boolean(gk.guideUses) },
-            { key: "hd", id: "gk" as const, label: "Human Design", color: "var(--color-dash-session)", on: Boolean(gk.guideUses) },
+            { key: "hd", id: "gk" as const, label: "Human Design", color: "var(--color-dash-session)", on: Boolean(gk.guideUses), shared: true },
           ]
         : []),
       { key: "vedic", id: "vedic", label: "Vedic chart", color: "var(--color-dash-voice)", on: has("vedic") },
@@ -529,12 +629,21 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
             <button
               key={i.key}
               type="button"
-              aria-pressed={i.on}
-              onClick={() => setSheet(i.id)}
-              className={`flex min-h-[70px] flex-col items-center gap-1 rounded-[14px] border px-1 py-2 text-[11px] text-foreground ${i.on ? "border-dash-gold bg-dash-raised" : "border-dash-edge bg-card"}`}
+              aria-haspopup="dialog"
+              aria-label={i.on ? (i.shared ? t({ message: `${i.label}, added, with Gene Keys`, context: "companion welcome" }) : t({ message: `${i.label}, added`, context: "companion welcome" })) : undefined}
+              onClick={(e) => {
+                sheetFrom.current = e.currentTarget;
+                setSheet(i.id);
+              }}
+              className={`flex min-h-[70px] flex-col items-center gap-1 rounded-[14px] border px-1 py-2 text-xs text-foreground ${FOCUS} ${i.on ? "border-dash-gold bg-dash-raised" : "border-dash-edge bg-card"}`}
             >
               <span className="size-6 rounded-full" style={{ background: i.color }} aria-hidden="true" />
-              {i.label}
+              <span>{i.label}</span>
+              {i.on ? (
+                <span className="font-semibold text-dash-gold-lit">
+                  {i.shared ? t({ message: `added, with Gene Keys`, context: "companion welcome" }) : t({ message: `added`, context: "companion welcome" })}
+                </span>
+              ) : null}
             </button>
           ))}
         </div>
@@ -562,7 +671,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
           <div className="flex w-[104px] flex-col items-center gap-1 rounded-2xl border border-dash-edge bg-card p-2.5 text-center">
             <Pet kind={kind} tint={tint} size={58} motion={`${pop} ${motion}`} />
             <b className="font-display text-[15px] font-normal text-dash-gold-lit">{cname}</b>
-            <span className="text-[10.5px] leading-tight text-muted-foreground">
+            <span className="text-xs leading-tight text-muted-foreground">
               <Trans context="companion welcome">Personal companion</Trans>
             </span>
           </div>
@@ -572,7 +681,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
                 <PetDrawing kind={r.look.pet ?? "horns"} tint={r.look.tint ?? "gold"} size={58} />
               </span>
               <b className="font-display text-[15px] font-normal text-dash-gold-lit">{roleNames[r.id] || r.name}</b>
-              <span className="text-[10.5px] leading-tight text-muted-foreground">{r.scopeLine}</span>
+              <span className="text-xs leading-tight text-muted-foreground">{r.scopeLine}</span>
             </div>
           ))}
         </div>
@@ -645,7 +754,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
   }
 
   return (
-    <div className="sheet-night fixed inset-0 z-[80] flex items-stretch justify-center bg-black/80 sm:items-center sm:p-6">
+    <div ref={rootRef} className="sheet-night fixed inset-0 z-[80] flex items-stretch justify-center bg-black/80 sm:items-center sm:p-6">
       <div
         ref={stageRef}
         tabIndex={-1}
@@ -655,7 +764,10 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
         className="relative flex h-full w-full max-w-[420px] flex-col overflow-hidden bg-background outline-none sm:h-[min(780px,100%)] sm:rounded-[32px] sm:border sm:border-dash-edge sm:shadow-[0_30px_80px_rgba(0,0,0,0.55)]"
       >
         {topbar}
-        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-[18px] pb-[18px] pt-[54px] [&>*]:shrink-0">{body}</div>
+        <div className="flex flex-1 flex-col gap-3 overflow-y-auto px-[18px] pb-[18px] pt-[54px] [&>*]:shrink-0" inert={sheet ? true : undefined}>
+          {voiceAsk}
+          {body}
+        </div>
         {sheet ? (
           <LensSheet
             id={sheet}

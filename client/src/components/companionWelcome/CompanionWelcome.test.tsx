@@ -74,7 +74,7 @@ describe("CompanionWelcome", () => {
   it("walks the egg: arrival, a name, a character, and saves each on the member's own rows", async () => {
     render(<CompanionWelcome firstName="Rowan" companions={army} payload={payload} startBeat={0} onTab={() => {}} onClose={() => {}} />);
     expect(screen.getByRole("heading", { name: "Welcome, Rowan." })).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Open the hatchery" }));
+    fireEvent.click(screen.getByRole("button", { name: "Speak aloud" }));
     expect(saved(1, "open")).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Juniper" }));

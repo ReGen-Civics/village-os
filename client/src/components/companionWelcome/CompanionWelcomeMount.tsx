@@ -11,7 +11,7 @@
  *
  * A guest without companions sees nothing: the routes answer 403 and this renders null.
  */
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { PetDrawing } from "@/components/profileDash/CompanionPet";
@@ -23,6 +23,15 @@ import { WELCOME_BEATS, type WelcomePayload, type WelcomeState, type WelcomeStat
 const CompanionWelcome = lazy(() => import("./CompanionWelcome"));
 
 const HASH = "#meet-your-companion";
+
+/** Focus back where it was, if it is still on the page (kept here so the welcome's kit stays in the welcome's own chunk). */
+function refocus(el: Element | null): boolean {
+  if (el instanceof HTMLElement && el.isConnected && el !== document.body) {
+    el.focus();
+    return true;
+  }
+  return false;
+}
 
 async function read<T>(path: string): Promise<T | null> {
   try {
@@ -58,6 +67,22 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
   const [state, setState] = useState<WelcomeState | null>(null);
   const [open, setOpen] = useState(false);
   const [startBeat, setStartBeat] = useState(0);
+  // Where focus was when the welcome opened, so closing it puts focus back there.
+  // Opened by itself, it had none: the "Pick up your welcome" card's Resume takes it.
+  const returnTo = useRef<Element | null>(null);
+  const resumeRef = useRef<HTMLButtonElement>(null);
+  const [refocusDue, setRefocusDue] = useState(false);
+  const openNow = useCallback(() => {
+    returnTo.current = document.activeElement;
+    setOpen(true);
+  }, []);
+
+  useEffect(() => {
+    if (!refocusDue || open) return;
+    setRefocusDue(false);
+    if (!refocus(returnTo.current)) resumeRef.current?.focus();
+    returnTo.current = null;
+  }, [refocusDue, open]);
 
   useEffect(() => {
     let alive = true;
@@ -70,7 +95,7 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
       const replay = window.location.hash === HASH;
       if (!w.state || replay) {
         setStartBeat(replay && w.state?.status === "done" ? 5 : (w.state?.beat ?? 0));
-        stopWaiting = whenNoModal(() => alive && setOpen(true));
+        stopWaiting = whenNoModal(() => alive && openNow());
       }
     });
     return () => {
@@ -83,15 +108,16 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
     const onHash = () => {
       if (window.location.hash === HASH && welcome) {
         setStartBeat(state?.status === "done" ? 5 : (state?.beat ?? 0));
-        setOpen(true);
+        openNow();
       }
     };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
-  }, [welcome, state]);
+  }, [welcome, state, openNow]);
 
   const close = useCallback((status: WelcomeStatus, beat: number, companionName: string) => {
     setOpen(false);
+    setRefocusDue(true);
     setState({ beat: status === "done" ? WELCOME_BEATS.length - 1 : beat, status, at: new Date().toISOString() });
     setCompanions((cs) => cs?.map((c) => (c.scope === "personal" ? { ...c, name: companionName === "your companion" ? c.name : companionName } : c)) ?? cs);
     if (window.location.hash === HASH) history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -120,18 +146,19 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
         <b className="text-[13px] text-foreground">
           <Trans context="companion welcome">Pick up your welcome</Trans>
         </b>
-        <p className="m-0 text-[11.5px] leading-snug text-muted-foreground">
+        <p className="m-0 text-xs leading-snug text-muted-foreground">
           <Trans context="companion welcome">
             {who} is {pct}% hatched · about 2 minutes left
           </Trans>
         </p>
       </div>
       <button
+        ref={resumeRef}
         type="button"
         className={`${BTN_GOLD} ml-auto !min-h-9 !px-3 !py-1.5 !text-[13px]`}
         onClick={() => {
           setStartBeat(state.beat);
-          setOpen(true);
+          openNow();
         }}
       >
         <Trans context="companion welcome">Resume</Trans>
