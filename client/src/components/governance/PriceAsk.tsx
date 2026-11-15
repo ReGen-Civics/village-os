@@ -8,11 +8,15 @@
  * may keep it, propose a price higher or lower (above the full band too, with a gentle note), or
  * negotiate on the first call, with an optional line on why. When they suggested changes to the role
  * card, the popup says so and asks how those change the price. The contract decides the amount.
+ *
+ * THE CAP (Rye, 15 Nov 2026): a proposal goes up to ROLE_PAY_CAP_PCT of the suggested price at their
+ * commitment (`capAt`), the full role's cap before they choose one. The popup says so, says why when a
+ * price goes above it, and will not save one; the server refuses it too (server/routes/openProposals.ts).
  */
 import { useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { askPeriod, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, ROLE_PAY_CAP_PCT, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
@@ -53,6 +57,11 @@ export default function PriceAsk({
   /** "$6,500 a month", in the reader's language and the role's own period. */
   const priced = (n: number, p: PayCeiling["per"] = ceiling.per) => perPeriod(i18n, money(n), p);
   const per = ceiling.per;
+  const capPct = pct && pct > 0 ? pct : 100;
+  const cap = capAt(ceiling.amount, capPct);
+  const capLine = suggested
+    ? t({ message: `Proposals up to ${priced(cap)}, ${ROLE_PAY_CAP_PCT}% of the suggested price.`, context: "price ask: the cap on a proposal" })
+    : t({ message: `Proposals for the full role go up to ${priced(cap)}.`, context: "price ask: the cap before a commitment is chosen" });
 
   // The popup's own draft, taken from the saved choice each time it opens.
   const [choice, setChoice] = useState<Choice>("suggested");
@@ -65,13 +74,14 @@ export default function PriceAsk({
     setOpen(true);
   };
   const typed = Math.floor(Number(amount) || 0);
+  const overCap = choice === "amount" && cap > 0 && typed > cap;
   const diff = suggested && typed > 0 ? priceDifferencePct(suggested, typed) : null;
   const save = () => {
     const w = why.trim().slice(0, PRICE_WHY_MAX);
     const withWhy = w ? { why: w } : {};
     if (choice === "suggested") onChange(null);
     else if (choice === "negotiate") onChange({ kind: "negotiate", ...withWhy });
-    else if (typed > 0) onChange({ kind: "amount", monthly: typed, per, ...withWhy });
+    else if (typed > 0 && !overCap) onChange({ kind: "amount", monthly: typed, per, ...withWhy });
     close();
   };
 
@@ -93,6 +103,11 @@ export default function PriceAsk({
         </p>
       ) : (
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
+      )}
+      {cap > 0 && (
+        <p className={HINT} data-price-cap="">
+          {capLine}
+        </p>
       )}
       <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
       {summary && (
@@ -127,6 +142,11 @@ export default function PriceAsk({
                 : t({ message: "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
             </DialogDescription>
           </DialogHeader>
+          {cap > 0 && (
+            <p className={HINT} data-price-popup-cap="">
+              {capLine}
+            </p>
+          )}
           <fieldset className="grid gap-2" data-price-popup="">
             <legend className="sr-only">{t({ message: "Your price", context: "price popup" })}</legend>
             {suggested && (
@@ -146,6 +166,7 @@ export default function PriceAsk({
                   type="number"
                   inputMode="numeric"
                   min={1}
+                  max={cap > 0 ? cap : undefined}
                   step={100}
                   aria-label={t({ message: `Your monthly price, in ${ceiling.currency}`, context: "price popup" })}
                   value={amount}
@@ -158,7 +179,11 @@ export default function PriceAsk({
                     {t({ message: `${signedPct(diff)} on the suggested price`, context: "price popup: the difference" })}
                   </p>
                 )}
-                {typed > ceiling.amount && (
+                {overCap ? (
+                  <p id={`${idPrefix}-price-over-cap`} className="text-sm font-medium text-foreground" role="alert" data-price-over-cap="">
+                    {t({ message: `That's above ${priced(cap)}, the most a proposal can ask at ${capPct}%: ${ROLE_PAY_CAP_PCT}% of the suggested price. Choose ${priced(cap)} or less.`, context: "price popup: above the cap" })}
+                  </p>
+                ) : typed > ceiling.amount && (
                   <p className="text-sm text-foreground" data-price-above-band="">
                     {t({ message: `That's above ${priced(ceiling.amount)}, the most for the full role. You can still propose it.`, context: "price popup: above the full band" })}
                   </p>
@@ -197,8 +222,8 @@ export default function PriceAsk({
             <button
               type="button"
               onClick={save}
-              disabled={choice === "amount" && typed <= 0}
-              aria-describedby={choice === "amount" && typed <= 0 ? `${idPrefix}-price-why-off` : undefined}
+              disabled={choice === "amount" && (typed <= 0 || overCap)}
+              aria-describedby={choice === "amount" && typed <= 0 ? `${idPrefix}-price-why-off` : overCap ? `${idPrefix}-price-over-cap` : undefined}
               className="min-h-11 rounded-lg border border-notice bg-notice px-4 font-semibold text-background disabled:opacity-40"
               data-save-price=""
             >

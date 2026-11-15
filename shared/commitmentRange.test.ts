@@ -1,6 +1,33 @@
 import { describe, expect, it } from "vitest";
 import { CEILING_PERIODS } from "./roleCardSections";
-import { ASK_PERIODS, askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { aboveCap, askAboveCap, capAt, ROLE_PAY_CAP_PCT, ASK_PERIODS, askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+
+describe("the 120% cap on a proposal (Rye, 15 Nov 2026)", () => {
+  it("is 120% of the listed price at the commitment: $13,000 caps at $15,600 at 100%, $7,800 at 50%", () => {
+    expect(ROLE_PAY_CAP_PCT).toBe(120);
+    expect(capAt(13000, 100)).toBe(15600);
+    expect(capAt(13000, 50)).toBe(7800);
+    expect(capAt(13000, 30)).toBe(4680);
+    // Whole units, rounded down, and no floating-point unit lost: 1,234 at 30% is 370.2, capped 444.24.
+    expect(capAt(1234, 30)).toBe(444);
+    expect(capAt(0, 50)).toBe(0);
+    expect(capAt(13000, 0)).toBe(0);
+  });
+  it("refuses an ask just over the cap and takes one at it; negotiate is never over", () => {
+    const ask = (monthly: number) => ({ kind: "amount" as const, monthly });
+    expect(askAboveCap(ask(7801), 13000, 50)).toBe(true);
+    expect(askAboveCap(ask(7800), 13000, 50)).toBe(false);
+    expect(askAboveCap(ask(15601), 13000, 100)).toBe(true);
+    expect(askAboveCap(ask(15600), 13000, 100)).toBe(false);
+    // No commitment chosen yet: the full role's cap.
+    expect(askAboveCap(ask(15601), 13000, null)).toBe(true);
+    expect(askAboveCap({ kind: "negotiate" }, 13000, 50)).toBe(false);
+    expect(askAboveCap(null, 13000, 50)).toBe(false);
+  });
+  it("says why in plain words", () => {
+    expect(aboveCap("$7,800", 50)).toBe("Proposals for this role go up to $7,800 at 50%, 120% of its listed price. Choose a price at or below that.");
+  });
+});
 
 describe("the commitment range (Rye, 14 Nov 2026)", () => {
   it("pays straight proportional to the full band: 50% of $13,000 is up to $6,500 (ruling 1)", () => {

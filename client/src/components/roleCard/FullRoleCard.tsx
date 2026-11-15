@@ -214,6 +214,7 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
+          <p className="leading-relaxed text-card-foreground" data-testid="pay-cap-words">{reward.cap}</p>
         </>
       ) : (
         pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>

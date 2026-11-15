@@ -2,13 +2,16 @@
  * THE REVIEW'S OTHER LINES (applicant journey QA, 15 Nov 2026): the price and the notes on the role card both
  * go with the application, so Review & submit says them too, each with a way back to its step.
  *
+ * The price line also says the cap at their commitment (Rye, 15 Nov 2026): proposals go up to 120% of the
+ * suggested price, the full role's cap before a commitment is chosen.
+ *
  * Kept beside ApplySteps.tsx because pages/ProposeARole.tsx holds the file-lines ceiling.
  */
 // A value import of the runtime, as client/src/lib/unsavedChanges.ts has: precompileEnglish compiles the messages of
 // a file that imports it and skips one that only uses `msg`.
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { askPeriod, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
@@ -41,7 +44,9 @@ export function reviewExtras(
         : diff !== null
           ? i18n._(msg({ message: `${priced(ask.monthly, askPeriod(ask))} (${signedPct(diff)} on the suggestion)`, context: "founding application review: the price" }))
           : priced(ask.monthly, askPeriod(ask));
-    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${line} · ${short(ask.why)}` : line });
+    const cap = capAt(c.amount, p.pct && p.pct > 0 ? p.pct : 100);
+    const capped = cap > 0 ? `${line} · ${i18n._(msg({ message: `Proposals up to ${priced(cap)}`, context: "founding application review: the cap on a proposal" }))}` : line;
+    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${capped} · ${short(ask.why)}` : capped });
   }
   const n = p.notes.length;
   if (n > 0) {

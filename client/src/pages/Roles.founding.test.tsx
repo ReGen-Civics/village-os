@@ -484,6 +484,8 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
     expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
+    // The 120% cap (Rye, 15 Nov 2026): for the full role, and at the example share.
+    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month for the full role, 120% of the listed price. At 50%, up to $5,400 a month.");
     expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.");
     // One footnote (copy sweep): the village's own note is not drawn beside it.
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
@@ -498,6 +500,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
     expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
     expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("At ");
+    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month, 120% of the listed price.");
   });
   it("shows only the split when no ceiling is written", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payCeiling: null }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });

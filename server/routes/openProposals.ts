@@ -77,7 +77,8 @@ import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
 import { sectionsForMany } from "../lib/roleCardSections";
-import { belowMinimum } from "../../shared/commitmentRange";
+import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt } from "../../shared/commitmentRange";
+import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
 import { clearAboutYouDecidedBefore } from "../repos/seatApplications";
@@ -522,6 +523,14 @@ export function register(app: Express, deps: Deps): void {
     for (const picked of parsed.value.body.roles) {
       const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
       if (typeof min === "number" && typeof pct === "number" && pct < min) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
+      // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
+      const ask = parsed.value.body.payAsk;
+      const ceiling = roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null;
+      if (ceiling && ask?.kind === "amount") {
+        if (askPeriod(ask) !== ceiling.per) return res.status(400).json({ error: askPeriodWrong(ceiling.per), field: "payAsk" });
+        const at = typeof pct === "number" && pct > 0 ? pct : 100;
+        if (askAboveCap(ask, ceiling.amount, at)) return res.status(400).json({ error: aboveCap(moneyWords(capAt(ceiling.amount, at), ceiling.currency), at), field: "payAsk" });
+      }
     }
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });

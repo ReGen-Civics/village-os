@@ -37,6 +37,8 @@ import { createOrgRole } from "../lib/orgChart";
 import { readOpenProposal } from "../repos/openProposals";
 import { retryOwedConfirmations } from "../lib/openProposalKept";
 import { rewriteTermsOffer } from "../repos/seatApplications";
+import { saveSections } from "../lib/roleCardSections";
+import { EMPTY_SECTIONS } from "../../shared/roleCardSections";
 import { usersRepo } from "../repos/users";
 import { loadVariables } from "../lib/variables";
 import { LANGUAGES } from "../../shared/applicantWords";
@@ -785,6 +787,35 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
       } finally {
         await pool.query("UPDATE org_roles SET commitment_min = NULL WHERE id = ?", [gate]); // module-review-ok: a test restoring the column it set
+      }
+    });
+
+    it("the 120% cap: an ask just over it at their commitment is refused in words, one at it is taken (Rye, 15 Nov 2026)", async () => {
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const card = (commitmentPct: number) => ({
+          roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+          serves: [{ goalId: "g-roots", how: "" }],
+          commitmentPct,
+          agreed: { loveLetter: true, nda: true },
+          terms: { answers: {} },
+        });
+        const ask = (monthly: number, per = "month") => ({ kind: "amount", monthly, per });
+        // At 50% the listed price is $6,500 and the cap $7,800.
+        const over = await call("POST", "/api/open-proposals", proposal({ email: "over@example.test", card: card(50), payAsk: ask(7801) }));
+        expect(over).toMatchObject({ status: 400, body: { field: "payAsk", error: "Proposals for this role go up to $7,800 at 50%, 120% of its listed price. Choose a price at or below that." } });
+        // At 100%, $15,600.
+        const overFull = await call("POST", "/api/open-proposals", proposal({ email: "overfull@example.test", card: card(100), payAsk: ask(15601) }));
+        expect(overFull).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        // An ask in another period cannot be read against the cap: refused, never let through.
+        const yearly = await call("POST", "/api/open-proposals", proposal({ email: "yearly@example.test", card: card(50), payAsk: ask(7000, "year") }));
+        expect(yearly).toMatchObject({ status: 400, body: { field: "payAsk", error: "Write your price for each month, the way the role lists it." } });
+        // CONTROL: at the cap, and negotiate, are taken.
+        const { id } = await send({ card: card(50), email: "atcap@example.test", payAsk: ask(7800) });
+        expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 7800, per: "month" });
+        await send({ card: card(100), email: "atcapfull@example.test", payAsk: ask(15600) });
+      } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
       }
     });
 

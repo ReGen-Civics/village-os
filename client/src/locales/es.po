@@ -16401,3 +16401,44 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap on a proposal"
+msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap before a commitment is chosen"
+msgid "Proposals for the full role go up to {0}."
+msgstr "Las propuestas para el rol completo llegan hasta {0}."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#. placeholder {1}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the cap"
+msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+msgstr "Eso supera {0}, lo máximo que puede pedir una propuesta al {capPct}%: el {ROLE_PAY_CAP_PCT}% del precio sugerido. Elige {1} o menos."
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review: the cap on a proposal"
+msgid "Proposals up to {0}"
+msgstr "Propuestas de hasta {0}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
+msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+msgstr "Propuestas de hasta {capFull} para el rol completo, el {ROLE_PAY_CAP_PCT}% del precio publicado. Al {at}%, hasta {capShare}."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal"
+msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."

@@ -22,8 +22,15 @@
  * card and on a decider's page, and the ask is the applicant's words. The
  * contract sets the pay.
  *
+ * THE CAP (Rye, 15 Nov 2026): proposals go up to ROLE_PAY_CAP_PCT of the listed
+ * price at the same commitment (`capAt`), and the server refuses an ask above it.
+ * The math is shared with the End of Moon invoice (shared/rolePayMath.ts).
+ *
  * Pure: no Node builtins, no clock.
  */
+import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
+
+export { ROLE_PAY_CAP_PCT };
 /**
  * The periods an ask may be for: the same three a role's ceiling names (CEILING_PERIODS in shared/roleCardSections.ts,
  * held equal by commitmentRange.test.ts). Written here, not imported: roleCardSections reaches shared/seatSettings.ts,
@@ -107,10 +114,30 @@ export function commitmentChoices(min: number | null | undefined): number[] {
   return out;
 }
 
-/** The most a role pays at a commitment: straight proportional to the full band (ruling 1), whole units, rounded down. */
+/**
+ * The listed price at a commitment: straight proportional to the full band (ruling 1), whole units, rounded
+ * down. The band is the full role, priced at 100%, so the commitment is applied once (shared/rolePayMath.ts).
+ */
 export function ceilingAt(band: number, pct: number): number {
   if (!Number.isFinite(band) || band <= 0 || !Number.isFinite(pct) || pct <= 0) return 0;
-  return Math.floor((band * Math.min(pct, 100)) / 100);
+  return Math.floor(payForTime(band, Math.min(pct, 100), 100));
+}
+
+/**
+ * The most a proposal may ask at a commitment: ROLE_PAY_CAP_PCT of the listed price there (Rye, 15 Nov 2026),
+ * whole units, rounded down. $13,000 at 100% caps at $15,600; at 50%, $7,800. Worked in whole numbers so
+ * the cap never lands a unit short by floating point.
+ */
+export function capAt(band: number, pct: number): number {
+  if (!Number.isInteger(band) || band <= 0 || !Number.isFinite(pct) || pct <= 0) return 0;
+  return Math.floor((band * Math.round(Math.min(pct, 100) * 100) * ROLE_PAY_CAP_PCT) / 1_000_000);
+}
+
+/** Whether an amount ask goes above the cap at a commitment. With no commitment chosen, the full role's cap. */
+export function askAboveCap(ask: PayAsk | null | undefined, band: number, pct: number | null | undefined): boolean {
+  if (!ask || ask.kind !== "amount") return false;
+  const cap = capAt(band, typeof pct === "number" && pct > 0 ? pct : 100);
+  return cap > 0 && ask.monthly > cap;
 }
 
 /** How full a role is: what its holders give in all against what it needs. Never ranks anyone. */
@@ -198,6 +225,13 @@ export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   }
   return { ok: true, value: null };
 }
+
+/** The refusal for an ask above the cap: the cap is given in the caller's money words. */
+export const aboveCap = (capWords: string, pct: number): string =>
+  `Proposals for this role go up to ${capWords} at ${pct}%, ${ROLE_PAY_CAP_PCT}% of its listed price. Choose a price at or below that.`;
+
+/** The refusal for an ask in another period than the role's: the cap can only be read in the role's own. */
+export const askPeriodWrong = (per: AskPeriod): string => `Write your price for each ${per}, the way the role lists it.`;
 
 /** The refusal for a commitment below what the role takes from one person. */
 export const belowMinimum = (min: number): string => `This role takes proposals from ${min}% to 100%. Choose ${min}% or more.`;

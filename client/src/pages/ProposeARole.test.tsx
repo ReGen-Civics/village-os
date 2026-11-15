@@ -272,7 +272,7 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     expect(posted[0].body.payAsk).toEqual({ kind: "negotiate" });
     expect(posted[0].body.card.commitmentPct).toBe(50);
   });
-  it("a contractor may propose above the full band: the popup says the difference, notes the band, nudges about their role-card changes, and sends the reason (Rye, 14 Nov 2026)", async () => {
+  it("a contractor may propose above the suggestion up to the 120% cap, never past it: the popup says why, says the difference, nudges about their role-card changes, and sends the reason (Rye, 14 and 15 Nov 2026)", async () => {
     await applyFor("r-gate", SHARED);
     await completeAll();
     // One suggested change to the role first, so the popup can name it.
@@ -289,17 +289,26 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    // The cap at 50% of a $13,000 band: 120% of the $6,500 suggestion.
+    expect(dialog.querySelector("[data-price-popup-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
+    // Past the cap: the popup says why and will not save it.
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
-    expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+131% on the suggested price");
-    expect(dialog.querySelector("[data-price-above-band]")?.textContent).toContain("That's above $13,000 a month, the most for the full role.");
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's above $7,800 a month, the most a proposal can ask at 50%: 120% of the suggested price. Choose $7,800 a month or less.");
+    expect(dialog.querySelector("[data-price-above-band]")).toBeNull();
+    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
+    // At the cap: taken.
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "7800" } });
+    expect(dialog.querySelector("[data-price-over-cap]")).toBeNull();
+    expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+20% on the suggested price");
     expect(dialog.querySelector("[data-price-nudge]")?.textContent).toBe("You suggested 1 change to the role. If it changes the work, say how it changes the price.");
     fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
     fireEvent.click(within(dialog).getByText("Use this price"));
-    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $15,000 a month (+131% on the suggestion).");
+    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $7,800 a month (+20% on the suggestion).");
+    expect(document.querySelector("[data-price-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     // Stored with the period the price was written in (QA F7): the role's ceiling period.
-    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 15000, per: "month", why: "The quarterly legal review adds work." });
+    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 7800, per: "month", why: "The quarterly legal review adds work." });
   });
   it("taking the suggested price sends no ask at all (control)", async () => {
     await applyFor("r-gate", SHARED);
@@ -561,7 +570,7 @@ describe("the six steps", () => {
     const review = document.querySelector("[data-review]") as HTMLElement;
     const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
     expect(price.textContent).toContain("Your price");
-    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    expect(price.textContent).toContain("The suggested price, $6,500 a month · Proposals up to $7,800 a month");
     const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
     expect(notes.textContent).toContain("Your notes on the role (1)");
     expect(notes.textContent).toContain("A legal review each quarter.");
