@@ -26,6 +26,8 @@
  * exactly long enough for the village's own rules to have moved.
  */
 
+import type { Persona } from "./companionPersona";
+
 export const COMPANION_SCOPES = ["personal", "role", "quest", "project"] as const;
 export type CompanionScope = (typeof COMPANION_SCOPES)[number];
 
@@ -523,6 +525,8 @@ export interface CompanionView {
   look: CompanionLook;
   /** For a forged or uploaded look, the portrait's address. Null for a chosen pet. */
   lookUrl: string | null;
+  /** How it talks to its member (shared/companionPersona.ts). Null: never given one. */
+  persona: Persona | null;
   dailyCap: number;
   status: CompanionStatus;
   sortOrder: number;

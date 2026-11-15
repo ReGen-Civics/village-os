@@ -319,24 +319,62 @@ describe.skipIf(!DB_CONFIGURED)("companions over HTTP", () => {
     expect(Number(m.c)).toBe(0);
   });
 
+  it("the welcome: a persona on the companion, progress in the member's own prefs, private lenses with a yes", async () => {
+    // Persona: a character is required, dials are clamped, and the view carries it back.
+    const bad = await call("PATCH", `/api/me/companions/${personal}`, { persona: { character: "wizard" } }, ana.token);
+    expect(bad.status).toBe(400);
+    const set = await call("PATCH", `/api/me/companions/${personal}`, { persona: { character: "poet", dials: { playful: 900 }, help: ["steps"] } }, ana.token);
+    expect(set.status, JSON.stringify(set.json)).toBe(200);
+    const army = await call("GET", "/api/me/companions", undefined, ana.token);
+    const mine = army.json.companions.find((c: any) => c.id === personal);
+    expect(mine.persona).toMatchObject({ character: "poet", dials: { playful: 100 }, help: ["steps"], speak: true });
+
+    // Progress: never opened reads null, then the beat and status the member saved.
+    const first = await call("GET", "/api/me/companion-welcome", undefined, ana.token);
+    expect(first.status).toBe(200);
+    expect(first.json.state).toBeNull();
+    expect(first.json.lenses).toEqual([]);
+    expect((await call("PUT", "/api/me/companion-welcome", { beat: 12, status: "open" }, ana.token)).status).toBe(400);
+    const saved = await call("PUT", "/api/me/companion-welcome", { beat: 3, status: "skipped" }, ana.token);
+    expect(saved.json.state).toMatchObject({ beat: 3, status: "skipped" });
+    expect((await call("GET", "/api/me/companion-welcome", undefined, ana.token)).json.state).toMatchObject({ beat: 3, status: "skipped" });
+    // The gate holds here as everywhere: a guest gets the companions sentence.
+    expect((await call("GET", "/api/me/companion-welcome", undefined, cara.token)).status).toBe(403);
+
+    // Lenses: no yes, no row; a birth date sent along is dropped; another member never sees it.
+    expect((await call("PUT", "/api/me/companion-lenses/vedic", { data: { rashi: 1, nakshatra: 3 } }, ana.token)).status).toBe(400);
+    const vedic = await call("PUT", "/api/me/companion-lenses/vedic", { consent: true, data: { rashi: 1, nakshatra: 3, birth: "1991-04-18" } }, ana.token);
+    expect(vedic.status, JSON.stringify(vedic.json)).toBe(200);
+    expect(vedic.json.lenses).toEqual([expect.objectContaining({ lens: "vedic", data: { rashi: 1, nakshatra: 3 } })]);
+    const [[row]] = await pool.query<any[]>("SELECT data FROM member_companion_lenses WHERE user_id = ? AND lens = 'vedic'", [ana.id]); // module-review-ok: reading back the stored lens to prove no birth detail reached the row
+    expect(String(row.data)).not.toContain("1991");
+    expect((await call("PUT", "/api/me/companion-lenses/own", { consent: true, data: { text: "write to me at ana@example.test" } }, ana.token)).status).toBe(400);
+    expect((await call("PUT", "/api/me/companion-lenses/stars", { consent: true, data: {} }, ana.token)).status).toBe(404);
+    expect((await call("GET", "/api/me/companion-welcome", undefined, ben.token)).json.lenses).toEqual([]);
+    const del = await call("DELETE", "/api/me/companion-lenses/vedic", undefined, ana.token);
+    expect(del.json.lenses).toEqual([]);
+  });
+
   it("erasure takes every companion row of the departed member, and none of anybody else's", async () => {
     const d = await call("GET", "/api/me/companions", undefined, dee.token);
     expect(d.status).toBe(200);
     const deePersonal = d.json.companions.find((c: any) => c.scope === "personal").id;
     await item(deePersonal, dee.id, "message", { body: "a note", toUserId: ben.id });
     await pool.query("INSERT INTO companion_messages (companion_id, owner_user_id, speaker, engine, body) VALUES (?,?,?,?,?)", [deePersonal, dee.id, "member", "village", "my words"]); // module-review-ok: a chat line for the departed member, which this server cannot write without a model key
+    expect((await call("PUT", "/api/me/companion-lenses/own", { consent: true, data: { text: "short messages, please" } }, dee.token)).status).toBe(200);
     const count = async (who: string) => {
       const [[a]] = await pool.query<any[]>("SELECT COUNT(*) AS c FROM companions WHERE owner_user_id = ?", [who]); // module-review-ok: reading back the companion rows the route or the erasure changed; asserting they are gone or untouched needs no product reader
       const [[b]] = await pool.query<any[]>("SELECT COUNT(*) AS c FROM companion_items WHERE owner_user_id = ?", [who]); // module-review-ok: reading back the companion rows the route or the erasure changed; asserting they are gone or untouched needs no product reader
       const [[c]] = await pool.query<any[]>("SELECT COUNT(*) AS c FROM companion_messages WHERE owner_user_id = ?", [who]); // module-review-ok: reading back the companion rows the route or the erasure changed; asserting they are gone or untouched needs no product reader
-      return [Number(a.c), Number(b.c), Number(c.c)];
+      const [[l]] = await pool.query<any[]>("SELECT COUNT(*) AS c FROM member_companion_lenses WHERE user_id = ?", [who]); // module-review-ok: reading back the lens rows the erasure changed
+      return [Number(a.c), Number(b.c), Number(c.c), Number(l.c)];
     };
     expect((await count(dee.id)).every((x) => x > 0)).toBe(true);
     const anaBefore = await count(ana.id);
 
     const gone = await call("DELETE", `/api/admin/players/${dee.id}`);
     expect(gone.status, JSON.stringify(gone.json)).toBe(200);
-    expect(await count(dee.id)).toEqual([0, 0, 0]);
+    expect(await count(dee.id)).toEqual([0, 0, 0, 0]);
     // Control: Ana's companions are untouched.
     expect(await count(ana.id)).toEqual(anaBefore);
   });
