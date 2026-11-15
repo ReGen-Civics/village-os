@@ -19,6 +19,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FLAG_WORDS, SERA_STATUS_WORDS, groupDecimal, type FlagKind, type SeraInvoiceStatus } from "@shared/invoiceTrack";
 import { formatMoney } from "@shared/money";
+import { rewardShareLine } from "@shared/rewardShare";
 import { Trans } from "@lingui/react/macro";
 import { InvoiceTrack, type TrackRow } from "../TreasurySync";
 import {
@@ -117,6 +118,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
               <li key={l.key} className="flex flex-wrap justify-between gap-2 border-b border-border py-1">
                 <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{LINE_BASIS_WORDS[l.basis]}. {l.basisLine}{l.priceNote ? ` ${l.priceNote}` : ""}</span></span>
                 <Amount minor={l.amountMinor} currency={l.currency} />
+                {l.reward && l.currency ? <p className="m-0 w-full text-xs text-muted-foreground" data-testid="desk-reward-parts">{rewardShareLine(l.reward, l.currency)}</p> : null}
                 {l.split ? <div className="w-full"><SplitBreakdown split={l.split} currency={l.currency} /></div> : null}
                 {l.adjust ? <div className="w-full"><AdjustBreakdown adjust={l.adjust} currency={l.currency} /></div> : null}
               </li>

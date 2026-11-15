@@ -55,6 +55,7 @@ import { cashOwedRowsByIds } from "../repos/cashOwed";
 import { memberUserIdRows, personRow, memberNoRows } from "../repos/liveSessions";
 import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
+import { recordLineRewards, settleLineRewards, shareLines } from "./moonReward";
 import {
   ACCOMPLISHED_WORDS, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
 } from "../../shared/accomplishedReview";
@@ -181,7 +182,8 @@ export async function sendInvoice(pool: Pool, userId: string, moon: Moon, frame:
     for (const [k, v] of Object.entries(b.rangeProposals as Record<string, unknown>)) if (Number.isInteger(v)) proposals[k] = v as number;
   }
   // A Treasurer's proposed amount carries from the void too, with the member's reply (Rye, 14 Nov 2026).
-  const lines = draftLines(frame, moon.days, proposals, finals, lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, parseAdjustReply(b.adjustReply));
+  // Each pay line shared into its parts as it is sent, so the member and the Treasurer read them (P1-6, 15 Nov 2026).
+  const lines = await shareLines(pool, draftLines(frame, moon.days, proposals, finals, lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, parseAdjustReply(b.adjustReply)));
   const routeKind = route?.route ?? "pending";
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const attestation = b.attestation === undefined || b.attestation === null ? null : parseAttestation(b.attestation, routeKind, moon.days);
@@ -544,11 +546,13 @@ async function approveOne(
 
   const items = await store.itemsOf(pool, recap.id);
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
-  const lines: InvoiceLine[] = linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) }));
+  // A line sent before its split was put on it, or whose amount moved since, is shared now (P1-6).
+  const lines: InvoiceLine[] = await shareLines(pool, linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) })));
+  const invoiceTitle = `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`;
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const owed = await oweApprovedRoleCash(conn, { cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle: `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`, lines });
+    const owed = await oweApprovedRoleCash(conn, { cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle, lines });
     if (!owed.ok) {
       await conn.rollback();
       return { refusal: rowExistsRefusal(owed.rowId) };
@@ -560,6 +564,8 @@ async function approveOne(
       await conn.rollback();
       return { refusal: APPROVAL_REFUSALS.notWaiting };
     }
+    // The Earned Equity and Credits shares, owed from this commit on, keyed on the line (P1-6).
+    await recordLineRewards(conn, { invoiceId: invoice.id, cycleId: invoice.cycleId, userId: recap.userId, invoiceTitle, lines: owed.lines });
     const total = invoiceTotals(owed.lines)[0];
     await event(conn, { kind: "invoice_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: total?.minor ?? null, currency: total?.currency ?? null, hash, selfApproved: decision.selfApproved });
     if (decision.selfApproved) await event(conn, { kind: "self_approved", recapId: recap.id, invoiceId: invoice.id, userId: recap.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, hash, selfApproved: true, note: SELF_APPROVED_WORDS });
@@ -570,6 +576,8 @@ async function approveOne(
   } finally {
     conn.release();
   }
+  // Then posted, each in its own transaction; before the launch vote they stay owed and are paid later.
+  await settleLineRewards(pool, invoice.id);
   await tell(deps, { userId: recap.userId, title: NOTICE_WORDS.approved, kind: "invoice_approved", recapId: recap.id, round: recap.round, actorUserId: actorId });
   if (decision.selfApproved) await tellReviewers(deps, recap, actorId);
   return null;

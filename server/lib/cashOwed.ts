@@ -61,6 +61,7 @@ import {
 import { readWorkValue, readWorkValueInput, type WorkValue } from "../../shared/workValue";
 import { exponentOf } from "../../shared/money";
 import { departedById } from "./departed";
+import { cashOfLine, type LineReward } from "../../shared/rewardShare";
 
 const newId = () => `cash-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -166,6 +167,8 @@ export interface MoonCashLine {
   amountMinor: number | null;
   held: boolean;
   cashOwedId: string | null;
+  /** The line's total shared out (shared/rewardShare.ts): only its cash share is owed. */
+  reward?: LineReward | null;
 }
 
 /**
@@ -196,7 +199,9 @@ export async function oweApprovedRoleCash<L extends MoonCashLine>(
 ): Promise<{ ok: true; lines: L[] } | { ok: false; rowId: string }> {
   const out: L[] = [];
   for (const line of p.lines) {
-    if (line.held || !line.currency || !line.amountMinor || line.amountMinor <= 0) {
+    // The cash share alone (Rye, 15 Nov 2026, P1-6: the price is the total reward).
+    const cash = cashOfLine(line);
+    if (line.held || !line.currency || !cash || cash <= 0) {
       out.push({ ...line });
       continue;
     }
@@ -210,7 +215,7 @@ export async function oweApprovedRoleCash<L extends MoonCashLine>(
         workKind: "role",
         workRef: line.firstSeatId,
         workTitle: `${line.roleNames.join(", ")}, ${p.invoiceTitle}`,
-        cash: { minor: line.amountMinor, currency: line.currency },
+        cash: { minor: cash, currency: line.currency },
         allowDeparted: true,
       });
     }

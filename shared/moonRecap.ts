@@ -78,6 +78,7 @@ import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
+import type { LineReward } from "./rewardShare";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -1424,6 +1425,15 @@ export interface InvoiceLine {
    * member sees it and may reply; approval refuses until a Treasurer confirms.
    */
   adjust?: LineAdjust | null;
+  /**
+   * The line's total shared into cash, Earned Equity and Credits (Rye, 15 Nov
+   * 2026, P1-6: a role's price is its TOTAL reward; shared/rewardShare.ts).
+   * Set on a pay line when the invoice is sent, and again at approval for a
+   * line whose amount moved. Only its cash share is owed as cash; the token
+   * shares are issued through the ledger once the invoice is approved. Absent
+   * on a line sent before 15 Nov, which is paid as it was, in cash.
+   */
+  reward?: LineReward | null;
 }
 
 /** What the split did to one line, and who confirmed it. */
