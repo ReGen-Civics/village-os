@@ -62,6 +62,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+/** The season's goals draw once the founding team read has decided the page's layout (page speed pass). */
+const settled = () => waitFor(() => expect(screen.queryByText("Loading roles…")).toBeNull());
+
 function renderRoles() {
   const loc = memoryLocation({ path: "/roles", record: true });
   const view = render(
@@ -73,9 +76,10 @@ function renderRoles() {
 }
 
 describe("season goals on /roles", () => {
-  it("draws the season's name, dates and goals from the live season, with a door to the fuller view", () => {
+  it("draws the season's name, dates and goals from the live season, with a door to the fuller view", async () => {
     seasonRef.value = season([{ id: "a", text: "Water system running" }, { id: "b", text: "First harvest shared", done: true }]);
     renderRoles();
+    await settled();
     const block = screen.getByRole("region", { name: "Season of Foundations" });
     expect(within(block).getByText("22 September 2026 to 21 December 2026")).toBeTruthy();
     expect(within(block).getByText("Water system running")).toBeTruthy();
@@ -84,9 +88,10 @@ describe("season goals on /roles", () => {
     expect(within(block).getByRole("link", { name: "Explore the goals" }).getAttribute("href")).toBe("/roles/select#sel-season");
   });
 
-  it("draws the commons beside the goals: moss in the one reached, a seed in the other (Phase D)", () => {
+  it("draws the commons beside the goals: moss in the one reached, a seed in the other (Phase D)", async () => {
     seasonRef.value = season([{ id: "a", text: "Water system running" }, { id: "b", text: "First harvest shared", done: true }]);
     renderRoles();
+    await settled();
     const block = screen.getByRole("region", { name: "Season of Foundations" });
     const drawing = within(block).getByRole("img", { name: /This season's 2 goals as circles/ });
     expect(drawing.querySelector('[data-goal="0"]')!.getAttribute("data-state")).toBe("seed");
@@ -95,30 +100,46 @@ describe("season goals on /roles", () => {
     expect(drawing.querySelector('[data-goal="0"]')!.getAttribute("data-active")).toBe("true");
   });
 
-  it("changes with the season and holds no goals of its own", () => {
+  it("changes with the season and holds no goals of its own", async () => {
     seasonRef.value = season([{ text: "Seed bank open" }], "Season of Roots");
     renderRoles();
+    await settled();
     expect(screen.getByRole("region", { name: "Season of Roots" })).toBeTruthy();
     expect(screen.getByText("Seed bank open")).toBeTruthy();
     expect(screen.queryByText("Water system running")).toBeNull();
   });
 
-  it("draws nothing when no season is set", () => {
+  it("holds the goals back until the founding team read decides the layout, so they never draw and then get pushed away", async () => {
+    seasonRef.value = season([{ id: "a", text: "Water system running" }]);
+    let answer: (v: unknown) => void = () => {};
+    const base = globalThis.fetch as unknown as (u: string) => Promise<unknown>;
+    vi.stubGlobal("fetch", vi.fn((url: string) => (url === "/api/org/founding-team" ? new Promise((r) => (answer = r)) : base(url))));
+    renderRoles();
+    await screen.findByText("Loading roles…");
+    expect(screen.queryByRole("region", { name: "Season of Foundations" })).toBeNull();
+    answer({ ok: true, status: 200, json: async () => ({ on: false, roleIds: [] }) });
+    expect(await screen.findByRole("region", { name: "Season of Foundations" })).toBeTruthy();
+  });
+
+  it("draws nothing when no season is set", async () => {
     seasonRef.value = { current: null, upcoming: null };
     renderRoles();
+    await settled();
     expect(screen.queryByText("This season's goals")).toBeNull();
   });
 
-  it("says so when the season has no goals, and still opens the door", () => {
+  it("says so when the season has no goals, and still opens the door", async () => {
     seasonRef.value = season([]);
     renderRoles();
+    await settled();
     expect(screen.getByText("No goals are set for this season yet.")).toBeTruthy();
     expect(screen.getByRole("link", { name: "Explore the goals" })).toBeTruthy();
   });
 
-  it("folds a long list behind one button", () => {
+  it("folds a long list behind one button", async () => {
     seasonRef.value = season(Array.from({ length: 9 }, (_, i) => ({ id: `g${i}`, text: `Goal number ${i + 1}` })));
     renderRoles();
+    await settled();
     expect(screen.queryByText("Goal number 7")).toBeNull();
     const more = screen.getByRole("button", { name: "Show all 9 goals" });
     expect(more.getAttribute("aria-expanded")).toBe("false");
