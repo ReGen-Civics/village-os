@@ -40,6 +40,29 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.5 (2026-11-15)
+
+### What changed for your village
+
+- **Meet your companion.** A guided, playful welcome on the member profile: the member meets their companion, names it, chooses its personality and voice, and is shown around each part of their profile. They can skip and pick it up later from Today, and quiet and reduced-motion modes are there.
+- **Optional lenses, private to the member.** A member may tell their companion about frameworks they like (for example Gene Keys, a Vedic chart, personality types, or how they like to be helped) so it speaks in a way that suits them. Lenses are optional, member-only, consent-based, never used to judge anyone, and deleted with the member's data. No birth details are stored.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+This release adds 1 database migration(s). Each runs by itself when the new image starts, before the village answers anyone. Before the image is published, release.yml checks that the previous release can still run over the schema they produce (docs/RELEASING.md):
+
+- `0386_companion_persona_and_lenses.sql`
+
+### Merged pull requests
+
+- #1264 Batch 166: Meet your companion (persona, private lenses, guided welcome; migration 0386)
+
+---
+
 ## 1.3.4 (2026-11-15)
 
 ### What changed for your village
