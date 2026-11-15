@@ -42,6 +42,7 @@
  */
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
+import { EMPTY_VOICE, VoiceInvite, applicationRequest, type VoiceState } from "@/components/voice/VoiceInvite";
 import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -131,6 +132,7 @@ function targetFor(field: string | null): string | null {
     case "links":
     case "files": return "[data-about-you-section]";
     case "membership": return "[data-agreements]";
+    case "voice": return "[data-voice-invite]";
     case "timeZone": return "#card-tz";
     case "earliestStart": return "#card-start";
     default: return null;
@@ -239,6 +241,7 @@ export default function ProposeARole() {
   /** Links to their work and files, for the deciders only (Rye, 10 Nov 2026). Files are never saved in the draft. */
   const [links, setLinks] = useState<ProposalLink[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [voice, setVoice] = useState<VoiceState>(EMPTY_VOICE); // Their voice note, sent only with their tick (components/voice/VoiceInvite.tsx).
   /** About you: facts, references and the consent (components/openProposal/AboutYou.tsx). */
   const [about, setAbout] = useState<AboutYouValue>(EMPTY_ABOUT_YOU);
   /** The words Sera drafted, until they are edited or kept (shared/seraDrafts.ts). Never sent. */
@@ -495,17 +498,8 @@ export default function ProposeARole() {
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
         ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
-      // With files, the application goes as one field of a multipart post (server/routes/openProposals.ts).
-      let request: RequestInit;
-      if (files.length) {
-        const fd = new FormData();
-        fd.append("proposal", JSON.stringify(proposal));
-        for (const f of files) fd.append("files", f, f.name);
-        request = { method: "POST", body: fd };
-      } else {
-        request = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposal) };
-      }
-      const res = await fetch("/api/open-proposals", request);
+      // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
+      const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
       if (!res.ok && data?.field === "membership") setLetterRead((n) => n + 1);
@@ -755,7 +749,7 @@ export default function ProposeARole() {
         )}
         {restored && (
           <p className="mt-2 text-sm text-foreground" data-draft-restored="">
-            {t({ message: "We kept your answers from last time. References and files are never saved, so add them again.", context: "founding application draft" })}
+            {t({ message: "We kept your answers from last time. References, files and recordings are never saved, so add them again.", context: "founding application draft" })}
           </p>
         )}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
@@ -800,6 +794,7 @@ export default function ProposeARole() {
               {heading(1)}
               <AboutPanes names={paneNames} now={pane} />
               <div hidden={pane !== 0} data-about-pane="0" className="grid gap-8">
+              <VoiceInvite value={voice} onChange={setVoice} />
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="propose-name" className={`mb-2 block ${LABEL}`}>

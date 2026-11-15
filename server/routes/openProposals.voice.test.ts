@@ -1,0 +1,208 @@
+/**
+ * A VOICE NOTE AT THE INTAKE (Rye, 14 Nov 2026; shared/voiceNotes.ts), over
+ * real HTTP and the scratch schema, with a private folder of the suite's own.
+ *
+ * What is pinned:
+ *
+ *   - Recordings and their words are kept only with the applicant's tick, in
+ *     the proposal's private folder, checked by their own bytes.
+ *   - Without the tick nothing of the voice is kept, and recordings or words
+ *     sent without it are refused with the field named, keeping nothing.
+ *   - The tidy job: a voice note goes with the name and address, and 90 days
+ *     after the decision even from a proposal that keeps everything else.
+ */
+import fs from "node:fs";
+import http from "node:http";
+import os from "node:os";
+import path from "node:path";
+import express from "express";
+import type mysql from "mysql2/promise";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
+import { VOICE_WORDS } from "../../shared/voiceNotes";
+import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
+import { escapeHtml } from "../lib/comms/mailer";
+import { createOrgRole } from "../lib/orgChart";
+import { readOpenProposal } from "../repos/openProposals";
+import { usersRepo } from "../repos/users";
+import { register, tidyOpenProposals } from "./openProposals";
+
+const configured = testDbConfigured();
+if (!configured) console.warn("[openProposals.voice] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
+
+const ORIGIN = "https://village.example.test";
+const NEXT = { id: "s-next", name: "Season of Roots", startsOn: "2099-01-01", endsOn: "2099-03-20", goals: [] };
+const NOW_SEASON = { id: "s-now", name: "Season of Seeds", startsOn: "2000-01-01", endsOn: "2098-12-31" };
+
+// The first bytes of each kind a browser records: WebM (EBML), MP4 ("ftyp" at 4), and a page that is not audio.
+const WEBM = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 0x9f, 0x42, 0x86, 0x81, 0x01, 0x42, 0xf7, 0x81]), Buffer.alloc(64, 1)]);
+const MP4 = Buffer.concat([Buffer.from([0, 0, 0, 0x18, 0x66, 0x74, 0x79, 0x70, 0x4d, 0x34, 0x41, 0x20]), Buffer.alloc(64, 2)]);
+const HTML = Buffer.from("<html><script>alert(1)</script></html>");
+
+describe.skipIf(!configured)("a voice note at the intake, on a real schema", () => {
+  let db: TestDb;
+  let pool: mysql.Pool;
+  let server: http.Server;
+  let base = "";
+  let gate = "";
+  let dir = "";
+  const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult };
+  const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+
+  beforeAll(async () => {
+    db = await provisionTestDb();
+    pool = testPool(db, { connectionLimit: 4 });
+    dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-voice-"));
+    await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-land', 'Land Circle', '[]', 0)");
+    gate = await createOrgRole(pool, { id: "opv-role-gate", name: "Gate Keeper", seats: 2, circleId: "c-land", aim: "Open the gate at dawn." });
+    const app = express();
+    app.use(express.json());
+    register(app, {
+      getPool: () => pool,
+      overLimit: async () => false,
+      clientIp: () => "203.0.113.9",
+      guardCapability: async (_req: any, res: any) => {
+        res.status(401).json({ error: "auth_required" });
+        return false;
+      },
+      authedUser: async () => null,
+      commsPostOffice: { getPool: () => pool },
+      deploymentOrigin: () => ORIGIN,
+      projectName: () => "Test Village",
+      escapeHtml,
+      seasonState: () => ({ current: NOW_SEASON, seasons: [NOW_SEASON, NEXT], timezone: "UTC" }),
+      postEmail: async (email: OutgoingEmail) => {
+        state.sent.push(email);
+        return state.answer;
+      },
+      governanceLifecycle: () => "public",
+      notify: async () => ({ fresh: true }),
+      notifyAdmins: async () => undefined,
+      members: usersRepo(pool),
+      liveHoldersOf: async () => [],
+      rolesCarrying: () => [],
+      loadRoleHolders: () => [],
+      seatCalendar: () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" }),
+      lapse: () => ({ currentSeasonId: "s-now", cadence: "season_turn" }),
+      stageOf: async () => "guest",
+      recordStageEvent: async () => undefined,
+      proposalFileDir: dir,
+    } as any);
+    server = http.createServer(app);
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const addr = server.address();
+    if (!addr || typeof addr === "string") throw new Error("the test server did not report a port");
+    base = `http://127.0.0.1:${addr.port}`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve) => server?.close(() => resolve()));
+    await pool?.end();
+    await db?.drop();
+    if (dir) await fs.promises.rm(dir, { recursive: true, force: true });
+  });
+
+  beforeEach(() => {
+    state.sent.length = 0;
+    state.answer = { status: "sent", messageId: "m-1" };
+  });
+
+  let n = 0;
+  const proposal = (over: Record<string, unknown> = {}) => ({
+    name: "Rowan Field",
+    email: `rowan${++n}@example.test`,
+    roles: [{ roleId: gate, note: "I open gates for a living." }],
+    why: "I live up the road and the gate is always shut.",
+    aim: "The gate opens at dawn every day.",
+    ...over,
+  });
+
+  const postJson = async (body: unknown) => {
+    const res = await fetch(`${base}/api/open-proposals`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); // module-review-ok: a test calling its own local server
+    return { status: res.status, body: (await res.json()) as any };
+  };
+
+  const postVoice = async (body: unknown, takes: Array<{ name: string; bytes: Buffer; type?: string }>) => {
+    const fd = new FormData();
+    fd.append("proposal", JSON.stringify(body));
+    for (const f of takes) fd.append("voice", new Blob([f.bytes], { type: f.type ?? "application/octet-stream" }), f.name);
+    const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
+    return { status: res.status, body: (await res.json()) as any };
+  };
+
+  const lastId = () => state.sent[state.sent.length - 1].idempotencyKey.split(":")[1];
+  const folders = async () => (await fs.promises.readdir(dir)).sort();
+
+  const ticked = (seconds: number[], transcript = "I keep gates.") => ({ voice: { consent: true, seconds, transcript } });
+
+  it("keeps ticked recordings and their words in the proposal's private folder, read by their own bytes", async () => {
+    const before = await folders();
+    const r = await postVoice(proposal(ticked([42, 61], "I have kept the gate on my road for six years.")), [
+      { name: "voice-1.webm", bytes: WEBM, type: "audio/webm" },
+      { name: "voice-2.m4a", bytes: MP4, type: "audio/mp4" },
+    ]);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    const id = lastId();
+    const voice = (await readOpenProposal(pool, id))?.body.voice;
+    expect(voice?.consent).toBe(true);
+    expect(voice?.transcript).toBe("I have kept the gate on my road for six years.");
+    expect(voice?.notes.map((n) => [n.kind, n.seconds, n.size])).toEqual([
+      ["webm", 42, WEBM.length],
+      ["m4a", 61, MP4.length],
+    ]);
+    expect(await folders()).toEqual([...before, id].sort());
+    expect((await fs.promises.readdir(path.join(dir, id))).sort()).toEqual(voice!.notes.map((n) => `${n.id}.${n.kind}`).sort());
+  });
+
+  it("keeps the words alone when the tick comes with no recording, and nothing of the voice without the tick", async () => {
+    expect((await postJson(proposal(ticked([], "Words only.")))).status).toBe(200);
+    expect((await readOpenProposal(pool, lastId()))?.body.voice).toEqual({ consent: true, notes: [], transcript: "Words only." });
+    // CONTROL: no voice part at all is an application like any other.
+    expect((await postJson(proposal())).status).toBe(200);
+    expect((await readOpenProposal(pool, lastId()))?.body.voice).toBeUndefined();
+  });
+
+  it("refuses recordings or words sent without the tick, wrong bytes and too many, keeping nothing", async () => {
+    const before = await folders();
+    const sent = state.sent.length;
+    const unticked = await postVoice(proposal(), [{ name: "voice-1.webm", bytes: WEBM }]);
+    expect(unticked).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
+    const wordsOnly = await postJson(proposal({ voice: { consent: false, seconds: [], transcript: "Not ticked." } }));
+    expect(wordsOnly).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
+    const html = await postVoice(proposal(ticked([10])), [{ name: "voice-1.webm", bytes: HTML, type: "audio/webm" }]);
+    expect(html).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType, field: "voice" } });
+    const tooLong = await postVoice(proposal(ticked([900])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    expect(tooLong).toEqual({ status: 400, body: { error: VOICE_WORDS.tooLong, field: "voice" } });
+    const four = await postVoice(proposal(ticked([1, 2, 3, 4])), [1, 2, 3, 4].map((i) => ({ name: `voice-${i}.webm`, bytes: WEBM })));
+    expect(four).toEqual({ status: 400, body: { error: VOICE_WORDS.tooMany, field: "voice" } });
+    expect(state.sent.length).toBe(sent);
+    expect(await folders()).toEqual(before);
+  });
+
+  it("the tidy job: a voice note goes with the name and address, and 90 days after any decision even where the rest is kept", async () => {
+    await postVoice(proposal(ticked([30])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    const declined = lastId();
+    await postVoice(proposal(ticked([30])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    // Adopted onto an account already here: no invitation, so the application keeps its name and address.
+    const joined = lastId();
+    await postVoice(proposal(ticked([30])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    const recent = lastId();
+    const old = new Date(Date.now() - 91 * 24 * 60 * 60_000);
+    await q("UPDATE open_role_proposals SET status = 'declined', confirmed_at = ?, decided_at = ? WHERE id = ?", [new Date(), old, declined]);
+    await q("UPDATE open_role_proposals SET status = 'adopted', confirmed_at = ?, decided_at = ? WHERE id = ?", [new Date(), old, joined]);
+    await q("UPDATE open_role_proposals SET status = 'adopted', confirmed_at = ?, decided_at = ? WHERE id = ?", [new Date(), new Date(Date.now() - 10 * 24 * 60 * 60_000), recent]);
+
+    const said = await tidyOpenProposals(pool, new Date(), dir);
+    expect(said).toMatch(/voice notes removed$/);
+    expect(await folders()).not.toContain(declined);
+    expect((await readOpenProposal(pool, declined))?.body.voice).toBeUndefined();
+    // The one who joined keeps their application and their name; their voice goes, from the row and from the disk.
+    const kept = await readOpenProposal(pool, joined);
+    expect(kept).toMatchObject({ name: "Rowan Field" });
+    expect(kept?.body.voice).toBeUndefined();
+    expect((await fs.promises.readdir(path.join(dir, joined))).filter((f) => f.startsWith("pv-"))).toEqual([]);
+    // CONTROL: a decision ten days old keeps its voice note.
+    expect((await readOpenProposal(pool, recent))?.body.voice?.notes).toHaveLength(1);
+    expect((await fs.promises.readdir(path.join(dir, recent))).filter((f) => f.startsWith("pv-"))).toHaveLength(1);
+  });
+});
