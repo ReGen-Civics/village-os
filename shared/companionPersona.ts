@@ -350,6 +350,16 @@ export function writeWelcome(v: unknown, at: string): { ok: true; state: Welcome
   return { ok: true, state: { beat, status: r.status as WelcomeStatus, at } };
 }
 
+/**
+ * A finished welcome stays finished (H7, Rye 15 Nov 2026). Once it is done,
+ * only another "done" may be saved over it: an old tab still open at an earlier
+ * beat cannot move it back to open or skipped. The server refuses that write
+ * with the finished state, and the old tab reloads to it.
+ */
+export function welcomeMoveRefused(prev: WelcomeState | null, next: Pick<WelcomeState, "status">): boolean {
+  return prev?.status === "done" && next.status !== "done";
+}
+
 /** The payload of `GET /api/me/companion-welcome`. */
 export interface WelcomePayload {
   state: WelcomeState | null;

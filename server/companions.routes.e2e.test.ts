@@ -338,6 +338,17 @@ describe.skipIf(!DB_CONFIGURED)("companions over HTTP", () => {
     const saved = await call("PUT", "/api/me/companion-welcome", { beat: 3, status: "skipped" }, ana.token);
     expect(saved.json.state).toMatchObject({ beat: 3, status: "skipped" });
     expect((await call("GET", "/api/me/companion-welcome", undefined, ana.token)).json.state).toMatchObject({ beat: 3, status: "skipped" });
+    // Two tabs (H7, 15 Nov 2026): one finishes, the other, still open at an earlier
+    // beat, saves after it. The finished welcome stays finished, and the old tab is
+    // handed the finished state to reload to.
+    expect((await call("PUT", "/api/me/companion-welcome", { beat: 7, status: "done" }, ana.token)).json.state).toMatchObject({ beat: 7, status: "done" });
+    for (const stale of [{ beat: 4, status: "open" }, { beat: 3, status: "skipped" }]) {
+      const back = await call("PUT", "/api/me/companion-welcome", stale, ana.token);
+      expect(back.status, JSON.stringify(back.json)).toBe(409);
+      expect(back.json.state).toMatchObject({ beat: 7, status: "done" });
+    }
+    expect((await call("GET", "/api/me/companion-welcome", undefined, ana.token)).json.state).toMatchObject({ beat: 7, status: "done" });
+    expect((await call("PUT", "/api/me/companion-welcome", { beat: 7, status: "done" }, ana.token)).status).toBe(200);
     // The gate holds here as everywhere: a guest gets the companions sentence.
     expect((await call("GET", "/api/me/companion-welcome", undefined, cara.token)).status).toBe(403);
 
