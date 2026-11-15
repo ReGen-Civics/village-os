@@ -111,6 +111,7 @@ import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
 import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_BYTES, VOICE_WORDS, parseSentVoice } from "../../shared/voiceNotes";
+import { registerVoiceDraft } from "./openProposalVoiceDraft";
 import { checkProposalFiles, checkVoiceNotes, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
 
 type Deps = Pick<
@@ -340,6 +341,9 @@ export function register(app: Express, deps: Deps): void {
   }
 
   // ── The public side ───────────────────────────────────────────────────────
+
+  // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
+  registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], overLimit, clientIp, ipBucket, villageName: projectName });
 
   app.get("/api/open-proposals/form", async (req, res) => {
     const d = await door(req.query.link);
