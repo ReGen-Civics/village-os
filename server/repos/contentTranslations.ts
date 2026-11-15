@@ -1,5 +1,5 @@
 /**
- * `content_translations` (9999_content_translations.sql): every statement that
+ * `content_translations` (0387_content_translations.sql): every statement that
  * reads or writes a translation of village content. The rules (what may be
  * translated, how long, which text a machine may not draft) are in
  * shared/contentTranslation.ts; this file only keeps the rows.

@@ -5,7 +5,7 @@
  * The catalog (client/src/locales/*.po) translates the words the code says.
  * It cannot translate what a village writes at run time: a role card's name and
  * aim, the founding sections of a card, a page's fields. Those are stored in
- * `content_translations` (migration 9999_content_translations.sql), one row per
+ * `content_translations` (migration 0387_content_translations.sql), one row per
  * (kind, ref_key, field, locale), and this file is the contract for that table.
  *
  * THE RULINGS IT KEEPS

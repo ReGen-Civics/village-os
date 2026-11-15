@@ -1,4 +1,4 @@
--- 9999 (the integrator renumbers at compose): translated village content
+-- 0387: translated village content
 -- (Rye, 15 Nov 2026: role cards and village content get translated, a
 -- machine draft shows marked until a person approves it).
 --
