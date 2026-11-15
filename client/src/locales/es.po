@@ -16931,3 +16931,18 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "founding application carried over"
+msgid "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
+msgstr "Rellenamos lo que escribiste en tu solicitud anterior: tu nombre, tu contacto, lo que contaste sobre ti, lo que aportas y las palabras de tu nota de voz. Cambia lo que quieras. Las respuestas para este rol, tu precio, las referencias, el consentimiento y las grabaciones empiezan de cero."
+
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "open proposal sent"
+msgid "Apply for another role too"
+msgstr "Postular también a otro rol"
+
+#: client/src/components/fireflyPath/RestoredNote.tsx
+msgctxt "open proposal sent"
+msgid "Your name, contact and what you wrote about yourself come with you, so you only add what is new for that role."
+msgstr "Tu nombre, tu contacto y lo que escribiste sobre ti pasan contigo, así que solo añades lo nuevo para ese rol."
