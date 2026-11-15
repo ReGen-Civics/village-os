@@ -97,6 +97,8 @@ import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
 import { boolVar, numberVar, rawValue } from "../lib/variables";
 import { foundingSetupFrom, type FoundingSetup } from "../../shared/foundingApplication";
+import { knowUsLinksFrom, NO_KNOW_US_LINKS, type KnowUsLinks } from "../../shared/knowUsLinks";
+import { listCalendarItems } from "../lib/calendar";
 import { VARIABLES_BY_KEY } from "../../shared/gameVariables";
 import { languageForNewProposal, languageOf } from "../lib/applicantLanguage";
 import { wordsIn } from "../../shared/applicantWords";
@@ -277,6 +279,34 @@ export function register(app: Express, deps: Deps): void {
    */
   const founding = (): FoundingSetup => (deps.founding ? deps.founding() : foundingSetupFrom((key) => (VARIABLES_BY_KEY[key] ? rawValue(key) : "")));
 
+  /**
+   * Step 1's acts (Rye, 15 Nov 2026, shared/knowUsLinks.ts): the next public call, land tour and
+   * potluck on the calendar for the next 60 days, else the village's own links. A calendar that
+   * cannot be read leaves the village's links standing.
+   */
+  async function knowUsLinks(): Promise<KnowUsLinks> {
+    const at = now();
+    let events: Awaited<ReturnType<typeof listCalendarItems>> = [];
+    try {
+      events = await listCalendarItems(getPool(), {
+        from: at,
+        to: new Date(at.getTime() + 60 * 86_400_000),
+        viewer: { userId: null, isAdmin: false },
+        timezone: deps.seasonState()?.timezone || "UTC",
+        includeDrafts: false,
+        limit: 300,
+        now: at,
+      });
+    } catch (e) {
+      console.error("[open-proposals] the calendar could not be read for step 1's links", e);
+    }
+    try {
+      return knowUsLinksFrom((key) => (VARIABLES_BY_KEY[key] ? rawValue(key) : ""), events, at);
+    } catch {
+      return NO_KNOW_US_LINKS;
+    }
+  }
+
   /** Next season by the village's calendar: the first that starts after today, or null. */
   function nextSeason() {
     const state = deps.seasonState();
@@ -365,7 +395,7 @@ export function register(app: Express, deps: Deps): void {
       voice: clipLimits(),
       ...(t ? {} : { message: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason }),
       roles: t ? await offered() : [],
-      founding: founding(),
+      founding: { ...founding(), knowUsLinks: await knowUsLinks() },
     });
   });
 

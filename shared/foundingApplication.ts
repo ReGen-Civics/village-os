@@ -15,6 +15,7 @@
  * reads the result from the form's answer, so both read one spelling.
  */
 import { KNOW_US_MAX, KNOW_US_TEXT_MAX } from "./openProposals";
+import { knowUsLinksOf, type KnowUsLinks } from "./knowUsLinks";
 
 /** The application's own settings, each registered in shared/gameVariables.ts under "The founding team". */
 export const FOUNDING_KEYS = {
@@ -73,6 +74,8 @@ export interface FoundingSetup {
   firstConversations: string[];
   /** The village's note under the application's title when the application changes (QA2-14); empty, no note. */
   updatedNote: string;
+  /** Step 1's acts: the last recording, the next call, tour and potluck, the Steward path (shared/knowUsLinks.ts). Set by the form's answer. */
+  knowUsLinks?: KnowUsLinks;
 }
 
 /** Lines of a long setting: one per line, trimmed, blank lines dropped. */
@@ -154,6 +157,7 @@ export function foundingSetupOf(raw: unknown): FoundingSetup {
     firstCycle: words(o.firstCycle),
     firstConversations: lines(o.firstConversations),
     updatedNote: words(o.updatedNote, 300),
+    knowUsLinks: knowUsLinksOf(o.knowUsLinks),
   };
 }
 

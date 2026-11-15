@@ -32,6 +32,8 @@ import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import type { DraftableGoal } from "@shared/seraDrafts";
 import { PLACEHOLDER_PARTS, shareWords, type FoundingSetup } from "@shared/foundingApplication";
+import type { KnowUsLinks } from "@shared/knowUsLinks";
+import { KnowUsWays } from "./KnowUsWays";
 
 /** A gold rule, the register's one ornament. */
 export const GOLD_RULE = "border-t border-notice/40";
@@ -105,11 +107,13 @@ export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<{ id: strin
 }
 
 /** Step 1: each way ticked by the applicant. The note shows while any is open, and the step never locks. */
-export function KnowUsStep({ ways, note, ticked, onChange }: { ways: readonly string[]; note: string; ticked: readonly string[]; onChange: (next: string[]) => void }) {
+export function KnowUsStep({ ways, note, ticked, onChange, links }: { ways: readonly string[]; note: string; ticked: readonly string[]; onChange: (next: string[]) => void; links?: KnowUsLinks }) {
   const { t } = useLingui();
   const open = ways.some((w) => !ticked.includes(w));
   return (
     <div className="grid gap-5">
+      {/* Each way as a link, the warm push and the Steward path fork (Rye, 15 Nov 2026). */}
+      <KnowUsWays links={links} />
       {ways.length > 0 ? (
         <fieldset className="grid gap-2" data-know-us="">
           <legend className={`mb-2 ${LABEL}`}>{t({ message: "Tick the ones you have done", context: "founding application know us" })}</legend>

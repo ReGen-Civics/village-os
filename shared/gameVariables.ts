@@ -2740,6 +2740,49 @@ export const VARIABLES: VariableDef[] = [
     default:
       "We encourage you to do these, but if you haven't, you can still apply, especially if you've been invited to, or if you live far away and the next call is more than a week away, or if you feel you're an incredibly strong candidate.",
   },
+  // Step 1's acts (Rye, 15 Nov 2026, shared/knowUsLinks.ts). Each is a page of this site or an https
+  // address. A next public call, tour or potluck event is linked first; these stand in when
+  // there is none. Empty: that act is not shown.
+  {
+    key: "org.founding_recording_link",
+    category: "The founding team",
+    label: "The last community call recording",
+    description: "Step 1 of the application offers \"Watch the last recording\" with this link, as the easiest first step. A page of this site or an https address. Empty: not offered.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.founding_call_link",
+    category: "The founding team",
+    label: "Where to join the next community call",
+    description: "Step 1 offers \"Join the next call\". The next public event titled community call or webinar is linked first, with its date; this link stands in when there is none. Empty: not offered.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.founding_tour_link",
+    category: "The founding team",
+    label: "Where to book a land tour",
+    description: "Step 1 offers \"Book a land tour\". The next public event titled land tour is linked first; this booking link stands in when there is none. Empty: not offered.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.founding_potluck_link",
+    category: "The founding team",
+    label: "Where to find the next potluck",
+    description: "Step 1 offers \"Come to the next potluck\". The next public event titled potluck is linked first, with its date and place; this link stands in when there is none. Empty: not offered.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.founding_steward_path_link",
+    category: "The founding team",
+    label: "Where someone completely new explores first",
+    description: "Step 1 says \"Completely new here? Explore the Steward path first\" with this link. A page of this site or an https address; empty means /steward.",
+    type: "text",
+    default: "",
+  },
   {
     key: "org.founding_first_cycle",
     category: "The founding team",

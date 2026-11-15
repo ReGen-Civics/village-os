@@ -787,7 +787,7 @@ export default function ProposeARole() {
             {/* STEP 1: get to know us. Never locks. */}
             <section {...panel(0)}>
               {heading(0)}
-              <KnowUsStep ways={setup.knowUs} note={setup.knowUsNote} ticked={knowUs} onChange={setKnowUs} />
+              <KnowUsStep ways={setup.knowUs} note={setup.knowUsNote} ticked={knowUs} onChange={setKnowUs} links={setup.knowUsLinks} />
             </section>
 
             {/* STEP 2: about you. Who you are, why you and why now, your work, references, and Human Design or Gene Keys. */}
