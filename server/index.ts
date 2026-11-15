@@ -257,7 +257,7 @@ import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry"
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
-import { pageTranslation, readerLocale } from "./lib/contentTranslationRead";
+import { noSharedCache, pageTranslation, readerLocale } from "./lib/contentTranslationRead";
 import { register as registerSessionCardRoutes } from "./routes/sessionCard";
 import { exportMemberSessions, register as registerLiveSessionsRoutes } from "./routes/liveSessions";
 import { register as registerSessionTasksRoutes } from "./routes/sessionTasks";
@@ -7871,7 +7871,7 @@ async function startServer() {
   app.get("/api/content/:section/translation", async (req, res) => {
     const section = String(req.params.section ?? "");
     const locale = readerLocale(req);
-    res.set("Cache-Control", "no-store");
+    noSharedCache(res);
     if (!locale) return res.json({ translation: null });
     const content = contentRepo.get() ?? {};
     res.json({ translation: await pageTranslation(getPool(), section, content[section], locale) });
