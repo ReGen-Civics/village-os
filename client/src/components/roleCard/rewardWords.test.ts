@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { setupI18n } from "@lingui/core";
-import { paysInTokens, rewardWords } from "./rewardWords";
+import { paysInTokens, rewardWords, TOKEN_TERMS_ALWAYS } from "./rewardWords";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };
@@ -13,11 +13,13 @@ describe("the role card's footnote (Rye, 15 Nov 2026)", () => {
     expect(w.footnote).toBe(`*At 100% commitment. ${FIRST_MONTH} ${TERMS}`);
     expect(w.footnote).not.toMatch(/\$\d/);
   });
-  it("leaves the clause out for a split all in cash, or with equity and credits at 0%", () => {
-    expect(rewardWords(i18n, BAND, 30, "", [{ label: "Cash", pct: 100 }]).footnote).toBe(`*At 100% commitment. ${FIRST_MONTH}`);
-    expect(rewardWords(i18n, BAND, 30, "", [{ label: "Cash", pct: 100 }, { label: "Equity", pct: 0 }, { label: "Credits", pct: 0 }]).footnote).not.toContain(TERMS);
-    // No split written at all: no clause.
-    expect(rewardWords(i18n, BAND, 30).footnote).toBe(`*At 100% commitment. ${FIRST_MONTH}`);
+  it("shows the clause for now on every card, an all-cash or empty split too (Rye, 15 Nov 2026: leave them on)", () => {
+    expect(TOKEN_TERMS_ALWAYS).toBe(true);
+    expect(rewardWords(i18n, BAND, 30, "", [{ label: "Cash", pct: 100 }]).footnote).toBe(`*At 100% commitment. ${FIRST_MONTH} ${TERMS}`);
+    expect(rewardWords(i18n, BAND, 30, "", [{ label: "Cash", pct: 100 }, { label: "Equity", pct: 0 }, { label: "Credits", pct: 0 }]).footnote).toContain(TERMS);
+    expect(rewardWords(i18n, BAND, 30).footnote).toBe(`*At 100% commitment. ${FIRST_MONTH} ${TERMS}`);
+    // Kept for later: the test the clause will follow when the constant is set false.
+    expect(paysInTokens([{ label: "Cash", pct: 100 }])).toBe(false);
   });
   it("credits alone are enough, and the village's note follows", () => {
     expect(paysInTokens([{ label: "Cash", pct: 95 }, { label: "Village credits", pct: 5 }])).toBe(true);
