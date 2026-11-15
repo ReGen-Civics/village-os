@@ -48,6 +48,8 @@ describe("translationTarget", () => {
     expect(translationTarget("role_card_sections", "r1", "payShape.0.label")).toMatchObject({ ok: true, protection: "human_only" });
     expect(translationTarget("role_card_sections", "r1", "qualities.2")).toMatchObject({ ok: true, protection: "open" });
     expect(translationTarget("role_card_sections", "r1", "qualities.99")).toMatchObject({ ok: false });
+    // The companion names the card's animal icon; a translated name would draw no animal.
+    expect(translationTarget("role_card_sections", "r1", "aiCompanion")).toMatchObject({ ok: false });
   });
 
   it("takes a journey page's words, but never a link", () => {

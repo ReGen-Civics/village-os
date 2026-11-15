@@ -8026,6 +8026,11 @@ msgctxt "companion welcome, what the companion says"
 msgid "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
 msgstr "¡Eso es todo el lugar, {firstName}! Mi primera pregunta te espera en Tus compañeros. Llámame cuando quieras: siempre estoy en tu perfil."
 
+#: client/src/i18n/machineTranslation.tsx
+msgctxt "note at the end of a page whose village words a machine translated"
+msgid "Some words on this page are a machine translation. A person has not checked them yet."
+msgstr "Algunas palabras de esta página son traducción automática. Una persona aún no las ha revisado."
+
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the named role a private intake reaches"
 msgid "{intakeRoleName} role"
@@ -15819,6 +15824,11 @@ msgstr ""
 msgctxt "open proposal confirmed drawing"
 msgid "You"
 msgstr "Tú"
+
+#: client/src/i18n/machineTranslation.tsx
+msgctxt "mark on a role card whose words a machine translated"
+msgid "Machine translation, not yet checked by a person"
+msgstr "Traducción automática, aún sin revisar por una persona"
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: roles paid on separate agreements"

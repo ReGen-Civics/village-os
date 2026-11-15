@@ -25,7 +25,7 @@
  *   role_card            ref_key = org_roles.id
  *                        field   = a text column ("aim") or a list line ("accountabilities.<n>")
  *   role_card_sections   ref_key = org_roles.id
- *                        field   = "aiSupport" | "aiCompanion" | "payNote" | "paySplitNote"
+ *                        field   = "aiSupport" | "payNote" | "paySplitNote" (never "aiCompanion": it names the card's animal)
  *                                  | "idealBackground.<n>" | "qualities.<n>" | "payShape.<n>.label"
  *   page_section         ref_key = "page-<id>"
  *                        field   = "<sectionId>.<fieldKey>"
@@ -124,7 +124,6 @@ export function translationTarget(kind: string, refKey: string, field: string): 
     if (refKey.length > ROLE_ID_MAX) return { ok: false, reason: "That is not a role." };
     if (parts.length === 1) {
       if (field === "aiSupport") return { ok: true, cap: slack(SECTION_LIMITS.aiSupportChars), protection: "open" };
-      if (field === "aiCompanion") return { ok: true, cap: slack(SECTION_LIMITS.companionChars), protection: "open" };
       if (field === "payNote" || field === "paySplitNote") return { ok: true, cap: slack(SECTION_LIMITS.payNoteChars), protection: "human_only" };
     }
     if (parts.length === 2 && (parts[0] === "idealBackground" || parts[0] === "qualities") && INDEX.test(parts[1]) && Number(parts[1]) < SECTION_LIMITS.lines) {

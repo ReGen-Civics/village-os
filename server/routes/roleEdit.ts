@@ -66,6 +66,7 @@ import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
 import { hasSections, villagePayFrom, type RoleCardSections } from "../../shared/roleCardSections";
 import { lastEditedOf, sectionsFor, sectionsForMany } from "../lib/roleCardSections";
+import { readerLocale, roleCardTranslation } from "../lib/contentTranslationRead";
 
 type Gate = {
   authedUser(req: any): Promise<any | null>;
@@ -195,9 +196,14 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     }
     const pool = g.getPool();
     const { sections } = await sectionsFor(pool, role.id);
+    // The card in the reader's language, where it has been translated (Rye, 15 Nov 2026). Only fresh
+    // translations of the words the card says now; a machine draft is named so the card marks it.
+    const locale = readerLocale(req);
+    const translation = locale ? await roleCardTranslation(pool, role as unknown as Record<string, unknown> & { id: string }, hasSections(sections) ? sections : null, locale) : null;
     res.set("Cache-Control", "no-store").json({
       roleId: role.id,
       sections: hasSections(sections) ? sections : null,
+      translation,
       lastEdited: await lastEditedOf(pool, role.id, { peopleShown: !!user || boolVar("org.public_people") }),
       showPayRanges: boolVar("org.show_pay_ranges"),
       villagePay: villagePay(),
