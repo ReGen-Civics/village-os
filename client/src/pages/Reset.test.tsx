@@ -2,7 +2,9 @@
 /**
  * /reset is a link anybody can send, so opening it must never sign a member
  * out by itself (security sweep on #1245). The sign-in stays, drafts stay,
- * and signing out is a separate tap that goes through `logout`.
+ * and signing out is a separate tap that goes through `logout`. Nor does it
+ * leave by itself: the page waits for "Go home", so the language selector
+ * and the line stay usable (copy sweep on #1272).
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
@@ -17,7 +19,7 @@ const logout = vi.fn(async () => {
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ logout }) }));
 vi.mock("@/i18n/PageLanguageBar", () => ({ PageLanguageBar: () => null }));
 
-import Reset, { HOME_AFTER_MS } from "./Reset";
+import Reset from "./Reset";
 
 i18n.load("en", {});
 i18n.activate("en");
@@ -54,6 +56,7 @@ describe("/reset and the sign-in", () => {
     window.localStorage.setItem(TOKEN_KEY, "session-token");
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await open();
+    expect(screen.getByRole("link", { name: "Go home" }).getAttribute("href")).toBe("/");
 
     expect(window.localStorage.getItem(TOKEN_KEY)).toBe("session-token");
     expect(window.localStorage.getItem(DRAFT)).toBe("{\"why\":\"my words\"}");
@@ -61,7 +64,7 @@ describe("/reset and the sign-in", () => {
     expect(screen.getByText("You're still signed in.")).toBeTruthy();
 
     await act(async () => {
-      vi.advanceTimersByTime(HOME_AFTER_MS * 4);
+      vi.advanceTimersByTime(60_000);
     });
     expect(replace).not.toHaveBeenCalled();
     expect(logout).not.toHaveBeenCalled();
@@ -80,15 +83,17 @@ describe("/reset and the sign-in", () => {
     expect(replace).toHaveBeenCalledWith("/");
   });
 
-  it("goes home by itself when nobody was signed in", async () => {
+  it("waits for the tap when nobody was signed in too, and offers no sign-out", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     await open();
     expect(screen.queryByRole("button", { name: "Also sign me out" })).toBeNull();
+    expect(screen.queryByText("You're still signed in.")).toBeNull();
+    expect(screen.getByRole("link", { name: "Go home" }).getAttribute("href")).toBe("/");
 
     await act(async () => {
-      vi.advanceTimersByTime(HOME_AFTER_MS);
+      vi.advanceTimersByTime(60_000);
     });
-    expect(replace).toHaveBeenCalledWith("/");
+    expect(replace).not.toHaveBeenCalled();
     expect(logout).not.toHaveBeenCalled();
   });
 });

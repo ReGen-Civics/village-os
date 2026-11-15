@@ -3,12 +3,15 @@
  * phone is stuck on an old version. No sign-in, no question to answer: the
  * link is the tap. It clears the site's workers, caches and storage, keeps
  * any draft and the sign-in (lib/deviceReset.ts says which keys and why),
- * says in one line what it did, and goes home.
+ * and says in one line what it did.
+ *
+ * THE PAGE WAITS FOR A TAP. It used to go home by itself after 2.5 seconds,
+ * which left no time to use the language selector or read the line (copy
+ * sweep on #1272). Now it stays until the member taps "Go home".
  *
  * THE SIGN-IN STAYS unless the member asks. The link is one anybody can
  * send, so it may not sign anybody out by itself. A member who is signed in
- * gets an "Also sign me out" button instead of the automatic trip home, so
- * the choice cannot run out under them; signing out goes through `logout`,
+ * also gets an "Also sign me out" button; signing out goes through `logout`,
  * which ends the session on the server too.
  *
  * It renders without the shell, like the 404, so a broken header or a stuck
@@ -16,13 +19,10 @@
  */
 import { useEffect, useState } from "react";
 import { Trans } from "@lingui/react/macro";
-import { BTN_SECONDARY, CARD, H2, HINT, LINK, NOTE, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, H2, HINT, NOTE, WORLD } from "@/components/journey/look";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import { resetDevice, type ResetResult } from "@/lib/deviceReset";
-
-/** Long enough to read one line, short enough that nobody wonders what to do. */
-export const HOME_AFTER_MS = 2500;
 
 export default function Reset() {
   const [result, setResult] = useState<ResetResult | null>(null);
@@ -31,16 +31,11 @@ export default function Reset() {
 
   useEffect(() => {
     let left = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
     void resetDevice().then((r) => {
-      if (left) return;
-      setResult(r);
-      // Signed in: the member chooses, so nothing leaves the page under them.
-      if (!r.signedIn) timer = setTimeout(() => window.location.replace("/"), HOME_AFTER_MS);
+      if (!left) setResult(r);
     });
     return () => {
       left = true;
-      if (timer) clearTimeout(timer);
     };
   }, []);
 
@@ -71,25 +66,21 @@ export default function Reset() {
             <Trans>Clearing this site from your device...</Trans>
           )}
         </p>
-        {result && !result.signedIn && (
-          <p className={`${HINT} mt-3`}>
-            <Trans>Taking you home now.</Trans>{" "}
-            <a href="/" className={LINK}>
-              <Trans context="fresh start page: go to the home page now">Go home</Trans>
-            </a>
-          </p>
-        )}
-        {result?.signedIn && (
+        {result && (
           <div className="mt-5 flex flex-col items-center gap-3">
-            <p className={HINT}>
-              <Trans>You're still signed in.</Trans>
-            </p>
-            <a href="/" className={LINK}>
+            {result.signedIn && (
+              <p className={HINT}>
+                <Trans>You're still signed in.</Trans>
+              </p>
+            )}
+            <a href="/" className={BTN_PRIMARY}>
               <Trans context="fresh start page: go to the home page now">Go home</Trans>
             </a>
-            <button type="button" onClick={() => void signOut()} disabled={signingOut} className={BTN_SECONDARY}>
-              <Trans context="fresh start page: sign out on this device too">Also sign me out</Trans>
-            </button>
+            {result.signedIn && (
+              <button type="button" onClick={() => void signOut()} disabled={signingOut} className={BTN_SECONDARY}>
+                <Trans context="fresh start page: sign out on this device too">Also sign me out</Trans>
+              </button>
+            )}
           </div>
         )}
       </div>

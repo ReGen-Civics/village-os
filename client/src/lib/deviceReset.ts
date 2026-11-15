@@ -3,7 +3,7 @@
  *
  * The link we hand to a member whose phone is stuck on an old version, or
  * holding something odd, when a reload has not fixed it. It clears what this
- * site keeps on the device and goes home:
+ * site keeps on the device:
  *
  *  - every service worker registered for this origin (client/public/sw.js is
  *    narrow on purpose, but an old one from an earlier build could still be
