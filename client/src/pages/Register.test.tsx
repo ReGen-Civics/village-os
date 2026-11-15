@@ -33,6 +33,18 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("@/components/auth/signInMethods", () => ({
   fetchSignInMethods: () => Promise.resolve(village.methods),
 }));
+/*
+ * The config, answered here rather than through fetch. The read now tries
+ * three times over about two and a half seconds before it gives up
+ * (lib/gameApi.ts, resilience P1-1), and the path pills wait for its answer,
+ * so a test that left it to an unstubbed fetch waited out every retry. Null
+ * is "the config cannot be had": the form falls back to today's path names.
+ */
+const configAnswer = vi.hoisted(() => ({ current: (): Promise<unknown> => Promise.resolve(null) }));
+vi.mock("@/lib/gameApi", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/gameApi")>()),
+  fetchConfigCached: () => configAnswer.current(),
+}));
 
 import Register from "./Register";
 
@@ -45,6 +57,7 @@ function renderRegister() {
 }
 
 beforeEach(() => {
+  configAnswer.current = () => Promise.resolve(null);
   registerMock.mockReset();
   village.methods = { password: true, google: false, inviteOnly: false };
   window.history.replaceState({}, "", "/register");
@@ -56,6 +69,16 @@ afterEach(() => {
 });
 
 describe("Register", () => {
+  it("opens the form while a slow config is on its way, then offers the village's own path names", async () => {
+    let arrive: (c: unknown) => void = () => {};
+    configAnswer.current = () => new Promise((done) => { arrive = done; });
+    renderRegister();
+    expect(await screen.findByLabelText(/^name$/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /investor/i }), "no platform names flashed before the village's own").toBeNull();
+    arrive({ paths: [{ id: "investor", label: "Patron of the Grove", role: "", description: "Backs the village.", route: "/investor" }] });
+    expect(await screen.findByRole("button", { name: /Patron of the Grove/ })).toBeInTheDocument();
+  });
+
   it("labels every field, including the two password fields separately", async () => {
     renderRegister();
     expect(await screen.findByLabelText(/^name$/i)).toBeInTheDocument();
