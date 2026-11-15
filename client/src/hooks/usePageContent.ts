@@ -3,7 +3,10 @@ import { readVillageSection } from "@/hooks/useVillageContent";
 import { useGameConfig } from "@/lib/gameApi";
 import { storyPageOffAlone } from "@/lib/brochure";
 import { pageSectionKey, type PageSpec, type PageVars, type ResolvedItem, type ResolvedPage } from "@shared/pageContent/types";
-import { resolvePage } from "@shared/pageContent/resolve";
+import { fillPage, resolvePageRaw } from "@shared/pageContent/resolve";
+import { overlayPageRaw, readPageTranslation, type PageTranslationWire } from "@shared/contentTranslationOverlay";
+import { useLocale } from "@/i18n/LocaleProvider";
+import { markMachineTranslated } from "@/i18n/machineTranslation";
 import { pageVarsFrom } from "@shared/pageContent/vars";
 import { withPathNames } from "@shared/pageContent/pathNames";
 import { servedPathsFrom } from "@/hooks/useVillagePaths";
@@ -56,10 +59,32 @@ export function withoutLinksToHiddenPages(spec: PageSpec, page: ResolvedPage, sh
   return { ...page, ...out };
 }
 
+/**
+ * A page's words in the reader's language, where the village has translated
+ * them (Rye, 15 Nov 2026). Asked for only in a language other than English,
+ * and never by an editor: Admin, Pages reads the section itself. Null while
+ * unanswered, an empty translation when there is none or the read fails, so a
+ * page in Spanish waits for its words once and never flashes English first.
+ */
+const NO_TRANSLATION: PageTranslationWire = { fields: {}, machine: [], locale: "en" };
+
+export function readPageTranslationFor(section: string, locale: string): Promise<PageTranslationWire> {
+  if (locale === "en") return Promise.resolve(NO_TRANSLATION);
+  return fetch(`/api/content/${encodeURIComponent(section)}/translation`, { headers: { "X-Village-Locale": locale } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((d) => {
+      const t = readPageTranslation(d?.translation);
+      return t && t.locale === locale ? t : NO_TRANSLATION;
+    })
+    .catch(() => NO_TRANSLATION);
+}
+
 export function usePageContent(spec: PageSpec): ResolvedPage | null {
   const config = useGameConfig();
   const vars = usePageVars();
+  const { locale } = useLocale();
   const [stored, setStored] = useState<{ doc: unknown } | null>(null);
+  const [translated, setTranslated] = useState<{ locale: string; t: PageTranslationWire } | null>(null);
   useEffect(() => {
     let alive = true;
     readVillageSection(pageSectionKey(spec)).then((doc) => {
@@ -69,11 +94,29 @@ export function usePageContent(spec: PageSpec): ResolvedPage | null {
       alive = false;
     };
   }, [spec]);
+  useEffect(() => {
+    let alive = true;
+    readPageTranslationFor(pageSectionKey(spec), locale).then((t) => {
+      if (alive) setTranslated({ locale, t });
+    });
+    return () => {
+      alive = false;
+    };
+  }, [spec, locale]);
+  const translation = translated && translated.locale === locale ? translated.t : null;
+  // Words a machine drafted are marked (machineTranslation.tsx): the layout's note shows while any are on the page.
+  const machine = (translation?.machine.length ?? 0) > 0;
+  useEffect(() => {
+    const key = pageSectionKey(spec);
+    markMachineTranslated(key, machine);
+    return () => markMachineTranslated(key, false);
+  }, [spec, machine]);
   // A box that names a path shows the village's path words (Admin, Paths &
   // Stages) until the village writes its own (shared/pageContent/pathNames.ts).
   return useMemo(() => {
-    if (!vars || !stored) return null;
-    const page = withPathNames(spec, stored.doc, resolvePage(spec, stored.doc, vars), servedPathsFrom(config));
+    if (!vars || !stored || !translation) return null;
+    const raw = overlayPageRaw(resolvePageRaw(spec, stored.doc), translation.fields);
+    const page = withPathNames(spec, stored.doc, fillPage(raw, vars), servedPathsFrom(config));
     return withoutLinksToHiddenPages(spec, page, (href) => !storyPageOffAlone(config, href));
-  }, [spec, stored, vars, config]);
+  }, [spec, stored, vars, config, translation]);
 }

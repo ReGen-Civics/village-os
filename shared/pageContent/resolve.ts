@@ -87,7 +87,11 @@ export function resolvePageRaw(spec: PageSpec, stored: unknown): ResolvedPage {
 
 /** What the page renders. */
 export function resolvePage(spec: PageSpec, stored: unknown, vars: PageVars): ResolvedPage {
-  const raw = resolvePageRaw(spec, stored);
+  return fillPage(resolvePageRaw(spec, stored), vars);
+}
+
+/** A page's raw words with `{words}` filled in (a translation is laid over the raw words first). */
+export function fillPage(raw: ResolvedPage, vars: PageVars): ResolvedPage {
   const out: Record<string, ResolvedSection> = {};
   for (const [id, section] of Object.entries(raw)) {
     const fields: Record<string, string> = {};

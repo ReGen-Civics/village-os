@@ -46,7 +46,8 @@ export type AssistantMode =
   | "roleGuide"
   | "card"
   | "adminHelper"
-  | "fieldHelp";
+  | "fieldHelp"
+  | "translate";
 
 export interface ModeSpec {
   audience: "public" | "member" | "admin";
@@ -98,6 +99,11 @@ export const ASSISTANT_MODES: Record<AssistantMode, ModeSpec> = {
   // their voice. Its own bucket, so drafting a profile never spends the
   // journal's day. No tools: it sees only the box and the conversation.
   fieldHelp: { audience: "member", dailyBudget: 200, maxTokens: 1200, toolCalls: 0 },
+  // Machine drafts of the village's own words in another language
+  // (server/routes/contentTranslations.ts). Off unless the server says so
+  // (CONTENT_MACHINE_DRAFTS=on); a holder of the power asks, a page at a time.
+  // No tools: the English arrives in the message.
+  translate: { audience: "admin", dailyBudget: 60, maxTokens: 4000, toolCalls: 0 },
 };
 
 /** Conversation limits, shared so no mode can quietly widen them. */

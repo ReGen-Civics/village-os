@@ -13,6 +13,7 @@ import {
   readLens,
   readWelcome,
   writeWelcome,
+  welcomeMoveRefused,
 } from "./companionPersona";
 import { lahiriAyanamsa, siderealMoonLon, vedicMoon } from "./geneKeysSky";
 import * as Astronomy from "astronomy-engine";
@@ -100,6 +101,15 @@ describe("welcome state", () => {
   it("checks a write", () => {
     expect(writeWelcome({ beat: 7, status: "done" }, "t")).toEqual({ ok: true, state: { beat: 7, status: "done", at: "t" } });
     expect(writeWelcome({ beat: -1, status: "done" }, "t").ok).toBe(false);
+  });
+
+  it("keeps a finished welcome finished: only another done may follow a done", () => {
+    const done = { beat: 7, status: "done" as const, at: "t" };
+    expect(welcomeMoveRefused(done, { status: "open" })).toBe(true);
+    expect(welcomeMoveRefused(done, { status: "skipped" })).toBe(true);
+    expect(welcomeMoveRefused(done, { status: "done" })).toBe(false);
+    expect(welcomeMoveRefused({ beat: 3, status: "skipped", at: "t" }, { status: "open" })).toBe(false);
+    expect(welcomeMoveRefused(null, { status: "open" })).toBe(false);
   });
 });
 
