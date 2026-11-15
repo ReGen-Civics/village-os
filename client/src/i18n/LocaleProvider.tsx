@@ -17,6 +17,8 @@ import { resolveLocale, SOURCE_LOCALE } from "./resolveLocale";
  * wins over both.
  */
 export const LOCALE_STORAGE_KEY = "vos_locale";
+/** Waits before each retry of a catalog that failed to load (a dropped signal on a phone). Then it stops until the browser says it is online again. */
+export const CATALOG_RETRY_MS = [2000, 5000, 15000, 30000, 60000] as const;
 const YEAR_SECONDS = 365 * 24 * 60 * 60;
 
 export type LocaleSources = {
@@ -92,7 +94,12 @@ export function LocaleProvider({
   const [locale, setActive] = useState(SOURCE_LOCALE);
   const [ready, setReady] = useState(false);
   const loadSeq = useRef(0);
-  const touched = useRef(false);
+  // Whether the visitor has typed into a field. A tap or a scroll is not typing (Spanish phone QA, 15 Nov 2026).
+  const typed = useRef(false);
+  // A catalog that arrived after they typed, held for their next step.
+  const pending = useRef<{ seq: number; tag: string; messages: Record<string, unknown> } | null>(null);
+  const retry = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const retryNow = useRef<(() => void) | null>(null);
 
   const choose = useCallback(
     (saved: string | null | undefined) =>
@@ -111,37 +118,60 @@ export function LocaleProvider({
 
   /**
    * Load `tag`. On the first load a slow catalog falls back to English after
-   * `timeoutMs`; it is still applied when it lands, unless the visitor has
-   * started using the page by then (never flip mid-task).
+   * `timeoutMs`. A late catalog is applied when it lands, a scroll or a tap
+   * notwithstanding; once the visitor has typed into a field it waits for
+   * their next step (a press of a button or a link, or Back), so no label
+   * changes under a sentence being written. A failed load shows English and
+   * is tried again, with growing waits, and at once when the browser comes
+   * back online (Spanish phone QA, 15 Nov 2026: on a slow phone a whole visit
+   * used to stay in English).
    */
   const load = useCallback(
     (tag: string, firstLoad: boolean) => {
       const seq = ++loadSeq.current;
+      clearTimeout(retry.current);
+      retryNow.current = null;
+      pending.current = null;
       if (tag === SOURCE_LOCALE) {
         show(SOURCE_LOCALE, {});
         return;
       }
-      let timedOut = false;
+      let fallenBack = false;
+      const fallBack = () => {
+        if (fallenBack) return;
+        fallenBack = true;
+        show(SOURCE_LOCALE, {});
+      };
       const timer = firstLoad
         ? setTimeout(() => {
-            if (seq !== loadSeq.current) return;
-            timedOut = true;
-            show(SOURCE_LOCALE, {});
+            if (seq === loadSeq.current) fallBack();
           }, timeoutMs)
         : undefined;
-      fetchCatalog(tag).then(
-        (res) => {
-          clearTimeout(timer);
-          if (seq !== loadSeq.current) return;
-          if (timedOut && touched.current) return;
-          show(tag, res.messages ?? {});
-        },
-        () => {
-          clearTimeout(timer);
-          if (seq !== loadSeq.current) return;
-          if (!timedOut) show(SOURCE_LOCALE, {});
-        },
-      );
+      const attempt = (tries: number) => {
+        retryNow.current = null;
+        fetchCatalog(tag).then(
+          (res) => {
+            clearTimeout(timer);
+            if (seq !== loadSeq.current) return;
+            const messages = res.messages ?? {};
+            if (fallenBack && typed.current) pending.current = { seq, tag, messages };
+            else show(tag, messages);
+          },
+          () => {
+            clearTimeout(timer);
+            if (seq !== loadSeq.current) return;
+            fallBack();
+            const wait = CATALOG_RETRY_MS[tries];
+            const again = () => {
+              clearTimeout(retry.current);
+              if (seq === loadSeq.current) attempt(tries + 1);
+            };
+            retryNow.current = again;
+            if (wait !== undefined) retry.current = setTimeout(again, wait);
+          },
+        );
+      };
+      attempt(0);
     },
     [fetchCatalog, show, timeoutMs],
   );
@@ -155,15 +185,37 @@ export function LocaleProvider({
   }, [choose, load, sources.saved]);
 
   useEffect(() => {
-    if (!ready) return;
-    const mark = () => { touched.current = true; };
-    window.addEventListener("pointerdown", mark, { once: true });
-    window.addEventListener("keydown", mark, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", mark);
-      window.removeEventListener("keydown", mark);
+    const isField = (t: EventTarget | null) =>
+      t instanceof HTMLElement && (t.matches("input, textarea, select") || t.isContentEditable);
+    const onInput = (e: Event) => {
+      if (isField(e.target)) typed.current = true;
     };
-  }, [ready]);
+    // The next step: a held catalog is applied once the press has done its work.
+    const applyHeld = () => {
+      const held = pending.current;
+      if (!held) return;
+      setTimeout(() => {
+        if (pending.current !== held) return;
+        pending.current = null;
+        if (held.seq === loadSeq.current) show(held.tag, held.messages);
+      }, 0);
+    };
+    const onClick = (e: Event) => {
+      if (e.target instanceof Element && e.target.closest("a, button, [role='button']")) applyHeld();
+    };
+    const onOnline = () => retryNow.current?.();
+    document.addEventListener("input", onInput, true);
+    document.addEventListener("click", onClick, true);
+    window.addEventListener("popstate", applyHeld);
+    window.addEventListener("online", onOnline);
+    return () => {
+      document.removeEventListener("input", onInput, true);
+      document.removeEventListener("click", onClick, true);
+      window.removeEventListener("popstate", applyHeld);
+      window.removeEventListener("online", onOnline);
+      clearTimeout(retry.current);
+    };
+  }, [show]);
 
   const setLocale = useCallback(
     (tag: string | null) => {
