@@ -26,6 +26,7 @@
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import { founderPowerStands } from "../lib/gameStart";
+import { ADMIN_ROLES_CLOSED_BODY, adminRolesClosed } from "../lib/launchDoors";
 import { recordEvent } from "../lib/events";
 import { holdingHasLapsed } from "../lib/stewardship";
 import { EXAMPLE_REFUSAL_BODY, isExampleUser } from "../lib/examples";
@@ -52,9 +53,12 @@ export function register(app: Express, deps: Deps): void {
     const actor = (req as any).adminUser;
     const on = req.body?.on;
     if (typeof on !== "boolean") return res.status(400).json({ error: "Send on: true or on: false" });
-    if ((await founderPowerStands(getPool())) && actor?.role !== "founder") {
+    const founderStands = await founderPowerStands(getPool());
+    if (founderStands && actor?.role !== "founder") {
       return res.status(403).json({ error: "Until the village starts its Game, only a founder decides which groups can open the admin panel" });
     }
+    // D2b (server/lib/launchDoors.ts): turning this on or off makes or removes admins, so after launch the panel does neither.
+    if (adminRolesClosed(!founderStands)) return res.status(409).json(ADMIN_ROLES_CLOSED_BODY);
     const all = rolesRepo.all();
     const idx = all.findIndex((r: any) => r.id === req.params.id);
     if (idx === -1) return res.status(404).json({ error: "Group not found" });

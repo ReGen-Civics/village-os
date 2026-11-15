@@ -492,6 +492,7 @@ import {
   thresholdSettingsFrom,
   overrideDials as highestTierDials,
   rollProblem,
+  launchMinElectorate,
   thresholdsForSubject,
   LAUNCH_SUBJECT_REF,
   MINT_RULE,
@@ -816,6 +817,7 @@ import {
   type LaunchDeps,
 } from "./lib/launch";
 import { founderPowerStands, readGameStart, recordGameStart } from "./lib/gameStart";
+import { ADMIN_GROUP_HOLDERS_CLOSED_AT_LAUNCH, ADMIN_ROLES_CLOSED_BODY, adminRolesClosed, gameHasStarted, HAND_MINT_CLOSED_BODY, handMintClosed } from "./lib/launchDoors"; // D1, D2: admin doors that close when the Game starts
 import {
   assertModuleGraph,
   attachModuleReadiness,
@@ -8317,6 +8319,7 @@ async function startServer() {
     // refusal off its shared `code`. Answering the launch-state refusal first
     // would hand one of them a 409 carrying a different sentence and no code.
     if (isExampleUser(target)) return res.status(409).json(EXAMPLE_REFUSAL_BODY);
+    if (adminRolesClosed(!founderStands)) return res.status(409).json(ADMIN_ROLES_CLOSED_BODY); // D2b: after launch the panel makes and removes no admins (server/lib/launchDoors.ts)
     if (!founderStands && role === "founder") {
       return res.status(409).json({
         error:
@@ -12288,7 +12291,7 @@ async function startServer() {
       tooFew,
       unityPct: threshold?.minUnityPct ?? null,
       quorumPct: threshold?.minQuorumPct ?? null,
-      minElectorate: threshold ? Math.max(1, Math.floor(numberVar("governance.launch_min_electorate"))) : null,
+      minElectorate: threshold ? launchMinElectorate(numberVar("governance.launch_min_electorate")) : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
       // The subject's own fact, then this village's. `why` is what the card
       // renders in the ready-to-ask state, so a mode note appended here lands
       // in front of the founder with no new field for a client to learn.
@@ -16043,6 +16046,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
    */
   app.post("/api/admin/tokens/:slug/mint", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    if (handMintClosed(await gameHasStarted(getPool()))) return res.status(409).json(HAND_MINT_CLOSED_BODY); // D1: after launch only the village's own rules mint (server/lib/launchDoors.ts)
     const slug = String(req.params.slug);
     const { toUserId, amount, reason } = req.body ?? {};
     const amt = Number(amount) || 0; // HUMAN, as typed. Finer than the token holds is refused below, never truncated: 2.5 once minted 2 and said "Minted"
@@ -16248,6 +16252,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
    */
   app.post("/api/admin/mint-requests/:id/approve", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    if (handMintClosed(await gameHasStarted(getPool()))) return res.status(409).json(HAND_MINT_CLOSED_BODY); // D1: a second signature on a hand mint is still a hand mint
     const acting = adminActor(req);
     if (!acting) return res.status(401).json({ error: "auth_required" });
     const out = await approveMintRequest(mintRequestDeps(), { requestId: String(req.params.id), decidedBy: acting.id, signer: acting.id });
@@ -25142,6 +25147,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!userId || !["add", "remove"].includes(action)) {
       return res.status(400).json({ error: "userId and action (add|remove) are required" });
     }
+    if (role.grantsAdmin && isAdminActor && adminRolesClosed(await gameHasStarted(getPool()))) return res.status(409).json({ error: ADMIN_GROUP_HOLDERS_CLOSED_AT_LAUNCH, code: "admin_roles_closed_at_launch", ballots: ["role_seat", "role_unseat"] }); // D2b
     const member = await members.byId(userId);
     if (action === "remove" && role.grantsAdmin && !accountsWithReach(await members.all(), loadRoles() as any, loadPowerHoldings().filter((h) => !(h.roleId === role.id && h.userId === userId)), new Date(), holdingHasLapsed, isExampleUser).length) return res.status(409).json({ error: LAST_ADMIN_REFUSAL }); // sheet 19
     if (!member || (action === "add" && !holderStands(member))) return res.status(404).json({ error: "Member not found" }); // a tombstone is nobody to appoint, and a stray holding of one can still be removed
