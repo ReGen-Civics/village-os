@@ -75,6 +75,7 @@
 import { canonicalJson } from "./canonicalJson";
 import { looksLikePaymentDetails, moneyWords, type SeatSettings } from "./seatSettings";
 import type { CycleBounds } from "./cycleClock";
+import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -1401,6 +1402,84 @@ export interface InvoiceLine {
   cashOwedId: string | null;
   /** A range line the member asked to talk about is held. */
   held: boolean;
+  /**
+   * Set when the member's split of their time scaled this line (Rye, 14 Nov
+   * 2026): the amount before, the share and the amount after. Absent on every
+   * line the split did not touch. A Treasurer confirms it before the invoice
+   * can be approved (`splitUnconfirmed`), so nothing pays off a split alone.
+   */
+  split?: LineSplit | null;
+}
+
+/** What the split did to one line, and who confirmed it. */
+export interface LineSplit {
+  /** The line's share of the member's time: the split's shares for the roles the line names, summed. */
+  sharePct: number;
+  /** The amount the terms give, before the split. */
+  baseMinor: number;
+  /** The amount after the split, rounded once. Equals the line's `amountMinor`. */
+  scaledMinor: number;
+  confirmedBy: string | null;
+  confirmedAt: string | null;
+}
+
+export const SPLIT_PAY_WORDS = {
+  basis: (sharePct: number) => `${sharePct}% of your time goes to this, from your split`,
+  base: "Before the split",
+  share: "Share of time",
+  scaled: "After the split",
+  waiting: "A Treasurer confirms the split before this is paid.",
+  confirmed: "The split is confirmed.",
+  confirm: "Confirm the split",
+  confirmHint: "These lines are scaled by the member's own split of their time. Check each amount, then confirm before you approve.",
+} as const;
+
+/**
+ * SCALE PAY BY THE MEMBER'S SPLIT (Rye, 14 Nov 2026, answer A). When a
+ * member's roles are paid through separate applications, each pay line scales
+ * by that line's share of the member's time, read from the split they set on
+ * their roles card. A line naming two roles takes both roles' shares.
+ *
+ * It fails closed, answering every line unchanged, when:
+ *   - there is no split;
+ *   - the split does not name exactly the roles held, or its shares do not add
+ *     up to 100 (`splitForRoles` and the sum below);
+ *   - fewer than two applications carry pay: one pay is folded, nothing to split;
+ *   - a pay line names a role the split does not.
+ * Allowances, listed lines and a range with no figure yet are never scaled.
+ *
+ * It only proposes: each scaled line carries `split` with no confirmation, and
+ * Finance approval refuses the invoice until a Treasurer confirms it.
+ */
+export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly RoleSplitShare[] | null | undefined, heldRoleIds: readonly string[]): InvoiceLine[] {
+  const unchanged = lines.map((l) => ({ ...l }));
+  const whole = splitForRoles(split ?? null, heldRoleIds);
+  if (!whole || whole.reduce((s, x) => s + x.share, 0) !== 100) return unchanged;
+  const pay = lines.filter((l) => l.kind === "pay" && l.basis !== "listed");
+  if (new Set(pay.map((l) => l.applicationId)).size < 2) return unchanged;
+  const shareOf = new Map(whole.map((s) => [s.roleId, s.share]));
+  if (pay.some((l) => l.roleIds.length === 0 || l.roleIds.some((r) => !shareOf.has(r)))) return unchanged;
+  return lines.map((l) => {
+    if (l.kind !== "pay" || l.basis === "listed" || l.amountMinor === null || !l.currency) return { ...l };
+    const sharePct = Math.min(100, l.roleIds.reduce((s, r) => s + (shareOf.get(r) as number), 0));
+    const scaledMinor = Math.round((l.amountMinor * sharePct) / 100);
+    return {
+      ...l,
+      amountMinor: scaledMinor,
+      basisLine: `${l.basisLine}. ${SPLIT_PAY_WORDS.basis(sharePct)}: ${moneyWords(scaledMinor, l.currency)}`,
+      split: { sharePct, baseMinor: l.amountMinor, scaledMinor, confirmedBy: null, confirmedAt: null },
+    };
+  });
+}
+
+/** Does any line still need a Treasurer: scaled by a split and not confirmed, or changed since? */
+export function splitUnconfirmed(lines: readonly InvoiceLine[]): boolean {
+  return lines.some((l) => !!l.split && (!l.split.confirmedAt || l.split.scaledMinor !== l.amountMinor));
+}
+
+/** Stamp a Treasurer's confirmation on every scaled line. Lines the split did not touch stay as they are. */
+export function confirmSplitLines(lines: readonly InvoiceLine[], by: string, at: string): InvoiceLine[] {
+  return lines.map((l) => (l.split ? { ...l, split: { ...l.split, confirmedBy: by, confirmedAt: at } } : { ...l }));
 }
 
 /** The days in a year a monthly amount is spread over. */
@@ -1656,6 +1735,8 @@ export const APPROVAL_REFUSALS = {
   workFirst: "The work is approved first, then the invoice.",
   noKey: "This approval needs a role holding the power to give it. An admin cannot stand in.",
   hashChanged: "The recap changed after it was read. Open it again before you approve.",
+  splitUnconfirmed: "This invoice is scaled by the member's split of their time. Confirm the split first, then approve.",
+  noSplit: "Nothing on this invoice is scaled by a split.",
 } as const;
 
 export const FINANCE_REFUSALS = {
@@ -1868,7 +1949,7 @@ export const GUIDE_WORDS = { open: "Open the End of Moon guide" } as const;
 
 export const REVIEW_EVENT_KINDS = [
   "sent", "taken_back", "work_approved", "returned", "amount_set", "range_answered", "invoice_sent",
-  "invoice_approved", "paid", "void", "route_confirmed", "route_changed", "payers_changed", "settings_changed", "rhythm_changed", "self_approved", "imported",
+  "invoice_approved", "paid", "void", "route_confirmed", "route_changed", "payers_changed", "settings_changed", "rhythm_changed", "self_approved", "imported", "split_confirmed",
 ] as const;
 export type ReviewEventKind = (typeof REVIEW_EVENT_KINDS)[number];
 
@@ -2665,6 +2746,7 @@ export const MOON_ROUTES = {
   approveInvoices: "/api/moon-review/invoices/approve",
   setRange: "/api/moon-review/invoices/:id/range",
   voidInvoice: "/api/moon-review/invoices/:id/void",
+  confirmSplit: "/api/moon-review/invoices/:id/confirm-split",
   invoice: "/api/moon-review/invoices/:id",
   confirmRoute: "/api/moon-review/pay-routes/:user/confirm",
   payers: "/api/moon-review/payers",

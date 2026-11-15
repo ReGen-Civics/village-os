@@ -34,11 +34,12 @@ describe("how much you give, across your roles", () => {
     expect(split.textContent).toContain("Your roles share one pay");
   });
 
-  it("opens the split for roles paid apart, and says pay does not read it yet", () => {
+  it("opens the split for roles paid apart, and says pay scales by it once a Treasurer confirms", () => {
     render(<RolesCommitment seats={[seat("a", "app-1"), seat("b", "app-2")]} />);
     const split = document.querySelector("[data-commitment-split]") as HTMLDetailsElement;
     expect(split.open).toBe(true);
-    expect(split.textContent).toContain("Pay does not read this yet");
+    expect(split.textContent).toContain("each role's pay at End of Moon scales by its part here");
+    expect(split.textContent).toContain("a Treasurer confirms it before anything is paid");
   });
 
   it("offers no split for a single role", () => {

@@ -11,7 +11,7 @@
  */
 import { createContext, useContext, type ReactNode } from "react";
 import { formatMoney } from "@shared/money";
-import { MY_MOON_WORDS } from "@shared/moonRecap";
+import { MY_MOON_WORDS, SPLIT_PAY_WORDS, type LineSplit } from "@shared/moonRecap";
 
 export { BTN_GOLD, BTN_LINE, CHIP, H2, KICKER, LINK, PANEL, RAISED } from "@/components/profileDash/dashUi";
 
@@ -53,3 +53,23 @@ export function Section({ title, kicker, children, id }: { title: string; kicker
   );
 }
 
+/**
+ * A LINE SCALED BY THE MEMBER'S SPLIT (Rye, 14 Nov 2026): the base pay, the
+ * share of time and the scaled amount, then whether a Treasurer has
+ * confirmed it. The member and Finance read the same three numbers.
+ */
+export function SplitBreakdown({ split, currency }: { split: LineSplit; currency: string | null }) {
+  return (
+    <div className="flex flex-col gap-0.5 rounded-lg bg-muted/60 px-2 py-1.5 text-xs text-muted-foreground" data-testid="line-split">
+      <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5">
+        <dt>{SPLIT_PAY_WORDS.base}</dt>
+        <dd className="m-0 text-right text-foreground"><Amount minor={split.baseMinor} currency={currency} /></dd>
+        <dt>{SPLIT_PAY_WORDS.share}</dt>
+        <dd className="m-0 text-right text-foreground">{split.sharePct}%</dd>
+        <dt>{SPLIT_PAY_WORDS.scaled}</dt>
+        <dd className="m-0 text-right font-semibold text-foreground"><Amount minor={split.scaledMinor} currency={currency} /></dd>
+      </dl>
+      <p className="m-0">{split.confirmedAt ? SPLIT_PAY_WORDS.confirmed : SPLIT_PAY_WORDS.waiting}</p>
+    </div>
+  );
+}

@@ -55,6 +55,7 @@
  */
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
+import { commitmentReviewFor } from "../lib/commitmentReview";
 import { membershipAlignedFor } from "../lib/applicationMembership";
 import { identityKey, OPEN_WORDS } from "../../shared/openProposals";
 import type { Express } from "express";
@@ -346,6 +347,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const voice = decidesIt(may, asks, viewerId) && p.body.voice
       ? { notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, size: n.size, href: voiceNoteHref(p.id, n.id) })), transcript: p.body.voice.transcript }
       : null;
+    // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
+    const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool)) : null;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
     // An agent is never offered a person's pay, allowance or commitment (audit B8a), so its page carries no terms.
     const subject = !p.body.agent && decidesIt(may, asks, viewerId) ? await loadSubject(pool, p.id) : null;
@@ -413,6 +416,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         founding,
         pieceSuggestions,
         voice,
+        commitment,
         offer,
         beforeAdopt,
         review,

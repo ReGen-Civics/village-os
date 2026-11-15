@@ -108,6 +108,10 @@ export function roleCard(
     commitmentPct: role.commitmentPct ?? publicTermsOf(role.termsOffer).commitmentPct,
     // 0383: whether the role needs its whole commitment. The roles list hides a required role that asks more than a member can give.
     commitmentRequired: role.commitmentRequired === true,
+    // The commitment range (Rye, 14 Nov 2026, shared/commitmentRange.ts): the least one person may propose, and what the
+    // role needs in all. Null: 100% only, and 100. Display only: a contract sets the pay.
+    commitmentMin: role.commitmentMin ?? null,
+    commitmentTarget: role.commitmentTarget ?? null,
     // Joining lane PR 2 (0370): a check happens for this role whatever the references say; the forms tell the applicant.
     alwaysChecked: role.alwaysChecked === true,
     // 0374: who the card says may hold it (null: not said), and whether an agent may, the unsaid read as either.
