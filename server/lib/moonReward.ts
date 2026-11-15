@@ -23,7 +23,7 @@ import type { InvoiceLine } from "../../shared/moonRecap";
 import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
 import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, toLedgerUnits, type OwedPosting } from "./economy";
-import { recordOwed, settleOwedForClaim, type SettleOutcome } from "../repos/questOwedPostings";
+import { owedClaimIdsOfSource, recordOwed, settleOwedForClaim, type SettleOutcome } from "../repos/questOwedPostings";
 import { sectionsForMany } from "./roleCardSections";
 import { earnedEquityMeaningWritten } from "./valuationStore";
 import { stringVar } from "./variables";
@@ -115,6 +115,21 @@ export async function recordLineRewards(
  */
 export async function settleLineRewards(pool: Pool, invoiceId: string): Promise<SettleOutcome[]> {
   const out = await settleOwedForClaim(pool, lineRewardClaimId(invoiceId));
+  for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
+  return out;
+}
+
+/**
+ * Pay every moon line's token share still owed, when the launch vote carries.
+ * An invoice approved before the vote records its Earned Equity and Credits as
+ * owed (`recordLineRewards`), and nothing else ever comes back for them: the
+ * steward's owed-postings press pays quest claims only, and answers 404 for a
+ * moon claim. So the launch closer calls this once the Game has started.
+ * Rows already posted move nothing, so calling it twice is safe.
+ */
+export async function settleOwedLineRewards(pool: Pool): Promise<SettleOutcome[]> {
+  const out: SettleOutcome[] = [];
+  for (const claimId of await owedClaimIdsOfSource(pool, MOON_REWARD_SOURCE)) out.push(...(await settleOwedForClaim(pool, claimId)));
   for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
   return out;
 }

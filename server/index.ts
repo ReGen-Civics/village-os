@@ -245,6 +245,7 @@ import { register as registerBadgesRoutes } from "./routes/badges";
 import { register as registerBadgeGrantRoutes } from "./routes/badgeGrants";
 import { register as registerMessagingRoutes } from "./routes/messaging";
 import { register as registerStaysRoutes } from "./routes/stays";
+import { settleOwedLineRewards } from "./lib/moonReward";
 import { register as registerSitePullRoutes } from "./routes/sitePull";
 import { register as registerBrandPreviewRoutes } from "./routes/brandPreview";
 import { register as registerBrandUploadRoutes } from "./routes/brandUploads";
@@ -21687,6 +21688,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
         await notifyAdmins("governance", `A carried launch vote could not land: ${b.title}`, `bal:${b.id}:launch-held`);
         return out;
       }
+      // End of Moon shares approved before this vote are paid now; nothing else comes back for them (server/lib/moonReward.ts).
+      await settleOwedLineRewards(getPool()).catch((e) => console.error("[launch] could not pay the moon rewards owed before launch", e));
 
       /*
        * `applied` STAYS EMPTY, and that is a decision rather than an omission.

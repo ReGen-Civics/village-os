@@ -30,7 +30,7 @@ import { loadTokenRegistry, memberAccount } from "./ledger";
 import { seedEconomy } from "./economySeed";
 import { CREDITS, EARNED_EQUITY, fromLedgerUnits, villageId } from "./economy";
 import { loadVariables, setVariable } from "./variables";
-import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards } from "./moonReward";
+import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards, settleOwedLineRewards } from "./moonReward";
 import { rewardShareLine } from "../../shared/rewardShare";
 import { recordGameStart } from "./gameStart";
 
@@ -260,6 +260,22 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect((await settleLineRewards(pool, inv.id)).map((o) => o.outcome)).toEqual(["posted"]);
     expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(2600);
     expect(await settleLineRewards(pool, inv.id)).toEqual([]);
+  });
+
+  it("the launch closer's sweep pays what was approved before the vote, once, and nothing before it", async () => {
+    await q("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    const before = await issued();
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    // The control: before the Game starts the sweep moves nothing, and the row stays owed.
+    expect((await settleOwedLineRewards(pool)).map((o) => o.outcome)).toEqual(["still_owed"]);
+    expect(await issued()).toEqual(before);
+    await recordGameStart(pool, { ballotId: "b-launch", startedBy: "m-ops", note: "Launched for the test." });
+    expect((await settleOwedLineRewards(pool)).map((o) => o.outcome)).toEqual(["posted"]);
+    expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(2600);
+    // Twice is safe: nothing is left owed.
+    expect(await settleOwedLineRewards(pool)).toEqual([]);
   });
 
   it("while Earned Equity's meaning is unwritten its share is held: not issued, not paid as cash", async () => {
