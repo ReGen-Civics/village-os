@@ -57,11 +57,15 @@ export function splitDomain(domain: string): SplitDomain {
 
 /**
  * THE DOMAINS A ROLE HOLDS, short (Rye, 14 Nov 2026: "Domains they hold ... right now they're just doing
- * the work of those domains"). The domain's parts, each cut at its first comma outside brackets, so
- * "the shared ownership and fundraising structure, shaped with legal" reads "The shared ownership and
- * fundraising structure". A part about growing a circle is left out: growing a circle is not part of
+ * the work of those domains"). The domain's parts, a long one cut at its first comma outside brackets,
+ * so "the financial model and its change log, including viability ..." reads "The financial model and
+ * its change log" while "building, renovation and repair" stays whole (live test, 14 Nov: a bare
+ * "Building" said nothing). A part about growing a circle is left out: growing a circle is not part of
  * the work the founding team is asked to do now, and the team view never implies it.
  */
+/** A domain part up to this long is shown whole; a longer one is cut at its first comma outside brackets. */
+export const DOMAIN_CHIP_CHARS = 48;
+
 export function domainsHeld(domain: string, max = 4): string[] {
   const cut = (p: string): string => {
     let depth = 0;
@@ -69,7 +73,7 @@ export function domainsHeld(domain: string, max = 4): string[] {
       const c = p[i];
       if (c === "(") depth++;
       else if (c === ")") depth = Math.max(0, depth - 1);
-      else if (c === "," && depth === 0) return p.slice(0, i).trim();
+      else if (c === "," && depth === 0 && p.length > DOMAIN_CHIP_CHARS) return p.slice(0, i).trim();
     }
     return p.trim();
   };

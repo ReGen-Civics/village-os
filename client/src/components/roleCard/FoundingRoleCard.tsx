@@ -277,11 +277,11 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
     <div className="@container">
     <div className="grid @4xl:grid-cols-[19rem_minmax(0,1fr)]">
       <header className="flex flex-col gap-4 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
-        <div className="grid grid-cols-[7.5rem_minmax(0,1fr)] items-start gap-4 @4xl:grid-cols-1">
+        <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 @md:grid-cols-[7.5rem_minmax(0,1fr)] @md:gap-4 @4xl:grid-cols-1">
           <div className="relative aspect-[4/5] max-w-full overflow-hidden rounded-2xl border border-notice/40">
             <ArtImage portrait src={art} className="absolute inset-0" imgClassName="object-top motion-safe:transition-transform motion-safe:duration-[2000ms] motion-safe:hover:scale-105" />
             {open && (
-              <span className="absolute left-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-full border border-notice bg-background/80 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-notice" data-testid="open-seat">
+              <span className="absolute left-2.5 top-2.5 hidden items-center gap-1.5 rounded-full border border-notice bg-background/80 @md:inline-flex px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-widest text-notice" data-testid="open-seat">
                 <span className="size-1.5 rounded-full bg-notice motion-safe:animate-pulse" aria-hidden="true" />
                 {t({ message: "Open role", context: "founding card: nobody holds this role yet" })}
               </span>
@@ -289,7 +289,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
           </div>
           <div className="flex min-w-0 flex-col gap-2">
             {p.circleName && <p className={EYEBROW}>{p.circleName}</p>}
-            <Title className="font-display text-2xl leading-tight text-card-foreground sm:text-3xl">{String(seat?.name ?? "")}</Title>
+            <Title className="font-display text-xl leading-tight text-card-foreground @md:text-2xl @lg:text-3xl">{String(seat?.name ?? "")}</Title>
             <RootsSlot roots={roots} />
             {p.sections?.paid && <p className="font-semibold text-notice" data-testid="paid-role-line">{SECTION_WORDS.paid}</p>}
           </div>

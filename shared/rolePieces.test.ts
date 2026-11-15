@@ -38,10 +38,14 @@ describe("splitDomain", () => {
 describe("domainsHeld", () => {
   it("names each part of a listed domain, cut at its first comma outside brackets, and leaves out growing a circle", () => {
     const d = "How the story is told: storytelling, brand and the content calendar; social media; the permitting sequence (including the D1 and water permits), wells and roads; and, as the circle grows, the team that holds each of these.";
-    expect(domainsHeld(d)).toEqual(["Storytelling", "Social media", "The permitting sequence (including the D1 and water permits)"]);
+    expect(domainsHeld(d)).toEqual(["Storytelling, brand and the content calendar", "Social media", "The permitting sequence (including the D1 and water permits)"]);
   });
   it("draws nothing for a domain written as prose (control: no list, no chips)", () => {
     expect(domainsHeld("Everything that becomes physical on the land.")).toEqual([]);
+  });
+  it("keeps a short part whole and cuts a long one at its first comma (live test, 14 Nov)", () => {
+    const d = "The land: building, renovation and repair; the financial model and its change log, including viability, lot pricing and funding scenarios";
+    expect(domainsHeld(d)).toEqual(["Building, renovation and repair", "The financial model and its change log"]);
   });
   it("keeps to the most it is asked for", () => {
     expect(domainsHeld("Money: a; b; c; d; e; f", 4)).toEqual(["A", "B", "C", "D"]);
