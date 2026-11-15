@@ -503,11 +503,11 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const sheet = await within(section).findByTestId("team-sheet");
     const held = () => Array.from(section.querySelectorAll("[data-domains-held] li")).map((li) => li.textContent);
-    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions"]);
+    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions, with legal"]);
     expect(sheet.textContent).toContain("Domains they hold");
     fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
     const formation = within(section).getByTestId("formation");
-    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions"]);
+    expect(held()).toEqual(["The financial model and its change log", "Tax and entity questions, with legal"]);
     // Nothing implies hiring or building a circle.
     expect(section.textContent).not.toMatch(/Events circle|circles? (they|it) will grow|circles to grow|Grows/i);
     // Choosing a lead opens its card below, piece by piece.
