@@ -2784,6 +2784,14 @@ export const VARIABLES: VariableDef[] = [
     default: "",
   },
   {
+    key: "org.newsletter_link",
+    category: "The founding team",
+    label: "Where to sign up for the newsletter",
+    description: "The roles opening after the founding team invite people to hear first about new ones: join a community call and sign up for the newsletter here. A page of this site or an https address. Empty: the newsletter is not mentioned.",
+    type: "text",
+    default: "",
+  },
+  {
     key: "org.founding_first_cycle",
     category: "The founding team",
     label: "What the first cycle looks like",

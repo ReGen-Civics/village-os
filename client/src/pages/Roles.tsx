@@ -670,8 +670,21 @@ export default function Roles() {
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
                   <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>
-                  <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  <p className="mb-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                     {t({ message: "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk.", context: "roles page, roles after the founding team" })}
+                  </p>
+                  {/* Hear first about new roles (Rye, 15 Nov 2026): the community calls, and the newsletter when the village has one. */}
+                  <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground" data-hear-first="">
+                    {t({ message: "Hear first about new opportunities:", context: "roles page, roles after the founding team" })}{" "}
+                    <Link href="/events" className={LINK}>{t({ message: "join a community call", context: "roles page, roles after the founding team" })}</Link>
+                    {otherWays.newsletter ? (
+                      <>
+                        {" "}
+                        {t({ message: "and", context: "roles page, hear first: join a call and sign up" })}{" "}
+                        <a href={otherWays.newsletter} target="_blank" rel="noopener noreferrer" className={LINK}>{t({ message: "sign up for our newsletter", context: "roles page, roles after the founding team" })}</a>
+                      </>
+                    ) : null}
+                    .
                   </p>
                   <div className="space-y-3">
                     {openingNext.map((role, i) => (

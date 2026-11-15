@@ -49,7 +49,12 @@ export interface OtherWayTile {
 export interface OtherWays {
   seeder: OtherWayTile;
   gifts: OtherWayTile;
+  /** Where to sign up for the village's newsletter (`org.newsletter_link`), or null while it has none (Rye, 15 Nov 2026). */
+  newsletter: string | null;
 }
+
+/** The newsletter's setting: the "opening next" roles invite people to hear first about new ones. */
+export const NEWSLETTER_KEY = "org.newsletter_link";
 
 const word = (raw: unknown, fallback: string, max = 200): string => {
   const s = typeof raw === "string" ? raw.trim().slice(0, max) : "";
@@ -65,7 +70,7 @@ export function safeHref(raw: unknown, fallback: string): string {
 }
 
 /** The two tiles from the village's settings. `get` returns the setting's value, or "" for a key the registry does not know. */
-export function otherWaysFrom(get: (key: OtherWaysKey | "org.stay_close_link") => string): OtherWays {
+export function otherWaysFrom(get: (key: OtherWaysKey | "org.stay_close_link" | typeof NEWSLETTER_KEY) => string): OtherWays {
   return {
     seeder: {
       title: word(get(OTHER_WAYS_KEYS.seederTitle), OTHER_WAYS_DEFAULTS.seederTitle),
@@ -77,6 +82,7 @@ export function otherWaysFrom(get: (key: OtherWaysKey | "org.stay_close_link") =
       line: word(get(OTHER_WAYS_KEYS.giftsLine), OTHER_WAYS_DEFAULTS.giftsLine, 300),
       href: GIFTS_HREF,
     },
+    newsletter: safeHref(get(NEWSLETTER_KEY), "") || null,
   };
 }
 
@@ -91,5 +97,5 @@ export function otherWaysOf(raw: unknown): OtherWays {
     line: word(t?.line, d.line, 300),
     href: safeHref(t?.href, d.href),
   });
-  return { seeder: tile(o.seeder, DEFAULT_OTHER_WAYS.seeder), gifts: tile(o.gifts, DEFAULT_OTHER_WAYS.gifts) };
+  return { seeder: tile(o.seeder, DEFAULT_OTHER_WAYS.seeder), gifts: tile(o.gifts, DEFAULT_OTHER_WAYS.gifts), newsletter: safeHref(o.newsletter, "") || null };
 }
