@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sitePageMeta, spliceMeta } from "./pageMeta";
+import { sitePageMeta, spliceHeroPreload, spliceMeta } from "./pageMeta";
 import { documentTitle } from "../../shared/pageTitles";
 
 const config = {
@@ -103,5 +103,24 @@ describe("a title that carries a replacement pattern (R114)", () => {
     expect(out).toContain("Save $&amp; and $' and $` now");
     expect(out.match(/<\/head>/g)?.length).toBe(1);
     expect(out.match(/<html>/g)?.length).toBe(1);
+  });
+});
+
+describe("spliceHeroPreload", () => {
+  it("names the landing page's hero in a preload, with the srcset the page's own img uses", () => {
+    const out = spliceHeroPreload(SHELL, "/api/uploads/hero.webp", "/api/uploads/hero.webp?w=480 480w");
+    expect(out).toContain('<link rel="preload" as="image" href="/api/uploads/hero.webp" imagesrcset="/api/uploads/hero.webp?w=480 480w" imagesizes="100vw" fetchpriority="high">');
+    expect(out.indexOf("preload")).toBeLessThan(out.indexOf("</head>"));
+  });
+
+  it("adds nothing with no hero, and nothing for an address that is not a path or an http(s) URL", () => {
+    expect(spliceHeroPreload(SHELL, "")).toBe(SHELL);
+    expect(spliceHeroPreload(SHELL, undefined)).toBe(SHELL);
+    expect(spliceHeroPreload(SHELL, "javascript:alert(1)")).toBe(SHELL);
+    expect(spliceHeroPreload(SHELL, "//evil.example/x.webp")).toBe(SHELL);
+  });
+
+  it("escapes what it writes into the attribute", () => {
+    expect(spliceHeroPreload(SHELL, 'https://cdn.example/a"b.webp')).toContain('href="https://cdn.example/a&quot;b.webp"');
   });
 });

@@ -4,6 +4,8 @@ import vm from "node:vm";
 import { describe, expect, it } from "vitest";
 import {
   type ChunkFacts,
+  LANDING_ROUTE,
+  landingRoutes,
   lazyRoutesFromApp,
   moduleKey,
   routePattern,
@@ -12,6 +14,28 @@ import {
 } from "./routePreload";
 
 const APP = fs.readFileSync(path.resolve(__dirname, "../App.tsx"), "utf8");
+
+describe("landingRoutes, against the real App.tsx", () => {
+  it("adds the landing page, because App.tsx draws Home from LandingRoute and loads it lazily", () => {
+    expect(landingRoutes(APP)).toEqual([LANDING_ROUTE]);
+    expect(LANDING_ROUTE).toEqual({ path: "/", module: "pages/Home" });
+  });
+
+  it("control: adds nothing once App.tsx stops loading Home that way", () => {
+    expect(landingRoutes(APP.replace(/import\(\s*["']\.\/pages\/Home["']\s*\)/g, 'import("./pages/Welcome")'))).toEqual([]);
+    expect(landingRoutes(APP.replace(/component=\{LandingRoute\}/g, "component={Elsewhere}"))).toEqual([]);
+  });
+
+  it("puts Home's chunk and its parts in the table for / only", () => {
+    const chunks: ChunkFacts[] = [
+      { fileName: "assets/index.js", imports: [], isEntry: true, isDynamicEntry: false, facadeModuleId: "/r/client/src/main.tsx", css: [] },
+      { fileName: "assets/Home.js", imports: [], isEntry: false, isDynamicEntry: true, facadeModuleId: "/r/client/src/pages/Home.tsx", css: [], copyParts: ["abcdef123456"] },
+    ];
+    const t = routePreloadTable(landingRoutes(APP), chunks);
+    expect(t.routes).toEqual([["^/?$", [0, 1]]]);
+    expect(t.files).toEqual(["assets/Home.js", "api/i18n/catalog/en/part/abcdef123456"]);
+  });
+});
 
 describe("lazyRoutesFromApp, against the real App.tsx", () => {
   const routes = lazyRoutesFromApp(APP);

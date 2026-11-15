@@ -17,21 +17,22 @@
  * No fireflies here. They belong to the one next act on a page, and the strip
  * is on every page.
  */
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { RootStrip, SeedOfLife } from "@/components/journey/nature";
 import { useGameConfig } from "@/lib/gameApi";
-import { usePath } from "@/lib/usePath";
+import { usePathState } from "@/lib/usePath";
 import { WHOLE_PATH_WORDS, pathLanguage, sayPath } from "@shared/yourPath";
 import { chaptersOf, companionFor, noteVisitorScreen, seedOf } from "./pathView";
 
 
-export default function RootLine({ quiet }: { quiet: (path: string, stepHref?: string | null) => boolean }) {
+/** `pending` is what stands in while the reader's path is still being worked out: the strip's held space, or nothing. */
+export default function RootLine({ quiet, pending = null }: { quiet: (path: string, stepHref?: string | null) => boolean; pending?: ReactNode }) {
   const { t, i18n } = useLingui();
   const [location] = useLocation();
   const config = useGameConfig();
-  const path = usePath();
+  const { path, known } = usePathState();
   const here = location.split(/[?#]/)[0] || "/";
   const shown = !!path && !quiet(location, path.step.href) && !path.quietOn.includes(here);
   const line = path && shown ? companionFor(path, { locale: i18n.locale, visitor: path.visitor, here, commitment: config?.project?.commitmentName }) : null;
@@ -39,6 +40,7 @@ export default function RootLine({ quiet }: { quiet: (path: string, stepHref?: s
     if (path?.visitor && line) noteVisitorScreen(here);
   }, [path?.visitor, line, here]);
 
+  if (!known) return <>{pending}</>;
   if (!path || !shown) return null;
   const said = sayPath(path, i18n.locale);
   const words = WHOLE_PATH_WORDS[pathLanguage(i18n.locale)];

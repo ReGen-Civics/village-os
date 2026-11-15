@@ -61,7 +61,7 @@ import { writeGoverningPurpose } from "./lib/governingPurpose";
 import { GPS_CHANGE } from "../shared/governingPurpose";
 import { pageContentProblem } from "../shared/pageContent";
 import { contentVersion } from "../shared/pageContent/resolve";
-import { sitePageMeta, siteWords, spliceMeta, trimTo } from "./lib/pageMeta";
+import { sitePageMeta, siteWords, spliceHeroPreload, spliceMeta, trimTo } from "./lib/pageMeta";
 import { pageVarsFrom } from "../shared/pageContent/vars";
 import { visitProgramProblem } from "../shared/visitProgram";
 import { greetingName, workWithUsAckEmail } from "./lib/workWithUsAck";
@@ -346,6 +346,8 @@ import {
   removeFiles,
   stampOf,
 } from "./lib/uploadsSweep";
+import { uploadVariant } from "./lib/uploadVariants";
+import { isResizableUpload, parseUploadVariant, uploadSrcSet } from "../shared/uploadVariants";
 import { planUploadsArchive, streamUploadsArchive } from "./lib/uploadsArchive";
 import type { UploadsSweepReport } from "../shared/uploadsSweep";
 import { scanUploadReferences } from "./repos/uploadRefs";
@@ -17441,6 +17443,33 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const ext = path.extname(safe).toLowerCase();
     const type = INLINE_TYPES[ext];
     res.setHeader("X-Content-Type-Options", "nosniff");
+    /*
+     * A SMALLER COPY, when the page asks for one (shared/uploadVariants.ts):
+     * `?w=800`, optionally `&crop=band`. Asked only after the suppression and
+     * existence checks above, so a hidden or erased picture has no copy either.
+     * A width outside the list is refused rather than quietly answered with the
+     * original, so a wrong srcset shows up as a broken request in development.
+     */
+    const ask = parseUploadVariant(req.query as Record<string, unknown>);
+    let originalIsStandIn = false;
+    if (ask === "refused") return res.status(400).json({ error: "That size is not offered" });
+    if (ask && isResizableUpload(`/api/uploads/${safe}`)) {
+      try {
+        // Too large to decode, or the encoder's line is full: the original below costs only a read.
+        const bytes = await uploadVariant(filePath, await fs.promises.stat(filePath), ask);
+        // A full line is this moment's answer, not this URL's: no cache may keep the original under the copy's address.
+        if (bytes === "busy") originalIsStandIn = true;
+        else if (bytes !== "too-large") {
+          res.type("image/webp");
+          res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
+          res.setHeader("Cache-Control", `${isMemberOwnedUpload(safe) ? "private" : "public"}, max-age=31536000, immutable`);
+          return res.send(bytes);
+        }
+      } catch (e) {
+        // A file sharp cannot read is still a file: hand over the original below.
+        console.warn(`[uploads] no ${ask.width}px copy of ${safe}: ${(e as Error)?.message ?? e}`);
+      }
+    }
     if (type) {
       res.type(type);
       res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
@@ -17478,6 +17507,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       res.setHeader("Content-Disposition", `attachment; filename="${safe}"`);
       res.setHeader("Cache-Control", "private, no-cache");
     }
+    if (originalIsStandIn) res.setHeader("Cache-Control", "no-store");
     res.sendFile(filePath);
   });
 
@@ -25661,8 +25691,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
       console.error(`[sendFile error] ${indexPath}: the shell is missing`);
       return res.status(500).send(`Server error: could not serve index.html from ${indexPath}`);
     }
-    const meta = sitePageMeta(req.path, requestOrigin(req), mergedConfig(), contentRepo.get() ?? null, !brochurePageServed(req.path));
-    res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(spliceMeta(shellWithTheme(shell, getBrand), meta), req, res));
+    const config = mergedConfig();
+    const meta = sitePageMeta(req.path, requestOrigin(req), config, contentRepo.get() ?? null, !brochurePageServed(req.path));
+    let html = spliceMeta(shellWithTheme(shell, getBrand), meta);
+    // `/` draws the brochure landing page, and its hero photograph, only while the story pages are on (client/src/App.tsx, LandingRoute).
+    if (req.path === "/" && brochureConfig().brochurePages) html = spliceHeroPreload(html, config.images.hero, uploadSrcSet(config.images.hero));
+    res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(html, req, res));
   });
 
   /** `<html lang dir>` for this visitor (spec i18n R16): the cookie, their browser, the village default. */

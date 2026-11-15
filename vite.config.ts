@@ -7,6 +7,7 @@ import zlib from "node:zlib";
 import { defineConfig, type Plugin } from "vite";
 import {
   type ChunkFacts,
+  landingRoutes,
   lazyRoutesFromApp,
   routePreloadScript,
   routePreloadTable,
@@ -193,7 +194,7 @@ function routeChunkPreload(): Plugin {
           copyParts: copyPartsIn(out.code),
         });
       }
-      const table = routePreloadTable(lazyRoutesFromApp(app), chunks);
+      const table = routePreloadTable([...landingRoutes(app), ...lazyRoutesFromApp(app)], chunks);
       if (table.routes.length === 0) {
         this.warn("route-chunk-preload: no route in client/src/App.tsx matched a page chunk, so nothing was emitted");
         return;
