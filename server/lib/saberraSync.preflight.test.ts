@@ -18,6 +18,7 @@ vi.mock("./modules", () => ({
 vi.mock("./identity", () => ({ instanceIdentity: () => ({ instanceId: "village-1", bornAt: "" }) }));
 
 import { preflight, SYNC_CALL_TIMEOUT_MS } from "./saberraSync";
+import { guardedFetch } from "./toolcheck";
 
 describe("the client a sync calls the service with", () => {
   it("carries a deadline on every call", () => {
@@ -25,5 +26,16 @@ describe("the client a sync calls the service with", () => {
     expect(p.ok).toBe(true);
     if (p.ok) expect(p.client.timeoutMs).toBe(SYNC_CALL_TIMEOUT_MS);
     expect(SYNC_CALL_TIMEOUT_MS).toBeGreaterThan(0);
+  });
+
+  it("dials through the SSRF guard, R169 and R111", () => {
+    // The address is admin-typed. Plain fetch followed every redirect with no
+    // address check, so a 307 from the service could walk the bearer token to
+    // a private host.
+    const p = preflight();
+    expect(p.ok).toBe(true);
+    if (p.ok) {
+      expect(p.client.fetchImpl).toBe(guardedFetch);
+    }
   });
 });

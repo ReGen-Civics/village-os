@@ -29,8 +29,12 @@ import https from "node:https";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
-const VETTED = "198.51.100.7"; // TEST-NET-2: public-looking, never routed
-const SECOND_PUBLIC = "203.0.113.9"; // TEST-NET-3: must never be offered
+// Real public addresses, never dialled: DNS is mocked and the interceptor
+// carries every request to the local fixture. They used to be TEST-NET-2 and
+// TEST-NET-3, which the shared outbound predicate (outboundAddress.ts) now
+// refuses as documentation ranges, so the guard would stop the dial first.
+const VETTED = "93.184.216.34"; // public, never routed to by this test
+const SECOND_PUBLIC = "8.8.4.4"; // public: must never be offered
 const lookupMock = vi.hoisted(() => vi.fn());
 
 vi.mock("dns/promises", async (importOriginal) => {
