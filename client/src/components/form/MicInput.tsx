@@ -8,10 +8,11 @@
  * sound goes). Where the browser cannot listen, MicButton draws nothing and the field is
  * the plain input it was.
  */
-import type { InputHTMLAttributes } from "react";
+import { useRef, type InputHTMLAttributes } from "react";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import { ClipBar } from "@/components/voice/VoiceClips";
+import { useFieldName } from "@/components/form/fieldName";
 
 /** A spoken phrase added to the text, never past the field's limit. */
 export function spokenInto(value: string, chunk: string, maxLength?: number): string {
@@ -31,17 +32,19 @@ export default function MicInput({
   /** The answer's key for a voice clip beside it (components/voice/VoiceClips.tsx); drawn only inside the application's clip provider. */
   clip?: string;
 }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const fieldName = useFieldName(ref);
   const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
   return (
     <div>
     <div className="relative">
-      <input value={value} onChange={(e) => onChange(e.target.value)} className={`pr-14 ${className}`} {...rest} />
+      <input ref={ref} value={value} onChange={(e) => onChange(e.target.value)} className={`pr-14 ${className}`} {...rest} />
       {/* MicButton's own wrapper is relative, so the corner is placed out here. */}
       <span className="absolute inset-y-0 right-0.5 flex items-center">
-        <MicButton disabled={rest.disabled} onText={said} />
+        <MicButton disabled={rest.disabled} onText={said} fieldName={fieldName} />
       </span>
     </div>
-    {clip && <ClipBar field={clip} onWords={said} />}
+    {clip && <ClipBar field={clip} onWords={said} fieldName={fieldName} />}
     </div>
   );
 }

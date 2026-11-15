@@ -5,7 +5,7 @@
  * anything of the voice leaves the device.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { VOICE_WORDS } from "@shared/voiceNotes";
 import { EMPTY_VOICE, VoiceInvite, applicationRequest, voiceSent, type VoiceState } from "./VoiceInvite";
@@ -91,5 +91,49 @@ describe("clips beside answers (Rye, 14 Nov 2026)", () => {
       { field: "value-1-title", seconds: 9, words: "" },
     ]);
     expect((fd.getAll("clips") as File[]).map((f) => f.name)).toEqual(["why.m4a", "value-1-title.webm"]);
+  });
+});
+
+describe("what a screen reader hears while recording (a11y sweep P2-10)", () => {
+  it("says the start and the stop once, from a region always on the page, and never the running time", async () => {
+    vi.stubGlobal(
+      "MediaRecorder",
+      class {
+        state = "inactive";
+        mimeType = "audio/webm";
+        ondataavailable: ((e: { data: Blob }) => void) | null = null;
+        onstop: (() => void) | null = null;
+        start() {
+          this.state = "recording";
+        }
+        stop() {
+          this.state = "inactive";
+          this.ondataavailable?.({ data: new Blob([new Uint8Array([0x1a, 0x45, 0xdf, 0xa3])], { type: "audio/webm" }) });
+          this.onstop?.();
+        }
+        static isTypeSupported(t: string) {
+          return t.startsWith("audio/webm");
+        }
+      },
+    );
+    Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [] }) } });
+    vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:take", revokeObjectURL: () => {} }));
+    const { container } = render(<Card />);
+    const said = () => container.querySelector("[data-voice-said]");
+    expect(said()?.getAttribute("role")).toBe("status");
+    expect(said()?.textContent).toBe("");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.record }));
+    });
+    expect(said()?.textContent).toBe("Recording 1 of 3 started.");
+    // The timer is on screen, outside every live region.
+    const timer = container.querySelector("[data-voice-timer]");
+    expect(timer?.textContent).toMatch(/0:00/);
+    expect(timer?.closest("[role=status], [aria-live]")).toBeNull();
+    expect(said()?.textContent).not.toMatch(/[0-9]:[0-9]/);
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.stop }));
+    });
+    expect(said()?.textContent).toBe("Recording stopped. You can play it back below.");
   });
 });
