@@ -15,7 +15,7 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { createOrgRole } from "../lib/orgChart";
-import { lastEditedOf, saveSections, sectionsFor, stampCardEdit } from "../lib/roleCardSections";
+import { editedOnDay, lastEditedOf, saveSections, sectionsFor, stampCardEdit } from "../lib/roleCardSections";
 import { usersRepo } from "../repos/users";
 import { register } from "./org";
 
@@ -84,6 +84,15 @@ describe.skipIf(!configured)("a role card's Last edited, on a real schema", () =
     expect(await lastEditedOf(pool, id, { peopleShown: false })).toEqual({ by: null, on: today });
   });
 
+  it("dates the edit in the village's time zone, never the UTC day (QA, 15 Nov 2026)", async () => {
+    const id = await createOrgRole(pool, { id: "le-tz", name: "Time Steward", aim: "Keep the hours." });
+    // 22:45 on 14 Nov in Costa Rica is 04:45 on 15 Nov in UTC.
+    await stampCardEdit(pool, id, "u-mara", new Date("2026-11-15T04:45:00Z"));
+    expect(await lastEditedOf(pool, id, { peopleShown: true, timeZone: "America/Costa_Rica" })).toEqual({ by: "Mara", on: "2026-11-14" });
+    // The same instant in a village on UTC is the 15th (control).
+    expect(await lastEditedOf(pool, id, { peopleShown: true, timeZone: "UTC" })).toEqual({ by: "Mara", on: "2026-11-15" });
+  });
+
   it("a write that changes nothing leaves Last edited where it was (control)", async () => {
     const id = await createOrgRole(pool, { id: "le-land", name: "Land Steward", aim: "Hold the land." });
     expect((await put(id, { aim: "Hold the land." })).body).toEqual({ success: true });
@@ -104,5 +113,13 @@ describe.skipIf(!configured)("a role card's Last edited, on a real schema", () =
     await saveSections(pool, id, { ...sections, idealBackground: ["Events, at any scale"] } as any, "u-ivo", new Date("2026-11-12T12:00:00Z"));
     expect(await lastEditedOf(pool, id, { peopleShown: true })).toEqual({ by: "Ivo", on: "2026-11-12" });
     expect(await lastEditedOf(pool, "le-other", { peopleShown: false })).toEqual({ by: null, on: "2026-11-11" });
+  });
+});
+
+describe("the day of an edit, read in a time zone", () => {
+  it("reads the instant in the zone, and falls back to UTC for a zone it cannot read", () => {
+    expect(editedOnDay("2026-11-15T04:45:00.000Z", "America/Costa_Rica")).toBe("2026-11-14");
+    expect(editedOnDay("2026-11-15T04:45:00.000Z", "Asia/Tokyo")).toBe("2026-11-15");
+    expect(editedOnDay("2026-11-15T04:45:00.000Z", "Not/AZone")).toBe("2026-11-15");
   });
 });
