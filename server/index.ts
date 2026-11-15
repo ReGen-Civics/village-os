@@ -17739,6 +17739,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     guardCapability,
     authedUser,
     getPool,
+    overLimit,
     contentSection: (section) => (contentRepo.get() ?? {})[section],
     machineDraft: async ({ locale, items, userId, req }) => {
       const call = await callAssistant({

@@ -37,6 +37,7 @@ describe.skipIf(!configured)("translations of the village's words, over the real
   const handlers = new Map<string, Handler>();
   const env: NodeJS.ProcessEnv = {};
   let allowed = true;
+  let spent = false;
   const asked: string[] = [];
   let draftAnswer: (ask: MachineDraftAsk) => Record<string, string> = () => ({});
   const drafts: MachineDraftAsk[] = [];
@@ -64,6 +65,7 @@ describe.skipIf(!configured)("translations of the village's words, over the real
       },
       authedUser: async () => ({ id: "u-mara" }),
       getPool: () => pool,
+      overLimit: async () => spent,
       contentSection: (s) => content[s],
       machineDraft: async (ask) => {
         drafts.push(ask);
@@ -100,6 +102,9 @@ describe.skipIf(!configured)("translations of the village's words, over the real
     expect(by["accountabilities.0"]).toMatchObject({ english: "Keep the books" });
     expect(by.compensation_reality).toMatchObject({ protection: "human_only" });
     expect(r.body.machineDrafts).toBe(false);
+    // The editor names where a draft's words go before anything is sent.
+    expect(r.body.machineDraftService).toBe("Anthropic's Claude");
+    expect(r.body.machineDraftNotice).toMatch(/Anthropic's Claude/);
   });
 
   it("refuses a binding page, a field that is not there, and a broken translation", async () => {
@@ -122,6 +127,15 @@ describe.skipIf(!configured)("translations of the village's words, over the real
     const r = await call("POST", "/api/admin/content-translations/draft", { body: { kind: "role_card", ref: "legal-steward", locale: "es" } });
     expect(r.statusCode).toBe(403);
     expect(drafts).toHaveLength(0);
+  });
+
+  it("stops a holder who asks for too many drafts in an hour, before anything is sent", async () => {
+    env.CONTENT_MACHINE_DRAFTS = "on";
+    spent = true;
+    const r = await call("POST", "/api/admin/content-translations/draft", { body: { kind: "role_card", ref: "legal-steward", locale: "es" } });
+    expect(r.statusCode).toBe(429);
+    expect(drafts).toHaveLength(0);
+    spent = false;
   });
 
   it("drafts the open fields, never pay words, and refuses a draft that drops the braces", async () => {
@@ -152,7 +166,11 @@ describe.skipIf(!configured)("translations of the village's words, over the real
   it("shows a translation as stale once the English changes", async () => {
     await pool.query("UPDATE org_roles SET name = 'Legal and Finance Steward' WHERE id = 'legal-steward'");
     const list = await call("GET", "/api/admin/content-translations", { query: { kind: "role_card", ref: "legal-steward", locale: "es" } });
-    expect(list.body.fields.find((f: any) => f.field === "name").translation).toMatchObject({ stale: true });
+    // Kept, not dropped: the editor shows the old Spanish as "needs update" beside the new English.
+    expect(list.body.fields.find((f: any) => f.field === "name")).toMatchObject({
+      english: "Legal and Finance Steward",
+      translation: { text: "Steward de Legal", status: "approved", stale: true, needsUpdate: true },
+    });
   });
 
   it("accepts a member's suggestion through the same write, and refuses a stale one", async () => {

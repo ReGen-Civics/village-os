@@ -44,6 +44,20 @@ export const machineDraftsOn = (env: NodeJS.ProcessEnv = process.env) => env[MAC
 /** Most fields drafted in one ask: a page's words fit, and the model's answer stays inside its room. */
 export const DRAFT_BATCH = 40;
 
+/** Draft asks per holder per hour. Each one sends a page of the village's words to the model's provider. */
+export const DRAFTS_PER_HOUR = 12;
+const HOUR_MS = 60 * 60 * 1000;
+
+/**
+ * WHO READS THE WORDS A DRAFT SENDS (coordinator, 15 Nov; said the way
+ * VOICE_WORDS.heardHint names the browser's speech service). The village and
+ * platform keys are Anthropic keys (server/lib/assistant.ts `resolveKey`), so
+ * the English of the fields being drafted goes to Anthropic's Claude. The
+ * editor shows this line beside the Draft button, before anything is sent.
+ */
+export const MACHINE_DRAFT_SERVICE = "Anthropic's Claude";
+export const MACHINE_DRAFT_NOTICE = `Drafting sends the English of these fields to ${MACHINE_DRAFT_SERVICE}, which writes the drafts. Pay words and binding pages are never sent.`;
+
 export interface MachineDraftAsk {
   locale: string;
   items: Array<{ field: string; english: string }>;
@@ -56,6 +70,8 @@ export interface ContentTranslationDeps {
   authedUser: (req: Request) => Promise<{ id: string } | null>;
   getPool: () => Pool;
   contentSection: (section: string) => unknown;
+  /** The shared rate limiter (server/index.ts `overLimit`): true when the bucket is spent. */
+  overLimit: (bucket: string, max: number, windowMs: number) => Promise<boolean>;
   /** The model's drafts by field, or null when it could not answer. Wired to callAssistant in index.ts. */
   machineDraft: (ask: MachineDraftAsk) => Promise<Record<string, string> | null>;
   env?: NodeJS.ProcessEnv;
@@ -118,6 +134,9 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
       ref: k.key.refKey,
       locale: k.key.locale,
       machineDrafts: machineDraftsOn(deps.env),
+      // Named before anything is sent, so the holder knows where a draft's words go.
+      machineDraftService: MACHINE_DRAFT_SERVICE,
+      machineDraftNotice: MACHINE_DRAFT_NOTICE,
       fields: fields.map((f) => {
         const row = rows.get(f.field);
         const hash = sourceHash(f.english);
@@ -126,7 +145,11 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
           english: f.english,
           protection: f.protection,
           sourceHash: hash,
-          translation: row ? { text: row.text, status: row.status, stale: row.sourceHash !== hash, approvedBy: row.approvedBy, updatedAt: row.updatedAt } : null,
+          // A STALE TRANSLATION IS KEPT AND SHOWN (coordinator, 15 Nov): readers see the English, and the editor
+          // shows the old translation as "needs update" beside the new English, so approved work is never lost.
+          translation: row
+            ? { text: row.text, status: row.status, stale: row.sourceHash !== hash, needsUpdate: row.sourceHash !== hash, approvedBy: row.approvedBy, updatedAt: row.updatedAt }
+            : null,
         };
       }),
     });
@@ -176,6 +199,9 @@ export function register(app: Pick<Express, "get" | "put" | "post" | "delete">, 
     if (!me) return res.status(401).json({ error: "auth_required" });
     if (!machineDraftsOn(deps.env)) {
       return res.status(403).json({ error: "machine_drafts_off", message: "Machine drafts are switched off on this village. Write the translation, or ask the person who runs the server." });
+    }
+    if (await deps.overLimit(`content-translation-draft:${me.id}`, DRAFTS_PER_HOUR, HOUR_MS)) {
+      return res.status(429).json({ error: "too_many_asks", message: "That is a lot of drafts for one hour. Try again a little later." });
     }
     const fields = await translatableFields(readers(), k.key.kind, k.key.refKey);
     if (!fields) return res.status(404).json({ error: "not_translatable", message: "There is nothing here that takes a translation." });
