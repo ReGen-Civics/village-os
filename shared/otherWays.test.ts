@@ -12,6 +12,7 @@ describe("the other ways to join", () => {
     expect(DEFAULT_OTHER_WAYS).toEqual({
       seeder: { title: "Become a Founding Seeder", line: "Live here one day? Start on the resident path.", href: "/resident" },
       gifts: { title: "Offer your gifts", line: "Volunteer or work-trade: tell us what you would like to give.", href: "/work-with-us" },
+      newsletter: null,
     });
     expect(SEEDER_FALLBACK_HREF).toBe("/resident");
     expect(GIFTS_HREF).toBe("/work-with-us");
