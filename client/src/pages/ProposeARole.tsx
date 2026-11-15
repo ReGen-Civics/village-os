@@ -827,7 +827,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <GrowingField id="propose-why" clip="why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" counter required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>

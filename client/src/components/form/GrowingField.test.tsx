@@ -4,7 +4,7 @@
  * line and cut the words off at the edge of the screen.
  */
 import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { EDIT_FIELDS } from "@/components/roleProposal/roleWords";
 import StepWords from "@/components/roleProposal/StepWords";
 import { CARD_WORDS } from "@shared/playerCardWords";
@@ -22,6 +22,19 @@ describe("a sentence field grows", () => {
     expect(box.className).toContain("break-words");
     expect(box.className).toContain("max-w-full");
     expect((box as HTMLTextAreaElement).value).toBe(LONG);
+  });
+
+  it("with a counter, shows how much of its limit is used, is described by it, and says so once at the limit", () => {
+    const { rerender } = render(<GrowingField id="w" aria-label="Why" counter maxLength={10} value="Seeds" onChange={() => {}} />);
+    expect(screen.getByText("5 / 10 characters").id).toBe("w-count");
+    expect(screen.getByLabelText("Why").getAttribute("aria-describedby")).toBe("w-count");
+    expect(screen.getByRole("status").textContent).toBe("");
+    rerender(<GrowingField id="w" aria-label="Why" counter maxLength={10} value="Seeds kept" onChange={() => {}} />);
+    expect(screen.getByRole("status").textContent).toBe("You have reached the 10 character limit.");
+    // CONTROL: no counter unless asked, so every other box is as it was.
+    cleanup();
+    render(<GrowingField id="w" aria-label="Why" maxLength={10} value="Seeds" onChange={() => {}} />);
+    expect(screen.queryByText(/characters/)).toBeNull();
   });
 
   it("keeps its rows while it cannot be measured, as inside a hidden step", () => {

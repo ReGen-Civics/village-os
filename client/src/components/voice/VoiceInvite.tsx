@@ -16,7 +16,7 @@
  * The page owns the state (`VoiceState`) so Send can carry it;
  * `applicationRequest` builds the post.
  */
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Mic, Square, Trash2 } from "lucide-react";
 import GrowingField from "@/components/form/GrowingField";
@@ -101,6 +101,14 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
     onChange({ ...v, takes: [...v.takes, { blob: take.blob, seconds: take.seconds, url: URL.createObjectURL(take.blob) }], transcript });
   };
   const recorder = useVoiceRecorder(took);
+  // The live region speaks at the start, at the near-end warning and at the stop, never the running time (a11y sweep P2-10).
+  const wasRecording = useRef(false);
+  const [stopped, setStopped] = useState(false);
+  useEffect(() => {
+    if (wasRecording.current && !recorder.recording) setStopped(true);
+    if (recorder.recording) setStopped(false);
+    wasRecording.current = recorder.recording;
+  }, [recorder.recording]);
 
   if (!support.record && !support.words) return null;
   if (value.skipped) {
@@ -165,7 +173,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
             )
           )}
           {recorder.recording && (
-            <p className="flex justify-between text-sm tabular-nums text-muted-foreground" role="status" aria-live="polite">
+            <p className="flex justify-between text-sm tabular-nums text-muted-foreground" data-voice-timer="">
               <span>{t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX}`, context: "voice note" })}</span>
               <span>
                 {voiceLength(recorder.elapsed)} / {voiceLength(VOICE_NOTE_MAX_SECONDS)}
@@ -173,6 +181,16 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
             </p>
           )}
           {recorder.recording && left <= 30 && <p className="text-sm font-medium text-foreground">{VOICE_WORDS.nearEnd}</p>}
+          {/* Always drawn, so a screen reader is listening before the words change. */}
+          <p className="sr-only" role="status" data-voice-said="">
+            {recorder.recording
+              ? left <= 30
+                ? VOICE_WORDS.nearEnd
+                : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
+              : stopped
+                ? t({ message: "Recording stopped. You can play it back below.", context: "voice note, read aloud" })
+                : ""}
+          </p>
           {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground" data-voice-live="">{recorder.live}</p>}
           {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{VOICE_WORDS.noTranscribe}</p>}
           {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}

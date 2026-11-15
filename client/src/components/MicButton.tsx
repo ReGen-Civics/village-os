@@ -55,12 +55,15 @@ export default function MicButton({
   onText,
   disabled,
   className = "",
+  fieldName = "",
 }: {
   /** Called with each finished phrase — append it to the draft. */
   onText: (chunk: string) => void;
   disabled?: boolean;
   /** Extra classes for spacing tweaks at the call site. */
   className?: string;
+  /** The field it types into, so each button has its own name (components/form/fieldName.ts). */
+  fieldName?: string;
 }) {
   const [listening, setListening] = useState(false);
   // The last refusal, said out loud on the button until the next try.
@@ -121,7 +124,7 @@ export default function MicButton({
         type="button"
         onClick={() => (listening ? stop() : start())}
         disabled={disabled}
-        aria-label={label}
+        aria-label={fieldName ? `${label}: ${fieldName}` : label}
         title={label}
         className={`shrink-0 size-11 rounded-xl flex items-center justify-center disabled:opacity-50 ${
           listening

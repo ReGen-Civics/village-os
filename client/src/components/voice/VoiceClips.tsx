@@ -23,6 +23,7 @@ import { Circle, Square, Trash2 } from "lucide-react";
 import { HINT } from "@/components/journey/look";
 import { DEFAULT_CLIP_LIMITS, VOICE_WORDS, isClipField, voiceLength, type VoiceClipLimits } from "@shared/voiceNotes";
 import { useVoiceRecorder, voiceSupport } from "./useVoiceRecorder";
+import { forField } from "@/components/form/fieldName";
 import type { VoiceState } from "./VoiceInvite";
 
 interface ClipsContext {
@@ -38,7 +39,7 @@ export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMI
 }
 
 /** The record button, the clip and, until it is given, the tick. Nothing without a provider, a recorder, or clips allowed. */
-export function ClipBar({ field, onWords }: { field: string; onWords: (words: string) => void }) {
+export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onWords: (words: string) => void; /** The answer's own label, so each control is named for it (components/form/fieldName.ts). */ fieldName?: string }) {
   const ctx = useContext(Clips);
   const [support] = useState(voiceSupport);
   const recorder = useVoiceRecorder((take) => {
@@ -68,7 +69,7 @@ export function ClipBar({ field, onWords }: { field: string; onWords: (words: st
     <div className="mt-2 grid gap-2" data-voice-clip={field}>
       <div className="flex flex-wrap items-center gap-2">
         {recorder.recording ? (
-          <button type="button" onClick={recorder.stop} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground" data-voice-clip-stop="">
+          <button type="button" onClick={recorder.stop} aria-label={forField(VOICE_WORDS.clipStop, fieldName)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-destructive px-4 text-sm font-semibold text-destructive-foreground" data-voice-clip-stop="">
             <Square className="size-3.5" aria-hidden="true" />
             {VOICE_WORDS.clipStop}
             <span className="tabular-nums">
@@ -76,16 +77,16 @@ export function ClipBar({ field, onWords }: { field: string; onWords: (words: st
             </span>
           </button>
         ) : (
-          <button type="button" onClick={() => void recorder.start()} disabled={full} className={btn} data-voice-clip-record="">
+          <button type="button" onClick={() => void recorder.start()} disabled={full} aria-label={forField(mine ? VOICE_WORDS.clipAgain : VOICE_WORDS.clipRecord, fieldName)} className={btn} data-voice-clip-record="">
             <Circle className="size-3.5 fill-destructive text-destructive" aria-hidden="true" />
             {mine ? VOICE_WORDS.clipAgain : VOICE_WORDS.clipRecord}
           </button>
         )}
         {mine && !recorder.recording && (
           <>
-            <audio controls preload="metadata" src={mine.url} aria-label={VOICE_WORDS.clipLabel} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
+            <audio controls preload="metadata" src={mine.url} aria-label={forField(VOICE_WORDS.clipLabel, fieldName)} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
             <span className="text-sm tabular-nums text-muted-foreground">{voiceLength(mine.seconds)}</span>
-            <button type="button" onClick={remove} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
+            <button type="button" onClick={remove} aria-label={forField(VOICE_WORDS.clipRemove, fieldName)} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
               <Trash2 className="size-4" aria-hidden="true" />
               {VOICE_WORDS.clipRemove}
             </button>
