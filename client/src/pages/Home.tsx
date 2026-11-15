@@ -35,6 +35,7 @@ import { HOME_PAGE } from "@shared/pageContent/home";
 import { useModule } from "@/modules/ModuleProvider";
 import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { useStoryPageOffAlone } from "@/lib/brochure";
+import { uploadSrcSet } from "@shared/uploadVariants";
 
 
 
@@ -55,7 +56,13 @@ import { useStoryPageOffAlone } from "@/lib/brochure";
  * A bare <img> rather than <Image> for the same reason the markup below always
  * used one: the hover zoom is `transition-transform` and the component's fade
  * is `transition-opacity`, and one would silently cancel the other.
+ *
+ * The card draws a 112px strip, so an upload is asked for as a 3:1 band at
+ * the width the card needs (shared/uploadVariants.ts): the four portraits were
+ * 120 to 240 KB each for a strip a tenth of their area. The card is the
+ * column's width on a phone and a quarter of the row on a desktop.
  */
+const JOURNEY_ART_SIZES = "(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw";
 function JourneyArt({ src, alt }: { src: string | undefined; alt: string }) {
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
@@ -76,6 +83,8 @@ function JourneyArt({ src, alt }: { src: string | undefined; alt: string }) {
   return (
     <img
       src={src}
+      srcSet={uploadSrcSet(src, "band")}
+      sizes={JOURNEY_ART_SIZES}
       alt={alt}
       loading="lazy"
       decoding="async"
@@ -156,7 +165,19 @@ export default function Home() {
   // section on (D-01). A senior professional landing here read no word about
   // paid roles, and the only gold on the screen was a link off the site. Off,
   // the hero keeps its own door to the paths. The read never blocks the page.
-  const founding = useFoundingOn();
+  const foundingRead = useFoundingOn();
+  const founding = foundingRead === true;
+  /*
+   * THE PAGE DRAWS ONCE, AT ITS SIZE (page speed pass, 14 Nov 2026). The hero's
+   * words, the founding line in it and the ways in all wait on two reads (the
+   * page's words and the founding switch), and the sections under them drew
+   * first, at the top of an empty hero, then got pushed off the screen as the
+   * hero filled: a layout shift of 1.5 to 2 on a phone, most of it twice over.
+   * So until both have answered, the hero holds its place invisibly and
+   * nothing is drawn under it; then everything arrives in place, and what
+   * arrives below the screen moves nothing a visitor can see.
+   */
+  const ready = !!page && foundingRead !== null;
   const pathsShown = !!paths && !paths.hidden && pathCards.length > 0;
   const waysShown = pathsShown || founding;
   const foundingLink = (
@@ -198,6 +219,9 @@ export default function Home() {
             <>
               <Image
                 src={brand.hero}
+                // The same srcset and sizes the server names in its preload of `/` (server/lib/pageMeta.ts, spliceHeroPreload), so the browser fetches the picture once.
+                srcSet={uploadSrcSet(brand.hero)}
+                sizes="100vw"
                 alt={altOr(brand.heroAlt, "The village and the land around it")}
                 priority
                 className="w-full h-full"
@@ -226,7 +250,7 @@ export default function Home() {
             ) : null}
             <h1
               style={{ animationDelay: "0.05s" }}
-              className={`hero-rise relative font-display ${headlineSize(hero?.headline ?? "")} leading-[1.08] text-foreground text-balance mb-6 break-words${hero ? "" : " invisible"}`}
+              className={`hero-rise relative font-display ${headlineSize(hero?.headline ?? "")} leading-[1.08] text-foreground text-balance mb-6 break-words${ready ? "" : " invisible"}`}
             >
               <Highlighted
                 text={hero?.headline || "\u00a0"}
@@ -237,7 +261,7 @@ export default function Home() {
 
             <p
               style={{ animationDelay: "0.1s" }}
-              className={`hero-rise relative max-w-[34em] text-lg sm:text-xl text-foreground/90 leading-relaxed mb-8${hero ? "" : " invisible"}`}
+              className={`hero-rise relative max-w-[34em] text-lg sm:text-xl text-foreground/90 leading-relaxed mb-8${ready ? "" : " invisible"}`}
             >
               <Emphasized text={hero?.subline ?? ""} strongClassName="font-semibold text-foreground" />
               {founding ? (
@@ -275,6 +299,8 @@ export default function Home() {
           column on a phone. The founding team leads with the gold edge while
           the village has the section on. The section keeps its id when it is
           empty so the hero's "Pick your path" never points at nothing. */}
+      {ready ? (
+      <>
       <section id="choose-path" aria-labelledby={waysShown ? "choose-path-h" : undefined} className={waysShown ? "relative z-20 scroll-mt-24 pb-16 sm:pb-20" : undefined}>
         {waysShown && (
         <div className="container -mt-24 sm:-mt-28 lg:-mt-32">
@@ -541,6 +567,8 @@ export default function Home() {
         </div>
       </section>
       )}
+      </>
+      ) : null}
       </div>
     </Layout>
   );
@@ -551,19 +579,29 @@ const WAY_CARD =
   "group flex h-full flex-col rounded-2xl bg-card p-5 shadow-sm transition-colors hover:border-notice/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
 const WAY_BODY = "text-sm leading-relaxed text-muted-foreground sm:text-base";
 
-/** Whether the village has its founding team section on. Off until the read answers, and off when it fails. */
-function useFoundingOn(): boolean {
-  const [on, setOn] = useState(false);
+/** How long the landing page waits on the founding switch before it draws without it. */
+const FOUNDING_READ_WAIT_MS = 8000;
+
+/**
+ * Whether the village has its founding team section on: null until the read
+ * answers, false when it fails, and false once FOUNDING_READ_WAIT_MS has gone
+ * by, so a stalled read never holds the page back. A late yes still turns the
+ * section on.
+ */
+function useFoundingOn(): boolean | null {
+  const [on, setOn] = useState<boolean | null>(null);
   useEffect(() => {
     let live = true;
+    const stall = setTimeout(() => live && setOn((v) => (v === null ? false : v)), FOUNDING_READ_WAIT_MS);
     // The same public read the roles page makes (GET /api/org/founding-team),
     // asked for its one yes or no; any failure is the section off.
     fetch("/api/org/founding-team")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => live && setOn(d?.on === true && Array.isArray(d?.roleIds) && d.roleIds.length > 0))
-      .catch(() => undefined);
+      .catch(() => live && setOn(false));
     return () => {
       live = false;
+      clearTimeout(stall);
     };
   }, []);
   return on;

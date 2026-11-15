@@ -470,6 +470,35 @@ as a blocking item for the same reason.
 4. **Restore it once** into a scratch database, following `docs/RUNBOOK.md`,
    "Restoring the database from a backup", before you rely on it.
 
+## 9b. If Cloudflare sits in front
+
+Optional, and only for a village whose domain is proxied through Cloudflare
+(the orange cloud). Cloudflare caches by file extension unless told
+otherwise, so it already keeps `/assets/*.js`, the fonts and the images, and
+it passes everything under `/api/` straight to the server. Two kinds of
+`/api/` answer are the same bytes forever and are marked so by the server
+(`Cache-Control: public, max-age=31536000, immutable`):
+
+- `/api/i18n/catalog/<locale>/part/<name>`: the pages' long English, named by
+  a hash of its words. A phone opening the landing page asks for about a dozen
+  of these before the page can draw.
+- `/api/uploads/<file>` and its smaller copies (`?w=480|800|1200`, optionally
+  `&crop=band`): uploads with an image extension are already cached; the
+  copies are separate URLs of the same kind.
+
+Add one **Cache Rule** (Caching, Cache Rules, Create rule):
+
+- **When incoming requests match**, custom filter expression:
+  `starts_with(http.request.uri.path, "/api/i18n/catalog/") and contains(http.request.uri.path, "/part/")`
+- **Then**: Cache eligibility **Eligible for cache**; Edge TTL **Use cache-control
+  header if present, bypass cache if not**; Browser TTL **Respect origin**.
+  Leave the cache key at its default, which includes the query string.
+
+Nothing else under `/api/` belongs in it: those answers depend on who is
+asking. A missing part is answered `no-store`, so a deploy in progress can
+never leave a cached 404 behind. To check the rule took, ask for any part
+twice and read the `cf-cache-status` header: `MISS`, then `HIT`.
+
 ## 10. Confirm it actually works
 
 Sign in with the password you set, and open the Launch Plan

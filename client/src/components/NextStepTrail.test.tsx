@@ -4,7 +4,7 @@
  * header, from the path conductor, for a member and for a visitor.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 import { tokenFacts, visitorFacts, yourPathAll, type PathFacts } from "@shared/yourPath";
@@ -16,7 +16,7 @@ vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => useAuthMock() }));
 vi.mock("@/lib/gameApi", () => ({ fetchGameMe: () => fetchGameMeMock(), useGameConfig: () => ({ project: { commitmentName: "Love Letter" } }) }));
 vi.mock("@/lib/profileRefresh", () => ({ onProfileRefresh: () => () => {} }));
 
-import { isQuietPath } from "./NextStepTrail";
+import { RootStripSlot, VISITOR_STEP_HREF, holdsStripSpace, isQuietPath } from "./NextStepTrail";
 import RootLine from "./path/RootLine";
 import { clearPathCache } from "@/lib/usePath";
 import { chaptersOf } from "./path/pathView";
@@ -184,5 +184,50 @@ describe("chaptersOf", () => {
     expect(chaptersOf([]).map((c) => c.state)).toEqual(["now", "ahead", "ahead", "ahead"]);
     const token = yourPathAll(tokenFacts(NOW, "UTC", { ref: "p", statusHref: "/application-status/p", status: "confirmed", step: "interview", by: null, withRole: "Land", termsToAnswer: false, invite: null, ownAccountAtAdoption: false, nextSeason: null }))[0];
     expect(chaptersOf(token.walked).map((c) => c.state)).toEqual(["walked", "now", "ahead", "ahead"]);
+  });
+});
+
+describe("the strip's held space (page speed pass)", () => {
+  it("names the visitor's step page the conductor itself names, so no space is held where a visitor's strip is quiet", () => {
+    expect(yourPathAll(visitorFacts(NOW, "UTC"))[0].step.href).toBe(VISITOR_STEP_HREF);
+  });
+
+  it("holds space where the strip will show, and nowhere it is quiet", () => {
+    expect(holdsStripSpace("/", false)).toBe(true);
+    expect(holdsStripSpace("/quests", true)).toBe(true);
+    expect(holdsStripSpace("/roles", false)).toBe(false);
+    expect(holdsStripSpace("/roles?from=home", false)).toBe(false);
+    expect(holdsStripSpace("/roles", true)).toBe(true);
+    for (const p of ["/profile", "/path", "/steward", "/admin/x", "/propose-a-role"]) expect(holdsStripSpace(p, true), p).toBe(false);
+  });
+
+  it("stands the slot in while the reader's path is still being worked out, then the strip takes its place", async () => {
+    let answer: (v: unknown) => void = () => {};
+    fetchGameMeMock.mockReturnValue(new Promise((r) => (answer = r)));
+    const { hook } = memoryLocation({ path: "/visit" });
+    const { container } = render(
+      <Router hook={hook}>
+        <RootLine quiet={isQuietPath} pending={<RootStripSlot />} />
+      </Router>,
+    );
+    expect(container.querySelector("[data-root-slot]")).not.toBeNull();
+    expect(container.querySelector("[data-root-line]")).toBeNull();
+    answer(served(account({})));
+    await screen.findAllByTestId("root-strip");
+    expect(container.querySelector("[data-root-slot]")).toBeNull();
+    expect(container.querySelector("[data-root-line]")).not.toBeNull();
+  });
+
+  it("gives the space back when the read fails, rather than holding an empty band", async () => {
+    fetchGameMeMock.mockRejectedValue(new Error("offline"));
+    const { hook } = memoryLocation({ path: "/visit" });
+    const { container } = render(
+      <Router hook={hook}>
+        <RootLine quiet={isQuietPath} pending={<RootStripSlot />} />
+      </Router>,
+    );
+    expect(container.querySelector("[data-root-slot]")).not.toBeNull();
+    await waitFor(() => expect(container.querySelector("[data-root-slot]")).toBeNull());
+    expect(container.querySelector("[data-root-line]")).toBeNull();
   });
 });

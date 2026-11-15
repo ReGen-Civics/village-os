@@ -108,6 +108,16 @@ describe("GET /api/i18n/catalog/:locale/part/:part", () => {
     expect((await get("/api/i18n/catalog/en/part/Nope00000000")).status).toBe(404);
   });
 
+  it("tells every cache never to keep a refusal: a part one instance lacks mid-deploy must not stay missing at the edge", async () => {
+    for (const [p, status] of [["/api/i18n/catalog/en/part/Nope00000000", 404], ["/api/i18n/catalog/es/part/Pa_rt-123456", 404], ["/api/i18n/catalog/en/part/abc", 400]] as const) {
+      const res = await get(p);
+      expect(res.status, p).toBe(status);
+      expect(res.headers.get("cache-control"), p).toBe("no-store");
+    }
+    // Control: a found part is still the year-long answer.
+    expect((await get("/api/i18n/catalog/en/part/Pa_rt-123456")).headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+  });
+
   it("serves parts for English only, for now", async () => {
     expect((await get("/api/i18n/catalog/es/part/Pa_rt-123456")).status).toBe(404);
   });

@@ -197,6 +197,16 @@ describe.skipIf(!DB_CONFIGURED)("the files nothing points at", () => {
   let foreignFile = "";
   let freshOrphan = "";
 
+  it("has the orphan count on /health from boot, before anybody asks for a sweep (it used to vanish with every deploy)", async () => {
+    // The boot measure runs after listen, so give it a moment rather than racing it.
+    let uploads: Record<string, unknown> | undefined;
+    for (let i = 0; i < 50 && uploads?.orphanFiles === undefined; i++) {
+      uploads = (await (await fetch(`${BASE}/health`)).json())?.uploads; // module-review-ok: the test client dialling the built server on localhost
+      if (uploads?.orphanFiles === undefined) await new Promise((r) => setTimeout(r, 100));
+    }
+    expect(uploads?.orphanFiles).toBe(0);
+  });
+
   it("fills the volume through the real doors, the way a village does", async () => {
     // A member's photograph. Its row names both the picture and its thumbnail.
     const photoForm = new FormData();

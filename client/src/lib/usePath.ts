@@ -46,8 +46,20 @@ export function visitorPath(now: Date = new Date()): PathView {
 
 /** The reader's path, or null while it is not known yet (and for a member on a server older than the path). */
 export function usePath(): PathView | null {
+  return usePathState().path;
+}
+
+/**
+ * The path and whether the answer is in: `known` is false only while it is
+ * still being worked out, so a surface can hold its space until then and draw
+ * nothing once the answer is that there is no path (the root strip, which
+ * used to appear 76px tall after the page had drawn and push it all down).
+ */
+export function usePathState(): { path: PathView | null; known: boolean } {
   const { user, loading } = useAuth() as { user: unknown; loading?: boolean };
-  const [path, setPath] = useState<PathView | null>(() => (user && cache && Date.now() - cache.at < TTL_MS ? cache.path : null));
+  const fresh = !!user && !!cache && Date.now() - cache.at < TTL_MS;
+  const [state, setState] = useState<{ path: PathView | null; known: boolean }>(() => (fresh && cache ? { path: cache.path, known: true } : { path: null, known: false }));
+  const setPath = (path: PathView | null) => setState({ path, known: true });
 
   useEffect(() => {
     if (loading) return;
@@ -67,7 +79,10 @@ export function usePath(): PathView | null {
           cache = { at: Date.now(), path: next };
           if (live) setPath(next);
         })
-        .catch(() => undefined);
+        // A failed read is an answer too: no path to show, and no space to hold for one.
+        .catch(() => {
+          if (live) setState((s) => (s.known ? s : { path: null, known: true }));
+        });
     };
     load(false);
     const off = onProfileRefresh(() => {
@@ -80,5 +95,5 @@ export function usePath(): PathView | null {
     };
   }, [user, loading]);
 
-  return path;
+  return state;
 }

@@ -61,6 +61,26 @@ export function lazyRoutesFromApp(appSource: string): LazyRoute[] {
   return routes;
 }
 
+/**
+ * THE LANDING PAGE, which the parser above leaves out because "/" draws the
+ * eager LandingRoute and LandingRoute draws the lazy Home (App.tsx, loadHome).
+ * App.tsx already starts Home's chunk at boot on "/", but only once the main
+ * bundle runs, and Home then waited on its copy parts one after another
+ * (client/src/i18n/copySplit.ts): about four seconds of a slow phone's visit
+ * before the page's own reads could even start (page speed pass, 14 Nov 2026).
+ * Listed here, "/" preloads Home's chunk, its imports and their parts beside
+ * the bundle, like every other page. `landingRoutes` adds it only while
+ * App.tsx still loads Home that way, so a rename preloads nothing rather than
+ * a stale file.
+ */
+export const LANDING_ROUTE: LazyRoute = { path: "/", module: "pages/Home" };
+
+export function landingRoutes(appSource: string): LazyRoute[] {
+  const draws = /<Route\s+path=["']\/["']\s+component=\{LandingRoute\}/.test(appSource);
+  const loads = /import\(\s*["']\.\/pages\/Home["']\s*\)/.test(appSource);
+  return draws && loads ? [LANDING_ROUTE] : [];
+}
+
 /** A wouter pattern as a RegExp source: `:param` is one segment, trailing slash optional. */
 export function routePattern(path: string): string {
   const body = path

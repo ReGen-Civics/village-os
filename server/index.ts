@@ -61,7 +61,7 @@ import { writeGoverningPurpose } from "./lib/governingPurpose";
 import { GPS_CHANGE } from "../shared/governingPurpose";
 import { pageContentProblem } from "../shared/pageContent";
 import { contentVersion } from "../shared/pageContent/resolve";
-import { sitePageMeta, siteWords, spliceMeta, trimTo } from "./lib/pageMeta";
+import { sitePageMeta, siteWords, spliceHeroPreload, spliceMeta, trimTo } from "./lib/pageMeta";
 import { pageVarsFrom } from "../shared/pageContent/vars";
 import { visitProgramProblem } from "../shared/visitProgram";
 import { greetingName, workWithUsAckEmail } from "./lib/workWithUsAck";
@@ -346,6 +346,8 @@ import {
   removeFiles,
   stampOf,
 } from "./lib/uploadsSweep";
+import { uploadVariant } from "./lib/uploadVariants";
+import { isResizableUpload, parseUploadVariant, uploadSrcSet } from "../shared/uploadVariants";
 import { planUploadsArchive, streamUploadsArchive } from "./lib/uploadsArchive";
 import type { UploadsSweepReport } from "../shared/uploadsSweep";
 import { scanUploadReferences } from "./repos/uploadRefs";
@@ -687,6 +689,7 @@ import {
 import { ensureInstanceIdentity, instanceIdentity, PLATFORM_VERSION, PRODUCT_NAME } from "./lib/identity";
 import { servedVillageSourceUrl, VILLAGE_SOURCE_URL_KEY } from "../shared/sourceUrl";
 import { brochureConfig, brochurePageServed, loadBrochurePages } from "./lib/brochurePages";
+import { clientRouteMatcher } from "../shared/clientRoutes";
 import { listDrafts, measureVisionMetrics, tierDraftWords, visionProgress } from "./lib/orgDrafts";
 import { DECIDES_BY, DOMAINS, HOW_CHOSEN, SHAPES } from "../shared/power";
 import { noteSeen, readSeen } from "./lib/sheetSeen"; import { displayCurrencyProblem } from "../shared/money";
@@ -4270,6 +4273,9 @@ function stayPostingHooks() {
  * retention sweep and by every look a founder takes at Admin > Uploaded Files.
  */
 let lastUploadsReport: UploadsSweepReport | null = null;
+/** Which sweep started last. Only the latest-started may write `lastUploadsReport`, so a slow walk never overwrites a newer answer. */
+let uploadsSweepStarted = 0;
+let uploadsSweepHeld = 0;
 
 /** What `/health` says about the database, and never a default. */
 type DatabaseProbe = { ok: true; ms: number } | { ok: false; error: string };
@@ -4485,6 +4491,7 @@ async function readUploadsGauge(): Promise<UploadsGauge | undefined> {
  * when the row fails, which is the half that stops the bleeding.
  */
 async function sweepUploadsVolume(): Promise<UploadsSweepReport> {
+  const started = ++uploadsSweepStarted;
   const entries = readVolume(UPLOADS_DIR);
   // Only stamped names are ever asked about: their millisecond is what makes
   // the database lookup exact. Everything else is reported as unknown without
@@ -4502,7 +4509,10 @@ async function sweepUploadsVolume(): Promise<UploadsSweepReport> {
     incompleteReason: scan.incompleteReason,
     scan: { tables: scan.tables, columns: scan.columns, values: scan.values },
   });
-  lastUploadsReport = report;
+  if (started > uploadsSweepHeld) {
+    lastUploadsReport = report;
+    uploadsSweepHeld = started;
+  }
   return report;
 }
 
@@ -17441,6 +17451,33 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const ext = path.extname(safe).toLowerCase();
     const type = INLINE_TYPES[ext];
     res.setHeader("X-Content-Type-Options", "nosniff");
+    /*
+     * A SMALLER COPY, when the page asks for one (shared/uploadVariants.ts):
+     * `?w=800`, optionally `&crop=band`. Asked only after the suppression and
+     * existence checks above, so a hidden or erased picture has no copy either.
+     * A width outside the list is refused rather than quietly answered with the
+     * original, so a wrong srcset shows up as a broken request in development.
+     */
+    const ask = parseUploadVariant(req.query as Record<string, unknown>);
+    let originalIsStandIn = false;
+    if (ask === "refused") return res.status(400).json({ error: "That size is not offered" });
+    if (ask && isResizableUpload(`/api/uploads/${safe}`)) {
+      try {
+        // Too large to decode, or the encoder's line is full: the original below costs only a read.
+        const bytes = await uploadVariant(filePath, await fs.promises.stat(filePath), ask);
+        // A full line is this moment's answer, not this URL's: no cache may keep the original under the copy's address.
+        if (bytes === "busy") originalIsStandIn = true;
+        else if (bytes !== "too-large") {
+          res.type("image/webp");
+          res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
+          res.setHeader("Cache-Control", `${isMemberOwnedUpload(safe) ? "private" : "public"}, max-age=31536000, immutable`);
+          return res.send(bytes);
+        }
+      } catch (e) {
+        // A file sharp cannot read is still a file: hand over the original below.
+        console.warn(`[uploads] no ${ask.width}px copy of ${safe}: ${(e as Error)?.message ?? e}`);
+      }
+    }
     if (type) {
       res.type(type);
       res.setHeader("Content-Disposition", `inline; filename="${safe}"`);
@@ -17478,6 +17515,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       res.setHeader("Content-Disposition", `attachment; filename="${safe}"`);
       res.setHeader("Cache-Control", "private, no-cache");
     }
+    if (originalIsStandIn) res.setHeader("Cache-Control", "no-store");
     res.sendFile(filePath);
   });
 
@@ -25532,6 +25570,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", precompressedAssets({ assetsDir: ASSETS_DIR, precompressedDir: path.resolve(staticPath, "..", "precompressed") }));
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR) });
+  /*
+   * `/index.html` is the shell's file name, not a page. express.static below
+   * handed out the raw file (no theme, no share card, no language) with a 200,
+   * so it is sent to `/` instead, keeping any query.
+   */
+  app.get("/index.html", (req, res) => {
+    const q = req.originalUrl.indexOf("?");
+    res.redirect(301, q >= 0 ? `/${req.originalUrl.slice(q)}` : "/");
+  });
   app.use(express.static(staticPath, { index: false }));
 
   /*
@@ -25651,6 +25698,28 @@ Send an empty drafts array when you are still listening. A role payload is {name
     res.type("html").set("Cache-Control", "no-cache").send(html);
   });
 
+  /*
+   * AN ADDRESS NO PAGE DRAWS IS A 404, with the same shell, so a person still
+   * sees "Off the trail" and a crawler or an uptime check is told the truth
+   * (shared/clientRoutes.ts). The routes come from the build; with no file,
+   * every address answers 200 as it always did.
+   */
+  const isClientRoute = (() => {
+    try {
+      const { patterns } = JSON.parse(fs.readFileSync(path.resolve(staticPath, "..", "client-routes.json"), "utf8")) as { patterns: string[] };
+      if (!Array.isArray(patterns) || patterns.length === 0) return () => true;
+      const known = clientRouteMatcher(patterns);
+      return (p: string) => p !== "/404" && known(p);
+    } catch {
+      return () => true;
+    }
+  })();
+  // Only the status: the catch-all below still sends the shell, and res.send keeps a status already set.
+  app.get("/{*splat}", (req, res, next) => {
+    if (!isClientRoute(req.path)) res.status(404);
+    next();
+  });
+
   // Every page, `/` included (express.static above serves no index), gets the
   // shell with its stylesheet link versioned (server/routes/brandTheme.ts) and
   // this village's own share card (server/lib/pageMeta.ts).
@@ -25661,8 +25730,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
       console.error(`[sendFile error] ${indexPath}: the shell is missing`);
       return res.status(500).send(`Server error: could not serve index.html from ${indexPath}`);
     }
-    const meta = sitePageMeta(req.path, requestOrigin(req), mergedConfig(), contentRepo.get() ?? null, !brochurePageServed(req.path));
-    res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(spliceMeta(shellWithTheme(shell, getBrand), meta), req, res));
+    const config = mergedConfig();
+    const meta = sitePageMeta(req.path, requestOrigin(req), config, contentRepo.get() ?? null, !brochurePageServed(req.path));
+    let html = spliceMeta(shellWithTheme(shell, getBrand), meta);
+    // `/` draws the brochure landing page, and its hero photograph, only while the story pages are on (client/src/App.tsx, LandingRoute).
+    if (req.path === "/" && brochureConfig().brochurePages) html = spliceHeroPreload(html, config.images.hero, uploadSrcSet(config.images.hero));
+    res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(html, req, res));
   });
 
   /** `<html lang dir>` for this visitor (spec i18n R16): the cookie, their browser, the village default. */
@@ -25702,6 +25775,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const { words, rows } = await backfillSeasonGoalIds(getPool());
     console.log(`[startup] season goal ids: ${rows} link(s) across ${words} goal text(s)`);
   });
+  /*
+   * /health's orphan count, measured once per boot (page speed pass, 14 Nov
+   * 2026). It is served from the last sweep, and the sweep is daily, so every
+   * deploy blanked it until the next morning. After listen for 0298's reason;
+   * it only reads, and a sweep a founder starts meanwhile is newer and wins.
+   */
+  void sweepUploadsVolume()
+    .then((r) => console.log(`[startup] uploads volume measured: ${r.complete ? `${r.tally.orphan.files} orphan file(s)` : `not judged (${r.incompleteReason})`}`))
+    .catch((e) => console.error("[startup] uploads volume could not be measured (continuing)", e));
   // R103: the seat journal's name-free lines from before 2026-11-06 become
   // public, so members read the history. After listen for 0298's reason, and
   // on every boot because its WHERE makes a repeat a no-op.

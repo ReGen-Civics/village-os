@@ -152,3 +152,24 @@ export function siteWords(
   });
   return { footerSignoff: site.footer.fields.signoff, menu, menuChanged };
 }
+
+/**
+ * START THE LANDING PAGE'S PHOTOGRAPH WITH THE PAGE, NOT AFTER IT (page speed pass).
+ *
+ * The hero is the landing page's largest paint, and the browser learned its
+ * address only after the bundle ran, the config and the page's words arrived,
+ * and React drew the hero: 15 seconds into a slow phone's visit. The server
+ * already knows the address, so `/` names it in a preload. The srcset and
+ * sizes must be the ones the page's <img> uses (shared/uploadVariants.ts and
+ * HERO_SIZES), or the browser fetches the picture twice. Only a path or a
+ * full http(s) URL is named; anything else is left out, and an empty hero
+ * adds nothing.
+ */
+export const HERO_SIZES = "100vw";
+
+export function spliceHeroPreload(shell: string, hero: string | null | undefined, srcset?: string): string {
+  const href = String(hero ?? "").trim();
+  if (!href || !(/^\/[^/]/.test(href) || /^https?:\/\//i.test(href))) return shell;
+  const set = srcset ? ` imagesrcset="${escapeAttr(srcset)}" imagesizes="${HERO_SIZES}"` : "";
+  return shell.replace("</head>", () => `  <link rel="preload" as="image" href="${escapeAttr(href)}"${set} fetchpriority="high">\n  </head>`);
+}
