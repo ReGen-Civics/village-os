@@ -7832,6 +7832,11 @@ msgctxt "founding application review"
 msgid "Earliest start: {startDay}"
 msgstr "Earliest start: {startDay}"
 
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, equity and credits"
+msgid "Equity and credit terms are still being written and are subject to legal review."
+msgstr "Equity and credit terms are still being written and are subject to legal review."
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
 msgid "No invoice has been sent yet."
@@ -9163,6 +9168,11 @@ msgstr "That did not save. Try again."
 msgctxt "agent paths"
 msgid "No paths are open to agents yet."
 msgstr "No paths are open to agents yet."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, the first month"
+msgid "Your first month often starts lower and follows what you deliver."
+msgstr "Your first month often starts lower and follows what you deliver."
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgctxt "canvas suggestion form heading"
