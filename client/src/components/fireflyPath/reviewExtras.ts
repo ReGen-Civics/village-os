@@ -4,7 +4,9 @@
  *
  * Kept beside ApplySteps.tsx because pages/ProposeARole.tsx holds the file-lines ceiling.
  */
-import type { I18n } from "@lingui/core";
+// A value import of the runtime, as client/src/lib/unsavedChanges.ts has: precompileEnglish compiles the messages of
+// a file that imports it and skips one that only uses `msg`.
+import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { askPeriod, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
@@ -20,7 +22,7 @@ export interface ReviewExtra {
 const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}…` : s.trim());
 
 export function reviewExtras(
-  i18n: I18n,
+  i18n: I18n = appI18n,
   p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }> },
 ): ReviewExtra[] {
   const out: ReviewExtra[] = [];
