@@ -24,6 +24,7 @@
  */
 import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
+export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
 import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
