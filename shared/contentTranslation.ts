@@ -23,7 +23,7 @@
  *
  * FIELD ADDRESSES
  *   role_card            ref_key = org_roles.id
- *                        field   = a text column ("aim") or "accountabilities.<n>"
+ *                        field   = a text column ("aim") or a list line ("accountabilities.<n>")
  *   role_card_sections   ref_key = org_roles.id
  *                        field   = "aiSupport" | "aiCompanion" | "payNote" | "paySplitNote"
  *                                  | "idealBackground.<n>" | "qualities.<n>" | "payShape.<n>.label"
@@ -67,7 +67,16 @@ export const ROLE_CARD_TEXT_FIELDS = [
   "location_expectations",
   "compensation_reality",
   "evidence_required",
+  // 0268 and 0274: the handover and CCOS words the full card draws.
+  "exists_while",
+  "signs_stretched",
+  "flows_back",
+  "step_back",
+  "time_commitment",
 ] as const;
+
+/** The org_roles list columns, translated line by line ("authorities.2"). */
+export const ROLE_CARD_LIST_FIELDS = ["accountabilities", "authorities", "responsibilities", "bring_me", "not_mine"] as const;
 
 /** Pay words. A person writes their translation; a machine never drafts one. */
 const HUMAN_ONLY_FIELDS: ReadonlySet<string> = new Set(["compensation_reality", "payNote", "paySplitNote", "payShape.label"]);
@@ -105,7 +114,9 @@ export function translationTarget(kind: string, refKey: string, field: string): 
     if (parts.length === 1 && (ROLE_CARD_TEXT_FIELDS as readonly string[]).includes(field)) {
       return { ok: true, cap: ROLE_CARD_FIELD_CHARS, protection: HUMAN_ONLY_FIELDS.has(field) ? "human_only" : "open" };
     }
-    if (parts.length === 2 && parts[0] === "accountabilities" && INDEX.test(parts[1])) return { ok: true, cap: ROLE_CARD_FIELD_CHARS, protection: "open" };
+    if (parts.length === 2 && (ROLE_CARD_LIST_FIELDS as readonly string[]).includes(parts[0]) && INDEX.test(parts[1])) {
+      return { ok: true, cap: ROLE_CARD_FIELD_CHARS, protection: "open" };
+    }
     return { ok: false, reason: `A role card has no translatable field "${field}".` };
   }
 

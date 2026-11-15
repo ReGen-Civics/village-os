@@ -35,7 +35,10 @@ describe("translationTarget", () => {
   it("takes a role card's text columns and its accountabilities by index", () => {
     expect(translationTarget("role_card", "r1", "aim")).toMatchObject({ ok: true, protection: "open" });
     expect(translationTarget("role_card", "r1", "accountabilities.3")).toMatchObject({ ok: true });
+    expect(translationTarget("role_card", "r1", "authorities.0")).toMatchObject({ ok: true });
+    expect(translationTarget("role_card", "r1", "exists_while")).toMatchObject({ ok: true });
     expect(translationTarget("role_card", "r1", "accountabilities.x")).toMatchObject({ ok: false });
+    expect(translationTarget("role_card", "r1", "runbook")).toMatchObject({ ok: false });
     expect(translationTarget("role_card", "r1", "holder_id")).toMatchObject({ ok: false });
   });
 
