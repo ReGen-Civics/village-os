@@ -27,12 +27,14 @@ export interface CommitmentReviewRole {
 export interface CommitmentReview {
   pct: number | null;
   ask: PayAsk | null;
+  /** How many changes they suggested to the role card (shared/pieceSuggestions.ts). A count, never a judgement. */
+  suggestionCount: number;
   roles: CommitmentReviewRole[];
 }
 
 export async function commitmentReviewFor(
   pool: Pool,
-  body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk },
+  body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk; pieceSuggestions?: unknown[] },
   liveRoles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>,
 ): Promise<CommitmentReview> {
   const pct = typeof body.card?.commitmentPct === "number" ? body.card.commitmentPct : null;
@@ -42,6 +44,7 @@ export async function commitmentReviewFor(
   return {
     pct,
     ask: body.payAsk ?? null,
+    suggestionCount: Array.isArray(body.pieceSuggestions) ? body.pieceSuggestions.length : 0,
     roles: roles.map((r) => {
       const fill = fills.get(r.id);
       const full = sections.get(r.id)?.payCeiling ?? null;

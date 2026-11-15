@@ -13,8 +13,8 @@
  */
 import { useLingui } from "@lingui/react/macro";
 import { commitmentChoices, type PayAsk } from "@shared/commitmentRange";
+import PriceAsk from "./PriceAsk";
 import type { PayCeiling } from "@shared/roleCardSections";
-import { ceilingAtWords } from "@shared/roleRewardWords";
 import {
   COMMITMENT_CHOICES,
   COMMITMENT_HINT,
@@ -39,8 +39,10 @@ export interface TermsRole {
   commitmentPct?: number | null;
   /** The least one person may propose (Rye, 14 Nov 2026, shared/commitmentRange.ts). Unset: the usual choices. */
   commitmentMin?: number | null;
-  /** The role's pay ceiling for the full role, when its card says: the form shows the most at each commitment and asks for an optional pay ask. */
+  /** The role's pay ceiling for the full role, when its card says: the form suggests a price from it and offers the price popup. */
   ceiling?: PayCeiling | null;
+  /** How many changes the applicant suggested to the role card, for the price popup's nudge. */
+  suggestions?: number;
 }
 
 export interface TermsStepValue {
@@ -179,12 +181,8 @@ export default function TermsEight({
                 <p className={`${HINT} mt-2`} data-commitment-hint="">
                   {t`This is about energy and attention, never hours. You can change it later.`}
                 </p>
-                {ceiling && value.commitmentPct !== null && value.commitmentPct > 0 && (
-                  <p className="mt-2 font-semibold text-foreground" aria-live="polite" data-commitment-ceiling="">
-                    {t({ message: `${ceilingAtWords(ceiling, value.commitmentPct)} at this commitment`, context: "terms commitment: the most the role pays at the chosen commitment" })}
-                  </p>
-                )}
-                {ceiling && <PayAskField idPrefix={idPrefix} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} />}
+                {/* The suggested price from their commitment, and the popup to propose their own (Rye, 14 Nov 2026). */}
+                {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={roles[0]?.suggestions ?? 0} />}
               </div>
             )}
           </div>
@@ -204,48 +202,6 @@ export default function TermsEight({
 function choicesFor(roles: ReadonlyArray<TermsRole>): readonly number[] {
   const min = roles.length === 1 ? roles[0].commitmentMin : null;
   return typeof min === "number" ? commitmentChoices(min) : CANDIDATE_COMMITMENTS;
-}
-
-/**
- * THE OPTIONAL PAY ASK (Rye, 14 Nov 2026, ruling 3): a monthly amount, or "negotiate on the first call if
- * chosen". Either way the contract sets the amount, at or under the ceiling. Choosing neither is fine.
- */
-function PayAskField({ idPrefix, value, onChange }: { idPrefix: string; value: PayAsk | null; onChange: (next: PayAsk | null) => void }) {
-  const { t } = useLingui();
-  const kind = value?.kind ?? null;
-  return (
-    <fieldset className="mt-4 grid gap-2 border-t border-border pt-3" data-pay-ask="">
-      <legend className="text-sm font-semibold text-foreground">{t({ message: "What you would ask (optional)", context: "terms: the pay ask" })}</legend>
-      <label className="flex min-h-11 items-center gap-2 text-foreground">
-        <input type="radio" name={`${idPrefix}-ask`} className="size-5 accent-notice" checked={kind === "amount"} onChange={() => onChange({ kind: "amount", monthly: value?.kind === "amount" ? value.monthly : 0 })} />
-        {t({ message: "A monthly amount", context: "terms: the pay ask" })}
-      </label>
-      {kind === "amount" && (
-        <input
-          id={`${idPrefix}-ask-amount`}
-          type="number"
-          inputMode="numeric"
-          min={1}
-          step={100}
-          aria-label={t({ message: "The monthly amount you would ask", context: "terms: the pay ask" })}
-          value={value?.kind === "amount" && value.monthly > 0 ? String(value.monthly) : ""}
-          onChange={(e) => onChange({ kind: "amount", monthly: Math.max(0, Math.floor(Number(e.target.value) || 0)) })}
-          className={`${FIELD} min-h-11 sm:max-w-xs`}
-          data-pay-ask-amount=""
-        />
-      )}
-      <label className="flex min-h-11 items-center gap-2 text-foreground">
-        <input type="radio" name={`${idPrefix}-ask`} className="size-5 accent-notice" checked={kind === "negotiate"} onChange={() => onChange({ kind: "negotiate" })} />
-        {t({ message: "Negotiate on the first call if chosen", context: "terms: the pay ask" })}
-      </label>
-      {kind && (
-        <button type="button" onClick={() => onChange(null)} className="justify-self-start text-sm text-muted-foreground underline underline-offset-4">
-          {t({ message: "Leave it blank", context: "terms: the pay ask" })}
-        </button>
-      )}
-      <p className={HINT}>{t({ message: "Either way, the contract sets the amount, at or under what the role pays at your commitment.", context: "terms: the pay ask" })}</p>
-    </fieldset>
-  );
 }
 
 // Kept so a test can hold the lines the lead named word for word.

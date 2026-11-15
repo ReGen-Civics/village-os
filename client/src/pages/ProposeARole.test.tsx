@@ -224,34 +224,62 @@ describe("one role per application", () => {
 
 describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
   const SHARED = { ...FORM, roles: [{ ...FORM.roles[0], commitmentMin: 30, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, FORM.roles[1]] };
-  it("offers commitments from the role's minimum to 100, says the most at the chosen one, and sends an optional ask", async () => {
+  it("offers commitments from the role's minimum to 100, suggests a price from the chosen one, and negotiate goes through the popup", async () => {
     await applyFor("r-gate", SHARED);
     const pick = screen.getByLabelText("Your commitment") as HTMLSelectElement;
     expect(Array.from(pick.options).map((o) => o.value).filter(Boolean)).toEqual(["30", "40", "50", "60", "70", "80", "90", "100"]);
     await completeAll();
-    expect(document.querySelector("[data-commitment-ceiling]")?.textContent).toBe("Up to $6,500 a month at this commitment");
-    const ask = document.querySelector("[data-pay-ask]") as HTMLElement;
-    fireEvent.click(within(ask).getByLabelText("Negotiate on the first call if chosen"));
+    expect(document.querySelector("[data-suggested-price]")?.textContent).toBe("Suggested: $6,500 a month, from your commitment of 50%.");
+    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You'll take the suggested price.");
+    fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByLabelText("Negotiate on the first call if chosen"));
+    fireEvent.click(within(dialog).getByText("Use this price"));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.payAsk).toEqual({ kind: "negotiate" });
     expect(posted[0].body.card.commitmentPct).toBe(50);
   });
-  it("sends a monthly amount when one is written, and no ask at all when none is chosen (control)", async () => {
+  it("a contractor may propose above the full band: the popup says the difference, notes the band, nudges about their role-card changes, and sends the reason (Rye, 14 Nov 2026)", async () => {
     await applyFor("r-gate", SHARED);
     await completeAll();
-    const ask = document.querySelector("[data-pay-ask]") as HTMLElement;
-    fireEvent.click(within(ask).getByLabelText("A monthly amount"));
-    fireEvent.change(ask.querySelector("[data-pay-ask-amount]") as HTMLInputElement, { target: { value: "6000" } });
+    // One suggested change to the role first, so the popup can name it.
+    const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
+    fireEvent.click(within(shape).getByText("Open the role card"));
+    const bar = await waitFor(() => {
+      const el = shape.querySelector('[data-piece-bar="purpose"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
+      return el;
+    });
+    fireEvent.click(within(bar).getByText("Something's missing"));
+    fireEvent.change(within(bar).getByLabelText("What is missing from this piece?"), { target: { value: "A legal review each quarter." } });
+    fireEvent.click(within(bar).getByText("Add to my application"));
+    fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
+    expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+131% on the suggested price");
+    expect(dialog.querySelector("[data-price-above-band]")?.textContent).toContain("above the full role's band of $13,000 a month");
+    expect(dialog.querySelector("[data-price-nudge]")?.textContent).toBe("You suggested 1 change to the role. If it changes the work, say how it changes the price.");
+    fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
+    fireEvent.click(within(dialog).getByText("Use this price"));
+    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $15,000 a month (+131% on the suggestion).");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
-    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
+    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 15000, why: "The quarterly legal review adds work." });
+  });
+  it("taking the suggested price sends no ask at all (control)", async () => {
+    await applyFor("r-gate", SHARED);
+    await completeAll();
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.payAsk).toBeUndefined();
   });
   it("a role with no minimum keeps the usual choices and asks nothing about pay (control)", async () => {
     await applyFor();
     const pick = screen.getByLabelText("Your commitment") as HTMLSelectElement;
     expect(Array.from(pick.options).map((o) => o.value).filter(Boolean)[0]).toBe("10");
-    expect(document.querySelector("[data-pay-ask]")).toBeNull();
+    expect(document.querySelector("[data-price-ask]")).toBeNull();
   });
 });
 
