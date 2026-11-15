@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { CEILING_PERIODS } from "./roleCardSections";
+import { ASK_PERIODS, askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
 
 describe("the commitment range (Rye, 14 Nov 2026)", () => {
   it("pays straight proportional to the full band: 50% of $13,000 is up to $6,500 (ruling 1)", () => {
@@ -77,6 +78,8 @@ describe("the price a contractor proposes (Rye, 14 Nov 2026)", () => {
     expect(readPayAsk({ kind: "amount", monthly: 500, per: "fortnight" })).toEqual({ ok: true, value: { kind: "amount", monthly: 500 } });
     expect(askPeriod({})).toBe("month");
     expect(askPeriod({ per: "year" })).toBe("year");
+    // The ask's periods are the ceiling's, written twice only to keep pay modules off seatSettings.
+    expect([...ASK_PERIODS]).toEqual([...CEILING_PERIODS]);
     expect([signedPct(8), signedPct(-15), signedPct(0)]).toEqual(["+8%", "-15%", "0%"]);
   });
 });

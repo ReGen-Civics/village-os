@@ -24,7 +24,13 @@
  *
  * Pure: no Node builtins, no clock.
  */
-import { CEILING_PERIODS, type CeilingPeriod } from "./roleCardSections";
+/**
+ * The periods an ask may be for: the same three a role's ceiling names (CEILING_PERIODS in shared/roleCardSections.ts,
+ * held equal by commitmentRange.test.ts). Written here, not imported: roleCardSections reaches shared/seatSettings.ts,
+ * and pay modules read this file (shared/seatSettings.boundary.test.ts).
+ */
+export const ASK_PERIODS = ["month", "moon", "year"] as const;
+export type AskPeriod = (typeof ASK_PERIODS)[number];
 
 export const COMMITMENT_TARGET_DEFAULT = 100;
 export const COMMITMENT_TARGET_MAX = 1000;
@@ -161,12 +167,12 @@ export type PayAsk = {
   /** The amount, for one `per`. The name is from when every ask was monthly; an ask with no `per` is a month. */
   monthly: number;
   /** The period the amount is for: the role's ceiling period when the form wrote it (QA F7, 15 Nov 2026). */
-  per?: CeilingPeriod;
+  per?: AskPeriod;
   why?: string;
 } | { kind: "negotiate"; why?: string };
 
 /** The period an amount ask is for: what it says, or a month for an ask written before asks said. */
-export const askPeriod = (ask: { per?: CeilingPeriod }): CeilingPeriod => ask.per ?? "month";
+export const askPeriod = (ask: { per?: AskPeriod }): AskPeriod => ask.per ?? "month";
 
 /** The difference a proposed price makes on the suggested one, as a whole percent: +8, -15, 0. Null when either is 0 or missing: nothing to compare. */
 export function priceDifferencePct(suggested: number, proposed: number): number | null {
@@ -187,7 +193,7 @@ export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate", ...why } };
   if (o.kind === "amount") {
     const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" ? digitsOf(o.monthly, 9) : NaN;
-    const per = (CEILING_PERIODS as readonly unknown[]).includes(o.per) ? { per: o.per as CeilingPeriod } : {};
+    const per = (ASK_PERIODS as readonly unknown[]).includes(o.per) ? { per: o.per as AskPeriod } : {};
     return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n, ...per, ...why } } : { ok: false, problem: RANGE_WORDS.askAmount };
   }
   return { ok: true, value: null };
