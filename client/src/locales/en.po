@@ -39,6 +39,11 @@ msgstr "A role shows the work it holds. Nothing here rates or compares people."
 msgid "Submitted work waiting for the human gate. Act in Admin → Quest Claims."
 msgstr "Submitted work waiting for the human gate. Act in Admin → Quest Claims."
 
+#: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
+msgctxt "companion welcome"
+msgid "Resume"
+msgstr "Resume"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
@@ -237,6 +242,11 @@ msgctxt "founding card piece heading"
 msgid "Who we hope for"
 msgstr "Who we hope for"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Enneagram"
+msgstr "Enneagram"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card field"
 #~ msgid "Task {n} for {roleName}"
@@ -284,6 +294,11 @@ msgstr "Ways in"
 msgctxt "price ask: the first month"
 msgid "Your first month starts lower and is tied to what you deliver."
 msgstr "Your first month starts lower and is tied to what you deliver."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Next: who you'll be"
+msgstr "Next: who you'll be"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "The village has not set its goals for this season yet. You can still propose: say in your aim what you would bring."
@@ -627,6 +642,11 @@ msgctxt "agent paths"
 msgid "Who confirms"
 msgstr "Who confirms"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Next ({count} added)"
+msgstr "Next ({count} added)"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal confirmed drawing"
 msgid "You and the village, met"
@@ -662,10 +682,20 @@ msgctxt "thanks composer: send in flight"
 msgid "Sending..."
 msgstr "Sending..."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Quiet"
+msgstr "Quiet"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Let's talk"
 msgstr "Let's talk"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Quiet: on"
+msgstr "Quiet: on"
 
 #: client/src/components/governance/GoalsList.tsx
 msgid "That is the most a proposal holds: {cap}."
@@ -1010,6 +1040,11 @@ msgctxt "module library, builder step number"
 msgid "Step {n}"
 msgstr "Step {n}"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Change all of this later"
+msgstr "Change all of this later"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{who} pledged {much}, returned when the quest was not funded"
 msgstr "{who} pledged {much}, returned when the quest was not funded"
@@ -1248,6 +1283,11 @@ msgctxt "proposed changes"
 msgid "Remove"
 msgstr "Remove"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Character"
+msgstr "Character"
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team: the domains a role holds"
 msgid "Domains they hold"
@@ -1334,6 +1374,11 @@ msgstr "Nobody holds the {careName} role today, so a private intake would reach 
 msgid "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 msgstr "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Get your Gene Keys"
+msgstr "Get your Gene Keys"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Counted by Voice, with each person's share capped. One member, one vote is shown beside it."
 msgstr "Counted by Voice, with each person's share capped. One member, one vote is shown beside it."
@@ -1346,6 +1391,11 @@ msgstr "Counted by Voice, with each person's share capped. One member, one vote 
 #~ msgctxt "open proposal card"
 #~ msgid "e.g. roughly 25 hours a week"
 #~ msgstr "e.g. roughly 25 hours a week"
+
+#: client/src/components/companionWelcome/welcomeKit.tsx
+msgctxt "companion welcome"
+msgid "Hear again"
+msgstr "Hear again"
 
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "voice field label: propose quest description"
@@ -1568,9 +1618,19 @@ msgstr "Send privately"
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
 msgstr "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Same personality as {cname}"
+msgstr "Same personality as {cname}"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Counted by one member, one vote. The count by Voice is shown beside it."
 msgstr "Counted by one member, one vote. The count by Voice is shown beside it."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Cancel"
+msgstr "Cancel"
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
@@ -2085,6 +2145,11 @@ msgctxt "canvas block button"
 msgid "Record a reading"
 msgstr "Record a reading"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Write only"
+msgstr "Write only"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "History"
@@ -2542,6 +2607,11 @@ msgstr "Add to mine"
 msgid "This disagreement stays in the round's record for everyone to see."
 msgstr "This disagreement stays in the round's record for everyone to see."
 
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "Send"
+msgstr "Send"
+
 #. placeholder {0}: money(value.monthly)
 #. placeholder {1}: suggested ? ` (${signedPct(priceDifferencePct(suggested, value.monthly) ?? 0)} on the suggestion)` : ""
 #: client/src/components/governance/PriceAsk.tsx
@@ -2842,6 +2912,11 @@ msgstr "Proposed by the member who keeps it. The circle decides by consent, as f
 msgid "Nobody has backed this yet."
 msgstr "Nobody has backed this yet."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Add lens"
+msgstr "Add lens"
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "the Sense frame of a canvas block"
 msgid "Sense: readings of {name}"
@@ -2984,6 +3059,13 @@ msgctxt "the commons: fold the list"
 msgid "Show fewer goals"
 msgstr "Show fewer goals"
 
+#. placeholder {0}: d.low
+#. placeholder {1}: d.high
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "{0} to {1}"
+msgstr "{0} to {1}"
+
 #. placeholder {0}: i + 1
 #. placeholder {1}: pieces.length
 #: client/src/components/roleCard/RolePieces.tsx
@@ -3072,6 +3154,11 @@ msgctxt "connector setup panel, title"
 msgid "Add the village connector to your Claude"
 msgstr "Add the village connector to your Claude"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "How do you like to be helped?"
+msgstr "How do you like to be helped?"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Set"
@@ -3156,6 +3243,13 @@ msgstr "No date yet. Agree one when you talk."
 #: client/src/pages/ExitPolicy.tsx
 msgid "What happened, in your own words…"
 msgstr "What happened, in your own words…"
+
+#. placeholder {0}: RASHI[moon.rashi]
+#. placeholder {1}: NAKSHATRA[moon.nakshatra]
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Moon in {0}, {1}"
+msgstr "Moon in {0}, {1}"
 
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "my notebook documents"
@@ -3596,6 +3690,12 @@ msgctxt "role application: link from the roles step to the role picker"
 msgid "Pick more roles"
 msgstr "Pick more roles"
 
+#. placeholder {0}: i + 1
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Type {0}, {n}"
+msgstr "Type {0}, {n}"
+
 #: client/src/components/governance/TermsOnOfferField.tsx
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "What you would like to talk about in the terms"
@@ -3757,6 +3857,11 @@ msgstr "Building the pack"
 msgid "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 msgstr "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Four-letter type (optional)"
+msgstr "Four-letter type (optional)"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "For example: the two of us and the care holder"
 msgstr "For example: the two of us and the care holder"
@@ -3853,6 +3958,11 @@ msgstr "Fireflies gather at a circle's hearth when people meet there. A light sh
 msgctxt "open proposal attachments"
 msgid "Remove {0}"
 msgstr "Remove {0}"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Speak aloud"
+msgstr "Speak aloud"
 
 #: client/src/components/journey/TestRun.tsx
 msgctxt "test run section toggle"
@@ -4110,6 +4220,11 @@ msgstr "Own figure"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose for this role"
 #~ msgstr "Propose for this role"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Personal companion"
+msgstr "Personal companion"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, applies the proposed change"
@@ -4521,6 +4636,11 @@ msgstr "How to switch it off"
 #~ msgid "Start with the open roles and what each one asks of you."
 #~ msgstr "Start with the open roles and what each one asks of you."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Time zone where you were born"
+msgstr "Time zone where you were born"
+
 #. placeholder {0}: season.name
 #. placeholder {1}: season.timezone
 #: client/src/components/canvas/CanvasSeason.tsx
@@ -4661,6 +4781,16 @@ msgstr "You suggested 1 change to the role. If it changes the work, say how it c
 msgid "One of your numbers differs between sources. The Treasurer has been shown it."
 msgstr "One of your numbers differs between sources. The Treasurer has been shown it."
 
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "A name…"
+msgstr "A name…"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "What {companionName} will do with it"
+msgstr "What {companionName} will do with it"
+
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Reading the village's pay settings…"
@@ -4785,6 +4915,11 @@ msgstr "Not now"
 #: client/src/components/journey/TestRun.tsx
 msgid "{0} things would not work as set"
 msgstr "{0} things would not work as set"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "INFP"
+msgstr "INFP"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -4971,6 +5106,11 @@ msgstr "What draws you here"
 msgctxt "admin section name"
 msgid "Org chart"
 msgstr "Org chart"
+
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "An example moon:"
+msgstr "An example moon:"
 
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Work out this role's pay with the valuation engine"
@@ -5163,6 +5303,13 @@ msgstr "Your journal goes to {outside} only once you choose {outside}."
 msgctxt "workbook block page, the quoted canvas question"
 msgid "The canvas asks"
 msgstr "The canvas asks"
+
+#. placeholder {0}: gk.profile
+#. placeholder {1}: gk.hdType
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "I'll use the reading you already made: <0>{0}</0>, {1}."
+msgstr "I'll use the reading you already made: <0>{0}</0>, {1}."
 
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -5436,6 +5583,16 @@ msgstr "Choose a .json file"
 msgid "Print this workbook to fill in by hand, or save it as a Markdown file to fill in on a screen. Both happen in your browser, and nothing is sent anywhere."
 msgstr "Print this workbook to fill in by hand, or save it as a Markdown file to fill in on a screen. Both happen in your browser, and nothing is sent anywhere."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "<0>Private to you.</0> {LENS_PRIVACY} The AI that writes your companions' words gets only the note above, and only when you talk through this village's own guide."
+msgstr "<0>Private to you.</0> {LENS_PRIVACY} The AI that writes your companions' words gets only the note above, and only when you talk through this village's own guide."
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Worked out on this device. Your birth date, time and place are never sent or kept; only the Moon's sign and nakshatra are."
+msgstr "Worked out on this device. Your birth date, time and place are never sent or kept; only the Moon's sign and nakshatra are."
+
 #: client/src/components/today/FirstFourteenDays.tsx
 msgctxt "first fourteen days strip, tick a step"
 msgid "Mark done"
@@ -5554,6 +5711,11 @@ msgstr "{0} things to look at before you continue:"
 msgctxt "coming up, i'll be there, how many said so"
 msgid "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
 msgstr "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
+
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "Got it"
+msgstr "Got it"
 
 #: client/src/components/roots/RootPicker.tsx
 msgctxt "root picker coverage summary"
@@ -5699,6 +5861,11 @@ msgstr "This village's records: {here}."
 #: client/src/pages/RoleDraft.tsx
 msgid "Your role starts on the first day of next season."
 msgstr "Your role starts on the first day of next season."
+
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "Goals guide. Tasks show the truth."
+msgstr "Goals guide. Tasks show the truth."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: offline"
@@ -5921,6 +6088,11 @@ msgctxt "canvas block picker, empty choice"
 msgid "Choose a block"
 msgstr "Choose a block"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Night owl. Short messages. Love metaphors."
+msgstr "Night owl. Short messages. Love metaphors."
+
 #: client/src/components/calendar/MoonTurnings.tsx
 msgctxt "calendar turnings"
 msgid "New moon, the next moon opens"
@@ -5950,6 +6122,11 @@ msgstr "Languages"
 msgctxt "proposed changes"
 msgid "{0} of {1} selected"
 msgstr "{0} of {1} selected"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "I'll speak aloud with your browser's own voice."
+msgstr "I'll speak aloud with your browser's own voice."
 
 #. placeholder {0}: money(p.s.expected.totalMinor)
 #: client/src/components/valuation/PricingDesk.tsx
@@ -6062,6 +6239,11 @@ msgstr "{0} listed, {1} unlisted"
 #~ msgctxt "founding team list"
 #~ msgid "The founding roles"
 #~ msgstr "The founding roles"
+
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "End of Moon, how it adds up"
+msgstr "End of Moon, how it adds up"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the reason for a change request"
@@ -6431,6 +6613,11 @@ msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} waiting"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Start the tour"
+msgstr "Start the tour"
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "People and roles"
@@ -6480,6 +6667,11 @@ msgctxt "role access state"
 msgid "Given"
 msgstr "Given"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid ". I speak through <0>{engineName}</0>, the guide you chose (change it on your guide card)."
+msgstr ". I speak through <0>{engineName}</0>, the guide you chose (change it on your guide card)."
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Asked for a co-sign. Another admin replaces the key from this card."
@@ -6523,6 +6715,16 @@ msgstr "added:"
 msgctxt "role draft discover"
 msgid "Asking the guide…"
 msgstr "Asking the guide…"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Say it, type it, or pick one:"
+msgstr "Say it, type it, or pick one:"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "A new role later brings a new friend"
+msgstr "A new role later brings a new friend"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "who answered a note"
@@ -6771,6 +6973,11 @@ msgctxt "agent proposal"
 msgid "Why it suits the role"
 msgstr "Why it suits the role"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Voice:"
+msgstr "Voice:"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Note"
@@ -7007,6 +7214,11 @@ msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
 msgstr "Read the quest above, then start with the first thing you can do today"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Work out my Moon"
+msgstr "Work out my Moon"
+
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgctxt "button that switches to the Adopt frame"
 msgid "Go to Adopt"
@@ -7025,6 +7237,11 @@ msgstr "Delete this document"
 msgctxt "sera answers"
 msgid "Not yet"
 msgstr "Not yet"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Birth time (if you know it)"
+msgstr "Birth time (if you know it)"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application terms"
@@ -7207,6 +7424,11 @@ msgctxt "aligned page, signed out"
 msgid "Sign in"
 msgstr "Sign in"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "I'll only write."
+msgstr "I'll only write."
+
 #. placeholder {0}: s.name
 #: client/src/components/circleCard/Hearth.tsx
 msgctxt "circle hearth, a stone"
@@ -7328,6 +7550,11 @@ msgstr "{count, plural, one {# open quest grows {text}} other {# open quests gro
 msgid "What each of these holds is in the list above, so none of it is offered here a second time."
 msgstr "What each of these holds is in the list above, so none of it is offered here a second time."
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Find your lines first, then come back here."
+msgstr "Find your lines first, then come back here."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "label of a practice's name"
 msgid "The practice"
@@ -7436,6 +7663,12 @@ msgstr "Choose the root you grow from"
 #~ msgctxt "open proposal side by side"
 #~ msgid "Time: roughly {time}"
 #~ msgstr "Time: roughly {time}"
+
+#. placeholder {0}: RASHI[moon.rashi]
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Moon in {0} (add your birth time for your nakshatra)"
+msgstr "Moon in {0} (add your birth time for your nakshatra)"
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page goals"
@@ -7990,6 +8223,11 @@ msgctxt "roles page season"
 msgid "This season"
 msgstr "This season"
 
+#: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
+msgctxt "companion welcome"
+msgid "Pick up your welcome"
+msgstr "Pick up your welcome"
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
 msgstr "Propose a change to what closing means"
@@ -8446,6 +8684,11 @@ msgstr "{reads} read, {writes} write"
 msgid "When two of us disagree"
 msgstr "When two of us disagree"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "How I like to be helped"
+msgstr "How I like to be helped"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "Share a concern"
@@ -8677,6 +8920,11 @@ msgstr "How roles are going"
 msgid "{changes, plural, one {Added. {title} has # change.} other {Added. {title} has # changes.}}"
 msgstr "{changes, plural, one {Added. {title} has # change.} other {Added. {title} has # changes.}}"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Welcome, {firstName}."
+msgstr "Welcome, {firstName}."
+
 #. placeholder {0}: asksFor(unplaced)
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{0, plural, one {# ask waiting} other {# asks waiting}}"
@@ -8710,6 +8958,11 @@ msgctxt "open work filter row"
 msgid "Where it happens"
 msgstr "Where it happens"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Replay the tour"
+msgstr "Replay the tour"
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: the floating decision row on a phone"
 msgid "Something waits before you can adopt. It is in the card further down."
@@ -8734,6 +8987,11 @@ msgstr "Show"
 msgctxt "proposed changes"
 msgid "Proposed changes: review, edit and accept what agents propose"
 msgstr "Proposed changes: review, edit and accept what agents propose"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Not sure"
+msgstr "Not sure"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "button that removes a practice"
@@ -8804,10 +9062,20 @@ msgctxt "proposal goals list"
 msgid "Remove goal {n}"
 msgstr "Remove goal {n}"
 
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "Everything you do lands in your tasks, even the ones nobody planned. At End of Moon we add it all up, and if it's far from what you agreed, your pay follows what you actually delivered."
+msgstr "Everything you do lands in your tasks, even the ones nobody planned. At End of Moon we add it all up, and if it's far from what you agreed, your pay follows what you actually delivered."
+
 #: client/src/components/roots/RootPicker.tsx
 msgctxt "root picker legend"
 msgid "Roots it grows from"
 msgstr "Roots it grows from"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Go to my profile"
+msgstr "Go to my profile"
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft character count"
@@ -9418,10 +9686,20 @@ msgstr "No start date given"
 #~ msgid "Add a quest"
 #~ msgstr "Add a quest"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Profile tour"
+msgstr "Profile tour"
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "link to the page where a setting is set"
 msgid "Where it is set"
 msgstr "Where it is set"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "{cname} is yours."
+msgstr "{cname} is yours."
 
 #. placeholder {0}: doc.by?.name || "a member"
 #. placeholder {1}: doc.at ? new Date(doc.at).toLocaleDateString() : ""
@@ -10154,6 +10432,11 @@ msgctxt "button that adopts the conflict agreement"
 msgid "Adopt it"
 msgstr "Adopt it"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Slide my Big Five too"
+msgstr "Slide my Big Five too"
+
 #: client/src/components/admin/RestorativeInAgreement.tsx
 msgid "Change it in the agreement"
 msgstr "Change it in the agreement"
@@ -10342,6 +10625,11 @@ msgstr "Circles"
 msgid "The canvas radar, one axis per block"
 msgstr "The canvas radar, one axis per block"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Next"
+msgstr "Next"
+
 #: client/src/components/gratitude/ThreadWeb.tsx
 msgctxt "thanks web: what the drawing shows, read aloud"
 msgid "This moon's threads between people who thanked each other, faces in alphabetical order"
@@ -10367,6 +10655,11 @@ msgstr "Open the desk as its own page, for a Treasurer who is not an admin"
 #: client/src/components/canvas/DecisionMatrix.tsx
 msgid "For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this half in itself."
 msgstr "For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this half in itself."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Every member gets a companion. Yours is still an egg. Let's find out who's inside."
+msgstr "Every member gets a companion. Yours is still an egg. Let's find out who's inside."
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The Governance Canvas asks a group twelve questions about how it works together. Under each question is this village's answer in one public line. The lines name roles, never people."
@@ -11224,6 +11517,11 @@ msgctxt "the value a member suggests"
 msgid "Your value"
 msgstr "Your value"
 
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Birth date"
+msgstr "Birth date"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "label of a suggested edit's reason"
 msgid "Why (optional)"
@@ -11460,6 +11758,11 @@ msgstr "In Claude, open Settings, then Connectors, then Add custom connector."
 msgid "<0>The canvas's own article<1/></0>, where its authors describe the canvas."
 msgstr "<0>The canvas's own article<1/></0>, where its authors describe the canvas."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Meet your companion"
+msgstr "Meet your companion"
+
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
 msgid "Time zone"
@@ -11527,6 +11830,11 @@ msgctxt "circle hearth, linked circles"
 msgid "Linked circles"
 msgstr "Linked circles"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Not now"
+msgstr "Not now"
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, none, the one door"
 msgid "Suggest a quest"
@@ -11572,6 +11880,11 @@ msgstr "pay is set by a person"
 msgctxt "role pay"
 msgid "Your figure"
 msgstr "Your figure"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Delete this lens"
+msgstr "Delete this lens"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
@@ -12236,6 +12549,11 @@ msgstr "The Governance Canvas, on Paper"
 msgid "Consequences, and how to appeal"
 msgstr "Consequences, and how to appeal"
 
+#: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
+msgctxt "companion welcome"
+msgid "{who} is {pct}% hatched · about 2 minutes left"
+msgstr "{who} is {pct}% hatched · about 2 minutes left"
+
 #. placeholder {0}: signedPct(diff)
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup: the difference"
@@ -12516,6 +12834,12 @@ msgctxt "notebook add button, busy"
 msgid "Adding"
 msgstr "Adding"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Done"
+msgstr "Done"
+
 #: client/src/pages/Reset.tsx
 msgid "Taking you home now. You may need to sign in again."
 msgstr "Taking you home now. You may need to sign in again."
@@ -12575,6 +12899,11 @@ msgstr "Decided lately"
 msgctxt "sera answers"
 msgid "Keep or untick"
 msgstr "Keep or untick"
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Back"
+msgstr "Back"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Someone who reaches a contact outside the village hears back within {replyHours, plural, one {# hour} other {# hours}}."
@@ -13103,6 +13432,11 @@ msgstr "Required: the role needs all of it"
 msgid "If it is adopted, a formal invitation to make your account comes to your email."
 msgstr "If it is adopted, a formal invitation to make your account comes to your email."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Its own personality"
+msgstr "Its own personality"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Nothing here is live. Approve runs the change through its own page as you, so it only works where you hold the power. A proposal lapses after seven days."
 msgstr "Nothing here is live. Approve runs the change through its own page as you, so it only works where you hold the power. A proposal lapses after seven days."
@@ -13152,6 +13486,13 @@ msgctxt "coverage column"
 msgid "Roots"
 msgstr "Roots"
 
+#. placeholder {0}: stop + 1
+#. placeholder {1}: stops.length
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Section {0} of {1}"
+msgstr "Section {0} of {1}"
+
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgctxt "valuation receipt"
 msgid "Narrow range"
@@ -13185,6 +13526,11 @@ msgstr "Someone here renamed it on {at}."
 msgctxt "about you"
 msgid "I have read this and I agree to the background check."
 msgstr "I have read this and I agree to the background check."
+
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "The hatchery"
+msgstr "The hatchery"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgid "Follow where your proposal is"
@@ -13507,6 +13853,11 @@ msgctxt "drafted letters"
 msgid "Drafted letters"
 msgstr "Drafted letters"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Skip for now"
+msgstr "Skip for now"
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "founding application next"
 msgid "Our review: we read every application, and write to you by {by}, with an invitation to the conversations or with our thanks."
@@ -13688,6 +14039,11 @@ msgstr "First reply"
 #: client/src/components/governance/TermsOnOfferField.tsx
 msgid "Everything else on the role card's terms"
 msgstr "Everything else on the role card's terms"
+
+#: client/src/components/companionWelcome/WelcomeParts.tsx
+msgctxt "companion welcome"
+msgid "A name for your companion"
+msgstr "A name for your companion"
 
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "These steps are still a draft. The community has not yet adopted its exit policy."
@@ -13957,6 +14313,11 @@ msgstr "That suggestion was not kept."
 msgctxt "approval inbox"
 msgid "Put it back"
 msgstr "Put it back"
+
+#: client/src/components/companionWelcome/LensSheet.tsx
+msgctxt "companion welcome"
+msgid "Yes, use this to shape how {companionName} talks to me."
+msgstr "Yes, use this to shape how {companionName} talks to me."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "These are still the platform's starting steps. Write them in the village's own words before adopting them."
@@ -14638,6 +14999,11 @@ msgstr "History ({0})"
 msgid "That did not reach the server, so nothing was saved."
 msgstr "That did not reach the server, so nothing was saved."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Open the hatchery"
+msgstr "Open the hatchery"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "I know, and I want to adopt anyway"
 msgstr "I know, and I want to adopt anyway"
@@ -14664,6 +15030,12 @@ msgstr "Pay settings adopted"
 msgctxt "site header"
 msgid "Skip to content"
 msgstr "Skip to content"
+
+#. placeholder {0}: r.scopeLine
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "<0>{0}.</0> Give it a name."
+msgstr "<0>{0}.</0> Give it a name."
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page archetypes"
@@ -14724,6 +15096,11 @@ msgstr "An AI may help draft our replies to you; a person always reads and sends
 msgctxt "admin helper, declines the proposed change"
 msgid "Not now"
 msgstr "Not now"
+
+#: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
+msgctxt "companion welcome"
+msgid "Your companion"
+msgstr "Your companion"
 
 #: client/src/components/guide/GuideChoiceCard.tsx
 msgctxt "profile: guide choice explainer"
@@ -14986,6 +15363,11 @@ msgstr "You might pick this if you are drawn to:"
 msgid "We changed some of the terms"
 msgstr "We changed some of the terms"
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Companion<0/>bonded"
+msgstr "Companion<0/>bonded"
+
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
 msgid "That did not save. Try again."
@@ -15112,6 +15494,12 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "The role suggests"
 msgstr "The role suggests"
 
+#. placeholder {0}: r.scopeLine
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Name for the {0}"
+msgstr "Name for the {0}"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer."
@@ -15174,6 +15562,11 @@ msgstr "The new price was not taken."
 msgid "The village has not adopted an agreement yet."
 msgstr "The village has not adopted an agreement yet."
 
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "your guide"
+msgstr "your guide"
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "formation: someone holds this role"
 msgid "Filled"
@@ -15189,6 +15582,13 @@ msgstr "Your own figure was {0}."
 msgctxt "reviewer's terms panel for a proposal"
 msgid "They chose {0}%"
 msgstr "They chose {0}%"
+
+#. placeholder {0}: beat + 1
+#. placeholder {1}: WELCOME_BEATS.length
+#: client/src/components/companionWelcome/CompanionWelcome.tsx
+msgctxt "companion welcome"
+msgid "Step {0} of {1}"
+msgstr "Step {0} of {1}"
 
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
