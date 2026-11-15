@@ -1270,6 +1270,10 @@ msgstr "Offer your gifts"
 msgid "See the places and their open roles on the Living Map"
 msgstr "See the places and their open roles on the Living Map"
 
+#: client/src/pages/Reset.tsx
+msgid "You're still signed in."
+msgstr "You're still signed in."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 #~ msgstr "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
@@ -4451,6 +4455,11 @@ msgctxt "founding application choose"
 msgid "Join the founding team"
 msgstr "Join the founding team"
 
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, roles after the founding team"
+msgid "sign up for our newsletter"
+msgstr "sign up for our newsletter"
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "It was downloaded on {when} UTC, once, as the vote allowed. Another copy needs another vote."
 msgstr "It was downloaded on {when} UTC, once, as the vote allowed. Another copy needs another vote."
@@ -5314,6 +5323,11 @@ msgstr "Propose a change"
 msgctxt "funding rounds"
 msgid "Withdraw it"
 msgstr "Withdraw it"
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, roles after the founding team"
+msgid "join a community call"
+msgstr "join a community call"
 
 #: client/src/components/characters/RolesOpenNow.tsx
 msgctxt "character card, open roles tagged for no character"
@@ -11533,6 +11547,11 @@ msgstr "Time zone: {tz}"
 msgid "Write the words you would like in place of the current ones, and why. They are frozen into the document when the vote opens, so they cannot change while people are voting."
 msgstr "Write the words you would like in place of the current ones, and why. They are frozen into the document when the vote opens, so they cannot change while people are voting."
 
+#: client/src/pages/Reset.tsx
+msgctxt "fresh start page: sign out on this device too"
+msgid "Also sign me out"
+msgstr "Also sign me out"
+
 #: client/src/pages/FundingRounds.tsx
 msgid "No ideas yet. The first one can be yours."
 msgstr "No ideas yet. The first one can be yours."
@@ -11904,6 +11923,11 @@ msgstr "Renew all filed roles"
 msgctxt "circle hearth, linked circles"
 msgid "Linked circles"
 msgstr "Linked circles"
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, roles after the founding team"
+msgid "Hear first about new opportunities:"
+msgstr "Hear first about new opportunities:"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -12916,8 +12940,8 @@ msgid "Done"
 msgstr "Done"
 
 #: client/src/pages/Reset.tsx
-msgid "Taking you home now. You may need to sign in again."
-msgstr "Taking you home now. You may need to sign in again."
+#~ msgid "Taking you home now. You may need to sign in again."
+#~ msgstr "Taking you home now. You may need to sign in again."
 
 #. placeholder {0}: ceilingAtWords(ceiling, value.commitmentPct)
 #: client/src/components/governance/TermsEight.tsx
@@ -13986,6 +14010,11 @@ msgstr "Their role here, such as cohort ombuds"
 #: client/src/components/Layout.tsx
 #~ msgid "Your account, {firstName}"
 #~ msgstr "Your account, {firstName}"
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, hear first: join a call and sign up"
+msgid "and"
+msgstr "and"
 
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
