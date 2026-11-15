@@ -47,7 +47,9 @@ const PAYERS = {
 const SETTINGS = { hostCountry: { code: "XX", name: "Hostland" }, pilotAck: { text: "This is a pilot.", version: "v1" }, taxForms: [], taxFormRoutes: [], holds: [] };
 const ATTEST = { workCountries: ["US"], daysInHostCountry: 0, statusUnchanged: true, servedAbroad: null, visitorEntryWork: false };
 const HOLDERS: Record<string, string[]> = { "moon.approve": ["m-ops"], "cash.pay": ["m-fin", "m-treas"] };
-const PAY = JSON.stringify({ v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 100000, per: "moon" } });
+// Each agreement is priced at 50%, the member gives 50% in all (`split` below): a 60/40 split gives the water
+// role 30% of them against its 50%, so it pays 60% of its terms. No double cut (Rye, 15 Nov 2026).
+const PAY = JSON.stringify({ v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 100000, per: "moon" }, clocks: { commitmentPct: 50 } });
 
 describe.skipIf(!configured)("pay scaled by the split, against a real schema", () => {
   let db: TestDb;
@@ -170,7 +172,7 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
     // The member sees their scaled pay per role before sending.
     const d = await draft();
     expect(amounts(d)).toEqual([["Garden keeper", 40000], ["Water keeper", 60000]]);
-    expect(d.lines.find((l: any) => l.roleIds.includes("r-water")).split).toMatchObject({ sharePct: 60, baseMinor: 100000, scaledMinor: 60000, confirmedAt: null });
+    expect(d.lines.find((l: any) => l.roleIds.includes("r-water")).split).toMatchObject({ sharePct: 60, givenPct: 30, pricedPct: 50, baseMinor: 100000, scaledMinor: 60000, confirmedAt: null });
 
     const sent = await sendAll();
     expect(sent.totalMinor).toBe(100000);

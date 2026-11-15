@@ -66,6 +66,14 @@ export function SplitBreakdown({ split, currency }: { split: LineSplit; currency
         <dd className="m-0 text-right text-foreground"><Amount minor={split.baseMinor} currency={currency} /></dd>
         <dt>{SPLIT_PAY_WORDS.share}</dt>
         <dd className="m-0 text-right text-foreground">{split.sharePct}%</dd>
+        {split.givenPct !== undefined && split.pricedPct !== undefined ? (
+          <>
+            <dt>{SPLIT_PAY_WORDS.given}</dt>
+            <dd className="m-0 text-right text-foreground">{split.givenPct}%</dd>
+            <dt>{SPLIT_PAY_WORDS.priced}</dt>
+            <dd className="m-0 text-right text-foreground">{split.pricedPct}%</dd>
+          </>
+        ) : null}
         <dt>{SPLIT_PAY_WORDS.scaled}</dt>
         <dd className="m-0 text-right font-semibold text-foreground"><Amount minor={split.scaledMinor} currency={currency} /></dd>
       </dl>

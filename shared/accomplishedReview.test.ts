@@ -130,7 +130,7 @@ describe("a Treasurer's proposed amount", () => {
   });
 
   it("sits on top of the split: the base is the scaled amount", () => {
-    const split = scaleBySplit(LINES, [{ roleId: "r-water", share: 50 }, { roleId: "r-garden", share: 50 }], ["r-water", "r-garden"]);
+    const split = scaleBySplit(LINES, [{ roleId: "r-water", share: 50 }, { roleId: "r-garden", share: 50 }], ["r-water", "r-garden"], { totalPct: 100, pricedPct: { "app-water": 100, "app-garden": 100 } });
     const out = applyAdjusts(split, { "app-water": PROPOSAL });
     expect(out.find((l) => l.key === "app-water")?.adjust?.baseMinor).toBe(40000);
   });
