@@ -50,7 +50,7 @@ export default function BuildProgress() {
           <h2 className="font-display text-3xl md:text-4xl font-bold text-teal-deep mb-3">
             What's Built. What's Coming.
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-teal-deep max-w-2xl mx-auto">
             Real-time milestones from the team. Updated as the village comes online.
           </p>
         </div>

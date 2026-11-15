@@ -304,3 +304,25 @@ describe("the bare mark's own box reaches 44px when asked (rehearsal, /quests at
     expect(button.className).not.toMatch(/\bsize-11\b/);
   });
 });
+
+describe("the focus ring follows the theme (a11y sweep P2-7)", () => {
+  // `ring-teal-deep/60` was the brand tone at 60%, near invisible on the night
+  // pages. `ring-ring` reads --ring, which `.sheet-night` sets to a gold that
+  // clears 7:1 there and the light theme keeps at its own value.
+  it("draws every trigger's ring, and the bare mark's, in --ring", () => {
+    render(
+      <p>
+        <InfoTip tip={TIP}>a value</InfoTip>
+        <InfoTip tip={TIP} label="bare" />
+        <InfoTip tip={TIP} label="boxed" tapBox />
+      </p>,
+    );
+    const worded = screen.getByRole("button", { name: "a value" });
+    const bare = screen.getByRole("button", { name: "bare" });
+    const mark = screen.getByRole("button", { name: "boxed" }).querySelector("span")!;
+    for (const el of [worded, bare, mark]) {
+      expect(el.className).toMatch(/ring-ring\b/);
+      expect(el.className).not.toMatch(/ring-teal-deep/);
+    }
+  });
+});

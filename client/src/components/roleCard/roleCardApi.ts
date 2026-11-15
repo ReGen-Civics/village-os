@@ -44,6 +44,12 @@ function fillOf(v: unknown): Record<string, RoleFill> {
   for (const [id, f] of Object.entries(v as Record<string, any>)) {
     const held = Number(f?.heldPct);
     const target = Number(f?.targetPct);
+    // Covered or open only, when the share would be one named person's commitment (security sweep L3).
+    if (f?.coarse === true && Number.isFinite(target) && target > 0) {
+      const covered = f.covered === true;
+      out[id] = { heldPct: covered ? target : 0, targetPct: target, openPct: covered ? 0 : target, covered, coarse: true };
+      continue;
+    }
     if (Number.isFinite(held) && held >= 0 && Number.isFinite(target) && target > 0) out[id] = { heldPct: held, targetPct: target, openPct: Math.max(0, target - held), covered: held >= target };
   }
   return out;

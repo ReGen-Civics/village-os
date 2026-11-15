@@ -168,6 +168,34 @@ describe("rollChangelog: the entry", () => {
     expect(rolled.slice(release, older)).toContain("timezone is UTC");
   });
 
+  it("keeps a standing note above the entries in Unreleased, and out of the release", () => {
+    // The shape main carried from 1.3.0 on: the intro, then a note held back
+    // for a later release, then the entries. 1.3.1 to 1.3.6 each had the note
+    // rolled into the release and taken out again by hand.
+    const held = CHANGELOG.replace(
+      "\n- **The platform's timezone is UTC.**",
+      "\nTo word with Legal for the next release, left out on purpose: the invoice half.\n\n- **The platform's timezone is UTC.**",
+    );
+    const out = rollChangelog(held, { version: "1.3.0", date: "2026-11-07", prs: [], migrations: [] });
+    const release = out.indexOf("## 1.3.0 (2026-11-07)");
+    const unreleasedBody = out.slice(out.indexOf("## Unreleased"), release);
+    expect(unreleasedBody).toContain("Work on `main` that has not been published");
+    expect(unreleasedBody).toContain("left out on purpose: the invoice half");
+    expect(unreleasedBody).not.toContain("timezone is UTC");
+    expect(out.slice(release)).not.toContain("left out on purpose");
+    expect(out.slice(release)).toContain("timezone is UTC");
+  });
+
+  it("moves a plain paragraph that follows an entry along with the entries", () => {
+    const tail = CHANGELOG.replace(
+      "A village that never chose moves.\n",
+      "A village that never chose moves.\n\nThat also changes the digest time.\n",
+    );
+    const out = rollChangelog(tail, { version: "1.3.0", date: "2026-11-07", prs: [], migrations: [] });
+    const release = out.indexOf("## 1.3.0 (2026-11-07)");
+    expect(out.slice(release)).toContain("That also changes the digest time.");
+  });
+
   it("names every migration under Does it touch your data", () => {
     expect(rolled).toContain("### Does it touch your data");
     expect(rolled).toContain("`0301_add_thing.sql`");

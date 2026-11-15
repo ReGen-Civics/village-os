@@ -12,9 +12,14 @@ import { roleFill, type RoleFill } from "../../shared/commitmentRange";
 import { readApplications } from "../repos/seatApplications";
 import { listOrgAssignments } from "./orgChart";
 
-export async function roleFillsFor(pool: Pool, roles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>): Promise<Map<string, RoleFill>> {
+export async function roleFillsFor(
+  pool: Pool,
+  roles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>,
+  /** Leave this account's own seatings out: the fill WITHOUT them, for "with this application" (QA F7). */
+  except?: string | null,
+): Promise<Map<string, RoleFill>> {
   const ids = new Set(roles.map((r) => r.id));
-  const seatings = (await listOrgAssignments(pool)).filter((s) => ids.has(s.orgRoleId) && !s.isExample && !s.isAgent && !s.endedAt && !s.lapsed);
+  const seatings = (await listOrgAssignments(pool)).filter((s) => ids.has(s.orgRoleId) && !s.isExample && !s.isAgent && !s.endedAt && !s.lapsed && !(except && s.userId === except));
   const apps = await readApplications(pool, Array.from(new Set(seatings.map((s) => s.applicationId).filter((x): x is string => !!x))));
   const shareOf = new Map(apps.map((a) => [a.id, (a.settings as { clocks?: { commitmentPct?: unknown } } | null)?.clocks?.commitmentPct]));
   const out = new Map<string, RoleFill>();

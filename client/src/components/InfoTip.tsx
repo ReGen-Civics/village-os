@@ -140,7 +140,7 @@ export const BARE_TAP_BOX =
   "group relative inline-flex items-center justify-center align-middle size-11 -my-3.5 -ml-2.5 -mr-3.5 rounded-full cursor-help select-none focus-visible:outline-none";
 /** The 16px circle drawn inside BARE_TAP_BOX. */
 const BARE_TAP_MARK =
-  "inline-flex items-center justify-center w-4 h-4 rounded-full border border-current/40 text-[10px] leading-none opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-teal-deep/60";
+  "inline-flex items-center justify-center w-4 h-4 rounded-full border border-current/40 text-[10px] leading-none opacity-70 group-hover:opacity-100 group-focus-visible:opacity-100 group-focus-visible:ring-2 group-focus-visible:ring-ring";
 
 export default function InfoTip({ tip, children, label, className = "", triggerClassName = "", tapBox = false }: InfoTipProps) {
   const tap = triggerClassName || WORDED_TAP;
@@ -264,8 +264,8 @@ export default function InfoTip({ tip, children, label, className = "", triggerC
             // design and is in twenty-six files, so growing the VISUAL would
             // reflow every one of them; an invisible inset pseudo-element
             // takes the hit area to 28 by 28 and moves no layout anywhere.
-            ? "relative inline-flex items-center justify-center align-middle w-4 h-4 ml-1 rounded-full border border-current/40 text-[10px] leading-none opacity-70 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep/60 cursor-help select-none before:absolute before:-inset-1.5 before:content-['']"
-            : `underline decoration-dotted decoration-1 underline-offset-4 cursor-help rounded-sm max-w-full text-left [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep/60 ${tap}`
+            ? "relative inline-flex items-center justify-center align-middle w-4 h-4 ml-1 rounded-full border border-current/40 text-[10px] leading-none opacity-70 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-help select-none before:absolute before:-inset-1.5 before:content-['']"
+            : `underline decoration-dotted decoration-1 underline-offset-4 cursor-help rounded-sm max-w-full text-left [overflow-wrap:anywhere] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${tap}`
         }
       >
         {bare ? <span aria-hidden="true" className={tapBox ? BARE_TAP_MARK : undefined}>?</span> : children}

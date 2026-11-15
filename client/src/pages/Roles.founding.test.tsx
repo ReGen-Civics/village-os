@@ -529,6 +529,15 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     expect(within(section).getByTestId("formation").querySelectorAll("[data-fill-meter]")).toHaveLength(2);
   });
 
+  it("a role one named person holds says covered or open, never their share (security sweep L3)", async () => {
+    founding = { ...founding, fill: { finance: { coarse: true, targetPct: 100, covered: false }, land: { coarse: true, targetPct: 100, covered: true } } as any };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    await waitFor(() => expect(Array.from(sheet.querySelectorAll("[data-fill-meter]")).map((m) => m.textContent)).toEqual(["Covered", "Held, still open"]));
+    expect(sheet.textContent).not.toMatch(/\d+% held/);
+  });
+
   it("names no holder to a reader the village shows no names to (control: the role still shows, filled)", async () => {
     org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [] }));
     renderRoles();
