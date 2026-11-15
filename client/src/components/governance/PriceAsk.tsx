@@ -12,7 +12,7 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -62,17 +62,18 @@ export default function PriceAsk({
     const withWhy = w ? { why: w } : {};
     if (choice === "suggested") onChange(null);
     else if (choice === "negotiate") onChange({ kind: "negotiate", ...withWhy });
-    else if (typed > 0) onChange({ kind: "amount", monthly: typed, ...withWhy });
+    else if (typed > 0) onChange({ kind: "amount", monthly: typed, per, ...withWhy });
     setOpen(false);
   };
 
+  const savedDiff = value?.kind === "amount" && suggested && askPeriod(value) === per ? priceDifferencePct(suggested, value.monthly) : null;
   const summary = !value
     ? suggested
       ? t({ message: "You'll take the suggested price.", context: "price ask summary" })
       : null
     : value.kind === "negotiate"
       ? t({ message: "Negotiate on the first call if chosen.", context: "price ask summary" })
-      : t({ message: `You propose ${money(value.monthly)} a ${per}${suggested ? ` (${signedPct(priceDifferencePct(suggested, value.monthly) ?? 0)} on the suggestion)` : ""}.`, context: "price ask summary" });
+      : t({ message: `You propose ${money(value.monthly)} a ${askPeriod(value)}${savedDiff !== null ? ` (${signedPct(savedDiff)} on the suggestion)` : ""}.`, context: "price ask summary" });
 
   return (
     <div className="mt-4 grid gap-2 border-t border-border pt-3" data-price-ask="">

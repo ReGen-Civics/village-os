@@ -39,7 +39,8 @@ import { addChange, createDraft, getDraft, withdrawDraft } from "../lib/orgDraft
 import { listOrgAssignments, listOrgRoles, type OrgRole } from "../lib/orgChart";
 import { firstNameOf } from "../lib/peopleLock";
 import { roleFillsFor } from "../lib/roleFill";
-import { usersRepo } from "../repos/users";
+import { namesOf } from "../repos/agentAccounts";
+import { publicFill } from "../../shared/commitmentRange";
 import { ROLE_WORD_FIELDS } from "../lib/roleProposals";
 import { editorState, labelOf, listingProblems, revertEdit, roleHistory, saveRoleEdit, suggestionFor, type EditorState } from "../lib/roleEdit";
 import { liveParameterKeys } from "../lib/roleParameterColumns";
@@ -143,21 +144,29 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     // The current team beside the open roles (Rye, 14 Nov 2026): the filled roles of the founding
     // circles, for anyone, holders by first name only where the village shows its people publicly.
     let team: ReturnType<typeof foundingTeamFilled> = [];
+    const namesShown = boolVar("org.public_people");
+    // The live people (no agents, no examples) holding each role: who the page can name.
+    const peopleOn = new Map<string, number>();
     if (featured.length > 0) {
-      const namesShown = boolVar("org.public_people");
       const seatings = await listOrgAssignments(g.getPool());
-      const users = usersRepo(g.getPool());
+      const circles = new Set(featured.map((f) => f.circleId).filter((c): c is string => !!c));
+      const inCircles = new Set(roles.filter((r) => r.circleId && circles.has(r.circleId)).map((r) => r.id));
+      const live = seatings.filter((s) => !s.isExample && !s.isAgent && !s.endedAt && !s.lapsed);
+      for (const s of live) peopleOn.set(s.orgRoleId, (peopleOn.get(s.orgRoleId) ?? 0) + 1);
       const firstNames = new Map<string, string | null>();
       if (namesShown) {
-        for (const id of Array.from(new Set(seatings.map((s) => s.userId).filter((x): x is string => !!x)))) {
-          const u = await users.byId(id);
-          firstNames.set(id, u ? firstNameOf(u.name) || null : null);
-        }
+        // One batched read, of the live people in the founding circles only (security sweep L4): an anonymous
+        // ask used to read every account that ever held any role, one query each.
+        const ids = Array.from(new Set(live.filter((s) => inCircles.has(s.orgRoleId) && s.userId).map((s) => s.userId as string)));
+        const names = await namesOf(g.getPool(), ids);
+        for (const id of ids) firstNames.set(id, names[id] ? firstNameOf(names[id]) || null : null);
       }
       team = foundingTeamFilled(featured, roles, seatings, (s) => (!namesShown ? null : s.userId ? (firstNames.get(s.userId) ?? null) : s.displayName ? firstNameOf(s.displayName) || null : null));
     }
     // How full each role is (Rye, 14 Nov 2026, ruling 4): what its holders give in all against what it needs.
-    const fill = featured.length > 0 ? Object.fromEntries(await roleFillsFor(g.getPool(), [...featured, ...roles.filter((r) => team.some((m) => m.id === r.id))])) : {};
+    // A role one named person holds says only covered or open, never their commitment (security sweep L3).
+    const fills = featured.length > 0 ? await roleFillsFor(g.getPool(), [...featured, ...roles.filter((r) => team.some((m) => m.id === r.id))]) : new Map();
+    const fill = Object.fromEntries(Array.from(fills, ([id, f]) => [id, publicFill(f, peopleOn.get(id) ?? 0, namesShown)]));
     res.set("Cache-Control", "no-store").json({
       team,
       fill,

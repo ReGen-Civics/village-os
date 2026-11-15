@@ -576,6 +576,15 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(after?.body.why).toBe("I live up the road and the gate is always shut.");
     });
 
+    it("COMMITMENT: an applicant who already holds the role is counted once, not twice (QA F7)", async () => {
+      // Compost Keeper is held by Ben and by Rowan (HAS), each the whole role. Rowan applies for it again.
+      const { id } = await confirmed(HAS.email, ["opd-role-compost"]);
+      const c = (await page(id, FOUNDER.id)).body.proposal.commitment;
+      expect(c.roles[0]).toMatchObject({ roleId: "opd-role-compost", heldPct: 200 });
+      // With this application: Ben's 100 and Rowan's new commitment (none chosen here), never Rowan's 100 as well.
+      expect(c.roles[0].withThisPct).toBe(100);
+    });
+
     it("SHAPE THE ROLE: a proposal sent without suggestions reads as none (an older form still works)", async () => {
       const { id } = await confirmed("shape2@example.test");
       expect((await page(id, FOUNDER.id)).body.proposal.pieceSuggestions).toEqual([]);

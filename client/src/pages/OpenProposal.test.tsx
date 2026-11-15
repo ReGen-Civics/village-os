@@ -204,6 +204,36 @@ describe("the open proposal page", () => {
     expect(box.textContent).not.toMatch(/score|rank|rating|match/i);
   });
 
+  it("COMMITMENT: a yearly ask reads as a year, each role is compared on its own, and no suggestion means no difference (QA F7)", async () => {
+    answer = () =>
+      json({
+        proposal: served({
+          commitment: {
+            pct: 50,
+            ask: { kind: "amount", monthly: 78000, per: "year" },
+            roles: [
+              { roleId: "role-gate", full: { amount: 120000, currency: "USD", per: "year" }, atCommitment: 60000, heldPct: 0, targetPct: 100, withThisPct: 50 },
+              { roleId: "role-well", full: { amount: 160000, currency: "USD", per: "year" }, atCommitment: 80000, heldPct: 0, targetPct: 100, withThisPct: 50 },
+              { roleId: "role-free", full: { amount: 0, currency: "USD", per: "year" }, atCommitment: 0, heldPct: 0, targetPct: 100, withThisPct: 50 },
+              { roleId: "role-monthly", full: { amount: 13000, currency: "USD", per: "month" }, atCommitment: 6500, heldPct: 0, targetPct: 100, withThisPct: 50 },
+            ],
+          },
+        }),
+      });
+    render(<OpenProposal />);
+    await heading();
+    const box = await screen.findByTestId("commitment-review");
+    expect(box.querySelector("[data-pay-ask-shown]")?.textContent).toBe("$78,000 a year");
+    expect(box.textContent).not.toContain("$78,000 a month");
+    const compare = (id: string) => box.querySelector(`[data-commitment-role="${id}"] [data-price-compare]`)?.textContent ?? null;
+    expect(compare("role-gate")).toBe("Suggested $60,000 a year; they propose $78,000 (+30%).");
+    expect(compare("role-well")).toBe("Suggested $80,000 a year; they propose $78,000 (-2%).");
+    // A suggestion of 0 has nothing to compare against, and a role paid by the month is not compared with a yearly price.
+    expect(compare("role-free")).toBeNull();
+    expect(compare("role-monthly")).toBeNull();
+    expect(box.textContent).not.toContain("(0%)");
+  });
+
   it("COMMITMENT: nothing is drawn for a reader who does not decide (control)", async () => {
     answer = () => json({ proposal: served({ commitment: null }) });
     render(<OpenProposal />);

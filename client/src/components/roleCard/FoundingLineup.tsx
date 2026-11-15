@@ -99,9 +99,12 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
   const width = Math.min(100, Math.round((f.heldPct / f.targetPct) * 100));
   return (
     <div className={`mt-2 grid gap-1 ${center ? "w-full max-w-40 justify-items-center" : "max-w-xs"}`} data-fill-meter="">
-      <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
-        <span className={`block h-full rounded-full ${f.covered ? "bg-muted-foreground" : "bg-notice"}`} style={{ width: `${width}%` }} />
-      </span>
+      {/* Without the share (one named holder) there is no bar to draw short of covered. */}
+      {(!f.coarse || f.covered) && (
+        <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
+          <span className={`block h-full rounded-full ${f.covered ? "bg-muted-foreground" : "bg-notice"}`} style={{ width: `${width}%` }} />
+        </span>
+      )}
       <span className="text-xs text-muted-foreground">{fillWords(f)}{f.targetPct !== 100 ? ` (of ${f.targetPct}%)` : ""}</span>
     </div>
   );

@@ -20,7 +20,7 @@ export interface CommitmentReviewRole {
   atCommitment: number | null;
   heldPct: number;
   targetPct: number;
-  /** Held now plus this application's commitment. */
+  /** What the others hold now plus this application's commitment: an applicant who holds the role already counts once (QA F7). */
   withThisPct: number;
 }
 
@@ -36,11 +36,17 @@ export async function commitmentReviewFor(
   pool: Pool,
   body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk; pieceSuggestions?: unknown[] },
   liveRoles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>,
+  /** The applicant's own account here, if their address has one. */
+  applicantUserId: string | null = null,
 ): Promise<CommitmentReview> {
   const pct = typeof body.card?.commitmentPct === "number" ? body.card.commitmentPct : null;
   const ids = body.roles.map((r) => r.roleId);
   const roles = ids.map((id) => liveRoles.find((r) => r.id === id) ?? { id, commitmentTarget: null });
-  const [fills, sections] = await Promise.all([roleFillsFor(pool, roles), sectionsForMany(pool, ids)]);
+  const [fills, others, sections] = await Promise.all([
+    roleFillsFor(pool, roles),
+    applicantUserId ? roleFillsFor(pool, roles, applicantUserId) : null,
+    sectionsForMany(pool, ids),
+  ]);
   return {
     pct,
     ask: body.payAsk ?? null,
@@ -49,13 +55,14 @@ export async function commitmentReviewFor(
       const fill = fills.get(r.id);
       const full = sections.get(r.id)?.payCeiling ?? null;
       const held = fill?.heldPct ?? 0;
+      const heldByOthers = (others ?? fills).get(r.id)?.heldPct ?? 0;
       return {
         roleId: r.id,
         full,
         atCommitment: full && pct ? ceilingAt(full.amount, pct) : null,
         heldPct: held,
         targetPct: fill?.targetPct ?? 100,
-        withThisPct: held + (pct ?? 0),
+        withThisPct: heldByOthers + (pct ?? 0),
       };
     }),
   };
