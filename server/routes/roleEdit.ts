@@ -64,7 +64,7 @@ import { boolVar, stringVar } from "../lib/variables";
 import { isListed } from "../../shared/roleListing";
 import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
-import { hasSections, villagePayFrom, type RoleCardSections } from "../../shared/roleCardSections";
+import { hasSections, sectionsForReader, villagePayFrom, type RoleCardSections } from "../../shared/roleCardSections";
 import { lastEditedOf, sectionsFor, sectionsForMany } from "../lib/roleCardSections";
 
 type Gate = {
@@ -134,6 +134,18 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
   /** The village's pay shape, read fresh on each ask so a changed setting shows at once (lead, 11 Nov). */
   const villagePay = () => villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: stringVar("org.pay_shape_at_risk"), note: stringVar("org.pay_shape_note") });
 
+  /**
+   * WHO READS THE PAY CEILING (`org.show_pay_ranges`): everyone while it is on. Off, only the people
+   * who read the full terms either way, as the setting says: a holder of `terms.read`, an admin, and
+   * the editor's door (who writes the figure). Everyone else gets sections with no ceiling key at all.
+   */
+  const seesPay = async (req: any, editor?: boolean): Promise<boolean> => {
+    if (boolVar("org.show_pay_ranges")) return true;
+    if (!(await g.authedUser(req))) return false;
+    if (editor ?? !!(await door(req))?.door) return true;
+    return (await g.isAdmin(req)) || (await g.canReadTerms(req));
+  };
+
   app.get("/api/org/founding-team", async (req, res) => {
     const key = (await g.authedUser(req))?.id ?? req.ip ?? "anon";
     if (await g.overLimit(`founding-team:${String(key)}`, READS, WINDOW_MS)) return res.status(429).json({ error: "too_many_asks" });
@@ -141,6 +153,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     const roles = on ? await listOrgRoles(g.getPool()) : [];
     const featured = foundingRoles(on, stringVar("org.founding_team_roles"), roles);
     const sections = await sectionsForMany(g.getPool(), featured.map((r) => r.id));
+    const pay = await seesPay(req);
     // The current team beside the open roles (Rye, 14 Nov 2026): the filled roles of the founding
     // circles, for anyone, holders by first name only where the village shows its people publicly.
     let team: ReturnType<typeof foundingTeamFilled> = [];
@@ -175,7 +188,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       // Each featured role's name, so a page that speaks of the founding team (the steward page's
       // band) names the roles that are open today and never a list typed once and left to go stale.
       names: Object.fromEntries(featured.map((r) => [r.id, r.name])),
-      sections: Object.fromEntries(featured.map((r) => [r.id, sections.get(r.id) as RoleCardSections])),
+      sections: Object.fromEntries(featured.map((r) => [r.id, sectionsForReader(sections.get(r.id) as RoleCardSections, pay)])),
       showPayRanges: boolVar("org.show_pay_ranges"),
       villagePay: villagePay(),
       // The "Other ways to join" tiles beside the section (QA2-07): village words, sent whether the section is on or off.
@@ -194,7 +207,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       return res.status(404).json({ error: "no_such_role", message: "There is no role by that id." });
     }
     const pool = g.getPool();
-    const { sections } = await sectionsFor(pool, role.id);
+    const { sections: held } = await sectionsFor(pool, role.id);
+    const sections = sectionsForReader(held, await seesPay(req, editor));
     res.set("Cache-Control", "no-store").json({
       roleId: role.id,
       sections: hasSections(sections) ? sections : null,
