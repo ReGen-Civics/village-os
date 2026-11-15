@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.12 (2026-11-15)
+
+### What changed for your village
+
+- **A role's price is the whole reward, and End of Moon pays it that way.** When the Treasurer confirms a pay line, it is shared by the split the person's card showed (their contract's, else the role's, else the village's default). Only the cash share is owed in cash. Earned Equity and Credits are recorded to be issued, once per line, and they issue when the village's Game has started. The invoice shows the three parts and bills the cash share, listing Equity and Credits as "Also earned, nothing to pay". With no split anywhere, the line is all cash and the Treasurer is told so.
+- **Adoption writes the split.** A contract adopted through a role application now records the split the card showed.
+- **A month with a split change is paid by days.** If someone's split across roles changes mid-month, each split pays for the days it was in place.
+- **Two people for a changed amount.** When two or more people can confirm pay, a changed amount must be confirmed by someone other than the person who proposed it. Founders and stewards who hold "approve alone" can confirm.
+- **Footnote wording.** Role cards say "Your first month often starts lower and follows what you deliver."
+
+### What you must do
+
+Nothing. Treasurers: at End of Moon, check each line's split before you confirm.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1324 Batch 177: End of Moon shares pay into cash, Earned Equity and Credits (#1318), days-weighted split, two-person pay changes, approve-alone confirms, footnote (#1321)
+
+---
+
 ## 1.3.11 (2026-11-15)
 
 ### What changed for your village

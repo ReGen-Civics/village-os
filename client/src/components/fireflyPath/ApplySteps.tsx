@@ -314,9 +314,54 @@ function useShares(setup: FoundingSetup): Array<{ label: string; pct: number | n
   return setup.shares.length ? setup.shares : PLACEHOLDER_PARTS.map((p) => ({ label: placeholder[p], pct: null }));
 }
 
+/** Which part of the reward a share's label names, or null for none or more than one. */
+function partOf(label: string): "cash" | "equity" | "credits" | null {
+  const hits = ([["cash", /\bcash\b/i], ["equity", /equity/i], ["credits", /credit/i]] as const).filter(([, re]) => re.test(label));
+  return hits.length === 1 ? hits[0][0] : null;
+}
+
+/**
+ * The line under the shares (the coordinator's suggestion, adopted 15 Nov 2026): the split in force as a
+ * sentence, "Of this, 40% is paid in cash, 55% in Earned Equity and 5% in credits by default; we settle the
+ * split together." A part at 0% is left out. With no split, or one whose labels do not each read as cash,
+ * equity or credits, the old line: "To be decided in the onboarding process."
+ */
+function useSplitLine(setup: FoundingSetup): string {
+  const { t } = useLingui();
+  const fallback = t({ message: "To be decided in the onboarding process.", context: "founding application compensation" });
+  const pct: Partial<Record<"cash" | "equity" | "credits", number>> = {};
+  for (const s of setup.shares) {
+    const part = partOf(s.label);
+    if (!part || part in pct || typeof s.pct !== "number") return fallback;
+    pct[part] = s.pct;
+  }
+  const order = (["cash", "equity", "credits"] as const).filter((p) => (pct[p] ?? 0) > 0);
+  if (order.length === 0) return fallback;
+  const lead = (p: (typeof order)[number], n: number) =>
+    p === "cash"
+      ? t({ message: `${n}% is paid in cash`, context: "founding application split line: the first part, cash" })
+      : p === "equity"
+        ? t({ message: `${n}% is paid in Earned Equity`, context: "founding application split line: the first part, Earned Equity" })
+        : t({ message: `${n}% is paid in credits`, context: "founding application split line: the first part, credits" });
+  const rest = (p: (typeof order)[number], n: number) =>
+    p === "equity"
+      ? t({ message: `${n}% in Earned Equity`, context: "founding application split line: a later part, Earned Equity" })
+      : t({ message: `${n}% in credits`, context: "founding application split line: a later part, credits" });
+  const parts = order.map((p, i) => (i === 0 ? lead(p, pct[p]!) : rest(p, pct[p]!)));
+  const [a, b, c] = parts;
+  const list =
+    parts.length === 1
+      ? a
+      : parts.length === 2
+        ? t({ message: `${a} and ${b}`, context: "founding application split line: two parts" })
+        : t({ message: `${a}, ${b} and ${c}`, context: "founding application split line: three parts" });
+  return t({ message: `Of this, ${list} by default; we settle the split together.`, context: "founding application split line" });
+}
+
 export function CompensationShape({ setup }: { setup: FoundingSetup }) {
   const { t } = useLingui();
   const shares = useShares(setup);
+  const splitLine = useSplitLine(setup);
   return (
     <section aria-labelledby="comp-shape-h" className="grid gap-5" data-comp-shape="">
       <div className={`${GOLD_RULE} pt-5`}>
@@ -336,7 +381,7 @@ export function CompensationShape({ setup }: { setup: FoundingSetup }) {
         ))}
       </dl>
       <p className="text-sm text-foreground" data-comp-onboarding="">
-        {t({ message: "To be decided in the onboarding process.", context: "founding application compensation" })}
+        {splitLine}
       </p>
       <div className="grid gap-2">
         {setup.atRisk && (
@@ -485,6 +530,7 @@ export function AboutPanes({ names, now }: { names: readonly string[]; now: numb
 export function RewardsBeside({ setup }: { setup: FoundingSetup }) {
   const { t } = useLingui();
   const shares = useShares(setup);
+  const splitLine = useSplitLine(setup);
   return (
     <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
       <p id="rewards-beside-h" className={EYEBROW}>
@@ -498,7 +544,7 @@ export function RewardsBeside({ setup }: { setup: FoundingSetup }) {
           </div>
         ))}
       </dl>
-      <p className="text-xs text-muted-foreground">{t({ message: "To be decided in the onboarding process.", context: "founding application compensation" })}</p>
+      <p className="text-xs text-muted-foreground" data-split-line="">{splitLine}</p>
       {setup.atRisk && <p className="text-xs leading-relaxed text-muted-foreground">{setup.atRisk}</p>}
     </section>
   );

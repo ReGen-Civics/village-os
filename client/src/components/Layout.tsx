@@ -21,6 +21,7 @@ import NextStepTrail from "./NextStepTrail";
 import { SITE_FOOTER_SIGNOFF } from "@shared/pageContent/site";
 import { UPSTREAM_SOURCE_URL, servedVillageSourceUrl } from "@shared/sourceUrl";
 import { storyPageShown } from "@/lib/brochure";
+import { MachineTranslationNote } from "@/i18n/machineTranslation";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -527,6 +528,7 @@ export default function Layout({ children }: LayoutProps) {
           words (go-live pass, M4). Founding pages draw no button (MobileFab). */}
       <main id="main" tabIndex={-1} className="flex-1 min-h-svh max-md:pb-[var(--fab-clear)]">
         {children}
+        <MachineTranslationNote />
       </main>
 
       {/* Footer */}
