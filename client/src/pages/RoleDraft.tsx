@@ -190,7 +190,7 @@ function usePlaceInvites(): PlaceInvite[] {
 }
 
 export default function RoleDraft() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const villageName = useVillageName();
   const cast = useCast();
   const places = usePlaceInvites();
@@ -330,12 +330,14 @@ export default function RoleDraft() {
 
   const ctx = { now: new Date(), season: seasonForSheet(season), classNames };
   const pickCount = picks.length;
-  const moonEnds = form?.term ? civilDayWords(form.term.endsOn) : "";
+  const termEnds = form?.term ? civilDayWords(form.term.endsOn, i18n.locale) : "";
   // The village's goals for this season, live (the Season tab in Admin). Done ones drop off.
   const seasonRaw = season as unknown as { current?: SeasonDoc | null } & SeasonDoc | null;
   const seasonDoc: SeasonDoc | null = seasonRaw?.current ?? seasonRaw ?? null;
   const seasonName = typeof seasonDoc?.name === "string" ? seasonDoc.name.trim() : "";
-  const seasonDates = seasonDoc?.startsOn && seasonDoc?.endsOn ? `${civilDayWords(seasonDoc.startsOn)} to ${civilDayWords(seasonDoc.endsOn)}` : "";
+  const seasonStarts = seasonDoc?.startsOn ? civilDayWords(seasonDoc.startsOn, i18n.locale) : "";
+  const seasonEnds = seasonDoc?.endsOn ? civilDayWords(seasonDoc.endsOn, i18n.locale) : "";
+  const seasonDates = seasonStarts && seasonEnds ? t({ message: `${seasonStarts} to ${seasonEnds}`, context: "role draft season dates" }) : "";
   const goals = (Array.isArray(seasonDoc?.goals) ? seasonDoc!.goals : [])
     .filter((g) => g && typeof g.text === "string" && g.text.trim())
     .map((g, i) => ({ id: String(g.id ?? i), text: String(g.text).trim(), done: !!g.done }));
@@ -382,7 +384,7 @@ export default function RoleDraft() {
             </h2>
             {seasonDates && <p className="mt-1 text-sm font-semibold text-muted-foreground">{seasonDates}</p>}
             <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground">
-              {t`A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals.`}
+              {t`A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals.`}
             </p>
             {goals.length > 0 ? (
               <ul className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -541,7 +543,7 @@ export default function RoleDraft() {
                       <dl className="grid grid-cols-2 border-b border-border text-center text-sm">
                         <div className="border-r border-border px-2 py-2">
                           <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                            <InfoTip triggerClassName="inline-flex min-h-11 items-center px-1" tip={t`We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks.`}>
+                            <InfoTip triggerClassName="inline-flex min-h-11 items-center px-1" tip={t`We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks.`}>
                               {t({ message: "Commitment", context: "role draft stat" })}
                             </InfoTip>
                           </dt>
@@ -712,7 +714,7 @@ export default function RoleDraft() {
                   <li>{t`Once you are approved into a role, you align with the village's confidentiality agreement (NDA), before you see any confidential records.`}</li>
                   <li>
                     {form?.term
-                      ? t`Your role runs from adoption to the next new moon, ${moonEnds}. Each new moon you lay out what you will contribute the next moon.`
+                      ? t`Your role runs from adoption to ${termEnds}. Each month you share what you'll bring the next month.`
                       : t`Your role starts on the first day of next season.`}
                   </li>
                 </ol>

@@ -12398,8 +12398,8 @@ msgstr "añadido, con Gene Keys"
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
-msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
-msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada luna y esta temporada, y cómo sirve a nuestras metas."
+msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada mes y esta temporada, y cómo sirve a nuestras metas."
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/ProposeARole.tsx
@@ -15620,8 +15620,8 @@ msgid "Decision letter"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
-msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
-msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada luna y cada temporada. El compromiso es cuánta energía y atención pide el rol."
+msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
+msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada mes y cada temporada. El compromiso es cuánta energía y atención pide el rol."
 
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
@@ -16528,8 +16528,8 @@ msgid "In bud"
 msgstr "En botón"
 
 #: client/src/pages/RoleDraft.tsx
-msgid "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
-msgstr "Tu rol va desde la adopción hasta la próxima luna nueva, {moonEnds}. En cada luna nueva presentas lo que vas a aportar la luna siguiente."
+msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
+msgstr "Tu rol va desde la adopción hasta el {termEnds}. Cada mes cuentas lo que vas a aportar el mes siguiente."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -16926,3 +16926,8 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/pages/RoleDraft.tsx
+msgctxt "role draft season dates"
+msgid "{seasonStarts} to {seasonEnds}"
+msgstr "Del {seasonStarts} al {seasonEnds}"

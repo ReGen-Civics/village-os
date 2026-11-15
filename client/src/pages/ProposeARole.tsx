@@ -697,7 +697,7 @@ export default function ProposeARole() {
   const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}…` : s.trim());
   const notYet = t({ message: "Not written yet", context: "founding application review" });
   // The review reads the earliest start in plain words ("1 December 2026"), as the rest of the page says a day.
-  const startDay = practical.earliestStart ? civilDayWords(practical.earliestStart) : "";
+  const startDay = practical.earliestStart ? civilDayWords(practical.earliestStart, i18n.locale) : "";
   /** Review & submit: each step in a line, with a way back to it. */
   const review: Array<[number, string]> = [
     [0, ways === 0 ? t({ message: "Nothing to tick", context: "founding application review" }) : t({ message: `${ticked} of ${ways} done`, context: "founding application review" })],
