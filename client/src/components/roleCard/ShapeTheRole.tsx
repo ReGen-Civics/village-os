@@ -13,6 +13,7 @@
 import { lazy, Suspense, useId, useState } from "react";
 import { ChevronDown, PencilLine, Plus, Sprout, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
+import GrowingField from "@/components/form/GrowingField";
 import { SUGGESTION_KINDS, SUGGESTION_LIMITS, SUGGESTION_WORDS, type PieceKey, type PieceSuggestion, type SuggestionKind } from "@shared/pieceSuggestions";
 import { useOrgSeats } from "./useOrgSeat";
 
@@ -92,7 +93,7 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
           <label htmlFor={`${id}-text`} className="text-sm font-semibold text-card-foreground">
             {prompt[open]}
           </label>
-          <textarea id={`${id}-text`} rows={3} maxLength={SUGGESTION_LIMITS.text} value={draft} onChange={(e) => setDraft(e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-ring" />
+          <GrowingField id={`${id}-text`} clip="suggestion" minRows={3} maxLength={SUGGESTION_LIMITS.text} value={draft} onChange={setDraft} className="rounded-lg border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-ring" />
           <div className="flex flex-wrap justify-end gap-2">
             <button type="button" onClick={() => setOpen(null)} className="min-h-10 rounded-lg px-3 text-sm text-muted-foreground hover:text-card-foreground">
               {t({ message: "Cancel", context: "shape the role" })}

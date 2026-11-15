@@ -597,6 +597,105 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     });
   });
 
+  describe("their voice note, for the deciders only (Rye, 14 Nov 2026)", () => {
+    // The first bytes of a WebM recording: an EBML header, then padding.
+    const WEBM = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3, 0x9f, 0x42, 0x86, 0x81, 0x01, 0x42, 0xf7, 0x81]), Buffer.alloc(64, 1)]);
+    const HEARD = "I have kept the gate on my own road for six years.";
+
+    /** Send with one ticked recording and its words, as somebody with no account, and confirm. */
+    const withVoice = async (email: string) => {
+      const before = state.sent.length;
+      const fd = new FormData();
+      fd.append("proposal", JSON.stringify({
+        name: "Rowan Field",
+        email,
+        roles: [{ roleId: gate, note: "I open gates for a living." }],
+        why: "I live up the road and the gate is always shut.",
+        aim: "The gate opens at dawn every day.",
+        voice: { consent: true, seconds: [42], transcript: HEARD },
+      }));
+      fd.append("voice", new Blob([WEBM], { type: "audio/webm" }), "voice-1.webm");
+      const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      return id;
+    };
+
+    const listen = async (href: string, as: string | null) => {
+      const before = state.viewer;
+      state.viewer = as;
+      try {
+        return await fetch(`${base}${href}`); // module-review-ok: a test calling its own local server
+      } finally {
+        state.viewer = before;
+      }
+    };
+
+    it("the holder of the power and the circle's asked holders hear it and read the words; another member gets neither", async () => {
+      const id = await withVoice("voice1@example.test");
+      const founder = (await page(id, FOUNDER.id)).body.proposal.voice;
+      expect(founder.transcript).toBe(HEARD);
+      expect(founder.notes).toHaveLength(1);
+      expect(founder.notes[0]).toMatchObject({ seconds: 42, size: WEBM.length });
+      expect((await page(id, ANA.id)).body.proposal.voice.notes).toHaveLength(1);
+      const mo = await page(id, MO.id);
+      expect(mo.status).toBe(200);
+      expect(mo.body.proposal.voice).toBeNull();
+      expect(JSON.stringify(mo.body)).not.toContain("six years");
+    });
+
+    it("the voice door plays the bytes kept, inline as audio, uncached, to a decider and nobody else", async () => {
+      const id = await withVoice("voice2@example.test");
+      const href = (await page(id, FOUNDER.id)).body.proposal.voice.notes[0].href as string;
+      const ok = await listen(href, FOUNDER.id);
+      expect(ok.status).toBe(200);
+      expect(Buffer.from(await ok.arrayBuffer()).equals(WEBM)).toBe(true);
+      expect(ok.headers.get("content-type")).toBe("audio/webm");
+      expect(ok.headers.get("content-disposition")).toBe("inline");
+      expect(ok.headers.get("cache-control")).toBe("private, no-store");
+      expect(ok.headers.get("x-content-type-options")).toBe("nosniff");
+      expect((await listen(href, ANA.id)).status).toBe(200);
+      expect((await listen(href, MO.id)).status).toBe(404);
+      expect((await listen(href, null)).status).toBe(401);
+      expect((await listen(href.replace(/pv-[0-9a-f]+$/, "pv-0000000000000000"), FOUNDER.id)).status).toBe(404);
+      expect((await listen(href.replace(/pv-[0-9a-f]+$/, "..%2F..%2Fsecret"), FOUNDER.id)).status).toBe(404);
+    });
+
+    it("a clip beside an answer reaches the deciders with its answer and words, and plays through the same door", async () => {
+      const before = state.sent.length;
+      const fd = new FormData();
+      fd.append("proposal", JSON.stringify({
+        name: "Rowan Field",
+        email: "voice4@example.test",
+        roles: [{ roleId: gate, note: "I open gates for a living." }],
+        why: "I live up the road and the gate is always shut.",
+        aim: "The gate opens at dawn every day.",
+        voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 18, words: "The gate is always shut." }] },
+      }));
+      fd.append("clips", new Blob([WEBM], { type: "audio/webm" }), "why.webm");
+      const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      const voice = (await page(id, FOUNDER.id)).body.proposal.voice;
+      expect(voice.clips).toEqual([expect.objectContaining({ field: "why", label: "Why you, and why now", seconds: 18, words: "The gate is always shut." })]);
+      expect((await listen(voice.clips[0].href, FOUNDER.id)).status).toBe(200);
+      expect((await listen(voice.clips[0].href, MO.id)).status).toBe(404);
+      expect((await page(id, MO.id)).body.proposal.voice).toBeNull();
+    });
+
+    it("a recording changed on disk since it was sent is not played", async () => {
+      const id = await withVoice("voice3@example.test");
+      const n = (await readOpenProposal(pool, id))!.body.voice!.notes[0];
+      await fs.promises.writeFile(path.join(fileDir, id, `${n.id}.${n.kind}`), Buffer.concat([WEBM, Buffer.from("x")]));
+      const href = (await page(id, FOUNDER.id)).body.proposal.voice.notes[0].href as string;
+      expect((await listen(href, FOUNDER.id)).status).toBe(404);
+    });
+  });
+
   describe("who decides", () => {
     it("a member without the power is refused, and so is a holder on their own address", async () => {
       const { id } = await confirmed("who@example.test");

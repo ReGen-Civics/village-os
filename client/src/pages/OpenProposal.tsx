@@ -26,6 +26,7 @@
  */
 import { AboutYouView, type ServedAboutYou } from "@/components/openProposal/AboutYou";
 import { AttachedView, type ServedAttachments } from "@/components/openProposal/ProposalAttachments";
+import { VoiceHeard, type ServedVoice } from "@/components/voice/VoiceHeard";
 import { useLingui } from "@lingui/react/macro";
 import { APPLICANT_NOTE_MAX } from "@shared/applicantWords";
 import { CardSideBySide } from "@/components/openProposal/RoleCardBridge";
@@ -92,6 +93,8 @@ export interface ServedOpenProposal {
   invitation: { state: "open" | "used" | "closed"; sentAt?: string | null; emailed?: boolean | null } | null;
   /** Links and files, sent to the people who decide it and nobody else (Rye, 10 Nov 2026). */
   attached?: ServedAttachments | null;
+  /** Their voice note, kept with their tick, for the people who decide it (shared/voiceNotes.ts). */
+  voice?: ServedVoice | null;
   /** About you: references, facts and the check, for the deciders only. */
   aboutYou?: ServedAboutYou | null;
   /** The founding application's own answers, for the deciders only: the ways they got to know us, and a ramp-up asked for. */
@@ -423,6 +426,7 @@ export default function OpenProposal() {
               </dl>
             </section>
 
+            <VoiceHeard voice={p.voice} />
             <AttachedView attached={p.attached} />
             <AboutYouView about={p.aboutYou} />
 

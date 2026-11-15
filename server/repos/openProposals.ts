@@ -267,7 +267,7 @@ export async function adoptedDecidedBefore(db: Db, before: Date): Promise<Stored
 /** Take the name and address off one proposal, once. True when this call did. */
 export async function anonymiseOpenProposal(db: Db, id: string, now: Date): Promise<boolean> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? WHERE id = ? AND anonymised_at IS NULL",
+    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions', '$.voice'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? WHERE id = ? AND anonymised_at IS NULL",
     [now, id],
   );
   return Number(result.affectedRows ?? 0) === 1;
@@ -348,7 +348,7 @@ export async function confirmKeptAddress(db: Db, id: string, confirmHash: string
 /** Take the name and address off every declined or withdrawn proposal decided before `before`. How many. */
 export async function anonymiseDecidedBefore(db: Db, before: Date, now: Date): Promise<number> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
+    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.pieceSuggestions', '$.voice'), name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
       "WHERE status IN ('declined', 'withdrawn') AND decided_at < ? AND anonymised_at IS NULL",
     [now, before],
   );
@@ -363,7 +363,7 @@ export async function anonymiseDecidedBefore(db: Db, before: Date, now: Date): P
  */
 export async function expireUndecidedBefore(db: Db, before: Date, now: Date): Promise<number> {
   const [result] = await db.query<ResultSetHeader>(
-    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note'), status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
+    "UPDATE open_role_proposals SET body_json = JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), '$.card.timeZone', '$.card.windows', '$.card.earliestStart', '$.links', '$.files', '$.references', '$.backgroundCheck', '$.about', '$.note', '$.voice'), status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
       "WHERE status = 'confirmed' AND confirmed_at < ? AND anonymised_at IS NULL",
     [now, now, before],
   );
@@ -409,6 +409,26 @@ export async function listOpenLinks(db: Db, limit = 200): Promise<StoredOpenLink
 export async function revokeOpenLink(db: Db, id: string, now: Date): Promise<boolean> {
   const [result] = await db.query<ResultSetHeader>("UPDATE open_proposal_links SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL", [now, id]);
   return Number(result.affectedRows ?? 0) === 1;
+}
+
+/**
+ * The proposals decided before `before` that still hold a voice note (shared/voiceNotes.ts). A voice
+ * note goes 90 days after the decision whatever the decision was, even where the written application
+ * is kept because its applicant joined.
+ */
+export async function voiceDecidedBefore(db: Db, before: Date): Promise<string[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT id FROM open_role_proposals WHERE decided_at < ? AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL ORDER BY decided_at, id",
+    [before],
+  );
+  return rows.map((r) => String(r.id));
+}
+
+/** Take the voice note's record off these proposals. Call after their recordings are removed from disk. How many. */
+export async function clearVoiceOf(db: Db, ids: readonly string[]): Promise<number> {
+  if (!ids.length) return 0;
+  const [result] = await db.query<ResultSetHeader>("UPDATE open_role_proposals SET body_json = JSON_REMOVE(body_json, '$.voice') WHERE id IN (?) AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL", [ids]);
+  return Number(result.affectedRows ?? 0);
 }
 
 /** Which of these proposals still keep their links and files: rows that exist and are not anonymised (Rye, 10 Nov 2026). */
