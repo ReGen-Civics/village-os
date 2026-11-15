@@ -99,6 +99,7 @@ const ENV_CHECKS: Record<string, (env: NodeJS.ProcessEnv) => { state: CheckState
   "site-address": siteAddressLaunchCheck,
 };
 import { readConfigDocument } from "../repos/appConfigDocs";
+import { writeLaunchAnswer } from "../repos/launchStateAnswers";
 import { commsChecklist, commsLaunchRow, type SetupItem } from "./comms/setup";
 import { normalizeSeasonConfig } from "./seasonCalendar";
 import { governanceRowFor } from "./launchGovernance";
@@ -206,13 +207,9 @@ async function readState(pool: Pool): Promise<LaunchState> {
   };
 }
 
-async function writeState(pool: Pool, state: LaunchState): Promise<void> {
-  await pool.query(
-    "INSERT INTO app_config (config_key, value) VALUES ('launch-state', ?) " +
-      "ON DUPLICATE KEY UPDATE value = VALUES(value)",
-    [JSON.stringify(state)],
-  );
-}
+/** The answer a confirm meets once the village has launched. */
+export const LAUNCHED_CONFIRM_REFUSAL =
+  "This village has already launched, so the launch checklist is a record now and its answers no longer change.";
 
 /**
  * The instant this village launched, or null.
@@ -506,12 +503,13 @@ export async function confirmManual(
   const req = LAUNCH_REQUIREMENTS.find((r) => r.id === reqId);
   if (!req) return { ok: false, error: `unknown requirement "${reqId}"` };
 
-  const state = await readState(pool);
+  // After the launch the checklist is history. Asked here for the plain
+  // refusal, and again inside the write, which is the one that cannot race.
+  if ((await readState(pool)).launchedAt) return { ok: false, error: LAUNCHED_CONFIRM_REFUSAL };
+  const landed = async (answer: Parameters<typeof writeLaunchAnswer>[2]): Promise<boolean> => writeLaunchAnswer(pool, reqId, answer);
 
   if (done === false) {
-    delete state.manualConfirms[reqId];
-    delete state.declines[reqId];
-    await writeState(pool, state);
+    if (!(await landed({ confirm: null, decline: null }))) return { ok: false, error: LAUNCHED_CONFIRM_REFUSAL };
     return { ok: true, answer: "retracted" };
   }
 
@@ -528,18 +526,18 @@ export async function confirmManual(
      * state nobody would know how to render, and the last answer is the one
      * the founder meant.
      */
-    delete state.manualConfirms[reqId];
-    state.declines[reqId] = { by, at: new Date().toISOString() };
-    await writeState(pool, state);
+    if (!(await landed({ confirm: null, decline: { by, at: new Date().toISOString() } }))) {
+      return { ok: false, error: LAUNCHED_CONFIRM_REFUSAL };
+    }
     return { ok: true, answer: "declined" };
   }
 
   if (!req.checkKey.startsWith("manual:")) {
     return { ok: false, error: `"${req.title}" is checked live by the server, so it cannot be hand-confirmed` };
   }
-  delete state.declines[reqId];
-  state.manualConfirms[reqId] = { by, at: new Date().toISOString() };
-  await writeState(pool, state);
+  if (!(await landed({ confirm: { by, at: new Date().toISOString() }, decline: null }))) {
+    return { ok: false, error: LAUNCHED_CONFIRM_REFUSAL };
+  }
   return { ok: true, answer: "done" };
 }
 
@@ -746,7 +744,7 @@ export async function recordLaunchCarried(
       "WHERE config_key = 'launch-state' " +
       // Both spellings of absent: the key missing entirely, and the key
       // present holding JSON null. A document written before this field
-      // existed is the first; one written by `writeState` is the second.
+      // existed is the first; one written whole by an older build is the second.
       "AND (JSON_EXTRACT(value, '$.launchedAt') IS NULL OR JSON_TYPE(JSON_EXTRACT(value, '$.launchedAt')) = 'NULL')",
     [at, input.closedBy, input.ballotId],
   );
