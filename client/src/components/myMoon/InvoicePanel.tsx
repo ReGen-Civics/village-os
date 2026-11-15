@@ -33,7 +33,7 @@ import {
 } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import type { MyMoonData } from "./moonApi";
-import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section, useRoomView } from "./moonUi";
+import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section, SplitBreakdown, useRoomView } from "./moonUi";
 import { authToken } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
 import { InvoiceTrack, type TrackRow } from "../TreasurySync";
@@ -237,6 +237,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                   <span className="text-sm font-semibold text-foreground"><Amount minor={l.amountMinor} currency={l.currency} /></span>
                 </div>
                 <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
+                {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (
                   <label className={LABEL}>
                     {MY_MOON_WORDS.proposeAmount}

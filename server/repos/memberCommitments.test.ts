@@ -13,7 +13,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
-import { commitmentHistory, commitmentNow, forgetCommitments, recordCommitment } from "./memberCommitments";
+import { commitmentHistory, commitmentNow, forgetCommitments, recordCommitment, splitOn } from "./memberCommitments";
 import { questsRepo } from "./quests";
 import { createOrgRole, listOrgRoles, updateOrgRole } from "../lib/orgChart";
 import { roleCard } from "../lib/roleCardProjection";
@@ -53,6 +53,17 @@ describe.skipIf(!testDbConfigured())("commitment percent against a real schema",
     const history = await commitmentHistory(pool, "m-wren");
     expect(history.map((h) => h.split ?? null)).toEqual([null, split]);
     expect((await commitmentNow(pool, "m-wren", "2026-11-01"))?.split).toEqual(split);
+  });
+
+  it("the pay path's one read: the split alone, as it holds on a day, and the same word commitmentNow reads", async () => {
+    const split = [{ roleId: "r-host", share: 70 }, { roleId: "r-well", share: 30 }];
+    await recordCommitment(pool, "m-wren", { pct: 50, period: "season", fromDate: "2026-10-01", note: "private", split });
+    await recordCommitment(pool, "m-wren", { pct: 40, period: "moon", fromDate: "2026-12-01", note: null });
+    expect(await splitOn(pool, "m-wren", "2026-11-08")).toEqual(split);
+    expect((await commitmentNow(pool, "m-wren", "2026-11-08"))?.split).toEqual(split);
+    expect(await splitOn(pool, "m-wren", "2026-12-02")).toBeNull();
+    expect(await splitOn(pool, "m-wren", "2026-09-01")).toBeNull();
+    expect(await splitOn(pool, "m-other", "2026-11-08")).toBeNull();
   });
 
   it("the word that holds today is the latest on or before it; a later day waits", async () => {

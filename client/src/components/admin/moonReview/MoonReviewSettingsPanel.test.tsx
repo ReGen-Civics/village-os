@@ -42,7 +42,7 @@ describe("the moon review settings panel", () => {
     render(<MoonReviewSettingsPanel password="tok" />);
     expect((await screen.findByTestId("payers-gap")).textContent).toBe(ADMIN_WORDS.payers.empty);
     fireEvent.click(screen.getByText(ADMIN_WORDS.payers.add));
-    fireEvent.change(screen.getByLabelText(ADMIN_WORDS.payers.legalName), { target: { value: "Example Payer" } });
+    fireEvent.change(await screen.findByLabelText(ADMIN_WORDS.payers.legalName), { target: { value: "Example Payer" } });
     fireEvent.change(screen.getByLabelText(ADMIN_WORDS.payers.currencies), { target: { value: "usd, crc" } });
     fireEvent.change(screen.getByLabelText(ADMIN_WORDS.payers.invoiceCc), { target: { value: "one@example.org, two@example.org" } });
     fireEvent.click(screen.getByLabelText(ADMIN_WORDS.payers.invoicing));
