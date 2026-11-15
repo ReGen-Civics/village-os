@@ -52,9 +52,30 @@ export const COMMITMENT_WORDS = {
  */
 export function readCommitmentPct(raw: unknown): CommitmentRead<number | null> {
   if (raw === null || raw === undefined || raw === "") return { ok: true, value: null };
-  const n = typeof raw === "number" ? raw : typeof raw === "string" && /^\s*\d{1,3}\s*%?\s*$/.test(raw) ? Number(raw.replace(/[%\s]/g, "")) : NaN;
+  const n = typeof raw === "number" ? raw : typeof raw === "string" ? pctDigits(raw) : NaN;
   if (!Number.isInteger(n) || n < 1 || n > 100) return { ok: false, problem: COMMITMENT_WORDS.pct };
   return { ok: true, value: n };
+}
+
+/** The longest text a percent is read from; anything longer is refused before it is looked at. */
+export const COMMITMENT_PCT_TEXT_MAX = 16;
+
+/**
+ * "50", " 50 % " to 50, with no regular expression (CodeQL js/polynomial-redos,
+ * read the way shared/commitmentRange.ts reads its numbers): cap the length,
+ * trim, strip one trailing %, trim again, then one to three digits, char by
+ * char. NaN for anything else.
+ */
+function pctDigits(raw: string): number {
+  if (raw.length > COMMITMENT_PCT_TEXT_MAX) return NaN;
+  let t = raw.trim();
+  if (t.endsWith("%")) t = t.slice(0, -1).trimEnd();
+  if (t.length < 1 || t.length > 3) return NaN;
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i);
+    if (c < 48 || c > 57) return NaN;
+  }
+  return Number(t);
 }
 
 /** The tolerant reading of a stored column: anything unreadable is "not said". */
