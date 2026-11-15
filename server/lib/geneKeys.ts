@@ -261,6 +261,23 @@ export async function geneKeysForAssistant(pool: Pool, userId: string): Promise<
 }
 
 /**
+ * What the companion welcome shows on its Gene Keys lens (shared/companionPersona.ts):
+ * whether the member has a reading, its profile and type, and whether their
+ * guide may use it. Null while the module is off, so the lens is not offered.
+ */
+export async function geneKeysForWelcome(
+  pool: Pool,
+  userId: string,
+): Promise<{ has: boolean; profile: string | null; hdType: string | null; guideUses: boolean } | null> {
+  if (effectiveLifecycle("gene-keys") === "off") return null;
+  const row = await readGeneKeys(pool, userId);
+  const chart = row ? chartOf(row) : null;
+  if (!row || !chart) return { has: false, profile: null, hdType: null, guideUses: false };
+  const v = viewOf(chart);
+  return { has: true, profile: v.profile, hdType: v.type, guideUses: Boolean(row.maia) };
+}
+
+/**
  * The paragraph itself, apart from the read so it can be pinned by a test.
  *
  * Rye asked to talk "Maia speaks your type" through before building it, then

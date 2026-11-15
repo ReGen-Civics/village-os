@@ -285,3 +285,45 @@ export function risingSign(utc: Date, lat: number, lon: number): number | null {
   const asc = Math.atan2(Math.cos(ramc), -(Math.sin(ramc) * Math.cos(eps) + Math.tan(lat * rad) * Math.sin(eps))) / rad;
   return Math.floor(normDeg(asc) / 30);
 }
+
+// ── The Vedic Moon (companion lenses, shared/companionPersona.ts) ────────────
+
+/**
+ * The Lahiri ayanamsa in degrees at `t`: how far the sidereal zodiac sits
+ * behind the tropical one. 23.853 at J2000 (23 deg 51 min 11 s, the
+ * Indian Ephemeris value), drifting 50.29 arcseconds a year with precession.
+ * Close to a minute of arc across a lifetime, far finer than a nakshatra's
+ * 13 degrees 20 minutes.
+ */
+export function lahiriAyanamsa(t: AstroTime): number {
+  return 23.853 + (50.29 / 3600) * (t.tt / 365.25);
+}
+
+/** The Moon's sidereal longitude, 0 to 360, at `utc`. */
+export function siderealMoonLon(utc: Date): number {
+  const t = Astronomy.MakeTime(utc);
+  return normDeg(WESTERN_LON.Moon(t) - lahiriAyanamsa(t));
+}
+
+/**
+ * The Moon's rashi (0 Mesha to 11 Meena) and nakshatra (0 Ashwini to 26 Revati)
+ * for a birth somewhere within `instants` (one instant for a known time; the
+ * first and last moments of the day when the time is not known). Each is null
+ * unless it holds across the whole window: the Moon crosses a nakshatra about
+ * once a day, so an unknown time often names the rashi and not the nakshatra.
+ *
+ * Read in the browser; only the two numbers leave the device
+ * (`PUT /api/me/companion-lenses/vedic`).
+ */
+export function vedicMoon(instants: readonly Date[]): { rashi: number | null; nakshatra: number | null } {
+  if (!instants.length) return { rashi: null, nakshatra: null };
+  const times = instants.map((d) => d.getTime());
+  const first = Math.min(...times), last = Math.max(...times);
+  const at = (ms: number) => siderealMoonLon(new Date(ms));
+  const held = (size: number): number | null => {
+    const v = Math.floor(at(first) / size);
+    for (let ms = first + NATAL_SAMPLE_MS; ms < last; ms += NATAL_SAMPLE_MS) if (Math.floor(at(ms) / size) !== v) return null;
+    return Math.floor(at(last) / size) === v ? v : null;
+  };
+  return { rashi: held(30), nakshatra: held(360 / 27) };
+}
