@@ -25,7 +25,7 @@ describe("an application for a role that opens after the founding team (Rye, 14 
     expect(LANGUAGES.en.replyPromise(7)).toBe("We reply within 7 days.");
   });
   it("its letter says the same", () => {
-    const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Amora", roleNames: ["Village Cook"], replyDays: null });
+    const letter = applicantUpdate("confirmed", { firstName: "Ana", village: "Riverbend", roleNames: ["Village Cook"], replyDays: null });
     expect(letter.text).toContain(LANGUAGES.en.replyPromise(null));
     expect(letter.text).not.toMatch(/within \d/);
   });
