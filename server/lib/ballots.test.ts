@@ -643,6 +643,25 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
     if (!failed.ok) return;
     expect(failed.outcome).not.toBe("passed");
   });
+
+  it("the launch vote is not called off over other people's votes, even by an admin (security lane S3)", async () => {
+    const early = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-withdraw-early", unityPct: 100, quorumPct: 100 });
+    expect(early.ok).toBe(true);
+    if (!early.ok) return;
+    // The control: only the caller has voted, so they may still call it off (to change what the launch hands over).
+    expect((await castVote(pool, early.ballot.id, "u-a", "yes")).ok).toBe(true);
+    const own = await withdrawBallot(pool, { ballotId: early.ballot.id, withdrawnBy: "u-a", reason: "Changing the selection.", withdrawerMayDiscardVotes: true });
+    expect(own.ok).toBe(true);
+
+    const late = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-withdraw-late", unityPct: 100, quorumPct: 100 });
+    expect(late.ok).toBe(true);
+    if (!late.ok) return;
+    expect((await castVote(pool, late.ballot.id, "u-b", "yes")).ok).toBe(true);
+    const refused = await withdrawBallot(pool, { ballotId: late.ballot.id, withdrawnBy: "u-admin", reason: "Too slow.", withdrawerMayDiscardVotes: true });
+    expect(refused.ok).toBe(false);
+    if (refused.ok) return;
+    expect(refused.error).toContain("can no longer be called off");
+  });
 });
 
 /**

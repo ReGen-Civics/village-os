@@ -1352,6 +1352,26 @@ export async function withdrawBallot(pool: Pool, input: WithdrawBallotInput): Pr
     };
   }
   const votes = await voteCount(pool, ballot.id);
+  /*
+   * NOR IS THE LAUNCH VOTE WITHDRAWN OVER OTHER PEOPLE'S VOTES (security lane
+   * S3, after the launch rehearsal of 15 Nov 2026). An admin or a
+   * proposal.decide holder could discard every vote cast and end it, the same
+   * grief as an early close by another door. Calling it off stays open while
+   * nobody but the caller has voted, which is the way to change what the
+   * launch hands over; after that it runs on the clock.
+   */
+  if (ballot.subjectType === VILLAGE_LAUNCH) {
+    const [others] = await pool.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS n FROM ballot_votes WHERE ballot_id = ? AND user_id <> ?",
+      [ballot.id, input.withdrawnBy],
+    );
+    if (Number(others[0]?.n ?? 0) > 0) {
+      return {
+        ok: false,
+        error: "Other people have voted on starting the Game, so it can no longer be called off. It runs its whole window and closes on the clock, or early once somebody votes no.",
+      };
+    }
+  }
   if (votes > 0 && !input.withdrawerMayDiscardVotes) {
     return {
       ok: false,
