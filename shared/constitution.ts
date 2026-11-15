@@ -102,7 +102,7 @@ export const CONSTITUTION: ConstitutionLaw[] = [
   {
     title: "Nobody witnesses their own work (once the village is grown)",
     plain:
-      "You cannot consent to your own claim: someone else must witness the work. A founder building alone is exempt only while the village is smaller than the solo-founder window, and every such use is recorded.",
+      "You cannot consent to your own claim: someone else must witness the work. A founder building alone is exempt only before the village starts its Game and while it is smaller than the solo-founder window, and every such use is recorded.",
     enforcedBy: "server/index.ts: the consent route's self-consent guard",
   },
   {
