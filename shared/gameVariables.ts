@@ -2534,6 +2534,30 @@ export const VARIABLES: VariableDef[] = [
     unit: "days",
   },
   {
+    key: "org.voice_clips_max",
+    category: "The village's people",
+    label: "Voice clips an applicant may record beside their answers",
+    description:
+      "On the public role application, each written answer has a small record button so the applicant can say that answer out loud. This is how many such clips one application may carry, beside the main voice note. They are kept only when the applicant ticks that the people who decide may listen, and go 90 days after the decision. 0 turns the clip buttons off.",
+    type: "integer",
+    default: "12",
+    min: 0,
+    max: 24,
+    unit: "clips",
+  },
+  {
+    key: "org.voice_clip_seconds",
+    category: "The village's people",
+    label: "Longest voice clip beside an answer",
+    description:
+      "How long one voice clip beside a written answer on the public role application may run. The recording stops by itself at this length.",
+    type: "integer",
+    default: "60",
+    min: 10,
+    max: 180,
+    unit: "seconds",
+  },
+  {
     key: "org.review_before_conversations",
     category: "The village's people",
     label: "Review each application before the conversations",

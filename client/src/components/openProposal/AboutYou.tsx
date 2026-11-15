@@ -15,6 +15,7 @@
  */
 import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
+import MicInput from "@/components/form/MicInput";
 import {
   ABOUT_BASED_MAX,
   ABOUT_LANGUAGES_MAX,
@@ -110,20 +111,20 @@ export function AboutYouFacts({
           <label htmlFor={`${idPrefix}-based`} className={LABEL}>
             {t({ message: "Where you are based (optional)", context: "about you" })}
           </label>
-          <input id={`${idPrefix}-based`} maxLength={ABOUT_BASED_MAX} value={value.based} onChange={(e) => onChange({ ...value, based: e.target.value })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-based`} clip="based" maxLength={ABOUT_BASED_MAX} value={value.based} onChange={(based) => onChange({ ...value, based })} className={fieldClass} />
         </div>
         <div>
           <label htmlFor={`${idPrefix}-languages`} className={LABEL}>
             {t({ message: "Languages you work in (optional)", context: "about you" })}
           </label>
-          <input id={`${idPrefix}-languages`} maxLength={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(e) => onChange({ ...value, languages: e.target.value })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-languages`} clip="languages" maxLength={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(languages) => onChange({ ...value, languages })} className={fieldClass} />
         </div>
       </div>
       <div>
         <label htmlFor={`${idPrefix}-story`} className={LABEL}>
           {t({ message: "Your story with us, in a line (optional)", context: "about you" })}
         </label>
-        <input id={`${idPrefix}-story`} maxLength={ABOUT_STORY_MAX} value={value.story} onChange={(e) => onChange({ ...value, story: e.target.value })} className={fieldClass} />
+        <MicInput id={`${idPrefix}-story`} clip="story" maxLength={ABOUT_STORY_MAX} value={value.story} onChange={(story) => onChange({ ...value, story })} className={fieldClass} />
         {storyAssist && <div className="mt-2 grid gap-2">{storyAssist}</div>}
       </div>
     </div>
@@ -165,13 +166,14 @@ export function ReferencesBlock({
             onChange={(e) => setRow(i, { ...r, name: e.target.value })}
             className={fieldClass}
           />
-          <input
+          <MicInput
             aria-label={t({ message: `Reference ${i + 1}: how you know them`, context: "about you" })}
             placeholder={t({ message: "How you know them", context: "about you reference" })}
             maxLength={REFERENCE_HOW_MAX}
             autoComplete="off"
             value={r.how}
-            onChange={(e) => setRow(i, { ...r, how: e.target.value })}
+            onChange={(how) => setRow(i, { ...r, how })}
+            clip={`reference-${i + 1}`}
             className={fieldClass}
           />
           <input

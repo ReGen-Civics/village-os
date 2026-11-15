@@ -4,9 +4,10 @@
  * A single-line input cuts a sentence off at the edge of the screen. This
  * stays at least 44px tall, wraps long words, and grows to the text.
  */
-import { useLayoutEffect, useRef, type TextareaHTMLAttributes } from "react";
+import { useEffect, useLayoutEffect, useRef, type TextareaHTMLAttributes } from "react";
 import MicButton from "@/components/MicButton";
-import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import { spokenInto } from "@/components/form/MicInput";
+import { ClipBar } from "@/components/voice/VoiceClips";
 
 export default function GrowingField({
   value,
@@ -14,21 +15,40 @@ export default function GrowingField({
   minRows = 2,
   className = "",
   mic = true,
+  clip,
   ...rest
 }: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> & {
   value: string;
   onChange: (value: string) => void;
   minRows?: number;
-  /** The voice button in the box's corner (MicButton; the browser's own speech engine). On unless the page says otherwise. */
+  /** The voice button in the box's corner (MicButton; the browser's speech service turns speech into text, see MicButton for where it goes). On unless the page says otherwise. */
   mic?: boolean;
+  /** The answer's key for a voice clip beside it (components/voice/VoiceClips.tsx); drawn only inside the application's clip provider. */
+  clip?: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
+  // A box drawn inside a hidden step measures 0: it keeps its rows until it is shown, then fits.
+  const fit = () => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
+    if (el.scrollHeight > 0) el.style.height = `${el.scrollHeight}px`;
+  };
+  useLayoutEffect(fit, [value]);
+  // Shown, or its width changed: fit again. Only a width change counts, so fitting never feeds itself.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    let width = el.clientWidth;
+    const watch = new ResizeObserver(() => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      fit();
+    });
+    watch.observe(el);
+    return () => watch.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const box = (
     <textarea
       ref={ref}
@@ -39,11 +59,16 @@ export default function GrowingField({
       {...rest}
     />
   );
-  if (!mic) return box;
+  const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
+  const clipBar = clip ? <ClipBar field={clip} onWords={said} /> : null;
+  if (!mic) return clipBar ? <div>{box}{clipBar}</div> : box;
   return (
-    <div className="relative">
-      {box}
-      <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={(chunk) => onChange(appendSpoken(value, chunk))} />
+    <div>
+      <div className="relative">
+        {box}
+        <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={said} />
+      </div>
+      {clipBar}
     </div>
   );
 }

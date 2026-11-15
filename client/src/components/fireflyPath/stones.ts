@@ -35,6 +35,7 @@ export function stoneOfField(field: string | null | undefined): number {
     case "files":
     case "selfKnowledge":
     case "drafts:about":
+    case "voice":
       return 1;
     case "aim":
     case "card":

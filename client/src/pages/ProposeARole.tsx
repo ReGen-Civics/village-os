@@ -40,7 +40,9 @@
  * WHAT IS KEPT, said on the form in one line (sheet 19i): never confirmed, deleted after 48 hours;
  * declined, its name and address go after 90 days (docs/ARCHITECTURE.md, 3.9).
  */
-import { goalsToFirstMoon } from "@/components/openProposal/RoleCardBridge";
+import GrowingField from "@/components/form/GrowingField";
+import MicInput from "@/components/form/MicInput";
+import { EMPTY_VOICE, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -70,13 +72,12 @@ import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OP
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { EMPTY_TERMS_STEP, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
-import { Practicalities, SeasonServes, browserTimeZone, type Practical } from "@/components/openProposal/RoleCardBridge";
+import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import { ABOUT_PANES, AboutPanes, CompensationShape, EnterHint, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
-/** The link in the confirmation email lives with the other threshold; App.tsx and the tests still find it here. */
-export { ConfirmProposal } from "@/components/fireflyPath/Thresholds";
+export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -102,7 +103,7 @@ interface FormRole {
 type FormState =
   | { kind: "loading" }
   | { kind: "closed"; message: string }
-  | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup }
+  | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup; clips: VoiceClipLimits }
   | { kind: "failed" };
 
 /** One thing to fix before sending: the field's name, the words, and where to look for it on the page. */
@@ -131,6 +132,7 @@ function targetFor(field: string | null): string | null {
     case "links":
     case "files": return "[data-about-you-section]";
     case "membership": return "[data-agreements]";
+    case "voice": return "[data-voice-invite]";
     case "timeZone": return "#card-tz";
     case "earliestStart": return "#card-start";
     default: return null;
@@ -239,6 +241,7 @@ export default function ProposeARole() {
   /** Links to their work and files, for the deciders only (Rye, 10 Nov 2026). Files are never saved in the draft. */
   const [links, setLinks] = useState<ProposalLink[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [voice, setVoice] = useState<VoiceState>(EMPTY_VOICE); // Their voice note, sent only with their tick (components/voice/VoiceInvite.tsx).
   /** About you: facts, references and the consent (components/openProposal/AboutYou.tsx). */
   const [about, setAbout] = useState<AboutYouValue>(EMPTY_ABOUT_YOU);
   /** The words Sera drafted, until they are edited or kept (shared/seraDrafts.ts). Never sent. */
@@ -273,7 +276,7 @@ export default function ProposeARole() {
         const roles: FormRole[] = Array.isArray(d?.roles) ? d.roles : [];
         setForm(
           d?.open
-            ? { kind: "open", village: String(d.village ?? ""), season: d.season ?? null, term: termOf(d.term) ?? null, goals: Array.isArray(d.goals) ? d.goals : [], roles, setup: foundingSetupOf(d.founding) }
+            ? { kind: "open", village: String(d.village ?? ""), season: d.season ?? null, term: termOf(d.term) ?? null, goals: Array.isArray(d.goals) ? d.goals : [], roles, setup: foundingSetupOf(d.founding), clips: clipLimitsOf(d.voice) }
             : { kind: "closed", message: String(d?.message ?? OPEN_WORDS.closed) },
         );
         if (d?.open) {
@@ -495,17 +498,8 @@ export default function ProposeARole() {
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
         ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
-      // With files, the application goes as one field of a multipart post (server/routes/openProposals.ts).
-      let request: RequestInit;
-      if (files.length) {
-        const fd = new FormData();
-        fd.append("proposal", JSON.stringify(proposal));
-        for (const f of files) fd.append("files", f, f.name);
-        request = { method: "POST", body: fd };
-      } else {
-        request = { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposal) };
-      }
-      const res = await fetch("/api/open-proposals", request);
+      // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
+      const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
       if (!res.ok && data?.field === "membership") setLetterRead((n) => n + 1);
@@ -755,7 +749,7 @@ export default function ProposeARole() {
         )}
         {restored && (
           <p className="mt-2 text-sm text-foreground" data-draft-restored="">
-            {t({ message: "We kept your answers from last time. References and files are never saved, so add them again.", context: "founding application draft" })}
+            {t({ message: "We kept your answers from last time. References, files and recordings are never saved, so add them again.", context: "founding application draft" })}
           </p>
         )}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
@@ -769,6 +763,7 @@ export default function ProposeARole() {
           <aside className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
             <StepTrail labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
           </aside>
+          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips}>
           <form
             ref={formRef}
             onSubmit={submit}
@@ -800,6 +795,8 @@ export default function ProposeARole() {
               {heading(1)}
               <AboutPanes names={paneNames} now={pane} />
               <div hidden={pane !== 0} data-about-pane="0" className="grid gap-8">
+              <VoiceInvite value={voice} onChange={setVoice} drafting={{ roleId: role.id, link: link || undefined, empty: { why: !why.trim(), aim: !aim.trim(), story: !about.story.trim(), items: filledItems.length === 0 },
+                onUse: (d) => { if (d.why) setWhy(d.why); if (d.aim) setAim(d.aim); if (d.story) setAbout((a) => ({ ...a, story: d.story! })); if (d.items) setItems((now) => placeDraftGoals(now, d.items!.map((g) => ({ ...BLANK_GOAL, ...g })), GOAL_LIMITS.max)); } }} />
               <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <label htmlFor="propose-name" className={`mb-2 block ${LABEL}`}>
@@ -828,7 +825,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <textarea id="propose-why" required rows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -848,7 +845,7 @@ export default function ProposeARole() {
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
                     {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
                   </label>
-                  <input id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={(e) => setSelfKnowledge(e.target.value)} className={FIELD} {...invalid("selfKnowledge")} />
+                  <MicInput id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>
                   <Beside id="propose-problem-selfKnowledge" message={problemOn("selfKnowledge")} />
                 </div>
@@ -872,7 +869,7 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <input id="propose-aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={(e) => setAim(e.target.value)} className={FIELD} {...invalid("aim")} />
+                <MicInput id="propose-aim" clip="aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
                   {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim.slice(0, OPEN_AIM_MAX)); setMarks((m) => ({ ...m, aim: r.aim!.slice(0, OPEN_AIM_MAX) })); } }} />}
@@ -986,6 +983,7 @@ export default function ProposeARole() {
               )}
             </div>
           </form>
+          </VoiceClipsProvider>
 
           {/* A desk has the width: the role stays beside the step. */}
           <aside className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">

@@ -102,7 +102,8 @@ import { createInviteOn, inviteById, reissueInviteOn, revokeInvite } from "../re
 import * as store from "../repos/openProposals";
 import { asksFor, type StoredAsk } from "../repos/roleProposals";
 import { PROPOSAL_FILE_ID, PROPOSAL_FILE_TYPES, proposalFileHref } from "../../shared/proposalAttachments";
-import { readProposalFile } from "../lib/proposalFiles";
+import { readProposalFile, readVoiceNote } from "../lib/proposalFiles";
+import { VOICE_NOTE_ID, VOICE_NOTE_TYPES, clipFieldLabel, voiceNoteHref } from "../../shared/voiceNotes";
 import { seatsWithCircles } from "../repos/seatApplications";
 import { baseOf, deciderOffer, loadSubject, saveOffer } from "../lib/counterOffer";
 import { OFFER_WORDS, openTalks, OFFER_LABELS } from "../../shared/counterOffer";
@@ -342,6 +343,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       : null;
     // What the applicant would make of each role card's pieces (Rye, 14 Nov 2026): deciders only, read-only, never to an AI.
     const pieceSuggestions = decidesIt(may, asks, viewerId) ? (p.body.pieceSuggestions ?? []) : null;
+    // Their voice note (Rye, 14 Nov 2026), kept only with their tick: the same gate as the files, never to an AI, gone 90 days after the decision.
+    const voice = decidesIt(may, asks, viewerId) && p.body.voice
+      ? {
+          notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, size: n.size, href: voiceNoteHref(p.id, n.id) })),
+          transcript: p.body.voice.transcript,
+          // Clips beside answers (Rye, 14 Nov 2026), each with the answer it belongs to and the words heard while it ran.
+          clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: voiceNoteHref(p.id, c.id) })),
+        }
+      : null;
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
     const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool)) : null;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
@@ -410,6 +420,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         aboutYou: agent ? null : aboutYou,
         founding,
         pieceSuggestions,
+        voice,
         commitment,
         offer,
         beforeAdopt,
@@ -457,6 +468,37 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", `attachment; filename="${file.name.replace(/[^ -~]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(file.name)}`);
+    res.send(bytes);
+  });
+
+  /*
+   * ONE RECORDING OF THEIR VOICE NOTE, by the same rule as the files: members
+   * only, and only those who decide it; anybody else is answered as if there
+   * were no such recording. Played in the page, so it is served inline as audio
+   * the page fetches, never cached or indexed, and sandboxed. The page reads it
+   * whole into the player, so no byte ranges are needed.
+   */
+  app.get(`${BASE}/:id/voice/:noteId`, async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    const viewer = await reader(req, res);
+    if (!viewer) return;
+    const viewerId = String(viewer.id);
+    if (await overLimit(`open-proposal-file:${viewerId}`, 60, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "too_many_asks", message: "That is a lot of listening in an hour. Try again in a little while." });
+    }
+    const p = await found(req, res);
+    if (!p) return;
+    const noteId = String(req.params.noteId ?? "");
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(p.body.voice?.notes ?? []), ...(p.body.voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
+    const asks = (await asksFor(getPool(), [p.id])).get(p.id) ?? [];
+    if (!note || !deps.proposalFileDir || !decidesIt(await deciding(p, viewerId), asks, viewerId)) return res.status(404).json(MISSING);
+    const bytes = await readVoiceNote(deps.proposalFileDir, p.id, note);
+    if (!bytes) return res.status(404).json(MISSING);
+    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.setHeader("Content-Disposition", "inline");
     res.send(bytes);
   });
 
