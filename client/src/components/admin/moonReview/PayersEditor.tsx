@@ -6,7 +6,7 @@
  *
  * Light-only, like the rest of this folder.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ADMIN_WORDS, AUTHORITY_KINDS, AUTHORITY_KIND_WORDS, INVOICING_ROUTES, PAY_ROUTE_SHORT_WORDS,
   type AuthorityKind, type Payer, type PayersDoc, type PayRoute,
@@ -42,10 +42,16 @@ const fromDraft = (d: Draft): Payer => ({
 export default function PayersEditor({ password }: { password: string }) {
   const { state, save, saving, message } = useSettingsDocument<PayersDoc>("payers", password);
   const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [seededFrom, setSeededFrom] = useState<PayersDoc | null>(null);
 
-  useEffect(() => {
-    if (state.kind === "ready") setDrafts(state.doc.payers.map(toDraft));
-  }, [state]);
+  // Seed the drafts once per loaded document, in the same render that first sees it, so they
+  // commit together with "Name who you pay first". An effect here ran in a later passive flush
+  // and wiped a payer pressed into being in between (14 Nov 2026, PayersEditor.test.tsx). A new
+  // document (a save, a reload) seeds afresh; anything else leaves the person's drafts alone.
+  if (state.kind === "ready" && state.doc !== seededFrom) {
+    setSeededFrom(state.doc);
+    setDrafts(state.doc.payers.map(toDraft));
+  }
 
   if (state.kind === "loading" || state.kind === "off") return null;
   if (state.kind === "refused") return <p role="alert" className="text-sm text-foreground">{state.text}</p>;
