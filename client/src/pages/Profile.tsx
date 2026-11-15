@@ -63,6 +63,8 @@ import { SeedOfLife } from "@/components/journey/nature";
 import { rememberPath, type PathView } from "@/lib/usePath";
 import { lazy, Suspense, useEffect, useState } from "react";
 const OnboardingPath = lazy(() => import("@/components/profile/OnboardingPath"));
+// MEET YOUR COMPANION (approved design, 14 Nov 2026): the guided welcome and its resume card, never on the first page.
+const CompanionWelcomeMount = lazy(() => import("@/components/companionWelcome/CompanionWelcomeMount"));
 import { Link, useLocation } from "wouter";
 import { onProfileRefresh } from "@/lib/profileRefresh";
 import { useStoryPageShown } from "@/lib/brochure";
@@ -541,6 +543,12 @@ export default function Profile() {
 
             <div className={tabOf("today")}>
               <TodayStrip data={dash} stepsWaiting={startStepsShown} pathSpeaks={!!path} />
+            </div>
+
+            <div className={tabOf("today")}>
+              <Suspense fallback={null}>
+                <CompanionWelcomeMount firstName={(user.name ?? "").trim().split(/\s+/)[0] || "friend"} onTab={setTab} />
+              </Suspense>
             </div>
 
             {/* WHO HELPS YOU: the member's guide, chosen once (2026-11-09). On Today, so a phone finds it first. */}
