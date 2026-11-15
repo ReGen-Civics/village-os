@@ -360,6 +360,11 @@ msgctxt "button that suggests a change to what closing means"
 msgid "Suggest a change"
 msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: the commitment range"
+msgid "Least one person may propose"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request step"
 msgid "In review"
@@ -411,6 +416,11 @@ msgstr ""
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Co-sign the new key"
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask"
+msgid "No ask given"
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -626,6 +636,11 @@ msgstr ""
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
 msgid "{a} and older"
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask"
+msgid "Their ask"
 msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
@@ -1066,6 +1081,10 @@ msgstr ""
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "What the village chose"
+msgstr ""
+
+#: client/src/pages/Reset.tsx
+msgid "Clearing this site from your device..."
 msgstr ""
 
 #: client/src/components/Layout.tsx
@@ -2178,6 +2197,11 @@ msgctxt "roles page: required roles beyond the reader's percent, several"
 msgid "{beyondCount} roles need more time than you have right now."
 msgstr "{beyondCount} roles necesitan más tiempo del que tienes ahora."
 
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "What you would ask (optional)"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Not funded this round"
@@ -2684,6 +2708,11 @@ msgctxt "thanks thread: who thanked whom"
 msgid "{from} thanked {to}"
 msgstr "{from} agradeció a {to}"
 
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment"
+msgid "Not chosen"
+msgstr ""
+
 #: client/src/components/governance/GoalsField.tsx
 msgctxt "proposal goals list"
 msgid "this role"
@@ -2738,6 +2767,10 @@ msgstr "No sirve a ninguna meta de la temporada"
 
 #: client/src/components/journey/TestRun.tsx
 msgid "What a member can give each moon"
+msgstr ""
+
+#: client/src/pages/Reset.tsx
+msgid "Done. We cleared this site's saved files and old version from this device, and kept your drafts."
 msgstr ""
 
 #: client/src/components/proposalDrafts/AskSera.tsx
@@ -2870,6 +2903,11 @@ msgstr ""
 #: client/src/components/notebook/NotebookExport.tsx
 msgctxt "save one exported file"
 msgid "Save {0}"
+msgstr ""
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: the commitment range"
+msgid "Shared or whole"
 msgstr ""
 
 #: client/src/components/review/SeraActs.tsx
@@ -3441,9 +3479,9 @@ msgid "{0} open claims keep the price they were taken at."
 msgstr ""
 
 #: client/src/components/commitment/RolesCommitment.tsx
-msgctxt "commitment split: roles paid on separate agreements"
-msgid "Your roles are paid on separate agreements. Say how your time falls between them. Pay does not read this yet. The village is still deciding how it will."
-msgstr ""
+#~ msgctxt "commitment split: roles paid on separate agreements"
+#~ msgid "Your roles are paid on separate agreements. Say how your time falls between them. Pay does not read this yet. The village is still deciding how it will."
+#~ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Delete this change request? This cannot be undone."
@@ -4094,6 +4132,11 @@ msgctxt "label above the canvas's own question"
 msgid "The canvas asks"
 msgstr ""
 
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment"
+msgid "They propose"
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft with a model"
 msgstr ""
@@ -4513,6 +4556,11 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} still didn't answer at {askedAt}."
+msgstr ""
+
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "Leave it blank"
 msgstr ""
 
 #: client/src/components/TreasurySync.tsx
@@ -5365,6 +5413,15 @@ msgctxt "notification bell"
 msgid "Waits on you"
 msgstr ""
 
+#. placeholder {0}: data.pct
+#. placeholder {1}: moneyWords(r.atCommitment, r.full.currency)
+#. placeholder {2}: r.full.per
+#. placeholder {3}: moneyWords(r.full.amount, r.full.currency)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the ceiling at their commitment"
+msgid "At {0}%, the role pays up to {1} a {2} (the full role: {3})."
+msgstr ""
+
 #: client/src/components/notebook/NotebookAdd.tsx
 msgid "How to add it"
 msgstr ""
@@ -5973,10 +6030,21 @@ msgctxt "funding rounds"
 msgid "What it is for"
 msgstr ""
 
+#. placeholder {0}: moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask, an amount"
+msgid "{0} a month"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft step"
 #~ msgid "Propose"
 #~ msgstr "Proponer"
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: the commitment range"
+msgid "What the role needs in all"
+msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
@@ -6030,6 +6098,10 @@ msgstr "Siguiente: tu Ikigai y tus personajes"
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
 msgid "Saved."
+msgstr ""
+
+#: client/src/pages/Reset.tsx
+msgid "A fresh start for this device"
 msgstr ""
 
 #: client/src/components/canvas/CanvasMoon.tsx
@@ -6103,6 +6175,11 @@ msgctxt "thanks composer: the send button"
 msgid "Send the lantern"
 msgstr "Enviar la linterna"
 
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "Either way, the contract sets the amount, at or under what the role pays at your commitment."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value of a setting today"
 msgid "Now"
@@ -6143,6 +6220,15 @@ msgstr "Esta vez no puedo ir"
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Signs what other villages read about this one: its discovery page, its public structure and its module report. Key <0>{kid}</0>, made {made}."
+msgstr ""
+
+#. placeholder {0}: r.heldPct
+#. placeholder {1}: r.targetPct
+#. placeholder {2}: r.withThisPct
+#. placeholder {3}: r.targetPct
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: how full the role would be"
+msgid "Held now: {0}% of {1}%. With this application: {2}% of {3}%."
 msgstr ""
 
 #: client/src/components/circleCard/HearthSections.tsx
@@ -6274,6 +6360,11 @@ msgstr ""
 #: client/src/pages/Roles.tsx
 msgid "Open this circle's card"
 msgstr "Abrir la ficha de este círculo"
+
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "A monthly amount"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stone"
@@ -7609,6 +7700,10 @@ msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
 msgstr "Propón un nuevo rol"
 
+#: client/src/components/ErrorBoundary.tsx
+msgid "Still stuck? Give this device a fresh start"
+msgstr ""
+
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "sera changes"
 msgid "Review it as one structure change"
@@ -8126,6 +8221,11 @@ msgstr ""
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Untick all"
+msgstr ""
+
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "Negotiate on the first call if chosen"
 msgstr ""
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
@@ -8741,6 +8841,10 @@ msgctxt "time zone field"
 msgid "Clear"
 msgstr ""
 
+#: client/src/components/ErrorBoundary.tsx
+msgid "We just updated the site"
+msgstr ""
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "Opening the role card…"
@@ -9206,6 +9310,11 @@ msgstr ""
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgctxt "label of the closing statement box"
 msgid "The village's words"
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask"
+msgid "Negotiate on the first call if chosen"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -10597,6 +10706,10 @@ msgctxt "conflict steps: how the village sees conflict, the platform's default"
 msgid "Conflict helps us evolve. As a culture, we meet it as an opportunity for growth, so everyone in it can take something good from it. Together we seek to understand what each conflict teaches us, so that every one helps us grow stronger."
 msgstr "El conflicto nos ayuda a evolucionar. Como cultura, lo recibimos como una oportunidad de crecimiento, para que cada persona involucrada pueda sacar algo bueno de él. Juntos buscamos entender lo que cada conflicto nos enseña, para que cada uno nos ayude a crecer más fuertes."
 
+#: client/src/pages/Reset.tsx
+msgid "Done. We cleared this site's saved files and old version from this device."
+msgstr ""
+
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
 msgid "it comes with its circle"
@@ -10945,6 +11058,11 @@ msgstr ""
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "The line that follows has Undo, to bring them back."
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment heading"
+msgid "Commitment and pay"
 msgstr ""
 
 #: client/src/components/admin/AgreementDocumentUpload.tsx
@@ -11499,6 +11617,11 @@ msgstr ""
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Ideas welcome until the pot's holder sets the next stage"
+msgstr ""
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "Blank least: the role is offered at 100% only. Blank in all: 100%. Set 300% when it needs three whole people. The role stays open until its holders give that much."
 msgstr ""
 
 #: client/src/components/commitment/RolesCommitment.tsx
@@ -12181,6 +12304,16 @@ msgstr ""
 #: client/src/components/notebook/NotebookAdd.tsx
 msgctxt "notebook add button, busy"
 msgid "Adding"
+msgstr ""
+
+#: client/src/pages/Reset.tsx
+msgid "Taking you home now. You may need to sign in again."
+msgstr ""
+
+#. placeholder {0}: ceilingAtWords(ceiling, value.commitmentPct)
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms commitment: the most the role pays at the chosen commitment"
+msgid "{0} at this commitment"
 msgstr ""
 
 #: client/src/components/canvas/CanvasView.tsx
@@ -13285,6 +13418,11 @@ msgstr ""
 msgid "Most people list three to five goals for a moon. You can send fewer, and we will read what you give us."
 msgstr "La mayoría de las personas anota de tres a cinco metas por luna. Puedes enviar menos, y leeremos lo que nos des."
 
+#: client/src/pages/Reset.tsx
+msgctxt "fresh start page: go to the home page now"
+msgid "Go home"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tab"
 msgid "Moon"
@@ -13534,6 +13672,11 @@ msgctxt "founding application intro"
 msgid "What your first month with us would look like, and when you could begin."
 msgstr "Cómo sería tu primer mes con nosotros, y cuándo podrías empezar."
 
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms: the pay ask"
+msgid "The monthly amount you would ask"
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
 msgid "Check your email"
@@ -13571,6 +13714,10 @@ msgstr ""
 msgctxt "calendar day strip: what is on a day"
 msgid "a gathering"
 msgstr "un encuentro"
+
+#: client/src/components/ErrorBoundary.tsx
+msgid "Tap reload to get the new version."
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles"
@@ -13665,6 +13812,11 @@ msgstr ""
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment on the roles card: heading"
 msgid "How much you give"
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment footnote"
+msgid "The contract sets the pay, at or under what the role pays at their commitment."
 msgstr ""
 
 #: client/src/components/circleCard/HearthSections.tsx
@@ -13825,6 +13977,11 @@ msgstr "Cuando una tensión entre personas necesita reparación, estos son los p
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "I can live with this"
+msgstr ""
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application value"
+msgid "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done."
 msgstr ""
 
 #: client/src/components/canvas/CanvasBaseline.tsx
@@ -14052,6 +14209,11 @@ msgstr ""
 msgctxt "open proposal confirmed drawing"
 msgid "You"
 msgstr "Tú"
+
+#: client/src/components/commitment/RolesCommitment.tsx
+msgctxt "commitment split: roles paid on separate agreements"
+msgid "Your roles are paid on separate agreements, so each role's pay at End of Moon scales by its part here. You see the scaled pay on your moon invoice, and a Treasurer confirms it before anything is paid. With no split, or parts that do not make 100%, pay stays as each agreement says."
+msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgctxt "how someone appeals a consequence"
@@ -14475,6 +14637,11 @@ msgstr ""
 msgctxt "open proposal side by side"
 msgid "Usual times: {windowList}"
 msgstr "Horarios habituales: {windowList}"
+
+#: client/src/components/ErrorBoundary.tsx
+msgctxt "update card: reload the page"
+msgid "Reload"
+msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "No first task for {roleName}"

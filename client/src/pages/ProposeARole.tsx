@@ -93,7 +93,7 @@ interface FormRole {
   accountabilities?: string[];
   timeCommitment?: string | null;
   /** The role's suggested wording for the eight settings and the commitment it asks (joining lane PR 3). */
-  terms?: { words?: TermsWords; commitmentPct?: number | null };
+  terms?: { words?: TermsWords; commitmentPct?: number | null }; commitmentMin?: number | null; payCeiling?: import("@shared/roleCardSections").PayCeiling | null; // the commitment range (Rye, 14 Nov 2026)
   conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>;
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
@@ -318,7 +318,7 @@ export default function ProposeARole() {
       setAim(d.aim);
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
-      setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct });
+      setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk });
       setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
@@ -496,7 +496,7 @@ export default function ProposeARole() {
         locale: i18n.locale,
         ...(membership.kind === "aligned" ? { membership: { letterVersion: membership.letterVersion } } : {}),
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
-        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}),
+        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
       // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
       const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
@@ -902,7 +902,7 @@ export default function ProposeARole() {
               {heading(3)}
               <section aria-label={labels[3]} tabIndex={-1} className="grid scroll-mt-24 gap-4 outline-none" data-terms-section="">
                 <TermsEight
-                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null }]}
+                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null }]}
                   value={termsStep}
                   onChange={setTermsStep}
                   problem={problemOn("terms")}

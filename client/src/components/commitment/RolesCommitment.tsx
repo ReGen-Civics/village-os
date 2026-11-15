@@ -22,9 +22,11 @@
  * pay, and the card says the split changes nothing; separate agreements are
  * where it is meant to matter.
  *
- * TODO(commitment-split-pay): weight pay by the split for roles paid apart.
- * Waits for the lead's ruling; nothing that pays reads this today
- * (server/lib/commitmentBoundary.test.ts).
+ * PAY (Rye, 14 Nov 2026, answer A): for roles paid apart, each role's pay
+ * at End of Moon scales by its part here (`scaleBySplit`), and a Treasurer
+ * confirms the scaled amounts before anything is paid. The member reads the
+ * scaled pay per role on their moon invoice. The percent itself never
+ * reaches pay (server/lib/commitmentBoundary.test.ts).
  *
  * Private to the member. Nobody else sees it, and it never ranks anyone.
  */
@@ -106,7 +108,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
     fold === "together"
       ? t({ message: "Your roles share one pay, so there is nothing you need to split. Splitting your time is only for your own planning.", context: "commitment split: every role is paid through one agreement" })
       : fold === "apart"
-        ? t({ message: "Your roles are paid on separate agreements. Say how your time falls between them. Pay does not read this yet. The village is still deciding how it will.", context: "commitment split: roles paid on separate agreements" })
+        ? t({ message: "Your roles are paid on separate agreements, so each role's pay at End of Moon scales by its part here. You see the scaled pay on your moon invoice, and a Treasurer confirms it before anything is paid. With no split, or parts that do not make 100%, pay stays as each agreement says.", context: "commitment split: roles paid on separate agreements" })
         : t({ message: "No pay agreement covers these roles yet, so a split is only for your own planning.", context: "commitment split: no agreement covers the roles" });
 
   return (

@@ -24,6 +24,7 @@ import { looksLikePaymentDetails, PAY_KINDS, parseSeatSettings, type PaySettings
 import { TRACKS, TRACK_WORDS, readTrack, type Track } from "./roleTracks";
 import { HELD_BY, readHeldBy, type HeldBy } from "./agentHolders";
 import { readCommitmentPct } from "./commitment";
+import { readCommitmentMin, readCommitmentTarget } from "./commitmentRange";
 
 /** Every parameter key, in the order the editor and the card text show them. */
 export const PARAMETER_KEYS = [
@@ -33,6 +34,8 @@ export const PARAMETER_KEYS = [
   "heldBy",
   "commitmentPct",
   "commitmentRequired",
+  "commitmentMin",
+  "commitmentTarget",
   "track",
   "whereWorked",
   "languages",
@@ -56,6 +59,8 @@ export const PARAMETER_COLUMNS: Record<ParameterKey, string> = {
   heldBy: "held_by",
   commitmentPct: "commitment_pct",
   commitmentRequired: "commitment_required",
+  commitmentMin: "commitment_min",
+  commitmentTarget: "commitment_target",
   track: "track",
   whereWorked: "where_worked",
   languages: "languages",
@@ -119,6 +124,10 @@ export type ParameterValues = {
   commitmentPct?: number | null;
   /** The role needs the whole of that commitment (0383); false is flexible. */
   commitmentRequired?: boolean;
+  /** The least one person may propose, 1 to 100 (Rye, 14 Nov 2026, shared/commitmentRange.ts). Null: the whole role only. */
+  commitmentMin?: number | null;
+  /** The commitment the role needs in all, held by one person or shared, 1 to 1000. Null: 100. */
+  commitmentTarget?: number | null;
   track?: Track | null;
   whereWorked?: WhereWorked | null;
   languages?: string[];
@@ -226,6 +235,14 @@ export function readParameter(key: ParameterKey, raw: unknown, isRole: (id: stri
     }
     case "commitmentPct": {
       const r = readCommitmentPct(raw);
+      return r.ok ? ok(r.value) : no(r.problem);
+    }
+    case "commitmentMin": {
+      const r = readCommitmentMin(raw);
+      return r.ok ? ok(r.value) : no(r.problem);
+    }
+    case "commitmentTarget": {
+      const r = readCommitmentTarget(raw);
       return r.ok ? ok(r.value) : no(r.problem);
     }
     case "heldBy": {
@@ -367,6 +384,8 @@ export const PARAMETER_CARD_FIELDS: readonly ParameterCardSpec[] = [
   { key: "alwaysChecked", heading: "Always background-checked", list: false, oneLine: true, aliases: ["background check"], limit: "Yes or no: whether a check happens for this role whatever the references say." },
   { key: "heldBy", heading: "Who can hold it", list: false, oneLine: true, aliases: ["held by"], limit: "Person, agent or either: whether a person, an agent or either may hold this role." },
   { key: "commitmentPct", heading: "Commitment percent", list: false, oneLine: true, aliases: ["commitment it asks"], limit: "A whole percent from 1 to 100: how much of a person the role asks." },
+  { key: "commitmentMin", heading: "Least commitment one person may propose", list: false, oneLine: true, aliases: ["minimum commitment"], limit: "A whole percent from 1 to 100. Left blank, the role is offered at 100% only." },
+  { key: "commitmentTarget", heading: "Commitment the role needs in all", list: false, oneLine: true, aliases: ["target commitment", "target total commitment"], limit: "A whole percent from 1 to 1000: 100 for one whole person, 300 for three. Left blank, 100." },
   { key: "commitmentRequired", heading: "Commitment required", list: false, oneLine: true, aliases: ["commitment needed"], limit: "Required or flexible: whether the role needs the whole of that commitment." },
   { key: "recruiting", heading: "Door", list: false, oneLine: true, aliases: ["door state"], limit: "Open or closed: whether the role is looking for someone." },
   { key: "track", heading: "Track", list: false, oneLine: true, aliases: [], limit: `One of: ${TRACKS.map((t) => TRACK_WORDS[t]).join(", ")}.` },

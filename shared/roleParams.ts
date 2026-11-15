@@ -27,6 +27,7 @@ import {
 export * from "./interviewerRoles";
 import { HELD_BY, HELD_BY_LABEL, readHeldBy, type HeldBy } from "./agentHolders";
 import { readCommitmentPct, storedCommitmentPct } from "./commitment";
+import { readCommitmentMin, readCommitmentTarget, storedCommitmentMin, storedCommitmentTarget } from "./commitmentRange";
 import { TRACKS as ROLE_TRACKS, PAID_TRACKS, readTrack, type Track as RoleTrack } from "./roleTracks";
 
 // ── Track ────────────────────────────────────────────────────────────────────
@@ -72,6 +73,10 @@ export interface RoleParams {
   commitmentPct: number | null;
   /** The role needs the whole of that commitment (0383). False: it is flexible. */
   commitmentRequired: boolean;
+  /** The least one person may propose, 1 to 100 (Rye, 14 Nov 2026). Null: the whole role only. Display only. */
+  commitmentMin: number | null;
+  /** The commitment the role needs in all, 1 to 1000. Null: 100. Display only. */
+  commitmentTarget: number | null;
 }
 
 export const ROLE_PARAM_KEYS = [
@@ -91,6 +96,8 @@ export const ROLE_PARAM_KEYS = [
   "heldBy",
   "commitmentPct",
   "commitmentRequired",
+  "commitmentMin",
+  "commitmentTarget",
 ] as const satisfies readonly (keyof RoleParams)[];
 export type RoleParamKey = (typeof ROLE_PARAM_KEYS)[number];
 
@@ -112,6 +119,8 @@ export const ROLE_PARAM_COLUMNS: Record<RoleParamKey, string> = {
   heldBy: "held_by",
   commitmentPct: "commitment_pct",
   commitmentRequired: "commitment_required",
+  commitmentMin: "commitment_min",
+  commitmentTarget: "commitment_target",
 };
 
 export const ROLE_PARAM_LABELS: Record<RoleParamKey, string> = {
@@ -131,6 +140,8 @@ export const ROLE_PARAM_LABELS: Record<RoleParamKey, string> = {
   heldBy: HELD_BY_LABEL,
   commitmentPct: "Commitment it asks",
   commitmentRequired: "Commitment required",
+  commitmentMin: "Least commitment one person may propose",
+  commitmentTarget: "Commitment the role needs in all",
 };
 
 // ── Parsing ──────────────────────────────────────────────────────────────────
@@ -253,6 +264,14 @@ export function parseRoleParams(body: unknown): Parsed<Partial<RoleParams>> {
     problems.push(put("commitmentPct", c.ok ? ok(c.value) : bad<number | null>(c.problem)));
   }
   if (o.commitmentRequired !== undefined) problems.push(put("commitmentRequired", typeof o.commitmentRequired === "boolean" ? ok(o.commitmentRequired) : bad<boolean>("Say whether the role needs its whole commitment.")));
+  if (o.commitmentMin !== undefined) {
+    const c = readCommitmentMin(o.commitmentMin);
+    problems.push(put("commitmentMin", c.ok ? ok(c.value) : bad<number | null>(c.problem)));
+  }
+  if (o.commitmentTarget !== undefined) {
+    const c = readCommitmentTarget(o.commitmentTarget);
+    problems.push(put("commitmentTarget", c.ok ? ok(c.value) : bad<number | null>(c.problem)));
+  }
   const first = problems.find((p): p is string => !!p);
   return first ? bad(first) : ok(value);
 }
@@ -305,6 +324,8 @@ export function roleParamsFromRow(r: Record<string, unknown>): RoleParams {
     heldBy: readHeldBy(r.held_by),
     commitmentPct: storedCommitmentPct(r.commitment_pct),
     commitmentRequired: r.commitment_required === 1 || r.commitment_required === true || r.commitment_required === "1",
+    commitmentMin: storedCommitmentMin(r.commitment_min),
+    commitmentTarget: storedCommitmentTarget(r.commitment_target),
   };
 }
 

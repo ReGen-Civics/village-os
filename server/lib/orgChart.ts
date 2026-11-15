@@ -302,7 +302,9 @@ export const ROLE_COLS =
   // 0374: who may hold the role, a person, an agent or either (shared/agentHolders.ts). NULL reads as either.
   "held_by, " +
   // 0383: the commitment the role asks as a stored value, and whether it needs all of it.
-  "commitment_pct, commitment_required";
+  "commitment_pct, commitment_required, " +
+  // The commitment range (Rye, 14 Nov 2026, shared/commitmentRange.ts): the least one person may propose, and what the role needs in all.
+  "commitment_min, commitment_target";
 
 export const ASSIGN_COLS =
   // `is_example` rides along so the flag travels through every SELECT. It was

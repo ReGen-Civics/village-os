@@ -223,7 +223,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const r = await call("GET", "/api/open-proposals/form");
       expect(r.body).toMatchObject({ open: true, village: "Test Village", season: { id: "s-next", name: "Season of Roots", startsOn: "2099-01-01" } });
       expect(r.body.roles.map((x: any) => x.id).sort()).toEqual([gate, well].sort());
-      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false });
+      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, payCeiling: null });
       expect(JSON.stringify(r.body)).not.toContain(example);
       expect(JSON.stringify(r.body)).not.toContain(dormant);
     });
@@ -682,6 +682,30 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         expect(stored?.terms?.answers).toMatchObject({ clocks: { choice: "talk", note: "Four days overlap" } });
       } finally {
         await rewriteTermsOffer(pool, gate, null);
+      }
+    });
+
+    it("a role that can be shared: the form offers its minimum; a commitment below it is refused, and the optional ask is kept (Rye, 14 Nov 2026)", async () => {
+      await pool.query("UPDATE org_roles SET commitment_min = 60 WHERE id = ?", [gate]); // module-review-ok: a test setting the column it asserts on
+      try {
+        const form = await call("GET", "/api/open-proposals/form");
+        expect(form.body.roles.find((x: any) => x.id === gate).commitmentMin).toBe(60);
+        const card = (commitmentPct: number) => ({
+          roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+          serves: [{ goalId: "g-roots", how: "" }],
+          commitmentPct,
+          agreed: { loveLetter: true, nda: true },
+          terms: { answers: {} },
+        });
+        const low = await call("POST", "/api/open-proposals", proposal({ email: "low@example.test", card: card(50), payAsk: { kind: "negotiate" } }));
+        expect(low).toMatchObject({ status: 400, body: { field: "terms", error: "This role takes proposals from 60% to 100%. Choose 60% or more." } });
+        const badAsk = await call("POST", "/api/open-proposals", proposal({ email: "badask@example.test", card: card(60), payAsk: { kind: "amount", monthly: "lots" } }));
+        expect(badAsk).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        // CONTROL: at the minimum, with an ask, it is taken and the ask kept.
+        const { id } = await send({ card: card(60), email: "atmin@example.test", payAsk: { kind: "amount", monthly: 6000 } });
+        expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
+      } finally {
+        await pool.query("UPDATE org_roles SET commitment_min = NULL WHERE id = ?", [gate]); // module-review-ok: a test restoring the column it set
       }
     });
 

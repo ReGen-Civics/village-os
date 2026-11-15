@@ -34,7 +34,7 @@ import {
   ATTESTATION_MISSING, EMPTY_SETTINGS, ITEM_TEXT_EMPTY, LIMITS, MOON_WORDS, NO_TERMS, PAYERS_DOC_KEY, EMPTY_PAYERS, PAY_ROUTES,
   RECAP_STATUS_WORDS, SERA_CLOSED_NOTE, SETTINGS_DOC_KEY, SUPPORT_LINE, attestationWords, auditTensions, billRef, billToOf,
   carriedTooOften, coverage, daysHeldIn, deliverableLines, endOfMoonFriday, goalScore, halfwayDay, heldDuring, invoiceDueOn,
-  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, moonDays, outsideRolesAudit,
+  invoiceSendRefusal, invoiceStatusLine, invoiceTotals, itemDedupeKey, linesFromTerms, memberView, scaleBySplit, moonDays, outsideRolesAudit,
   parseItemFields, parseMoonReviewSettings, parsePayRouteInput, parsePayers, parseRoleAudit, payRouteWords, payerForRoute,
   THANKS_WORDS, parseThanks, periodWords, thanksDedupeKey, readingOf, recapEditable, routeChangeClearsConfirmation, scoreContextOf, seatCoverage, seatReadingOf, sendBy,
   setupGaps, taskScore, termsCarryMoney, waitingLine, waitingStage, workDueOn, workSummaryHtml, workSummaryText,
@@ -49,6 +49,7 @@ import { civilDateKey } from "../../shared/lunar";
 import type { AccomplishmentMoon } from "../../shared/taskAccomplishments";
 import { SCREEN_REASON_WORDS, type ScreenReason } from "../../shared/memberTaskFeedback";
 import type { SeatSettings } from "../../shared/seatSettings";
+import type { RoleSplitShare } from "../../shared/commitment";
 import * as store from "../repos/moonRecaps";
 import * as gatherStore from "../repos/moonGather";
 import type { BoardPress, BoardTask, RoleCardWords, SeatingRow } from "../repos/moonGather";
@@ -56,6 +57,7 @@ import { planVersions, moonLoadOf } from "../repos/seasonPlans";
 import { readApplications } from "../repos/seatApplications";
 import { dbDocument } from "../repos/store-db";
 import { heldTermsFor } from "./heldTerms";
+import { splitForPay } from "./splitForPay";
 import { raiseTension, type TensionDeps } from "./roleTensions";
 
 const newId = (prefix: string): string => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
@@ -340,6 +342,17 @@ export interface Frame {
   seasonId: string | null;
   seasonGoals: SeasonGoalRef[];
   ownGoals: string[];
+  /**
+   * The member's split of their time across roles, as it holds on the moon's
+   * last day (server/lib/splitForPay.ts), for `scaleBySplit`. Null or absent:
+   * pay is the terms, unchanged.
+   */
+  split?: RoleSplitShare[] | null;
+}
+
+/** The draft lines for a frame: the terms, scaled by the split where it applies. */
+export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}): InvoiceLine[] {
+  return scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId));
 }
 
 /** The season running on a day: the latest that has begun and not ended. */
@@ -383,6 +396,7 @@ export async function loadFrame(pool: Pool, userId: string, moon: Moon, deps: Fr
     seasonId: season?.id ?? null,
     seasonGoals,
     ownGoals,
+    split: await splitForPay(pool, userId, moon.days.lastDay),
   };
 }
 
@@ -500,6 +514,8 @@ function fromOf(raw: string | null): FromBlock | null {
 export function invoiceViewOf(input: {
   stored: store.InvoiceRow | null;
   terms: readonly TermsInForce[];
+  /** The frame's roles and split, so a draft shows the split's scaled pay. Absent: the terms unchanged. */
+  frame?: Pick<Frame, "terms" | "roles" | "split">;
   moon: Moon;
   route: PayRouteRecord | null;
   payers: PayersDoc;
@@ -522,7 +538,7 @@ export function invoiceViewOf(input: {
     };
   }
   if (!termsCarryMoney(input.terms)) return null;
-  const lines = linesFromTerms(input.terms, moon.days);
+  const lines = input.frame ? draftLines(input.frame, moon.days) : linesFromTerms(input.terms, moon.days);
   const route = input.route;
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const totals = invoiceTotals(lines);
@@ -649,7 +665,7 @@ export async function myMoon(pool: Pool, userId: string, moon: Moon, deps: MyMoo
     outsideRoles: outsideRolesAudit({ items, heldRoleIds, roleNames, emptyRoleIds: belongsIds.filter((id) => !heldNow.has(id)) }),
     invoiceNeeded,
     noTermsLine: !invoiceNeeded && frame.roles.length > 0 ? NO_TERMS : null,
-    invoice: invoiceViewOf({ stored, terms: frame.terms, moon, route, payers, settings, today, summary: recap ? summaryFor({ stored, recap, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: deps.timeZone }) : null }),
+    invoice: invoiceViewOf({ stored, terms: frame.terms, frame, moon, route, payers, settings, today, summary: recap ? summaryFor({ stored, recap, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: deps.timeZone }) : null }),
     payRoute: route,
     routeChoices: PAY_ROUTES.map((r) => ({ route: r, words: payRouteWords(r, settings) })),
     pilotAck: settings.pilotAck ? { version: settings.pilotAck.version, text: settings.pilotAck.text, acceptedVersion: route?.pilotAckVersion ?? null } : null,

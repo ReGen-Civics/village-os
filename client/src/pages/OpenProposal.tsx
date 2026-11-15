@@ -31,6 +31,7 @@ import { useLingui } from "@lingui/react/macro";
 import { APPLICANT_NOTE_MAX } from "@shared/applicantWords";
 import { CardSideBySide } from "@/components/openProposal/RoleCardBridge";
 import PieceSuggestionsReview from "@/components/roleCard/PieceSuggestionsReview";
+import CommitmentReview, { type CommitmentReviewData } from "@/components/openProposal/CommitmentReview";
 import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
 import TermsWeOffer, { OpenTalksWarning, type ServedDeciderOffer } from "@/components/openProposal/TermsWeOffer";
@@ -78,6 +79,8 @@ export interface ServedOpenProposal {
   membership?: { aligned: boolean };
   /** What the applicant would make of each role card's pieces (shared/pieceSuggestions.ts): deciders only, else null. */
   pieceSuggestions?: PieceSuggestion[] | null;
+  /** The commitment, what the role pays at it, the optional ask and the coverage (Rye, 14 Nov 2026): deciders only, else null. */
+  commitment?: CommitmentReviewData | null;
   why: string;
   aim: string;
   confirmedOn: string | null;
@@ -380,6 +383,7 @@ export default function OpenProposal() {
             </section>}
             {/* Beside each piece of the role card, what they would change, find missing or deliver (Rye, 14 Nov 2026). */}
             {!p.agent && <PieceSuggestionsReview suggestions={p.pieceSuggestions} roles={p.roles} />}
+            {!p.agent && <CommitmentReview data={p.commitment} roles={p.roles} />}
 
             {/* An agent is offered no pay, allowance or commitment (verify B153, B8): a person's terms never show for one. */}
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} />}

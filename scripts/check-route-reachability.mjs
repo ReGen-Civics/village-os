@@ -133,6 +133,13 @@ const ALLOWLIST = {
 
   "/forgot-password": "one door, on the sign-in page, which is where a locked-out person already is",
 
+  // The fresh start for one device (client/src/pages/Reset.tsx). It is a link we
+  // hand to a member whose phone is stuck on an old version, by message or by
+  // voice, the way a reset link is. Its one door on the site is the "just
+  // updated" card a stuck page shows; a nav entry would offer every member a
+  // button that signs them out.
+  "/reset": "a link we hand to a member whose device is stuck; on the site only the update card links it",
+
   // One page per arrival from an outside service, and meaningless without the
   // arrival's id. Its door is that arrival's card on /review, which is where a
   // steward already is when there is something to read; a nav entry could only

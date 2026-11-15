@@ -548,6 +548,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
             { roleId: gate, piece: "purpose", kind: "missing", text: "Who the gate keeps out, and why." },
             { roleId: "not-a-role-i-picked", piece: "purpose", kind: "change", text: "Dropped: a role this application does not pick." },
           ],
+          payAsk: { kind: "negotiate" },
         }),
       });
       expect(res.status, await res.clone().text()).toBe(200);
@@ -558,7 +559,14 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
         { roleId: gate, piece: "accountabilities", kind: "deliver", text: "A dawn rota, posted every Sunday." },
         { roleId: gate, piece: "purpose", kind: "missing", text: "Who the gate keeps out, and why." },
       ]);
+      // The commitment block (Rye, 14 Nov 2026): the ask and the coverage arithmetic, for deciders only.
+      const c = decider.body.proposal.commitment;
+      expect(c).toMatchObject({ pct: null, ask: { kind: "negotiate" } });
+      expect(c.roles).toHaveLength(1);
+      expect(c.roles[0]).toMatchObject({ roleId: gate, full: null, atCommitment: null, targetPct: 100 });
+      expect(c.roles[0].withThisPct).toBe(c.roles[0].heldPct);
       const mo = await page(id, MO.id);
+      expect(mo.body.proposal.commitment).toBeNull();
       expect(mo.body.proposal.pieceSuggestions).toBeNull();
       expect(JSON.stringify(mo.body)).not.toContain("dawn rota");
       // They show how one person thinks, so they go with the name and the address when it is anonymised.
