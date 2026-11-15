@@ -40,6 +40,35 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.7 (2026-11-15)
+
+A release of fixes from six quality sweeps across the last ten days' work.
+
+### What changed for your village
+
+- **Pay is safer.** A member paid on separate applications whose amount the Treasurer changed could never be confirmed; that works now. A confirm is refused if the amounts changed since the Treasurer looked, nobody can confirm their own pay, goals still open count against progress, the far-off flag needs a fair sample, and a figure Finance set is no longer halved by a split.
+- **Applications are safer and more private.** An address we have stopped emailing (bounced or erased) can no longer slip an application through; an unconfirmed address is never linked to the member who owns it; agents never read voice transcripts or suggestions; uploads have a total size cap; erasing an account now reaches that person's applications; and voice notes are heard by the deciders and admins, as the consent now says.
+- **The application form reads and works better.** The email is checked as you go, the review shows your price and your notes on the role, the phone button bar no longer covers what you type, buttons are bigger and named, and focus stays where you are. Prices say their period, and a role held by one person no longer shows their exact share in public.
+- **Words match the village.** No more "Lead" on the founding roles, the price says your proposal sets your pay, the Anchor Circle is the one circle for now, and "filling first" replaces "hiring first". New strings are now in Spanish.
+- **Never a blank page.** If the village can't be reached the site says so and tries again; offline is told apart from an update; a missing file's not-found is never cached; /reset keeps you signed in and waits for you.
+- **Smaller fixes.** A host who pressed quickly could get the wrong gathering length; a role card's "Last edited" date follows the village's time zone; the companion welcome keeps keyboard focus and asks before it speaks; the connector can now make approved role-card word edits and set the pay note.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1288 Batch 170 (1.3.7): open-proposal security, pay QA fixes, a11y, copy sweep, resilience
+- #1287 Batch 169: Spanish strings, a11y fixes, release-notify, role-card price fixes
+- #1282 Batch 168 (1.3.7): connector words, newsletter line, sessions length fix, /reset keeps sign-in
+
+---
+
 ## 1.3.6 (2026-11-15)
 
 ### What changed for your village
