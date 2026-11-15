@@ -45,6 +45,20 @@ export function foundingRoles<R extends FoundingCandidate>(on: boolean, setting:
 }
 
 /**
+ * HIRING THE FOUNDING TEAM FIRST (Rye, 14 Nov 2026): "make it clear that we're
+ * going to hire those people first, but... we still have a lot of other roles
+ * to fill." While the founding team is featured, every other listed role opens
+ * after it: it can be read and applied for now, and its applicant is told the
+ * reply waits until the founding team is in place.
+ *
+ * True when the founding team has roles and none of `roleIds` is one of them.
+ */
+export function opensAfterFounding(foundingIds: readonly string[], roleIds: readonly string[]): boolean {
+  if (foundingIds.length === 0 || roleIds.length === 0) return false;
+  return !roleIds.some((id) => foundingIds.includes(id));
+}
+
+/**
  * THE `{foundingRoles}` WORD, for page words that speak of the founding team
  * (the steward page's "Join the founding team" band, lead, 12 Nov 2026: "text
  * like this seems very temporary... we can't have text like this that will

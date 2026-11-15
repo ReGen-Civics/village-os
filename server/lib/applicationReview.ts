@@ -65,6 +65,7 @@ import * as repo from "../repos/applicationReview";
 import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
 import { listOrgRoles } from "./orgChart";
+import { afterFounding, replyDaysFor } from "./foundingFirst";
 import { isExampleUser } from "./examples";
 import { isTombstone } from "./oauthAccounts";
 import type { DecideDeps } from "./openProposalDecide";
@@ -608,7 +609,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a person. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; url: string | null } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; url: string | null } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -633,6 +634,7 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     timeZone: tz,
   });
   const d = await confirmedDetail(pool, ref);
+  const firstReplied = steps.some((x) => x.kind === "first_reply");
   const roleNames = await repo.roleNamesById(pool, d?.roleIds ?? []);
   const mode = d?.mode ?? "split";
   const booking = interviews.length ? bookingWords(interviews.map((i) => names.get(i.roleId) ?? i.roleId)) : null;
@@ -653,7 +655,9 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     bookNow,
     mode,
     outcome,
-    replyDays: numberVar("org.applicant_reply_days"),
+    // Until the first reply, an application for a role that opens after the founding team is told the reply waits (Rye, 14 Nov 2026).
+    replyDays: firstReplied ? numberVar("org.applicant_reply_days") : await replyDaysFor(pool, d?.roleIds ?? []),
+    afterFounding: !firstReplied && (await afterFounding(pool, d?.roleIds ?? [])),
     referencesGiven,
     locale: own ? languageOf(own) : "en",
     note: own?.body.note ?? null,

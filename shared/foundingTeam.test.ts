@@ -1,5 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { foundingRoleIds, foundingRoleList, foundingRoles, withFoundingRoles } from "./foundingTeam";
+import { foundingRoleIds, foundingRoleList, foundingRoles, opensAfterFounding, withFoundingRoles } from "./foundingTeam";
+
+describe("hiring the founding team first (Rye, 14 Nov 2026)", () => {
+  it("a role outside the founding team opens after it", () => {
+    expect(opensAfterFounding(["finance", "land"], ["cook"])).toBe(true);
+  });
+  it("a founding role, or an application that names one, does not (control)", () => {
+    expect(opensAfterFounding(["finance", "land"], ["land"])).toBe(false);
+    expect(opensAfterFounding(["finance", "land"], ["cook", "finance"])).toBe(false);
+  });
+  it("with no founding team featured, or no role named, nothing opens later (control)", () => {
+    expect(opensAfterFounding([], ["cook"])).toBe(false);
+    expect(opensAfterFounding(["finance"], [])).toBe(false);
+  });
+});
 
 const ROLES = [
   { id: "finance", listed: null, active: true },

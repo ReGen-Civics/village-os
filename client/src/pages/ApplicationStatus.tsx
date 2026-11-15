@@ -43,7 +43,9 @@ interface Served {
   /** The conversation open now and its role's booking link (12 Nov 2026). */
   bookNow?: { role: string; url: string | null } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
-  replyDays?: number;
+  replyDays?: number | null;
+  /** Until the first reply, the roles open after the founding team (Rye, 14 Nov 2026). */
+  afterFounding?: boolean;
   /** A count only: how many references the applicant gave (shared/proposalAbout.ts). */
   referencesGiven?: number | null;
   /** The applicant's language, and a decider's note for them (server/lib/applicationReview.ts statusOf). */
@@ -271,7 +273,7 @@ export default function ApplicationStatus() {
   const termsWait = !!s?.offer && s.offer.mayAnswer && s.offer.open > 0;
   /** A founding application: our review comes before the conversations (Phase A). Its page is the quiet register. */
   const founding = !!s?.reviewFirst;
-  const hints = founding && s?.outcome == null && view ? stepHints(view.path.map((p) => p.label), w.status, applicantSteps(lang, typeof s?.replyDays === "number" ? s.replyDays : 7)).map((h, i) => (view.path[i].state === "done" ? null : h)) : null;
+  const hints = founding && s?.outcome == null && view ? stepHints(view.path.map((p) => p.label), w.status, applicantSteps(lang, s?.afterFounding ? null : typeof s?.replyDays === "number" ? s.replyDays : 7)).map((h, i) => (view.path[i].state === "done" ? null : h)) : null;
 
   return (
     <Layout>
@@ -309,7 +311,7 @@ export default function ApplicationStatus() {
                   <p className={EYEBROW}>{view.stepWords}</p>
                   {!(founding && s.outcome === "adopted") && <p className="mt-1 text-lg text-foreground">{view.move}</p>}
                   {byDay && <p className="mt-1 text-foreground">{w.status.by(byDay)}</p>}
-                  {s.outcome == null && typeof s.replyDays === "number" && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.replyDays)}</p>}
+                  {s.outcome == null && (s.afterFounding || typeof s.replyDays === "number") && <p className="mt-1 text-foreground" data-reply-promise="">{w.replyPromise(s.afterFounding ? null : (s.replyDays as number))}</p>}
                   {s.outcome === "adopted" && (
                     <p className="mt-2 font-medium text-notice" data-adopted-line="">
                       {founding

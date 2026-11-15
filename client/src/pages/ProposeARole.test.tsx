@@ -131,6 +131,32 @@ describe("one role per application", () => {
     expect(window.location.search).toBe("");
   });
 
+  it("hiring the founding team first (Rye, 14 Nov 2026): the founding roles first, then the roles opening next with the note that the reply waits", async () => {
+    window.history.pushState({}, "", "/propose-a-role");
+    serve({ ...FORM, roles: [FORM.roles[0], { ...FORM.roles[1], opensLater: true }] });
+    render(<ProposeARole />);
+    const first = await screen.findByRole("region", { name: "Hiring first: the founding team" });
+    const later = screen.getByRole("region", { name: "Opening next" });
+    expect(within(first).getAllByRole("button").map((d) => d.getAttribute("data-role"))).toEqual(["r-gate"]);
+    expect(within(later).getAllByRole("button").map((d) => d.getAttribute("data-role"))).toEqual(["r-host"]);
+    expect(later.textContent).toMatch(/it may be a while before we reply/);
+    fireEvent.click(within(later).getByRole("button", { name: /Apply: Welcome Host/ }));
+    await screen.findByRole("heading", { level: 1, name: OPEN_WORDS.heading("Welcome Host") });
+    expect(document.querySelector("[data-opens-later]")?.textContent).toMatch(/opens after the founding team/);
+  });
+
+  it("one list and no note while every role is a founding role (control)", async () => {
+    await applyFor("r-gate");
+    expect(document.querySelector("[data-opens-later]")).toBeNull();
+    cleanup();
+    window.history.pushState({}, "", "/propose-a-role");
+    serve(FORM);
+    render(<ProposeARole />);
+    await screen.findByRole("heading", { level: 1, name: OPEN_WORDS.chooseHeading });
+    expect(screen.queryByRole("region", { name: "Opening next" })).toBeNull();
+    expect(document.querySelectorAll("[data-role-choice]")).toHaveLength(1);
+  });
+
   it("a link naming several roles applies for the first one still offered; one no longer offered says so and offers the rest", async () => {
     window.history.pushState({}, "", "/propose-a-role?role=r-gone&role=r-host&role=r-gate");
     serve(FORM);
@@ -723,6 +749,16 @@ describe("the sent threshold", () => {
     const doors = within(document.querySelector("[data-wait-doors]") as HTMLElement).getAllByRole("link").map((a) => a.getAttribute("href"));
     expect(doors).toEqual(["/roles", "/love-letter"]);
     expect(document.querySelector('[data-threshold="sent"] [data-met="false"]')).toBeTruthy();
+  });
+
+  it("an application for a role that opens after the founding team is told the reply waits, and is given no reply date (Rye, 14 Nov 2026)", async () => {
+    await applyFor("r-gate", FORM, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
+    await completeAll();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
+    sendNow();
+    await screen.findByRole("heading", { name: "Check your email" });
+    expect(document.querySelector("[data-after-founding]")?.textContent).toMatch(/founding team first/);
+    expect(document.querySelector("[data-dated-steps]")?.textContent ?? "").not.toMatch(/write to you by /);
   });
 
   it("names the role's conversations in order after sending", async () => {
