@@ -16420,3 +16420,9 @@ msgstr "Grabar es opcional, y mucha gente escribe. Valora las respuestas escrita
 msgctxt "admin open proposals"
 msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
 msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la escuchan. Se borra con la solicitud y, a más tardar, 90 días después de la decisión."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application value"
+msgid "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
+msgstr "Las metas guían el trabajo, y el pago sigue a lo que entregas. Si un mes termina lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. Quien lleva la tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que lo confirme."
