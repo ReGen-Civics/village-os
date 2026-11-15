@@ -24,6 +24,9 @@ import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/jou
 import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
 import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
+/** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
+export { VoiceClipsProvider } from "./VoiceClips";
+export { clipLimitsOf, type VoiceClipLimits } from "@shared/voiceNotes";
 
 export interface VoiceTake {
   blob: Blob;
@@ -32,19 +35,26 @@ export interface VoiceTake {
   url: string;
 }
 
+/** A clip beside one answer (components/voice/VoiceClips.tsx): the recording and the words heard while it ran. */
+export interface ClipTake extends VoiceTake {
+  words: string;
+}
+
 export interface VoiceState {
   takes: VoiceTake[];
   /** What the speech engine heard, as the applicant corrected it. */
   transcript: string;
   consent: boolean;
   skipped: boolean;
+  /** Clips beside answers, one per answer, by the answer's key (shared/voiceNotes.ts `isClipField`). */
+  clips: Record<string, ClipTake>;
 }
 
-export const EMPTY_VOICE: VoiceState = { takes: [], transcript: "", consent: false, skipped: false };
+export const EMPTY_VOICE: VoiceState = { takes: [], transcript: "", consent: false, skipped: false, clips: {} };
 
 /** Whether anything of the voice is sent: only with the tick, and only when there is something. */
 export function voiceSent(v: VoiceState): boolean {
-  return v.consent && (v.takes.length > 0 || v.transcript.trim() !== "");
+  return v.consent && (v.takes.length > 0 || v.transcript.trim() !== "" || Object.keys(v.clips).length > 0);
 }
 
 /**
@@ -54,13 +64,26 @@ export function voiceSent(v: VoiceState): boolean {
  */
 export function applicationRequest(proposal: Record<string, unknown>, files: readonly File[], voice: VoiceState): RequestInit {
   const sent = voiceSent(voice);
-  const body = sent ? { ...proposal, voice: { consent: true, seconds: voice.takes.map((t) => t.seconds), transcript: voice.transcript.trim().slice(0, VOICE_TRANSCRIPT_MAX) } } : proposal;
+  const clips = sent ? Object.entries(voice.clips) : [];
+  const body = sent
+    ? {
+        ...proposal,
+        voice: {
+          consent: true,
+          seconds: voice.takes.map((t) => t.seconds),
+          transcript: voice.transcript.trim().slice(0, VOICE_TRANSCRIPT_MAX),
+          ...(clips.length ? { clips: clips.map(([field, c]) => ({ field, seconds: c.seconds, words: c.words })) } : {}),
+        },
+      }
+    : proposal;
   const takes = sent ? voice.takes : [];
-  if (!files.length && !takes.length) return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  if (!files.length && !takes.length && !clips.length) return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
   const fd = new FormData();
   fd.append("proposal", JSON.stringify(body));
   for (const f of files) fd.append("files", f, f.name);
   takes.forEach((t, i) => fd.append("voice", t.blob, `voice-${i + 1}.${voiceKindOfType(t.blob.type)}`));
+  // Clips in the same order as their descriptions above, which is how the server pairs them.
+  clips.forEach(([field, c]) => fd.append("clips", c.blob, `${field}.${voiceKindOfType(c.blob.type)}`));
   return { method: "POST", body: fd };
 }
 
@@ -92,7 +115,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
     URL.revokeObjectURL(value.takes[i].url);
     onChange({ ...value, takes: value.takes.filter((_, k) => k !== i) });
   };
-  const anything = value.takes.length > 0 || value.transcript.trim() !== "";
+  const anything = value.takes.length > 0 || value.transcript.trim() !== "" || Object.keys(value.clips).length > 0;
   const left = VOICE_NOTE_MAX_SECONDS - recorder.elapsed;
   const problem = recorder.problem === "blocked" ? VOICE_WORDS.micBlocked : recorder.problem === "noMic" ? VOICE_WORDS.noMic : null;
 

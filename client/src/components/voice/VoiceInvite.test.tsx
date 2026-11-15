@@ -79,3 +79,17 @@ describe("the invitation", () => {
     expect(screen.queryByText(/Recording 1/)).toBeNull();
   });
 });
+
+describe("clips beside answers (Rye, 14 Nov 2026)", () => {
+  it("sends each clip in `clips`, described in the same order, only with the tick", () => {
+    const clip = { ...take("audio/mp4"), seconds: 20, words: "I keep gates." };
+    const v: VoiceState = { ...EMPTY_VOICE, clips: { why: clip, "value-1-title": { ...take(), seconds: 9, words: "" } } };
+    expect(applicationRequest({ name: "R" }, [], v).headers).toEqual({ "Content-Type": "application/json" });
+    const fd = applicationRequest({ name: "R" }, [], { ...v, consent: true }).body as FormData;
+    expect(JSON.parse(String(fd.get("proposal"))).voice.clips).toEqual([
+      { field: "why", seconds: 20, words: "I keep gates." },
+      { field: "value-1-title", seconds: 9, words: "" },
+    ]);
+    expect((fd.getAll("clips") as File[]).map((f) => f.name)).toEqual(["why.m4a", "value-1-title.webm"]);
+  });
+});

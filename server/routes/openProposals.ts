@@ -110,9 +110,9 @@ import { gateOf } from "../lib/roleCardProjection";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
-import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_BYTES, VOICE_WORDS, parseSentVoice } from "../../shared/voiceNotes";
+import { VOICE_CLIPS_CEILING, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
 import { registerVoiceDraft } from "./openProposalVoiceDraft";
-import { checkProposalFiles, checkVoiceNotes, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
+import { checkProposalFiles, checkVoiceClips, checkVoiceNotes, readVoiceNote, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceClips, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
 
 type Deps = Pick<
   AppDeps,
@@ -340,6 +340,11 @@ export function register(app: Express, deps: Deps): void {
     return (await settings()).publicLink ? { open: true, linkId: null } : { open: false };
   }
 
+  /** The admin door for one recording (below). */
+  const adminVoiceHref = (proposalId: string, noteId: string) => `/api/admin/open-proposals/${encodeURIComponent(proposalId)}/voice/${encodeURIComponent(noteId)}`;
+  /** How many clips beside answers, and how long each (village settings; shared/voiceNotes.ts holds the ceilings). */
+  const clipLimits = () => clipLimitsOf({ max: numberVar("org.voice_clips_max"), seconds: numberVar("org.voice_clip_seconds") });
+
   // ── The public side ───────────────────────────────────────────────────────
 
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
@@ -356,6 +361,8 @@ export function register(app: Express, deps: Deps): void {
       season: t?.season ?? null,
       term: t?.term ?? null,
       goals: t?.goals ?? [],
+      // The clips beside answers this village takes (Rye, 14 Nov 2026).
+      voice: clipLimits(),
       ...(t ? {} : { message: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason }),
       roles: t ? await offered() : [],
       founding: founding(),
@@ -372,10 +379,11 @@ export function register(app: Express, deps: Deps): void {
   const upload = multer({
     storage: multer.memoryStorage(),
     defParamCharset: "utf8",
-    limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX, fields: 1, fieldSize: 512 * 1024 },
+    limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + VOICE_CLIPS_CEILING, fields: 1, fieldSize: 512 * 1024 },
   }).fields([
     { name: "files", maxCount: PROPOSAL_FILES_MAX },
     { name: "voice", maxCount: VOICE_NOTES_MAX },
+    { name: "clips", maxCount: VOICE_CLIPS_CEILING },
   ]);
 
   app.post("/api/open-proposals", async (req, res) => {
@@ -387,7 +395,7 @@ export function register(app: Express, deps: Deps): void {
       if (err) {
         const code = String(err?.code ?? "");
         // A recording refused by the upload's own caps is named as the voice note's.
-        if (err?.field === "voice") return void res.status(code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.tooMany, field: "voice" });
+        if (err?.field === "voice" || err?.field === "clips") return void res.status(code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.tooMany, field: "voice" });
         const error = code === "LIMIT_FILE_SIZE" ? ATTACHMENT_WORDS.fileTooBig : code === "LIMIT_FILE_COUNT" || code === "LIMIT_UNEXPECTED_FILE" ? ATTACHMENT_WORDS.tooManyFiles : ATTACHMENT_WORDS.fileUnreadable;
         return void res.status(code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error, field: "files" });
       }
@@ -400,14 +408,15 @@ export function register(app: Express, deps: Deps): void {
       const sent = (req as Request & { files?: Record<string, Express.Multer.File[] | undefined> }).files ?? {};
       const files = (sent.files ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
       const voiceNotes = (sent.voice ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
-      void intake(req, res, body && typeof body === "object" ? (body as Record<string, any>) : {}, files, voiceNotes).catch((e) => {
+      const clips = (sent.clips ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
+      void intake(req, res, body && typeof body === "object" ? (body as Record<string, any>) : {}, files, voiceNotes, clips).catch((e) => {
         console.error("[open-proposals] a proposal with files was not taken", e);
         if (!res.headersSent) res.status(500).json({ error: OPEN_WORDS.notSent });
       });
     });
   });
 
-  async function intake(req: Request, res: Response, body: Record<string, any>, files: UploadedFile[], voiceNotes: UploadedFile[] = []) {
+  async function intake(req: Request, res: Response, body: Record<string, any>, files: UploadedFile[], voiceNotes: UploadedFile[] = [], clips: UploadedFile[] = []) {
     // Honeypot: a hidden field only a bot fills. Pretend it went, keep nothing.
     if (body.hp) return res.json({ sent: true });
     // Two buckets per connection. This one counts every try, refused or not, and is generous: it only stops a flood.
@@ -449,11 +458,13 @@ export function register(app: Express, deps: Deps): void {
     const checked = checkProposalFiles(files);
     if (!checked.ok) return res.status(400).json({ error: checked.error, field: "files" });
     // The voice note, only with the applicant's tick, every recording checked by its own bytes (Rye, 14 Nov 2026).
-    const voice = parseSentVoice(body.voice, voiceNotes.length);
+    const voice = parseSentVoice(body.voice, voiceNotes.length, clips.length, clipLimits());
     if (!voice.ok) return res.status(400).json({ error: voice.error, field: "voice" });
-    if (voiceNotes.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "voice" });
+    if ((voiceNotes.length || clips.length) && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "voice" });
     const heardOk = checkVoiceNotes(voiceNotes);
     if (!heardOk.ok) return res.status(400).json({ error: heardOk.error, field: "voice" });
+    const clipsOk = checkVoiceClips(clips);
+    if (!clipsOk.ok) return res.status(400).json({ error: clipsOk.error, field: "voice" });
     const { name, email } = parsed.value;
     // The term is the village's, set here and never taken from the form.
     // The goals' words are kept with the card as they read when it was sent, never taken from the form.
@@ -491,7 +502,8 @@ export function register(app: Express, deps: Deps): void {
     try {
       const kept = files.length && fileDir ? await writeProposalFiles(fileDir, id, files) : [];
       const heard = voice.value && voiceNotes.length && fileDir ? await writeVoiceNotes(fileDir, id, voiceNotes, voice.value.seconds) : [];
-      const spoken = voice.value ? { voice: { consent: true as const, notes: heard, transcript: voice.value.transcript } } : {};
+      const clipped = voice.value?.clips && clips.length && fileDir ? await writeVoiceClips(fileDir, id, clips, voice.value.clips) : [];
+      const spoken = voice.value ? { voice: { consent: true as const, notes: heard, transcript: voice.value.transcript, ...(clipped.length ? { clips: clipped } : {}) } } : {};
       await store.insertOpenProposal(pool, { id, name: name.slice(0, OPEN_NAME_MAX), email, emailKey, targetSeasonId: season.id, body: { ...proposal, ...(kept.length ? { files: kept } : {}), ...spoken }, confirmHash: hashOf(token), linkId: d.linkId, now: now() });
     } catch (e) {
       if (fileDir) await removeProposalFiles(fileDir, id);
@@ -616,10 +628,39 @@ export function register(app: Express, deps: Deps): void {
         confirmedAt: p.confirmedAt,
         // Kept although our confirmation email failed (Rye, 14 Nov 2026): flagged, never hidden.
         addressUnconfirmed: p.addressUnconfirmed ? OPEN_WORDS.addressUnconfirmed : null,
-        // Whether they sent a voice note (shared/voiceNotes.ts): a count only, heard on the decider page.
-        voiceNotes: p.body.voice?.notes.length ?? 0,
+        // Their voice (Rye, 14 Nov 2026: "I want to be able to hear the applicants voice"), played here through the admin door below.
+        voice: p.body.voice
+          ? {
+              notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, href: adminVoiceHref(p.id, n.id) })),
+              clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: adminVoiceHref(p.id, c.id) })),
+            }
+          : null,
       })),
     });
+  });
+
+  /*
+   * ONE RECORDING OF AN APPLICANT'S VOICE, for Admin's applications panel (Rye,
+   * 14 Nov 2026). The same people who read the application there (intake.moderate)
+   * may hear it, a confirmed application only, as the panel lists. Inline audio the
+   * panel fetches, never cached or indexed, sandboxed, checked against its fingerprint.
+   */
+  app.get("/api/admin/open-proposals/:id/voice/:noteId", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    const id = String(req.params.id ?? "");
+    const noteId = String(req.params.noteId ?? "");
+    const p = /^op-[0-9a-f]{20}$/.test(id) ? await store.readOpenProposal(getPool(), id) : null;
+    const voice = p && p.status === "confirmed" ? p.body.voice : undefined;
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(voice?.notes ?? []), ...(voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
+    const bytes = note && deps.proposalFileDir ? await readVoiceNote(deps.proposalFileDir, id, note) : null;
+    if (!note || !bytes) return res.status(404).json({ error: "not_found" });
+    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+    res.setHeader("Content-Disposition", "inline");
+    res.send(bytes);
   });
 
   app.put("/api/admin/open-proposals/settings", async (req, res) => {

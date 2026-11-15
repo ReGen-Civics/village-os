@@ -11,6 +11,7 @@
 import type { InputHTMLAttributes } from "react";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
+import { ClipBar } from "@/components/voice/VoiceClips";
 
 /** A spoken phrase added to the text, never past the field's limit. */
 export function spokenInto(value: string, chunk: string, maxLength?: number): string {
@@ -22,18 +23,25 @@ export default function MicInput({
   value,
   onChange,
   className = "",
+  clip,
   ...rest
 }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange"> & {
   value: string;
   onChange: (value: string) => void;
+  /** The answer's key for a voice clip beside it (components/voice/VoiceClips.tsx); drawn only inside the application's clip provider. */
+  clip?: string;
 }) {
+  const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
   return (
+    <div>
     <div className="relative">
       <input value={value} onChange={(e) => onChange(e.target.value)} className={`pr-14 ${className}`} {...rest} />
       {/* MicButton's own wrapper is relative, so the corner is placed out here. */}
       <span className="absolute inset-y-0 right-0.5 flex items-center">
-        <MicButton disabled={rest.disabled} onText={(chunk) => onChange(spokenInto(value, chunk, rest.maxLength))} />
+        <MicButton disabled={rest.disabled} onText={said} />
       </span>
+    </div>
+    {clip && <ClipBar field={clip} onWords={said} />}
     </div>
   );
 }

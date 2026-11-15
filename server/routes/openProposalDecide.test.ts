@@ -663,6 +663,30 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect((await listen(href.replace(/pv-[0-9a-f]+$/, "..%2F..%2Fsecret"), FOUNDER.id)).status).toBe(404);
     });
 
+    it("a clip beside an answer reaches the deciders with its answer and words, and plays through the same door", async () => {
+      const before = state.sent.length;
+      const fd = new FormData();
+      fd.append("proposal", JSON.stringify({
+        name: "Rowan Field",
+        email: "voice4@example.test",
+        roles: [{ roleId: gate, note: "I open gates for a living." }],
+        why: "I live up the road and the gate is always shut.",
+        aim: "The gate opens at dawn every day.",
+        voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 18, words: "The gate is always shut." }] },
+      }));
+      fd.append("clips", new Blob([WEBM], { type: "audio/webm" }), "why.webm");
+      const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      const voice = (await page(id, FOUNDER.id)).body.proposal.voice;
+      expect(voice.clips).toEqual([expect.objectContaining({ field: "why", label: "Why you, and why now", seconds: 18, words: "The gate is always shut." })]);
+      expect((await listen(voice.clips[0].href, FOUNDER.id)).status).toBe(200);
+      expect((await listen(voice.clips[0].href, MO.id)).status).toBe(404);
+      expect((await page(id, MO.id)).body.proposal.voice).toBeNull();
+    });
+
     it("a recording changed on disk since it was sent is not played", async () => {
       const id = await withVoice("voice3@example.test");
       const n = (await readOpenProposal(pool, id))!.body.voice!.notes[0];
