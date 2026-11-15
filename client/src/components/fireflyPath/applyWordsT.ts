@@ -35,7 +35,7 @@ const VOICE: Record<VoiceKey, MessageDescriptor> = {
   heardLabel: msg({ message: "What we heard, in your words", context: "voice invite" }),
   heardHint: msg({ message: "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong.", context: "voice invite" }),
   consent: msg({ message: "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them.", context: "voice invite" }),
-  kept: msg({ message: "Only the people who decide your application hear them. We delete them with your application, and at the latest 90 days after we decide.", context: "voice invite" }),
+  kept: msg({ message: "Only the people who decide your application and the village's admins hear them. We delete them with your application, and at the latest 90 days after we decide.", context: "voice invite" }),
   notKept: msg({ message: "Without the tick, your recordings stay on this device and are not sent.", context: "voice invite" }),
   clipRecord: msg({ message: "Record this answer", context: "voice clip beside an answer" }),
   clipStop: msg({ message: "Stop", context: "voice clip beside an answer" }),

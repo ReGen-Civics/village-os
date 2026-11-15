@@ -16495,10 +16495,11 @@ msgctxt "voice invite"
 msgid "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them."
 msgstr "Guardar mis grabaciones de voz con mi solicitud. Las escucharán las personas que la deciden y quienes administran la aldea."
 
+# needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
-msgid "Only the people who decide your application hear them. We delete them with your application, and at the latest 90 days after we decide."
-msgstr "Solo las escuchan las personas que deciden tu solicitud. Las borramos con tu solicitud, y a más tardar 90 días después de decidir."
+msgid "Only the people who decide your application and the village's admins hear them. We delete them with your application, and at the latest 90 days after we decide."
+msgstr "Solo las escuchan las personas que deciden tu solicitud y quienes administran la aldea. Las borramos con tu solicitud, y a más tardar 90 días después de decidir."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
