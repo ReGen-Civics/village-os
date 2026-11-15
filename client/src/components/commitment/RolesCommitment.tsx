@@ -55,7 +55,7 @@ export interface CommitmentSeat {
 const SUMMARY = "flex min-h-11 cursor-pointer list-none items-center gap-2 py-2 text-sm font-semibold text-notice [&::-webkit-details-marker]:hidden";
 
 export default function RolesCommitment({ seats }: { seats: readonly CommitmentSeat[] }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const mine = useMyCommitment(true);
   const [pct, setPct] = useState<number | null>(null);
   const [period, setPeriod] = useState<CommitmentPeriod | null>(null);
@@ -81,7 +81,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
   const splitWhole = splitSum === 100;
   const changed = pct !== null || period !== null || note.trim() !== "" || draft !== null;
   const nowPct = mine.now?.pct ?? 0;
-  const nowFrom = mine.now?.fromDate ? civilDayWords(mine.now.fromDate) : "";
+  const nowFrom = mine.now?.fromDate ? civilDayWords(mine.now.fromDate, i18n.locale) : "";
   const earlier = mine.history.filter((h) => h.id !== mine.now?.id).slice(0, 4);
   const many = seats.length >= 2;
   // Each role's share and its part of the whole person, rounded together so the parts add up to the total.
@@ -221,7 +221,7 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
           <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
             {earlier.map((h) => {
               const was = h.pct;
-              const from = civilDayWords(h.fromDate);
+              const from = civilDayWords(h.fromDate, i18n.locale);
               const span = periodWords[h.period].toLowerCase();
               return (
                 <li key={h.id}>
