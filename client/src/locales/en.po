@@ -1598,6 +1598,11 @@ msgctxt "open proposal attachments"
 msgid "Link {0}: what it is"
 msgstr "Link {0}: what it is"
 
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: two parts"
+msgid "{a} and {b}"
+msgstr "{a} and {b}"
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Access to give or take back"
 msgstr "Access to give or take back"
@@ -1828,6 +1833,11 @@ msgstr "Whoever holds it keeps it."
 msgctxt "role editor"
 msgid "Still to write before it can be listed:"
 msgstr "Still to write before it can be listed:"
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, Earned Equity"
+msgid "{n}% is paid in Earned Equity"
+msgstr "{n}% is paid in Earned Equity"
 
 #: client/src/pages/YourPath.tsx
 msgctxt "your path, the whole path page"
@@ -2382,6 +2392,11 @@ msgstr "Nobody, on purpose."
 msgctxt "org chart section label"
 msgid "This role"
 msgstr "This role"
+
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 30%"
+msgid "Steady: {village} gets about a day and a half of your week"
+msgstr "Steady: {village} gets about a day and a half of your week"
 
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgctxt "admin confidentiality section"
@@ -5976,6 +5991,11 @@ msgctxt "founding application check"
 msgid "Add at least one value item."
 msgstr "Add at least one value item."
 
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, 100%"
+msgid "All in: {village} is your full-time work"
+msgstr "All in: {village} is your full-time work"
+
 #. placeholder {0}: c.by
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
@@ -6799,6 +6819,11 @@ msgstr "What it is for"
 msgctxt "role editor: the commitment range"
 msgid "What the role needs in all"
 msgstr "What the role needs in all"
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, cash"
+msgid "{n}% is paid in cash"
+msgstr "{n}% is paid in cash"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
@@ -8049,6 +8074,11 @@ msgctxt "companion welcome, what the companion says"
 msgid "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
 msgstr "That's the whole place, {firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile."
 
+#: client/src/i18n/machineTranslation.tsx
+msgctxt "note at the end of a page whose village words a machine translated"
+msgid "Some words on this page are a machine translation. A person has not checked them yet."
+msgstr "Some words on this page are a machine translation. A person has not checked them yet."
+
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the named role a private intake reaches"
 msgid "{intakeRoleName} role"
@@ -8112,9 +8142,9 @@ msgid "The practice"
 msgstr "The practice"
 
 #: client/src/components/roleEdit/SectionsFields.tsx
-msgctxt "role editor, qualities hint, the focus line"
-msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
-msgstr "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
+#~ msgctxt "role editor, qualities hint, the focus line"
+#~ msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
+#~ msgstr "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
 
 #: client/src/components/openWork/statusWords.ts
 msgctxt "open work board: status mark, a quest done this moon"
@@ -9112,6 +9142,11 @@ msgstr "Trying again"
 msgid "Your idea is withdrawn."
 msgstr "Your idea is withdrawn."
 
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line"
+msgid "Of this, {list} by default; we settle the split together."
+msgstr "Of this, {list} by default; we settle the split together."
+
 #: client/src/components/modules/SuggestDial.tsx
 msgid "The suggestion was refused."
 msgstr "The suggestion was refused."
@@ -10031,6 +10066,11 @@ msgstr "Keep my voice recordings with my application. The people who decide it a
 msgctxt "module library, copy failed"
 msgid "Your browser blocked copying. Select the text above and copy it."
 msgstr "Your browser blocked copying. Select the text above and copy it."
+
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 10%"
+msgid "On your mind: {village} gets a dedicated work block once a week"
+msgstr "On your mind: {village} gets a dedicated work block once a week"
 
 #. placeholder {0}: SECTION_LIMITS.lines
 #: client/src/components/roleEdit/SectionsFields.tsx
@@ -11233,6 +11273,11 @@ msgctxt "admin helper, proposal: an empty value"
 msgid "(blank)"
 msgstr "(blank)"
 
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: three parts"
+msgid "{a}, {b} and {c}"
+msgstr "{a}, {b} and {c}"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "How your work serves: {goalText}"
 msgstr "How your work serves: {goalText}"
@@ -11307,6 +11352,11 @@ msgstr "You propose {0}{1}."
 msgctxt "member door choice"
 msgid "This moon"
 msgstr "This moon"
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: a later part, credits"
+msgid "{n}% in credits"
+msgstr "{n}% in credits"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal conversations"
@@ -11795,6 +11845,11 @@ msgstr "Saving"
 msgctxt "landing, founding team card eyebrow"
 msgid "Paid roles"
 msgstr "Paid roles"
+
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 60%"
+msgid "Fully focused: {village} is your main work"
+msgstr "Fully focused: {village} is your main work"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work filter: quests that ask most of a person"
@@ -12669,6 +12724,11 @@ msgstr "{0}, outside the village"
 #: client/src/pages/ExitPolicy.tsx
 msgid "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
 msgstr "Bring it to somebody outside the village, at {outsideOrganisation}. Members see who they are and how to reach them."
+
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 50%"
+msgid "Focused: {village} is a main part of your work, about half your week"
+msgstr "Focused: {village} is a main part of your work, about half your week"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application kept"
@@ -14385,9 +14445,9 @@ msgid "Full commitment (100%)"
 msgstr "Full commitment (100%)"
 
 #: client/src/components/roleCard/focusLine.ts
-msgctxt "role card quality, 60% and above"
-msgid "Fully focused: {village} is your main work"
-msgstr "Fully focused: {village} is your main work"
+#~ msgctxt "role card quality, 60% and above"
+#~ msgid "Fully focused: {village} is your main work"
+#~ msgstr "Fully focused: {village} is your main work"
 
 #: client/src/components/Layout.tsx
 #~ msgid "Close menu"
@@ -14857,6 +14917,11 @@ msgctxt "drafted letters"
 msgid "Drafted letters"
 msgstr "Drafted letters"
 
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, credits"
+msgid "{n}% is paid in credits"
+msgstr "{n}% is paid in credits"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Skip for now"
@@ -14938,9 +15003,9 @@ msgid "Save"
 msgstr "Save"
 
 #: client/src/components/roleCard/focusLine.ts
-msgctxt "role card quality, below 60%"
-msgid "Focused: {village} is a main part of your work"
-msgstr "Focused: {village} is a main part of your work"
+#~ msgctxt "role card quality, below 60%"
+#~ msgid "Focused: {village} is a main part of your work"
+#~ msgstr "Focused: {village} is a main part of your work"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -15872,6 +15937,11 @@ msgctxt "open proposal confirmed drawing"
 msgid "You"
 msgstr "You"
 
+#: client/src/i18n/machineTranslation.tsx
+msgctxt "mark on a role card whose words a machine translated"
+msgid "Machine translation, not yet checked by a person"
+msgstr "Machine translation, not yet checked by a person"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: roles paid on separate agreements"
 msgid "Your roles are paid on separate agreements, so each role's pay at End of Moon scales by its part here. You see the scaled pay on your moon invoice, and a Treasurer confirms it before anything is paid. With no split, or parts that do not make 100%, pay stays as each agreement says."
@@ -16337,6 +16407,11 @@ msgstr "Save as Markdown"
 #~ msgid "See the quests"
 #~ msgstr "See the quests"
 
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: a later part, Earned Equity"
+msgid "{n}% in Earned Equity"
+msgstr "{n}% in Earned Equity"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
 #~ msgstr "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
@@ -16631,6 +16706,11 @@ msgctxt "companion welcome"
 msgid "Name for the {0}"
 msgstr "Name for the {0}"
 
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card focus line, from 80%"
+msgid "Deeply committed: {village} is your main work, about four days a week"
+msgstr "Deeply committed: {village} is your main work, about four days a week"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer."
@@ -16903,6 +16983,11 @@ msgstr "this moon (from its new moon to the next)"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."
 #~ msgstr "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor, qualities hint, the focus line"
+msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card picks the words for the commitment it shows, in steps from 10% to 100%."
+msgstr "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card picks the words for the commitment it shows, in steps from 10% to 100%."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: the allowance tooltip"
