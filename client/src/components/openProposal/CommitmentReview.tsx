@@ -7,7 +7,7 @@
  * pay.
  */
 import { useLingui } from "@lingui/react/macro";
-import { priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
@@ -42,21 +42,10 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their price", context: "open proposal: the pay ask" })}</dt>
           <dd className="mt-0.5 text-foreground" data-pay-ask-shown="">
             {askWords ??
-              (data.ask?.kind === "amount" ? t({ message: `${moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")} a month`, context: "open proposal: the pay ask, an amount" }) : "")}
+              (data.ask?.kind === "amount" ? t({ message: `${moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")} a ${askPeriod(data.ask)}`, context: "open proposal: the pay ask, an amount" }) : "")}
           </dd>
         </div>
       </dl>
-      {(() => {
-        // Suggested, proposed and the difference, in plain numbers (Rye, 14 Nov 2026). Nothing judges the price.
-        const r = data.roles.find((x) => x.full && x.atCommitment !== null);
-        if (!r || !r.full || r.atCommitment === null || data.ask?.kind !== "amount") return null;
-        const diff = priceDifferencePct(r.atCommitment, data.ask.monthly);
-        return (
-          <p className="text-sm text-foreground" data-price-compare="">
-            {t({ message: `Suggested ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per}; they propose ${moneyWords(data.ask.monthly, r.full.currency)} (${signedPct(diff ?? 0)}).${data.ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""}`, context: "open proposal: suggested and proposed price" })}
-          </p>
-        );
-      })()}
       {data.ask?.why && (
         <div data-price-why="">
           <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Why this price", context: "open proposal: the pay ask" })}</p>
@@ -81,6 +70,18 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
                   {t({ message: `At ${data.pct}%, the role pays up to ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per} (the full role: ${moneyWords(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
                 </p>
               )}
+              {(() => {
+                // Suggested against proposed, for THIS role (QA F7): plain numbers, nothing judges the price. Only in the
+                // same period, and only with a suggestion above 0, so a missing figure never reads as "0%".
+                const ask = data.ask;
+                if (!r.full || !r.atCommitment || ask?.kind !== "amount" || askPeriod(ask) !== r.full.per) return null;
+                const diff = priceDifferencePct(r.atCommitment, ask.monthly);
+                return (
+                  <p data-price-compare="">
+                    {t({ message: `Suggested ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per}; they propose ${moneyWords(ask.monthly, r.full.currency)}${diff !== null ? ` (${signedPct(diff)})` : ""}.${ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""}`, context: "open proposal: suggested and proposed price" })}
+                  </p>
+                );
+              })()}
               <p data-commitment-coverage="">
                 {t({ message: `Held now: ${r.heldPct}% of ${r.targetPct}%. With this application: ${r.withThisPct}% of ${r.targetPct}%.`, context: "open proposal: how full the role would be" })}
               </p>

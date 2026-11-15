@@ -292,7 +292,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $15,000 a month (+131% on the suggestion).");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
-    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 15000, why: "The quarterly legal review adds work." });
+    // Stored with the period the price was written in (QA F7): the role's ceiling period.
+    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 15000, per: "month", why: "The quarterly legal review adds work." });
   });
   it("taking the suggested price sends no ask at all (control)", async () => {
     await applyFor("r-gate", SHARED);

@@ -24,6 +24,7 @@
  *
  * Pure: no Node builtins, no clock.
  */
+import { CEILING_PERIODS, type CeilingPeriod } from "./roleCardSections";
 
 export const COMMITMENT_TARGET_DEFAULT = 100;
 export const COMMITMENT_TARGET_MAX = 1000;
@@ -136,9 +137,19 @@ export function fillWords(f: RoleFill): string {
  * (Rye, 14 Nov 2026: "they can suggest a price higher or lower (to be more competitive as a proposal)
  * than the suggested price"), above the full role's band included. The contract decides the amount.
  */
-export type PayAsk = { kind: "amount"; monthly: number; why?: string } | { kind: "negotiate"; why?: string };
+export type PayAsk = {
+  kind: "amount";
+  /** The amount, for one `per`. The name is from when every ask was monthly; an ask with no `per` is a month. */
+  monthly: number;
+  /** The period the amount is for: the role's ceiling period when the form wrote it (QA F7, 15 Nov 2026). */
+  per?: CeilingPeriod;
+  why?: string;
+} | { kind: "negotiate"; why?: string };
 
-/** The difference a proposed price makes on the suggested one, as a whole percent: +8, -15, 0. */
+/** The period an amount ask is for: what it says, or a month for an ask written before asks said. */
+export const askPeriod = (ask: { per?: CeilingPeriod }): CeilingPeriod => ask.per ?? "month";
+
+/** The difference a proposed price makes on the suggested one, as a whole percent: +8, -15, 0. Null when either is 0 or missing: nothing to compare. */
 export function priceDifferencePct(suggested: number, proposed: number): number | null {
   if (!Number.isFinite(suggested) || suggested <= 0 || !Number.isFinite(proposed) || proposed <= 0) return null;
   return Math.round(((proposed - suggested) / suggested) * 100);
@@ -157,7 +168,8 @@ export function readPayAsk(raw: unknown): RangeRead<PayAsk | null> {
   if (o.kind === "negotiate") return { ok: true, value: { kind: "negotiate", ...why } };
   if (o.kind === "amount") {
     const n = typeof o.monthly === "number" ? o.monthly : typeof o.monthly === "string" ? digitsOf(o.monthly, 9) : NaN;
-    return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n, ...why } } : { ok: false, problem: RANGE_WORDS.askAmount };
+    const per = (CEILING_PERIODS as readonly unknown[]).includes(o.per) ? { per: o.per as CeilingPeriod } : {};
+    return Number.isInteger(n) && n > 0 && n <= 100_000_000 ? { ok: true, value: { kind: "amount", monthly: n, ...per, ...why } } : { ok: false, problem: RANGE_WORDS.askAmount };
   }
   return { ok: true, value: null };
 }

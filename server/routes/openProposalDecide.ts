@@ -353,7 +353,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         }
       : null;
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
-    const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool)) : null;
+    const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool), may.own ?? null) : null;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
     // An agent is never offered a person's pay, allowance or commitment (audit B8a), so its page carries no terms.
     const subject = !p.body.agent && decidesIt(may, asks, viewerId) ? await loadSubject(pool, p.id) : null;

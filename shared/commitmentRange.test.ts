@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
+import { askPeriod, ceilingAt, commitmentChoices, digitsOf, priceDifferencePct, signedPct, PRICE_WHY_MAX, fillWords, payAskOf, rangeMin, readCommitmentMin, readCommitmentTarget, readPayAsk, roleFill } from "./commitmentRange";
 
 describe("the commitment range (Rye, 14 Nov 2026)", () => {
   it("pays straight proportional to the full band: 50% of $13,000 is up to $6,500 (ruling 1)", () => {
@@ -70,6 +70,13 @@ describe("the price a contractor proposes (Rye, 14 Nov 2026)", () => {
     expect(priceDifferencePct(6500, 5525)).toBe(-15);
     expect(priceDifferencePct(6500, 6500)).toBe(0);
     expect(priceDifferencePct(0, 7000)).toBeNull();
+  });
+  it("an ask keeps the period it was written in, and an unknown period is dropped (QA F7)", () => {
+    expect(readPayAsk({ kind: "amount", monthly: 78000, per: "year" })).toEqual({ ok: true, value: { kind: "amount", monthly: 78000, per: "year" } });
+    expect(readPayAsk({ kind: "amount", monthly: 500, per: "moon" })).toEqual({ ok: true, value: { kind: "amount", monthly: 500, per: "moon" } });
+    expect(readPayAsk({ kind: "amount", monthly: 500, per: "fortnight" })).toEqual({ ok: true, value: { kind: "amount", monthly: 500 } });
+    expect(askPeriod({})).toBe("month");
+    expect(askPeriod({ per: "year" })).toBe("year");
     expect([signedPct(8), signedPct(-15), signedPct(0)]).toEqual(["+8%", "-15%", "0%"]);
   });
 });
