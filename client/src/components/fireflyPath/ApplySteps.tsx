@@ -205,6 +205,10 @@ export function ValueItems({
       <p className="font-semibold text-foreground" data-value-contract="">
         {t({ message: "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done.", context: "founding application value" })}
       </p>
+      {/* Paid on what we truly accomplish (Rye, 14 Nov 2026), said where the contract is written, before anyone signs up to it (steelman QA, 15 Nov 2026). */}
+      <p className="text-sm leading-relaxed text-muted-foreground" data-value-pay-follows="">
+        {t({ message: "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.", context: "founding application value" })}
+      </p>
       {goals.length > 0 ? (
         <div className={`${QUIET} grid gap-2`} data-season-goals="">
           <p className={EYEBROW}>{t({ message: "This season's goals", context: "founding application value" })}</p>
