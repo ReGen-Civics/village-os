@@ -405,14 +405,16 @@ const PAGE_COPY = /shared[\\/]pageContent[\\/](team|circles|opportunities|master
 /** A route page, and the size under which it rides the "smallpages" chunk below. */
 const SMALL_PAGE = /client[\\/]src[\\/]pages[\\/][^\\/]+\.tsx$/;
 /*
- * 10000 since the page speed pass (14 Nov 2026), was 7500. Turning
+ * 12000 since the page speed pass (14 Nov 2026), was 7500. Turning
  * experimentalMinChunkSize off (below) cost the block-charged total about 250
- * KB; grouping the pages between 7500 and 10000 bytes of source won back 36 KB
- * of it, which is what kept the total under MAX_TOTAL_DIST_KB without raising
- * it. The group is about 80 KB raw and is fetched only by these small pages,
- * none of which is a key route.
+ * KB. Measured with this pass on 1.3.6: 7500 left it at 7416 KB of 7400 and
+ * 10000 at 7380; on main at 2b783b0, 10000 at 7392 and 12000 at 7332. The
+ * ceiling was not raised.
+ * The price is paid only on these small pages, none of them a key route: the
+ * group they share is about 125 KB raw (it was 43 KB), fetched on the first
+ * visit to any of them and from cache after.
  */
-const SMALL_PAGE_BYTES = 10000;
+const SMALL_PAGE_BYTES = 12000;
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
 /**
