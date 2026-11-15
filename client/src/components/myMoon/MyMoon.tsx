@@ -33,6 +33,7 @@ import {
   type ThanksEntry,
 } from "@shared/moonRecap";
 import { guideSheetLink } from "@shared/moonRhythm";
+import { ACCOMPLISHED_PAY_WORDS } from "@shared/accomplishedPay";
 import * as api from "./moonApi";
 import type { MyMoonData } from "./moonApi";
 import ItemCard from "./ItemCard";
@@ -135,6 +136,16 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
             </button>
           </div>
           {room ? <p className={MUTED} aria-live="polite">{MY_MOON_WORDS.roomViewOn}. {MOON_WORDS.roomViewLine}</p> : null}
+          <details className="rounded-lg border border-border bg-muted/40 px-3 py-2" data-testid="accomplished-pay">
+            <summary className="cursor-pointer text-sm font-medium text-foreground">
+              {ACCOMPLISHED_PAY_WORDS.title} <span className="font-normal text-muted-foreground">{ACCOMPLISHED_PAY_WORDS.show}</span>
+            </summary>
+            <div className="mt-2 flex flex-col gap-2">
+              <p className={`${MUTED} m-0`}>{ACCOMPLISHED_PAY_WORDS.goals}</p>
+              <p className={`${MUTED} m-0`}>{ACCOMPLISHED_PAY_WORDS.review}</p>
+              <p className={`${MUTED} m-0`}>{ACCOMPLISHED_PAY_WORDS.confirm}</p>
+            </div>
+          </details>
           <MoonSpiral moon={data.moon} today={today} editable={editable && !noRoles} />
           {data.moons.length > 1 ? (
             <label className={LABEL}>

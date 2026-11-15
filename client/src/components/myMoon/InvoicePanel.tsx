@@ -34,6 +34,8 @@ import {
 import * as api from "./moonApi";
 import type { MyMoonData } from "./moonApi";
 import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section, SplitBreakdown, useRoomView } from "./moonUi";
+import { ACCOMPLISHED_WORDS } from "@shared/accomplishedReview";
+import { AccomplishedBlock, AdjustBreakdown } from "./AccomplishedBlock";
 import { authToken } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
 import { InvoiceTrack, type TrackRow } from "../TreasurySync";
@@ -147,6 +149,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
   const [number, setNumber] = useState(inv?.memberNumber ?? "");
   const [key, setKey] = useState(inv?.externalInvoiceKey ?? "");
   const [proposals, setProposals] = useState<Record<string, string>>({});
+  const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => setNumber(inv?.memberNumber ?? ""), [inv?.memberNumber]);
@@ -183,7 +186,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
     };
     const rangeProposals: Record<string, number> = {};
     for (const [k, v] of Object.entries(proposals)) if (v.trim() && Number.isInteger(Number(v))) rangeProposals[k] = Number(v);
-    const out = await api.sendInvoice(cycleId, { attestation, pilotAckVersion: ack.version, memberNumber: number.trim(), externalInvoiceKey: route === "local_contractor" ? key.trim() || null : null, rangeProposals });
+    const out = await api.sendInvoice(cycleId, { attestation, pilotAckVersion: ack.version, memberNumber: number.trim(), externalInvoiceKey: route === "local_contractor" ? key.trim() || null : null, rangeProposals, adjustReply: reply.trim() || null });
     setBusy(false);
     if (!out.ok) return setError(out.error);
     await reload();
@@ -238,6 +241,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                 </div>
                 <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
                 {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
+                {l.adjust && !room ? <AdjustBreakdown adjust={l.adjust} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (
                   <label className={LABEL}>
                     {MY_MOON_WORDS.proposeAmount}
@@ -257,6 +261,15 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
             <span>{MOON_WORDS.total}</span>
             <span><Amount minor={inv.totalMinor} currency={inv.currency} /></span>
           </p>
+          {inv.accomplished ? <AccomplishedBlock view={inv.accomplished} /> : null}
+
+          {unsent && editable && !room && inv.lines.some((l) => l.adjust) ? (
+            <label className={LABEL} data-testid="adjust-reply">
+              {ACCOMPLISHED_WORDS.replyLabel}
+              <textarea value={reply} rows={2} maxLength={500} onChange={(e) => setReply(e.target.value)} className={INPUT} />
+              <span className="text-xs font-normal text-muted-foreground">{ACCOMPLISHED_WORDS.replyHint}</span>
+            </label>
+          ) : null}
 
           {unsent && editable && !room ? (
             <div className="flex flex-col gap-3 rounded-lg border border-border p-3" data-testid="attestation">

@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 238 open and 50 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 239 open and 50 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 261 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 262 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-288 dials in 39 categories. 151 carry a minimum and a maximum. By type: 114 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 55 text, 6 longtext.
+289 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 55 text, 6 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 261 of them as soon as it is saved, and
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
 | The village's people | 19 | 18 | 1 |
-| The founding team | 12 | 12 | 0 |
+| The founding team | 13 | 13 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Companions | 2 | 2 | 0 |
@@ -288,6 +288,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Feature the founding team on the Roles page | `org.founding_team` | The village's people | boolean | `false` | the whole village |
 | The founding team's roles | `org.founding_team_roles` | The village's people | text | blank | the whole village |
 | Show pay ranges on role cards | `org.show_pay_ranges` | The village's people | boolean | `false` | the whole village |
+| When a moon counts as far from what was agreed | `moon_review.far_off_pct` | The founding team | integer | `25` | the whole village |
 | How rewards work, on every role card | `org.pay_shape` | The founding team | text | blank | the whole village |
 | The at-risk line under the pay shape | `org.pay_shape_at_risk` | The founding team | text | blank | the whole village |
 | The note under the pay shape | `org.pay_shape_note` | The founding team | text | blank | the whole village |
@@ -3697,7 +3698,22 @@ Off, no role card shows a pay range or an amount to visitors or members, whateve
 
 ## The founding team
 
-12 dials. 12 for the whole village.
+13 dials. 13 for the whole village.
+
+### When a moon counts as far from what was agreed
+
+At the End of Moon review, each member's invoice shows what was agreed (their pay and their moon goals) beside what they delivered (goals done, and every task done, including tasks outside their roles). When the two are this far apart, the review flags it for the Treasurer: goal progress below 100 minus this percent, or this percent or more of the tasks done outside the member's roles. At the default of 25, that is goal progress under 75%, or a quarter of the work outside their roles, about one week in a four-week moon. The flag changes no pay. The Treasurer may propose a different amount with a reason, the member can reply, and nothing pays until the Treasurer confirms. Works with: the Treasurer's role, which holds the power to pay.
+
+| Fact | Value |
+| --- | --- |
+| Key | `moon_review.far_off_pct` |
+| Type | integer, a whole number |
+| Default | `25` |
+| Range | 5 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
 
 ### How rewards work, on every role card
 

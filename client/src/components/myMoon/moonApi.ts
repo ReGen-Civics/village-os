@@ -199,6 +199,8 @@ export const returnRecap = (recap: string, body: ReturnRequest, init: RequestIni
 export const approveInvoices = (body: BulkApproveRequest, init: RequestInit = {}) => call<BulkApproveResponse>(MOON_ROUTES.approveInvoices, "POST", body, init);
 /** A Treasurer confirms the lines a member's split scaled (Rye, 14 Nov 2026). Approval refuses until this is done. */
 export const confirmSplit = (id: string, init: RequestInit = {}) => call<{ confirmed: string }>(door(MOON_ROUTES.confirmSplit, { id }), "POST", {}, init);
+/** A Treasurer proposes a different amount on a pay line, with a reason; null withdraws it (Rye, 14 Nov 2026). */
+export const adjustPay = (id: string, body: { applicationId: string; amountMinor: number | null; reason: string }, init: RequestInit = {}) => call<{ voided: string }>(door(MOON_ROUTES.adjustPay, { id }), "POST", body, init);
 
 /** Copy words to the clipboard. False when the browser refused. */
 export async function copyText(text: string): Promise<boolean> {

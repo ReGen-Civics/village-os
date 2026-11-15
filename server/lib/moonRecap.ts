@@ -40,7 +40,7 @@ import {
   setupGaps, taskScore, termsCarryMoney, waitingLine, waitingStage, workDueOn, workSummaryHtml, workSummaryText,
   type AssignmentRow, type FromBlock, type InvoiceLine, type InvoiceView, type ItemOrigin, type ItemResponse, type ItemState,
   type MemberMoonResponse, type MoonDays, type MoonReviewSettings, type PayRouteRecord, type MoonRef, type MyMoonResponse,
-  type PayRouteResponse, type PayersDoc, type RecapItem, type RecapView, type RoleAudit, type RoleHeld, type SeasonGoalRef,
+  type PayRouteResponse, type PayersDoc, type MoonGoal, type RecapItem, type RecapView, type RoleAudit, type RoleHeld, type SeasonGoalRef,
   type SendRecapResponse, type SeraState, type TakeBackResponse, type TaskStatus, type TermsInForce, type ThanksEntry,
 } from "../../shared/moonRecap";
 import { EMPTY_RHYTHM, RHYTHM_DOC_KEY, parseRhythm, type RhythmDoc } from "../../shared/moonRhythm";
@@ -58,6 +58,8 @@ import { readApplications } from "../repos/seatApplications";
 import { dbDocument } from "../repos/store-db";
 import { heldTermsFor } from "./heldTerms";
 import { splitForPay } from "./splitForPay";
+import { accomplishedComparison, adjustsFrom, applyAdjusts, FAR_OFF_KEY, type AccomplishedView, type AdjustProposals } from "../../shared/accomplishedReview";
+import { numberVar } from "./variables";
 import { raiseTension, type TensionDeps } from "./roleTensions";
 
 const newId = (prefix: string): string => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
@@ -351,8 +353,9 @@ export interface Frame {
 }
 
 /** The draft lines for a frame: the terms, scaled by the split where it applies. */
-export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}): InvoiceLine[] {
-  return scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId));
+export function draftLines(frame: Pick<Frame, "terms" | "roles" | "split">, days: MoonDays, proposals: Readonly<Record<string, number>> = {}, finals: Readonly<Record<string, number>> = {}, adjusts: AdjustProposals = {}, reply: string | null = null): InvoiceLine[] {
+  // A Treasurer's proposed amount sits on top of the split (Rye, 14 Nov 2026): its base is what terms and split gave.
+  return applyAdjusts(scaleBySplit(linesFromTerms(frame.terms, days, proposals, finals), frame.split ?? null, frame.roles.map((r) => r.roleId)), adjusts, reply);
 }
 
 /** The season running on a day: the latest that has begun and not ended. */
@@ -516,6 +519,10 @@ export function invoiceViewOf(input: {
   terms: readonly TermsInForce[];
   /** The frame's roles and split, so a draft shows the split's scaled pay. Absent: the terms unchanged. */
   frame?: Pick<Frame, "terms" | "roles" | "split">;
+  /** A Treasurer's proposals carried from the newest void, so the member's draft shows them before re-sending. */
+  adjusts?: AdjustProposals;
+  /** Agreed beside delivered (Rye, 14 Nov 2026), when the caller read the moon's goals and items. */
+  compare?: CompareInput;
   moon: Moon;
   route: PayRouteRecord | null;
   payers: PayersDoc;
@@ -535,10 +542,11 @@ export function invoiceViewOf(input: {
       from: fromOf(stored.fromJson), period, lines, currency: stored.currency, totalMinor: stored.totalMinor, expectedOn: stored.expectedOn,
       paidOn: stored.paidOn, selfApproved: stored.selfApproved, supportLine: SUPPORT_LINE, externalInvoiceKey: stored.externalInvoiceKey,
       workSummary: input.summary?.text ?? null, workSummaryHtml: input.summary?.html ?? null, sendRefusal: null,
+      ...(input.compare ? { accomplished: compareOf(lines, input.compare) } : {}),
     };
   }
   if (!termsCarryMoney(input.terms)) return null;
-  const lines = input.frame ? draftLines(input.frame, moon.days) : linesFromTerms(input.terms, moon.days);
+  const lines = input.frame ? draftLines(input.frame, moon.days, {}, {}, input.adjusts ?? {}) : linesFromTerms(input.terms, moon.days);
   const route = input.route;
   const payer = route ? payerForRoute(payers, route.route, route.payerKey) : null;
   const totals = invoiceTotals(lines);
@@ -553,7 +561,26 @@ export function invoiceViewOf(input: {
     expectedOn: null, paidOn: null, selfApproved: false, supportLine: SUPPORT_LINE, externalInvoiceKey: null, workSummary: null, workSummaryHtml: null,
     // The attestation, the pilot note and the number are typed at send, so a draft is not refused for them.
     sendRefusal: refusal === ATTESTATION_MISSING ? null : refusal,
+    ...(input.compare ? { accomplished: compareOf(lines, input.compare) } : {}),
   };
+}
+
+/** What agreed-beside-delivered reads, besides the invoice's own lines. */
+export interface CompareInput {
+  goals: readonly Pick<MoonGoal, "status">[];
+  items: readonly Pick<RecapItem, "state" | "taskStatus" | "roleId">[];
+  roles: readonly { roleId: string; name: string }[];
+  /** The village dial `moon_review.far_off_pct`. */
+  farOffPct: number;
+}
+
+function compareOf(lines: readonly InvoiceLine[], c: CompareInput): AccomplishedView {
+  return accomplishedComparison({ lines, goals: c.goals, items: c.items, roles: c.roles, farOffPct: c.farOffPct });
+}
+
+/** The far-off dial, read once per request. A village that never set it reads the default. */
+export function farOffPct(): number {
+  return numberVar(FAR_OFF_KEY);
 }
 
 /** The lines a stored invoice carries, or none when its JSON cannot be read. */
@@ -643,6 +670,9 @@ export async function myMoon(pool: Pool, userId: string, moon: Moon, deps: MyMoo
   const nextBounds = deps.clock.boundsFor(new Date(moon.bounds.endsAt.getTime() + 1000));
   const nextGoals = await store.goalsFor(pool, userId, nextBounds.id);
   const flag = <G extends { carryCount: number }>(g: G) => ({ ...g, flagged: carriedTooOften(g) });
+  // A Treasurer's proposal on a voided revision shows on the draft, so the member reads it before re-sending.
+  const lastVoid = recap && !stored ? (await store.invoiceHistory(pool, recap.id)).filter((i) => i.status === "void").pop() ?? null : null;
+  const compare: CompareInput = { goals: lastGoals, items, roles: frame.roles.map((r) => ({ roleId: r.roleId, name: r.name })), farOffPct: farOffPct() };
 
   return {
     moon: moon.ref,
@@ -665,7 +695,7 @@ export async function myMoon(pool: Pool, userId: string, moon: Moon, deps: MyMoo
     outsideRoles: outsideRolesAudit({ items, heldRoleIds, roleNames, emptyRoleIds: belongsIds.filter((id) => !heldNow.has(id)) }),
     invoiceNeeded,
     noTermsLine: !invoiceNeeded && frame.roles.length > 0 ? NO_TERMS : null,
-    invoice: invoiceViewOf({ stored, terms: frame.terms, frame, moon, route, payers, settings, today, summary: recap ? summaryFor({ stored, recap, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: deps.timeZone }) : null }),
+    invoice: invoiceViewOf({ stored, terms: frame.terms, frame, adjusts: lastVoid ? adjustsFrom(linesOf(lastVoid)) : {}, compare, moon, route, payers, settings, today, summary: recap ? summaryFor({ stored, recap, items, seasonGoals: frame.seasonGoals, payers, moon, timeZone: deps.timeZone }) : null }),
     payRoute: route,
     routeChoices: PAY_ROUTES.map((r) => ({ route: r, words: payRouteWords(r, settings) })),
     pilotAck: settings.pilotAck ? { version: settings.pilotAck.version, text: settings.pilotAck.text, acceptedVersion: route?.pilotAckVersion ?? null } : null,
