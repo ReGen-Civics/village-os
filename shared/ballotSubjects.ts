@@ -981,22 +981,6 @@ export function criticalityOfItems(tiers: readonly Criticality[]): Criticality {
 }
 
 /**
- * D3 (launch security decisions, 2026-11-15; awaiting Rye's confirmation):
- * THE LAUNCH NEEDS AT LEAST THIS MANY VOTERS, whatever
- * `governance.launch_min_electorate` says. The dial's own `min` is 1, and a
- * launch one person votes on is one person starting a Game for everybody, so
- * the floor sits here in the check itself, where every reader of the dial
- * passes. Set it to 1 to restore the dial's full range.
- */
-export const LAUNCH_MIN_ELECTORATE_FLOOR = 3;
-
-/** The launch's head count: the village's dial, never below the floor. */
-export function launchMinElectorate(villageMin: number, floor: number = LAUNCH_MIN_ELECTORATE_FLOOR): number {
-  const asked = Number.isFinite(villageMin) ? Math.floor(villageMin) : floor;
-  return Math.max(1, floor, asked);
-}
-
-/**
  * Whether the roll is big enough for this subject, said as a fact.
  *
  * R55 and R56 both land on this sentence, so it counts and stops. A village of
@@ -1006,8 +990,8 @@ export function launchMinElectorate(villageMin: number, floor: number = LAUNCH_M
 export function electorateFloorProblem(subjectType: string, onTheRoll: number, villageMin?: number): string | null {
   const floor = thresholdsForSubject(subjectType);
   if (!floor || floor.minElectorate <= 0) return null;
-  // The launch's head count is the village's own dial (Rye, 2026-11-06), never below the floor (D3).
-  const min = subjectType === VILLAGE_LAUNCH && villageMin !== undefined && Number.isFinite(villageMin) ? launchMinElectorate(villageMin) : floor.minElectorate;
+  // The launch's head count is the village's own dial (Rye, 2026-11-06), never below one.
+  const min = subjectType === VILLAGE_LAUNCH && villageMin !== undefined && Number.isFinite(villageMin) ? Math.max(1, Math.floor(villageMin)) : floor.minElectorate;
   if (onTheRoll >= min) return null;
   const short = min - onTheRoll;
   const people = onTheRoll === 1 ? "One member holds a voice" : `${onTheRoll} members hold a voice`;

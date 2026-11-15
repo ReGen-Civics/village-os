@@ -36,7 +36,6 @@ import type { Pool } from "mysql2/promise";
 import { recordEvent } from "../lib/events";
 import { holdingHasLapsed } from "../lib/stewardship";
 import { founderPowerStands } from "../lib/gameStart";
-import { ADMIN_ROLES_CLOSED_BODY, adminRolesClosed } from "../lib/launchDoors";
 import { EXAMPLE_REFUSAL_BODY, isExampleUser } from "../lib/examples";
 import { accountsWithReach, LAST_ADMIN_REFUSAL, type AdminGroup, type GroupHolding } from "../lib/groupAdmin";
 import { stewardSeatRefusal } from "../lib/roleGrants";
@@ -164,9 +163,6 @@ export function register(app: Express, deps: Deps): void {
     }
     const notHeld = giveOnlyWhatYouHold(may, added.flatMap((id) => (byId.get(id)?.capabilities ?? []) as string[]));
     if (notHeld) return res.status(403).json(notHeld);
-    // D2b (server/lib/launchDoors.ts): an admin acting as the operator, with nobody holding power.assign, links or unlinks no admin group after launch.
-    const touchesAdminGroup = [...added, ...removed].some((id) => byId.get(id)?.grantsAdmin === true);
-    if (touchesAdminGroup && may.via === "fallback" && adminRolesClosed(!(await founderPowerStands(getPool())))) return res.status(409).json(ADMIN_ROLES_CLOSED_BODY);
     if (added.some((id) => byId.get(id)?.grantsAdmin === true) && (await founderPowerStands(getPool())) && actor?.role !== "founder") {
       return res.status(403).json({ error: "Until the village starts its Game, only a founder decides which roles can open the admin panel" });
     }

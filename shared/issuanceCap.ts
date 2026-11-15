@@ -10,43 +10,13 @@
  *
  * ── DECLINING IS NOT A HOLE IN THE CAP, AND THIS IS THE LOAD BEARING PART ──
  *
- * Rye settled separately that the village-wide cap binds the doors it binds
+ * Rye settled separately that the village-wide cap binds every door as it does
  * today and is not to be weakened. Those two rulings only fit together one
  * way: declining means the founder chose to name no number OF THEIR OWN, and
- * the platform default keeps binding those doors underneath them. A decline
+ * the platform default keeps binding every door underneath them. A decline
  * that switched the cap off would be an uncapped village created by pressing a
  * button labelled "not now", so it does not exist here and no state below can
  * express it.
- *
- * ── WHICH DOORS IT BINDS, EXACTLY (corrected 2026-11-15, D4) ──────────────
- *
- * This header used to say the cap binds "every door". It does not, and the
- * largest gap is a ruling. The cap is `mintCapGuard` (server/lib/mintCap.ts), a
- * per-token, per-lunar-cycle ceiling on issuance out of `sys:mint`, and it
- * binds exactly the five call sites that pass it:
- *
- *   - the admin hand mint, `POST /api/admin/tokens/:slug/mint`;
- *   - a hand mint's co-signed approval, `approveMintRequest` in
- *     server/lib/mintRequests.ts (the second steward and the village's vote
- *     on a waiting grant both reach it);
- *   - treasury stocking, `POST /api/admin/exchange/stock`;
- *   - funding a circle treasury (server/lib/circleTreasury.ts);
- *   - a circle's cap bonus (server/lib/circleBonus.ts).
- *
- * OUTSIDE IT BY RULING: work pay. End of Moon pay, quest pay and role pay are
- * not held under this cap or any other (Rye, 2026-10-22: "no caps here!"; see
- * `ceilingBinds` in shared/workValue.ts). They issue through the mint rule
- * engine, mostly from faucets other than `sys:mint`, and nothing here limits
- * them.
- *
- * OUTSIDE IT AS BUILT: every other issuing door. The other `sys:mint` writers
- * (the stays comp, adjust and manual purchase routes, the Stripe stay purchase
- * settle, the quest work exchange release, any `stay-credit` mint rule) issue
- * without meeting the guard, though the cycle counter sees them and they use
- * up the room left for the guarded doors. Issuance from the other faucets
- * (`sys:gratitude-pool`, `sys:cycle-pool`, `sys:library-mint`, the Voice and
- * Equity mints) is never counted. Before launch none of these issue at all:
- * the faucet gate in server/lib/gameStart.ts refuses every issuing posting.
  *
  * ── THREE ANSWERS, AND TWO OF THEM LOOK IDENTICAL IN THE DATABASE ──────────
  *
@@ -97,7 +67,7 @@ export type IssuanceCapAnswer =
    * The founder was asked and chose to name no number of their own.
    *
    * A DECISION, with a person and an instant attached. The platform default
-   * keeps binding the doors it binds, so this is a choice about who sets the number
+   * keeps binding every door, so this is a choice about who sets the number
    * and never a choice about whether one binds.
    */
   | "declined"

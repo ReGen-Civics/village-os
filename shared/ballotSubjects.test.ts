@@ -20,8 +20,6 @@ import {
   delegationRefusalSentence,
   dialsForSubject,
   electorateFloorProblem,
-  launchMinElectorate,
-  LAUNCH_MIN_ELECTORATE_FLOOR,
   evaluationRulesFor,
   floorForCriticality,
   floorForSubject,
@@ -220,21 +218,11 @@ describe("per-subject thresholds", () => {
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 40)).toBeNull();
   });
 
-  it("reads the village's own head count for the launch, never below the floor, and only for the launch (Rye, 2026-11-06; D3)", () => {
+  it("reads the village's own head count for the launch, never below one, and only for the launch (Rye, 2026-11-06)", () => {
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 2)).toBeNull();
     expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 5)).toContain("3 more members");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 5, 5)).toBeNull();
-    // D3: a dial below LAUNCH_MIN_ELECTORATE_FLOOR is held at the floor.
-    expect(LAUNCH_MIN_ELECTORATE_FLOOR).toBe(3);
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 2, 2), "two is one short of the floor").toContain("One more member");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 1, 1), "one person cannot launch alone").toContain("2 more members");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0, 0)).toContain("3 more members");
-    expect(electorateFloorProblem(VILLAGE_LAUNCH, 3, 1)).toBeNull();
-    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }], 2)).toContain("One more member");
-    expect(launchMinElectorate(1)).toBe(3);
-    expect(launchMinElectorate(7)).toBe(7);
-    // Flipping the floor to 1 restores the dial's full range, never below one.
-    expect(launchMinElectorate(2, 1)).toBe(2);
-    expect(launchMinElectorate(0, 1), "a zero is read as one").toBe(1);
+    expect(electorateFloorProblem(VILLAGE_LAUNCH, 0, 0), "a zero is read as one").toContain("One more member");
+    expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }], 2)).toBeNull();
     // Control: with no village value the registry's three still holds.
     expect(rollProblem(VILLAGE_LAUNCH, [{ weight: 1 }, { weight: 1 }])).toContain("One more member");
     // Another subject never reads the launch's dial.

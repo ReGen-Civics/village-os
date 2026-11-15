@@ -69,9 +69,8 @@ export const ROUTE_POWERS: Readonly<Record<string, Capability>> = {
   "POST /api/admin/library/sweep": "library.keep",
   "POST /api/admin/exchange/reconcile": "operator.recover",
   "POST /api/admin/tokens": "exchange.manage",
-  "POST /api/admin/tokens/:slug/mint": "exchange.manage",
-  "POST /api/admin/mint-requests/:id/approve": "exchange.manage",
-  "POST /api/admin/mint-requests/:id/decline": "exchange.manage",
+  // The hand mint and its second signature ask the gate for token.mint themselves (Rye, 2026-11-15).
+  "POST /api/admin/mint-requests/:id/decline": "token.mint",
   "PUT /api/admin/email-config": "operator.secrets",
   "PUT /api/admin/integrations/:key": "operator.secrets",
   "PUT /api/admin/work-with-us-config": "story.tell",
@@ -163,6 +162,8 @@ export const ROUTE_POWERS: Readonly<Record<string, Capability>> = {
   "POST /api/admin/payments/suspensions/:id/lift": "operator.accounts",
   "POST /api/admin/submissions/:id/handling": "intake.moderate",
   "PUT /api/admin/tokens/:slug": "exchange.manage",
+  // The queue a second signer reads (Rye, 2026-11-15).
+  "GET /api/admin/mint-requests": "token.mint",
   "POST /api/admin/training-modules": "operator.config",
   "PUT /api/admin/training-modules/:id": "operator.config",
   "DELETE /api/admin/training-modules/:id": "operator.config",
