@@ -322,8 +322,15 @@ describe.skipIf(!DB_CONFIGURED)("Village Comms, the address book", () => {
     expect(letters.status, letters.text).toBe(200);
     // An email of theirs on the ledger: the password link they ask for.
     expect((await call("POST", "/api/auth/forgot-password", { body: { email: LEAVER_EMAIL }, token: null })).status).toBe(200);
-    const contactId = await contactIdOf(LEAVER_EMAIL);
-    const theirEmails = await q("SELECT id FROM comms_messages WHERE contact_id = ?", [contactId]);
+    // The letter goes out in the background, so the answer never waits on
+    // the provider (R110); give it a moment to land on the ledger.
+    let contactId = "";
+    let theirEmails: any[] = [];
+    for (let i = 0; i < 50 && !theirEmails.length; i++) {
+      if (i) await new Promise((r) => setTimeout(r, 100));
+      contactId = await contactIdOf(LEAVER_EMAIL);
+      theirEmails = contactId ? await q("SELECT id FROM comms_messages WHERE contact_id = ?", [contactId]) : [];
+    }
     expect(theirEmails.length).toBeGreaterThanOrEqual(1);
 
     const exported = await call("GET", "/api/profile/export", { token: memberToken });

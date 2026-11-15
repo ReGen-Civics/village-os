@@ -420,7 +420,7 @@ jobs:
           set -euo pipefail
           docker run -d --name village --network host \
             -e DATABASE_URL='mysql://root:ci-smoke@127.0.0.1:3306/village' \
-            -e AUTH_TOKEN_SECRET='ci-smoke-not-a-secret' \
+            -e AUTH_TOKEN_SECRET='ci-smoke-token-secret-not-a-real-secret' \
             -e PORT=3000 \
             village-os:candidate
           # 900 seconds. A cold boot against an empty schema was MEASURED at

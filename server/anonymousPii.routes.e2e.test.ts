@@ -340,6 +340,8 @@ beforeAll(async () => {
       DATABASE_URL: testDb.url,
       ADMIN_PASSWORD: ADMIN,
       AUTH_TOKEN_SECRET: "pii-walker-secret",
+      // A signing key, so the SIGNED documents are walked too: without one they answer 503 and say nothing (R115).
+      VILLAGE_SECRETS_KEY: "1f".repeat(32), // module-review-ok: fixture sealing key, same as every e2e suite
       RESEND_API_KEY: "",
       ANTHROPIC_API_KEY: "",
     },

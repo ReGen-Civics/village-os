@@ -121,6 +121,13 @@ const domainInput = typeof args.domain === "string" ? args.domain.trim() : "";
 const fromEmailOverride = typeof args["from-email"] === "string" ? args["from-email"].trim() : "";
 const supportEmailOverride = typeof args["support-email"] === "string" ? args["support-email"].trim() : "";
 const adminPasswordOverride = typeof args["admin-password"] === "string" ? args["admin-password"].trim() : "";
+if (adminPasswordOverride && adminPasswordOverride.length < 20) {
+  console.error(
+    "fork-init: --admin-password is shorter than 20 characters. The server refuses a bootstrap password that short " +
+      "on /api/admin/bootstrap and the database export. Leave the flag off to have one generated.",
+  );
+  process.exit(1);
+}
 const COMPOSE = !!args.compose;
 const portInput = typeof args.port === "string" ? args.port.trim() : "3000";
 if (!/^\d{2,5}$/.test(portInput)) {
@@ -164,12 +171,12 @@ if (fs.existsSync(outPath) && !FORCE && !DRY) {
  * documents for both AUTH_TOKEN_SECRET and MEMBER_SECRETS_KEY. */
 const genHex32 = () => crypto.randomBytes(32).toString("hex");
 
-/** A one-time bootstrap password. Readable enough to type once by hand if
- * needed, random enough that guessing it isn't a real path in. */
+/** A one-time bootstrap password: 24 random bytes, base64url, 32 characters.
+ * It is pasted once on /claim, never typed from memory, so nothing about it
+ * needs to be readable, and the server refuses one under 20 characters on its
+ * password doors (ADMIN_PASSWORD_MIN_LENGTH in server/lib/passwordDoors.ts). */
 function genPassword() {
-  const words = crypto.randomBytes(6).toString("base64url").replace(/[-_]/g, "x");
-  const digits = crypto.randomInt(1000, 9999);
-  return `${words}-${digits}`;
+  return crypto.randomBytes(24).toString("base64url");
 }
 
 const domain = domainInput.replace(/^https?:\/\//, "").replace(/\/+$/, "");
@@ -310,7 +317,14 @@ const rendered = outLines.join("\n");
 if (DRY) {
   console.log(`--dry: would write ${templateKeys.length} variable(s) to ${path.relative(ROOT, outPath)}.`);
 } else {
-  fs.writeFileSync(outPath, rendered, "utf8");
+  // Owner read and write only: the file holds every secret the village has.
+  // chmod means nothing on Windows, where the folder's own permissions apply.
+  fs.writeFileSync(outPath, rendered, { encoding: "utf8", mode: 0o600 });
+  try {
+    fs.chmodSync(outPath, 0o600);
+  } catch {
+    /* best effort; START_HERE.md says to run chmod 600 .env */
+  }
   console.log(`Wrote ${path.relative(ROOT, outPath)} (${templateKeys.length} variables).`);
 }
 

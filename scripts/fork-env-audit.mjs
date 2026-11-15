@@ -81,6 +81,11 @@ export const INTERNAL = new Set([
   // and provisionLogPath() reads it back to name that run's ledger file. A
   // founder setting it would only rename a file in the test cache.
   "VILLAGE_TEST_RUN_ID",
+  // Set by vitest itself in every worker, and inherited by the servers the e2e
+  // suites spawn. server/lib/secretFloors.ts reads it to exempt those
+  // throwaway servers from the secret length floors. A founder setting it
+  // would only switch those floors off on their own village.
+  "VITEST",
   // Set by the test harness alone: the comms suites point the post office at
   // the fake provider (server/testkit/fakeResend.ts) with it, so no test ever
   // sends a real email. A founder setting it would send the village's mail,

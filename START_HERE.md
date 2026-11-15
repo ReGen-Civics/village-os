@@ -65,7 +65,11 @@ This writes a file called `.env` with every secret generated for you, and
 lists what it could not fill in (email, mostly). It does not show you the
 founder password on screen. Open `.env` in a text editor when you need it and
 find the line `ADMIN_PASSWORD=`. Keep `.env` private: anybody holding it holds
-your village.
+your village. On Linux or a Mac, make it readable by you alone:
+
+```
+chmod 600 .env
+```
 
 ### 4. Start the village
 
@@ -112,6 +116,11 @@ caddy reverse-proxy --from village.example.org --to localhost:3000
 
 Set `FRONTEND_URL=https://village.example.org` in `.env`, then run
 `docker compose up -d` again so the village reads it.
+
+The village answers on this server's own `localhost:3000` only, so the web
+server is the one way in and sign-in always travels over HTTPS. Keep it that
+way on a rented server: setting `VILLAGE_BIND=0.0.0.0` opens port 3000 to the
+whole internet over plain HTTP.
 
 Nothing outside the server tells you when the village stops answering. Point a
 free uptime checker at `https://village.example.org/health` (it answers `503`

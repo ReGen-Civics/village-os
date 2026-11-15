@@ -577,6 +577,11 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
    */
   app.post("/api/auth/google/exchange", async (req: Request, res: Response) => {
     const clear = () => res.clearCookie(OAUTH_HANDOFF_COOKIE, { path: "/" });
+    // Bounded like the two doors before it (R109). The handoff is signed and
+    // single-use, so this is a ceiling on work, not the defence itself.
+    if (await deps.overLimit(`oauth-exchange:${deps.clientIp(req)}`, 60, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
+    }
     const raw = readCookie(req, OAUTH_HANDOFF_COOKIE);
     if (!raw) {
       clear();

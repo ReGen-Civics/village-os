@@ -35,6 +35,9 @@ name: village-os
 
 services:
   db:
+    # TODO(pin): pin to an exact 8.4 LTS patch (mysql:8.4.x) once the current
+    # one is confirmed. Not guessed here: an install that already pulled a
+    # newer 8.4 patch would be moved backwards onto an older server binary.
     image: mysql:8.4
     restart: unless-stopped
     environment:
@@ -64,8 +67,19 @@ services:
       - .env
     environment:
       PORT: "3000"
+      # The database's own passwords stay with the database. `.env` holds them
+      # because compose reads them from there for the db service above, and
+      # env_file hands the app everything in `.env`; these blank them in the
+      # app's environment. The app reaches MySQL through DATABASE_URL alone.
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_PASSWORD: ""
+    # Published on this machine's loopback only. A web server with HTTPS on
+    # the same machine (Caddy, nginx) is the way in from outside, which keeps
+    # sign-in off plain HTTP and keeps the rate limits keyed on real
+    # addresses. To reach the app from other machines WITHOUT a proxy (a home
+    # network, say), set VILLAGE_BIND=0.0.0.0 in `.env`, deliberately.
     ports:
-      - "${VILLAGE_PORT:-3000}:3000"
+      - "${VILLAGE_BIND:-127.0.0.1}:${VILLAGE_PORT:-3000}:3000"
     volumes:
       - village-data:/app/data
     healthcheck:

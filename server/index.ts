@@ -961,6 +961,10 @@ import { resolveHyphaLinks } from "../shared/hypha";
 import { closePool, getPool } from "./db/pool";
 import { applyPending, connect as dbConnect } from "./db/migrate";
 import { startMaintenanceServer } from "./db/maintenanceMode";
+import { clientIpConfigFromEnv, deriveClientIp, forwardedHeaderIgnored } from "./lib/clientIp";
+import { authTokenSecretProblem } from "./lib/secretFloors";
+import { checkPasswordUniformly, dummyHash } from "./lib/passwordCheck";
+import { adminPasswordTooShort, passwordDoorThrottled, poolCounter, recordPasswordDoorFailure, SHORT_PASSWORD_ANSWER, shortPasswordLogLine } from "./lib/passwordDoors";
 import { alignTableCollations } from "./db/collation";
 import { dbCollection, dbDocument } from "./repos/store-db";
 import {
@@ -1079,11 +1083,12 @@ const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const PLACEHOLDER_ADMIN_PASSWORD = "change-me";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || PLACEHOLDER_ADMIN_PASSWORD;
 /**
- * Only the placeholder is refused — deliberately not a strength rule. What is
- * dangerous here is a credential ANYONE CAN READ IN THE SOURCE, not a short
- * one; a village that has chosen its own bootstrap word has made a decision,
- * and quietly overriding it would lock a founder out of their own deployment
- * at the exact moment they need break-glass access.
+ * The placeholder is refused here. Since audit S2 the two doors this password
+ * opens (bootstrap and the database export) also refuse one shorter than
+ * ADMIN_PASSWORD_MIN_LENGTH, LOUDLY, with a log line naming the variable, so a
+ * founder locked out by it is told exactly what to change. The earlier view
+ * that a short word was the village's own decision did not survive the export:
+ * that door hands out every member's data to whoever guesses it.
  */
 const adminPasswordIsUsable = ADMIN_PASSWORD !== PLACEHOLDER_ADMIN_PASSWORD;
 /**
@@ -1096,6 +1101,13 @@ const adminPasswordIsUsable = ADMIN_PASSWORD !== PLACEHOLDER_ADMIN_PASSWORD;
  * because each replica would sign with a different secret. Set
  * AUTH_TOKEN_SECRET in the environment for stable sessions.
  */
+// R113: a SET secret has a floor, and a short one refuses to boot. Unset keeps
+// the random per-process fallback below. server/lib/secretFloors.ts.
+const authTokenSecretRefusal = authTokenSecretProblem();
+if (authTokenSecretRefusal) {
+  console.error(`[startup] ${authTokenSecretRefusal}`);
+  process.exit(1);
+}
 const AUTH_TOKEN_SECRET = process.env.AUTH_TOKEN_SECRET || crypto.randomBytes(32).toString("hex");
 if (!process.env.AUTH_TOKEN_SECRET) {
   console.warn(
@@ -1812,7 +1824,7 @@ async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 }
 
-async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+async function verifyPassword(password: string, storedHash: string | null | undefined): Promise<boolean> {
   // Unsalted SHA-256 hashes are NOT accepted, as of 2026-09-19. They were kept
   // working so an existing member would be re-hashed to bcrypt on their next
   // sign-in, and that is why they persisted: the upgrade only ever reached
@@ -1822,12 +1834,13 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
   // string. Rye ruled that those accounts go through a password reset
   // instead. The set-password link is the door, and it works from any stored
   // hash, including an empty one.
-  try {
-    return await bcrypt.compare(password, storedHash);
-  } catch {
-    return false;
-  }
+  //
+  // The compare runs against a dummy hash when there is no usable one, so a
+  // missing account costs the same as a wrong password: server/lib/passwordCheck.ts.
+  return checkPasswordUniformly(password, storedHash, BCRYPT_SALT_ROUNDS);
 }
+// Made at boot, so the first unknown address is not the one slower request.
+void dummyHash(BCRYPT_SALT_ROUNDS);
 
 /**
  * Header only. Query-string and body fallbacks were removed: a password in a URL
@@ -4760,37 +4773,26 @@ async function recordHit(bucket: string): Promise<void> {
 }
 
 /**
- * How many proxies sit in front of this process. One on Railway, Fly, Render
- * and most PaaS; raise it if a fork puts its own CDN or load balancer ahead
- * of the platform's. Zero means the socket address IS the client.
+ * The caller's address: server/lib/clientIp.ts holds the rule and why. Two
+ * conditions, both needed (R105): X-Forwarded-For is read only as many hops
+ * as TRUSTED_PROXY_HOPS says, and only when the socket peer is a private or
+ * loopback address, which is where our own proxy connects from. A direct
+ * caller on a public address is answered by its socket address, whatever
+ * header it sent.
  */
-const TRUSTED_PROXY_HOPS = Math.max(0, Number(process.env.TRUSTED_PROXY_HOPS ?? 1) || 0);
-
-/**
- * The caller's address, as far as anything we control can vouch for it.
- *
- * X-Forwarded-For grows left to right: each proxy APPENDS the address it
- * received the request from. So the rightmost entries are written by our own
- * infrastructure and the leftmost is whatever the original client sent —
- * which anyone can forge. Reading `split(",")[0]` therefore took the one
- * value in the header that is entirely attacker-controlled, and every rate
- * limit keyed on it (checkout attempts, sign-in throttling, the assistant's
- * cost cap, the abuse guard) could be reset to zero by changing a header.
- *
- * Counting in from the RIGHT by the number of proxies we actually run lands
- * on the address our own edge observed. Extra entries the client pre-seeded
- * sit to the left of it and are ignored.
- */
+const CLIENT_IP_CONFIG = clientIpConfigFromEnv();
+let ignoredForwardedHeaderLogged = false;
 function clientIp(req: express.Request): string {
   const raw = req.headers["x-forwarded-for"];
-  const chain = (Array.isArray(raw) ? raw.join(",") : String(raw ?? ""))
-    .split(",").map(s => s.trim()).filter(Boolean);
-  if (chain.length && TRUSTED_PROXY_HOPS > 0) {
-    // Fewer entries than hops means the header did not come through the
-    // chain we expect; the leftmost is then the least-bad answer available.
-    return chain[Math.max(0, chain.length - TRUSTED_PROXY_HOPS)];
+  const peer = req.socket.remoteAddress;
+  if (!ignoredForwardedHeaderLogged && forwardedHeaderIgnored(raw, peer, CLIENT_IP_CONFIG)) {
+    ignoredForwardedHeaderLogged = true;
+    console.warn(
+      `[client-ip] ignoring X-Forwarded-For from a public peer (${peer}); rate limits key on the socket address. ` +
+        "If this deployment sits behind a platform edge that connects from a public address, set TRUSTED_PROXY_PEER=any. Logged once per process.",
+    );
   }
-  return req.socket.remoteAddress ?? "unknown";
+  return deriveClientIp(raw, peer, CLIENT_IP_CONFIG);
 }
 // Global daily call cap for the AI assistant, so a key can't run away with cost.
 async function assistantDailyCapReached(max: number): Promise<boolean> {
@@ -7933,7 +7935,9 @@ async function startServer() {
       return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
     }
     const user = await members.byEmail(email);
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    // One bcrypt compare on every attempt, a dummy hash when there is no
+    // account or no password, so the time taken names no address (R110).
+    if (!(await verifyPassword(password, user?.passwordHash)) || !user) {
       await recordHit(ipBucket);
       await recordHit(acctBucket);
       return res.status(401).json({ error: "Invalid credentials" });
@@ -7969,7 +7973,20 @@ async function startServer() {
           "Set ADMIN_PASSWORD to a value of your own in the environment, redeploy, and try again.",
       });
     }
+    // Audit S2: a floor on the password, and a GLOBAL budget of failures
+    // checked before the compare, so a pool of addresses shares one bound.
+    // server/lib/passwordDoors.ts.
+    if (adminPasswordTooShort(ADMIN_PASSWORD)) {
+      console.error(shortPasswordLogLine("bootstrap", ADMIN_PASSWORD.length));
+      return res.status(503).json({ error: SHORT_PASSWORD_ANSWER });
+    }
+    const doorCounter = poolCounter(getPool());
+    const doorIp = clientIp(req);
+    if (await passwordDoorThrottled(doorCounter, "bootstrap", doorIp)) {
+      return res.status(429).set("Retry-After", "3600").json({ error: "Too many attempts." });
+    }
     if (!secretEquals(String(password), ADMIN_PASSWORD)) {
+      await recordPasswordDoorFailure(doorCounter, "bootstrap", doorIp);
       return res.status(401).json({ error: "auth_required" });
     }
     const normEmail = String(email).trim().toLowerCase();
