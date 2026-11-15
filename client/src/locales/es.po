@@ -1972,6 +1972,11 @@ msgctxt "open work board: status mark, an open quest"
 msgid "Open: nobody carries it yet"
 msgstr "Abierta: nadie la lleva todavía"
 
+#: client/src/components/voice/VoiceDrafts.tsx
+msgctxt "voice drafts"
+msgid "Use this"
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Your suggestion is with the village. It waits on the canvas Team block, where whoever may adopt it decides."
 msgstr ""
@@ -4126,6 +4131,12 @@ msgctxt "about you"
 msgid "Reference {0}: email or phone"
 msgstr "Referencia {0}: correo o teléfono"
 
+#. placeholder {0}: value.takes.length + 1
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Recording {0} of {VOICE_NOTES_MAX}"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The key is stored unsealed, so it travels in every database dump. Set VILLAGE_SECRETS_KEY and restart to seal it in place; that keeps the same key."
@@ -4279,6 +4290,12 @@ msgstr ""
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "an unknown date"
+msgstr ""
+
+#. placeholder {0}: i + 1
+#: client/src/components/voice/VoiceHeard.tsx
+msgctxt "voice note, deciders"
+msgid "Recording {0}"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -5270,6 +5287,12 @@ msgstr ""
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "label before a decision's note"
 msgid "The note:"
+msgstr ""
+
+#. placeholder {0}: i + 1
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Recording {0}"
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -6499,9 +6522,9 @@ msgid "The meadow is resting"
 msgstr "El prado descansa"
 
 #: client/src/pages/ProposeARole.tsx
-msgctxt "founding application draft"
-msgid "We kept your answers from last time. References and files are never saved, so add them again."
-msgstr "Guardamos tus respuestas de la última vez. Las referencias y los archivos nunca se guardan, así que añádelos de nuevo."
+#~ msgctxt "founding application draft"
+#~ msgid "We kept your answers from last time. References and files are never saved, so add them again."
+#~ msgstr "Guardamos tus respuestas de la última vez. Las referencias y los archivos nunca se guardan, así que añádelos de nuevo."
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "org chart, a sample circle or role"
@@ -8907,6 +8930,12 @@ msgctxt "approval inbox"
 msgid "Declined"
 msgstr ""
 
+#. placeholder {0}: i + 1
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Recording {0}"
+msgstr ""
+
 #: client/src/components/governance/DecisionOutcome.tsx
 msgid "This asks again after <0>a vote too few of us answered</0>."
 msgstr ""
@@ -9475,6 +9504,11 @@ msgstr "Te escribiremos para encontrar un momento."
 #: client/src/pages/RoleDraft.tsx
 msgid "Who do you play? Pick one or more."
 msgstr "¿A quién juegas? Elige uno o más."
+
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Tap the mic in any answer below to say it instead of typing it."
+msgstr ""
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "How it serves the governing purpose"
@@ -14197,6 +14231,11 @@ msgstr ""
 msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
 msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada luna y cada temporada. El compromiso es cuánta energía y atención pide el rol."
 
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Remove"
+msgstr ""
+
 #: client/src/components/guide/GuideDataSection.tsx
 msgctxt "data settings: heading for where guide conversations go"
 msgid "Your words and the guides"
@@ -14554,6 +14593,11 @@ msgstr ""
 msgid "The membership letter didn't load. Reload the page to read it and align."
 msgstr "La carta de membresía no cargó. Recarga la página para leerla y alinearte."
 
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Their voice"
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: change your percent"
 msgid "Change it"
@@ -14890,6 +14934,11 @@ msgstr ""
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Kind of work"
+msgstr ""
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application draft"
+msgid "We kept your answers from last time. References, files and recordings are never saved, so add them again."
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
