@@ -522,7 +522,36 @@ export function terminalAnswerFor(err: unknown): TerminalAnswer {
       detail,
     };
   }
+  const body = bodyReadRefusal(err);
+  if (body) return { ...body, level: "warn", detail: err instanceof Error ? err.message : String(err) };
   return { status: 500, body: { error: "Internal server error" }, level: "error", detail };
+}
+
+/*
+ * A BODY THE SERVER COULD NOT READ (hostile-edges QA, 15 Nov 2026). The JSON
+ * reader (body-parser, through `express.json()`) refuses a body that is not
+ * JSON, one over its size limit, or one in a charset it cannot decode, and
+ * marks each refusal with `type`, a 4xx `status` and `expose: true`. They all
+ * reached this handler and answered "Internal server error" with a 500, on the
+ * public application form among every other route, so a person who sent a cut
+ * off request was told the village had broken. Answered now with the status
+ * the reader chose and a sentence saying what to do. The log gets the reader's
+ * own message and no stack: a malformed body is the sender's, not a fault.
+ */
+const BODY_READ_WORDS: Record<string, { status: number; error: string; code: string }> = {
+  "entity.parse.failed": { status: 400, error: "We couldn't read what was sent. Reload the page and try again.", code: "body_unreadable" },
+  "entity.too.large": { status: 413, error: "What was sent is too large. Send less at once and try again.", code: "body_too_large" },
+  "charset.unsupported": { status: 415, error: "We couldn't read what was sent. Reload the page and try again.", code: "body_unreadable" },
+  "encoding.unsupported": { status: 415, error: "We couldn't read what was sent. Reload the page and try again.", code: "body_unreadable" },
+  "request.size.invalid": { status: 400, error: "We couldn't read what was sent. Reload the page and try again.", code: "body_unreadable" },
+};
+
+function bodyReadRefusal(err: unknown): { status: number; body: { error: string; code: string } } | null {
+  const e = err as { type?: unknown; expose?: unknown; status?: unknown } | null | undefined;
+  if (typeof e?.type !== "string" || e.expose !== true) return null;
+  const words = BODY_READ_WORDS[e.type];
+  if (!words) return null;
+  return { status: words.status, body: { error: words.error, code: words.code } };
 }
 
 /** Log it on the right channel and answer. The handler itself stays two lines. */
