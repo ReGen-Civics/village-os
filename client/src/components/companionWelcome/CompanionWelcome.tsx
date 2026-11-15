@@ -141,7 +141,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
     setVoiceChosen(true);
   };
   const { speak, cancel } = useSpeech(voiceChosen && persona.speak && !quiet, persona.character);
-  const cname = name.trim() || "your companion";
+  const cname = name.trim() || t({ message: "your companion", context: "companion welcome, before it has a name" });
   const tint = TINT_OF[persona.character];
   // The egg stays lilac until a character is picked (the approved Hatchery board).
   const [picked, setPicked] = useState(Boolean(personal?.persona));
@@ -495,7 +495,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
           <Egg tint={eggTint} />
         </div>
         {named ? (
-          <Bubble key={`n-${name}`} who={cname} text={`${name}? ${name}! Oh, I love it. ${name} it is. You can rename me any time.`} speak={speak} quiet={quiet}>
+          <Bubble key={`n-${name}`} who={cname} text={t({ message: `${name}? ${name}! Oh, I love it. ${name} it is. You can rename me any time.`, context: "companion welcome, what the companion says" })} speak={speak} quiet={quiet}>
             <div className="mt-2 flex gap-1.5">
               <button type="button" className={`${BTN_GOLD} !min-h-9 !px-3 !py-1.5 !text-[13px]`} onClick={next}>
                 <Trans context="companion welcome">Next: who you'll be</Trans>
@@ -503,7 +503,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
             </div>
           </Bubble>
         ) : (
-          <Bubble key="ask" who="Your companion" text={`Tap tap? Hello in there… I mean, out there! I'm your companion, ${firstName}. I'll hatch once you've told me who to be. First: what's my name?`} speak={speak} quiet={quiet} />
+          <Bubble key="ask" who={t({ message: "Your companion", context: "companion welcome, the speaker before it has a name" })} text={t({ message: `Tap tap? Hello in there… I mean, out there! I'm your companion, ${firstName}. I'll hatch once you've told me who to be. First: what's my name?`, context: "companion welcome, what the companion says" })} speak={speak} quiet={quiet} />
         )}
         <p className={fine}>
           <Trans context="companion welcome">Say it, type it, or pick one:</Trans>
@@ -623,7 +623,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
     body = (
       <>
         <Egg tint={eggTint} small />
-        <Bubble key="lenses" who={cname} text="Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable." speak={speak} quiet={quiet} />
+        <Bubble key="lenses" who={cname} text={t({ message: "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable.", context: "companion welcome, what the companion says" })} speak={speak} quiet={quiet} />
         <div className="grid grid-cols-3 gap-2">
           {items.map((i) => (
             <button
@@ -740,7 +740,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose }: 
         <h2 id="cw-title" className="m-0 font-display text-[26px] text-dash-gold-lit">
           <Trans context="companion welcome">{cname} is yours.</Trans>
         </h2>
-        <Bubble key="bonded" who={cname} text={`That's the whole place, ${firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile.`} speak={speak} quiet={quiet} />
+        <Bubble key="bonded" who={cname} text={t({ message: `That's the whole place, ${firstName}! My first question is waiting for you in Your companions. Call me any time, I'm always on your profile.`, context: "companion welcome, what the companion says" })} speak={speak} quiet={quiet} />
         <div className="flex flex-wrap justify-center gap-2.5">
           <button type="button" className={BTN_GOLD} onClick={() => leave("done")}>
             <Trans context="companion welcome">Go to my profile</Trans>

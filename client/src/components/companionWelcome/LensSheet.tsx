@@ -73,13 +73,13 @@ export function LensSheet({
   // Own words.
   const [own, setOwn] = useState(current?.lens === "own" ? (current.data as { text: string }).text : "");
 
-  const title = id === "gk" ? "Gene Keys and Human Design" : id === "vedic" ? "Vedic chart" : id === "type" ? "Personality type" : "In your own words";
+  const title = id === "gk" ? t({ message: "Gene Keys and Human Design", context: "companion lens sheet" }) : id === "vedic" ? t({ message: "Vedic chart", context: "companion lens sheet" }) : id === "type" ? t({ message: "Personality type", context: "companion lens sheet" }) : t({ message: "In your own words", context: "companion lens sheet" });
   const added = id === "gk" ? Boolean(gk?.guideUses) : Boolean(current);
 
   const workOut = async () => {
     setError(null);
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-    if (!m) return setError("Choose your birth date first.");
+    if (!m) return setError(t({ message: "Choose your birth date first.", context: "companion lens sheet" }));
     const sky = await import("@shared/geneKeysSky");
     const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
     const tm = /^(\d{2}):(\d{2})$/.exec(time);
@@ -87,7 +87,7 @@ export function LensSheet({
       ? [sky.zonedToUtc(y, mo, d, Number(tm[1]), Number(tm[2]), zone)]
       : [sky.zonedToUtc(y, mo, d, 0, 0, zone), sky.zonedToUtc(y, mo, d, 23, 59, zone)];
     const v = sky.vedicMoon(instants);
-    if (v.rashi === null) return setError("Your Moon changed sign that day. Add your birth time so I can tell which.");
+    if (v.rashi === null) return setError(t({ message: "Your Moon changed sign that day. Add your birth time so I can tell which.", context: "companion lens sheet" }));
     setMoon(v);
   };
 
@@ -110,17 +110,17 @@ export function LensSheet({
 
   const save = async () => {
     setError(null);
-    if (!yes) return setError("Tick the box to say yes first.");
+    if (!yes) return setError(t({ message: "Tick the box to say yes first.", context: "companion lens sheet" }));
     setBusy(true);
     if (id === "gk") {
       const r = await send("/api/gene-keys/me", "PATCH", { maia: true });
       setBusy(false);
-      if (!r.ok) return setError(r.json?.error ?? "That could not be saved just now.");
+      if (!r.ok) return setError(r.json?.error ?? t({ message: "That could not be saved just now.", context: "companion lens sheet" }));
       return onSaved(null, true);
     }
     const r = await send(`/api/me/companion-lenses/${id}`, "PUT", { consent: true, data: data() });
     setBusy(false);
-    if (!r.ok) return setError(r.json?.error ?? "That could not be saved just now.");
+    if (!r.ok) return setError(r.json?.error ?? t({ message: "That could not be saved just now.", context: "companion lens sheet" }));
     onSaved(r.json?.lenses ?? null);
   };
 
@@ -129,12 +129,12 @@ export function LensSheet({
     if (id === "gk") {
       const r = await send("/api/gene-keys/me", "PATCH", { maia: false });
       setBusy(false);
-      if (!r.ok) return setError(r.json?.error ?? "That could not be changed just now.");
+      if (!r.ok) return setError(r.json?.error ?? t({ message: "That could not be changed just now.", context: "companion lens sheet" }));
       return onSaved(null, false);
     }
     const r = await send(`/api/me/companion-lenses/${id}`, "DELETE");
     setBusy(false);
-    if (!r.ok) return setError(r.json?.error ?? "That could not be deleted just now.");
+    if (!r.ok) return setError(r.json?.error ?? t({ message: "That could not be deleted just now.", context: "companion lens sheet" }));
     onSaved(r.json?.lenses ?? null);
   };
 

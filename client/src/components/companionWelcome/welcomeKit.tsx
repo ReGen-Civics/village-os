@@ -50,6 +50,9 @@ export function useSpeech(on: boolean, character: Character) {
       try {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
+        // The voice speaks the language the page is in, so a Spanish line is never read by an English voice (Spanish phone QA, 15 Nov 2026).
+        const lang = document.documentElement.lang;
+        if (lang) u.lang = lang;
         u.rate = ({ plain: 1.1, coach: 1.08, elder: 0.9, poet: 0.92 } as Partial<Record<Character, number>>)[character] ?? 1;
         u.pitch = character === "sidekick" || character === "trickster" ? 1.25 : 1;
         u.onstart = () => onStart?.();
