@@ -76,6 +76,8 @@ import type { AppDeps } from "../lib/appDeps";
 import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
+import { sectionsForMany } from "../lib/roleCardSections";
+import { belowMinimum } from "../../shared/commitmentRange";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
 import { clearAboutYouDecidedBefore } from "../repos/seatApplications";
@@ -294,6 +296,8 @@ export function register(app: Express, deps: Deps): void {
     // Role journey PR-C: with the village setting on, a card that is not complete offers nothing to apply for.
     const needsCard = deps.boolVar?.("org.apply_needs_complete_card") === true;
     const nameOf = new Map(roles.map((r) => [r.id, r.name]));
+    // Each role's pay ceiling for the full role, as its public card already shows it (Rye, 14 Nov 2026).
+    const ceilings = await sectionsForMany(pool, roles.map((r) => r.id));
     return roles
       .filter((r) => r.active && !r.isExample && isListed(r) && r.circleId && live.has(r.circleId))
       .filter((r) => !needsCard || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
@@ -310,6 +314,10 @@ export function register(app: Express, deps: Deps): void {
         terms: publicTermsOf(r.termsOffer),
         // A role always background-checked (0370): the form says a check happens whatever the references say.
         alwaysChecked: r.alwaysChecked === true,
+        // The commitment range (Rye, 14 Nov 2026): the least one person may propose, and the full role's ceiling,
+        // so the form offers only that range and says the most at each commitment. Display only.
+        commitmentMin: r.commitmentMin ?? null,
+        payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
         // The conversations in the role's order, as its public card shows them (role journey L5), so the
         // form and the board can say what happens next (role audit, 10 Nov 2026). The booking link is
         // not here: it is offered once the address is confirmed (L6).
@@ -430,6 +438,12 @@ export function register(app: Express, deps: Deps): void {
       knowUs: founding().knowUs,
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
+    // A commitment below what the role takes from one person is refused, in words (Rye, 14 Nov 2026, ruling 2).
+    const pct = parsed.value.body.card?.commitmentPct;
+    for (const picked of parsed.value.body.roles) {
+      const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
+      if (typeof min === "number" && typeof pct === "number" && pct < min) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
+    }
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
     const checked = checkProposalFiles(files);

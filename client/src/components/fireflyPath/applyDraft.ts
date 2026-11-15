@@ -19,6 +19,7 @@ import type { ProposalGoal } from "@shared/proposalGoals";
 import type { TermAnswers } from "@shared/termsWords";
 import type { DraftMarks } from "@shared/seraDrafts";
 import { pieceSuggestionsOf, type PieceSuggestion } from "@shared/pieceSuggestions";
+import { payAskOf, type PayAsk } from "@shared/commitmentRange";
 
 export const DRAFT_VERSION = 1;
 export const DRAFT_DAYS = 30;
@@ -42,7 +43,7 @@ export interface ApplyDraft {
   aim: string;
   items: ProposalGoal[];
   marks: DraftMarks;
-  terms: { answers: TermAnswers; commitmentPct: number | null };
+  terms: { answers: TermAnswers; commitmentPct: number | null; payAsk?: PayAsk | null };
   rampUp: boolean;
   practical: { timeZone: string; windows: string[]; earliestStart: string };
   /** What they would make of the role card, piece by piece (shared/pieceSuggestions.ts). Their own words, so it waits here with the rest. */
@@ -72,7 +73,7 @@ export function toDraft(d: Omit<ApplyDraft, "savedAt">, now: Date): ApplyDraft {
     aim: d.aim,
     items: d.items.map((g) => ({ ...g })),
     marks: { ...(d.marks.aim ? { aim: d.marks.aim } : {}), ...(d.marks.story ? { story: d.marks.story } : {}) },
-    terms: { answers: d.terms.answers, commitmentPct: d.terms.commitmentPct },
+    terms: { answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk ?? null },
     rampUp: d.rampUp,
     practical: { timeZone: d.practical.timeZone, windows: [...d.practical.windows], earliestStart: d.practical.earliestStart },
     pieceSuggestions: d.pieceSuggestions.map((x) => ({ ...x })),
@@ -107,7 +108,7 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     aim: str(o.aim, 300),
     items,
     marks: { ...(str(o.marks?.aim, 300) ? { aim: str(o.marks.aim, 300) } : {}), ...(str(o.marks?.story, 300) ? { story: str(o.marks.story, 300) } : {}) },
-    terms: { answers: o.terms?.answers && typeof o.terms.answers === "object" && !Array.isArray(o.terms.answers) ? o.terms.answers : {}, commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null },
+    terms: { answers: o.terms?.answers && typeof o.terms.answers === "object" && !Array.isArray(o.terms.answers) ? o.terms.answers : {}, commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null, payAsk: payAskOf(o.terms?.payAsk) },
     rampUp: o.rampUp === true,
     practical: { timeZone: str(o.practical?.timeZone, 64), windows: strs(o.practical?.windows, 6, 40), earliestStart: str(o.practical?.earliestStart, 10) },
     pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions),

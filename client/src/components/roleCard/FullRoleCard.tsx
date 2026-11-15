@@ -37,6 +37,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
+import { rewardWords } from "@shared/roleRewardWords";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
 import { Fireflies } from "@/components/journey/nature";
@@ -202,9 +203,20 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
   // THE POINT OF PAY, drawn once: in the founding card it is the "How rewards work" piece, whose
   // heading is the piece's own, so the block carries none. Only what the card holds is drawn: no
   // ceiling written, no ceiling line.
+  // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
+  // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
+  const reward = sections?.payCeiling ? rewardWords(sections.payCeiling, seat?.card?.commitmentMin ?? null) : null;
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
-      {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+      {reward ? (
+        <>
+          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
+          {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
+          <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
+        </>
+      ) : (
+        pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>
+      )}
       {pay.shape.length > 0 && (
         <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
           {pay.shape.map((sh) => (
@@ -217,7 +229,8 @@ export default function FullRoleCard({ seat, circleName = null, register = "game
       )}
       {pay.split && <p className="leading-relaxed text-card-foreground" data-testid="pay-split">{pay.split}</p>}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-      {pay.note && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-note">{pay.note}</p>}
+      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
+      {pay.note && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}
     </div>
   ) : null;
 

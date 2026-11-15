@@ -22,6 +22,7 @@
  */
 import { ArrowRight, LayoutList, Sprout, Target, UserRound } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
+import { fillWords, type RoleFill } from "@shared/commitmentRange";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { domainsHeld } from "@shared/rolePieces";
@@ -79,6 +80,8 @@ function OpenPill() {
 export interface FoundingLineupProps {
   roles: FoundingRole[];
   filled: FilledRole[];
+  /** How full each role is, by id (Rye, 14 Nov 2026, ruling 4). */
+  fill?: Record<string, RoleFill>;
   view: LineupView;
   onView: (v: LineupView) => void;
   /** The open card's role id, if any. */
@@ -87,7 +90,24 @@ export interface FoundingLineupProps {
   cardId: string;
 }
 
-export default function FoundingLineup({ roles, filled, view, onView, shown, onOpen, cardId }: FoundingLineupProps) {
+/**
+ * HOW FULL A ROLE IS (Rye, 14 Nov 2026, ruling 4): what its holders give against what it needs, as a bar
+ * and in words, "50% held · 50% open" or "120% held · covered". A shared role stays open below its target.
+ * It shows the role's need, never anyone's worth.
+ */
+function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
+  const width = Math.min(100, Math.round((f.heldPct / f.targetPct) * 100));
+  return (
+    <div className={`mt-2 grid gap-1 ${center ? "w-full max-w-40 justify-items-center" : "max-w-xs"}`} data-fill-meter="">
+      <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        <span className={`block h-full rounded-full ${f.covered ? "bg-muted-foreground" : "bg-notice"}`} style={{ width: `${width}%` }} />
+      </span>
+      <span className="text-xs text-muted-foreground">{fillWords(f)}{f.targetPct !== 100 ? ` (of ${f.targetPct}%)` : ""}</span>
+    </div>
+  );
+}
+
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId }: FoundingLineupProps) {
   const { t } = useLingui();
   const filledLabel = (f: FilledRole) => (f.holders.length ? roleWithHolders(f.name, f.holders) : f.name);
   const circle = roles[0]?.circleName ?? null;
@@ -158,6 +178,7 @@ export default function FoundingLineup({ roles, filled, view, onView, shown, onO
                         ))}
                       </ul>
                     )}
+                    {fill[id] && <FillMeter f={fill[id]} />}
                     <Domains seat={r.seat} />
                   </div>
                   <button
@@ -226,6 +247,7 @@ export default function FoundingLineup({ roles, filled, view, onView, shown, onO
                     </span>
                     <span className="mt-2 font-semibold leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>
                   </button>
+                  {fill[id] && <FillMeter f={fill[id]} center />}
                   <Domains seat={r.seat} center />
                 </li>
               );

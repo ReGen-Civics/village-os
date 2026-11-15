@@ -8,6 +8,7 @@ import { gameFetch } from "@/lib/gameApi";
 import { NO_VILLAGE_PAY, readSections, villagePayFrom, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { DEFAULT_OTHER_WAYS, otherWaysOf, type OtherWays } from "@shared/otherWays";
 import type { FilledTeamRole } from "@shared/foundingTeam";
+import type { RoleFill } from "@shared/commitmentRange";
 
 export interface FoundingTeamAnswer {
   on: boolean;
@@ -21,6 +22,8 @@ export interface FoundingTeamAnswer {
   otherWays: OtherWays;
   /** The current team beside the open roles (Rye, 14 Nov 2026): the founding circles' filled roles, holders by first name when the village shows names. */
   team: FilledTeamRole[];
+  /** How full each role is, by id (Rye, 14 Nov 2026): what its holders give against what it needs. */
+  fill: Record<string, RoleFill>;
 }
 
 export interface RoleCardAnswer {
@@ -32,7 +35,19 @@ export interface RoleCardAnswer {
   mayEdit: boolean;
 }
 
-const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [] };
+const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [], fill: {} };
+
+/** The fills as the server sent them, read again so a bad row draws nothing. */
+function fillOf(v: unknown): Record<string, RoleFill> {
+  const out: Record<string, RoleFill> = {};
+  if (!v || typeof v !== "object") return out;
+  for (const [id, f] of Object.entries(v as Record<string, any>)) {
+    const held = Number(f?.heldPct);
+    const target = Number(f?.targetPct);
+    if (Number.isFinite(held) && held >= 0 && Number.isFinite(target) && target > 0) out[id] = { heldPct: held, targetPct: target, openPct: Math.max(0, target - held), covered: held >= target };
+  }
+  return out;
+}
 
 /** The team as the server sent it, read again so a bad row draws nothing. */
 function teamOf(v: unknown): FilledTeamRole[] {
@@ -64,7 +79,7 @@ export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
       const read = readSections(d?.sections?.[id]);
       if (read.ok) sections[id] = read.value;
     }
-    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team) };
+    return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team), fill: fillOf(d?.fill) };
   } catch {
     return OFF;
   }

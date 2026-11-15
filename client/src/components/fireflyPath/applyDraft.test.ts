@@ -47,6 +47,6 @@ describe("the saved draft", () => {
     expect(fromDraft(toDraft(STATE, old), NOW, 5)).toBeNull();
     for (const bad of [null, "text", [], { savedAt: "not a date" }]) expect(fromDraft(bad, NOW, 5)).toBeNull();
     expect(fromDraft({ ...toDraft(STATE, NOW), step: 99, reached: -4 }, NOW, 5)).toMatchObject({ step: 5, reached: 5 });
-    expect(fromDraft({ ...toDraft(STATE, NOW), terms: { answers: [], commitmentPct: 7.5 } }, NOW, 5)?.terms).toEqual({ answers: {}, commitmentPct: null });
+    expect(fromDraft({ ...toDraft(STATE, NOW), terms: { answers: [], commitmentPct: 7.5 } }, NOW, 5)?.terms).toEqual({ answers: {}, commitmentPct: null, payAsk: null });
   });
 });

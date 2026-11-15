@@ -222,6 +222,39 @@ describe("one role per application", () => {
   });
 });
 
+describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
+  const SHARED = { ...FORM, roles: [{ ...FORM.roles[0], commitmentMin: 30, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, FORM.roles[1]] };
+  it("offers commitments from the role's minimum to 100, says the most at the chosen one, and sends an optional ask", async () => {
+    await applyFor("r-gate", SHARED);
+    const pick = screen.getByLabelText("Your commitment") as HTMLSelectElement;
+    expect(Array.from(pick.options).map((o) => o.value).filter(Boolean)).toEqual(["30", "40", "50", "60", "70", "80", "90", "100"]);
+    await completeAll();
+    expect(document.querySelector("[data-commitment-ceiling]")?.textContent).toBe("Up to $6,500 a month at this commitment");
+    const ask = document.querySelector("[data-pay-ask]") as HTMLElement;
+    fireEvent.click(within(ask).getByLabelText("Negotiate on the first call if chosen"));
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.payAsk).toEqual({ kind: "negotiate" });
+    expect(posted[0].body.card.commitmentPct).toBe(50);
+  });
+  it("sends a monthly amount when one is written, and no ask at all when none is chosen (control)", async () => {
+    await applyFor("r-gate", SHARED);
+    await completeAll();
+    const ask = document.querySelector("[data-pay-ask]") as HTMLElement;
+    fireEvent.click(within(ask).getByLabelText("A monthly amount"));
+    fireEvent.change(ask.querySelector("[data-pay-ask-amount]") as HTMLInputElement, { target: { value: "6000" } });
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
+  });
+  it("a role with no minimum keeps the usual choices and asks nothing about pay (control)", async () => {
+    await applyFor();
+    const pick = screen.getByLabelText("Your commitment") as HTMLSelectElement;
+    expect(Array.from(pick.options).map((o) => o.value).filter(Boolean)[0]).toBe("10");
+    expect(document.querySelector("[data-pay-ask]")).toBeNull();
+  });
+});
+
 describe("the six steps", () => {
   it("shows one step at a time under \"Step N of 6\", with one primary act worded as what comes next", async () => {
     await applyFor();

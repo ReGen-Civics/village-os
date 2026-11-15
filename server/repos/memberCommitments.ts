@@ -7,7 +7,10 @@
  * asked for exactly that: people move this from season to season, moon to
  * moon, week to week. `commitmentBoundary.test.ts` holds the file to it.
  *
- * Private to the member. Nothing that pays reads it (shared/commitment.ts).
+ * Private to the member. Nothing that pays reads it (shared/commitment.ts),
+ * with ONE narrowed door (Rye, 14 Nov 2026): `splitOn` hands the split, and
+ * only the split, to server/lib/splitForPay.ts for the End of Moon invoice,
+ * where a Treasurer confirms it before anything is paid.
  * It goes when the member is erased (`forgetCommitments`, server/lib/erasure.ts).
  */
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
@@ -64,6 +67,19 @@ export async function commitmentNow(db: Queryable, userId: string, today: string
   );
   const read = rows.map(rowToCommitment).filter((c): c is MemberCommitment => c !== null);
   return commitmentOn(read, today);
+}
+
+/**
+ * THE SPLIT ALONE, as it holds on `day`: the one read the pay path may make
+ * (server/lib/splitForPay.ts). It selects `split_json` and nothing else, so
+ * the percent, the period and the note never reach a pay path.
+ */
+export async function splitOn(db: Queryable, userId: string, day: string): Promise<MemberCommitment["split"]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT `split_json` FROM `member_commitments` WHERE `user_id` = ? AND `from_date` <= ? ORDER BY `from_date` DESC, `id` DESC LIMIT 1",
+    [userId, day],
+  );
+  return rows.length === 0 ? null : storedCommitmentSplit(rows[0].split_json);
 }
 
 /** Erasure: the member's whole history goes with them. */

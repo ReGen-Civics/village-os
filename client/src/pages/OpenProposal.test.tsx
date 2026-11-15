@@ -182,6 +182,31 @@ describe("the open proposal page", () => {
     expect(within(review).queryByRole("link", { name: /Apply for this role/ })).toBeNull();
   });
 
+  it("COMMITMENT: a decider reads what they propose, what the role pays at it, their ask and the coverage, in plain arithmetic (Rye, 14 Nov 2026)", async () => {
+    answer = () =>
+      json({
+        proposal: served({
+          commitment: { pct: 50, ask: { kind: "amount", monthly: 6000 }, roles: [{ roleId: "role-gate", full: { amount: 13000, currency: "USD", per: "month" }, atCommitment: 6500, heldPct: 40, targetPct: 100, withThisPct: 90 }] },
+        }),
+      });
+    render(<OpenProposal />);
+    await heading();
+    const box = await screen.findByTestId("commitment-review");
+    expect(box.querySelector("[data-commitment-pct]")?.textContent).toBe("50%");
+    expect(box.querySelector("[data-pay-ask-shown]")?.textContent).toBe("$6,000 a month");
+    expect(box.querySelector("[data-commitment-ceiling]")?.textContent).toBe("At 50%, the role pays up to $6,500 a month (the full role: $13,000).");
+    expect(box.querySelector("[data-commitment-coverage]")?.textContent).toBe("Held now: 40% of 100%. With this application: 90% of 100%.");
+    // Facts only: nothing ranks or scores anyone.
+    expect(box.textContent).not.toMatch(/score|rank|rating|match/i);
+  });
+
+  it("COMMITMENT: nothing is drawn for a reader who does not decide (control)", async () => {
+    answer = () => json({ proposal: served({ commitment: null }) });
+    render(<OpenProposal />);
+    await heading();
+    expect(screen.queryByTestId("commitment-review")).toBeNull();
+  });
+
   it("SHAPE THE ROLE: nothing is drawn when the reader is served no suggestions (control)", async () => {
     answer = () => json({ proposal: served({ pieceSuggestions: null }) });
     render(<OpenProposal />);
