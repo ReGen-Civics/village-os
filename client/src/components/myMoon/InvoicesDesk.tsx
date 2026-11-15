@@ -28,12 +28,14 @@ import {
   MY_MOON_WORDS,
   QUEUE_WORDS,
   SELF_APPROVED_WORDS,
+  SPLIT_PAY_WORDS,
+  splitUnconfirmed,
   type BulkApproveResponse,
 } from "@shared/moonRecap";
 import * as api from "./moonApi";
 import type { QueueData, QueueRowView } from "./moonApi";
 import { RowHead } from "./ReviewQueue";
-import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, SMALL_BTN_ON } from "./moonUi";
+import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, SMALL_BTN_ON, SplitBreakdown } from "./moonUi";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
 
@@ -50,6 +52,15 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
   const [error, setError] = useState<string | null>(null);
   if (!inv) return null;
   const waiting = row.waitingOn === "invoice";
+  const splitToConfirm = waiting && splitUnconfirmed(inv.lines);
+
+  const confirmIt = async () => {
+    if (!inv.id) return;
+    setError(null);
+    const r = await api.confirmSplit(inv.id, init);
+    if (!r.ok) return setError(r.error);
+    await onDone();
+  };
 
   const returnIt = async () => {
     if (!note.trim()) return;
@@ -73,6 +84,20 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
             <span>{MOON_WORDS.total}</span>
             <span><Amount minor={inv.totalMinor} currency={inv.currency} /></span>
           </p>
+          {splitToConfirm ? (
+            <div className="flex flex-col gap-2 rounded-lg border border-border p-2" data-testid="split-confirm">
+              <p className="m-0 text-xs text-muted-foreground">{SPLIT_PAY_WORDS.confirmHint}</p>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                {inv.lines.filter((l) => l.split).map((l) => (
+                  <li key={l.key} className="flex flex-col gap-1">
+                    <span className="text-sm font-medium text-foreground">{l.roleNames.join(", ")}</span>
+                    <SplitBreakdown split={l.split!} currency={l.currency} />
+                  </li>
+                ))}
+              </ul>
+              <button type="button" className={`${SMALL_BTN} self-start`} onClick={confirmIt}>{SPLIT_PAY_WORDS.confirm}</button>
+            </div>
+          ) : null}
         </div>
       </div>
       <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={open} onClick={() => setOpen((v) => !v)}>{open ? QUEUE_WORDS.close : QUEUE_WORDS.open}</button>
@@ -83,6 +108,7 @@ function InvoiceRow({ row, picked, onPick, init, onDone }: {
               <li key={l.key} className="flex flex-wrap justify-between gap-2 border-b border-border py-1">
                 <span>{l.roleNames.join(", ")} <span className="text-xs text-muted-foreground">{LINE_BASIS_WORDS[l.basis]}. {l.basisLine}</span></span>
                 <Amount minor={l.amountMinor} currency={l.currency} />
+                {l.split ? <div className="w-full"><SplitBreakdown split={l.split} currency={l.currency} /></div> : null}
               </li>
             ))}
           </ul>

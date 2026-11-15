@@ -20,6 +20,7 @@
 
 /** The village's public link. */
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
+import { payAskOf, readPayAsk, type PayAsk } from "./commitmentRange";
 import { applicantSteps, cleanNote, isApplicantLanguage, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { termOf, type OpenProposalTerm } from "./openProposalTerm";
 import { cardOf, parseCard, type OpenProposalCard } from "./openProposalCard";
@@ -177,6 +178,8 @@ export interface OpenProposalBody {
    * (shared/pieceSuggestions.ts). For the deciders, read-only, beside each piece; never given to an AI.
    */
   pieceSuggestions?: PieceSuggestion[];
+  /** Their optional pay ask (Rye, 14 Nov 2026, shared/commitmentRange.ts): a monthly amount, or negotiate. For the deciders; the contract sets the pay. */
+  payAsk?: PayAsk;
 }
 
 export interface OpenProposalInput {
@@ -223,6 +226,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
     ...(o.rampUp === true ? { rampUp: true as const } : {}),
     ...(text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) ? { selfKnowledge: text(o.selfKnowledge, SELF_KNOWLEDGE_MAX).slice(0, SELF_KNOWLEDGE_MAX) } : {}),
     ...(pieceSuggestionsOf(o.pieceSuggestions).length ? { pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions) } : {}),
+    ...(payAskOf(o.payAsk) ? { payAsk: payAskOf(o.payAsk) as PayAsk } : {}),
   };
 }
 
@@ -293,7 +297,10 @@ export function parseOpenProposal(
   // What they would make of the role card, piece by piece (Rye, 14 Nov 2026): optional, for the roles picked.
   const suggested = parsePieceSuggestions(o.pieceSuggestions, new Set(roles.map((r) => r.roleId)));
   if (!suggested.ok) return { ok: false, field: "pieceSuggestions", error: suggested.error };
+  const asked = readPayAsk(o.payAsk);
+  if (!asked.ok) return { ok: false, field: "payAsk", error: asked.problem };
   const own = {
+    ...(asked.value ? { payAsk: asked.value } : {}),
     ...(suggested.value.length ? { pieceSuggestions: suggested.value } : {}),
     ...(knowUs.length ? { knowUs } : {}),
     ...(o.rampUp === true ? { rampUp: true as const } : {}),
