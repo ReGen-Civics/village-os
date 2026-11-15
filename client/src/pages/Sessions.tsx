@@ -276,11 +276,16 @@ export default function Sessions() {
     };
   }, [on, signedIn, fetchList]);
 
-  // The village's usual length, once it arrives, unless the member already chose one.
+  // The village's usual length, once it arrives, unless the member already chose one. Applied in
+  // the render that first sees it, once per value, so it commits with the start card's buttons.
+  // An effect here ran in a later passive flush and, still seeing durationTouched as false, put the
+  // village default back over a length "Get the room ready" had just set (14 Nov 2026, comingUp.test.tsx).
   const villageMinutes = load.kind === "ready" ? load.data.defaultMinutes : null;
-  useEffect(() => {
-    if (villageMinutes != null && !durationTouched) setDuration(String(villageMinutes));
-  }, [villageMinutes, durationTouched]);
+  const [seededMinutes, setSeededMinutes] = useState<number | null>(null);
+  if (villageMinutes != null && villageMinutes !== seededMinutes) {
+    setSeededMinutes(villageMinutes);
+    if (!durationTouched) setDuration(String(villageMinutes));
+  }
 
   // A tick that no longer fits the circle chosen, or an item that went elsewhere, is dropped.
   const brought = load.kind === "ready" ? load.data.library.items : null;
