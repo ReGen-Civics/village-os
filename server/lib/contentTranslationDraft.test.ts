@@ -4,7 +4,7 @@ import { readTranslationReply, translationMessage, translationSystemPrompt } fro
 
 describe("the machine's translation ask", () => {
   it("names the language, the village voice and the braces rule", () => {
-    const p = translationSystemPrompt("es", "Amora");
+    const p = translationSystemPrompt("es", "Riverside");
     expect(p).toMatch(/Español|Spanish/);
     expect(p).toMatch(/\{village\}/);
     expect(p).toMatch(/tú/);

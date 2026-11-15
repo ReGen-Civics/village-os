@@ -55,7 +55,7 @@ describe.skipIf(!configured)("translations of the village's words, over the real
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 4 });
     await createOrgRole(pool, { id: "legal-steward", name: "Legal Steward", aim: "Hold the legal side of {village}.", accountabilities: ["Keep the books"] });
-    await pool.query("UPDATE org_roles SET compensation_reality = 'Paid each moon.' WHERE id = 'legal-steward'");
+    await pool.query("UPDATE org_roles SET compensation_reality = 'Paid each moon.' WHERE id = 'legal-steward'"); // module-review-ok: a test giving the fixture role pay words, a column createOrgRole does not take
     const record = (method: string) => (p: string, h: Handler) => void handlers.set(`${method} ${p}`, h);
     register({ get: record("GET"), put: record("PUT"), post: record("POST"), delete: record("DELETE") } as any, {
       guardCapability: async (_req, res, cap) => {
@@ -164,7 +164,7 @@ describe.skipIf(!configured)("translations of the village's words, over the real
   });
 
   it("shows a translation as stale once the English changes", async () => {
-    await pool.query("UPDATE org_roles SET name = 'Legal and Finance Steward' WHERE id = 'legal-steward'");
+    await pool.query("UPDATE org_roles SET name = 'Legal and Finance Steward' WHERE id = 'legal-steward'"); // module-review-ok: a test editing the English under a translation, to make it stale
     const list = await call("GET", "/api/admin/content-translations", { query: { kind: "role_card", ref: "legal-steward", locale: "es" } });
     // Kept, not dropped: the editor shows the old Spanish as "needs update" beside the new English.
     expect(list.body.fields.find((f: any) => f.field === "name")).toMatchObject({
