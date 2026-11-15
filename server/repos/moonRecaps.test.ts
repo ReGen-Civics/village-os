@@ -21,7 +21,7 @@ import {
   clearApprovals, confirmPayRoute, doneTasksBetween, ensureRecap, forgetMoonReviews, insertInvoice, insertItem, insertReviewEvent,
   invoiceById, itemsOf, keysInOtherRecaps, markRecapSent, memberNumbersOf, nextBillRefSeq, payRouteOf, recapById,
   setFinanceApproved, setInvoiceApproved, setWorkApproved, takeBackRecap, upsertPayRoute, type ItemInsert,
-  goalsFor, insertGoal, scoreGoal, updateItem, writeScoreSnapshot, claimNudge, itemKeysOf, mergePackItem, saveThanks,
+  goalsFor, insertGoal, scoreGoal, updateItem, writeScoreSnapshot, claimNudge, itemKeysOf, mergePackItem, saveThanks, forgetLineWords,
 } from "./moonRecaps";
 
 const configured = testDbConfigured();
@@ -226,5 +226,33 @@ describe.skipIf(!configured)("moon review store on a real database", () => {
     const [ev] = await pool.query<mysql.RowDataPacket[]>("SELECT `amount_minor`, `note` FROM `moon_review_events` WHERE `user_id` = 'u1'"); // module-review-ok: fixture read against the S5 scratch schema
     expect(ev.map((e) => [Number(e.amount_minor), e.note])).toEqual([[100_000, null]]);
     expect((await itemsOf(pool, "mr-0000000000000009"))[0].text).toBe("Bystander's work");
+  });
+
+  it("erasure takes a proposed amount's words out of the invoice lines, keeping the amounts and who acted (QA 15 Nov)", async () => {
+    const adjust = { baseMinor: 650_000, adjustedMinor: 500_000, reason: "Two of five goals done, missed the water survey", proposedBy: "fin", proposedAt: "2026-11-14T10:00:00Z", reply: "I was ill for a week, here is why", confirmedBy: "fin2", confirmedAt: "2026-11-15T10:00:00Z" };
+    const lines = [{ key: "app-1", applicationId: "app-1", kind: "pay", roleNames: ["Steward"], amountMinor: 500_000, basisLine: "6,500.00 per moon", adjust }, { key: "app-1:allowance", kind: "allowance", amountMinor: 1000 }];
+    for (const [userId, recapId, invoiceId, seq] of [["u40", "mr-0000000000000040", "mv-0000000000000040", 40], ["u41", "mr-0000000000000041", "mv-0000000000000041", 41]] as const) {
+      await ensureRecap(pool, { id: recapId, userId, cycleId: "lunar-000333", seasonId: null });
+      await insertInvoice(pool, {
+        id: invoiceId, recapId, userId, cycleId: "lunar-000333", payerKey: "us-payer", revision: 1, billRefSeq: seq, memberNumber: `Q-${seq}`,
+        currency: "USD", totalMinor: 501_000, linesJson: JSON.stringify(lines), fromJson: "{}", attestationJson: "{}", externalInvoiceKey: null, voidOf: null,
+      });
+    }
+    await forgetMoonReviews(pool, "u40");
+    const gone = JSON.parse((await invoiceById(pool, "mv-0000000000000040"))!.linesJson);
+    expect(gone[0].adjust).toEqual({ ...adjust, reason: "", reply: null });
+    expect(gone[0].amountMinor).toBe(500_000);
+    expect(gone[1]).toEqual(lines[1]);
+    // Another member's invoice is untouched.
+    expect(JSON.parse((await invoiceById(pool, "mv-0000000000000041"))!.linesJson)[0].adjust.reply).toBe(adjust.reply);
+  });
+});
+
+describe("forgetLineWords", () => {
+  it("leaves lines with no proposal, and text that is not a list, exactly as they were", () => {
+    expect(forgetLineWords("[]")).toBe("[]");
+    expect(forgetLineWords("not json")).toBe("not json");
+    const plain = JSON.stringify([{ key: "a", amountMinor: 1 }]);
+    expect(forgetLineWords(plain)).toBe(plain);
   });
 });

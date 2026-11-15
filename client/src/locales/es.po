@@ -16401,3 +16401,13 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment"
+msgid "Your counter-offer"
+msgstr "Tu contraoferta"
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the ceiling at their commitment"
+msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
+msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
