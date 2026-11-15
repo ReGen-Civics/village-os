@@ -40,6 +40,27 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.6 (2026-11-15)
+
+### What changed for your village
+
+- **The founding team is hired first.** The roles page and the application form say plainly that the founding roles are being filled first, and show the roles opening next.
+- **"Get to know us" points somewhere.** The application's first step now offers a way in for each item: watch the last community call, join the next call, book a land tour, come to the next potluck. Each link can be set in Admin, and upcoming public events fill in their date and place by themselves; an item with nothing set stays hidden. It also offers a fork: new here? explore the Steward path first; already a strong fit? carry on with the application. Links open in a new tab, so the draft is kept.
+
+### What you must do
+
+To show the get-to-know-us links, set them in Admin under the founding team (recording, call, tour, potluck); until then they stay hidden.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1267 Batch 167: hire the founding team first + Get to know us
+
+---
+
 ## 1.3.5 (2026-11-15)
 
 ### What changed for your village
