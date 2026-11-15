@@ -240,7 +240,8 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     // How full each role is (Rye, 14 Nov 2026): the open lead holds nothing yet; the filled role is covered by a holder with no stated share.
     const fill = (await call("GET", "/api/org/founding-team", null)).json.fill;
     expect(fill[lead.id]).toEqual({ heldPct: 0, targetPct: 100, openPct: 100, covered: false });
-    expect(fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
+    // One named holder: covered or open only, never their share (security sweep L3).
+    expect(fill[ops]).toEqual({ coarse: true, targetPct: 100, covered: true });
     // A holder seated through a seat application whose terms state a commitment holds that share (Rye, 14 Nov 2026).
     await insertApplication(pool, {
       id: `${lead.id}-app`,
@@ -259,12 +260,17 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     });
     await seatHolder(pool, lead.id, { displayName: "Ines Shared", applicationId: `${lead.id}-app` });
     const shared = (await call("GET", "/api/org/founding-team", null)).json.fill;
-    expect(shared[lead.id]).toEqual({ heldPct: 50, targetPct: 100, openPct: 50, covered: false });
-    // CONTROL: the holder with no stated share still holds the whole of the other role.
-    expect(shared[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
+    // Ines alone holds it and names are public, so her 50% never goes out: only "open" (security sweep L3).
+    expect(shared[lead.id]).toEqual({ coarse: true, targetPct: 100, covered: false });
+    expect(JSON.stringify(shared[lead.id])).not.toContain("50");
+    // A second holder: the arithmetic is the role's again, exact.
+    await seatHolder(pool, lead.id, { displayName: "Jo Second" });
+    expect((await call("GET", "/api/org/founding-team", null)).json.fill[lead.id]).toEqual({ heldPct: 150, targetPct: 100, openPct: 0, covered: true });
     // CONTROL: a village that keeps its people for members still shows the role, with no name.
     await setVar("org.public_people", "false");
     expect((await call("GET", "/api/org/founding-team", null)).json.team).toEqual([{ id: ops, name: "Operations Steward", holders: [] }]);
+    // CONTROL: with no names shown, one holder's share is nobody's in particular, and stays exact.
+    expect((await call("GET", "/api/org/founding-team", null)).json.fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
     for (const k of ["org.public_people", "org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
   });
 });

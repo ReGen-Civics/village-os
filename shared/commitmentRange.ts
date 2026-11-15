@@ -114,6 +114,24 @@ export interface RoleFill {
   /** What is still open, never below 0. */
   openPct: number;
   covered: boolean;
+  /** Only covered or open is known: the exact share would be one named person's commitment (security sweep L3). */
+  coarse?: true;
+}
+
+/** A fill as a public page may read it: covered or open only, without the share. */
+export interface CoarseFill {
+  coarse: true;
+  targetPct: number;
+  covered: boolean;
+}
+
+/**
+ * The fill a page anyone can read is sent (security sweep L3, 15 Nov 2026). When one person holds the role
+ * and the village shows its people by name, the share held IS that named person's commitment, so only
+ * covered or open goes out. Two or more holders, or no names shown, and the arithmetic stays exact.
+ */
+export function publicFill(f: RoleFill, people: number, namesShown: boolean): RoleFill | CoarseFill {
+  return namesShown && people === 1 ? { coarse: true, targetPct: f.targetPct, covered: f.covered } : f;
 }
 
 /**
@@ -128,6 +146,7 @@ export function roleFill(holderPcts: ReadonlyArray<number | null | undefined>, t
 
 /** "50% held · 50% open", "120% held · covered". */
 export function fillWords(f: RoleFill): string {
+  if (f.coarse) return f.covered ? "Covered" : "Held, still open";
   return f.covered ? `${f.heldPct}% held · covered` : `${f.heldPct}% held · ${f.openPct}% open`;
 }
 
