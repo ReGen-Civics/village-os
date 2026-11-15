@@ -1,4 +1,4 @@
--- 9999 (the integrator renumbers): a companion's personality, and the member's
+-- 0386: a companion's personality, and the member's
 -- private lenses (Rye, 14 Nov 2026, "Meet your companion").
 --
 -- THE CONTRACT IS shared/companionPersona.ts.
