@@ -161,7 +161,10 @@ The number is minor unless a merged pull request carries the label
 `server/releaseTrain.test.ts` holds them.
 
 **The changelog still wants writing as work lands.** The train moves what is
-under `## Unreleased`; when nothing is there, the entry says so and the
+under `## Unreleased`, from the first list item or `###` heading on. The plain
+paragraphs above the first entry are standing text and stay where they are:
+the "Work on `main`" introduction, and a note held back for a later release.
+Write entries as list items. When nothing is there, the entry says so and the
 pull request list stands in for it, which is the summary-of-the-log this file
 warns about. A release pull request can be edited before it merges.
 
@@ -173,6 +176,16 @@ variable `RELEASE_TRAIN` set to `on` runs the train; any other value pauses
 it, and every run then ends green saying it is paused. A release by hand
 (below) still works with the train on: the land workflow tags any version on
 main that has its changelog section and no tag yet.
+
+**Telling the villages that follow releases.** `.github/workflows/release-notify.yml`
+runs when `release.yml` completes, and only for a release tag whose run
+concluded success. It sends a `repository_dispatch` of type `village-os-release`
+(payload: `version`, `tag`, `commit`) to each repository in the variable
+`RELEASE_NOTIFY_REPOS` (comma separated, `owner/name`), using the secret
+`RELEASE_NOTIFY_TOKEN`: a fine-grained token on exactly those repositories,
+Contents set to read and write. Without both it sends nothing and stays green.
+A village's pin workflow can listen for it, so an upgrade does not wait on
+GitHub's schedules, which drop and delay runs.
 
 ---
 

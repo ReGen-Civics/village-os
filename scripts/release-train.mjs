@@ -147,14 +147,15 @@ export function rollChangelog(text, { version, date, prs, migrations }) {
   const end = nextRel < 0 ? src.length : afterHeading + nextRel;
   let body = src.slice(afterHeading, end).replace(/\n-{3,}\s*$/, "\n").trim();
 
-  // Unreleased opens with a standing paragraph ("Work on `main` that has not
-  // been published..."). It stays where it is; only the entries move.
-  let intro = "";
-  if (/^Work on `main`/.test(body)) {
-    const cut = body.indexOf("\n\n");
-    intro = cut < 0 ? body : body.slice(0, cut);
-    body = cut < 0 ? "" : body.slice(cut + 2).trim();
-  }
+  // Unreleased opens with standing text: the "Work on `main` that has not been
+  // published..." paragraph, and any note held back for a later release. Every
+  // plain paragraph before the first entry stays where it is; the entries
+  // (from the first list item or ### heading on) move into the release.
+  const paras = body ? body.split(/\n{2,}/) : [];
+  const first = paras.findIndex((p) => /^(?:[-*+] |\d+\. |#{3,} )/.test(p));
+  const standing = first < 0 ? paras : paras.slice(0, first);
+  const intro = standing.join("\n\n");
+  body = first < 0 ? "" : paras.slice(first).join("\n\n").trim();
 
   const entries = body || "Nothing was written up by hand for this release. The merged pull requests below are the record.";
   const section = [
