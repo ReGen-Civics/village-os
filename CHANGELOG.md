@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.13 (2026-11-15)
+
+### What changed for your village
+
+- **Translated village content.** Role cards, their sections and page content can carry a translation for each language the village offers. A reader sees their language when a translation is up to date with the English, and the English otherwise. A machine draft is marked as machine translation until a person approves it. Whoever can edit the English can approve or improve a translation, and any member can suggest one. Legal and binding pages are never translated this way. Machine drafts are off unless the server sets `CONTENT_MACHINE_DRAFTS=on`, and they name the AI service they use.
+- **Six focus steps.** `{focus}` in a role's qualities now reads one of six lines, at 10, 30, 50, 60, 80 and 100% commitment, following the applicant's chosen share.
+- **Equity and credits always shown.** The role card's footnote keeps the equity and credits terms for every village for now.
+- **The application names the split.** "Of this, X% is paid in cash, Y% in Earned Equity and Z% in credits by default; we settle the split together", built from the role's split.
+- **A finished companion welcome stays finished,** even when an old tab tries to save over it.
+
+### What you must do
+
+Nothing. To offer machine drafts, set `CONTENT_MACHINE_DRAFTS=on` on the server.
+
+### Does it touch your data
+
+Yes, one expand-only migration: `0387_content_translations` adds a new table. The previous release never reads it, so going back to 1.3.12 is safe; the table stays and is ignored.
+
+### Merged pull requests
+
+- #1337 Batch 178: translated village content (#1316, #1319, #1320), equity and credits terms always on (#1325), six focus bands (#1326), application split line (#1327), finished welcome stays finished (#1329)
+
+---
+
 ## 1.3.12 (2026-11-15)
 
 ### What changed for your village
