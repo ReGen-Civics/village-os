@@ -57,6 +57,8 @@ export interface LineAdjust {
   reply: string | null;
   confirmedBy: string | null;
   confirmedAt: string | null;
+  /** Set when the one person who could confirm was the one who proposed it (P1-4): they confirmed their own. */
+  confirmedAlone?: true;
 }
 
 /** What carries from a voided revision to the next send, by application id. */
