@@ -117,7 +117,7 @@ import { adminOrRouteHolder, routePower } from "./lib/operatorRoutes";
 import { giveOnlyWhatYouHold, makePowerAssignGate, register as registerSeatPowerGroupRoutes, registerSeatGrantFreshness } from "./routes/seatPowerGroups";
 import { SeatGrantCache, bridgedHoldings, effectiveHoldings, readSeatGrantSnapshot } from "./lib/seatGrants";
 import { isMemberReadable } from "./lib/memberReadable";
-import { accountsWithReach, adminGroupsOf, LAST_ADMIN_REFUSAL } from "./lib/groupAdmin";
+import { accountsWithReach, adminAccessBeyondSeater, adminGroupsOf, ADMIN_ACCESS_NOT_HELD, LAST_ADMIN_REFUSAL } from "./lib/groupAdmin";
 import { register as registerOrgSeatingRoutes } from "./routes/orgSeatings";
 import { register as registerRoleRenewalRoutes } from "./routes/roleRenewal";
 import { configureAccessNotices } from "./lib/roleAccess";
@@ -25142,6 +25142,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!userId || !["add", "remove"].includes(action)) {
       return res.status(400).json({ error: "userId and action (add|remove) are required" });
     }
+    // Admin access counts as a power the seater must hold (server/lib/groupAdmin.ts): a decider or a power.assign holder who cannot open the panel seats nobody into a group that does.
+    if (adminAccessBeyondSeater(role, userIsAdmin(actorUser))) return res.status(403).json({ error: ADMIN_ACCESS_NOT_HELD, code: "admin_access_not_held" });
     const member = await members.byId(userId);
     if (action === "remove" && role.grantsAdmin && !accountsWithReach(await members.all(), loadRoles() as any, loadPowerHoldings().filter((h) => !(h.roleId === role.id && h.userId === userId)), new Date(), holdingHasLapsed, isExampleUser).length) return res.status(409).json({ error: LAST_ADMIN_REFUSAL }); // sheet 19
     if (!member || (action === "add" && !holderStands(member))) return res.status(404).json({ error: "Member not found" }); // a tombstone is nobody to appoint, and a stray holding of one can still be removed
