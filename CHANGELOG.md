@@ -40,6 +40,28 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.8 (2026-11-15)
+
+### What changed for your village
+
+- **Pages load much faster on phones.** On a slow phone the home page's main picture shows in about 5 seconds instead of 14, and it no longer jumps around while loading. Pictures are sent at the size they are shown, so the home page downloads about a third less.
+- **Each key page loads only what it needs.** Voice, companion and chart code no longer load on the home page, /roles, the application or /steward. A build check now keeps each of those pages under its own size budget.
+- **Small fixes.** An unknown address returns a proper not-found, /index.html sends you to the home page, and /health shows the orphan-file count right after a restart.
+
+### What you must do
+
+Nothing. Villages behind Cloudflare can add one cache rule for the translation files (docs/PROVISIONING.md, section 9b) to make first visits faster.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1293 Batch 171 (1.3.8): page speed, first-view bundling, image resize, real 404
+
+---
+
 ## 1.3.7 (2026-11-15)
 
 A release of fixes from six quality sweeps across the last ten days' work.
