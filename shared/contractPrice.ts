@@ -35,6 +35,8 @@ export interface ContractPrice {
   capped: boolean;
   /** Where the figure came from, in plain words: the terms' `pay.note`. */
   note: string;
+  /** The split the card showed when they applied (its own, else the village's default), written on the contract. */
+  shape?: Array<{ label: string; pct: number }>;
 }
 
 /** The words a contract's price carries, by where it came from. */
@@ -74,8 +76,8 @@ export function contractPriceOf(ceiling: PayCeiling | null | undefined, agreedPc
 }
 
 /** The pay group as the terms store it (shared/seatSettings.ts `pay`). */
-export function payGroupOf(p: ContractPrice): { kind: "fixed"; amountMinor: number; currency: string; per: "month" | "moon"; note: string } {
-  return { kind: "fixed", amountMinor: p.amountMinor, currency: p.currency, per: p.per, note: p.note };
+export function payGroupOf(p: ContractPrice): { kind: "fixed"; amountMinor: number; currency: string; per: "month" | "moon"; note: string; shape?: Array<{ label: string; pct: number }> } {
+  return { kind: "fixed", amountMinor: p.amountMinor, currency: p.currency, per: p.per, note: p.note, ...(p.shape && p.shape.length ? { shape: p.shape.map((s) => ({ label: s.label, pct: s.pct })) } : {}) };
 }
 
 /** "$6,500 a month. From their price ask, at 50% commitment." */

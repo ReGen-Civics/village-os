@@ -78,6 +78,7 @@ import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
+import { billedOfLine, type LineReward } from "./rewardShare";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -1389,6 +1390,8 @@ export interface InvoiceLine {
    * (shared/contractPrice.ts, QA-1115 P0-1). Shown to the member and the Treasurer beside the line.
    */
   priceNote?: string;
+  /** The split the contract records (`pay.shape`): what the card showed when they applied. Shared out by it first (P1-6). */
+  contractShape?: Array<{ label: string; pct: number }>;
   currency: string | null;
   /** The terms' amount, per `per`. */
   termsMinor: number | null;
@@ -1424,6 +1427,15 @@ export interface InvoiceLine {
    * member sees it and may reply; approval refuses until a Treasurer confirms.
    */
   adjust?: LineAdjust | null;
+  /**
+   * The line's total shared into cash, Earned Equity and Credits (Rye, 15 Nov
+   * 2026, P1-6: a role's price is its TOTAL reward; shared/rewardShare.ts).
+   * Set on a pay line when the invoice is sent, and again at approval for a
+   * line whose amount moved. Only its cash share is owed as cash; the token
+   * shares are issued through the ledger once the invoice is approved. Absent
+   * on a line sent before 15 Nov, which is paid as it was, in cash.
+   */
+  reward?: LineReward | null;
 }
 
 /** What the split did to one line, and who confirmed it. */
@@ -1699,7 +1711,7 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
     } else if (pay && pay.currency && pay.kind === "fixed" && Number.isInteger(pay.amountMinor) && (pay.amountMinor as number) > 0) {
       const per = pay.per ?? "moon";
       const amount = pay.amountMinor as number;
-      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
+      out.push({ ...base, key: t.applicationId, kind: "pay", basis: per === "month" ? "per_month" : "per_moon", listedAs: null, ...(pay.note?.trim() ? { priceNote: pay.note.trim() } : {}), ...(pay.shape?.length ? { contractShape: pay.shape.map((s) => ({ ...s })) } : {}), currency: pay.currency, termsMinor: amount, per, range: null, proposedMinor: null, finalMinor: null, amountMinor: prorate(amount, per, base.daysHeld, moon.days), basisLine: basisLineWords(amount, pay.currency, per, base.daysHeld, moon.days) });
     } else if (pay && pay.currency && pay.kind === "range" && Number.isInteger(pay.minMinor) && Number.isInteger(pay.maxMinor)) {
       const per = pay.per ?? "moon";
       const range = { minMinor: pay.minMinor as number, maxMinor: pay.maxMinor as number };
@@ -1739,6 +1751,17 @@ export function termsCarryMoney(terms: readonly TermsInForce[]): boolean {
     const a = t.settings?.allowance;
     return (!!p && (p.kind === "fixed" || p.kind === "range") && !!p.currency) || (!!a && a.kind === "flat" && !!a.currency);
   });
+}
+
+/**
+ * What the payer is billed, per currency: each line's cash share when the payer is billed cash only
+ * (`PAYER_IS_BILLED`, shared/rewardShare.ts), else its whole amount. The invoice's stored total, the
+ * PDF, the email and the queue read this; `invoiceTotals` stays the whole reward the work earned.
+ */
+export function billedTotals(lines: readonly InvoiceLine[]): Array<{ currency: string; minor: number }> {
+  const by = new Map<string, number>();
+  for (const l of lines) if (isPayableLine(l)) by.set(l.currency as string, (by.get(l.currency as string) ?? 0) + (billedOfLine(l) ?? 0));
+  return Array.from(by, ([currency, minor]) => ({ currency, minor })).sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
 /** The total, the sum of the rounded lines, per currency. */
