@@ -296,6 +296,26 @@ export function shareOfYou(totalPct: number, share: number): number {
 }
 
 /**
+ * Every role's part of the whole person at once, whole percents that add up to
+ * the total (QA F11): rounding each alone shows 17, 17, 17 for 34, 33, 33 of
+ * 50%, which reads as 51%. Largest remainder: each role takes the floor, and
+ * the roles with the biggest remainders take the leftover points, ties to the
+ * earlier role.
+ */
+export function sharesOfYou(totalPct: number, split: readonly RoleSplitShare[]): Map<string, number> {
+  const raw = split.map((s, i) => ({ roleId: s.roleId, i, exact: (totalPct * s.share) / 100 }));
+  const out = new Map(raw.map((r) => [r.roleId, Math.floor(r.exact)]));
+  const target = Math.round(raw.reduce((sum, r) => sum + r.exact, 0));
+  let left = target - Array.from(out.values()).reduce((a, b) => a + b, 0);
+  for (const r of [...raw].sort((a, b) => b.exact - Math.floor(b.exact) - (a.exact - Math.floor(a.exact)) || a.i - b.i)) {
+    if (left <= 0) break;
+    out.set(r.roleId, (out.get(r.roleId) as number) + 1);
+    left -= 1;
+  }
+  return out;
+}
+
+/**
  * An even split across these roles, whole percents adding to 100: the first
  * roles take the remainder, so three roles read 34, 33, 33.
  */

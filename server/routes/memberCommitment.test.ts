@@ -4,7 +4,7 @@
  * and records every statement, so "a change is a new row, never an edit" is
  * read off the SQL the route actually sends.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { register as registerCommitment } from "./memberCommitment";
 import { register as registerQuests } from "./quests";
 
@@ -54,10 +54,10 @@ function memberPool() {
   return { pool, rows, sql };
 }
 
-function mountCommitment(user: { id: string } | null = { id: "m-wren" }) {
+function mountCommitment(user: { id: string } | null = { id: "m-wren" }, villageZone?: string) {
   const { app, call } = harness();
   const store = memberPool();
-  registerCommitment(app, { authedUser: async () => user, getPool: () => store.pool, overLimit: async () => false } as any);
+  registerCommitment(app, { authedUser: async () => user, getPool: () => store.pool, overLimit: async () => false, villageZone: () => villageZone } as any);
   return { call, ...store };
 }
 
@@ -101,6 +101,30 @@ describe("a member's commitment on the routes", () => {
     const plain = await call("POST /api/me/commitment", { body: { pct: 30 } });
     expect(plain.body.now.split).toBeNull();
     expect(rows[1].split_json).toBeNull();
+  });
+
+  it("dates a split by the village's day, the one the moon is counted in, and a plain word by the member's (QA F10)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const split = [{ roleId: "r-host", share: 60 }, { roleId: "r-well", share: 40 }];
+      // The member's day (no saved zone: UTC) is 14 November; the village is already on the 15th.
+      vi.setSystemTime(new Date("2026-11-14T12:00:00Z"));
+      const ahead = mountCommitment({ id: "m-wren" }, "Pacific/Kiritimati");
+      expect((await ahead.call("POST /api/me/commitment", { body: { pct: 50, split } })).status).toBe(200);
+      expect((await ahead.call("POST /api/me/commitment", { body: { pct: 40 } })).status).toBe(200);
+      expect(ahead.rows.map((r) => r.from_date)).toEqual(["2026-11-15", "2026-11-14"]);
+      // The village is still on the 13th: the split holds from the village's day, and is not refused as back-dated.
+      vi.setSystemTime(new Date("2026-11-14T05:00:00Z"));
+      const behind = mountCommitment({ id: "m-wren" }, "Pacific/Pago_Pago");
+      const r = await behind.call("POST /api/me/commitment", { body: { pct: 50, split } });
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(behind.rows.map((x) => x.from_date)).toEqual(["2026-11-13"]);
+      // A date the member gives is kept as given.
+      expect((await behind.call("POST /api/me/commitment", { body: { pct: 50, split, fromDate: "2026-11-20" } })).status).toBe(200);
+      expect(behind.rows[1].from_date).toBe("2026-11-20");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("refuses a split that does not add up to the whole, or names a role twice, and stores nothing", async () => {

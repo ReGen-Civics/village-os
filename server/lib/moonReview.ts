@@ -41,7 +41,7 @@ import {
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
   financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
-  termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines,
+  termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines, splitHolds, amountsMatch,
   type ApprovalStage, type ApprovalSubject, type ApproverKeys, type ApproverPool, type BulkApproveResponse, type FromBlock,
   type ImportPackResponse, type InvoiceLine, type PayRouteRecord, type InvoiceView, type MoonAttestation, type QueueResponse, type QueueRow,
   type RecapItem, type ReviewEventKind, type RoleAudit, type RoomResponse, type SendInvoiceResponse,
@@ -667,9 +667,11 @@ export async function setRange(pool: Pool, actorId: string, invoiceId: string, b
  * stand. To pay the terms unchanged instead, Finance returns or voids the
  * invoice with a note, as for any other line it disagrees with.
  */
-export async function confirmSplit(pool: Pool, actorId: string, invoiceId: string, deps: Pick<ReviewDeps, "keyHolders">, now: () => Date = () => new Date()): Promise<Outcome<{ confirmed: string }>> {
+export async function confirmSplit(pool: Pool, actorId: string, invoiceId: string, body: unknown, deps: Pick<ReviewDeps, "keyHolders">, now: () => Date = () => new Date()): Promise<Outcome<{ confirmed: string }>> {
   const invoice = await store.invoiceById(pool, invoiceId);
   if (!invoice) return refuse(404, "not_found");
+  // Nobody confirms their own pay, a split as much as a proposed amount (QA F8).
+  if (invoice.userId === actorId) return refuse(403, APPROVAL_REFUSALS.ownConfirm);
   const no = await financeActor(pool, actorId, invoice, deps);
   if (no) return refuse(403, no);
   if (invoice.status !== "waiting") return refuse(409, APPROVAL_REFUSALS.notWaiting);
@@ -677,24 +679,28 @@ export async function confirmSplit(pool: Pool, actorId: string, invoiceId: strin
   const hasSplit = lines.some((l) => l.split);
   const hasAdjust = lines.some((l) => l.adjust);
   if (!hasSplit && !hasAdjust) return refuse(400, APPROVAL_REFUSALS.noSplit);
+  // The confirm carries every amount the Treasurer saw; anything else is not what they confirmed (QA F2).
+  const seen = body && typeof body === "object" ? (body as Record<string, unknown>).amounts : undefined;
+  if (!amountsMatch(lines, seen)) return refuse(409, APPROVAL_REFUSALS.amountsChanged);
   // A scaled line whose amount no longer matches its split is not confirmed: the member resends.
-  if (lines.some((l) => l.split && l.split.scaledMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
+  // A proposal on top of a split reads the split against the proposal's base (QA F1).
+  if (!lines.every(splitHolds)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
   // The same for a proposed amount (Rye, 14 Nov 2026): one Confirm covers both, and changes no amount.
   if (lines.some((l) => l.adjust && l.adjust.adjustedMinor !== l.amountMinor)) return refuse(409, APPROVAL_REFUSALS.hashChanged);
-  if (hasAdjust && invoice.userId === actorId) return refuse(403, ADJUST_REFUSALS.ownPay);
   const at = now().toISOString();
   const confirmed = confirmAdjustLines(confirmSplitLines(lines, actorId, at), actorId, at);
   const scaled = invoiceTotals(confirmed)[0];
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    if ((await store.setInvoiceLines(conn, invoice.id, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("raced");
+    // Only the lines read above: a resend or a proposal in between leaves nothing stamped (QA F2).
+    if ((await store.setInvoiceLinesIfUnchanged(conn, invoice.id, invoice.linesJson, JSON.stringify(confirmed), invoice.totalMinor)) !== 1) throw new Error("moved");
     if (hasSplit) await event(conn, { kind: "split_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
     if (hasAdjust) await event(conn, { kind: "adjust_confirmed", recapId: invoice.recapId, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: scaled?.minor ?? null, currency: scaled?.currency ?? null });
     await conn.commit();
   } catch (e) {
     await conn.rollback().catch(() => undefined);
-    if (e instanceof Error && e.message === "raced") return refuse(409, APPROVAL_REFUSALS.notWaiting);
+    if (e instanceof Error && e.message === "moved") return refuse(409, APPROVAL_REFUSALS.amountsChanged);
     throw e;
   } finally {
     conn.release();
@@ -744,7 +750,8 @@ export async function adjustPay(pool: Pool, actorId: string, invoiceId: string, 
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), invoice.totalMinor);
+    // The total follows the lines, so a withdrawn proposal leaves the record at the agreed amount (QA F11).
+    await store.setInvoiceLines(conn, invoice.id, JSON.stringify(changed), invoiceTotals(changed)[0]?.minor ?? invoice.totalMinor);
     if ((await store.voidInvoice(conn, invoice.id)) !== 1) throw new Error("raced");
     if (recap.status === "waiting") await store.returnRecap(conn, { id: recap.id, by: actorId, note: words, keepWork: true });
     await event(conn, { kind: "pay_adjusted", recapId: recap.id, invoiceId: invoice.id, userId: invoice.userId, actorUserId: actorId, actorRole: INVOICE_APPROVE_CAPABILITY, amountMinor: input.amountMinor, currency: line.currency, note: input.reason });

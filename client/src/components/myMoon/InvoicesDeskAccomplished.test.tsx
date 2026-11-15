@@ -56,8 +56,9 @@ describe("the Finance desk: agreed and delivered", () => {
     const box = screen.getByTestId("accomplished");
     expect(box.textContent).toContain(ACCOMPLISHED_WORDS.heading);
     expect(screen.getByTestId("accomplished-sentence").textContent).toBe("Agreed: US$1,000 for 3 goals. Delivered: 1 of 3 goals done, plus 2 other tasks (1 outside your roles).");
-    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.under(75));
-    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.over(1, 2));
+    expect(screen.getByTestId("far-off").textContent).toContain(ACCOMPLISHED_WORDS.under(75, { done: 1, partly: 0, of: 3 }));
+    // Two tasks done is below the sample "over" reads, so it raises no line (QA F5).
+    expect(screen.getByTestId("far-off").textContent).not.toContain(ACCOMPLISHED_WORDS.over(1, 2));
   });
 
   it("sends a proposal with an amount and a reason to the adjust door", async () => {
@@ -89,6 +90,8 @@ describe("the Finance desk: agreed and delivered", () => {
     fireEvent.click(screen.getByRole("button", { name: ACCOMPLISHED_WORDS.confirm }));
     await waitFor(() => expect(reload).toHaveBeenCalled());
     expect(String((fetchMock.mock.calls[0] as unknown[])[0])).toContain(MOON_ROUTES.confirmSplit.replace(":id", "mv-1"));
+    // The confirm carries the amounts the Treasurer saw, so it refuses if one moved (QA F2).
+    expect(JSON.parse(String(((fetchMock.mock.calls[0] as unknown[])[1] as RequestInit).body))).toEqual({ amounts: { "app-1": 125000 } });
   });
 
   it("offers no confirm once the proposal is confirmed", () => {

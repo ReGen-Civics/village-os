@@ -13,6 +13,11 @@
  *   no split             pay is the terms; nothing to confirm
  *   split not 100        pay is the terms (fails closed)
  *   one pay              one application for both roles: pay is the terms
+ *   split + proposal     a Treasurer's proposed amount on a scaled line is
+ *                        confirmed and paid, never deadlocked (QA F1)
+ *   stale confirm        a confirm carrying amounts that moved is refused, and
+ *                        the write only lands on the lines it read (QA F2)
+ *   own pay              a cash.pay holder never confirms their own split (QA F8)
  *
  * Every person here is invented.
  */
@@ -20,7 +25,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { LUNAR_CLOCK } from "../../shared/cycleClock";
-import { APPROVAL_REFUSALS, MOON_ROUTES } from "../../shared/moonRecap";
+import { APPROVAL_REFUSALS, MOON_ROUTES, seenAmountsOf } from "../../shared/moonRecap";
+import * as store from "../repos/moonRecaps";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
 
@@ -149,9 +155,11 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
     const row = await queueRow();
     return call(`POST ${MOON_ROUTES.approveInvoices}`, { body: { invoices: [{ id: row.invoice.id, hash: row.hash, expectedOn: "2026-11-20" }] } });
   };
-  const confirm = (by: string, id: string) => {
+  /** Confirm as `by`, carrying the amounts the Treasurer saw: the invoice's lines as stored, unless given (QA F2). */
+  const confirm = async (by: string, id: string, amounts?: Record<string, number | null>) => {
+    const [row] = await q("SELECT `lines_json` FROM `moon_invoices` WHERE `id` = ?", [id]); // module-review-ok: fixture SQL
     as(by);
-    return call(`POST ${MOON_ROUTES.confirmSplit}`, { params: { id } });
+    return call(`POST ${MOON_ROUTES.confirmSplit}`, { params: { id }, body: { amounts: amounts ?? (row ? seenAmountsOf(JSON.parse(row.lines_json)) : {}) } });
   };
   const amounts = (inv: any) => inv.lines.map((l: any) => [l.roleNames.join(", "), l.amountMinor]).sort();
 
@@ -181,7 +189,7 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
 
     // Only someone who may act for Finance confirms; the work approver may not, nor the member.
     expect((await confirm("m-ops", row.invoice.id)).status).toBe(403);
-    expect((await confirm("m-wren", row.invoice.id)).status).toBe(403);
+    expect(await confirm("m-wren", row.invoice.id)).toEqual({ status: 403, body: { error: APPROVAL_REFUSALS.ownConfirm } });
     const ok = await confirm("m-fin", row.invoice.id);
     expect(ok).toEqual({ status: 200, body: { confirmed: row.invoice.id } });
     const events = (await q("SELECT `kind`, `actor_user_id`, `amount_minor` FROM `moon_review_events` WHERE `kind` = 'split_confirmed'")); // module-review-ok: fixture SQL
@@ -223,5 +231,65 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
     const sent = await sendAll();
     expect(sent.lines.map((l: any) => [[...l.roleIds].sort(), l.amountMinor])).toEqual([[["r-garden", "r-water"], 100000]]);
     expect(sent.lines.every((l: any) => !l.split)).toBe(true);
+  });
+
+  it("split, then a proposed amount on a scaled line: confirmed once, then paid as proposed (QA F1)", async () => {
+    await seat("apart");
+    await split([["r-water", 60], ["r-garden", 40]]);
+    const sent = await sendAll();
+    await approveWork();
+    as("m-fin");
+    const p = await call(`POST ${MOON_ROUTES.adjustPay}`, { params: { id: sent.id }, body: { applicationId: "app-water", amountMinor: 70000, reason: "Took on the pump rebuild." } });
+    expect(p).toEqual({ status: 200, body: { voided: sent.id } });
+
+    // The member sends again; the water line carries the split and the proposal on top of it.
+    as("m-wren");
+    expect((await call(`POST ${MOON_ROUTES.sendRecap}`, { params: { cycle: CYCLE }, body: {} })).status).toBe(200);
+    const again = await call(`POST ${MOON_ROUTES.sendInvoice}`, { params: { cycle: CYCLE }, body: { attestation: ATTEST, pilotAckVersion: "v1", memberNumber: "INV-8" } });
+    expect(again.status, JSON.stringify(again.body)).toBe(200);
+    const water = again.body.invoice.lines.find((l: any) => l.applicationId === "app-water");
+    expect(water).toMatchObject({ amountMinor: 70000, split: { scaledMinor: 60000 }, adjust: { baseMinor: 60000, adjustedMinor: 70000 } });
+    await approveWork();
+
+    // One Confirm covers the split and the proposal, then approval pays.
+    as("m-fin");
+    const row2 = await queueRow();
+    expect((await approveInvoice()).body.refused).toHaveLength(1);
+    expect(await confirm("m-treas", row2.invoice.id)).toEqual({ status: 200, body: { confirmed: row2.invoice.id } });
+    expect((await approveInvoice()).body.approved).toEqual([row2.invoice.id]);
+    const owed = (await q("SELECT `amount_minor` FROM `cash_owed` ORDER BY `amount_minor`")).map((r: any) => Number(r.amount_minor)); // module-review-ok: fixture SQL
+    expect(owed).toEqual([40000, 70000]);
+  });
+
+  it("a confirm whose amounts moved is refused, and nothing is stamped (QA F2)", async () => {
+    await seat("apart");
+    await split([["r-water", 60], ["r-garden", 40]]);
+    const sent = await sendAll();
+    await approveWork();
+    // The Treasurer saw a different water amount than the invoice now says.
+    const stale = { ...seenAmountsOf(sent.lines), "app-water": 55000 };
+    expect(await confirm("m-fin", sent.id, stale)).toEqual({ status: 409, body: { error: APPROVAL_REFUSALS.amountsChanged } });
+    expect(await confirm("m-fin", sent.id, {})).toEqual({ status: 409, body: { error: APPROVAL_REFUSALS.amountsChanged } });
+    const [row] = await q("SELECT `lines_json` FROM `moon_invoices` WHERE `id` = ?", [sent.id]); // module-review-ok: fixture SQL
+    expect(JSON.parse(row.lines_json).every((l: any) => !l.split || l.split.confirmedAt === null)).toBe(true);
+    expect(await q("SELECT `id` FROM `moon_review_events` WHERE `kind` = 'split_confirmed'")).toHaveLength(0); // module-review-ok: fixture SQL
+
+    // The write itself only lands on the lines it read: lines changed in between leave it nothing to write.
+    expect(await store.setInvoiceLinesIfUnchanged(pool, sent.id, "[]", row.lines_json, sent.totalMinor)).toBe(0);
+    expect(await store.setInvoiceLinesIfUnchanged(pool, sent.id, row.lines_json, row.lines_json, sent.totalMinor)).toBe(1);
+  });
+
+  it("a cash.pay holder never confirms their own split (QA F8)", async () => {
+    HOLDERS["cash.pay"] = ["m-fin", "m-treas", "m-wren"];
+    try {
+      await seat("apart");
+      await split([["r-water", 60], ["r-garden", 40]]);
+      const sent = await sendAll();
+      await approveWork();
+      expect(await confirm("m-wren", sent.id)).toEqual({ status: 403, body: { error: APPROVAL_REFUSALS.ownConfirm } });
+      expect(await q("SELECT `id` FROM `moon_review_events` WHERE `kind` = 'split_confirmed'")).toHaveLength(0); // module-review-ok: fixture SQL
+    } finally {
+      HOLDERS["cash.pay"] = ["m-fin", "m-treas"];
+    }
   });
 });

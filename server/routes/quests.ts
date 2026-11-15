@@ -169,7 +169,7 @@ export function register(app: Express, deps: Deps): void {
   } = deps;
   // What a member says they can give (0383): the Open work board reads it to
   // order quests for them, so it is served beside the board. Store and display only.
-  registerMemberCommitment(app, { authedUser, getPool, overLimit });
+  registerMemberCommitment(app, { authedUser, getPool, overLimit, villageZone: () => deps.seasonState?.()?.timezone });
   // Whether quests may ask a minimum age (shared/ageBands.ts). The village setting, ships off.
   const minimumAgesOn: () => boolean = deps.minimumAgesOn ?? minimumAgesOnByDefault;
 

@@ -1453,8 +1453,10 @@ export const SPLIT_PAY_WORDS = {
  *   - the split does not name exactly the roles held, or its shares do not add
  *     up to 100 (`splitForRoles` and the sum below);
  *   - fewer than two applications carry pay: one pay is folded, nothing to split;
- *   - a pay line names a role the split does not.
- * Allowances, listed lines and a range with no figure yet are never scaled.
+ *   - a pay line names a role the split does not;
+ *   - a role is named on more than one pay line.
+ * Allowances, listed lines, a range with no figure yet and a range figure
+ * Finance set are never scaled.
  *
  * It only proposes: each scaled line carries `split` with no confirmation, and
  * Finance approval refuses the invoice until a Treasurer confirms it.
@@ -1467,8 +1469,14 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
   if (new Set(pay.map((l) => l.applicationId)).size < 2) return unchanged;
   const shareOf = new Map(whole.map((s) => [s.roleId, s.share]));
   if (pay.some((l) => l.roleIds.length === 0 || l.roleIds.some((r) => !shareOf.has(r)))) return unchanged;
+  // A role named on two pay lines would hand its share to both, so the
+  // shares no longer add to 100. Refuse the split: pay is the terms (QA F9).
+  const named = pay.flatMap((l) => l.roleIds);
+  if (new Set(named).size !== named.length) return unchanged;
   return lines.map((l) => {
     if (l.kind !== "pay" || l.basis === "listed" || l.amountMinor === null || !l.currency) return { ...l };
+    // A range figure Finance set is already Finance's decision for this line: the split never rescales it (QA F6).
+    if (l.basis === "range" && l.finalMinor !== null) return { ...l };
     const sharePct = Math.min(100, l.roleIds.reduce((s, r) => s + (shareOf.get(r) as number), 0));
     const scaledMinor = Math.round((l.amountMinor * sharePct) / 100);
     return {
@@ -1482,7 +1490,38 @@ export function scaleBySplit(lines: readonly InvoiceLine[], split: readonly Role
 
 /** Does any line still need a Treasurer: scaled by a split and not confirmed, or changed since? */
 export function splitUnconfirmed(lines: readonly InvoiceLine[]): boolean {
-  return lines.some((l) => !!l.split && (!l.split.confirmedAt || l.split.scaledMinor !== l.amountMinor));
+  return lines.some((l) => !!l.split && (!l.split.confirmedAt || !splitHolds(l)));
+}
+
+/**
+ * Does the line still carry the amount its split made? A Treasurer's proposed
+ * amount sits on top of the split (`applyAdjusts`), so once a line has one the
+ * split is read against the proposal's base, the scaled amount it started
+ * from, and the proposal answers for the line's amount (QA F1).
+ */
+export function splitHolds(l: InvoiceLine): boolean {
+  if (!l.split) return true;
+  return l.adjust ? l.split.scaledMinor === l.adjust.baseMinor : l.split.scaledMinor === l.amountMinor;
+}
+
+/**
+ * THE AMOUNTS A TREASURER CONFIRMED (QA F2). The confirm carries every line's
+ * amount as the Treasurer saw it, by line key, and the server refuses when the
+ * invoice no longer says exactly that: Rye's rule that a confirm "refuses if
+ * the amount changed".
+ */
+export type SeenAmounts = Record<string, number | null>;
+
+export function seenAmountsOf(lines: readonly Pick<InvoiceLine, "key" | "amountMinor">[]): SeenAmounts {
+  return Object.fromEntries(lines.map((l) => [l.key, l.amountMinor]));
+}
+
+/** Did the Treasurer see exactly these lines? Unreadable input is a no. */
+export function amountsMatch(lines: readonly Pick<InvoiceLine, "key" | "amountMinor">[], seen: unknown): boolean {
+  if (!seen || typeof seen !== "object" || Array.isArray(seen)) return false;
+  const s = seen as Record<string, unknown>;
+  if (Object.keys(s).length !== lines.length) return false;
+  return lines.every((l) => Object.prototype.hasOwnProperty.call(s, l.key) && s[l.key] === l.amountMinor);
 }
 
 /** Stamp a Treasurer's confirmation on every scaled line. Lines the split did not touch stay as they are. */
@@ -1745,6 +1784,8 @@ export const APPROVAL_REFUSALS = {
   hashChanged: "The recap changed after it was read. Open it again before you approve.",
   splitUnconfirmed: "This invoice is scaled by the member's split of their time. Confirm the split first, then approve.",
   noSplit: "Nothing on this invoice is scaled by a split.",
+  ownConfirm: "Nobody confirms their own pay. Another person holding the cash power confirms it.",
+  amountsChanged: "An amount on this invoice changed after you read it. Open it again, check each amount, then confirm.",
 } as const;
 
 export const FINANCE_REFUSALS = {

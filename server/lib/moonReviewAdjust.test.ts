@@ -13,7 +13,8 @@
  *                      carries the proposed amount
  *   who may propose    not the member, not the work approver, never on one's
  *                      own pay, never without a reason
- *   withdrawn          a withdrawn proposal leaves pay as the terms
+ *   withdrawn          a withdrawn proposal leaves pay as the terms, and the
+ *                      voided record's total with it (QA F11)
  *   no task data       no goals and no tasks done: no flag, pay is the terms,
  *                      nothing to confirm (fails closed)
  *
@@ -23,7 +24,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { LUNAR_CLOCK } from "../../shared/cycleClock";
-import { MOON_ROUTES } from "../../shared/moonRecap";
+import { MOON_ROUTES, seenAmountsOf } from "../../shared/moonRecap";
 import { ADJUST_REFUSALS } from "../../shared/accomplishedReview";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
@@ -163,9 +164,11 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     as(by);
     return call(`POST ${MOON_ROUTES.adjustPay}`, { params: { id }, body });
   };
-  const confirm = (by: string, id: string) => {
+  /** Confirm as `by`, carrying the amounts the Treasurer saw: the invoice's lines as stored, unless given (QA F2). */
+  const confirm = async (by: string, id: string, amounts?: Record<string, number | null>) => {
+    const [row] = await q("SELECT `lines_json` FROM `moon_invoices` WHERE `id` = ?", [id]); // module-review-ok: fixture SQL
     as(by);
-    return call(`POST ${MOON_ROUTES.confirmSplit}`, { params: { id } });
+    return call(`POST ${MOON_ROUTES.confirmSplit}`, { params: { id }, body: { amounts: amounts ?? (row ? seenAmountsOf(JSON.parse(row.lines_json)) : {}) } });
   };
 
   it("the whole flow: agreed beside delivered, a proposal, the member's reply, confirmed before it pays", async () => {
@@ -173,6 +176,7 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     await addItem("Fixed the pump", "r-water", true);
     await addItem("Covered the kitchen rota", null, true);
     await addItem("Ran the open day", null, true);
+    await addItem("Mended the fence", null, true);
     await sendRecap();
     const sent = await sendInvoice();
     expect(sent.totalMinor).toBe(100000);
@@ -183,8 +187,8 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     const row = await queueRow();
     const acc = row.invoice.accomplished;
     expect(acc.goals).toMatchObject({ done: 1, partly: 1, carried: 2, total: 4 });
-    expect(acc.tasks).toMatchObject({ done: 3, outside: 2, byRole: [{ roleId: "r-water", name: "Water keeper", count: 1 }] });
-    expect(acc.sentence).toBe("Agreed: US$1,000 for 4 goals. Delivered: 1 of 4 goals done, 1 partly, plus 3 other tasks (2 outside your roles).");
+    expect(acc.tasks).toMatchObject({ done: 4, outside: 3, byRole: [{ roleId: "r-water", name: "Water keeper", count: 1 }] });
+    expect(acc.sentence).toBe("Agreed: US$1,000 for 4 goals. Delivered: 1 of 4 goals done, 1 partly, plus 4 other tasks (3 outside your roles).");
     expect(acc.farOff).toMatchObject({ under: true, over: true, pct: 25 });
     expect(Object.keys(acc).sort()).toEqual(["agreed", "farOff", "goals", "sentence", "tasks"]);
 
@@ -252,6 +256,9 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     const third = await sendInvoice();
     expect(third.totalMinor).toBe(100000);
     expect(third.lines.every((l: any) => !l.adjust)).toBe(true);
+    // The withdrawn revision is kept at the agreed total, not the proposal's (QA F11).
+    const [voided] = await q("SELECT `total_minor` FROM `moon_invoices` WHERE `id` = ?", [second.id]); // module-review-ok: fixture SQL
+    expect(Number(voided.total_minor)).toBe(100000);
   });
 
   it("no task data: no flag, pay is the terms, nothing to confirm", async () => {
