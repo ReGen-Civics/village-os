@@ -13,7 +13,7 @@
  *     visitor sees, and the rest behind one switch.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
@@ -162,7 +162,7 @@ describe("Join the founding team", () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const line = section.querySelector("[data-hiring-first]") as HTMLElement;
-    expect(line.textContent).toMatch(/We are hiring these roles first\. More roles open after them\./);
+    expect(line.textContent).toMatch(/We are filling these roles first\. More roles open after them\./);
     expect(within(line).getByRole("link", { name: "See the roles opening next" }).getAttribute("href")).toBe("#opening-next");
     const next = await screen.findByRole("region", { name: "More roles, opening next" });
     expect(next.id).toBe("opening-next");
@@ -193,7 +193,7 @@ describe("Join the founding team", () => {
     org.roles = org.roles.slice(0, 2);
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
-    expect(section.querySelector("[data-hiring-first]")?.textContent).toMatch(/We are hiring these roles first/);
+    expect(section.querySelector("[data-hiring-first]")?.textContent).toMatch(/We are filling these roles first/);
     expect(within(section).queryByRole("link", { name: "See the roles opening next" })).toBeNull();
     expect(screen.queryByRole("region", { name: "More roles, opening next" })).toBeNull();
   });
@@ -245,7 +245,11 @@ describe("Join the founding team", () => {
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. To be decided in the onboarding process.");
     expect(within(pay).getByTestId("pay-at-risk").textContent).toBe(VILLAGE_PAY.atRisk);
-    expect(within(pay).getByTestId("pay-note").textContent).toBe(VILLAGE_PAY.note);
+    // One footnote: the ceiling's own, so the village's note is not drawn again (copy sweep, 15 Nov 2026).
+    expect(within(pay).queryByTestId("pay-note")).toBeNull();
+    expect(within(pay).getByTestId("pay-footnote")).toBeTruthy();
+    // The split is said once: the tiles show it, and its words stay for screen readers.
+    expect(within(pay).getByTestId("pay-split").querySelector(".sr-only")?.textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. ");
     // RANGES AND MINIMUMS STAY HIDDEN, even when an older payload still carries one.
     expect(card.textContent).not.toContain("6,750");
     expect(card.textContent).not.toContain("6750");
@@ -263,6 +267,15 @@ describe("Join the founding team", () => {
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
     await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
+  });
+
+  it("opening a role moves focus to its card, where the eye goes (a11y sweep P1-3)", async () => {
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
+    const slot = section.querySelector("[data-founding-card-slot]") as HTMLElement;
+    expect(slot.tabIndex).toBe(-1);
+    await waitFor(() => expect(document.activeElement).toBe(slot));
   });
 
   it("a card that writes its own shares shows those in place of the village's", async () => {
@@ -470,9 +483,13 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
-    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, this role pays up to $4,500 a month.");
-    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*The full band, at 100% commitment. Your first moon starts lower and is tied to what you deliver.");
-    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("30% to 100% (100% is the whole role)");
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.");
+    // One footnote (copy sweep): the village's own note is not drawn beside it.
+    expect(within(piece).queryByTestId("pay-note")).toBeNull();
+    expect(piece.textContent).not.toContain("full band");
+    expect(piece.textContent).not.toContain("value in, value out");
+    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("Full or part commitment (from 30%)");
   });
   it("a role offered whole says nothing about sharing (control)", async () => {
     const card = await open();
@@ -601,5 +618,53 @@ describe("verify 2.2: the admin view", () => {
     fireEvent.click(await screen.findByRole("button", { name: "See all roles" }));
     await screen.findByRole("heading", { level: 3, name: "Lead Finance Steward" });
     expect(screen.queryByRole("checkbox", { name: /roles visitors do not see/ })).toBeNull();
+  });
+});
+
+describe("a founding team that would not load (performance QA sweep, resilience P2-6)", () => {
+  it("says so with a way to ask again, instead of silently dropping the founding team", async () => {
+    let tries = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+        if (u === "/api/org") return reply(org);
+        if (u === "/api/org/founding-team") {
+          tries += 1;
+          return tries === 1 ? reply({ error: "boom" }, 500) : reply(founding);
+        }
+        if (u === "/api/season") return reply({ current: null });
+        return reply([], 404);
+      }),
+    );
+    renderRoles();
+    expect(await screen.findByText("We couldn't load the founding team just now.")).toBeTruthy();
+    expect(screen.queryByRole("region", { name: "Join the founding team" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(await screen.findByRole("region", { name: "Join the founding team" })).toBeTruthy();
+    expect(screen.queryByText("We couldn't load the founding team just now.")).toBeNull();
+    expect(tries).toBe(2);
+  });
+
+  it("shows a loading line while the founding team is on its way, and no notice for a team that is simply off (control)", async () => {
+    let answer: (v: unknown) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+        if (u === "/api/org") return reply(org);
+        if (u === "/api/org/founding-team") return new Promise((done) => { answer = () => done(reply({ on: false, roleIds: [] })); });
+        if (u === "/api/season") return reply({ current: null });
+        return reply([], 404);
+      }),
+    );
+    renderRoles();
+    const status = document.querySelector("[data-founding-status]") as HTMLElement;
+    await waitFor(() => expect(status.textContent).toContain("Loading roles"));
+    await act(async () => answer(null));
+    await waitFor(() => expect(status.textContent).toBe(""));
+    expect(screen.queryByText("We couldn't load the founding team just now.")).toBeNull();
   });
 });

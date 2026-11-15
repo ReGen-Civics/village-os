@@ -22,7 +22,8 @@
  */
 import { ArrowRight, LayoutList, Sprout, Target, UserRound } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { fillWords, type RoleFill } from "@shared/commitmentRange";
+import type { RoleFill } from "@shared/commitmentRange";
+import { fillLine } from "./cardWordsT";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { domainsHeld } from "@shared/rolePieces";
@@ -96,6 +97,7 @@ export interface FoundingLineupProps {
  * It shows the role's need, never anyone's worth.
  */
 function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
+  const { t, i18n } = useLingui();
   const width = Math.min(100, Math.round((f.heldPct / f.targetPct) * 100));
   return (
     <div className={`mt-2 grid gap-1 ${center ? "w-full max-w-40 justify-items-center" : "max-w-xs"}`} data-fill-meter="">
@@ -105,7 +107,7 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
           <span className={`block h-full rounded-full ${f.covered ? "bg-muted-foreground" : "bg-notice"}`} style={{ width: `${width}%` }} />
         </span>
       )}
-      <span className="text-xs text-muted-foreground">{fillWords(f)}{f.targetPct !== 100 ? ` (of ${f.targetPct}%)` : ""}</span>
+      <span className="text-xs text-muted-foreground">{fillLine(i18n, f)}{f.targetPct !== 100 ? ` ${t({ message: `(of ${f.targetPct}%)`, context: "role fill, a target other than 100" })}` : ""}</span>
     </div>
   );
 }
@@ -128,7 +130,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
           type="button"
           aria-pressed={view === v}
           onClick={() => onView(v)}
-          className={`inline-flex min-h-10 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
+          className={`inline-flex min-h-11 items-center gap-1.5 px-3.5 text-sm font-semibold focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring ${view === v ? "bg-muted text-card-foreground" : "text-muted-foreground hover:text-card-foreground"}`}
         >
           <Icon className="size-4" aria-hidden="true" />
           {label}

@@ -9,6 +9,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { VOICE_WORDS } from "@shared/voiceNotes";
 import GrowingField from "@/components/form/GrowingField";
+import { forField } from "@/components/form/fieldName";
 import { VoiceClipsProvider } from "./VoiceClips";
 import { EMPTY_VOICE, type VoiceState } from "./VoiceInvite";
 
@@ -35,21 +36,42 @@ function Form({ start = EMPTY_VOICE, max = 12 }: { start?: VoiceState; max?: num
 }
 
 describe("a clip beside an answer", () => {
+  it("names every control for its own answer, from the answer's label (a11y sweep P2-9)", () => {
+    recorder();
+    vi.stubGlobal("URL", Object.assign(URL, { revokeObjectURL: () => {} }));
+    function Two() {
+      const [voice, setVoice] = useState<VoiceState>({ ...EMPTY_VOICE, clips: { aim: clip } });
+      return (
+        <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={{ max: 12, seconds: 60 }}>
+          <label htmlFor="f-why">Why you, and why now</label>
+          <GrowingField id="f-why" clip="why" value="" onChange={() => {}} />
+          <label htmlFor="f-aim">Your aim in this role</label>
+          <GrowingField id="f-aim" clip="aim" value="" onChange={() => {}} />
+        </VoiceClipsProvider>
+      );
+    }
+    render(<Two />);
+    expect(screen.getByRole("button", { name: "Record this answer: Why you, and why now" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Record again: Your aim in this role" })).toBeTruthy();
+    expect(screen.getByLabelText("Your voice for this answer: Your aim in this role").tagName).toBe("AUDIO");
+    expect(screen.getByRole("button", { name: "Remove clip: Your aim in this role" })).toBeTruthy();
+  });
+
   it("is drawn only on the application, where the browser can record", () => {
     recorder();
     render(<GrowingField aria-label="Elsewhere" clip="why" value="" onChange={() => {}} />);
-    expect(screen.queryByRole("button", { name: VOICE_WORDS.clipRecord })).toBeNull();
+    expect(screen.queryByRole("button", { name: forField(VOICE_WORDS.clipRecord, "Elsewhere") })).toBeNull();
     render(<Form />);
-    expect(screen.getByRole("button", { name: VOICE_WORDS.clipRecord })).toBeTruthy();
+    expect(screen.getByRole("button", { name: forField(VOICE_WORDS.clipRecord, "Why") })).toBeTruthy();
   });
 
   it("is not drawn where the village allows no clips, and says so when the limit is reached", () => {
     recorder();
     const { unmount } = render(<Form max={0} />);
-    expect(screen.queryByRole("button", { name: VOICE_WORDS.clipRecord })).toBeNull();
+    expect(screen.queryByRole("button", { name: forField(VOICE_WORDS.clipRecord, "Why") })).toBeNull();
     unmount();
     render(<Form max={1} start={{ ...EMPTY_VOICE, clips: { aim: clip } }} />);
-    expect((screen.getByRole("button", { name: VOICE_WORDS.clipRecord }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: forField(VOICE_WORDS.clipRecord, "Why") }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText(VOICE_WORDS.clipsFull(1))).toBeTruthy();
   });
 
@@ -57,11 +79,11 @@ describe("a clip beside an answer", () => {
     recorder();
     vi.stubGlobal("URL", Object.assign(URL, { revokeObjectURL: () => {} }));
     render(<Form start={{ ...EMPTY_VOICE, clips: { why: clip } }} />);
-    expect(screen.getByRole("button", { name: VOICE_WORDS.clipAgain })).toBeTruthy();
+    expect(screen.getByRole("button", { name: forField(VOICE_WORDS.clipAgain, "Why") })).toBeTruthy();
     fireEvent.click(screen.getByRole("checkbox", { name: new RegExp(VOICE_WORDS.consent.slice(0, 30)) }));
     expect(screen.getByTestId("consent").textContent).toBe("true");
     expect(screen.queryByRole("checkbox")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.clipRemove }));
-    expect(screen.getByRole("button", { name: VOICE_WORDS.clipRecord })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: forField(VOICE_WORDS.clipRemove, "Why") }));
+    expect(screen.getByRole("button", { name: forField(VOICE_WORDS.clipRecord, "Why") })).toBeTruthy();
   });
 });

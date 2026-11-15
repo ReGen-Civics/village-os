@@ -19,7 +19,8 @@
  *     joined: their written application stays, their voice goes.
  *
  * THE KEPT RECORDING REACHES NO ASSISTANT, agent tool or prompt. It is served
- * by one door, to the deciders, as the files are. The LIVE sound is heard by
+ * by two doors, to the deciders and to the village's admins (admin or founder),
+ * and never to an agent caller (server/lib/voiceForViewer.ts). The LIVE sound is heard by
  * the browser's speech service while they talk (Google's in Chrome, Apple's
  * in Safari; see MicButton), which is how the words are written down; the
  * card says so.
@@ -180,7 +181,7 @@ export const VOICE_WORDS = {
   reopen: "Talk to us instead",
   heardLabel: "What we heard, in your words",
   heardHint: "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong.",
-  consent: "Keep my voice recordings with my application. The people who decide will listen to them.",
+  consent: "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them.",
   kept: "Only the people who decide your application hear them. We delete them with your application, and at the latest 90 days after we decide.",
   notKept: "Without the tick, your recordings stay on this device and are not sent.",
   // Clips beside answers.
@@ -205,7 +206,7 @@ export const VOICE_WORDS = {
   transcriptTooLong: `Keep what we heard under ${VOICE_TRANSCRIPT_MAX} characters.`,
   // The deciders' page.
   heardHeading: "Their voice",
-  heardNote: "Only the people who decide this application hear it. It is deleted with the application, and at the latest 90 days after the decision.",
+  heardNote: "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision.",
   listen: "Listen",
   transcriptFold: "What the browser heard (their words, not checked)",
   unplayable: "This recording didn't play. Try again in a moment.",

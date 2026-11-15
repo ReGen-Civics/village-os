@@ -182,18 +182,95 @@ let _configNow: PublicGameConfig | null = null;
 export function configNow(): PublicGameConfig | null {
   return _configNow;
 }
+
+/** Every mounted reader of the config, so a fresh one reaches them all at once. */
+const _configReaders = new Set<(c: PublicGameConfig) => void>();
+
+/**
+ * THE WAITS BETWEEN TRIES of a config read: three tries in all, about two and
+ * a half seconds. One failed read used to be kept for the whole life of the
+ * page, and the home page, /steward and /visit wait on the config, so a single
+ * 500 or a dropped connection left them blank for good (performance QA sweep,
+ * resilience P1-1). After the last try the failure is NOT kept: those pages
+ * show a "try again" card (components/ConfigUnavailable.tsx), and the next
+ * read asks the server again.
+ */
+export const CONFIG_RETRY_DELAYS_MS: readonly number[] = [600, 1800];
+
+let _configFailed = false;
+const _configFailedReaders = new Set<(failed: boolean) => void>();
+function setConfigFailed(failed: boolean): void {
+  if (_configFailed === failed) return;
+  _configFailed = failed;
+  _configFailedReaders.forEach((read) => read(failed));
+}
+
+async function readConfigOnce(): Promise<PublicGameConfig | null> {
+  try {
+    const r = await fetch("/api/game/config");
+    return r.ok ? ((await r.json()) as PublicGameConfig) : null;
+  } catch {
+    return null;
+  }
+}
+
+const pause = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
+
 export function fetchConfigCached(): Promise<PublicGameConfig | null> {
   if (!_configCache) {
-    _configCache = fetch("/api/game/config")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((c) => { _configNow = c; return c; })
-      .catch(() => null);
+    // Assigned before the first await, so the check at the end always sees it.
+    let reading!: Promise<PublicGameConfig | null>;
+    reading = (async () => {
+      for (let attempt = 0; ; attempt++) {
+        const c = await readConfigOnce();
+        if (c) {
+          _configNow = c;
+          setConfigFailed(false);
+          // A reader that mounted during an earlier, failed round is waiting on no promise now.
+          _configReaders.forEach((read) => read(c));
+          return c;
+        }
+        if (attempt >= CONFIG_RETRY_DELAYS_MS.length) break;
+        await pause(CONFIG_RETRY_DELAYS_MS[attempt]);
+      }
+      if (_configCache === reading) _configCache = null;
+      setConfigFailed(true);
+      return null;
+    })();
+    _configCache = reading;
   }
   return _configCache;
 }
 
-/** Every mounted reader of the config, so a fresh one reaches them all at once. */
-const _configReaders = new Set<(c: PublicGameConfig) => void>();
+/** Ask for the config again now (the "try again" card's button). */
+export function retryGameConfig(): Promise<PublicGameConfig | null> {
+  if (!_configCache) setConfigFailed(false);
+  return fetchConfigCached();
+}
+
+/**
+ * True once every try at the config has failed and no read has succeeded
+ * since. A page that waits on the config shows the "try again" card on true
+ * instead of rendering nothing.
+ */
+export function useConfigFailed(): boolean {
+  const [failed, setFailed] = useState(() => _configFailed);
+  useEffect(() => {
+    _configFailedReaders.add(setFailed);
+    setFailed(_configFailed);
+    return () => {
+      _configFailedReaders.delete(setFailed);
+    };
+  }, []);
+  return failed;
+}
+
+/** For tests: forget the cached config and any failure. */
+export function resetGameConfigForTests(): void {
+  _configCache = null;
+  _configNow = null;
+  _configFailed = false;
+}
 
 /**
  * READ THE CONFIG AGAIN AND HAND IT TO EVERY READER ON THE PAGE.
@@ -212,6 +289,7 @@ export async function refreshGameConfig(): Promise<PublicGameConfig | null> {
   if (!fresh) return null;
   _configNow = fresh;
   _configCache = Promise.resolve(fresh);
+  setConfigFailed(false);
   _configReaders.forEach((read) => read(fresh));
   return fresh;
 }

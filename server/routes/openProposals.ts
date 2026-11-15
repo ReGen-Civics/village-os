@@ -88,7 +88,7 @@ import { currentLetter } from "../lib/membershipLetter";
 import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
 import { inApplicationTransaction } from "../repos/seatApplications";
 import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
-import { confirmationEmail, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
+import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
 import { inviteById } from "../repos/memberInvites";
 import { dbDocument } from "../repos/store-db";
 import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposalDecide";
@@ -104,6 +104,7 @@ import { languageForNewProposal, languageOf } from "../lib/applicantLanguage";
 import { wordsIn } from "../../shared/applicantWords";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import * as store from "../repos/openProposals";
+import { voiceViewerOf } from "../lib/voiceForViewer";
 import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
@@ -162,6 +163,16 @@ const newToken = (): string => crypto.randomBytes(24).toString("base64url");
 const OPEN_TRIES_HOURLY = 60;
 /** Posts that carry files, per connection per hour, refused or accepted. */
 const OPEN_UPLOAD_TRIES_HOURLY = 30;
+/**
+ * THE WHOLE POST, AND HOW MANY AT ONCE (security sweep, 14 Nov 2026). Each part
+ * is capped by multer, but nothing capped their sum, and every byte is held in
+ * memory until the post is judged. A post with no length, or over 45 MB, is
+ * refused before a byte is read (three 10 MB files, three notes and the clips
+ * fit); and this server reads no more than four such posts at a time, so the
+ * most an upload can ever hold here is about 180 MB.
+ */
+export const OPEN_UPLOAD_MAX_BYTES = 45 * 1024 * 1024;
+export const OPEN_UPLOADS_AT_ONCE = 4;
 
 export function register(app: Express, deps: Deps): void {
   const { getPool, overLimit, clientIp, guardCapability, authedUser, deploymentOrigin, projectName, escapeHtml } = deps;
@@ -413,24 +424,46 @@ export function register(app: Express, deps: Deps): void {
    * before a byte reaches disk, and checked by their own first bytes
    * (shared/proposalAttachments.ts). A plain JSON post still works.
    */
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    defParamCharset: "utf8",
-    limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + VOICE_CLIPS_CEILING, fields: 1, fieldSize: 512 * 1024 },
-  }).fields([
-    { name: "files", maxCount: PROPOSAL_FILES_MAX },
-    { name: "voice", maxCount: VOICE_NOTES_MAX },
-    { name: "clips", maxCount: VOICE_CLIPS_CEILING },
-  ]);
+  // Clips are capped at the village's own count (org.voice_clips_max), read for each post, never at the platform ceiling.
+  const uploadFor = (clipsMax: number, clipCap = Math.max(1, Math.min(VOICE_CLIPS_CEILING, clipsMax))) =>
+    multer({
+      storage: multer.memoryStorage(),
+      defParamCharset: "utf8",
+      limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + clipCap, fields: 1, fieldSize: 512 * 1024 },
+    }).fields([
+      { name: "files", maxCount: PROPOSAL_FILES_MAX },
+      { name: "voice", maxCount: VOICE_NOTES_MAX },
+      // multer refuses a maxCount of 0, and a village with clips off is refused by parseSentVoice below.
+      { name: "clips", maxCount: clipCap },
+    ]);
+  let uploadsReading = 0;
 
   app.post("/api/open-proposals", async (req, res) => {
     if (!req.is("multipart/form-data")) return intake(req, res, req.body ?? {}, []);
     // Before any file is read: the per-connection cap on posts that carry files.
     // Generous on purpose: this counts every post that carries files, refused or not. The strict five an hour is counted in `intake`, on accepted proposals only.
     if (await overLimit(`open-proposal:upload:ip:${ipBucket(clientIp(req))}`, OPEN_UPLOAD_TRIES_HOURLY, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooManyTries });
-    upload(req, res, (err: any) => {
+    // Node reads exactly Content-Length bytes of a body that names one, so the header is the total. No length (chunked) is refused.
+    const length = Number(req.headers["content-length"] ?? NaN);
+    if (!Number.isFinite(length) || length > OPEN_UPLOAD_MAX_BYTES) {
+      res.setHeader("Connection", "close");
+      return res.status(Number.isFinite(length) ? 413 : 411).json({ error: ATTACHMENT_WORDS.uploadTooBig, field: "files" });
+    }
+    if (uploadsReading >= OPEN_UPLOADS_AT_ONCE) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
+    uploadsReading += 1;
+    let released = false;
+    const release = () => {
+      if (!released) uploadsReading -= 1;
+      released = true;
+    };
+    // Held until the answer is sent (or the connection drops), so the buffers are counted while they are in memory.
+    res.on("finish", release);
+    res.on("close", release);
+    const clipsMax = clipLimits().max;
+    uploadFor(clipsMax)(req, res, (err: any) => {
       if (err) {
         const code = String(err?.code ?? "");
+        if (err?.field === "clips" && code === "LIMIT_UNEXPECTED_FILE") return void res.status(400).json({ error: VOICE_WORDS.tooManyClips(clipsMax), field: "voice" });
         // A recording refused by the upload's own caps is named as the voice note's.
         if (err?.field === "voice" || err?.field === "clips") return void res.status(code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.tooMany, field: "voice" });
         const error = code === "LIMIT_FILE_SIZE" ? ATTACHMENT_WORDS.fileTooBig : code === "LIMIT_FILE_COUNT" || code === "LIMIT_UNEXPECTED_FILE" ? ATTACHMENT_WORDS.tooManyFiles : ATTACHMENT_WORDS.fileUnreadable;
@@ -551,7 +584,14 @@ export function register(app: Express, deps: Deps): void {
     const roleNames = proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean);
     // A mail door that throws is a send that did not go: the application is kept all the same.
     const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
-    if (!WENT.has(sent.status)) return keepUnsent(res, { id, email, token, status: sent.status });
+    if (!WENT.has(sent.status)) {
+      if (keepsWhenUnsent(sent)) return keepUnsent(res, { id, email, token, status: sent.status });
+      // The address itself is refused (suppressed, malformed, expired): nobody can confirm it, so nothing is kept.
+      console.error(`[open-proposals] the confirmation email for ${id} was refused (${sent.status}${sent.reason ? `: ${sent.reason}` : ""}); the application is not kept`);
+      await store.deleteOpenProposal(pool, id);
+      if (fileDir) await removeProposalFiles(fileDir, id);
+      return res.status(503).json({ error: OPEN_WORDS.notSent });
+    }
     // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
     const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
     res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
@@ -645,6 +685,8 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/admin/open-proposals", async (req, res) => {
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const pool = getPool();
+    // Their voice plays here for the village's admins alone, never an agent (server/lib/voiceForViewer.ts).
+    const hearer = await voiceViewerOf(req, pool, await authedUser(req));
     const [s, links, waiting, roles] = await Promise.all([settings(), store.listOpenLinks(pool), store.listOpenProposals(pool, ["confirmed"]), offered()]);
     const roleName = new Map(roles.map((r) => [r.id, `${r.name} (${r.circle})`]));
     const linkLabel = new Map(links.map((l) => [l.id, l.label]));
@@ -668,7 +710,7 @@ export function register(app: Express, deps: Deps): void {
         // Kept although our confirmation email failed (Rye, 14 Nov 2026): flagged, never hidden.
         addressUnconfirmed: p.addressUnconfirmed ? OPEN_WORDS.addressUnconfirmed : null,
         // Their voice (Rye, 14 Nov 2026: "I want to be able to hear the applicants voice"), played here through the admin door below.
-        voice: p.body.voice
+        voice: hearer.admin && p.body.voice
           ? {
               notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, href: adminVoiceHref(p.id, n.id) })),
               clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: adminVoiceHref(p.id, c.id) })),
@@ -680,14 +722,16 @@ export function register(app: Express, deps: Deps): void {
 
   /*
    * ONE RECORDING OF AN APPLICANT'S VOICE, for Admin's applications panel (Rye,
-   * 14 Nov 2026). The same people who read the application there (intake.moderate)
-   * may hear it, a confirmed application only, as the panel lists. Inline audio the
+   * 14 Nov 2026). The village's admins may hear it (holding intake.moderate, and
+   * admin or founder, and a person: the consent tick names them; security sweep,
+   * 14 Nov 2026), a confirmed application only, as the panel lists. Inline audio the
    * panel fetches, never cached or indexed, sandboxed, checked against its fingerprint.
    */
   app.get("/api/admin/open-proposals/:id/voice/:noteId", async (req, res) => {
     res.setHeader("Cache-Control", "private, no-store");
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    if (!(await voiceViewerOf(req, getPool(), await authedUser(req))).admin) return res.status(404).json({ error: "not_found" });
     const id = String(req.params.id ?? "");
     const noteId = String(req.params.noteId ?? "");
     const p = /^op-[0-9a-f]{20}$/.test(id) ? await store.readOpenProposal(getPool(), id) : null;

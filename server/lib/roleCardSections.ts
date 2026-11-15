@@ -14,6 +14,8 @@
 import type { Pool } from "mysql2/promise";
 import { dbDocument } from "../repos/store-db";
 import { firstNames, roleDraftRows } from "../repos/roleEditHistory";
+import { civilDateKey } from "../../shared/lunar";
+import { villageTimezone } from "./villageReaders";
 import {
   cardEditOf,
   newerEdit,
@@ -90,8 +92,22 @@ export interface LastEdited {
   on: string;
 }
 
+/**
+ * The day of an edit as the village reads it: the instant in the village's time zone, never the UTC
+ * date (QA, 15 Nov 2026: an edit at 22:45 in Costa Rica on 14 Nov read "15 November"). Never throws.
+ */
+export function editedOnDay(at: string, timeZone: string): string {
+  const d = new Date(at);
+  if (Number.isNaN(d.getTime())) return at.slice(0, 10);
+  try {
+    return civilDateKey(d, timeZone || "UTC");
+  } catch {
+    return civilDateKey(d, "UTC");
+  }
+}
+
 /** Who last changed this role's card, and when: its newest live edit or its newest sections save. */
-export async function lastEditedOf(pool: Pool, roleId: string, opts: { peopleShown: boolean }): Promise<LastEdited | null> {
+export async function lastEditedOf(pool: Pool, roleId: string, opts: { peopleShown: boolean; timeZone?: string }): Promise<LastEdited | null> {
   const [rows, raw] = await Promise.all([roleDraftRows(pool, roleId, 1), loadRaw(pool)]);
   const top = rows.find((r) => r.status === "published" && r.publishedAt);
   const fromDraft: SectionsEdit | null = top && top.publishedAt ? { by: top.publishedBy, at: new Date(top.publishedAt).toISOString() } : null;
@@ -100,5 +116,5 @@ export async function lastEditedOf(pool: Pool, roleId: string, opts: { peopleSho
   if (!newest) return null;
   let by: string | null = null;
   if (opts.peopleShown && newest.by) by = (await firstNames(pool, [newest.by])).get(newest.by) || null;
-  return { by, on: newest.at.slice(0, 10) };
+  return { by, on: editedOnDay(newest.at, opts.timeZone ?? villageTimezone()) };
 }

@@ -431,6 +431,27 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect((await readOpenProposal(pool, plain.id))?.addressUnconfirmed).toBeNull();
     });
 
+    it("an address the post office refuses (bounced, complained, erased, malformed, expired) is NOT kept: the old 'couldn't send' answer (security sweep, 14 Nov 2026)", async () => {
+      const refused: PostResult[] = [
+        { status: "skipped", messageId: "m-s", reason: "suppressed" },
+        { status: "skipped", messageId: "m-b", reason: "bad_address" },
+        { status: "expired", messageId: "m-e", reason: "expired" },
+        { status: "bounced", messageId: "m-x" },
+      ];
+      for (const [i, answer] of refused.entries()) {
+        state.answer = answer;
+        const before = (await q("SELECT COUNT(*) AS n FROM open_role_proposals"))[0].n;
+        const r = await call("POST", "/api/open-proposals", proposal({ email: `refused-${i}@example.test` }));
+        expect(r, JSON.stringify(answer)).toMatchObject({ status: 503, body: { error: OPEN_WORDS.notSent } });
+        expect((await q("SELECT COUNT(*) AS n FROM open_role_proposals"))[0].n).toBe(before);
+      }
+      expect(state.admins).toEqual([]);
+      // CONTROL: the village's own mail not being set up is a passing fault, and the application is kept.
+      state.answer = { status: "skipped", messageId: null, reason: "no_api_key" };
+      const kept = await call("POST", "/api/open-proposals", proposal({ email: "not-set-up@example.test" }));
+      expect(kept.body).toMatchObject({ sent: true, kept: true });
+    });
+
     /** What the tidy job's retry is handed: this suite's fake mail door. */
     const retryDeps = () => ({
       getPool: () => pool,
@@ -616,7 +637,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     it.each([
       ["no name", { name: "  " }, "name", OPEN_WORDS.needName],
       ["no address", { email: "" }, "email", OPEN_WORDS.needEmail],
-      ["two addresses", { email: "a@example.test, b@example.test" }, "email", OPEN_WORDS.needEmail],
+      ["two addresses", { email: "a@example.test, b@example.test" }, "email", OPEN_WORDS.badEmail],
+      ["an address with no dot after the @", { email: "rowan@example" }, "email", OPEN_WORDS.badEmail],
       ["no role", { roles: [] }, "roles", OPEN_WORDS.needRole],
       // One role per application (the lead, 11 Nov 2026): two listed roles, each open, are still refused.
       ["two roles", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-well" }] }, "roles", OPEN_WORDS.tooManyRoles],

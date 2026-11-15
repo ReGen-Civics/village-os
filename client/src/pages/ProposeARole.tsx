@@ -40,6 +40,7 @@
  * WHAT IS KEPT, said on the form in one line (sheet 19i): never confirmed, deleted after 48 hours;
  * declined, its name and address go after 90 days (docs/ARCHITECTURE.md, 3.9).
  */
+import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
 import { EMPTY_VOICE, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
@@ -59,29 +60,30 @@ import { useLingui } from "@lingui/react/macro";
 import { i18n } from "@/i18n/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "wouter";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { doorBackOf } from "@shared/seatApplyLinks";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
+import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
 import Layout from "@/components/Layout";
-import { Fireflies } from "@/components/journey/nature";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage";
 import { useFocusedFieldInView, useKeyboardInset } from "@/lib/keyboardInset";
 import { IKIGAI_KEY, ikigaiFromStored, whyFromIkigai } from "@shared/roleDiscover";
 import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
+import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { EMPTY_TERMS_STEP, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
-import { ABOUT_PANES, AboutPanes, CompensationShape, EnterHint, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
+import StoneBar from "@/components/fireflyPath/StoneBar";
+import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
+import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
-const BUTTON = `${BTN_PRIMARY} py-3`;
 /** Nothing a season goal does not have: the "serves" list a card sends is at most this long (shared/openProposalCard.ts). */
 const SERVES_MAX = CARD_LIMITS.serves;
 
@@ -217,6 +219,7 @@ export default function ProposeARole() {
   const params = useParams<{ token?: string }>();
   const link = params.token ? decodeURIComponent(params.token) : "";
   const [form, setForm] = useState<FormState>({ kind: "loading" });
+  const [formTries, setFormTries] = useState(0); // bumped by "Try again" after a failed load
   const [roleId, setRoleId] = useState<string | null>(null);
   const [gone, setGone] = useState(false);
   const [knowUs, setKnowUs] = useState<string[]>([]);
@@ -266,13 +269,13 @@ export default function ProposeARole() {
   const keyboard = useKeyboardInset();
   useFocusedFieldInView(formRef);
   const me = useOptionalAuth()?.user ?? null;
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
 
   useEffect(() => {
     // The role a card's Apply link (or the draft board) named: the first the village still offers.
     const wanted = new URLSearchParams(window.location.search).getAll("role").map((r) => r.trim()).filter(Boolean);
     fetch(`/api/open-proposals/form${link ? `?link=${encodeURIComponent(link)}` : ""}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))) // closed is a 200 with open: false; a 500 is an outage (resilience P2-6)
       .then((d) => {
         const roles: FormRole[] = Array.isArray(d?.roles) ? d.roles : [];
         setForm(
@@ -287,7 +290,7 @@ export default function ProposeARole() {
         }
       })
       .catch(() => setForm({ kind: "failed" }));
-  }, [link]);
+  }, [link, formTries]);
 
   // R-Ikigai answers the person ticked on the draft board become their own words in "Why you", once, and only into an empty field.
   useEffect(() => {
@@ -388,7 +391,7 @@ export default function ProposeARole() {
     const aboutDrafts = unconfirmedDrafts({ aim: "", story: about.story, marks, goals: [] });
     if (aboutDrafts.length > 0) found.push({ field: "drafts:about", message: DRAFT_WORDS.blocked(aboutDrafts), target: null });
     if (!name.trim()) add("name", OPEN_WORDS.needName);
-    if (!email.trim()) add("email", OPEN_WORDS.needEmail);
+    if (!email.trim()) add("email", OPEN_WORDS.needEmail); else if (/[,;]/.test(email) || addressProblem(email)) add("email", OPEN_WORDS.badEmail);
     if (!why.trim()) add("why", OPEN_WORDS.needWhy);
     const aboutProblem = aboutYouProblem(about, role?.alwaysChecked === true);
     if (aboutProblem) add("checkConsent", aboutProblem);
@@ -586,9 +589,7 @@ export default function ProposeARole() {
   if (form.kind === "failed") {
     return (
       <Shell>
-        <p role="alert" className="text-foreground">
-          {t`This page didn't load. Check your connection and try again.`}
-        </p>
+        <LoadFailed onRetry={() => { setForm({ kind: "loading" }); setFormTries((n) => n + 1); }} />
       </Shell>
     );
   }
@@ -762,7 +763,7 @@ export default function ProposeARole() {
       ) : (
         <div className="grid gap-8 lg:grid-cols-[11rem_minmax(0,1fr)_17rem] lg:items-start">
           {/* A desk: the path stands in its own column beside the step (D-06). */}
-          <aside className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
+          <aside aria-label={t({ message: "Your progress", context: "founding application, the steps beside" })} className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
             <StepTrail labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
           </aside>
           <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips}>
@@ -822,12 +823,12 @@ export default function ProposeARole() {
                 </label>
                 <div className="flex flex-wrap gap-2" data-starters="">
                   {starters.map((s) => (
-                    <button key={s} type="button" onClick={() => startWith(s)} className="jw-btn inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm text-foreground hover:border-notice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+                    <button key={s} type="button" onClick={() => startWith(s)} aria-label={t({ message: `Start with: ${s}`, context: "founding application why starter" })} className="jw-btn inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm text-foreground hover:border-notice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
                       {s}
                     </button>
                   ))}
                 </div>
-                <GrowingField id="propose-why" clip="why" required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" counter required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -936,7 +937,7 @@ export default function ProposeARole() {
             {/* STEP 6: review & submit. Everything read back, the agreements, then send. */}
             <section {...panel(5)}>
               {heading(5)}
-              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} />
+              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions })} />
               <div data-agreements="" className="scroll-mt-24">
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />
@@ -954,41 +955,12 @@ export default function ProposeARole() {
               <input type="text" name="hp" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
             </div>
 
-            {/*
-              THE ONE PRIMARY ACT, within thumb reach. On a phone the tab bar steps out (M2,
-              data-hides-tabbar-phone on the form) and this bar rides above the keyboard
-              (--stone-kb, visualViewport). On a desk (lg) it is not sticky at all: it rests at the
-              card's foot behind a rule, with Enter named beside Continue (D-06).
-            */}
-            <div style={{ "--stone-kb": `${keyboard}px` } as React.CSSProperties} data-keyboard={keyboard > 0 ? "open" : undefined}
-              className="sticky bottom-[calc(var(--stone-kb,0px)+env(safe-area-inset-bottom,0px)+0.5rem)] z-20 -mx-5 mt-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-sm backdrop-blur sm:-mx-10 sm:px-8 lg:static lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:shadow-none lg:backdrop-blur-none" data-stone-bar="">
-              <button type="button" onClick={back} disabled={stone === 0} className={`${BTN_SECONDARY} disabled:invisible`} data-stone-back="">
-                <ArrowLeft className="size-4" aria-hidden="true" />
-                {/* On a phone the arrow says it, so Continue has the width; a screen reader still hears "Back". */}
-                <span className="max-sm:sr-only">{t({ message: "Back", context: "open proposal stones" })}</span>
-              </button>
-              {stone < LAST_STONE && <EnterHint />}
-              {stone < LAST_STONE ? (
-                <Fireflies key={`next-${stone}`} className="min-w-0 flex-1 justify-end sm:flex-none">
-                  <button type="button" onClick={next} className={`${BUTTON} w-full sm:w-auto`} data-stone-next="">
-                    <span className="min-w-0 break-words">{t({ message: `Continue to ${nextName}`, context: "founding application steps" })}</span>
-                    <ArrowRight className="size-5 shrink-0" aria-hidden="true" />
-                  </button>
-                </Fireflies>
-              ) : (
-                <Fireflies key="send" className="min-w-0 flex-1 justify-end sm:flex-none">
-                  <button type="submit" disabled={sending} className={`${BUTTON} w-full sm:w-auto`}>
-                    {sending ? t({ message: "Sending...", context: "open proposal send" }) : t({ message: "Send my application", context: "founding application send" })}
-                    {!sending && <ArrowRight className="size-5" aria-hidden="true" />}
-                  </button>
-                </Fireflies>
-              )}
-            </div>
+            <StoneBar keyboard={keyboard} stone={stone} last={LAST_STONE} nextName={nextName} sending={sending} onBack={back} onNext={next} />
           </form>
           </VoiceClipsProvider>
 
           {/* A desk has the width: the role stays beside the step. */}
-          <aside className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
+          <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
             <RoleBeside role={role} pct={pct} />
             <RewardsBeside setup={setup} />
           </aside>

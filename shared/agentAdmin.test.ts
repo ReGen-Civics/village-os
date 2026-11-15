@@ -10,7 +10,7 @@
  *               the agent's own account is never a subject
  */
 import { describe, expect, it } from "vitest";
-import { adminRequestDecision, DEFAULT_AGENT_ADMIN_PATHS, effectiveAgentAdminPaths, parseAgentAdminPaths, pathMatches, type AgentAdminPathsDoc } from "./agentAdmin";
+import { adminRequestDecision, alwaysAPerson, DEFAULT_AGENT_ADMIN_PATHS, effectiveAgentAdminPaths, parseAgentAdminPaths, pathMatches, type AgentAdminPathsDoc } from "./agentAdmin";
 
 const SHIPPED = DEFAULT_AGENT_ADMIN_PATHS;
 
@@ -105,6 +105,16 @@ describe("always a person (check 53)", () => {
       if (!d.ok) expect(d.words.length).toBeGreaterThan(10);
       expect(key).toBeTruthy();
     }
+  });
+
+  it("never opens an applicant's voice, even a GET with the Anchor's approval of AI agents (security sweep, 14 Nov 2026)", () => {
+    for (const p of ["/api/admin/open-proposals/op-0123456789abcdef0123/voice/pv-0123456789abcdef", "/api/governance/open-proposals/op-0123456789abcdef0123/voice/pv-0123456789abcdef"]) {
+      expect(alwaysAPerson("GET", p, null, { applicantDataOpen: true }), p).toMatchObject({ key: "voice" });
+    }
+    // CONTROL: the application itself is a personal-data read, which the approval opens.
+    expect(alwaysAPerson("GET", "/api/admin/open-proposals", null, { applicantDataOpen: true })).toBeNull();
+    // And paths that only share the word are not caught.
+    expect(alwaysAPerson("GET", "/api/governance/voice-spread", null, {})).toBeNull();
   });
 
   it("refuses each item even when a list names it", () => {

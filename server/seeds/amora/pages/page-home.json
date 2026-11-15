@@ -23,7 +23,7 @@
         "id": "steward",
         "title": "Village Steward",
         "subtitle": "Co-Creator",
-        "description": "Hold a role, join a circle, and keep the whole village running."
+        "description": "Hold a role, take on quests, and keep the whole village running."
       },
       {
         "id": "resident",
@@ -38,7 +38,7 @@
         "description": "Launch or grow your business inside the village, and share in what you build."
       }
     ],
-    "intro": "Four ways into {village}. Pick the one that fits you today. You can add more later.",
+    "intro": "Pick the way in that fits you today. You can add more later.",
     "eyebrow": "What brought you here?",
     "heading": "Choose your path"
   },
@@ -55,7 +55,7 @@
       },
       {
         "name": "Co-Create",
-        "description": "Join our circles"
+        "description": "Take a role or a quest"
       },
       {
         "name": "Integrate",

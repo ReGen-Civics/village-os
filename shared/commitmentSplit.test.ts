@@ -5,7 +5,7 @@
  * agreements they came through.
  */
 import { describe, expect, it } from "vitest";
-import { evenSplit, readCommitmentInput, readCommitmentSplit, rolePayFold, shareOfYou, splitForRoles, storedCommitmentSplit } from "./commitment";
+import { evenSplit, readCommitmentInput, readCommitmentSplit, rolePayFold, shareOfYou, sharesOfYou, splitForRoles, storedCommitmentSplit } from "./commitment";
 
 describe("reading a split", () => {
   it("reads shares that add up to 100, from a body or a stored string", () => {
@@ -55,6 +55,15 @@ describe("the split, as the page shows it", () => {
     expect(shareOfYou(50, 60)).toBe(30);
     expect(shareOfYou(50, 33)).toBe(17);
     expect(shareOfYou(100, 25)).toBe(25);
+  });
+
+  it("rounds every role together so the parts add up to the total (QA F11)", () => {
+    const three = [{ roleId: "a", share: 34 }, { roleId: "b", share: 33 }, { roleId: "c", share: 33 }];
+    const parts = sharesOfYou(50, three);
+    expect([...parts.values()].reduce((x, y) => x + y, 0)).toBe(50);
+    expect(Object.fromEntries(parts)).toEqual({ a: 17, b: 17, c: 16 });
+    expect(Object.fromEntries(sharesOfYou(50, [{ roleId: "a", share: 60 }, { roleId: "b", share: 40 }]))).toEqual({ a: 30, b: 20 });
+    expect(Object.fromEntries(sharesOfYou(35, [{ roleId: "a", share: 50 }, { roleId: "b", share: 50 }]))).toEqual({ a: 18, b: 17 });
   });
 
   it("splits evenly in whole percents that add to 100", () => {

@@ -38,7 +38,7 @@ import {
   COMMITMENT_PERIODS,
   evenSplit,
   rolePayFold,
-  shareOfYou,
+  sharesOfYou,
   splitForRoles,
   type CommitmentPeriod,
   type RoleSplitShare,
@@ -84,6 +84,9 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
   const nowFrom = mine.now?.fromDate ? civilDayWords(mine.now.fromDate) : "";
   const earlier = mine.history.filter((h) => h.id !== mine.now?.id).slice(0, 4);
   const many = seats.length >= 2;
+  // Each role's share and its part of the whole person, rounded together so the parts add up to the total.
+  const shareFor = (id: string) => split?.find((x) => x.roleId === id)?.share ?? evenSplit(ids).find((x) => x.roleId === id)?.share ?? 0;
+  const ofYouAll = sharesOfYou(total, ids.map((id) => ({ roleId: id, share: shareFor(id) })));
 
   const setShare = (roleId: string, share: number) => {
     const base = split ?? evenSplit(ids);
@@ -163,8 +166,8 @@ export default function RolesCommitment({ seats }: { seats: readonly CommitmentS
           </p>
           <ul className="space-y-3 pb-3">
             {seats.map((s) => {
-              const share = split?.find((x) => x.roleId === s.id)?.share ?? evenSplit(ids).find((x) => x.roleId === s.id)?.share ?? 0;
-              const ofYou = shareOfYou(total, share);
+              const share = shareFor(s.id);
+              const ofYou = ofYouAll.get(s.id) ?? 0;
               const roleName = s.name;
               return (
                 <li key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1">

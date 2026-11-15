@@ -9,12 +9,13 @@
  * negotiate on the first call, with an optional line on why. When they suggested changes to the role
  * card, the popup says so and asks how those change the price. The contract decides the amount.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { askPeriod, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
+import { perPeriod } from "@/components/roleCard/rewardWords";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const FIELD = "w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
@@ -39,10 +40,18 @@ export default function PriceAsk({
   /** How many changes they suggested to the role card (shared/pieceSuggestions.ts). */
   suggestionCount?: number;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [open, setOpen] = useState(false);
+  // Focus goes back to the button that opened the popup (a11y sweep P1-4): the dialog is opened by state, not a trigger.
+  const adjustRef = useRef<HTMLButtonElement>(null);
+  const close = () => {
+    setOpen(false);
+    setTimeout(() => adjustRef.current?.focus(), 0);
+  };
   const suggested = pct && pct > 0 ? ceilingAt(ceiling.amount, pct) : null;
-  const money = (n: number) => moneyWords(n, ceiling.currency);
+  const money = (n: number) => moneyWords(n, ceiling.currency, i18n.locale);
+  /** "$6,500 a month", in the reader's language and the role's own period. */
+  const priced = (n: number, p: PayCeiling["per"] = ceiling.per) => perPeriod(i18n, money(n), p);
   const per = ceiling.per;
 
   // The popup's own draft, taken from the saved choice each time it opens.
@@ -63,7 +72,7 @@ export default function PriceAsk({
     if (choice === "suggested") onChange(null);
     else if (choice === "negotiate") onChange({ kind: "negotiate", ...withWhy });
     else if (typed > 0) onChange({ kind: "amount", monthly: typed, per, ...withWhy });
-    setOpen(false);
+    close();
   };
 
   const savedDiff = value?.kind === "amount" && suggested && askPeriod(value) === per ? priceDifferencePct(suggested, value.monthly) : null;
@@ -73,25 +82,26 @@ export default function PriceAsk({
       : null
     : value.kind === "negotiate"
       ? t({ message: "Negotiate on the first call if chosen.", context: "price ask summary" })
-      : t({ message: `You propose ${money(value.monthly)} a ${askPeriod(value)}${savedDiff !== null ? ` (${signedPct(savedDiff)} on the suggestion)` : ""}.`, context: "price ask summary" });
+      : t({ message: `You propose ${priced(value.monthly, askPeriod(value))}${savedDiff !== null ? ` (${signedPct(savedDiff)} on the suggestion)` : ""}.`, context: "price ask summary" });
 
   return (
     <div className="mt-4 grid gap-2 border-t border-border pt-3" data-price-ask="">
       <p className="text-sm font-semibold text-foreground">{t({ message: "Your price", context: "price ask heading" })}</p>
       {suggested ? (
         <p className="text-foreground" data-suggested-price="">
-          {t({ message: `Suggested: ${money(suggested)} a ${per}, from your commitment of ${pct}%.`, context: "price ask: the suggested price" })}
+          {t({ message: `Suggested: ${priced(suggested)}, from your commitment of ${pct}%.`, context: "price ask: the suggested price" })}
         </p>
       ) : (
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
       )}
-      <p className={HINT}>{t({ message: "Your first month starts lower and is tied to what you deliver.", context: "price ask: the first month" })}</p>
+      <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
           {summary}
         </p>
       )}
       <button
+        ref={adjustRef}
         type="button"
         onClick={start}
         className="inline-flex min-h-11 items-center gap-2 justify-self-start rounded-xl border border-notice px-4 font-semibold text-foreground hover:bg-notice/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
@@ -101,14 +111,20 @@ export default function PriceAsk({
         {t({ message: "Adjust the price", context: "price ask: open the popup" })}
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={open} onOpenChange={(o) => (o ? setOpen(true) : close())}>
+        <DialogContent
+          className="max-w-lg"
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            adjustRef.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>{t({ message: "Your price", context: "price popup title" })}</DialogTitle>
             <DialogDescription>
               {suggested
-                ? t({ message: `We suggest ${money(suggested)} a ${per} at ${pct}%. As a contractor you can propose more or less. The contract decides the amount.`, context: "price popup lede" })
-                : t({ message: "As a contractor you can propose your own price. The contract decides the amount.", context: "price popup lede" })}
+                ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your pay: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
+                : t({ message: "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
             </DialogDescription>
           </DialogHeader>
           <fieldset className="grid gap-2" data-price-popup="">
@@ -116,7 +132,7 @@ export default function PriceAsk({
             {suggested && (
               <label className="flex min-h-11 items-center gap-2 text-foreground">
                 <input type="radio" name={`${idPrefix}-price`} className="size-5 accent-notice" checked={choice === "suggested"} onChange={() => setChoice("suggested")} />
-                {t({ message: `Take the suggested price, ${money(suggested)} a ${per}`, context: "price popup choice" })}
+                {t({ message: `Take the suggested price, ${priced(suggested)}`, context: "price popup choice" })}
               </label>
             )}
             <label className="flex min-h-11 items-center gap-2 text-foreground">
@@ -144,7 +160,7 @@ export default function PriceAsk({
                 )}
                 {typed > ceiling.amount && (
                   <p className="text-sm text-foreground" data-price-above-band="">
-                    {t({ message: `That's above the full role's band of ${money(ceiling.amount)} a ${per}. You can still propose it, and the contract decides.`, context: "price popup: above the full band" })}
+                    {t({ message: `That's above ${priced(ceiling.amount)}, the most for the full role. You can still propose it.`, context: "price popup: above the full band" })}
                   </p>
                 )}
               </div>
@@ -169,14 +185,20 @@ export default function PriceAsk({
               <textarea id={`${idPrefix}-price-why`} rows={3} maxLength={PRICE_WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} />
             </div>
           )}
+          {choice === "amount" && typed <= 0 && (
+            <p id={`${idPrefix}-price-why-off`} className={HINT} data-price-needs-amount="">
+              {t({ message: `Enter a price above ${money(0)}.`, context: "price popup: why Use this price is off" })}
+            </p>
+          )}
           <DialogFooter>
-            <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-lg px-4 text-muted-foreground hover:text-foreground">
+            <button type="button" onClick={close} className="min-h-11 rounded-lg px-4 text-muted-foreground hover:text-foreground">
               {t({ message: "Cancel", context: "price popup" })}
             </button>
             <button
               type="button"
               onClick={save}
               disabled={choice === "amount" && typed <= 0}
+              aria-describedby={choice === "amount" && typed <= 0 ? `${idPrefix}-price-why-off` : undefined}
               className="min-h-11 rounded-lg border border-notice bg-notice px-4 font-semibold text-background disabled:opacity-40"
               data-save-price=""
             >

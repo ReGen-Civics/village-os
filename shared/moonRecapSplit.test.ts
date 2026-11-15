@@ -6,7 +6,8 @@
  * Treasurer's confirmation.
  */
 import { describe, expect, it } from "vitest";
-import { confirmSplitLines, invoiceTotals, linesFromTerms, scaleBySplit, splitUnconfirmed, type TermsInForce } from "./moonRecap";
+import { amountsMatch, confirmSplitLines, invoiceTotals, linesFromTerms, scaleBySplit, seenAmountsOf, splitHolds, splitUnconfirmed, type TermsInForce } from "./moonRecap";
+import { applyAdjusts, adjustUnconfirmed, confirmAdjustLines } from "./accomplishedReview";
 
 const MOON = { days: 30 };
 
@@ -86,6 +87,58 @@ describe("scaleBySplit", () => {
     ];
     const lines = scaleBySplit(linesFromTerms(withAllowance, MOON), SPLIT_60_40, HELD);
     expect(lines.map((l) => [l.key, l.amountMinor, !!l.split])).toEqual([["app-1", 60_000, true], ["app-1:allowance", 5_000, false], ["app-2", null, false]]);
+  });
+
+  it("never rescales a range figure Finance set: that line keeps Finance's amount (QA F6)", () => {
+    const ranged = [APART[0], { ...APART[1], settings: { v: 1 as const, pay: { kind: "range" as const, currency: "USD", minMinor: 50_000, maxMinor: 80_000, per: "moon" as const } } }];
+    const lines = scaleBySplit(linesFromTerms(ranged, MOON, {}, { "app-2": 70_000 }), SPLIT_60_40, HELD);
+    expect(lines.map((l) => [l.key, l.amountMinor, !!l.split])).toEqual([["app-1", 60_000, true], ["app-2", 70_000, false]]);
+    // A member's own range proposal, with no Finance figure yet, still scales.
+    const proposed = scaleBySplit(linesFromTerms(ranged, MOON, { "app-2": 70_000 }), SPLIT_60_40, HELD);
+    expect(proposed.find((l) => l.key === "app-2")?.amountMinor).toBe(28_000);
+  });
+
+  it("refuses the split when a role is named on two pay lines: its share would count twice (QA F9)", () => {
+    const dup = [
+      terms({ applicationId: "a1", roleIds: ["r1"], roleNames: ["Hosting"] }),
+      terms({ applicationId: "a2", roleIds: ["r1"], roleNames: ["Hosting"] }),
+      terms({ applicationId: "a3", roleIds: ["r2"], roleNames: ["Garden"] }),
+    ];
+    const lines = scaleBySplit(linesFromTerms(dup, MOON), SPLIT_60_40, HELD);
+    expect(lines.map((l) => [l.amountMinor, l.split])).toEqual([[100_000, undefined], [100_000, undefined], [100_000, undefined]]);
+  });
+});
+
+describe("a proposed amount on a scaled line (QA F1)", () => {
+  const scaled = () => scaleBySplit(linesFromTerms(APART, MOON), SPLIT_60_40, HELD);
+  const P = { "app-1": { adjustedMinor: 70_000, reason: "Took on more.", proposedBy: "u-fin", proposedAt: "2026-11-21T10:00:00.000Z" } };
+
+  it("the split is read against the proposal's base, so one confirm clears both and nothing deadlocks", () => {
+    const lines = applyAdjusts(scaled(), P);
+    const one = lines.find((l) => l.key === "app-1")!;
+    expect(one).toMatchObject({ amountMinor: 70_000, split: { scaledMinor: 60_000 }, adjust: { baseMinor: 60_000, adjustedMinor: 70_000 } });
+    expect(lines.every(splitHolds)).toBe(true);
+    const done = confirmAdjustLines(confirmSplitLines(lines, "u-treasurer", "2026-11-22T09:00:00.000Z"), "u-treasurer", "2026-11-22T09:00:00.000Z");
+    expect(splitUnconfirmed(done)).toBe(false);
+    expect(adjustUnconfirmed(done)).toBe(false);
+  });
+
+  it("still catches a split that moved under the proposal", () => {
+    const lines = applyAdjusts(scaled(), P).map((l) => (l.split ? { ...l, split: { ...l.split, scaledMinor: l.split.scaledMinor + 1, confirmedAt: "t" } } : l));
+    expect(splitUnconfirmed(lines)).toBe(true);
+  });
+});
+
+describe("the amounts a Treasurer confirms (QA F2)", () => {
+  it("match only the exact lines and amounts that were read", () => {
+    const lines = scaleBySplit(linesFromTerms(APART, MOON), SPLIT_60_40, HELD);
+    const seen = seenAmountsOf(lines);
+    expect(seen).toEqual({ "app-1": 60_000, "app-2": 40_000 });
+    expect(amountsMatch(lines, seen)).toBe(true);
+    expect(amountsMatch(lines, { ...seen, "app-1": 59_999 })).toBe(false);
+    expect(amountsMatch(lines, { "app-1": 60_000 })).toBe(false);
+    expect(amountsMatch(lines, { ...seen, extra: 1 })).toBe(false);
+    for (const bad of [undefined, null, "x", [60_000, 40_000]]) expect(amountsMatch(lines, bad)).toBe(false);
   });
 });
 

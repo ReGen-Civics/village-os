@@ -107,11 +107,11 @@ export default function FoundingTeam({
           {t({ message: "Join the founding team", context: "founding team section heading" })}
         </Heading>
         <p className={`${lead ? "mt-3" : "mt-5"} max-w-2xl text-lg leading-relaxed text-muted-foreground sm:mt-5 sm:text-xl`}>
-          {t({ message: "We are building our team of people who will lead each domain of the village from the foundation through to completion.", context: "founding team section lede" })}
+          {t({ message: "We are forming the founding team: the people who will hold each domain of the village, from the foundation through to completion.", context: "founding team section lede" })}
         </p>
         {/* Hiring the founding team first (Rye, 14 Nov 2026): one line, so a visitor sharing the link sees there is more to come. */}
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground" data-hiring-first="">
-          {t({ message: "We are hiring these roles first. More roles open after them.", context: "founding team section, hiring first" })}{" "}
+          {t({ message: "We are filling these roles first. More roles open after them.", context: "founding team section, hiring first" })}{" "}
           {laterCount > 0 && (
             <a href="#opening-next" className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
               {t({ message: "See the roles opening next", context: "founding team section, hiring first" })}
@@ -137,10 +137,12 @@ export default function FoundingTeam({
             requestAnimationFrame(() => {
               const card = document.getElementById(`${headingId}-card`);
               if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "start", behavior: reducedMotion() ? "auto" : "smooth" });
+              // Focus follows the eye (a11y sweep P1-3): a keyboard or screen reader user lands on the card they opened.
+              card?.focus({ preventScroll: true });
             });
           }}
         />
-        <div id={`${headingId}-card`} className="scroll-mt-24">
+        <div id={`${headingId}-card`} tabIndex={-1} className="scroll-mt-24 focus:outline-none" data-founding-card-slot="">
           {current ? (
             <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
           ) : wide ? (

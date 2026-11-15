@@ -186,6 +186,8 @@ import { eraseSeasonPlanWords } from "../repos/seasonPlans";
 import { forgetMemberSessions } from "./liveSessions";
 import { forgetRoleTensionsFor } from "./roleTensions";
 import { forgetMemberProposals } from "../repos/roleProposals";
+import { anonymiseOpenProposal, openProposalsOfMember, withdrawForErasure } from "../repos/openProposals";
+import { removeProposalFiles } from "./proposalFiles";
 import { forgetMemberReview } from "../repos/applicationReview";
 import { isExampleUser } from "./examples";
 import { forgetMemberInProposals } from "./externalProposals";
@@ -277,6 +279,13 @@ export type ErasureDeps = {
    * needs no sign-in, so revoking a face means unlinking a file.
    */
   uploadsDir: string;
+  /**
+   * The private folder of the public applications' files and recordings
+   * (server/lib/proposalFiles.ts). Absent, an erased member's application
+   * folders go on the nightly sweep instead, which removes every folder whose
+   * row is anonymised.
+   */
+  proposalFileDir?: string;
   /**
    * The notification spine as the server holds it, so a notice this sweep
    * writes follows each recipient's mail preference. The delegations step
@@ -1492,6 +1501,28 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
         await forgetMemberProposals(pool, target.id);
       },
     },
+    {
+      /*
+       * Their public applications (open role proposals, 0305; security sweep,
+       * 14 Nov 2026): every one made from their real address, and every one
+       * whose invitation reached their account. One still waiting is closed
+       * as withdrawn; each is anonymised with the one list every anonymising
+       * path uses (`ANONYMISE_REMOVES`: links, files, references, the check,
+       * voice, and the rest), and its private folder of files and recordings
+       * goes now. What stays is the application's substance, naming nobody.
+       * AFTER THE TOMBSTONE, so an application they confirm while their
+       * sessions live is still found.
+       */
+      name: "open-proposals-after-tombstone",
+      run: async () => {
+        const at = new Date();
+        for (const id of await openProposalsOfMember(pool, { emailKey: realEmailKey(target), userId: String(target.id ?? "") })) {
+          await withdrawForErasure(pool, id, at);
+          await anonymiseOpenProposal(pool, id, at);
+          if (deps.proposalFileDir) await removeProposalFiles(deps.proposalFileDir, id);
+        }
+      },
+    },
     /*
      * WHAT A SEAT STILL HELD FOR THEM (adversarial round 2, findings 8 to 10).
      * Four steps, each after the tombstone for the reason the needs step gives:
@@ -2354,6 +2385,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "purchase-emails-after-tombstone",
   "application-review-after-tombstone",
   "role-proposals-after-tombstone",
+  "open-proposals-after-tombstone",
   "seat-journal-after-tombstone",
   "seat-claims-after-tombstone",
   "org-seatings-after-tombstone",

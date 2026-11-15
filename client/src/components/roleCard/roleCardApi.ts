@@ -24,6 +24,13 @@ export interface FoundingTeamAnswer {
   team: FilledTeamRole[];
   /** How full each role is, by id (Rye, 14 Nov 2026): what its holders give against what it needs. */
   fill: Record<string, RoleFill>;
+  /**
+   * True when the read itself failed (a 500, a 429, no connection). The answer
+   * is still the section off, so no page waits on it, but a page that leads
+   * with the founding team can say it could not load instead of silently
+   * dropping it (performance QA sweep, resilience P2-6).
+   */
+  failed?: boolean;
 }
 
 export interface RoleCardAnswer {
@@ -36,6 +43,7 @@ export interface RoleCardAnswer {
 }
 
 const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [], fill: {} };
+const FAILED: FoundingTeamAnswer = { ...OFF, failed: true };
 
 /** The fills as the server sent them, read again so a bad row draws nothing. */
 function fillOf(v: unknown): Record<string, RoleFill> {
@@ -70,11 +78,11 @@ function payOf(v: any): VillagePay {
   return villagePayFrom({ shape, atRisk: String(v.atRisk ?? ""), note: String(v.note ?? "") });
 }
 
-/** The founding team, or the section off when the read fails: the page never waits on it to show its roles. */
+/** The founding team, or the section off (marked `failed`) when the read fails: the page never waits on it to show its roles. */
 export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
   try {
     const r = await gameFetch("/api/org/founding-team");
-    if (!r.ok) return OFF;
+    if (!r.ok) return FAILED;
     const d = await r.json();
     const roleIds = Array.isArray(d?.roleIds) ? d.roleIds.filter((x: unknown): x is string => typeof x === "string") : [];
     const sections: Record<string, RoleCardSections> = {};
@@ -87,7 +95,7 @@ export async function readFoundingTeam(): Promise<FoundingTeamAnswer> {
     }
     return { on: d?.on === true && roleIds.length > 0, roleIds, names, sections, showPayRanges: d?.showPayRanges === true, villagePay: payOf(d?.villagePay), otherWays: otherWaysOf(d?.otherWays), team: teamOf(d?.team), fill: fillOf(d?.fill) };
   } catch {
-    return OFF;
+    return FAILED;
   }
 }
 

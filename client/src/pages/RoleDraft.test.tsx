@@ -92,6 +92,20 @@ describe("QA2-01: the founding team's roles stay off the game's board", () => {
     await waitFor(() => expect(JSON.parse(localStorage.getItem(ROLE_DRAFT_KEY) ?? "{}").picks).toEqual(["garden"]));
   });
 
+  it("with only the founding roles open, never says no role is open: it points to the founding team (copy sweep, 15 Nov 2026)", async () => {
+    const onlyFounding = { ...ORG, roles: ORG.roles.filter((r) => r.id === "lfs" || r.state === "filled") };
+    serve({ org: onlyFounding, founding: { on: true, roleIds: ["lfs"], sections: {} } });
+    render(<RoleDraft />);
+    const line = await waitFor(() => {
+      const el = document.querySelector("[data-founding-open-instead]") as HTMLElement | null;
+      if (!el) throw new Error("not yet");
+      return el;
+    });
+    expect(line.textContent).toBe("No other role is open right now. The founding roles are open: see the founding team.");
+    expect(within(line).getByRole("link", { name: "see the founding team." }).getAttribute("href")).toBe("/roles");
+    expect(document.body.textContent).not.toContain("No role is open right now.");
+  });
+
   it("lists every open role and says nothing of a founding team while the section is off (control)", async () => {
     serve();
     render(<RoleDraft />);

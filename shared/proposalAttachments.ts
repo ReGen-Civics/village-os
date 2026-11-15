@@ -73,6 +73,10 @@ export const ATTACHMENT_WORDS = {
   /** The data promise, in one line on the form. */
   promise: "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email.",
   // Refusals, each with what to do.
+  /** The whole post, files and recordings together, is over the upload's total. */
+  uploadTooBig: "Your files and recordings together are too large to send. Send fewer files, or record shorter answers.",
+  /** Too many uploads in flight on this server at once. */
+  uploadBusy: "We're receiving a lot of uploads right now. Please try again in a minute.",
   tooManyLinks: `Add up to ${PROPOSAL_LINKS_MAX} links.`,
   linkNeedsLabel: "Give each link a few words saying what it is.",
   linkLabelTooLong: `Keep each link's label under ${PROPOSAL_LINK_LABEL_MAX} characters.`,

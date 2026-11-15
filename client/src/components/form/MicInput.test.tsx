@@ -53,14 +53,14 @@ function Line({ max }: { max?: number }) {
 describe("a one-line answer you can speak into", () => {
   it("appends each finished phrase to what is written", () => {
     render(<Line />);
-    fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing" }));
+    fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing: Aim" }));
     say("seed to every household");
     expect((screen.getByLabelText("Aim") as HTMLInputElement).value).toBe("I bring seed to every household");
   });
 
   it("never goes past the field's own limit", () => {
     render(<Line max={12} />);
-    fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing" }));
+    fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing: Aim" }));
     say("seed to every household");
     expect((screen.getByLabelText("Aim") as HTMLInputElement).value).toBe("I bring seed");
     expect(spokenInto("", "hello there", 5)).toBe("hello");
@@ -69,6 +69,10 @@ describe("a one-line answer you can speak into", () => {
 
   it("puts a mic on where you are based, your languages and your story line", () => {
     render(<AboutYouFacts value={EMPTY_ABOUT_YOU} onChange={() => {}} />);
-    expect(screen.getAllByRole("button", { name: "Speak instead of typing" })).toHaveLength(3);
+    const mics = screen.getAllByRole("button", { name: /^Speak instead of typing/ });
+    expect(mics).toHaveLength(3);
+    // Each named for its own answer (a11y sweep P2-9), never three of the same.
+    expect(new Set(mics.map((m) => m.getAttribute("aria-label"))).size).toBe(3);
+    for (const m of mics) expect(m.getAttribute("aria-label")).toMatch(/^Speak instead of typing: \S/);
   });
 });

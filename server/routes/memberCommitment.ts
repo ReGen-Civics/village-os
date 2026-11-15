@@ -14,6 +14,11 @@
  *
  * "Today" is the member's own calendar day, in their saved time zone, else UTC,
  * so a word said late in the evening holds from the day the member is living.
+ * A SPLIT is dated by the VILLAGE's calendar day instead (QA F10): pay reads
+ * it against the moon's last day, which is a village day
+ * (server/lib/splitForPay.ts), so a split said from another zone must not land
+ * a day early or late against the moon it scales. Either day is accepted as a
+ * floor, so nobody is refused for living ahead of the village.
  *
  * Store and display only. Nothing that pays reads it (shared/commitment.ts).
  */
@@ -24,7 +29,25 @@ import { readCommitmentInput } from "../../shared/commitment";
 import { commitmentHistory, commitmentNow, recordCommitment } from "../repos/memberCommitments";
 import { timeZoneOf } from "../repos/memberTimeZone";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit">;
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit"> & {
+  /** The village's time zone, the one the moon's days are counted in. Absent: UTC. */
+  villageZone?: () => string | null | undefined;
+};
+
+/** The village's calendar day now, year-month-day. */
+export function villageToday(zone: string | null | undefined, now: Date): string {
+  try {
+    return civilDateKey(now, zone || "UTC");
+  } catch {
+    return now.toISOString().slice(0, 10);
+  }
+}
+
+/** Does the body carry a split? Only then is the word dated by the village day. */
+function carriesSplit(body: unknown): boolean {
+  const split = body && typeof body === "object" ? (body as Record<string, unknown>).split : undefined;
+  return Array.isArray(split) ? split.length > 0 : typeof split === "string" && split.trim() !== "" && split.trim() !== "[]";
+}
 
 /** The member's calendar day now, year-month-day. */
 async function todayFor(deps: Deps, userId: string, now: Date): Promise<string> {
@@ -58,8 +81,17 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`commitment:${user.id}`, 30, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "Too many changes at once. Try again in a while." });
     }
-    const today = await todayFor(deps, user.id, new Date());
-    const input = readCommitmentInput(req.body, today);
+    const at = new Date();
+    const today = await todayFor(deps, user.id, at);
+    let body: unknown = req.body;
+    let floor = today;
+    if (carriesSplit(body)) {
+      const village = villageToday(deps.villageZone?.(), at);
+      const b = body as Record<string, unknown>;
+      if (b.fromDate === undefined || b.fromDate === null || b.fromDate === "") body = { ...b, fromDate: village };
+      floor = village < today ? village : today;
+    }
+    const input = readCommitmentInput(body, floor);
     if (!input.ok) return res.status(400).json({ error: input.problem });
     await recordCommitment(getPool(), user.id, input.value);
     const [now, history] = await Promise.all([commitmentNow(getPool(), user.id, today), commitmentHistory(getPool(), user.id)]);

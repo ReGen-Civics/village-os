@@ -261,7 +261,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
             <span>{MOON_WORDS.total}</span>
             <span><Amount minor={inv.totalMinor} currency={inv.currency} /></span>
           </p>
-          {inv.accomplished ? <AccomplishedBlock view={inv.accomplished} /> : null}
+          {inv.accomplished ? <AccomplishedBlock view={inv.accomplished} level={4} /> : null}
 
           {unsent && editable && !room && inv.lines.some((l) => l.adjust) ? (
             <label className={LABEL} data-testid="adjust-reply">

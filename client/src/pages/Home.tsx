@@ -299,7 +299,7 @@ export default function Home() {
                     {t({ message: "Founding team", context: "landing, founding team card title" })}
                   </span>
                   <span className={`mt-2 block ${WAY_BODY}`}>
-                    {t({ message: "Lead a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
+                    {t({ message: "Hold a whole domain of the village, from the foundation through to completion.", context: "landing, founding team card body" })}
                   </span>
                   <span className="mt-auto inline-flex items-center gap-2 pt-4 text-sm font-semibold text-notice">
                     {t({ message: "See the open roles", context: "landing, founding team card door" })}

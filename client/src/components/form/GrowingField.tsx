@@ -8,6 +8,8 @@ import { useEffect, useLayoutEffect, useRef, type TextareaHTMLAttributes } from 
 import MicButton from "@/components/MicButton";
 import { spokenInto } from "@/components/form/MicInput";
 import { ClipBar } from "@/components/voice/VoiceClips";
+import { useFieldName } from "@/components/form/fieldName";
+import { useLingui } from "@lingui/react/macro";
 
 export default function GrowingField({
   value,
@@ -16,6 +18,7 @@ export default function GrowingField({
   className = "",
   mic = true,
   clip,
+  counter = false,
   ...rest
 }: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> & {
   value: string;
@@ -25,8 +28,11 @@ export default function GrowingField({
   mic?: boolean;
   /** The answer's key for a voice clip beside it (components/voice/VoiceClips.tsx); drawn only inside the application's clip provider. */
   clip?: string;
+  /** Show how many characters are left of `maxLength`, so the box never cuts an answer off unseen (a11y sweep, 14 Nov 2026). */
+  counter?: boolean;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
+  const fieldName = useFieldName(ref);
   // A box drawn inside a hidden step measures 0: it keeps its rows until it is shown, then fits.
   const fit = () => {
     const el = ref.current;
@@ -57,18 +63,43 @@ export default function GrowingField({
       onChange={(e) => onChange(e.target.value)}
       className={`min-h-[44px] w-full max-w-full resize-none overflow-hidden whitespace-pre-wrap break-words ${mic ? "pr-12" : ""} ${className}`}
       {...rest}
+      aria-describedby={[rest["aria-describedby"], counter && rest.maxLength && rest.id ? `${rest.id}-count` : ""].filter(Boolean).join(" ") || undefined}
     />
   );
   const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
-  const clipBar = clip ? <ClipBar field={clip} onWords={said} /> : null;
-  if (!mic) return clipBar ? <div>{box}{clipBar}</div> : box;
+  const clipBar = clip ? <ClipBar field={clip} onWords={said} fieldName={fieldName} /> : null;
+  const max = typeof rest.maxLength === "number" && rest.maxLength > 0 ? rest.maxLength : 0;
+  const count = counter && max ? <CharacterCount used={value.length} max={max} id={rest.id ? `${rest.id}-count` : undefined} /> : null;
+  if (!mic) return clipBar || count ? <div>{box}{count}{clipBar}</div> : box;
   return (
     <div>
       <div className="relative">
         {box}
-        <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={said} />
+        <MicButton className="absolute bottom-1 right-1" disabled={rest.disabled} onText={said} fieldName={fieldName} />
       </div>
+      {count}
       {clipBar}
+    </div>
+  );
+}
+
+/**
+ * How much of the box is used, under it. Read with the box (aria-describedby),
+ * and said once aloud only when the limit is reached, never on every key.
+ */
+function CharacterCount({ used, max, id }: { used: number; max: number; id?: string }) {
+  const { t } = useLingui();
+  const full = used >= max;
+  const usedText = used.toLocaleString();
+  const maxText = max.toLocaleString();
+  return (
+    <div className="mt-1 flex justify-end text-sm">
+      <span id={id} className={`tabular-nums ${full ? "font-semibold text-foreground" : "text-muted-foreground"}`} data-character-count="">
+        {t({ message: `${usedText} / ${maxText} characters`, context: "character count under a box" })}
+      </span>
+      <span className="sr-only" role="status">
+        {full ? t({ message: `You have reached the ${maxText} character limit.`, context: "character count under a box" }) : ""}
+      </span>
     </div>
   );
 }
