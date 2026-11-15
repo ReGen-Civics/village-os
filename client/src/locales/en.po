@@ -862,6 +862,11 @@ msgctxt "applicant's application status, terms"
 msgid "What you answered"
 msgstr "What you answered"
 
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "They chose to negotiate on the first call. This is the suggested price at {pct}% commitment until a price is agreed."
+msgstr "They chose to negotiate on the first call. This is the suggested price at {pct}% commitment until a price is agreed."
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "Funding rounds"
@@ -983,6 +988,11 @@ msgstr "(done when {doneWhen})"
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We are waiting for your answer."
 msgstr "We are waiting for your answer."
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Pay the contract will record"
+msgstr "Pay the contract will record"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Apply for these {pickCount} roles"
@@ -1123,6 +1133,11 @@ msgstr "What would you change, and why?"
 msgctxt "role draft, only the founding roles are open"
 msgid "see the founding team."
 msgstr "see the founding team."
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
+msgstr "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -1280,6 +1295,11 @@ msgstr "Join the founding team"
 msgctxt "the value of a setting once changed"
 msgid "After"
 msgstr "After"
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "The suggested price: the listed price at {pct}% commitment."
+msgstr "The suggested price: the listed price at {pct}% commitment."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone and its card shows here while you walk."
@@ -3701,6 +3721,12 @@ msgstr "Drop in anything that helps me understand you. Each one changes how I ta
 msgid "How this serves the village's purpose, in one line"
 msgstr "How this serves the village's purpose, in one line"
 
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap before a commitment is chosen"
+msgid "Proposals for the full role go up to {0}."
+msgstr "Proposals for the full role go up to {0}."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
 msgid "Talk to us instead"
@@ -3743,6 +3769,11 @@ msgstr "The quest you want to do: what you would create, and what it brings to t
 msgctxt "founding application, later role note"
 msgid "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
 msgstr "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
+msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+msgstr "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: label beside the full moon"
@@ -3965,6 +3996,7 @@ msgctxt "role pay"
 msgid "Show the suggestion"
 msgstr "Show the suggestion"
 
+#: client/src/components/openProposal/ContractPrice.tsx
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "an amount for each month"
 msgid "{money} a month"
@@ -4087,6 +4119,11 @@ msgstr "When shaping starts (leave empty to keep the round in Seed)"
 msgctxt "pricing desk"
 msgid "Confirm the hours first"
 msgstr "Confirm the hours first"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the one footnote"
+msgid "*At 100% commitment."
+msgstr "*At 100% commitment."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading on the change requests page"
@@ -6958,6 +6995,12 @@ msgstr "What it is"
 msgid "Members sign in here to propose the roles they will hold this moon."
 msgstr "Members sign in here to propose the roles they will hold this moon."
 
+#. placeholder {0}: priced(cap)
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review: the cap on a proposal"
+msgid "Proposals up to {0}"
+msgstr "Proposals up to {0}"
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Leaving out {circle} also leaves out its role."
@@ -8417,6 +8460,13 @@ msgstr "By {nextDate}."
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "The count is being made. Open this page again in a moment."
 msgstr "The count is being made. Open this page again in a moment."
+
+#. placeholder {0}: priced(cap)
+#. placeholder {1}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the cap"
+msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+msgstr "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "This file cannot be loaded as it is:"
@@ -10233,6 +10283,7 @@ msgctxt "admin quest safety"
 msgid "Minimum age"
 msgstr "Minimum age"
 
+#: client/src/components/openProposal/ContractPrice.tsx
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "an amount for each moon"
 msgid "{money} a moon"
@@ -10494,6 +10545,11 @@ msgstr "When you join a circle's meeting today, a firefly joins the others at it
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Some could not be approved"
 msgstr "Some could not be approved"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the full role's listed price"
+msgid "Listed price: {full} for the full role*"
+msgstr "Listed price: {full} for the full role*"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -11346,9 +11402,9 @@ msgid "The Governance Canvas asks a group twelve questions about how it works to
 msgstr "The Governance Canvas asks a group twelve questions about how it works together. Under each question is this village's answer in one public line. The lines name roles, never people."
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the one footnote"
-msgid "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
-msgstr "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
+#~ msgctxt "role card rewards: the one footnote"
+#~ msgid "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
+#~ msgstr "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
@@ -11476,6 +11532,11 @@ msgstr "The vote is open until {closes}. Every member on the roll has been told.
 msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Not now"
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
+msgstr "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, what we tend"
@@ -12391,6 +12452,11 @@ msgctxt "founding application review"
 msgid "{valueCount} value items. Aim: {0}"
 msgstr "{valueCount} value items. Aim: {0}"
 
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "From their price ask, at {pct}% commitment."
+msgstr "From their price ask, at {pct}% commitment."
+
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "review page"
 msgid "Review"
@@ -12561,6 +12627,11 @@ msgstr "Bring it to somebody outside the village, at {outsideOrganisation}. Memb
 msgctxt "founding application kept"
 msgid "We have your application. Our confirmation email didn't go out, so we'll write to you at {sentTo} soon."
 msgstr "We have your application. Our confirmation email didn't go out, so we'll write to you at {sentTo} soon."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal"
+msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+msgstr "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
@@ -14896,9 +14967,9 @@ msgid "The check could not run. Reload and try again."
 msgstr "The check could not run. Reload and try again."
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the full role's ceiling"
-msgid "Up to {full} for the full role*"
-msgstr "Up to {full} for the full role*"
+#~ msgctxt "role card rewards: the full role's ceiling"
+#~ msgid "Up to {full} for the full role*"
+#~ msgstr "Up to {full} for the full role*"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -15309,6 +15380,12 @@ msgstr "How much you give"
 #~ msgctxt "open proposal: commitment footnote"
 #~ msgid "The contract sets the pay, at or under what the role pays at their commitment."
 #~ msgstr "The contract sets the pay, at or under what the role pays at their commitment."
+
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap on a proposal"
+msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+msgstr "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -16034,6 +16111,11 @@ msgctxt "founding application first day"
 msgid "Your first conversation"
 msgstr "Your first conversation"
 
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "A Treasurer confirms each payment drawn from it."
+msgstr "A Treasurer confirms each payment drawn from it."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "You said you will be there."
@@ -16366,6 +16448,11 @@ msgstr "One proposal carries all your picks, with the terms each role offers."
 msgctxt "circle hearth, quiet"
 msgid "No roles sit at this hearth yet. The fire is lit for the first."
 msgstr "No roles sit at this hearth yet. The fire is lit for the first."
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: more than one role"
+msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
+msgstr "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, linked circles"

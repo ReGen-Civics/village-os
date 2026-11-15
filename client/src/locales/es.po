@@ -863,6 +863,12 @@ msgctxt "applicant's application status, terms"
 msgid "What you answered"
 msgstr "Lo que respondiste"
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "They chose to negotiate on the first call. This is the suggested price at {pct}% commitment until a price is agreed."
+msgstr "Eligió negociar en la primera llamada. Es el precio sugerido con un compromiso del {pct}% hasta que se acuerde un precio."
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "Funding rounds"
@@ -984,6 +990,12 @@ msgstr "(lista cuando {doneWhen})"
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We are waiting for your answer."
 msgstr "Estamos esperando tu respuesta."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Pay the contract will record"
+msgstr "La paga que registrará el contrato"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Apply for these {pickCount} roles"
@@ -1124,6 +1136,12 @@ msgstr "¿Qué cambiarías, y por qué?"
 msgctxt "role draft, only the founding roles are open"
 msgid "see the founding team."
 msgstr "mira el equipo fundador."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
+msgstr "Este rol no tiene precio publicado, así que al adoptarlo el contrato no registra paga. La escribe un Tesorero."
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -1282,6 +1300,12 @@ msgstr "Únete al equipo fundador"
 msgctxt "the value of a setting once changed"
 msgid "After"
 msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "The suggested price: the listed price at {pct}% commitment."
+msgstr "El precio sugerido: el precio publicado con un compromiso del {pct}%."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone and its card shows here while you walk."
@@ -1790,107 +1814,6 @@ msgstr ""
 msgctxt "price popup: above the full band"
 msgid "That's above {0}, the most for the full role. You can still propose it."
 msgstr "Eso supera {0}, lo máximo para el rol completo. Aun así puedes proponerlo."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap on a proposal"
-msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
-msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap before a commitment is chosen"
-msgid "Proposals for the full role go up to {0}."
-msgstr "Las propuestas para el rol completo llegan hasta {0}."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#. placeholder {1}: priced(cap)
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup: above the cap"
-msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
-msgstr "Eso supera {0}, lo máximo que puede pedir una propuesta al {capPct}%: el {ROLE_PAY_CAP_PCT}% del precio sugerido. Elige {1} o menos."
-
-# needs-native-review: new words, 15 Nov 2026
-#. placeholder {0}: priced(cap)
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review: the cap on a proposal"
-msgid "Proposals up to {0}"
-msgstr "Propuestas de hasta {0}"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
-msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
-msgstr "Propuestas de hasta {capFull} para el rol completo, el {ROLE_PAY_CAP_PCT}% del precio publicado. Al {at}%, hasta {capShare}."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal"
-msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
-msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: the contract's pay"
-msgid "Pay the contract will record"
-msgstr "La paga que registrará el contrato"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: the contract's pay"
-msgid "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it."
-msgstr "Este rol no tiene precio publicado, así que al adoptarlo el contrato no registra paga. La escribe un Tesorero."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: where the contract's pay comes from"
-msgid "From their price ask, at {pct}% commitment."
-msgstr "De su precio propuesto, con un compromiso del {pct}%."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: where the contract's pay comes from"
-msgid "They chose to negotiate on the first call. This is the suggested price at {pct}% commitment until a price is agreed."
-msgstr "Eligió negociar en la primera llamada. Es el precio sugerido con un compromiso del {pct}% hasta que se acuerde un precio."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: where the contract's pay comes from"
-msgid "The suggested price: the listed price at {pct}% commitment."
-msgstr "El precio sugerido: el precio publicado con un compromiso del {pct}%."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: the contract's pay"
-msgid "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
-msgstr "Su propuesta superaba el {ROLE_PAY_CAP_PCT}% del precio publicado, así que se queda en ese tope."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/openProposal/ContractPrice.tsx
-msgctxt "open proposal: the contract's pay"
-msgid "A Treasurer confirms each payment drawn from it."
-msgstr "Un Tesorero confirma cada pago que salga de ella."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: more than one role"
-msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
-msgstr "¿Postulas a más de un rol? Envía una solicitud para cada uno. Cada uno se paga según el compromiso que le des, y los precios se suman: dos roles al 50% pagan como un rol completo."
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the full role's listed price"
-msgid "Listed price: {full} for the full role*"
-msgstr "Precio publicado: {full} por el rol completo*"
-
-# needs-native-review: new words, 15 Nov 2026
-#: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the one footnote"
-msgid "*At 100% commitment."
-msgstr "*Con un compromiso del 100%."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
@@ -3792,6 +3715,13 @@ msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. To
 msgid "How this serves the village's purpose, in one line"
 msgstr ""
 
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap before a commitment is chosen"
+msgid "Proposals for the full role go up to {0}."
+msgstr "Las propuestas para el rol completo llegan hasta {0}."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
 msgid "Talk to us instead"
@@ -3834,6 +3764,12 @@ msgstr ""
 msgctxt "founding application, later role note"
 msgid "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
 msgstr "Este rol abre después del equipo fundador. Puedes postularte desde ya. Primero estamos formando el equipo fundador, así que puede pasar un tiempo antes de que te respondamos."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
+msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+msgstr "Propuestas de hasta {capFull} para el rol completo, el {ROLE_PAY_CAP_PCT}% del precio publicado. Al {at}%, hasta {capShare}."
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: label beside the full moon"
@@ -4056,6 +3992,7 @@ msgctxt "role pay"
 msgid "Show the suggestion"
 msgstr ""
 
+#: client/src/components/openProposal/ContractPrice.tsx
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "an amount for each month"
 msgid "{money} a month"
@@ -4169,6 +4106,12 @@ msgstr ""
 msgctxt "pricing desk"
 msgid "Confirm the hours first"
 msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the one footnote"
+msgid "*At 100% commitment."
+msgstr "*Con un compromiso del 100%."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading on the change requests page"
@@ -7045,6 +6988,13 @@ msgstr ""
 msgid "Members sign in here to propose the roles they will hold this moon."
 msgstr "Los miembros inician sesión aquí para proponer los roles que tendrán esta luna."
 
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review: the cap on a proposal"
+msgid "Proposals up to {0}"
+msgstr "Propuestas de hasta {0}"
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Leaving out {circle} also leaves out its role."
@@ -8512,6 +8462,14 @@ msgstr "Para el {nextDate}."
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "The count is being made. Open this page again in a moment."
 msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#. placeholder {1}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the cap"
+msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+msgstr "Eso supera {0}, lo máximo que puede pedir una propuesta al {capPct}%: el {ROLE_PAY_CAP_PCT}% del precio sugerido. Elige {1} o menos."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "This file cannot be loaded as it is:"
@@ -10330,6 +10288,7 @@ msgctxt "admin quest safety"
 msgid "Minimum age"
 msgstr ""
 
+#: client/src/components/openProposal/ContractPrice.tsx
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "an amount for each moon"
 msgid "{money} a moon"
@@ -10591,6 +10550,12 @@ msgstr "Cuando te unes hoy a la reunión de un círculo, una luciérnaga se suma
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Some could not be approved"
 msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the full role's listed price"
+msgid "Listed price: {full} for the full role*"
+msgstr "Precio publicado: {full} por el rol completo*"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -11436,9 +11401,9 @@ msgid "The Governance Canvas asks a group twelve questions about how it works to
 msgstr ""
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the one footnote"
-msgid "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
-msgstr "*Al 100% de compromiso. Tu primer mes empieza más bajo y sigue lo que entregas. Las condiciones de participación y créditos aún se están escribiendo y están sujetas a revisión legal."
+#~ msgctxt "role card rewards: the one footnote"
+#~ msgid "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
+#~ msgstr "*Al 100% de compromiso. Tu primer mes empieza más bajo y sigue lo que entregas. Las condiciones de participación y créditos aún se están escribiendo y están sujetas a revisión legal."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
@@ -11566,6 +11531,12 @@ msgstr ""
 msgctxt "decline the model consent line"
 msgid "Not now"
 msgstr "Ahora no"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "Their ask was above {ROLE_PAY_CAP_PCT}% of the listed price, so it is held there."
+msgstr "Su propuesta superaba el {ROLE_PAY_CAP_PCT}% del precio publicado, así que se queda en ese tope."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, what we tend"
@@ -12480,6 +12451,12 @@ msgctxt "founding application review"
 msgid "{valueCount} value items. Aim: {0}"
 msgstr "{valueCount} aportes de valor. Objetivo: {0}"
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "From their price ask, at {pct}% commitment."
+msgstr "De su precio propuesto, con un compromiso del {pct}%."
+
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "review page"
 msgid "Review"
@@ -12650,6 +12627,12 @@ msgstr ""
 msgctxt "founding application kept"
 msgid "We have your application. Our confirmation email didn't go out, so we'll write to you at {sentTo} soon."
 msgstr "Recibimos tu solicitud. Nuestro correo de confirmación no salió, así que te escribiremos pronto a {sentTo}."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the cap on a proposal"
+msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
@@ -14983,9 +14966,9 @@ msgid "The check could not run. Reload and try again."
 msgstr ""
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the full role's ceiling"
-msgid "Up to {full} for the full role*"
-msgstr "Hasta {full} por el rol completo*"
+#~ msgctxt "role card rewards: the full role's ceiling"
+#~ msgid "Up to {full} for the full role*"
+#~ msgstr "Hasta {full} por el rol completo*"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -15398,6 +15381,13 @@ msgstr "Cuánto das"
 #~ msgctxt "open proposal: commitment footnote"
 #~ msgid "The contract sets the pay, at or under what the role pays at their commitment."
 #~ msgstr ""
+
+# needs-native-review: new words, 15 Nov 2026
+#. placeholder {0}: priced(cap)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the cap on a proposal"
+msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -16125,6 +16115,12 @@ msgctxt "founding application first day"
 msgid "Your first conversation"
 msgstr "Tu primera conversación"
 
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay"
+msgid "A Treasurer confirms each payment drawn from it."
+msgstr "Un Tesorero confirma cada pago que salga de ella."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "You said you will be there."
@@ -16459,6 +16455,12 @@ msgstr "Una sola propuesta lleva todas tus elecciones, con las condiciones que o
 msgctxt "circle hearth, quiet"
 msgid "No roles sit at this hearth yet. The fire is lit for the first."
 msgstr "Todavía no hay roles en este fogón. El fuego está encendido para el primero."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: more than one role"
+msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
+msgstr "¿Postulas a más de un rol? Envía una solicitud para cada uno. Cada uno se paga según el compromiso que le des, y los precios se suman: dos roles al 50% pagan como un rol completo."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, linked circles"
