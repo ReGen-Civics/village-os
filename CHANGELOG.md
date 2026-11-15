@@ -40,6 +40,31 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.3 (2026-11-14)
+
+### What changed for your village
+
+- **A role can be shared, and proposals can be for part of it.** Each role can set a minimum commitment and a target total. The card shows the pay for the full role and what it pays at a given commitment; the application form offers commitments from the minimum to 100% and shows a live "up to" amount; applicants may name a monthly ask or choose to negotiate on the first call. The founding team shows how much of each role is held, and a role can be held beyond 100% when several people share it.
+- **The commitment split can scale pay, with the Treasurer's confirmation.** When a member's roles are paid through separate applications, each role's pay follows its share of their time, and nothing is paid until the Treasurer confirms it at the End of Moon review. Roles paid as one are unchanged.
+- **A page recovers by itself after an update.** A page left open across a release reloads once to fetch the new version, and shows a reload card instead of a blank page if that fails. Anyone can open `/reset` to clear the site from their device; drafts are kept.
+
+### What you must do
+
+Nothing. A role with no minimum or target set behaves exactly as before.
+
+### Does it touch your data
+
+This release adds 1 database migration(s). Each runs by itself when the new image starts, before the village answers anyone. Before the image is published, release.yml checks that the previous release can still run over the schema they produce (docs/RELEASING.md):
+
+- `0385_role_commitment_range.sql`
+
+### Merged pull requests
+
+- #1248 Batch 161 (1.3.3): pay split, shared-role commitment range (0385), stale-page recovery
+- #1241 Tests: wait for late-rendered UI in two flaky tests (moon review payer, steward thumb reach)
+
+---
+
 ## 1.3.2 (2026-11-14)
 
 ### What changed for your village
