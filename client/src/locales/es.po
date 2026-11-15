@@ -6039,6 +6039,54 @@ msgstr "La meta de la temporada a la que sirve"
 msgctxt "founding application compensation"
 msgid "To be decided in the onboarding process."
 msgstr "Por decidir en el proceso de incorporación."
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line"
+msgid "Of this, {list} by default; we settle the split together."
+msgstr "De esto, {list} por defecto; acordamos el reparto juntos."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, cash"
+msgid "{n}% is paid in cash"
+msgstr "el {n}% se paga en efectivo"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, Earned Equity"
+msgid "{n}% is paid in Earned Equity"
+msgstr "el {n}% se paga en Participación Ganada"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: the first part, credits"
+msgid "{n}% is paid in credits"
+msgstr "el {n}% se paga en créditos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: a later part, Earned Equity"
+msgid "{n}% in Earned Equity"
+msgstr "el {n}% en Participación Ganada"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: a later part, credits"
+msgid "{n}% in credits"
+msgstr "el {n}% en créditos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: two parts"
+msgid "{a} and {b}"
+msgstr "{a} y {b}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application split line: three parts"
+msgid "{a}, {b} and {c}"
+msgstr "{a}, {b} y {c}"
+
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "That is not JSON the platform can read: {problem}"
