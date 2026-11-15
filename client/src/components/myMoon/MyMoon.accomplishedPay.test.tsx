@@ -6,7 +6,7 @@
  */
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { ACCOMPLISHED_PAY_WORDS } from "@shared/accomplishedPay";
+import { ACCOMPLISHED_PAY_WORDS } from "./accomplishedPayWords";
 import { MyMoonView } from "./MyMoon";
 import { myMoon } from "./myMoon.fixture";
 
@@ -17,10 +17,10 @@ describe("How pay works, under the My moon header", () => {
     render(<MyMoonView data={myMoon()} villageRoles={[]} onCycle={() => {}} reload={async () => null} />);
     const box = screen.getByTestId("accomplished-pay");
     const words = box.textContent ?? "";
-    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.title);
-    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.goals);
-    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.review);
-    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.confirm);
+    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.title.message);
+    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.goals.message);
+    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.review.message);
+    expect(words).toContain(ACCOMPLISHED_PAY_WORDS.confirm.message);
   });
 
   it("shows for a member with no roles yet too, so nobody starts a moon without it", () => {
@@ -31,7 +31,7 @@ describe("How pay works, under the My moon header", () => {
 
 describe("The words themselves", () => {
   it("say goals guide us, pay follows what we accomplish, it can go up or down, and nothing pays until the Treasurer confirms", () => {
-    const all = Object.values(ACCOMPLISHED_PAY_WORDS).join(" ");
+    const all = Object.values(ACCOMPLISHED_PAY_WORDS).map((m) => m.message).join(" ");
     expect(all).toContain("truly accomplish");
     expect(all).toContain("outside your roles");
     expect(all).toContain("up or down");

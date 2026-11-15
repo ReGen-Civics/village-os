@@ -20,7 +20,7 @@ import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { splitDomain, splitLine } from "@shared/rolePieces";
-import { commitmentRowWords } from "@shared/roleRewardWords";
+import { commitmentRowWords } from "./rewardWords";
 import { EYEBROW, HINT } from "@/components/journey/look";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import RoleCardParams from "@/components/power/RoleCardParams";
@@ -111,7 +111,7 @@ export interface FoundingRoleCardProps {
 }
 
 export default function FoundingRoleCard(p: FoundingRoleCardProps) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const { seat, lifted } = p;
   const Title = lifted ? "h2" : "h3";
   const SubH = lifted ? "h4" : "h5";
@@ -124,7 +124,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
   const facts: Array<{ icon: LucideIcon; label: string; value: string }> = [
     // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
-    { icon: Clock, label: W.timeCommitment, value: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(seat.card.commitmentMin) : p.commitmentPct !== null ? `${p.commitmentPct}%` : (p.commitment ?? "") },
+    { icon: Clock, label: W.timeCommitment, value: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : p.commitmentPct !== null ? `${p.commitmentPct}%` : (p.commitment ?? "") },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") },
     { icon: MapPin, label: t({ message: "Where", context: "founding card fact" }), value: row("where") },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },

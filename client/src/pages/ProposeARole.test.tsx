@@ -135,7 +135,7 @@ describe("one role per application", () => {
     window.history.pushState({}, "", "/propose-a-role");
     serve({ ...FORM, roles: [FORM.roles[0], { ...FORM.roles[1], opensLater: true }] });
     render(<ProposeARole />);
-    const first = await screen.findByRole("region", { name: "Hiring first: the founding team" });
+    const first = await screen.findByRole("region", { name: "Filling first: the founding team" });
     const later = screen.getByRole("region", { name: "Opening next" });
     expect(within(first).getAllByRole("button").map((d) => d.getAttribute("data-role"))).toEqual(["r-gate"]);
     expect(within(later).getAllByRole("button").map((d) => d.getAttribute("data-role"))).toEqual(["r-host"]);
@@ -285,7 +285,7 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
     expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+131% on the suggested price");
-    expect(dialog.querySelector("[data-price-above-band]")?.textContent).toContain("above the full role's band of $13,000 a month");
+    expect(dialog.querySelector("[data-price-above-band]")?.textContent).toContain("That's above $13,000 a month, the most for the full role.");
     expect(dialog.querySelector("[data-price-nudge]")?.textContent).toBe("You suggested 1 change to the role. If it changes the work, say how it changes the price.");
     fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
     fireEvent.click(within(dialog).getByText("Use this price"));

@@ -162,7 +162,7 @@ describe("Join the founding team", () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const line = section.querySelector("[data-hiring-first]") as HTMLElement;
-    expect(line.textContent).toMatch(/We are hiring these roles first\. More roles open after them\./);
+    expect(line.textContent).toMatch(/We are filling these roles first\. More roles open after them\./);
     expect(within(line).getByRole("link", { name: "See the roles opening next" }).getAttribute("href")).toBe("#opening-next");
     const next = await screen.findByRole("region", { name: "More roles, opening next" });
     expect(next.id).toBe("opening-next");
@@ -179,7 +179,7 @@ describe("Join the founding team", () => {
     org.roles = org.roles.slice(0, 2);
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
-    expect(section.querySelector("[data-hiring-first]")?.textContent).toMatch(/We are hiring these roles first/);
+    expect(section.querySelector("[data-hiring-first]")?.textContent).toMatch(/We are filling these roles first/);
     expect(within(section).queryByRole("link", { name: "See the roles opening next" })).toBeNull();
     expect(screen.queryByRole("region", { name: "More roles, opening next" })).toBeNull();
   });
@@ -231,7 +231,11 @@ describe("Join the founding team", () => {
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. To be decided in the onboarding process.");
     expect(within(pay).getByTestId("pay-at-risk").textContent).toBe(VILLAGE_PAY.atRisk);
-    expect(within(pay).getByTestId("pay-note").textContent).toBe(VILLAGE_PAY.note);
+    // One footnote: the ceiling's own, so the village's note is not drawn again (copy sweep, 15 Nov 2026).
+    expect(within(pay).queryByTestId("pay-note")).toBeNull();
+    expect(within(pay).getByTestId("pay-footnote")).toBeTruthy();
+    // The split is said once: the tiles show it, and its words stay for screen readers.
+    expect(within(pay).getByTestId("pay-split").querySelector(".sr-only")?.textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. ");
     // RANGES AND MINIMUMS STAY HIDDEN, even when an older payload still carries one.
     expect(card.textContent).not.toContain("6,750");
     expect(card.textContent).not.toContain("6750");
@@ -456,9 +460,13 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Up to $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
-    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, this role pays up to $4,500 a month.");
-    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*The full band, at 100% commitment. Your first moon starts lower and is tied to what you deliver.");
-    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("30% to 100% (100% is the whole role)");
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.");
+    // One footnote (copy sweep): the village's own note is not drawn beside it.
+    expect(within(piece).queryByTestId("pay-note")).toBeNull();
+    expect(piece.textContent).not.toContain("full band");
+    expect(piece.textContent).not.toContain("value in, value out");
+    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("Full or part commitment (from 30%)");
   });
   it("a role offered whole says nothing about sharing (control)", async () => {
     const card = await open();

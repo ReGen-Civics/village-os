@@ -10,6 +10,7 @@ import { useLingui } from "@lingui/react/macro";
 import { askPeriod, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
+import { perPeriod } from "@/components/roleCard/rewardWords";
 
 export interface CommitmentReviewData {
   pct: number | null;
@@ -20,7 +21,9 @@ export interface CommitmentReviewData {
 }
 
 export default function CommitmentReview({ data, roles }: { data: CommitmentReviewData | null | undefined; roles: Array<{ id: string; name: string | null }> }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
+  const money = (n: number, currency: string) => moneyWords(n, currency, i18n.locale);
+  const priced = (n: number, currency: string, per: PayCeiling["per"]) => perPeriod(i18n, money(n, currency), per);
   if (!data) return null;
   const several = data.roles.length > 1;
   const askWords = !data.ask
@@ -42,7 +45,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their price", context: "open proposal: the pay ask" })}</dt>
           <dd className="mt-0.5 text-foreground" data-pay-ask-shown="">
             {askWords ??
-              (data.ask?.kind === "amount" ? t({ message: `${moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")} a ${askPeriod(data.ask)}`, context: "open proposal: the pay ask, an amount" }) : "")}
+              (data.ask?.kind === "amount" ? priced(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD", askPeriod(data.ask)) : "")}
           </dd>
         </div>
       </dl>
@@ -67,7 +70,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
               {several && <p className="font-semibold">{name}</p>}
               {r.full && r.atCommitment !== null && (
                 <p data-commitment-ceiling="">
-                  {t({ message: `At ${data.pct}%, the role pays up to ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per} (the full role: ${moneyWords(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
+                  {t({ message: `At ${data.pct}%, the role pays up to ${priced(r.atCommitment, r.full.currency, r.full.per)} (the full role: ${money(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
                 </p>
               )}
               {(() => {
@@ -78,7 +81,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
                 const diff = priceDifferencePct(r.atCommitment, ask.monthly);
                 return (
                   <p data-price-compare="">
-                    {t({ message: `Suggested ${moneyWords(r.atCommitment, r.full.currency)} a ${r.full.per}; they propose ${moneyWords(ask.monthly, r.full.currency)}${diff !== null ? ` (${signedPct(diff)})` : ""}.${ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""}`, context: "open proposal: suggested and proposed price" })}
+                    {t({ message: `Suggested ${priced(r.atCommitment, r.full.currency, r.full.per)}; they propose ${money(ask.monthly, r.full.currency)}${diff !== null ? ` (${signedPct(diff)})` : ""}.${ask.monthly > r.full.amount ? ` That is above ${money(r.full.amount, r.full.currency)}, the most for the full role.` : ""}`, context: "open proposal: suggested and proposed price" })}
                   </p>
                 );
               })()}

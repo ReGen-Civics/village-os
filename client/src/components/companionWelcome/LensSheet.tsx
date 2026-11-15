@@ -194,7 +194,7 @@ export function LensSheet({
             </p>
           ) : null}
           <p className="m-0 text-[11.5px] text-muted-foreground">
-            <Trans context="companion welcome">Worked out on this device. Your birth date, time and place are never sent or kept; only the Moon's sign and nakshatra are.</Trans>
+            <Trans context="companion welcome">Worked out on this device. Your birth date, time and place are never sent or kept. Only your Moon sign and nakshatra are saved.</Trans>
           </p>
         </>
       ) : null}
@@ -244,7 +244,7 @@ export function LensSheet({
             <textarea className={`${INPUT} min-h-20 py-2`} maxLength={400} value={own} placeholder={t({ message: `Night owl. Short messages. Love metaphors.`, context: "companion welcome" })} onChange={(e) => setOwn(e.target.value)} />
             <MicButton onText={(chunk) => setOwn((v) => `${v}${v && !v.endsWith(" ") ? " " : ""}${chunk}`.slice(0, 400))} className={MIC_CLASS} />
           </span>
-          <span className="text-[11.5px]">{MIC_LINE}</span>
+          <span className="text-[11.5px]">{t(MIC_LINE)}</span>
         </label>
       ) : null}
 

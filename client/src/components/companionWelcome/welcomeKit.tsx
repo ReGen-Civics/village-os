@@ -9,8 +9,9 @@ import { PetDrawing } from "@/components/profileDash/CompanionPet";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import type { PetKind, PetTint } from "@shared/companionItems";
 import type { Character } from "@shared/companionPersona";
+import { msg } from "@lingui/core/macro";
 
-export const MIC_LINE = "The mic uses your browser's speech service (Google, Apple or Microsoft) to turn speech into text. Typing always works.";
+export const MIC_LINE = msg({ message: "The mic uses your browser's speech service (Google, Apple or Microsoft) to turn speech into text. Typing always works.", context: "companion welcome, the mic" });
 
 /** The egg's colour and the hatched pet's body follow the character (the Hatchery mockup). */
 export const TINT_OF: Record<Character, PetTint> = { sidekick: "gold", elder: "lilac", plain: "leaf", poet: "lilac", coach: "leaf", trickster: "rose" };
