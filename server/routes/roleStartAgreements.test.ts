@@ -549,7 +549,9 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
       const queued = await q("SELECT type, status FROM submissions WHERE user_id = ?", [who.id]);
       expect(queued).toEqual([{ type: "membership-508", status: "new" }]);
       expect(await q("SELECT t.id FROM alignment_texts t JOIN alignment_parties p ON p.text_id = t.id WHERE p.user_id = ? AND t.subject_type = 'membership'", [who.id])).toHaveLength(1);
-      // A second proposal aligned with the same words carries nothing more and queues nothing more.
+      // A second proposal aligned with the same words carries nothing more and queues nothing more. The first is closed
+      // before it: one application per role per address while it waits (shared/applicationAgain.ts).
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [who.email]);
       await proposeAndConfirm(who.email, true);
       expect(await q("SELECT id FROM submissions WHERE user_id = ?", [who.id])).toHaveLength(1);
     });

@@ -442,6 +442,8 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     });
 
     it("a holder of the power reads none of their own proposal's links or files", async () => {
+      // One application per role per address while it waits (shared/applicationAgain.ts): close this address's earlier ones first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [HAS.email]);
       state.powerHolders = [FOUNDER.id, HAS.id];
       const id = await withFiles(HAS.email);
       const own = await page(id, HAS.id);
@@ -591,6 +593,8 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     });
 
     it("ABOUT YOU: a holder of the power reads none of their own proposal's references", async () => {
+      // One application per role per address while it waits (shared/applicationAgain.ts): close this address's earlier ones first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [HAS.email]);
       state.powerHolders = [FOUNDER.id, HAS.id];
       const id = await withReferences(HAS.email);
       expect((await page(id, HAS.id)).body.proposal.aboutYou).toBeNull();

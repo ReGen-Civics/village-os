@@ -656,6 +656,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
     });
 
     it("an address with an account gets the same update on its profile, once", async () => {
+      // One application per role per address while it waits (shared/applicationAgain.ts): close this address's earlier ones first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [APPLICANT.email]);
       const { id } = await confirmed(APPLICANT.email);
       state.notices.length = 0;
       await call("POST", `/api/governance/applications/${id}/first-reply`, {}, FOUNDER.id);
