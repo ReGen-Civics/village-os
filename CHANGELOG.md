@@ -40,6 +40,28 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.9 (2026-11-15)
+
+### What changed for your village
+
+- **Roles paid separately no longer have the commitment taken off twice.** When someone's roles are paid through separate agreements, the commitment split now scales each agreement against the commitment it was priced at, so the commitment counts once. Two roles each priced at 50% for $6,500, held by someone giving 100% split evenly, now pay $13,000 in all instead of $6,500.
+- **The Treasurer sees more.** Each scaled line at End of Moon now shows the time given and the commitment it was priced at, next to the base, share and scaled amount. Nothing pays until a Treasurer confirms it.
+- **Still safe when data is missing.** No split, a split that doesn't add to 100, no total commitment, or an agreement with no priced commitment all leave pay as the agreement states it.
+
+### What you must do
+
+Nothing. Treasurers: there is no cap, so a role priced at a small commitment that is given much more time pays more. Check those lines at End of Moon.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1296 Batch 172 (1.3.9): pay split applies the commitment once (#1295)
+
+---
+
 ## 1.3.8 (2026-11-15)
 
 ### What changed for your village
