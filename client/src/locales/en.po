@@ -280,6 +280,11 @@ msgctxt "landing, the ways in heading when the paths are hidden"
 msgid "Ways in"
 msgstr "Ways in"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the first month"
+msgid "Your first month starts lower and is tied to what you deliver."
+msgstr "Your first month starts lower and is tied to what you deliver."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "The village has not set its goals for this season yet. You can still propose: say in your aim what you would bring."
 msgstr "The village has not set its goals for this season yet. You can still propose: say in your aim what you would bring."
@@ -638,9 +643,9 @@ msgid "{a} and older"
 msgstr "{a} and older"
 
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: the pay ask"
-msgid "Their ask"
-msgstr "Their ask"
+#~ msgctxt "open proposal: the pay ask"
+#~ msgid "Their ask"
+#~ msgstr "Their ask"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: message field"
@@ -2202,9 +2207,14 @@ msgid "{beyondCount} roles need more time than you have right now."
 msgstr "{beyondCount} roles need more time than you have right now."
 
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "What you would ask (optional)"
-msgstr "What you would ask (optional)"
+#~ msgctxt "terms: the pay ask"
+#~ msgid "What you would ask (optional)"
+#~ msgstr "What you would ask (optional)"
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask"
+msgid "Choose your commitment to see a suggested price."
+msgstr "Choose your commitment to see a suggested price."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -2527,6 +2537,13 @@ msgstr "Add to mine"
 msgid "This disagreement stays in the round's record for everyone to see."
 msgstr "This disagreement stays in the round's record for everyone to see."
 
+#. placeholder {0}: money(value.monthly)
+#. placeholder {1}: suggested ? ` (${signedPct(priceDifferencePct(suggested, value.monthly) ?? 0)} on the suggestion)` : ""
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask summary"
+msgid "You propose {0} a {per}{1}."
+msgstr "You propose {0} a {per}{1}."
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Make the role"
@@ -2634,6 +2651,12 @@ msgstr "The confidentiality agreement is not promised"
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgid "That link didn't work"
 msgstr "That link didn't work"
+
+#. placeholder {0}: data.suggestionCount
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: suggestions count, several"
+msgid "They suggested {0} changes to the role card."
+msgstr "They suggested {0} changes to the role card."
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
@@ -2761,6 +2784,12 @@ msgstr "Delete"
 msgctxt "approval inbox"
 msgid "Decline"
 msgstr "Decline"
+
+#. placeholder {0}: money(suggested)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "We suggest {0} a {per} at {pct}%. As a contractor you can propose more or less. The contract decides the amount."
+msgstr "We suggest {0} a {per} at {pct}%. As a contractor you can propose more or less. The contract decides the amount."
 
 #. placeholder {0}: CARD_LIMITS.movesPerRole
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -2966,6 +2995,11 @@ msgstr "Badges a member needs"
 msgctxt "proposed changes"
 msgid "Nothing here is live until you accept it. Edit any proposed text in place; your edits are saved as you type. Accepting runs each change through its own page, as you."
 msgstr "Nothing here is live until you accept it. Edit any proposed text in place; your edits are saved as you type. Accepting runs each change through its own page, as you."
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: commitment footnote"
+msgid "The contract sets the pay. As a contractor they may propose more or less than the suggested price."
+msgstr "The contract sets the pay. As a contractor they may propose more or less than the suggested price."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
@@ -3794,6 +3828,11 @@ msgctxt "sera answers"
 msgid "Start from ours instead"
 msgstr "Start from ours instead"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask summary"
+msgid "Negotiate on the first call if chosen."
+msgstr "Negotiate on the first call if chosen."
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Send for signing"
@@ -4225,6 +4264,12 @@ msgstr "Edit"
 msgid "The two of us talk it through, in person. In the room: the two of us."
 msgstr "The two of us talk it through, in person. In the room: the two of us."
 
+#. placeholder {0}: money(ceiling.amount)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the full band"
+msgid "That's above the full role's band of {0} a {per}. You can still propose it, and the contract decides."
+msgstr "That's above the full role's band of {0} a {per}. You can still propose it, and the contract decides."
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application first day"
 msgid "Your first cycle"
@@ -4536,6 +4581,11 @@ msgstr "They have not promised the confidentiality agreement."
 msgid "No quest reached the ballot in this round."
 msgstr "No quest reached the ballot in this round."
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Cancel"
+msgstr "Cancel"
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
@@ -4580,10 +4630,15 @@ msgctxt "sera changes"
 msgid "{agent} still didn't answer at {askedAt}."
 msgstr "{agent} still didn't answer at {askedAt}."
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup nudge, one"
+msgid "You suggested 1 change to the role. If it changes the work, say how it changes the price."
+msgstr "You suggested 1 change to the role. If it changes the work, say how it changes the price."
+
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "Leave it blank"
-msgstr "Leave it blank"
+#~ msgctxt "terms: the pay ask"
+#~ msgid "Leave it blank"
+#~ msgstr "Leave it blank"
 
 #: client/src/components/TreasurySync.tsx
 msgid "One of your numbers differs between sources. The Treasurer has been shown it."
@@ -5460,6 +5515,11 @@ msgctxt "voice field: opens a conversation with your guide about this box"
 msgid "Talk it out"
 msgstr "Talk it out"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup nudge, several"
+msgid "You suggested {suggestionCount} changes to the role. If they change the work, say how they change the price."
+msgstr "You suggested {suggestionCount} changes to the role. If they change the work, say how they change the price."
+
 #. placeholder {0}: problems.length
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application check"
@@ -5954,6 +6014,11 @@ msgctxt "change request note kind"
 msgid "Answer"
 msgstr "Answer"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: open the popup"
+msgid "Adjust the price"
+msgstr "Adjust the price"
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Remove the row \"{subject}\" from the Decision Matrix? Everyone in the village stops seeing it."
 msgstr "Remove the row \"{subject}\" from the Decision Matrix? Everyone in the village stops seeing it."
@@ -6192,9 +6257,9 @@ msgid "Send the lantern"
 msgstr "Send the lantern"
 
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "Either way, the contract sets the amount, at or under what the role pays at your commitment."
-msgstr "Either way, the contract sets the amount, at or under what the role pays at your commitment."
+#~ msgctxt "terms: the pay ask"
+#~ msgid "Either way, the contract sets the amount, at or under what the role pays at your commitment."
+#~ msgstr "Either way, the contract sets the amount, at or under what the role pays at your commitment."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value of a setting today"
@@ -6378,9 +6443,9 @@ msgid "Open this circle's card"
 msgstr "Open this circle's card"
 
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "A monthly amount"
-msgstr "A monthly amount"
+#~ msgctxt "terms: the pay ask"
+#~ msgid "A monthly amount"
+#~ msgstr "A monthly amount"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stone"
@@ -6463,6 +6528,16 @@ msgstr "Standing example"
 msgctxt "role discover admin"
 msgid "Loading…"
 msgstr "Loading…"
+
+#. placeholder {0}: moneyWords(r.atCommitment, r.full.currency)
+#. placeholder {1}: r.full.per
+#. placeholder {2}: moneyWords(data.ask.monthly, r.full.currency)
+#. placeholder {3}: signedPct(diff ?? 0)
+#. placeholder {4}: data.ask.monthly > r.full.amount ? ` That is above the full role's band of ${moneyWords(r.full.amount, r.full.currency)}.` : ""
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: suggested and proposed price"
+msgid "Suggested {0} a {1}; they propose {2} ({3}).{4}"
+msgstr "Suggested {0} a {1}; they propose {2} ({3}).{4}"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Adopted on {adoptedDay} by the village's vote."
@@ -7020,6 +7095,11 @@ msgstr "Paste the paths as JSON, in the shape the list saves: a paths list of me
 #~ msgid "No open quests grow {goalName} yet"
 #~ msgstr "No open quests grow {goalName} yet"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Use this price"
+msgstr "Use this price"
+
 #: client/src/components/admin/QuestSafetyEditor.tsx
 #~ msgctxt "admin quest safety"
 #~ msgid "A physical quest asks 18 unless you set a minimum. It can ask 16 for light work beside a named adult, never lower, and never for machines or heights."
@@ -7048,6 +7128,11 @@ msgstr "Changes show in gold. Saving updates the role at once and is kept in its
 msgctxt "save bar, which item failed"
 msgid "Role {name}"
 msgstr "Role {name}"
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup title"
+msgid "Your price"
+msgstr "Your price"
 
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "voice field purpose: objection ruling note"
@@ -7132,6 +7217,12 @@ msgstr "You are signed in, so a block can also open the words the village keeps 
 msgctxt "quest page: link to the board filtered to one season goal"
 msgid "See all the open work for this goal"
 msgstr "See all the open work for this goal"
+
+#. placeholder {0}: ceiling.currency
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Your monthly price, in {0}"
+msgstr "Your monthly price, in {0}"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page"
@@ -7444,6 +7535,11 @@ msgstr "Your allowance to give opens as you walk the {ladder}."
 #: client/src/components/governance/GoalsList.tsx
 msgid "Plant the first three beds"
 msgstr "Plant the first three beds"
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask heading"
+msgid "Your price"
+msgstr "Your price"
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft next"
@@ -8237,9 +8333,9 @@ msgid "Untick all"
 msgstr "Untick all"
 
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "Negotiate on the first call if chosen"
-msgstr "Negotiate on the first call if chosen"
+#~ msgctxt "terms: the pay ask"
+#~ msgid "Negotiate on the first call if chosen"
+#~ msgstr "Negotiate on the first call if chosen"
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 msgctxt "role draft discover"
@@ -8412,6 +8508,11 @@ msgctxt "week strip, the day that is today"
 msgid "today"
 msgstr "today"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup choice"
+msgid "Negotiate on the first call if chosen"
+msgstr "Negotiate on the first call if chosen"
+
 #: client/src/i18n/LanguagePicker.tsx
 msgctxt "language picker"
 msgid "Close"
@@ -8464,6 +8565,11 @@ msgstr "Sera's version and this role say the same."
 #: client/src/components/modules/SuggestDial.tsx
 msgid "The village votes on this change by itself."
 msgstr "The village votes on this change by itself."
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask"
+msgid "Why this price"
+msgstr "Why this price"
 
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, while you wait"
@@ -9096,6 +9202,12 @@ msgstr "Not written yet."
 #~ msgid "Save characters"
 #~ msgstr "Save characters"
 
+#. placeholder {0}: money(suggested)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the suggested price"
+msgid "Suggested: {0} a {per}, from your commitment of {pct}%."
+msgstr "Suggested: {0} a {per}, from your commitment of {pct}%."
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, what we decided"
 msgid "Our words, adopted"
@@ -9556,6 +9668,11 @@ msgctxt "role editor"
 msgid "Listing and the door"
 msgstr "Listing and the door"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "As a contractor you can propose your own price. The contract decides the amount."
+msgstr "As a contractor you can propose your own price. The contract decides the amount."
+
 #. placeholder {0}: c.by
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -9847,6 +9964,11 @@ msgstr "Approved"
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Decided in the last 30 days"
 msgstr "Decided in the last 30 days"
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask summary"
+msgid "You'll take the suggested price."
+msgstr "You'll take the suggested price."
 
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
@@ -10226,6 +10348,11 @@ msgctxt "an outside contact you asked, and the day"
 msgid "{contact} on {when}"
 msgstr "{contact} on {when}"
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Why this price (optional)"
+msgstr "Why this price (optional)"
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft filter"
 msgid "Only roles that fit"
@@ -10463,6 +10590,12 @@ msgctxt "approval inbox"
 msgid "Nothing is waiting."
 msgstr "Nothing is waiting."
 
+#. placeholder {0}: money(suggested)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup choice"
+msgid "Take the suggested price, {0} a {per}"
+msgstr "Take the suggested price, {0} a {per}"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Loading the conflict agreement…"
 msgstr "Loading the conflict agreement…"
@@ -10684,6 +10817,11 @@ msgstr "Nothing here with these filters"
 msgctxt "time zone field"
 msgid "Use my browser's ({browser})"
 msgstr "Use my browser's ({browser})"
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the pay ask"
+msgid "Their price"
+msgstr "Their price"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -12060,6 +12198,12 @@ msgstr "The Governance Canvas, on Paper"
 msgid "Consequences, and how to appeal"
 msgstr "Consequences, and how to appeal"
 
+#. placeholder {0}: signedPct(diff)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: the difference"
+msgid "{0} on the suggested price"
+msgstr "{0} on the suggested price"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "No words yet"
@@ -12340,9 +12484,9 @@ msgstr "Taking you home now. You may need to sign in again."
 
 #. placeholder {0}: ceilingAtWords(ceiling, value.commitmentPct)
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms commitment: the most the role pays at the chosen commitment"
-msgid "{0} at this commitment"
-msgstr "{0} at this commitment"
+#~ msgctxt "terms commitment: the most the role pays at the chosen commitment"
+#~ msgid "{0} at this commitment"
+#~ msgstr "{0} at this commitment"
 
 #: client/src/components/canvas/CanvasView.tsx
 #: client/src/components/companion/CompanionPanel.tsx
@@ -13699,9 +13843,9 @@ msgid "What your first month with us would look like, and when you could begin."
 msgstr "What your first month with us would look like, and when you could begin."
 
 #: client/src/components/governance/TermsEight.tsx
-msgctxt "terms: the pay ask"
-msgid "The monthly amount you would ask"
-msgstr "The monthly amount you would ask"
+#~ msgctxt "terms: the pay ask"
+#~ msgid "The monthly amount you would ask"
+#~ msgstr "The monthly amount you would ask"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
@@ -13841,9 +13985,9 @@ msgid "How much you give"
 msgstr "How much you give"
 
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: commitment footnote"
-msgid "The contract sets the pay, at or under what the role pays at their commitment."
-msgstr "The contract sets the pay, at or under what the role pays at their commitment."
+#~ msgctxt "open proposal: commitment footnote"
+#~ msgid "The contract sets the pay, at or under what the role pays at their commitment."
+#~ msgstr "The contract sets the pay, at or under what the role pays at their commitment."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -13951,6 +14095,11 @@ msgctxt "language picker"
 msgid "No language matches"
 msgstr "No language matches"
 
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: suggestions count, one"
+msgid "They suggested 1 change to the role card."
+msgstr "They suggested 1 change to the role card."
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "You can withdraw a pledge until choosing closes. Then it is firm and lowers what the pot pays. Nothing is collected yet."
 msgstr "You can withdraw a pledge until choosing closes. Then it is firm and lowers what the pot pays. Nothing is collected yet."
@@ -13963,6 +14112,11 @@ msgstr "No thanks on the wall yet"
 msgctxt "founding card piece, under the heading"
 msgid "The goals it moves and the conversations on the way in"
 msgstr "The goals it moves and the conversations on the way in"
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup choice"
+msgid "Propose my own price"
+msgstr "Propose my own price"
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Nothing the village runs speaks to {name} yet."
@@ -14010,6 +14164,11 @@ msgstr "These items become your first month's contract: three to five things you
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgid "<0><1/> Print the canvas workbook</0> to talk it through on paper first."
 msgstr "<0><1/> Print the canvas workbook</0> to talk it through on paper first."
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Your price"
+msgstr "Your price"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
