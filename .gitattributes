@@ -61,3 +61,6 @@ drizzle/*.sql text eol=lf
 # "SyntaxError: Invalid or unexpected token" before any test ran (CI passed).
 # The repo already stores it LF; this keeps every checkout LF too.
 scripts/release-train.mjs text eol=lf
+
+# Run by cron on Linux: a CRLF first line breaks it. Same reason as the line above.
+ops/backup/compose-backup.sh text eol=lf

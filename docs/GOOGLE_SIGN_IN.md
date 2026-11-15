@@ -13,26 +13,17 @@ button, and the server prints this on every boot:
 [auth] sign-in methods: email and password. Google is OFF, missing: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET. No Google button is shown while it is off.
 ```
 
-To turn it on you need a `GOOGLE_CLIENT_ID` and a `GOOGLE_CLIENT_SECRET`, and
-there are two ways to get them.
+To turn it on you need a `GOOGLE_CLIENT_ID` and a `GOOGLE_CLIENT_SECRET`.
+Each village makes its own Google OAuth client: ten minutes below, and the
+consent screen carries your village's name, the secret is yours alone, and you
+can change your own domain without asking anybody. Under APIs & Services,
+Credentials, create an OAuth client ID of type Web application, with the
+authorized redirect URI `https://<your-domain>/api/auth/google/callback`, then
+set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` or enter them in Admin,
+Integrations.
 
-**Ask ReGen Civics, and do no console work at all.** We hold one Google client
-with each incubator village's callback registered on it, and Google allows 100
-callbacks on one client, so thirteen is nowhere near the limit. Send your
-village's domain, paste the two values we send back, done. This is the right
-starting point for a village being designed, and it is the wrong one for a
-village holding a real community's accounts, for two reasons worth saying
-plainly: the Google consent screen will say **ReGen Civics** rather than your
-village's name, and one leaked secret is every incubator village's problem at
-once.
-
-**Register your own, which is the answer once you go live.** Ten minutes below.
-Moving from ours to yours is a two-variable change with no code and no
-migration, so starting on ours costs you nothing later.
-
-Either way you set the same variables (and `FRONTEND_URL`, which you need
-anyway). The deployment reads its own credentials and has no idea who
-registered them. The boot line then reads:
+You set those two variables (and `FRONTEND_URL`, which you need anyway). The
+boot line then reads:
 
 ```
 [auth] sign-in methods: email and password, Google. Google callback: https://your-village.example/api/auth/google/callback
@@ -101,7 +92,7 @@ This platform is about to run on thirteen hostnames. A Google OAuth client is
 registered against exact callback addresses, so somebody has to own that list.
 Three shapes were considered.
 
-### One shared client owned by ReGen Civics
+### One shared client owned by ReGen Civics (dropped)
 
 Every village's callback is registered on one OAuth client, and every village
 is handed the same client ID and secret.
@@ -116,17 +107,9 @@ is handed the same client ID and secret.
   Civics** to a member signing in to their own village, which is wrong on a
   platform whose whole claim is that a village owns itself.
 
-**Update, 2026-08-31: both of the first two are now in use, in that order.**
-The analysis below was written for a village running a real community, and for
-that village it still holds. It was not written for the phase thirteen villages
-are actually in, which is months of design before anyone joins. During that
-phase the shared client's costs land almost entirely on us rather than on a
-member, and its friction saves each founder ten minutes of console work they
-would have to redo anyway when their real domain is chosen. So the shared
-client is the documented starting point and a village's own client is the
-documented graduation, taken before going live. The mechanism did not change:
-that is the point, and it is what the closing paragraph of this section already
-said.
+**Ruling, 15 November 2026: the shared option is dropped.** Every village makes
+its own client. A shared secret held by many villages is a leak for all of them,
+and the consent screen would name the wrong organisation.
 
 ### One client per village, created by the founder
 
@@ -156,13 +139,10 @@ with Google and then redirects onward to the village with a signed assertion.
   village into one place we would then be holding. If the broker is down,
   nobody in the network can use Google.
 
-**The mechanism that ships covers the first two options at no extra cost.** The
-deployment reads its own client ID, secret and callback from its own
-environment and does not know or care who registered them. A founder who
-creates their own client sets three variables; a founder who is handed the
-shared client's credentials sets the same three variables. The only difference
-is who added the callback address in the console. The broker is the one that
-would have needed different code, and it is the one we are not building.
+**The mechanism that ships is the second option.** The deployment reads its own
+client ID, secret and callback from its own environment, and a founder who
+creates their own client sets three variables. The broker is the one that would
+have needed different code, and it is the one we are not building.
 
 ## What happens when somebody signs in
 
