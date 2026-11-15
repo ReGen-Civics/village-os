@@ -35,6 +35,8 @@ import {
   EVENT_STATUSES,
   PUBLIC_STATUSES,
   daysUntil,
+  isNthWeek,
+  nthWeekdayDay,
   spotsLeft,
   type AttendanceMode,
   type CalendarItem,
@@ -109,9 +111,19 @@ export function cleanRecurrence(raw: unknown): Recurrence | null {
       return { freq: "weekly", byWeekday: Array.from(new Set<number>(days)).sort(), interval, ...common };
     }
     case "monthly": {
+      const interval = Number.isInteger(r.interval) && r.interval >= 1 && r.interval <= 12 ? r.interval : 1;
+      // "The first Friday" (RFC 5545 BYDAY=1FR). Checked before byMonthDay so
+      // a document carrying both keeps the weekday rule, which is the one a
+      // form that offers it wrote last.
+      const nw = r.byNthWeekday;
+      if (nw && typeof nw === "object") {
+        const weekday = Number(nw.weekday);
+        const nth = Number(nw.nth);
+        if (!isNthWeek(nth) || !Number.isInteger(weekday) || weekday < 0 || weekday > 6) return null;
+        return { freq: "monthly", byNthWeekday: { nth, weekday }, interval, ...common };
+      }
       const d = Number(r.byMonthDay);
       if (!Number.isInteger(d) || d < 1 || d > 31) return null;
-      const interval = Number.isInteger(r.interval) && r.interval >= 1 && r.interval <= 12 ? r.interval : 1;
       return { freq: "monthly", byMonthDay: d, interval, ...common };
     }
     case "lunar":
@@ -263,9 +275,15 @@ export function expandOccurrences(row: CalendarRow, from: Date, to: Date, timeZo
     // Months since the base month must be a multiple of the interval.
     const monthsSinceBase = (yy: number, mm: number) => (yy - base.year) * 12 + (mm - base.month);
     while ((y < last[0] || (y === last[0] && m <= last[1])) && starts.length < 1000) {
-      const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-      if (monthsSinceBase(y, m) >= 0 && monthsSinceBase(y, m) % interval === 0 && rec.byMonthDay <= daysInMonth) {
-        starts.push(atBaseTime(y, m, rec.byMonthDay));
+      if (monthsSinceBase(y, m) >= 0 && monthsSinceBase(y, m) % interval === 0) {
+        // Either a fixed day (skipped in a month too short for it) or the nth
+        // weekday of the village's civil month, worked out on the civil date
+        // so the time zone only enters when the wall time becomes an instant.
+        const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+        const day = "byNthWeekday" in rec
+          ? nthWeekdayDay(y, m, rec.byNthWeekday)
+          : rec.byMonthDay <= daysInMonth ? rec.byMonthDay : null;
+        if (day !== null) starts.push(atBaseTime(y, m, day));
       }
       m += 1;
       if (m > 12) { m = 1; y += 1; }
