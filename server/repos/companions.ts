@@ -1,8 +1,8 @@
 /**
  * THE COMPANION TABLES' ONE ENUMERABLE HOME (0295).
  *
- * Every statement against `companions`, `companion_items` and
- * `companion_messages` is here, so the erasure sweep and anybody asking "who
+ * Every statement against `companions`, `companion_items`,
+ * `companion_messages` and `member_companion_lenses` is here, so the erasure sweep and anybody asking "who
  * reads this table" has one file to read. The policy (the cap, the evidence
  * rule, which door a yes opens) is server/lib/companions.ts, and nothing here
  * decides who may see what.
@@ -28,6 +28,8 @@ export interface CompanionRow {
   provider: CompanionProvider;
   name: string;
   look: string | null;
+  /** JSON, shared/companionPersona.ts. Null: never given one. */
+  persona: string | null;
   dailyQuestionCap: number;
   status: CompanionStatus;
   sortOrder: number;
@@ -69,7 +71,7 @@ export interface MessageRow {
 }
 
 const COMPANION_COLS =
-  "id, owner_user_id, scope, scope_id, provider, name, look, daily_question_cap, status, sort_order";
+  "id, owner_user_id, scope, scope_id, provider, name, look, persona, daily_question_cap, status, sort_order";
 const ITEM_COLS =
   "id, companion_id, owner_user_id, type, draft_kind, title, body, payload, quote, source_ref, source_occurred_at, origin, " +
   "external_ref, dedupe_key, blocking, DATE_FORMAT(due_on, '%Y-%m-%d') AS due_on, DATE_FORMAT(day_key, '%Y-%m-%d') AS day_key, " +
@@ -96,6 +98,7 @@ function toCompanion(r: RowDataPacket): CompanionRow {
     provider: r.provider,
     name: String(r.name),
     look: r.look == null ? null : String(r.look),
+    persona: r.persona == null ? null : String(r.persona),
     dailyQuestionCap: Number(r.daily_question_cap),
     status: r.status,
     sortOrder: Number(r.sort_order),
@@ -148,7 +151,7 @@ export async function companionById(pool: Q, id: string): Promise<CompanionRow |
 /** Insert a companion, or leave the one already there for this (owner, scope, scope id). */
 export async function insertCompanionIfAbsent(
   pool: Q,
-  c: Omit<CompanionRow, "status"> & { status?: CompanionStatus },
+  c: Omit<CompanionRow, "status" | "persona"> & { status?: CompanionStatus },
 ): Promise<void> {
   await pool.query(
     "INSERT IGNORE INTO companions (id, owner_user_id, scope, scope_id, provider, name, look, daily_question_cap, status, sort_order) " +
@@ -160,13 +163,14 @@ export async function insertCompanionIfAbsent(
 export async function updateCompanion(
   pool: Q,
   id: string,
-  patch: Partial<Pick<CompanionRow, "name" | "look" | "dailyQuestionCap" | "status" | "sortOrder" | "provider">>,
+  patch: Partial<Pick<CompanionRow, "name" | "look" | "persona" | "dailyQuestionCap" | "status" | "sortOrder" | "provider">>,
 ): Promise<void> {
   const cols: string[] = [];
   const args: unknown[] = [];
   const map: Record<string, string> = {
     name: "name",
     look: "look",
+    persona: "persona",
     dailyQuestionCap: "daily_question_cap",
     status: "status",
     sortOrder: "sort_order",
@@ -419,6 +423,37 @@ export async function forgetCompanionsForMember(pool: Q, userId: string): Promis
   await pool.query("DELETE FROM companion_messages WHERE owner_user_id = ?", [userId]);
   await pool.query("DELETE FROM companion_items WHERE owner_user_id = ?", [userId]);
   await pool.query("DELETE FROM companions WHERE owner_user_id = ?", [userId]);
+  await pool.query("DELETE FROM member_companion_lenses WHERE user_id = ?", [userId]);
+}
+
+// ── the member's private lenses (shared/companionPersona.ts) ─────────────────
+
+export interface LensRow {
+  lens: string;
+  data: unknown;
+  updatedAt: string;
+}
+
+/** One member's lenses. Only that member's own routes call this. */
+export async function lensesOf(pool: Q, userId: string): Promise<LensRow[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT lens, data, updated_at FROM member_companion_lenses WHERE user_id = ? ORDER BY lens",
+    [userId],
+  );
+  return rows.map((r) => ({ lens: String(r.lens), data: json<unknown>(r.data), updatedAt: iso(r.updated_at) ?? "" }));
+}
+
+export async function putLens(pool: Q, userId: string, lens: string, data: unknown): Promise<void> {
+  await pool.query(
+    "INSERT INTO member_companion_lenses (user_id, lens, data) VALUES (?, ?, ?) " +
+      "ON DUPLICATE KEY UPDATE data = VALUES(data), updated_at = CURRENT_TIMESTAMP",
+    [userId, lens, JSON.stringify(data)],
+  );
+}
+
+export async function deleteLens(pool: Q, userId: string, lens: string): Promise<boolean> {
+  const [r] = await pool.query<any>("DELETE FROM member_companion_lenses WHERE user_id = ? AND lens = ?", [userId, lens]);
+  return Number(r?.affectedRows ?? 0) > 0;
 }
 
 // ── the live roster, as companions read it ───────────────────────────────

@@ -2,13 +2,17 @@
  * A member's companions, over HTTP (0295; the companions contract, section 6).
  *
  *   GET    /api/me/companions                     the army, each one's questions and drafts, the consent line
- *   PATCH  /api/me/companions/:id                 name, look, cap, order, resting, engine
+ *   PATCH  /api/me/companions/:id                 name, look, persona, cap, order, resting, engine
  *   POST   /api/me/companions/consent             the member's yes to the line that names who answers
  *   GET    /api/me/companions/:id/chat            one companion's recent chat
  *   POST   /api/me/companions/:id/chat            say something to it
  *   POST   /api/me/companion-items/:id/answer     answer a question
  *   POST   /api/me/companion-items/:id/confirm    yes to a draft, with edits or without
  *   POST   /api/me/companion-items/:id/decline    no to a draft, or "not mine" to a question
+ *   GET    /api/me/companion-welcome              the welcome's progress, the member's lenses, their Gene Keys standing
+ *   PUT    /api/me/companion-welcome              save which beat they reached, and open, skipped or done
+ *   PUT    /api/me/companion-lenses/:lens         add or change one private lens, with the member's yes
+ *   DELETE /api/me/companion-lenses/:lens         delete one
  *
  * A ROUTE MODULE, because server/index.ts is at its ratchet. Every route asks
  * the one gate for `companion.use` before anything else, and no route takes a
@@ -67,6 +71,20 @@ import {
   type Words,
 } from "../lib/companions";
 import { companionSystemPrompt, draftFromReply, fillFromRecord, type ProposeRsvp } from "../lib/companionMaia";
+import { geneKeysForAssistant, geneKeysForWelcome } from "../lib/geneKeys";
+import {
+  LENS_IDS,
+  LENS_NEVER,
+  lensNote,
+  parsePersona,
+  personaLines,
+  readLens,
+  readWelcome,
+  writeWelcome,
+  type LensId,
+  type LensView,
+  type WelcomePayload,
+} from "../../shared/companionPersona";
 import * as repo from "../repos/companions";
 import { portraitsForMember } from "../repos/characterPortraits";
 import { MEMBER_BATCH_PREFIX, openIdeas, withIdeaLock } from "../repos/questProposals";
@@ -229,6 +247,99 @@ export function register(app: Express, deps: Deps): void {
     }
   };
 
+  /** The member's lenses as they read them: only rows that still pass the checks a write runs. */
+  const lensViews = async (uid: string): Promise<LensView[]> => {
+    const out: LensView[] = [];
+    for (const row of await repo.lensesOf(getPool(), uid)) {
+      if (!(LENS_IDS as readonly string[]).includes(row.lens)) continue;
+      const lens = row.lens as LensId;
+      const read = readLens(lens, row.data);
+      if (!read.ok) continue;
+      out.push({ lens, data: read.data, note: lensNote(lens, read.data), updatedAt: row.updatedAt } as LensView);
+    }
+    return out;
+  };
+
+  /**
+   * How a companion talks to this member: its persona, then the member's lenses
+   * and Gene Keys note, closed by LENS_NEVER. Lenses go ONLY to the village's own
+   * engine: a member who talks through the outside guide keeps them at home, and
+   * the lens card says so.
+   */
+  const styleFor = async (uid: string, c: repo.CompanionRow, provider: "village" | "saberra"): Promise<{ lines: string[]; own: string | null }> => {
+    const persona = parsePersona(c.persona);
+    const lines = persona ? personaLines(persona) : [];
+    let own: string | null = null;
+    if (provider === "village") {
+      const lenses = await lensViews(uid);
+      for (const l of lenses) {
+        if (l.lens === "own") own = (l.data as { text: string }).text;
+        else lines.push(l.note);
+      }
+      const gk = await geneKeysForAssistant(getPool(), uid).catch(() => null);
+      if (gk) lines.push(gk);
+      if (lenses.length || gk) lines.push(LENS_NEVER);
+    }
+    return { lines, own };
+  };
+
+  // ── The welcome (shared/companionPersona.ts) ──────────────────────────────
+
+  app.get("/api/me/companion-welcome", async (req, res) => {
+    const user = await member(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    const body: WelcomePayload = {
+      state: readWelcome(user.prefs),
+      lenses: await lensViews(uid),
+      geneKeys: await geneKeysForWelcome(getPool(), uid).catch(() => null),
+    };
+    res.json(body);
+  });
+
+  app.put("/api/me/companion-welcome", async (req, res) => {
+    const user = await member(req, res);
+    if (!user) return;
+    if (await overLimit(`companion-welcome:${user.id}`, EDITS_PER_HOUR, HOUR_MS)) {
+      return res.status(429).json({ error: "Try again in a little while." });
+    }
+    const w = writeWelcome(req.body, new Date().toISOString());
+    if (!w.ok) return res.status(400).json({ error: w.error });
+    const updated = await members.update(String(user.id), (u: any) => {
+      u.prefs = { ...(u.prefs ?? {}), companionWelcome: w.state };
+    });
+    if (!updated) return res.status(404).json({ error: "Your account could not be found." });
+    res.json({ state: readWelcome(updated.prefs) });
+  });
+
+  app.put("/api/me/companion-lenses/:lens", async (req, res) => {
+    const user = await member(req, res);
+    if (!user) return;
+    const lens = String(req.params.lens);
+    if (!(LENS_IDS as readonly string[]).includes(lens)) return res.status(404).json({ error: "Not found" });
+    if (await overLimit(`companion-lens:${user.id}`, EDITS_PER_HOUR, HOUR_MS)) {
+      return res.status(429).json({ error: "Try again in a little while." });
+    }
+    // A lens is stored only with the member's own yes, said on the card that shows what it changes.
+    if (req.body?.consent !== true) return res.status(400).json({ error: "Tick the box to say yes first." });
+    const read = readLens(lens as LensId, req.body?.data);
+    if (!read.ok) return res.status(400).json({ error: read.error });
+    if (lens === "own" && carriesContact((read.data as { text: string }).text)) {
+      return res.status(400).json({ error: "Leave out email addresses and phone numbers." });
+    }
+    await repo.putLens(getPool(), String(user.id), lens, read.data);
+    res.json({ lenses: await lensViews(String(user.id)) });
+  });
+
+  app.delete("/api/me/companion-lenses/:lens", async (req, res) => {
+    const user = await member(req, res);
+    if (!user) return;
+    const lens = String(req.params.lens);
+    if (!(LENS_IDS as readonly string[]).includes(lens)) return res.status(404).json({ error: "Not found" });
+    await repo.deleteLens(getPool(), String(user.id), lens);
+    res.json({ lenses: await lensViews(String(user.id)) });
+  });
+
   app.get("/api/me/companions", async (req, res) => {
     const user = await member(req, res);
     if (!user) return;
@@ -301,6 +412,12 @@ export function register(app: Express, deps: Deps): void {
       const n = Number(b.sortOrder);
       if (!Number.isInteger(n) || n < 0 || n > 1000) return res.status(400).json({ error: "sortOrder is a whole number from 0 to 1000." });
       patch.sortOrder = n;
+    }
+    if (b.persona !== undefined) {
+      // A persona shapes only how this companion talks to its own member (shared/companionPersona.ts).
+      const persona = b.persona === null ? null : parsePersona(b.persona);
+      if (b.persona !== null && !persona) return res.status(400).json({ error: "Choose a character for your companion." });
+      patch.persona = persona ? JSON.stringify(persona) : null;
     }
     if (b.status !== undefined) {
       if (b.status !== "active" && b.status !== "resting") return res.status(400).json({ error: "A companion is active or resting." });
@@ -382,12 +499,15 @@ export function register(app: Express, deps: Deps): void {
     const messageId = await repo.addMessage(getPool(), { companionId: c.id, ownerUserId: uid, speaker: "member", engine: provider, body: text });
     const history = await repo.recentMessages(getPool(), c.id, uid, CHAT_HISTORY);
     const roleName = c.scope === "role" ? ((await repo.rosterFor(getPool(), [c.scopeId])).get(c.scopeId)?.name ?? null) : null;
+    const style = await styleFor(uid, c, provider);
     const system = companionSystemPrompt({
       guideName: engine,
       villageName: e.villageName,
       companionName: c.name,
       roleName,
       never: NEVER_INVENT,
+      style: style.lines,
+      memberStyle: style.own,
     });
     const call = await callAssistant({
       mode: "member",

@@ -37,6 +37,7 @@
  * every check that door carries runs. This file never writes a ledger row, an
  * RSVP or a message itself.
  */
+import { parsePersona } from "../../shared/companionPersona";
 import { createHash, randomUUID } from "crypto";
 import type { Pool } from "mysql2/promise";
 import {
@@ -552,6 +553,7 @@ export async function armyView(
         const l = parseLook(c.look);
         return l && l.source !== "choose" && l.portraitKey ? portraitUrl(l.portraitKey) : null;
       })(),
+      persona: parsePersona(c.persona),
       dailyCap: effectiveCap(c.dailyQuestionCap, env.ceiling),
       status: c.status,
       sortOrder: c.sortOrder,
