@@ -267,4 +267,36 @@ describe("getting the room ready from the start card", () => {
     expect((screen.getByRole("checkbox", { name: /Picnic/ }) as HTMLInputElement).checked).toBe(false);
     expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
   });
+  it("keeps the meeting's own length when Get the room ready is pressed before the village default has settled", async () => {
+    /*
+     * The village's usual length was applied by an effect that ran in a later passive
+     * flush than the commit that first drew this button. A press in between set the
+     * row's 45, then the stale effect (which still saw durationTouched as false) put
+     * the village's 60 back. This presses from a MutationObserver callback, the first
+     * moment the button is in the document, then waits past every flush. It failed on
+     * the effect-applied default (14 Nov 2026, the batch 168 flake).
+     */
+    answers["GET /api/sessions"] = () =>
+      json({ open: [], recent: [], circles, defaultMinutes: 60, library: { items: [], myCircleIds: ["garden"] }, comingUp: payload([row({ durationMin: 45 })]) });
+    const pressed = new Promise<void>((resolve) => {
+      const press = () => {
+        const button = screen.queryByRole("button", { name: RHYTHM_COPY.getReady });
+        if (!button) return;
+        observer.disconnect();
+        fireEvent.click(button);
+        resolve();
+      };
+      const observer = new MutationObserver(press);
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+    const memory = memoryLocation({ path: "/sessions", record: true });
+    render(
+      <Router hook={memory.hook}>
+        <Sessions />
+      </Router>,
+    );
+    await pressed;
+    await new Promise((r) => setTimeout(r, 50));
+    expect((screen.getByLabelText(SESSION_COPY.durationLabel) as HTMLInputElement).value).toBe("45");
+  });
 });

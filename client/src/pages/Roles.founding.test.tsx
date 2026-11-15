@@ -168,11 +168,25 @@ describe("Join the founding team", () => {
     expect(next.id).toBe("opening-next");
     expect(next.textContent).toMatch(/You are welcome to apply for any of these now\. It may be a while before we reply/);
     expect(within(next).getByRole("heading", { level: 3, name: "Village Cook" })).toBeTruthy();
+    // Hear first (Rye, 15 Nov 2026): the community calls always; the newsletter only once the village has one.
+    const hear = next.querySelector("[data-hear-first]") as HTMLElement;
+    expect(within(hear).getByRole("link", { name: "join a community call" }).getAttribute("href")).toBe("/events");
+    expect(within(hear).queryByRole("link", { name: "sign up for our newsletter" })).toBeNull();
     expect(within(next).queryByRole("heading", { level: 3, name: "Lead Finance Steward" })).toBeNull();
     // Once on the page: the directory leaves it out.
     fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
     await screen.findByRole("heading", { level: 2, name: "All roles and circles" });
     expect(screen.getAllByRole("heading", { level: 3, name: "Village Cook" })).toHaveLength(1);
+  });
+
+  it("names the newsletter beside the calls once the village has one, in a new tab (Rye, 15 Nov 2026)", async () => {
+    founding = { ...founding, otherWays: { newsletter: "https://news.example.test/join" } };
+    renderRoles();
+    const next = await screen.findByRole("region", { name: "More roles, opening next" });
+    const hear = next.querySelector("[data-hear-first]") as HTMLElement;
+    const a = within(hear).getByRole("link", { name: "sign up for our newsletter" });
+    expect([a.getAttribute("href"), a.getAttribute("target")]).toEqual(["https://news.example.test/join", "_blank"]);
+    expect(hear.textContent).toMatch(/Hear first about new opportunities: join a community call and sign up for our newsletter\./);
   });
 
   it("with no other role open, the line stays and points nowhere, and no opening-next section draws (control)", async () => {
