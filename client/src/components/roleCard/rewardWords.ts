@@ -38,6 +38,13 @@ export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPerio
   return i18n._(msg({ message: `${money} a month`, context: "an amount for each month" }));
 }
 
+/**
+ * The equity and credits clause shows on every card for now (Rye, 15 Nov 2026: "Show the equity and credits
+ * section and we will soon be turning on the village and issuing these tokens so leave them on for now").
+ * Set false to show it only when the split in force pays a token share (`paysInTokens`).
+ */
+export const TOKEN_TERMS_ALWAYS = true;
+
 /** Does the split in force pay any of the reward in equity or credits? A share above 0% only. */
 export function paysInTokens(shape: readonly PayShare[] | null | undefined): boolean {
   return (shape ?? []).some((s) => s.pct > 0 && /equity|credit/i.test(s.label));
@@ -47,8 +54,8 @@ export function paysInTokens(shape: readonly PayShare[] | null | undefined): boo
  * The headline is the LISTED price, with the cap beside it (steelman, 15 Nov 2026): "Up to" read as a ceiling
  * beside "you can propose more". The footnote (Rye, 15 Nov 2026): the commitment, "Your first month often
  * starts lower and follows what you deliver." with no figure, because the amount is the applicant's to
- * propose; the equity and credits clause only when the split in force (the card's, else the village's) pays a
- * share above 0% in equity or credits; then the village's own note.
+ * propose; the equity and credits clause (always for now, `TOKEN_TERMS_ALWAYS`; otherwise only when the split
+ * in force, the card's else the village's, pays a share above 0% in equity or credits); then the village's note.
  */
 export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = []): RewardWords {
   const lo = rangeMin(min);
@@ -76,7 +83,7 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
     footnote: [
       i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
       i18n._(msg({ message: "Your first month often starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first month" })),
-      paysInTokens(shape) ? i18n._(msg({ message: "Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the footnote, equity and credits" })) : null,
+      TOKEN_TERMS_ALWAYS || paysInTokens(shape) ? i18n._(msg({ message: "Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the footnote, equity and credits" })) : null,
       String(note ?? "").replace(/^\*\s*/, "").trim(),
     ]
       .filter(Boolean)

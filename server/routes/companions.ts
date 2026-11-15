@@ -11,6 +11,7 @@
  *   POST   /api/me/companion-items/:id/decline    no to a draft, or "not mine" to a question
  *   GET    /api/me/companion-welcome              the welcome's progress, the member's lenses, their Gene Keys standing
  *   PUT    /api/me/companion-welcome              save which beat they reached, and open, skipped or done
+ *                                                  (a finished welcome stays finished: 409 with the saved state)
  *   PUT    /api/me/companion-lenses/:lens         add or change one private lens, with the member's yes
  *   DELETE /api/me/companion-lenses/:lens         delete one
  *
@@ -81,6 +82,7 @@ import {
   readLens,
   readWelcome,
   writeWelcome,
+  welcomeMoveRefused,
   type LensId,
   type LensView,
   type WelcomePayload,
@@ -305,10 +307,18 @@ export function register(app: Express, deps: Deps): void {
     }
     const w = writeWelcome(req.body, new Date().toISOString());
     if (!w.ok) return res.status(400).json({ error: w.error });
+    // Read and decided inside the row lock, so two tabs saving at once cannot
+    // slip an "open" in after a "done".
+    let refused = false;
     const updated = await members.update(String(user.id), (u: any) => {
+      if (welcomeMoveRefused(readWelcome(u.prefs), w.state)) {
+        refused = true;
+        return;
+      }
       u.prefs = { ...(u.prefs ?? {}), companionWelcome: w.state };
     });
     if (!updated) return res.status(404).json({ error: "Your account could not be found." });
+    if (refused) return res.status(409).json({ error: "You already finished your welcome.", state: readWelcome(updated.prefs) });
     res.json({ state: readWelcome(updated.prefs) });
   });
 
