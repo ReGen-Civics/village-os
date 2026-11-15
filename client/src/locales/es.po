@@ -16946,3 +16946,22 @@ msgstr "Postular también a otro rol"
 msgctxt "open proposal sent"
 msgid "Your name, contact and what you wrote about yourself come with you, so you only add what is new for that role."
 msgstr "Tu nombre, tu contacto y lo que escribiste sobre ti pasan contigo, así que solo añades lo nuevo para ese rol."
+
+# needs-native-review: new words, 12 Nov 2026
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card quality, 60% and above"
+msgid "Fully focused: {village} is your main work"
+msgstr "Plena dedicación: {village} es tu trabajo principal"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleCard/focusLine.ts
+msgctxt "role card quality, below 60%"
+msgid "Focused: {village} is a main part of your work"
+msgstr "Dedicación: {village} es una parte principal de tu trabajo"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor, qualities hint, the focus line"
+msgid "Write {FOCUS_TOKEN} on a line of its own for how focused the role asks someone to be: the card says it is their main work at {FOCUS_MAIN_WORK_PCT}% and above, a main part of their work below."
+msgstr "Escribe {FOCUS_TOKEN} en una línea propia para decir cuánta dedicación pide el rol: la tarjeta dice que es su trabajo principal desde {FOCUS_MAIN_WORK_PCT}% y una parte principal de su trabajo por debajo."
