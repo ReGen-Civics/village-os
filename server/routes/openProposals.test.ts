@@ -37,6 +37,8 @@ import { createOrgRole } from "../lib/orgChart";
 import { readOpenProposal } from "../repos/openProposals";
 import { retryOwedConfirmations } from "../lib/openProposalKept";
 import { rewriteTermsOffer } from "../repos/seatApplications";
+import { saveSections } from "../lib/roleCardSections";
+import { EMPTY_SECTIONS } from "../../shared/roleCardSections";
 import { usersRepo } from "../repos/users";
 import { loadVariables } from "../lib/variables";
 import { LANGUAGES } from "../../shared/applicantWords";
@@ -768,6 +770,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
 
     it("a role that can be shared: the form offers its minimum; a commitment below it is refused, and the optional ask is kept (Rye, 14 Nov 2026)", async () => {
       await pool.query("UPDATE org_roles SET commitment_min = 60 WHERE id = ?", [gate]); // module-review-ok: a test setting the column it asserts on
+      // A listed price, so an amount ask has a cap to be read against (at 60% of $13,000: $7,800, capped at $9,360).
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
       try {
         const form = await call("GET", "/api/open-proposals/form");
         expect(form.body.roles.find((x: any) => x.id === gate).commitmentMin).toBe(60);
@@ -786,8 +790,53 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         const { id } = await send({ card: card(60), email: "atmin@example.test", payAsk: { kind: "amount", monthly: 6000 } });
         expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
       } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
         await pool.query("UPDATE org_roles SET commitment_min = NULL WHERE id = ?", [gate]); // module-review-ok: a test restoring the column it set
       }
+    });
+
+    it("the 120% cap: an ask just over it at their commitment is refused in words, one at it is taken (Rye, 15 Nov 2026)", async () => {
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const card = (commitmentPct: number) => ({
+          roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+          serves: [{ goalId: "g-roots", how: "" }],
+          commitmentPct,
+          agreed: { loveLetter: true, nda: true },
+          terms: { answers: {} },
+        });
+        const ask = (monthly: number, per = "month") => ({ kind: "amount", monthly, per });
+        // At 50% the listed price is $6,500 and the cap $7,800.
+        const over = await call("POST", "/api/open-proposals", proposal({ email: "over@example.test", card: card(50), payAsk: ask(7801) }));
+        expect(over).toMatchObject({ status: 400, body: { field: "payAsk", error: "Proposals for this role go up to $7,800 at 50%, 120% of its listed price. Choose a price at or below that." } });
+        // At 100%, $15,600.
+        const overFull = await call("POST", "/api/open-proposals", proposal({ email: "overfull@example.test", card: card(100), payAsk: ask(15601) }));
+        expect(overFull).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        // An ask in another period cannot be read against the cap: refused, never let through.
+        const yearly = await call("POST", "/api/open-proposals", proposal({ email: "yearly@example.test", card: card(50), payAsk: ask(7000, "year") }));
+        expect(yearly).toMatchObject({ status: 400, body: { field: "payAsk", error: "Write your price for each month, the way the role lists it." } });
+        // An edited request (QA-1115 hostile edges): an absurd figure, negotiate with a figure, an unknown period, and a shape that is neither kind.
+        expect(await call("POST", "/api/open-proposals", proposal({ email: "absurd@example.test", card: card(50), payAsk: ask(100_000_000) }))).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        expect(await call("POST", "/api/open-proposals", proposal({ email: "both@example.test", card: card(50), payAsk: { kind: "negotiate", monthly: 5000 } }))).toMatchObject({ status: 400, body: { field: "payAsk", error: "Choose a price or to negotiate on the first call, one of the two." } });
+        expect(await call("POST", "/api/open-proposals", proposal({ email: "hourly@example.test", card: card(50), payAsk: { kind: "amount", monthly: 50, per: "hour" } }))).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        expect(await call("POST", "/api/open-proposals", proposal({ email: "shape@example.test", card: card(50), payAsk: [1, 2] }))).toMatchObject({ status: 400, body: { field: "payAsk" } });
+        // CONTROL: at the cap, and negotiate, are taken.
+        const { id } = await send({ card: card(50), email: "atcap@example.test", payAsk: ask(7800) });
+        expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 7800, per: "month" });
+        await send({ card: card(100), email: "atcapfull@example.test", payAsk: ask(15600) });
+      } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+      }
+      // A role that lists no price has no cap: an amount is refused in words, negotiate is taken.
+      const card = {
+        roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+        serves: [{ goalId: "g-roots", how: "" }],
+        commitmentPct: 50,
+        agreed: { loveLetter: true, nda: true },
+        terms: { answers: {} },
+      };
+      expect(await call("POST", "/api/open-proposals", proposal({ email: "noprice@example.test", card, payAsk: { kind: "amount", monthly: 5000, per: "month" } }))).toMatchObject({ status: 400, body: { field: "payAsk", error: "This role lists no price yet, so choose to negotiate on the first call." } });
+      await send({ card, email: "noprice-negotiate@example.test", payAsk: { kind: "negotiate" } });
     });
 
     it("form v2: a card needs an aim; the 90-day tidy clears the time zone, usual times and earliest start", async () => {

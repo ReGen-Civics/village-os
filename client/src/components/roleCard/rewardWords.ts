@@ -14,7 +14,7 @@
 // a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { ceilingAt, rangeMin } from "@shared/commitmentRange";
+import { capAt, ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
@@ -23,6 +23,8 @@ export interface RewardWords {
   /** Null for a role offered at 100% only. */
   range: string | null;
   proposal: string;
+  /** The cap on a proposal for the full role, 120% of the listed price (Rye, 15 Nov 2026). */
+  cap: string;
   footnote: string;
 }
 
@@ -36,14 +38,22 @@ export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPerio
   return i18n._(msg({ message: `${money} a month`, context: "an amount for each month" }));
 }
 
-export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined): RewardWords {
+/**
+ * The headline is the LISTED price, with the cap beside it (steelman, 15 Nov 2026): "Up to" read as a ceiling
+ * beside "you can propose more". The footnote's fine print is the village's own note (the card's, else the
+ * village's `org.pay_shape_note`), and nothing else: no village is told its equity terms are still being
+ * written, or that its first month starts lower, unless it says so itself.
+ */
+export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = ""): RewardWords {
   const lo = rangeMin(min);
   const shared = lo < 100;
   const at = exampleShare(min);
   const full = perPeriod(i18n, moneyWords(c.amount, c.currency, i18n.locale), c.per);
   const atPrice = perPeriod(i18n, moneyWords(ceilingAt(c.amount, at), c.currency, i18n.locale), c.per);
+  const capFull = perPeriod(i18n, moneyWords(capAt(c.amount, 100), c.currency, i18n.locale), c.per);
+  const capShare = perPeriod(i18n, moneyWords(capAt(c.amount, at), c.currency, i18n.locale), c.per);
   return {
-    headline: i18n._(msg({ message: `Up to ${full} for the full role*`, context: "role card rewards: the full role's ceiling" })),
+    headline: i18n._(msg({ message: `Listed price: ${full} for the full role*`, context: "role card rewards: the full role's listed price" })),
     range: shared
       ? i18n._(msg({ message: `Take on all of it, or part of it: we're open to proposals from ${lo}% to 100%. One person can hold the whole role, or a few people can share it.`, context: "role card rewards: a role that can be shared" }))
       : null,
@@ -54,7 +64,15 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
     ]
       .filter(Boolean)
       .join(" "),
-    footnote: i18n._(msg({ message: "*At 100% commitment. Your first month starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the one footnote" })),
+    cap: shared
+      ? i18n._(msg({ message: `Proposals up to ${capFull} for the full role, ${ROLE_PAY_CAP_PCT}% of the listed price. At ${at}%, up to ${capShare}.`, context: "role card rewards: the cap on a proposal, a role that can be shared" }))
+      : i18n._(msg({ message: `Proposals up to ${capFull}, ${ROLE_PAY_CAP_PCT}% of the listed price.`, context: "role card rewards: the cap on a proposal" })),
+    footnote: [
+      i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
+      String(note ?? "").replace(/^\*\s*/, "").trim(),
+    ]
+      .filter(Boolean)
+      .join(" "),
   };
 }
 

@@ -135,13 +135,36 @@ describe("no double cut (Rye, 15 Nov 2026)", () => {
     expect(splitUnconfirmed(lines)).toBe(true);
   });
 
-  it("a 30% agreement the split gives 50% of the member's time: base x time given / priced, with no cap", () => {
+  it("a 30% agreement the split gives 50% of the member's time: base x time given / priced, held to the 120% cap (Rye, 15 Nov 2026)", () => {
     const t = [priced("app-1", "r1", 30, 300_000), priced("app-2", "r2", 70, 700_000)];
     const split = [{ roleId: "r1", share: 50 }, { roleId: "r2", share: 50 }];
-    // Giving 100%: 50% of them goes to each. 300,000 x 50 / 30 = 500,000 and 700,000 x 50 / 70 = 500,000.
-    expect(scale(t, split, 100).map((l) => [l.amountMinor, l.split?.givenPct, l.split?.pricedPct])).toEqual([[500_000, 50, 30], [500_000, 50, 70]]);
+    // Giving 100%: 50% of them goes to each. 300,000 x 50 / 30 = 500,000 is above 120% of its terms, so it pays 360,000.
+    const full = scale(t, split, 100);
+    expect(full.map((l) => [l.amountMinor, l.split?.givenPct, l.split?.pricedPct, l.split?.capped])).toEqual([[360_000, 50, 30, true], [500_000, 50, 70, undefined]]);
+    expect(full[0].split).toMatchObject({ baseMinor: 300_000, scaledMinor: 360_000, confirmedAt: null });
+    expect(full[0].basisLine).toContain("capped at 120%");
+    // The Treasurer still confirms a capped line before it pays.
+    expect(splitUnconfirmed(full)).toBe(true);
     // Giving 60%: 30% of them to each. The 30% agreement pays its terms, the 70% one three sevenths of them.
     expect(scale(t, split, 60).map((l) => l.amountMinor)).toEqual([300_000, Math.round((700_000 * 60 * 50) / (100 * 70))]);
+  });
+
+  it("the cap is 120% of the terms exactly: a line at it is not marked, one a unit over is held there", () => {
+    const t = [priced("app-1", "r1", 50, 650_000), priced("app-2", "r2", 50, 650_000)];
+    // 60% of a 100% member to a 50% agreement is 120% of it: at the cap, not over.
+    const at = scale(t, [{ roleId: "r1", share: 60 }, { roleId: "r2", share: 40 }], 100);
+    expect(at.map((l) => [l.amountMinor, l.split?.capped])).toEqual([[780_000, undefined], [520_000, undefined]]);
+    // 70% is 140%: held at 780,000.
+    const over = scale(t, [{ roleId: "r1", share: 70 }, { roleId: "r2", share: 30 }], 100);
+    expect(over.map((l) => [l.amountMinor, l.split?.capped])).toEqual([[780_000, true], [390_000, undefined]]);
+  });
+
+  it("a line from an adopted application carries where its price came from, for the member and the Treasurer (QA-1115 P0-1)", () => {
+    const note = "They chose to negotiate on the first call. This is the suggested price at 50% commitment until a price is agreed.";
+    const t = terms({ applicationId: "app-1", roleIds: ["r1"], roleNames: ["r1"], amount: 650_000, settings: { v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 650_000, per: "month", note }, clocks: { commitmentPct: 50 } } });
+    expect(linesFromTerms([t], MOON)[0].priceNote).toBe(note);
+    // A contract with no note carries none.
+    expect(linesFromTerms([priced("app-2", "r2", 50, 650_000)], MOON)[0].priceNote).toBeUndefined();
   });
 
   it("a split that matches the priced commitments pays the terms exactly", () => {

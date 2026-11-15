@@ -77,6 +77,11 @@ export function SplitBreakdown({ split, currency }: { split: LineSplit; currency
         <dt>{SPLIT_PAY_WORDS.scaled}</dt>
         <dd className="m-0 text-right font-semibold text-foreground"><Amount minor={split.scaledMinor} currency={currency} /></dd>
       </dl>
+      {split.capped ? (
+        <p className="m-0 font-semibold text-foreground" data-testid="line-split-capped">
+          {SPLIT_PAY_WORDS.capped}. {SPLIT_PAY_WORDS.cappedNote}
+        </p>
+      ) : null}
       <p className="m-0">{split.confirmedAt ? SPLIT_PAY_WORDS.confirmed : SPLIT_PAY_WORDS.waiting}</p>
     </div>
   );

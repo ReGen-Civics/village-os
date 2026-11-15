@@ -32,6 +32,8 @@ import { openProposalsWaitingOn } from "../lib/openProposalDecide";
 import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { runSeasonTurn } from "../lib/seasonTurn";
 import { readOpenProposal } from "../repos/openProposals";
+import { saveSections } from "../lib/roleCardSections";
+import { EMPTY_SECTIONS } from "../../shared/roleCardSections";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 
@@ -448,6 +450,33 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(body).toContain("Clocks: Commitment: 80%");
       const together = body.split("\n").find((l) => l.startsWith("We'll fill")) ?? "";
       for (const label of ["Term", "Clocks", "Allowance", "Ending"]) expect(together).not.toContain(label);
+    });
+
+    it("writes the contract's pay at adoption: negotiate takes the suggested price at the agreed commitment, the decider reads it first, and the note says it was negotiate (QA-1115 P0-1)", async () => {
+      await q("DELETE FROM seat_applications WHERE candidate_user_id = ?", [HAS.id]);
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const { id } = await proposalWithCard({ term: A, ending: A });
+        await q("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.payAsk', JSON_OBJECT('kind', 'negotiate')) WHERE id = ?", [id]);
+        // A counter-offer moves the commitment from 60% to 80%: the price follows the agreed commitment.
+        await save(id, { commitmentPct: 80, expectedRevision: 0 });
+        await call("POST", `/api/governance/applications/${id}/terms`, { replies: { commitment: { choice: "accept", note: "" } } }, HAS.id);
+        // The decider reads the figure and where it comes from before adopting.
+        const before = await page(id, FOUNDER.id);
+        expect(before.body.proposal.contractPrice).toEqual({ amountMinor: 1_040_000, currency: "USD", per: "month", source: "negotiate", capped: false, pct: 80 });
+        // The applicant is no decider: they read none of it.
+        expect((await page(id, HAS.id)).body.proposal?.contractPrice).toBeUndefined();
+        const adopted = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+        expect(adopted.status, JSON.stringify(adopted.body)).toBe(200);
+        const app = await appOf(HAS.id);
+        expect(app.settings.pay).toEqual({
+          kind: "fixed", amountMinor: 1_040_000, currency: "USD", per: "month",
+          note: "They chose to negotiate on the first call. This is the suggested price at 80% commitment until a price is agreed.",
+        });
+        expect(app.settings.clocks).toEqual({ commitmentPct: 80 });
+      } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+      }
     });
 
     it("records a setting still being talked about at an adopt-anyway as still open, never as accepted", async () => {

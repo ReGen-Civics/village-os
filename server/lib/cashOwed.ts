@@ -134,7 +134,9 @@ export async function oweQuestCash(
 
 /**
  * A settled cycle owes each live seat on a cash-paying role its cash, once per
- * cycle, seat and member. Runs before the token rules are read, because a
+ * cycle, seat and member. A seat held through an adopted application is left
+ * to its End of Moon invoice, which a Treasurer confirms (QA-1115 P0-2,
+ * `seatsOnCashRoles`). Runs before the token rules are read, because a
  * village with no `role.cycle` rule at all can still pay its roles in cash.
  * Returns how many new rows it wrote.
  */

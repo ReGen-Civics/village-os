@@ -45,6 +45,8 @@
 import { cardSummary } from "../../shared/openProposalCard";
 import { isCommitment, notesAsText, overallChoice } from "../../shared/termsWords";
 import { baseOf } from "./counterOffer";
+import { contractPriceOf, payGroupOf, type ContractPrice } from "../../shared/contractPrice";
+import { sectionsForMany } from "./roleCardSections";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import { isVillageHeld, type Capability } from "../../shared/capabilities";
 import { civilDateKey } from "../../shared/lunar";
@@ -313,14 +315,28 @@ export async function agreedOf(db: Db, proposal: store.StoredOpenProposal): Prom
  * words for each setting, and the agreed commitment under Clocks. These are what the
  * holder aligns with (shared/alignments.ts renders the words).
  */
-export function settingsOfAgreed(agreed: Agreed, term: { endsOn: string } | null | undefined): Record<string, unknown> {
+export function settingsOfAgreed(agreed: Agreed, term: { endsOn: string } | null | undefined, price: ContractPrice | null = null): Record<string, unknown> {
   const words = Object.fromEntries(Object.entries(agreed.words).filter(([, w]) => typeof w === "string" && w.trim()));
   return {
     v: 1,
     ...(term ? { term: { endsOn: term.endsOn } } : {}),
     ...(isCommitment(agreed.commitmentPct) ? { clocks: { commitmentPct: agreed.commitmentPct } } : {}),
+    // The contract's price (QA-1115 P0-1): without it End of Moon has nothing to invoice.
+    ...(price ? { pay: payGroupOf(price) } : {}),
     ...(Object.keys(words).length ? { words } : {}),
   };
+}
+
+/**
+ * THE PRICE ADOPTION WRITES (shared/contractPrice.ts): the accepted ask held to the cap, else the suggested
+ * price, at the agreed commitment, from the role's own band. One role per application; an older proposal
+ * naming several is priced by the first role that lists a band. Null with no band: the contract records no pay.
+ */
+export async function contractPriceFor(db: Pool, proposal: store.StoredOpenProposal, agreed: Agreed): Promise<ContractPrice | null> {
+  const ids = proposal.body.roles.map((r) => r.roleId);
+  const sections = await sectionsForMany(db, ids);
+  const ceiling = ids.map((id) => sections.get(id)?.payCeiling ?? null).find((c) => !!c) ?? null;
+  return contractPriceOf(ceiling, agreed.commitmentPct ?? null, proposal.body.payAsk ?? null);
 }
 
 /** The card's goals for the first moon as the application's list holds them. */
@@ -430,6 +446,7 @@ export async function placeOnRoles(
   const seats = await seatsForUpdate(pool, seatIds);
   // What was agreed is what is signed (audit B2): the offer, the latest revision, their answers and the commitment.
   const agreed = await agreedOf(pool, p.proposal);
+  const price = await contractPriceFor(pool, p.proposal, agreed);
   const goals = goalsOfCard(p.proposal.body);
   const cardTerms = p.proposal.body.card?.terms ?? null;
   const aim = String(p.proposal.body.aim ?? "").trim();
@@ -456,7 +473,7 @@ export async function placeOnRoles(
     deliverables: deliverablesOf(p.proposal.body, seats, agreed) || null,
     // The goals as a list, so the proposal's page draws them as one (joining lane PR 1), and the terms as agreed.
     ...(Object.keys(answers).length ? { answers } : {}),
-    settings: settingsOfAgreed(agreed, term),
+    settings: settingsOfAgreed(agreed, term, price),
   });
   if (!parsed.ok) return { ok: false, code: "cannot", error: parsed.error };
   for (const id of seatIds) {
