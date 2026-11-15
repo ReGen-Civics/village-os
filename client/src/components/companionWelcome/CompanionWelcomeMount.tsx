@@ -115,10 +115,27 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
     return () => window.removeEventListener("hashchange", onHash);
   }, [welcome, state, openNow]);
 
+  // Finished in another tab: the server refused this tab's step back, so close and
+  // read the saved state again, which is the finished one.
+  const finishedElsewhere = useCallback(() => {
+    setOpen(false);
+    setRefocusDue(true);
+    void Promise.all([read<WelcomePayload>("/api/me/companion-welcome"), read<CompanionsPayload>("/api/me/companions")]).then(([w, c]) => {
+      if (w) {
+        setWelcome(w);
+        setState(w.state);
+      }
+      if (c) setCompanions(c.companions);
+    });
+  }, []);
+
   const close = useCallback((status: WelcomeStatus, beat: number, companionName: string) => {
     setOpen(false);
     setRefocusDue(true);
-    setState({ beat: status === "done" ? WELCOME_BEATS.length - 1 : beat, status, at: new Date().toISOString() });
+    // A finished welcome stays finished, here as on the server: skipping a replay changes nothing.
+    const next: WelcomeState = { beat: status === "done" ? WELCOME_BEATS.length - 1 : beat, status, at: new Date().toISOString() };
+    setState((prev) => (prev?.status === "done" ? prev : next));
+    setWelcome((w) => (w && w.state?.status !== "done" ? { ...w, state: next } : w));
     setCompanions((cs) => cs?.map((c) => (c.scope === "personal" ? { ...c, name: companionName === "your companion" ? c.name : companionName } : c)) ?? cs);
     if (window.location.hash === HASH) history.replaceState(null, "", window.location.pathname + window.location.search);
     if (status === "done") window.scrollTo({ top: 0 });
@@ -129,7 +146,7 @@ export default function CompanionWelcomeMount({ firstName, onTab }: { firstName:
   if (open) {
     return (
       <Suspense fallback={null}>
-        <CompanionWelcome firstName={firstName} companions={companions} payload={welcome} startBeat={startBeat} onTab={onTab} onClose={close} />
+        <CompanionWelcome firstName={firstName} companions={companions} payload={welcome} startBeat={startBeat} onTab={onTab} onClose={close} onFinishedElsewhere={finishedElsewhere} />
       </Suspense>
     );
   }

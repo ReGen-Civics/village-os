@@ -606,7 +606,8 @@ describe("the terms", () => {
     await applyFor();
     const shape = document.querySelector("[data-comp-shape]") as HTMLElement;
     expect(Array.from(shape.querySelectorAll("[data-share-pct]")).map((d) => d.textContent)).toEqual(["40%", "55%", "5%"]);
-    expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("To be decided in the onboarding process.");
+    // The split in force as a sentence (adopted 15 Nov 2026).
+    expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 40% is paid in cash, 55% in Earned Equity and 5% in credits by default; we settle the split together.");
     expect(shape.querySelector("[data-at-risk]")?.textContent).toBe(SETUP.atRisk);
     expect(shape.querySelector("[data-comp-footer]")?.textContent).toBe(SETUP.footer);
     // The risk sits right beside the footer.
@@ -623,6 +624,19 @@ describe("the terms", () => {
     expect(Array.from(shape.querySelectorAll("[data-share-pct]")).map((d) => d.textContent)).toEqual(["N%", "N%", "N%"]);
     expect(shape.querySelector("[data-at-risk]")).toBeNull();
     expect(shape.querySelector("[data-comp-footer]")).toBeNull();
+    // No split: the old line.
+    expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("To be decided in the onboarding process.");
+  });
+
+  it("the split line leaves out a part at 0%, and keeps the old line for a split it cannot read", async () => {
+    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 0 }, { label: "Equity", pct: 90 }, { label: "Credits", pct: 10 }] } });
+    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 90% is paid in Earned Equity and 10% in credits by default; we settle the split together.");
+    cleanup();
+    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 100 }] } });
+    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 100% is paid in cash by default; we settle the split together.");
+    cleanup();
+    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 50 }, { label: "Bonus", pct: 50 }] } });
+    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("To be decided in the onboarding process.");
   });
 
   it("each setting the role has written is answered, and the answers travel with the card", async () => {
