@@ -21293,6 +21293,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
         await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
         return out;
       }
+      // R159: the closer asks the openers' question again. A ballot opened
+      // before the openers asked it, or written by any other door, could
+      // otherwise create the `steward` row the launch adopts as the founding seat.
+      const reservedAtClose = reservedRoleIdRefusal(roleId);
+      if (reservedAtClose) {
+        out.held = `${reservedAtClose} Nothing was created.`;
+        await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
+        return out;
+      }
       const existing = rolesRepo.all().find((r: any) => r.id === roleId) as any;
       if (existing) {
         out.held = `${existing.name ?? roleId} already exists in this village, so there was nothing to create.`;
