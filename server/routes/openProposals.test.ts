@@ -38,6 +38,8 @@ import { readOpenProposal } from "../repos/openProposals";
 import { retryOwedConfirmations } from "../lib/openProposalKept";
 import { rewriteTermsOffer } from "../repos/seatApplications";
 import { usersRepo } from "../repos/users";
+import { loadVariables } from "../lib/variables";
+import { LANGUAGES } from "../../shared/applicantWords";
 import { register, tidyOpenProposals } from "./openProposals";
 
 const configured = testDbConfigured();
@@ -223,7 +225,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const r = await call("GET", "/api/open-proposals/form");
       expect(r.body).toMatchObject({ open: true, village: "Test Village", season: { id: "s-next", name: "Season of Roots", startsOn: "2099-01-01" } });
       expect(r.body.roles.map((x: any) => x.id).sort()).toEqual([gate, well].sort());
-      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, payCeiling: null });
+      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, opensLater: false, payCeiling: null });
       expect(JSON.stringify(r.body)).not.toContain(example);
       expect(JSON.stringify(r.body)).not.toContain(dormant);
     });
@@ -294,6 +296,40 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       for (const key of ["knowUs", "rampUp", "selfKnowledge"]) expect(body).not.toHaveProperty(key);
     });
 
+    it("hiring the founding team first (Rye, 14 Nov 2026): a role outside it opens later, and its applicant is told the reply waits, on every page and letter", async () => {
+      const setVar = async (key: string, value: string | null) => {
+        if (value === null) await q("DELETE FROM game_variables WHERE config_key = ?", [key]);
+        else await q("INSERT INTO game_variables (config_key, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", [key, value]);
+        await loadVariables(pool);
+      };
+      await setVar("org.founding_team", "true");
+      await setVar("org.founding_team_roles", gate);
+      try {
+        const form = await call("GET", "/api/open-proposals/form");
+        const flag = (id: string) => form.body.roles.find((r: any) => r.id === id)?.opensLater;
+        expect(flag(gate)).toBe(false);
+        expect(flag(well)).toBe(true);
+        // The founding role keeps the village's days (control).
+        const founding = await call("POST", "/api/open-proposals", proposal({ email: "first@example.test" }));
+        expect(founding.body).toMatchObject({ replyDays: expect.any(Number), afterFounding: false });
+        // A role opening next: no days, and said.
+        const before = state.sent.length;
+        const later = await call("POST", "/api/open-proposals", proposal({ email: "later@example.test", roles: [{ roleId: well, note: "Wells are my life." }] }));
+        expect(later.body).toMatchObject({ sent: true, replyDays: null, afterFounding: true });
+        const confirmed = await call("POST", "/api/open-proposals/confirm", { token: tokenOf(state.sent[before]) });
+        expect(confirmed.body).toMatchObject({ confirmed: true, replyDays: null, afterFounding: true, steps: applicantSteps("en", null) });
+        expect(confirmed.body.steps.find((s: any) => s.key === "review").when).toMatch(/Once our founding team is in place/);
+        const status = state.sent.find((m) => m.idempotencyKey.endsWith(":status") && m.to.email === "later@example.test");
+        expect(status?.text).toContain(LANGUAGES.en.replyPromise(null));
+        expect(status?.text).not.toMatch(/We reply within \d/);
+      } finally {
+        await setVar("org.founding_team", null);
+        await setVar("org.founding_team_roles", null);
+      }
+      // With the founding team off, nothing opens later (control).
+      expect((await call("GET", "/api/open-proposals/form")).body.roles.every((r: any) => r.opensLater === false)).toBe(true);
+    });
+
     it("refuses Human Design or Gene Keys longer than its limit, naming the field", async () => {
       const r = await call("POST", "/api/open-proposals", proposal({ selfKnowledge: "x".repeat(301) }));
       expect(r.status).toBe(400);
@@ -324,7 +360,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const ok = await call("POST", "/api/open-proposals/confirm", { token });
       // The applicant also gets the link to their own status page (role journey L5); only its hash is kept.
       // The firefly path's confirmed page: it speaks the language proposed in, and dates the first reply.
-      expect(ok.body).toEqual({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath: expect.stringContaining(`/application-status/${id}?token=`), locale: "en", replyDays: expect.any(Number), steps: applicantSteps("en", ok.body.replyDays) });
+      expect(ok.body).toEqual({ confirmed: true, message: OPEN_WORDS.confirmed, statusPath: expect.stringContaining(`/application-status/${id}?token=`), locale: "en", replyDays: expect.any(Number), afterFounding: false, steps: applicantSteps("en", ok.body.replyDays) });
       // The confirmed page draws the one step list the status page uses (shared/applicantWords.ts), in order.
       expect(ok.body.steps.map((s: { key: string }) => s.key)).toEqual(["received", "review", "invitation", "conversations", "decision", "first_cycle"]);
       expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");

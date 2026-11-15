@@ -80,12 +80,40 @@ export function StepMark({ labels, now, reached, onGo }: { labels: readonly stri
   );
 }
 
-/** With no role named: the open roles, each one door. One application is for one role. */
-export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<{ id: string; name: string; circle: string; aim: string | null }>; onPick: (id: string) => void }) {
+type ChoiceRole = { id: string; name: string; circle: string; aim: string | null; opensLater?: boolean };
+
+/**
+ * With no role named: the open roles, each one door. One application is for one role.
+ *
+ * Hiring the founding team first (Rye, 14 Nov 2026): while some roles open after the
+ * founding team, the list is two, the founding roles first and then the roles opening
+ * next, with the line that says a reply to those waits.
+ */
+export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
   const { t } = useLingui();
   if (roles.length === 0) {
     return <p className={HINT}>{t({ message: "No role is open right now. Check back soon.", context: "founding application choose" })}</p>;
   }
+  const later = roles.filter((r) => r.opensLater === true);
+  const first = roles.filter((r) => r.opensLater !== true);
+  if (later.length === 0 || first.length === 0) return <RoleDoors roles={roles} onPick={onPick} />;
+  return (
+    <div className="grid gap-10">
+      <section aria-labelledby="choose-first" data-role-choice-first="">
+        <h2 id="choose-first" className="mb-4 font-display text-2xl leading-tight text-foreground">{t({ message: "Hiring first: the founding team", context: "founding application choose, founding roles heading" })}</h2>
+        <RoleDoors roles={first} onPick={onPick} />
+      </section>
+      <section aria-labelledby="choose-later" data-role-choice-later="">
+        <h2 id="choose-later" className="mb-2 font-display text-2xl leading-tight text-foreground">{t({ message: "Opening next", context: "founding application choose, later roles heading" })}</h2>
+        <p className="mb-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">{t({ message: "You are welcome to apply for these now. We are filling the founding team first, so it may be a while before we reply.", context: "founding application choose, later roles note" })}</p>
+        <RoleDoors roles={later} onPick={onPick} />
+      </section>
+    </div>
+  );
+}
+
+function RoleDoors({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
+  const { t } = useLingui();
   return (
     <ul className="grid gap-3" data-role-choice="">
       {roles.map((r) => (

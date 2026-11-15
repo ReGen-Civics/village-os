@@ -98,6 +98,8 @@ interface FormRole {
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
   alwaysChecked?: boolean;
+  /** Opens after the founding team (Rye, 14 Nov 2026): applied for now, answered once the founding team is in place. */
+  opensLater?: boolean;
 }
 
 type FormState =
@@ -520,6 +522,7 @@ export default function ProposeARole() {
         to: sentTo,
         at: new Date(),
         replyDays: typeof data?.replyDays === "number" ? data.replyDays : null,
+        afterFounding: data?.afterFounding === true,
         ...(kept ? { kept, statusPath: typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null } : {}),
       });
       window.scrollTo?.({ top: 0 });
@@ -741,6 +744,12 @@ export default function ProposeARole() {
         </p>
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
+        {/* Hiring the founding team first (Rye, 14 Nov 2026): said before a word is written. */}
+        {role.opensLater && (
+          <p className={`mt-4 ${TILE} text-sm text-foreground`} data-opens-later="">
+            {t({ message: "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply.", context: "founding application, later role note" })}
+          </p>
+        )}
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
         {setup.updatedNote && (
           <p className="mt-2 text-sm text-foreground" data-updated-note="">

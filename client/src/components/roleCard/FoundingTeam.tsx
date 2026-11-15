@@ -64,6 +64,7 @@ export default function FoundingTeam({
   lead = false,
   filled = [],
   fill = {},
+  laterCount = 0,
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -73,6 +74,8 @@ export default function FoundingTeam({
   filled?: FilledRole[];
   /** How full each role is, by id (Rye, 14 Nov 2026). */
   fill?: Record<string, RoleFill>;
+  /** The listed roles that open after this team (Rye, 14 Nov 2026), shown under it at #opening-next. */
+  laterCount?: number;
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -105,6 +108,15 @@ export default function FoundingTeam({
         </Heading>
         <p className={`${lead ? "mt-3" : "mt-5"} max-w-2xl text-lg leading-relaxed text-muted-foreground sm:mt-5 sm:text-xl`}>
           {t({ message: "We are building our team of people who will lead each domain of the village from the foundation through to completion.", context: "founding team section lede" })}
+        </p>
+        {/* Hiring the founding team first (Rye, 14 Nov 2026): one line, so a visitor sharing the link sees there is more to come. */}
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground" data-hiring-first="">
+          {t({ message: "We are hiring these roles first. More roles open after them.", context: "founding team section, hiring first" })}{" "}
+          {laterCount > 0 && (
+            <a href="#opening-next" className="font-medium text-notice underline underline-offset-2 hover:text-foreground">
+              {t({ message: "See the roles opening next", context: "founding team section, hiring first" })}
+            </a>
+          )}
         </p>
       </div>
 
