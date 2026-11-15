@@ -224,7 +224,7 @@ import { register as registerApplicationCardRoutes, orgRoleExtras } from "./rout
 import { register as registerRoleProposalRoutes } from "./routes/roleProposals";
 import { register as registerOpenProposalRoutes } from "./routes/openProposals";
 import { adminDoorRefusal, register as registerStewardHandoverRoutes } from "./routes/stewardHandover";
-import { powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
+import { freezeLaunchSelection, powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
 import { register as registerRoleGuideRoutes } from "./routes/roleGuide";
 import { register as registerMapOrgRoutes } from "./routes/mapOrg";
 import { register as registerMapMasterplanRoutes } from "./routes/mapMasterplan";
@@ -13522,6 +13522,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const slate = await launchSlateProblem(getPool(), req.body?.slate, electorate, firstName);
     if (!slate.ok) return res.status(409).json({ error: slate.error });
     const villageName = mergedConfig().project.name;
+    // Read once: the document says these words and the ballot freezes this copy (audit S3).
+    const handoverSelection = (await readLaunchSelection(getPool())).capabilities;
     const doc = launchProposalDoc({
       villageName,
       quorumPct: dials.quorumPct,
@@ -13532,7 +13534,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       openedOn: new Date().toISOString().slice(0, 10),
       slate: slate.members,
       // Frozen here, in plain words: the hand-over control refuses to change it while this vote is open.
-      handover: (await readLaunchSelection(getPool())).capabilities.map(powerInPlainWords),
+      handover: handoverSelection.map(powerInPlainWords),
       carriedOpen: (await launchStatus(getPool(), launchDeps)).carriedOpen.map((c) => c.title), // host-only rows this vote carries
     });
 
@@ -13549,7 +13551,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       durationDays: Math.max(1, numberVar("governance.vote_days")),
       openedBy: user.id,
       electorate,
-      onOpen: (conn, ballotId) => insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id),
+      onOpen: async (conn, ballotId) => {
+        await insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id);
+        // The closer moves this copy, never the live selection (audit S3).
+        await freezeLaunchSelection(conn, ballotId, handoverSelection);
+      },
     });
     if (!result.ok) return res.status(409).json({ error: result.error, ballotId: result.alreadyOpen?.id ?? null });
 

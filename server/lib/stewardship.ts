@@ -182,7 +182,7 @@ import {
 import { catalystUserIds } from "../repos/users";
 import { slateFor } from "../repos/stewardSlate";
 import { capabilityHoldings, moveCapabilityToVillage, STEWARD_ROLE_ID } from "./capabilityHolding";
-import { readLaunchCrossing, readLaunchSelection, writeLaunchCrossing } from "./launchHandover";
+import { owedLaunchBallotId, readLaunchCrossing, selectionForLaunch, writeLaunchCrossing } from "./launchHandover";
 import { boolVar, stringVar } from "./variables";
 
 /**
@@ -1787,7 +1787,7 @@ export async function seatCatalystsAsStewards(
       error:
         `The ${STEWARD_ROLE_NAME} role already has ${outside.length === 1 ? "a holder" : `${outside.length} holders`} the launch did not name and no vote seated. ` +
         "The launch hands this role the veto and every power it moves, so it seated nobody and moved nothing. " +
-        "Take them out of the role, and the village seats its stewards by a role_seat vote.",
+        "Take them out of the role, and the village votes its stewards in with a role_seat ballot.",
     };
   }
 
@@ -1974,9 +1974,9 @@ export async function seatCatalystsAsStewards(
       "A power entrusted to a role nobody sits in belongs to nobody at all. " +
       "The stewards hand them over by their own act once the village votes somebody into the role.";
     // Owed now, and the first vote-seating finishes it (R165).
-    if ((await readLaunchCrossing(pool)) !== "crossed") await writeLaunchCrossing(pool, "waiting");
+    if ((await readLaunchCrossing(pool)) !== "crossed") await writeLaunchCrossing(pool, "waiting", new Date(), launchBallotId);
   } else {
-    const crossed = await crossLaunchSelection(pool, launchBallotId, "The village's own hand on this, from the vote that started its Game.");
+    const crossed = await crossLaunchSelection(pool, launchBallotId, "The village's own hand on this, from the vote that started its Game.", launchBallotId);
     base.capabilitiesMoved.push(...crossed.moved);
     base.capabilitiesKeptElsewhere.push(...crossed.keptElsewhere);
     // TRUE ONLY WHEN EVERY SELECTED POWER IS THERE, which is what the caller's own
@@ -1988,7 +1988,7 @@ export async function seatCatalystsAsStewards(
       base.holdingHeld = crossed.refusals.join(" ");
       base.error = base.error ?? base.holdingHeld;
     } else {
-      await writeLaunchCrossing(pool, "crossed");
+      await writeLaunchCrossing(pool, "crossed", new Date(), launchBallotId);
     }
   }
 
@@ -2008,12 +2008,15 @@ export async function crossLaunchSelection(
   pool: Pool,
   ballotId: string,
   note: string,
+  /** The launch ballot whose frozen selection crosses (audit S3). Null reads the live selection. */
+  launchBallotId: string | null,
 ): Promise<{ moved: string[]; keptElsewhere: Array<{ capability: string; holderRoleId: string }>; refusals: string[] }> {
   const moved: string[] = [];
   const keptElsewhere: Array<{ capability: string; holderRoleId: string }> = [];
   const refusals: string[] = [];
   const holderOf = new Map((await capabilityHoldings(pool)).map((h) => [h.capability, h.holderRoleId]));
-  for (const capability of (await readLaunchSelection(pool)).capabilities) {
+  // The selection the launch vote opened with, never one edited since (audit S3).
+  for (const capability of await selectionForLaunch(pool, launchBallotId)) {
     const holder = holderOf.get(capability);
     if (holder && holder !== STEWARD_ROLE_ID) {
       keptElsewhere.push({ capability, holderRoleId: holder });
@@ -2034,8 +2037,9 @@ export async function crossLaunchSelection(
  */
 export async function crossOwedLaunchSelection(pool: Pool, seatingBallotId: string): Promise<Awaited<ReturnType<typeof crossLaunchSelection>> | null> {
   if ((await readLaunchCrossing(pool)) !== "waiting") return null;
-  const crossed = await crossLaunchSelection(pool, seatingBallotId, "The stewards' launch selection, crossing when the village voted somebody into the steward role.");
-  if (crossed.refusals.length === 0) await writeLaunchCrossing(pool, "crossed");
+  const launchBallotId = await owedLaunchBallotId(pool);
+  const crossed = await crossLaunchSelection(pool, seatingBallotId, "The stewards' launch selection, crossing when the village voted somebody into the steward role.", launchBallotId);
+  if (crossed.refusals.length === 0) await writeLaunchCrossing(pool, "crossed", new Date(), launchBallotId);
   return crossed;
 }
 
