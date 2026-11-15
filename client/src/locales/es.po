@@ -5051,6 +5051,10 @@ msgstr "No se ha comprometido con el acuerdo de confidencialidad."
 msgid "No quest reached the ballot in this round."
 msgstr ""
 
+#: client/src/pages/RoleDraft.tsx
+msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
+msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada mes y cada temporada. El compromiso es cuánta energía y atención pide el rol."
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup"
 msgid "Cancel"
@@ -5754,6 +5758,11 @@ msgstr ""
 msgctxt "role editor"
 msgid "Interviewers, in order"
 msgstr ""
+
+# needs-native-review: new words, 12 Nov 2026
+#: client/src/pages/RoleDraft.tsx
+msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada mes y esta temporada, y cómo sirve a nuestras metas."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: failure"
@@ -9980,6 +9989,10 @@ msgctxt "pricing desk"
 msgid "Kind of work for {0}"
 msgstr ""
 
+#: client/src/pages/RoleDraft.tsx
+msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
+msgstr "Tu rol va desde la adopción hasta el {termEnds}. Cada mes cuentas lo que vas a aportar el mes siguiente."
+
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 msgstr ""
@@ -11148,6 +11161,11 @@ msgstr "Todavía no hay suficiente de tu propia escritura para hacer un borrador
 msgctxt "button that adopts the conflict agreement"
 msgid "Adopt it"
 msgstr ""
+
+#: client/src/pages/RoleDraft.tsx
+msgctxt "role draft season dates"
+msgid "{seasonStarts} to {seasonEnds}"
+msgstr "Del {seasonStarts} al {seasonEnds}"
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -12395,11 +12413,6 @@ msgstr "añadido, con Gene Keys"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
 #~ msgstr "1 de los roles que elegiste ya no está abierto. Elige entre los roles de abajo."
-
-# needs-native-review: new words, 12 Nov 2026
-#: client/src/pages/RoleDraft.tsx
-msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
-msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada mes y esta temporada, y cómo sirve a nuestras metas."
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/ProposeARole.tsx
@@ -15619,10 +15632,6 @@ msgctxt "drafted letters"
 msgid "Decision letter"
 msgstr ""
 
-#: client/src/pages/RoleDraft.tsx
-msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
-msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada mes y cada temporada. El compromiso es cuánta energía y atención pide el rol."
-
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
 msgid "Remove"
@@ -16527,10 +16536,6 @@ msgctxt "friday harvest, a priority partly done, carried to monday"
 msgid "In bud"
 msgstr "En botón"
 
-#: client/src/pages/RoleDraft.tsx
-msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
-msgstr "Tu rol va desde la adopción hasta el {termEnds}. Cada mes cuentas lo que vas a aportar el mes siguiente."
-
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Round stages"
@@ -16926,8 +16931,3 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-#: client/src/pages/RoleDraft.tsx
-msgctxt "role draft season dates"
-msgid "{seasonStarts} to {seasonEnds}"
-msgstr "Del {seasonStarts} al {seasonEnds}"

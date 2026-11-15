@@ -5065,6 +5065,10 @@ msgstr "They have not promised the confidentiality agreement."
 msgid "No quest reached the ballot in this round."
 msgstr "No quest reached the ballot in this round."
 
+#: client/src/pages/RoleDraft.tsx
+msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
+msgstr "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup"
 msgid "Cancel"
@@ -5764,6 +5768,10 @@ msgstr "Pool released: {0} {1}"
 msgctxt "role editor"
 msgid "Interviewers, in order"
 msgstr "Interviewers, in order"
+
+#: client/src/pages/RoleDraft.tsx
+msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: failure"
@@ -9976,6 +9984,10 @@ msgctxt "pricing desk"
 msgid "Kind of work for {0}"
 msgstr "Kind of work for {0}"
 
+#: client/src/pages/RoleDraft.tsx
+msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
+msgstr "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
+
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
 msgstr "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
@@ -11149,6 +11161,11 @@ msgstr "There is not enough of your own writing to draft from yet. Add a few lin
 msgctxt "button that adopts the conflict agreement"
 msgid "Adopt it"
 msgstr "Adopt it"
+
+#: client/src/pages/RoleDraft.tsx
+msgctxt "role draft season dates"
+msgid "{seasonStarts} to {seasonEnds}"
+msgstr "{seasonStarts} to {seasonEnds}"
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -12400,8 +12417,8 @@ msgstr "added, with Gene Keys"
 #~ msgstr "1 role you picked is not open any more. Pick from the roles below."
 
 #: client/src/pages/RoleDraft.tsx
-msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
-msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
+#~ msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
+#~ msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application intro"
@@ -15615,8 +15632,8 @@ msgid "Decision letter"
 msgstr "Decision letter"
 
 #: client/src/pages/RoleDraft.tsx
-msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
-msgstr "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
+#~ msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
+#~ msgstr "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each moon and season. Commitment is how much energy and attention the role asks."
 
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
@@ -16520,8 +16537,8 @@ msgid "In bud"
 msgstr "In bud"
 
 #: client/src/pages/RoleDraft.tsx
-msgid "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
-msgstr "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
+#~ msgid "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
+#~ msgstr "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
