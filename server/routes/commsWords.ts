@@ -56,7 +56,7 @@ import { effectiveLifecycle, requireModule } from "../lib/modules";
 import { stringVar } from "../lib/variables";
 import { letterTeam } from "../lib/comms/villageLetter";
 import { stayCloseFrom } from "../../shared/comms/comeAndPlay";
-import { renderSampleLetters } from "../../shared/comms/letterSamples";
+import { LETTER_SAMPLE_IDS, renderSampleLetters } from "../../shared/comms/letterSamples";
 import { safeHref } from "../../shared/otherWays";
 import { liveTemplateRow } from "../repos/commsTemplates";
 
@@ -203,17 +203,60 @@ export function register(app: Express, deps: Deps): void {
    * look, with its live modules and settings and a made-up reader
    * (shared/comms/letterSamples.ts). A look: it sends and changes nothing.
    */
-  app.get("/api/admin/comms/letter-previews", moduleGate, async (req, res) => {
-    if (!(await mayLook(req, res))) return;
+  /** The sample letters in this village's look, the one render the preview and the test share. */
+  async function sampleLetters() {
     const village = await loadEmailVillage(getPool(), commsPostOffice.origin());
-    const letters = renderSampleLetters({
+    return renderSampleLetters({
       village,
       lifecycleOf: (id) => effectiveLifecycle(id),
       newsletter: safeHref(stringVar("org.newsletter_link"), "") || null,
       stayClose: stayCloseFrom(stringVar("org.stay_close_name"), stringVar("org.stay_close_link")),
       team: letterTeam(village),
     });
-    res.json({ letters });
+  }
+
+  app.get("/api/admin/comms/letter-previews", moduleGate, async (req, res) => {
+    if (!(await mayLook(req, res))) return;
+    res.json({ letters: await sampleLetters() });
+  });
+
+  /**
+   * THE SAMPLE LETTERS, SENT TO WHOEVER PRESSED THE BUTTON, the way "Send me a
+   * test" sends one email's words: the same gate, the signed-in admin's own
+   * account address and nobody else's (an address in the body is never read),
+   * `essential`, origin `comms.test`, a fresh idempotency key each time so a
+   * test can never stand in the way of a real letter, and no applicant, no
+   * notification and no journey touched. Each subject carries "[Test]".
+   * `keys` picks some of the six; with none, all six go. One post per letter.
+   */
+  app.post("/api/admin/comms/letter-previews/send", moduleGate, async (req, res) => {
+    if (!(await guardCapability(req, res, "comms.manage", REFUSAL))) return;
+    const asked = (req.body as { keys?: unknown } | undefined)?.keys;
+    if (asked !== undefined && !Array.isArray(asked)) return res.status(400).json({ error: "Name the letters as a list." });
+    const known: readonly string[] = LETTER_SAMPLE_IDS;
+    const unknown = (asked ?? []).filter((k) => typeof k !== "string" || !known.includes(k));
+    if (unknown.length) return res.status(400).json({ error: `There is no sample letter called "${String(unknown[0]).slice(0, 60)}".` });
+    const wanted = new Set<string>(asked?.length ? (asked as string[]) : known);
+    const user = await authedUser(req);
+    const to = String(user?.email ?? "").trim();
+    if (!to) return res.status(400).json({ error: "Your account has no email address to send a test to." });
+    const results = [];
+    for (const letter of await sampleLetters()) {
+      if (!wanted.has(letter.id)) continue;
+      const result = await post(commsPostOffice, {
+        idempotencyKey: `comms.test:${randomUUID()}`,
+        kind: "essential",
+        origin: "comms.test",
+        to: { email: to, name: user?.name ?? null, userId: user?.id ?? null },
+        subject: `[Test] ${letter.subject}`,
+        html: letter.html,
+        text: letter.text,
+        preheader: letter.preheader,
+        urgent: true,
+      });
+      results.push({ key: letter.id, status: result.status, reason: result.reason ?? null, messageId: result.messageId });
+    }
+    res.json({ sentTo: to, results });
   });
 
   /** One email's words: live, the platform's, every version, and the fields it may use. */
