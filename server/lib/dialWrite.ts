@@ -38,6 +38,7 @@ import { floorDialRefusal } from "./villageFloors";
 import { QUORUM_FALLBACK_KEY, ADMIN_ROUTE_REFUSAL as QUORUM_FALLBACK_ADMIN_ROUTE } from "../../shared/quorumFallback";
 import type { CapabilityVerdict } from "./appDeps";
 import { readGameStart } from "./gameStart";
+import { isVoteRuleDial, voteRuleDialClosed, VOTE_RULE_DIAL_CLOSED_AT_LAUNCH } from "./launchDoors";
 import { setVariable } from "./variables";
 import { SOURCE_CAP_KEYS, WEIGHT_CAP_ON_KEY, WEIGHT_CAP_PCT_KEY } from "./governanceWeights";
 
@@ -135,6 +136,11 @@ export async function writeDial(
   // 0334: ON is the failsafe door's, OFF is the village's vote (Rye, 2026-11-06).
   if (key === QUORUM_FALLBACK_KEY) return { status: 409, body: { error: QUORUM_FALLBACK_ADMIN_ROUTE, proposeInstead: true } };
   if (raw === undefined || raw === null) return { status: 400, body: { error: "A value is required" } };
+  // D2a (server/lib/launchDoors.ts): after launch the dials that decide how votes pass move only by
+  // the village's vote. The founder seated as a steward who broke the glass keeps the door.
+  if (isVoteRuleDial(key) && voteRuleDialClosed(key, (await readGameStart(getPool())).started, verdict.reachedPast)) {
+    return { status: 409, body: { error: VOTE_RULE_DIAL_CLOSED_AT_LAUNCH, code: "vote_rule_dial_closed_at_launch", proposeInstead: true } };
+  }
   // After the Birthing, what a vote MEANS is the village's, and the one door
   // to it is a governance_mode ballot. This route is how a village is set up,
   // not how it is governed (dispatcher lane).

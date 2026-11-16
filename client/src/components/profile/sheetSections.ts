@@ -122,7 +122,7 @@ export const SHEET_SECTIONS: SheetSection[] = [
     id: "investorFacts",
     band: "path",
     path: "investor",
-    quiet: "What you have put in, and what came back, once you walk the {path} path.",
+    quiet: "What you've put in, and what came back, once you walk the {path} path.",
   },
   {
     id: "ventures",
@@ -134,7 +134,7 @@ export const SHEET_SECTIONS: SheetSection[] = [
     id: "reservations",
     band: "path",
     path: "resident",
-    quiet: "Where you are staying and what you have reserved, once you walk the {path} path.",
+    quiet: "Where you're staying and what you've reserved, once you walk the {path} path.",
   },
   {
     id: "seats",

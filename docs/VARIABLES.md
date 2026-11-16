@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 245 open and 50 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 246 open and 50 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 268 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-295 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 61 text, 6 longtext.
+296 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 6 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -57,7 +57,7 @@ Each dial also says WHEN a change lands. 268 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 19 | 18 | 1 |
+| The village's people | 20 | 19 | 1 |
 | The founding team | 19 | 19 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
@@ -276,6 +276,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `12` | the whole village |
 | Longest voice clip beside an answer | `org.voice_clip_seconds` | The village's people | integer | `60` | the whole village |
 | Review each application before the conversations | `org.review_before_conversations` | The village's people | boolean | `false` | the whole village |
+| The team that signs letters to applicants | `org.letter_team` | The village's people | text | blank | the whole village |
 | The way to stay close, named in the not-invited letter | `org.stay_close_name` | The village's people | text | blank | the whole village |
 | Where the way to stay close is | `org.stay_close_link` | The village's people | text | blank | the whole village |
 | Roles accepted from a sync start unlisted | `org.sync_starts_unlisted` | The village's people | boolean | `false` | the whole village |
@@ -3431,7 +3432,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-19 dials. 18 for the whole village, 1 for the founder or an admin.
+20 dials. 19 for the whole village, 1 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3530,6 +3531,20 @@ On, an application waits for our review once its address confirms: a holder of t
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The team that signs letters to applicants
+
+The sign-off on the letters an applicant or a person asking to join reads, such as "The Human Operations team". A team, never a person's name. Leave it empty and the letters are signed by the village's own team.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.letter_team` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

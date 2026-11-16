@@ -2521,9 +2521,9 @@ msgid "Add your name."
 msgstr "Escribe tu nombre."
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
-msgctxt "shape the role"
-msgid "The role card could not be read just now. Your application still goes without it."
-msgstr "No pudimos leer la ficha del rol ahora. Tu solicitud se envía igual sin ella."
+#~ msgctxt "shape the role"
+#~ msgid "The role card could not be read just now. Your application still goes without it."
+#~ msgstr "No pudimos leer la ficha del rol ahora. Tu solicitud se envía igual sin ella."
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/Quests.tsx
@@ -3027,6 +3027,11 @@ msgctxt "your path, the next act"
 msgid "Open my moon"
 msgstr "Abrir mi luna"
 
+#: client/src/pages/Home.tsx
+msgctxt "landing, founding team card eyebrow"
+msgid "Roles with rewards"
+msgstr ""
+
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "Each new moon the village looks again at the block its season chose to grow and at any block a key moment flagged. With neither, the blocks take turns in canvas order."
 msgstr ""
@@ -3471,6 +3476,11 @@ msgstr "Ya recibimos cinco propuestas desde esta conexión en la última hora, a
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Open it on its own page"
+msgstr ""
+
+#: client/src/components/roleCard/ShapeTheRole.tsx
+msgctxt "shape the role"
+msgid "The role card couldn't open just now. You can still send your application."
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
@@ -5853,9 +5863,9 @@ msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "full role card, under the one act"
-msgid "Six steps. No account needed."
-msgstr "Seis pasos. No necesitas cuenta."
+#~ msgctxt "full role card, under the one act"
+#~ msgid "Six steps. No account needed."
+#~ msgstr "Seis pasos. No necesitas cuenta."
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgctxt "who adopts a canvas suggestion"
@@ -6617,9 +6627,9 @@ msgid "Why this agent, in its keeper's words"
 msgstr ""
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
-msgctxt "shape the role lede"
-msgid "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application, and the people who decide read it beside that piece."
-msgstr "Lee el rol parte por parte. En cualquier parte, di qué cambiarías, qué falta o cómo la entregarías. Va con tu solicitud, y las personas que deciden lo leen junto a esa parte."
+#~ msgctxt "shape the role lede"
+#~ msgid "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application, and the people who decide read it beside that piece."
+#~ msgstr "Lee el rol parte por parte. En cualquier parte, di qué cambiarías, qué falta o cómo la entregarías. Va con tu solicitud, y las personas que deciden lo leen junto a esa parte."
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Planning for next season instead? Propose my roles lets you change any words (your changes show in gold) and tie your season goals to the village's."
@@ -7544,6 +7554,12 @@ msgstr ""
 msgid "How to reach them"
 msgstr ""
 
+#. placeholder {0}: priced(suggested)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
@@ -8088,6 +8104,11 @@ msgctxt "coming up, taking back i'll be there"
 msgid "I can't come after all"
 msgstr "Al final no puedo ir"
 
+#: client/src/pages/YourPath.tsx
+msgctxt "your path, the whole path page"
+msgid "These wait behind the step above. Take them in any order once it's done."
+msgstr ""
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application choose, founding roles heading"
 #~ msgid "Hiring first: the founding team"
@@ -8100,6 +8121,11 @@ msgstr ""
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Reading the village's rows"
+msgstr ""
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
@@ -9323,6 +9349,11 @@ msgstr ""
 #~ msgctxt "terms: the pay ask"
 #~ msgid "Negotiate on the first call if chosen"
 #~ msgstr ""
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "full role card, under the one act"
+msgid "No account needed."
+msgstr ""
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 msgctxt "role draft discover"
@@ -10813,6 +10844,11 @@ msgctxt "proposed changes"
 msgid "Proposed by {0}"
 msgstr ""
 
+#: client/src/pages/Home.tsx
+msgctxt "landing hero, the founding team line"
+msgid "We're building the founding team: the people who'll take the village from idea to home, season by season."
+msgstr ""
+
 #: client/src/pages/Characters.tsx
 msgctxt "characters page, the class card's eyebrow"
 msgid "A root"
@@ -11054,9 +11090,9 @@ msgstr "Las decisiones avanzan cuando nadie tiene una objeción razonada de que 
 
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup lede"
-msgid "We suggest {0} at {pct}%. Your proposal sets your pay: propose more or less, and we agree it together in your first month's contract."
-msgstr "Te sugerimos {0} al {pct}%. Tu propuesta fija tu pago: propón más o menos, y lo acordamos juntos en el contrato de tu primer mes."
+#~ msgctxt "price popup lede"
+#~ msgid "We suggest {0} at {pct}%. Your proposal sets your pay: propose more or less, and we agree it together in your first month's contract."
+#~ msgstr "Te sugerimos {0} al {pct}%. Tu propuesta fija tu pago: propón más o menos, y lo acordamos juntos en el contrato de tu primer mes."
 
 #: client/src/pages/Propose.tsx
 #: client/src/pages/ProposeARole.tsx
@@ -11900,9 +11936,9 @@ msgid "Saving"
 msgstr ""
 
 #: client/src/pages/Home.tsx
-msgctxt "landing, founding team card eyebrow"
-msgid "Paid roles"
-msgstr "Roles remunerados"
+#~ msgctxt "landing, founding team card eyebrow"
+#~ msgid "Paid roles"
+#~ msgstr "Roles remunerados"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleCard/focusLine.ts
@@ -12538,9 +12574,9 @@ msgid "This upload did not reach the server. Nothing changed."
 msgstr ""
 
 #: client/src/pages/YourPath.tsx
-msgctxt "your path, the whole path page"
-msgid "These wait behind the step above. Take them in any order once it is done."
-msgstr ""
+#~ msgctxt "your path, the whole path page"
+#~ msgid "These wait behind the step above. Take them in any order once it is done."
+#~ msgstr ""
 
 #: client/src/components/guide/GuideChoiceCard.tsx
 msgctxt "profile: the member's guide choice card"
@@ -13003,9 +13039,9 @@ msgid "If that does not settle it, we ask the care holder to sit with us. In the
 msgstr ""
 
 #: client/src/pages/Home.tsx
-msgctxt "landing hero, the founding team line"
-msgid "We're forming the founding team now: paid roles that take the village from idea to home, season by season and intended for the long run."
-msgstr "Estamos formando el equipo fundador: roles remunerados que llevan la aldea de la idea al hogar, temporada a temporada y pensados para el largo plazo."
+#~ msgctxt "landing hero, the founding team line"
+#~ msgid "We're forming the founding team now: paid roles that take the village from idea to home, season by season and intended for the long run."
+#~ msgstr "Estamos formando el equipo fundador: roles remunerados que llevan la aldea de la idea al hogar, temporada a temporada y pensados para el largo plazo."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Take the stored season off? It no longer reads, so the canvas is already in canvas order, and every reading stays."
@@ -13389,9 +13425,9 @@ msgstr ""
 #~ msgstr ""
 
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup lede"
-msgid "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract."
-msgstr "Tu propuesta fija tu pago: propón tu propio precio, y lo acordamos juntos en el contrato de tu primer mes."
+#~ msgctxt "price popup lede"
+#~ msgid "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract."
+#~ msgstr "Tu propuesta fija tu pago: propón tu propio precio, y lo acordamos juntos en el contrato de tu primer mes."
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The commitment we'd agree on"
@@ -15047,6 +15083,11 @@ msgctxt "price ask: the suggested price"
 msgid "Suggested: {0}, from your commitment of {pct}%."
 msgstr "Sugerido: {0}, según tu compromiso del {pct}%."
 
+#: client/src/components/roleCard/ShapeTheRole.tsx
+msgctxt "shape the role lede"
+msgid "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application."
+msgstr ""
+
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgctxt "role discover admin"
 msgid "Profile lines"
@@ -15502,6 +15543,11 @@ msgstr "Sí, usa esto para dar forma a cómo me habla {companionName}."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "These are still the platform's starting steps. Write them in the village's own words before adopting them."
+msgstr ""
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: more than one role"
+msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
 msgstr ""
 
 #: client/src/components/admin/SigningKeyCard.tsx
@@ -16657,9 +16703,9 @@ msgstr "Todavía no hay roles en este fogón. El fuego está encendido para el p
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: more than one role"
-msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
-msgstr "¿Postulas a más de un rol? Envía una solicitud para cada uno. Cada uno se paga según el compromiso que le des, y los precios se suman: dos roles al 50% pagan como un rol completo."
+#~ msgctxt "price ask: more than one role"
+#~ msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role."
+#~ msgstr "¿Postulas a más de un rol? Envía una solicitud para cada uno. Cada uno se paga según el compromiso que le des, y los precios se suman: dos roles al 50% pagan como un rol completo."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, linked circles"

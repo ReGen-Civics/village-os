@@ -128,7 +128,7 @@ export default function ShapeTheRole({ roleId, value, onChange, pct = null }: { 
         {t({ message: "Shape the role (optional)", context: "shape the role heading" })}
       </h3>
       <p className="mt-1 max-w-prose text-muted-foreground">
-        {t({ message: "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application, and the people who decide read it beside that piece.", context: "shape the role lede" })}
+        {t({ message: "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application.", context: "shape the role lede" })}
       </p>
       <button
         type="button"
@@ -153,7 +153,7 @@ export default function ShapeTheRole({ roleId, value, onChange, pct = null }: { 
               <FullRoleCard seat={found.seat} circleName={found.circleName} register="founding" noAct commitmentChosen={pct} marks={(piece) => value.filter((s) => s.roleId === roleId && s.piece === piece).length} after={(piece) => <PieceBar roleId={roleId} piece={piece as PieceKey} value={value} onChange={onChange} />} />
             </Suspense>
           ) : found === "missing" ? (
-            <p className="text-muted-foreground">{t({ message: "The role card could not be read just now. Your application still goes without it.", context: "shape the role" })}</p>
+            <p className="text-muted-foreground">{t({ message: "The role card couldn't open just now. You can still send your application.", context: "shape the role" })}</p>
           ) : (
             <p className="text-muted-foreground" role="status">{t({ message: "Opening the role card…", context: "shape the role" })}</p>
           )}

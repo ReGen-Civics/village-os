@@ -2623,6 +2623,15 @@ export const VARIABLES: VariableDef[] = [
     default: "false",
   },
   {
+    key: "org.letter_team",
+    category: "The village's people",
+    label: "The team that signs letters to applicants",
+    description:
+      "The sign-off on the letters an applicant or a person asking to join reads, such as \"The Human Operations team\". A team, never a person's name. Leave it empty and the letters are signed by the village's own team.",
+    type: "text",
+    default: "",
+  },
+  {
     key: "org.stay_close_name",
     category: "The village's people",
     label: "The way to stay close, named in the not-invited letter",
