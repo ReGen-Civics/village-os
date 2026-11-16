@@ -70,6 +70,12 @@ export interface EmailVillage {
    */
   tokenName?: string;
   /**
+   * The village's own words a letter may name (gap G6): what a member is
+   * called, its catalyst, a role, its membership commitment. Present only for
+   * a village that set any of them; a field it left blank reads its fallback.
+   */
+  words?: { member?: string; catalyst?: string; role?: string; commitment?: string };
+  /**
    * The rest of the village's look, set only when it chose the dark scheme or
    * colours of its own (`brand.theme.mode`, `.overrides`, `.accent`). Absent,
    * a letter derives from the seed and the character alone, as it always has.
@@ -309,6 +315,10 @@ export function composeEmail(input: ComposeInput): ComposedEmail {
     "village.name": village.name,
     "village.url": village.url,
     "village.tokenName": village.tokenName ?? null,
+    "village.member": village.words?.member ?? null,
+    "village.catalyst": village.words?.catalyst ?? null,
+    "village.role": village.words?.role ?? null,
+    "village.commitment": village.words?.commitment ?? null,
     "footer.address": village.postalAddress,
   };
   const tracker: FillTracker = newTracker();
