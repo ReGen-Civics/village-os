@@ -54,7 +54,7 @@ async function seedRoles(roles: Role[]) {
 }
 
 async function holding(): Promise<string[]> {
-  const [rows] = await pool.query<any[]>("SELECT holder_role_id FROM capability_holding WHERE capability = ?", [TOKEN_MINT]);
+  const [rows] = await pool.query<any[]>("SELECT holder_role_id FROM capability_holding WHERE capability = ?", [TOKEN_MINT]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
   return rows.map((r: any) => String(r.holder_role_id));
 }
 

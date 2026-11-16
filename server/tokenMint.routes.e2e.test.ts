@@ -170,8 +170,8 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: a village migration 0112 recorded a
   beforeAll(async () => {
     if (!DB_CONFIGURED) return;
     await stopServer();
-    // module-review-ok: fixture rows on the scratch schema this suite provisioned, standing in for the launch closer
-    await pool.query("INSERT INTO roles (id, name, description, capabilities, sort_order) VALUES ('steward', 'Village Steward', 'Holds the village in trust.', '[]', 0)");
+    // Fixture rows on the scratch schema this suite provisioned, standing in for the launch closer.
+    await pool.query("INSERT INTO roles (id, name, description, capabilities, sort_order) VALUES ('steward', 'Village Steward', 'Holds the village in trust.', '[]', 0)"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     await pool.query( // module-review-ok: the same fixture
       "INSERT INTO role_holders (id, role_id, user_id, granted_by) VALUES ('tm-h-sam', 'steward', ?, 'fixture'), ('tm-h-tara', 'treasury', ?, 'fixture')",
       [people.sam.id, people.tara.id],
@@ -184,14 +184,14 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: a village migration 0112 recorded a
   }, 300_000);
 
   it("the boot step moved token.mint to the steward role and gave it to the Treasury role, once", async () => {
-    const [held] = await pool.query<any[]>("SELECT holder_role_id FROM capability_holding WHERE capability = 'token.mint'");
+    const [held] = await pool.query<any[]>("SELECT holder_role_id FROM capability_holding WHERE capability = 'token.mint'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     expect(held.map((r: any) => String(r.holder_role_id))).toEqual(["steward"]);
-    const [roles] = await pool.query<any[]>("SELECT id, capabilities FROM roles WHERE id IN ('steward', 'treasury') ORDER BY id");
+    const [roles] = await pool.query<any[]>("SELECT id, capabilities FROM roles WHERE id IN ('steward', 'treasury') ORDER BY id"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     for (const r of roles) {
       const caps = typeof r.capabilities === "string" ? JSON.parse(r.capabilities) : r.capabilities;
       expect(caps, String(r.id)).toContain("token.mint");
     }
-    const [marker] = await pool.query<any[]>("SELECT value FROM app_config WHERE config_key = 'data-migrations'");
+    const [marker] = await pool.query<any[]>("SELECT value FROM app_config WHERE config_key = 'data-migrations'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     expect(String(marker[0]?.value ?? "")).toContain(TOKEN_MINT_0112_MARKER);
   });
 
