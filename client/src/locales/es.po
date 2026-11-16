@@ -226,6 +226,11 @@ msgctxt "roots filter count"
 msgid "Showing {shown} of {total} {noun}: the ones that grow from your roots, and the ones not tagged yet."
 msgstr "Mostrando {shown} de {total} {noun}: los que crecen de tus raíces y los que aún no tienen etiqueta."
 
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "the season's ordered list of group priorities"
+msgid "The priority board"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Your draft holds three. Take one off to draft another."
 #~ msgstr ""
@@ -319,6 +324,10 @@ msgstr ""
 #~ msgctxt "open proposal card field"
 #~ msgid "Task {n} for {roleName}"
 #~ msgstr ""
+
+#: client/src/components/priorities/TeamWeek.tsx
+msgid "Change yours on your profile"
+msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nothing is being weighed right now."
@@ -749,6 +758,13 @@ msgstr "Qué significan las marcas"
 msgid "The village's own rows"
 msgstr ""
 
+#. placeholder {0}: dayWords(week.weekOf)
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/TeamWeek.tsx
+msgctxt "weekly top priority, the week it is for"
+msgid "Week of {0}"
+msgstr ""
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
 msgid "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one."
@@ -859,6 +875,10 @@ msgstr ""
 msgctxt "thanks composer: message field"
 msgid "What you saw them do"
 msgstr "Lo que viste que hizo"
+
+#: client/src/components/priorities/MyWeekCard.tsx
+msgid "See the team's week"
+msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
@@ -2113,6 +2133,11 @@ msgctxt "what the launch guide read"
 msgid "References: {0}."
 msgstr ""
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "an ask's place in line, no week given"
+msgid "Not said"
+msgstr ""
+
 #: client/src/pages/rites/Welcome.tsx
 msgctxt "rites interest form"
 msgid "Your name"
@@ -2540,6 +2565,12 @@ msgctxt "calendar day panel eyebrow"
 msgid "Today"
 msgstr "Hoy"
 
+#. placeholder {0}: i.place
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, an item's place in the order"
+msgid "Number {0}"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Saved. The role is updated."
@@ -2600,6 +2631,10 @@ msgctxt "invoice desk"
 msgid "Chain: {there}."
 msgstr "Cadena: {there}."
 
+#: client/src/components/priorities/PriorityBoard.tsx
+msgid "No owner role yet"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stones"
 #~ msgid "Stone {stoneNumber} of {stoneCount}"
@@ -2623,6 +2658,10 @@ msgstr "Tu precio"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Answers for 1 thing"
 #~ msgstr "Respuestas para 1 cosa"
+
+#: client/src/components/priorities/PriorityBoard.tsx
+msgid "A new priority goes to the end. The circle places it at its next vote."
+msgstr ""
 
 #: client/src/pages/Characters.tsx
 msgctxt "characters page lede"
@@ -2845,6 +2884,12 @@ msgstr ""
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
 msgid "Newcomers"
+msgstr ""
+
+#. placeholder {0}: i.text
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, choose the role that owns an item"
+msgid "Owner role of {0}"
 msgstr ""
 
 #. placeholder {0}: settings.join(", ")
@@ -3092,6 +3137,10 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Who adopts on this block"
+msgstr ""
+
+#: client/src/components/priorities/TeamWeek.tsx
+msgid "Nobody has named a top priority yet this week."
 msgstr ""
 
 #: client/src/components/roleCard/cardWordsT.ts
@@ -3704,6 +3753,11 @@ msgstr ""
 msgid "Nobody has backed this yet."
 msgstr ""
 
+#. placeholder {0}: dayWords(p.line.weekOf)
+#: client/src/components/priorities/TeamWeek.tsx
+msgid "From the week of {0}"
+msgstr ""
+
 #: client/src/components/hiddenMap/OpeningMoment.tsx
 msgid "Now open to you"
 msgstr ""
@@ -3820,6 +3874,10 @@ msgctxt "characters page main act"
 msgid "Grow from this root"
 msgstr ""
 
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Asked of a role"
+msgstr ""
+
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, eyebrow after a key"
 msgid "One more step"
@@ -3913,6 +3971,10 @@ msgstr ""
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
 msgid "Badges a member needs"
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Names show here as people join the room."
 msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
@@ -4122,6 +4184,11 @@ msgctxt "hand-mint form, reason box"
 msgid "Reason (required)"
 msgstr ""
 
+#. placeholder {0}: p.name
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "How did it go for {0}?"
+msgstr ""
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application check"
 msgid "One thing to look at before you continue:"
@@ -4293,6 +4360,11 @@ msgctxt "fallback when adopting or declining a canvas suggestion is refused"
 msgid "Nothing was decided."
 msgstr ""
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "an ask's place in line, when the holder expects to pick it up"
+msgid "Next week"
+msgstr ""
+
 #. placeholder {0}: money(p.s.range.lowTotalMinor)
 #. placeholder {1}: money(p.s.range.highTotalMinor)
 #: client/src/components/valuation/PricingDesk.tsx
@@ -4349,6 +4421,9 @@ msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 #: client/src/components/openProposal/TermsWeOffer.tsx
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/PlaceInLine.tsx
+#: client/src/components/priorities/PriorityBoard.tsx
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 #: client/src/pages/ApplicationStatus.tsx
 #: client/src/pages/FundingRounds.tsx
@@ -4981,6 +5056,13 @@ msgctxt "review response"
 msgid "Ask a question"
 msgstr ""
 
+#. placeholder {0}: dayWords(p.expectWeek)
+#. placeholder {0}: dayWords(place.expectWeek)
+#: client/src/components/priorities/PlaceInLine.tsx
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Expected around the week of {0}."
+msgstr ""
+
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "Start from ours instead"
@@ -5464,6 +5546,10 @@ msgstr "Para ti"
 msgctxt "root picker, a fourth root"
 msgid "Up to {MAX_ROOTS_ON_WORK} roots. Take one off first."
 msgstr "Hasta {MAX_ROOTS_ON_WORK} raíces. Quita una primero."
+
+#: client/src/components/priorities/PriorityBoard.tsx
+msgid "Add to the board"
+msgstr ""
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -5977,6 +6063,10 @@ msgstr "No se ha comprometido con el acuerdo de confidencialidad."
 msgid "No quest reached the ballot in this round."
 msgstr ""
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Give it a place"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
 #~ msgstr "No llevamos el tiempo ni lo pagamos. Pagamos el trabajo contratado y los aportes que presentas cada mes y cada temporada. El compromiso es cuánta energía y atención pide el rol."
@@ -6217,6 +6307,11 @@ msgstr "Decidir juntos"
 msgid "Loading the season's goals…"
 msgstr ""
 
+#: client/src/components/priorities/priorityWords.ts
+msgctxt "priority board, an item's status"
+msgid "Done"
+msgstr ""
+
 #: client/src/components/sessions/GatheringSeed.tsx
 msgctxt "coming up, i'll be there, said once it lands"
 msgid "Thank you. The {circle} will see you there."
@@ -6319,6 +6414,16 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Your note (optional to adopt, needed to decline)"
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "The season's priority board"
+msgstr ""
+
+#: client/src/components/priorities/PlaceInLine.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "priorities, change what was set"
+msgid "Change"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -7774,6 +7879,11 @@ msgctxt "sera answers"
 msgid "In a draft, not live yet: 1 change"
 msgstr ""
 
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, add an item"
+msgid "Add a priority"
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgctxt "canvas block picker, empty choice"
 msgid "Choose a block"
@@ -8072,6 +8182,11 @@ msgstr ""
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "What it is for"
+msgstr ""
+
+#: client/src/components/priorities/MyWeekCard.tsx
+msgctxt "profile, label for your top priority this week"
+msgid "Your top priority"
 msgstr ""
 
 #. placeholder {0}: moneyWords(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD")
@@ -8656,6 +8771,11 @@ msgstr ""
 #~ msgid "Suggested {0} a {1}; they propose {2} ({3}).{4}"
 #~ msgstr "Sugerido {0} por {1}; propone {2} ({3}).{4}"
 
+#: client/src/components/priorities/MyWeekCard.tsx
+msgctxt "profile, set your top priority for this week"
+msgid "Set this week's"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Adopted on {adoptedDay} by the village's vote."
 msgstr ""
@@ -8777,6 +8897,11 @@ msgstr ""
 msgid "Give it a name and say why. Then add the changes, from here or from any setting with a Suggest button."
 msgstr ""
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "an ask's place in line, when the holder expects to pick it up"
+msgid "This week"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and restart, and that start makes the key, sealed. Until then those pages answer 503."
@@ -8886,6 +9011,11 @@ msgctxt "character count under a box"
 msgid "{usedText} / {maxText} characters"
 msgstr "{usedText} / {maxText} caracteres"
 
+#. placeholder {0}: p.position
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Number {0} on the role's list."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "({count} of at most {cap})"
 msgstr ""
@@ -8912,6 +9042,10 @@ msgstr "Voz:"
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "What went in is native to this place."
+msgstr ""
+
+#: client/src/components/priorities/TeamWeek.tsx
+msgid "Set yours on your profile"
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -9002,6 +9136,10 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The public line for {name}"
+msgstr ""
+
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Waiting for a holder of the role to take it."
 msgstr ""
 
 #: client/src/components/path/YourPathCard.tsx
@@ -9210,6 +9348,10 @@ msgstr ""
 #~ msgid "Circles are sociocratic working groups with real authority over their own domain. Decisions inside a circle pass by consent or other circle-chosen processes."
 #~ msgstr "Los círculos son grupos de trabajo sociocráticos con autoridad real sobre su propio ámbito. Las decisiones dentro de un círculo se toman por consentimiento o por otros procesos que el círculo elija."
 
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Where your asks sit"
+msgstr ""
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
@@ -9262,6 +9404,10 @@ msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la es
 #: client/src/components/admin/VocabularyPanel.tsx
 msgctxt "admin identity: save the nouns"
 msgid "Save your words"
+msgstr ""
+
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgid "Taken. The holder has not said where it sits yet."
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -9500,6 +9646,10 @@ msgstr ""
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "a switch setting"
 msgid "Off"
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Nobody here has a top priority to read back yet."
 msgstr ""
 
 #: client/src/pages/Aligned.tsx
@@ -10010,6 +10160,10 @@ msgstr ""
 msgctxt "role draft next"
 msgid "Select a role to apply for"
 msgstr "Elige un rol para postular"
+
+#: client/src/components/priorities/PriorityBoard.tsx
+msgid "The group's priorities for the season, in the order the circle chose. The order changes in a meeting's vote."
+msgstr ""
 
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgctxt "role discover admin"
@@ -10667,6 +10821,12 @@ msgstr "Nuestra redacción para esta propuesta"
 msgid "Your type is {0}, with lines {1} and {2}."
 msgstr "Tu tipo es {0}, con las líneas {1} y {2}."
 
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "placeholder for a top priority"
+msgid "One line"
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgid "No Quests posted yet. Post the first one."
 msgstr "Todavía no hay misiones publicadas. Publica la primera."
@@ -11177,6 +11337,11 @@ msgstr ""
 #: client/src/components/admin/RitesConfigPanel.tsx
 msgctxt "rites admin"
 msgid "This is not JSON yet: {0}"
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "meeting room, set a person's top priority for the week"
+msgid "Set it"
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -12263,6 +12428,11 @@ msgctxt "admin character classes: the stock portraits heading"
 msgid "Faces"
 msgstr ""
 
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, choose the role that owns a new item"
+msgid "Owner role"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
@@ -12369,6 +12539,10 @@ msgstr ""
 msgctxt "roles page, opens a role's full card"
 msgid "Read the full card"
 msgstr "Leer la ficha completa"
+
+#: client/src/components/priorities/TeamWeek.tsx
+msgid "This week, each person's top priority"
+msgstr ""
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
@@ -12662,6 +12836,10 @@ msgctxt "move a step earlier"
 msgid "Move up"
 msgstr ""
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Place on your list"
+msgstr ""
+
 #: client/src/components/review/SeraRows.tsx
 msgid "This role comes with its new circle. Add the circle, and it comes with it."
 msgstr ""
@@ -12797,6 +12975,10 @@ msgstr "Encuentra tu lugar en el juego"
 msgctxt "founding team section heading"
 msgid "Join the founding team"
 msgstr "Únete al equipo fundador"
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Put the board on the agenda"
+msgstr ""
 
 #. placeholder {0}: row.work
 #: client/src/components/roots/RootPicker.tsx
@@ -14170,6 +14352,12 @@ msgctxt "role card focus line, from 60%"
 msgid "Fully focused: {village} is your main work"
 msgstr "Plena dedicación: {village} es tu trabajo principal"
 
+#. placeholder {0}: i.text
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, choose an item's status"
+msgid "Status of {0}"
+msgstr ""
+
 #: client/src/components/hiddenMap/OpeningMoment.tsx
 msgid "Here is every place the members have logged."
 msgstr ""
@@ -14315,6 +14503,12 @@ msgstr "Tu linterna llegó a {name}"
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
 msgid "a moon"
+msgstr ""
+
+#. placeholder {0}: i.ownerRole
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, the role that owns an item"
+msgid "Owner: {0}"
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
@@ -14663,9 +14857,19 @@ msgctxt "heading of the review feed"
 msgid "The review"
 msgstr ""
 
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "meeting room, save a person's top priority"
+msgid "Keep it"
+msgstr ""
+
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgctxt "a role choice"
 msgid "No role"
+msgstr ""
+
+#: client/src/components/priorities/MyWeekCard.tsx
+msgctxt "profile, change your top priority for this week"
+msgid "Change it"
 msgstr ""
 
 #: client/src/components/admin/AdminHeader.tsx
@@ -15253,6 +15457,11 @@ msgctxt "role card rewards: the cap on a proposal"
 msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
 msgstr "Propuestas de hasta {capFull}, el {ROLE_PAY_CAP_PCT}% del precio publicado."
 
+#: client/src/components/priorities/priorityWords.ts
+msgctxt "priority board, an item's status"
+msgid "Not started"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
 msgid "Changes"
@@ -15508,6 +15717,10 @@ msgctxt "previous frame"
 msgid "Back"
 msgstr ""
 
+#: client/src/components/priorities/MyWeekCard.tsx
+msgid "Name the one thing you'll put first this week. The team sees it."
+msgstr ""
+
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, copy the address"
 msgid "Copy the address"
@@ -15598,6 +15811,12 @@ msgstr ""
 msgctxt "talk it out: closes the panel"
 msgid "Close"
 msgstr "Cerrar"
+
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "priorities, save what was typed"
+msgid "Save"
+msgstr ""
 
 #. placeholder {0}: problems.length
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -16119,6 +16338,11 @@ msgctxt "roles page, roles after the founding team"
 msgid "We're filling the founding team first, so it may be a while before we reply. You're welcome to apply now, and we'll write to you as soon as we're ready to talk."
 msgstr ""
 
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Your top priority this week"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with these {pickCount} roles"
 #~ msgstr ""
@@ -16291,6 +16515,11 @@ msgctxt "companion welcome"
 msgid "{who} is {pct}% hatched · about 2 minutes left"
 msgstr "{who} ya salió del huevo en un {pct}% · faltan unos 2 minutos"
 
+#: client/src/components/priorities/priorityWords.ts
+msgctxt "priority board, an item's status"
+msgid "Set aside"
+msgstr ""
+
 #. placeholder {0}: signedPct(diff)
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup: the difference"
@@ -16398,6 +16627,11 @@ msgstr ""
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal side by side"
 msgid "Their card beside the open card"
+msgstr ""
+
+#. placeholder {0}: place.position
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Number {0} on your list."
 msgstr ""
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -16709,6 +16943,12 @@ msgctxt "sera answers"
 msgid "Keep or untick"
 msgstr ""
 
+#. placeholder {0}: i.servesGoal
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, the season goal an item serves"
+msgid "Serves: {0}"
+msgstr ""
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Back"
@@ -16813,6 +17053,12 @@ msgstr "Elige el rol al que postulas."
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint form, amount box"
 msgid "Amount"
+msgstr ""
+
+#. placeholder {0}: person.name
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "meeting room, a host types a person's top priority for the week"
+msgid "Top priority for {0}"
 msgstr ""
 
 #: client/src/components/governance/VillageConflictSteps.tsx
@@ -17296,6 +17542,10 @@ msgctxt "next step box, link to open roles"
 msgid "See the open roles"
 msgstr "Ver los roles abiertos"
 
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Keep this order on the board"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "next frame"
 msgid "Next"
@@ -17401,6 +17651,10 @@ msgstr ""
 msgid "No goal of {roleName} picked"
 msgstr "No eligió ninguna meta de “{roleName}”"
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Say where it sits on your list, so whoever raised it knows."
+msgstr ""
+
 #: client/src/components/roleEdit/EditRoleButton.tsx
 msgctxt "role card, opens the role editor"
 msgid "Edit this role"
@@ -17428,6 +17682,10 @@ msgstr ""
 
 #: client/src/components/review/SeraDifferences.tsx
 msgid "A draft from this queue is still open."
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Once the room has voted, set the agenda's order. Then keep it on the board."
 msgstr ""
 
 #: client/src/components/characters/OpenNowBadge.tsx
@@ -17483,6 +17741,14 @@ msgstr ""
 #: client/src/components/hiddenMap/PhotoPicker.tsx
 msgctxt "hidden map, adding photos to a place"
 msgid "Preparing"
+msgstr ""
+
+#. placeholder {0}: mine.servesGoal
+#. placeholder {0}: p.line.servesGoal
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/TeamWeek.tsx
+msgctxt "weekly top priority, the season goal it serves"
+msgid "Serves: {0}"
 msgstr ""
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
@@ -17558,6 +17824,11 @@ msgstr ""
 #: client/src/pages/Decision.tsx
 msgctxt "decision: your turn"
 msgid "Give my answer"
+msgstr ""
+
+#: client/src/components/priorities/PriorityBoard.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Nothing is on the board yet."
 msgstr ""
 
 #. placeholder {0}: filled.unoffered.map(tokenName).join(", ")
@@ -18251,6 +18522,13 @@ msgctxt "landing commons eyebrow"
 msgid "What we tend together"
 msgstr "Lo que cuidamos juntos"
 
+#. placeholder {0}: dayWords(mine.weekOf)
+#. placeholder {0}: dayWords(p.line.weekOf)
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "Carried from the week of {0}"
+msgstr ""
+
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgid "Only the people who decide this proposal see these. Open links with care: they lead off this site."
 msgstr "Solo las personas que deciden esta propuesta ven esto. Abre los enlaces con cuidado: llevan fuera de este sitio."
@@ -18416,6 +18694,11 @@ msgctxt "calendar legend"
 msgid "a gathering"
 msgstr "un encuentro"
 
+#: client/src/components/priorities/PriorityBoard.tsx
+msgctxt "priority board, no role owns this item"
+msgid "No owner role"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application intro"
 msgid "What your first month with us would look like, and when you could begin."
@@ -18543,6 +18826,10 @@ msgstr ""
 
 #: client/src/pages/HiddenMap.tsx
 msgid "Ask for a copy"
+msgstr ""
+
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Expect to pick it up"
 msgstr ""
 
 #: client/src/components/admin/SigningKeyCard.tsx
@@ -18901,6 +19188,11 @@ msgctxt "founding application steps"
 msgid "Step {0}: {label}"
 msgstr "Paso {0}: {label}"
 
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "an ask's place in line, when the holder expects to pick it up"
+msgid "In {n} weeks"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Applications are closed right now. Your selection stays here, and you can apply when they open."
 msgstr "Las postulaciones están cerradas ahora. Tu selección se queda aquí y puedes postular cuando abran."
@@ -18912,6 +19204,10 @@ msgstr ""
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Add a return visit"
+msgstr ""
+
+#: client/src/components/priorities/RoomPriorities.tsx
+msgid "No top priority yet."
 msgstr ""
 
 #: client/src/components/voice/VoiceInvite.tsx
@@ -19223,6 +19519,12 @@ msgstr ""
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Always background-checked, whatever the references say (roles that hold money or work near children)"
+msgstr ""
+
+#. placeholder {0}: dayWords(a.raisedOn)
+#: client/src/components/priorities/RaisedAsksCard.tsx
+msgctxt "an ask raised with a role, the day it was raised"
+msgid "Raised {0}"
 msgstr ""
 
 #: client/src/components/fundingRounds/common.tsx
@@ -19586,6 +19888,12 @@ msgctxt "booking link field"
 msgid "Clear"
 msgstr ""
 
+#. placeholder {0}: dayWords(place.expectWeek)
+#: client/src/components/priorities/PlaceInLine.tsx
+msgctxt "an ask's place in line, the week already said"
+msgid "Week of {0}"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{n, plural, one {{pledged} pledged by # backer} other {{pledged} pledged by # backers}}"
 msgstr ""
@@ -19894,6 +20202,13 @@ msgctxt "founding application choose"
 msgid "The role in your link is not open any more. These are open now."
 msgstr "El rol de tu enlace ya no está abierto. Estos están abiertos ahora."
 
+#: client/src/components/priorities/MyWeekCard.tsx
+#: client/src/components/priorities/PlaceInLine.tsx
+#: client/src/components/priorities/RoomPriorities.tsx
+msgctxt "priorities, stop editing without saving"
+msgid "Cancel"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Edit this role"
@@ -20194,6 +20509,11 @@ msgstr ""
 msgid "The village has not adopted an agreement yet."
 msgstr ""
 
+#: client/src/components/priorities/priorityWords.ts
+msgctxt "priority board, an item's status"
+msgid "Under way"
+msgstr ""
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "your guide"
@@ -20361,6 +20681,10 @@ msgstr "Créditos"
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{sera} {agent} change"
+msgstr ""
+
+#: client/src/components/priorities/PlaceInLine.tsx
+msgid "Whoever raised it sees this on their profile."
 msgstr ""
 
 #: client/src/pages/ExitPolicy.tsx
