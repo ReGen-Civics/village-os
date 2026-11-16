@@ -62,7 +62,7 @@ export default function Card() {
   return (
     <RitesWorld look={me.look} lang={<PageLanguageBar tone="onDark" />}>
       <div className={`app${me.nav.length ? " has-nav" : ""}`}>
-        <TopBar sigil={me.sigil} name={w.cardTitle}>
+        <TopBar sigil={me.sigil} name={w.cardTitle} heading>
           <Chip place="phone" places={places} />
         </TopBar>
         <div className="pad">

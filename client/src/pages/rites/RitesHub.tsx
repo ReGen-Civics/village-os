@@ -197,7 +197,7 @@ export default function RitesHub() {
   return (
     <RitesWorld look={me.look} lang={<PageLanguageBar tone="onDark" />}>
       <div className={`app${me.nav.length ? " has-nav" : ""}`}>
-        <TopBar sigil={me.sigil} name={me.village} />
+        <TopBar sigil={me.sigil} name={me.village} heading />
         <div className="pad">
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Link className="btn ghost small" href="/card">

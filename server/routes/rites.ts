@@ -258,6 +258,9 @@ export function register(app: Express, deps: Deps): void {
     res.json({
       village: projectName(),
       inviter,
+      asHome: cfg.welcome.asHome,
+      // Joining needs an invitation here: a visitor with none is sent to ask for one (QA P4-r-1).
+      inviteOnly: invites.required(),
       welcome: { ...fillAll(cfg.welcome), steps: cfg.welcome.steps.map(fillAll), road: cfg.welcome.road.map(fillAll), doors: cfg.welcome.doors.map(fillAll) },
       articles: { ...fillAll(cfg.articles), items: cfg.articles.items },
       counts: await counts(cfg),

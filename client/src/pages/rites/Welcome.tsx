@@ -123,7 +123,7 @@ export default function Welcome() {
                   {w.kicker ? <p className="sc" style={{ marginBottom: 8 }}>{w.kicker}</p> : null}
                   <h1>{w.title}</h1>
                   {w.lede ? <p className="lede">{w.lede}</p> : null}
-                  <Link className="btn gold" style={{ marginTop: 18 }} href={invite ? `/aboard?invite=${encodeURIComponent(invite)}` : "/aboard"}>
+                  <Link className="btn gold" style={{ marginTop: 18 }} href={invite ? `/aboard?invite=${encodeURIComponent(invite)}` : data.inviteOnly && !user ? "/request-membership" : "/aboard"}>
                     {w.cta}
                   </Link>
                 </div>
@@ -202,7 +202,7 @@ export default function Welcome() {
                         <Chip place={d.place} places={data.places} />
                       </button>
                     ) : (
-                      <a className="door" href={d.href || (invite ? `/aboard?invite=${encodeURIComponent(invite)}` : "/aboard")}>
+                      <a className="door" href={d.href || (invite ? `/aboard?invite=${encodeURIComponent(invite)}` : data.inviteOnly && !user ? "/request-membership" : "/aboard")}>
                         <div className="ic"><Icon name="vehicle" /></div>
                         <div style={{ flex: 1 }}>
                           <b>{d.title}</b>

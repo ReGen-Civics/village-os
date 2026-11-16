@@ -49,7 +49,7 @@ export function Door() {
         </TopBar>
         <div className="pad">
           <div className="parch" style={{ padding: 22, marginTop: 10 }}>
-            <p className="hand" style={{ fontSize: 30 }}>{d.title}</p>
+            <h1 className="hand" style={{ fontSize: 30 }}>{d.title}</h1>
             {d.line ? <p style={{ marginTop: 8, fontSize: 15 }}>{d.line}</p> : null}
             <p className="small muted" style={{ marginTop: 14 }}>{d.given}</p>
             <p style={{ fontFamily: "var(--font-display)", fontSize: 24, lineHeight: 1 }}>{data.giver}</p>

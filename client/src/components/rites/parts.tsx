@@ -106,11 +106,12 @@ export function Sigil({ src, className = "sigil" }: { src?: string | null; class
   );
 }
 
-export function TopBar({ sigil, name, children }: { sigil?: string | null; name: string; children?: ReactNode }) {
+export function TopBar({ sigil, name, children, heading = false }: { sigil?: string | null; name: string; children?: ReactNode; heading?: boolean }) {
   return (
     <div className="topbar">
       <Sigil src={sigil} />
-      <div className="name">{name}</div>
+      {/* The screen's name is its h1 where nothing else on the screen is one (QA P6-r-5). */}
+      {heading ? <h1 className="name">{name}</h1> : <div className="name">{name}</div>}
       <div className="sp" />
       {children}
     </div>

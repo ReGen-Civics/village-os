@@ -89,7 +89,7 @@ function Sworn({ c, onConfirm }: { c: CeremonyView; onConfirm: () => void }) {
   const numbers = me ? [me.tokens.record, me.tokens.voice].filter((x): x is NonNullable<typeof x> => !!x).map((x) => ({ n: x.n, name: x.name })) : [];
   return (
     <div className={`app${me?.nav.length ? " has-nav" : ""}`}>
-      <TopBar sigil={c.sigil} name={w.swornBar || c.rite.done}>
+      <TopBar sigil={c.sigil} name={w.swornBar || c.rite.done} heading>
         <Chip place={c.place} places={w.places} />
       </TopBar>
       <div className="pad center">
@@ -210,7 +210,7 @@ export default function Ceremony() {
             <div style={{ color: "var(--ceremony)" }}>
               <Sigil src={c.sigil} />
             </div>
-            <div className="name">{c.rite.title}</div>
+            <h1 className="name">{c.rite.title}</h1>
             <div className="sp" />
             <Chip place={c.place} places={w.places} />
           </div>

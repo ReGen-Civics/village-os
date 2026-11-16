@@ -379,7 +379,8 @@ export interface RitesConfig {
   format: typeof RITES_FORMAT;
   rites: RiteDef[];
   words: Words;
-  welcome: Record<WelcomeKey, string> & { steps: StepDef[]; doors: DoorDef[]; road: StepDef[] };
+  /** `asHome`: the welcome is the village's home page for a signed-out visitor. */
+  welcome: Record<WelcomeKey, string> & { steps: StepDef[]; doors: DoorDef[]; road: StepDef[]; asHome: boolean };
   /** `linkFor`: who the "read them all" link shows to, everyone or signed-in members (until the page is public). */
   articles: Record<ArticlesKey, string> & { items: ArticleDef[]; linkFor: "everyone" | "members" };
   letter: Record<LetterKey, string>;
@@ -410,6 +411,7 @@ export const DEFAULT_WELCOME: RitesConfig["welcome"] = {
   steps: [],
   doors: [],
   road: [],
+  asHome: false,
 };
 
 export const DEFAULT_LETTER: RitesConfig["letter"] = {
@@ -649,6 +651,7 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
     ...welcomeTexts,
     steps: readSteps(w?.steps, "welcome.steps", problems),
     road: readSteps(w?.road, "welcome.road", problems),
+    asHome: w?.asHome === true,
     doors,
   };
 

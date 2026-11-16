@@ -92,6 +92,28 @@ export default function ComeAboard() {
   }
   const w = data.words;
   const road = (w.aboardRoad || "").split("|").map((s) => s.trim()).filter(Boolean);
+  // Joining here is by invitation and this visitor holds none: say so before any form, and point to asking (QA P4-r-1).
+  if (!user && data.inviteOnly && !invite) {
+    return (
+      <RitesWorld look={data.look} lang={<PageLanguageBar tone="onDark" />}>
+        <div className="app">
+          <TopBar sigil={data.sigil} name={data.village} />
+          <div className="pad">
+            <h1 style={{ marginTop: 18, fontSize: 32 }}>{w.aboardTitle}</h1>
+            <p className="muted" style={{ marginTop: 10 }}>
+              <Trans context="rites">Joining here is by invitation. Ask to join, and a member answers you with one.</Trans>
+            </p>
+            <a className="btn gold" style={{ marginTop: 22 }} href="/request-membership">
+              <Trans context="rites">Ask to join</Trans>
+            </a>
+            <a className="btn ghost" style={{ marginTop: 10 }} href="/login">
+              <Trans context="rites">I have an account</Trans>
+            </a>
+          </div>
+        </div>
+      </RitesWorld>
+    );
+  }
   const googleHref = `/api/auth/google/start?${new URLSearchParams({ next: "/aboard/welcome", ...(invite ? { invite } : {}) }).toString()}`;
 
   return (

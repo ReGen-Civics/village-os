@@ -107,7 +107,7 @@ export default function Fleet() {
   return (
     <RitesWorld look={data.look} lang={<PageLanguageBar tone="onDark" />}>
       <div className={`app fleet${data.nav.length ? " has-nav" : ""}`}>
-        <TopBar sigil={data.sigil} name={w.title}>
+        <TopBar sigil={data.sigil} name={w.title} heading>
           <Chip place="phone" places={data.places} />
           <Chip place="gathering" places={data.places} />
         </TopBar>

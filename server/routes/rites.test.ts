@@ -175,6 +175,9 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     expect(pub.status).toBe(200);
     expect(pub.body.welcome.doors.map((d: any) => d.id)).toEqual(["rent", "buy"]);
     expect(pub.body.counts.map((c: any) => c.label)).toEqual(["members", "circles", "quests done"]);
+    // Not the home page unless the village says so; whether joining needs an invitation, for the welcome's way in (QA P4-3, P4-r-1).
+    expect(pub.body.asHome).toBe(false);
+    expect(typeof pub.body.inviteOnly).toBe("boolean");
   });
 
   it("before anybody holds the admitting rite, an admitted member witnesses; the candidate never does", async () => {

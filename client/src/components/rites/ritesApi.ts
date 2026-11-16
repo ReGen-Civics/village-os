@@ -48,6 +48,8 @@ export interface DoorView extends StepView {
 export interface PublicView {
   village: string;
   inviter: string | null;
+  asHome?: boolean;
+  inviteOnly?: boolean;
   welcome: Record<string, string> & { steps: StepView[]; road: StepView[]; doors: DoorView[] };
   articles: Record<string, string> & { items: Array<{ n: number; title: string; line: string }>; linkFor?: "everyone" | "members" };
   counts: Array<{ label: string; n: number }>;
