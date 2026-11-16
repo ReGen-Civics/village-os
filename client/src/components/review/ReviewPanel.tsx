@@ -11,14 +11,23 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
-import { LEVEL_WORDS, PANEL_WORDS, SCORE_LEVELS, EVIDENCE_MAX, type Criterion, type ScoreLevel } from "@shared/applicationReview";
+import { GUT_ANSWERS, GUT_NOTE_MAX, GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, SCORE_LEVELS, EVIDENCE_MAX, type Criterion, type GutAnswer, type ScoreLevel } from "@shared/applicationReview";
 
 interface Card {
   booking?: { mode: "block" | "split"; words: string };
   criteria: Criterion[];
   mayRead: boolean;
   mayScore: { interviewId: number; position: number; minutes: number } | null;
-  interviews: Array<{ position: number; roleName: string; minutes: number; final: boolean; state: string; entries: Array<{ criterionId: string; level: string; evidence: string }> | null }>;
+  interviews: Array<{
+    position: number;
+    roleName: string;
+    minutes: number;
+    final: boolean;
+    state: string;
+    entries: Array<{ criterionId: string; level: string; evidence: string }> | null;
+    /** Read by the same rule as the entries. */
+    gut?: { answer: GutAnswer; note: string } | null;
+  }>;
 }
 
 const SECONDARY =
@@ -52,6 +61,7 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [entries, setEntries] = useState<Record<string, { level: ScoreLevel | ""; evidence: string }>>({});
+  const [gut, setGut] = useState<{ answer: GutAnswer | ""; note: string }>({ answer: "", note: "" });
   const [stepping, setStepping] = useState(false);
   const [reason, setReason] = useState("");
 
@@ -78,12 +88,16 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
     if (!card.mayScore) return;
     setBusy(true);
     setSaid(null);
-    const body = { entries: card.criteria.map((c) => ({ criterionId: c.id, level: entries[c.id]?.level ?? "", evidence: entries[c.id]?.evidence ?? "" })) };
+    const body = {
+      entries: card.criteria.map((c) => ({ criterionId: c.id, level: entries[c.id]?.level ?? "", evidence: entries[c.id]?.evidence ?? "" })),
+      gut: { answer: gut.answer, note: gut.note },
+    };
     const a = await call(`${base}/interviews/${card.mayScore.interviewId}/score`, "POST", body);
     setBusy(false);
     setSaid({ ok: a.ok, text: a.ok ? PANEL_WORDS.submitted : String(a.data?.error ?? "That did not save.") });
     if (a.ok) {
       setEntries({});
+      setGut({ answer: "", note: "" });
       await load();
       onChanged?.();
     }
@@ -131,6 +145,14 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
                 ))}
               </dl>
             )}
+            {iv.gut && (
+              <p className="mt-2 text-foreground" data-gut-check="">
+                <span className="text-sm font-semibold">{PANEL_WORDS.gutRead}</span>
+                {": "}
+                <span className="font-semibold">{GUT_WORDS[iv.gut.answer] ?? iv.gut.answer}</span>
+                {iv.gut.note ? `. ${iv.gut.note}` : ""}
+              </p>
+            )}
           </li>
         ))}
       </ol>
@@ -175,7 +197,28 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
               </label>
             </fieldset>
           ))}
-          <button type="submit" disabled={busy} className={PRIMARY}>
+          <fieldset className="space-y-2" data-gut-form="">
+            <legend className="font-medium text-foreground">{PANEL_WORDS.gutLabel}</legend>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={PANEL_WORDS.gutLabel}>
+              {GUT_ANSWERS.map((g) => (
+                <label key={g} className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-border px-3 text-sm">
+                  <input type="radio" name="gut" required value={g} checked={gut.answer === g} onChange={() => setGut((v) => ({ ...v, answer: g }))} />
+                  {GUT_WORDS[g]}
+                </label>
+              ))}
+            </div>
+            <label className="block text-sm text-foreground">
+              {PANEL_WORDS.gutNoteLabel}
+              <input
+                type="text"
+                maxLength={GUT_NOTE_MAX}
+                className="mt-1 block min-h-[44px] w-full rounded-lg border border-border px-3"
+                value={gut.note}
+                onChange={(e) => setGut((v) => ({ ...v, note: e.target.value }))}
+              />
+            </label>
+          </fieldset>
+          <button type="submit" disabled={busy || !gut.answer} className={PRIMARY}>
             {PANEL_WORDS.submit}
           </button>
         </form>
