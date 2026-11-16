@@ -25,7 +25,10 @@ vi.mock("@/modules/ModuleProvider", () => ({
 vi.mock("@/lib/gameApi", () => ({ authToken: () => (env.user ? "tok-treasurer" : null) }));
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock("@/components/myMoon/ReviewQueue", () => ({ default: () => <p>review queue drawn</p> }));
-vi.mock("@/components/admin/CashPayoutsTab", () => ({ default: () => <p>cash payouts drawn</p> }));
+vi.mock("@/components/admin/CashPayoutsTab", () => ({
+  default: ({ withPayBoard }: { withPayBoard?: boolean }) => <p>cash payouts drawn{withPayBoard === false ? "" : " with its own pay board"}</p>,
+}));
+vi.mock("@/components/myMoon/PayBoard", () => ({ default: () => <p>pay by member drawn</p> }));
 
 import Treasury from "./Treasury";
 import { forgetTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
@@ -71,6 +74,7 @@ describe("the Treasury page", () => {
     expect(screen.queryByRole("heading", { name: "Tokens" })).toBeNull();
     expect(screen.queryByText("review queue drawn")).toBeNull();
     expect(screen.queryByText("cash payouts drawn")).toBeNull();
+    expect(screen.queryByText("pay by member drawn")).toBeNull();
     // The picker is read from the treasury's own door, never the admin registry or roster.
     await waitFor(() => expect(asked()).toContain("/api/admin/mint-requests"));
     expect(asked()).toContain("/api/treasury/mint-options");
@@ -94,6 +98,29 @@ describe("the Treasury page", () => {
     expect(await screen.findByText("review queue drawn")).toBeInTheDocument();
     expect(await screen.findByText("cash payouts drawn")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Mint by hand" })).toBeNull();
+  });
+
+  it("shows a cash.pay holder without admin Pay by member once, never a second copy inside the cash desk", async () => {
+    env.user = { id: "u-t", name: "Tara Treasurer", role: "member" };
+    env.doors = { mint: false, cashPay: true, pay: true };
+    renderPage();
+    expect(await screen.findAllByText("pay by member drawn")).toHaveLength(1);
+    expect(await screen.findByText("cash payouts drawn")).toBeInTheDocument();
+    expect(screen.queryByText(/with its own pay board/)).toBeNull();
+  });
+
+  it("shows a moon.approve_alone holder without cash.pay Pay by member and no cash desk", async () => {
+    env.doors = { mint: false, cashPay: false, pay: true };
+    renderPage();
+    expect(await screen.findByText("pay by member drawn")).toBeInTheDocument();
+    expect(screen.queryByText(/cash payouts drawn/)).toBeNull();
+  });
+
+  it("does not show a token.mint-only holder Pay by member", async () => {
+    env.doors = { mint: true, cashPay: false, pay: false };
+    renderPage();
+    expect(await screen.findByRole("heading", { name: "Mint by hand" })).toBeInTheDocument();
+    expect(screen.queryByText("pay by member drawn")).toBeNull();
   });
 
   it("asks a visitor to sign in and asks the server nothing", async () => {

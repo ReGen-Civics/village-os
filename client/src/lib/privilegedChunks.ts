@@ -14,7 +14,10 @@
  * So a page whose file name starts with one of these words keeps its own lazy
  * chunk, whatever its size. The same goes for the hand-mint form both the
  * Admin token tab and the Treasury draw (`components/admin/MintDesk.tsx`),
- * which would otherwise qualify for the "smallui" group by having two importers.
+ * which would otherwise qualify for the "smallui" group by having two importers,
+ * and likewise the treasurer's pay board (`components/myMoon/PayBoard.tsx`,
+ * "Pay by member") and the cash desk (`components/admin/CashPayoutsTab.tsx`),
+ * each drawn by the Treasury page and by Admin.
  *
  * Kept out of vite.config.ts so a test can pin it without loading the build.
  */
@@ -23,7 +26,7 @@
 export const PRIVILEGED_PAGE = /client[\\/]src[\\/]pages[\\/](?:Treasury|Admin|Mint|Cash)[^\\/]*\.tsx$/;
 
 /** A component that carries one of those pages' powers, never a group member. */
-export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/]MintDesk|treasury[\\/][^\\/]+)\.tsx$/;
+export const PRIVILEGED_COMPONENT = /client[\\/]src[\\/]components[\\/](?:admin[\\/](?:MintDesk|CashPayoutsTab)|myMoon[\\/]PayBoard|treasury[\\/][^\\/]+)\.tsx$/;
 
 /** Whether this module may join a shared page or component group at all. */
 export function mayJoinSharedGroup(id: string): boolean {

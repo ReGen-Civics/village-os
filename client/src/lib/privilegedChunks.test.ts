@@ -24,6 +24,10 @@ describe("privileged pages never ride a shared page group", () => {
   it("keeps the shared hand-mint form and the treasury components out", () => {
     expect(mayJoinSharedGroup("/repo/client/src/components/admin/MintDesk.tsx")).toBe(false);
     expect(mayJoinSharedGroup("/repo/client/src/components/treasury/TreasuryCard.tsx")).toBe(false);
+    // Pay by member (#1358) and the cash desk, each drawn by the Treasury and by Admin.
+    expect(mayJoinSharedGroup("C:\\repo\\client\\src\\components\\myMoon\\PayBoard.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/admin/CashPayoutsTab.tsx")).toBe(false);
+    expect(mayJoinSharedGroup("/repo/client/src/components/myMoon/MyMoon.tsx")).toBe(true);
   });
 
   it("lets ordinary member pages and components group as before", () => {

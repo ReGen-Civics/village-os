@@ -11,6 +11,7 @@
  *
  *   token.mint                      the hand mint and the grants waiting for a second signer (MintDesk)
  *   cash.pay or moon.approve_alone  the End of Moon review queue (ReviewQueue), where pay is confirmed
+ *   cash.pay or moon.approve_alone  Pay by member (PayBoard, #1358): cash sent from escrow and the token pay to approve
  *   cash.pay                        the cash to pay out (CashPayoutsTab, the same list /cash-payouts shows)
  *
  * Which ones open is `GET /api/treasury/doors`, the same `mayAct` every write
@@ -40,6 +41,8 @@ import type { ModuleLifecycle } from "@shared/modules";
 const MintDesk = lazy(() => import("@/components/admin/MintDesk"));
 const ReviewQueue = lazy(() => import("@/components/myMoon/ReviewQueue"));
 const CashPayoutsTab = lazy(() => import("@/components/admin/CashPayoutsTab"));
+/** "Pay by member" (#1358): the same module the Cash payouts desk draws, its own chunk (client/src/lib/privilegedChunks.ts). */
+const PayBoard = lazy(() => import("@/components/myMoon/PayBoard"));
 
 /** `MOON_REVIEW_MODULE` in shared/moonRecap.ts, spelled here so this chunk does not carry that file. */
 const MOON_REVIEW_MODULE = "moon-review";
@@ -141,9 +144,16 @@ export default function Treasury() {
                   <ReviewQueue />
                 </section>
               )}
+              {doors?.pay && (
+                // Each member's cash sent from escrow and the token pay to approve or adjust.
+                // GET /api/moon-review/pay-board asks a live holder of cash.pay or moon.approve_alone, no admin.
+                <section className={CARD} data-treasury="pay-by-member">
+                  <PayBoard password={password} />
+                </section>
+              )}
               {doors?.cashPay && (
                 <section className={CARD} data-treasury="cash">
-                  <CashPayoutsTab password={password} />
+                  <CashPayoutsTab password={password} withPayBoard={false} />
                 </section>
               )}
             </Suspense>
