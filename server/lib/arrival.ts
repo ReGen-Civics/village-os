@@ -33,6 +33,7 @@
  */
 // Village Comms: the one door to the email system (server/lib/commsSink.ts).
 import { commsSink } from "./commsSink";
+import { articleFor } from "../../shared/villageWord";
 
 /** The shape this needs from a seating row. Structural, so the repo owns it. */
 export interface SeatRow {
@@ -168,6 +169,8 @@ export interface JoinHost {
   seats: () => readonly SeatRow[] | Promise<readonly SeatRow[]>;
   everyone: () => Promise<readonly { id?: unknown; role?: unknown }[]>;
   notify: GreetDeps["notify"];
+  /** The village's own name for a stage (Admin, Paths & Stages). Absent: the platform's "Guest". */
+  stageName?: (stageId: string) => string;
 }
 
 /**
@@ -191,7 +194,10 @@ export async function memberJoined(
 ): Promise<string[]> {
   commsSink.fire({ type: "member_joined", userId: member.id });
   try {
-    await host.addActivity("join", `${host.firstName(member.name)} stepped into the village as a Guest`, {
+    // The first stage under the village's own name (QA P6-18: a village whose
+    // first stage is "Deckhand" read "as a Guest" on its pulse).
+    const stage = (host.stageName?.("guest") || "").trim() || "Guest";
+    await host.addActivity("join", `${host.firstName(member.name)} stepped into the village as ${articleFor(stage)} ${stage}`, {
       actorUserId: member.id,
       entityType: "user",
       entityRef: member.id,

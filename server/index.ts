@@ -513,6 +513,7 @@ import { isMintRuleKey, parseMintRuleKey } from "../shared/mintRuleKeys";
 import {
   allTokens,
   tokenNameClash,
+  unusedTokenSlugs,
   RECOGNITION_FAUCET,
   balanceOf,
   balancesFor, PLATFORM_TOKEN, postPaymentReversalLeg,
@@ -8176,7 +8177,7 @@ async function startServer() {
     resetPerIpHourly: () => numberVar("abuse.password_reset_per_ip_hourly"),
     recordAudit: recordAuthAudit,
   });
-  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify });
+  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify, stageName });
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
@@ -16067,7 +16068,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // The same rule the rename below enforces, and it has to be here too:
     // guarding only the rename leaves CREATE as an unguarded door to the
     // identical collision, reached by typing the name in the first time.
-    const createClash = tokenNameClash(String(name).trim(), cleanSlug);
+    const createClash = tokenNameClash(String(name).trim(), cleanSlug, { mirrorsShown: effectiveLifecycle("hypha") !== "off" });
     if (createClash) return res.status(409).json({ error: createClash });
     /*
      * 0092: `transferable` used to ride straight off the body with no
@@ -18160,7 +18161,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const valueDef = tokenDef(valueSlug);
     res.json({
       project: m.project,
-      currency: { ...m.currency, value: { slug: valueSlug, name: valueDef?.name ?? valueSlug }, names: Object.fromEntries(allTokens().map((t) => [t.slug, t.name])) },
+      currency: { ...m.currency, value: { slug: valueSlug, name: valueDef?.name ?? valueSlug }, names: Object.fromEntries(allTokens().map((t) => [t.slug, t.name])), unused: unusedTokenSlugs(effectiveLifecycle("hypha") !== "off") }, // unused: G12, a token a member never sees
       images: m.images,
       ...servedPathWords(), // paths, with their sentences, and the ladder's name: server/lib/villagePaths.ts
       stages: servedLadder(mergedConfig().project.commitmentName),

@@ -2110,7 +2110,7 @@ describe.skipIf(!DB_CONFIGURED)("the coordination loop, end to end", () => {
      */
     const seatedBell = await api("GET", "/api/notifications", undefined, doerToken);
     const seatedNotes = (seatedBell.json.notifications ?? []).filter(
-      (n: any) => n.type === "role_appointed" && String(n.title).includes("You were seated as"),
+      (n: any) => n.type === "role_appointed" && String(n.title).includes("You took up the role of"),
     );
     expect(seatedNotes, "one word per seating, and none for a documented holder").toHaveLength(1);
     expect(seatedNotes[0].link).toBe("/map/circles");
