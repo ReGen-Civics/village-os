@@ -76,16 +76,37 @@ describe("a fresh village", () => {
     expect(k.privateKeyPem).toContain("PRIVATE KEY");
   });
 
-  it("STILL BOOTS with no key set, storing plaintext and saying so", async () => {
-    // The tension this whole change exists for: fail-closed here would refuse
-    // to start a village whose operator has not set the variable yet.
-    const { pool, store } = fakePool();
-    const k = await ensureSigningKey(pool, {});
+  it("STILL BOOTS with no key set, and mints NOTHING: a private key is never stored unsealed (R115)", async () => {
+    // Fail-closed on the boot would refuse to start a village whose operator
+    // has not set the variable yet. Fail-closed on the KEY is the rule now:
+    // no plaintext private half is ever written, and signing waits for a key.
+    const { pool, store, writes } = fakePool();
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const k = await ensureSigningKey(pool, {});
+      expect(store.value, "nothing was written to app_config").toBeUndefined();
+      expect(writes).toEqual([]);
+      expect(signingKeyAtRest()).toBe("absent");
+      expect(canSign()).toBe(false);
+      expect(k.privateKeyPem).toBeNull();
+      expect(() => signDocument({ a: 1 }, k, "2026-08-31T00:00:00.000Z")).toThrow(NO_SIGNING_KEY_SENTENCE);
+      const said = err.mock.calls.map((c) => c.map(String).join(" ")).join(" ");
+      expect(said).toContain("[identity] NO SIGNING KEY");
+    } finally {
+      err.mockRestore();
+    }
+  });
 
-    expect(doc()(store).privateKeyPem).toContain("PRIVATE KEY");
-    expect(signingKeyAtRest()).toBe("plaintext");
+  it("the first boot WITH a key after that mints it sealed", async () => {
+    const { pool, store } = fakePool();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await ensureSigningKey(pool, {});
+    resetSigningKeyForTests();
+    vi.restoreAllMocks();
+    const k = await ensureSigningKey(pool, { VILLAGE_SECRETS_KEY: KEY_A });
+    expect(signingKeyAtRest()).toBe("sealed");
     expect(canSign()).toBe(true);
-    // And it is a usable village: it can sign, which is the point of booting.
+    expect(String(store.value)).not.toContain("PRIVATE KEY");
     const signed = signDocument({ hello: "village" }, k, "2026-08-31T00:00:00.000Z");
     expect(verifyDocument(signed, k.publicKeyPem)).toBe(true);
   });
@@ -94,18 +115,18 @@ describe("a fresh village", () => {
     // 2026-10-02: the variable was set, with quotes around it, and this line
     // said "not set". The boot log is where an operator looks first.
     const { pool, store } = fakePool();
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       await ensureSigningKey(pool, { VILLAGE_SECRETS_KEY: `"${KEY_A}"` });
-      const said = warn.mock.calls.map((c) => c.map(String).join(" ")).join(" ");
-      expect(said).toContain("[identity] the signing key is stored in PLAINTEXT.");
+      const said = err.mock.calls.map((c) => c.map(String).join(" ")).join(" ");
+      expect(said).toContain("[identity] NO SIGNING KEY");
       expect(said).toContain("VILLAGE_SECRETS_KEY is set, but it is 66 characters with quotes around it.");
       expect(said).not.toContain("is not set");
       expect(said).not.toContain(KEY_A.slice(0, 8));
-      // The shape the gate refuses seals nothing, exactly as an absent key.
-      expect(doc()(store).privateKeyPem).toContain("PRIVATE KEY");
+      // The shape the gate refuses seals nothing, and so mints nothing.
+      expect(store.value).toBeUndefined();
     } finally {
-      warn.mockRestore();
+      err.mockRestore();
     }
   });
 });
