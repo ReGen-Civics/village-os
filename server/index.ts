@@ -20752,7 +20752,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       if (hasCapability("ballot.vote", ctx)) eligible.push(u);
     }
     // The whole roll, so the share cap (when it is on) is measured against
-    // everybody who may vote; caps by source ride each row's basis (0388).
+    // everybody who may vote; caps by source ride each row's basis (0394).
     return rollEntriesFor(getPool(), eligible.map((u: any) => String(u.id)), weightModeNow());
   }
 

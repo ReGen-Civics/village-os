@@ -533,7 +533,7 @@ describe.skipIf(!DB_CONFIGURED)("the per-cycle cap counts issuance, net, from ev
       toUserId: oraId, amount: 5, reason: "one steward alone",
     }, founderToken)).status).toBe(200);
 
-    // Door 2, marked as cash put in (0388): the same door, source admin_mint_cash.
+    // Door 2, marked as cash put in (0394): the same door, source admin_mint_cash.
     // A tag that is neither cash nor other is refused before anything moves.
     expect((await call("POST", `/api/admin/tokens/${slug}/mint`, {
       toUserId: oraId, amount: 5, reason: "cash given", contribution: "money",
