@@ -205,7 +205,11 @@ describe("the status page's words (statusView)", () => {
 
   it("offers only the open conversation's way to book: its role's link, or our letter with times", () => {
     const withLink = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: "https://cal.example.test/welcome" } })).booking!;
-    expect(withLink.book).toEqual({ label: "Book your conversation with Welcome Role", url: "https://cal.example.test/welcome" });
+    expect(withLink.book).toEqual({ links: [{ label: "Book a time with Welcome Role", url: "https://cal.example.test/welcome" }] });
+    // Several people hold the role, each with their own link: one door each, by first name.
+    const several = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: "https://cal.example.test/ana", links: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] } })).booking!;
+    expect(several.book).toEqual({ links: [{ label: "Book a time with Welcome Role (Ana)", url: "https://cal.example.test/ana" }, { label: "Book a time with Welcome Role (Ben)", url: "https://cal.example.test/ben" }] });
+    expect(statusView("es", served(input(), { bookNow: { role: "Welcome Role", url: "https://cal.example.test/welcome" } })).booking!.book).toEqual({ links: [{ label: "Reserva un horario con Welcome Role", url: "https://cal.example.test/welcome" }] });
     const noLink = statusView("en", served(input(), { bookNow: { role: "Welcome Role", url: null } })).booking!;
     expect(noLink.book).toEqual({ text: "We'll write to you with times for your conversation with Welcome Role." });
     expect(statusView("en", served(input())).booking!.book, "control: nothing open, nothing to book").toBeNull();
@@ -218,16 +222,20 @@ describe("the status page's words (statusView)", () => {
       { role: "Hiring Role", minutes: 20, bookingUrl: "https://cal.example.test/hiring" },
     ];
     const letter = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations, statusLink: null, lang: "en" });
-    expect(letter.text).toContain("Book your first conversation, with Ops Role, here: https://cal.example.test/ops");
+    expect(letter.text).toContain("Book a time with Ops Role for your first conversation: https://cal.example.test/ops");
     expect(letter.text).toContain("Each later conversation opens once the one before it is written up");
     expect(letter.text, "a later conversation's link waits until it opens").not.toContain("cal.example.test/hiring");
     const none = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations: [{ role: "Ops Role", minutes: 60, bookingUrl: null }], statusLink: null, lang: "en" });
     expect(none.text).toContain("We'll write to you with times for your first conversation, with Ops Role.");
     expect(none.text, "control: one conversation has no later ones").not.toContain("Each later conversation");
     const es = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations, statusLink: null, lang: "es" });
-    expect(es.text).toContain("Reserva tu primera conversación, con Ops Role, aquí: https://cal.example.test/ops");
+    expect(es.text).toContain("Reserva un horario con Ops Role para tu primera conversación: https://cal.example.test/ops");
+    // The interviewers' own links come before the role's: several people, one line each.
+    const own = invitedLetter({ firstName: "Ada", village: "V", roleNames: ["Lead Role"], conversations: [{ role: "Ops Role", minutes: 60, bookingUrl: "https://cal.example.test/ops", bookingLinks: [{ who: "Ana", url: "https://cal.example.test/ana" }, { who: "Ben", url: "https://cal.example.test/ben" }] }], statusLink: null, lang: "en" });
+    expect(own.text).toContain("Book a time with Ops Role for your first conversation: \nAna: https://cal.example.test/ana\nBen: https://cal.example.test/ben");
+    expect(own.text, "the role's link gives way to the people's own").not.toContain("cal.example.test/ops");
     // The opened later conversation's letter carries its own role's link, or our letter with times.
-    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Hiring Role", minutes: 20, bookingUrl: "https://cal.example.test/hiring" }).text).toContain("Book it at a time you choose: https://cal.example.test/hiring");
+    expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Hiring Role", minutes: 20, bookingUrl: "https://cal.example.test/hiring" }).text).toContain("Book a time with Hiring Role: https://cal.example.test/hiring");
     expect(applicantUpdate("conversation", { firstName: null, village: "V", roleNames: ["Lead Role"], replyDays: 7, withRole: "Hiring Role", minutes: 20 }).text).toContain("We'll write to you with times.");
   });
 

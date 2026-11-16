@@ -32,6 +32,7 @@ import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
 import { forgetMemberReview } from "../repos/applicationReview";
+import { register as registerProfile } from "./profile";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[applicationReview] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -156,6 +157,13 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       stageOf: async (u: any) => (u.stageGranted ? String(u.stageGranted) : "guest"),
       recordStageEvent: async () => {},
       sessionsOn: () => false,
+    } as any);
+    // The member's own booking link lives on the profile doors.
+    registerProfile(app, {
+      authedUser: async () => (state.viewer ? await usersRepo(pool).byId(state.viewer) : null),
+      members: usersRepo(pool),
+      publicUser: (u: any) => ({ id: u.id }),
+      getPool: () => pool,
     } as any);
     server = http.createServer(app);
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -423,11 +431,11 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("booklink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const first = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", url: "https://calendar.example.test/channel" });
+        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
         // The next conversation opens only once the first is written up, and then offers its own role's way in.
         await score(id, Number((await interviews(id))[0].id), IA.id);
         const second = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(second.body.status.bookNow).toEqual({ role: "Data Role", url: null });
+        expect(second.body.status.bookNow).toEqual({ role: "Data Role", url: null, links: [] });
         // Control: an http link is not a booking link.
         await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["http://calendar.example.test/data", roleB]);
         expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.bookNow.url).toBeNull();
@@ -440,6 +448,131 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       const { id } = await confirmed("late@example.test");
       await score(id, Number((await interviews(id))[0].id), IA.id);
       expect((await call("POST", `/api/governance/applications/${id}/split`, {}, IB.id)).status).toBe(409);
+    });
+  });
+
+  describe("each interviewer's own booking link (team call, 16 Nov 2026)", () => {
+    const IA_LINK = "https://calendar.example.test/iva";
+    const IB_LINK = "https://calendar.example.test/ivo";
+    const saveLink = (as: string, bookingUrl: unknown) => call("PUT", "/api/profile/booking-link", { bookingUrl }, as);
+
+    it("saves an https link on the member's profile and refuses anything else", async () => {
+      try {
+        expect((await call("GET", "/api/profile/booking-link", undefined, IA.id)).body).toEqual({ bookingUrl: null });
+        for (const bad of ["http://calendar.example.test/iva", "javascript:alert(1)", "https://user:pw@calendar.example.test/x", "not a link", 42]) {
+          const r = await saveLink(IA.id, bad);
+          expect(r.status, String(bad)).toBe(400);
+        }
+        // CONTROL: none of the refused writes landed.
+        expect((await call("GET", "/api/profile/booking-link", undefined, IA.id)).body).toEqual({ bookingUrl: null });
+        expect((await saveLink(IA.id, `  ${IA_LINK}  `)).body).toEqual({ bookingUrl: IA_LINK });
+        expect((await call("GET", "/api/profile/booking-link", undefined, IA.id)).body).toEqual({ bookingUrl: IA_LINK });
+        // Only the signed-in member's own link, and a stranger is turned away.
+        expect((await call("GET", "/api/profile/booking-link", undefined, IB.id)).body).toEqual({ bookingUrl: null });
+        expect((await call("PUT", "/api/profile/booking-link", { bookingUrl: IA_LINK }, null)).status).toBe(401);
+        expect((await saveLink(IA.id, "")).body).toEqual({ bookingUrl: null });
+      } finally {
+        await saveLink(IA.id, "");
+      }
+    });
+
+    it("offers the link of the person holding the step's role, then the role's link, then our letter with times", async () => {
+      await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["https://calendar.example.test/channel-role", roleA]);
+      try {
+        await saveLink(IA.id, IA_LINK);
+        await saveLink(IB.id, IB_LINK);
+        const { id, confirm } = await confirmed("ownlink@example.test");
+        const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
+        const status = async () => (await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status;
+        // 1. The interviewer's own link beats the role's.
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
+        // 2. CONTROL: cleared, the role's link comes back.
+        await saveLink(IA.id, "");
+        expect((await status()).bookNow.url).toBe("https://calendar.example.test/channel-role");
+        // The next conversation's letter carries the next interviewer's own link, by role, never an email address.
+        await saveLink(IA.id, IA_LINK);
+        const sentBefore = state.sent.length;
+        const criteria = (await cardOf(id, IA.id)).body.scorecards.criteria;
+        const scored = await call("POST", `/api/governance/applications/${id}/interviews/${(await interviews(id))[0].id}/score`, { ...entriesFor(criteria), gut: { answer: "unsure", note: "Quiet, hard to read." } }, IA.id);
+        expect(scored.status).toBe(200);
+        // The gut check never reaches the applicant's page by the emailed link either.
+        expect(JSON.stringify(await status())).not.toContain("hard to read");
+        expect(JSON.stringify(await status())).not.toContain("unsure");
+        const letter = state.sent.slice(sentBefore).find((m) => m.text.includes("Data Role"));
+        expect(letter?.text).toContain(`Book a time with Data Role: ${IB_LINK}`);
+        expect(letter?.text).not.toContain(IB.email);
+        expect((await status()).bookNow).toEqual({ role: "Data Role", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
+        // 3. Neither a person's link nor the role's: nothing to follow, and the page says we write with times.
+        await saveLink(IB.id, "");
+        expect((await status()).bookNow).toEqual({ role: "Data Role", url: null, links: [] });
+        expect(JSON.stringify(await status())).not.toContain("@example.test");
+      } finally {
+        await saveLink(IA.id, "");
+        await saveLink(IB.id, "");
+        await q("UPDATE org_roles SET booking_url = NULL WHERE id = ?", [roleA]);
+      }
+    });
+  });
+
+  describe("the gut check rides with the scorecard", () => {
+    const withGut = async (id: string, ivId: number, as: string, gut: unknown) => {
+      const card = await cardOf(id, as);
+      return call("POST", `/api/governance/applications/${id}/interviews/${ivId}/score`, { ...entriesFor(card.body.scorecards.criteria), gut }, as);
+    };
+
+    it("is blind until the reader's own card is in, read by later interviewers and the decider, and never by the applicant", async () => {
+      // An applicant with their own account, so the signed-in status door is tried as well as the emailed link.
+      const GUT_APPLICANT = person("u-gut-applicant", "Robin Gut");
+      await usersRepo(pool).add({ id: GUT_APPLICANT.id, name: GUT_APPLICANT.name, email: GUT_APPLICANT.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+      const { id, confirm } = await confirmed(GUT_APPLICANT.email);
+      const ivs = await interviews(id);
+      const first = await withGut(id, Number(ivs[0].id), IA.id, { answer: "yes", note: "Felt right from the start." });
+      expect(first.status, JSON.stringify(first.body)).toBe(200);
+
+      // The scorer reads their own, beside the three criteria (the gut is not a fourth one).
+      const own = (await cardOf(id, IA.id)).body.scorecards.interviews[0];
+      expect(own.gut).toEqual({ answer: "yes", note: "Felt right from the start." });
+      expect(own.entries).toHaveLength(3);
+
+      // The next interviewer reads nothing of it before their own card.
+      const before = await cardOf(id, IB.id);
+      expect(before.body.scorecards.interviews.every((i: any) => i.gut === null)).toBe(true);
+      expect(JSON.stringify(before.body)).not.toContain("Felt right");
+
+      // CONTROL: once their own is in, they read it.
+      expect((await withGut(id, Number(ivs[1].id), IB.id, { answer: "no", note: "" })).status).toBe(200);
+      const after = (await cardOf(id, IB.id)).body.scorecards.interviews;
+      expect(after[0].gut).toEqual({ answer: "yes", note: "Felt right from the start." });
+      expect(after[1].gut).toEqual({ answer: "no", note: "" });
+
+      // The person who decides reads both; someone outside the review reads neither.
+      state.powerHolders = [SEAT_NOT_INTERVIEWER.id];
+      expect((await cardOf(id, SEAT_NOT_INTERVIEWER.id)).body.scorecards.interviews[0].gut?.answer).toBe("yes");
+      expect((await cardOf(id, OUTSIDER.id)).body.scorecards.interviews.every((i: any) => i.gut === null)).toBe(true);
+
+      // The applicant: no scorecard door, and nothing of it on their status page, by link or signed in.
+      expect((await cardOf(id, GUT_APPLICANT.id)).status).toBe(404);
+      // With an account the applicant reads their page signed in (no emailed token is minted for them).
+      expect(confirm.statusPath ?? "").not.toContain("token=");
+      const signedIn = await call("GET", `/api/governance/applications/${id}/status`, undefined, GUT_APPLICANT.id);
+      // CONTROL: the door answered, so the absence below is about the content.
+      expect(signedIn.status).toBe(200);
+      for (const page of [JSON.stringify(signedIn.body)]) {
+        expect(page).not.toContain("Felt right");
+        expect(page).not.toContain("gut");
+      }
+    });
+
+    it("is optional, and refuses an answer it does not know or a line with no answer, storing nothing", async () => {
+      const { id } = await confirmed("gutbad@example.test");
+      const ivs = await interviews(id);
+      expect((await withGut(id, Number(ivs[0].id), IA.id, { answer: "maybe" })).status).toBe(400);
+      expect((await withGut(id, Number(ivs[0].id), IA.id, { note: "A line with no answer." })).status).toBe(400);
+      expect((await withGut(id, Number(ivs[0].id), IA.id, { answer: "yes", note: "x".repeat(201) })).status).toBe(400);
+      expect(await q("SELECT 1 FROM application_scores WHERE application_ref = ?", [id])).toEqual([]);
+      // CONTROL: without one, the card goes in as it always did.
+      expect((await score(id, Number(ivs[0].id), IA.id)).status).toBe(200);
+      expect((await cardOf(id, IA.id)).body.scorecards.interviews[0].gut).toBeNull();
     });
   });
 

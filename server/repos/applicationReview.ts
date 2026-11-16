@@ -14,8 +14,9 @@
  * reads these tables: server/lib/applicationReview.refusal.test.ts scans for it.
  */
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import type { InterviewState, ScoreEntry, ScoreLevel, StepKind } from "../../shared/applicationReview";
+import { GUT_CRITERION, type GutCheck, type GutAnswer, type InterviewState, type ScoreEntry, type ScoreLevel, type StepKind } from "../../shared/applicationReview";
 import { parseBookingUrl } from "../../shared/roleBooking";
+import { memberBookingUrl } from "../../shared/interviewBooking";
 
 type Db = Pool | PoolConnection;
 
@@ -174,8 +175,10 @@ export async function markHeld(db: Db, id: number, at: Date): Promise<void> {
 export interface StoredScore {
   interviewId: number;
   scorerUserId: string;
+  /** A criterion's id, or GUT_CRITERION for the gut check (shared/applicationReview.ts). */
   criterionId: string;
-  level: ScoreLevel;
+  /** A ScoreLevel, or a GutAnswer on the gut check's row. */
+  level: ScoreLevel | GutAnswer;
   evidence: string;
   submittedAt: Date;
 }
@@ -187,6 +190,14 @@ export async function insertScores(db: Db, ref: string, interviewId: number, sco
       [ref, interviewId, scorer, e.criterionId, e.level, e.evidence, at],
     );
   }
+}
+
+/** The interviewer's gut check, one more row of their scorecard (GUT_CRITERION). Written in the same transaction as the scorecard. */
+export async function insertGut(db: Db, ref: string, interviewId: number, scorer: string, gut: GutCheck, at: Date): Promise<void> {
+  await db.query(
+    "INSERT INTO application_scores (application_ref, interview_id, scorer_user_id, criterion_id, level, evidence, submitted_at) VALUES (?,?,?,?,?,?,?)",
+    [ref, interviewId, scorer, GUT_CRITERION, gut.answer, gut.note, at],
+  );
 }
 
 export async function scoresOf(db: Db, ref: string): Promise<StoredScore[]> {
@@ -335,6 +346,21 @@ export async function bookingUrlsById(db: Db, ids: readonly string[]): Promise<M
   if (!ids.length) return new Map();
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, booking_url FROM org_roles WHERE id IN (?)", [[...ids]]);
   return new Map(rows.map((r: any) => [String(r.id), parseBookingUrl(r.booking_url)]));
+}
+
+/**
+ * The first name and saved booking link (`prefs.bookingUrl`) of each of these members. The link
+ * comes back as stored; `stepBookingLinks` (shared/interviewBooking.ts) checks it. Nothing else of
+ * the member leaves here, never an email address.
+ */
+export async function bookingLinksOfMembers(db: Db, userIds: readonly string[]): Promise<Array<{ userId: string; firstName: string | null; bookingUrl: unknown }>> {
+  if (!userIds.length) return [];
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, prefs FROM users WHERE id IN (?)", [[...userIds]]);
+  return rows.map((r: any) => ({
+    userId: String(r.id),
+    firstName: typeof r.name === "string" ? (r.name.trim().split(/\s+/)[0] || null) : null,
+    bookingUrl: memberBookingUrl(json(r.prefs)),
+  }));
 }
 
 export async function roleNamesById(db: Db, ids: readonly string[]): Promise<Map<string, string>> {

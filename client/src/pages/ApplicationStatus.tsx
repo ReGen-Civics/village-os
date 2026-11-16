@@ -40,8 +40,8 @@ interface Served {
   path: Array<{ label: string; state: "done" | "now" | "later" }>;
   booking: string | null;
   mode: "block" | "split";
-  /** The conversation open now and its role's booking link (12 Nov 2026). */
-  bookNow?: { role: string; url: string | null } | null;
+  /** The conversation open now and how to book it: the interviewer's own link, else the role's (16 Nov 2026). */
+  bookNow?: { role: string; url: string | null; links?: Array<{ who: string | null; url: string }> } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
   replyDays?: number | null;
   /** Until the first reply, the roles open after the founding team (Rye, 14 Nov 2026). */
@@ -455,10 +455,16 @@ export default function ApplicationStatus() {
               <section aria-label={w.status.booking.label} className={TILE}>
                 {/* One story whatever the role's conversationMode holds: the applicant books each conversation at times they choose, in order. */}
                 <p className="text-foreground">{view.booking.text}</p>
-                {view.booking.book && "url" in view.booking.book && (
-                  <a href={view.booking.book.url} target="_blank" rel="noopener noreferrer" className={`mt-3 ${DOOR}`} data-book-now="">
-                    {view.booking.book.label}
-                  </a>
+                {view.booking.book && "links" in view.booking.book && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {view.booking.book.links
+                      .filter((l) => /^https:\/\//.test(l.url))
+                      .map((l) => (
+                        <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className={DOOR} data-book-now="">
+                          {l.label}
+                        </a>
+                      ))}
+                  </div>
                 )}
                 {view.booking.book && "text" in view.booking.book && <p className="mt-2 text-sm text-muted-foreground" data-book-write="">{view.booking.book.text}</p>}
               </section>
