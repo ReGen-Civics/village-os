@@ -60,6 +60,8 @@ export const POWER_KIND_OF: Record<Capability, PowerKind> = {
   "map.curatePhotos": "place",
   "place.tend": "place",
   "place.permit": "place",
+  "hiddenmap.keep": "place",
+  "hiddenmap.export": "place",
   "stay.member_rate": "place",
   "event.rsvp": "place",
   "event.manage": "place",

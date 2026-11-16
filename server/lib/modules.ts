@@ -768,7 +768,7 @@ export function moduleMaxLifecycle(id: string): ModuleLifecycle {
   const def = MODULES_BY_ID[id];
   if (!def) return "off";
   if (def.core) return "public";
-  let bound: ModuleLifecycle = "public";
+  let bound: ModuleLifecycle = def.widest ?? "public";
   for (const dep of def.requires) {
     const depLc: ModuleLifecycle = MODULES_BY_ID[dep]?.core ? "public" : effectiveLifecycle(dep);
     if (LIFECYCLE_RANK[depLc] < LIFECYCLE_RANK[bound]) bound = depLc;
@@ -850,6 +850,16 @@ export async function setModuleLifecycle(
       const names = limiting.map(
         (dep) => `${MODULES_BY_ID[dep]?.name ?? dep} (now ${effectiveLifecycle(dep)})`,
       );
+      // No dependency limits it: the module's own ceiling does (`widest`).
+      if (limiting.length === 0) {
+        return {
+          ok: false,
+          status: 409,
+          error: `"${def.name}" goes no wider than ${bound}.`,
+          limitedBy: [],
+          maxLifecycle: bound,
+        };
+      }
       return {
         ok: false,
         status: 409,

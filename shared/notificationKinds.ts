@@ -860,6 +860,14 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     many: "{n} doors opened.",
     celebrate: true,
   },
+  // The hidden map (0392): a member's map has opened. Said once, by its dedupe
+  // key, with no place in it.
+  hidden_map_opened: {
+    group: "village",
+    blurb: "Enough of your places are vouched for, and the whole map is open to you.",
+    many: "{n} maps opened.",
+    celebrate: false,
+  },
   badge: {
     group: "village",
     blurb: "A mark on your profile, earned or placed, with what it means beside it.",

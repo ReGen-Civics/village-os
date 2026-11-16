@@ -4085,6 +4085,131 @@ export const VARIABLES: VariableDef[] = [
     unit: "members",
   },
 
+  // ── The hidden map (module hidden-map, shared/hiddenMap.ts) ───────────────
+  //
+  // READ by server/lib/hiddenMap.ts at the point of use. Every one is a dial
+  // like any other, so the village can propose and vote a change.
+  {
+    key: "hiddenmap.unlock_pins",
+    category: "Hidden map",
+    label: "Vouched pins that open the whole map",
+    description:
+      "How many of a member's own planting pins must be vouched for by somebody else before they see every pin on the hidden map. Until then they see only their own. Once a member's map has opened it stays open, so raising this later only asks more of members who have not opened yet. Zero opens the map to every member who can see the module.",
+    type: "integer",
+    default: "7",
+    min: 0,
+    max: 100,
+    unit: "pins",
+  },
+  {
+    key: "hiddenmap.vouches_per_pin",
+    category: "Hidden map",
+    label: "Vouches one pin needs before it counts",
+    description:
+      "How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet.",
+    type: "integer",
+    default: "1",
+    min: 1,
+    max: 10,
+    unit: "vouches",
+  },
+  {
+    key: "hiddenmap.default_precision",
+    category: "Hidden map",
+    label: "How exactly a new pin is shown beyond the open members",
+    description:
+      "The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.",
+    type: "choice",
+    default: "region",
+    choices: [
+      { value: "region", label: "Region, about 50 km", hint: "The safest. A dot says which part of the country, and nothing nearer." },
+      { value: "km", label: "About 1 km", hint: "Close enough to find the area, too coarse to find the spot." },
+      { value: "exact", label: "Exact", hint: "Only for places that are safe to be found." },
+    ],
+  },
+  {
+    key: "hiddenmap.teaser",
+    category: "Hidden map",
+    label: "Show dots to members whose map has not opened",
+    description:
+      "When on, a member who has not opened the map yet sees every other pin as a plain dot, no finer than about 1 km and never finer than the pin's own setting, with no words, photos or stage. When off, they see their own pins and nothing else about anybody's.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "hiddenmap.basemap",
+    category: "Hidden map",
+    label: "What the hidden map is drawn on",
+    description:
+      "The picture under the pins. Tiles load on each member's own phone from the provider named here, with its credit always on screen, and nothing is stored on the village's server. The provider can see which squares of the world a phone asked for, which is why the zoom below is capped. A grid draws no picture at all and sends nothing anywhere.",
+    type: "choice",
+    default: "none",
+    choices: [
+      { value: "none", label: "A grid of latitude and longitude", hint: "Nothing leaves the phone. No coastline, roads or names." },
+      { value: "osm", label: "OpenStreetMap", hint: "Roads, places and names, drawn by volunteers. Free for light use with the credit shown." },
+      { value: "esri-imagery", label: "Satellite imagery from Esri", hint: "Photographs from above. Free to view with the credit shown." },
+    ],
+  },
+  {
+    key: "hiddenmap.basemap_max_zoom",
+    category: "Hidden map",
+    label: "Closest the picture under the pins will zoom",
+    description:
+      "The deepest zoom at which tiles are asked for. At 13 one tile covers about 5 km, so the provider learns only which 5 km square a member looked at. Pins are still drawn exactly where they are for members who may see them.",
+    type: "integer",
+    default: "13",
+    min: 2,
+    max: 18,
+    unit: "zoom",
+  },
+  {
+    key: "hiddenmap.access_log_days",
+    category: "Hidden map",
+    label: "Days the record of who looked is kept",
+    description:
+      "Every read of the shared map, every vouch and every copy taken is recorded with who and when, and never where. Rows older than this are deleted.",
+    type: "integer",
+    default: "90",
+    min: 7,
+    max: 3650,
+    unit: "days",
+  },
+  {
+    key: "hiddenmap.export_hours",
+    category: "Hidden map",
+    label: "Hours a second member has to approve a copy of the map",
+    description:
+      "A copy of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved copy the asker has not downloaded expires too.",
+    type: "integer",
+    default: "24",
+    min: 1,
+    max: 168,
+    unit: "hours",
+  },
+  {
+    key: "hiddenmap.visit_pay_days",
+    category: "Hidden map",
+    label: "Days between paid return visits to the same pin",
+    description:
+      "When the village names a quest for return visits, a member's visit to the same pin opens a new claim at most this often, so one tree is visited for its story and never farmed.",
+    type: "integer",
+    default: "30",
+    min: 0,
+    max: 365,
+    unit: "days",
+  },
+  {
+    key: "hiddenmap.photo_max_mb",
+    category: "Hidden map",
+    label: "Largest photo a member may add to a pin",
+    description: "The largest single photo, before it is shrunk and every hidden detail in it is removed.",
+    type: "integer",
+    default: "12",
+    min: 1,
+    max: 40,
+    unit: "MB",
+  },
+
   // ── Task boards (spec section 17, A6) ─────────────────────────────────────
   //
   // READ by server/repos/memberTasks.ts `listIsOn` and every count of who has
