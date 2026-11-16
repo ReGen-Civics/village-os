@@ -39,6 +39,7 @@ vi.mock("@/lib/hiddenMapApi", async (orig) => ({
   photoUrl: async () => "blob:x",
 }));
 
+import { TOKEN_KEY } from "@/lib/gameApi";
 import HiddenMap from "./HiddenMap";
 
 beforeAll(() => {
@@ -189,7 +190,7 @@ describe("opening with no signal (P6-2)", () => {
   });
 
   it("opens offline when the profile cannot be read either, from the snapshot this same session wrote (P6-2 final)", async () => {
-    window.localStorage.setItem("village-auth-token", "session-token-for-ash-0123456789abcdef");
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-ash-0123456789abcdef");
     me = { ...base, open: false };
     pins = [];
     const online = render(<HiddenMap />);
@@ -206,14 +207,14 @@ describe("opening with no signal (P6-2)", () => {
   });
 
   it("never opens another session's snapshot offline", async () => {
-    window.localStorage.setItem("village-auth-token", "session-token-for-ash-0123456789abcdef");
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-ash-0123456789abcdef");
     me = { ...base, open: false };
     pins = [];
     const online = render(<HiddenMap />);
     await screen.findByText("The rest of the map is secret.");
     online.unmount();
 
-    window.localStorage.setItem("village-auth-token", "session-token-for-somebody-else-fedcba98");
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-somebody-else-fedcba98");
     noSignal = true;
     modulesFailed = true;
     signedIn = null;

@@ -234,7 +234,7 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
         onPointerCancel={() => { drag.current = null; }}
         onWheel={(e) => zoomBy(e.deltaY < 0 ? 1 : -1)}
         role="application"
-        aria-label={onTap ? t`Map. Tap to place the pin.` : t`Map`}
+        aria-label={onTap ? t`Map. Tap to place the pin.` : t({ message: `Map`, context: "hidden map, the map view" })}
       >
         {tiles.map((t) => (
           <img
@@ -304,7 +304,7 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
               // The hit area is 24px at least (WCAG 2.5.8); the drawn pin sits in its middle.
               className={`absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full ${onSelect ? "" : "pointer-events-none"}`}
               style={{ left: s.x, top: s.y }}
-              aria-label={dot ? t`A pin somewhere near here (${labels[p.layer]})` : t`${(p as PinView).title || (p as PinView).kind}, ${labels[p.layer]}`}
+              aria-label={dot ? t`A pin somewhere near here (${labels[p.layer]})` : t({ message: `${(p as PinView).title || (p as PinView).kind}, ${labels[p.layer]}`, context: "hidden map, the map view" })}
             >
               <span
                 aria-hidden="true"
@@ -319,10 +319,10 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
         })()}
       </div>
       <div className="absolute right-2 top-2 flex flex-col gap-1">
-        <button type="button" onClick={() => zoomBy(1)} className="flex size-11 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-sm hover:bg-muted" aria-label={t`Zoom in`}>
+        <button type="button" onClick={() => zoomBy(1)} className="flex size-11 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-sm hover:bg-muted" aria-label={t({ message: `Zoom in`, context: "hidden map, the map view" })}>
           <Plus className="size-4" aria-hidden="true" />
         </button>
-        <button type="button" onClick={() => zoomBy(-1)} className="flex size-11 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-sm hover:bg-muted" aria-label={t`Zoom out`}>
+        <button type="button" onClick={() => zoomBy(-1)} className="flex size-11 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-sm hover:bg-muted" aria-label={t({ message: `Zoom out`, context: "hidden map, the map view" })}>
           <Minus className="size-4" aria-hidden="true" />
         </button>
       </div>
