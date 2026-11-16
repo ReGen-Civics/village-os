@@ -30,7 +30,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { deriveTheme } from "../../shared/brandTokens";
+import { deriveTheme, type DerivedTheme } from "../../shared/brandTokens";
 
 export interface BrandThemeFields {
   /** The three founder decisions (docs/DESIGN_TOKENS_SPEC.md §3.1). */
@@ -43,6 +43,23 @@ export interface BrandThemeFields {
    * or invalid keeps the character's rotation.
    */
   accent?: string;
+  /**
+   * The page's scheme (DESIGN_TOKENS_SPEC §3.2): "dark" promotes the night
+   * layer to the whole member site; anything else is light, today's look.
+   */
+  mode?: string;
+  /**
+   * Slots set exactly (§3.3): `{ "--primary": "#e9b84a", ... }`, keys from
+   * OVERRIDE_SLOTS in shared/brandTokens.ts. Cleaned there; every pair the
+   * page draws is measured on the result, so an override can fail the report.
+   */
+  overrides?: Record<string, string>;
+  /**
+   * The game tokens (gap G3, GAME_TOKENS in shared/brandTokens.ts): hex values
+   * by name (`paper`, `map-sea`, ...), plus `font-label`, a font stack.
+   * Emitted after the slots; a token left out keeps its slot fallback.
+   */
+  tokens?: Record<string, string>;
   /** URL of a CSS file carrying the village's @font-face declarations. */
   fontImportUrl?: string;
   /** Full font-family stacks; blank = keep the platform default. */
@@ -123,8 +140,11 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined): strin
   // output is our own hex — no sanitising needed — and its absence is the
   // neutral fork emitting nothing. The card also implies a type pairing,
   // which an EXPLICIT font choice below always beats.
-  const derived = deriveTheme(theme.seed, theme.character, theme.accent);
+  const derived = deriveOf(theme);
   if (derived) {
+    // The scheme first, so form controls and scrollbars take the dark chrome,
+    // and a marker liveTheme.ts reads to keep `data-scheme` in step.
+    if (derived.mode === "dark") vars.push("  color-scheme: dark;", "  --village-scheme: dark;");
     for (const [k, v] of Object.entries(derived.vars)) vars.push(`  ${k}: ${v};`);
   }
 
@@ -134,7 +154,18 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined): strin
   if (display) vars.push(`  --font-display: ${display};`);
   if (body) vars.push(`  --font-body: ${body};`);
   if (accent) vars.push(`  --font-accent: ${accent};`);
+  // The label face, the one game token that is a stack. Like every font field,
+  // a value with anything a stack is not made of is dropped whole.
+  const label = derived ? sanitizeFontStack((theme.tokens as Record<string, unknown> | undefined)?.["font-label"]) : null;
+  if (label) vars.push(`  --font-label: ${label};`);
   if (vars.length) parts.push(`:root:root {\n${vars.join("\n")}\n}`);
+  // Admin is light by ruling (2026-09-04). In the dark scheme it keeps the
+  // light palette on its own root; Admin's Night look (.sheet-night) is its
+  // own world and is left to it.
+  if (derived?.lightVars) {
+    const light = Object.entries(derived.lightVars).map(([k, v]) => `  ${k}: ${v};`);
+    parts.push(`.admin-root:not(.sheet-night) {\n  color-scheme: light;\n${light.join("\n")}\n}`);
+  }
 
   return parts.length ? parts.join("\n") + "\n" : "";
 }
@@ -177,4 +208,46 @@ export function withThemeVersion(html: string, version: string): string {
  */
 export function brandColour(theme: BrandThemeFields | null | undefined): string {
   return deriveTheme(theme?.seed, theme?.character, theme?.accent)?.vars["--tone-brand"] ?? "#404040";
+}
+
+/** deriveTheme with every theme field it reads, the one place this file calls it with options. */
+export function deriveOf(theme: BrandThemeFields | null | undefined): DerivedTheme | null {
+  if (!theme) return null;
+  return deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides, tokens: theme.tokens });
+}
+
+/**
+ * The page's scheme and its ground, for the places that paint before any
+ * stylesheet or cannot read one: the shell's first paint and the phone's bar,
+ * and the install manifest. Null for a light village, whose shell and manifest
+ * stay exactly as they were.
+ */
+export function darkScheme(theme: BrandThemeFields | null | undefined): { ground: string } | null {
+  const d = deriveOf(theme);
+  return d && d.mode === "dark" ? { ground: d.vars["--background"] } : null;
+}
+
+/** The install screen's ground: the village's own in the dark scheme, white as before otherwise. */
+export function installBackground(theme: BrandThemeFields | null | undefined): string {
+  return darkScheme(theme)?.ground ?? "#ffffff";
+}
+
+/** The phone's bar in an installed app: the dark ground in the dark scheme, the brand otherwise. */
+export function installThemeColour(theme: BrandThemeFields | null | undefined): string {
+  return darkScheme(theme)?.ground ?? brandColour(theme);
+}
+
+/**
+ * The shell, marked for the dark scheme: `data-scheme="dark"` on <html> (the
+ * hook index.css's dark rules hang on), and the first paint and the phone's
+ * bar in the village's own ground instead of the platform's night. A light
+ * village's shell comes back unchanged. Only the exact tags client/index.html
+ * ships are touched, so a shell without them is returned as it came.
+ */
+export function withScheme(html: string, scheme: { ground: string } | null): string {
+  if (!scheme || typeof html !== "string" || !/^#[0-9a-f]{6}$/i.test(scheme.ground)) return html;
+  return html
+    .replace(/<html(?![^>]*data-scheme)([^>]*)>/i, `<html$1 data-scheme="dark">`)
+    .replace(/(<meta name="theme-color" content=")#[0-9a-f]{6}(" \/>)/i, `$1${scheme.ground}$2`)
+    .replace(/<style>html\{background-color:#[0-9a-f]{6};color-scheme:dark\}<\/style>/i, `<style>html{background-color:${scheme.ground};color-scheme:dark}</style>`);
 }

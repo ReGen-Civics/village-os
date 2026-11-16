@@ -98,6 +98,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/admin": "Village settings",
   "/journal": "Journal",
   "/protocols": "Protocols",
+  "/hidden-map": "Hidden map",
   "/funding-rounds": "Funding rounds",
   // One line covers the list and every room, by the longest-prefix rule.
   "/sessions": "Live sessions",

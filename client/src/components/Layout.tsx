@@ -14,6 +14,7 @@ import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import MessageCountBadge from "@/components/messages/MessageCountBadge";
 import { altOr, useGameConfig } from "@/lib/gameApi";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/config/nav";
+import { useVillageMenu } from "@/hooks/useVillageMenu";
 import { useTokenName } from "@/hooks/useTokenNames";
 import MobileTabBar, { isBareRoute } from "./mobile/MobileTabBar";
 import MobileFab from "./mobile/MobileFab";
@@ -70,7 +71,11 @@ export default function Layout({ children }: LayoutProps) {
   // this page") loses its entry and its link the same way. While the config
   // loads they stay out rather than flash in.
   const storyShown = (href: string) => storyPageShown(cfg, href);
+  // The village's own menu (gap G5, shared/menuDoc.ts): a label and a hidden
+  // flag per entry, its group names. Gates still decide who sees what.
+  const menu = useVillageMenu();
   const visible = (item: NavLink) =>
+    !menu.hidden.includes(item.href) &&
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.href)) &&
@@ -81,6 +86,8 @@ export default function Layout({ children }: LayoutProps) {
   // href stays put. Substituted HERE, once, because both the desktop dropdown
   // and the mobile drawer render their items through groupItems.
   const withTokenLabel = (link: NavLink): NavLink => {
+    const own = menu.labels[link.href];
+    if (own) return { ...link, label: own };
     if (link.token) return { ...link, label: tokenName };
     // A story page carries the village's own name for it (Admin, Pages, Whole site).
     const named = link.brochure ? cfg?.site?.menu?.[link.href] : undefined;
@@ -96,9 +103,9 @@ export default function Layout({ children }: LayoutProps) {
   // its optional modules off never renders an empty dropdown.
   const groupItems = (group: NavGroup) => group.items.filter(visible).map(withTokenLabel);
   const navEntries = NAV.filter((e) => (isGroup(e) ? groupItems(e).length > 0 : visible(e))).map((e) =>
-    isGroup(e) ? e : withTokenLabel(e),
+    isGroup(e) ? { ...e, label: menu.groups[e.label] || e.label } : withTokenLabel(e),
   );
-  const accountItems = ACCOUNT_MENU.filter(visible);
+  const accountItems = ACCOUNT_MENU.filter(visible).map((l) => (menu.labels[l.href] ? { ...l, label: menu.labels[l.href] } : l));
 
   // Footer-only modules. A gated footer link would be a dead end on a fresh
   // fork, because every one of these pages renders NotFound with its module

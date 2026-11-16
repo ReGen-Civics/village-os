@@ -233,6 +233,10 @@ Everywhere else in the overlay a blank field resolves to Amora's value in `gameC
 | `theme.baseSize` | integer px, clamped 14–20 | `16` |
 | `theme.density` | `choice`: `comfortable \| compact` | `comfortable`. Scales spacing only, with a floor so touch targets never drop below the accessible minimum. |
 
+### 3.3a `theme.tokens` — the game tokens (gap G3, built 2026-11-15)
+
+A closed list of colours the game surfaces read beyond the slots, each with the slot a component falls back to when the village sets nothing (`GAME_TOKENS` in `shared/brandTokens.ts`, written `var(--paper, var(--card))` at the point of use): `paper` (card), `paper-2` (muted), `paper-foreground` (card-foreground), `paper-muted` (muted-foreground), `success` (sage), `ceremony` (secondary), `seal` (destructive), `stamp-alt` (sage), `surface-deep` (background), `glow` (muted), `place-1` (chart-2), `place-2` (primary), `place-3` (secondary), `map-sea` (background), `map-land` (card), `map-line` (border), `map-water` (chart-2), `map-grid` (border), `map-fog` (background), `destructive` (destructive), and `font-label`, a font stack. Hex only; emitted after the slots; a token not set emits nothing. The inks on paper, `success` and `ceremony` are measured in the report.
+
 ### 3.4 `theme` — server-owned, never client-writable
 
 | Key | Type | Behaviour |

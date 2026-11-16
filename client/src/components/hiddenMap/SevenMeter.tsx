@@ -22,11 +22,11 @@ export function slotsFor(needed: number, vouched: number, logged: number): SlotS
 export default function SevenMeter({ needed, vouched, logged, glow = false }: { needed: number; vouched: number; logged: number; glow?: boolean }) {
   const { t } = useLingui();
   if (needed > 12) {
-    return <p className="font-display text-3xl text-card-foreground">{t`${vouched} of ${needed}`}</p>;
+    return <p className="font-display text-3xl text-card-foreground">{t({ message: `${vouched} of ${needed}`, context: "hidden map, progress toward opening the map" })}</p>;
   }
   const slots = slotsFor(needed, vouched, logged);
   return (
-    <ol className="flex gap-2" aria-label={t`${vouched} of ${needed} vouched`}>
+    <ol className="flex gap-2" aria-label={t({ message: `${vouched} of ${needed} vouched`, context: "hidden map, progress toward opening the map" })}>
       {slots.map((s, i) => (
         <li
           key={i}
@@ -40,7 +40,7 @@ export default function SevenMeter({ needed, vouched, logged, glow = false }: { 
         >
           {s === "vouched" && <Sprout className="size-5" aria-hidden="true" />}
           {s === "waiting" && <span className="size-2.5 rounded-full bg-primary" aria-hidden="true" />}
-          <span className="sr-only">{s === "vouched" ? t`vouched` : s === "waiting" ? t`waiting for a vouch` : t`still to log`}</span>
+          <span className="sr-only">{s === "vouched" ? t({ message: `vouched`, context: "hidden map, progress toward opening the map" }) : s === "waiting" ? t`waiting for a vouch` : t({ message: `still to log`, context: "hidden map, progress toward opening the map" })}</span>
         </li>
       ))}
     </ol>

@@ -22,6 +22,7 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
+import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
@@ -308,7 +309,8 @@ import { register as registerOnboardingRoutes } from "./routes/onboarding";
 import { exportMemberTasks, register as registerMemberTaskRoutes } from "./routes/memberTasks";
 import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskBridge";
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
-import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR } from "./routes/stockAvatars";
+import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBDIR } from "./routes/stockAvatars";
+import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
@@ -331,7 +333,7 @@ import {
   readSetPasswordToken,
   setPasswordLinkRefusal,
 } from "./lib/memberTokens";
-import { brandColour, sanitizeFontName } from "./lib/themeCss";
+import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
 import { CONSTITUTION } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
@@ -7929,7 +7931,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body);
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : null); // menu: gap G5, shared/menuDoc.ts
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -18178,6 +18180,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       ...brochureConfig(),
       villageSourceUrl: servedVillageSourceUrl(stringVar(VILLAGE_SOURCE_URL_KEY)), // the footer's village source link (AGPL section 13): shared/sourceUrl.ts
       site: siteWords(contentRepo.get() ?? null, m),
+      menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
@@ -18925,6 +18928,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   registerCharacterPortraitRoutes(app, { authedUser, getPool, uploadsDir: UPLOADS_DIR });
   registerArchetypeAdminRoutes(app, { isAdmin, guardCapability, getPool });
+  registerStockArtRoutes(app, { isAdmin, guardCapability, uploadsDir: UPLOADS_DIR });
   registerPowerAffinityRoutes(app, { isAdmin, guardCapability, getPool });
   // The seat vote registers far below, behind the governance mount, so its opener
   // arrives here deferred and resolves per request (server/routes/powerHands.ts).
@@ -25563,9 +25567,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       scope: "/",
       display: "standalone",
       orientation: "any",
-      background_color: "#ffffff",
-      // The village's own brand colour, derived the way theme.css derives it.
-      theme_color: brandColour(getBrand().theme),
+      background_color: installBackground(getBrand().theme),
+      // The village's own brand colour, derived the way theme.css derives it (its ground in the dark scheme).
+      theme_color: installThemeColour(getBrand().theme),
       icons: [
         // One entry, `any` sized: the brand icon is an SVG on most forks and
         // a raster on some, and claiming sizes we have not measured would put
@@ -25694,7 +25698,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // The same files at brotli 11, written once by the build: server/lib/precompressedAssets.ts.
   app.use("/assets", precompressedAssets({ assetsDir: ASSETS_DIR, precompressedDir: path.resolve(staticPath, "..", "precompressed") }));
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
-  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR) });
+  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

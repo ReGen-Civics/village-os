@@ -72,7 +72,7 @@ export default function PhotoPicker({
     <div className="space-y-3">
       <label className={`${BTN_SECONDARY} cursor-pointer`}>
         <Camera className="size-4" aria-hidden="true" />
-        <span>{label ?? t`Add a photo`}</span>
+        <span>{label ?? t({ message: `Add a photo`, context: "hidden map, adding photos to a place" })}</span>
         <input type="file" accept="image/*" className="sr-only" onChange={(e) => void choose(e.target.files?.[0] ?? null)} />
       </label>
       {found && <p className={HINT} aria-live="polite">{found}</p>}
@@ -81,10 +81,10 @@ export default function PhotoPicker({
           <CoverTool file={file} value={choice} onChange={setChoice} />
           <div className="flex flex-wrap gap-2">
             <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void confirm()}>
-              {busy ? <Trans>Preparing</Trans> : <Trans>Use this photo</Trans>}
+              {busy ? <Trans context="hidden map, adding photos to a place">Preparing</Trans> : <Trans context="hidden map, adding photos to a place">Use this photo</Trans>}
             </button>
             <button type="button" className={BTN_SECONDARY} onClick={() => void choose(null)}>
-              <Trans>Leave it out</Trans>
+              <Trans context="hidden map, adding photos to a place">Leave it out</Trans>
             </button>
           </div>
         </div>

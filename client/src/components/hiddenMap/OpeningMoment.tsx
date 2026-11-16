@@ -57,7 +57,7 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
   return (
     <div ref={root} role="dialog" aria-modal="true" aria-labelledby="hm-opened" className="fixed inset-0 z-50 overflow-y-auto bg-background motion-safe:animate-in motion-safe:fade-in">
       <div className="container max-w-xl space-y-6 py-10">
-        <p className={`${EYEBROW} text-center`}>{t`${me.needed} ${plantings}, vouched`}</p>
+        <p className={`${EYEBROW} text-center`}>{t({ message: `${me.needed} ${plantings}, vouched`, context: "hidden map, the moment the map opens" })}</p>
         <h1 ref={heading} tabIndex={-1} id="hm-opened" className="text-center font-display text-4xl leading-tight text-foreground sm:text-5xl">
           <Trans>The map is yours!</Trans>
         </h1>
@@ -70,11 +70,11 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
             <dd className="font-display text-2xl text-card-foreground">{me.allPins}</dd>
           </div>
           <div className="rounded-xl bg-muted p-3">
-            <dt className={HINT}><Trans>Members who logged</Trans></dt>
+            <dt className={HINT}><Trans context="hidden map, the moment the map opens">Members who logged</Trans></dt>
             <dd className="font-display text-2xl text-card-foreground">{me.planters}</dd>
           </div>
           <div className="rounded-xl bg-muted p-3">
-            <dt className={HINT}><Trans>Maps opened</Trans></dt>
+            <dt className={HINT}><Trans context="hidden map, the moment the map opens">Maps opened</Trans></dt>
             <dd className="font-display text-2xl text-card-foreground">{me.openedBefore + 1}</dd>
           </div>
         </dl>
@@ -100,7 +100,7 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
         {me.openedBefore > 0 && (
           <p className={`${NOTE} text-center`}>{t`${plural(me.openedBefore, { one: "# member opened the map before you.", other: "# members opened the map before you." })}`}</p>
         )}
-        <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={done}><Trans>Explore the map</Trans></button>
+        <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={done}><Trans context="hidden map, the moment the map opens">Explore the map</Trans></button>
       </div>
     </div>
   );

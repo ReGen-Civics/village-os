@@ -29,7 +29,7 @@
  * in one file.
  */
 import type { Express, Request, Response } from "express";
-import { THEME_HREF, buildThemeCss, themeCssVersion, withThemeVersion, type BrandThemeFields } from "../lib/themeCss";
+import { THEME_HREF, buildThemeCss, darkScheme, themeCssVersion, withScheme, withThemeVersion, type BrandThemeFields } from "../lib/themeCss";
 
 /** The brand document, read as it stands on each request. Only its `theme` is used here. */
 export type GetBrand = () => unknown;
@@ -55,19 +55,25 @@ function themeOf(brand: unknown): BrandThemeFields | null {
  * same CSS, and a brand saved in Admin is a different key on the very next
  * request.
  */
-let last: { key: string; css: string; version: string } | null = null;
-function currentTheme(getBrand: GetBrand): { css: string; version: string } {
+type Scheme = { ground: string } | null;
+let last: { key: string; css: string; version: string; scheme: Scheme } | null = null;
+function currentTheme(getBrand: GetBrand): { css: string; version: string; scheme: Scheme } {
   const theme = themeOf(getBrand());
   const key = JSON.stringify(theme);
   if (last && last.key === key) return last;
   const css = buildThemeCss(theme);
-  last = { key, css, version: themeCssVersion(css) };
+  last = { key, css, version: themeCssVersion(css), scheme: darkScheme(theme) };
   return last;
 }
 
-/** The shell with its stylesheet link carrying the current version. A shell without the link comes back unchanged. */
+/**
+ * The shell with its stylesheet link carrying the current version and, for a
+ * village in the dark scheme, the dark mark and its own first paint. A shell
+ * without the link comes back unchanged.
+ */
 export function shellWithTheme(shell: string, getBrand: GetBrand): string {
-  return withThemeVersion(shell, currentTheme(getBrand).version);
+  const t = currentTheme(getBrand);
+  return withScheme(withThemeVersion(shell, t.version), t.scheme);
 }
 
 export function register(app: Express, deps: { getBrand: GetBrand }): void {
