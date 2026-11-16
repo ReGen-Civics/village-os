@@ -260,7 +260,10 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     // A stop does not count toward opening.
     const stop = await logPin("m-plant", { layer: "stop", kind: "Overnight" });
     as("m-keep");
-    await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: stop } });
+    // Only plantings wait in the queue, and a keeper whose map is closed cannot reach a stop at all.
+    const queue = await call(handlers, "GET /api/hidden-map/vouch-queue");
+    expect(queue.body.pins.map((p: any) => p.id)).not.toContain(stop);
+    expect((await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: stop } })).status).toBe(404);
     for (const id of ids.slice(1, 6)) await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id } });
     as("m-plant");
     let me = await call(handlers, "GET /api/hidden-map/me");

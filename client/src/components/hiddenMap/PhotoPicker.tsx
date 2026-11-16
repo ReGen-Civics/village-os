@@ -19,10 +19,13 @@ export interface SafePhoto {
 export default function PhotoPicker({
   onLocation,
   onAdd,
+  onStaged,
   label,
 }: {
   onLocation?: (p: GpsReading) => void;
   onAdd: (photo: SafePhoto) => void;
+  /** True while a photo is chosen and not yet used or left out, so the form can wait for it. */
+  onStaged?: (staged: boolean) => void;
   label?: string;
 }) {
   const { t } = useLingui();
@@ -37,6 +40,7 @@ export default function PhotoPicker({
     setFound(null);
     setChoice({ covers: [], crop: null });
     setFile(f);
+    onStaged?.(f !== null);
     if (!f) return;
     const at = await readLocation(f);
     if (at) {
@@ -55,6 +59,7 @@ export default function PhotoPicker({
       const blob = await makeSafe(file, choice.covers, choice.crop ?? undefined);
       onAdd({ blob, preview: URL.createObjectURL(blob) });
       setFile(null);
+      onStaged?.(false);
       setChoice({ covers: [], crop: null });
     } catch (e) {
       setProblem(e instanceof CannotMakeSafe ? t`This phone could not prepare that photo safely, so it was not added. Try a different photo.` : t`That photo could not be prepared. Try a different one.`);

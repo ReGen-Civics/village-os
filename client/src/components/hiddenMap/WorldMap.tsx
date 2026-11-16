@@ -145,13 +145,21 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
     const nw = unproject((cx - size.w / 2) / TILE, (cy - size.h / 2) / TILE, v.zoom);
     const se = unproject((cx + size.w / 2) / TILE, (cy + size.h / 2) / TILE, v.zoom);
     const lines: Array<{ key: string; x1: number; y1: number; x2: number; y2: number; label: string }> = [];
+    // A label only where it has room: at least 64px from the last one on its axis, so a narrow
+    // phone never runs them together. Every line is still drawn.
+    let lastX = -Infinity;
     for (let lng = Math.ceil(nw.lng / step) * step; lng <= se.lng && lines.length < 80; lng += step) {
       const x = toScreen({ lat: 0, lng }).x;
-      lines.push({ key: `lng${lng}`, x1: x, y1: 0, x2: x, y2: size.h, label: `${Number(lng.toFixed(3))}°` });
+      const room = x - lastX >= 64;
+      if (room) lastX = x;
+      lines.push({ key: `lng${lng}`, x1: x, y1: 0, x2: x, y2: size.h, label: room ? `${Number(lng.toFixed(3))}°` : "" });
     }
+    let lastY = -Infinity;
     for (let lat = Math.ceil(se.lat / step) * step; lat <= nw.lat && lines.length < 160; lat += step) {
       const y = toScreen({ lat, lng: 0 }).y;
-      lines.push({ key: `lat${lat}`, x1: 0, y1: y, x2: size.w, y2: y, label: `${Number(lat.toFixed(3))}°` });
+      const room = y - lastY >= 28;
+      if (room) lastY = y;
+      lines.push({ key: `lat${lat}`, x1: 0, y1: y, x2: size.w, y2: y, label: room ? `${Number(lat.toFixed(3))}°` : "" });
     }
     return lines;
   }, [bm, v.zoom, cx, cy, size.w, size.h, toScreen]);
@@ -232,12 +240,16 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
               onPointerDown={(e) => e.stopPropagation()}
               onPointerUp={(e) => e.stopPropagation()}
               onClick={() => onSelect?.(p.id)}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow-sm ${pinLook(p, vouchesPerPin)} ${
-                chosen ? "ring-2 ring-ring ring-offset-2" : ""
-              }`}
+              // The hit area is 24px at least (WCAG 2.5.8); the drawn pin sits in its middle.
+              className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
               style={{ left: s.x, top: s.y }}
               aria-label={dot ? t`A pin somewhere near here (${labels[p.layer]})` : t`${(p as PinView).title || (p as PinView).kind}, ${labels[p.layer]}`}
-            />
+            >
+              <span
+                aria-hidden="true"
+                className={`block shrink-0 rounded-full border-2 border-background shadow-sm ${pinLook(p, vouchesPerPin)} ${chosen ? "ring-2 ring-ring ring-offset-2" : ""}`}
+              />
+            </button>
           );
         })}
         {placing && (() => {
