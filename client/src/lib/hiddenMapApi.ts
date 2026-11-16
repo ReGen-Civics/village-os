@@ -21,6 +21,10 @@ export interface MapMe {
   /** How many members have logged a pin. */
   planters: number;
   vouchesPerPin: number;
+  /** False while the village has not admitted this member; their pins do not count yet. */
+  admitted?: boolean;
+  /** When this member's pins start counting, where the village marks admission. */
+  countsFrom?: string | null;
   openedAt: string | null;
   openedBefore: number;
   kindPrompts: Record<Layer, string>;

@@ -58,6 +58,8 @@ const base = {
   teaser: false,
   precisions: ["exact", "km", "region"],
   vouchesPerPin: 1,
+  admitted: true,
+  countsFrom: null,
   plantingPays: false, vouchWays: ["in-person", "call", "photos"], vouchRule: "Vouch for what you know.",
   openedAt: null,
   openedBefore: 0,
@@ -102,6 +104,28 @@ describe("a closed map (screen 08)", () => {
     render(<HiddenMap />);
     await screen.findByText("The rest of the map is secret.");
     expect(screen.queryByText("The map is yours!")).toBeNull();
+  });
+});
+
+describe("counting from admission (P3-w-1)", () => {
+  it("counts only pins from admission, marks the older ones, and shows the server's vouched count", async () => {
+    me = { ...base, open: false, vouchedCount: 1, countsFrom: "2026-11-10T00:00:00Z" };
+    pins = [
+      { ...pin("p1", 1), createdAt: "2026-11-01T00:00:00Z", title: "Before" },
+      { ...pin("p2", 1), createdAt: "2026-11-12T00:00:00Z", title: "After" },
+    ];
+    render(<HiddenMap />);
+    expect(await screen.findByRole("list", { name: "1 of 7 vouched" })).toBeTruthy();
+    expect(screen.getByText(/1 logged/)).toBeTruthy();
+    expect(screen.getByText("From before your admission, so it does not count toward opening the map")).toBeTruthy();
+  });
+
+  it("tells a member not yet admitted that nothing counts yet", async () => {
+    me = { ...base, open: false, vouchedCount: 0, admitted: false, countsFrom: null };
+    pins = [pin("p1", 1)];
+    render(<HiddenMap />);
+    expect(await screen.findByText("Your places start counting once you are admitted to the village.")).toBeTruthy();
+    expect(screen.getByRole("list", { name: "0 of 7 vouched" })).toBeTruthy();
   });
 });
 
