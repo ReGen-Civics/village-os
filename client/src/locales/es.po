@@ -2495,6 +2495,11 @@ msgctxt "connector setup panel, step two"
 msgid "Paste this address and save it."
 msgstr ""
 
+#: client/src/components/fireflyPath/RememberOnDevice.tsx
+msgctxt "founding application, remember on this device"
+msgid "Forget my answers on this device"
+msgstr ""
+
 #: client/src/components/review/SeraCompare.tsx
 msgid "Struck words are only here. Underlined words are only in {theirsTitle}."
 msgstr ""
@@ -4706,6 +4711,11 @@ msgstr ""
 msgid "The public page names them by organisation or role. Members see the name and how to reach them, and can ask them to talk."
 msgstr ""
 
+#: client/src/pages/RoleDraft.tsx
+msgctxt "role draft step"
+msgid "Your Ikigai and your characters"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "when the review time ends"
 msgid "Waits until {until}"
@@ -5416,9 +5426,9 @@ msgid "The village can ask, raise concerns and objections, and suggest edits. Th
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
-msgctxt "founding application lede"
-msgid "Six steps. Your name and email come from your account, and your answers are saved on this device as you go."
-msgstr "Seis pasos. Tu nombre y tu correo vienen de tu cuenta, y tus respuestas se guardan en este dispositivo mientras avanzas."
+#~ msgctxt "founding application lede"
+#~ msgid "Six steps. Your name and email come from your account, and your answers are saved on this device as you go."
+#~ msgstr "Seis pasos. Tu nombre y tu correo vienen de tu cuenta, y tus respuestas se guardan en este dispositivo mientras avanzas."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal side by side"
@@ -6147,9 +6157,9 @@ msgid "1 quest still needs yours"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
-msgctxt "founding application lede"
-msgid "Six steps, and no account needed. Your answers are saved on this device as you go."
-msgstr "Seis pasos, y no necesitas cuenta. Tus respuestas se guardan en este dispositivo mientras avanzas."
+#~ msgctxt "founding application lede"
+#~ msgid "Six steps, and no account needed. Your answers are saved on this device as you go."
+#~ msgstr "Seis pasos, y no necesitas cuenta. Tus respuestas se guardan en este dispositivo mientras avanzas."
 
 #: client/src/components/voice/VoiceArea.tsx
 msgctxt "voice field: opens a conversation with your guide about this box"
@@ -6620,9 +6630,9 @@ msgid "Shape it into a quest. Once it says what it delivers and what it asks, it
 msgstr ""
 
 #: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application, the send failed"
-msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device."
-msgstr "No pudimos enviar tu solicitud. Revisa tu conexión y envíala de nuevo: todo lo que escribiste sigue guardado en este dispositivo."
+#~ msgctxt "founding application, the send failed"
+#~ msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device."
+#~ msgstr "No pudimos enviar tu solicitud. Revisa tu conexión y envíala de nuevo: todo lo que escribiste sigue guardado en este dispositivo."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: sends your words"
@@ -7462,9 +7472,9 @@ msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
-msgctxt "role draft step"
-msgid "Your Ikigai (look it up) and your characters"
-msgstr "Tu Ikigai (búscalo) y tus personajes"
+#~ msgctxt "role draft step"
+#~ msgid "Your Ikigai (look it up) and your characters"
+#~ msgstr "Tu Ikigai (búscalo) y tus personajes"
 
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
@@ -7748,6 +7758,11 @@ msgctxt "button that checks a pasted season file"
 msgid "Check the file"
 msgstr ""
 
+#: client/src/components/fireflyPath/RememberOnDevice.tsx
+msgctxt "founding application, remember on this device"
+msgid "Remember my answers on this device"
+msgstr ""
+
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, an empty day"
 msgid "Nothing on this day."
@@ -7820,6 +7835,11 @@ msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la es
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks hint"
 msgid "Nothing changes until you tap."
+msgstr ""
+
+#: client/src/components/GuideChat.tsx
+msgctxt "guide chat: the message box, for a screen reader"
+msgid "Message to {assistantName}"
 msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
@@ -8200,6 +8220,11 @@ msgstr ""
 #~ msgctxt "open proposal card"
 #~ msgid "The quest"
 #~ msgstr ""
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application lede"
+msgid "Six steps. Your name and email come from your account."
+msgstr ""
 
 #: client/src/i18n/LanguagePicker.tsx
 #, fuzzy
@@ -10074,8 +10099,8 @@ msgid "Kind of work for {0}"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
-msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
-msgstr "Tu rol va desde la adopción hasta el {termEnds}. Cada mes cuentas lo que vas a aportar el mes siguiente."
+#~ msgid "Your role runs from adoption to {termEnds}. Each month you share what you'll bring the next month."
+#~ msgstr "Tu rol va desde la adopción hasta el {termEnds}. Cada mes cuentas lo que vas a aportar el mes siguiente."
 
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "Ask me about organizing: governance, conflict, membership, legal shells, internal economics. I read your village's brief first, then its own calls, and they outrank the books when they speak to it."
@@ -11160,6 +11185,10 @@ msgid "Save all four as one file"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
+msgid "Each month you share what you'll bring the next month."
+msgstr ""
+
+#: client/src/pages/RoleDraft.tsx
 msgctxt "role draft heading"
 msgid "Open roles"
 msgstr "Roles abiertos"
@@ -11306,6 +11335,11 @@ msgstr "Cómo sirve tu trabajo: {goalText}"
 #: client/src/components/admin/RoleValueEditor.tsx
 msgctxt "role pay"
 msgid "Opening…"
+msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application, the send failed"
+msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -11500,6 +11534,11 @@ msgstr "Los hilos de esta luna entre personas que se agradecieron, con las caras
 #. placeholder {3}: s.range.why.join(", ")
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "Likely {0} to {1}. {2}: {3}."
+msgstr ""
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application lede"
+msgid "Six steps, and no account needed."
 msgstr ""
 
 #: client/src/components/admin/PricingDeskTab.tsx
@@ -11988,6 +12027,11 @@ msgstr ""
 
 #: client/src/components/journey/EconomicsView.tsx
 msgid "The economy conserves: every token sums to zero, no drift, no illegal negatives."
+msgstr ""
+
+#: client/src/components/fireflyPath/RememberOnDevice.tsx
+msgctxt "founding application, remember on this device"
+msgid "Only this browser keeps them, so you can come back later. Nothing reaches us until you send."
 msgstr ""
 
 #: client/src/pages/Quests.tsx
