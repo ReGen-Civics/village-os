@@ -245,6 +245,43 @@ most one Lore line. The R47 pass moved 28 templates to version 2. The investor p
 stayed at version 1, word for word, because they wait on Rye's or counsel's review.
 `shared/comms/defaults/words.test.ts` renders every one and holds it to all of this.
 
+## Letters written in code, and the come-and-play block
+
+Some letters come from code, not from Words: the applicant letters (not invited, declined, our
+review's invitation, the adoption) and the answers to a request to join. They all go out in one
+shared frame, and the letters that close a door also carry an invitation back in (the Operations
+role, 16 Nov 2026: "a whole bunch of ways to come and play in the village in a beautiful way").
+
+- **The frame**, `renderLetterFrame` in `shared/comms/letterFrame.ts`: the village's band with
+  its logo or name, the words, a team's signature, an optional section under the words, and the
+  footer. It is table based with inline styles, fluid to 600 pixels, light and dark
+  (`color-scheme: light dark`, with every surface swapped for the village's night, the
+  `--sheet-*` layer `deriveTheme` derives from the seed), and always has a plain-text twin.
+  `bodyFromText` turns a letter's plain text into the frame's body and makes its addresses links.
+- **The block**, `renderComeAndPlay(ctx)` in `shared/comms/comeAndPlay.ts`, returns
+  `{ html, text }`: a warm heading, up to six cards painted with the platform's module art
+  (`client/public/images/modules`, served from the village's own site; Outlook on Windows draws
+  an emoji instead, because it cannot draw WebP), and one main button to the front page. A card
+  shows only when its page opens for the reader: a module's card needs the module `public` for
+  somebody with no account, or `members` too for a member; the newsletter card needs
+  `org.newsletter_link`; the way-to-stay-close card needs `org.stay_close_name` and
+  `org.stay_close_link`. Quests, gratitude and the roles page are always there. The words are one
+  table per applicant language (`COME_AND_PLAY_WORDS`), so a language added to
+  `shared/applicantWords.ts` fails the typecheck here until it has them too.
+- **On the server**, `server/lib/comms/villageLetter.ts`. `dressLetter(pool, origin, words,
+  { lang, comeAndPlay: "public" | "members" | false, skip })` reads the village, the modules and
+  the settings once and returns the whole letter. `comeAndPlayFor(pool, village, { audience })`
+  returns the block alone. **A letter added later** (the 90-day close, an expired invitation)
+  calls `dressLetter` with `comeAndPlay: "public"` and gets the same invitation.
+- **As a footer on a member email**, pass the block as `comeAndPlay` to `composeEmail` (or to
+  `renderTemplate`'s context). No template carries it by default.
+- **Who signs:** `org.letter_team`, a team the village names, such as "The Human Operations team",
+  never a person. Empty: the village's own team.
+- **Preview:** `GET /api/admin/comms/letter-previews` renders every one in the village's own look,
+  with its live modules and settings and a made-up reader (`shared/comms/letterSamples.ts`).
+  `npx tsx scripts/preview-letters.ts <dir> [seed] [character]` writes the same letters to
+  static files with a made-up village. Neither sends anything.
+
 ## Journeys
 
 `server/lib/comms/journeys.ts`: `enroll`, `stop`, `touch` and the tick. Definitions are in

@@ -424,22 +424,23 @@ export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { s
  * only reason, and only when they write one), and points to three ways to stay
  * close: a quest, the other open roles, the next season.
  */
-export function declinedLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; site: string; lang?: ApplicantLanguage; note?: string | null }): { subject: string; text: string } {
+export function declinedLetter(i: {
+  firstName: string | null;
+  village: string;
+  roleNames: readonly string[];
+  site: string;
+  lang?: ApplicantLanguage;
+  note?: string | null;
+  /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
+  doorsInBlock?: boolean;
+}): { subject: string; text: string } {
   const w = wordsIn(i.lang);
+  const doors = i.doorsInBlock
+    ? [w.declined.againOwn]
+    : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
   return {
     subject: w.declined.subject(i.village),
-    text: [
-      w.hello(i.firstName),
-      "",
-      w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village),
-      ...noteLines(i.lang, i.note),
-      "",
-      w.declined.stayClose,
-      w.declined.quest(`${i.site}/quests`),
-      w.declined.roles(`${i.site}/roles`),
-      w.declined.again,
-      "",
-    ].join("\n"),
+    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ""].join("\n"),
   };
 }
 
@@ -529,9 +530,11 @@ export function notInvitedLetter(i: {
   stayClose: StayClose;
   lang?: ApplicantLanguage;
   note?: string | null;
+  /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
+  doorsInBlock?: boolean;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
-  const doors = [
+  const doors = i.doorsInBlock ? [] : [
     ...(i.stayClose.program ? [w.notInvited.program(i.stayClose.program.name, letterHref(i.site, i.stayClose.program.href))] : []),
     ...(i.stayClose.quests ? [w.notInvited.quest(letterHref(i.site, "/quests"))] : []),
     ...(i.stayClose.events ? [w.notInvited.events(letterHref(i.site, "/events"))] : []),
