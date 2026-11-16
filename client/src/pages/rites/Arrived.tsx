@@ -101,7 +101,13 @@ export default function Arrived() {
               markHint={w.markHint}
               meta={me.inviter ? w.cameWith : undefined}
               stamps={me.stamps}
-              foot={w.stampsFoot ? <p className="tiny muted" style={{ marginTop: 12 }}>{w.stampsFoot}</p> : null}
+              foot={
+                <>
+                  {w.stampsFoot ? <p className="tiny muted" style={{ marginTop: 12 }}>{w.stampsFoot}</p> : null}
+                  {/* A line only for someone who has not yet taken the village's admitting rite (QA P3-w-1). */}
+                  {!me.sworn && w.beforeRiteNote ? <p className="tiny muted" style={{ marginTop: 6 }}>{w.beforeRiteNote}</p> : null}
+                </>
+              }
             />
           </div>
 

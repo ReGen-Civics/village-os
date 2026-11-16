@@ -75,6 +75,7 @@ export default function Card() {
             stamps={me.stamps}
             numbers={numbers}
             numbersFirst
+            foot={!me.sworn && w.beforeRiteNote ? <p className="tiny muted" style={{ marginTop: 12 }}>{w.beforeRiteNote}</p> : null}
           />
 
           {record && record.entries.length ? (
