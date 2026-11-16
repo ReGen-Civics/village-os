@@ -111,7 +111,7 @@ export interface Persona {
   character: Character;
   dials: Dials;
   help: HelpWay[];
-  /** Speak replies aloud with the browser's own voice. */
+  /** Speak the companion's lines aloud, with the kindest voice the device has for the page language (client/src/lib/voice/pickBrowserVoice.ts). */
   speak: boolean;
 }
 
