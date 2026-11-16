@@ -68,6 +68,8 @@ import CashPayoutsTab from "@/components/admin/CashPayoutsTab";
 import TypographyPanel from "@/components/TypographyPanel";
 import SoundsPanel from "@/components/SoundsPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
+import VocabularyPanel from "@/components/admin/VocabularyPanel";
+import NoticeWordsPanel from "@/components/admin/NoticeWordsPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
@@ -7172,6 +7174,8 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
               It is deliberately NOT one of the measured Identity fields in setupProgress.ts, because it ships with a
               working default and counting it would leave Identity unfinished forever for a village happy with it. */}
           {IDENTITY_WIZARD_FIELDS.map(([key, label]) => brandField("project", key, label, defaults.project[key] ?? ""))}
+          {/* The village's own nouns (gap G4), saved on their own. */}
+          <VocabularyPanel password={password} />
           {/* Picked by name, so a founder never has to know the code (VillageCurrencyField.tsx). */}
           <VillageCurrencyField
             value={String(brand.project?.fiatCurrency ?? "")}
@@ -7249,6 +7253,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         <SoundsPanel password={password} />
         <IdentityPackPanel password={password} />
         <MenuPanel password={password} />
+        <NoticeWordsPanel password={password} />
       </SetupSection>
 
       <SetupSection {...step} id="numbers" n={4} title="Numbers" subtitle="The editable figures on your site.">

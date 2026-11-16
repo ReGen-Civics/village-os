@@ -23,6 +23,8 @@ import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
+import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
+import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
 import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
@@ -4100,6 +4102,8 @@ const notifyDeps: NotifyDeps = {
   origin: deploymentOrigin,
   projectName: () => mergedConfig().project.name,
   brandColour: () => brandColour(getBrand().theme),
+  // The village's own notice words (gap G6), with its name and nouns as {words}.
+  noticeWords: () => ({ words: noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), vars: pageVarsFrom({ ...mergedConfig(), vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any) }),
 };
 
 /** Producer shorthand: fire-and-forget by contract (insertNotification never throws). */
@@ -7934,7 +7938,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : null); // menu: gap G5, shared/menuDoc.ts
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -18183,6 +18187,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
       villageSourceUrl: servedVillageSourceUrl(stringVar(VILLAGE_SOURCE_URL_KEY)), // the footer's village source link (AGPL section 13): shared/sourceUrl.ts
       site: siteWords(contentRepo.get() ?? null, m),
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
+      vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
+      noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });

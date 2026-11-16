@@ -27,6 +27,31 @@ export interface PageVarSource {
     catalystName?: unknown;
   } | null;
   currency?: { name?: unknown; collectiveName?: unknown; value?: { name?: unknown } | null } | null;
+  /**
+   * The village's own nouns (gap G4), ALREADY RESOLVED by shared/vocabulary.ts
+   * `vocabularyOf` (the config serves them resolved, and the server passes
+   * them resolved). Read here without importing that module, so the noun
+   * table is not part of every page's first load.
+   */
+  vocabulary?: unknown;
+}
+
+/**
+ * `{circle}`, `{circles}`, `{a-circle}` and the rest from a resolved
+ * vocabulary; the village noun is `{village-noun}`, since `{village}` is the
+ * name. Nothing for a slot the source lacks, so a page names it as typed.
+ */
+function nounWords(raw: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [slot, n] of Object.entries(raw as Record<string, { one?: unknown; many?: unknown; a?: unknown }>)) {
+    if (!n || typeof n.one !== "string" || typeof n.many !== "string") continue;
+    const key = slot === "village" ? "village-noun" : slot;
+    out[key] = n.one;
+    out[`${key}s`] = n.many;
+    out[`a-${key}`] = `${typeof n.a === "string" ? n.a : "a"} ${n.one}`;
+  }
+  return out;
 }
 
 export function pageVarsFrom(config: PageVarSource): PageVars {
@@ -49,5 +74,8 @@ export function pageVarsFrom(config: PageVarSource): PageVars {
     value: word(currency?.value?.name, "village tokens"),
     // The umbrella word for every token together, set in Admin then Tokens.
     tokens: word(currency?.collectiveName, "Village Tokens"),
+    // The village's own nouns, `{circle}`, `{circles}`, `{a-circle}` and the
+    // rest (gap G4). The platform's words when the village set none.
+    ...nounWords(config.vocabulary),
   };
 }
