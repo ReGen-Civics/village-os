@@ -207,6 +207,17 @@ export default function Fleet() {
                   </div>
                 ))
               )}
+              {f.applyLine ? (
+                <div className="panel">
+                  {f.applyKicker ? <p className="sc">{f.applyKicker}</p> : null}
+                  <p className="small" style={{ marginTop: 6 }}>{f.applyLine}</p>
+                  {f.applyLabel ? (
+                    <a className="btn gold small" style={{ marginTop: 12, width: "100%" }} href={f.applyHref || "/season-places"}>
+                      {f.applyLabel}
+                    </a>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="col">

@@ -340,6 +340,10 @@ export const FLEET_LIMITS = {
   pathTitle: 40,
   pathLine: 120,
   pathHref: 200,
+  applyKicker: 40,
+  applyLine: 220,
+  applyLabel: 30,
+  applyHref: 200,
 } as const;
 export type FleetKey = keyof typeof FLEET_LIMITS;
 export const FLEET_PHOTOS_MAX = 12;
