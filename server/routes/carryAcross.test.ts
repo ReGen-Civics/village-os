@@ -256,7 +256,7 @@ describe.skipIf(!configured)("carrying people across to a new chart", () => {
     expect(old.ended_at).not.toBeNull();
     expect(old.ended_reason).toBe("Carried across to the new chart");
     expect(notices).toHaveLength(1);
-    expect(notices[0]).toMatchObject({ userId: "u-ana", type: "role_appointed", title: "You were seated as Finance Steward" });
+    expect(notices[0]).toMatchObject({ userId: "u-ana", type: "role_appointed", title: "You took up the role of Finance Steward" });
     expect(notices[0].dedupeKey).toBe(`org-seat:${now[0].id}`);
   });
 

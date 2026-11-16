@@ -617,6 +617,11 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
    * browser.
    */
   app.post("/api/auth/google/exchange", async (req: Request, res: Response) => {
+    // Bounded like the two doors before it (R109). The handoff is signed and
+    // single-use, so this is a ceiling on work, not the defence itself.
+    if (await deps.overLimit(`oauth-exchange:${deps.clientIp(req)}`, 60, 60 * 60 * 1000)) {
+      return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
+    }
     // The same name the callback set: `__Host-` on https (R041). A bare-named
     // cookie on an https village is never read, which is the point: only this
     // host could have set the prefixed one.

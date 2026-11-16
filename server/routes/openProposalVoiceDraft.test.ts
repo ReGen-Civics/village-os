@@ -12,10 +12,12 @@
 import http from "node:http";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import type { AssistantRequest, AssistantResult } from "../lib/assistant";
+import { LIMITS_UNREADABLE, type AssistantRequest, type AssistantResult } from "../lib/assistant";
+import { AI_DRAFT_SERVICE } from "../../shared/aiDraftService";
+import { MACHINE_DRAFT_SERVICE } from "./contentTranslations";
 import { readVoiceDraft, voiceDraftSystem } from "../lib/voiceDrafts";
 import { VOICE_DRAFT_WORDS } from "../../shared/voiceDrafts";
-import { VOICE_DRAFTS_PER_HOUR, registerVoiceDraft } from "./openProposalVoiceDraft";
+import { VOICE_DRAFTS_PER_CONNECTION_DAY, VOICE_DRAFTS_PER_HOUR, registerVoiceDraft } from "./openProposalVoiceDraft";
 
 const HEARD = "I have run the seed library on my road for six years, and I want to bring people to the land the same way. In my first months I would start a seed swap every new moon.";
 const ROLE = { id: "r-seeds", name: "Seed Keeper", aim: "Every household saves seed.", accountabilities: ["Run the seed swap"] };
@@ -48,7 +50,10 @@ describe("the door, over HTTP", () => {
   const state = {
     open: true,
     limited: new Set<string>(),
+    /** Buckets whose limiter cannot be read. */
+    unreadable: new Set<string>(),
     counted: [] as string[],
+    signedIn: null as { id: string } | null,
     asked: [] as AssistantRequest[],
     reply: { ok: true, text: JSON.stringify({ why: "I have run the seed library for six years.", aim: "A seed swap every new moon.", items: [{ title: "Start the seed swap", doneWhen: "One swap held" }] }) } as Partial<AssistantResult>,
   };
@@ -60,10 +65,12 @@ describe("the door, over HTTP", () => {
       door: async () => ({ open: state.open }),
       offered: async () => [ROLE],
       seasonGoals: async () => ["Grow the commons"],
-      overLimit: async (key) => {
+      limitState: async (key) => {
         state.counted.push(key);
-        return [...state.limited].some((k) => key.startsWith(k));
+        if ([...state.unreadable].some((k) => key.startsWith(k))) return "unavailable";
+        return [...state.limited].some((k) => key.startsWith(k)) ? "over" : "under";
       },
+      authedUser: async () => state.signedIn,
       clientIp: () => "203.0.113.9",
       ipBucket: (ip) => ip,
       villageName: () => "Test Village",
@@ -84,8 +91,10 @@ describe("the door, over HTTP", () => {
   beforeEach(() => {
     state.open = true;
     state.limited.clear();
+    state.unreadable.clear();
     state.counted.length = 0;
     state.asked.length = 0;
+    state.signedIn = null;
   });
 
   const post = async (body: unknown) => {
@@ -101,6 +110,8 @@ describe("the door, over HTTP", () => {
     const sent = state.asked[0];
     expect(sent.mode).toBe("proposal");
     expect(sent.userId).toBeNull();
+    // A stranger counts on their address's and the strangers' slices of the mode's day (audit, 15 Nov 2026).
+    expect(sent.daySlices?.map((s) => s.key)).toEqual(["address:203.0.113.9", "anonymous"]);
     expect(sent.prefetch).toEqual([{ key: "application.voice", data: { roleCard: { name: ROLE.name, aim: ROLE.aim, accountabilities: ROLE.accountabilities }, seasonGoals: ["Grow the commons"], heard: HEARD } }]);
     const everything = JSON.stringify(sent);
     expect(everything).not.toContain("Rowan");
@@ -127,6 +138,40 @@ describe("the door, over HTTP", () => {
     expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 503, body: { error: VOICE_DRAFT_WORDS.unavailable } });
     expect(state.asked).toHaveLength(0);
     expect(VOICE_DRAFTS_PER_HOUR).toBeGreaterThan(0);
+  });
+
+  it("fails closed: a limiter that cannot be read refuses the draft and asks no model", async () => {
+    for (const bucket of ["open-proposal:voice-draft:ip:", "open-proposal:voice-draft:daily-ip:", "open-proposal:voice-draft:day"]) {
+      state.unreadable.clear();
+      state.unreadable.add(bucket);
+      expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 503, body: { error: VOICE_DRAFT_WORDS.tryShortly } });
+    }
+    expect(state.asked).toHaveLength(0);
+    // The engine's own limiter failing closed is said the same way.
+    state.unreadable.clear();
+    state.reply = { ok: false, status: 503, error: LIMITS_UNREADABLE } as any;
+    expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 503, body: { error: VOICE_DRAFT_WORDS.tryShortly } });
+  });
+
+  it("a signed-in asker counts on their own day, never the strangers' ceiling, and the strangers' ceiling never closes it", async () => {
+    state.reply = { ok: true, text: JSON.stringify({ aim: "A seed swap every new moon." }) } as any;
+    state.signedIn = { id: "u-ana" };
+    state.limited.add("open-proposal:voice-draft:day");
+    state.limited.add("open-proposal:voice-draft:daily-ip:");
+    const r = await post({ roleId: ROLE.id, heard: HEARD });
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    expect(state.counted).toEqual(["open-proposal:voice-draft:user:u-ana", "open-proposal:voice-draft:daily-user:u-ana"]);
+    expect(state.asked[0].userId).toBe("u-ana");
+    expect(state.asked[0].daySlices).toBeUndefined();
+    state.limited.add("open-proposal:voice-draft:daily-user:");
+    expect(await post({ roleId: ROLE.id, heard: HEARD })).toEqual({ status: 429, body: { error: VOICE_DRAFT_WORDS.tooMany } });
+    expect(VOICE_DRAFTS_PER_CONNECTION_DAY).toBeLessThanOrEqual(3);
+  });
+
+  it("names who reads the words, the same service the translation notice names", () => {
+    expect(MACHINE_DRAFT_SERVICE).toBe(AI_DRAFT_SERVICE);
+    expect(VOICE_DRAFT_WORDS.sends).toContain(AI_DRAFT_SERVICE);
+    expect(VOICE_DRAFT_WORDS.sends).not.toContain("to an AI,");
   });
 
   it("a model that cannot answer is said plainly, and an unusable reply is an empty draft", async () => {
