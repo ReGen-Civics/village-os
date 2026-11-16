@@ -62,6 +62,8 @@ export interface PlaceSeason {
   name?: string | null;
   startsOn: string;
   endsOn?: string | null;
+  /** The season document's goals, as the Season tab writes them. */
+  goals?: Array<{ text: string; done?: boolean }> | null;
 }
 
 /**

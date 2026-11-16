@@ -339,7 +339,7 @@ export const VARIABLES: VariableDef[] = [
     type: "choice",
     default: "circle",
     choices: [
-      { value: "circle", label: "Each circle", hint: "A crew proposes together, and holds one place." },
+      { value: "circle", label: "Each circle", hint: "A circle proposes together, and holds one place." },
       { value: "member", label: "Each member", hint: "Every member proposes for themselves." },
     ],
   },
@@ -362,7 +362,7 @@ export const VARIABLES: VariableDef[] = [
     category: "Season places",
     label: "Places in a season",
     description:
-      "How many circles can take part in one season. Over it, a circle that was adopted, or that has served its seasons, waits in order and takes the first place that frees, and its crew is told. Lowering it removes nobody: places already held stand. Leave it blank for no cap. 0 means no places.",
+      "How many circles can take part in one season. Over it, a circle that was adopted, or that has served its seasons, waits in order and takes the first place that frees, and its people are told. Lowering it removes nobody: places already held stand. Leave it blank for no cap. 0 means no places.",
     type: "integer",
     default: "",
     blank: "no cap",
@@ -373,20 +373,20 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "season_crew.picker_role",
     category: "Season places",
-    label: "The role that picks a circle's crew",
+    label: "The role that picks a circle's team",
     criticality: "structural",
     description:
-      "Every season starts fresh: each member applies, and each circle's crew for the season is picked from everyone who applied. Name the role whose holder in each circle picks it, as your circles call it. Leave it blank, or leave a circle without a live holder of that role, and every role holder in the circle can pick.",
+      "Every season starts fresh: each member applies, and each circle's team for the season is picked from everyone who applied. Name the role whose holder in each circle picks it, as your circles call it. Leave it blank, or leave a circle without a live holder of that role, and every role holder in the circle can pick.",
     type: "text",
     default: "",
   },
   {
     key: "season_crew.needs_place",
     category: "Season places",
-    label: "A circle needs a season place to pick a crew",
+    label: "A circle needs a season place to pick a team",
     criticality: "structural",
     description:
-      "When on, a circle picks a crew for a season only while it holds a place in that season, so the places in a season cap how many circles sail.",
+      "When on, a circle picks a team for a season only while it holds a place in that season, so the places in a season cap how many circles take part.",
     type: "boolean",
     default: "false",
   },

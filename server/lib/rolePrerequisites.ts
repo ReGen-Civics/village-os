@@ -17,7 +17,8 @@ import {
   type Prerequisite,
   type PrerequisiteMap,
 } from "../../shared/rolePrerequisites";
-import { holdingsOf, itemNames } from "../repos/rolePrerequisites";
+import { holdingsOf, itemDetails, itemNames } from "../repos/rolePrerequisites";
+import { listOrgAssignments, listOrgRoles, type LapseContext } from "./orgChart";
 import { stringVar } from "./variables";
 
 export interface PrerequisiteView {
@@ -49,6 +50,50 @@ export async function prerequisitesFor(pool: Pool, userId: string, onlyRoles?: r
       return { kind: i.kind, id: i.id, label: words.label, href: words.href, done };
     }),
   }));
+}
+
+/** One role's path: its words, who holds it now, each item it asks for with what the reader has, in order. */
+export interface RolePath {
+  roleId: string;
+  name: string;
+  aim: string | null;
+  /** Live member holders now, for "Role (First name)" (III.2): ids only, the route names them. */
+  holderIds: string[];
+  items: Array<{ kind: Prerequisite["kind"]; id: string; title: string; detail: string | null; amountMinor: number | null; href: string; done: boolean }>;
+}
+
+export async function rolePathFor(pool: Pool, userId: string, roleId: string, lapse: LapseContext): Promise<RolePath | null> {
+  const role = (await listOrgRoles(pool)).find((r) => r.id === roleId && r.active);
+  if (!role) return null;
+  const holderIds = Array.from(new Set(
+    (await listOrgAssignments(pool, lapse))
+      .filter((a) => a.orgRoleId === roleId && !a.lapsed && a.holderKind === "member" && a.userId && !a.isAgent)
+      .map((a) => a.userId as string),
+  ));
+  const parsed = parsePrerequisites(stringVar(PREREQUISITES_KEY));
+  const asked = parsed.ok ? parsed.map.get(roleId) ?? [] : [];
+  const ids = idsOf(parsed.ok ? parsed.map : new Map(), [roleId]);
+  const [holdings, details] = await Promise.all([holdingsOf(pool, userId, ids.products, ids.quests), itemDetails(pool, ids.products, ids.quests)]);
+  return {
+    roleId,
+    name: role.name,
+    aim: role.aim ?? null,
+    holderIds,
+    items: asked.map((i) => {
+      const p = i.kind === "product" ? details.products.get(i.id) : null;
+      const q = i.kind === "quest" ? details.quests.get(i.id) : null;
+      const words = itemWords(i, p?.name ?? q?.title ?? null);
+      return {
+        kind: i.kind,
+        id: i.id,
+        title: p?.name ?? q?.title ?? words.label,
+        detail: q?.description ?? null,
+        amountMinor: p?.amountMinor ?? null,
+        href: words.href,
+        done: i.kind === "product" ? holdings.paidProducts.has(i.id) : holdings.consentedQuests.has(i.id),
+      };
+    }),
+  };
 }
 
 /**

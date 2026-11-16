@@ -899,14 +899,14 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   },
   season_crew_applied: {
     group: "decisions",
-    blurb: "Somebody applied to sail this season with a circle you pick for.",
-    many: "{n} people applied to sail with a circle you pick for.",
+    blurb: "Somebody applied to take part this season with a circle you pick for.",
+    many: "{n} people applied to take part with a circle you pick for.",
     celebrate: false,
     waits: true,
   },
   season_crew_picked: {
     group: "village",
-    blurb: "A circle picked you for its crew this season.",
+    blurb: "A circle picked you for its team this season.",
     many: "{n} circles picked you this season.",
     celebrate: false,
   },

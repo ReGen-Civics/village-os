@@ -29,7 +29,7 @@ import { parseWords, targetSeasonOf, type PlaceSeason } from "../../shared/seaso
 import type { AppDeps } from "../lib/appDeps";
 import type { NotifyInput } from "../lib/notify";
 import type { LapseContext } from "../lib/orgChart";
-import { crewDials, pickersByCircle, pickersOf } from "../lib/seasonCrew";
+import { crewDials, pickerRoles, pickersByCircle, pickersOf } from "../lib/seasonCrew";
 import { seasonName } from "../lib/seasonPlaces";
 import {
   CREW_APPLICATION_ID,
@@ -76,7 +76,7 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
   }
 
   /** The circles that sail this season: those holding a place when the village asks for one, else every circle somebody can pick for. */
-  async function circlesFor(seasonId: string, pickers: Map<string, { pickers: string[]; roleName: string | null }>): Promise<string[]> {
+  async function circlesFor(seasonId: string, pickers: Map<string, { pickers: string[]; roleName: string | null; roleId: string | null }>): Promise<string[]> {
     if (crewDials.needsPlace()) return circlesTakingPart(getPool(), seasonId);
     return Array.from(pickers.keys());
   }
@@ -95,7 +95,7 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
     const state = seasonState();
     const season = targetSeasonOf(state, req.query.season);
     const seasons = crewSeasons(state).map((s) => ({ id: s.id, name: s.name ?? null }));
-    if (!season) return res.json({ season: null, seasons, circles: [], mine: null, pool: null, picksFor: [] });
+    if (!season) return res.json({ season: null, seasons, goals: [], circles: [], mine: null, pool: null, picksFor: [] });
     const pool = getPool();
     const pickers = await pickersByCircle(pool, lapse());
     const ids = await circlesFor(season.id, pickers);
@@ -110,6 +110,7 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
     res.json({
       season: { id: season.id, name: season.name ?? null },
       seasons,
+      goals: (season.goals ?? []).filter((g) => g && typeof g.text === "string" && g.text.trim()).map((g) => ({ text: g.text, done: Boolean(g.done) })),
       applied: applications.length,
       circles: ids.map((id) => {
         const p = pickers.get(id);
@@ -119,17 +120,20 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
           circleId: id,
           name: names.get(id) ?? id,
           // III.2: the role first, holders' first names in parentheses, read live.
-          pickedBy: p?.roleName ? { role: p.roleName, names: (p.pickers ?? []).map(first).filter(Boolean) } : null,
+          pickedBy: p?.roleName ? { role: p.roleName, roleId: p.roleId, names: (p.pickers ?? []).map(first).filter(Boolean) } : null,
           berths: b,
           picked,
           berthsLeft: berthsLeft(b, picked),
-          wanted: applications.filter((a) => a.wantsCircleId === id && a.status === "applied").length,
+          // Everyone who named this circle, picked or still waiting: the "applied" count beside it.
+          wanted: applications.filter((a) => a.wantsCircleId === id).length,
         };
       }),
       mine: mine
         ? { id: mine.id, status: mine.status, statusWords: CREW_STATUS_WORDS[mine.status], wantsCircleId: mine.wantsCircleId, pickedCircleId: mine.pickedCircleId, pickedCircleName: mine.pickedCircleId ? names.get(mine.pickedCircleId) ?? null : null, words: mine.words }
         : null,
       picksFor,
+      // Every role that picks, held or not, so a page can link to what it asks first.
+      pickerRoles: await pickerRoles(pool),
       // The pool is for the people who pick. Everyone else sees counts.
       pool: picksFor.length
         ? applications.map((a) => ({ id: a.id, name: first(a.userId), wantsCircleId: a.wantsCircleId, words: a.words, status: a.status, pickedCircleId: a.pickedCircleId }))
@@ -148,7 +152,7 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
     const wants = typeof req.body?.circleId === "string" && req.body.circleId.trim() ? req.body.circleId.trim() : null;
     const pickers = await pickersByCircle(pool, lapse());
     if (wants && !(await circlesFor(season.id, pickers)).includes(wants)) {
-      return res.status(400).json({ error: "not_sailing", message: "That circle is not picking a crew this season. Apply for one that is, or for any." });
+      return res.status(400).json({ error: "not_sailing", message: "That circle is not picking a team this season. Apply for one that is, or for any." });
     }
     const out = await upsertApplication(pool, { seasonId: season.id, userId, wantsCircleId: wants, words: words.words });
     if (out.created && wants) {
@@ -198,7 +202,7 @@ export function registerSeasonCrew(app: Express, deps: CrewDeps): void {
     if (!got) return;
     const { a, circleId } = got;
     const pool = getPool();
-    if (!(await releaseOn(pool, a.id, circleId))) return res.status(409).json({ error: "not_yours", message: "This person is not on your circle's crew this season." });
+    if (!(await releaseOn(pool, a.id, circleId))) return res.status(409).json({ error: "not_yours", message: "This person is not on your circle's team this season." });
     const name = (await circleNames(pool, [circleId])).get(circleId) ?? circleId;
     await tell(a.userId, "released", CREW_NOTICES.released(name, seasonName(placeDeps, a.seasonId)), a.seasonId, `${a.id}:released:${Date.now().toString(36)}`);
     res.json({ success: true, status: "applied" });

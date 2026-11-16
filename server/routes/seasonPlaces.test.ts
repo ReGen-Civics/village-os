@@ -16,6 +16,7 @@ import { admit, type PlaceDeps } from "../lib/seasonPlaces";
 import { prerequisiteRefusal } from "../lib/rolePrerequisites";
 import { listSeason, readPlace, withSeasonLock, writePlace } from "../repos/seasonPlaces";
 import { register, seasonPlaceCloser } from "./seasonPlaces";
+import { register as registerRolePath } from "./rolePrerequisites";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
@@ -314,7 +315,7 @@ describe.skipIf(!configured)("season places against a real schema", () => {
       expect((await call("PUT /api/season-places/crew/circles/:circleId/berths", { params: { circleId: "crew-a" }, body: { berths: 1 } })).body.berths).toBe(1);
       told.length = 0;
       expect((await pick(mine.body.id, "crew-a")).body).toMatchObject({ success: true, status: "picked" });
-      expect(told).toEqual([expect.objectContaining({ userId: "u-c1", type: "season_crew_picked", title: "You're crew this season! Crew A picked you for Fourth." })]);
+      expect(told).toEqual([expect.objectContaining({ userId: "u-c1", type: "season_crew_picked", title: "You're in this season! Crew A picked you for Fourth." })]);
       expect((await call("GET /api/season-places/crew")).body.pool.map((p: any) => p.status)).toEqual(["picked"]);
 
       me = "u-b1";
@@ -366,6 +367,34 @@ describe.skipIf(!configured)("season places against a real schema", () => {
       expect((await call("POST /api/season-places/gatherings/:eventId/circles", { params: { eventId: "ev-host" }, body: { circleId: "crew-a" } })).status).toBe(403);
       me = "u-a1";
       expect((await call("POST /api/season-places/gatherings/:eventId/circles", { params: { eventId: "ev-host" }, body: { circleId: "crew-a" } })).body.status).toBe("going");
+      // The list a member's season page reads: each gathering that takes circles, and where theirs stands.
+      me = "u-a2";
+      const list = await call("GET /api/season-places/gatherings");
+      expect(list.body.gatherings).toEqual([
+        expect.objectContaining({ eventId: "ev-host", title: "Spring gathering", circleCap: null, going: 1, waiting: 0, mine: [{ circleId: "crew-a", name: "Crew A", status: "going", position: null }] }),
+      ]);
+    });
+  });
+
+  describe("a role's path", () => {
+    it("names the role's holders and lists what it asks, with what the reader has, in order", async () => {
+      await pool.query("INSERT INTO payment_products (id, name, kind, amount_minor, created_by) VALUES ('prod-path', 'Path fee', 'fee', 70000, 'u-h')"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      await pool.query("INSERT INTO quests (id, title, description) VALUES ('q-path-1', 'First lesson', 'Walk around it.')"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      await setVariable(pool, "roles.prerequisites", "crew-a-lead = product:prod-path, quest:q-path-1");
+      const c = collect();
+      registerRolePath(c.app, { authedUser: async () => ({ id: "u-c1" }), getPool: () => pool, firstName: (n: string) => n.split(" ")[0], lapse: () => ({ currentSeasonId: null, cadence: "never" }) } as any);
+      const h = c.handlers.get("GET /api/governance/role-path/:roleId")!;
+      const { res, out } = makeRes();
+      await h({ params: { roleId: "crew-a-lead" }, query: {}, headers: {} }, res);
+      expect(out.body).toMatchObject({ roleId: "crew-a-lead", name: "Lead", holders: ["Ada"] });
+      expect(out.body.items).toEqual([
+        expect.objectContaining({ kind: "product", title: "Path fee", amountMinor: 70000, done: false }),
+        expect.objectContaining({ kind: "quest", title: "First lesson", detail: "Walk around it.", done: false }),
+      ]);
+      const missing = makeRes();
+      await h({ params: { roleId: "no-such-role" }, query: {}, headers: {} }, missing.res);
+      expect(missing.out.status).toBe(404);
+      await setVariable(pool, "roles.prerequisites", "");
     });
   });
 

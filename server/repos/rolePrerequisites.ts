@@ -30,6 +30,24 @@ export async function holdingsOf(db: Q, userId: string, productIds: readonly str
   return { paidProducts, consentedQuests };
 }
 
+/** What a role's path shows of each item: a product's name and price, a quest's title and what it asks. */
+export async function itemDetails(db: Q, productIds: readonly string[], questIds: readonly string[]): Promise<{
+  products: Map<string, { name: string; amountMinor: number | null }>;
+  quests: Map<string, { title: string; description: string | null }>;
+}> {
+  const products = new Map<string, { name: string; amountMinor: number | null }>();
+  const quests = new Map<string, { title: string; description: string | null }>();
+  if (productIds.length) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, amount_minor FROM payment_products WHERE id IN (?)", [productIds]);
+    for (const r of rows) products.set(String(r.id), { name: String(r.name), amountMinor: r.amount_minor == null ? null : Number(r.amount_minor) });
+  }
+  if (questIds.length) {
+    const [rows] = await db.query<RowDataPacket[]>("SELECT id, title, description FROM quests WHERE id IN (?)", [questIds]);
+    for (const r of rows) quests.set(String(r.id), { title: String(r.title), description: r.description == null ? null : String(r.description).slice(0, 300) });
+  }
+  return { products, quests };
+}
+
 /** The village's own names for the products and quests a role asks for. A missing one has no name. */
 export async function itemNames(db: Q, productIds: readonly string[], questIds: readonly string[]): Promise<{ products: Map<string, string>; quests: Map<string, string> }> {
   const products = new Map<string, string>();

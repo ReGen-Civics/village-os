@@ -1545,7 +1545,7 @@ export const MODULES: ModuleDef[] = [
     setup: "none",
     name: "Season places",
     description:
-      "Every season starts fresh: members apply, and each circle's picker chooses that season's crew from everyone who applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order, and each gathering can take circles up to a cap its host sets.",
+      "Every season starts fresh: members apply, and each circle's picker chooses that season's team from everyone who applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order, and each gathering can take circles up to a cap its host sets.",
     // Proposals are decided by the governance module's own road: the power
     // that places people in roles, or a village vote.
     requires: ["governance"],

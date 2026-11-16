@@ -156,6 +156,17 @@ export async function promoteCirclesOn(conn: PoolConnection, eventId: string, ca
   return out;
 }
 
+/** Upcoming gatherings that take circles, soonest first: id, title, start and cap. */
+export async function gatheringsTakingCircles(db: Q, limit = 20): Promise<Array<{ id: string; title: string; startsAt: string; circleCap: number | null }>> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT e.id, e.title, e.starts_at, s.circle_cap FROM event_circle_settings s JOIN events e ON e.id = s.event_id
+      WHERE s.takes_circles = 1 AND e.removed_at IS NULL AND e.status IN ('scheduled', 'postponed') AND e.starts_at >= (NOW() - INTERVAL 1 DAY)
+      ORDER BY e.starts_at, e.id LIMIT ?`,
+    [limit],
+  );
+  return rows.map((r) => ({ id: String(r.id), title: String(r.title), startsAt: iso(r.starts_at) ?? "", circleCap: r.circle_cap == null ? null : Number(r.circle_cap) }));
+}
+
 /** Whether a circle holds a place in a season, for a gathering that asks for one. */
 export async function holdsSeasonPlace(db: Q, seasonId: string, circleId: string): Promise<boolean> {
   const [[r]] = await db.query<RowDataPacket[]>(

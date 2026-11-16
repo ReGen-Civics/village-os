@@ -19,6 +19,8 @@ export interface CirclePickers {
   pickers: string[];
   /** The picking role's name when a live holder of it picks; null when the crew picks. */
   roleName: string | null;
+  /** That role's id, for a link to its path. */
+  roleId: string | null;
 }
 
 export const crewDials = {
@@ -31,28 +33,37 @@ export async function pickersByCircle(pool: Pool, lapse: LapseContext): Promise<
   const dial = crewDials.pickerRole();
   const crewMap = await crews(pool, lapse);
   const out = new Map<string, CirclePickers>();
-  const pickerRoles = new Map<string, { circleId: string; name: string }>();
+  const pickerRoles = new Map<string, { circleId: string; name: string; id: string }>();
   if (dial.trim()) {
     for (const r of await listOrgRoles(pool)) {
-      if (r.active && r.circleId && isPickerRole(r.name, dial)) pickerRoles.set(r.id, { circleId: r.circleId, name: r.name });
+      if (r.active && r.circleId && isPickerRole(r.name, dial)) pickerRoles.set(r.id, { circleId: r.circleId, name: r.name, id: r.id });
     }
   }
   if (pickerRoles.size) {
     for (const a of await listOrgAssignments(pool, lapse)) {
       const role = pickerRoles.get(a.orgRoleId);
       if (!role || a.lapsed || a.holderKind !== "member" || !a.userId || a.isAgent) continue;
-      const entry = out.get(role.circleId) ?? { pickers: [], roleName: role.name };
+      const entry = out.get(role.circleId) ?? { pickers: [], roleName: role.name, roleId: role.id };
       if (!entry.pickers.includes(a.userId)) entry.pickers.push(a.userId);
       out.set(role.circleId, entry);
     }
   }
   // The fallback: a circle with no live picker is picked for by its crew.
   for (const [circleId, crew] of Array.from(crewMap.entries())) {
-    if (!out.has(circleId) && crew.length) out.set(circleId, { pickers: [...crew], roleName: null });
+    if (!out.has(circleId) && crew.length) out.set(circleId, { pickers: [...crew], roleName: null, roleId: null });
   }
   return out;
 }
 
+/** Every active role the picker dial names, held or not, for a link to its path. */
+export async function pickerRoles(pool: Pool): Promise<Array<{ id: string; name: string; circleId: string }>> {
+  const dial = crewDials.pickerRole();
+  if (!dial.trim()) return [];
+  return (await listOrgRoles(pool))
+    .filter((r) => r.active && r.circleId && isPickerRole(r.name, dial))
+    .map((r) => ({ id: r.id, name: r.name, circleId: r.circleId as string }));
+}
+
 export async function pickersOf(pool: Pool, lapse: LapseContext, circleId: string): Promise<CirclePickers> {
-  return (await pickersByCircle(pool, lapse)).get(circleId) ?? { pickers: [], roleName: null };
+  return (await pickersByCircle(pool, lapse)).get(circleId) ?? { pickers: [], roleName: null, roleId: null };
 }

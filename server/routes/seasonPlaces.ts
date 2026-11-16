@@ -403,7 +403,7 @@ export function register(app: Express, deps: Deps): void {
     if (!got) return;
     const crewMayOpen = got.candidates.includes(got.userId) && placeAdoptionPath(got.rule, got.candidates) === "ballot";
     if (!got.decider && !crewMayOpen) {
-      return res.status(403).json({ error: "not_a_holder", message: "A holder of the power to place people puts a proposal to the village. When nobody outside the circle holds it, the circle's crew does." });
+      return res.status(403).json({ error: "not_a_holder", message: "A holder of the power to place people puts a proposal to the village. When nobody outside the circle holds it, the circle's own role holders do." });
     }
     if (got.place.status !== "proposed") return res.status(409).json(notWaiting(got.place));
     const opened = await openPlaceVote(got.place, got.userId, ["proposed"]);
@@ -415,7 +415,7 @@ export function register(app: Express, deps: Deps): void {
     const got = await loadFor(req, res, "withdraw");
     if (!got) return;
     if (!got.candidates.includes(got.userId)) {
-      return res.status(403).json({ error: "not_crew", message: "Only the circle's own crew can withdraw it." });
+      return res.status(403).json({ error: "not_crew", message: "Only the circle's own role holders can withdraw it." });
     }
     const pool = getPool();
     const p = got.place;

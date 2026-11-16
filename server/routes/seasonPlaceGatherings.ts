@@ -36,6 +36,7 @@ import type { LapseContext } from "../lib/orgChart";
 import { crews } from "../lib/seasonPlaces";
 import { pickersOf } from "../lib/seasonCrew";
 import {
+  gatheringsTakingCircles,
   circleSettingsOf,
   holdsSeasonPlace,
   leaveOn,
@@ -89,6 +90,34 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     for (const c of promoted) await tellCircle(c, eventId, "opened", CIRCLE_NOTICES.opened(names.get(c) ?? c, title), `opened:${stamp}`);
     return promoted.length;
   }
+
+  // Every upcoming gathering that takes circles, with where the reader's circles stand in each.
+  app.get("/api/season-places/gatherings", async (req, res) => {
+    if (!eventsOn()) return res.status(404).json(NOT_HERE);
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json(SIGN_IN);
+    const pool = getPool();
+    const crewMap = await crews(pool, lapse());
+    const mine = new Set(Array.from(crewMap.entries()).filter(([, crew]) => crew.includes(String(user.id))).map(([id]) => id));
+    const out = [];
+    for (const g of await gatheringsTakingCircles(pool)) {
+      const places = await listCirclePlaces(pool, g.id);
+      const waiting = places.filter((p) => p.status === "waiting");
+      const names = await circleNames(pool, places.filter((p) => mine.has(p.circleId)).map((p) => p.circleId));
+      out.push({
+        eventId: g.id,
+        title: g.title,
+        startsAt: g.startsAt,
+        circleCap: g.circleCap,
+        going: places.length - waiting.length,
+        waiting: waiting.length,
+        mine: places
+          .filter((p) => mine.has(p.circleId))
+          .map((p) => ({ circleId: p.circleId, name: names.get(p.circleId) ?? p.circleId, status: p.status, position: p.status === "waiting" ? waiting.findIndex((w) => w.circleId === p.circleId) + 1 : null })),
+      });
+    }
+    res.json({ gatherings: out });
+  });
 
   app.get(base, async (req, res) => {
     if (!eventsOn()) return res.status(404).json(NOT_HERE);
@@ -151,7 +180,7 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     if (row.status !== "scheduled" && row.status !== "postponed") return res.status(409).json({ error: "not_open", message: CIRCLE_REFUSALS.closed });
     const circleId = String(req.body?.circleId ?? "").trim();
     if (!(await pickersOf(pool, lapse(), circleId)).pickers.includes(userId)) {
-      return res.status(403).json({ error: "not_crew", message: "A circle is signed up by whoever picks its crew this season, or by its crew when nobody does." });
+      return res.status(403).json({ error: "not_crew", message: "A circle is signed up by whoever picks its team this season, or by its role holders when nobody does." });
     }
     const name = (await circleNames(pool, [circleId])).get(circleId) ?? circleId;
     if (settings.needsSeasonPlace) {
@@ -183,7 +212,7 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     const pool = getPool();
     const circleId = String(req.params.circleId ?? "");
     if (!(await pickersOf(pool, lapse(), circleId)).pickers.includes(userId)) {
-      return res.status(403).json({ error: "not_crew", message: "A circle is taken out by whoever picks its crew this season, or by its crew when nobody does." });
+      return res.status(403).json({ error: "not_crew", message: "A circle is taken out by whoever picks its team this season, or by its role holders when nobody does." });
     }
     const out = await withGatheringLock(pool, row.id, (conn) => leaveOn(conn, row.id, circleId, userId));
     if (!out?.left) return res.status(409).json({ error: "not_signed_up", message: "That circle is not signed up for this gathering." });

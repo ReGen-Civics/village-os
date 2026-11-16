@@ -39,7 +39,7 @@ export function berthsLeft(berths: number | null, picked: number): number | null
 export function parseBerths(raw: unknown): { ok: true; berths: number | null } | { ok: false; error: string } {
   if (raw === null || raw === undefined || raw === "") return { ok: true, berths: null };
   const n = Number(raw);
-  if (!Number.isInteger(n) || n < 0 || n > BERTHS_MAX) return { ok: false, error: `Berths are a whole number from 0 to ${BERTHS_MAX}, or blank for no limit.` };
+  if (!Number.isInteger(n) || n < 0 || n > BERTHS_MAX) return { ok: false, error: `Spots are a whole number from 0 to ${BERTHS_MAX}, or blank for no limit.` };
   return { ok: true, berths: n };
 }
 
@@ -50,21 +50,21 @@ export function crewSeasons(state: { current: PlaceSeason | null; upcoming: Plac
 
 export const CREW_STATUS_WORDS: Readonly<Record<CrewStatus, string>> = {
   applied: "Applied",
-  picked: "Crew this season",
+  picked: "In this season",
   withdrawn: "Withdrawn",
 };
 
 /** Notice titles. They name the circle and the season, never a person. */
 export const CREW_NOTICES = {
-  picked: (circle: string, season: string) => `You're crew this season! ${circle} picked you for ${season}.`,
+  picked: (circle: string, season: string) => `You're in this season! ${circle} picked you for ${season}.`,
   released: (circle: string, season: string) => `${circle} released your place for ${season}. Your application stands, and any circle can still pick you.`,
-  applied: (season: string) => `Somebody applied to sail in ${season}, and you pick a crew.`,
+  applied: (season: string) => `Somebody applied to take part in ${season}, and you pick a team.`,
 } as const;
 
 export const CREW_REFUSALS = {
-  notPicker: "A circle's crew is picked by whoever holds its picking role this season, or by its crew when nobody does.",
-  full: (circle: string) => `${circle} has no berths left this season.`,
-  needsPlace: (circle: string, season: string) => `${circle} needs a place in ${season} before it can pick a crew.`,
+  notPicker: "A circle's team is picked by whoever holds its picking role this season, or by its role holders when nobody does.",
+  full: (circle: string) => `${circle} has no spots left this season.`,
+  needsPlace: (circle: string, season: string) => `${circle} needs a place in ${season} before it can pick a team.`,
   taken: "Another circle picked this person a moment ago.",
   noSeason: "There is no season open to apply for. The village's seasons are dated in Admin, Season.",
 } as const;

@@ -11,12 +11,28 @@
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
-import { prerequisitesFor } from "../lib/rolePrerequisites";
+import type { LapseContext } from "../lib/orgChart";
+import { prerequisitesFor, rolePathFor } from "../lib/rolePrerequisites";
+import { memberNames } from "../repos/seasonPlaces";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool">;
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "firstName"> & { lapse(): LapseContext };
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, getPool } = deps;
+  const { authedUser, getPool, firstName, lapse } = deps;
+
+  /**
+   * One role's path for the reader: its words, its holders now by first name
+   * (signed-in live view, III.2), and each thing it asks for, in order, with
+   * what the reader has. The role's own application door does the asking.
+   */
+  app.get("/api/governance/role-path/:roleId", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to see a role's path." });
+    const path = await rolePathFor(getPool(), String(user.id), String(req.params.roleId ?? ""), lapse());
+    if (!path) return res.status(404).json({ error: "not_found", message: "There is no role by that id." });
+    const names = await memberNames(getPool(), path.holderIds);
+    res.json({ ...path, holderIds: undefined, holders: path.holderIds.map((id) => firstName(names.get(id) ?? "")).filter(Boolean) });
+  });
 
   app.get("/api/governance/role-prerequisites", async (req, res) => {
     const user = await authedUser(req);
