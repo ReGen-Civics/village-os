@@ -131,6 +131,8 @@ export interface PublicGameConfig {
   /** The story pages this village switched off one by one, while the rest
    *  are served. Absent on an older server, which reads as none. */
   brochureHidden?: string[];
+  /** Member doors opened to visitors while the story pages are off (gap G15). */
+  brochureOpen?: string[];
   /** Site-wide words from Admin, Pages, Whole site. Absent on an older server. */
   site?: {
     footerSignoff: string;
