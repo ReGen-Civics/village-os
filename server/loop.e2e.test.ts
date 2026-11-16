@@ -263,6 +263,11 @@ beforeAll(async () => {
       // The Riverside webhook fails closed without a secret; the loop sends
       // the matching header and proves both the accept and the discard path.
       RIVERSIDE_WEBHOOK_SECRET: "loop-test-riverside",
+      // S47 points the platform at a local RPC stub on http://127.0.0.1. A
+      // production server refuses a loopback RPC (base-reads.ts,
+      // loopbackRpcAllowed, R111); this test-only switch is the one way a
+      // NODE_ENV=production boot accepts it, and no deployment sets it.
+      VILLAGE_E2E_LOOPBACK_RPC: "1",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
