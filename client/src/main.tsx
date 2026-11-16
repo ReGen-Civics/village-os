@@ -2,7 +2,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { fetchConfigCached } from "./lib/gameApi";
 import { listenForThemeChanges } from "./lib/liveTheme";
-import { loadVillageSounds } from "./lib/sound";
 import { installStaleChunkRecovery } from "./lib/staleChunk";
 import "./index.css";
 
@@ -102,7 +101,8 @@ fetchConfigCached();
 // A Look saved in Admin re-themes open pages without a reload (lib/liveTheme.ts).
 listenForThemeChanges();
 // The village's own sounds, if it loaded any (lib/sound.ts, gap G8). Silent otherwise.
-void loadVillageSounds();
+// Imported lazily so the first page's scripts do not grow by the audio layer.
+void import("./lib/sound").then((m) => m.loadVillageSounds()).catch(() => undefined);
 
 // A page that outlived a deploy reloads itself once for the new build (lib/staleChunk.ts).
 installStaleChunkRecovery();
