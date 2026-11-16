@@ -28,10 +28,10 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Users, Video } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Repeat, Users, Video } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
-import type { CalendarItem, RsvpStatus } from "@shared/gatherings";
+import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
 import { civilDate, lunarYearOf, type YearAnchor } from "@shared/lunar";
 import { moonCountLabel } from "@shared/villageMoon";
 import InfoTip from "@/components/InfoTip";
@@ -287,6 +287,8 @@ export default function Events() {
 
   const itemCard = (g: CalendarItem, showWhen: boolean, surface: "card" | "muted" = "card") => {
     const second = localSecondLine(g, timezone);
+    // Authored rhythms only: a mirrored row (a circle's call, the sky) says its own rhythm where it lives.
+    const rhythm = g.kind === "gathering" || g.kind === "festival" ? describeRecurrence(g.recurrence) : null;
     const key = `${g.id}:${g.occurrenceKey}`;
     return (
       <li key={key} className={`border border-border rounded-xl p-4 sm:p-5 ${surface === "muted" ? "bg-muted" : "bg-card"}`}>
@@ -316,6 +318,12 @@ export default function Events() {
               {showWhen && <span className="text-foreground/60">({whenLabel(g.daysUntil)})</span>}
             </p>
             {second && <p className="text-xs text-muted-foreground/80 mt-0.5 ml-5">{second}</p>}
+            {rhythm && (
+              <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                <Repeat className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                {rhythm}
+              </p>
+            )}
             {g.locationText && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />

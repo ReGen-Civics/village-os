@@ -17,7 +17,7 @@
  */
 import { createHash, randomBytes } from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import type { CalendarItem, CalendarKind } from "../../shared/gatherings";
+import { nthWeekdayDay, type CalendarItem, type CalendarKind, type Recurrence } from "../../shared/gatherings";
 import { civilParts, zonedTimeToUtc, type YearAnchor } from "../../shared/lunar";
 import { expandOccurrences, type CalendarRow } from "./calendar";
 import { lunarSummaryFor, type MonthName } from "./lunarTable";
@@ -167,7 +167,10 @@ export function icsTimezone(timeZone: string, from: Date, to: Date): string[] {
         return `${l.getUTCFullYear()}${pad(l.getUTCMonth() + 1)}${pad(l.getUTCDate())}T${pad(l.getUTCHours())}${pad(l.getUTCMinutes())}00`;
       };
       lines.push(`BEGIN:${kind}`, `DTSTART:${local(first)}`, `TZOFFSETFROM:${fmtOffset(first.fromOffset)}`, `TZOFFSETTO:${fmtOffset(first.toOffset)}`);
-      lines.push(`RDATE:${mine.map(local).join(",")}`);
+      // One RDATE line per change. A comma list is equally valid RFC 5545,
+      // but ical.js reads only its first value, so a subscriber built on it
+      // placed every winter instance of a daylight-saving zone an hour off.
+      for (const tr of mine) lines.push(`RDATE:${local(tr)}`);
       lines.push(`END:${kind}`);
     }
   }
@@ -255,6 +258,15 @@ function vevent(e: EventLines, opts: IcsOptions, stamp: string): string[] {
 
 const sequenceOf = (row: CalendarRow) => Math.max(0, Math.floor(row.updatedAt.getTime() / 60_000));
 
+/** Whether the base row's own village date is one the rule produces. */
+export function startFollowsRule(r: Recurrence, base: { year: number; month: number; day: number; weekday: number }): boolean {
+  if (r.freq === "weekly") return r.byWeekday.includes(base.weekday);
+  if (r.freq === "monthly") {
+    return "byNthWeekday" in r ? nthWeekdayDay(base.year, base.month, r.byNthWeekday) === base.day : r.byMonthDay === base.day;
+  }
+  return true;
+}
+
 /** The RRULE for a weekly or monthly recurrence, or null for the others. */
 export function rruleFor(row: CalendarRow): string | null {
   const r = row.recurrence;
@@ -266,6 +278,10 @@ export function rruleFor(row: CalendarRow): string | null {
   }
   if (r.freq === "monthly") {
     const interval = r.interval && r.interval > 1 ? `;INTERVAL=${r.interval}` : "";
+    if ("byNthWeekday" in r) {
+      // BYDAY=1FR is the first Friday, BYDAY=-1FR the last (RFC 5545 3.3.10).
+      return `FREQ=MONTHLY${interval};BYDAY=${r.byNthWeekday.nth}${WEEKDAY[r.byNthWeekday.weekday]}${until}`;
+    }
     return `FREQ=MONTHLY${interval};BYMONTHDAY=${r.byMonthDay}${until}`;
   }
   return null;
@@ -326,6 +342,11 @@ export function buildIcs(rows: CalendarRow[], opts: IcsOptions): string {
           status: statusOf(row.status), category: categoryOf(row.kind), sequence: sequenceOf(row) + 1, recurrenceId: original, colour: row.colour,
         });
       }
+      // RFC 5545 leaves a DTSTART that the rule would not produce undefined,
+      // and most clients show it as an extra instance. The village's own
+      // calendar never shows one (expandOccurrences only emits rule dates),
+      // so the feed says the same thing by excluding it.
+      if (!startFollowsRule(rec, base) && !exdates.some((d) => d.getTime() === row.startsAt.getTime())) exdates.push(row.startsAt);
       out.push(...vevent({
         uid, start: row.startsAt, end: row.endsAt, allDay: false, summary: row.title,
         description: describe(row, row.startsAt, "Repeats."), location: row.locationText, url: link(row),
