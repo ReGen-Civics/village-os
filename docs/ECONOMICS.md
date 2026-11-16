@@ -565,6 +565,13 @@ recognition faucet; `gratitude.proposal_accept_award` is retired, and Gratitude 
 sent from one member to another (`GRATITUDE_ONLY_SENT`). The admin hand-mint and circle
 treasuries refuse it too.
 
+**Who an accepted proposal pays (audit, 15 Nov 2026).** A proposal sent while signed in pays
+the account that sent it. One sent from the public form names only a typed address, and anybody
+can sign up at a stranger's address first, so `applyAcceptReward` pays the account at that
+address only when it owns the address: it proved it, or it is an accepted member (admitted, an
+admin or founder, or seated live; `ownsItsAddress` in `server/lib/applicantAccount.ts`). A bare
+account at the address is treated as no account: nothing is paid and nothing is owed.
+
 **A badge multiplies the token it names (0278, Rye, 2026-10-23: "the multiplier is attached to a
 token, so voice, credits, etc").** `badges.multipliers` maps a token to a factor from 1 to 3.
 `rewardMultipliersFor` (`server/lib/seasonPatterns.ts`) compounds every awake badge a member

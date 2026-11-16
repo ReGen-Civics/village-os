@@ -58,29 +58,8 @@ export async function recordedKeepers(pool: Pool, agent: { id: string; name: str
   return keepers;
 }
 
-/** The answer when the lock on an agent's claim could not be had in time. */
-export const AGENT_CLAIM_BUSY = Symbol("agent-claim-busy");
-
-/**
- * Run `work` while this connection holds the one named lock for claims on this
- * agent, so the keeper check and the proposal it lets in are one step to every
- * other claim. AGENT_CLAIM_BUSY when the lock did not come within 5 seconds.
- */
-export async function whileAgentClaimHeld<T>(pool: Pool, agentUserId: string, work: () => Promise<T>): Promise<T | typeof AGENT_CLAIM_BUSY> {
-  const name = `agent-claim:${agentUserId}`.slice(0, 64);
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query<any[]>("SELECT GET_LOCK(?, 5) AS got", [name]);
-    if (Number(rows[0]?.got) !== 1) return AGENT_CLAIM_BUSY;
-    try {
-      return await work();
-    } finally {
-      await conn.query("SELECT RELEASE_LOCK(?)", [name]).catch(() => undefined);
-    }
-  } finally {
-    conn.release();
-  }
-}
+/** The keeper check's lock, kept in its repo (server/repos/agentClaimLock.ts) beside the SQL it runs. */
+export { AGENT_CLAIM_BUSY, whileAgentClaimHeld } from "../repos/agentClaimLock";
 
 /** Whether this member may say they keep the agent: nobody recorded yet, or only them. */
 export function mayKeep(keepers: ReadonlySet<string>, memberId: string): boolean {
