@@ -146,6 +146,17 @@ const PATH_LOOK: Record<(typeof LETTER_PATH_IDS)[number], { icon: typeof Users; 
   prosperity: { icon: Sparkles, color: "border-muted-foreground text-muted-foreground" },
 };
 
+/**
+ * A covenant part as its paragraphs, split on blank lines (gap G15): a village
+ * that writes its covenant as many short parts reads one paragraph each, where
+ * one <p> ran them together. The stored text is unchanged, so the letter's
+ * fingerprint does not move. Text with no blank line is one paragraph, as before.
+ */
+export function paragraphsOf(text: string | null | undefined): string[] {
+  const parts = String(text ?? "").split(/\r?\n[ \t]*\r?\n/).map((p) => p.trim()).filter(Boolean);
+  return parts.length ? parts : [String(text ?? "")];
+}
+
 export default function LoveLetter() {
   const { content: legal } = useVillageContent<LegalContent>("legal");
   const { content: covenant } = useVillageContent<CovenantContent>("covenant");
@@ -451,7 +462,9 @@ export default function LoveLetter() {
           >
             <p className="mb-6 text-foreground">{parts.greeting}</p>
 
-            <p className="mb-6 text-foreground">{parts.opening}</p>
+            {paragraphsOf(parts.opening).map((para, i) => (
+              <p key={`opening-${i}`} className="mb-6 text-foreground">{para}</p>
+            ))}
 
             <p className="mb-6 text-foreground">{parts.joining}</p>
 
@@ -473,7 +486,9 @@ export default function LoveLetter() {
 
             <p className="mb-6 text-foreground">{parts.inReturn}</p>
 
-            <p className="mb-6 text-foreground">{parts.governance}</p>
+            {paragraphsOf(parts.governance).map((para, i) => (
+              <p key={`governance-${i}`} className="mb-6 text-foreground">{para}</p>
+            ))}
 
             {parts.contribution && (
               <p className="mb-6 text-foreground">{parts.contribution}</p>
