@@ -961,7 +961,7 @@ import { resolveHyphaLinks } from "../shared/hypha";
 import { closePool, getPool } from "./db/pool";
 import { applyPending, connect as dbConnect } from "./db/migrate";
 import { startMaintenanceServer } from "./db/maintenanceMode";
-import { clientIpConfigFromEnv, deriveClientIp, forwardedHeaderIgnored } from "./lib/clientIp";
+import { clientIpConfigFromEnv, clientIpModeLine, deriveClientIp } from "./lib/clientIp";
 import { authTokenSecretProblem } from "./lib/secretFloors";
 import { checkPasswordUniformly, dummyHash } from "./lib/passwordCheck";
 import { adminPasswordTooShort, passwordDoorThrottled, poolCounter, recordPasswordDoorFailure, SHORT_PASSWORD_ANSWER, shortPasswordLogLine } from "./lib/passwordDoors";
@@ -4773,26 +4773,18 @@ async function recordHit(bucket: string): Promise<void> {
 }
 
 /**
- * The caller's address: server/lib/clientIp.ts holds the rule and why. Two
- * conditions, both needed (R105): X-Forwarded-For is read only as many hops
- * as TRUSTED_PROXY_HOPS says, and only when the socket peer is a private or
- * loopback address, which is where our own proxy connects from. A direct
- * caller on a public address is answered by its socket address, whatever
- * header it sent.
+ * The caller's address: server/lib/clientIp.ts holds the rule and why (R105).
+ * X-Forwarded-For is read only as many hops as TRUSTED_PROXY_HOPS says, and
+ * only from a peer the mode trusts: on Railway the edge, the one way in, by
+ * default; everywhere else a private or loopback peer only, so a direct
+ * caller on a public address is answered by its socket address whatever
+ * header it sent. TRUSTED_PROXY_PEER=any or strict overrides either default.
+ * The chosen mode is logged once, here at boot, never per request.
  */
 const CLIENT_IP_CONFIG = clientIpConfigFromEnv();
-let ignoredForwardedHeaderLogged = false;
+console.log(clientIpModeLine(CLIENT_IP_CONFIG));
 function clientIp(req: express.Request): string {
-  const raw = req.headers["x-forwarded-for"];
-  const peer = req.socket.remoteAddress;
-  if (!ignoredForwardedHeaderLogged && forwardedHeaderIgnored(raw, peer, CLIENT_IP_CONFIG)) {
-    ignoredForwardedHeaderLogged = true;
-    console.warn(
-      `[client-ip] ignoring X-Forwarded-For from a public peer (${peer}); rate limits key on the socket address. ` +
-        "If this deployment sits behind a platform edge that connects from a public address, set TRUSTED_PROXY_PEER=any. Logged once per process.",
-    );
-  }
-  return deriveClientIp(raw, peer, CLIENT_IP_CONFIG);
+  return deriveClientIp(req.headers["x-forwarded-for"], req.socket.remoteAddress, CLIENT_IP_CONFIG);
 }
 // Global daily call cap for the AI assistant, so a key can't run away with cost.
 async function assistantDailyCapReached(max: number): Promise<boolean> {

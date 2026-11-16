@@ -86,6 +86,14 @@ export const INTERNAL = new Set([
   // throwaway servers from the secret length floors. A founder setting it
   // would only switch those floors off on their own village.
   "VITEST",
+  // Injected by Railway into every service it runs, never set by a founder.
+  // server/lib/clientIp.ts reads them to know Railway's edge is the only way
+  // in, and trusts its forwarded header by default (TRUSTED_PROXY_PEER says
+  // more). A founder setting one by hand elsewhere would trust any peer.
+  "RAILWAY_ENVIRONMENT_ID",
+  "RAILWAY_ENVIRONMENT_NAME",
+  "RAILWAY_PROJECT_ID",
+  "RAILWAY_ENVIRONMENT",
   // Set by the test harness alone: the comms suites point the post office at
   // the fake provider (server/testkit/fakeResend.ts) with it, so no test ever
   // sends a real email. A founder setting it would send the village's mail,

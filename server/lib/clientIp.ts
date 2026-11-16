@@ -20,9 +20,19 @@
  * where a proxy on the same machine or the same private network connects
  * from. A public peer IS the client, and its socket address is the answer.
  *
- * `TRUSTED_PROXY_PEER=any` turns the second condition off, for a platform
- * whose edge connects from a public address. Use it only when nothing can
- * reach this process except through that edge.
+ * ON RAILWAY THE PEER IS TRUSTED BY DEFAULT. Railway's edge is the only way
+ * into a Railway service, so whatever connects to the socket there is that
+ * edge, and a deploy that promotes staging to production with nobody reading
+ * the log must not put every visitor in the edge's one bucket. Railway is
+ * detected by the variables it injects into every service
+ * (RAILWAY_ENVIRONMENT_ID, RAILWAY_ENVIRONMENT_NAME, RAILWAY_PROJECT_ID, and
+ * the older RAILWAY_ENVIRONMENT); any one of them is enough.
+ *
+ * TRUSTED_PROXY_PEER overrides that default in both directions: `any` trusts
+ * the header from any peer (a platform edge on a public address elsewhere),
+ * `strict` forces the private-peer rule even on Railway. Blank, or any other
+ * value, takes the default: trusted on Railway, strict everywhere else, which
+ * is what a self-hosted compose install gets.
  */
 
 export interface ClientIpConfig {
@@ -30,13 +40,32 @@ export interface ClientIpConfig {
   hops: number;
   /** Trust the header from any peer, not only private and loopback ones. */
   anyPeer: boolean;
+  /** Why `anyPeer` is what it is, for the one boot line. */
+  reason: string;
+}
+
+/** The variables Railway injects into every service it runs. */
+export const RAILWAY_MARKERS = ["RAILWAY_ENVIRONMENT_ID", "RAILWAY_ENVIRONMENT_NAME", "RAILWAY_PROJECT_ID", "RAILWAY_ENVIRONMENT"] as const;
+
+export function onRailway(env: NodeJS.ProcessEnv = process.env): boolean {
+  return RAILWAY_MARKERS.some((k) => String(env[k] ?? "").trim() !== "");
 }
 
 export function clientIpConfigFromEnv(env: NodeJS.ProcessEnv = process.env): ClientIpConfig {
-  return {
-    hops: Math.max(0, Number(env.TRUSTED_PROXY_HOPS ?? 1) || 0),
-    anyPeer: String(env.TRUSTED_PROXY_PEER ?? "").trim().toLowerCase() === "any",
-  };
+  const hops = Math.max(0, Number(env.TRUSTED_PROXY_HOPS ?? 1) || 0);
+  const set = String(env.TRUSTED_PROXY_PEER ?? "").trim().toLowerCase();
+  if (set === "any") return { hops, anyPeer: true, reason: "TRUSTED_PROXY_PEER=any" };
+  if (set === "strict") return { hops, anyPeer: false, reason: "TRUSTED_PROXY_PEER=strict" };
+  if (onRailway(env)) return { hops, anyPeer: true, reason: "Railway detected (TRUSTED_PROXY_PEER unset)" };
+  return { hops, anyPeer: false, reason: "not on Railway (TRUSTED_PROXY_PEER unset)" };
+}
+
+/** The one line the server logs at boot about which rule it chose. Never per request. */
+export function clientIpModeLine(config: ClientIpConfig): string {
+  if (config.hops <= 0) return "[client-ip] TRUSTED_PROXY_HOPS=0: rate limits key on the socket address, X-Forwarded-For is never read";
+  return config.anyPeer
+    ? `[client-ip] trusting the proxy peer: ${config.reason}; X-Forwarded-For is read ${config.hops} hop(s) deep from any peer`
+    : `[client-ip] strict, private and loopback peers only: ${config.reason}; X-Forwarded-For is read ${config.hops} hop(s) deep`;
 }
 
 /** `::ffff:10.0.0.1` is the IPv4 address 10.0.0.1 on a dual-stack socket. */
@@ -103,13 +132,4 @@ export function deriveClientIp(
   // Fewer entries than hops means the header did not come through the chain
   // we expect; the leftmost is then the least-bad answer available.
   return chain[Math.max(0, chain.length - config.hops)];
-}
-
-/** Whether this request carried a header the rule above refused to read. */
-export function forwardedHeaderIgnored(
-  forwardedFor: string | string[] | undefined,
-  socketAddress: string | undefined | null,
-  config: ClientIpConfig,
-): boolean {
-  return forwardedChain(forwardedFor).length > 0 && config.hops > 0 && !config.anyPeer && !isPrivatePeer(socketAddress);
 }
