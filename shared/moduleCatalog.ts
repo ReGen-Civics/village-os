@@ -445,6 +445,21 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     hue: 28,
     emblem: "NotebookPen",
   },
+  protocols: {
+    promise: "The village's careful routines as checklists anyone can walk, even with no signal.",
+    benefits: [
+      "Named checklists, each step required or optional, and a step can be kept for one role",
+      "Any member starts a run and ticks the steps; a run with a required step open cannot be completed",
+      "Every run records who ticked what and when, and several people can tick the same run",
+      "Works on a phone with no signal, and sends what was ticked when the signal returns",
+      "Offers to add itself to a phone's home screen",
+    ],
+    forWhom: "Villages with routines that must be done the same careful way every time.",
+    setupSummary: "Write the checklists on this card, or import a file of them, then switch the module on for members.",
+    dataSummary: "The checklists, and for each run who ticked each step and when.",
+    hue: 200,
+    emblem: "ListChecks",
+  },
   "gene-keys": {
     promise: "Each member's lines and how they work best, so roles and teams fit the people in them.",
     benefits: [

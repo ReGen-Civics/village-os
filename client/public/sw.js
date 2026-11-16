@@ -61,9 +61,15 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       // Drop caches from an older naming scheme so an upgrade cannot leave
-      // megabytes of unreachable artifact behind on someone's phone.
+      // megabytes of unreachable artifact behind on someone's phone. The
+      // protocols pages' offline shell is another worker's cache
+      // (protocols-sw.js, scope /protocols) and is left to that worker:
+      // Cache Storage is shared by the whole origin, and deleting it here
+      // would leave a member with no checklist the next time they had no signal.
       const names = await caches.keys();
-      await Promise.all(names.filter((n) => n !== CACHE && n !== ASSETS).map((n) => caches.delete(n)));
+      await Promise.all(
+        names.filter((n) => n !== CACHE && n !== ASSETS && !n.startsWith("protocols-shell-")).map((n) => caches.delete(n)),
+      );
       await self.clients.claim();
     })(),
   );

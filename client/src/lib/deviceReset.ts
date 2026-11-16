@@ -19,6 +19,8 @@
  *    (components/fireflyPath/applyDraft.ts `draftKey`, used by ProposeARole);
  *  - `village.journal.draft.<owner>` and `village.journal.outbox`, a journal
  *    sitting in progress and entries waiting to sync (components/journal);
+ *  - `village.queue.<name>`, any page's offline queue (lib/offlineQueue.ts):
+ *    requests a member made with no signal that have not reached the server;
  *  - any other key with "draft" in its name, so a draft added later is kept
  *    without anybody remembering this list (the work-with-us form's is one);
  *  - THE SIGN-IN (`TOKEN_KEY`, and `LEGACY_TOKEN_KEY` until it is moved).
@@ -32,6 +34,7 @@
  */
 
 import { LEGACY_TOKEN_KEY, TOKEN_KEY } from "./gameApi";
+import { QUEUE_KEY_PREFIX } from "./offlineQueue";
 
 /** The keys that hold the sign-in, which the reset leaves in place. */
 export function isSignInKey(key: string): boolean {
@@ -40,7 +43,7 @@ export function isSignInKey(key: string): boolean {
 
 /** A key the reset never removes. */
 export function isKeptKey(key: string): boolean {
-  return /draft/i.test(key) || key === "village.journal.outbox" || isSignInKey(key);
+  return /draft/i.test(key) || key === "village.journal.outbox" || key.startsWith(QUEUE_KEY_PREFIX) || isSignInKey(key);
 }
 
 export interface ResetResult {
