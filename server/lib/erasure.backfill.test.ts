@@ -84,6 +84,7 @@ const GIVEN_TO_IT = [
   "member-agent-after-tombstone",
   "guest-places-after-tombstone",
   "invites-after-tombstone",
+  "hidden-map-after-tombstone",
   "meet-me-windows-after-tombstone",
   "notices-naming-after-tombstone",
   "ballot-words-after-tombstone",
