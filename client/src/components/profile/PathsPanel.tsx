@@ -140,7 +140,7 @@ export default function PathsPanel({
               </div>
 
               <p className="mt-2 text-sm text-muted-foreground">
-                {claimed ? "You walk this path." : "You do not walk this path."}
+                {claimed ? "You walk this path." : "You don't walk this path."}
               </p>
 
               {/* Only once the offer has actually ARRIVED. Until then the offer

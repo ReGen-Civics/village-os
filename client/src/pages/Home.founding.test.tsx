@@ -2,7 +2,7 @@
 /**
  * D-01 (go-live design pass): the landing's first screen. While the village
  * has its founding team section on, "Join the founding team" is the hero's one
- * gold act, the map sits beside it edged, the hero says paid roles exist, and
+ * gold act, the map sits beside it edged, the hero says the founding team is forming, and
  * the founding card leads the ways in with the gold edge. Off, the hero keeps
  * its own door to the paths and says nothing of a founding team.
  */
@@ -76,7 +76,7 @@ describe("the landing's first screen with the founding team on", () => {
     expect(map.className).not.toContain("bg-notice");
     // One gold act in the hero.
     expect(hero().querySelectorAll("a.bg-notice")).toHaveLength(1);
-    expect(hero().textContent).toContain("paid roles that take the village from idea to home, season by season and intended for the long run");
+    expect(hero().textContent).toContain("the people who'll take the village from idea to home, season by season");
     expect(hero().textContent).not.toContain("multi-year");
   });
 

@@ -102,6 +102,7 @@ afterAll(async () => {
 describe.skipIf(!configured)("the Words routes", () => {
   it("registers every route the screen calls", () => {
     expect([...setup().handlers.keys()].sort()).toEqual([
+      "GET /api/admin/comms/letter-previews",
       "GET /api/admin/comms/words",
       "GET /api/admin/comms/words/:key",
       "POST /api/admin/comms/words/:key/adopt",
@@ -110,6 +111,20 @@ describe.skipIf(!configured)("the Words routes", () => {
       "POST /api/admin/comms/words/:key/test",
       "PUT /api/admin/comms/words/:key",
     ]);
+  });
+
+  it("previews the letters written in code, in the village's look, and refuses somebody who may not look", async () => {
+    const { call, sent } = setup();
+    const out = await call("GET", "/api/admin/comms/letter-previews");
+    expect(out.status).toBe(200);
+    const ids = out.body.letters.map((l: any) => l.id);
+    expect(ids).toEqual(["not-invited", "not-invited-es", "declined", "join-declined", "invited", "member-footer"]);
+    const no = out.body.letters.find((l: any) => l.id === "not-invited");
+    expect(no.html).toContain("Come and play!");
+    expect(no.text).toContain("Take a quest: https://village.example.test/quests");
+    expect(sent).toHaveLength(0);
+    const refused = await setup({ mayLook: false }).call("GET", "/api/admin/comms/letter-previews");
+    expect(refused.status).toBe(403);
   });
 
   it("sends the test with exactly the subject, HTML and text the preview showed", async () => {

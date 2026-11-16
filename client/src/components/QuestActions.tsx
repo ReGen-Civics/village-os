@@ -97,7 +97,7 @@ function ConsentedReward({ claim, decimals, pay }: { claim: QuestClaim; decimals
           badge holder was previously told the pre-multiplier grant and never
           saw the rest of what landed. */}
       {!credited && pay && pay.lines.length > 0 && (
-        <p className="text-xs text-emerald-800 mt-1">This quest pays {linesWords(pay.lines)}.</p>
+        <p className="text-xs text-emerald-800 mt-1">This quest rewards you with {linesWords(pay.lines)}.</p>
       )}
       {bonus > 0 && (
         <p className="text-xs text-emerald-800 mt-1">
@@ -243,7 +243,7 @@ export default function QuestActions({
         )
       ) : claim.status === "submitted" ? (
         <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-700">
-          <Send className="w-4 h-4" /> Turned in. Waiting on the circle's yes.
+          <Send className="w-4 h-4" /> Turned in! Waiting on the circle's yes.
         </span>
       ) : (
         <ConsentedReward claim={claim} decimals={decimals} pay={pay} />

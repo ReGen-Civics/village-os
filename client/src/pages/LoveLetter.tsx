@@ -382,7 +382,7 @@ export default function LoveLetter() {
                 <div data-next-steps="" className="space-y-4 text-muted-foreground">
                   <NextStep>Your letter is with the people who look after joining {villageName}.</NextStep>
                   {user ? (
-                    <NextStep>You will get a notice when they answer, and your profile shows where it stands.</NextStep>
+                    <NextStep>You'll get a notice when they answer, and your profile shows where it stands.</NextStep>
                   ) : (
                     <NextStep>
                       Someone will write to you at{" "}

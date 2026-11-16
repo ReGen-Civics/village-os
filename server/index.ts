@@ -381,7 +381,7 @@ import {
   upcomingByStructure,
   withdrawRsvp,
 } from "./lib/gatherings";
-import { cleanRecurrence, getCalendarItemFor, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
+import { getCalendarItemFor, recurrenceRefusal, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
 import {
   attachWaitlistInfo,
   cancelMeetMe,
@@ -11048,7 +11048,8 @@ async function startServer() {
     }
     if (body.recurrence !== undefined && body.recurrence !== null && body.recurrence !== "") {
       if (typeof body.recurrence !== "object") return "Recurrence must be an object";
-      if (!cleanRecurrence(body.recurrence)) return "Recurrence needs a freq of weekly, monthly, lunar or solar with its days or its sky event";
+      const refusal = recurrenceRefusal(body.recurrence);
+      if (refusal) return refusal;
     }
     if (body.link) {
       const l = String(body.link);
@@ -25663,6 +25664,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * so it is sent to `/` instead, keeping any query.
    */
   app.get("/index.html", (req, res) => {
+    // CodeQL js/server-side-unvalidated-url-redirection (alert 487) flags this;
+    // it is a false positive. The target is always "/" followed by the query,
+    // and the query starts at the "?" itself, so the location begins "/?" and
+    // can never be "//host" or a scheme: it stays on this origin whatever the
+    // request carried.
     const q = req.originalUrl.indexOf("?");
     res.redirect(301, q >= 0 ? `/${req.originalUrl.slice(q)}` : "/");
   });
