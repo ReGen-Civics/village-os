@@ -129,7 +129,10 @@ export default function HiddenMap() {
 
   const mine = pins.filter((p): p is PinView => !("dot" in p) && p.mine);
   const myPlantings = mine.filter((p) => p.layer === "planting");
-  const vouchedMine = myPlantings.filter((p) => p.vouches >= me.vouchesPerPin && !p.hidden);
+  // What the server counts toward opening: nothing before admission, and nothing at all while not admitted (QA P3-w-1).
+  const admitted = me.admitted !== false;
+  const counts = (p: PinView) => admitted && (!me.countsFrom || p.createdAt >= me.countsFrom);
+  const countingPlantings = myPlantings.filter(counts);
   const plantings = me.labels.planting;
   const meWithCounts: MapMe = { ...me, ownPlantings: myPlantings.length };
 
@@ -190,10 +193,11 @@ export default function HiddenMap() {
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h2 id="hm-meter" className={H2}>{t`Your first ${me.needed}`}</h2>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-chart-3">{t`${vouchedMine.length} vouched`}</span> · {t`${myPlantings.length} logged`}
+                  <span className="font-semibold text-chart-3">{t`${me.vouchedCount} vouched`}</span> · {t`${countingPlantings.length} logged`}
                 </p>
               </div>
-              <SevenMeter needed={me.needed} vouched={vouchedMine.length} logged={myPlantings.length} />
+              <SevenMeter needed={me.needed} vouched={me.vouchedCount} logged={countingPlantings.length} />
+              {!admitted && <p className={HINT}><Trans>Your places start counting once you are admitted to the village.</Trans></p>}
               <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground" aria-hidden="true">
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-chart-3" /><Trans>vouched</Trans></li>
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-primary" /><Trans>waiting for a vouch</Trans></li>
@@ -282,7 +286,7 @@ export default function HiddenMap() {
                             <span className="min-w-0 flex-1">
                               <span className="block truncate font-semibold text-foreground">{p.title || p.whatWentIn || p.kind}</span>
                               <span className={HINT}>
-                                {p.hidden ? t`Hidden by a keeper` : vouched ? t`${plural(p.vouches, { one: "Vouched", other: "Vouched by # members" })}` : t`Waiting for a vouch`}
+                                {p.hidden ? t`Hidden by a keeper` : p.layer === "planting" && !me.open && !counts(p) ? t`From before your admission, so it does not count toward opening the map` : vouched ? t`${plural(p.vouches, { one: "Vouched", other: "Vouched by # members" })}` : t`Waiting for a vouch`}
                               </span>
                             </span>
                           </button>

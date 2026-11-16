@@ -47,6 +47,11 @@ export interface WhoAmI {
   ownPins: number;
   /** True only on the read that recorded the opening: the moment to tell the member. */
   justOpened: boolean;
+  /**
+   * When pins start counting for this member: a time when the village marks
+   * admission, null while they are not yet admitted, undefined when it marks none.
+   */
+  countsFrom: Date | null | undefined;
 }
 
 /**
@@ -83,7 +88,7 @@ export async function whoAmI(
   const o = admitted ? opening(vouched, dials.unlockPins, opened) : { open: opened, vouchedCount: 0, needed: Math.max(0, Math.floor(dials.unlockPins)) };
   const justOpened = o.open && !opened;
   if (justOpened) await repo.recordOpening(pool, villageId, userId, vouched, o.needed, now);
-  return { viewer: { userId, open: o.open, keeper, admitted }, opening: o, ownPins, justOpened };
+  return { viewer: { userId, open: o.open, keeper, admitted }, opening: o, ownPins, justOpened, countsFrom: since };
 }
 
 /** The map as this viewer may read it. The SQL scope is the first wall; `visiblePin` is the second. */

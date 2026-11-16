@@ -406,7 +406,8 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-keep");
     expect((await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id: deckPin }, body: { seen: "call" } })).status).toBe(200);
     as("m-deck");
-    expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
+    const deckMe = (await call(h, "GET /api/hidden-map/me")).body;
+    expect(deckMe).toMatchObject({ open: false, admitted: false, countsFrom: null });
     await setVariable(pool as any, "hiddenmap.unlock_pins", "0");
     expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
     await setVariable(pool as any, "hiddenmap.unlock_pins", "1");
