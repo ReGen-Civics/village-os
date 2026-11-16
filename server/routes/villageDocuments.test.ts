@@ -34,7 +34,7 @@ import { recordCanvasReading } from "../repos/canvasReadings";
 import { canvasProposalById } from "../repos/canvasProposals";
 import { insertStoredDocument, markDocumentShared, notebookForExport, resourceFactsFor } from "../repos/villageDocuments";
 import { CANVAS_MEMBERS_ONLY } from "./canvas";
-import { DRAFT_AFTER_ADOPTION, MODEL_OWNER_ONLY, NO_MODEL, VILLAGE_PICK_REFUSAL, register } from "./villageDocuments";
+import { DRAFT_AFTER_ADOPTION, MODEL_DRAFTS_DAY_SPENT, MODEL_DRAFTS_HOUR_SPENT, MODEL_OWNER_ONLY, NO_MODEL, VILLAGE_PICK_REFUSAL, register } from "./villageDocuments";
 import { CANVAS_ORDER } from "../../shared/governanceCanvas";
 
 const configured = testDbConfigured();
@@ -55,6 +55,10 @@ let server: http.Server;
 let base = "";
 /** The key the owner's model road would use. Null means none is set. */
 let MEMBER_KEY: MemberKey | null = null;
+/** Buckets the limiter stand-in answers "over" for, by prefix, and every bucket it was asked. */
+const LIMITED: string[] = [];
+const LIMIT_ASKED: string[] = [];
+const LIMIT_MAX: number[] = [];
 /** What the model stand-in was sent, one entry per call. */
 const MODEL_CALLS: ModelDraftInput[] = [];
 /** What the model stand-in answers with. */
@@ -132,7 +136,11 @@ describe.skipIf(!configured)("a member's notebook, the picks and the export", ()
       },
       getPool: () => pool,
       firstName: (name: string) => String(name ?? "").trim().split(/\s+/)[0] ?? "",
-      overLimit: async () => false,
+      overLimit: async (key: string, max: number) => {
+        LIMIT_ASKED.push(key);
+        LIMIT_MAX.push(max);
+        return LIMITED.some((k) => key.startsWith(k));
+      },
       clientIp: () => "127.0.0.1",
       villageName: () => "Alder Hollow",
       memberKey: async () => MEMBER_KEY,
@@ -443,6 +451,38 @@ describe.skipIf(!configured)("a member's notebook, the picks and the export", ()
       expect(MODEL_CALLS.length).toBe(before);
       // The splitter sends nothing anywhere, so any reader may use it.
       expect((await call("POST", `/api/documents/${docId}/draft`, "other", { mode: "words" })).status).toBe(200);
+    });
+
+    // Security audit, 15 Nov 2026: one account's model drafts on the village's key are capped an hour and a day.
+    it("caps one account's model drafts on a shared key, and sends nothing once spent", async () => {
+      const had = process.env.PLATFORM_ASSISTANT_KEY;
+      process.env.PLATFORM_ASSISTANT_KEY = "platform-key-test";
+      MEMBER_KEY = null;
+      try {
+        const before = MODEL_CALLS.length;
+        LIMITED.length = 0;
+        LIMIT_ASKED.length = 0;
+        expect((await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).status).toBe(200);
+        expect(LIMIT_ASKED).toEqual([`documents-model-draft:${PEOPLE.owner.id}`, `documents-model-draft-day:${PEOPLE.owner.id}`]);
+        // The caps are village dials, 6 an hour and 12 a day by default.
+        expect(LIMIT_MAX.slice(-2)).toEqual([6, 12]);
+        LIMITED.push("documents-model-draft-day:");
+        expect(await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).toEqual({ status: 429, body: { error: MODEL_DRAFTS_DAY_SPENT } });
+        LIMITED.length = 0;
+        LIMITED.push("documents-model-draft:");
+        expect(await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).toEqual({ status: 429, body: { error: MODEL_DRAFTS_HOUR_SPENT } });
+        expect(MODEL_CALLS.length).toBe(before + 1);
+        // A member's own key pays its own allowance, so these caps are not asked.
+        LIMITED.length = 0;
+        LIMIT_ASKED.length = 0;
+        MEMBER_KEY = { provider: "anthropic", key: "sk-member-test" };
+        expect((await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).status).toBe(200);
+        expect(LIMIT_ASKED.filter((k) => k.startsWith("documents-model-draft"))).toEqual([]);
+      } finally {
+        LIMITED.length = 0;
+        if (had === undefined) delete process.env.PLATFORM_ASSISTANT_KEY;
+        else process.env.PLATFORM_ASSISTANT_KEY = had;
+      }
     });
   });
 

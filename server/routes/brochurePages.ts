@@ -16,7 +16,7 @@
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
-import { brochureHiddenPages, brochurePagesOn, updateBrochurePages } from "../lib/brochurePages";
+import { brochureHiddenPages, brochureOpenPages, brochurePagesOn, updateBrochurePages } from "../lib/brochurePages";
 import { brochurePatchProblem, type BrochurePatch } from "../../shared/brochure";
 
 type Deps = Pick<AppDeps, "isAdmin" | "guardCapability">;
@@ -26,7 +26,8 @@ export function register(app: Express, deps: Deps): void {
 
   app.get("/api/admin/brochure-pages", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
-    res.json({ enabled: brochurePagesOn(), hidden: brochureHiddenPages() });
+    const open = brochureOpenPages();
+    res.json({ enabled: brochurePagesOn(), hidden: brochureHiddenPages(), ...(open.length ? { open } : {}) });
   });
 
   app.put("/api/admin/brochure-pages", async (req, res) => {

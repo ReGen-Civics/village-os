@@ -23,6 +23,7 @@ import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
+import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
 // the active clock now, and it had no caller left here. `sceneStopsFor` and
@@ -201,7 +202,8 @@ import { claimRefusalFor } from "./lib/questClaimGate";
 import { ageBandOf } from "./repos/questSafety";
 import { MAP_REASON_FOR } from "../shared/questClaimGate";
 import { type ConsentActor, register as registerQuestClaimRoutes } from "./routes/questClaims";
-import { countInWindow, limitState, recordHit as recordRateHit } from "./repos/rateHits";
+import { countInWindow, limitState, recordHit as recordRateHit, type LimitState } from "./repos/rateHits";
+import { assistantDayCapPeek, assistantDayCapState, assistantDayRefusal } from "./lib/assistantDayCap";
 import { register as registerHousingRoutes } from "./routes/housing";
 import { register as registerJourneyRoutes } from "./routes/journey";
 import { keepFirstPlanIfUsed } from "./lib/commandCentrePlanDefault";
@@ -513,6 +515,7 @@ import { isMintRuleKey, parseMintRuleKey } from "../shared/mintRuleKeys";
 import {
   allTokens,
   tokenNameClash,
+  unusedTokenSlugs,
   RECOGNITION_FAUCET,
   balanceOf,
   balancesFor, PLATFORM_TOKEN, postPaymentReversalLeg,
@@ -657,7 +660,7 @@ import {
   treasuryStock,
   upsertSettings,
 } from "./lib/exchange";
-import { usersRepo } from "./repos/users";
+import { hasAnyRealUser, usersRepo } from "./repos/users";
 import { distributionsForMember, gratitudeCyclesRepo, gratitudeDistributionsRepo, gratitudeLogRepo } from "./repos/gratitude";
 import { grantsForMember, portraitsForMember } from "./repos/characterPortraits";
 import { charactersForMember } from "./repos/playerCharacters";
@@ -757,8 +760,9 @@ import {
 } from "./lib/villageReaders";
 import {
   ASSISTANT_MODES, DEFAULT_ASSISTANT_MODEL, borrowingPlatformKey, callAssistant, parseJsonReply, sanitizeMessages,
-  assistantOwnKeyReadiness, wireAssistant, type AssistantResult,
+  anonymousDaySlices, assistantOwnKeyReadiness, wireAssistant, type AssistantResult,
 } from "./lib/assistant";
+import { ipBucket } from "../shared/openProposals";
 import { recordAssistantUsage, type AssistantPath } from "./lib/assistantUsage";
 import { renderWeeklyBrief } from "./lib/assistantTemplates";
 import { guardedFetchJson } from "./lib/toolcheck";
@@ -966,6 +970,10 @@ import { resolveHyphaLinks } from "../shared/hypha";
 import { closePool, getPool } from "./db/pool";
 import { applyPending, connect as dbConnect } from "./db/migrate";
 import { startMaintenanceServer } from "./db/maintenanceMode";
+import { clientIpConfigFromEnv, clientIpModeLine, deriveClientIp } from "./lib/clientIp";
+import { decideAuthTokenSecretAtBoot } from "./lib/secretFloors";
+import { checkPasswordUniformly, dummyHash } from "./lib/passwordCheck";
+import { adminPasswordTooShort, passwordDoorThrottled, poolCounter, recordPasswordDoorFailure, SHORT_PASSWORD_ANSWER, shortPasswordLogLine } from "./lib/passwordDoors";
 import { alignTableCollations } from "./db/collation";
 import { dbCollection, dbDocument } from "./repos/store-db";
 import {
@@ -1084,11 +1092,12 @@ const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const PLACEHOLDER_ADMIN_PASSWORD = "change-me";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || PLACEHOLDER_ADMIN_PASSWORD;
 /**
- * Only the placeholder is refused — deliberately not a strength rule. What is
- * dangerous here is a credential ANYONE CAN READ IN THE SOURCE, not a short
- * one; a village that has chosen its own bootstrap word has made a decision,
- * and quietly overriding it would lock a founder out of their own deployment
- * at the exact moment they need break-glass access.
+ * The placeholder is refused here. Since audit S2 the two doors this password
+ * opens (bootstrap and the database export) also refuse one shorter than
+ * ADMIN_PASSWORD_MIN_LENGTH, LOUDLY, with a log line naming the variable, so a
+ * founder locked out by it is told exactly what to change. The earlier view
+ * that a short word was the village's own decision did not survive the export:
+ * that door hands out every member's data to whoever guesses it.
  */
 const adminPasswordIsUsable = ADMIN_PASSWORD !== PLACEHOLDER_ADMIN_PASSWORD;
 /**
@@ -1101,6 +1110,9 @@ const adminPasswordIsUsable = ADMIN_PASSWORD !== PLACEHOLDER_ADMIN_PASSWORD;
  * because each replica would sign with a different secret. Set
  * AUTH_TOKEN_SECRET in the environment for stable sessions.
  */
+// R113: a SET secret has a 32-character floor. What boot does about a short
+// one is decided in startServer once the database answers: a village in use
+// boots and warns, only a first start refuses. server/lib/secretFloors.ts.
 const AUTH_TOKEN_SECRET = process.env.AUTH_TOKEN_SECRET || crypto.randomBytes(32).toString("hex");
 if (!process.env.AUTH_TOKEN_SECRET) {
   console.warn(
@@ -1699,6 +1711,9 @@ async function initStores(): Promise<void> {
     // and nothing else.
     villageKey: () => getEmailConfig().assistant_api_key || process.env.ANTHROPIC_API_KEY || "",
     rateLimited: (bucket, max, windowMs) => overLimit(bucket, max, windowMs),
+    // Every assistant bucket guards spend, so it reads the guard's third
+    // answer and refuses when the guard cannot check (fail closed; audit 15 Nov).
+    limitState: (bucket, max, windowMs) => limitState(getPool(), bucket, max, windowMs),
   });
   if (borrowingPlatformKey()) {
     console.log("[assistant] no village key set: running on the platform key, with its own smaller daily allowance");
@@ -1817,7 +1832,7 @@ async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 }
 
-async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+async function verifyPassword(password: string, storedHash: string | null | undefined): Promise<boolean> {
   // Unsalted SHA-256 hashes are NOT accepted, as of 2026-09-19. They were kept
   // working so an existing member would be re-hashed to bcrypt on their next
   // sign-in, and that is why they persisted: the upgrade only ever reached
@@ -1827,12 +1842,13 @@ async function verifyPassword(password: string, storedHash: string): Promise<boo
   // string. Rye ruled that those accounts go through a password reset
   // instead. The set-password link is the door, and it works from any stored
   // hash, including an empty one.
-  try {
-    return await bcrypt.compare(password, storedHash);
-  } catch {
-    return false;
-  }
+  //
+  // The compare runs against a dummy hash when there is no usable one, so a
+  // missing account costs the same as a wrong password: server/lib/passwordCheck.ts.
+  return checkPasswordUniformly(password, storedHash, BCRYPT_SALT_ROUNDS);
 }
+// Made at boot, so the first unknown address is not the one slower request.
+void dummyHash(BCRYPT_SALT_ROUNDS);
 
 /**
  * Header only. Query-string and body fallbacks were removed: a password in a URL
@@ -4780,42 +4796,24 @@ async function recordHit(bucket: string): Promise<void> {
 }
 
 /**
- * How many proxies sit in front of this process. One on Railway, Fly, Render
- * and most PaaS; raise it if a fork puts its own CDN or load balancer ahead
- * of the platform's. Zero means the socket address IS the client.
+ * The caller's address: server/lib/clientIp.ts holds the rule and why (R105).
+ * X-Forwarded-For is read only as many hops as TRUSTED_PROXY_HOPS says, and
+ * only from a peer the mode trusts: on Railway the edge, the one way in, by
+ * default; everywhere else a private or loopback peer only, so a direct
+ * caller on a public address is answered by its socket address whatever
+ * header it sent. TRUSTED_PROXY_PEER=any or strict overrides either default.
+ * The chosen mode is logged once, here at boot, never per request.
  */
-const TRUSTED_PROXY_HOPS = Math.max(0, Number(process.env.TRUSTED_PROXY_HOPS ?? 1) || 0);
-
-/**
- * The caller's address, as far as anything we control can vouch for it.
- *
- * X-Forwarded-For grows left to right: each proxy APPENDS the address it
- * received the request from. So the rightmost entries are written by our own
- * infrastructure and the leftmost is whatever the original client sent —
- * which anyone can forge. Reading `split(",")[0]` therefore took the one
- * value in the header that is entirely attacker-controlled, and every rate
- * limit keyed on it (checkout attempts, sign-in throttling, the assistant's
- * cost cap, the abuse guard) could be reset to zero by changing a header.
- *
- * Counting in from the RIGHT by the number of proxies we actually run lands
- * on the address our own edge observed. Extra entries the client pre-seeded
- * sit to the left of it and are ignored.
- */
+const CLIENT_IP_CONFIG = clientIpConfigFromEnv();
+console.log(clientIpModeLine(CLIENT_IP_CONFIG));
 function clientIp(req: express.Request): string {
-  const raw = req.headers["x-forwarded-for"];
-  const chain = (Array.isArray(raw) ? raw.join(",") : String(raw ?? ""))
-    .split(",").map(s => s.trim()).filter(Boolean);
-  if (chain.length && TRUSTED_PROXY_HOPS > 0) {
-    // Fewer entries than hops means the header did not come through the
-    // chain we expect; the leftmost is then the least-bad answer available.
-    return chain[Math.max(0, chain.length - TRUSTED_PROXY_HOPS)];
-  }
-  return req.socket.remoteAddress ?? "unknown";
+  return deriveClientIp(req.headers["x-forwarded-for"], req.socket.remoteAddress, CLIENT_IP_CONFIG);
 }
 // Global daily call cap for the AI assistant, so a key can't run away with cost.
-async function assistantDailyCapReached(max: number): Promise<boolean> {
-  const today = new Date().toISOString().slice(0, 10);
-  return overLimit(`assistant-day:${today}`, max, 24 * 60 * 60 * 1000);
+// Fails CLOSED (audit, 15 Nov 2026): `unavailable` when the limiter cannot be
+// read, and both callers refuse on it (server/lib/assistantDayCap.ts).
+async function assistantDailyCapReached(max: number): Promise<LimitState> {
+  return assistantDayCapState((bucket, m, windowMs) => limitState(getPool(), bucket, m, windowMs), max);
 }
 
 /**
@@ -4829,9 +4827,8 @@ async function assistantDailyCapReached(max: number): Promise<boolean> {
  * records its hits per request it actually submits, one each, which is the
  * same accounting the Synthesize button does per click.
  */
-async function assistantDailyCapAtLimit(max: number): Promise<boolean> {
-  const today = new Date().toISOString().slice(0, 10);
-  return atLimit(`assistant-day:${today}`, max, 24 * 60 * 60 * 1000);
+async function assistantDailyCapAtLimit(max: number): Promise<LimitState> {
+  return assistantDayCapPeek((bucket, windowMs) => countInWindow(getPool(), bucket, windowMs), max);
 }
 
 /**
@@ -4978,6 +4975,18 @@ async function startServer() {
     } finally {
       await conn.end();
     }
+  }
+
+  // R113: a short AUTH_TOKEN_SECRET never takes a village in use down. It
+  // warns on every start and reads red on the launch journey; only a first
+  // start, with nobody in the database, refuses. A failed read boots.
+  {
+    const verdict = await decideAuthTokenSecretAtBoot(process.env, () => hasAnyRealUser(getPool()));
+    if (verdict.action === "refuse") {
+      console.error(verdict.line);
+      process.exit(1);
+    }
+    if (verdict.action === "warn") console.warn(verdict.line);
   }
 
   // S7: the token registry is the tokens TABLE; load it before any handler
@@ -5663,14 +5672,15 @@ async function startServer() {
     }
 
     let enqueued = "";
+    let dayPeek: LimitState = "under";
     const maxQueue = Number((moduleConfig("automation") as any)?.maxReadyQueue ?? 15);
     const [[queue]] = await getPool().query<any[]>(
       "SELECT COUNT(*) AS n FROM call_syntheses WHERE published_at IS NULL AND is_example = 0",
     );
     if (Number(queue.n) >= maxQueue) {
       enqueued = `; ready queue full at ${queue.n}`;
-    } else if (await assistantDailyCapAtLimit(600)) {
-      enqueued = "; daily cap reached";
+    } else if ((dayPeek = await assistantDailyCapAtLimit(600)) !== "under") {
+      enqueued = dayPeek === "unavailable" ? "; daily cap unreadable, nothing enqueued" : "; daily cap reached";
     } else {
       const room = Math.min(MAX_BATCH_SIZE, maxQueue - Number(queue.n));
       const inputs: BatchRecordingInput[] = [];
@@ -5688,7 +5698,7 @@ async function startServer() {
         // One hit per request that is actually going in, which is what the
         // Synthesize button spends per click. Charged here rather than at the
         // top of the tick so a tick that submits nothing costs nothing.
-        if (await assistantDailyCapReached(600)) { capped = true; break; }
+        if ((await assistantDailyCapReached(600)) !== "under") { capped = true; break; }
         inputs.push({
           recordingId: p.id,
           title: p.title,
@@ -7955,7 +7965,9 @@ async function startServer() {
       return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
     }
     const user = await members.byEmail(email);
-    if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    // One bcrypt compare on every attempt, a dummy hash when there is no
+    // account or no password, so the time taken names no address (R110).
+    if (!(await verifyPassword(password, user?.passwordHash)) || !user) {
       await recordHit(ipBucket);
       await recordHit(acctBucket);
       return res.status(401).json({ error: "Invalid credentials" });
@@ -7991,7 +8003,20 @@ async function startServer() {
           "Set ADMIN_PASSWORD to a value of your own in the environment, redeploy, and try again.",
       });
     }
+    // Audit S2: a floor on the password, and a GLOBAL budget of failures
+    // checked before the compare, so a pool of addresses shares one bound.
+    // server/lib/passwordDoors.ts.
+    if (adminPasswordTooShort(ADMIN_PASSWORD)) {
+      console.error(shortPasswordLogLine("bootstrap", ADMIN_PASSWORD.length));
+      return res.status(503).json({ error: SHORT_PASSWORD_ANSWER });
+    }
+    const doorCounter = poolCounter(getPool());
+    const doorIp = clientIp(req);
+    if (await passwordDoorThrottled(doorCounter, "bootstrap", doorIp)) {
+      return res.status(429).set("Retry-After", "3600").json({ error: "Too many attempts." });
+    }
     if (!secretEquals(String(password), ADMIN_PASSWORD)) {
+      await recordPasswordDoorFailure(doorCounter, "bootstrap", doorIp);
       return res.status(401).json({ error: "auth_required" });
     }
     const normEmail = String(email).trim().toLowerCase();
@@ -8154,7 +8179,7 @@ async function startServer() {
     resetPerIpHourly: () => numberVar("abuse.password_reset_per_ip_hourly"),
     recordAudit: recordAuthAudit,
   });
-  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify });
+  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify, stageName });
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
@@ -13779,9 +13804,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (Number(queue.n) >= maxQueue) {
       return res.status(409).json({ error: `The ready queue holds ${queue.n} unpublished syntheses. Publish or clear before drafting more (backpressure at ${maxQueue})` });
     }
-    if (await assistantDailyCapReached(600)) {
-      return res.status(429).json({ error: "The assistant's daily budget is spent. Try tomorrow" });
-    }
+    const dayRefusal = assistantDayRefusal(await assistantDailyCapReached(600));
+    if (dayRefusal) return res.status(dayRefusal.status).json({ error: dayRefusal.error });
     const apiKey = getEmailConfig().assistant_api_key || process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return res.status(503).json({ error: "The assistant is not configured (ANTHROPIC_API_KEY). Everything else keeps working" });
@@ -16046,7 +16070,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // The same rule the rename below enforces, and it has to be here too:
     // guarding only the rename leaves CREATE as an unguarded door to the
     // identical collision, reached by typing the name in the first time.
-    const createClash = tokenNameClash(String(name).trim(), cleanSlug);
+    const createClash = tokenNameClash(String(name).trim(), cleanSlug, { mirrorsShown: effectiveLifecycle("hypha") !== "off" });
     if (createClash) return res.status(409).json({ error: createClash });
     /*
      * 0092: `transferable` used to ride straight off the body with no
@@ -16944,15 +16968,21 @@ Send an empty drafts array when you are still listening. A role payload is {name
       shape,
       villageWords,
       fence: fenceForPrompt,
+      voice: guideVoiceOf(stringVar("guide.voice")),
     });
 
+    // Public intake. A signed-in caller counts on their own slice of the day
+    // (callAssistant adds it for a userId); a caller with no account counts on
+    // their address's and the strangers' slices, so strangers together cannot
+    // spend the day a signed-in applicant or member needs (audit, 15 Nov 2026).
+    const asker = await authedUser(req).catch(() => null);
+    const askerId = asker?.id ? String(asker.id) : null;
     const call = await callAssistant({
-      // Public intake. Nobody is signed in, so userId stays null: this is the
-      // one mode where a per-user ceiling could never mean anything.
-      mode: "proposal", system, messages, model: DEFAULT_ASSISTANT_MODEL, clientIp: clientIp(req), userId: null,
+      mode: "proposal", system, messages, model: DEFAULT_ASSISTANT_MODEL, clientIp: clientIp(req), userId: askerId,
+      ...(askerId ? {} : { daySlices: anonymousDaySlices("proposal", ipBucket(clientIp(req))) }),
     });
     // LANE Q: the write moved ABOVE the guard.
-    await noteAssistantUsage("proposal", DEFAULT_ASSISTANT_MODEL, call, null);
+    await noteAssistantUsage("proposal", DEFAULT_ASSISTANT_MODEL, call, askerId);
     if (!call.ok) return res.status(call.status).json({ error: call.error });
     const parsed = parseJsonReply<any>(call.text, {
       reply: call.text || "Tell me a little about what you'd like to bring to the village.",
@@ -18134,7 +18164,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const valueDef = tokenDef(valueSlug);
     res.json({
       project: m.project,
-      currency: { ...m.currency, value: { slug: valueSlug, name: valueDef?.name ?? valueSlug }, names: Object.fromEntries(allTokens().map((t) => [t.slug, t.name])) },
+      currency: { ...m.currency, value: { slug: valueSlug, name: valueDef?.name ?? valueSlug }, names: Object.fromEntries(allTokens().map((t) => [t.slug, t.name])), unused: unusedTokenSlugs(effectiveLifecycle("hypha") !== "off") }, // unused: G12, a token a member never sees
       images: m.images,
       ...servedPathWords(), // paths, with their sentences, and the ladder's name: server/lib/villagePaths.ts
       stages: servedLadder(mergedConfig().project.commitmentName),

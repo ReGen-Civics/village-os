@@ -137,6 +137,19 @@ export function allTokens(): TokenDef[] {
 }
 
 /**
+ * THE TOKENS A MEMBER NEVER SEES (gap G12): every token the village switched
+ * off, and every Hypha mirror while its bridge is off. A page that names a
+ * token as an example or an option leaves these out, so a village never reads
+ * the name of a token it does not use.
+ */
+export function unusedTokenSlugs(mirrorsShown: boolean): string[] {
+  return allTokens()
+    .filter((t) => !t.active || (t.governance === "hypha" && !mirrorsShown))
+    .map((t) => t.slug)
+    .sort();
+}
+
+/**
  * TWO TOKENS MAY NOT SHARE A DISPLAY NAME (Rye, 2026-08-15).
  *
  * Returns a refusal sentence, or null when the name is free. Shared by the
@@ -158,11 +171,15 @@ export function allTokens(): TokenDef[] {
  * that blocks the ordinary case gets removed rather than obeyed. This prevents
  * the collision, not the family resemblance.
  */
-export function tokenNameClash(name: string, exceptSlug: string): string | null {
+export function tokenNameClash(name: string, exceptSlug: string, opts?: { mirrorsShown?: boolean }): string | null {
   const wanted = name.trim().toLowerCase();
   if (!wanted) return null;
+  // A Hypha mirror whose bridge is off shows on no member surface (gap G12),
+  // so its Base name cannot collide with anything a member reads: a village
+  // that does not run the bridge may call its own Voice token "Voice".
+  const mirrorsShown = opts?.mirrorsShown ?? true;
   const clash = allTokens().find(
-    (t) => t.slug !== exceptSlug && t.name.trim().toLowerCase() === wanted,
+    (t) => t.slug !== exceptSlug && t.name.trim().toLowerCase() === wanted && (mirrorsShown || t.governance === "platform"),
   );
   if (!clash) return null;
   return clash.governance === "platform"

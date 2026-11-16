@@ -8,6 +8,7 @@
 import { Link } from "wouter";
 import { Rocket } from "lucide-react";
 import StewardSlatePicker, { type StewardCandidate } from "@/components/governance/StewardSlatePicker";
+import { useAppWords } from "@/hooks/useAppWords";
 
 /** What `/api/admin/launch` says about the launch vote itself (R74). */
 export interface LaunchVote {
@@ -70,6 +71,8 @@ export default function StartTheGame({
   /** What the server said when it refused the ask, shown on the card. */
   refusal: string;
 }) {
+  // The village may name its launch vote (gap G7); blank keeps the platform's name.
+  const launchName = useAppWords()("launch", "name") ?? "Start the Game";
   const running = vote?.openBallot ?? null;
   const shortOfPeople = !!vote?.tooFew;
   const governanceOff = vote?.governanceOn === false;
@@ -84,7 +87,7 @@ export default function StartTheGame({
       <div className="flex items-center gap-3 flex-wrap justify-between">
         <div>
           <p className="font-semibold text-stone-900 flex items-center gap-2">
-            <Rocket className="w-4 h-4 text-teal-deep" /> Start the Game
+            <Rocket className="w-4 h-4 text-teal-deep" /> {launchName}
           </p>
           {!running && governanceOff && (
             <p className="text-xs text-stone-700 mt-1 max-w-md">
