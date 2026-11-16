@@ -407,6 +407,14 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-sworn");
     expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
     admittedAt.set("m-sworn", new Date(Date.now() - 60_000));
+    // The vouch that completes the planter's count announces the opening at once (P3-11),
+    // before the planter looks at the map again.
+    const late = await plant("m-sworn");
+    as("m-keep");
+    await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id: late }, body: { seen: "in-person" } });
+    expect(told.filter((n) => n.userId === "m-sworn")).toHaveLength(1);
+    expect(stamped).toEqual(["m-sworn"]);
+    as("m-sworn");
     expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(true);
     await call(h, "GET /api/hidden-map/me");
     const notices = told.filter((n) => n.userId === "m-sworn");
