@@ -19,6 +19,14 @@ interface Sounds {
   files: Partial<Record<SoundMomentId, { ogg?: string; mp3?: string }>>;
 }
 
+/** Whatever the server answered, as the panel reads it: never a missing `files`. */
+function soundsFrom(d: unknown): Sounds {
+  const o = d && typeof d === "object" ? (d as Partial<Sounds>) : {};
+  const files = o.files && typeof o.files === "object" ? o.files : {};
+  const volume = typeof o.volume === "number" && o.volume >= 0 && o.volume <= 1 ? o.volume : 0.5;
+  return { volume, files };
+}
+
 export default function SoundsPanel({ password }: { password: string }) {
   const { t } = useLingui();
   const [sounds, setSounds] = useState<Sounds | null>(null);
@@ -27,7 +35,7 @@ export default function SoundsPanel({ password }: { password: string }) {
 
   const load = useCallback(async () => {
     const res = await fetch("/api/brand/sounds", { cache: "no-cache" }).catch(() => null);
-    setSounds(res?.ok ? await res.json() : { volume: 0.5, files: {} });
+    setSounds(soundsFrom(res?.ok ? await res.json().catch(() => null) : null));
   }, []);
   useEffect(() => {
     void load();
@@ -41,14 +49,14 @@ export default function SoundsPanel({ password }: { password: string }) {
     const res = await fetch("/api/admin/brand/sound", { method: "POST", headers: auth, body: form }).catch(() => null);
     const d = await res?.json().catch(() => null);
     if (!res?.ok) toast.error(d?.error ?? t`That sound did not save.`);
-    else setSounds(d.sounds);
+    else setSounds(soundsFrom(d?.sounds));
     setBusy(null);
   };
 
   const remove = async (moment: SoundMomentId) => {
     const res = await fetch(`/api/admin/brand/sound/${moment}`, { method: "DELETE", headers: auth }).catch(() => null);
     const d = await res?.json().catch(() => null);
-    if (res?.ok) setSounds(d.sounds);
+    if (res?.ok) setSounds(soundsFrom(d?.sounds));
   };
 
   const setVolume = async (volume: number) => {
@@ -58,7 +66,7 @@ export default function SoundsPanel({ password }: { password: string }) {
       body: JSON.stringify({ volume }),
     }).catch(() => null);
     const d = await res?.json().catch(() => null);
-    if (res?.ok) setSounds(d.sounds);
+    if (res?.ok) setSounds(soundsFrom(d?.sounds));
   };
 
   if (!sounds) return null;
