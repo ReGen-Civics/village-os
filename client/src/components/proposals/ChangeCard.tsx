@@ -1,0 +1,342 @@
+/**
+ * ONE PROPOSED CHANGE, AS A CARD (the lead, 16 Nov 2026). Drawn in the role card's hand: the kind in a gold-edged
+ * tile with its icon, the change in one sentence, where it lands with a door to see that page live, the plain
+ * flags, then the change itself as before and after:
+ *
+ *   page words, a role card, a setting   the fields it touches, changed ones only, word by word
+ *   season priorities                    the goals row by row: kept, moved, reworded, added, taken out
+ *   a calendar event                     a small event card, in village time
+ *   an FAQ taken down                    the question as it reads now, struck
+ *
+ * Three acts: Accept (through its own route, as the reader), Edit words (today's editor, in place) and Discard.
+ * A change that did not land keeps its reason on the card, in the route's own words.
+ *
+ * `DecidedCard` is the same card in the history: what went live (and what the reader changed first), or what was
+ * put aside, who decided and when.
+ */
+import { useState, type ReactNode } from "react";
+import { Bot, Check, ExternalLink, PenLine, UserRound, X } from "lucide-react";
+import type { I18n, MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/journey/look";
+import { faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
+import { fieldDiffs, valueAt } from "@shared/proposedChanges";
+import { EventCard, FieldDiffs, RowsDiff } from "./Diff";
+import { FACE_ICON, FLAG_ICON } from "./faces";
+import { Field, asText, nodePaths } from "./ProposalEditor";
+import type { Decided, Problem, Proposal, Where } from "./reviewTypes";
+
+/** What each kind of change and each flag is called, keyed by the unions so a new one fails the compiler. */
+const FACE_WORDS: Record<ChangeFace, MessageDescriptor> = {
+  page_words: msg({ message: "Page words", context: "proposed changes: kind of change" }),
+  role_card: msg({ message: "Role card", context: "proposed changes: kind of change" }),
+  faq: msg({ message: "FAQ", context: "proposed changes: kind of change" }),
+  village_setting: msg({ message: "Village setting", context: "proposed changes: kind of change" }),
+  module: msg({ message: "Module", context: "proposed changes: kind of change" }),
+  listed_roles: msg({ message: "Listed roles", context: "proposed changes: kind of change" }),
+  season_priorities: msg({ message: "Season priorities", context: "proposed changes: kind of change" }),
+  onboarding: msg({ message: "Onboarding path", context: "proposed changes: kind of change" }),
+  calendar_event: msg({ message: "Calendar event", context: "proposed changes: kind of change" }),
+  admin_setting: msg({ message: "Admin setting", context: "proposed changes: kind of change" }),
+};
+
+export const faceWords = (i18n: I18n, face: ChangeFace): string => i18n._(FACE_WORDS[face]);
+
+const FLAG_WORDS: Record<ChangeFlag, MessageDescriptor> = {
+  whole_document: msg({ message: "Replaces the whole document", context: "proposed changes: flag" }),
+  public_page: msg({ message: "Public page", context: "proposed changes: flag" }),
+  money_words: msg({ message: "Affects money words", context: "proposed changes: flag" }),
+  calendar_event: msg({ message: "Creates a calendar event", context: "proposed changes: flag" }),
+  priorities_links: msg({ message: "Changes priorities and their links", context: "proposed changes: flag" }),
+};
+
+export const flagWords = (i18n: I18n, flag: ChangeFlag): string => i18n._(FLAG_WORDS[flag]);
+
+export function dayWords(iso: string | null | undefined, zone: string, locale?: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  try {
+    return new Intl.DateTimeFormat(locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: zone }).format(d);
+  } catch {
+    return d.toLocaleDateString();
+  }
+}
+
+/** The kind's tile, as the role card draws a piece's icon. */
+export function FaceTile({ face, size = "md" }: { face: ChangeFace; size?: "sm" | "md" }) {
+  const Icon = FACE_ICON[face];
+  return (
+    <span className={`grid shrink-0 place-items-center rounded-xl border border-notice/50 bg-card text-notice ${size === "sm" ? "size-8" : "size-11"}`} aria-hidden="true">
+      <Icon className={size === "sm" ? "size-4" : "size-5"} />
+    </span>
+  );
+}
+
+export function Flags({ flags }: { flags: ChangeFlag[] }) {
+  const { i18n } = useLingui();
+  if (!flags.length) return null;
+  return (
+    <ul className="flex flex-wrap gap-1.5" data-testid="change-flags">
+      {flags.map((f) => {
+        const Icon = FLAG_ICON[f];
+        return (
+          <li key={f} className="inline-flex items-center gap-1.5 rounded-full border border-notice/50 px-2.5 py-1 text-xs font-semibold text-notice" data-flag={f}>
+            <Icon className="size-3.5" aria-hidden="true" />
+            {flagWords(i18n, f)}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+function WhereLine({ where, targetLabel: given }: { where?: Where; targetLabel: string }) {
+  // A setting's label is its route ("/api/admin/events"), which says nothing to a reader: the page name is enough.
+  const targetLabel = given.startsWith("/api/") ? "" : given;
+  return (
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+      <span>
+        {where ? <Trans context="proposed changes">Lands on {where.label}</Trans> : null}
+        {where && targetLabel && targetLabel !== where.label ? <span>{` · ${targetLabel}`}</span> : !where ? targetLabel : null}
+      </span>
+      {where?.href && (
+        <a href={where.href} target="_blank" rel="noopener noreferrer" className={`${LINK} inline-flex min-h-11 items-center gap-1`} data-testid="see-live">
+          <Trans context="proposed changes">See it live</Trans>
+          <ExternalLink className="size-3.5" aria-hidden="true" />
+        </a>
+      )}
+    </p>
+  );
+}
+
+function Head({ face, summary, targetLabel, where, flags, aside }: { face: ChangeFace; summary: string; targetLabel: string; where?: Where; flags: ChangeFlag[]; aside?: ReactNode }) {
+  const { i18n } = useLingui();
+  return (
+    <div className="flex min-w-0 items-start gap-3">
+      <FaceTile face={face} />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-notice" data-testid="change-kind">{faceWords(i18n, face)}</p>
+        <h3 className="break-words font-display text-xl leading-snug text-card-foreground">{summary}</h3>
+        <WhereLine where={where} targetLabel={targetLabel} />
+        <Flags flags={flags} />
+        {aside}
+      </div>
+    </div>
+  );
+}
+
+/** The change itself, as before and after, chosen by what it is. `before` is what is live; `after` what would be. */
+function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: { face: ChangeFace; kind: string; before: unknown; after: Record<string, unknown>; labels: Record<string, string>; zone: string; whole: boolean; plain?: boolean }) {
+  if (kind === "faq_remove") {
+    return (
+      <div className="rounded-xl border border-destructive/50 bg-destructive/5 p-3 sm:p-4" data-testid="faq-taken-down">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-destructive">
+          <Trans context="proposed changes">Taken down if you accept</Trans>
+        </p>
+        <p className="break-words text-muted-foreground line-through decoration-destructive decoration-2">{asText(valueAt(before, "question"))}</p>
+      </div>
+    );
+  }
+  if (face === "season_priorities") {
+    const b = goalLines(before).map((g) => g.text);
+    const a = goalLines(after).map((g) => g.text);
+    return plain ? <RowsDiff before={a} after={a} testId="goals-diff" /> : <RowsDiff before={b} after={a} testId="goals-diff" />;
+  }
+  if (face === "calendar_event") {
+    const changes = before && typeof before === "object" && !plain ? fieldChanges(before, after).filter((f) => f.changed) : [];
+    return (
+      <div className="space-y-3">
+        <EventCard body={after} zone={zone} />
+        {changes.length > 0 && <FieldDiffs fields={fieldChanges(before, after)} labels={labels} />}
+      </div>
+    );
+  }
+  return <FieldDiffs fields={plain ? fieldChanges(null, after).map((f) => ({ ...f, changed: true })) : fieldChanges(before, after, whole)} labels={labels} plain={plain} testId="field-diffs" />;
+}
+
+export interface ChangeCardProps {
+  change: Proposal;
+  body: Record<string, unknown>;
+  zone: string;
+  problems: Problem[];
+  saved?: "saving" | "saved" | "failed";
+  busy: boolean;
+  checkedPage: boolean;
+  onCheckedPage: (v: boolean) => void;
+  onEdit: (path: string, next: unknown) => void;
+  onAccept: () => void;
+  onDiscard: () => void;
+}
+
+export default function ChangeCard({ change: c, body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
+  const { t } = useLingui();
+  const [editing, setEditing] = useState(false);
+  const [json, setJson] = useState(false);
+  const face = faceOf(c.kind, c.route);
+  const flags = flagsOf(c.kind, c.route, c.target, body);
+  const whole = flags.includes("whole_document");
+  const edited = JSON.stringify(body) !== JSON.stringify(c.body);
+  const shown = nodePaths(body);
+  const loose = problems.filter((p) => !p.field || !shown.has(p.field) || !editing);
+  const editable = c.kind !== "faq_remove";
+  const editorId = `edit-${c.id}`;
+
+  return (
+    <article className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5" data-proposal={c.id} data-testid={`proposal-${c.id}`} aria-label={c.summary}>
+      <Head
+        face={face}
+        summary={c.summary}
+        targetLabel={c.targetLabel}
+        where={c.where}
+        flags={flags}
+        aside={
+          <p className={HINT}>
+            {edited && (
+              <span className={`${CHIP_SOFT} mr-2`}>
+                <Trans context="proposed changes">Edited by you</Trans>
+              </span>
+            )}
+            {saved === "saving" && <Trans context="proposed changes">Saving your edits</Trans>}
+            {saved === "saved" && <Trans context="proposed changes">Edits saved</Trans>}
+            {saved === "failed" && (
+              <span className="text-destructive">
+                <Trans context="proposed changes">Edits not saved</Trans>
+              </span>
+            )}
+          </p>
+        }
+      />
+
+      {c.status === "failed" && c.error && !problems.length && (
+        <p role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="last-try">
+          <Trans context="proposed changes">Last try did not land: {c.error}</Trans>
+        </p>
+      )}
+      {c.status === "unknown" && (
+        <div role="alert" className="space-y-2 rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {c.error && <p>{c.error}</p>}
+          <label className="flex min-h-11 items-center gap-2 text-foreground">
+            <input type="checkbox" className="size-5 accent-notice" checked={checkedPage} onChange={(e) => onCheckedPage(e.target.checked)} />
+            <Trans context="proposed changes">I checked its page, and this change is not there yet</Trans>
+          </label>
+        </div>
+      )}
+      {loose.map((p, i) => (
+        <p key={i} role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {p.error}
+        </p>
+      ))}
+
+      {editing ? (
+        <div id={editorId} className="rounded-xl border border-notice/40 p-3 sm:p-4">
+          <Field path="" value={body} proposed={c.body} live={c.live} labels={c.labels} problems={problems} onChange={onEdit} depth={0} idPrefix={c.id} />
+        </div>
+      ) : (
+        <ChangeBody face={face} kind={c.kind} before={c.live} after={body} labels={c.labels} zone={zone} whole={whole} />
+      )}
+
+      <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
+        <button type="button" className={BTN_PRIMARY} disabled={busy || (c.status === "unknown" && !checkedPage)} onClick={onAccept} data-testid={`accept-${c.id}`}>
+          <Check className="size-4" aria-hidden="true" />
+          {busy ? <Trans context="proposed changes">Working</Trans> : <Trans context="proposed changes">Accept</Trans>}
+        </button>
+        {editable && (
+          <button type="button" className={BTN_SECONDARY} onClick={() => setEditing((e) => !e)} aria-expanded={editing} aria-controls={editorId} data-testid={`edit-${c.id}`}>
+            <PenLine className="size-4" aria-hidden="true" />
+            {editing ? <Trans context="proposed changes">Done editing</Trans> : <Trans context="proposed changes">Edit words</Trans>}
+          </button>
+        )}
+        <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={onDiscard} data-testid={`discard-${c.id}`}>
+          <X className="size-4" aria-hidden="true" />
+          <Trans context="proposed changes">Discard</Trans>
+        </button>
+        <button type="button" className={`${LINK} ml-auto inline-flex min-h-11 items-center text-sm`} onClick={() => setJson((j) => !j)} aria-expanded={json}>
+          {json ? <Trans context="proposed changes">Hide JSON</Trans> : <Trans context="proposed changes">Show JSON</Trans>}
+        </button>
+      </div>
+      {json && (
+        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-border bg-background p-3 text-xs text-muted-foreground" aria-label={t({ message: "The change as JSON", context: "proposed changes" })}>
+          {`${c.route.method} ${c.route.path}\n${JSON.stringify(body, null, 2)}`}
+        </pre>
+      )}
+    </article>
+  );
+}
+
+/** Who proposed it, in words: an agent account named whole, a person by first name. */
+export function ByWho({ name, kind }: { name: string; kind?: "agent" | "person" }) {
+  const Icon = kind === "agent" ? Bot : UserRound;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <Icon className="size-3.5 text-notice" aria-hidden="true" />
+      {kind === "agent" ? <Trans context="proposed changes">{name}, an agent</Trans> : name}
+    </span>
+  );
+}
+
+/** A decided change, in the history. */
+export function DecidedCard({ d, zone }: { d: Decided; zone: string }) {
+  const { i18n } = useLingui();
+  const route = d.route ?? { method: "PUT", path: "" };
+  const kind = d.kind ?? "setting";
+  const face = faceOf(kind, route);
+  const proposed = d.body ?? {};
+  const accepted = d.accepted ?? null;
+  const took = d.status === "accepted";
+  const flags = flagsOf(kind, route, d.target ?? {}, accepted ?? proposed);
+  const when = dayWords(d.at, zone, i18n.locale);
+  const editedFields = took && accepted ? fieldDiffs(proposed, accepted).length : 0;
+  return (
+    <article className="min-w-0 space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-5" data-testid={`decided-${d.id}`} aria-label={d.summary}>
+      <Head
+        face={face}
+        summary={d.summary}
+        targetLabel={d.targetLabel}
+        where={d.where}
+        flags={flags}
+        aside={
+          <p className="flex flex-wrap items-center gap-2 text-sm">
+            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${took ? "bg-open/15 text-open" : "border border-border bg-muted text-muted-foreground"}`} data-testid="decided-status">
+              {took ? <Check className="size-3.5" aria-hidden="true" /> : <X className="size-3.5" aria-hidden="true" />}
+              {took ? <Trans context="proposed changes">Accepted by {d.by}</Trans> : <Trans context="proposed changes">Discarded by {d.by}</Trans>}
+            </span>
+            <span className="text-muted-foreground">{when}</span>
+            {took && d.edited > 0 && (
+              <span className={CHIP_SOFT}>
+                <Trans context="proposed changes">Edited before it went live</Trans>
+              </span>
+            )}
+          </p>
+        }
+      />
+      {d.error && (
+        <p className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="decided-error">
+          <Trans context="proposed changes">It did not land: {d.error}</Trans>
+        </p>
+      )}
+      {took && accepted && editedFields > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <Trans context="proposed changes">Proposed, then edited before it went live</Trans>
+          </p>
+          <ChangeBody face={face} kind={kind} before={proposed} after={accepted} labels={d.labels ?? {}} zone={zone} whole={false} />
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            {took ? <Trans context="proposed changes">What went live</Trans> : <Trans context="proposed changes">What was proposed</Trans>}
+          </p>
+          {kind === "faq_remove" ? (
+            <p className="text-foreground">
+              <Trans context="proposed changes">The FAQ comes down.</Trans>
+            </p>
+          ) : (
+            <ChangeBody face={face} kind={kind} before={null} after={(took ? accepted : null) ?? proposed} labels={d.labels ?? {}} zone={zone} whole={false} plain />
+          )}
+        </div>
+      )}
+    </article>
+  );
+}

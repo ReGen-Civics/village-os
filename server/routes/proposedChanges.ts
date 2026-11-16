@@ -32,7 +32,7 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { recordEvent } from "../lib/events";
 import { isAgentAccount } from "../repos/agentAccounts";
-import { applyProposal, checkProposal, labelsFor, liveOf, routeExistsIn, type KindDeps, type Run } from "../lib/proposedChanges";
+import { applyProposal, checkProposal, labelsFor, liveOf, routeExistsIn, whereOf, type KindDeps, type Run } from "../lib/proposedChanges";
 import * as store from "../repos/proposedChanges";
 import {
   ACCEPT_NOTE,
@@ -220,10 +220,24 @@ export function register(app: Express, deps: Deps): void {
     const kd = kindDeps();
     const run = runAs(req);
     const { batches, changes } = await store.listOpen(pool);
-    const decided = await store.listDecided(pool, 20);
+    const decided = await store.listDecided(pool, 40);
     const names = new Map<string, string>();
+    // An agent account is named whole ("Sera Companion"), so two agents never read as one; a person by first name.
+    const agentIds = new Set([...changes, ...decided].filter((c) => c.proposedByKind === "agent").map((c) => c.proposedBy));
     for (const id of Array.from(new Set([...changes, ...decided].flatMap((c) => [c.proposedBy, c.decidedBy ?? ""]).filter(Boolean)))) {
-      names.set(id, firstName((await members.byId(id))?.name));
+      const name = (await members.byId(id))?.name;
+      names.set(id, agentIds.has(id) ? String(name ?? "").trim() || "An agent" : firstName(name));
+    }
+    // The batches the decided changes came from, so the history names its batch.
+    const decidedBatches = new Map<string, store.StoredBatch>();
+    for (const id of Array.from(new Set(decided.map((c) => c.batchId)))) {
+      const b = batches.find((x) => x.id === id) ?? (await store.batchById(pool, id));
+      if (b) decidedBatches.set(id, b);
+    }
+    for (const b of [...batches, ...Array.from(decidedBatches.values())]) {
+      if (names.has(b.proposedBy)) continue;
+      const name = (await members.byId(b.proposedBy))?.name;
+      names.set(b.proposedBy, b.proposedByKind === "agent" ? String(name ?? "").trim() || "An agent" : firstName(name));
     }
     const served = [];
     for (const c of changes) {
@@ -239,6 +253,7 @@ export function register(app: Express, deps: Deps): void {
         draft: c.draft,
         live: await liveOf(kd, run, c.kind, c.target, c.draft ?? c.body),
         labels: labelsFor(c.kind, c.target, c.draft ?? c.body),
+        where: whereOf(c.kind, c.target),
         status: c.status,
         error: c.error,
         by: names.get(c.proposedBy) ?? "Someone",
@@ -247,9 +262,37 @@ export function register(app: Express, deps: Deps): void {
       });
     }
     res.set("Cache-Control", "no-store").json({
-      batches: batches.map((b) => ({ id: b.id, title: b.title, by: names.get(b.proposedBy) ?? firstName(""), at: b.createdAt })),
+      // Every time on the page is read in village time, named when it is not the reader's own.
+      timezone: deps.seasonState().timezone || "UTC",
+      batches: batches.map((b) => ({ id: b.id, title: b.title, by: names.get(b.proposedBy) ?? firstName(""), byKind: b.proposedByKind, at: b.createdAt })),
       changes: served,
-      decided: decided.map((c) => ({ id: c.id, summary: c.summary, targetLabel: c.targetLabel, status: c.status, by: names.get(c.decidedBy ?? "") ?? "Someone", at: c.decidedAt, edited: (c.lessons ?? []).length })),
+      // The history: what was proposed, what was accepted (the person's edits included), who decided and when, and
+      // the last reason a change did not land, which a discarded change keeps. What was live before is not kept.
+      decided: decided.map((c) => {
+        const b = decidedBatches.get(c.batchId);
+        return {
+          id: c.id,
+          batchId: c.batchId,
+          batchTitle: b?.title ?? "",
+          kind: c.kind,
+          target: c.target,
+          targetLabel: c.targetLabel,
+          route: { method: c.routeMethod, path: c.routePath },
+          summary: c.summary,
+          body: c.body,
+          accepted: c.accepted,
+          labels: labelsFor(c.kind, c.target, c.accepted ?? c.body),
+          where: whereOf(c.kind, c.target),
+          status: c.status,
+          error: c.error,
+          proposedBy: names.get(c.proposedBy) ?? "Someone",
+          proposedByKind: c.proposedByKind,
+          proposedAt: c.createdAt,
+          by: names.get(c.decidedBy ?? "") ?? "Someone",
+          at: c.decidedAt,
+          edited: (c.lessons ?? []).length,
+        };
+      }),
     });
   });
 

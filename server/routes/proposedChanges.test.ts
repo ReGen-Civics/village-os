@@ -204,6 +204,35 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     ]);
   });
 
+  it("the page reads where each change lands, the village's clock, who proposed a batch, and a history worth reading", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Cards", items: [PAGE, FAQ, DIAL] }, AGENT.id);
+    const [pageId, faqId, dialId] = filed.body.ids;
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.timezone).toBe("UTC");
+    expect(read.body.batches[0]).toEqual(expect.objectContaining({ title: "Cards", by: "Helper Agent", byKind: "agent" }));
+    const where = Object.fromEntries(read.body.changes.map((c: any) => [c.id, c.where]));
+    expect(where[pageId]).toEqual({ label: "Home page", href: "/" });
+    expect(where[faqId]).toEqual({ label: "Steward page", href: "/steward" });
+    expect(where[dialId]).toEqual({ label: "Admin, Variables", href: "/admin?tab=variables" });
+
+    // Accepted with an edit, and refused once by its route and then put aside.
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId, body: { hero: { headline: "A home on the land" } } }] });
+    refuse.add("/api/admin/variables/org.applicant_reply_days");
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id: dialId }] });
+    await call("POST", "/api/admin/proposals/discard", { ids: [dialId] });
+    const after = await call("GET", "/api/admin/proposals");
+    const page = after.body.decided.find((d: any) => d.id === pageId);
+    expect(page).toEqual(
+      expect.objectContaining({
+        batchTitle: "Cards", kind: "page_content", status: "accepted", by: "Fern", proposedBy: "Helper Agent", proposedByKind: "agent", edited: 1,
+        body: PAGE.body, accepted: { hero: { headline: "A home on the land" } }, where: { label: "Home page", href: "/" },
+        route: { method: "PUT", path: "/api/admin/content/page-home" },
+      }),
+    );
+    const dial = after.body.decided.find((d: any) => d.id === dialId);
+    expect(dial).toEqual(expect.objectContaining({ status: "discarded", error: "This needs the power to turn the village's dials.", accepted: null }));
+  });
+
   it("two accepts of the same change at once apply it once (audit, 15 Nov 2026)", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
     const id = filed.body.ids[0];
