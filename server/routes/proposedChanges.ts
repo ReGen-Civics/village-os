@@ -317,8 +317,16 @@ export function register(app: Express, deps: Deps): void {
       // The latest edits are kept even when the change fails, so fixing it starts from them.
       if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
       const kd = kindDeps();
-      const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-      const out = checked.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: checked.error, field: checked.field };
+      // A change that throws on its way to its route (the loopback timing out, a read that fails) is THIS change
+      // failing, recorded with its reason. It used to throw out of the loop: the answer was a 500 with no results,
+      // the page said nothing landed, and every change after it in the selection was never tried.
+      let out: { ok: true } | { ok: false; error: string; field?: string };
+      try {
+        const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
+        out = checked.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: checked.error, field: checked.field };
+      } catch (e) {
+        out = { ok: false, error: `${REVIEW_WORDS.unreached} ${String((e as Error)?.message ?? e).slice(0, 200)}` };
+      }
       if (!out.ok) {
         await store.markFailed(pool, id, uid, out.error);
         await recordEvent(pool, { kind: "proposed_change", text: `A proposed change did not land: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });

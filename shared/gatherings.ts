@@ -71,10 +71,93 @@ export interface OccurrenceOverride {
 export type Recurrence =
   | { freq: "weekly"; byWeekday: number[]; interval?: number; until?: string | null; exceptions?: string[]; overrides?: Record<string, OccurrenceOverride> }
   | { freq: "monthly"; byMonthDay: number; interval?: number; until?: string | null; exceptions?: string[]; overrides?: Record<string, OccurrenceOverride> }
+  | { freq: "monthly"; byNthWeekday: NthWeekday; interval?: number; until?: string | null; exceptions?: string[]; overrides?: Record<string, OccurrenceOverride> }
   | { freq: "lunar"; on: "new_moon" | "full_moon" | "cycle_close"; until?: string | null; exceptions?: string[]; overrides?: Record<string, OccurrenceOverride> }
   | { freq: "solar"; on: "solstice" | "equinox" | "either"; until?: string | null; exceptions?: string[]; overrides?: Record<string, OccurrenceOverride> };
 
 export const RECURRENCE_FREQS = ["weekly", "monthly", "lunar", "solar"] as const;
+
+/**
+ * Which week of the month a monthly-by-weekday rhythm keeps: 1 to 4 count
+ * from the month's start, -1 is the month's last. There is no 5: a fifth
+ * Friday exists in only some months, and "last" is what a village means.
+ */
+export const NTH_WEEKS = [1, 2, 3, 4, -1] as const;
+export type NthWeek = (typeof NTH_WEEKS)[number];
+
+/** "The first Friday": a week of the month and a weekday (0 = Sunday), in village time. RFC 5545's BYDAY=1FR. */
+export interface NthWeekday {
+  nth: NthWeek;
+  weekday: number;
+}
+
+export const isNthWeek = (v: unknown): v is NthWeek => NTH_WEEKS.includes(v as NthWeek);
+
+/**
+ * The day of the month (1-31) on which the nth weekday of a civil month
+ * falls, or null when that month has none. Pure calendar arithmetic on a
+ * civil year and month: no instants, so no time zone can move the answer.
+ * `month` is 1-based.
+ */
+export function nthWeekdayDay(year: number, month: number, rule: NthWeekday): number | null {
+  if (!isNthWeek(rule.nth) || !Number.isInteger(rule.weekday) || rule.weekday < 0 || rule.weekday > 6) return null;
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  if (rule.nth === -1) {
+    const lastWeekday = new Date(Date.UTC(year, month - 1, daysInMonth)).getUTCDay();
+    return daysInMonth - ((lastWeekday - rule.weekday + 7) % 7);
+  }
+  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+  const day = 1 + ((rule.weekday - firstWeekday + 7) % 7) + (rule.nth - 1) * 7;
+  return day <= daysInMonth ? day : null;
+}
+
+/**
+ * The monthly-by-weekday rules a civil date answers to, for a form that
+ * offers "every month on this day's weekday". The 6th of a month that is a
+ * Friday is the first Friday; the 27th can be both the fourth and the last.
+ * A 29th to 31st is only ever the last.
+ */
+export function nthWeekdayRulesFor(year: number, month: number, day: number): NthWeekday[] {
+  const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const out: NthWeekday[] = [];
+  const n = Math.ceil(day / 7);
+  if (n >= 1 && n <= 4) out.push({ nth: n as NthWeek, weekday });
+  if (day + 7 > daysInMonth) out.push({ nth: -1, weekday });
+  return out;
+}
+
+const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
+const NTH_WORDS: Record<NthWeek, string> = { 1: "first", 2: "second", 3: "third", 4: "fourth", [-1]: "last" };
+
+/** "first Friday", "last Sunday". */
+export function nthWeekdayLabel(rule: NthWeekday): string {
+  return `${NTH_WORDS[rule.nth] ?? ""} ${WEEKDAY_NAMES[rule.weekday] ?? ""}`.trim();
+}
+
+/**
+ * A rhythm in one plain line, for the calendar and the organiser's list.
+ * Null for no rhythm. English only for now, like the calendar's other labels.
+ */
+export function describeRecurrence(r: Recurrence | null | undefined): string | null {
+  if (!r) return null;
+  const every = (n: number | undefined, one: string, many: string) => (n && n > 1 ? `Every ${n} ${many}` : `Every ${one}`);
+  switch (r.freq) {
+    case "weekly":
+      return `${every(r.interval, "week", "weeks")} on ${r.byWeekday.map((d) => WEEKDAY_NAMES[d]).filter(Boolean).join(", ")}`;
+    case "monthly":
+      if ("byNthWeekday" in r) {
+        const label = nthWeekdayLabel(r.byNthWeekday);
+        const head = label.charAt(0).toUpperCase() + label.slice(1);
+        return r.interval && r.interval > 1 ? `${head} of every ${r.interval} months` : `${head} of every month`;
+      }
+      return `${every(r.interval, "month", "months")} on day ${r.byMonthDay}`;
+    case "lunar":
+      return r.on === "new_moon" ? "Every new moon" : r.on === "full_moon" ? "Every full moon" : "Every cycle close";
+    case "solar":
+      return r.on === "solstice" ? "Every solstice" : r.on === "equinox" ? "Every equinox" : "Every solstice and equinox";
+  }
+}
 
 export interface Gathering {
   id: string;

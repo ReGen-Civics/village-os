@@ -418,14 +418,14 @@ describe("QA2-07: Founding Seeders and volunteering are named among the other wa
 });
 
 describe("QA2-02: no second step one under the founding team", () => {
-  it("puts the roots inside Other ways to join, under Find your place in the game, with no Step one", async () => {
+  it("leaves the game behind one quiet door inside Other ways to join, with no Step one (design pass D-04, M3)", async () => {
     renderRoles();
     await screen.findByRole("region", { name: "Join the founding team" });
     const other = screen.getByRole("region", { name: "Other ways to join" });
     expect(within(other).getByRole("heading", { name: "Find your place in the game" })).toBeTruthy();
-    const roots = document.querySelector("[data-archetype-step]") as HTMLElement;
-    expect(roots.getAttribute("data-archetype-step")).toBe("nested");
-    expect(other.contains(roots)).toBe(true);
+    expect(within(other).getByRole("link", { name: /Explore the game/ }).getAttribute("href")).toBe("/roles/select");
+    // The roots live on /roles/select while the founding team leads.
+    expect(document.querySelector("[data-archetype-step]")).toBeNull();
     expect(document.body.textContent).not.toMatch(/Step one/i);
   });
   it("keeps Step one as the page's first step while the founding team is off (control)", async () => {
