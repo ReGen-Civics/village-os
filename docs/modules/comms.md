@@ -260,7 +260,7 @@ role, 16 Nov 2026: "a whole bunch of ways to come and play in the village in a b
   `bodyFromText` turns a letter's plain text into the frame's body and makes its addresses links.
 - **The block**, `renderComeAndPlay(ctx)` in `shared/comms/comeAndPlay.ts`, returns
   `{ html, text }`: a warm heading, up to six cards painted with the platform's module art
-  (`client/public/images/modules`, served from the village's own site; Outlook on Windows draws
+  (`server/assets/modules` at `/images/modules`, served from the village's own site; Outlook on Windows draws
   an emoji instead, because it cannot draw WebP), and one main button to the front page. A card
   shows only when its page opens for the reader: a module's card needs the module `public` for
   somebody with no account, or `members` too for a member; the newsletter card needs

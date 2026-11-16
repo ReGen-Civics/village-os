@@ -166,7 +166,7 @@ describe("Join the founding team", () => {
     expect(within(line).getByRole("link", { name: "See the roles opening next" }).getAttribute("href")).toBe("#opening-next");
     const next = await screen.findByRole("region", { name: "More roles, opening next" });
     expect(next.id).toBe("opening-next");
-    expect(next.textContent).toMatch(/You are welcome to apply for any of these now\. It may be a while before we reply/);
+    expect(next.textContent).toMatch(/so it may be a while before we reply\. You're welcome to apply now/);
     expect(within(next).getByRole("heading", { level: 3, name: "Village Cook" })).toBeTruthy();
     // Hear first (Rye, 15 Nov 2026): the community calls always; the newsletter only once the village has one.
     const hear = next.querySelector("[data-hear-first]") as HTMLElement;
@@ -230,7 +230,7 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(within(card).getByTestId("last-edited").textContent).toBe("Last edited by Mara on 11 November 2026"));
     // Piece by piece (Rye, 14 Nov): every piece is in the page, and one button opens them all.
     fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
-    expect(within(card).getByTestId("paid-role-line").textContent).toBe("This is a paid role");
+    expect(within(card).getByTestId("paid-role-line").textContent).toBe("This role is rewarded");
     expect(within(card).getByRole("heading", { name: "Ideal background" })).toBeTruthy();
     expect(within(card).getByRole("heading", { name: "Qualities we're looking for" })).toBeTruthy();
     // QA2-09: "Digital Companion" (capitalised) replaces the AI wording.
@@ -330,9 +330,9 @@ describe("QA2-16: each concept once on the founding card", () => {
       return el;
     });
   };
-  it("says paid once: the circle alone in the eyebrow, then This is a paid role", async () => {
+  it("says paid once: the circle alone in the eyebrow, then This role is rewarded", async () => {
     const card = await open();
-    await waitFor(() => expect(within(card).getByTestId("paid-role-line").textContent).toBe("This is a paid role"));
+    await waitFor(() => expect(within(card).getByTestId("paid-role-line").textContent).toBe("This role is rewarded"));
     expect(card.textContent).not.toMatch(/Paid role/);
     expect(card.querySelector("header p")?.textContent).toBe("Anchor Circle");
   });

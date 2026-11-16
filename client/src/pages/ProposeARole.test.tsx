@@ -424,7 +424,7 @@ describe("the six steps", () => {
     fireEvent.change(document.getElementById("value-r-gate-0-title") as HTMLInputElement, { target: { value: "Open the gate" } });
     pressNext();
     const list = (await screen.findByText(/things to look at before you continue/)).closest("[data-problems]") as HTMLElement;
-    expect(list.textContent).toContain("Say how we will know value 1 is done.");
+    expect(list.textContent).toContain("Say how we'll know value 1 is done.");
     expect(list.textContent).toContain("Choose the season goal value 1 serves.");
     await waitFor(() => expect(document.activeElement?.id).toBe("value-r-gate-0-done"));
     fireEvent.change(document.getElementById("value-r-gate-0-done") as HTMLInputElement, { target: { value: "at sunrise" } });
