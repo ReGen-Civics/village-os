@@ -23,6 +23,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { smallestUnit } from "@/lib/tokenAmount";
 import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
@@ -49,6 +50,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
   /** Called after a mint, a signature or a decline, so the caller can re-read what it shows. */
   onChanged?: () => void;
 }) {
+  const { t } = useLingui();
   const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "" });
   /** 0106: grants waiting for a second steward, and the ones already decided. */
   const [grants, setGrants] = useState<any[]>([]);
@@ -99,11 +101,12 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
        * moves nothing. Saying "Minted" here would be the product telling a
        * steward something that did not happen.
        */
-      if (data.pending) toast.success(data.message || "Recorded. Awaiting a second steward's sign-off");
-      else toast.success(`Minted: ${data.remaining} left under this cycle's cap`);
+      const remaining = data.remaining;
+      if (data.pending) toast.success(data.message || t`Recorded. Awaiting a second steward's sign-off`);
+      else toast.success(t`Minted: ${remaining} left under this cycle's cap`);
       setMint({ slug: "", toUserId: "", amount: "", reason: "" });
       changed();
-    } catch (e: any) { toast.error(e?.message || "Mint failed"); }
+    } catch (e: any) { toast.error(e?.message || t({ message: "Mint failed", context: "toast after a hand mint was refused" })); }
   };
 
   /** The SECOND steward agrees. The amount and token come from the record. */
@@ -116,15 +119,15 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
       });
       const data = await res.json();
       if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success("Signed. The grant is credited");
+      toast.success(t`Signed. The grant is credited`);
       changed();
-    } catch (e: any) { toast.error(e?.message || "Could not sign that grant"); }
+    } catch (e: any) { toast.error(e?.message || t`Could not sign that grant`); }
   };
 
   const declineGrant = async (id: string) => {
     // Null is the cancel and it has to survive: `?? ""` would turn Escape
     // into a decline with an empty reason.
-    const note = window.prompt("Why are you turning this down? The record keeps it.");
+    const note = window.prompt(t`Why are you turning this down? The record keeps it.`);
     if (note === null) return;
     try {
       const res = await fetch(`${API_BASE}/admin/mint-requests/${id}/decline`, {
@@ -134,46 +137,51 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
       });
       const data = await res.json();
       if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success("Turned down. The cap has its room back");
+      toast.success(t`Turned down. The cap has its room back`);
       changed();
-    } catch (e: any) { toast.error(e?.message || "Could not turn that grant down"); }
+    } catch (e: any) { toast.error(e?.message || t`Could not turn that grant down`); }
   };
+
+  const capWords = mintCap.toLocaleString();
+  const cosignWords = cosignOver.toLocaleString();
 
   return (
     <div className="space-y-6">
       <div className="border border-border rounded-xl p-5">
-        <h3 className="font-semibold text-foreground mb-1">Mint by hand</h3>
+        <h3 className="font-semibold text-foreground mb-1"><Trans context="heading of the hand-mint form">Mint by hand</Trans></h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Issues from the dedicated mint faucet, with a reason, audited. This village
-          can bring at most {mintCap.toLocaleString()} of a token into existence per
-          lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap).
-          {" "}{MINT_CAP_SCOPE} A busy month of stays or work-exchange quests can use
-          it up before anyone mints anything here.
-          {" "}Minting to your own account is refused.
+          <Trans>
+            Issues from the dedicated mint faucet, with a reason, audited. This village
+            can bring at most {capWords} of a token into existence per
+            lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap).
+          </Trans>
+          {" "}{MINT_CAP_SCOPE}{" "}
+          <Trans>A busy month of stays or work-exchange quests can use it up before anyone mints anything here.</Trans>
+          {" "}<Trans>Minting to your own account is refused.</Trans>{" "}
           {cosignOver > 0
-            ? ` A grant over ${cosignOver.toLocaleString()} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over).`
-            : " A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0)."}
+            ? <Trans>A grant over {cosignWords} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over).</Trans>
+            : <Trans>A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0).</Trans>}
         </p>
         <div className="flex flex-wrap items-center gap-2">
           <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
-            aria-label="Token to mint"
+            aria-label={t({ message: "Token to mint", context: "hand-mint form, token picker" })}
             className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
-            <option value="">Token…</option>
+            <option value=""><Trans context="hand-mint form, token picker placeholder">Token…</Trans></option>
             {tokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
           </select>
           <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
-            aria-label="Member to mint to"
+            aria-label={t({ message: "Member to mint to", context: "hand-mint form, member picker" })}
             className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
-            <option value="">Member…</option>
+            <option value=""><Trans context="hand-mint form, member picker placeholder">Member…</Trans></option>
             {members.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
           </select>
           <input value={mint.amount} onChange={(e) => setMint({ ...mint, amount: e.target.value })}
-            placeholder="Amount" type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-border rounded-lg px-3 py-2 w-28 bg-background text-foreground" />
+            placeholder={t({ message: "Amount", context: "hand-mint form, amount box" })} type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-border rounded-lg px-3 py-2 w-28 bg-background text-foreground" />
           <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
-            placeholder="Reason (required)" className="text-sm border border-border rounded-lg px-3 py-2 flex-1 min-w-48 bg-background text-foreground" />
+            placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className="text-sm border border-border rounded-lg px-3 py-2 flex-1 min-w-48 bg-background text-foreground" />
           <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
             className="min-h-11 text-sm bg-teal-deep text-white border border-border rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-            Mint
+            <Trans context="hand-mint form, submit button">Mint</Trans>
           </button>
         </div>
       </div>
@@ -185,10 +193,12 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
       */}
       {grants.length > 0 && (
         <div className="border border-border rounded-xl p-5">
-          <h3 className="font-semibold text-foreground mb-1">Grants and their signatures</h3>
+          <h3 className="font-semibold text-foreground mb-1"><Trans context="heading of the hand-mint grants record">Grants and their signatures</Trans></h3>
           <p className="text-xs text-muted-foreground mb-3">
-            A grant over the threshold moves nothing until a second steward agrees.
-            Whoever asked for it cannot be the one who signs it.
+            <Trans>
+              A grant over the threshold moves nothing until a second steward agrees.
+              Whoever asked for it cannot be the one who signs it.
+            </Trans>
           </p>
           <div className="space-y-2">
             {grants.map((g) => (
@@ -213,11 +223,11 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
                   <div className="flex items-center gap-2">
                     <button onClick={() => signGrant(g.id)}
                       className="min-h-11 text-sm bg-teal-deep text-white border border-border rounded-lg px-3 py-2 font-medium">
-                      Sign it
+                      <Trans context="hand-mint grants record, approve a grant">Sign it</Trans>
                     </button>
                     <button onClick={() => declineGrant(g.id)}
                       className="min-h-11 text-sm border border-border text-foreground rounded-lg px-3 py-2 font-medium">
-                      Turn it down
+                      <Trans context="hand-mint grants record, decline a grant">Turn it down</Trans>
                     </button>
                   </div>
                 )}

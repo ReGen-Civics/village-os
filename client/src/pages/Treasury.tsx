@@ -24,6 +24,7 @@
  */
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
+import { Trans } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
@@ -121,7 +122,7 @@ export default function Treasury() {
             <section className={CARD}>
               <p className={HINT}>
                 {TREASURY_WORDS.noneHeld}{" "}
-                <Link href="/powers" className={LINK}>What We Look After</Link>
+                <Link href="/powers" className={LINK}><Trans context="link to the powers page">What We Look After</Trans></Link>
               </p>
             </section>
           ) : (
