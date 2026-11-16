@@ -17,8 +17,12 @@
  * them for anyone who decides, and nothing it writes is kept by the village
  * unless the applicant uses it as their own answer.
  *
+ * The notice names who reads the words (AI_DRAFT_SERVICE, the same name the
+ * machine translation notice reads), so an applicant knows before pressing.
+ *
  * Pure, so the page and the server import it alike.
  */
+import { AI_DRAFT_SERVICE } from "./aiDraftService";
 
 /** The most of what was heard that goes to the AI. */
 export const VOICE_DRAFT_INPUT_MAX = 8000;
@@ -41,7 +45,7 @@ export interface VoiceDraft {
 
 export const VOICE_DRAFT_WORDS = {
   button: "Draft my answers from what I said",
-  sends: "This sends the words above (never your recording) and the role you are applying for to an AI, which writes a first draft of your answers for you to edit. Nothing else goes: not your name, email, references, links or files. No AI takes part in choosing.",
+  sends: `This sends the words above (never your recording) and the role you are applying for to ${AI_DRAFT_SERVICE}, an AI, which writes a first draft of your answers for you to edit. Nothing else goes: not your name, email, references, links or files. No AI takes part in choosing.`,
   working: "Writing your first drafts. You can keep going while you wait.",
   heading: "Your answers, drafted from what you said",
   hint: "Edit anything, then press Use this to put it in your application. Only empty answers get a draft; your own words stay as they are.",
@@ -56,6 +60,7 @@ export const VOICE_DRAFT_WORDS = {
   nothing: "We couldn't draft anything from that. Your words are kept above; type your answers, or record a little more.",
   unavailable: "Drafting isn't available right now. Your words are kept above, and you can type your answers.",
   tooMany: "That's a lot of drafting for one hour. Type your answers, or try again later.",
+  tryShortly: "Drafting can't start just now. Your words are kept above. Try again shortly, or type your answers.",
   closed: "Applications aren't open right now.",
   pickRole: "Choose the role you are applying for first.",
 } as const;

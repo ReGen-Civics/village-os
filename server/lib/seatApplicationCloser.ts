@@ -444,7 +444,7 @@ export async function tellOutcome(deps: NoticeDeps, app: StoredApplication, outc
     for (const s of outcome.seated) {
       const name = names[app.seatIds.indexOf(s.seatId)] ?? s.seatId;
       // The same type and key grammar every seating door uses, keyed on this seating.
-      const title = s.renewed ? `Your role as ${name} was renewed on your new terms` : `You were seated as ${name}`;
+      const title = s.renewed ? `Your role as ${name} was renewed on your new terms` : `You took up the role of ${name}`;
       await deps.notify({ userId: app.candidateUserId, type: "role_appointed", title, body: null, link, actorUserId: actorId, dedupeKey: `org-seat:${s.assignmentId}` });
       // The role has started: one grant task per item on its card (L8). Best effort; the seating stands.
       // A renewal on new terms is the same person in the same role: the access they hold stays.

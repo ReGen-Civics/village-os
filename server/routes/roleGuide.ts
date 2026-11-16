@@ -45,6 +45,8 @@ import { guideStateFor } from "./guideChoice";
 import { register as registerRoleDiscover } from "./roleDiscover";
 import { register as registerProposalDrafts } from "./proposalDrafts";
 import { guidePromptName } from "@shared/guideName";
+import { guideVoiceOf } from "@shared/guideVoice";
+import { stringVar } from "../lib/variables";
 import type { GuideAnswer, RoleGuideStep } from "@shared/roleGuide";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "clientIp" | "overLimit" | "members" | "seasonState" | "mayAct"> & {
@@ -152,7 +154,8 @@ export function register(app: Express, deps: Deps): void {
     const call = await callAssistant({
       mode: "roleGuide",
       // The prompt's own form of the name: "You are your village guide" is not a sentence.
-      system: guideSystemPrompt(sera ? answering.name : guidePromptName(villageGuideName()), villageName()),
+      // Sera speaks in her own voice; only the village guide reads the village's.
+      system: guideSystemPrompt(sera ? answering.name : guidePromptName(villageGuideName()), villageName(), sera ? "" : guideVoiceOf(stringVar("guide.voice"))),
       messages: [{ role: "user", content: "Read what the village knows and suggest my card." }],
       model: DEFAULT_ASSISTANT_MODEL,
       clientIp: clientIp(req),

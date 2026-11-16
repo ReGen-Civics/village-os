@@ -44,6 +44,7 @@ import {
   ToolsCategoriesEditor,
 } from "@/components/admin/ModuleConfigPanels";
 import SaberraConfigPanel from "@/components/admin/SaberraConfigPanel";
+import ProtocolsEditor from "@/components/admin/ProtocolsEditor";
 import HiddenMapConfigPanel from "@/components/admin/HiddenMapConfigPanel";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 
@@ -101,6 +102,8 @@ const CONFIG_PANELS: Record<string, (p: { password: string }) => ReactElement> =
   // pointed at nothing until this panel existed: the two addresses, the
   // connection, and the one button that pulls.
   saberra: SaberraConfigPanel,
+  // The checklists themselves, their import, and the install card's switch.
+  protocols: ProtocolsEditor,
   // The map's name, its layers' words and kinds, and the two quests that pay (QA pass 5, P5-19).
   "hidden-map": HiddenMapConfigPanel,
 };

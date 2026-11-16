@@ -23,6 +23,18 @@ export function useTokenNameFor(slug: string, fallback = "credits"): string {
   return String(cfg?.currency?.names?.[slug] ?? "").trim() || fallback;
 }
 
+/**
+ * Whether a member can see this token at all (gap G12): false for a token the
+ * village switched off, and for a Hypha mirror while its bridge is off. A page
+ * that names tokens as examples or options names only these. True while the
+ * config loads, so nothing flickers out and back.
+ */
+export function useTokenInUse(slug: string): boolean {
+  const cfg = useGameConfig();
+  const unused: unknown = cfg?.currency?.unused;
+  return !(Array.isArray(unused) && unused.includes(slug));
+}
+
 /** The same, for a plain function that is handed the map (one read, many slugs). */
 export function useTokenNameMap(): Record<string, string> {
   const cfg = useGameConfig();

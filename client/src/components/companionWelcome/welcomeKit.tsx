@@ -12,6 +12,15 @@ import type { Character } from "@shared/companionPersona";
 import { msg } from "@lingui/core/macro";
 import { pickBrowserVoice } from "@/lib/voice/pickBrowserVoice";
 
+/**
+ * WHERE THE SPOKEN WORDS GO (coordinator, 15 Nov 2026). The voice picker
+ * (lib/voice/pickBrowserVoice.ts) prefers Edge's Natural voices and Chrome's
+ * Google voices, which are online voices: the browser sends the words to be
+ * spoken to its own service. Said wherever speaking aloud is offered, beside
+ * MIC_LINE, which says the same of the mic.
+ */
+export const SPEAK_LINE = msg({ message: "Speaking aloud may use your browser's online voice (Google or Microsoft), which sends the words I say to that service. Quiet keeps them on your screen only.", context: "companion welcome, the spoken voice" });
+
 export const MIC_LINE = msg({ message: "The mic uses your browser's speech service (Google, Apple or Microsoft) to turn speech into text. Typing always works.", context: "companion welcome, the mic" });
 
 /** The egg's colour and the hatched pet's body follow the character (the Hatchery mockup). */
