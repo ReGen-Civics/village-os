@@ -85,6 +85,8 @@ CREATE TABLE IF NOT EXISTS `hidden_map_vouches` (
   `voucher_user_id` varchar(64) NOT NULL,
   -- open (their own map had opened) or keeper (the bootstrap power).
   `basis` varchar(8) NOT NULL,
+  -- How the voucher saw it: in-person, call or photos.
+  `seen` varchar(16) NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `withdrawn_at` datetime NULL,
   PRIMARY KEY (`village_id`, `pin_id`, `voucher_user_id`),

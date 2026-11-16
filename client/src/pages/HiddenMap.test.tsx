@@ -59,7 +59,7 @@ const base = {
   teaser: false,
   precisions: ["exact", "km", "region"],
   vouchesPerPin: 1,
-  plantingPays: false,
+  plantingPays: false, vouchWays: ["in-person", "call", "photos"], vouchRule: "Vouch for what you know.",
   openedAt: null,
   openedBefore: 0,
 };

@@ -90,8 +90,15 @@ const call = async (handlers: Map<string, Handler>, key: string, req: any = {}) 
   return out;
 };
 
-function deps(pool: any, who: () => string | null, seats: { keep: Set<string>; export: Set<string> }, photoDir: string) {
+function deps(
+  pool: any,
+  who: () => string | null,
+  seats: { keep: Set<string>; export: Set<string> },
+  photoDir: string,
+  extra: { admission?: (id: string) => Promise<Date | null | undefined>; notify?: (n: any) => Promise<any> } = {},
+) {
   return {
+    ...extra,
     authedUser: async () => (who() ? { id: who() } : null),
     capabilityCtx: async (user: any) => ({
       stageIndex: -1,
@@ -223,7 +230,7 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     expect((await call(handlers, "GET /api/hidden-map/pins/:id", { params: { id: first } })).status).toBe(404);
     const queue = await call(handlers, "GET /api/hidden-map/vouch-queue");
     expect(queue.body.pins).toEqual([]);
-    expect((await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first } })).status).toBe(404);
+    expect((await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first }, body: { seen: "in-person" } })).status).toBe(404);
   });
 
   it("an administrator is not a keeper: the queue is for the seat", async () => {
@@ -234,7 +241,7 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
 
   it("refuses a self-vouch", async () => {
     as("m-plant");
-    const out = await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first } });
+    const out = await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first }, body: { seen: "in-person" } });
     expect(out.status).toBe(409);
   });
 
@@ -245,7 +252,7 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     expect(queued).toBeTruthy();
     expect(queued.mine).toBe(false);
     expect(JSON.stringify(queue.body)).not.toContain("m-plant");
-    const v = await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first } });
+    const v = await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: first }, body: { seen: "in-person" } });
     expect(v.status).toBe(200);
     expect(v.body.vouches).toBe(1);
     const after = await call(handlers, "GET /api/hidden-map/vouch-queue");
@@ -263,15 +270,15 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     // Only plantings wait in the queue, and a keeper whose map is closed cannot reach a stop at all.
     const queue = await call(handlers, "GET /api/hidden-map/vouch-queue");
     expect(queue.body.pins.map((p: any) => p.id)).not.toContain(stop);
-    expect((await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: stop } })).status).toBe(404);
-    for (const id of ids.slice(1, 6)) await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id } });
+    expect((await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: stop }, body: { seen: "in-person" } })).status).toBe(404);
+    for (const id of ids.slice(1, 6)) await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
     as("m-plant");
     let me = await call(handlers, "GET /api/hidden-map/me");
     expect(me.body).toMatchObject({ open: false, vouchedCount: 6, needed: 7 });
     expect(typeof me.body.allPins).toBe("number");
     expect(JSON.stringify(me.body)).not.toMatch(/40\.1/);
     as("m-keep");
-    await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: ids[6] } });
+    await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: ids[6] }, body: { seen: "in-person" } });
     as("m-plant");
     me = await call(handlers, "GET /api/hidden-map/me");
     expect(me.body).toMatchObject({ open: true, vouchedCount: 7, needed: 7, vouchesPerPin: 1, openedBefore: 0 });
@@ -357,6 +364,57 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     expect(geo.features.every((f: any) => f.properties.precision !== "exact")).toBe(true);
     expect(file.body).not.toMatch(/m-plant|m-new|hmf-/);
     expect((await call(handlers, "GET /api/hidden-map/exports/:id/download", { params: { id } })).status).toBe(409);
+    await setVariable(pool as any, "hiddenmap.unlock_pins", "7");
+  });
+
+  it("refuses a vouch that does not say how it was seen", async () => {
+    const id = await logPin("m-new", { title: "Seen how?" });
+    as("m-plant");
+    const out = await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id } });
+    expect(out.status).toBe(400);
+    expect(out.body.error).toMatch(/in-person, call, photos/);
+  });
+
+  it("with an admission hook: nothing counts before admission, the unadmitted neither open nor vouch, and the opening is told once", async () => {
+    // A second register over the same schema, with the hook and the bell, for members this test owns.
+    const admittedAt = new Map<string, Date | null>([["m-deck", null], ["m-sworn", new Date(Date.now() + 1000)]]);
+    const told: any[] = [];
+    const c = collect();
+    register(c.app, deps(pool, () => whoami, seats, photoDir, {
+      admission: async (id) => (admittedAt.has(id) ? admittedAt.get(id)! : undefined),
+      notify: async (n) => { told.push(n); return { ok: true }; },
+    }));
+    const h = c.handlers;
+    const plant = async (who: string) => {
+      as(who);
+      return (await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id as string;
+    };
+    await setVariable(pool as any, "hiddenmap.unlock_pins", "1");
+    // Not yet admitted: a vouched planting does not open the map, a zero dial does not either, and they cannot vouch.
+    const deckPin = await plant("m-deck");
+    as("m-keep");
+    expect((await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id: deckPin }, body: { seen: "call" } })).status).toBe(200);
+    as("m-deck");
+    expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
+    await setVariable(pool as any, "hiddenmap.unlock_pins", "0");
+    expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
+    await setVariable(pool as any, "hiddenmap.unlock_pins", "1");
+    const someone = await plant("m-new");
+    as("m-deck");
+    expect((await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id: someone }, body: { seen: "in-person" } })).status).toBe(404);
+    // Admitted a moment from now: a pin logged before admission does not count; one logged after does.
+    const early = await plant("m-sworn");
+    as("m-keep");
+    await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id: early }, body: { seen: "in-person" } });
+    as("m-sworn");
+    expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(false);
+    admittedAt.set("m-sworn", new Date(Date.now() - 60_000));
+    expect((await call(h, "GET /api/hidden-map/me")).body.open).toBe(true);
+    await call(h, "GET /api/hidden-map/me");
+    const notices = told.filter((n) => n.userId === "m-sworn");
+    expect(notices).toHaveLength(1);
+    expect(notices[0]).toMatchObject({ type: "hidden_map_opened", link: "/hidden-map", dedupeKey: "hidden-map-opened:m-sworn" });
+    expect(JSON.stringify(notices[0])).not.toMatch(/\d+\.\d{3,}/);
     await setVariable(pool as any, "hiddenmap.unlock_pins", "7");
   });
 

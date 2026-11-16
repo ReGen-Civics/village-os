@@ -56,6 +56,16 @@ Not built yet:
 - **Shown precision:** per pin, exact, about 1 km, or about 50 km. It is the finest anybody outside the open members
   is ever shown. Coarse points snap to the centre of a fixed grid cell (0.01 or 0.5 degrees), never random jitter.
 
+## Vouching and admission
+
+- **A vouch says how it was seen:** in person, on a live call, or from the photos. The village chooses which ways count
+  and writes the rule a voucher reads (module settings `vouchWays`, `vouchRule`). The way is kept on the vouch, and no
+  voucher is ever named beside a pin.
+- **Admission (optional).** A module that records when a member is admitted (a rite, an oath) passes an `admission`
+  hook to this module's routes. Then a pin counts toward opening only from that moment, and a member not yet admitted
+  neither opens the map (a dial of zero included) nor vouches. Without the hook, everything counts as before.
+- **The opening is told once,** as a `hidden_map_opened` notice with no place in it.
+
 ## Who sees what
 
 One function decides it, `visiblePin` in `shared/hiddenMap.ts`, and every read calls it.
