@@ -30,6 +30,7 @@ import { makeInviteDoor } from "../lib/inviteDoor";
 import { hashInviteToken, INVITE_DAYS, mintInviteToken } from "../lib/invites";
 import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { claimInvite, createInviteOn } from "../repos/memberInvites";
+import { loadTokenRegistry } from "../lib/ledger";
 import { register, stampRiteFromModule } from "./rites";
 
 const configured = testDbConfigured();
@@ -45,14 +46,17 @@ const CONFIG = {
   ],
   welcome: { doors: [{ id: "rent", title: "Rent a week" }, { id: "buy", title: "Buy in", interestOnly: true }] },
   door: { title: "A member gave you this." },
+  tokens: { record: "rec-tok" },
 };
 
-type Person = { id: string; name: string; email: string; tokenVersion: number; membershipGranted: boolean; isExample?: boolean };
+type Person = { id: string; name: string; email: string; tokenVersion: number; membershipGranted: boolean; isExample?: boolean; role?: string };
 const people: Person[] = [
   { id: "u-ada", name: "Ada Stone", email: "ada@example.test", tokenVersion: 0, membershipGranted: true },
   { id: "u-bo", name: "Bo Reed", email: "bo@example.test", tokenVersion: 0, membershipGranted: true },
   { id: "u-cy", name: "Cy Moss", email: "cy@example.test", tokenVersion: 0, membershipGranted: false },
   { id: "u-di", name: "Di Fern", email: "di@example.test", tokenVersion: 0, membershipGranted: false },
+  // A fresh village's founder: claimed, never admitted by any vouch or letter (QA P5-03).
+  { id: "u-fay", name: "Fay Root", email: "fay@example.test", tokenVersion: 0, membershipGranted: false, role: "founder" },
 ];
 const byId = (id: string) => people.find((p) => p.id === id) ?? null;
 
@@ -80,6 +84,10 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     for (const p of people) {
       await pool.query("INSERT INTO users (id, name, email, password_hash, paths, membership_granted) VALUES (?, ?, ?, 'x', '[]', ?)", [p.id, p.name, p.email, p.membershipGranted ? 1 : 0]); // module-review-ok: fixture SQL against the S5 scratch schema
     }
+    // A record token kept in hundredths, as a 2-decimal token is on the ledger (QA P5-17).
+    await pool.query("INSERT IGNORE INTO tokens (slug, name, kind, decimals) VALUES ('rec-tok', 'Record Tokens', 'recognition', 2)"); // module-review-ok: fixture SQL against the S5 scratch schema
+    await pool.query("INSERT INTO token_balances (account_id, token_type, balance) VALUES ('mem:u-ada', 'rec-tok', 777700)"); // module-review-ok: fixture SQL against the S5 scratch schema
+    await loadTokenRegistry(pool);
     await loadModuleSettings(pool);
     await setModuleLifecycle("rites", "public", null, { sharedPasswordPosture: () => false });
     const set = await setModuleConfig("rites", CONFIG, null);
@@ -180,6 +188,9 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     const joined = await call("POST", `/api/rites/ceremonies/${id}/witness`, { via: "call" });
     expect(joined.status).toBe(200);
     expect(joined.body.witnesses).toMatchObject([{ id: "u-bo", via: "call", confirmed: false }]);
+    // A founder nobody admitted witnesses too, while nobody is sworn (QA P5-03).
+    as("u-fay");
+    expect((await call("POST", `/api/rites/ceremonies/${id}/witness`, { via: "present" })).status).toBe(200);
 
     // Lines in order, from the candidate only; the witness waits for the lines and the mark.
     expect((await call("POST", `/api/rites/ceremonies/${id}/spoken`, { line: 0 })).status).toBe(409);
@@ -200,6 +211,8 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     const card = await call("GET", "/api/rites/me");
     expect(card.body.stamps.map((s: any) => [s.id, s.state])).toEqual([["vow", "on"], ["signed", "on"], ["met", "next"], ["seven", "todo"]]);
     expect(card.body.sworn).toBe(true);
+    // Whole tokens on the card: 777700 hundredths read 7,777 (QA P5-17).
+    expect(card.body.tokens.record).toMatchObject({ name: "Record Tokens", n: 7777 });
     // The mark is fixed now.
     expect((await call("POST", "/api/rites/mark", { strokes: [[[1, 1], [2, 2]]] })).status).toBe(409);
     const ring = await call("GET", "/api/rites/ring");

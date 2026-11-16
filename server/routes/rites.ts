@@ -59,6 +59,8 @@ import { recordEvent } from "../lib/events";
 import type { InviteDoor } from "../lib/inviteDoor";
 import { readInviteToken } from "../lib/invites";
 import { entriesForMember, tokenDef } from "../lib/ledger";
+import { isAdmitted } from "../lib/admission";
+import { GAME_CONFIG } from "../../shared/gameConfig";
 import { effectiveLifecycle, moduleConfig, requireModule } from "../lib/modules";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { stageName } from "../lib/villagePaths";
@@ -74,6 +76,9 @@ type Deps = Pick<
   JoinAnswerDeps & { invites: InviteDoor };
 
 const HOUR = 60 * 60 * 1000;
+
+/** A ledger balance in whole tokens: the ledger keeps a token's smallest unit (QA P5-17). */
+const whole = (slug: string, n: number): number => (slug ? n / 10 ** Math.max(0, tokenDef(slug)?.decimals ?? 0) : n);
 
 /**
  * THE HOOK FOR A RITE ANOTHER MODULE STAMPS (`byModule` in the village's
@@ -126,15 +131,23 @@ export function register(app: Express, deps: Deps): void {
   const first = (name: unknown) => firstName(String(name ?? "")) || "A member";
 
   /** Is this member sworn, and is anybody? The witness rule reads both. */
+  /**
+   * In by the village's own rules (the member rung, a grant at or above it), or
+   * a founder or admin account: the people a fresh village has before anybody
+   * has sworn, so its first two can witness each other (QA P5-03; the same test
+   * canvasNames.ts uses).
+   */
+  const inAlready = (u: any): boolean => !!u && (isAdmitted(u, GAME_CONFIG.stages) || u.role === "founder" || u.role === "admin");
+
   async function standing(userId: string, cfg: RitesConfig) {
     const pool = getPool();
     const rite = admittingRite(cfg.rites);
     if (!rite) {
       const u: any = await members.byId(userId);
-      return { sworn: !!u?.membershipGranted, anyoneSworn: false, admitted: !!u?.membershipGranted, admittingId: null as string | null };
+      return { sworn: inAlready(u), anyoneSworn: false, admitted: inAlready(u), admittingId: null as string | null };
     }
     const [sworn, anyone, u] = await Promise.all([repo.holds(pool, userId, rite.id), repo.anyHolder(pool, rite.id), members.byId(userId)]);
-    return { sworn, anyoneSworn: anyone, admitted: !!(u as any)?.membershipGranted, admittingId: rite.id };
+    return { sworn, anyoneSworn: anyone, admitted: inAlready(u), admittingId: rite.id };
   }
 
   /** Whether `userId` may witness for somebody (the candidate check is the caller's). */
@@ -179,7 +192,7 @@ export function register(app: Express, deps: Deps): void {
   async function tokenLine(slug: string, userId: string) {
     if (!slug) return null;
     const bal = await repo.balancesOfMany(getPool(), [userId], slug);
-    return { slug, name: tokenDef(slug)?.name ?? slug, n: bal.get(userId) ?? 0 };
+    return { slug, name: tokenDef(slug)?.name ?? slug, n: whole(slug, bal.get(userId) ?? 0) };
   }
 
   // ── Public: the welcome, the letter, the door ────────────────────────────
@@ -417,7 +430,7 @@ export function register(app: Express, deps: Deps): void {
     const entries = (await entriesForMember(getPool(), String(user.id)))
       .filter((e) => e.tokenType === cfg.tokens.record && e.amount > 0)
       .slice(0, 8)
-      .map((e) => ({ id: e.id, title: e.description || e.source.replace(/_/g, " "), n: e.amount, at: e.at }));
+      .map((e) => ({ id: e.id, title: e.description || e.source.replace(/_/g, " "), n: whole(cfg.tokens.record, e.amount), at: e.at }));
     res.json({ token: tokenDef(cfg.tokens.record)?.name ?? cfg.tokens.record, entries });
   });
 
@@ -442,7 +455,7 @@ export function register(app: Express, deps: Deps): void {
         you: p.id === String(user.id),
         resting: !p.admitted && resting.includes(p.id),
         roles: deps.roleIdsFor(p.id).map((r) => roleNames.get(r)).filter(Boolean),
-        voice: voice.get(p.id) ?? 0,
+        voice: whole(cfg.tokens.voice, voice.get(p.id) ?? 0),
       }))
       .sort((a, b) => Number(a.resting) - Number(b.resting) || b.voice - a.voice || a.name.localeCompare(b.name))
       .slice(0, 60);
@@ -949,7 +962,7 @@ export function register(app: Express, deps: Deps): void {
       fleet: { ...cfg.fleet, photos: undefined },
       words: { title: cfg.words.fleetTitle, seasonKicker: cfg.words.fleetSeasonKicker, circlesTitle: cfg.words.circlesTitle, circleLive: cfg.words.circleLive, crewCount: cfg.words.crewCount, gatheringsTitle: cfg.words.gatheringsTitle, ballotsKicker: cfg.words.ballotsKicker },
       places: { phone: cfg.words.placePhone, site: cfg.words.placeSite, gathering: cfg.words.placeGathering },
-      voice: cfg.tokens.voice ? { name: tokenDef(cfg.tokens.voice)?.name ?? cfg.tokens.voice, n: (await repo.balancesOfMany(pool, [String(user.id)], cfg.tokens.voice)).get(String(user.id)) ?? 0 } : null,
+      voice: cfg.tokens.voice ? { name: tokenDef(cfg.tokens.voice)?.name ?? cfg.tokens.voice, n: whole(cfg.tokens.voice, (await repo.balancesOfMany(pool, [String(user.id)], cfg.tokens.voice)).get(String(user.id)) ?? 0) } : null,
       sigil: cfg.sigil,
       nav: cfg.nav,
       look: cfg.look,
