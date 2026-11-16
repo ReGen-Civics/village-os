@@ -28,8 +28,9 @@ Built:
 
 - **S3:** return visits open a claim on the quest the village names (`returnVisitQuestId`), described below.
 
+- **S4:** capture with no signal: an IndexedDB outbox on the phone, described below.
+
 Not built yet:
-- S4: capture with no signal (an IndexedDB outbox).
 - S5 (optional): seed origins from the library.
 
 ## Setup
@@ -167,3 +168,24 @@ per pin per `hiddenmap.visit_pay_days` (default 30). That is the whole of it (`s
   member holding an open claim gets no second one until that one is decided.
 - **The claim names a day, never a place**, because whoever consents quests may not be somebody whose map has opened.
 - The owner's own visits and visits by members whose map is closed open nothing. The visit itself always stands.
+
+## With no signal
+
+A place or a return visit logged with no signal waits on the phone and goes up once there is signal
+(`client/src/lib/hiddenMapOutbox.ts`).
+
+- **Its own store, IndexedDB**, because the shared offline queue keeps JSON in localStorage and photos do not fit
+  there. Only the safe copies are stored: every photo is re-encoded before it reaches the outbox.
+- **A resend writes nothing twice.** A pin carries the device's `clientId`, and the server writes one pin per client
+  id. Its photos follow one at a time and each leaves the phone as soon as the server takes it, so a lost answer can
+  repeat at most the one photo in flight. A visit is idempotent by its own client id.
+- **It belongs to the member who made it.** Another account signed in on the same phone neither sees nor sends it.
+  The page lists what is waiting, with Send now and Discard.
+- **It sends from the open page:** on load, when the phone comes back online, when the tab returns, and on Send
+  now. It stops at the first failure that is not a refusal and keeps everything from there. A refusal (400, 404,
+  409, 413, 422) is kept with the server's words for the member to read and discard.
+- **No service worker here.** Opening the page itself with no signal belongs to the village's offline shell; this
+  module registers no worker. A browser with no IndexedDB keeps captures only while the page stays open, and the page
+  says so.
+- **A closed map learns one number** about everybody else's pins: how many there are (`allPins` on
+  `GET /api/hidden-map/me`). Nothing about where.
