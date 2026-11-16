@@ -433,14 +433,16 @@ describe.skipIf(!DB_CONFIGURED)("a village sets itself up alone, and can issue n
     expect(await launchBallots()).toEqual([]);
   });
 
-  it("the head count is the village's own dial: two clears the floor, and three brings it back (Rye, 2026-11-06)", async () => {
+  it("the head count is the village's own dial, held at the floor of three (Rye, 2026-11-06; D3)", async () => {
     const set = (value: string) => call("PUT", "/api/admin/variables/governance.launch_min_electorate", { body: { value } });
     expect((await set("0")).status, "never below one").toBeGreaterThanOrEqual(400);
     expect((await set("2")).status).toBe(200);
     try {
       const status = await call("GET", "/api/admin/launch");
-      expect(status.json?.vote?.minElectorate).toBe(2);
-      expect(status.json?.vote?.tooFew ?? null, "two on the roll is enough now").toBeNull();
+      expect(status.json?.vote?.minElectorate, "LAUNCH_MIN_ELECTORATE_FLOOR holds the dial at three").toBe(3);
+      expect(String(status.json?.vote?.tooFew), "two on the roll is still one short").toContain("One more member");
+      const early = await call("POST", "/api/admin/launch/propose");
+      expect(early.status).toBe(409);
     } finally {
       expect((await set("3")).status).toBe(200);
     }

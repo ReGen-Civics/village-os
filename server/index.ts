@@ -496,6 +496,7 @@ import {
   thresholdSettingsFrom,
   overrideDials as highestTierDials,
   rollProblem,
+  launchMinElectorate,
   thresholdsForSubject,
   LAUNCH_SUBJECT_REF,
   MINT_RULE,
@@ -12310,7 +12311,7 @@ async function startServer() {
       tooFew,
       unityPct: threshold?.minUnityPct ?? null,
       quorumPct: threshold?.minQuorumPct ?? null,
-      minElectorate: threshold ? Math.max(1, Math.floor(numberVar("governance.launch_min_electorate"))) : null,
+      minElectorate: threshold ? launchMinElectorate(numberVar("governance.launch_min_electorate")) : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
       // The subject's own fact, then this village's. `why` is what the card
       // renders in the ready-to-ask state, so a mode note appended here lands
       // in front of the founder with no new field for a client to learn.
