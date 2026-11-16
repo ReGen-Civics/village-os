@@ -412,3 +412,16 @@ export async function activeCircles(db: Db): Promise<Array<{ id: string; name: s
   );
   return rows.map((r) => ({ id: String(r.id), name: String(r.name), purpose: r.purpose == null ? null : String(r.purpose), leadRoleId: r.lead_role_id == null ? null : String(r.lead_role_id) }));
 }
+
+/**
+ * A fresh token on an invitation that is still the member's own, open and
+ * unused, so its link can be shown again (the old link stops). False when it
+ * is used, withdrawn, run out or somebody else's.
+ */
+export async function rotateOpenInvite(db: Db, inviteId: string, inviterUserId: string, tokenHash: string): Promise<boolean> {
+  const [r] = await db.query<ResultSetHeader>( // module-review-ok: the one invitation this member answered a request with, re-tokened in place
+    "UPDATE member_invites SET token_hash = ? WHERE id = ? AND inviter_user_id = ? AND used_by_user_id IS NULL AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP",
+    [tokenHash, inviteId, inviterUserId],
+  );
+  return r.affectedRows > 0;
+}

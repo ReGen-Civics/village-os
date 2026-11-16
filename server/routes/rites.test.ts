@@ -206,6 +206,11 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     as("u-bo");
     const sworn = await call("POST", `/api/rites/ceremonies/${id}/confirm`);
     expect(sworn.body.step).toBe("sworn");
+    // A witness confirming a moment after the count was reached is still recorded (QA pass 2).
+    as("u-fay");
+    const late = await call("POST", `/api/rites/ceremonies/${id}/confirm`);
+    expect(late.status).toBe(200);
+    expect(late.body.witnesses.find((w: any) => w.id === "u-fay").confirmed).toBe(true);
 
     as("u-ada");
     const card = await call("GET", "/api/rites/me");
@@ -323,6 +328,21 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     expect(yes.status, JSON.stringify(yes.body)).toBe(200);
     expect(yes.body.emailed).toBe(true);
     expect(state.sent.at(-1).to.email).toBe("eli@example.test");
+    // The link again, in person (QA P2-1): a fresh token, and the emailed one stops.
+    expect((await call("GET", "/api/rites/door-requests")).body.requests[0]).toMatchObject({ status: "accepted", linkOpen: true });
+    const again = await call("POST", `/api/rites/door-requests/${sub.id}/link`);
+    expect(again.status).toBe(200);
+    const tokenOf = (l: string) => decodeURIComponent(new URL(l).searchParams.get("invite") ?? "");
+    expect(tokenOf(again.body.link)).not.toBe(tokenOf(yes.body.link));
+    as(null);
+    expect((await call("GET", `/api/rites/letter?token=${tokenOf(yes.body.link)}`)).body.valid).toBe(false);
+    expect((await call("GET", `/api/rites/letter?token=${tokenOf(again.body.link)}`)).body.valid).toBe(true);
+    as("u-bo");
+    expect((await call("POST", `/api/rites/door-requests/${sub.id}/link`)).status).toBe(403);
+    // A stranger asking on a signed-in member's phone is filed as the stranger (QA P2-6).
+    expect((await call("POST", `/api/rites/door/${mine.body.code}/request`, { name: "Gus Lane", email: "gus@example.test" })).status).toBe(200);
+    expect(state.submissions.at(-1).userId).toBeUndefined();
+    as("u-ada");
 
     // Replacing the code ends the old one.
     const fresh = await call("POST", "/api/rites/door/replace");

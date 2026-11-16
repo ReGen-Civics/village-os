@@ -51,13 +51,13 @@ import {
   type RitesConfig,
   type WitnessVia,
 } from "../../shared/rites";
-import { JOIN_REQUEST_TYPE } from "../../shared/joinAnswers";
+import { JOIN_REQUEST_TYPE, joinInviteId } from "../../shared/joinAnswers";
 import { formSubmittedTrigger } from "../../shared/comms/contracts";
 import type { AppDeps } from "../lib/appDeps";
 import { commsSink } from "../lib/commsSink";
 import { recordEvent } from "../lib/events";
 import type { InviteDoor } from "../lib/inviteDoor";
-import { readInviteToken } from "../lib/invites";
+import { hashInviteToken, invitePath, mintInviteToken, readInviteToken } from "../lib/invites";
 import { entriesForMember, tokenDef } from "../lib/ledger";
 import { isAdmitted } from "../lib/admission";
 import { GAME_CONFIG } from "../../shared/gameConfig";
@@ -283,8 +283,11 @@ export function register(app: Express, deps: Deps): void {
   });
 
   app.post("/api/rites/door/:code/request", async (req, res) => {
-    if (await overLimit(`rites-door-ask:${clientIp(req)}`, 6, HOUR)) return refuse(res, 429, "Too many requests. Try again later.");
     const code = String(req.params.code ?? "");
+    // Bounded per address AND code: at a gathering every phone shares one address, so the allowance follows the
+    // packet being handed round, while one address still cannot flood every member's door (QA P2-5).
+    if (await overLimit(`rites-door-ask:${clientIp(req)}:${code.slice(0, 16)}`, 40, HOUR)) return refuse(res, 429, "Too many requests at this code for now. Try again later.");
+    if (await overLimit(`rites-door-ask:${clientIp(req)}`, 120, HOUR)) return refuse(res, 429, "Too many requests. Try again later.");
     const owner = await doorOwner(code);
     if (!owner) return refuse(res, 404, "This code isn't one of ours any more. Ask the member who gave it to you for a new one.");
     const b = body(req);
@@ -293,7 +296,7 @@ export function register(app: Express, deps: Deps): void {
     const why = text(b.why, WHY_MAX);
     if (!name) return refuse(res, 400, "Tell us the name you go by.", "name");
     if (!email) return refuse(res, 400, "Give an email address we can answer you at.", "email");
-    const submitter = await authedUser(req);
+    // Never the session's account: a stranger asking on a member's phone is the stranger, not that member (QA P2-6).
     const entry: any = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       type: JOIN_REQUEST_TYPE,
@@ -302,10 +305,6 @@ export function register(app: Express, deps: Deps): void {
       rewarded: false,
       submittedAt: new Date().toISOString(),
     };
-    if (submitter) {
-      entry.userId = submitter.id;
-      entry.userName = submitter.name;
-    }
     await submissionsRepo.insert(entry);
     commsSink.fire(formSubmittedTrigger(JOIN_REQUEST_TYPE, entry.id, entry.data));
     await notify({
@@ -313,7 +312,7 @@ export function register(app: Express, deps: Deps): void {
       type: "rite_door_request",
       title: `${name} asked to join with your code`,
       body: why || null,
-      link: "/rites/requests",
+      link: "/rites#requests",
       dedupeKey: `rite-door-request:${entry.id}`,
     });
     const cfg = ritesConfig();
@@ -397,7 +396,7 @@ export function register(app: Express, deps: Deps): void {
       inviter,
       aboard,
       stamps: stampsFor(cfg.rites, new Set(held.keys()), cfg.walk),
-      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !r.byModule && !isPlainRite(r), admits: r.admits, place: r.place })),
+      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !r.byModule && !isPlainRite(r), admits: r.admits, place: r.place, atGathering: r.gatheringLines.length > 0 })),
       openCeremonies: ceremonies.filter((c) => c.status === "open").map((c) => ({ id: c.id, riteId: c.riteId })),
       tokens: { record: await tokenLine(cfg.tokens.record, userId), voice: await tokenLine(cfg.tokens.voice, userId) },
       words: Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, vars)])),
@@ -727,6 +726,11 @@ export function register(app: Express, deps: Deps): void {
     const c = await repo.ceremonyById(pool, id);
     if (!c) return refuse(res, 404, "There is no ceremony by that name here.");
     const [ws, mark] = await Promise.all([repo.witnessesOf(pool, id), repo.markOf(pool, c.candidateUserId)]);
+    // A witness who confirms a moment after the count was reached is still recorded as a witness (QA pass 2).
+    if (c.status === "sworn" && ws.some((w) => w.userId === String(user.id))) {
+      await repo.confirmWitness(pool, id, String(user.id), new Date());
+      return res.json(await ceremonyView(id, String(user.id)));
+    }
     const no = refuseConfirm(facts(c, !!mark, ws.filter((w) => w.confirmedAt).length), ws.some((w) => w.userId === String(user.id)));
     if (no) return refuse(res, 409, no);
     await repo.confirmWitness(pool, id, String(user.id), new Date());
@@ -831,7 +835,7 @@ export function register(app: Express, deps: Deps): void {
       type: "rite_buddy_paired",
       title: `You walk beside ${first((newcomer as any).name)}`,
       body: "Write them a first word.",
-      link: "/rites/newcomers",
+      link: "/rites#newcomers",
       dedupeKey: `rite-buddy:${newcomerId}:${buddyId}`,
     });
     res.json({ success: true });
@@ -882,8 +886,33 @@ export function register(app: Express, deps: Deps): void {
     const user = await signedIn(req, res);
     if (!user) return;
     res.json({
-      requests: requestsFor(String(user.id)).map((s: any) => ({ id: String(s.id), name: String(s.data?.name ?? ""), message: String(s.data?.message ?? ""), status: String(s.status ?? "new"), at: s.submittedAt })),
+      requests: await Promise.all(
+        requestsFor(String(user.id)).map(async (s: any) => {
+          const inv = await inviteById(getPool(), joinInviteId(String(s.id)));
+          // The link can be shown again while it is this member's, open and unused.
+          const linkOpen = !!inv && inv.inviterUserId === String(user.id) && !inv.usedByUserId && !inv.revokedAt && !inv.expired;
+          return { id: String(s.id), name: String(s.data?.name ?? ""), message: String(s.data?.message ?? ""), status: String(s.status ?? "new"), at: s.submittedAt, linkOpen };
+        }),
+      ),
     });
+  });
+
+  /**
+   * Show the letter's link again, for the member who said yes (QA P2-1): at a
+   * fire there may be no mail, and only the hash is kept. A fresh token replaces
+   * the old one on the same open, unused invitation, so the old link stops and
+   * only the shown one works.
+   */
+  app.post("/api/rites/door-requests/:id/link", async (req, res) => {
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required" });
+    const id = String(req.params.id ?? "");
+    const row = requestsFor(String(user.id)).find((s: any) => String(s.id) === id);
+    if (!row) return res.status(403).json({ error: "This request was made at another member's door." });
+    const token = mintInviteToken();
+    const ok = await repo.rotateOpenInvite(getPool(), joinInviteId(id), String(user.id), hashInviteToken(token));
+    if (!ok) return refuse(res, 409, "That invitation has been used, withdrawn or has run out. Answer the request again for a new one.");
+    res.json({ link: `${deps.deploymentOrigin().replace(/\/+$/, "")}${invitePath(token)}` });
   });
 
   async function answerDoorRequest(req: Request, res: Response, yes: boolean) {

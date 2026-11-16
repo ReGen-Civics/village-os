@@ -68,7 +68,7 @@ export interface MeView {
   inviter: string | null;
   aboard: { doorId: string | null; why: string | null } | null;
   stamps: StampView[];
-  rites: Array<{ id: string; todo: string; done: string; spoken: boolean; admits: boolean; place: PlaceKey | null }>;
+  rites: Array<{ id: string; todo: string; done: string; spoken: boolean; admits: boolean; place: PlaceKey | null; atGathering?: boolean }>;
   openCeremonies: Array<{ id: string; riteId: string }>;
   tokens: { record: { slug: string; name: string; n: number } | null; voice: { slug: string; name: string; n: number } | null };
   words: Record<string, string>;

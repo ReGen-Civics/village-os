@@ -13,7 +13,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import type { StampView } from "@shared/rites";
 import { useAuth } from "@/contexts/AuthContext";
-import { BottomNav, RitesWorld, Stamps, TopBar } from "@/components/rites/parts";
+import { BottomNav, Qr, RitesWorld, Stamps, TopBar } from "@/components/rites/parts";
 import { ritesGet, ritesSend, type MeView, type RitesError } from "@/components/rites/ritesApi";
 import ModuleGate from "@/components/modules/ModuleGate";
 import { gameFetch } from "@/lib/gameApi";
@@ -33,7 +33,28 @@ interface OpenList {
 }
 
 interface Requests {
-  requests: Array<{ id: string; name: string; message: string; status: string }>;
+  requests: Array<{ id: string; name: string; message: string; status: string; linkOpen?: boolean }>;
+}
+
+/** A letter's link handed over in person: copy it, share it, or let their phone scan it from this one (QA P2-1). */
+function LinkPanel({ link }: { link: string }) {
+  const { t } = useLingui();
+  return (
+    <div className="panel" style={{ marginTop: 10, display: "grid", gap: 10, justifyItems: "center", textAlign: "center" }}>
+      <Qr text={link} label={t({ message: "Their invitation, to scan with their phone", context: "rites" })} />
+      <p className="tiny" style={{ wordBreak: "break-all" }}>{link}</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
+        <button type="button" className="btn ghost small" onClick={() => void navigator.clipboard?.writeText(link)}>
+          <Trans context="rites">Copy the link</Trans>
+        </button>
+        {typeof navigator !== "undefined" && "share" in navigator ? (
+          <button type="button" className="btn ghost small" onClick={() => void navigator.share?.({ url: link }).catch(() => undefined)}>
+            <Trans context="rites">Share it</Trans>
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
 }
 
 function Greeting({ newcomerId, initial }: { newcomerId: string; initial: string | null }) {
@@ -124,6 +145,7 @@ export default function RitesHub() {
   const [newcomers, setNewcomers] = useState<Newcomers | null>(null);
   const [requests, setRequests] = useState<Requests | null>(null);
   const [note, setNote] = useState("");
+  const [shown, setShown] = useState<Record<string, string>>({});
   const [off, setOff] = useState(false);
 
   const load = useCallback(() => {
@@ -135,6 +157,11 @@ export default function RitesHub() {
   useEffect(() => {
     if (user) load();
   }, [user, load]);
+  // A bell's link names a section (#requests, #newcomers): go there once it has drawn.
+  useEffect(() => {
+    const hash = typeof window === "undefined" ? "" : window.location.hash.slice(1);
+    if (hash && (requests || newcomers)) document.getElementById(hash)?.scrollIntoView({ block: "start" });
+  }, [requests, newcomers]);
 
   if (!user && !loading) {
     return (
@@ -191,6 +218,20 @@ export default function RitesHub() {
                       <Link className="btn ember small" href={`/rites/ceremony/${going.id}`}>
                         <Trans context="rites">Go back to it</Trans>
                       </Link>
+                    ) : r.atGathering ? (
+                      // Where are we: on site, or at a gathering, where the gathering's own lines are spoken (QA P2-7).
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {(["site", "gathering"] as const).map((place) => (
+                          <button
+                            key={place}
+                            type="button"
+                            className="btn ember small"
+                            onClick={() => act(async () => navigate(`/rites/ceremony/${(await ritesSend<{ id: string }>("POST", "/api/rites/ceremonies", { riteId: r.id, place })).id}`))}
+                          >
+                            {place === "site" ? me.words.placeSite : me.words.placeGathering}
+                          </button>
+                        ))}
+                      </div>
                     ) : (
                       <button
                         type="button"
@@ -224,7 +265,7 @@ export default function RitesHub() {
           ) : null}
 
           {newcomers?.mayPair && newcomers.newcomers.length ? (
-            <section className="s">
+            <section className="s" id="newcomers">
               <h3>
                 <Trans context="rites">Newcomers</Trans>
               </h3>
@@ -288,7 +329,7 @@ export default function RitesHub() {
           </section>
 
           {requests && requests.requests.length ? (
-            <section className="s">
+            <section className="s" id="requests">
               <h3>
                 <Trans context="rites">Asked at your code</Trans>
               </h3>
@@ -298,7 +339,17 @@ export default function RitesHub() {
                   {r.message ? <p className="small muted" style={{ marginTop: 4 }}>{r.message}</p> : null}
                   {r.status === "new" ? (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-                      <button type="button" className="btn gold small" onClick={() => act(async () => setNote(((await ritesSend<{ message: string }>("POST", `/api/rites/door-requests/${r.id}/accept`)).message)))}>
+                      <button
+                        type="button"
+                        className="btn gold small"
+                        onClick={() =>
+                          act(async () => {
+                            const a = await ritesSend<{ message: string; link: string | null }>("POST", `/api/rites/door-requests/${r.id}/accept`);
+                            if (a.link) setShown((s) => ({ ...s, [r.id]: a.link as string }));
+                            setNote(a.message);
+                          })
+                        }
+                      >
                         <Trans context="rites">Yes</Trans>
                       </button>
                       <button type="button" className="btn ghost small" onClick={() => act(() => ritesSend("POST", `/api/rites/door-requests/${r.id}/decline`))}>
@@ -306,8 +357,26 @@ export default function RitesHub() {
                       </button>
                     </div>
                   ) : (
-                    <p className="tiny muted" style={{ marginTop: 6 }}>{r.status}</p>
+                    <>
+                      <p className="tiny muted" style={{ marginTop: 6 }}>{r.status}</p>
+                      {r.linkOpen && !shown[r.id] ? (
+                        <button
+                          type="button"
+                          className="btn ghost small"
+                          style={{ marginTop: 8 }}
+                          onClick={() =>
+                            act(async () => {
+                              const a = await ritesSend<{ link: string }>("POST", `/api/rites/door-requests/${r.id}/link`);
+                              setShown((s) => ({ ...s, [r.id]: a.link }));
+                            })
+                          }
+                        >
+                          <Trans context="rites">Show their invitation again</Trans>
+                        </button>
+                      ) : null}
+                    </>
                   )}
+                  {shown[r.id] ? <LinkPanel link={shown[r.id]} /> : null}
                 </div>
               ))}
             </section>

@@ -339,3 +339,10 @@
 /* the language selector's row, at the foot of every screen */
 .rites .langbar { max-width: 430px; margin: 0 auto; padding: 8px 20px 110px; background: var(--background); }
 .rites .ceremony .topbar .sigil { color: var(--ceremony); }
+
+/* The printed packet prints alone. The calendar's print sheet hides everything on the page; the packet comes back (QA P2-2). */
+@media print {
+  .rites .packtable,
+  .rites .packtable * { visibility: visible; }
+  .rites .packtable { position: absolute; left: 0; top: 0; width: 100%; background: none; }
+}
