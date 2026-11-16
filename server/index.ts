@@ -305,6 +305,7 @@ import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskB
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
 import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBDIR } from "./routes/stockAvatars";
 import { register as registerStockArtRoutes } from "./routes/stockArt";
+import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
 import { register as registerWalletRoutes } from "./routes/wallet";
@@ -25658,6 +25659,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", precompressedAssets({ assetsDir: ASSETS_DIR, precompressedDir: path.resolve(staticPath, "..", "precompressed") }));
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
+  registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below
    * handed out the raw file (no theme, no share card, no language) with a 200,
