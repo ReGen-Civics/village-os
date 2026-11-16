@@ -7,7 +7,7 @@
  * (components/fireflyPath/applyCarry.ts).
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { draftKey } from "@/components/fireflyPath/applyDraft";
 import { carryKey } from "@/components/fireflyPath/applyCarry";
@@ -61,8 +61,11 @@ const applyFor = async (id: string, form: unknown = FORM) => {
 const value = (label: string | RegExp) => (screen.getByLabelText(label) as HTMLInputElement).value;
 
 /** The first application, whole: their own words, the background-check consent, the role's answers and its commitment, then Send. */
-async function sendFirst(form: unknown = FORM) {
+const tickRemember = () => fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+
+async function sendFirst(form: unknown = FORM, { remember = true }: { remember?: boolean } = {}) {
   await applyFor("r-gate", form);
+  if (remember) tickRemember();
   pressNext();
   fireEvent.change(screen.getByLabelText(OPEN_WORDS.nameLabel), { target: { value: "Rowan" } });
   fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@example.test" } });
@@ -143,6 +146,31 @@ describe("a second application", () => {
     pressNext();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.nameLabel), { target: { value: "Rowan" } });
     expect(window.localStorage.getItem(carryKey(""))).toBeNull();
+    cleanup();
+    await applyFor("r-host");
+    expect(document.querySelector("[data-carried-over]")).toBeNull();
+    expect(value(OPEN_WORDS.nameLabel)).toBe("");
+  });
+
+  it("without the tick, nothing is kept on this device, and the door to another role still carries their words in the page", async () => {
+    await sendFirst(FORM, { remember: false });
+    expect(Object.keys(window.localStorage).filter((k) => k.startsWith("apply-"))).toEqual([]);
+    fireEvent.click(screen.getByRole("button", { name: "Apply for another role too" }));
+    fireEvent.click(await screen.findByRole("button", { name: /Apply: Welcome Host/ }));
+    await screen.findByRole("heading", { level: 1, name: OPEN_WORDS.heading("Welcome Host") });
+    await expectCarried();
+    expect(Object.keys(window.localStorage).filter((k) => k.startsWith("apply-"))).toEqual([]);
+  });
+
+  it("forgetting clears every draft and carried answer on this device, and a later visit opens blank", async () => {
+    await sendFirst();
+    cleanup();
+    await applyFor("r-host");
+    // What this device already keeps reads as ticked, so they can see it and forget it.
+    await waitFor(() => expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true));
+    fireEvent.click(screen.getByRole("button", { name: "Forget my answers on this device" }));
+    expect(Object.keys(window.localStorage).filter((k) => k.startsWith("apply-"))).toEqual([]);
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(false);
     cleanup();
     await applyFor("r-host");
     expect(document.querySelector("[data-carried-over]")).toBeNull();
