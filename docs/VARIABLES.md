@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 246 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 248 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 275 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 277 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-302 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 6 longtext.
+304 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Each dial also says WHEN a change lands. 275 of them as soon as it is saved, and
 | Gratitude | 11 | 11 | 0 |
 | Ledger | 17 | 9 | 8 |
 | The Mint | 7 | 6 | 1 |
-| Progression | 34 | 34 | 0 |
+| Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
 | Governance | 51 | 45 | 6 |
 | Tokens | 4 | 1 | 3 |
@@ -58,10 +58,10 @@ Each dial also says WHEN a change lands. 275 of them as soon as it is saved, and
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
 | The village's people | 20 | 19 | 1 |
+| Companions | 3 | 3 | 0 |
 | The founding team | 19 | 19 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
-| Companions | 2 | 2 | 0 |
 | Messages | 2 | 2 | 0 |
 | Feed | 3 | 3 | 0 |
 | Stays | 10 | 10 | 0 |
@@ -134,6 +134,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | A role starts only after: confidentiality | `org.start_after_confidentiality` | Progression | boolean | `false` | the whole village |
 | A role starts only after: membership | `org.start_after_membership` | Progression | boolean | `false` | the whole village |
 | A paid role starts only after its terms | `org.start_after_paid_terms` | Progression | boolean | `false` | the whole village |
+| The style for portraits drawn for members | `characters.forge_style` | Progression | longtext | blank | the whole village |
 | Sending-budget multiplier: Visitor | `progression.multiplier.visitor` | Progression | decimal | `0` | the whole village |
 | Sending-budget multiplier: Guest | `progression.multiplier.guest` | Progression | decimal | `1` | the whole village |
 | Sending-budget multiplier: Immersant | `progression.multiplier.immersant` | Progression | decimal | `1` | the whole village |
@@ -295,6 +296,9 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Feature the founding team on the Roles page | `org.founding_team` | The village's people | boolean | `false` | the whole village |
 | The founding team's roles | `org.founding_team_roles` | The village's people | text | blank | the whole village |
 | Show pay ranges on role cards | `org.show_pay_ranges` | The village's people | boolean | `false` | the whole village |
+| How your guide speaks | `guide.voice` | Companions | longtext | blank | the whole village |
+| Questions one companion may ask a day | `companions.max_questions_per_day` | Companions | integer | `3` | the whole village |
+| Roles that have a companion | `companions.role_ids` | Companions | text | `all` | the whole village |
 | When a moon counts as far from what was agreed | `moon_review.far_off_pct` | The founding team | integer | `25` | the whole village |
 | How rewards work, on every role card | `org.pay_shape` | The founding team | text | blank | the whole village |
 | The at-risk line under the pay shape | `org.pay_shape_at_risk` | The founding team | text | blank | the whole village |
@@ -318,8 +322,6 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Show gatherings this far ahead | `events.upcoming_days` | Events | integer | `90` | the whole village |
 | Keep finished gatherings listed for | `events.past_visible_days` | Events | integer | `30` | the whole village |
 | Soft reports that auto-hide a post | `forum.report_hide_threshold` | Forum | integer | `3` | the whole village |
-| Questions one companion may ask a day | `companions.max_questions_per_day` | Companions | integer | `3` | the whole village |
-| Roles that have a companion | `companions.role_ids` | Companions | text | `all` | the whole village |
 | Messages one member may send per minute | `messaging.sends_per_minute` | Messages | integer | `20` | the whole village |
 | Largest group conversation | `messaging.max_members` | Messages | integer | `50` | the whole village |
 | Which forum category the feed shows | `feed.category_slug` | Feed | text | `village-life` | the whole village |
@@ -1062,7 +1064,7 @@ What it may be set to:
 
 ## Progression
 
-34 dials. 34 for the whole village.
+35 dials. 35 for the whole village.
 
 ### How often every role reopens
 
@@ -1138,6 +1140,20 @@ When on, a role whose terms carry pay, an allowance or a bonus does not start un
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The style for portraits drawn for members
+
+How a portrait drawn for a member should look, in a few sentences: the medium, the light, the palette and anything to leave out. A portrait provider puts these words before its own. Only the first 1500 characters are used. Leave it empty and a provider draws in its own neutral style. Members who upload their own picture are not affected.
+
+| Fact | Value |
+| --- | --- |
+| Key | `characters.forge_style` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
@@ -3813,6 +3829,53 @@ Off, no role card shows a pay range or an amount to visitors or members, whateve
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
 
+## Companions
+
+3 dials. 3 for the whole village.
+
+### How your guide speaks
+
+A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried.
+
+| Fact | Value |
+| --- | --- |
+| Key | `guide.voice` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Questions one companion may ask a day
+
+The most questions each companion brings a member in one village day. Drafts are never held back by this, because a draft that wants to move money should always be seen. A member may lower it for any of their companions. More than 3 is not offered: that ceiling waits on a founder's ruling. A question over the limit waits for the next morning.
+
+| Fact | Value |
+| --- | --- |
+| Key | `companions.max_questions_per_day` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 0 to 3 |
+| Counted in | questions |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Roles that have a companion
+
+Which roles give their holders a companion that speaks for the role. Write all for every role, leave it empty for none, or paste role ids from the org chart separated by commas. The personal companion is always there for every member, whatever this says.
+
+| Fact | Value |
+| --- | --- |
+| Key | `companions.role_ids` |
+| Type | text, free text, one line |
+| Default | `all` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
 ## The founding team
 
 19 dials. 19 for the whole village.
@@ -4147,39 +4210,6 @@ When this many DIFFERENT members soft-report the same thread or reply, it hides 
 | Default | `3` |
 | Range | 2 to 10 |
 | Counted in | reports |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-## Companions
-
-2 dials. 2 for the whole village.
-
-### Questions one companion may ask a day
-
-The most questions each companion brings a member in one village day. Drafts are never held back by this, because a draft that wants to move money should always be seen. A member may lower it for any of their companions. More than 3 is not offered: that ceiling waits on a founder's ruling. A question over the limit waits for the next morning.
-
-| Fact | Value |
-| --- | --- |
-| Key | `companions.max_questions_per_day` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 0 to 3 |
-| Counted in | questions |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### Roles that have a companion
-
-Which roles give their holders a companion that speaks for the role. Write all for every role, leave it empty for none, or paste role ids from the org chart separated by commas. The personal companion is always there for every member, whatever this says.
-
-| Fact | Value |
-| --- | --- |
-| Key | `companions.role_ids` |
-| Type | text, free text, one line |
-| Default | `all` |
-| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

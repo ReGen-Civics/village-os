@@ -433,7 +433,7 @@ export default function HowWeCreate() {
                 {!pageOff("/co-creators-guide") && (
                   <Link
                     href="/co-creators-guide"
-                    className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-teal-deep-dark transition-all hover:scale-105 flex items-center gap-2"
+                    className="px-6 py-3 bg-primary text-primary-foreground rounded-full font-medium uppercase tracking-wider text-sm hover:bg-primary-hover transition-all hover:scale-105 flex items-center gap-2"
                   >
                     {cta.fields.guideLabel}
                     <ArrowRight className="w-5 h-5" />

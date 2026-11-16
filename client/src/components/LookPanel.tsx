@@ -1,11 +1,58 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CHARACTER_CARDS, deriveTheme } from "@shared/brandTokens";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { CHARACTER_CARDS, OVERRIDE_SLOTS, deriveTheme, sanitizeOverrides } from "@shared/brandTokens";
 import { announceThemeChange } from "@/lib/liveTheme";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { changedKeys } from "@/lib/unsavedChanges";
 
-const LOOK_KEYS = ["seed", "character", "place", "accent"] as const;
+const LOOK_KEYS = ["seed", "character", "place", "accent", "mode", "overrides"] as const;
+
+/**
+ * What each exact-colour slot paints, in a founder's words. Every slot in
+ * OVERRIDE_SLOTS has a line; the compiler holds the two lists together.
+ */
+const SLOT_WORDS: Record<(typeof OVERRIDE_SLOTS)[number], string> = {
+  "--background": "Page ground",
+  "--foreground": "Text on the page",
+  "--card": "Panels and cards",
+  "--card-foreground": "Text on panels",
+  "--popover": "Menus and pop-ups",
+  "--popover-foreground": "Text in menus",
+  "--primary": "Main button",
+  "--primary-foreground": "Text on the main button",
+  "--primary-hover": "Main button under the pointer",
+  "--secondary": "Second button and chips",
+  "--secondary-foreground": "Text on the second button",
+  "--accent": "Highlighted row",
+  "--accent-foreground": "Text on a highlighted row",
+  "--muted": "Quiet panel",
+  "--muted-foreground": "Quiet text",
+  "--border": "Edges and dividers",
+  "--input": "Field edges",
+  "--ring": "Focus ring",
+  "--destructive": "Warnings and errors",
+  "--destructive-foreground": "Text on a warning",
+  "--sidebar": "Side menu",
+  "--sidebar-foreground": "Text in the side menu",
+  "--chart-1": "Chart colour 1",
+  "--chart-2": "Chart colour 2",
+  "--chart-3": "Chart colour 3",
+  "--chart-4": "Chart colour 4",
+  "--chart-5": "Chart colour 5",
+  "--tone-brand": "Brand fill (carries white text)",
+  "--tone-brand-hover": "Brand fill under the pointer",
+  "--tone-brand-mid": "Brand, middle tone",
+  "--tone-brand-soft": "Brand, soft tone",
+  "--tone-brand-text": "Brand as text (dark look)",
+  "--tone-brand-band": "Header band",
+  "--tone-sun": "Accent",
+  "--tone-sun-on-band": "Accent as text on the band",
+  "--tone-mist": "Mist",
+  "--tone-mist-light": "Light mist",
+  "--tone-cream": "Cream wash",
+  "--radius": "Corner radius (rem, 0 to 1.5)",
+};
 
 /**
  * Admin → Make This Yours → Look: the THREE decisions everything visual
@@ -23,6 +70,7 @@ const LOOK_KEYS = ["seed", "character", "place", "accent"] as const;
  * large file another workstream edits; the mount is one line.
  */
 export default function LookPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [theme, setTheme] = useState<any>(null);
   /** The four look fields as the server last had them. */
   const [saved, setSaved] = useState<any>(null);
@@ -42,7 +90,16 @@ export default function LookPanel({ password }: { password: string }) {
       const res = await fetch("/api/admin/brand", {
         method: "PUT",
         headers: { Authorization: `Bearer ${password}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ theme: { seed: theme.seed ?? "", character: theme.character ?? "", place: theme.place ?? "", accent: theme.accent ?? "" } }),
+        body: JSON.stringify({
+          theme: {
+            seed: theme.seed ?? "",
+            character: theme.character ?? "",
+            place: theme.place ?? "",
+            accent: theme.accent ?? "",
+            mode: theme.mode === "dark" ? "dark" : "",
+            overrides: sanitizeOverrides(theme.overrides),
+          },
+        }),
       });
       if (!res.ok) return { ok: false, reason: "The server did not accept the look." };
       setSaved(theme);
@@ -52,7 +109,15 @@ export default function LookPanel({ password }: { password: string }) {
   };
 
   if (!theme) return null;
-  const derived = deriveTheme(theme.seed, theme.character, theme.accent);
+  const derived = deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides });
+  const overrides: Record<string, string> = theme.overrides && typeof theme.overrides === "object" ? theme.overrides : {};
+  const setOverride = (slot: string, value: string) => {
+    const next = { ...overrides };
+    if (value) next[slot] = value;
+    else delete next[slot];
+    setTheme({ ...theme, overrides: next });
+  };
+  const overrideCount = Object.keys(sanitizeOverrides(overrides)).length;
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
@@ -161,6 +226,73 @@ export default function LookPanel({ password }: { password: string }) {
         })}
       </div>
 
+      {/* THE SCHEME (gap G1). Dark promotes the night layer to every member
+          page; Admin stays light by ruling. Both need a seed, like every
+          other derived colour. */}
+      <fieldset className="mb-5">
+        <legend className="block text-sm font-medium text-foreground mb-1.5"><Trans context="admin look: light or dark page heading">Page look</Trans></legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t({ message: "Page look", context: "admin look: light or dark page heading" })}>
+          {([["", t({ message: "Light", context: "admin look: page scheme choice" })], ["dark", t({ message: "Dark", context: "admin look: page scheme choice" })]] as const).map(([value, label]) => {
+            const active = (theme.mode === "dark" ? "dark" : "") === value;
+            return (
+              <button
+                key={label}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setTheme({ ...theme, mode: value })}
+                className={`rounded-lg border px-3 py-2 text-sm text-foreground ${active ? "border-teal-deep ring-1 ring-teal-deep" : "border-border"}`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-muted-foreground mt-1 max-w-prose">
+          <Trans>Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour.</Trans>
+        </p>
+      </fieldset>
+
+      <details className="mb-5 rounded-lg border border-border px-3 py-2.5" open={overrideCount > 0}>
+        <summary className="cursor-pointer text-sm font-medium text-foreground">
+          {overrideCount ? t`Exact colours (${overrideCount} set)` : t({ message: "Exact colours", context: "admin look: section of exact colour overrides" })}
+        </summary>
+        <p className="text-xs text-muted-foreground mt-2 mb-3 max-w-prose">
+          <Trans>
+            Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set.
+            Every pair is measured below, and a colour you set can fail: the report says so.
+          </Trans>
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {OVERRIDE_SLOTS.map((slot) => {
+            const value = overrides[slot] ?? "";
+            const isRadius = slot === "--radius";
+            const start = derived?.vars?.[slot];
+            return (
+              <div key={slot} className="flex items-center gap-2">
+                {!isRadius && (
+                  <input
+                    type="color"
+                    value={/^#[0-9a-f]{6}$/i.test(value) ? value : start && /^#[0-9a-f]{6}$/i.test(start) ? start : "#6e7376" /* theme-ok: the colour input's starting point before a founder sets one, never rendered as chrome */}
+                    onChange={(e) => setOverride(slot, e.target.value)}
+                    aria-label={SLOT_WORDS[slot]}
+                    className="h-8 w-10 shrink-0 rounded border border-border cursor-pointer"
+                  />
+                )}
+                <input
+                  value={value}
+                  onChange={(e) => setOverride(slot, e.target.value.trim().slice(0, 7))}
+                  placeholder={isRadius ? "1" : t({ message: "blank", context: "admin look: empty exact colour field" })}
+                  aria-label={t({ message: `${SLOT_WORDS[slot]}, exact value`, context: "admin look: exact colour field label" })}
+                  className="w-24 shrink-0 text-xs border border-border rounded-lg px-2 py-1.5 font-mono"
+                />
+                <span className="text-xs text-foreground">{SLOT_WORDS[slot]}</span>
+              </div>
+            );
+          })}
+        </div>
+      </details>
+
       {derived && (
         <div className="mb-4 text-xs rounded-lg border border-gray-100 px-3 py-2.5">
           {/* The honest report (amendment A3): measured pairs, named verdicts,
@@ -169,11 +301,15 @@ export default function LookPanel({ password }: { password: string }) {
             Contrast: {derived.contrast.pairs.length} pairs measured ·{" "}
             {derived.contrast.status === "ok" && <span className="text-emerald-700">all pass as-is</span>}
             {derived.contrast.status === "adjusted" && <span className="text-amber-700">passes, and your colour's lightness was adjusted to stay readable</span>}
-            {derived.contrast.status === "fail" && <span className="text-red-700">FAILING. This should not happen; please report it</span>}
+            {derived.contrast.status === "fail" && (
+              <span className="text-red-700">
+                {overrideCount ? <Trans>FAILING. A colour you set does not read on its partner; see the pairs marked fail</Trans> : <Trans>FAILING. This should not happen; please report it</Trans>}
+              </span>
+            )}
           </p>
           <p className="text-gray-500">
             worst ratio {derived.contrast.worstRatio}:1 ·{" "}
-            {derived.contrast.pairs.map((p) => `${p.name} ${p.ratio}`).join(" · ")}
+            {derived.contrast.pairs.map((p) => `${p.name} ${p.ratio}${p.verdict === "fail" ? " (fail)" : ""}`).join(" · ")}
           </p>
         </div>
       )}

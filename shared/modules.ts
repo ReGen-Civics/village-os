@@ -487,6 +487,12 @@ export interface ModuleDef {
   variableKeys: string[];
   /** API prefixes mounted behind requireModule(id). */
   apiPrefixes: string[];
+  /**
+   * The widest lifecycle this module may ever stand at. Absent means public.
+   * A module whose rows must never reach a visitor says "members", and the
+   * lifecycle write refuses anything wider, whatever its dependencies allow.
+   */
+  widest?: ModuleLifecycle;
   /** Named Hypha deep links this module's UI renders. */
   hyphaLinks?: string[];
   /** Show the legal caution card before enabling (funds-bearing modules).
@@ -1443,6 +1449,34 @@ export const MODULES: ModuleDef[] = [
     // surface; saved results stay in their table and return when it is on.
   },
   {
+    id: "protocols",
+    guild: [],
+    tier: "included",
+    // Who ticked which step of which checklist, and when: that names people,
+    // so the widest class is member-pii (drizzle/0389).
+    dataClass: "member-pii",
+    group: "coordinate",
+    // Nothing must be set before it is honest to run: with no checklists the
+    // page says so, and the card is where they are written.
+    setup: "none",
+    name: "Protocols",
+    description:
+      "Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen.",
+    requires: [],
+    recommends: [],
+    capabilities: [],
+    variableKeys: [],
+    apiPrefixes: ["/api/protocols"],
+    defaultConfig: { showInstallCard: true },
+    validateConfig: (c: any) => {
+      if (c == null || typeof c !== "object") return "config must be an object";
+      if (c.showInstallCard !== undefined && typeof c.showInstallCard !== "boolean") return "showInstallCard must be true or false";
+      return null;
+    },
+    // No openStateCheck: nothing here is owed to anybody. Off hides every
+    // surface; protocols and runs stay in their tables and return when it is on.
+  },
+  {
     id: "funding-rounds",
     guild: [],
     setupNeeds: [
@@ -1516,6 +1550,55 @@ export const MODULES: ModuleDef[] = [
     // A visitor reads the public tier only while the org chart is public.
     variableKeys: ["map.public_structure"],
     apiPrefixes: ["/api/place-registry"],
+  },
+  {
+    id: "hidden-map",
+    guild: [],
+    setupNeeds: [
+      {
+        id: "map-keeper",
+        kind: "hands",
+        ref: "hiddenmap.keep",
+        title: "Seat someone who keeps the hidden map, so the first members can be vouched for",
+        scope: "village",
+        phase: "before-enable",
+        need: "recommended",
+        fixAt: "/admin?tab=circles-map",
+        since: "1.2.0",
+        certainty: "verified",
+        source: "docs/modules/hidden-map.md Setup",
+      },
+      {
+        id: "basemap",
+        kind: "decision",
+        ref: "hiddenmap.basemap",
+        title: "Choose what the hidden map is drawn on",
+        scope: "village",
+        phase: "before-enable",
+        need: "recommended",
+        fixAt: "/modules/hidden-map#setting-hiddenmap.basemap",
+        since: "1.2.0",
+        certainty: "verified",
+        source: "docs/modules/hidden-map.md Setup",
+      },
+    ],
+    tier: "included",
+    // Each pin is tied to the member who logged it, and photos may show
+    // people. No route ever sends the owner, and the photos are stripped and
+    // served only to members who may see the pin (0392).
+    dataClass: "member-pii",
+    group: "know-and-decide",
+    setup: "none",
+    name: "Hidden map",
+    description:
+      "A members-only map of the places your members log, with photos, growth over time and return visits. Each member sees only their own pins until enough of them are vouched for by others, and then the whole map opens.",
+    requires: [],
+    recommends: ["quests"],
+    capabilities: ["hiddenmap.keep", "hiddenmap.export"],
+    variableKeys: [],
+    apiPrefixes: ["/api/hidden-map"],
+    // Never public: what it holds stays inside the membership.
+    widest: "members",
   },
   {
     id: "session-card",
@@ -2141,6 +2224,7 @@ export const MODULE_KEY_PREFIXES: Record<string, string> = {
   governance: "governance",
   hypha: "hypha",
   comms: "comms",
+  hiddenmap: "hidden-map",
 };
 
 /**

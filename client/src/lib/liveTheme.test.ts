@@ -3,7 +3,7 @@
  * A saved Look re-themes open pages without a reload (Rye, 2026-11-09).
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { THEME_PATH, checkThemeVersion, currentThemeVersion, relinkTheme } from "./liveTheme";
+import { THEME_PATH, checkThemeVersion, currentThemeVersion, relinkTheme, syncScheme } from "./liveTheme";
 
 const links = () => Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'));
 const put = (href: string) => {
@@ -63,5 +63,15 @@ describe("liveTheme", () => {
     });
     expect(await checkThemeVersion(f as unknown as typeof fetch)).toBe(false);
     expect(links()).toHaveLength(1);
+  });
+
+  it("keeps the dark-scheme mark in step with the sheet's own marker (gap G1)", () => {
+    const root = document.documentElement;
+    root.style.setProperty("--village-scheme", "dark");
+    syncScheme(root);
+    expect(root.getAttribute("data-scheme")).toBe("dark");
+    root.style.removeProperty("--village-scheme");
+    syncScheme(root);
+    expect(root.hasAttribute("data-scheme")).toBe(false);
   });
 });
