@@ -7187,6 +7187,11 @@ msgctxt "founding application compensation"
 msgid "To be decided in the onboarding process."
 msgstr "To be decided in the onboarding process."
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Your booking link"
+msgstr "Your booking link"
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "That is not JSON the platform can read: {problem}"
 msgstr "That is not JSON the platform can read: {problem}"
@@ -8012,6 +8017,11 @@ msgstr "The photo you are about to add"
 msgctxt "character count under a box"
 msgid "You have reached the {maxText} character limit."
 msgstr "You have reached the {maxText} character limit."
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
@@ -9564,6 +9574,11 @@ msgstr "The settings behind this block"
 msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr "Withdraw it and end the vote"
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Saved."
+msgstr "Saved."
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome, what the companion says"
@@ -13902,6 +13917,11 @@ msgctxt "task handed to a role"
 msgid "Suggest a change"
 msgstr "Suggest a change"
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Save"
+msgstr "Save"
+
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor"
 msgid "That did not save. Try again."
@@ -14688,6 +14708,11 @@ msgstr "{0}, {1}, added {2}"
 msgctxt "hidden map, progress toward opening the map"
 msgid "{vouched} of {needed}"
 msgstr "{vouched} of {needed}"
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Booking link"
+msgstr "Booking link"
 
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: the powers heading"
@@ -19491,6 +19516,11 @@ msgstr "Your guide answers in the journal, beside long boxes when you talk it ou
 msgid "The agreement could not be read just now."
 msgstr "The agreement could not be read just now."
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Clear"
+msgstr "Clear"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{n, plural, one {{pledged} pledged by # backer} other {{pledged} pledged by # backers}}"
 msgstr "{n, plural, one {{pledged} pledged by # backer} other {{pledged} pledged by # backers}}"
@@ -19565,6 +19595,11 @@ msgstr "Files (optional)"
 msgctxt "sera answers"
 msgid "1 pay change is left out. Pay is set by a person."
 msgstr "1 pay change is left out. Pay is set by a person."
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "When you talk with someone applying for a role, they book a time with you here. Use your own booking page, such as a Google booking page."
+msgstr "When you talk with someone applying for a role, they book a time with you here. Use your own booking page, such as a Google booking page."
 
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: why these powers come first"

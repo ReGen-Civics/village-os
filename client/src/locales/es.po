@@ -7208,6 +7208,11 @@ msgctxt "founding application compensation"
 msgid "To be decided in the onboarding process."
 msgstr "Por decidir en el proceso de incorporación."
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Your booking link"
+msgstr ""
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "That is not JSON the platform can read: {problem}"
 msgstr ""
@@ -8037,6 +8042,11 @@ msgstr ""
 msgctxt "character count under a box"
 msgid "You have reached the {maxText} character limit."
 msgstr "Llegaste al límite de {maxText} caracteres."
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "That did not save. Try again."
+msgstr ""
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
@@ -9604,6 +9614,11 @@ msgstr ""
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
+msgstr ""
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Saved."
 msgstr ""
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
@@ -13949,6 +13964,11 @@ msgctxt "task handed to a role"
 msgid "Suggest a change"
 msgstr ""
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Save"
+msgstr ""
+
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor"
 msgid "That did not save. Try again."
@@ -14740,6 +14760,11 @@ msgstr ""
 #: client/src/components/hiddenMap/SevenMeter.tsx
 msgctxt "hidden map, progress toward opening the map"
 msgid "{vouched} of {needed}"
+msgstr ""
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Booking link"
 msgstr ""
 
 #: client/src/components/profile/ProgressionPowers.tsx
@@ -19546,6 +19571,11 @@ msgstr ""
 msgid "The agreement could not be read just now."
 msgstr ""
 
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "Clear"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "{n, plural, one {{pledged} pledged by # backer} other {{pledged} pledged by # backers}}"
 msgstr ""
@@ -19622,6 +19652,11 @@ msgstr "Archivos (opcional)"
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "1 pay change is left out. Pay is set by a person."
+msgstr ""
+
+#: client/src/components/BookingLinkField.tsx
+msgctxt "booking link field"
+msgid "When you talk with someone applying for a role, they book a time with you here. Use your own booking page, such as a Google booking page."
 msgstr ""
 
 #: client/src/components/profile/ProgressionPowers.tsx
