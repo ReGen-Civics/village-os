@@ -328,6 +328,11 @@ msgctxt "agent paths, a group"
 msgid "Map"
 msgstr "Map"
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{sent} letters sent to {sentTo}. They should arrive in a minute or two."
+msgstr "{sent} letters sent to {sentTo}. They should arrive in a minute or two."
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "circle standing"
 msgid "Forming"
@@ -762,6 +767,11 @@ msgstr "Your Moon changed sign that day. Add your birth time so I can tell which
 msgid "Saved {name}. The week map above reads it now."
 msgstr "Saved {name}. The week map above reads it now."
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
+msgstr "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nobody has written yet."
 msgstr "Nobody has written yet."
@@ -774,6 +784,11 @@ msgstr "Suggest a change to {blockName}"
 msgctxt "the conflict agreement editor is loading"
 msgid "Loading the frames…"
 msgstr "Loading the frames…"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Token pay, the bonus on the pay"
+msgstr "Token pay, the bonus on the pay"
 
 #: client/src/pages/Governance.tsx
 msgid "Open the canvas workbook"
@@ -1034,6 +1049,11 @@ msgstr "or"
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "File the ticked ones as suggestions"
 msgstr "File the ticked ones as suggestions"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Change the amount"
+msgstr "Change the amount"
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
@@ -1347,6 +1367,11 @@ msgstr "You're still signed in."
 #~ msgid "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 #~ msgstr "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no sender address yet. Add it in Comms Settings."
+msgstr "Not sent: the village has no sender address yet. Add it in Comms Settings."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
 msgstr "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
@@ -1467,6 +1492,11 @@ msgstr "Nobody holds the {careName} role today, so a private intake would reach 
 msgid "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 msgstr "For the decisions the platform does not run, the village writes who approves, who is asked first, who is told and how it is decided."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Their answer: {answer}"
+msgstr "Their answer: {answer}"
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Get your Gene Keys"
@@ -1499,6 +1529,11 @@ msgstr "Your quest"
 msgctxt "sera draft mark"
 msgid "Draft from Sera"
 msgstr "Draft from Sera"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The line holds the name of someone in this village, so the public page hides it. Write it again with the role in place of the name."
@@ -1554,6 +1589,11 @@ msgstr "The whole log and its review dates are in Sessions"
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "<0>{0}</0>, from {1} to {2}, in {3} time."
 msgstr "<0>{0}</0>, from {1} to {2}, in {3} time."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Issued to their account"
+msgstr "Issued to their account"
 
 #: client/src/components/governance/VillageAgreements.tsx
 msgctxt "agreements whose vote is open"
@@ -1857,6 +1897,11 @@ msgstr "Across the whole run"
 msgctxt "voice field purpose: join request"
 msgid "Why you want to join the village and what you hope to bring and find here."
 msgstr "Why you want to join the village and what you hope to bring and find here."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Token pay"
+msgstr "Token pay"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -2585,6 +2630,11 @@ msgctxt "commitment field: the period a member's word covers"
 msgid "This season"
 msgstr "This season"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Your answer"
+msgstr "Your answer"
+
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Everything has been touched recently."
 msgstr "Everything has been touched recently."
@@ -2603,6 +2653,11 @@ msgstr "The village has chosen"
 msgctxt "sera answers"
 msgid "Its words name a member here, so they cannot be taken as they are."
 msgstr "Its words name a member here, so they cannot be taken as they are."
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Why it changed: {reason}"
+msgstr "Why it changed: {reason}"
 
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "quest editor"
@@ -2863,6 +2918,11 @@ msgctxt "founding application refusal"
 msgid "One of those roles isn't open any more. Reload the page and pick again."
 msgstr "One of those roles isn't open any more. Reload the page and pick again."
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Could not issue yet. The Treasurer can see why."
+msgstr "Could not issue yet. The Treasurer can see why."
+
 #. placeholder {0}: failure.failed.length
 #: client/src/components/SaveBar.tsx
 msgid "{0, plural, one {# change did not save. It is still here to try again.} other {# changes did not save. They are still here to try again.}}"
@@ -3029,6 +3089,11 @@ msgstr "Open my moon"
 msgctxt "landing, founding team card eyebrow"
 msgid "Roles with rewards"
 msgstr "Roles with rewards"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Letters as they arrive"
+msgstr "Letters as they arrive"
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "Each new moon the village looks again at the block its season chose to grow and at any block a key moment flagged. With neither, the blocks take turns in canvas order."
@@ -3362,6 +3427,11 @@ msgstr "Remove this one"
 msgctxt "button that adds a practice that keeps tensions small"
 msgid "Add a practice"
 msgstr "Add a practice"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Keep the amount"
+msgstr "Keep the amount"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone, and its goals are asked here."
@@ -4061,6 +4131,11 @@ msgstr "Can be held by an agent"
 #~ msgid "Next: review my selection"
 #~ msgstr "Next: review my selection"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Approved, issuing to your account"
+msgstr "Approved, issuing to your account"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card window"
 msgid "Weekday mornings"
@@ -4442,6 +4517,11 @@ msgstr "Not named yet"
 msgctxt "role editor"
 msgid "Amount"
 msgstr "Amount"
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Approved, issues to your account at launch"
+msgstr "Approved, issues to your account at launch"
 
 #. placeholder {0}: r.current ?? ""
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -4892,6 +4972,11 @@ msgstr "Where the words and the settings part"
 msgid "Could not open the process"
 msgstr "Could not open the process"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Sent from escrow"
+msgstr "Sent from escrow"
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "The hours are an estimate that sets the price. Members see the price, never the hours. Every figure is kept beside its suggestion, so past prices fill in as quests are done."
@@ -5009,6 +5094,11 @@ msgctxt "roles page archetypes"
 msgid "Step one"
 msgstr "Step one"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
+msgstr "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
 msgid "How to switch it off"
@@ -5118,6 +5208,12 @@ msgstr "We don't track time and we don't pay for it. We pay for contracted work 
 msgctxt "price popup"
 msgid "Cancel"
 msgstr "Cancel"
+
+#. placeholder {0}: results.length
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{failed} of {0} did not go out. Sent mail has the details."
+msgstr "{failed} of {0} did not go out. Sent mail has the details."
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that sends a closing policy suggestion"
@@ -5265,6 +5361,11 @@ msgctxt "founding application about"
 msgid "Your Human Design or Gene Keys (optional)"
 msgstr "Your Human Design or Gene Keys (optional)"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Send your answer"
+msgstr "Send your answer"
+
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: why the lead quest was chosen"
 msgid "It grows from your roots."
@@ -5274,6 +5375,11 @@ msgstr "It grows from your roots."
 msgctxt "founding application compensation"
 msgid "How rewards work"
 msgstr "How rewards work"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Month"
+msgstr "Month"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Counts for this version. An edit asks again."
@@ -5441,6 +5547,11 @@ msgctxt "founding application refusal"
 msgid "Tick that we may keep your voice note, or remove the recordings."
 msgstr "Tick that we may keep your voice note, or remove the recordings."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "New amount, at most {ceiling}"
+msgstr "New amount, at most {ceiling}"
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "You have none yet. Gather several changes here and the village votes on them together."
 msgstr "You have none yet. Gather several changes here and the village votes on them together."
@@ -5448,6 +5559,16 @@ msgstr "You have none yet. Gather several changes here and the village votes on 
 #: client/src/pages/ChangeRequests.tsx
 msgid "The village can ask, raise concerns and objections, and suggest edits. The people whose roles look after these settings are asked to look."
 msgstr "The village can ask, raise concerns and objections, and suggest edits. The people whose roles look after these settings are asked to look."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "No token pay this month."
+msgstr "No token pay this month."
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "{units} {name}, changed from {shared}"
+msgstr "{units} {name}, changed from {shared}"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application lede"
@@ -5482,6 +5603,11 @@ msgctxt "site header"
 msgid "Sign in"
 msgstr "Sign in"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "A member"
+msgstr "A member"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "The approval inbox is for admins and for holders of the powers it covers."
 msgstr "The approval inbox is for admins and for holders of the powers it covers."
@@ -5504,10 +5630,20 @@ msgctxt "open proposal side by side"
 msgid "The season's goals they serve"
 msgstr "The season's goals they serve"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Nobody was paid this month."
+msgstr "Nobody was paid this month."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, opens an admin page"
 msgid "Open {label}"
 msgstr "Open {label}"
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Waiting for the Treasurer's approval"
+msgstr "Waiting for the Treasurer's approval"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
@@ -5630,6 +5766,11 @@ msgctxt "funding rounds"
 msgid "From {author}"
 msgstr "From {author}"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Cash"
+msgstr "Cash"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Nothing is waiting. When an agent proposes a change, it appears here."
@@ -5726,6 +5867,11 @@ msgstr "join a community call"
 msgctxt "character card, open roles tagged for no character"
 msgid "Also open in the village, for anyone:"
 msgstr "Also open in the village, for anyone:"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved. They issue at launch."
+msgstr "Approved. They issue at launch."
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: signed out door"
@@ -6227,6 +6373,11 @@ msgctxt "roles page, how it works"
 msgid "Roles"
 msgstr "Roles"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved by {approvedBy}."
+msgstr "Approved by {approvedBy}."
+
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "exit policy section heading"
 msgid "Repair before departure"
@@ -6536,6 +6687,11 @@ msgctxt "sera compare"
 msgid "Show less"
 msgstr "Show less"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Approved, issuing"
+msgstr "Approved, issuing"
+
 #: client/src/components/today/FirstFourteenDays.tsx
 msgctxt "first fourteen days strip, all done"
 msgid "Every step of our first 14 days is walked. Welcome, truly."
@@ -6750,6 +6906,11 @@ msgstr "End of Moon, how it adds up"
 msgctxt "the reason for a change request"
 msgid "Why"
 msgstr "Why"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Save the change"
+msgstr "Save the change"
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.received
@@ -6983,6 +7144,11 @@ msgctxt "thanks composer: the send button"
 msgid "Send the lantern"
 msgstr "Send the lantern"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Owed {owed}, sent {sent}"
+msgstr "Owed {owed}, sent {sent}"
+
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms: the pay ask"
 #~ msgid "Either way, the contract sets the amount, at or under what the role pays at your commitment."
@@ -7010,6 +7176,11 @@ msgstr "Saved. We told the applicant."
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
 msgstr "See: what the village shows about {name}"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no email provider key yet. Add it in Comms Settings."
+msgstr "Not sent: the village has no email provider key yet. Add it in Comms Settings."
 
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgid "Work it out here"
@@ -7559,6 +7730,11 @@ msgctxt "price popup lede"
 msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
 msgstr "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Reading the month's pay."
+msgstr "Reading the month's pay."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor"
@@ -7624,6 +7800,11 @@ msgstr "Aligning is the village's way of signing. Your role starts once every ag
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgid "Attached. Every holder is asked to align again with the agreement as it reads now."
 msgstr "Attached. Every holder is asked to align again with the agreement as it reads now."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Close"
+msgstr "Close"
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgid "{quoted} <0>{creditText}</0>. The canvas lives at <1>{url}</1>. {ours}"
@@ -7913,6 +8094,11 @@ msgctxt "role card rewards: the footnote, equity and credits"
 msgid "Equity and credit terms are still being written and are subject to legal review."
 msgstr "Equity and credit terms are still being written and are subject to legal review."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Why it changed. The member reads this and can answer."
+msgstr "Why it changed. The member reads this and can answer."
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
 msgid "No invoice has been sent yet."
@@ -7945,6 +8131,11 @@ msgstr "Paste the paths as JSON, in the shape the list saves: a paths list of me
 msgctxt "price popup"
 msgid "Use this price"
 msgstr "Use this price"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approve selected"
+msgstr "Approve selected"
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 #~ msgctxt "admin quest safety"
@@ -7995,6 +8186,11 @@ msgstr "Year"
 msgctxt "empty reply time"
 msgid "The village chooses"
 msgstr "The village chooses"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "The End of Moon review is not on in this village."
+msgstr "The End of Moon review is not on in this village."
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, a connected service's fallback name"
@@ -8186,6 +8382,11 @@ msgstr "What each of these holds is in the list above, so none of it is offered 
 msgctxt "role fill, a target other than 100"
 msgid "(of {0}%)"
 msgstr "(of {0}%)"
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "You answered: {answer}"
+msgstr "You answered: {answer}"
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -9384,6 +9585,11 @@ msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 msgstr "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
+msgstr "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a canvas suggestion is being set aside by the story's holder"
 msgid "Setting aside"
@@ -9476,6 +9682,11 @@ msgstr "Ready for the village to review?"
 msgctxt "circle hearth, a plant"
 msgid "A seed, waiting for hands"
 msgstr "A seed, waiting for hands"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Each member's cash and token pay for a month: what is owed, what was sent from escrow, and the token pay to approve."
+msgstr "Each member's cash and token pay for a month: what is owed, what was sent from escrow, and the token pay to approve."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application review"
@@ -9628,6 +9839,11 @@ msgstr "Start it"
 msgid "They have not aligned with the membership letter yet."
 msgstr "They have not aligned with the membership letter yet."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Changed by {changedBy}: {reason}"
+msgstr "Changed by {changedBy}: {reason}"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: the list of threads"
 msgid "The thanks, newest first"
@@ -9680,6 +9896,11 @@ msgstr "How roles are going"
 #: client/src/components/modules/SuggestDial.tsx
 msgid "{changes, plural, one {Added. {title} has # change.} other {Added. {title} has # changes.}}"
 msgstr "{changes, plural, one {Added. {title} has # change.} other {Added. {title} has # changes.}}"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "New amount"
+msgstr "New amount"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -10006,6 +10227,11 @@ msgstr "No cycle has closed yet."
 msgctxt "admin quest safety"
 msgid "Open to every age"
 msgstr "Open to every age"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Owed"
+msgstr "Owed"
 
 #: client/src/components/sessions/GatheringSeed.tsx
 msgctxt "coming up, i'll be there"
@@ -10354,6 +10580,11 @@ msgctxt "role track"
 msgid "Volunteer"
 msgstr "Volunteer"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Issued to your account"
+msgstr "Issued to your account"
+
 #. placeholder {0}: marks?.(p.key) ?? 0
 #: client/src/components/roleCard/RolePieces.tsx
 msgctxt "role card rail: how many suggestions a piece carries"
@@ -10558,6 +10789,11 @@ msgctxt "founding application value"
 msgid "How we will know it is done"
 msgstr "How we will know it is done"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Owed since {since}"
+msgstr "Owed since {since}"
+
 #: client/src/components/governance/TermsOnOfferField.tsx
 msgid "Loading the terms on offer…"
 msgstr "Loading the terms on offer…"
@@ -10629,6 +10865,11 @@ msgctxt "voice note"
 msgid "Tap the mic in any answer below to say it instead of typing it."
 msgstr "Tap the mic in any answer below to say it instead of typing it."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "No cash this month."
+msgstr "No cash this month."
+
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "How it serves the governing purpose"
 msgstr "How it serves the governing purpose"
@@ -10656,6 +10897,11 @@ msgstr "Select up to three roles. The order is your preference."
 #~ msgctxt "about you"
 #~ msgid "If you leave the three references blank, we'll run a background check instead. Its cost comes out of your first contractor pay."
 #~ msgstr "If you leave the three references blank, we'll run a background check instead. Its cost comes out of your first contractor pay."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approve and issue selected"
+msgstr "Approve and issue selected"
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
@@ -10999,6 +11245,11 @@ msgstr "That is not a role card. A role card starts with the line Role card v1."
 msgctxt "companion lens sheet"
 msgid "That could not be changed just now."
 msgstr "That could not be changed just now."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved by {approvedBy}, who changed it and was the only one who could."
+msgstr "Approved by {approvedBy}, who changed it and was the only one who could."
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a canvas suggestion was adopted"
@@ -11958,6 +12209,11 @@ msgstr "What will be done when it is finished?"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Kept in this browser only. Nothing is sent until you apply."
 #~ msgstr "Kept in this browser only. Nothing is sent until you apply."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Claimed, ready to send"
+msgstr "Claimed, ready to send"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: close after sending"
@@ -12930,6 +13186,11 @@ msgctxt "companion welcome"
 msgid "Delete this lens"
 msgstr "Delete this lens"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Your token pay"
+msgstr "Your token pay"
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
 msgstr "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
@@ -12993,6 +13254,11 @@ msgstr "Energy and attention. We agree it together."
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Risk tags, separated by commas (optional)"
 msgstr "Risk tags, separated by commas (optional)"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "{units} {name}, changed from {shared}"
+msgstr "{units} {name}, changed from {shared}"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -13061,6 +13327,11 @@ msgstr "Cancel"
 msgctxt "sera changes"
 msgid "Small changes {nSmall}"
 msgstr "Small changes {nSmall}"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved and issued."
+msgstr "Approved and issued."
 
 #: client/src/components/quiet/OffTheTrail.tsx
 msgid "There is no page at this address. It may have moved, or it may never have existed. The land is still here, and the way home is short."
@@ -13511,6 +13782,11 @@ msgstr "Night look"
 #~ msgid "Circles are sociocratic working groups with real authority over their own domain. Decisions inside a circle pass by consent."
 #~ msgstr "Circles are sociocratic working groups with real authority over their own domain. Decisions inside a circle pass by consent."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "a holder"
+msgstr "a holder"
+
 #: client/src/components/roleEdit/SectionsFields.tsx
 msgctxt "role editor, ceiling hint"
 msgid "The card reads: Total compensation up to this figure. Ranges and minimums stay off the card."
@@ -13569,6 +13845,11 @@ msgstr "See your whole path"
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The line could not be saved just now."
 msgstr "The line could not be saved just now."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "This month has more pay than one board shows. The first 2,000 lines of each kind are here."
+msgstr "This month has more pay than one board shows. The first 2,000 lines of each kind are here."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "a change was saved"
@@ -14008,6 +14289,11 @@ msgctxt "role editor"
 msgid "Listed"
 msgstr "Listed"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Earned Equity"
+msgstr "Earned Equity"
+
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Anyone here can suggest a change. The village decides."
 msgstr "Anyone here can suggest a change. The village decides."
@@ -14062,6 +14348,11 @@ msgstr "Open Integrations"
 msgctxt "pricing desk"
 msgid "{0} need your hours"
 msgstr "{0} need your hours"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send me a test"
+msgstr "Send me a test"
 
 #: client/src/components/power/SeatAction.tsx
 msgctxt "role card button, signed out"
@@ -14126,6 +14417,11 @@ msgstr "Read the village's exit policy"
 msgctxt "open work filter: every size"
 msgid "Any size"
 msgstr "Any size"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Approved, issues at launch"
+msgstr "Approved, issues at launch"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "Decision Matrix column, before its answer"
@@ -14711,6 +15007,11 @@ msgctxt "open work: why the lead quest was chosen"
 msgid "It grows {goalText}, and that goal needs hands this season."
 msgstr "It grows {goalText}, and that goal needs hands this season."
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Could not issue"
+msgstr "Could not issue"
+
 #. placeholder {0}: currency.toLowerCase()
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: amount field"
@@ -14760,6 +15061,11 @@ msgstr "Open the agreement, where a member who can open votes proposes a change"
 msgctxt "founding application wait"
 msgid "While you wait"
 msgstr "While you wait"
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card: nobody holds this role yet"
@@ -15014,6 +15320,11 @@ msgctxt "founding application why starter"
 msgid "Why this role:"
 msgstr "Why this role:"
 
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Earned Equity"
+msgstr "Earned Equity"
+
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Where the Anchor decided this (the thread, the meeting or the date)"
 msgstr "Where the Anchor decided this (the thread, the meeting or the date)"
@@ -15184,6 +15495,11 @@ msgstr "Weekend evenings"
 msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "your guide"
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Recorded {when} by {who}. {reference}"
+msgstr "Recorded {when} by {who}. {reference}"
 
 #: client/src/components/governance/GoalsList.tsx
 msgid "Most people list three to five goals for a moon. You can send fewer, and we will read what you give us."
@@ -15467,6 +15783,11 @@ msgctxt "open proposal sent"
 msgid "Check your email"
 msgstr "Check your email"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Open"
+msgstr "Open"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card window"
 msgid "Weekday afternoons"
@@ -15614,6 +15935,11 @@ msgctxt "agent paths"
 msgid "Search the paths"
 msgstr "Search the paths"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "{token}: {waiting} waiting, {approved} approved, {issued} issued"
+msgstr "{token}: {waiting} waiting, {approved} approved, {issued} issued"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment on the roles card: heading"
 msgid "How much you give"
@@ -15623,6 +15949,11 @@ msgstr "How much you give"
 #~ msgctxt "open proposal: commitment footnote"
 #~ msgid "The contract sets the pay, at or under what the role pays at their commitment."
 #~ msgstr "The contract sets the pay, at or under what the role pays at their commitment."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "The village has not launched yet. Approved token pay issues to each account at launch."
+msgstr "The village has not launched yet. Approved token pay issues to each account at launch."
 
 #. placeholder {0}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
@@ -16011,6 +16342,11 @@ msgctxt "sera changes"
 msgid "Showing all {nShown} waiting changes"
 msgstr "Showing all {nShown} waiting changes"
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send all to me"
+msgstr "Send all to me"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
 #~ msgid "{goalCount} goals for your first moon"
@@ -16024,6 +16360,11 @@ msgstr "This comes from the village's conflict agreement now, with the care and 
 msgctxt "open proposal side by side"
 msgid "No goal for {roleName}"
 msgstr "No goal for {roleName}"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Loading the letters..."
+msgstr "Loading the letters..."
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft canvas words from this document"
@@ -16439,6 +16780,11 @@ msgstr "Allowance"
 msgid "Apply for these roles"
 msgstr "Apply for these roles"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Pay by member"
+msgstr "Pay by member"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Connector and settings"
@@ -16452,6 +16798,11 @@ msgstr "{markers} of {electorate} members chose, and this round needed {quorum}%
 msgctxt "open proposal confirm"
 msgid "Confirmed"
 msgstr "Confirmed"
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Credits"
+msgstr "Credits"
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -16467,6 +16818,11 @@ msgstr "1 pay change is left out. Pay is set by a person."
 msgctxt "progression: why these powers come first"
 msgid "First what your roles and groups hand you, then what opened most recently."
 msgstr "First what your roles and groups hand you, then what opened most recently."
+
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Waiting for approval"
+msgstr "Waiting for approval"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Ask to share it"
@@ -16847,6 +17203,11 @@ msgctxt "founding application check"
 msgid "Choose the season goal value {n} serves."
 msgstr "Choose the season goal value {n} serves."
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sent to {sentTo}. It should arrive in a minute or two."
+msgstr "Sent to {sentTo}. It should arrive in a minute or two."
+
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"
 #~ msgstr "Propose for these roles"
@@ -17026,6 +17387,11 @@ msgctxt "agent paths, the box a list is pasted into"
 msgid "Pasted paths"
 msgstr "Pasted paths"
 
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Credits"
+msgstr "Credits"
+
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page button"
 #~ msgid "Draft your roles"
@@ -17100,6 +17466,11 @@ msgstr "this moon (from its new moon to the next)"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{0} things to look at before the next stone:"
 #~ msgstr "{0} things to look at before the next stone:"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sending..."
+msgstr "Sending..."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."

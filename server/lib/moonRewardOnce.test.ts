@@ -27,6 +27,7 @@ import { seedEconomy } from "./economySeed";
 import { CREDITS, EARNED_EQUITY, EQUITY_MEANING_UNWRITTEN, faucetFor, fromLedgerUnits, keys, mint, runSettlement, toLedgerUnits, villageId } from "./economy";
 import { loadVariables, setVariable } from "./variables";
 import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards } from "./moonReward";
+import { PAY_BOARD_ROUTES } from "../../shared/moonRewardReview";
 import { recordGameStart } from "./gameStart";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -61,7 +62,7 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     if (!h) throw new Error(`no handler for ${key}`);
     const out: { status: number; body: any } = { status: 200, body: undefined };
     const res: any = { status(c: number) { out.status = c; return res; }, json(b: unknown) { out.body = b; return res; } };
-    await h({ params: {}, body: {}, query: {}, ...req }, res);
+    await h({ params: {}, body: {}, query: {}, get: () => undefined, ...req }, res);
     return out;
   };
   const as = (who: string) => { whoami = who; };
@@ -118,6 +119,7 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     }
     await q(`DELETE FROM \`token_ledger\` WHERE \`source\` = ?`, [MOON_REWARD_SOURCE]); // module-review-ok: fixture SQL
     await q("DELETE FROM `quest_owed_postings` WHERE `source` = ?", [MOON_REWARD_SOURCE]); // module-review-ok: fixture SQL
+    await q("DELETE FROM `moon_reward_reviews`"); // module-review-ok: fixture SQL
     await q("DELETE FROM `token_ledger` WHERE `source` = 'role_cycle'"); // module-review-ok: fixture SQL
     await q("DELETE FROM `mint_rules` WHERE `village_id` = ? AND `trigger` = 'role.cycle'", [villageId()]); // module-review-ok: fixture SQL
     await q("UPDATE `org_roles` SET `value_tokens` = ? WHERE `id` = 'r-water'", [JSON.stringify([{ token: CREDITS, amount: 100 }])]); // module-review-ok: fixture SQL
@@ -159,6 +161,14 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     const row = await queueRow();
     return call(`POST ${MOON_ROUTES.approveInvoices}`, { body: { invoices: [{ id: row.invoice.id, hash: row.hash, expectedOn: "2026-11-20" }] } });
   };
+  /** A Treasurer approves the invoice's token shares (each waits for that review, shared/moonRewardReview.ts). */
+  const approveTokens = async () => {
+    as("m-treas");
+    const keys = (await q("SELECT `idempotency_key` FROM `quest_owed_postings` WHERE `source` = ?", [MOON_REWARD_SOURCE])).map((r: any) => String(r.idempotency_key)); // module-review-ok: fixture SQL
+    const out = await call(`POST ${PAY_BOARD_ROUTES.approve}`, { body: { keys } });
+    expect(out.status, JSON.stringify(out.body)).toBe(200);
+    return out;
+  };
   const cashOwed = async () => (await q("SELECT `amount_minor` FROM `cash_owed` WHERE `user_id` = 'm-wren'")).map((r: any) => Number(r.amount_minor)); // module-review-ok: fixture SQL
   const issuedOf = async (token: string) =>
     Number((await q("SELECT COALESCE(SUM(`amount`), 0) AS n FROM `token_ledger` WHERE `source` = ? AND `token_type` = ? AND `to_account` = ?", [MOON_REWARD_SOURCE, token, memberAccount("m-wren")]))[0].n); // module-review-ok: fixture SQL
@@ -191,6 +201,7 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     expect(await creditsBy("role_cycle")).toBe(0);
     await sendAll();
     expect((await approve()).body.approved).toHaveLength(1);
+    await approveTokens();
     // The settlement again, after the approval: still nothing from it.
     await runSettlement(pool, AT);
     expect(await creditsBy("role_cycle")).toBe(0);
@@ -230,6 +241,7 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
     await sendAll();
     expect((await approve()).body.approved).toHaveLength(1);
+    await approveTokens();
     const id = await approvedId();
     const rows = await q("SELECT `token_slug`, `units`, `state`, `refusal_reason`, `last_error` FROM `quest_owed_postings` WHERE `claim_id` = ?", [lineRewardClaimId(id)]); // module-review-ok: fixture SQL
     expect(rows.map((r: any) => [r.token_slug, r.state, r.refusal_reason, r.last_error])).toEqual([[EARNED_EQUITY, "owed", "equity_meaning", EQUITY_MEANING_UNWRITTEN]]);

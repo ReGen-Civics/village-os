@@ -4,7 +4,7 @@ import { linguiMacros } from "./client/src/i18n/linguiMacros";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type Rollup } from "vite";
 import {
   type ChunkFacts,
   landingRoutes,
@@ -416,6 +416,30 @@ const SMALL_PAGE = /client[\\/]src[\\/]pages[\\/][^\\/]+\.tsx$/;
  * visit to any of them and from cache after.
  */
 const SMALL_PAGE_BYTES = 12000;
+/*
+ * TWO MORE PAGE GROUPS (budget headroom pass, 16 Nov 2026). The total stood
+ * at 7392 KB of 7400 on 5fc1b94, and the pages that were still one file each
+ * paid about 2 KB of padding apiece. Neither group holds a key route, and
+ * nothing imports a page but the router, so neither can be imported back.
+ *
+ * "shopfront": the public brochure pages (the SHOPFRONT list in
+ * scripts/check-brand-refs.mjs, without the key routes and without
+ * ProjectHistory, which is big enough to be its own file). A visitor reading
+ * one usually reads the next, so the group is about 125 KB raw fetched once
+ * instead of one file per page. One that is under SMALL_PAGE_BYTES stays in
+ * "smallpages" where it already was.
+ *
+ * "midpages": member pages from SMALL_PAGE_BYTES up to this many bytes of
+ * source (source length counts comments and long copy, so these are 7 to 20 KB
+ * once built). About 125 KB raw, a second "smallpages" so the first one does
+ * not grow.
+ *
+ * Measured together with the "keyset-" groups and the preload trim below: 7224
+ * KB block-charged, main JS and first-page JS no higher than before. 24000
+ * here measured 7204 with a 290 KB group, too much for one page to wait on.
+ */
+const MID_PAGE_BYTES = 18000;
+const SHOPFRONT_PAGES = /client[\\/]src[\\/]pages[\\/](Team|MasterPlan|Visit|WorkWithUs|LoveLetter|GoodNeighbor|CoCreatorsGuide|HowWeCreate|InvestorJourney|ResidentJourney|ProsperityJourney|ResidentRights|StewardRights)\.tsx$/;
 /** The natural interface kit, grouped into its own chunk below. */
 const NATURAL_KIT = /components[\\/]natural[\\/]|lib[\\/]celebrated|shared[\\/]capabilities/;
 /**
@@ -466,6 +490,8 @@ const KEY_ROUTE_SPEC = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirna
 const KEY_ROUTE_PAGES: string[] = [...KEY_ROUTE_SPEC.routes.map((r) => r.page), ...(KEY_ROUTE_SPEC.everyPage ?? [])].map((p) => path.resolve(import.meta.dirname, p).replace(/\\/g, "/"));
 /** Every module a key route's page reaches by static imports, worked out once per build like `eagerModules`. */
 let keyRouteModules: Set<string> | null = null;
+/** For each module a key page reaches, the names of the key pages that reach it, joined: worked out once per build. */
+let keySetModules: Map<string, string> | null = null;
 /*
  * NEVER A GROUP MEMBER, 2: THE MICROPHONE AND THE COMPANION. They hold
  * SpeechRecognition, MediaRecorder and getUserMedia, and the companion's
@@ -513,6 +539,164 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
   return verdict;
 }
 
+/*
+ * A KEY ROUTE'S OWN SMALL MODULES, ONE CHUNK PER SET OF KEY PAGES (budget
+ * headroom pass, 16 Nov 2026).
+ *
+ * The rule above keeps every module a key page reaches out of "smalls" and
+ * "smallui", and rightly: those groups would hand the landing page the role
+ * editor's code. But it left those modules to rollup, which gave each shared
+ * one its own file, and on 5fc1b94 that was 64 files under 4 KB (24 of them
+ * reached by /roles alone) costing a whole block each.
+ *
+ * So a small module a key page reaches joins a group named for exactly the set
+ * of key pages that reach it ("keyset-Roles", "keyset-Home-Roles"). Every
+ * member of "keyset-Roles" is a module /roles already loads on its first view,
+ * so the group hands no key route a module it did not already fetch, which is
+ * what guard-route-first-views measures. A lazy page outside the key routes
+ * that imports one member downloads the group: tens of KB, and from cache
+ * after the first key route.
+ *
+ * It stays acyclic for the same reason the groups above do. What a key page
+ * reaches is a static closure, so a member's imports are reached by at least
+ * the same key pages: a group only ever imports a group with the same or a
+ * larger page set. And a member may import only packages, boot modules, named
+ * chunks and members of such groups, so no chunk rollup builds can sit
+ * between two groups and import one back.
+ *
+ * THE FIRST PAGE MUST NOT SPLIT, and that is the rule that decides most
+ * verdicts. Rollup treats every named chunk as an entry of its own that
+ * nothing is "already loaded" for, and it puts first-page modules that the
+ * same named chunks reach into the same file. So a group reaching some of the
+ * modules in one of those files, and not the rest, splits that file in two:
+ * the first try at this rule took the first page from 10 files to 16 and the
+ * total UP to 7436 KB. A member therefore has to reach either none or all of
+ * each such set (an "atom" below). keySetPlan works the atoms out the same way
+ * rollup does for first-page modules, from which named chunks reach them, and
+ * drops any candidate that would cut one.
+ */
+type GetModuleInfo = Rollup.GetModuleInfo;
+let keySetGroups: Map<string, string> | null = null;
+function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): ReadonlyMap<string, string> {
+  if (keySetGroups) return keySetGroups;
+  const all = Array.from(ids());
+  // The rules above, for every module: which named chunk each one joins.
+  const base = new Map<string, string>();
+  for (const id of all) {
+    const g = baseChunkOf(id, info, ids);
+    if (g) base.set(id, g);
+  }
+  const eager = eagerModules as Set<string>;
+  const keySet = keySetModules as Map<string, string>;
+  const membersOf = new Map<string, string[]>();
+  for (const [id, g] of Array.from(base)) membersOf.set(g, [...(membersOf.get(g) ?? []), id]);
+  // What rollup counts as loaded with a named chunk: its members, their
+  // imports, and every member of any named chunk reached on the way.
+  const closureOf = (start: readonly string[]): Set<string> => {
+    const seen = new Set<string>();
+    const stack = [...start];
+    while (stack.length) {
+      const m = stack.pop() as string;
+      if (seen.has(m)) continue;
+      seen.add(m);
+      const g = base.get(m);
+      if (g) for (const other of membersOf.get(g) ?? []) stack.push(other);
+      for (const dep of info(m)?.importedIds ?? []) stack.push(dep);
+    }
+    return seen;
+  };
+  // A first-page module outside every named chunk travels with the others
+  // that the same named chunks reach: one "atom" per set.
+  const reachedBy = new Map<string, string[]>();
+  for (const [g, members] of Array.from(membersOf)) {
+    for (const m of Array.from(closureOf(members))) if (eager.has(m) && !base.has(m)) reachedBy.set(m, [...(reachedBy.get(m) ?? []), g]);
+  }
+  const atomKey = (m: string) => (reachedBy.get(m) ?? []).sort().join(",");
+  const atoms = new Map<string, string[]>();
+  for (const m of Array.from(eager)) if (!base.has(m)) atoms.set(atomKey(m), [...(atoms.get(atomKey(m)) ?? []), m]);
+  // Candidates: small modules a key page reaches that no rule above took.
+  const candidate = (id: string): boolean => {
+    const m = info(id);
+    return (
+      keySet.has(id) &&
+      !base.has(id) &&
+      !!m?.code &&
+      m.code.length < SMALL_MODULE_BYTES &&
+      !id.includes("node_modules") &&
+      !id.startsWith("\0") &&
+      !eager.has(id) &&
+      !SMALL_GROUP_NEVER.test(id) &&
+      m.importers.length >= 2 &&
+      !NATURAL_KIT.test(id) &&
+      !m.importers.some((by) => NATURAL_KIT.test(by))
+    );
+  };
+  // A candidate whose first-page reach would cut an atom never joins.
+  const cutsNoAtom = (id: string) => {
+    const reach = new Set(Array.from(closureOf([id])).filter((m) => eager.has(m) && !base.has(m)));
+    return Array.from(reach).every((m) => (atoms.get(atomKey(m)) ?? []).every((x) => reach.has(x)));
+  };
+  const accepted = new Set(all.filter((id) => candidate(id) && cutsNoAtom(id)));
+  // And one whose imports include a lazy module outside every group drops out, until none does.
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const id of Array.from(accepted)) {
+      const deps = info(id)?.importedIds ?? [];
+      if (!deps.every((dep) => eager.has(dep) || base.has(dep) || accepted.has(dep) || dep.includes("node_modules"))) {
+        accepted.delete(id);
+        changed = true;
+      }
+    }
+  }
+  keySetGroups = new Map(Array.from(accepted, (id) => [id, `keyset-${keySet.get(id)}`]));
+  return keySetGroups;
+}
+
+/*
+ * NO PRELOAD HINT FOR A FILE THE IMPORTER ALREADY HOLDS (budget headroom pass,
+ * 16 Nov 2026).
+ *
+ * Vite writes, beside every dynamic import, the list of files to preload with
+ * it: the target and everything it imports, transitively. That list includes
+ * the chunks the importing chunk has itself already imported statically, and
+ * for the entry those are the first page's own chunks (icons, shell-libs,
+ * internalPath and the rest), named again in the list of all hundred-odd
+ * routes. Vite's preload helper skips a file it has a link for, so those
+ * entries do nothing at runtime; they only cost bytes in the main chunk and in
+ * every chunk that imports lazily. This drops, for each import, the files the
+ * importer's own static imports already loaded.
+ */
+let preloadBundle: Rollup.OutputBundle | null = null;
+const loadedWithChunk = new Map<string, Set<string>>();
+function staticallyLoadedWith(fileName: string): Set<string> {
+  const known = loadedWithChunk.get(fileName);
+  if (known) return known;
+  const seen = new Set<string>();
+  const stack = [fileName];
+  while (stack.length) {
+    const f = stack.pop() as string;
+    if (seen.has(f)) continue;
+    seen.add(f);
+    const out = preloadBundle?.[f];
+    if (out?.type === "chunk") stack.push(...out.imports);
+  }
+  loadedWithChunk.set(fileName, seen);
+  return seen;
+}
+function capturePreloadBundle(): Plugin {
+  return {
+    name: "capture-preload-bundle",
+    apply: "build",
+    generateBundle: {
+      order: "pre",
+      handler(_options, bundle) {
+        preloadBundle = bundle;
+        loadedWithChunk.clear();
+      },
+    },
+  };
+}
+
 /**
  * Long English moved out of the lazy chunks into dist/i18n/parts/en, outside
  * dist/public (client/src/i18n/copySplit.ts). One collector per build: the
@@ -521,8 +705,102 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
 const longCopy = new CopyCollector();
 const LONG_COPY_PARTS = path.resolve(import.meta.dirname, "dist", "i18n", "parts", "en");
 
+/**
+ * The chunk a module joins under the rules above, before the "keyset-" groups
+ * (keySetPlan below), or undefined for rollup's own chunking.
+ */
+function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () => IterableIterator<string>): string | undefined {
+  if (id.includes("lucide-react")) return "icons";
+  /*
+   * THE SHELL'S LIBRARIES, ONE NAMED CHUNK (role journey PR-B, 2026-11-09).
+   * Rollup split these off the entry only when the lazy-chunk graph
+   * happened to share them (a chunk it named "internalPath"), and folded
+   * them back in when it did not: adding the role editor as one more lazy
+   * chunk took the main chunk from 345 KB to 471 KB while first-page JS
+   * stayed at 641 KB, i.e. nothing new was loaded. Named, the split no
+   * longer depends on how many lazy chunks import them.
+   */
+  if (/node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?(?:motion-dom|tailwind-merge|sonner|wouter|@lingui\/core)\//.test(id)) return "shell-libs";
+  /*
+   * The natural interface kit, one chunk instead of four.
+   *
+   * Its pieces are shared by the dashboard, the quest board, the
+   * profile, the admin and both crowdpool boards, so rollup gave each
+   * one its own shared chunk: 4276 real bytes spread across four files
+   * and charged 16 KB in blocks. Grouped, the same bytes cost one
+   * block. This is the merging fix the block-charge note above
+   * describes, at the smallest scale it is worth doing.
+   */
+  if (NATURAL_KIT.test(id)) {
+    return "natural";
+  }
+  // SMALL SHARED MODULES, two lazy chunks: see SMALL_MODULE_BYTES above.
+  // Only modules the entry does NOT import statically, so the first
+  // page load fetches nothing it did not fetch before.
+  if (!eagerModules) {
+    eagerModules = new Set();
+    const stack = Array.from(getModuleIds()).filter((m) => getModuleInfo(m)?.isEntry);
+    while (stack.length) {
+      const m = stack.pop() as string;
+      if (eagerModules.has(m)) continue;
+      eagerModules.add(m);
+      for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
+    }
+  }
+  // What the key routes' pages reach statically joins no group: see KEY_ROUTE_PAGES above.
+  if (!keyRouteModules) {
+    keyRouteModules = new Set();
+    const stack = Array.from(getModuleIds()).filter((m) => KEY_ROUTE_PAGES.includes(m.split("?")[0].replace(/\\/g, "/")));
+    while (stack.length) {
+      const m = stack.pop() as string;
+      if (keyRouteModules.has(m)) continue;
+      keyRouteModules.add(m);
+      for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
+    }
+  }
+  // Which key pages reach each module, for the "keyset-" groups: see keySetPlan above.
+  if (!keySetModules) {
+    const reached = new Map<string, string[]>();
+    for (const page of Array.from(getModuleIds()).filter((m) => KEY_ROUTE_PAGES.includes(m.split("?")[0].replace(/\\/g, "/")))) {
+      const label = path.basename(page.split("?")[0]).replace(/\.tsx?$/, "");
+      const seen = new Set<string>();
+      const stack = [page];
+      while (stack.length) {
+        const m = stack.pop() as string;
+        if (seen.has(m)) continue;
+        seen.add(m);
+        reached.set(m, [...(reached.get(m) ?? []), label]);
+        for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
+      }
+    }
+    keySetModules = new Map(Array.from(reached, ([m, labels]) => [m, labels.sort().join("-")]));
+  }
+  const key = keyRouteModules;
+  /*
+   * THE PAGES' OWN COPY, one chunk (batch 158). Each brochure page's
+   * words (shared/pageContent/<page>.ts) are a leaf module of 1 to 4 KB
+   * shared by its page and the admin's page editor, so rollup gave each
+   * its own file and a whole 4 KB block. Grouped, they ride one file. Only
+   * lazy ones: whatever the first page already carries stays where it is.
+   */
+  if (PAGE_COPY.test(id) && !eagerModules.has(id) && !key.has(id)) return "page-copy";
+  /*
+   * SMALL LAZY PAGES, one chunk (batch 158). A route that is a few
+   * hundred lines (the password pages, a short list) was its own 2 to 4
+   * KB file and a whole 4 KB block. Nothing imports a page but the
+   * router's React.lazy, so the group can never be imported back.
+   */
+  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id)) {
+    const code = getModuleInfo(id)?.code;
+    if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
+    if (SHOPFRONT_PAGES.test(id)) return "shopfront";
+    if (code && code.length < MID_PAGE_BYTES) return "midpages";
+  }
+  return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
+}
+
 export default defineConfig({
-  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet(), guardRouteFirstViews()],
+  plugins: [linguiMacros(longCopy), splitLongCopy(longCopy, LONG_COPY_PARTS), react(), tailwindcss(), serveGroundsInDev(), dropLegacyWoffFallback(), useUnhintedFonts(), routeChunkPreload(), preloadDisplayFace(), guardBootSet(), guardRouteFirstViews(), capturePreloadBundle()],
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -534,6 +812,8 @@ export default defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
+    // Drop preload hints for files the importer already loaded: see capturePreloadBundle above.
+    modulePreload: { resolveDependencies: (_file, deps, { hostId }) => deps.filter((dep) => !staticallyLoadedWith(hostId).has(dep)) },
     emptyOutDir: true,
     /*
      * Terser rather than esbuild's minifier, 2026-11-02 budget pass: about
@@ -610,76 +890,7 @@ export default defineConfig({
          */
         // Groups hold only what manualChunks names: see SMALL_MODULE_BYTES.
         onlyExplicitManualChunks: true,
-        manualChunks: (id: string, { getModuleInfo, getModuleIds }) => {
-          if (id.includes("lucide-react")) return "icons";
-          /*
-           * THE SHELL'S LIBRARIES, ONE NAMED CHUNK (role journey PR-B, 2026-11-09).
-           * Rollup split these off the entry only when the lazy-chunk graph
-           * happened to share them (a chunk it named "internalPath"), and folded
-           * them back in when it did not: adding the role editor as one more lazy
-           * chunk took the main chunk from 345 KB to 471 KB while first-page JS
-           * stayed at 641 KB, i.e. nothing new was loaded. Named, the split no
-           * longer depends on how many lazy chunks import them.
-           */
-          if (/node_modules\/(?:\.pnpm\/[^/]+\/node_modules\/)?(?:motion-dom|tailwind-merge|sonner|wouter|@lingui\/core)\//.test(id)) return "shell-libs";
-          /*
-           * The natural interface kit, one chunk instead of four.
-           *
-           * Its pieces are shared by the dashboard, the quest board, the
-           * profile, the admin and both crowdpool boards, so rollup gave each
-           * one its own shared chunk: 4276 real bytes spread across four files
-           * and charged 16 KB in blocks. Grouped, the same bytes cost one
-           * block. This is the merging fix the block-charge note above
-           * describes, at the smallest scale it is worth doing.
-           */
-          if (NATURAL_KIT.test(id)) {
-            return "natural";
-          }
-          // SMALL SHARED MODULES, two lazy chunks: see SMALL_MODULE_BYTES above.
-          // Only modules the entry does NOT import statically, so the first
-          // page load fetches nothing it did not fetch before.
-          if (!eagerModules) {
-            eagerModules = new Set();
-            const stack = Array.from(getModuleIds()).filter((m) => getModuleInfo(m)?.isEntry);
-            while (stack.length) {
-              const m = stack.pop() as string;
-              if (eagerModules.has(m)) continue;
-              eagerModules.add(m);
-              for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
-            }
-          }
-          // What the key routes' pages reach statically joins no group: see KEY_ROUTE_PAGES above.
-          if (!keyRouteModules) {
-            keyRouteModules = new Set();
-            const stack = Array.from(getModuleIds()).filter((m) => KEY_ROUTE_PAGES.includes(m.split("?")[0].replace(/\\/g, "/")));
-            while (stack.length) {
-              const m = stack.pop() as string;
-              if (keyRouteModules.has(m)) continue;
-              keyRouteModules.add(m);
-              for (const dep of getModuleInfo(m)?.importedIds ?? []) stack.push(dep);
-            }
-          }
-          const key = keyRouteModules;
-          /*
-           * THE PAGES' OWN COPY, one chunk (batch 158). Each brochure page's
-           * words (shared/pageContent/<page>.ts) are a leaf module of 1 to 4 KB
-           * shared by its page and the admin's page editor, so rollup gave each
-           * its own file and a whole 4 KB block. Grouped, they ride one file. Only
-           * lazy ones: whatever the first page already carries stays where it is.
-           */
-          if (PAGE_COPY.test(id) && !eagerModules.has(id) && !key.has(id)) return "page-copy";
-          /*
-           * SMALL LAZY PAGES, one chunk (batch 158). A route that is a few
-           * hundred lines (the password pages, a short list) was its own 2 to 4
-           * KB file and a whole 4 KB block. Nothing imports a page but the
-           * router's React.lazy, so the group can never be imported back.
-           */
-          if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id)) {
-            const code = getModuleInfo(id)?.code;
-            if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
-          }
-          return smallGroupOf(id, getModuleInfo, eagerModules, key) ?? undefined;
-        },
+        manualChunks: (id: string, { getModuleInfo, getModuleIds }) => baseChunkOf(id, getModuleInfo, getModuleIds) ?? keySetPlan(getModuleInfo, getModuleIds).get(id),
       },
     },
   },
