@@ -1829,6 +1829,10 @@ msgstr ""
 msgid "No goals are set for this season yet."
 msgstr "Todavía no hay metas para esta temporada."
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "The pictures a member picks from when they make their character: two for each class, in three skin tones. Replace any of them with your village's own. They are cropped to 3:4 and every page shows them."
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
@@ -2959,6 +2963,10 @@ msgctxt "protocols page"
 msgid "Nothing was waiting."
 msgstr ""
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not reset."
+msgstr ""
+
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
 msgid "Changes discarded."
@@ -3487,6 +3495,11 @@ msgstr "Compartido o completo"
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "A decision. It goes into a draft before it is live."
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: while a set of stock portraits uploads"
+msgid "Loading the set…"
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -4084,6 +4097,11 @@ msgctxt "open proposal: an agent's keeper with no name"
 msgid "A member"
 msgstr ""
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: upload many stock portraits at once"
+msgid "Load a set"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgid "Why you, and why now"
 msgstr "Por qué tú, y por qué ahora"
@@ -4222,6 +4240,11 @@ msgstr ""
 msgctxt "cycle clock: the clock has not answered yet"
 msgid "Reading when allowances refill"
 msgstr "Leyendo cuándo se renuevan las asignaciones"
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: replace one stock portrait"
+msgid "Replace"
+msgstr ""
 
 #: client/src/components/governance/SeatPicksField.tsx
 msgctxt "role application: link from the roles step to the role picker"
@@ -6102,6 +6125,10 @@ msgstr ""
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Withdraw it"
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not save."
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -8893,6 +8920,11 @@ msgstr "Explora las metas"
 msgid "Not synced yet. Press Sync to read every source."
 msgstr ""
 
+#. placeholder {0}: refused.join(", ")
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "Loaded {done} faces. Not part of the cast, so left out: {0}."
+msgstr ""
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -11017,6 +11049,11 @@ msgctxt "next step box heading"
 msgid "Your next step"
 msgstr "Tu siguiente paso"
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: the stock portraits heading"
+msgid "Faces"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
@@ -11221,6 +11258,11 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: go back to the platform's stock portrait"
+msgid "Use the platform's"
 msgstr ""
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
@@ -13455,6 +13497,11 @@ msgstr ""
 #: client/src/pages/Profile.tsx
 msgctxt "voice field purpose: profile bio"
 msgid "A few sentences about who you are and what you bring to the village."
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: after loading a set of stock portraits"
+msgid "Loaded {done} faces."
 msgstr ""
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
