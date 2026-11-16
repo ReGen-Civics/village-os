@@ -201,17 +201,41 @@ export async function setPlantingClaim(pool: Pool, villageId: string, pinId: str
  * rule), so these open one after another as each claim is decided.
  */
 export async function owedPlantings(pool: Pool, villageId: string, ownerId: string, perPin: number, limit = 20): Promise<string[]> {
+  if (limit <= 0) return [];
   const [rows] = await pool.query<any[]>(
     `SELECT p.id FROM hidden_map_pins p
       WHERE p.village_id = ? AND p.owner_user_id = ? AND p.layer = 'planting' AND p.hidden_at IS NULL
         AND p.planting_claim_id IS NULL
-        AND (SELECT COUNT(*) FROM hidden_map_vouches v
+        AND EXISTS (SELECT 1 FROM hidden_map_photos ph
+              WHERE ph.village_id = p.village_id AND ph.pin_id = p.id AND ph.visit_id IS NULL)
+        AND (SELECT COUNT(DISTINCT v.voucher_user_id) FROM hidden_map_vouches v
               WHERE v.village_id = p.village_id AND v.pin_id = p.id AND v.withdrawn_at IS NULL
                 AND v.voucher_user_id <> p.owner_user_id) >= ?
       ORDER BY p.created_at, p.id LIMIT ?`,
-    [villageId, ownerId, Math.max(1, perPin), limit],
+    [villageId, ownerId, Math.max(PAID_PLANTING_MIN_VOUCHES, perPin), limit],
   );
   return rows.map((r) => String(r.id));
+}
+
+/**
+ * A PAID planting needs a photo of its own and at least this many members
+ * vouching, whatever `hiddenmap.vouches_per_pin` says (security audit, 16 Nov
+ * 2026). That dial still decides when a map OPENS. With one vouch and no photo,
+ * two members could vouch each other's invented pins and each be paid for them.
+ */
+export const PAID_PLANTING_MIN_VOUCHES = 2;
+
+/**
+ * How many of a member's plantings opened a claim in the last seven days, by
+ * the database's own clock on both sides, for `hiddenmap.paid_plantings_per_week`.
+ */
+export async function plantingClaimsThisWeek(pool: Pool, villageId: string, ownerId: string): Promise<number> {
+  const [rows] = await pool.query<any[]>(
+    `SELECT COUNT(*) AS n FROM hidden_map_pins p JOIN quest_claims c ON c.id = p.planting_claim_id
+      WHERE p.village_id = ? AND p.owner_user_id = ? AND c.claimed_at >= (NOW() - INTERVAL 7 DAY)`,
+    [villageId, ownerId],
+  );
+  return Number(rows[0]?.n ?? 0);
 }
 
 export async function plantingClaimOf(pool: Pool, villageId: string, pinId: string): Promise<string | null> {

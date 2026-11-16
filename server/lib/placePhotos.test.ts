@@ -17,6 +17,7 @@ import sharp from "sharp";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 import {
   stripAndEncode,
   readMetadataMarkers,
@@ -79,6 +80,40 @@ describe("the fixture really is geotagged", () => {
   it("carries the camera make as readable bytes", async () => {
     const geo = await geotaggedFixture();
     expect(geo.includes(Buffer.from(FIXTURE_CAMERA))).toBe(true);
+  });
+});
+
+/** A tiny PNG whose header claims a 10000 x 10000 canvas (100 megapixels): under sharp's own default, over ours. */
+function hugeCanvasPng(): Buffer {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (b: Buffer) => {
+    let c = 0xffffffff;
+    for (const x of b) c = crcTable[(c ^ x) & 0xff]! ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type, "latin1"), data]);
+    const sum = Buffer.alloc(4);
+    sum.writeUInt32BE(crc(body));
+    return Buffer.concat([len, body, sum]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(10000, 0);
+  ihdr.writeUInt32BE(10000, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 2; // truecolour
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk("IHDR", ihdr), chunk("IDAT", zlib.deflateSync(Buffer.alloc(64))), chunk("IEND", Buffer.alloc(0))]);
+}
+
+describe("stripAndEncode refuses a canvas too big to decode (security audit, 16 Nov 2026)", () => {
+  it("throws on the header before any pixel is decoded", async () => {
+    await expect(stripAndEncode(hugeCanvasPng())).rejects.toThrow(/pixel limit/i);
   });
 });
 

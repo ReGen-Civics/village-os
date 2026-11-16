@@ -488,15 +488,30 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
       visitClaims: { stageOf: async () => "member", roleIdsFor: () => [], claimsRepo: claims, questsRepo: quests },
     }));
     const h = c.handlers;
+    const plain = await sharp({ create: { width: 64, height: 48, channels: 3, background: { r: 40, g: 120, b: 60 } } }).jpeg().toBuffer();
     const three: string[] = [];
     for (let i = 0; i < 3; i++) {
       as("m-owed");
-      three.push((await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id);
+      const id = (await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id;
+      const stored = await storePhoto(plain, photoDir);
+      await repo.insertPhoto(pool as any, villageId(), { id: `hmf-owed-${i}`, pinId: id, visitId: null, uploader: "m-owed", ...stored }, new Date());
+      three.push(id);
     }
-    as("m-keep");
-    for (const id of three) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
+    // A fourth planting with no photo of its own is vouched like the rest and never paid.
+    as("m-owed");
+    const bare = (await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id;
 
     const open = async () => (await claims.forUser("m-owed")).filter((x: any) => x.questId === "q-plant");
+    // One vouch opens no paid claim, whatever hiddenmap.vouches_per_pin says (security audit, 16 Nov 2026).
+    as("m-keep");
+    for (const id of [...three, bare]) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
+    as("m-owed");
+    await call(h, "GET /api/hidden-map/me");
+    expect(await open()).toHaveLength(0);
+    // A second member's vouch does. At most two paid plantings a week here.
+    await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "2");
+    as("m-plant");
+    for (const id of [...three, bare]) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
     // One open claim at a time, the quest board's rule: the first planting's.
     let mine = await open();
     expect(mine).toHaveLength(1);
@@ -515,15 +530,24 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
       as("m-owed");
       await call(h, "GET /api/hidden-map/me");
       mine = await open();
-      expect(mine).toHaveLength(i + 1);
-      expect(new Set(await claimed()).size).toBe(i + 1);
+      // The week's cap of two holds the third planting back until the dial allows it.
+      expect(mine).toHaveLength(2);
+      if (i === 2) {
+        await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "5");
+        await call(h, "GET /api/hidden-map/me");
+        mine = await open();
+        expect(mine).toHaveLength(3);
+      }
     }
-    // Nothing more is owed, so another look opens nothing.
+    expect(new Set(await claimed()).size).toBe(3);
+    // Nothing more is owed (the bare pin never is), so another look opens nothing.
     await call(h, "GET /api/hidden-map/me");
     expect(await open()).toHaveLength(3);
+    expect(await repo.plantingClaimOf(pool as any, villageId(), bare)).toBeNull();
+    await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "5");
     // The board's own rule is untouched for every other caller: a consented claim still blocks a plain open.
-    const plain = await claims.openClaim({ ...mine[0]!, id: "claim-plain-retry", status: "claimed" } as any);
-    expect(plain.ok).toBe(false);
+    const retry = await claims.openClaim({ ...mine[0]!, id: "claim-plain-retry", status: "claimed" } as any);
+    expect(retry.ok).toBe(false);
     expect(await setModuleConfig("hidden-map", {}, null)).toEqual({ ok: true });
   });
 
