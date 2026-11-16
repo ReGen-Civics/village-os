@@ -63,6 +63,8 @@ Not built yet:
   hook to this module's routes. Then a pin counts toward opening only from that moment, and a member not yet admitted
   neither opens the map (a dial of zero included) nor vouches. Without the hook, everything counts as before.
 - **The opening is told once,** as a `hidden_map_opened` notice with no place in it.
+- **An `opened` hook** runs once at that moment for whichever module wires it in `server/index.ts` (a rite to stamp, say).
+  This module never names another.
 
 ## Who sees what
 
