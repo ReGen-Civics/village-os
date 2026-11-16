@@ -102,25 +102,44 @@ export function register(app: Express, deps: Deps): void {
     return hasCapability(cap, { ...ctx, isAdmin: false });
   };
 
+  /**
+   * The moment a member's map opens: the `opened` hook (a rite to stamp), then
+   * the notice. Once, because only the read that records the opening calls it,
+   * and the notice carries its own dedupe key besides. Never a place.
+   */
+  const announceOpening = async (userId: string) => {
+    if (opened) await opened(userId).catch((e: unknown) => console.error("[hidden-map] the opening hook failed", e));
+    if (notify) {
+      await notify({
+        userId,
+        type: "hidden_map_opened",
+        title: "Your map is open",
+        body: "Enough of your places are vouched for. Every place the members have logged is yours to explore.",
+        link: "/hidden-map",
+        dedupeKey: `hidden-map-opened:${userId}`,
+      }).catch((e: unknown) => console.error("[hidden-map] the opening notice did not go", e));
+    }
+  };
+
+  /**
+   * After a vouch, the planter's map may have just opened. Record it and say so
+   * now, at the moment, instead of on the planter's next look (QA pass 3, P3-11).
+   */
+  const settleOpeningOf = async (ownerId: string) => {
+    try {
+      const who = await whoAmI(getPool(), vid(), ownerId, false, dials(), new Date(), admission);
+      if (who.justOpened) await announceOpening(ownerId);
+    } catch (e) {
+      console.error("[hidden-map] could not settle a planter's opening", e);
+    }
+  };
+
   const me = async (req: any) => {
     const user = await authedUser(req);
     if (!user) return null;
     const keeper = await seated(user, "hiddenmap.keep");
     const who = await whoAmI(getPool(), vid(), String(user.id), keeper, dials(), new Date(), admission);
-    if (who.justOpened && opened) {
-      await opened(String(user.id)).catch((e: unknown) => console.error("[hidden-map] the opening hook failed", e));
-    }
-    if (who.justOpened && notify) {
-      // Once, by its dedupe key, and never a place: the notice says the map is open and where to look.
-      await notify({
-        userId: String(user.id),
-        type: "hidden_map_opened",
-        title: "Your map is open",
-        body: "Enough of your places are vouched for. Every place the members have logged is yours to explore.",
-        link: "/hidden-map",
-        dedupeKey: `hidden-map-opened:${String(user.id)}`,
-      }).catch((e: unknown) => console.error("[hidden-map] the opening notice did not go", e));
-    }
+    if (who.justOpened) await announceOpening(String(user.id));
     return { user, who };
   };
 
@@ -320,6 +339,7 @@ export function register(app: Express, deps: Deps): void {
     }
     await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", new Date(), seen);
     await repo.logAccess(getPool(), vid(), uid, "vouch", { pinId: id });
+    if (found.record.ownerUserId && found.record.layer === "planting") await settleOpeningOf(found.record.ownerUserId);
     const after = await repo.getPin(getPool(), vid(), uid, id);
     res.json({ vouches: after?.vouches ?? found.record.vouches, vouchedByMe: true });
   });
