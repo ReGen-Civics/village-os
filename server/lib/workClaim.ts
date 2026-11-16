@@ -87,11 +87,11 @@ export async function openSubmittedClaim(
             actorUserId: input.user.id,
           });
         } catch (bell) {
-          console.error(`[work-claim] claim ${claim.id}: the submission bell for ${recipientId} did not send`, bell);
+          console.error("[work-claim] claim %s: the submission bell for %s did not send", claim.id, recipientId, bell);
         }
       }
     } catch (who) {
-      console.error(`[work-claim] claim ${claim.id}: could not read who to ring about the submission`, who);
+      console.error("[work-claim] claim %s: could not read who to ring about the submission", claim.id, who);
     }
   }
   return { ok: true, claimId: claim.id, questTitle: claim.questTitle };

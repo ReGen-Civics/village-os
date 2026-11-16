@@ -343,7 +343,7 @@ export function register(app: Express, deps: Deps): void {
           if (opened.ok) await repo.setRunQuestClaim(pool, runId, opened.claimId);
         }
       } catch (e) {
-        console.error(`[protocols] run ${runId}: completed, but its quest claim could not be opened`, e);
+        console.error("[protocols] run %s: completed, but its quest claim could not be opened", runId, e);
       }
     }
     res.json({ run: await oneView(runId) });
