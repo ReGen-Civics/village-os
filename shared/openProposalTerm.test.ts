@@ -42,7 +42,7 @@ describe("the words", () => {
       "You proposed to hold Lead Financial Steward in Willowmere for this moon, from 9 November 2026 to 8 December 2026.",
     );
     const yes = adoptedInviteLetter({ firstName: "Juno", village: "Willowmere", roleNames: ["Lead Financial Steward"], season: null, startsOn: "9 November 2026", moon: { from: "9 November 2026", to: "8 December 2026" }, link: "https://x", days: 14 });
-    expect(yes.text).toContain("adopted your proposal to hold Lead Financial Steward this moon.");
+    expect(yes.text).toContain("said yes to your proposal to hold Lead Financial Steward this moon.");
     expect(yes.text).toContain("Your roles run from 9 November 2026 to the next new moon, 8 December 2026.");
     expect(yes.text).not.toContain("next season");
   });

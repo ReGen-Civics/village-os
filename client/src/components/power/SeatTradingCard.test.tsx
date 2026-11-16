@@ -185,7 +185,7 @@ describe("the brief's sample at the member tier", () => {
     const narrow = card().querySelector('dl[aria-label="Right now"]')!;
     const held = Array.from(narrow.querySelectorAll("div")).find((d) => d.querySelector("dt")?.textContent === "Held now")!;
     expect(held.querySelector("dd")!.textContent).toBe("1");
-    expect(screen.getByText("1 of 2 seated is ready to be re-chosen.")).toBeTruthy();
+    expect(screen.getByText("1 of 2 team members is ready to be re-chosen.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Apply for this role: Water Keeper" })).toBeTruthy();
     expect(screen.queryByText(/^Contact/)).toBeNull();
   });
@@ -218,7 +218,7 @@ describe("the empty seat, the way every fork starts", () => {
         "Still to be written down: what it decides on, what it answers for, why it matters and how the next holder is chosen. The founding team writes these down.",
       ),
     ).toBeTruthy();
-    expect(screen.getByText("Set at seating")).toBeTruthy();
+    expect(screen.getByText("Set when someone takes the role")).toBeTruthy();
   });
 
   it("draws no heading over a blank, no class chip and no picture", () => {
@@ -292,9 +292,9 @@ describe("a seat says what it is for", () => {
 });
 
 describe("a stranger on the map", () => {
-  it("sees a Seated spot per seating, why the names are missing, and a way to sign in", () => {
+  it("sees a Team member spot per seating, why the names are missing, and a way to sign in", () => {
     show(SAMPLE, { viewPeople: false, signedIn: false });
-    expect(screen.getAllByText("Seated").filter((el) => el.closest("li"))).toHaveLength(2);
+    expect(screen.getAllByText("Team member").filter((el) => el.closest("li"))).toHaveLength(2);
     expect(screen.getByText("Sign in to see who holds it.")).toBeTruthy();
     const signIn = screen.getByRole("link", { name: /Sign in to apply for this role/ });
     expect(signIn.getAttribute("href")).toMatch(/^\/login\?next=/);

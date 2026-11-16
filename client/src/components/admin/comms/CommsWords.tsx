@@ -11,9 +11,12 @@
  *
  * Light-only, like every admin surface: fixed grays on fixed white.
  */
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import WordsEditor from "./WordsEditor";
 import { fetchWordsList, type WordsList } from "./wordsApi";
+
+/** The letters written in code, as they arrive. Loaded on its own, so Admin's chunk does not carry it. */
+const LetterSamples = lazy(() => import("./LetterSamples"));
 
 export default function CommsWords({ password }: { password: string }) {
   const [list, setList] = useState<WordsList | null>(null);
@@ -106,6 +109,12 @@ export default function CommsWords({ password }: { password: string }) {
             )}
           </div>
         </div>
+      )}
+
+      {list && (
+        <Suspense fallback={null}>
+          <LetterSamples password={password} />
+        </Suspense>
       )}
     </div>
   );

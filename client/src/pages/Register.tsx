@@ -239,7 +239,7 @@ export default function Register() {
                   {check?.invitedBy ? `${check.invitedBy} invited you. ` : "You were invited. "}
                   {check?.forRoles?.length ? (
                     <span data-invite-roles="">
-                      {t`The village adopted your application for ${forRoles}. Make your account to take them up.`}
+                      {t`The village said yes to your application for ${forRoles}. Make your account to take them up.`}
                     </span>
                   ) : (
                     "Create your account to step inside."
