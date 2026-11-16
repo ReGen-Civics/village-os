@@ -60,7 +60,7 @@ export const KIND_WORDS: Record<ProposalKind, string> = {
   module_lifecycle: "A module turned off, preview, members or public. target {id}; body {lifecycle}.",
   module_config: "A module's own settings. target {id}; body the settings to change, merged onto the module's settings.",
   role_listing: "Which roles are listed: list only these. target {}; body {ids}.",
-  season_goals: "A season's goals. target {seasonId}; body {goals: [{text, done?}]}.",
+  season_goals: "A season's goals, the whole list in its new order. target {seasonId}; body {goals: [{id?, text, done?}]}. A goal that replaces a goal held now, reworded or moved, carries that goal's id, so the quests and moon items linked to it stay linked; a goal with no id keeps one only when its words match a held goal exactly.",
   onboarding_path: "The village's onboarding path document. target {}; body {doc}.",
   setting: "Any other admin setting, through its own route. target {method, path, readPath?}; body the route's own body.",
 };
@@ -381,6 +381,40 @@ export function fieldDiffs(proposed: unknown, accepted: unknown): FieldDiff[] {
     const av = b.has(k) ? b.get(k) : null;
     if (!same(pv, av)) out.push({ field: k, proposed: pv, accepted: av });
   }
+  return out;
+}
+
+/**
+ * Which held goal's id each proposed goal keeps, index for index, or null for none.
+ *
+ * A rewording must not orphan what links to a goal (quests and moon items serve
+ * it by id), so a proposed goal that names a held goal's id keeps it. Without an
+ * id, or with one that is not held, it keeps the id of a held goal whose words
+ * match exactly. A proposal never invents an id: only ids held now come back. No
+ * id comes back twice: named ids are honoured first, in list order, so a later
+ * duplicate falls back to the word match, and a word match never takes an id a
+ * goal named.
+ */
+export function keptGoalIds(
+  held: ReadonlyArray<{ id?: unknown; text?: unknown }>,
+  proposed: ReadonlyArray<{ id?: unknown; text?: unknown }>,
+): Array<string | null> {
+  const heldIds = new Set(held.map((h) => h.id).filter((id): id is string => typeof id === "string" && id !== ""));
+  const taken = new Set<string>();
+  const out: Array<string | null> = proposed.map((g) => {
+    const id = typeof g.id === "string" ? g.id : "";
+    if (!heldIds.has(id) || taken.has(id)) return null;
+    taken.add(id);
+    return id;
+  });
+  proposed.forEach((g, i) => {
+    if (out[i]) return;
+    const text = String(g.text ?? "").trim();
+    const same = held.find((h) => typeof h.id === "string" && h.id !== "" && !taken.has(h.id) && String(h.text ?? "").trim() === text);
+    if (!same) return;
+    taken.add(same.id as string);
+    out[i] = same.id as string;
+  });
   return out;
 }
 
