@@ -11,6 +11,11 @@ msgstr ""
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Archive"
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "The model's answer could not be read, so nothing was drafted. The words-only draft still works."
 msgstr ""
@@ -154,6 +159,16 @@ msgctxt "role pay"
 msgid "Kind of work"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Detail (optional)"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "A JSON file of protocols (format village-protocols/1). A step's \"who\" names a role on the org chart, or \"anyone\". Importing a protocol that already exists saves a new version of it."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopted on {adoptedOn} by the village's vote."
 msgstr ""
@@ -257,6 +272,11 @@ msgctxt "companion welcome"
 msgid "Enneagram"
 msgstr "Eneagrama"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "No signal yet. Everything you ticked is safe on this phone."
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card field"
 #~ msgid "Task {n} for {roleName}"
@@ -314,6 +334,11 @@ msgstr "Siguiente: quién serás"
 msgid "The village has not set its goals for this season yet. You can still propose: say in your aim what you would bring."
 msgstr "La aldea todavía no ha fijado sus metas para esta temporada. Igual puedes proponerte: cuenta en tu propósito lo que traerías."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Suggest adding the protocols to a phone's home screen, on the protocols page"
+msgstr ""
+
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/Roles.tsx
 #~ msgid "A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person plays it for a season."
@@ -353,6 +378,11 @@ msgstr ""
 msgctxt "about you reference"
 msgid "Email or phone"
 msgstr "Correo o teléfono"
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "That did not save. Check the connection and try again."
+msgstr ""
 
 #. placeholder {0}: q.title
 #: client/src/components/valuation/PricingDesk.tsx
@@ -598,6 +628,10 @@ msgctxt "sera answers"
 msgid "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view legend"
 msgid "What the marks mean"
@@ -834,6 +868,11 @@ msgstr "Una nota breve para agradecer a alguien lo que hizo y lo que significó 
 msgid "Still offline. Check your connection."
 msgstr "Sigues sin conexión. Revisa tu conexión."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "(archived)"
+msgstr ""
+
 #: client/src/components/TreasurySync.tsx
 msgid "Your numbers, from every source"
 msgstr ""
@@ -860,6 +899,11 @@ msgstr ""
 msgctxt "bottom tab bar"
 msgid "Home"
 msgstr "Inicio"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{waiting, plural, one {# change to send} other {# changes to send}}"
+msgstr ""
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The village authorised one copy for the steward this vote names. It has not been downloaded yet."
@@ -924,6 +968,13 @@ msgstr "Tu primer mes empieza más bajo y sigue lo que entregas."
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks: adds a suggested task"
 msgid "Add to my list"
+msgstr ""
+
+#. placeholder {0}: p.done
+#. placeholder {1}: p.total
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{0} of {1} done"
 msgstr ""
 
 #: client/src/components/admin/LetterDraftsPanel.tsx
@@ -1416,6 +1467,11 @@ msgctxt "companion welcome"
 msgid "Character"
 msgstr "Carácter"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Finish practice"
+msgstr ""
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "founding team: the domains a role holds"
 msgid "Domains they hold"
@@ -1773,6 +1829,10 @@ msgstr ""
 msgid "No goals are set for this season yet."
 msgstr "Todavía no hay metas para esta temporada."
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "The pictures a member picks from when they make their character: two for each class, in three skin tones. Replace any of them with your village's own. They are cropped to 3:4 and every page shows them."
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
@@ -2053,6 +2113,11 @@ msgstr ""
 msgid "{notesArePublic} \"Nobody yet\" is an answer."
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "A tick"
+msgstr ""
+
 #: client/src/components/openProposal/MembershipAtApplication.tsx
 msgid "You are already aligned with the village's membership letter, so there is nothing to do here."
 msgstr "Ya te alineaste con la carta de membresía de la aldea, así que aquí no hay nada que hacer."
@@ -2162,6 +2227,11 @@ msgctxt "change request note outcome"
 msgid "Taken in"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Yours to tick, as {keptFor}."
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "{who} pledged {much}, firm"
@@ -2228,6 +2298,10 @@ msgstr "Hoy"
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Saved. The role is updated."
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. This should not happen; please report it"
 msgstr ""
 
 #: client/src/pages/Quests.tsx
@@ -2466,6 +2540,11 @@ msgstr "Constante: {village} recibe alrededor de un día y medio de tu semana"
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgctxt "admin confidentiality section"
 msgid "Attached: {docTitle} ({kb} KB)."
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor quest"
+msgid "None"
 msgstr ""
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
@@ -2750,6 +2829,11 @@ msgstr "Esto le pide a {name} {what}. Envía el rol al que postulas, tu \"Por qu
 msgid "No steward is sitting now, so there is nobody to name."
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Photo at the top of a run (optional)"
+msgstr ""
+
 #. placeholder {0}: i + 1
 #. placeholder {1}: goals.length - 1
 #: client/src/components/governance/GoalsList.tsx
@@ -2797,6 +2881,11 @@ msgctxt "circle picker"
 msgid "Find a circle"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "A path on this site, such as an image you uploaded, or an https address."
+msgstr ""
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgid "The invoice tracks and the disagreements did not load. Close and open again in a moment."
 msgstr "No se cargaron el seguimiento de las facturas ni los desacuerdos. Cierra y vuelve a abrir en un momento."
@@ -2826,6 +2915,16 @@ msgstr ""
 #~ msgid "No role picked yet"
 #~ msgstr "Todavía no has elegido un rol"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Completed by {ender}, {ended}."
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Down"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Share it without my name. It shows as \"a member\" everywhere, and its forum thread is posted for you. In a small village people may still guess who wrote it."
 msgstr ""
@@ -2845,6 +2944,11 @@ msgctxt "funding rounds"
 msgid "Pot"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the phone tabs"
+msgid "Phone tabs"
+msgstr ""
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Link to a Google Doc shared with anyone who has the link"
@@ -2857,6 +2961,15 @@ msgstr "Algo salió mal. Inténtalo de nuevo."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "A worry you cannot point to yet."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Nothing was waiting."
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not reset."
 msgstr ""
 
 #: client/src/components/SaveBar.tsx
@@ -3102,6 +3215,10 @@ msgctxt "label of the season file text box"
 msgid "Season file"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgid "Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu. Blank keeps the platform's word."
+msgstr ""
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "How I talk to you"
@@ -3230,6 +3347,12 @@ msgstr ""
 msgid "Done. We cleared this site's saved files and old version from this device, and kept your drafts."
 msgstr "Listo. Borramos de este dispositivo los archivos guardados y la versión vieja de este sitio, y conservamos tus borradores."
 
+#. placeholder {0}: p.questTitle
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "A completed run hands in: {0}"
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "three draft goals for your first moon"
 msgstr "tres borradores de metas para tu primera luna"
@@ -3287,9 +3410,20 @@ msgstr ""
 msgid "Declined. The suggestion and your note are listed under Decided lately on this block, and the member who made it is told."
 msgstr ""
 
+#. placeholder {0}: p.title
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Create {0}"
+msgstr ""
+
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, keyboard shortcut for the helper"
 msgid "Ctrl /"
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the label font field"
+msgid "Label face"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
@@ -3377,6 +3511,11 @@ msgctxt "sera answers"
 msgid "A decision. It goes into a draft before it is live."
 msgstr ""
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: while a set of stock portraits uploads"
+msgid "Loading the set…"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "an outside contact's organisation"
 msgid "Organisation"
@@ -3385,6 +3524,11 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for {seasonName}, say what you bring, and send it. Your name and email come from your account."
 #~ msgstr "Elige hasta {maxRoles} roles para {seasonName}, cuenta lo que traes y envíalo. Tu nombre y tu correo vienen de tu cuenta."
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Keep going"
+msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -3408,12 +3552,23 @@ msgctxt "companion welcome"
 msgid "{0} to {1}"
 msgstr "{0} a {1}"
 
+#. placeholder {0}: p.version
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "version {0}"
+msgstr ""
+
 #. placeholder {0}: i + 1
 #. placeholder {1}: pieces.length
 #: client/src/components/roleCard/RolePieces.tsx
 msgctxt "role card: which piece is open, out of how many"
 msgid "{0} of {1}"
 msgstr "{0} de {1}"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: while it saves"
+msgid "Saving…"
+msgstr ""
 
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
@@ -3455,6 +3610,11 @@ msgstr ""
 msgctxt "pay board"
 msgid "Keep the amount"
 msgstr "Mantener la cantidad"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the group names"
+msgid "Groups"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone, and its goals are asked here."
@@ -3704,6 +3864,11 @@ msgstr ""
 #: client/src/components/power/RoleCardParams.tsx
 #~ msgid "About this role"
 #~ msgstr ""
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Add the protocols to your phone"
+msgstr ""
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -3956,6 +4121,11 @@ msgctxt "open proposal: an agent's keeper with no name"
 msgid "A member"
 msgstr ""
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: upload many stock portraits at once"
+msgid "Load a set"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgid "Why you, and why now"
 msgstr "Por qué tú, y por qué ahora"
@@ -4094,6 +4264,11 @@ msgstr ""
 msgctxt "cycle clock: the clock has not answered yet"
 msgid "Reading when allowances refill"
 msgstr "Leyendo cuándo se renuevan las asignaciones"
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: replace one stock portrait"
+msgid "Replace"
+msgstr ""
 
 #: client/src/components/governance/SeatPicksField.tsx
 msgctxt "role application: link from the roles step to the role picker"
@@ -4304,6 +4479,11 @@ msgctxt "companion welcome"
 msgid "Should I talk to you out loud, with your browser's own voice? Or stay quiet and only write?"
 msgstr "¿Te hablo en voz alta, con la voz de tu propio navegador? ¿O me quedo en silencio y solo escribo?"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Ending the run"
+msgstr ""
+
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: heading"
 #~ msgid "How much can you give right now?"
@@ -4316,6 +4496,11 @@ msgstr ""
 #: client/src/pages/OpenProposal.tsx
 msgid "Optional. Plain text. They read it on their status page and in our email. It is part of their own application, and nobody else sees it."
 msgstr "Opcional. Texto sencillo. La lee en la página del estado de su propuesta y en nuestro correo. Es parte de su propia solicitud, y nadie más la ve."
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Add to your phone"
+msgstr ""
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar page title"
@@ -4388,6 +4573,11 @@ msgctxt "open proposal attachments"
 msgid "Remove {0}"
 msgstr "Quitar {0}"
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Add a step"
+msgstr ""
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Speak aloud"
@@ -4421,6 +4611,11 @@ msgctxt "admin quest safety"
 msgid "Safety note, shown as written"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "The protocols work offline"
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "This asks {name} for {what}. It sends the roles you picked, your \"Why you\" and your aim, and nothing else: not your references, links, files, name or email. Nothing is sent until you press it."
 msgstr "Esto le pide a {name} {what}. Le envía los roles que elegiste, tu “Por qué tú” y tu propósito, y nada más: ni tus referencias, ni enlaces, ni archivos, ni tu nombre ni tu correo. No se envía nada hasta que lo presiones."
@@ -4436,6 +4631,11 @@ msgstr ""
 
 #: client/src/components/journey/TestRun.tsx
 msgid "Nothing refused across the whole run"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Saved as version {version}."
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
@@ -4513,6 +4713,11 @@ msgstr "Cambiar mis raíces"
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "label of the note box on a canvas suggestion"
 msgid "Your note (optional)"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Save protocol"
 msgstr ""
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
@@ -4768,6 +4973,11 @@ msgctxt "root picker, a fourth root"
 msgid "Up to {MAX_ROOTS_ON_WORK} roots. Take one off first."
 msgstr "Hasta {MAX_ROOTS_ON_WORK} raíces. Quita una primero."
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{keptFor} ticks this one."
+msgstr ""
+
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Approval of AI agents touching applicant data"
 msgstr ""
@@ -4867,6 +5077,11 @@ msgstr ""
 msgctxt "founding application first day"
 msgid "Your first cycle"
 msgstr "Tu primer ciclo"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the menu entries"
+msgid "Entries"
+msgstr ""
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -5266,9 +5481,19 @@ msgstr ""
 msgid "Nobody holds the {intakeRoleLabel} today, so a private intake would reach nobody."
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Start"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Rough cost:"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Send now"
 msgstr ""
 
 #: client/src/components/admin/AgentsPanel.tsx
@@ -5335,6 +5560,11 @@ msgstr ""
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a read"
 msgid "Read"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Remove"
 msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
@@ -5546,6 +5776,11 @@ msgstr "En cualquier lugar"
 msgid "{agent} suggests {nChanges} for the chart"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "That file did not read."
+msgstr ""
+
 #: client/src/pages/RoleMeasures.tsx
 msgid "This page is for administrators."
 msgstr ""
@@ -5664,6 +5899,11 @@ msgctxt "connector setup panel, the switch"
 msgid "Our agent may make the changes we approve in the chat"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Step {n}"
+msgstr ""
+
 #: client/src/pages/Register.tsx
 #~ msgid "The village adopted your application for {forRoles}. Make your account to take them up."
 #~ msgstr "La aldea adoptó tu postulación para {forRoles}. Crea tu cuenta para asumirlos."
@@ -5730,12 +5970,24 @@ msgctxt "companion welcome"
 msgid "An example moon:"
 msgstr "Una luna de ejemplo:"
 
+#. placeholder {0}: p.steps
+#. placeholder {0}: p.steps.length
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "{0, plural, one {# step} other {# steps}}"
+msgstr ""
+
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Work out this role's pay with the valuation engine"
 msgstr ""
 
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgid "No document attached yet."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Practise again"
 msgstr ""
 
 #: client/src/components/openWork/statusWords.ts
@@ -5902,6 +6154,10 @@ msgstr ""
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Withdraw it"
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not save."
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -6274,6 +6530,11 @@ msgctxt "first fourteen days strip, tick a step"
 msgid "Mark done"
 msgstr "Marcar como hecho"
 
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Scroll down and tap Add to Home Screen."
+msgstr ""
+
 #: client/src/components/canvas/RecordReadingForm.tsx
 msgid "Where does {blockName} stand today?"
 msgstr ""
@@ -6583,6 +6844,11 @@ msgstr ""
 #~ msgctxt "open proposal confirm"
 #~ msgid "Propose again"
 #~ msgstr "Proponer otra vez"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{title} works offline"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft stat"
@@ -7099,6 +7365,11 @@ msgstr ""
 #~ msgid "Apply for {seatName}"
 #~ msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Finish"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "That was not saved."
 msgstr ""
@@ -7135,6 +7406,11 @@ msgstr "Un nuevo comienzo para este dispositivo"
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "The canvas moon is on the village calendar."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Start a run, tick each step as it is done, and the village keeps who ticked what and when."
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -7195,6 +7471,11 @@ msgctxt "your path, the profile hero"
 msgid "Your walk so far"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Started by {starter}, {started}"
+msgstr ""
+
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing counts as removed because of a check that failed. A role leaves the list only when {agent} archives it, or when it is missing from two full checks in a row."
 msgstr ""
@@ -7209,6 +7490,11 @@ msgstr "Enviar la linterna"
 msgctxt "pay board"
 msgid "Owed {owed}, sent {sent}"
 msgstr "Pendiente {owed}, enviado {sent}"
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Move step {n} down"
+msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms: the pay ask"
@@ -7236,6 +7522,11 @@ msgstr "Guardado. Se lo dijimos a la persona que propone."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Save as a new version"
 msgstr ""
 
 #: client/src/components/admin/comms/LetterSamples.tsx
@@ -7325,6 +7616,11 @@ msgstr ""
 #: client/src/components/companion/CompanionPanel.tsx
 msgid "The guide is reading"
 msgstr "La guía está leyendo"
+
+#. placeholder {0}: e.label
+#: client/src/components/admin/MenuPanel.tsx
+msgid "Show {0} in the menu"
+msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
 msgid "Three to five is the usual."
@@ -7417,6 +7713,11 @@ msgstr ""
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "File"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "All protocols"
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -7571,6 +7872,11 @@ msgctxt "role editor"
 msgid "Final approval"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "In a real run, {keptFor} ticks this one."
+msgstr ""
+
 #. placeholder {0}: day(stored.adoptedAt)
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted on {0}. Members read these words until new ones are adopted, so a change is saved by adopting it."
@@ -7656,6 +7962,11 @@ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Give it a name and say why. Then add the changes, from here or from any setting with a Suggest button."
+msgstr ""
+
+#: client/src/components/admin/SigningKeyCard.tsx
+msgctxt "signing key"
+msgid "This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and restart, and that start makes the key, sealed. Until then those pages answer 503."
 msgstr ""
 
 #: client/src/components/canvas/CanvasFrameSay.tsx
@@ -7793,6 +8104,11 @@ msgctxt "price popup lede"
 msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Once a month at most, and never again after three \"not now\" answers. A small link stays on the page either way."
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -7832,6 +8148,11 @@ msgstr ""
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgctxt "button that opens the conflict agreement editor"
 msgid "Edit the agreement"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Remove step {n}"
 msgstr ""
 
 #: client/src/components/commons/CommonsPanel.tsx
@@ -8098,6 +8419,11 @@ msgctxt "admin open proposals"
 msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
 msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la escuchan. Se borra con la solicitud y, a más tardar, 90 días después de la decisión."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Remove"
+msgstr ""
+
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks hint"
 msgid "Nothing changes until you tap."
@@ -8113,6 +8439,11 @@ msgstr ""
 msgctxt "companion welcome, before it has a name"
 msgid "your companion"
 msgstr "tu compañero"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Handed in for {questTitle}. A steward confirms it."
+msgstr ""
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -8163,6 +8494,16 @@ msgstr "{0} ocupados"
 msgctxt "founding application review"
 msgid "Earliest start: {startDay}"
 msgstr "Inicio más temprano: {startDay}"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "The village did not take every change. Each one says why, on its run."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Required steps done"
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleCard/rewardWords.ts
@@ -8391,6 +8732,11 @@ msgstr ""
 msgid "Reading the village's rows"
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: light or dark page heading"
+msgid "Page look"
+msgstr ""
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup lede"
 msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
@@ -8608,6 +8954,11 @@ msgstr "Explora las metas"
 msgid "Not synced yet. Press Sync to read every source."
 msgstr ""
 
+#. placeholder {0}: refused.join(", ")
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "Loaded {done} faces. Not part of the cast, so left out: {0}."
+msgstr ""
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -8658,6 +9009,12 @@ msgctxt "founding application refusal"
 msgid "This email address already has three proposals waiting today. Check your inbox for the confirmation links, or try again tomorrow."
 msgstr "Este correo ya tiene tres propuestas pendientes hoy. Busca los enlaces de confirmación en tu bandeja de entrada, o inténtalo mañana."
 
+#. placeholder {0}: p.title
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Update {0}"
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a suggestion is being declined"
 msgid "Declining"
@@ -8685,6 +9042,11 @@ msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Loading this village's conflict agreement…"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "A protocol with the id \"{newId}\" already exists. Give this one another name."
 msgstr ""
 
 #: client/src/components/roots/RootsFilterToggle.tsx
@@ -8736,6 +9098,11 @@ msgctxt "price ask heading"
 msgid "Your price"
 msgstr "Tu precio"
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Import"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft next"
 msgid "Select a role to apply for"
@@ -8744,6 +9111,11 @@ msgstr "Elige un rol para postular"
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgctxt "role discover admin"
 msgid "Human Design types"
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: section of exact colour overrides"
+msgid "Exact colours"
 msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
@@ -8776,6 +9148,11 @@ msgstr "Esta luna"
 msgctxt "roles page: the founding team read failed"
 msgid "We couldn't load the founding team just now."
 msgstr "No pudimos cargar el equipo fundador en este momento."
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Protocols"
+msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
@@ -8821,6 +9198,11 @@ msgstr "Esta página no está recibiendo propuestas en este momento."
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row, who shared it"
 msgid ", from {0}"
+msgstr ""
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the save button"
+msgid "Save the menu"
 msgstr ""
 
 #: client/src/pages/Home.tsx
@@ -8879,6 +9261,11 @@ msgstr ""
 msgctxt "role draft button"
 msgid "Selected"
 msgstr "Elegido"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "No protocols yet. An admin writes them on the module's page."
+msgstr ""
 
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: where a member's words go, guide unnamed"
@@ -9195,9 +9582,19 @@ msgstr "Lugares que buscan quien los cuide:"
 msgid "This role lists no goals yet."
 msgstr "Este rol todavía no tiene metas."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Who may tick it"
+msgstr ""
+
 #: client/src/pages/YourPath.tsx
 msgctxt "your path, the whole path page"
 msgid "Press Enter to take this step."
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Edit"
 msgstr ""
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
@@ -9554,6 +9951,11 @@ msgctxt "agent paths"
 msgid "No paths are open to agents yet."
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Nothing had changed."
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "role card rewards: the footnote, the first month"
@@ -9588,6 +9990,11 @@ msgstr "Elige tu compromiso para ver un precio sugerido"
 #: client/src/components/power/RoleCardParams.tsx
 #~ msgid "What it pays"
 #~ msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "with {withOthers}"
+msgstr ""
 
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card heading"
@@ -9850,6 +10257,11 @@ msgctxt "a button that deletes a matrix row"
 msgid "Remove this row"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "The member who completes a run gets a claim on this quest, handed in for a steward to confirm, and the quest's rules pay it as they pay any quest. A practice run never claims it."
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Take a quest, alone or with others"
@@ -9874,6 +10286,15 @@ msgstr "Ninguna en particular"
 msgctxt "founding application choose, founding roles heading"
 msgid "Filling first: the founding team"
 msgstr "Primero: el equipo fundador"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Yes, set it aside"
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgid "Exact colours ({overrideCount} set)"
+msgstr ""
 
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
@@ -9915,6 +10336,11 @@ msgctxt "connector setup panel, dismiss"
 msgid "Got it"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Name"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "start a change request"
 msgid "Start it"
@@ -9953,6 +10379,11 @@ msgstr "Sus propias palabras, junto a cada parte de la ficha del rol a la que se
 msgctxt "calendar moon view heading, a village with no moon count or names"
 msgid "This moon"
 msgstr "Esta luna"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "optional"
+msgstr ""
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -10258,6 +10689,10 @@ msgstr ""
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Adds {addedCount}, changes {changedCount}, already there {sameCount}. Nothing is removed. Nothing is saved until you press Save."
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgid "The colours the game's own pieces use: paper, stamps, the map, the places a quest happens. Blank keeps each one on the page colour it falls back to."
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -10657,6 +11092,11 @@ msgctxt "next step box heading"
 msgid "Your next step"
 msgstr "Tu siguiente paso"
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: the stock portraits heading"
+msgid "Faces"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
@@ -10782,6 +11222,11 @@ msgctxt "role draft stat"
 msgid "Recruiting"
 msgstr "Buscando gente"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: empty exact colour field"
+msgid "blank"
+msgstr ""
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
 msgid "a person confirms"
@@ -10856,6 +11301,11 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
+msgstr ""
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: go back to the platform's stock portrait"
+msgid "Use the platform's"
 msgstr ""
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
@@ -10988,6 +11438,11 @@ msgstr "Elige hasta tres roles. El orden es tu preferencia."
 #~ msgid "If you leave the three references blank, we'll run a background check instead. Its cost comes out of your first contractor pay."
 #~ msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Or paste the file here"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -11056,6 +11511,11 @@ msgstr "Grabación detenida. Puedes escucharla abajo."
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "admin quest roots"
 msgid "Roots it grows from"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "The protocols did not load."
 msgstr ""
 
 #: client/src/pages/ApplicationStatus.tsx
@@ -11153,6 +11613,16 @@ msgstr "Cerrar"
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Choose the file to bring in."
+msgstr ""
+
+#. placeholder {0}: g.label
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The name for the {0} group"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "The import did not reach the server."
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -11421,6 +11891,11 @@ msgstr "Alcanzada"
 msgid "Decisions move forward when no one has a reasoned objection that the proposal would cause harm or block the aim. Everyone loving them is not the bar."
 msgstr "Las decisiones avanzan cuando nadie tiene una objeción razonada de que la propuesta causaría daño o impediría el propósito. No hace falta que a todas las personas les encante."
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Do it the same careful way, every time"
+msgstr ""
+
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup lede"
@@ -11454,6 +11929,12 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera answers"
 msgid "including {n} roles inside {name}"
+msgstr ""
+
+#. placeholder {0}: roleWithHolders(waitingOn.who.roleTitle, holders[waitingOn.who.roleId])
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Waiting for {0}."
 msgstr ""
 
 #: client/src/pages/FundingRounds.tsx
@@ -11519,6 +12000,11 @@ msgctxt "quest goal thread editor: button while saving"
 msgid "Saving"
 msgstr "Guardando"
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "That did not save."
+msgstr ""
+
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, while you wait"
 msgid "Read the role again"
@@ -11562,6 +12048,11 @@ msgctxt "role draft heading"
 msgid "Open roles"
 msgstr "Roles abiertos"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Practice run"
+msgstr ""
+
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
 msgid "Set aside. The people who decide these still see it."
@@ -11576,6 +12067,11 @@ msgstr ""
 msgctxt "voice invite"
 msgid "The microphone is blocked for this site. Allow it in your browser settings, or type your answers."
 msgstr "El micrófono está bloqueado para este sitio. Permítelo en la configuración de tu navegador, o escribe tus respuestas."
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "That did not change."
+msgstr ""
 
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "voice field label: raise an objection"
@@ -11715,6 +12211,11 @@ msgstr ""
 #~ msgid "Your aim for the season"
 #~ msgstr "Tu propósito para la temporada"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Light"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "This deployment cannot open the key, so those pages answer 503. A restore under a different VILLAGE_SECRETS_KEY does this. If the old value is gone for good, make a new key here."
@@ -11775,6 +12276,11 @@ msgstr "Propones {0}{1}."
 #: client/src/pages/RoleProposal.tsx
 msgctxt "member door choice"
 msgid "This moon"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Checklists"
 msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
@@ -12042,6 +12548,11 @@ msgstr ""
 msgid "We'll keep your answers. When you're back online, tap try again."
 msgstr "Guardaremos tus respuestas. Cuando vuelvas a tener conexión, toca Intentar de nuevo."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Its linked quest is no longer on the board, so a completed run claims nothing."
+msgstr ""
+
 #: client/src/components/companion/CompanionPanel.tsx
 msgid "The guide never changes the canvas. To change an answer, suggest it under Say on the block. <0>Your profile</0> holds anything it drafted for you."
 msgstr "La guía nunca cambia el lienzo. Para cambiar una respuesta, sugiérela en Decir, dentro del bloque. <0>Tu perfil</0> guarda todo lo que haya redactado para ti."
@@ -12109,6 +12620,11 @@ msgctxt "new role from a card"
 msgid "The card's words"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Starting the run"
+msgstr ""
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "The season, week by week"
 msgstr ""
@@ -12164,6 +12680,12 @@ msgstr ""
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "to"
+msgstr ""
+
+#. placeholder {0}: p.steps.length
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{0, plural, one {# step} other {# steps}}"
 msgstr ""
 
 #: client/src/components/admin/AdminHeader.tsx
@@ -12248,6 +12770,10 @@ msgctxt "role editor"
 msgid "Kind of pay"
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgid "Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour."
+msgstr ""
+
 #. placeholder {0}: new Date(a.decidedAt).toLocaleDateString()
 #: client/src/components/governance/VillageAgreements.tsx
 msgctxt "the day an agreement was adopted"
@@ -12326,6 +12852,10 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "Commitment"
 msgstr "Compromiso"
 
+#: client/src/components/LookPanel.tsx
+msgid "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "An agent is proposed by the member who keeps it, and the circle decides by consent, as for a person."
@@ -12380,6 +12910,11 @@ msgctxt "role card piece rail"
 msgid "Pieces of this role"
 msgstr "Partes de este rol"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Progress"
+msgstr ""
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, nobody named on the quest"
 msgid "Ask in the quest chat below"
@@ -12424,8 +12959,17 @@ msgctxt "proposed changes"
 msgid "Sign in to review proposed changes"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The menu did not save."
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Putting a change to the whole village opens a vote every member is rung about, and this account does not open those yet. Say what you would change to whoever keeps the exit policy."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Practice finished. Nothing was recorded."
 msgstr ""
 
 #: client/src/components/commons/CommonsPanel.tsx
@@ -12439,6 +12983,11 @@ msgstr ""
 
 #: client/src/components/ConfigUnavailable.tsx
 msgid "Check your connection, then try again."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Stop practising"
 msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -12649,6 +13198,11 @@ msgstr ""
 msgid "Pick a file to add."
 msgstr ""
 
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Not now"
+msgstr ""
+
 #: client/src/pages/Home.tsx
 msgctxt "landing, founding team card door"
 msgid "See the open roles"
@@ -12663,6 +13217,11 @@ msgstr "Mostrar mi luz en el mapa"
 msgctxt "founding application know us act"
 msgid "Book a land tour"
 msgstr "Reserva una visita al terreno"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Changes the village did not take"
+msgstr ""
 
 #: client/src/pages/RoleProposal.tsx
 msgctxt "member door choice"
@@ -12733,6 +13292,11 @@ msgctxt "pricing desk"
 msgid "from"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Loading."
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft season"
 msgid "This season's goals: {seasonName}"
@@ -12748,6 +13312,11 @@ msgstr ""
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{asks, plural, one {# ask waiting} other {# asks waiting}}"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Import a file"
 msgstr ""
 
 #. placeholder {0}: KIND_LABELS[doc.kind]
@@ -12835,6 +13404,12 @@ msgstr ""
 msgid "You meet the people the role works closest with."
 msgstr "Conoces a las personas con quienes el rol trabaja más de cerca."
 
+#. placeholder {0}: refused.length
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{0, plural, one {The village did not take # change on this run.} other {The village did not take # changes on this run.}}"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "remove one change"
 msgid "Remove"
@@ -12886,6 +13461,12 @@ msgstr "hoy"
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "send one suggestion to a vote alone"
 msgid "Send it on its own"
+msgstr ""
+
+#. placeholder {0}: e.label
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: a menu entry label field"
+msgid "Your word for {0}"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -12976,6 +13557,11 @@ msgctxt "voice field purpose: profile bio"
 msgid "A few sentences about who you are and what you bring to the village."
 msgstr ""
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: after loading a set of stock portraits"
+msgid "Loaded {done} faces."
+msgstr ""
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Who is asked first:"
 msgstr ""
@@ -13001,6 +13587,11 @@ msgstr "{valueCount} aportes de valor. Objetivo: {0}"
 msgctxt "open proposal: where the contract's pay comes from"
 msgid "From their price ask, at {pct}% commitment."
 msgstr "De su precio propuesto, con un compromiso del {pct}%."
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "What it is for"
+msgstr ""
 
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "review page"
@@ -13241,6 +13832,11 @@ msgstr ""
 msgid "This is outside the suggestion's band, so give a reason. A second Treasurer or a steward then signs it, or the village decides."
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{required} required"
+msgstr ""
+
 #: client/src/pages/ApplicationStatus.tsx
 msgid "Here is our new wording beside what you answered. Settings we did not change stay as you accepted them."
 msgstr "Aquí está nuestra nueva redacción junto a lo que respondiste. Lo que no cambiamos se queda como lo aceptaste."
@@ -13307,6 +13903,11 @@ msgstr "Retirar mi sí"
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "As much as, for {0}"
+msgstr ""
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the label font field"
+msgid "Label face, as a font stack"
 msgstr ""
 
 #: client/src/components/roots/RootTags.tsx
@@ -13403,6 +14004,10 @@ msgctxt "add a suggestion to a change request"
 msgid "Add to {targetTitle}"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The menu is saved. Members see it on their next page."
+msgstr ""
+
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgctxt "close the public line form without saving"
 msgid "Cancel"
@@ -13466,8 +14071,18 @@ msgstr ""
 msgid "Up to {PROPOSAL_FILES_MAX} files: PDF, Word (.docx), PNG or JPG, {mb} MB each."
 msgstr "Hasta {PROPOSAL_FILES_MAX} archivos: PDF, Word (.docx), PNG o JPG, de {mb} MB cada uno."
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Restore"
+msgstr ""
+
 #: client/src/components/TreasurySync.tsx
 msgid "Sync reads three sources again: this village's records, the Base chain (the public ledger some tokens live on) and Sera (the village's record keeper). It only reads, so nothing is paid or moved. Any difference goes to the Treasurer. You can sync once a minute."
+msgstr ""
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin: the village menu editor heading"
+msgid "Menu"
 msgstr ""
 
 #: client/src/components/Layout.tsx
@@ -13871,6 +14486,16 @@ msgctxt "admin header, per-device dark colours"
 msgid "Night look"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Mark complete"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "{waiting, plural, one {# change is waiting to send.} other {# changes are waiting to send.}}"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -13884,6 +14509,11 @@ msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "No role is named yet."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "That protocol is not on this phone. Open the list with signal once, then practise."
 msgstr ""
 
 #: client/src/components/TreasurySync.tsx
@@ -13998,6 +14628,11 @@ msgstr ""
 msgid " · no key set, so this module answers 503"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Complete"
+msgstr ""
+
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card: the one act"
 msgid "Apply for this role"
@@ -14005,6 +14640,11 @@ msgstr "Postúlate a este rol"
 
 #: client/src/pages/StructureReview.tsx
 msgid "Pick one. Nothing is decided for you."
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "New protocol"
 msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
@@ -14020,6 +14660,11 @@ msgstr ""
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season."
 #~ msgstr ""
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Add to your phone"
+msgstr ""
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page goals"
@@ -14210,6 +14855,11 @@ msgctxt "settlement table column"
 msgid "From"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Nothing here is recorded or sent, and no quest is claimed. Tick every step to learn the list."
+msgstr ""
+
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
 msgid "Withdraw"
@@ -14230,10 +14880,21 @@ msgctxt "quest goal thread editor: button"
 msgid "Save the thread"
 msgstr "Guardar el hilo"
 
+#. placeholder {0}: now.text
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Done: {0}"
+msgstr ""
+
 #: client/src/components/Layout.tsx
 #, fuzzy
 #~ msgid "Sign out everywhere"
 #~ msgstr "Cerrar sesión en todos los dispositivos"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Set aside by {ender}, {ended}."
+msgstr ""
 
 #: client/src/components/review/SeraCompare.tsx
 msgctxt "sera compare"
@@ -14284,6 +14945,11 @@ msgstr "Lo que ofreces a cambio"
 msgctxt "site header"
 msgid "Main Site"
 msgstr "Sitio principal"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Steps"
+msgstr ""
 
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
@@ -14458,6 +15124,11 @@ msgstr "Proponerme para “{seatName}”"
 msgid "It comes back for review on {reviewDay}."
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Move step {n} up"
+msgstr ""
+
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms setting"
 #~ msgid "Clocks"
@@ -14628,6 +15299,11 @@ msgctxt "open proposal, founding application"
 msgid "These are optional. Someone who lives far away may not have been able to come yet."
 msgstr "Son opcionales. Quien vive lejos quizá aún no haya podido venir."
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Runs in progress"
+msgstr ""
+
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application first day"
@@ -14647,6 +15323,11 @@ msgstr ""
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Onboarding"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Any member"
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -14779,10 +15460,19 @@ msgctxt "role editor history"
 msgid "Changed"
 msgstr ""
 
+#: client/src/components/admin/pages/PageSwitches.tsx
+msgid "Show it to visitors even while the story pages are hidden"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application choose"
 msgid "Choose the role you are applying for. Each application is for one role."
 msgstr "Elige el rol al que postulas. Cada solicitud es para un solo rol."
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Dark"
+msgstr ""
 
 #: client/src/components/review/SeraMember.tsx
 msgid "Small changes applying by themselves: off."
@@ -14798,6 +15488,16 @@ msgstr "La aldea todavía no ha fijado su próxima temporada, así que por ahora
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "Notice before leaving, in days"
+msgstr ""
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Add to home screen"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols practice run"
+msgid "Back to the list"
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -15034,6 +15734,13 @@ msgstr ""
 msgid "{n, plural, one {# role open now} other {# roles open now}}"
 msgstr "{n, plural, one {# rol abierto ahora} other {# roles abiertos ahora}}"
 
+#. placeholder {0}: SLOT_WORDS[slot]
+#. placeholder {0}: TOKEN_WORDS[name]
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: exact colour field label"
+msgid "{0}, exact value"
+msgstr ""
+
 #: client/src/pages/FundingRounds.tsx
 msgid "The rounds could not be read just now. Try again in a moment."
 msgstr ""
@@ -15118,6 +15825,11 @@ msgstr "Cantidad de {0} para enviar"
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "Decision Matrix column"
 msgid "Who is told"
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Cancel"
 msgstr ""
 
 #: client/src/components/openProposal/MembershipAtApplication.tsx
@@ -15227,6 +15939,12 @@ msgstr ""
 msgid "The village said yes to your application for {forRoles}. Make your account to take them up."
 msgstr ""
 
+#. placeholder {0}: i + 1
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: one of the four phone tabs"
+msgid "Phone tab {0}"
+msgstr ""
+
 #: client/src/pages/Propose.tsx
 #: client/src/pages/ProposeARole.tsx
 msgid "Back to the circle"
@@ -15328,6 +16046,11 @@ msgstr ""
 msgid "Save what closing means"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Imported {count} protocols."
+msgstr ""
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
 msgid "this quest's circle"
@@ -15358,6 +16081,11 @@ msgctxt "the workbook's paper size choices"
 msgid "Paper size"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Edit {title}"
+msgstr ""
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
 msgid "Sera: {there}."
@@ -15382,6 +16110,11 @@ msgstr "hoy"
 msgctxt "commitment field"
 msgid "A note for yourself (optional)"
 msgstr "Una nota para ti (opcional)"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "a member"
+msgstr ""
 
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "sera changes"
@@ -15472,6 +16205,11 @@ msgstr "Un solo porcentaje para todos tus roles juntos. Dijiste {nowPct}% desde 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Who can hold it"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Set aside"
 msgstr ""
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
@@ -15627,6 +16365,11 @@ msgctxt "sera answers"
 msgid "Cancel"
 msgstr ""
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "None yet. Write one, or import a file."
+msgstr ""
+
 #: client/src/components/admin/RoleCharacterTags.tsx
 msgctxt "admin role roots"
 msgid "Roots saved"
@@ -15659,6 +16402,11 @@ msgstr ""
 msgctxt "founding team section eyebrow"
 msgid "Founding team"
 msgstr "Equipo fundador"
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "They open from your home screen like an app, and work when there is no signal."
+msgstr ""
 
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgctxt "drafted letters"
@@ -15787,6 +16535,11 @@ msgstr "Opcional. Puedes saltártelo."
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide."
+msgstr ""
+
+#: client/src/components/companionWelcome/welcomeKit.tsx
+msgctxt "companion welcome, the spoken voice"
+msgid "Speaking aloud may use your browser's online voice (Google or Microsoft), which sends the words I say to that service. Quiet keeps them on your screen only."
 msgstr ""
 
 #: client/src/components/review/AgentProposalsCard.tsx
@@ -15928,6 +16681,11 @@ msgstr "Toca recargar para tener la versión nueva."
 #~ msgid "Pick up to {maxRoles} roles"
 #~ msgstr "Elige hasta {maxRoles} roles"
 
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Required"
+msgstr ""
+
 #: client/src/pages/FundingRounds.tsx
 msgid "{count, plural, one {# idea so far} other {# ideas so far}}"
 msgstr ""
@@ -15954,6 +16712,11 @@ msgstr "Grabar es opcional. Las respuestas escritas se leen con el mismo cuidado
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "That suggestion was not kept."
+msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Choose a protocols file"
 msgstr ""
 
 #: client/src/components/approvals/ApprovalInbox.tsx
@@ -16015,6 +16778,11 @@ msgstr "Te contaremos cómo conocernos cuando postules."
 #~ msgctxt "admin helper panel"
 #~ msgid "The helper runs on Claude, using an Anthropic key that belongs to your village. Nobody can set it from this page, and the key never comes to your browser."
 #~ msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Up"
+msgstr ""
 
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, the full moon on a day"
@@ -16224,6 +16992,11 @@ msgstr ""
 #~ msgid "Alone or with others, no role needed"
 #~ msgstr "A solas o con otras personas, sin necesidad de rol"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Practise it first (nothing is recorded)"
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "A person confirms"
@@ -16397,6 +17170,11 @@ msgstr "Puedes proponer más o menos."
 msgid "The newest decisions on {name}, with the note each was decided with, where one was written."
 msgstr ""
 
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Tap Add."
+msgstr ""
+
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, eyebrow"
 msgid "Your week"
@@ -16424,6 +17202,11 @@ msgstr "Borrar mi selección"
 msgctxt "founding application know us fork"
 msgid "Already feel like a strong fit? Carry on with your application."
 msgstr "¿Ya sientes que encajas bien? Sigue con tu solicitud."
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Done"
+msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "which step a change request is on"
@@ -16505,6 +17288,11 @@ msgstr "Tú"
 msgctxt "mark on a role card whose words a machine translated"
 msgid "Machine translation, not yet checked by a person"
 msgstr "Traducción automática, aún sin revisar por una persona"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Sign in again to send what you ticked. It stays on this phone until then."
+msgstr ""
 
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: roles paid on separate agreements"
@@ -16682,6 +17470,11 @@ msgctxt "admin age band"
 msgid "That did not save. Try again."
 msgstr ""
 
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Tap the Share button <0>(the square with an arrow)</0> at the bottom of Safari."
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view eyebrow"
 msgid "This moon"
@@ -16706,6 +17499,16 @@ msgstr "La carta de membresía no cargó. Recarga la página para leerla y aline
 #~ msgid "Suggested {0} a {1}; they propose {2}{3}.{4}"
 #~ msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Kept on your phone. It sends when you're back in signal."
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "The protocols did not load. Check your signal and try again."
+msgstr ""
+
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
 msgid "Their voice"
@@ -16727,6 +17530,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "History ({0})"
 msgstr "Historial ({0})"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Everything is sent."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "That did not reach the server, so nothing was saved."
 msgstr ""
@@ -16739,6 +17547,11 @@ msgstr ""
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "I know, and I want to adopt anyway"
 msgstr "Lo sé, y quiero adoptarla de todos modos"
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the game colour tokens heading"
+msgid "Game colours"
+msgstr ""
 
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks"
@@ -16864,6 +17677,11 @@ msgstr ""
 msgid "That did not reach the server, so nothing was recorded."
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Try again"
+msgstr ""
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "The desk could not be read."
@@ -16876,6 +17694,11 @@ msgstr ""
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "How this was worked out"
+msgstr ""
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "That run is not on this phone. It may have been started on another phone that has not sent it yet."
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
@@ -16928,6 +17751,11 @@ msgstr ""
 msgctxt "progression: why these powers come first"
 msgid "First what your roles and groups hand you, then what opened most recently."
 msgstr "Primero lo que te dan tus roles y grupos, luego lo que se abrió más recientemente."
+
+#: client/src/components/protocols/InstallCard.tsx
+msgctxt "protocols install card"
+msgid "Then open it once from your home screen while you have signal and sign in. After that it works with no signal."
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -17004,6 +17832,11 @@ msgstr "el {n}% en Participación Ganada"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
 #~ msgstr "Te alineas con la Carta de Amor, el acuerdo de membresía de la aldea, cuando propones. Alinear es la forma en que la aldea firma."
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Quest a completed run hands in (optional)"
+msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -17228,6 +18061,11 @@ msgctxt "role draft button label"
 msgid "Full card for {roleName}"
 msgstr "Ficha completa de {roleName}"
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Opening the protocols"
+msgstr ""
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook section heading"
 msgid "The five levels"
@@ -17283,6 +18121,11 @@ msgctxt "voice field label: profile bio"
 msgid "Your bio"
 msgstr ""
 
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Recent runs"
+msgstr ""
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
 msgid "The role suggests"
@@ -17323,6 +18166,11 @@ msgstr ""
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"
 #~ msgstr ""
+
+#: client/src/components/admin/ProtocolsEditor.tsx
+msgctxt "admin protocols editor"
+msgid "Check the file"
+msgstr ""
 
 #. placeholder {0}: c.name
 #: client/src/components/roleDraft/ArchetypeStep.tsx
@@ -17534,6 +18382,12 @@ msgstr "Cerrar"
 msgid "Not ready for a role? Take a quest, alone or with others."
 msgstr "¿Todavía no es el momento de un rol? Toma una misión, a solas o con otras personas."
 
+#. placeholder {0}: p.questTitle
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Completing it hands in {0} for a steward to confirm."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note kind"
 msgid "Objection"
@@ -17639,6 +18493,11 @@ msgstr ""
 msgctxt "calendar: go to today"
 msgid "Today"
 msgstr "Hoy"
+
+#: client/src/pages/Protocols.tsx
+msgctxt "protocols page"
+msgid "Set this run aside"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stone"

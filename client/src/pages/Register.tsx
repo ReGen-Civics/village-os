@@ -13,6 +13,7 @@ import { useVillagePaths } from "@/hooks/useVillagePaths";
 import { ACCOUNT_WORDS, NAME_MAX, PASSWORD_MAX, PASSWORD_MIN } from "@shared/accountRules";
 import { andList } from "@shared/openProposals";
 import { useLingui } from "@lingui/react/macro";
+import { useAppWords } from "@/hooks/useAppWords";
 
 /** What the server said about the invitation link this page was opened with. */
 interface InviteCheck {
@@ -43,6 +44,7 @@ function inviteFromAddress(): string {
  * or an event. It sits on the same panel as the form it stands in for.
  */
 function InvitationNeeded({ villageName, reason }: { villageName: string; reason?: string }) {
+  const word = useAppWords();
   return (
     <section aria-labelledby="invitation-needed" className={`${CARD} space-y-5`}>
       {reason && (
@@ -51,21 +53,21 @@ function InvitationNeeded({ villageName, reason }: { villageName: string; reason
         </p>
       )}
       <h2 id="invitation-needed" className={H2}>
-        You need an invitation to join {villageName}
+        {word("joining", "heading") ?? <>You need an invitation to join {villageName}</>}
       </h2>
       <p className={LEDE}>
-        Got an invitation link? Open it to create your account.
+        {word("joining", "withLink") ?? "Got an invitation link? Open it to create your account."}
       </p>
       <p className={LEDE}>
-        No link yet? Ask to join, and someone from the village will reach out. A community call is a good
-        first step.
+        {word("joining", "withoutLink") ??
+          "No link yet? Ask to join, and someone from the village will reach out. A community call is a good first step."}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <a
           href="/request-membership"
           className={BTN_PRIMARY}
         >
-          Ask to join
+          {word("joining", "askButton") ?? "Ask to join"}
           <ArrowRight className="w-5 h-5" aria-hidden="true" />
         </a>
         <a

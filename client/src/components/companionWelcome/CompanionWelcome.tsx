@@ -42,7 +42,7 @@ import {
   type WelcomeStatus,
   welcomeMoveRefused,
 } from "@shared/companionPersona";
-import { Bubble, Egg, FOCUS, INPUT, MIC_LINE, Pet, TINT_OF, burst, chip, confetti, refocus, send, useInertOutside, useSpeech } from "./welcomeKit";
+import { Bubble, Egg, FOCUS, INPUT, MIC_LINE, Pet, SPEAK_LINE, TINT_OF, burst, chip, confetti, refocus, send, useInertOutside, useSpeech } from "./welcomeKit";
 import { LensSheet, type SheetId } from "./LensSheet";
 import { MoonPromise, NameBox } from "./WelcomeParts";
 import "./companionWelcome.css";
@@ -406,6 +406,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
         <button type="button" className={`${BTN_LINE} ${SMALL}`} onClick={() => chooseVoice(false)}>
           <Trans context="companion welcome">Quiet</Trans>
         </button>
+        <span className="basis-full text-muted-foreground" data-testid="speak-line">{t(SPEAK_LINE)}</span>
       </div>
     ) : null;
 
@@ -502,6 +503,9 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
             <Trans context="companion welcome">Quiet</Trans>
           </button>
         </div>
+        <p className={`${fine} mt-2 max-w-[32ch]`} data-testid="speak-line">
+          {t(SPEAK_LINE)}
+        </p>
         <p className={`${fine} mt-2 max-w-[32ch]`}>
           <Trans context="companion welcome">Change it any time with Quiet at the top.</Trans>
         </p>
@@ -612,6 +616,7 @@ function Welcome({ firstName, companions, payload, startBeat, onTab, onClose, on
           <Trans context="companion welcome">
             . I speak through <b className="text-dash-cash">{engineName}</b>, the guide you chose (change it on your guide card).
           </Trans>
+          {!quiet && persona.speak ? <span className="mt-1 block" data-testid="speak-line">{t(SPEAK_LINE)}</span> : null}
         </div>
         {foot(
           <span className={fine}>

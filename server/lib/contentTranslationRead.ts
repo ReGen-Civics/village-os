@@ -9,7 +9,11 @@
  * translation falls back to the English, field by field, until somebody
  * translates the new words.
  *
- * A machine draft is shown, and named in `machine`, so the page can mark it.
+ * A machine draft is shown, and named in `machine`, so the page can mark it
+ * (Rye, 15 Nov). The test is "not approved", never "is ai_draft": a row whose
+ * status is anything but a person's approval is read as a machine's and
+ * marked, so an unknown or mistyped status can never reach a reader
+ * unmarked, and approved words never carry the mark.
  *
  * THE READER ASKS. The client sends `X-Village-Locale` only on the reads a
  * visitor sees (the role card, a page's words). An editor's read never sends
@@ -72,6 +76,9 @@ const LISTS: ReadonlySet<string> = new Set(ROLE_CARD_LIST_FIELDS);
 
 const text = (v: unknown): string | null => (typeof v === "string" && v.trim() ? v : null);
 
+/** Marked as a machine translation unless a person approved it: fails toward the mark. */
+export const machineWritten = (row: Pick<ContentTranslationRow, "status">): boolean => row.status !== "approved";
+
 /** Is this row a translation of exactly this English? */
 const fresh = (row: ContentTranslationRow, english: string | null) => english !== null && sourceHash(english) === row.sourceHash;
 
@@ -101,7 +108,7 @@ export async function roleCardTranslation(
   ]);
   const out: RoleCardTranslation = { seat: {}, sections: {}, machine: [], locale };
   const take = (row: ContentTranslationRow) => {
-    if (row.status === "ai_draft") out.machine.push(`${row.kind}:${row.field}`);
+    if (machineWritten(row)) out.machine.push(`${row.kind}:${row.field}`);
   };
 
   for (const row of cardRows) {
@@ -186,7 +193,7 @@ export async function pageTranslation(pool: Pool, section: string, stored: unkno
     if (!translationTarget(row.kind, row.refKey, row.field).ok) continue;
     if (!fresh(row, pageEnglishAt(section, stored, row.field))) continue;
     out.fields[row.field] = row.text;
-    if (row.status === "ai_draft") out.machine.push(row.field);
+    if (machineWritten(row)) out.machine.push(row.field);
   }
   return Object.keys(out.fields).length ? out : null;
 }

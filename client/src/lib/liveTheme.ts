@@ -55,10 +55,26 @@ export function relinkTheme(version?: string | null): void {
   const anchor = old.at(-1);
   if (anchor?.parentNode) anchor.parentNode.insertBefore(next, anchor.nextSibling);
   else document.head.appendChild(next);
-  const drop = () => old.forEach((l) => l.remove());
+  const drop = () => {
+    old.forEach((l) => l.remove());
+    syncScheme();
+  };
   next.addEventListener("load", drop, { once: true });
   // A failed load keeps the old sheet: the page stays as it was rather than unthemed.
   next.addEventListener("error", () => next.remove(), { once: true });
+}
+
+/**
+ * THE SCHEME MARK. The server marks the shell `data-scheme="dark"` for a
+ * village in the dark scheme (server/lib/themeCss.ts `withScheme`), and
+ * index.css's dark rules hang on it. A save in Admin re-links the sheet
+ * without a reload, so the mark is read back off the sheet itself: theme.css
+ * sets `--village-scheme: dark` exactly when it is dark.
+ */
+export function syncScheme(root: HTMLElement = document.documentElement): void {
+  const dark = getComputedStyle(root).getPropertyValue("--village-scheme").trim() === "dark";
+  if (dark) root.setAttribute("data-scheme", "dark");
+  else root.removeAttribute("data-scheme");
 }
 
 /** Ask the server for the sheet's current version; re-link only when it moved. */

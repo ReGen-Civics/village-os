@@ -48,7 +48,7 @@ const { chromium, webkit, devices } = requirePw("playwright");
 
 const PORT = 4600 + (process.pid % 1000);
 const BASE = `http://localhost:${PORT}`;
-const ADMIN = "l1-probe-admin";
+const ADMIN = "l1-probe-admin-not-a-real-password";
 const SHOTS = process.env.SHOTS_DIR ?? path.join(os.tmpdir(), "l1-shots");
 fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -113,7 +113,7 @@ async function main() {
       DATABASE_URL: testDb.url,
       ADMIN_PASSWORD: ADMIN,
       JOURNEY_PASSWORD: "l1-probe-journey",
-      AUTH_TOKEN_SECRET: "l1-probe-secret",
+      AUTH_TOKEN_SECRET: "l1-probe-token-secret-not-a-real-secret",
       RESEND_API_KEY: "",
       STRIPE_WEBHOOK_SECRET: "whsec_l1probe",
       ANTHROPIC_API_KEY: "",

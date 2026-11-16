@@ -36,7 +36,7 @@ import fs from "node:fs";
 import { docsMode } from "./lib/generatedDocs.mjs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { formatter } from "@lingui/format-po";
 import { compileMessageOrThrow } from "@lingui/message-utils/compileMessage";
 
@@ -135,18 +135,39 @@ async function read(file, locale) {
   return po.parse(fs.readFileSync(file, "utf8"), { locale, sourceLocale: "en", filename: file });
 }
 
+/**
+ * The extraction's config, as a CONSTANT. It is written at
+ * node_modules/.i18n-check-XXXX/, so the repository's own config is two folders
+ * up, and every path comes from the environment. See staleSourceIds for why
+ * nothing may be spliced into it.
+ */
+export const I18N_CHECK_CONFIG = `import base from "../../lingui.config.ts";
+export default {
+  ...base,
+  rootDir: process.env.I18N_CHECK_ROOT,
+  catalogs: base.catalogs.map((c) => ({ ...c, path: process.env.I18N_CHECK_OUT + "/{locale}" })),
+};
+`;
+
 /** Ids a fresh extraction finds that the committed English catalog lacks. */
 function staleSourceIds(committed) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-extract-"));
-  const cfg = path.join(tmp, "lingui.config.mjs");
-  // Every value spliced into this generated module goes in through JSON.stringify,
-  // the import specifier included. It used to be pasted between two quote marks
-  // by hand, so a checkout path holding a quote or a backslash would have broken
-  // out of the string and become code (CodeQL js/bad-code-sanitization, alert
-  // 473). pathToFileURL also percent-encodes what a URL cannot carry raw.
-  const real = pathToFileURL(path.join(ROOT, "lingui.config.ts")).href;
-  fs.writeFileSync(cfg, `import base from ${JSON.stringify(real)};\nexport default { ...base, rootDir: ${JSON.stringify(ROOT.split(path.sep).join("/"))}, catalogs: base.catalogs.map((c) => ({ ...c, path: ${JSON.stringify(tmp.split(path.sep).join("/"))} + "/{locale}" })) };\n`);
-  const r = spawnSync(process.execPath, [path.join(ROOT, "node_modules", "@lingui", "cli", "dist", "lingui.js"), "extract", "--config", cfg], { cwd: ROOT, encoding: "utf8", env: { ...process.env, NODE_OPTIONS: "--import tsx" } });
+  // NO VALUE IS EVER SPLICED INTO GENERATED CODE (CodeQL js/bad-code-sanitization,
+  // alerts 473 and 489). The config module's text is a constant: it imports the real
+  // config by a fixed relative path, because it is written two folders below the
+  // repository root, and it reads the paths it needs from the environment at run
+  // time. A checkout path holding a quote, a backslash or anything else can never
+  // become code. JSON.stringify did not satisfy the scanner; a constant needs no
+  // argument about whether it is safe.
+  const cfgDir = fs.mkdtempSync(path.join(ROOT, "node_modules", ".i18n-check-"));
+  const cfg = path.join(cfgDir, "lingui.config.mjs");
+  fs.writeFileSync(cfg, I18N_CHECK_CONFIG);
+  const r = spawnSync(process.execPath, [path.join(ROOT, "node_modules", "@lingui", "cli", "dist", "lingui.js"), "extract", "--config", cfg], {
+    cwd: ROOT,
+    encoding: "utf8",
+    env: { ...process.env, NODE_OPTIONS: "--import tsx", I18N_CHECK_ROOT: ROOT.split(path.sep).join("/"), I18N_CHECK_OUT: tmp.split(path.sep).join("/") },
+  });
+  fs.rmSync(cfgDir, { recursive: true, force: true });
   if (r.status !== 0) throw new Error(`lingui extract failed:\n${r.stdout}${r.stderr}`);
   return read(path.join(tmp, "en.po"), "en").then((fresh) => Object.keys(fresh).filter((id) => !fresh[id].obsolete && !(id in committed)).map((id) => ({ message: fresh[id].message ?? id, context: fresh[id].context })));
 }

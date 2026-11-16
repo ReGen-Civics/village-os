@@ -214,7 +214,19 @@ export const POWERS: readonly PowerEntry[] = [
     capability: "token.mint",
     title: "Minting tokens by hand",
     surface: "Minting a platform token to a member with a reason, and signing a grant that waits for a second signer",
-    routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve"],
+    routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve", "/api/treasury/mint-options"],
+  },
+  {
+    capability: "hiddenmap.keep",
+    title: "Keeping the hidden map",
+    surface: "Vouching for the first members' pins before anybody's map has opened, hiding a pin, and reading who looked at the map",
+    routes: ["/api/hidden-map/pins/:id/hide", "/api/hidden-map/vouch-queue", "/api/hidden-map/access-log"],
+  },
+  {
+    capability: "hiddenmap.export",
+    title: "The second signature on a copy of the hidden map",
+    surface: "Approving or declining another member's request for a copy of the map",
+    routes: ["/api/hidden-map/exports/:id/approve", "/api/hidden-map/exports/:id/decline"],
   },
   {
     capability: "pot.steward",

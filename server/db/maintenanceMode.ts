@@ -15,8 +15,8 @@
  * real app would have bound, and answers every request with one plain page:
  * an honest sentence about what happened, a statement that no data was lost
  * (migrations stop at the first failed statement, by design, and nothing
- * after that point ever ran), and the exact technical detail to hand to
- * whoever operates this deployment. `/health` and `/api/platform/info`
+ * after that point ever ran), and the file and step to hand to whoever
+ * operates this deployment. The raw error goes to the server log only (R213). `/health` and `/api/platform/info`
  * answer with JSON instead of HTML, in roughly the same shape the real
  * `/health` route uses (see server/index.ts), so a Railway health check or
  * the fleet roller's prober sees a clear non-ok status rather than a 404.
@@ -99,6 +99,27 @@ function humanSummary(detail: MaintenanceDetail): { headline: string; body: stri
   }
 }
 
+/**
+ * What the PUBLIC page and `/health` say about the failure (audit R213): a
+ * fixed sentence plus the file and the step, never the raw error. The raw
+ * `detail.message` is a database error, and a database error can carry table
+ * and column names, a fragment of a row, or a host name, on a page anyone can
+ * open. It goes to the server log instead, where the operator reads it.
+ */
+export function publicDetail(detail: MaintenanceDetail): string {
+  const log = "The full error is in the server log.";
+  switch (detail.kind) {
+    case "migration-failed":
+      return `Update ${detail.file} stopped at step ${detail.statementIndex} of ${detail.statementsTotal}. ${log}`;
+    case "tamper-detected":
+      return `Update file ${detail.file} does not match this deployment's record of it. ${log}`;
+    case "lock-timeout":
+      return `The update lock was still held after ${detail.timeoutSeconds} seconds. ${log}`;
+    case "ledger-invariant":
+      return `${detail.problems} ledger check${detail.problems === 1 ? "" : "s"} failed at boot. The server log lists each one under [ledger invariant].`;
+  }
+}
+
 function renderHtml(opts: MaintenanceServerOptions): string {
   const { detail } = opts;
   const label = opts.instanceLabel ? escapeHtml(opts.instanceLabel) : "This village";
@@ -127,7 +148,7 @@ function renderHtml(opts: MaintenanceServerOptions): string {
   <p>${escapeHtml(headline)}</p>
   ${body.map((p) => `<p>${escapeHtml(p)}</p>`).join("\n  ")}
   <p class="send">Send this to whoever operates this deployment:</p>
-  <div class="detail">${escapeHtml(detail.message)}</div>
+  <div class="detail">${escapeHtml(publicDetail(detail))}</div>
 </main>
 </body>
 </html>
@@ -139,7 +160,12 @@ function jsonBody(opts: MaintenanceServerOptions) {
     status: "maintenance",
     build: null,
     timestamp: new Date().toISOString(),
-    error: { kind: opts.detail.kind, message: opts.detail.message },
+    error: {
+      kind: opts.detail.kind,
+      ...("file" in opts.detail ? { file: opts.detail.file } : {}),
+      ...(opts.detail.kind === "migration-failed" ? { step: opts.detail.statementIndex, steps: opts.detail.statementsTotal } : {}),
+      message: publicDetail(opts.detail),
+    },
   };
 }
 
@@ -151,6 +177,8 @@ function jsonBody(opts: MaintenanceServerOptions) {
  * the operator fixes the underlying problem and restarts the container.
  */
 export function startMaintenanceServer(opts: MaintenanceServerOptions): http.Server {
+  // The one place the raw error is shown: the operator's log, not the page.
+  console.error(`[maintenance] serving the maintenance page (${opts.detail.kind}). Full detail: ${opts.detail.message}`);
   const html = renderHtml(opts);
   const server = http.createServer((req, res) => {
     const url = req.url ?? "/";

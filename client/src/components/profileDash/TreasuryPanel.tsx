@@ -30,6 +30,7 @@ import { PLATFORM_DEFAULT_MODEL } from "@shared/valuation";
 import type { DashData, WalletRowLite } from "./useDashData";
 import { cashSummary, earnedIn, moonRows, pickTokens, whole, wholeMoney, type MoonRow } from "./dashModel";
 import { KICKER, LINK } from "./dashUi";
+import { useAppWords } from "@/hooks/useAppWords";
 
 type Coin = "cash" | "gold" | "voice" | "thanks";
 const COIN: Record<Coin, string> = {
@@ -120,6 +121,8 @@ export default function TreasuryPanel({
   seasonName: string | null;
 }) {
   const rates = useDisplayRates();
+  // The village's own headings, where it set them (gap G7); names only, never what a token does.
+  const word = useAppWords();
   /** The village's own word for its recognition token, never a literal (scripts/check-village-facts.mjs). */
   const thanksName = useTokenName("Recognition");
   const config = useGameConfig();
@@ -192,9 +195,9 @@ export default function TreasuryPanel({
     >
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1">
-          <p className={KICKER}>{seasonName ? `Your treasury · ${seasonName}` : "Your treasury"}</p>
+          <p className={KICKER}>{seasonName ? `${word("treasury", "kicker") ?? "Your treasury"} · ${seasonName}` : (word("treasury", "kicker") ?? "Your treasury")}</p>
           <h2 id="tr-h" className="m-0 font-display text-[34px] leading-tight sm:text-[38px]">
-            What you hold
+            {word("treasury", "heading") ?? "What you hold"}
           </h2>
         </div>
         <a href="#ledger" className={`${LINK} hidden text-sm sm:inline`}>
@@ -321,7 +324,7 @@ export default function TreasuryPanel({
         {moons.length > 0 ? (
           <div className="hidden min-w-0 flex-[1_1_380px] flex-col gap-3 rounded-[18px] border border-dash-edge bg-dash-raised p-5 sm:flex">
             <h3 className="m-0 text-base" style={BODY_HEADING}>
-              By moon
+              {word("treasury", "byMoon") ?? "By moon"}
             </h3>
             {moons.map((m) => (
               <div key={m.label} className="grid grid-cols-[80px_1fr] items-center gap-3">
@@ -357,7 +360,7 @@ export default function TreasuryPanel({
 
         <div className="flex min-w-0 flex-[1_1_380px] flex-col gap-2.5 rounded-2xl border border-dash-edge bg-card p-4 sm:rounded-[18px] sm:bg-dash-raised sm:p-5">
           <h3 className="m-0 text-[15px] sm:text-base" style={BODY_HEADING}>
-            Coming when you finish
+            {word("treasury", "coming") ?? "Coming when you finish"}
           </h3>
           {coming.length === 0 ? (
             <p className="m-0 text-[13px] text-muted-foreground">
@@ -377,7 +380,7 @@ export default function TreasuryPanel({
           {latest.length > 0 ? (
             <>
               <h3 className="m-0 mt-1.5 hidden text-base sm:block" style={BODY_HEADING}>
-                Latest in your ledger
+                {word("treasury", "latest") ?? "Latest in your ledger"}
               </h3>
               {latest.map((l, i) => (
                 <div key={`${l.at}-${i}`} className="hidden gap-2.5 text-[13px] sm:flex">

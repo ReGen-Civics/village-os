@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 246 open and 50 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 258 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-296 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 6 longtext.
+314 dials in 40 categories. 165 carry a minimum and a maximum. By type: 128 integer, 19 decimal, 19 percentage, 42 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and
 | Gratitude | 11 | 11 | 0 |
 | Ledger | 17 | 9 | 8 |
 | The Mint | 7 | 6 | 1 |
-| Progression | 34 | 34 | 0 |
+| Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
 | Governance | 51 | 45 | 6 |
 | Tokens | 4 | 1 | 3 |
@@ -53,15 +53,15 @@ Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and
 | Tools | 2 | 2 | 0 |
 | Accounts & sessions | 2 | 0 | 2 |
 | Email and reminders | 15 | 11 | 4 |
-| Abuse guards | 5 | 0 | 5 |
+| Abuse guards | 11 | 0 | 11 |
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
 | The village's people | 20 | 19 | 1 |
+| Companions | 3 | 3 | 0 |
 | The founding team | 19 | 19 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
-| Companions | 2 | 2 | 0 |
 | Messages | 2 | 2 | 0 |
 | Feed | 3 | 3 | 0 |
 | Stays | 10 | 10 | 0 |
@@ -76,6 +76,7 @@ Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and
 | Exit | 10 | 10 | 0 |
 | Needs | 5 | 5 | 0 |
 | Journal | 2 | 2 | 0 |
+| Hidden map | 10 | 10 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
 | Language | 1 | 1 | 0 |
@@ -134,6 +135,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | A role starts only after: confidentiality | `org.start_after_confidentiality` | Progression | boolean | `false` | the whole village |
 | A role starts only after: membership | `org.start_after_membership` | Progression | boolean | `false` | the whole village |
 | A paid role starts only after its terms | `org.start_after_paid_terms` | Progression | boolean | `false` | the whole village |
+| The style for portraits drawn for members | `characters.forge_style` | Progression | longtext | blank | the whole village |
 | Sending-budget multiplier: Visitor | `progression.multiplier.visitor` | Progression | decimal | `0` | the whole village |
 | Sending-budget multiplier: Guest | `progression.multiplier.guest` | Progression | decimal | `1` | the whole village |
 | Sending-budget multiplier: Immersant | `progression.multiplier.immersant` | Progression | decimal | `1` | the whole village |
@@ -253,6 +255,12 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Failed logins per account per 15 minutes | `abuse.login_account_per_quarter_hour` | Abuse guards | integer | `10` | the founder or an admin |
 | Password-reset requests per IP per hour | `abuse.password_reset_per_ip_hourly` | Abuse guards | integer | `10` | the founder or an admin |
 | Investor-packet requests per IP per hour | `abuse.investor_docs_per_ip_hourly` | Abuse guards | integer | `3` | the founder or an admin |
+| Most of the guide's day one account may use | `assistant.account_day_share_percent` | Abuse guards | integer | `25` | the founder or an admin |
+| Fewest guide calls one account may use in a day | `assistant.account_day_share_floor` | Abuse guards | integer | `5` | the founder or an admin |
+| Guide calls a day for visitors with no account | `assistant.anonymous_day_calls` | Abuse guards | integer | `150` | the founder or an admin |
+| Guide calls a day for one address with no account | `assistant.anonymous_address_day_calls` | Abuse guards | integer | `40` | the founder or an admin |
+| Model drafts from a document per account per hour | `documents.model_drafts_per_hour` | Abuse guards | integer | `6` | the founder or an admin |
+| Model drafts from a document per account per day | `documents.model_drafts_per_day` | Abuse guards | integer | `12` | the founder or an admin |
 | Keep handled form submissions for | `retention.submissions_days` | Data lifecycle | integer | `365` | the founder or an admin |
 | Keep read notifications for | `retention.notifications_days` | Data lifecycle | integer | `90` | the founder or an admin |
 | Leave an unreferenced upload alone for | `uploads.orphan_grace_days` | Data lifecycle | integer | `30` | the founder or an admin |
@@ -289,6 +297,9 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Feature the founding team on the Roles page | `org.founding_team` | The village's people | boolean | `false` | the whole village |
 | The founding team's roles | `org.founding_team_roles` | The village's people | text | blank | the whole village |
 | Show pay ranges on role cards | `org.show_pay_ranges` | The village's people | boolean | `false` | the whole village |
+| How your guide speaks | `guide.voice` | Companions | longtext | blank | the whole village |
+| Questions one companion may ask a day | `companions.max_questions_per_day` | Companions | integer | `3` | the whole village |
+| Roles that have a companion | `companions.role_ids` | Companions | text | `all` | the whole village |
 | When a moon counts as far from what was agreed | `moon_review.far_off_pct` | The founding team | integer | `25` | the whole village |
 | How rewards work, on every role card | `org.pay_shape` | The founding team | text | blank | the whole village |
 | The at-risk line under the pay shape | `org.pay_shape_at_risk` | The founding team | text | blank | the whole village |
@@ -312,8 +323,6 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Show gatherings this far ahead | `events.upcoming_days` | Events | integer | `90` | the whole village |
 | Keep finished gatherings listed for | `events.past_visible_days` | Events | integer | `30` | the whole village |
 | Soft reports that auto-hide a post | `forum.report_hide_threshold` | Forum | integer | `3` | the whole village |
-| Questions one companion may ask a day | `companions.max_questions_per_day` | Companions | integer | `3` | the whole village |
-| Roles that have a companion | `companions.role_ids` | Companions | text | `all` | the whole village |
 | Messages one member may send per minute | `messaging.sends_per_minute` | Messages | integer | `20` | the whole village |
 | Largest group conversation | `messaging.max_members` | Messages | integer | `50` | the whole village |
 | Which forum category the feed shows | `feed.category_slug` | Feed | text | `village-life` | the whole village |
@@ -378,6 +387,16 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Whether naming the village's needs target is asked before launch | `needs.launch_requirement` | Needs | choice | `recommended` | the whole village |
 | Members who must answer before a pulse average shows | `journal.pulse_floor` | Journal | integer | `1` | the whole village |
 | Every member has a task board unless a steward turns one off | `memberTasks.listDefault` | Journal | boolean | `true` | the whole village |
+| Vouched pins that open the whole map | `hiddenmap.unlock_pins` | Hidden map | integer | `7` | the whole village |
+| Vouches one pin needs before it counts | `hiddenmap.vouches_per_pin` | Hidden map | integer | `1` | the whole village |
+| How exactly a new pin is shown beyond the open members | `hiddenmap.default_precision` | Hidden map | choice | `region` | the whole village |
+| Show dots to members whose map has not opened | `hiddenmap.teaser` | Hidden map | boolean | `false` | the whole village |
+| What the hidden map is drawn on | `hiddenmap.basemap` | Hidden map | choice | `none` | the whole village |
+| Closest the picture under the pins will zoom | `hiddenmap.basemap_max_zoom` | Hidden map | integer | `13` | the whole village |
+| Days the record of who looked is kept | `hiddenmap.access_log_days` | Hidden map | integer | `90` | the whole village |
+| Hours a second member has to approve a copy of the map | `hiddenmap.export_hours` | Hidden map | integer | `24` | the whole village |
+| Days between paid return visits to the same pin | `hiddenmap.visit_pay_days` | Hidden map | integer | `30` | the whole village |
+| Largest photo a member may add to a pin | `hiddenmap.photo_max_mb` | Hidden map | integer | `12` | the whole village |
 | Our agent may make the changes we approve in the chat | `agents.lead_approved_writes` | Connector | boolean | `true` | the whole village |
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
 | How long a live session runs unless its opener says otherwise | `sessions.default_minutes` | Live Sessions | integer | `60` | the whole village |
@@ -1056,7 +1075,7 @@ What it may be set to:
 
 ## Progression
 
-34 dials. 34 for the whole village.
+35 dials. 35 for the whole village.
 
 ### How often every role reopens
 
@@ -1132,6 +1151,20 @@ When on, a role whose terms carry pay, an allowance or a bonus does not start un
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The style for portraits drawn for members
+
+How a portrait drawn for a member should look, in a few sentences: the medium, the light, the palette and anything to leave out. A portrait provider puts these words before its own. Only the first 1500 characters are used. Leave it empty and a provider draws in its own neutral style. Members who upload their own picture are not affected.
+
+| Fact | Value |
+| --- | --- |
+| Key | `characters.forge_style` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
@@ -3106,7 +3139,7 @@ Off by default. When on, links in automated emails pass through the email provid
 
 ## Abuse guards
 
-5 dials. 5 for the founder or an admin.
+11 dials. 11 for the founder or an admin.
 
 ### Registrations per IP per hour
 
@@ -3179,6 +3212,96 @@ How many investor document requests one IP address may make per hour. Each reque
 | Default | `3` |
 | Range | 1 to 100 |
 | Counted in | per hour |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Most of the guide's day one account may use
+
+Each way of asking the guide has its own number of calls a day on the village's key, shared by everyone. This is the most of that one signed-in account may use in a day, so one person asking all day cannot use it up for everybody. Admin tools keep the whole day, and a member who brings their own key pays their own way. 0 means signed-in accounts get no calls on the village's key at all.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.account_day_share_percent` |
+| Type | integer, a whole number |
+| Default | `25` |
+| Range | 0 to 100 |
+| Counted in | % of the day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Fewest guide calls one account may use in a day
+
+A floor under the share above, for a way of asking whose whole day is small: one account may always use at least this many calls a day, while the share is above 0. It is never more than that way's whole day. 0 means no floor.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.account_day_share_floor` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 0 to 1000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Guide calls a day for visitors with no account
+
+The visitor guide and the application's voice drafts answer people with no account. Together, those people may use this many of the public guide's calls a day, and the rest stay for people who are signed in, so a few visitors cannot use up the day. It is never more than the public guide's whole day. 0 means visitors with no account get no guide calls.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.anonymous_day_calls` |
+| Type | integer, a whole number |
+| Default | `150` |
+| Range | 0 to 10000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Guide calls a day for one address with no account
+
+How many of the visitors' calls above one internet address may use in a day. A household or an office behind one connection counts as one address, so keep it above one conversation's worth. 0 means visitors with no account get no guide calls.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.anonymous_address_day_calls` |
+| Type | integer, a whole number |
+| Default | `40` |
+| Range | 0 to 10000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Model drafts from a document per account per hour
+
+How many times one account may ask a model to draft from a document in an hour, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.
+
+| Fact | Value |
+| --- | --- |
+| Key | `documents.model_drafts_per_hour` |
+| Type | integer, a whole number |
+| Default | `6` |
+| Range | 0 to 1000 |
+| Counted in | per hour |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Model drafts from a document per account per day
+
+How many times one account may ask a model to draft from a document in a day, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.
+
+| Fact | Value |
+| --- | --- |
+| Key | `documents.model_drafts_per_day` |
+| Type | integer, a whole number |
+| Default | `12` |
+| Range | 0 to 1000 |
+| Counted in | per day |
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
@@ -3717,6 +3840,53 @@ Off, no role card shows a pay range or an amount to visitors or members, whateve
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
 
+## Companions
+
+3 dials. 3 for the whole village.
+
+### How your guide speaks
+
+A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried.
+
+| Fact | Value |
+| --- | --- |
+| Key | `guide.voice` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Questions one companion may ask a day
+
+The most questions each companion brings a member in one village day. Drafts are never held back by this, because a draft that wants to move money should always be seen. A member may lower it for any of their companions. More than 3 is not offered: that ceiling waits on a founder's ruling. A question over the limit waits for the next morning.
+
+| Fact | Value |
+| --- | --- |
+| Key | `companions.max_questions_per_day` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 0 to 3 |
+| Counted in | questions |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Roles that have a companion
+
+Which roles give their holders a companion that speaks for the role. Write all for every role, leave it empty for none, or paste role ids from the org chart separated by commas. The personal companion is always there for every member, whatever this says.
+
+| Fact | Value |
+| --- | --- |
+| Key | `companions.role_ids` |
+| Type | text, free text, one line |
+| Default | `all` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
 ## The founding team
 
 19 dials. 19 for the whole village.
@@ -4051,39 +4221,6 @@ When this many DIFFERENT members soft-report the same thread or reply, it hides 
 | Default | `3` |
 | Range | 2 to 10 |
 | Counted in | reports |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-## Companions
-
-2 dials. 2 for the whole village.
-
-### Questions one companion may ask a day
-
-The most questions each companion brings a member in one village day. Drafts are never held back by this, because a draft that wants to move money should always be seen. A member may lower it for any of their companions. More than 3 is not offered: that ceiling waits on a founder's ruling. A question over the limit waits for the next morning.
-
-| Fact | Value |
-| --- | --- |
-| Key | `companions.max_questions_per_day` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 0 to 3 |
-| Counted in | questions |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### Roles that have a companion
-
-Which roles give their holders a companion that speaks for the role. Write all for every role, leave it empty for none, or paste role ids from the org chart separated by commas. The personal companion is always there for every member, whatever this says.
-
-| Fact | Value |
-| --- | --- |
-| Key | `companions.role_ids` |
-| Type | text, free text, one line |
-| Default | `all` |
-| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
@@ -5122,6 +5259,169 @@ When on, every member has a task board on their profile unless a steward turns t
 | Type | boolean, on or off |
 | Default | `true` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+## Hidden map
+
+10 dials. 10 for the whole village.
+
+### Vouched pins that open the whole map
+
+How many of a member's own planting pins must be vouched for by somebody else before they see every pin on the hidden map. Until then they see only their own. Once a member's map has opened it stays open, so raising this later only asks more of members who have not opened yet. Zero opens the map to every member who can see the module.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.unlock_pins` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 0 to 100 |
+| Counted in | pins |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Vouches one pin needs before it counts
+
+How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.vouches_per_pin` |
+| Type | integer, a whole number |
+| Default | `1` |
+| Range | 1 to 10 |
+| Counted in | vouches |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How exactly a new pin is shown beyond the open members
+
+The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.default_precision` |
+| Type | choice, one of a fixed list |
+| Default | `region` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+What it may be set to:
+
+- `region` Region, about 50 km. The safest. A dot says which part of the country, and nothing nearer.
+- `km` About 1 km. Close enough to find the area, too coarse to find the spot.
+- `exact` Exact. Only for places that are safe to be found.
+
+### Show dots to members whose map has not opened
+
+When on, a member who has not opened the map yet sees every other pin as a plain dot, no finer than about 1 km and never finer than the pin's own setting, with no words, photos or stage. When off, they see their own pins and nothing else about anybody's.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.teaser` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### What the hidden map is drawn on
+
+The picture under the pins. Tiles load on each member's own phone from the provider named here, with its credit always on screen, and nothing is stored on the village's server. The provider can see which squares of the world a phone asked for, which is why the zoom below is capped. A grid draws no picture at all and sends nothing anywhere.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.basemap` |
+| Type | choice, one of a fixed list |
+| Default | `none` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+What it may be set to:
+
+- `none` A grid of latitude and longitude. Nothing leaves the phone. No coastline, roads or names.
+- `osm` OpenStreetMap. Roads, places and names, drawn by volunteers. Free for light use with the credit shown.
+- `esri-imagery` Satellite imagery from Esri. Photographs from above. Free to view with the credit shown.
+
+### Closest the picture under the pins will zoom
+
+The deepest zoom at which tiles are asked for. At 13 one tile covers about 5 km, so the provider learns only which 5 km square a member looked at. Pins are still drawn exactly where they are for members who may see them.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.basemap_max_zoom` |
+| Type | integer, a whole number |
+| Default | `13` |
+| Range | 2 to 18 |
+| Counted in | zoom |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Days the record of who looked is kept
+
+Every read of the shared map, every vouch and every copy taken is recorded with who and when, and never where. Rows older than this are deleted.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.access_log_days` |
+| Type | integer, a whole number |
+| Default | `90` |
+| Range | 7 to 3650 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Hours a second member has to approve a copy of the map
+
+A copy of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved copy the asker has not downloaded expires too.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.export_hours` |
+| Type | integer, a whole number |
+| Default | `24` |
+| Range | 1 to 168 |
+| Counted in | hours |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Days between paid return visits to the same pin
+
+When the village names a quest for return visits, a member's visit to the same pin opens a new claim at most this often, so one tree is visited for its story and never farmed.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.visit_pay_days` |
+| Type | integer, a whole number |
+| Default | `30` |
+| Range | 0 to 365 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Largest photo a member may add to a pin
+
+The largest single photo, before it is shrunk and every hidden detail in it is removed.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.photo_max_mb` |
+| Type | integer, a whole number |
+| Default | `12` |
+| Range | 1 to 40 |
+| Counted in | MB |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

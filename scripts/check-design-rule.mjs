@@ -92,6 +92,8 @@ const PAGES = [
   "client/src/pages/Review.tsx",
   "client/src/pages/Decisions.tsx",
   "client/src/pages/Decision.tsx",
+  // The Treasury (2026-11-15): the hand mint and the pay queues for a holder who is not an admin.
+  "client/src/pages/Treasury.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */

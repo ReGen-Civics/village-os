@@ -113,7 +113,7 @@ async function main() {
       DATA_DIR: dataDir,
       DATABASE_URL: `${DB_SERVER}/${SCHEMA}`,
       ADMIN_PASSWORD,
-      AUTH_TOKEN_SECRET: "rehearsal-token-secret-not-real", // module-review-ok: signs tokens for the scratch server only, dropped with the run
+      AUTH_TOKEN_SECRET: "rehearsal-token-secret-not-a-real-secret", // module-review-ok: signs tokens for the scratch server only, dropped with the run
       FRONTEND_URL: BASE,
       TRUSTED_PROXY_HOPS: "1",
       RESEND_API_BASE: mail.url,

@@ -495,6 +495,9 @@ export interface AppDeps {
    */
   brandColour(): string;
 
+  /** The village's icon, the one its own web app manifest names (favicon, or the platform's). */
+  appIcon(): string;
+
   /**
    * What this village counts its money in, MERGED: the founder's Make This
    * Yours value over the platform default. It is `mergedConfig().project
