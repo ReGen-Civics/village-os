@@ -148,9 +148,16 @@ describe("moduleCatalog", () => {
      * switched on, and a village that keeps its org chart private turns it
      * off for both at once.
      */
+    /*
+     * Season places joined on 2026-11-15 with three dials, each a working
+     * village on day one: `season_places.who` is circles, and the two number
+     * dials are blank with `blank` declared ("no cap", "every season needs a
+     * proposal"), so switching the module on changes nothing until a village
+     * sets a number.
+     */
     expect(claiming).toEqual([
       "feed", "forum", "governance", "gratitude",
-      "introductions", "journal", "messaging", "places", "progression", "quests", "sessions",
+      "introductions", "journal", "messaging", "places", "progression", "quests", "season-places", "sessions",
     ]);
   });
 
@@ -314,7 +321,14 @@ describe("moduleCatalog", () => {
      * would put platform words where a village's own belong, and a line about
      * one place is wrong for every other place.
      */
-    expect(blank).toEqual(["sessions", "governance"]);
+    /*
+     * `season_places.cap` and `season_places.free_after` are the third honest
+     * case (2026-11-15). Each declares what blank MEANS (`blank` on the dial,
+     * read with `optionalNumberVar`): no cap, and every season needs a
+     * proposal. Both are answers a village can run on; 0 is a different
+     * answer for each, which is why blank had to be its own spelling.
+     */
+    expect(blank).toEqual(["season-places", "sessions", "governance"]);
   });
 
   it("the builder links point into the upstream repository's module docs", () => {

@@ -125,7 +125,7 @@ export function seasonPlaceCloser(deps: PlaceDeps): SubjectCloser {
       const moved = await setStatus(pool, b.subjectRef, ["voting"], "declined", { decidedBy: b.id, decided: true });
       const place = await readPlace(pool, b.subjectRef);
       if (moved && place) {
-        await tellCrew(deps, place, "season_place_declined", PLACE_NOTICES.declined(await subjectOf(pool, place), seasonName(deps, place.seasonId)), `declined:${b.id}`);
+        await tellCrew(deps, place, "declined", PLACE_NOTICES.declined(await subjectOf(pool, place), seasonName(deps, place.seasonId)), `declined:${b.id}`);
       }
       void actorId;
       return { applied: [], held: null, proposerTold: place?.proposedBy ?? null };
@@ -392,7 +392,7 @@ export function register(app: Express, deps: Deps): void {
     if (!(await setStatus(pool, got.place.id, ["proposed"], "declined", { decidedBy: got.userId, decided: true }))) {
       return res.status(409).json(notWaiting((await readPlace(pool, got.place.id)) ?? got.place));
     }
-    await tellCrew(placeDeps, got.place, "season_place_declined", PLACE_NOTICES.declined(await subjectOf(pool, got.place), seasonName(placeDeps, got.place.seasonId)), `declined:${got.userId}`);
+    await tellCrew(placeDeps, got.place, "declined", PLACE_NOTICES.declined(await subjectOf(pool, got.place), seasonName(placeDeps, got.place.seasonId)), `declined:${got.userId}`);
     res.json({ success: true, status: "declined" });
   });
 

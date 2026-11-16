@@ -55,6 +55,13 @@ const NOT_HERE = { error: "not_found", message: "That gathering isn't on the cal
 const SIGN_IN = { error: "auth_required", message: "Sign in to see the circles at a gathering." };
 const HOSTS_ONLY = { error: "hosts_only", message: "A gathering's circle settings are changed by whoever holds the power to manage gatherings." };
 const ASKS = 30;
+
+/** The notice kinds a crew hears about a gathering (shared/notificationKinds.ts), read by the catalogue's producer scan. */
+const CIRCLE_NOTICE_TYPES: Record<"going" | "waiting" | "opened", string> = {
+  going: "circle_place_going",
+  waiting: "circle_place_waiting",
+  opened: "circle_place_opened",
+};
 const ASK_WINDOW_MS = 10 * 60 * 1000;
 
 export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps): void {
@@ -67,9 +74,9 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     return row && !row.removedAt ? row : null;
   }
 
-  async function tellCircle(circleId: string, eventId: string, type: string, title: string, key: string) {
+  async function tellCircle(circleId: string, eventId: string, kind: keyof typeof CIRCLE_NOTICE_TYPES, title: string, key: string) {
     for (const userId of (await crews(getPool(), lapse())).get(circleId) ?? []) {
-      await notify({ userId, type, title, body: null, link: "/events", actorUserId: null, dedupeKey: `cp:${eventId}:${circleId}:${key}:${userId}` });
+      await notify({ userId, type: CIRCLE_NOTICE_TYPES[kind], title, body: null, link: "/events", actorUserId: null, dedupeKey: `cp:${eventId}:${circleId}:${key}:${userId}` });
     }
   }
 
@@ -77,7 +84,7 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     const promoted = (await withGatheringLock(getPool(), eventId, (conn) => promoteCirclesOn(conn, eventId, cap))) ?? [];
     const names = await circleNames(getPool(), promoted);
     const stamp = Date.now().toString(36);
-    for (const c of promoted) await tellCircle(c, eventId, "circle_place_opened", CIRCLE_NOTICES.opened(names.get(c) ?? c, title), `opened:${stamp}`);
+    for (const c of promoted) await tellCircle(c, eventId, "opened", CIRCLE_NOTICES.opened(names.get(c) ?? c, title), `opened:${stamp}`);
     return promoted.length;
   }
 
@@ -157,8 +164,8 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     if (!out) return res.status(404).json(NOT_HERE);
     if (!out.duplicate) {
       const stamp = Date.now().toString(36);
-      if (out.status === "going") await tellCircle(circleId, row.id, "circle_place_going", CIRCLE_NOTICES.going(name, row.title), `going:${stamp}`);
-      else await tellCircle(circleId, row.id, "circle_place_waiting", CIRCLE_NOTICES.waiting(name, row.title, out.position ?? 1), `waiting:${stamp}`);
+      if (out.status === "going") await tellCircle(circleId, row.id, "going", CIRCLE_NOTICES.going(name, row.title), `going:${stamp}`);
+      else await tellCircle(circleId, row.id, "waiting", CIRCLE_NOTICES.waiting(name, row.title, out.position ?? 1), `waiting:${stamp}`);
     }
     res.json({ success: true, status: out.status, position: out.position, duplicate: out.duplicate });
   });

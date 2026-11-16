@@ -75,13 +75,23 @@ export function seasonName(deps: Pick<PlaceDeps, "seasons">, seasonId: string): 
 
 export const placeHref = (seasonId: string) => `/season-places?season=${encodeURIComponent(seasonId)}`;
 
+/** The notice kinds a crew hears (shared/notificationKinds.ts), read by the catalogue's producer scan. */
+export const CREW_NOTICE_TYPES: Record<"placed" | "waitlisted" | "opened" | "declined", string> = {
+  placed: "season_place_placed",
+  waitlisted: "season_place_waitlisted",
+  opened: "season_place_opened",
+  declined: "season_place_declined",
+};
+
+export type CrewNotice = keyof typeof CREW_NOTICE_TYPES;
+
 /** Tell a subject's crew one thing, once per (row, kind, person). */
-export async function tellCrew(deps: PlaceDeps, place: StoredPlace, type: string, title: string, keyPart: string): Promise<void> {
+export async function tellCrew(deps: PlaceDeps, place: StoredPlace, kind: CrewNotice, title: string, keyPart: string): Promise<void> {
   const pool = deps.getPool();
   for (const userId of await candidatesOf(pool, deps.lapse(), place.subjectKind, place.subjectId)) {
     await deps.notify({
       userId,
-      type,
+      type: CREW_NOTICE_TYPES[kind],
       title,
       body: null,
       link: placeHref(place.seasonId),
@@ -114,8 +124,8 @@ export async function admit(
     const season = seasonName(deps, place.seasonId);
     // Keyed on the row's created_at, so a subject that withdraws and proposes again is told again.
     const round = place.createdAt.replace(/\D/g, "").slice(0, 14);
-    if (result === "taking_part") await tellCrew(deps, place, "season_place_placed", PLACE_NOTICES.placed(subject, season), `placed:${round}`);
-    else await tellCrew(deps, place, "season_place_waitlisted", PLACE_NOTICES.waitlisted(subject, season, position ?? 1), `waitlisted:${round}`);
+    if (result === "taking_part") await tellCrew(deps, place, "placed", PLACE_NOTICES.placed(subject, season), `placed:${round}`);
+    else await tellCrew(deps, place, "waitlisted", PLACE_NOTICES.waitlisted(subject, season, position ?? 1), `waitlisted:${round}`);
   }
   return { result, place, position };
 }
@@ -128,7 +138,7 @@ export async function promoteSeason(deps: PlaceDeps, seasonId: string): Promise<
   for (const p of promoted) {
     const fresh = (await readPlace(pool, p.id)) ?? p;
     const round = fresh.createdAt.replace(/\D/g, "").slice(0, 14);
-    await tellCrew(deps, fresh, "season_place_opened", PLACE_NOTICES.opened(await subjectOf(pool, fresh), season), `opened:${round}`);
+    await tellCrew(deps, fresh, "opened", PLACE_NOTICES.opened(await subjectOf(pool, fresh), season), `opened:${round}`);
   }
   return promoted;
 }

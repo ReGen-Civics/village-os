@@ -62,6 +62,12 @@ export const SEASON_PLACES_WORDS = {
   wordsLabel: "What your crew brings this season (optional)",
   dialsLink: "See and propose changes to these numbers",
   empty: "Nobody has proposed for this season yet.",
+  loading: "Reading the season's places",
+  adopt: "Adopt",
+  decline: "Not this season",
+  toVillage: "Put it to the village",
+  withdraw: "Withdraw",
+  otherSeason: "Seasons open to propose for",
 } as const;
 
 async function ask(path: string, body?: unknown): Promise<{ ok: boolean; status: number; data: any }> {
@@ -123,7 +129,7 @@ export default function SeasonPlaces() {
     <Layout>
       <div className={`${WORLD} py-8 sm:py-12`}>
         <div className="mx-auto max-w-3xl space-y-6 px-4">
-          {state === "loading" && <div className="flex justify-center py-16"><BreathingLoader label="Reading the season's places" /></div>}
+          {state === "loading" && <div className="flex justify-center py-16"><BreathingLoader label={SEASON_PLACES_WORDS.loading} /></div>}
           {message && <p role="alert" className="text-coral">{message}</p>}
           {state === "ready" && data && !data.season && <p className={LEDE}>{SEASON_PLACES_WORDS.noSeason}</p>}
           {state === "ready" && data?.season && (
@@ -136,6 +142,20 @@ export default function SeasonPlaces() {
                 </p>
                 {(data.overCap ?? 0) > 0 && <p className={HINT}>{SEASON_PLACES_WORDS.overCap(data.overCap ?? 0)}</p>}
                 <Link href="/modules/season-places" className={LINK}>{SEASON_PLACES_WORDS.dialsLink}</Link>
+                {data.seasons.length > 1 && (
+                  <nav aria-label={SEASON_PLACES_WORDS.otherSeason} className="flex flex-wrap gap-2 pt-2">
+                    {data.seasons.map((s) => (
+                      <a
+                        key={s.id}
+                        href={`/season-places?season=${encodeURIComponent(s.id)}`}
+                        aria-current={s.id === data.season?.id ? "page" : undefined}
+                        className={CHIP_SOFT}
+                      >
+                        {s.name ?? s.id}
+                      </a>
+                    ))}
+                  </nav>
+                )}
               </header>
 
               {data.mine.length > 0 && (
@@ -189,10 +209,10 @@ export default function SeasonPlaces() {
                       </div>
                       {p.words && <p className="whitespace-pre-wrap text-sm text-muted-foreground">{p.words}</p>}
                       <div className="flex flex-wrap gap-2">
-                        {p.mayDecide && <button type="button" disabled={busy} className={BTN_PRIMARY} onClick={() => act(`/api/season-places/${p.id}/adopt`)}>Adopt</button>}
-                        {p.mayDecide && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/decline`)}>Not this season</button>}
-                        {p.mayPutToVillage && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/put-to-village`)}>Put it to the village</button>}
-                        {p.mayWithdraw && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/withdraw`)}>Withdraw</button>}
+                        {p.mayDecide && <button type="button" disabled={busy} className={BTN_PRIMARY} onClick={() => act(`/api/season-places/${p.id}/adopt`)}>{SEASON_PLACES_WORDS.adopt}</button>}
+                        {p.mayDecide && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/decline`)}>{SEASON_PLACES_WORDS.decline}</button>}
+                        {p.mayPutToVillage && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/put-to-village`)}>{SEASON_PLACES_WORDS.toVillage}</button>}
+                        {p.mayWithdraw && <button type="button" disabled={busy} className={BTN_SECONDARY} onClick={() => act(`/api/season-places/${p.id}/withdraw`)}>{SEASON_PLACES_WORDS.withdraw}</button>}
                       </div>
                     </li>
                   ))}

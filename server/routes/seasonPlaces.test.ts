@@ -98,7 +98,7 @@ describe.skipIf(!configured)("season places against a real schema", () => {
   };
 
   async function circle(id: string, name: string, crew: string[]) {
-    await pool.query("INSERT INTO circles (id, name) VALUES (?, ?)", [id, name]);
+    await pool.query("INSERT INTO circles (id, name) VALUES (?, ?)", [id, name]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     const roleId = await createOrgRole(pool, { id: `${id}-crew`, name: `${name} crew`, circleId: id, seats: 10 });
     for (const u of crew) await seatHolder(pool, roleId, { userId: u });
   }
@@ -111,7 +111,7 @@ describe.skipIf(!configured)("season places against a real schema", () => {
     const on = await setModuleLifecycle("events", "members", null, { sharedPasswordPosture: () => false });
     if (on && (on as any).ok === false) throw new Error(`events would not switch on: ${JSON.stringify(on)}`);
     for (const [id, name] of [["u-a1", "Ada One"], ["u-a2", "Ada Two"], ["u-b1", "Bo One"], ["u-c1", "Cy One"], ["u-h", "Hal Holder"]]) {
-      await pool.query("INSERT INTO users (id, name, email, password_hash, paths) VALUES (?, ?, ?, 'x', '[]')", [id, name, `${id}@example.test`]);
+      await pool.query("INSERT INTO users (id, name, email, password_hash, paths) VALUES (?, ?, ?, 'x', '[]')", [id, name, `${id}@example.test`]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     }
     await circle("crew-a", "Crew A", ["u-a1", "u-a2"]);
     await circle("crew-b", "Crew B", ["u-b1"]);
@@ -128,9 +128,9 @@ describe.skipIf(!configured)("season places against a real schema", () => {
 
   beforeEach(async () => {
     told.length = 0;
-    await pool.query("DELETE FROM season_places");
-    await pool.query("DELETE FROM event_circle_places");
-    await pool.query("DELETE FROM event_circle_settings");
+    await pool.query("DELETE FROM season_places"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    await pool.query("DELETE FROM event_circle_places"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    await pool.query("DELETE FROM event_circle_settings"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     await setVariable(pool, "season_places.cap", "");
     await setVariable(pool, "season_places.free_after", "");
   });
@@ -170,14 +170,14 @@ describe.skipIf(!configured)("season places against a real schema", () => {
     for (const s of ["s1", "s2", "s3"]) {
       await withSeasonLock(pool, s, async (conn) => {
         const w = await writePlace(conn, { seasonId: s, subjectKind: "circle", subjectId: "crew-b", road: "proposal", words: null, proposedBy: "u-b1", status: "proposed" });
-        if (w.ok) await conn.query("UPDATE season_places SET status = 'taking_part' WHERE id = ?", [w.id]);
+        if (w.ok) await conn.query("UPDATE season_places SET status = 'taking_part' WHERE id = ?", [w.id]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       });
     }
     me = "u-b1";
     const out = await call("POST /api/season-places", { body: { circleId: "crew-b" } });
     expect(out.body).toMatchObject({ success: true, road: "served", served: 3, status: "taking_part" });
     // Control: with the dial at 4 the same history still needs a proposal.
-    await pool.query("DELETE FROM season_places WHERE season_id = 's4'");
+    await pool.query("DELETE FROM season_places WHERE season_id = 's4'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     await setVariable(pool, "season_places.free_after", "4");
     expect((await call("POST /api/season-places", { body: { circleId: "crew-b" } })).body.road).toBe("proposal");
   });
@@ -242,10 +242,10 @@ describe.skipIf(!configured)("season places against a real schema", () => {
 
   describe("circle places at a gathering", () => {
     beforeAll(async () => {
-      await pool.query(
+      await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
         "INSERT INTO events (id, title, starts_at, status, kind) VALUES ('ev-host', 'Spring gathering', '2099-02-01 10:00:00', 'scheduled', 'gathering')",
       ).catch(async () => {
-        await pool.query("INSERT INTO events (id, title, starts_at, status) VALUES ('ev-host', 'Spring gathering', '2099-02-01 10:00:00', 'scheduled')");
+        await pool.query("INSERT INTO events (id, title, starts_at, status) VALUES ('ev-host', 'Spring gathering', '2099-02-01 10:00:00', 'scheduled')"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       });
     });
 
@@ -285,7 +285,7 @@ describe.skipIf(!configured)("season places against a real schema", () => {
 
   describe("role prerequisites", () => {
     beforeAll(async () => {
-      await pool.query(
+      await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
         "INSERT INTO payment_products (id, name, kind, amount_minor, created_by) VALUES ('prod-lessons', 'Lessons', 'fee', 10000, 'u-h')",
       );
     });
@@ -298,9 +298,9 @@ describe.skipIf(!configured)("season places against a real schema", () => {
       // A role the dial does not name asks nothing.
       expect(await prerequisiteRefusal(pool, "u-c1", ["other-role"], name)).toBeNull();
 
-      await pool.query("INSERT INTO product_purchases (id, product_id, user_id, amount_minor, receipt_no, status) VALUES ('pp-1', 'prod-lessons', 'u-c1', 10000, 9001, 'reversed')");
+      await pool.query("INSERT INTO product_purchases (id, product_id, user_id, amount_minor, receipt_no, status) VALUES ('pp-1', 'prod-lessons', 'u-c1', 10000, 9001, 'reversed')"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       expect(await prerequisiteRefusal(pool, "u-c1", ["lead-role"], name)).not.toBeNull();
-      await pool.query("INSERT INTO product_purchases (id, product_id, user_id, amount_minor, receipt_no, status) VALUES ('pp-2', 'prod-lessons', 'u-c1', 10000, 9002, 'paid')");
+      await pool.query("INSERT INTO product_purchases (id, product_id, user_id, amount_minor, receipt_no, status) VALUES ('pp-2', 'prod-lessons', 'u-c1', 10000, 9002, 'paid')"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       expect(await prerequisiteRefusal(pool, "u-c1", ["lead-role"], name)).toBeNull();
       await setVariable(pool, "roles.prerequisites", "");
     });
