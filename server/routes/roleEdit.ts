@@ -64,7 +64,7 @@ import { boolVar, stringVar } from "../lib/variables";
 import { isListed } from "../../shared/roleListing";
 import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
-import { hasSections, sectionsForReader, villagePayFrom, type RoleCardSections } from "../../shared/roleCardSections";
+import { hasSections, sectionsForReader, villagePayFrom, type PayReader, type RoleCardSections } from "../../shared/roleCardSections";
 import { lastEditedOf, sectionsFor, sectionsForMany } from "../lib/roleCardSections";
 import { noSharedCache, readerLocale, roleCardTranslation } from "../lib/contentTranslationRead";
 
@@ -133,18 +133,20 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
   // editor's door reads every role, as the editor does.
 
   /** The village's pay shape, read fresh on each ask so a changed setting shows at once (lead, 11 Nov). */
-  const villagePay = () => villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: stringVar("org.pay_shape_at_risk"), note: stringVar("org.pay_shape_note") });
+  const villagePay = () =>
+    villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: stringVar("org.pay_shape_at_risk"), note: stringVar("org.pay_shape_note"), splitAmounts: boolVar("org.pay_split_amounts") });
 
   /**
-   * WHO READS THE PAY CEILING (`org.show_pay_ranges`): everyone while it is on. Off, only the people
-   * who read the full terms either way, as the setting says: a holder of `terms.read`, an admin, and
-   * the editor's door (who writes the figure). Everyone else gets sections with no ceiling key at all.
+   * WHO READS THE PAY CEILING: the reader as `readsCeiling` (shared/roleCardSections.ts) weighs them
+   * against each card's own choice. The village's switch (`org.show_pay_ranges`); a holder of
+   * `terms.read`; and an admin or the editor's door, who write the figure. A signed-out reader is
+   * nobody but the switch.
    */
-  const seesPay = async (req: any, editor?: boolean): Promise<boolean> => {
-    if (boolVar("org.show_pay_ranges")) return true;
-    if (!(await g.authedUser(req))) return false;
-    if (editor ?? !!(await door(req))?.door) return true;
-    return (await g.isAdmin(req)) || (await g.canReadTerms(req));
+  const payReader = async (req: any, editor?: boolean): Promise<PayReader> => {
+    const villageShows = boolVar("org.show_pay_ranges");
+    if (!(await g.authedUser(req))) return { villageShows, readsTerms: false, edits: false };
+    const edits = (editor ?? !!(await door(req))?.door) || (await g.isAdmin(req));
+    return { villageShows, readsTerms: edits || (await g.canReadTerms(req)), edits };
   };
 
   app.get("/api/org/founding-team", async (req, res) => {
@@ -154,7 +156,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     const roles = on ? await listOrgRoles(g.getPool()) : [];
     const featured = foundingRoles(on, stringVar("org.founding_team_roles"), roles);
     const sections = await sectionsForMany(g.getPool(), featured.map((r) => r.id));
-    const pay = await seesPay(req);
+    const pay = await payReader(req);
     // The current team beside the open roles (Rye, 14 Nov 2026): the filled roles of the founding
     // circles, for anyone, holders by first name only where the village shows its people publicly.
     let team: ReturnType<typeof foundingTeamFilled> = [];
@@ -209,7 +211,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     }
     const pool = g.getPool();
     const { sections: held } = await sectionsFor(pool, role.id);
-    const sections = sectionsForReader(held, await seesPay(req, editor));
+    const sections = sectionsForReader(held, await payReader(req, editor));
     // The card in the reader's language, where it has been translated (Rye, 15 Nov 2026). Only fresh
     // translations of the words the card says now; a machine draft is named so the card marks it.
     // The translation reads the sections' words alone (never the ceiling), so it is handed the held set.

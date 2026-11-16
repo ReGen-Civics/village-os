@@ -223,7 +223,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // ceiling written, no ceiling line.
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
-  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? []) : null;
+  // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? []) : null;
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (

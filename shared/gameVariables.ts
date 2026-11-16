@@ -2781,7 +2781,16 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Show pay ranges on role cards",
     description:
-      "Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way.",
+      "Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way. A role card can choose for itself in the role editor, under Who sees the listed price: everyone, or only the people who edit the card. That choice holds on the card, the founding team and the application form.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "org.pay_split_amounts",
+    category: "The village's people",
+    label: "Show each reward share as its own amount",
+    description:
+      "Off, a role card with a listed price shows it as one figure for the full role. On, the card names each share of that figure as its own amount, worked out from the role's shares, such as up to $4,000 in cash and $6,000 in equity a month. A role card can choose for itself in the role editor, under How the listed price reads. Who sees the figure at all is still decided by Show pay ranges on role cards and the card's own choice.",
     type: "boolean",
     default: "false",
   },

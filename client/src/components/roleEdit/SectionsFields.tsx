@@ -12,7 +12,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { FOCUS_TOKEN } from "@shared/focusLine";
-import { CEILING_PERIODS, EMPTY_SECTIONS, SECTION_LIMITS, SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
+import { CEILING_PERIODS, EMPTY_SECTIONS, PAY_VISIBILITIES, PAY_WORDINGS, SECTION_LIMITS, SECTION_WORDS, type PayVisibility, type PayWording, type RoleCardSections } from "@shared/roleCardSections";
 import { INPUT, LEDE, PANEL, SECONDARY } from "@/components/roleProposal/parts";
 
 export interface SectionsForm {
@@ -27,6 +27,10 @@ export interface SectionsForm {
   ceilingCurrency: string;
   ceilingPer: string;
   paySplitNote: string;
+  /** Who sees the listed price: the village's switch, everyone, or only the card's editors. */
+  payVisibility: PayVisibility;
+  /** How the listed price reads: the village's switch, one figure, or each share's amount. */
+  payWording: PayWording;
 }
 
 export function sectionsFormOf(s: RoleCardSections | undefined | null): SectionsForm {
@@ -43,6 +47,8 @@ export function sectionsFormOf(s: RoleCardSections | undefined | null): Sections
     ceilingCurrency: v.payCeiling?.currency ?? "USD",
     ceilingPer: v.payCeiling?.per ?? "month",
     paySplitNote: v.paySplitNote,
+    payVisibility: v.payVisibility ?? "village",
+    payWording: v.payWording ?? "village",
   };
 }
 
@@ -61,6 +67,9 @@ export function sectionsOf(f: SectionsForm): Record<string, unknown> {
     // Blank leaves the card with no ceiling, and only the split line shows.
     payCeiling: f.ceilingAmount.trim() ? { amount: f.ceilingAmount.trim().replace(/[,\s]/g, ""), currency: f.ceilingCurrency.trim().toUpperCase(), per: f.ceilingPer } : null,
     paySplitNote: f.paySplitNote.trim(),
+    // "village" is sent as it is and stored as nothing: the card follows the village again.
+    payVisibility: f.payVisibility,
+    payWording: f.payWording,
   };
 }
 
@@ -146,6 +155,32 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
         </div>
         <p className="mt-1 text-xs text-muted-foreground">
           <Trans context="role editor, ceiling hint">The card reads: Total compensation up to this figure. Ranges and minimums stay off the card.</Trans>
+        </p>
+      </Field>
+
+      <Field label={SECTION_WORDS.priceOnCard} changed={!same("payVisibility") || !same("payWording")}>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="block text-sm text-foreground">
+            {SECTION_WORDS.visibilityLabel}
+            <select className={`${INPUT} mt-1`} value={value.payVisibility} onChange={(e) => set("payVisibility", e.target.value as PayVisibility)} data-pay-visibility="">
+              {PAY_VISIBILITIES.map((v) => (
+                <option key={v} value={v}>{SECTION_WORDS.visibility[v]}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block text-sm text-foreground">
+            {SECTION_WORDS.wordingLabel}
+            <select className={`${INPUT} mt-1`} value={value.payWording} onChange={(e) => set("payWording", e.target.value as PayWording)} data-pay-wording="">
+              {PAY_WORDINGS.map((v) => (
+                <option key={v} value={v}>{SECTION_WORDS.wording[v]}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          <Trans context="role editor, who sees the listed price hint">The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it.</Trans>
+          {" "}
+          <Trans context="role editor, how the listed price reads hint">Each share as its own amount names what each share below comes to, in cash, equity or credits, for the full role.</Trans>
         </p>
       </Field>
 
