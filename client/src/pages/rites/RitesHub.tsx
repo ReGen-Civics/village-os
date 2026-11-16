@@ -218,17 +218,17 @@ export default function RitesHub() {
                       <Link className="btn ember small" href={`/rites/ceremony/${going.id}`}>
                         <Trans context="rites">Go back to it</Trans>
                       </Link>
-                    ) : r.atGathering ? (
-                      // Where are we: on site, or at a gathering, where the gathering's own lines are spoken (QA P2-7).
+                    ) : r.atGathering || r.callCounts ? (
+                      // Where are we: on site, at a gathering (its own lines), or on a call from where they are (QA P2-7, P3).
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {(["site", "gathering"] as const).map((place) => (
+                        {(["site", ...(r.atGathering ? ["gathering"] : []), ...(r.callCounts ? ["phone"] : [])] as Array<"site" | "gathering" | "phone">).map((place) => (
                           <button
                             key={place}
                             type="button"
                             className="btn ember small"
                             onClick={() => act(async () => navigate(`/rites/ceremony/${(await ritesSend<{ id: string }>("POST", "/api/rites/ceremonies", { riteId: r.id, place })).id}`))}
                           >
-                            {place === "site" ? me.words.placeSite : me.words.placeGathering}
+                            {place === "site" ? me.words.placeSite : place === "gathering" ? me.words.placeGathering : me.words.placePhone}
                           </button>
                         ))}
                       </div>

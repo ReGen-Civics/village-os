@@ -44,6 +44,7 @@ import {
   refuseSpoken,
   refuseWitness,
   ringOrder,
+  stampedOnlyWith,
   stampedTogether,
   stampsFor,
   type CeremonyFacts,
@@ -129,6 +130,20 @@ export function register(app: Express, deps: Deps): void {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   const first = (name: unknown) => firstName(String(name ?? "")) || "A member";
+
+  /** Each member's live org-chart roles by name: the seats a crew list names beside a person (QA P1-12). */
+  async function orgRoleNames(): Promise<Map<string, string[]>> {
+    const pool = getPool();
+    const [roles, assignments] = await Promise.all([listOrgRoles(pool), listOrgAssignments(pool, deps.lapseContext())]);
+    const name = new Map(roles.filter((r) => r.active && !r.isExample).map((r) => [r.id, r.name]));
+    const out = new Map<string, string[]>();
+    for (const a of assignments) {
+      if (a.holderKind !== "member" || !a.userId || a.isExample || a.lapsed || a.endedAt) continue;
+      const n = name.get(a.orgRoleId);
+      if (n) out.set(a.userId, [...(out.get(a.userId) ?? []), n]);
+    }
+    return out;
+  }
 
   /** Is this member sworn, and is anybody? The witness rule reads both. */
   /**
@@ -396,11 +411,11 @@ export function register(app: Express, deps: Deps): void {
       inviter,
       aboard,
       stamps: stampsFor(cfg.rites, new Set(held.keys()), cfg.walk),
-      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !r.byModule && !isPlainRite(r), admits: r.admits, place: r.place, atGathering: r.gatheringLines.length > 0 })),
+      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !r.byModule && !isPlainRite(r), admits: r.admits, place: r.place, atGathering: r.gatheringLines.length > 0, callCounts: r.callCounts })),
       openCeremonies: ceremonies.filter((c) => c.status === "open").map((c) => ({ id: c.id, riteId: c.riteId })),
       tokens: { record: await tokenLine(cfg.tokens.record, userId), voice: await tokenLine(cfg.tokens.voice, userId) },
       words: Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, vars)])),
-      doors: cfg.welcome.doors.map((d) => ({ id: d.id, title: d.choiceTitle || d.title, line: d.choiceLine || d.line, place: d.place, interestOnly: d.interestOnly, href: d.href })),
+      doors: cfg.welcome.doors.map((d) => ({ id: d.id, title: d.choiceTitle || d.title, line: d.choiceLine || d.line, place: d.place, interestOnly: d.interestOnly, href: d.href, questTitle: fill(d.questTitle, vars), questHref: d.questHref, questPlace: d.questPlace, meetLabel: d.meetLabel })),
       steps: cfg.welcome.steps.map((st) => st.title),
       look: cfg.look,
       sigil: cfg.sigil,
@@ -444,6 +459,7 @@ export function register(app: Express, deps: Deps): void {
     const ids = Array.from(new Set([...swornIds, ...resting]));
     const [people, voice] = await Promise.all([repo.people(pool, ids), repo.balancesOfMany(pool, ids, cfg.tokens.voice)]);
     const roleNames = new Map(deps.loadRoles().map((r) => [r.id, r.name]));
+    const orgRoles = await orgRoleNames();
     const crew = ids
       .map((id) => people.get(id))
       .filter((p): p is repo.PersonRow => !!p)
@@ -453,7 +469,7 @@ export function register(app: Express, deps: Deps): void {
         avatar: p.avatar,
         you: p.id === String(user.id),
         resting: !p.admitted && resting.includes(p.id),
-        roles: deps.roleIdsFor(p.id).map((r) => roleNames.get(r)).filter(Boolean),
+        roles: Array.from(new Set([...deps.roleIdsFor(p.id).map((r) => roleNames.get(r)).filter(Boolean), ...(orgRoles.get(p.id) ?? [])])),
         voice: whole(cfg.tokens.voice, voice.get(p.id) ?? 0),
       }))
       .sort((a, b) => Number(a.resting) - Number(b.resting) || b.voice - a.voice || a.name.localeCompare(b.name))
@@ -515,6 +531,7 @@ export function register(app: Express, deps: Deps): void {
     const isWitness = ws.some((w) => w.userId === viewerId);
     const s = await standing(viewerId, cfg);
     const roleNames = new Map(deps.loadRoles().map((r) => [r.id, r.name]));
+    const orgRoles = await orgRoleNames();
     return {
       id: c.id,
       rite: rite ? { id: rite.id, title: rite.title, todo: rite.todo, done: rite.done, callCounts: rite.callCounts, place: rite.place } : { id: c.riteId, title: c.riteId, todo: c.riteId, done: c.riteId, callCounts: true, place: null },
@@ -532,7 +549,7 @@ export function register(app: Express, deps: Deps): void {
       mark: mark && MARK_PATH_SHAPE.test(mark.path) ? mark.path : null,
       candidate: { id: c.candidateUserId, name: first(people.get(c.candidateUserId)?.name) },
       witnesses: ws.map((w) => {
-        const roles = deps.roleIdsFor(w.userId).map((r) => roleNames.get(r)).filter(Boolean) as string[];
+        const roles = Array.from(new Set([...(deps.roleIdsFor(w.userId).map((r) => roleNames.get(r)).filter(Boolean) as string[]), ...(orgRoles.get(w.userId) ?? [])]));
         const nm = first(people.get(w.userId)?.name);
         return {
           id: w.userId,
@@ -710,10 +727,10 @@ export function register(app: Express, deps: Deps): void {
       console.warn(`[rites] admitting ${candidateId} after their rite did not finish: ${String((e as Error)?.message ?? e)}`);
     }
     // A rite the village keeps quiet (`pulse: false`, such as one tied to the hidden map) is never said in public.
-    if (rite.pulse) await recordEvent(pool, { kind: "rite_stamped", text: `${first(candidate?.name)} ${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`, actorUserId: candidateId, originModuleId: RITES_MODULE, audience: "public" });
+    if (rite.pulse) await recordEvent(pool, { kind: "rite_stamped", text: `${first(candidate?.name)} ${rite.said || `${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`}`, actorUserId: candidateId, originModuleId: RITES_MODULE, audience: "public" });
     const pair = await repo.buddyOf(pool, candidateId);
     if (pair) {
-      await notify({ userId: pair.buddyUserId, type: "rite_stamped", title: `${first(candidate?.name)} ${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`, link: "/card", dedupeKey: `rite-stamped:${candidateId}:${rite.id}:buddy` });
+      await notify({ userId: pair.buddyUserId, type: "rite_stamped", title: `${first(candidate?.name)} ${rite.said || `${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`}`, link: "/card", dedupeKey: `rite-stamped:${candidateId}:${rite.id}:buddy` });
     }
     await notify({ userId: candidateId, type: "rite_stamped", title: rite.done, link: "/card", dedupeKey: `rite-stamped:${candidateId}:${rite.id}` });
   }
@@ -763,6 +780,8 @@ export function register(app: Express, deps: Deps): void {
     const rite = cfg.rites.find((r) => r.id === String(b.riteId ?? ""));
     if (!rite) return refuse(res, 404, "There is no rite by that name here.");
     if (rite.byModule) return refuse(res, 403, "This rite is stamped when it happens, by the part of the village it belongs to. Nobody stamps it by hand.");
+    const partner = stampedOnlyWith(rite, cfg.rites);
+    if (partner) return refuse(res, 403, `This rite is stamped together with "${partner.todo}", in its ceremony (QA P1-11).`);
     if (!isPlainRite(rite)) return refuse(res, 400, "This rite is completed in a ceremony.");
     const memberId = String(b.userId ?? "");
     const target: any = await members.byId(memberId);
@@ -809,7 +828,7 @@ export function register(app: Express, deps: Deps): void {
       buddyWord: cfg.words.buddy,
       sworn: Array.from(swornPeople.values()).map((p) => ({ id: p.id, name: first(p.name) })),
       newcomers: rows.reverse(),
-      rites: cfg.rites.filter(isPlainRite).map((r) => ({ id: r.id, todo: r.todo })),
+      rites: cfg.rites.filter((r) => isPlainRite(r) && !stampedOnlyWith(r, cfg.rites)).map((r) => ({ id: r.id, todo: r.todo })),
       look: cfg.look,
     });
   });

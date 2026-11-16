@@ -6,7 +6,8 @@
  * A choice made before a Google sign-in left the page is sent here, once.
  */
 import { useEffect, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { gameFetch } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import { PLACES, type PlaceKey } from "@shared/rites";
@@ -17,6 +18,7 @@ import { ABOARD_KEPT } from "./ComeAboard";
 
 export default function Arrived() {
   const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
   const [me, setMe] = useState<MeView | null>(null);
   const [error, setError] = useState("");
 
@@ -60,7 +62,25 @@ export default function Arrived() {
 
   const w = me.words;
   const places = { phone: w.placePhone, site: w.placeSite, gathering: w.placeGathering };
-  const questPlace = (PLACES as readonly string[]).includes(w.firstQuestPlace) ? (w.firstQuestPlace as PlaceKey) : null;
+  // The way in a newcomer chose may carry its own first quest and meeting (QA P3-7): a far-away pirate meets on a call.
+  const door = me.doors.find((d) => d.id === me.aboard?.doorId);
+  const questTitle = door?.questTitle || w.firstQuestTitle;
+  const questHref = door?.questHref || w.firstQuestHref || "/quests";
+  const questPlace = door?.questTitle ? door.questPlace ?? null : (PLACES as readonly string[]).includes(w.firstQuestPlace) ? (w.firstQuestPlace as PlaceKey) : null;
+  const meetLabel = door?.meetLabel || w.meetLabel;
+  const buddy = me.buddy;
+  // Say hello opens a conversation with them, falling back to their page (QA P1-5).
+  const sayHello = async () => {
+    if (!buddy) return;
+    try {
+      const r = await gameFetch("/api/messages/direct", { method: "POST", body: JSON.stringify({ userId: buddy.id }) });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.id) return navigate(`/messages/${encodeURIComponent(String(d.id))}`);
+    } catch {
+      /* the page below is the way */
+    }
+    navigate(buddy.handle ? `/profile/${buddy.handle}` : "/messages");
+  };
 
   return (
     <RitesWorld look={me.look} lang={<PageLanguageBar tone="onDark" />}>
@@ -98,11 +118,11 @@ export default function Arrived() {
               </div>
               {me.buddy.greeting ? <div className="bubble">{me.buddy.greeting}</div> : null}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 14 }}>
-                <Link className="btn gold small" style={{ width: "100%" }} href={me.buddy.handle ? `/profile/${me.buddy.handle}` : "/messages"}>
+                <button type="button" className="btn gold small" style={{ width: "100%" }} onClick={() => void sayHello()}>
                   {w.sayHello}
-                </Link>
+                </button>
                 <Link className="btn ghost small" style={{ width: "100%" }} href="/rites">
-                  {w.meetLabel}
+                  {meetLabel}
                 </Link>
               </div>
             </div>
@@ -114,14 +134,14 @@ export default function Arrived() {
             </div>
           )}
 
-          {w.firstQuestTitle ? (
-            <Link className="panel" href={w.firstQuestHref || "/quests"} style={{ marginTop: 14, display: "flex", gap: 14, alignItems: "center", textDecoration: "none", color: "inherit" }}>
+          {questTitle ? (
+            <Link className="panel" href={questHref} style={{ marginTop: 14, display: "flex", gap: 14, alignItems: "center", textDecoration: "none", color: "inherit" }}>
               <div className="icbox"><Icon name="quests" /></div>
               <div style={{ flex: 1 }}>
                 <p className="tiny muted">
                   <Trans context="rites">Your first quest</Trans>
                 </p>
-                <p style={{ fontWeight: 600 }}>{w.firstQuestTitle}</p>
+                <p style={{ fontWeight: 600 }}>{questTitle}</p>
               </div>
               <Chip place={questPlace} places={places} />
             </Link>

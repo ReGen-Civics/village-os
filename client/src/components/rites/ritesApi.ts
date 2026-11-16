@@ -39,6 +39,10 @@ export interface DoorView extends StepView {
   onWelcome?: boolean;
   choiceTitle?: string;
   choiceLine?: string;
+  questTitle?: string;
+  questHref?: string;
+  questPlace?: PlaceKey | null;
+  meetLabel?: string;
 }
 
 export interface PublicView {
@@ -68,7 +72,7 @@ export interface MeView {
   inviter: string | null;
   aboard: { doorId: string | null; why: string | null } | null;
   stamps: StampView[];
-  rites: Array<{ id: string; todo: string; done: string; spoken: boolean; admits: boolean; place: PlaceKey | null; atGathering?: boolean }>;
+  rites: Array<{ id: string; todo: string; done: string; spoken: boolean; admits: boolean; place: PlaceKey | null; atGathering?: boolean; callCounts?: boolean }>;
   openCeremonies: Array<{ id: string; riteId: string }>;
   tokens: { record: { slug: string; name: string; n: number } | null; voice: { slug: string; name: string; n: number } | null };
   words: Record<string, string>;

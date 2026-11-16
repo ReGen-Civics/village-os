@@ -128,6 +128,8 @@ export interface RiteDef {
   byModule: string;
   /** Said on the public pulse when stamped (default yes). */
   pulse: boolean;
+  /** How the pulse says it after a first name, when the done words do not read in the third person ("met their matelot"). */
+  said: string;
 }
 
 export interface StepDef {
@@ -150,6 +152,11 @@ export interface DoorDef {
   /** The door as a choice on the joining form, when it reads differently there. */
   choiceTitle: string;
   choiceLine: string;
+  /** The first quest and the meeting for somebody who came in by this door, when they differ from the village's. */
+  questTitle: string;
+  questHref: string;
+  questPlace: PlaceKey | null;
+  meetLabel: string;
 }
 
 export interface ArticleDef {
@@ -533,7 +540,7 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
   }
   const id = str(r.id);
   if (!ID.test(id)) problems.push(`${at}.id "${id}" must be lowercase letters, numbers and dashes, up to 40.`);
-  const t = readTexts(r, { title: 30, todo: 30, done: 30, gatheringAnswer: 60 }, { title: "", todo: "", done: "", gatheringAnswer: "" }, at, problems);
+  const t = readTexts(r, { title: 30, todo: 30, done: 30, gatheringAnswer: 60, said: 40 }, { title: "", todo: "", done: "", gatheringAnswer: "", said: "" }, at, problems);
   if (!t.todo) problems.push(`${at}.todo (the rite as a task) is empty.`);
   if (!t.done) problems.push(`${at}.done (the rite done) is empty.`);
   const witnesses = r.witnesses === undefined ? 1 : Number(r.witnesses);
@@ -566,6 +573,7 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
     place: readPlace(r.place, `${at}.place`, problems),
     byModule: byModule ?? "",
     pulse: r.pulse === undefined ? true : bool("pulse"),
+    said: t.said,
   };
 }
 
@@ -621,11 +629,11 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
         if (!isObj(d)) return void problems.push(`${at} must be an object.`);
         const id = str(d.id);
         if (!ID.test(id)) problems.push(`${at}.id "${id}" must be lowercase letters, numbers and dashes.`);
-        const t = readTexts(d, { title: 40, line: 180, href: 200, choiceTitle: 40, choiceLine: 180 }, { title: "", line: "", href: "", choiceTitle: "", choiceLine: "" }, at, problems);
+        const t = readTexts(d, { title: 40, line: 180, href: 200, choiceTitle: 40, choiceLine: 180, questTitle: 60, questHref: 200, meetLabel: 24 }, { title: "", line: "", href: "", choiceTitle: "", choiceLine: "", questTitle: "", questHref: "", meetLabel: "" }, at, problems);
         if (d.onWelcome !== undefined && typeof d.onWelcome !== "boolean") problems.push(`${at}.onWelcome must be true or false.`);
         if (!t.title) problems.push(`${at}.title is empty.`);
         if (d.interestOnly !== undefined && typeof d.interestOnly !== "boolean") problems.push(`${at}.interestOnly must be true or false.`);
-        doors.push({ id, title: t.title, line: t.line, href: t.href, interestOnly: d.interestOnly === true, onWelcome: d.onWelcome !== false, choiceTitle: t.choiceTitle, choiceLine: t.choiceLine, place: readPlace(d.place, `${at}.place`, problems) });
+        doors.push({ id, title: t.title, line: t.line, href: t.href, interestOnly: d.interestOnly === true, onWelcome: d.onWelcome !== false, choiceTitle: t.choiceTitle, choiceLine: t.choiceLine, questTitle: t.questTitle, questHref: t.questHref, questPlace: readPlace(d.questPlace, `${at}.questPlace`, problems), meetLabel: t.meetLabel, place: readPlace(d.place, `${at}.place`, problems) });
       });
       const seen = new Set<string>();
       for (const d of doors) {
@@ -842,6 +850,11 @@ export function admittingRite(rites: readonly RiteDef[]): RiteDef | null {
 /** A rite stamped by one witness's tap, with no ceremony. Never one a module stamps. */
 export function isPlainRite(r: RiteDef): boolean {
   return r.lines.length === 0 && !r.mark && r.witnesses === 1 && !r.byModule;
+}
+
+/** A rite another rite stamps together with itself: it is stamped only by that rite's ceremony, never alone. */
+export function stampedOnlyWith(r: RiteDef, rites: readonly RiteDef[]): RiteDef | null {
+  return rites.find((o) => o.id !== r.id && o.together.includes(r.id)) ?? null;
 }
 
 /** The rites one stamp of `r` writes: itself and its together rites, each once. */

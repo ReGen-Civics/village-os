@@ -145,6 +145,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/feed", label: "Feed", module: "feed" },
       { href: "/forum", label: "Forum", module: "forum" },
       { href: "/messages", label: "Messages", module: "messaging" },
+      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
+      { href: "/rites", label: "Rites", module: "rites" },
       { href: "/introductions", label: "Introductions", module: "introductions" },
       { href: "/events", label: "Events", module: "events" },
       // The circle calls a member takes part in. It sat in the account menu,

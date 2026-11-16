@@ -124,6 +124,7 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
       escapeHtml,
       loadRoles: () => [],
       roleIdsFor: () => [],
+      lapseContext: () => undefined,
       postEmail: async (email: any) => {
         state.sent.push(email);
         return { status: "sent", messageId: "m-1" };
@@ -261,6 +262,8 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     as("u-ada");
     expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "met" })).body.stamped).toEqual(["met"]);
     expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "vow" })).status).toBe(400);
+    // A rite stamped together with the vow is never stamped alone (QA P1-11).
+    expect((await call("POST", "/api/rites/stamps", { userId: "u-di", riteId: "signed" })).status).toBe(403);
   });
 
   it("a rite another module stamps is never stamped by hand, and a quiet rite is never said in public", async () => {

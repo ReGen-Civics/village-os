@@ -27,6 +27,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Check, Copy, Link2 } from "lucide-react";
 
 import { gameFetch } from "@/lib/gameApi";
+import { Link } from "wouter";
+import { Trans } from "@lingui/react/macro";
+import { useModules } from "@/modules/ModuleProvider";
 
 type Standing = "open" | "used" | "expired" | "revoked";
 
@@ -58,6 +61,8 @@ const STANDING_WORDS: Record<Standing, string> = {
 const DID_NOT_SAVE = "That did not save. Try again in a moment.";
 
 export default function InvitePanel() {
+  // Where a member writes their own line on an invitation and prints their code, when the village runs rites (QA P1-2).
+  const ritesOn = useModules().modules.some((m) => m.id === "rites");
   const [list, setList] = useState<InviteList | null>(null);
   const [link, setLink] = useState("");
   const [copied, setCopied] = useState(false);
@@ -149,6 +154,11 @@ export default function InvitePanel() {
               >
                 {busy ? "Making a link..." : "Make an invitation link"}
               </button>
+              {ritesOn ? (
+                <Link href="/rites" className="mt-3 block text-sm font-semibold text-foreground underline underline-offset-4">
+                  <Trans context="rites">Invite with a letter in your own words, or print your code</Trans>
+                </Link>
+              ) : null}
             </>
           ) : (
             <p className="mt-1 text-sm text-muted-foreground">{list.closed}</p>
