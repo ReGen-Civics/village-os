@@ -144,6 +144,10 @@ export function register(app: Express, deps: Deps): void {
       ownPins: m.who.ownPins,
       keeper: m.who.viewer.keeper,
       mayApproveExports: m.who.opening.open && (await seated(m.user, "hiddenmap.export")),
+      vouchesPerPin: dials().vouchesPerPin,
+      // Counts and a time, never a place: the opening moment and the closed map's one number.
+      planters: await repo.countPlanters(getPool(), vid()),
+      ...(await repo.openingOf(getPool(), vid(), String(m.user.id))),
       labels: c.labels,
       kinds: c.kinds,
       openLayers: c.openLayers,

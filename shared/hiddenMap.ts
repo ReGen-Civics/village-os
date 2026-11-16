@@ -222,6 +222,7 @@ export interface PinRecord {
   stage: Stage | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  native: boolean;
   hidden: boolean;
   createdAt: string;
   vouches: number;
@@ -244,6 +245,7 @@ export interface PinView {
   stage: Stage | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  native: boolean;
   hidden: boolean;
   createdAt: string;
   vouches: number;
@@ -285,6 +287,7 @@ function full(pin: PinRecord, mine: boolean): PinView {
     stage: pin.stage,
     partnerState: pin.partnerState,
     plantedOn: pin.plantedOn,
+    native: pin.native,
     hidden: pin.hidden,
     createdAt: pin.createdAt,
     vouches: pin.vouches,
@@ -480,6 +483,8 @@ export interface PinInput {
   notes: string | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  /** What went in belongs to this place. Plantings only. */
+  native: boolean;
 }
 
 const text = (v: unknown, max: number): string | null => {
@@ -535,6 +540,7 @@ export function parsePinInput(
       notes: text(b.notes, MAX_NOTES),
       partnerState,
       plantedOn,
+      native: b.layer === "planting" && b.native === true,
     },
   };
 }

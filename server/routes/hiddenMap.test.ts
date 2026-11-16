@@ -196,6 +196,7 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     expect(a.status).toBe(201);
     expect(a.body.pin.mine).toBe(true);
     expect(a.body.pin.stage).toBe("seed");
+    expect(a.body.pin.native).toBe(false);
     expect(JSON.stringify(a.body)).not.toContain("m-plant");
     first = a.body.pin.id;
     const again = await call(handlers, "POST /api/hidden-map/pins", { body });
@@ -266,7 +267,9 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: ids[6] } });
     as("m-plant");
     me = await call(handlers, "GET /api/hidden-map/me");
-    expect(me.body).toMatchObject({ open: true, vouchedCount: 7, needed: 7 });
+    expect(me.body).toMatchObject({ open: true, vouchedCount: 7, needed: 7, vouchesPerPin: 1, openedBefore: 0 });
+    expect(me.body.openedAt).toBeTruthy();
+    expect(me.body.planters).toBeGreaterThanOrEqual(1);
   });
 
   it("an open member sees every pin, and none carries an owner", async () => {

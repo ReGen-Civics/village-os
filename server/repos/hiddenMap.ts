@@ -32,6 +32,7 @@ function toPin(r: any, photos: Map<string, string[]>): PinRecord {
     stage: (r.stage ?? null) as Stage | null,
     partnerState: (r.partner_state ?? null) as PartnerState | null,
     plantedOn: day(r.planted_on),
+    native: Number(r.native_seed ?? 0) === 1,
     hidden: r.hidden_at !== null && r.hidden_at !== undefined,
     createdAt: iso(r.created_at),
     vouches: Number(r.vouches ?? 0),
@@ -125,12 +126,12 @@ export async function insertPin(pool: Pool, villageId: string, id: string, owner
   await pool.query(
     `INSERT IGNORE INTO hidden_map_pins
        (id, village_id, client_id, owner_user_id, layer, kind, lat, lng, shown_precision, title, what_went_in, notes,
-        stage, partner_state, planted_on, created_at, changed_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        stage, partner_state, planted_on, native_seed, created_at, changed_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id, villageId, pin.clientId, ownerUserId, pin.layer, pin.kind, pin.point.lat, pin.point.lng, pin.precision,
       pin.title, pin.whatWentIn, pin.notes, pin.layer === "planting" ? "seed" : null, pin.partnerState, pin.plantedOn,
-      now, now,
+      pin.native ? 1 : 0, now, now,
     ],
   );
 }
@@ -154,6 +155,41 @@ export async function countOwnPins(pool: Pool, villageId: string, userId: string
     [villageId, userId],
   );
   return Number(rows[0]?.n ?? 0);
+}
+
+/** How many members have logged a pin that is still theirs. A number, no names. */
+export async function countPlanters(pool: Pool, villageId: string): Promise<number> {
+  const [rows] = await pool.query<any[]>(
+    "SELECT COUNT(DISTINCT owner_user_id) AS n FROM hidden_map_pins WHERE village_id = ? AND owner_user_id IS NOT NULL AND hidden_at IS NULL",
+    [villageId],
+  );
+  return Number(rows[0]?.n ?? 0);
+}
+
+/** When this member's map opened, and how many members had opened it before them. */
+export async function openingOf(pool: Pool, villageId: string, userId: string): Promise<{ openedAt: string | null; openedBefore: number }> {
+  const [rows] = await pool.query<any[]>("SELECT opened_at FROM hidden_map_unlocks WHERE village_id = ? AND user_id = ? LIMIT 1", [villageId, userId]);
+  if (!rows.length) return { openedAt: null, openedBefore: 0 };
+  const at = rows[0].opened_at;
+  const [before] = await pool.query<any[]>(
+    "SELECT COUNT(*) AS n FROM hidden_map_unlocks WHERE village_id = ? AND (opened_at < ? OR (opened_at = ? AND user_id < ?))",
+    [villageId, at, at, userId],
+  );
+  return { openedAt: iso(at), openedBefore: Number(before[0]?.n ?? 0) };
+}
+
+/** Record the planting quest's claim on a pin, once. False when it already had one. */
+export async function setPlantingClaim(pool: Pool, villageId: string, pinId: string, claimId: string): Promise<boolean> {
+  const [r]: any = await pool.query(
+    "UPDATE hidden_map_pins SET planting_claim_id = ? WHERE village_id = ? AND id = ? AND planting_claim_id IS NULL",
+    [claimId, villageId, pinId],
+  );
+  return Number(r?.affectedRows ?? 0) > 0;
+}
+
+export async function plantingClaimOf(pool: Pool, villageId: string, pinId: string): Promise<string | null> {
+  const [rows] = await pool.query<any[]>("SELECT planting_claim_id FROM hidden_map_pins WHERE village_id = ? AND id = ? LIMIT 1", [villageId, pinId]);
+  return rows[0]?.planting_claim_id ?? null;
 }
 
 export async function hasOpened(pool: Pool, villageId: string, userId: string): Promise<boolean> {
