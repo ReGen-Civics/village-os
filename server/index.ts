@@ -329,7 +329,7 @@ import {
   readSetPasswordToken,
   setPasswordLinkRefusal,
 } from "./lib/memberTokens";
-import { brandColour, sanitizeFontName } from "./lib/themeCss";
+import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
 import { CONSTITUTION } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
@@ -25557,9 +25557,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       scope: "/",
       display: "standalone",
       orientation: "any",
-      background_color: "#ffffff",
-      // The village's own brand colour, derived the way theme.css derives it.
-      theme_color: brandColour(getBrand().theme),
+      background_color: installBackground(getBrand().theme),
+      // The village's own brand colour, derived the way theme.css derives it (its ground in the dark scheme).
+      theme_color: installThemeColour(getBrand().theme),
       icons: [
         // One entry, `any` sized: the brand icon is an SVG on most forks and
         // a raster on some, and claiming sizes we have not measured would put

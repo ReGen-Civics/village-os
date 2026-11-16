@@ -22,7 +22,7 @@ describe("LookPanel", () => {
     return puts;
   };
 
-  it("offers Save on the first change, sends its four fields, then says Saved", async () => {
+  it("offers Save on the first change, sends its six fields, then says Saved", async () => {
     const puts = stub(200);
     render(<LookPanel password="pw" />);
     const place = await screen.findByPlaceholderText(/river valley/);
@@ -31,7 +31,7 @@ describe("LookPanel", () => {
     expect(await screen.findByText(/1 change not saved yet/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(puts).toHaveLength(1));
-    expect(Object.keys((puts[0] as { theme: object }).theme).sort()).toEqual(["accent", "character", "place", "seed"]);
+    expect(Object.keys((puts[0] as { theme: object }).theme).sort()).toEqual(["accent", "character", "mode", "overrides", "place", "seed"]);
     expect(await screen.findByText("Saved")).toBeTruthy();
     expect(unsavedCount()).toBe(0);
   });
