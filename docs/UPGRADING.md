@@ -54,10 +54,15 @@ from, which is the detail to quote if you ask for help.
 
 ## Step 2. Find out what has been published
 
-Nothing tells you when a release comes out. There is no email, no banner in
-the village, and no notification. You have to look. **Put a reminder in your
-calendar to run this once a month**, and read `docs/SECURITY_ADVISORIES.md`
-whenever you are told something urgent has been posted.
+The village itself never tells you when a release comes out: no email, no banner,
+no notification. GitHub can. On the repository page
+(<https://github.com/ReGen-Civics/village-os>) choose **Watch, Custom**, tick
+**Releases** and **Security alerts**, and GitHub emails you for each new release
+and each security advisory. Platform security fixes are published as GitHub
+security advisories on that repository, so this is how you hear about one.
+Also **put a reminder in your calendar to run the list below once a month**, and
+read `docs/SECURITY_ADVISORIES.md` whenever you are told something urgent has
+been posted.
 
 This lists every version ever published. It needs no account, no login, and no
 Docker:
@@ -70,8 +75,7 @@ curl -s "https://ghcr.io/v2/regen-civics/village-os/tags/list" -H "Authorization
   | tr ',' '\n' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | sort -V
 ```
 
-Run on 2026-09-02 that printed one line, `1.1.0`, which was the only release
-published at that point. The last line is the newest release. If it is higher
+The last line is the newest release. If it is higher
 than the version you are running, there is an upgrade waiting.
 
 ## Step 3. Read what changed
@@ -141,7 +145,8 @@ working, so going back to one of them names that older address.
 
 **On one computer with `docker-compose.yml`** (`START_HERE.md`, part A),
 change `VILLAGE_OS_IMAGE` in `.env` to the new version, for example
-`ghcr.io/regen-civics/village-os:1.3.0`, then:
+`ghcr.io/regen-civics/village-os:` followed by the release number you read in
+Step 2, then:
 
 ```sh
 docker compose pull
@@ -158,17 +163,45 @@ version and redeploy. Its variables stay where they are.
 over again:
 
 ```sh
-docker pull ghcr.io/regen-civics/village-os:1.3.0
+docker pull ghcr.io/regen-civics/village-os:NEW_VERSION
 
 docker stop village
 docker rm village
 
-docker run -d --name village -p 3000:3000 \
+docker run -d --name village -p 127.0.0.1:3000:3000 \
   --env-file .env \
   -v village-data:/app/data \
-  ghcr.io/regen-civics/village-os:1.3.0
+  ghcr.io/regen-civics/village-os:NEW_VERSION
 ```
 
+Replace `NEW_VERSION` with the release number from Step 2. `-p 127.0.0.1:3000:3000`
+keeps the village reachable only from this computer, so put an HTTPS web server
+in front of it (`START_HERE.md`, part A, step 7).
+
+**What this container needs.** Everything in the env file, and these without
+fail: `DATABASE_URL` (to a MySQL 8 database you run yourself, with a real,
+non-empty password in the URL: the container does not make a database),
+`AUTH_TOKEN_SECRET`, `VILLAGE_SECRETS_KEY`, `MEMBER_SECRETS_KEY`,
+`ADMIN_PASSWORD`, `BREAK_GLASS_ADMIN_EMAIL` and `FRONTEND_URL`.
+`node scripts/fork-init.mjs` writes them all. **The first boot is slow**, because
+it applies every migration before it listens: wait up to 600 seconds (ten
+minutes, the same wait `docker-compose.yml` allows) and watch
+`docker logs -f village` before you decide anything is wrong. Plain `docker run`
+has no health check, so run `curl http://127.0.0.1:3000/health` yourself.
+
+**To hold an exact build, pin by digest.** A tag can be moved; a digest cannot.
+After a pull, this prints `image@sha256:...`:
+
+```sh
+docker image inspect --format '{{index .RepoDigests 0}}' ghcr.io/regen-civics/village-os:NEW_VERSION
+```
+
+The release workflow run for that version (the repository's Actions tab, workflow
+`release`) prints the digest it published, in its summary under "Published". If
+the two match, you have the image the project built. Then name the image as
+`ghcr.io/regen-civics/village-os@sha256:...` in `VILLAGE_OS_IMAGE` or in your
+`docker run` line. Release images are not signed and carry no attestation yet, so
+this digest comparison is the check available today.
 **Carry over EVERY environment variable your village already had.** Only
 `DATABASE_URL` is needed for the server to start, so a village started with
 too few starts cleanly and answers `/health` with `ok`, and then:
@@ -219,8 +252,8 @@ When it is up:
 curl https://your-village.example/health
 ```
 
-`"status": "ok"`, and `version` at `/api/platform/info` reading the new number,
-means the upgrade landed. Open the village in a browser and click into two or three
+`"status": "ok"`, and `version` at `/api/platform/info` (`/health` carries only
+`build`) reading the new number, means the upgrade landed. Open the village in a browser and click into two or three
 pages before you call it done.
 
 ---
@@ -319,7 +352,7 @@ between first, and take the backup with particular care.
 
 | Question | Answer |
 |---|---|
-| What am I running? | `curl https://your-village.example/health` |
+| What am I running? | `curl https://your-village.example/api/platform/info` for `version` and `build`; `/health` shows `build` and whether the database answers |
 | What is published? | The command in Step 2 |
 | What changed? | `CHANGELOG.md` |
 | Does upgrading change my database? | Yes. Every time. It happens on start, by itself. |
