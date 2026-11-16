@@ -110,6 +110,7 @@ import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
 import { matchOnEvent } from "./lib/seraPersonMatch";
 import { register as registerPulseRoutes } from "./routes/pulse";
 import { register as registerPlayersRoutes } from "./routes/players";
+import { register as registerTreasuryRoutes } from "./routes/treasury";
 import { register as registerGroupAdminRoutes } from "./routes/groupAdmin";
 import { villagePowerRows } from "./lib/villagePowers";
 import { GUIDANCE_WORDS, POWER_FAMILIES } from "../shared/powerBoard";
@@ -25293,6 +25294,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // The village pulse and the admin roster, each registered at exactly the
   // point its own routes used to sit. Express matches in registration order.
   registerPulseRoutes(app, { getPool });
+  registerTreasuryRoutes(app, { authedUser, mayAct, guardCapability, members, tokens: () => allTokens(), mintCap: () => numberVar("ledger.admin_mint_cycle_cap") });
   registerPlayersRoutes(app, {
     isAdmin, members, claimsRepo, computeStage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext,
     adminGroupsFor: (id: string) => adminGroupsOf(id, loadRoles() as any, loadPowerHoldings(), new Date(), holdingHasLapsed).map((g) => g.name),

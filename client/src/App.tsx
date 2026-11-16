@@ -250,6 +250,7 @@ const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
 const Review = lazyPage(() => import("./pages/Review"));
 const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
+const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
 const Library = lazyPage(() => import("./pages/Library"));
 const VillageHealth = lazyPage(() => import("./pages/VillageHealth"));
@@ -358,6 +359,8 @@ function Router() {
       <Route path="/review" component={Review} />
       {/* The treasurer's payout list, for a finance role holding cash.pay without admin */}
       <Route path="/cash-payouts" component={CashPayouts} />
+      {/* The hand mint and the pay queues for a holder of token.mint, cash.pay or moon.approve_alone, admin or not */}
+      <Route path="/treasury" component={Treasury} />
       <Route path="/library" component={Library} />
       {/* /village-health, not /health: the server owns /health as the ops probe */}
       <Route path="/village-health" component={VillageHealth} />

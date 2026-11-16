@@ -57,6 +57,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/review": "Review",
   "/approvals": "Approvals",
   "/cash-payouts": "Cash to pay out",
+  "/treasury": "Treasury",
   "/role-proposals": "Propose my roles",
   // Keys here are matched by longest PREFIX against the live location, so a
   // key with no route behind it can never match and is dead weight that
