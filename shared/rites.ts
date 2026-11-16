@@ -97,6 +97,8 @@ const SLUG = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
 export interface RiteDef {
   id: string;
+  /** The rite's name at the top of its ceremony: "The vow". Defaults to the task words. */
+  title: string;
   /** The rite as a task, on a waiting stamp: "Plant the seven". */
   todo: string;
   /** The rite done, on an inked stamp and in the pulse: "Planted the seven". */
@@ -136,6 +138,11 @@ export interface DoorDef {
   interestOnly: boolean;
   /** Where the door leads when it is open (a page here, or an https address). */
   href: string;
+  /** Shown on the public welcome too (default yes); every door is a choice when joining. */
+  onWelcome: boolean;
+  /** The door as a choice on the joining form, when it reads differently there. */
+  choiceTitle: string;
+  choiceLine: string;
 }
 
 export interface ArticleDef {
@@ -152,6 +159,9 @@ export interface CountDef {
 /** Text fields and their limits. Every one is the village's to write; the default is neutral. */
 export const WORD_LIMITS = {
   buddy: 24,
+  memberWord: 24,
+  newcomerWord: 24,
+  buddyTitle: 30,
   buddyLine: 160,
   placePhone: 16,
   placeSite: 16,
@@ -160,6 +170,9 @@ export const WORD_LIMITS = {
   spoken: 20,
   witnessesTitle: 30,
   ceremonyFoot: 140,
+  witnessBuddy: 30,
+  witnessOther: 30,
+  swornBar: 30,
   markTitle: 40,
   markLine: 160,
   swornKicker: 40,
@@ -183,6 +196,12 @@ export const WORD_LIMITS = {
   aboardDoorQuestion: 60,
   aboardButton: 40,
   aboardFoot: 160,
+  aboardRoad: 80,
+  cameWith: 60,
+  markHint: 40,
+  firstQuestPlace: 16,
+  ringCount: 30,
+  invitedBy: 60,
   cardTitle: 30,
   recordTitle: 30,
   crewTitle: 30,
@@ -192,6 +211,8 @@ export const WORD_LIMITS = {
   fleetTitle: 30,
   fleetSeasonKicker: 30,
   circlesTitle: 30,
+  circleLive: 16,
+  crewCount: 30,
   gatheringsTitle: 30,
   ballotsKicker: 40,
   witnessPageTitle: 40,
@@ -201,6 +222,9 @@ export type Words = Record<WordKey, string>;
 
 export const DEFAULT_WORDS: Words = {
   buddy: "Buddy",
+  memberWord: "",
+  newcomerWord: "",
+  buddyTitle: "Your buddy",
   buddyLine: "A member who walks beside you through your first moon and your rites.",
   placePhone: "Phone",
   placeSite: "On site",
@@ -209,6 +233,9 @@ export const DEFAULT_WORDS: Words = {
   spoken: "Spoken",
   witnessesTitle: "Your witnesses",
   ceremonyFoot: "",
+  witnessBuddy: "your {buddy}",
+  witnessOther: "{member}",
+  swornBar: "",
   markTitle: "Make your mark",
   markLine: "Draw your mark with a finger. It becomes your sign on your card.",
   swornKicker: "The rite is complete",
@@ -232,6 +259,12 @@ export const DEFAULT_WORDS: Words = {
   aboardDoorQuestion: "How are you joining?",
   aboardButton: "Join as a {newcomer}",
   aboardFoot: "",
+  aboardRoad: "",
+  cameWith: "Came in with {inviter}",
+  markHint: "your mark comes later",
+  firstQuestPlace: "",
+  ringCount: "by {n}",
+  invitedBy: "Invited by {inviter}",
   cardTitle: "Your card",
   recordTitle: "Your record",
   crewTitle: "The members",
@@ -241,6 +274,8 @@ export const DEFAULT_WORDS: Words = {
   fleetTitle: "The village",
   fleetSeasonKicker: "This season",
   circlesTitle: "Circles",
+  circleLive: "",
+  crewCount: "{n} members",
   gatheringsTitle: "Gatherings ahead",
   ballotsKicker: "Open votes",
   witnessPageTitle: "Rites to witness",
@@ -256,6 +291,8 @@ export const WELCOME_LIMITS = {
   pulseTitle: 40,
   stepsTitle: 40,
   stepsNote: 30,
+  waiting: 80,
+  ceremonyPhoto: 300,
   doorsTitle: 40,
   doorsFoot: 220,
   roadTitle: 40,
@@ -288,11 +325,35 @@ export const DOOR_PAGE_LIMITS = {
   packetBackTitle: 40,
   packetBackLine: 160,
   scanLine: 80,
+  packetKicker: 60,
 } as const;
 export type DoorPageKey = keyof typeof DOOR_PAGE_LIMITS;
 
 export const ARTICLES_LIMITS = { kicker: 40, title: 60, lede: 220, linkLabel: 40, href: 200 } as const;
 export type ArticlesKey = keyof typeof ARTICLES_LIMITS;
+
+export const FLEET_LIMITS = {
+  joinTitle: 40,
+  joinLine: 200,
+  joinLabel: 30,
+  joinHref: 200,
+  pathTitle: 40,
+  pathLine: 120,
+  pathHref: 200,
+} as const;
+export type FleetKey = keyof typeof FLEET_LIMITS;
+export const FLEET_PHOTOS_MAX = 12;
+
+/** The icons the screens' bottom bar draws. Shapes only; the labels are the village's. */
+export const NAV_ICONS = ["home", "vehicle", "quests", "map", "fleet", "card"] as const;
+export type NavIcon = (typeof NAV_ICONS)[number];
+export const NAV_MAX = 5;
+
+export interface NavItem {
+  icon: NavIcon;
+  label: string;
+  href: string;
+}
 
 export interface RitesConfig {
   format: typeof RITES_FORMAT;
@@ -302,8 +363,14 @@ export interface RitesConfig {
   articles: Record<ArticlesKey, string> & { items: ArticleDef[] };
   letter: Record<LetterKey, string>;
   door: Record<DoorPageKey, string>;
+  fleet: Record<FleetKey, string> & { photos: Record<string, string> };
   counts: CountDef[];
   tokens: { record: string; voice: string };
+  /** The village's own mark for the top of each screen: an uploaded image or an https address. */
+  sigil: string;
+  nav: NavItem[];
+  /** The order a newcomer walks the rites, when it differs from the card's. */
+  walk: string[];
   look: Partial<Record<LookColour | LookFont, string>>;
 }
 
@@ -314,6 +381,7 @@ export const DEFAULT_WELCOME: RitesConfig["welcome"] = {
   ...blank(WELCOME_LIMITS),
   title: "Welcome to {village}",
   cta: "Join",
+  waiting: "{inviter} is waiting for you.",
   pulseTitle: "Right now",
   stepsTitle: "Your first hour",
   doorsTitle: "Ways in",
@@ -352,12 +420,16 @@ export const DEFAULT_CONFIG: RitesConfig = {
   articles: DEFAULT_ARTICLES,
   letter: DEFAULT_LETTER,
   door: DEFAULT_DOOR,
+  fleet: { ...blank(FLEET_LIMITS), photos: {} },
   counts: [
     { source: "sworn", label: "members" },
     { source: "circles", label: "circles" },
     { source: "quests", label: "quests done" },
   ],
   tokens: { record: "", voice: "" },
+  sigil: "",
+  nav: [],
+  walk: [],
   look: {},
 };
 
@@ -393,7 +465,7 @@ function readTexts<K extends string>(src: unknown, limits: Record<K, number>, de
     }
     const t = v.trim();
     if (t.length > limits[k]) problems.push(`${where}.${k} is ${t.length} characters. Keep it to ${limits[k]}.`);
-    else if ((k === "href" || k.endsWith("Href") || k === "photo") && !safeHref(t)) problems.push(`${where}.${k} must be a page here (starting with /) or an https address.`);
+    else if (/^(?:href|photo)$|Href$|Photo$/.test(k) && !safeHref(t)) problems.push(`${where}.${k} must be a page here (starting with /) or an https address.`);
     else out[k] = t;
   }
   return out;
@@ -450,7 +522,7 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
   }
   const id = str(r.id);
   if (!ID.test(id)) problems.push(`${at}.id "${id}" must be lowercase letters, numbers and dashes, up to 40.`);
-  const t = readTexts(r, { todo: 30, done: 30, gatheringAnswer: 60 }, { todo: "", done: "", gatheringAnswer: "" }, at, problems);
+  const t = readTexts(r, { title: 30, todo: 30, done: 30, gatheringAnswer: 60 }, { title: "", todo: "", done: "", gatheringAnswer: "" }, at, problems);
   if (!t.todo) problems.push(`${at}.todo (the rite as a task) is empty.`);
   if (!t.done) problems.push(`${at}.done (the rite done) is empty.`);
   const witnesses = r.witnesses === undefined ? 1 : Number(r.witnesses);
@@ -466,6 +538,7 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
   if (ink !== "seal" && ink !== "alt") problems.push(`${at}.ink must be "seal" or "alt".`);
   return {
     id,
+    title: t.title || t.todo,
     todo: t.todo,
     done: t.done,
     witnesses: Number.isInteger(witnesses) ? Math.min(Math.max(witnesses, 1), WITNESSES_MAX) : 1,
@@ -532,10 +605,11 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
         if (!isObj(d)) return void problems.push(`${at} must be an object.`);
         const id = str(d.id);
         if (!ID.test(id)) problems.push(`${at}.id "${id}" must be lowercase letters, numbers and dashes.`);
-        const t = readTexts(d, { title: 40, line: 180, href: 200 }, { title: "", line: "", href: "" }, at, problems);
+        const t = readTexts(d, { title: 40, line: 180, href: 200, choiceTitle: 40, choiceLine: 180 }, { title: "", line: "", href: "", choiceTitle: "", choiceLine: "" }, at, problems);
+        if (d.onWelcome !== undefined && typeof d.onWelcome !== "boolean") problems.push(`${at}.onWelcome must be true or false.`);
         if (!t.title) problems.push(`${at}.title is empty.`);
         if (d.interestOnly !== undefined && typeof d.interestOnly !== "boolean") problems.push(`${at}.interestOnly must be true or false.`);
-        doors.push({ id, title: t.title, line: t.line, href: t.href, interestOnly: d.interestOnly === true, place: readPlace(d.place, `${at}.place`, problems) });
+        doors.push({ id, title: t.title, line: t.line, href: t.href, interestOnly: d.interestOnly === true, onWelcome: d.onWelcome !== false, choiceTitle: t.choiceTitle, choiceLine: t.choiceLine, place: readPlace(d.place, `${at}.place`, problems) });
       });
       const seen = new Set<string>();
       for (const d of doors) {
@@ -617,8 +691,71 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
       }
   }
 
+  const fleetRaw = isObj(raw.fleet) ? raw.fleet : raw.fleet === undefined ? {} : null;
+  if (fleetRaw === null) problems.push("fleet must be an object.");
+  const fleetTexts = readTexts<FleetKey>(fleetRaw ?? {}, FLEET_LIMITS, DEFAULT_CONFIG.fleet, "fleet", problems);
+  const photos: Record<string, string> = {};
+  if (fleetRaw?.photos !== undefined) {
+    if (!isObj(fleetRaw.photos)) problems.push("fleet.photos must map a circle id to a photo.");
+    else {
+      const entries = Object.entries(fleetRaw.photos);
+      if (entries.length > FLEET_PHOTOS_MAX) problems.push(`fleet.photos has ${entries.length} photos. Keep it to ${FLEET_PHOTOS_MAX}.`);
+      for (const [id, url] of entries.slice(0, FLEET_PHOTOS_MAX)) {
+        const u = str(url);
+        if (!/^[A-Za-z0-9._-]{1,64}$/.test(id)) problems.push(`fleet.photos "${id}" is not a circle id.`);
+        else if (!u || u.length > 300 || !safePhoto(u)) problems.push(`fleet.photos.${id} must be an uploaded file (starting with /) or an https address.`);
+        else photos[id] = u;
+      }
+    }
+  }
+
+  const walk: string[] = [];
+  if (raw.walk !== undefined) {
+    if (!Array.isArray(raw.walk)) problems.push("walk must be a list of rite ids.");
+    else
+      for (const w of raw.walk.map(str)) {
+        if (!rites.some((r) => r.id === w)) problems.push(`walk names "${w}", and there is no rite with that id.`);
+        else if (!walk.includes(w)) walk.push(w);
+      }
+  }
+
+  const sigil = str(raw.sigil);
+  if (sigil && (sigil.length > 300 || !safePhoto(sigil))) problems.push("sigil must be an uploaded file (starting with /) or an https address.");
+
+  const nav: NavItem[] = [];
+  if (raw.nav !== undefined) {
+    if (!Array.isArray(raw.nav)) problems.push("nav must be a list.");
+    else {
+      if (raw.nav.length > NAV_MAX) problems.push(`nav has ${raw.nav.length} entries. Keep it to ${NAV_MAX}.`);
+      raw.nav.slice(0, NAV_MAX).forEach((n, i) => {
+        const at = `nav[${i + 1}]`;
+        if (!isObj(n)) return void problems.push(`${at} must be an object.`);
+        const icon = str(n.icon);
+        if (!(NAV_ICONS as readonly string[]).includes(icon)) problems.push(`${at}.icon must be one of ${NAV_ICONS.join(", ")}.`);
+        const t = readTexts(n, { label: 16, href: 200 }, { label: "", href: "" }, at, problems);
+        if (!t.label || !t.href) problems.push(`${at} needs a label and an href.`);
+        else if ((NAV_ICONS as readonly string[]).includes(icon)) nav.push({ icon: icon as NavIcon, label: t.label, href: t.href });
+      });
+    }
+  }
+
   return {
-    config: { format: RITES_FORMAT, rites, words, welcome, articles: { ...articleTexts, items }, letter, door, counts, tokens, look },
+    config: {
+      format: RITES_FORMAT,
+      rites,
+      words,
+      welcome,
+      articles: { ...articleTexts, items },
+      letter,
+      door,
+      fleet: { ...fleetTexts, photos },
+      counts,
+      tokens,
+      sigil: sigil && safePhoto(sigil) && sigil.length <= 300 ? sigil : "",
+      nav,
+      walk,
+      look,
+    },
     problems,
   };
 }
@@ -670,12 +807,14 @@ export interface StampView {
 }
 
 /** Each rite in the village's order: inked with its done words if held, the first unheld one marked next. */
-export function stampsFor(rites: readonly RiteDef[], held: ReadonlySet<string>): StampView[] {
-  let nextGiven = false;
+export function stampsFor(rites: readonly RiteDef[], held: ReadonlySet<string>, walk: readonly string[] = []): StampView[] {
+  // The next rite is the first unheld one in the order a newcomer walks them,
+  // which a village may give apart from the order its card shows them in.
+  const order = [...walk.filter((id) => rites.some((r) => r.id === id)), ...rites.map((r) => r.id).filter((id) => !walk.includes(id))];
+  const next = order.find((id) => !held.has(id)) ?? null;
   return rites.map((r) => {
     if (held.has(r.id)) return { id: r.id, label: r.done, state: "on", ink: r.ink };
-    const state: StampState = nextGiven ? "todo" : "next";
-    nextGiven = true;
+    const state: StampState = r.id === next ? "next" : "todo";
     return { id: r.id, label: r.todo, state, ink: r.ink };
   });
 }

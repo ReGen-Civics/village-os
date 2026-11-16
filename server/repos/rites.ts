@@ -404,3 +404,11 @@ export async function forgetMemberRites(db: Db, userId: string): Promise<void> {
     [userId],
   );
 }
+
+/** The village's active circles, for the fleet page: names and who leads, never a place. */
+export async function activeCircles(db: Db): Promise<Array<{ id: string; name: string; purpose: string | null; leadRoleId: string | null }>> {
+  const [rows] = await db.query<RowDataPacket[]>( // module-review-ok: circle names and lead roles, read for a members' page
+    "SELECT id, name, purpose, lead_role_id FROM circles WHERE status = 'active' AND is_example = 0 ORDER BY sort_order, name",
+  );
+  return rows.map((r) => ({ id: String(r.id), name: String(r.name), purpose: r.purpose == null ? null : String(r.purpose), leadRoleId: r.lead_role_id == null ? null : String(r.lead_role_id) }));
+}

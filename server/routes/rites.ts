@@ -62,17 +62,23 @@ import { entriesForMember, tokenDef } from "../lib/ledger";
 import { moduleConfig, requireModule } from "../lib/modules";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { stageName } from "../lib/villagePaths";
+import { listOrgAssignments, listOrgRoles } from "../lib/orgChart";
 import { inviteById, inviteTakenBy } from "../repos/memberInvites";
 import * as repo from "../repos/rites";
 import { joinAnswerDoor, type JoinAnswerDeps } from "./joinAnswers";
 
 type Deps = Pick<
   AppDeps,
-  "authedUser" | "isAdmin" | "getPool" | "members" | "mayAct" | "overLimit" | "clientIp" | "notify" | "firstName" | "projectName" | "deploymentOrigin" | "stageOf" | "submissionsRepo" | "loadRoles" | "roleIdsFor"
+  "authedUser" | "isAdmin" | "getPool" | "members" | "mayAct" | "overLimit" | "clientIp" | "notify" | "firstName" | "projectName" | "deploymentOrigin" | "stageOf" | "submissionsRepo" | "loadRoles" | "roleIdsFor" | "lapseContext"
 > &
   JoinAnswerDeps & { invites: InviteDoor };
 
 const HOUR = 60 * 60 * 1000;
+
+/** The card's word once a member holds the admitting rite: the village's own, else its member stage's name. */
+const memberWordOf = (cfg: RitesConfig) => cfg.words.memberWord || stageName("member");
+/** The card's word before it: the village's own, else its newcomer stage's name. */
+const newcomerWordOf = (cfg: RitesConfig) => cfg.words.newcomerWord || stageName("guest");
 
 export function ritesConfig(): RitesConfig {
   return parseRitesConfig(moduleConfig(RITES_MODULE)).config;
@@ -118,7 +124,7 @@ export function register(app: Express, deps: Deps): void {
   }
 
   function wordsFor(cfg: RitesConfig, user: any, extra: Record<string, string> = {}) {
-    return { name: first(user?.name), member: stageName("member"), newcomer: stageName("guest"), village: projectName(), buddy: cfg.words.buddy, ...extra };
+    return { name: first(user?.name), member: memberWordOf(cfg), newcomer: newcomerWordOf(cfg), village: projectName(), buddy: cfg.words.buddy, ...extra };
   }
 
   async function counts(cfg: RitesConfig) {
@@ -167,7 +173,7 @@ export function register(app: Express, deps: Deps): void {
       const found = await invites.resolve(token);
       if (found.ok) inviter = first(found.inviterName);
     }
-    const vars = { village: projectName(), member: stageName("member"), newcomer: stageName("guest"), buddy: cfg.words.buddy, inviter: inviter ?? "" };
+    const vars = { village: projectName(), member: memberWordOf(cfg), newcomer: newcomerWordOf(cfg), buddy: cfg.words.buddy, inviter: inviter ?? "" };
     const fillAll = (o: object): Record<string, unknown> =>
       Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === "string" && !/href|photo/i.test(k) ? fill(v, vars) : v]));
     res.json({
@@ -178,7 +184,9 @@ export function register(app: Express, deps: Deps): void {
       counts: await counts(cfg),
       places: { phone: cfg.words.placePhone, site: cfg.words.placeSite, gathering: cfg.words.placeGathering },
       look: cfg.look,
-      words: { aboardTitle: fill(cfg.words.aboardTitle, vars), aboardWhy: cfg.words.aboardWhy, aboardWhyHelp: fill(cfg.words.aboardWhyHelp, vars), aboardDoorQuestion: cfg.words.aboardDoorQuestion, aboardButton: fill(cfg.words.aboardButton, vars), aboardFoot: fill(cfg.words.aboardFoot, vars), steps: [stageName("guest")] },
+      sigil: cfg.sigil,
+      nav: cfg.nav,
+      words: Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, vars)])),
       steps: cfg.welcome.steps.map((s) => s.title),
     });
   });
@@ -191,7 +199,7 @@ export function register(app: Express, deps: Deps): void {
     if (!found.ok) return res.json({ valid: false, error: found.error });
     const cfg = ritesConfig();
     const inviter = first(found.inviterName);
-    const vars = { inviter, village: projectName(), member: stageName("member"), newcomer: stageName("guest") };
+    const vars = { inviter, village: projectName(), member: memberWordOf(cfg), newcomer: newcomerWordOf(cfg) };
     const l = cfg.letter;
     res.json({
       valid: true,
@@ -210,6 +218,7 @@ export function register(app: Express, deps: Deps): void {
       village: projectName(),
       counts: await counts(cfg),
       look: cfg.look,
+      sigil: cfg.sigil,
       places: { phone: cfg.words.placePhone },
     });
   });
@@ -228,13 +237,14 @@ export function register(app: Express, deps: Deps): void {
     const owner = await doorOwner(String(req.params.code ?? ""));
     if (!owner) return res.status(404).json({ error: "This code isn't one of ours any more. Ask the member who gave it to you for a new one." });
     const cfg = ritesConfig();
-    const vars = { inviter: first(owner.name), village: projectName(), member: stageName("member") };
+    const vars = { inviter: first(owner.name), village: projectName(), member: memberWordOf(cfg) };
     const d = cfg.door;
     res.json({
       giver: first(owner.name),
       village: projectName(),
       door: Object.fromEntries(Object.entries(d).map(([k, v]) => [k, fill(v, vars)])),
       look: cfg.look,
+      sigil: cfg.sigil,
       places: { phone: cfg.words.placePhone },
     });
   });
@@ -333,18 +343,19 @@ export function register(app: Express, deps: Deps): void {
       inviteTakenBy(pool, userId),
     ]);
     const stage = await stageOf(user);
-    const word = s.admittingId ? (s.sworn ? stageName("member") : stageName("guest")) : stageName(stage);
+    const word = s.admittingId ? (s.sworn ? memberWordOf(cfg) : newcomerWordOf(cfg)) : stageName(stage);
     let inviter: string | null = null;
     if (inviteId) {
       const inv = await inviteById(pool, inviteId);
       const u: any = inv ? await members.byId(inv.inviterUserId) : null;
       if (u) inviter = first(u.name);
     }
-    const vars = wordsFor(cfg, user, { buddy: buddy?.name ?? cfg.words.buddy });
+    const vars = wordsFor(cfg, user, { buddy: buddy?.name ?? cfg.words.buddy, inviter: inviter ?? "" });
     res.json({
       id: userId,
       name: first(user.name),
       stageWord: word,
+      memberWord: memberWordOf(cfg),
       sworn: s.sworn,
       admitted: s.admitted,
       mayWitness: s.anyoneSworn ? s.sworn : s.admitted,
@@ -352,14 +363,16 @@ export function register(app: Express, deps: Deps): void {
       buddy,
       inviter,
       aboard,
-      stamps: stampsFor(cfg.rites, new Set(held.keys())),
+      stamps: stampsFor(cfg.rites, new Set(held.keys()), cfg.walk),
       rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !isPlainRite(r), admits: r.admits, place: r.place })),
       openCeremonies: ceremonies.filter((c) => c.status === "open").map((c) => ({ id: c.id, riteId: c.riteId })),
       tokens: { record: await tokenLine(cfg.tokens.record, userId), voice: await tokenLine(cfg.tokens.voice, userId) },
       words: Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, vars)])),
-      doors: cfg.welcome.doors.map((d) => ({ id: d.id, title: d.title, line: d.line, place: d.place, interestOnly: d.interestOnly, href: d.href })),
+      doors: cfg.welcome.doors.map((d) => ({ id: d.id, title: d.choiceTitle || d.title, line: d.choiceLine || d.line, place: d.place, interestOnly: d.interestOnly, href: d.href })),
       steps: cfg.welcome.steps.map((st) => st.title),
       look: cfg.look,
+      sigil: cfg.sigil,
+      nav: cfg.nav,
       village: projectName(),
     });
   });
@@ -413,7 +426,7 @@ export function register(app: Express, deps: Deps): void {
       }))
       .sort((a, b) => Number(a.resting) - Number(b.resting) || b.voice - a.voice || a.name.localeCompare(b.name))
       .slice(0, 60);
-    res.json({ member: stageName("member"), voiceName: cfg.tokens.voice ? tokenDef(cfg.tokens.voice)?.name ?? cfg.tokens.voice : null, crew });
+    res.json({ member: memberWordOf(cfg), voiceName: cfg.tokens.voice ? tokenDef(cfg.tokens.voice)?.name ?? cfg.tokens.voice : null, crew });
   });
 
   // ── The mark and the ring ─────────────────────────────────────────────────
@@ -467,7 +480,10 @@ export function register(app: Express, deps: Deps): void {
     const roleNames = new Map(deps.loadRoles().map((r) => [r.id, r.name]));
     return {
       id: c.id,
-      rite: rite ? { id: rite.id, todo: rite.todo, done: rite.done, callCounts: rite.callCounts, place: rite.place } : { id: c.riteId, todo: c.riteId, done: c.riteId, callCounts: true, place: null },
+      rite: rite ? { id: rite.id, title: rite.title, todo: rite.todo, done: rite.done, callCounts: rite.callCounts, place: rite.place } : { id: c.riteId, title: c.riteId, todo: c.riteId, done: c.riteId, callCounts: true, place: null },
+      photo: cfg.welcome.ceremonyPhoto,
+      sigil: cfg.sigil,
+      village: projectName(),
       place: c.place,
       lines: c.lines,
       answer: c.answer,
@@ -493,14 +509,8 @@ export function register(app: Express, deps: Deps): void {
       }),
       you: { isCandidate, isWitness, mayWitness: !isCandidate && (s.anyoneSworn ? s.sworn : s.admitted) },
       words: {
-        help: cfg.words.ceremonyHelp,
-        spoken: cfg.words.spoken,
-        witnessesTitle: cfg.words.witnessesTitle,
-        foot: cfg.words.ceremonyFoot,
-        markTitle: cfg.words.markTitle,
-        markLine: cfg.words.markLine,
-        buddy: cfg.words.buddy,
-        member: stageName("member"),
+        ...Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, { name: first(people.get(c.candidateUserId)?.name), member: memberWordOf(cfg), newcomer: newcomerWordOf(cfg), village: projectName(), buddy: cfg.words.buddy })])),
+        member: memberWordOf(cfg),
         places: { phone: cfg.words.placePhone, site: cfg.words.placeSite, gathering: cfg.words.placeGathering },
       },
       look: cfg.look,
@@ -742,7 +752,7 @@ export function register(app: Express, deps: Deps): void {
           mine: pair?.buddyUserId === String(user.id),
           why: pair?.buddyUserId === String(user.id) ? aboard?.why ?? null : null,
           greeting: pair?.buddyUserId === String(user.id) ? pair.greeting : null,
-          stamps: stampsFor(cfg.rites, new Set(held.keys())),
+          stamps: stampsFor(cfg.rites, new Set(held.keys()), cfg.walk),
         };
       }),
     );
@@ -873,5 +883,47 @@ export function register(app: Express, deps: Deps): void {
       if (inv?.inviterUserId === String(user.id)) own[id] = line;
     }
     res.json({ lines: own });
+  });
+
+  // ── The fleet page ────────────────────────────────────────────────────────
+
+  /**
+   * Every active circle with who leads it and how many hold its roles now, and
+   * the village's words and photos for the page. Gatherings, the season and
+   * open votes are read by the page from their own modules' routes.
+   */
+  app.get("/api/rites/fleet", async (req, res) => {
+    const user = await signedIn(req, res);
+    if (!user) return;
+    const pool = getPool();
+    const cfg = ritesConfig();
+    const [circles, roles, assignments] = await Promise.all([repo.activeCircles(pool), listOrgRoles(pool), listOrgAssignments(pool, deps.lapseContext())]);
+    const live = assignments.filter((a) => a.holderKind === "member" && a.userId && !a.isExample && !a.lapsed && !a.endedAt);
+    const roleCircle = new Map(roles.filter((r) => r.active && !r.isExample).map((r) => [r.id, r.circleId]));
+    const leadIds = circles.map((c) => (c.leadRoleId ? live.find((a) => a.orgRoleId === c.leadRoleId)?.userId ?? null : null)).filter((x): x is string => !!x);
+    const people = await repo.people(pool, leadIds);
+    const roleName = new Map(roles.map((r) => [r.id, r.name]));
+    res.json({
+      circles: circles.map((c) => {
+        const crew = new Set(live.filter((a) => roleCircle.get(a.orgRoleId) === c.id).map((a) => a.userId as string));
+        const leadId = c.leadRoleId ? live.find((a) => a.orgRoleId === c.leadRoleId)?.userId ?? null : null;
+        const lead = leadId ? people.get(leadId) : null;
+        return {
+          id: c.id,
+          name: c.name,
+          photo: cfg.fleet.photos[c.id] ?? null,
+          lead: lead && c.leadRoleId ? `${roleName.get(c.leadRoleId) ?? ""} (${first(lead.name)})`.trim() : null,
+          crew: crew.size,
+        };
+      }),
+      fleet: { ...cfg.fleet, photos: undefined },
+      words: { title: cfg.words.fleetTitle, seasonKicker: cfg.words.fleetSeasonKicker, circlesTitle: cfg.words.circlesTitle, circleLive: cfg.words.circleLive, crewCount: cfg.words.crewCount, gatheringsTitle: cfg.words.gatheringsTitle, ballotsKicker: cfg.words.ballotsKicker },
+      places: { phone: cfg.words.placePhone, site: cfg.words.placeSite, gathering: cfg.words.placeGathering },
+      voice: cfg.tokens.voice ? { name: tokenDef(cfg.tokens.voice)?.name ?? cfg.tokens.voice, n: (await repo.balancesOfMany(pool, [String(user.id)], cfg.tokens.voice)).get(String(user.id)) ?? 0 } : null,
+      sigil: cfg.sigil,
+      nav: cfg.nav,
+      look: cfg.look,
+      village: projectName(),
+    });
   });
 }

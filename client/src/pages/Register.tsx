@@ -1,5 +1,6 @@
 import Layout from "@/components/Layout";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
+import Letter, { useLetter } from "@/components/rites/Letter";
 import { fetchSignInMethods } from "@/components/auth/signInMethods";
 import { useAuth } from "@/contexts/AuthContext";
 import { m } from "framer-motion";
@@ -106,6 +107,8 @@ export default function Register() {
    * with its own sentence either way.
    */
   const [invite] = useState(inviteFromAddress);
+  // The invitation dressed as a letter, when the village's rites module serves one (components/rites/Letter.tsx).
+  const letter = useLetter(invite);
   const [inviteOnly, setInviteOnly] = useState<boolean | null>(null);
   const [check, setCheck] = useState<InviteCheck | null>(null);
 
@@ -204,6 +207,9 @@ export default function Register() {
       setLoading(false);
     }
   }
+
+  if (letter === undefined) return null;
+  if (letter) return <Letter letter={letter} onOpen={() => navigate(`/welcome?invite=${encodeURIComponent(invite)}`)} />;
 
   return (
     <Layout>
