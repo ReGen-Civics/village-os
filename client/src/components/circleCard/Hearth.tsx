@@ -19,7 +19,10 @@
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { fx } from "@/components/journey/nature/geometry";
-import { HEARTH_CENTRE, HEARTH_VIEW, STONE_RING, emberSeed, embers, type Stone, type ThreadDrawing } from "./hearthModel";
+import { HEARTH_CENTRE, HEARTH_VIEW, STONE_RING, emberSeed, embers, labelLines, type Stone, type ThreadDrawing } from "./hearthModel";
+
+/** The gap between the two lines of a stone's name, in the drawing's units. */
+const LABEL_LINE_HEIGHT = 14;
 
 /** The id a stone's row carries in "Who holds what", so a tap on the stone lands on it. */
 export const roleRowId = (roleId: string) => `role-stone-${roleId}`;
@@ -150,9 +153,20 @@ export default function Hearth({
               >
                 {s.initial}
               </text>
-              <text x={fx(s.x)} y={fx(s.labelY)} textAnchor="middle" className="fill-muted-foreground text-xs group-hover:fill-foreground group-focus-visible:fill-foreground">
-                {short(s.name)}
-              </text>
+              {(() => {
+                // Two lines at most (QA P1-08); a name above its stone grows upward, so it never meets the stone.
+                const lines = labelLines(s.name, stones.length);
+                const top = s.labelY < s.y ? s.labelY - (lines.length - 1) * LABEL_LINE_HEIGHT : s.labelY;
+                return (
+                  <text x={fx(s.x)} y={fx(top)} textAnchor="middle" className="fill-muted-foreground text-xs group-hover:fill-foreground group-focus-visible:fill-foreground">
+                    {lines.map((line, i) => (
+                      <tspan key={i} x={fx(s.x)} dy={i === 0 ? 0 : LABEL_LINE_HEIGHT}>
+                        {line}
+                      </tspan>
+                    ))}
+                  </text>
+                );
+              })()}
             </a>
           );
         })}
