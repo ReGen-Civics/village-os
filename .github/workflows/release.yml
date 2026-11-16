@@ -597,6 +597,7 @@ jobs:
             docs/GOOGLE_SIGN_IN.md
             docs/FORK_RUNBOOK.md
             ops/RELEASES.md
+            ops/backup/compose-backup.sh
           )
           git archive --format=zip --prefix="${kit}/" -o "${kit}.zip" "refs/tags/${TAG}" -- "${files[@]}"
           # Every listed file must be in the kit. git archive refuses a path the

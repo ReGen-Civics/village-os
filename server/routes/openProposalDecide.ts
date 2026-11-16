@@ -321,11 +321,14 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const may = await deciding(p, viewerId);
     const holdsThePower = may.rule.who === "live-holders" && may.rule.holders.includes(viewerId);
     // The invitation's standing, for the holders of the power, on an adoption that made one.
-    let invitation: { state: "open" | "used" | "closed"; sentAt: string | null; emailed: boolean | null } | null = null;
+    let invitation: { state: "open" | "used" | "closed"; sentAt: string | null; emailed: boolean | null; askedAt: string | null } | null = null;
     if (p.status === "adopted" && holdsThePower && !may.own) {
       const inv = await inviteById(pool, openInviteId(p.id));
       const sentNote = await store.invitationSentOf(pool, p.id);
-      invitation = { state: !inv ? "closed" : inv.usedByUserId ? "used" : inv.revokedAt || inv.expired ? "closed" : "open", sentAt: sentNote ? sentNote.at.toISOString() : null, emailed: sentNote ? sentNote.emailed : null };
+      // The applicant asked for a new one from their status page (server/lib/applicantFollowups.ts). Said only while it still waits on a holder.
+      const asked = await store.newInvitationAskedOf(pool, p.id);
+      const state = !inv ? "closed" : inv.usedByUserId ? "used" : inv.revokedAt || inv.expired ? "closed" : "open";
+      invitation = { state, sentAt: sentNote ? sentNote.at.toISOString() : null, emailed: sentNote ? sentNote.emailed : null, askedAt: asked && state === "closed" ? asked.toISOString() : null };
     }
     // A former member's address, told only to those who decide it (coordinator, 2026-10-31).
     const former = open && may.ok && !!may.own && (await isFormerMemberAccount(work, may.own));
@@ -708,7 +711,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         account: true,
         invitation: null,
         application: { id: placed.applicationId, href: applicationHref(placed.applicationId) },
-        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
+        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
       });
     }
 

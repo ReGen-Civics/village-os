@@ -43,7 +43,8 @@ export const PROPOSAL_KINDS = [
 ] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
 
-export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed"] as const;
+// `unknown`: the apply threw, so whether it reached its page is not known; a person checks before it is tried again.
+export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed", "unknown"] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
 export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
@@ -228,6 +229,30 @@ const KNOWN_ROUTES: ReadonlyArray<{ kind: Exclude<ProposalKind, "setting">; meth
 ];
 
 /**
+ * AN ACCEPTED GATHERING IS ON THE CALENDAR.
+ *
+ * `POST /api/admin/events` files a gathering as a DRAFT when its body names no
+ * status (server/lib/gatherings.ts, `createGathering`), which is right for the
+ * calendar editor: a person there saves a draft and publishes it later. On the
+ * review page there is no later. The person reads the gathering, presses
+ * Accept, and that press is the decision to put it on the calendar, so a
+ * proposed gathering with no status was accepted, answered 200 and stayed
+ * invisible to everyone (15 Nov 2026: the webinar, land tour and potluck).
+ *
+ * So a proposed new gathering that names no status carries `scheduled`: added
+ * when it is filed, so the reviewer sees it and can change it to draft, and
+ * again when it is accepted, for a proposal filed before this rule. A status
+ * the proposal names, draft included, is kept as written.
+ */
+export const NEW_GATHERING_ROUTE = { method: "POST", path: "/api/admin/events" } as const;
+
+export function settingBodyToApply(method: string, path: string, body: Record<string, unknown>): Record<string, unknown> {
+  const isNewGathering = String(method).toUpperCase() === NEW_GATHERING_ROUTE.method && String(path).replace(/\/+$/, "") === NEW_GATHERING_ROUTE.path;
+  if (!isNewGathering || (body.status !== undefined && body.status !== null && body.status !== "")) return body;
+  return { ...body, status: "scheduled" };
+}
+
+/**
  * A `setting` that names a route a kind already covers becomes that kind, so its own validator runs at proposal time
  * and the page shows it field by field. The connector may send everything as {method, path, body}.
  */
@@ -275,7 +300,7 @@ export function readProposalInput(raw: unknown): { ok: true; value: ProposalInpu
       if (readProblem) return { ok: false, error: `readPath: ${readProblem}` };
       out.readPath = String(target.readPath);
     }
-    return { ok: true, value: { kind: "setting", target: out, body, summary } };
+    return { ok: true, value: { kind: "setting", target: out, body: settingBodyToApply(method, path, body), summary } };
   }
   return { ok: true, value: { kind: kind as ProposalKind, target: cleanTarget(target), body, summary } };
 }
@@ -427,4 +452,8 @@ export const REVIEW_WORDS = {
   gone: "That proposal is not here.",
   noRoute: "There is no such admin route to change.",
   notReader: "The review page is for admins and for holders of the powers its changes need.",
+  unreached: "This change did not reach its page, so nothing changed. Try it again.",
+  /** The apply threw or timed out: it may have landed before the answer was lost (audit, 15 Nov 2026). */
+  unknown: "We could not tell whether this change reached its page. Open that page and look. If the change is there, put this one aside. If it is not, tick that you checked and accept it again.",
+  checkFirst: "Check its page first: this change may already be there. Tick that you checked, then accept it again.",
 } as const;

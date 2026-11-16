@@ -201,8 +201,16 @@ export default function PricingDesk({ call }: { call: Call }) {
     await load();
   };
 
-  if (failed) return <p className="text-sm text-muted-foreground">{failed}</p>;
-  if (!read) return <p className="text-sm text-muted-foreground"><Trans context="pricing desk">Opening the pricing desk…</Trans></p>;
+  // The page keeps its one heading while it opens and when it refuses (QA P1-16).
+  const heading = <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>;
+  if (failed || !read) {
+    return (
+      <div className="max-w-6xl mx-auto">
+        {heading}
+        <p className="mt-2 text-sm text-muted-foreground">{failed ?? <Trans context="pricing desk">Opening the pricing desk…</Trans>}</p>
+      </div>
+    );
+  }
 
   const step = (done: boolean, now: boolean) =>
     `rounded-xl border p-3 ${done ? "border-sage/30 bg-sage-light" : now ? "border-teal-deep ring-2 ring-muted bg-card" : "border-border bg-card"}`;
@@ -213,7 +221,7 @@ export default function PricingDesk({ call }: { call: Call }) {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold text-foreground"><Trans context="pricing desk">Pricing desk</Trans></h1>
+      {heading}
       <p className="text-muted-foreground mb-4"><Trans context="pricing desk">Every open quest, the engine's suggestion beside it, and one tap to use it. For the Treasurer.</Trans></p>
       <div className="mb-3"><PayDoorNote door={read.payDoor} /></div>
 

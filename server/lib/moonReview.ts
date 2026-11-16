@@ -41,7 +41,7 @@ import {
   GOAL_STATUS_WORDS, approvalDecision, approvalHash, goalScoreProblem, invoicePaidFrom, parseMoonGoals, rowExistsRefusal, authorityNote, carriedTooOften, confirmRouteRefusal, coverage, eligibleApprovers,
   financeApprovalRefusal, goalScore, invoiceSendRefusal, invoiceTotals, billedTotals, isPayableLine, memberView, packMoonDates,
   parseAttestation, payerForRoute, rangeChangedNote, recapEditable, recapStatusAfterWork, reviewDedupeKey,
-  termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines, splitHolds, amountsMatch,
+  termsCarryMoney, validatePack, waitingStage, splitUnconfirmed, confirmSplitLines, splitHolds, amountsMatch, inRange, rangeOutsideRefusal,
   type ApprovalStage, type ApprovalSubject, type ApproverKeys, type ApproverPool, type BulkApproveResponse, type FromBlock,
   type ImportPackResponse, type InvoiceLine, type PayRouteRecord, type InvoiceView, type MoonAttestation, type QueueResponse, type QueueRow,
   type RecapItem, type ReviewEventKind, type RoleAudit, type RoomResponse, type SendInvoiceResponse,
@@ -57,7 +57,7 @@ import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
 import { recordLineRewards, settleLineRewards, shareLines } from "./moonReward";
 import {
-  ACCOMPLISHED_WORDS, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
+  ACCOMPLISHED_WORDS, ADJUST_AMOUNT_MAX, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
 } from "../../shared/accomplishedReview";
 import {
   draftLines, farOffPct, invoiceViewOf, linesOf, loadFrame, payersDoc, recapView, settingsDoc, summaryFor, type Frame, type FrameDeps, type Moon, type Outcome,
@@ -513,7 +513,14 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export type ApproveDeps = Pick<ReviewDeps, "notify" | "keyHolders" | "nameOf"> & {
   /** The moon's last civil day for a cycle id, for the nomad status check. */
   lastDayOf(cycleId: string): string | null;
+  /** The moon as people read it ("10 October to 8 November 2026"), for the cash and ledger lines. */
+  moonWordsOf?(cycleId: string): string | null;
 };
+
+/** "moon of 10 October to 8 November 2026, invoice FAY-2": the cycle id only when no dates can be read. */
+export function invoiceTitleOf(cycleId: string, memberNumber: string | null, moonWords: string | null | undefined): string {
+  return `moon ${moonWords ? `of ${moonWords}` : cycleId}, invoice ${memberNumber}`;
+}
 
 /**
  * ONE INVOICE'S FINANCE APPROVAL, every check a single approval runs. Answers
@@ -556,7 +563,7 @@ async function approveOne(
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
   // A line sent before its split was put on it, or whose amount moved since, is shared now (P1-6).
   const lines: InvoiceLine[] = await shareLines(pool, linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) })));
-  const invoiceTitle = `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`;
+  const invoiceTitle = invoiceTitleOf(invoice.cycleId, invoice.memberNumber, deps.moonWordsOf?.(invoice.cycleId));
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
@@ -639,17 +646,21 @@ async function financeActor(pool: Pool, actorId: string, invoice: store.InvoiceR
 export async function setRange(pool: Pool, actorId: string, invoiceId: string, body: unknown, deps: Pick<ReviewDeps, "keyHolders" | "notify">): Promise<Outcome<{ voided: string }>> {
   const invoice = await store.invoiceById(pool, invoiceId);
   if (!invoice) return refuse(404, "not_found");
+  // Nobody sets the amount on their own pay, as nobody proposes or confirms it (security audit, S2).
+  if (invoice.userId === actorId) return refuse(403, APPROVAL_REFUSALS.ownRange);
   const no = await financeActor(pool, actorId, invoice, deps);
   if (no) return refuse(403, no);
   if (invoice.status !== "waiting") return refuse(409, APPROVAL_REFUSALS.notWaiting);
   const b = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
   const finalMinor = Number(b.finalMinor);
   const note = typeof b.note === "string" ? b.note.replace(/\s+/g, " ").trim() : "";
-  if (!Number.isInteger(finalMinor) || finalMinor < 0) return refuse(400, "A range amount is a whole number of minor units.");
+  if (!Number.isSafeInteger(finalMinor) || finalMinor < 0 || finalMinor > ADJUST_AMOUNT_MAX) return refuse(400, "A range amount is a whole number of minor units.");
   if (!note || note.length > LIMITS.reviewNote) return refuse(400, "note_required");
   const lines = linesOf(invoice);
   const line = lines.find((l) => l.applicationId === b.applicationId && l.basis === "range");
   if (!line || !line.currency) return refuse(400, "not_a_range_line");
+  // Inside the range the member agreed to, and so never past the cap on it (security audit, S2).
+  if (!line.range || !inRange(finalMinor, line.range)) return refuse(400, rangeOutsideRefusal(line.range, line.currency));
   const changed = lines.map((l) => (l === line ? { ...l, finalMinor } : l));
   const recap = await store.recapById(pool, invoice.recapId);
   if (!recap) return refuse(404, "not_found");
@@ -803,6 +814,9 @@ export async function voidOne(pool: Pool, actorId: string, invoiceId: string, bo
   if (!invoice) return refuse(404, "not_found");
   const no = await financeActor(pool, actorId, invoice, deps);
   if (no) return refuse(403, no);
+  // An approved invoice already owes its cash and its token shares, so voiding it would leave both
+  // payable under a void record (security audit, S2). It is corrected the way a paid one is.
+  if (invoice.status === "approved") return refuse(409, APPROVAL_REFUSALS.approvedNoVoid);
   if (invoice.status === "paid" || invoice.status === "void") return refuse(409, "not_voidable");
   const b = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
   const note = typeof b.note === "string" ? b.note.replace(/\s+/g, " ").trim() : "";

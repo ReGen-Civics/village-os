@@ -7,7 +7,7 @@ always see who holds which power and how to give it back. More than twenty
 modules add the rest (a map of the land, a forum, messages, events, stays, a library,
 a shared exchange, crowdfunding) and each village chooses which ones it runs.
 
-Amora is the first village to run on it. It is developed with ReGen Civics.
+It is developed in the open by ReGen Civics.
 
 - **Free and open source.** AGPL-3.0-or-later licence (`LICENSE`). Use it, change it, run as
   many villages as you like. See [License](#license) below.

@@ -64,6 +64,7 @@ import { lapseLeftAnswers } from "./seraAnswer";
 import { forgetCachedDifferences, readDifferences } from "./seraDifferencesRead";
 import { proposalKindFor, splitStreams } from "./saberraStreams";
 import { schedulerEnabled } from "./scheduler";
+import { guardedFetch } from "./toolcheck";
 import { secretStatus, secretValue, villageSecretsConfigured, villageSecretsKeyProblem } from "./secrets";
 import { villageTimezone } from "./villageReaders";
 import { upsertFacts } from "../repos/moduleFacts";
@@ -162,7 +163,10 @@ export function preflight(): Preflight {
       },
     };
   }
-  return { ok: true, client: { baseUrl, token, fetchImpl: fetch as never, timeoutMs: SYNC_CALL_TIMEOUT_MS } };
+  // The address is admin-typed, so the call goes through the SSRF guard
+  // (R169 / R111): https only, every hop's address checked and pinned, the
+  // token dropped on a cross-origin redirect. Plain `fetch` did none of that.
+  return { ok: true, client: { baseUrl, token, fetchImpl: guardedFetch, timeoutMs: SYNC_CALL_TIMEOUT_MS } };
 }
 
 // ── The read ────────────────────────────────────────────────────────────────

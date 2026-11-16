@@ -6,8 +6,8 @@
  * show, draws nothing. A season with no goals says so and still offers the door.
  *
  * Drawn in the profile's language (docs/DESIGN_RULE.md): the featured panel
- * StartHereCard uses, an eyebrow over a display heading, the season's walk as a
- * trail of days, and each goal as a tile with its number in a gold ring, the
+ * StartHereCard uses, an eyebrow over a display heading, the day of the season in
+ * words, and each goal as a tile with its number in a gold ring, the
  * way the sheet's stat tiles carry theirs. A reached goal's ring fills and
  * takes a check. The count of reached goals is the village's, never a person's.
  *
@@ -24,7 +24,7 @@ import { seasonView } from "@shared/seasonGoalsView";
 import Commons from "@/components/commons/Commons";
 import { GoalWords } from "@/components/commons/CommonsPanel";
 import { openWorkFor, useGoalOpenWork } from "@/components/commons/goalOpenWork";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, CHIP_SOFT, EYEBROW, HINT, RING } from "@/components/journey/look";
+import { BTN_SECONDARY, CARD_FEATURED, CHIP_SOFT, EYEBROW, HINT, RING } from "@/components/journey/look";
 
 /** More goals than this fold behind one button, so a long list never pushes the page down. */
 const SHOWN = 6;
@@ -43,7 +43,6 @@ export default function SeasonGoals() {
   const folded = goals.length - SHOWN;
   const reached = goals.filter((g) => g.done).length;
   const total = goals.length;
-  const walked = day !== null && of ? day / of : null;
   return (
     <section aria-labelledby="roles-season-h" className={`sel-rise mx-auto mb-12 max-w-5xl text-left ${CARD_FEATURED}`}>
       <div className="flex items-center gap-2">
@@ -61,12 +60,7 @@ export default function SeasonGoals() {
           </p>
         )}
       </div>
-      {walked !== null && (
-        // The season as a walk: the path fills to today. Decoration only; the words above carry it.
-        <div className="relative mt-4 h-1 overflow-hidden rounded-full bg-muted" aria-hidden="true">
-          <span className="jw-trail-fill absolute inset-0" style={{ transform: `scaleX(${walked})` }} />
-        </div>
-      )}
+      {/* No filling bar under the day (design pass D-04): progress is never a meter. The commons below carries the season. */}
       {goals.length > 0 ? (
         <>
           {reached > 0 && (
@@ -120,7 +114,8 @@ export default function SeasonGoals() {
         <p className={`mt-4 ${HINT}`}>{t({ message: "No goals are set for this season yet.", context: "roles page goals" })}</p>
       )}
       <div className="mt-6 border-t border-border pt-5">
-        <Link href="/roles/select#sel-season" className={BTN_PRIMARY}>
+        {/* Edged: the page's one gold act is its own ("Browse the open roles"). */}
+        <Link href="/roles/select#sel-season" className={BTN_SECONDARY}>
           {t({ message: "Explore the goals", context: "roles page goals" })}
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>

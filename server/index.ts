@@ -84,7 +84,7 @@ import {
   WIRED_BUT_HELD_BACK,
   type PowerHolder,
 } from "./lib/capabilityRegistry";
-import { allVariables, boolVar, loadVariables, numberVar, rawValue, setVariable, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
+import { allVariables, boolVar, loadVariables, numberVar, rawValue, refreshVariables, setVariable, startVariablesRefresh, storedOverride, stringVar, wireVariableGuard } from "./lib/variables";
 import { blankZeroRedemptionCeilings } from "./lib/redemptionCeilings";
 import { memberJoined } from "./lib/arrival";
 import { climbLadder, freezeStandingAboveTheDoor, questsThatCarriedPastTheDoor, type LadderStage } from "./lib/admission";
@@ -117,7 +117,7 @@ import { adminOrRouteHolder, routePower } from "./lib/operatorRoutes";
 import { giveOnlyWhatYouHold, makePowerAssignGate, register as registerSeatPowerGroupRoutes, registerSeatGrantFreshness } from "./routes/seatPowerGroups";
 import { SeatGrantCache, bridgedHoldings, effectiveHoldings, readSeatGrantSnapshot } from "./lib/seatGrants";
 import { isMemberReadable } from "./lib/memberReadable";
-import { accountsWithReach, adminGroupsOf, LAST_ADMIN_REFUSAL } from "./lib/groupAdmin";
+import { accountsWithReach, adminAccessBeyondSeater, adminGroupsOf, ADMIN_ACCESS_NOT_HELD, LAST_ADMIN_REFUSAL } from "./lib/groupAdmin";
 import { register as registerOrgSeatingRoutes } from "./routes/orgSeatings";
 import { register as registerRoleRenewalRoutes } from "./routes/roleRenewal";
 import { configureAccessNotices } from "./lib/roleAccess";
@@ -226,7 +226,7 @@ import { register as registerApplicationCardRoutes, orgRoleExtras } from "./rout
 import { register as registerRoleProposalRoutes } from "./routes/roleProposals";
 import { register as registerOpenProposalRoutes } from "./routes/openProposals";
 import { adminDoorRefusal, register as registerStewardHandoverRoutes } from "./routes/stewardHandover";
-import { powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
+import { freezeLaunchSelection, powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
 import { register as registerRoleGuideRoutes } from "./routes/roleGuide";
 import { register as registerMapOrgRoutes } from "./routes/mapOrg";
 import { register as registerMapMasterplanRoutes } from "./routes/mapMasterplan";
@@ -247,6 +247,7 @@ import { register as registerBadgesRoutes } from "./routes/badges";
 import { register as registerBadgeGrantRoutes } from "./routes/badgeGrants";
 import { register as registerMessagingRoutes } from "./routes/messaging";
 import { register as registerStaysRoutes } from "./routes/stays";
+import { retryOwedLineRewards, settleOwedLineRewards } from "./lib/moonReward";
 import { register as registerSitePullRoutes } from "./routes/sitePull";
 import { register as registerBrandPreviewRoutes } from "./routes/brandPreview";
 import { register as registerBrandUploadRoutes } from "./routes/brandUploads";
@@ -497,6 +498,7 @@ import {
   thresholdSettingsFrom,
   overrideDials as highestTierDials,
   rollProblem,
+  launchMinElectorate,
   thresholdsForSubject,
   LAUNCH_SUBJECT_REF,
   MINT_RULE,
@@ -3146,6 +3148,7 @@ const holderReads: HolderReads = {
   badgeRows: () => badgeCapabilityRows(getPool()),
   roleHolders: loadPowerHoldings,
   roles: loadRoles,
+  villageHeld: () => villageHeldCapabilities(getPool()),
 };
 const liveHoldersOf = (capability: string): Promise<string[]> => liveHoldersNow(holderReads, capability);
 const powerAssignGate = makePowerAssignGate({ authedUser, capabilityCtx, liveHoldersOf });
@@ -3168,6 +3171,7 @@ async function capabilityCtx(user: any) {
   // badges module is on. Off = zero queries, zero effect: the gate is
   // byte-identical to its pre-badges self.
   let badgeCapabilities: string[] = [];
+  let badgeVoteCapabilities: string[] = [];
   let badgeDenies: string[] = [];
   if (effectiveLifecycle("badges") !== "off") {
     // 0050: a badge declared `seasonal` grants nothing while its season is
@@ -3176,6 +3180,7 @@ async function capabilityCtx(user: any) {
     // enforces on its own side.
     const grants = await badgeGrantsFor(getPool(), user.id, await dormantBadgeIds());
     badgeCapabilities = grants.capabilities;
+    badgeVoteCapabilities = grants.voteCapabilities;
     badgeDenies = grants.denies;
   }
   return {
@@ -3183,6 +3188,8 @@ async function capabilityCtx(user: any) {
     stageIndexOf: stageIndex,
     roleCapabilities: agent ? [] : roleCapabilitiesFor(user.id),
     badgeCapabilities: agent ? [] : badgeCapabilities,
+    // R157: on a key the village holds, only an award a vote made counts.
+    badgeVoteCapabilities: agent ? [] : badgeVoteCapabilities,
     badgeDenies,
     stageUnlockOverrides: stageUnlockOverridesFromVars(),
     // Admins pass every capability gate (shared/capabilities.ts honors this):
@@ -4046,7 +4053,7 @@ function deploymentOrigin(): string {
 const googleSignInAvailability = () =>
   resolveGoogleConfig(googleCredentialEnv(), String(process.env.FRONTEND_URL ?? "")); // the client pair from Admin, Integrations first (R171)
 /** Exit and delete: a password, or a fresh Google sign-in for a member with none (server/lib/identityConfirm.ts). */
-const confirmIdentity = makeIdentityGate({ authSecret: AUTH_TOKEN_SECRET, verifyPassword, googleAvailable: () => googleSignInAvailability().available, members: { update: (id, mutate) => members.update(id, mutate) } });
+const confirmIdentity = makeIdentityGate({ authSecret: AUTH_TOKEN_SECRET, verifyPassword, googleAvailable: () => googleSignInAvailability().available, cookiesSecure: () => { const a = googleSignInAvailability(); return a.available && a.config.redirectUri.startsWith("https://"); }, members: { update: (id, mutate) => members.update(id, mutate) } }); // cookiesSecure: the confirm cookie is `__Host-` on https (R041)
 
 /**
  * S16: the notification spine's dependencies. The spine never imports the
@@ -5197,6 +5204,8 @@ async function startServer() {
       (f.skipped.length ? `, ${f.skipped.length} stuck and reported` : "");
   }
   registerJob("exchange-reconcile", 60 * 60 * 1000, runExchangeReconcile);
+  // End of Moon token shares still owed after the launch: the closer pays them once, this retries (server/lib/moonReward.ts).
+  registerJob("moon-reward-owed", 60 * 60 * 1000, async () => retryOwedLineRewards(getPool()));
   // An unanswered redemption ends itself and the held tokens go back in full,
   // through the same door a human uses, so an expiry is never a second way to
   // move value. `redemption.expires_after_days` at 0 means never expire.
@@ -12313,7 +12322,7 @@ async function startServer() {
       tooFew,
       unityPct: threshold?.minUnityPct ?? null,
       quorumPct: threshold?.minQuorumPct ?? null,
-      minElectorate: threshold ? Math.max(1, Math.floor(numberVar("governance.launch_min_electorate"))) : null,
+      minElectorate: threshold ? launchMinElectorate(numberVar("governance.launch_min_electorate")) : null, // D3: never below LAUNCH_MIN_ELECTORATE_FLOOR
       // The subject's own fact, then this village's. `why` is what the card
       // renders in the ready-to-ask state, so a mode note appended here lands
       // in front of the founder with no new field for a client to learn.
@@ -13542,6 +13551,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const slate = await launchSlateProblem(getPool(), req.body?.slate, electorate, firstName);
     if (!slate.ok) return res.status(409).json({ error: slate.error });
     const villageName = mergedConfig().project.name;
+    // Read once: the document says these words and the ballot freezes this copy (audit S3).
+    const handoverSelection = (await readLaunchSelection(getPool())).capabilities;
     const doc = launchProposalDoc({
       villageName,
       quorumPct: dials.quorumPct,
@@ -13552,7 +13563,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       openedOn: new Date().toISOString().slice(0, 10),
       slate: slate.members,
       // Frozen here, in plain words: the hand-over control refuses to change it while this vote is open.
-      handover: (await readLaunchSelection(getPool())).capabilities.map(powerInPlainWords),
+      handover: handoverSelection.map(powerInPlainWords),
       carriedOpen: (await launchStatus(getPool(), launchDeps)).carriedOpen.map((c) => c.title), // host-only rows this vote carries
     });
 
@@ -13569,7 +13580,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       durationDays: Math.max(1, numberVar("governance.vote_days")),
       openedBy: user.id,
       electorate,
-      onOpen: (conn, ballotId) => insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id),
+      onOpen: async (conn, ballotId) => {
+        await insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id);
+        // The closer moves this copy, never the live selection (audit S3).
+        await freezeLaunchSelection(conn, ballotId, handoverSelection);
+      },
     });
     if (!result.ok) return res.status(409).json({ error: result.error, ballotId: result.alreadyOpen?.id ?? null });
 
@@ -21345,6 +21360,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
         await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
         return out;
       }
+      // R159: the closer asks the openers' question again. A ballot opened
+      // before the openers asked it, or written by any other door, could
+      // otherwise create the `steward` row the launch adopts as the founding seat.
+      const reservedAtClose = reservedRoleIdRefusal(roleId);
+      if (reservedAtClose) {
+        out.held = `${reservedAtClose} Nothing was created.`;
+        await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
+        return out;
+      }
       const existing = rolesRepo.all().find((r: any) => r.id === roleId) as any;
       if (existing) {
         out.held = `${existing.name ?? roleId} already exists in this village, so there was nothing to create.`;
@@ -21744,6 +21768,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
         await notifyAdmins("governance", `A carried launch vote could not land: ${b.title}`, `bal:${b.id}:launch-held`);
         return out;
       }
+      // End of Moon shares approved before this vote are paid now; nothing else comes back for them (server/lib/moonReward.ts).
+      await settleOwedLineRewards(getPool()).catch((e) => console.error("[launch] could not pay the moon rewards owed before launch", e));
 
       /*
        * `applied` STAYS EMPTY, and that is a decision rather than an omission.
@@ -24129,7 +24155,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerSeatApplicationRoutes(app, { authedUser, capabilityCtx, guardCapability, getPool, notify, notifyAdmins, overLimit, members, firstName, postEmail: (email) => postToOffice(commsPostOffice, email), projectName: notifyDeps.projectName, liveHoldersOf, rolesCarrying, loadRoleHolders, roleBallotSetup, seatCalendar, lapse: lapseContext, landingDeps, closers: SUBJECT_CLOSERS });
   registerApplicationCardRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, firstName, seasonState, lapse: lapseContext, mapLifecycle: () => effectiveLifecycle("map"), boolVar, villageName: () => mergedConfig().project.name || null });
   registerRoleProposalRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, firstName, overLimit, notify, members, isPresent: notifyDeps.isPresent, seasonState, lapse: lapseContext, mapLifecycle: () => effectiveLifecycle("map"), boolVar, villageName: () => mergedConfig().project.name || null });
-  registerOpenProposalRoutes(app, { proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), getPool, overLimit, clientIp, guardCapability, authedUser, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, seasonState, notify, notifyAdmins, members, stageOf, recordStageEvent, liveHoldersOf, rolesCarrying, loadRoleHolders, seatCalendar, lapse: lapseContext, boolVar, stringVar, letterSource: () => letterSourceFrom(mergedConfig(), contentRepo.get()), signings: submissionsRepo }); // a role proposal from somebody with no account (0305), and its decision
+  registerOpenProposalRoutes(app, { proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), getPool, overLimit, clientIp, guardCapability, authedUser, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, seasonState, notify, notifyAdmins, members, stageOf, recordStageEvent, liveHoldersOf, rolesCarrying, loadRoleHolders, seatCalendar, lapse: lapseContext, boolVar, stringVar, letterSource: () => letterSourceFrom(mergedConfig(), contentRepo.get()), signings: submissionsRepo, mayReadPay: async (req) => { const u = await authedUser(req); return !!u && ((await isAdmin(req)) || hasCapability("terms.read", await capabilityCtx(u))); } }); // a role proposal from somebody with no account (0305), and its decision
   registerStewardHandoverRoutes(app, { getPool, overLimit, authedUser, liveHoldersOf }); // the launch selection, then every hand-over to the village (Rye, 2026-11-01)
   registerRoleGuideRoutes(app, { authedUser, mayAct, getPool, clientIp, overLimit, members, seasonState, lapse: lapseContext, villageGuideName: () => String(getWorkWithUs().assistantName ?? ""), villageName: () => mergedConfig().project.name || "the village" });
   registerAlignmentRoutes(app, { authedUser, guardCapability, getPool, notify, notifyAdmins, overLimit, members, confirmIdentity, googleAvailable: () => googleSignInAvailability().available, authSecret: AUTH_TOKEN_SECRET, seatCalendar, capabilityCtx, liveHoldersOf });
@@ -25199,6 +25225,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!userId || !["add", "remove"].includes(action)) {
       return res.status(400).json({ error: "userId and action (add|remove) are required" });
     }
+    // Admin access counts as a power the seater must hold (server/lib/groupAdmin.ts): a decider or a power.assign holder who cannot open the panel seats nobody into a group that does.
+    if (adminAccessBeyondSeater(role, userIsAdmin(actorUser))) return res.status(403).json({ error: ADMIN_ACCESS_NOT_HELD, code: "admin_access_not_held" });
     const member = await members.byId(userId);
     if (action === "remove" && role.grantsAdmin && !accountsWithReach(await members.all(), loadRoles() as any, loadPowerHoldings().filter((h) => !(h.roleId === role.id && h.userId === userId)), new Date(), holdingHasLapsed, isExampleUser).length) return res.status(409).json({ error: LAST_ADMIN_REFUSAL }); // sheet 19
     if (!member || (action === "add" && !holderStands(member))) return res.status(404).json({ error: "Member not found" }); // a tombstone is nobody to appoint, and a stray holding of one can still be removed
@@ -25819,6 +25847,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // Arm the scheduler tick only now that every boot stage has succeeded and
   // every registerJob call above has run. See the note at the old call site.
   startScheduler(getPool());
+  // The dials a previous release saved while this one booted (server/lib/variables.ts, refreshVariables).
+  await refreshVariables(getPool());
+  startVariablesRefresh(getPool());
   server.listen(port, "0.0.0.0", () => {
     console.log(`[startup] Server listening on 0.0.0.0:${port}`);
   });

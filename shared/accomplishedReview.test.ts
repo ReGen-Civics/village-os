@@ -5,7 +5,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ACCOMPLISHED_WORDS, ADJUST_REFUSALS, FAR_OFF_DEFAULT, FAR_OFF_MIN_GOALS, FAR_OFF_MIN_TASKS, accomplishedComparison, adjustUnconfirmed, adjustsFrom, applyAdjusts, confirmAdjustLines,
-  farOffOf, parseAdjustInput, parseAdjustReply,
+  farOffOf, parseAdjustInput, parseAdjustReply, ADJUST_AMOUNT_MAX,
 } from "./accomplishedReview";
 import { linesFromTerms, scaleBySplit, type InvoiceLine, type MoonGoal, type RecapItem, type TermsInForce } from "./moonRecap";
 
@@ -162,6 +162,14 @@ describe("a Treasurer's proposed amount", () => {
     expect(parseAdjustInput({ applicationId: "app-water", amountMinor: 1.5, reason: "x" })).toEqual({ ok: false, error: ADJUST_REFUSALS.amount });
     expect(parseAdjustInput({ amountMinor: 1, reason: "x" })).toEqual({ ok: false, error: ADJUST_REFUSALS.noLine });
     expect(parseAdjustInput({ applicationId: "a", amountMinor: 1, reason: "x".repeat(501) })).toEqual({ ok: false, error: ADJUST_REFUSALS.reasonLong });
+  });
+
+  it("refuses an absurd amount: past the ceiling a role's terms carry, and past what a number holds exactly", () => {
+    expect(ADJUST_AMOUNT_MAX).toBeLessThanOrEqual(Number.MAX_SAFE_INTEGER);
+    expect(parseAdjustInput({ applicationId: "a", amountMinor: ADJUST_AMOUNT_MAX, reason: "x" })).toMatchObject({ ok: true, amountMinor: ADJUST_AMOUNT_MAX });
+    for (const amountMinor of [ADJUST_AMOUNT_MAX + 1, Number.MAX_SAFE_INTEGER, 1e21, "1e21"]) {
+      expect(parseAdjustInput({ applicationId: "a", amountMinor, reason: "x" }), String(amountMinor)).toEqual({ ok: false, error: ADJUST_REFUSALS.amountTooLarge });
+    }
   });
 
   it("keeps the member's reply to one clipped line of their own words", () => {

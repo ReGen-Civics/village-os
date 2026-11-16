@@ -30,7 +30,7 @@ import type { Pool, RowDataPacket } from "mysql2/promise";
 /** One award, with the badge's grants and denies as the columns hold them. */
 export async function badgeCapabilityRows(pool: Pool): Promise<RowDataPacket[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT a.user_id, b.id AS badge_id, b.capabilities, b.denies FROM badge_awards a " +
+    "SELECT a.user_id, a.awarded_by, b.id AS badge_id, b.capabilities, b.denies FROM badge_awards a " +
       "JOIN badges b ON b.id = a.badge_id " +
       "WHERE b.active = 1 AND (a.expires_at IS NULL OR a.expires_at > NOW())",
   );

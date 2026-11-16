@@ -33,7 +33,7 @@ interface Proposal {
   draft: Record<string, unknown> | null;
   live: unknown;
   labels: Record<string, string>;
-  status: "proposed" | "failed";
+  status: "proposed" | "failed" | "unknown";
   error: string | null;
   by: string;
   byKind: "agent" | "person";
@@ -267,6 +267,8 @@ export default function ProposedChanges() {
   const [decided, setDecided] = useState<Decided[]>([]);
   const [edits, setEdits] = useState<Record<string, Record<string, unknown>>>({});
   const [picked, setPicked] = useState<Record<string, boolean>>({});
+  // A change whose last try may have landed is tried again only once the person ticks that they checked its page.
+  const [checkedPage, setCheckedPage] = useState<Record<string, boolean>>({});
   const [problems, setProblems] = useState<Record<string, Problem[]>>({});
   const [json, setJson] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
@@ -340,7 +342,7 @@ export default function ProposedChanges() {
     setBusy(true);
     setOutcome(null);
     try {
-      const items = selected.map((c) => ({ id: c.id, body: edits[c.id] ?? c.body }));
+      const items = selected.map((c) => ({ id: c.id, body: edits[c.id] ?? c.body, ...(c.status === "unknown" && checkedPage[c.id] ? { checked: true } : {}) }));
       // The dry run first: each change read by its own validator. A problem shows on its own field and nothing is accepted.
       const check = await fetch("/api/admin/proposals/check", { method: "POST", headers: headers(), body: JSON.stringify({ items }) });
       const cd = (await check.json().catch(() => ({}))) as { results?: Array<{ id: string; ok: boolean; error?: string; field?: string | null }> };
@@ -355,7 +357,13 @@ export default function ProposedChanges() {
       }
       const r = await fetch("/api/admin/proposals/accept", { method: "POST", headers: headers(), body: JSON.stringify({ items }) });
       const d = (await r.json().catch(() => ({}))) as { results?: Array<{ id: string; ok: boolean; error?: string; field?: string | null }> };
-      const results = d.results ?? [];
+      // An answer with no results is not "none landed": it is an accept that did not run. Say so, and reload what stands.
+      if (!r.ok || !Array.isArray(d.results)) {
+        setProblems({ _page: [{ error: t({ message: "The accept did not finish. Reload to see which changes landed, then try the rest again.", context: "proposed changes" }), field: null }] });
+        await load();
+        return;
+      }
+      const results = d.results;
       const landed = results.filter((x) => x.ok).map((x) => changes.find((c) => c.id === x.id)?.summary ?? x.id);
       const failed = results.filter((x) => !x.ok);
       setOutcome({ landed, failed: failed.length });
@@ -530,6 +538,20 @@ export default function ProposedChanges() {
                             <p role="alert" className="rounded-lg border border-destructive/50 px-3 py-2 text-sm text-destructive">
                               <Trans context="proposed changes">Last try did not land: {c.error}</Trans>
                             </p>
+                          )}
+                          {c.status === "unknown" && (
+                            <div role="alert" className="space-y-2 rounded-lg border border-destructive/50 px-3 py-2 text-sm text-destructive">
+                              {c.error && <p>{c.error}</p>}
+                              <label className="flex items-center gap-2 text-foreground">
+                                <input
+                                  type="checkbox"
+                                  className="size-5 accent-notice"
+                                  checked={!!checkedPage[c.id]}
+                                  onChange={(e) => setCheckedPage((p) => ({ ...p, [c.id]: e.target.checked }))}
+                                />
+                                <Trans context="proposed changes">I checked its page, and this change is not there yet</Trans>
+                              </label>
+                            </div>
                           )}
                           {loose.map((p, i) => (
                             <p key={i} role="alert" className="rounded-lg border border-destructive/50 px-3 py-2 text-sm text-destructive">{p.error}</p>

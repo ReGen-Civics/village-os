@@ -21,7 +21,7 @@
 import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { register } from "./authGoogle";
-import { OAUTH_HANDOFF_COOKIE, makeOAuthState, readOAuthState } from "../lib/oauthGoogle";
+import { OAUTH_BIND_COOKIE, OAUTH_HANDOFF_COOKIE, oauthBindHash, makeOAuthState, readOAuthState } from "../lib/oauthGoogle";
 import { makeGoogleLink, readGoogleLink } from "../lib/oauthAccounts";
 import { whenInviteDescribed } from "../lib/inviteDoor";
 
@@ -141,13 +141,14 @@ function mount(members: any, invites?: any) {
     told,
     audit,
     async callback(email = EMAIL, invite: string | null = null) {
-      const state = makeOAuthState(SECRET, "/profile", Date.now(), invite ? { invite } : undefined);
+      // The binder `start` would have set in this browser (R215).
+      const state = makeOAuthState(SECRET, "/profile", Date.now(), { bind: oauthBindHash("binder-1"), ...(invite ? { invite } : {}) });
       const nonce = readOAuthState(SECRET, state)!.nonce;
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ id_token: idToken(nonce, email) }), { status: 200, headers: { "content-type": "application/json" } }),
       );
       const { out, res } = respond();
-      await routes.get("GET /api/auth/google/callback")!({ query: { code: "code-1", state }, headers: {} }, res);
+      await routes.get("GET /api/auth/google/callback")!({ query: { code: "code-1", state }, headers: { cookie: `${OAUTH_BIND_COOKIE}=binder-1` } }, res);
       return out;
     },
     async exchange(handoff: string) {

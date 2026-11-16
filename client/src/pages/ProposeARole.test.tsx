@@ -216,6 +216,7 @@ describe("one role per application", () => {
 
   it("SHAPE THE ROLE: a suggestion written on a piece of the role card travels with the application (Rye, 14 Nov 2026)", async () => {
     await applyFor();
+    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
     await completeAll();
     const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
     fireEvent.click(within(shape).getByText("Open the role card"));
@@ -238,7 +239,7 @@ describe("one role per application", () => {
     fireEvent.click(within(bar).getByText("Add to my application"));
     expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
     expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
-    // The piece's chip on the rail carries a dot, and the words wait in the draft on this device.
+    // The piece's chip on the rail carries a dot, and the words wait in the draft on this device (they ticked to remember).
     expect(shape.querySelector('[data-piece-tab="purpose"] [data-piece-marked]')).toBeTruthy();
     expect(shape.querySelector('[data-piece-tab="domain"] [data-piece-marked]')).toBeNull();
     await waitFor(() => expect(Object.values({ ...window.localStorage }).join(" ")).toContain("Who keeps the key when I am away."));
@@ -674,8 +675,21 @@ describe("your first day", () => {
 });
 
 describe("the saved draft", () => {
+  it("writes nothing to this device until they tick the box", async () => {
+    await applyFor();
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(false);
+    pressNext();
+    fillAbout();
+    expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBeNull();
+    cleanup();
+    await applyFor();
+    expect(screen.queryByText(/We kept your answers from last time/)).toBeNull();
+    expect((screen.getByLabelText(OPEN_WORDS.whyLabel) as HTMLTextAreaElement).value).toBe("");
+  });
+
   it("keeps the words and the step across leaving and coming back, never the references, and is cleared once sent", async () => {
     await applyFor();
+    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
     pressNext();
     fillAbout();
     fireEvent.change(screen.getByLabelText("Reference 1: name"), { target: { value: "Ines Vargas" } });
@@ -706,6 +720,7 @@ describe("the saved draft", () => {
 
   it("a draft for one role never fills another role's application", async () => {
     await applyFor("r-gate");
+    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
     pressNext();
     fillAbout();
     cleanup();

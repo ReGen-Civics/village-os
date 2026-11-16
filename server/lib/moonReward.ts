@@ -11,7 +11,15 @@
  *     posts them through the ledger after it commits. The key is the cycle,
  *     the line and the member, the same three the line's cash key names, so a
  *     retried or repeated approval issues nothing twice. Before the village's
- *     launch vote the rows stay owed and are paid later, as a quest's are.
+ *     launch vote the rows stay owed and are paid later. An Earned Equity share
+ *     is owed while the village's meaning for it is unwritten, and the ledger
+ *     door refuses to issue it until the meaning is written (`owedPreflight`).
+ *   - A share the hourly settlement already paid for one of the line's seats,
+ *     this moon, in the same token, is not owed a second time (security
+ *     audit, S1): one seat-moon is paid its tokens once, whichever door ran
+ *     first. The settlement leaves these two tokens to the invoice for a seat
+ *     held on an adopted application's money terms, so this guards a moon
+ *     paid before that rule, or terms that changed.
  * The cash share alone becomes cash owed (`oweApprovedRoleCash`, `cashOfLine`).
  *
  * An allowance line stays cash: it is a cost the role carries, not its reward.
@@ -22,12 +30,15 @@ import type { Pool, PoolConnection } from "mysql2/promise";
 import type { InvoiceLine } from "../../shared/moonRecap";
 import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
-import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, toLedgerUnits, type OwedPosting } from "./economy";
-import { recordOwed, settleOwedForClaim, type SettleOutcome } from "../repos/questOwedPostings";
+import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, keys, toLedgerUnits, villageId, type OwedPosting } from "./economy";
+import { memberAccount } from "./ledger";
+import { owedClaimIdsOfSource, recordOwed, settleOwedForClaim, type SettleOutcome } from "../repos/questOwedPostings";
+import { roleCycleLegsForApplication } from "../repos/tokenLedger";
 import { sectionsForMany } from "./roleCardSections";
 import { earnedEquityMeaningWritten } from "./valuationStore";
 import { stringVar } from "./variables";
 import { departedById } from "./departed";
+import { readGameStart } from "./gameStart";
 
 /** The ledger's `source` for a moon line's token shares. */
 export const MOON_REWARD_SOURCE = "moon_invoice_reward";
@@ -69,7 +80,10 @@ export const lineRewardClaimId = (invoiceId: string): string => `moon:${invoiceI
  * postings (drizzle/0210, the same rows a quest consent writes): recorded on
  * the approval's own connection, inside its transaction, so the obligation
  * exists exactly when the approval does. Earned Equity held for its unwritten
- * meaning is not owed here. A member who has left is owed nothing.
+ * meaning is owed here too, and waits at the ledger door until the meaning is
+ * written (security audit, S3: it used to be dropped with no row). A share the
+ * hourly settlement already paid for one of the line's seats is not owed again.
+ * A member who has left is owed nothing.
  */
 export async function recordLineRewards(
   conn: PoolConnection,
@@ -79,10 +93,15 @@ export async function recordLineRewards(
   for (const l of p.lines) {
     if (l.held || !l.reward) continue;
     const shares = [
-      ...(l.reward.equityUnits > 0 && !l.reward.equityHeld ? [{ token: l.reward.tokens.equity, units: l.reward.equityUnits }] : []),
+      ...(l.reward.equityUnits > 0 ? [{ token: l.reward.tokens.equity, units: l.reward.equityUnits }] : []),
       ...(l.reward.creditsUnits > 0 ? [{ token: l.reward.tokens.credits, units: l.reward.creditsUnits }] : []),
     ];
+    const bySettlement = shares.length > 0 ? await settledBySeat(conn, p.cycleId, l.applicationId, p.userId) : new Set<string>();
     for (const s of shares) {
+      if (bySettlement.has(s.token)) {
+        console.error(`[moon] line ${l.key} (${p.cycleId}): the moon's settlement already paid ${s.token} for this role this moon, so the invoice owes none of it`);
+        continue;
+      }
       const from = faucetFor(s.token);
       if (!from) {
         console.error(`[moon] no faucet issues ${s.token}: line ${l.key} (${p.cycleId}) owes ${s.units} of it and records none`);
@@ -107,6 +126,19 @@ export async function recordLineRewards(
 }
 
 /**
+ * The tokens the hourly settlement already paid one member for a seat held on
+ * one application, in one cycle: the `role.cycle` keys it writes
+ * (`keys.roleCycle`), compared byte for byte.
+ */
+async function settledBySeat(conn: PoolConnection, cycleId: string, applicationId: string, userId: string): Promise<Set<string>> {
+  const out = new Set<string>();
+  for (const r of await roleCycleLegsForApplication(conn, applicationId, memberAccount(userId))) {
+    if (String(r.idempotency_key) === keys.roleCycle(villageId(), cycleId, String(r.seat_id), userId, String(r.token_type))) out.add(String(r.token_type));
+  }
+  return out;
+}
+
+/**
  * Pay what an approved invoice's lines owe in tokens, one row at a time, after
  * the approval commits. A refusal that can change (the village has not started
  * its Game) leaves the row owed, to be paid by the owed-postings press; one no
@@ -115,6 +147,34 @@ export async function recordLineRewards(
  */
 export async function settleLineRewards(pool: Pool, invoiceId: string): Promise<SettleOutcome[]> {
   const out = await settleOwedForClaim(pool, lineRewardClaimId(invoiceId));
+  for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
+  return out;
+}
+
+/**
+ * Pay every moon line's token share still owed, when the launch vote carries.
+ * An invoice approved before the vote records its Earned Equity and Credits as
+ * owed (`recordLineRewards`), and nothing else ever comes back for them: the
+ * steward's owed-postings press pays quest claims only, and answers 404 for a
+ * moon claim. So the launch closer calls this once the Game has started.
+ * Rows already posted move nothing, so calling it twice is safe.
+ */
+/**
+ * The hourly retry of `settleOwedLineRewards`, once the Game has started (security lane review of
+ * #1331). The launch closer's sweep runs once: a transient error at the close, a `still_owed`
+ * outcome, or a share held until the village writes what Earned Equity means would otherwise
+ * never be tried again. Answers the scheduler's one-line summary.
+ */
+export async function retryOwedLineRewards(pool: Pool): Promise<string> {
+  if (!(await readGameStart(pool)).started) return "the Game has not started";
+  const out = await settleOwedLineRewards(pool);
+  const count = (o: SettleOutcome["outcome"]) => out.filter((x) => x.outcome === o).length;
+  return `${count("posted")} posted, ${count("still_owed")} still owed, ${count("refused")} refused`;
+}
+
+export async function settleOwedLineRewards(pool: Pool): Promise<SettleOutcome[]> {
+  const out: SettleOutcome[] = [];
+  for (const claimId of await owedClaimIdsOfSource(pool, MOON_REWARD_SOURCE)) out.push(...(await settleOwedForClaim(pool, claimId)));
   for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
   return out;
 }

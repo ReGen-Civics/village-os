@@ -4933,7 +4933,7 @@ function BadgesAdminTab({ password }: { password: string }) {
                   <td className="py-2 pr-3 font-medium text-gray-900">{a.user_name ?? "(anonymized)"}</td>
                   <td className="py-2 pr-3">{a.badge_name} <span className="text-xs text-gray-400">({a.badge_kind})</span></td>
                   <td className="py-2 pr-3">{a.count > 1 ? `×${a.count}` : "-"}</td>
-                  <td className="py-2 pr-3 text-gray-500">{a.awarded_by ? "steward" : "engine"}</td>
+                  <td className="py-2 pr-3 text-gray-500">{String(a.awarded_by ?? "").startsWith("ballot:") ? "vote" : a.awarded_by ? "steward" : "engine"}</td>
                   <td className="py-2 pr-3 text-gray-500">{a.note ?? ""}</td>
                   <td className="py-2 pr-3 text-gray-500">{a.expires_at ? new Date(a.expires_at).toLocaleDateString() : "-"}</td>
                   <td className="py-2 text-right">

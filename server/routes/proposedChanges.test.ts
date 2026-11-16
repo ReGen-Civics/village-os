@@ -6,6 +6,8 @@
  *   - a missing capability at accept is the route's own refusal, shown on the change, which can be fixed and accepted again
  *   - an edited text is accepted exactly as edited, and the lesson records the difference
  *   - drafts save on the server; the connector and an agent account cannot accept
+ *   - a proposed new gathering with no status lands on the calendar, filed before that rule or after it
+ *   - a change that throws on its way to its route is recorded as failed with its reason, and the rest still run
  */
 import http from "node:http";
 import express from "express";
@@ -33,6 +35,9 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   const faqs: Record<string, any[]> = { steward: [{ id: "ste-1", question: "Who decides?", answer: "The circle." }] };
   // Which routes say no, as the one capability gate would for a person without the power.
   const refuse = new Set<string>();
+  // Which routes hang up without answering, as a loopback that times out or is cut would.
+  const drop = new Set<string>();
+  const commitThenDrop = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
   const slowTarget = { on: false };
 
@@ -50,6 +55,12 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     fake.use(express.json());
     fake.use(async (req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
+      if (drop.has(req.path)) return void req.socket.destroy();
+      // The route does its work, then the answer is lost: a loopback that times out after its target committed.
+      if (commitThenDrop.has(req.path)) {
+        if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
+        return void req.socket.destroy();
+      }
       // A slow target, so accepts racing for one change are all in flight at once (the race case below).
       if (slowTarget.on) await new Promise((r) => setTimeout(r, 300));
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
@@ -68,6 +79,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     const app = express();
     app.use(express.json());
     app.put("/api/admin/brand", (_req, res) => res.json({ success: true })); // a route a `setting` may name
+    app.post("/api/admin/events", (_req, res) => res.json({ success: true })); // the calendar's new-gathering route, which a `setting` may name
     register(app, {
       authedUser,
       getPool: () => pool,
@@ -95,6 +107,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
   beforeEach(async () => {
     refuse.clear();
+    drop.clear();
+    commitThenDrop.clear();
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
@@ -231,5 +245,76 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(filed.status).toBe(200);
     const [row] = await q("SELECT body_json FROM proposed_changes");
     expect(JSON.parse(row.body_json)).toEqual({ tagline: "Living together" });
+  });
+
+  const GATHERING = { kind: "setting", target: { method: "POST", path: "/api/admin/events" }, body: { title: "Potluck on the land", startsAt: "2026-12-05T23:00:00.000Z" }, summary: "Put the potluck on the calendar." };
+
+  it("a proposed new gathering with no status is filed as scheduled, and accepting it puts it on the calendar", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Calendar", items: [GATHERING, { ...GATHERING, body: { ...GATHERING.body, status: "draft" }, summary: "A draft potluck, on purpose." }] }, AGENT.id);
+    expect(filed.status).toBe(200);
+    const rows = await q("SELECT body_json FROM proposed_changes ORDER BY position");
+    // The reviewer sees the status it will land with, and one the proposal named is kept as written.
+    expect(rows.map((r) => JSON.parse(r.body_json).status)).toEqual(["scheduled", "draft"]);
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: filed.body.ids.map((id: string) => ({ id })) });
+    expect(acc.body.results.map((x: any) => x.ok)).toEqual([true, true]);
+    expect(hits.map((h) => [h.path, h.body.status])).toEqual([["/api/admin/events", "scheduled"], ["/api/admin/events", "draft"]]);
+  });
+
+  it("a gathering proposed before that rule, with no status, is still put on the calendar when it is accepted", async () => {
+    // The shape already waiting in a village's table: filed by the old code, body with no status.
+    await q("INSERT INTO proposed_change_batches (id, title, proposed_by, proposed_by_kind) VALUES ('pcb_old', 'Calendar', ?, 'agent')", [AGENT.id]);
+    await q(
+      "INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind) VALUES ('pc_old', 'pcb_old', 0, 'setting', ?, '/api/admin/events', 'POST', '/api/admin/events', ?, ?, ?, 'agent')",
+      [JSON.stringify(GATHERING.target), GATHERING.summary, JSON.stringify(GATHERING.body), AGENT.id],
+    );
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: "pc_old" }] });
+    expect(acc.body.results).toEqual([{ id: "pc_old", ok: true }]);
+    expect(hits).toHaveLength(1);
+    expect(hits[0].body).toMatchObject({ title: "Potluck on the land", status: "scheduled" });
+  });
+
+  it("a change whose apply throws is recorded as unknown with its reason, and the changes after it still run", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Phase A content", items: [PAGE, FAQ] }, AGENT.id);
+    const [pageId, faqId] = filed.body.ids;
+    drop.add("/api/admin/content/page-home");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId }, { id: faqId }] });
+    expect(acc.status).toBe(200);
+    expect(acc.body.results.map((x: any) => [x.id, x.ok])).toEqual([[pageId, false], [faqId, true]]);
+    expect(acc.body.results[0].error).toContain("could not tell whether this change reached its page");
+    const rows = await q("SELECT id, status, error_text FROM proposed_changes ORDER BY position");
+    expect(rows.map((r) => r.status)).toEqual(["unknown", "accepted"]);
+    expect(rows[0].error_text).toContain("could not tell whether this change reached its page");
+    // It still waits on the review page, where a person can see it.
+    expect((await call("GET", "/api/admin/proposals")).body.changes.map((c: any) => [c.id, c.status])).toEqual([[pageId, "unknown"]]);
+  });
+
+  it("a thrown apply that DID land on its route is never applied twice by one more click (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    // The route commits, then the connection drops before the answer: the loopback reads it as a throw.
+    commitThenDrop.add("/api/admin/faqs/steward");
+    const first = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    commitThenDrop.clear();
+    expect(first.body.results[0].ok).toBe(false);
+    expect(faqs.steward.length - before, "the first try landed").toBe(1);
+    // One more click, as the page sends it: refused, and the route is not called again.
+    const hitsBefore = hits.length;
+    const again = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(again.body.results[0]).toMatchObject({ ok: false, code: "check_target" });
+    expect(hits.length).toBe(hitsBefore);
+    expect(faqs.steward.length - before).toBe(1);
+    // CONTROL: a person who checked and says so may try it again; putting it aside works too.
+    const checked = await call("POST", "/api/admin/proposals/accept", { items: [{ id, checked: true }] });
+    expect(checked.body.results[0].ok).toBe(true);
+  });
+
+  it("an unknown change can be put aside", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    const id = filed.body.ids[0];
+    drop.add("/api/admin/content/page-home");
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    const out = await call("POST", "/api/admin/proposals/discard", { ids: [id] });
+    expect(out.body.results[0].ok).toBe(true);
   });
 });

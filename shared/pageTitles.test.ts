@@ -44,6 +44,9 @@ describe("page titles", () => {
   it("keeps the longer key winning where one key is a prefix of another", () => {
     expect(pageTitleFor("/propose-quest")).toBe(PAGE_TITLES["/propose-quest"]);
     expect(pageTitleFor("/propose")).toBe(PAGE_TITLES["/propose"]);
+    // QA P1-17: the founding application reads "Apply", never the member proposal's name.
+    expect(documentTitle("/propose-a-role", "Village")).toBe("Apply · Village");
+    expect(documentTitle("/propose-a-role/confirm", "Village")).toBe("Apply · Village");
     expect(pageTitleFor("/role-proposals/new")).toBe(PAGE_TITLES["/role-proposals"]);
     expect(pageTitleFor("/role-applications/x")).toBe(PAGE_TITLES["/role-applications"]);
   });

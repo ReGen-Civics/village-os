@@ -19,7 +19,7 @@ Two paths exist and both end at the same running platform:
   relationships with your members, not ReGen's.
 
 Every instance runs the same published image,
-`ghcr.io/regen-civics/village-os`, pinned to a release such as `1.3.0`. Nobody
+`ghcr.io/regen-civics/village-os`, pinned to a release (the latest one, named in `CHANGELOG.md`). Nobody
 needs access to the repository to run one, and nobody forks it unless their
 village means to change the code. What makes your instance yours is its own
 database, its own domain, and its own environment variables, set in the steps
@@ -82,7 +82,7 @@ the deploy settings in step 2.
 ## 2. Add MySQL, the app service and a volume
 
 In your Railway project: add a MySQL database service; add an app service
-that runs the image `ghcr.io/regen-civics/village-os:1.3.0` (name a release,
+that runs the image `ghcr.io/regen-civics/village-os:VERSION` (replace `VERSION` with the latest release in `CHANGELOG.md`; name a release,
 never `:edge`, which is the untested tip of `main`); and add a volume to the
 app service mounted at `/app/data` (this is where member uploads live;
 `server/seeds/` in the repository is never touched at deploy time). Then set
@@ -303,30 +303,22 @@ the exact hole both lockouts fell into. Two variables close it:
   goes missing returns when you sign in again. On a default invite-only
   village it cannot create a founder from nothing; the claim above does that.
 
-## 6a. Google sign-in, which ReGen Civics can host for you
+## 6a. Google sign-in
 
-Two ways to switch this on. Both give you the same two values, the client ID
-and its secret, and the code does not know or care which you used. Paste them
-under Admin, Integrations (the two Google sign-in cards), or set them on the host
-as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; Admin wins when both are set.
-The callback address comes from `FRONTEND_URL` on the host.
+Each village makes its own Google OAuth client. Ten minutes in Google Cloud
+Console, and the consent screen carries your village's name, the secret is yours
+alone, and you can change your own domain without asking anybody.
 
-**Ask ReGen Civics for the shared credentials (start here).** We hold one
-Google client with every incubator village's callback address registered on it.
-Send us your village's domain, and we send back a `GOOGLE_CLIENT_ID` and
-`GOOGLE_CLIENT_SECRET` to paste under Admin, Integrations. Your Google Cloud Console work is
-zero. Two things to know while you use them: the Google consent screen will say
-**ReGen Civics** rather than your village's name, and the secret is shared with
-the other incubator villages, so it is right for a village being designed and
-wrong for one holding a real community's accounts.
+1. In [Google Cloud Console](https://console.cloud.google.com/), open **APIs &
+   Services, Credentials, Create credentials, OAuth client ID**, and choose
+   **Web application**.
+2. Under authorized redirect URIs add `https://<your-domain>/api/auth/google/callback`.
+3. Copy the client ID and secret into **Admin, Integrations** (the two Google
+   sign-in cards), or set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` on the
+   host. Admin wins when both are set. The callback address comes from
+   `FRONTEND_URL` on the host.
 
-**Register your own client (do this before you go live).** Ten minutes in
-Google Cloud Console, and then the consent screen carries your village's name,
-the secret is yours alone, and you can change your own domain without asking
-anybody. Full steps in `docs/GOOGLE_SIGN_IN.md`.
-
-Moving from the first to the second is a two-variable change and no code, so
-starting on ours costs you nothing later.
+Full steps, including the consent screen, are in `docs/GOOGLE_SIGN_IN.md`.
 
 Skipping this entirely is fine. Your village works on email and password, and
 no Google button is drawn where it would not work.
@@ -546,7 +538,7 @@ village can pull and run a named version with no account and no access token.
   which version it is, and how to pin a version so your village stays put
   while others move.
 
-Step 2 pinned a release, such as `1.3.0`, and that pin is what keeps your
+Step 2 pinned a release, and that pin is what keeps your
 village still while others move. `:stable` follows the newest release, and
 `:edge` is the untested tip of `main`, never for a village. A fork deployed
 from its own repository runs whatever its branch holds. Read

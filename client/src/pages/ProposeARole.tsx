@@ -18,9 +18,8 @@
  * shows, so Back loses nothing; every check runs in one place
  * (`findProblems`): Continue judges the step you are on, and Send reviews the
  * whole application in walking order, names every gap, and puts the cursor on
- * the first one (components/fireflyPath/stones.ts). The answers are saved on
- * this device as you go, without references or files
- * (components/fireflyPath/applyDraft.ts).
+ * the first one (components/fireflyPath/stones.ts). Ticked to remember, the answers
+ * are saved on this device, never references or files (fireflyPath/applyRemember.ts).
  *
  * THE FOUNDING REGISTER (Phase A brief): the same night world, quieter.
  * Larger display type, more space, gold rules, the step circles as the only
@@ -81,8 +80,9 @@ import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
 import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
-import { readCarry, writeCarry } from "@/components/fireflyPath/applyCarry";
+import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
+import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
@@ -264,6 +264,10 @@ export default function ProposeARole() {
   /** The draft for this role has been read back (or there was none), so saving may begin. */
   const [draftFor, setDraftFor] = useState<string | null>(null);
   const [restored, setRestored] = useState<false | "draft" | "carry">(false);
+  /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Off until ticked; nothing is written before. */
+  const [remember, setRemember] = useState(false);
+  /** The words of the application just sent, held in this page only, so "Apply for another role too" works with nothing kept on the device. */
+  const carriedHere = useRef<ApplyCarry | null>(null);
   /** What to put the cursor on after the next draw: the step's heading, or a field with a problem. */
   const [aimAt, setAimAt] = useState<{ n: number; target: string | null } | null>(null);
   const touch = useRef<{ x: number; y: number; owned: boolean } | null>(null);
@@ -315,7 +319,10 @@ export default function ProposeARole() {
     const read = readStoredJson("local", draftKey(roleId, link));
     const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
     // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
-    const carry = own ? null : readCarry(link, roleId, LAST_STONE);
+    const stored = own ? null : readCarry(link, roleId, LAST_STONE);
+    const carry = own ? null : (stored ?? (carriedHere.current ? carryAsDraft(carriedHere.current, roleId, new Date(), LAST_STONE) : null));
+    // Something this device already keeps reads as ticked, so they see what is kept and can forget it.
+    if (own || stored) setRemember(true);
     const d = own ?? carry?.draft ?? null;
     if (carry) {
       // Straight on from a sent one, the page still holds the last role's answers: those, files, consents and agreements start fresh.
@@ -345,13 +352,13 @@ export default function ProposeARole() {
 
   // THE DRAFT, saved as they go. Only the fields toDraft names: references, consent, files and agreements cannot reach it.
   useEffect(() => {
-    if (!roleId || draftFor !== roleId || sent) return;
+    if (!roleId || draftFor !== roleId || sent || !remember) return;
     writeStoredJson(
       "local",
       draftKey(roleId, link),
       toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical, pieceSuggestions }, new Date()),
     );
-  }, [roleId, draftFor, link, sent, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
+  }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
   useEffect(() => {
@@ -528,7 +535,9 @@ export default function ProposeARole() {
       }
       // Sent: the draft has done its work, and their own words wait for a next role (fireflyPath/applyCarry.ts).
       removeStored("local", draftKey(roleId, link));
-      writeCarry(link, { name, email, about, selfKnowledge, links, knowUs, items, marks, transcript: voice.transcript });
+      const carryFields = { name, email, about, selfKnowledge, links, knowUs, items, marks, transcript: voice.transcript };
+      carriedHere.current = toCarry(carryFields, new Date());
+      if (remember) writeCarry(link, carryFields);
       const sentTo = email.trim();
       const kept = data?.kept === true; // Kept though our confirmation email failed (server/lib/openProposalKept.ts): said honestly.
       setSent({
@@ -752,8 +761,8 @@ export default function ProposeARole() {
         <h1 className="mt-2 break-words font-display text-4xl leading-tight text-foreground sm:text-5xl">{t({ message: `Apply: ${role.name}`, context: "founding application title" })}</h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
           {me
-            ? t({ message: "Six steps. Your name and email come from your account, and your answers are saved on this device as you go.", context: "founding application lede" })
-            : t({ message: "Six steps, and no account needed. Your answers are saved on this device as you go.", context: "founding application lede" })}
+            ? t({ message: "Six steps. Your name and email come from your account.", context: "founding application lede" })
+            : t({ message: "Six steps, and no account needed.", context: "founding application lede" })}
         </p>
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
@@ -764,6 +773,7 @@ export default function ProposeARole() {
             {setup.updatedNote}
           </p>
         )}
+        <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} />
         {restored && <RestoredNote kind={restored} />}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
       </header>

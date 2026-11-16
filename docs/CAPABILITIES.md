@@ -35,7 +35,7 @@ In one line: `needs an alignment` then `admin` then `admin-override` then `denie
 | 4 | `denied by warning badge` | refused | `isDeniable(cap) && (ctx.badgeDenies ?? []).includes(cap)` |
 | 5 | `role` | allowed | `ctx.roleCapabilities.includes(cap)` |
 | 6 | `carried by a greater key` | allowed | `carriedBy(ctx.roleCapabilities, cap)` |
-| 7 | `badge` | allowed | `isBadgeGrantable(cap) && (ctx.badgeCapabilities ?? []).includes(cap)` |
+| 7 | `badge` | allowed | `isBadgeGrantable(cap) && badgeGrants.includes(cap)` |
 | 8 | `stage` | allowed | `unlockStage && unlockStage !== "none"` and `needed >= 0 && ctx.stageIndex >= needed` |
 | 9 | `not granted` | refused | nothing above it decided |
 
@@ -447,7 +447,7 @@ The same facts, in a shape a script can read. Regenerated with the rest of the f
       "source": "badge",
       "allowed": true,
       "conditions": [
-        "isBadgeGrantable(cap) && (ctx.badgeCapabilities ?? []).includes(cap)"
+        "isBadgeGrantable(cap) && badgeGrants.includes(cap)"
       ]
     },
     {

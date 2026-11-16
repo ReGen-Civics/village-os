@@ -101,6 +101,29 @@ export function initialOf(name: string): string {
   return m ? m[0].toLocaleUpperCase() : "·";
 }
 
+/** The most characters on one line of a stone's name. */
+export const LABEL_LINE_MAX = 20;
+/** One line of a name, shortened with an ellipsis when it would crowd a neighbour. */
+const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
+
+/**
+ * A stone's name as the drawing writes it (QA P1-08: on a phone "Community Buildin…" and "Legal, Finance &…"
+ * said nothing). A note in brackets drops off the drawing, since "Who holds what" lists the full name. With up
+ * to six stones the name wraps onto two lines at a space; a crowded ring keeps one short line.
+ */
+export function labelLines(name: string, stones: number): string[] {
+  const full = name.trim().replace(/\s+/g, " ");
+  const bare = full.length > LABEL_LINE_MAX ? full.replace(/\s*\([^)]*\)\s*$/, "").trim() || full : full;
+  if (stones > 6) return [cut(bare, 18)];
+  if (bare.length <= LABEL_LINE_MAX) return [bare];
+  const words = bare.split(" ");
+  let first = "";
+  let i = 0;
+  while (i < words.length && (first ? `${first} ${words[i]}` : words[i]).length <= LABEL_LINE_MAX) first = first ? `${first} ${words[i++]}` : words[i++];
+  if (!first) return [cut(bare, LABEL_LINE_MAX)];
+  return [first, cut(words.slice(i).join(" "), LABEL_LINE_MAX)];
+}
+
 /** The roles as stones on the ring, evenly from the top, clockwise, in the card's order. */
 export function stonesOf(roles: readonly RoleRowOut[]): Stone[] {
   const drawn = roles.slice(0, STONES_MAX);

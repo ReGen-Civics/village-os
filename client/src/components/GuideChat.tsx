@@ -2,6 +2,7 @@
 // an offer to work with the village, and a self-proposed quest. Both talk to
 // /api/assistant/proposal with a `kind`, so the two flows stay in step.
 import { useEffect, useRef, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { Sparkles, CheckCircle2, ArrowRight, Send } from "lucide-react";
 import { sendProposal, ProposalKind } from "@/lib/proposals";
 import type { IdeaReceipt } from "@shared/questIdeas";
@@ -34,6 +35,7 @@ export default function GuideChat({
   onRefineInForm: (p: Record<string, any>) => void;
   refineLabel?: string;
 }) {
+  const { t } = useLingui();
   const defaultGreeting =
     kind === "quest-proposal"
       ? `Hi, I'm ${assistantName}. Got a Quest the board is missing? Tell me what you'd love to bring.`
@@ -168,6 +170,7 @@ export default function GuideChat({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
           placeholder={`Tell ${assistantName} about your idea…`}
+          aria-label={t({ message: `Message to ${assistantName}`, context: "guide chat: the message box, for a screen reader" })}
           rows={1}
           className="flex-1 resize-none px-3 py-2 text-sm border border-stone-200 rounded-xl outline-none focus:border-teal-deep max-h-32"
         />

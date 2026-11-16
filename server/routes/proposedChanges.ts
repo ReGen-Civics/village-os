@@ -309,7 +309,13 @@ export function register(app: Express, deps: Deps): void {
         results.push({ id, ok: false, error: REVIEW_WORDS.gone });
         continue;
       }
-      if (c.status !== "proposed" && c.status !== "failed") {
+      // A change whose last try may have landed is tried again only once the person says they checked its page.
+      const checked = obj(it)?.checked === true;
+      if (store.needsACheck(c) && !checked) {
+        results.push({ id, ok: false, error: REVIEW_WORDS.checkFirst, field: null, code: "check_target" } as any);
+        continue;
+      }
+      if (c.status !== "proposed" && c.status !== "failed" && !store.needsACheck(c)) {
         results.push({ id, ok: false, error: REVIEW_WORDS.notProposed });
         continue;
       }
@@ -317,19 +323,24 @@ export function register(app: Express, deps: Deps): void {
       // The latest edits are kept even when the change fails, so fixing it starts from them.
       if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
       // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
-      if (!(await store.claimForApplying(pool, id, uid))) {
+      if (!(await store.claimForApplying(pool, id, uid, checked))) {
         results.push({ id, ok: false, error: REVIEW_WORDS.notProposed });
         continue;
       }
       const kd = kindDeps();
+      // A change that throws on its way to its route (the loopback timing out, a read that fails) is THIS change's
+      // outcome, recorded, and the loop goes on. It is NOT a plain "failed": the route may have committed before the
+      // answer was lost, so it is `unknown`, and a person checks its page before it is tried again (audit, 15 Nov 2026).
       let out: { ok: true } | { ok: false; error: string; field?: string | null };
       try {
-        const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-        out = checked.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: checked.error, field: checked.field };
+        const valid = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
+        out = valid.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: valid.error, field: valid.field };
       } catch (e) {
-        // Put back where a person can see it and try again, never left claimed.
-        await store.markFailed(pool, id, uid, String((e as Error)?.message ?? e).slice(0, 400));
-        throw e;
+        const error = `${REVIEW_WORDS.unknown} (${String((e as Error)?.message ?? e).slice(0, 200)})`;
+        await store.markUnknown(pool, id, uid, error);
+        await recordEvent(pool, { kind: "proposed_change", text: `A proposed change may or may not have landed, so it waits on a check: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
+        results.push({ id, ok: false, error, field: null });
+        continue;
       }
       if (!out.ok) {
         await store.markFailed(pool, id, uid, out.error);

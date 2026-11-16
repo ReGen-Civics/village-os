@@ -1013,6 +1013,9 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect((await call("GET", `/api/governance/applications/${id}/status`, undefined, PLANTED.id)).status).toBe(404);
       expect((await call("POST", `/api/governance/applications/${id}/terms`, { replies: {} }, PLANTED.id)).status).toBe(404);
 
+      // Nor through the new-invitation door (#1357): it opens only by the status link that went to the mailbox.
+      expect((await call("POST", `/api/application-status/${id}/new-invitation`, {}, PLANTED.id)).status).toBe(404);
+
       // Adopting goes the invitation's way: nothing is placed on the planted account.
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
       expect(r.status, JSON.stringify(r.body)).toBe(200);

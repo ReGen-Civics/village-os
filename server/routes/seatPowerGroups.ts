@@ -37,7 +37,7 @@ import { recordEvent } from "../lib/events";
 import { holdingHasLapsed } from "../lib/stewardship";
 import { founderPowerStands } from "../lib/gameStart";
 import { EXAMPLE_REFUSAL_BODY, isExampleUser } from "../lib/examples";
-import { accountsWithReach, LAST_ADMIN_REFUSAL, type AdminGroup, type GroupHolding } from "../lib/groupAdmin";
+import { accountsWithReach, adminAccessBeyondSeater, ADMIN_ACCESS_NOT_HELD, hasAdminReach, LAST_ADMIN_REFUSAL, type AdminGroup, type GroupHolding } from "../lib/groupAdmin";
 import { stewardSeatRefusal } from "../lib/roleGrants";
 import { bridgedHoldings, effectiveHoldings, type SeatGrantCache } from "../lib/seatGrants";
 import { listSeatGroupLinks, seatHeader, writeSeatGroupLinks } from "../repos/seatPowerGroups";
@@ -163,6 +163,11 @@ export function register(app: Express, deps: Deps): void {
     }
     const notHeld = giveOnlyWhatYouHold(may, added.flatMap((id) => (byId.get(id)?.capabilities ?? []) as string[]));
     if (notHeld) return res.status(403).json(notHeld);
+    // The same rule for admin access, which no capability list carries (server/lib/groupAdmin.ts). The operator fallback is an admin and passes.
+    if (may.via === "holder") {
+      const reach = !!actor && hasAdminReach(actor, groups as AdminGroup[], effectiveHoldings(loadRoleHolders(), bridgedHoldings(seatGrants.snapshot(), lapseContext())), new Date(), holdingHasLapsed);
+      if ([...added, ...removed].some((id) => adminAccessBeyondSeater(byId.get(id), reach))) return res.status(403).json({ error: ADMIN_ACCESS_NOT_HELD, code: "admin_access_not_held" });
+    }
     if (added.some((id) => byId.get(id)?.grantsAdmin === true) && (await founderPowerStands(getPool())) && actor?.role !== "founder") {
       return res.status(403).json({ error: "Until the village starts its Game, only a founder decides which roles can open the admin panel" });
     }
