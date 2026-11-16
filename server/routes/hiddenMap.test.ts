@@ -93,7 +93,7 @@ function deps(
   who: () => string | null,
   seats: { keep: Set<string>; export: Set<string> },
   photoDir: string,
-  extra: { admission?: (id: string) => Promise<Date | null | undefined>; notify?: (n: any) => Promise<any> } = {},
+  extra: { admission?: (id: string) => Promise<Date | null | undefined>; notify?: (n: any) => Promise<any>; opened?: (id: string) => Promise<void> } = {},
 ) {
   return {
     ...extra,
@@ -375,10 +375,12 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     // A second register over the same schema, with the hook and the bell, for members this test owns.
     const admittedAt = new Map<string, Date | null>([["m-deck", null], ["m-sworn", new Date(Date.now() + 1000)]]);
     const told: any[] = [];
+    const stamped: string[] = [];
     const c = collect();
     register(c.app, deps(pool, () => whoami, seats, photoDir, {
       admission: async (id) => (admittedAt.has(id) ? admittedAt.get(id)! : undefined),
       notify: async (n) => { told.push(n); return { ok: true }; },
+      opened: async (id) => { stamped.push(id); },
     }));
     const h = c.handlers;
     const plant = async (who: string) => {
@@ -409,6 +411,8 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     await call(h, "GET /api/hidden-map/me");
     const notices = told.filter((n) => n.userId === "m-sworn");
     expect(notices).toHaveLength(1);
+    // The opening hook runs once, for the member who opened, and never for one who did not.
+    expect(stamped).toEqual(["m-sworn"]);
     expect(notices[0]).toMatchObject({ type: "hidden_map_opened", link: "/hidden-map", dedupeKey: "hidden-map-opened:m-sworn" });
     expect(JSON.stringify(notices[0])).not.toMatch(/\d+\.\d{3,}/);
     await setVariable(pool as any, "hiddenmap.unlock_pins", "7");

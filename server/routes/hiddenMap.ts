@@ -55,6 +55,11 @@ type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "guardCapability" | "
   admission?: Admission;
   /** The bell: the member hears once when their map opens. Absent: nobody is told. */
   notify?: AppDeps["notify"];
+  /**
+   * Called once, the moment a member's map opens (a rite to stamp, say). Wired in
+   * server/index.ts by whichever module cares; this one never names another.
+   */
+  opened?: (userId: string) => Promise<void>;
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -87,7 +92,7 @@ function uploadedFiles(req: any): Array<{ buffer: Buffer }> {
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, admission, notify } = deps;
+  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, admission, notify, opened } = deps;
   const vid = () => villageId();
   const config = () => configOf(moduleConfig(MODULE_ID));
 
@@ -102,6 +107,9 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return null;
     const keeper = await seated(user, "hiddenmap.keep");
     const who = await whoAmI(getPool(), vid(), String(user.id), keeper, dials(), new Date(), admission);
+    if (who.justOpened && opened) {
+      await opened(String(user.id)).catch((e: unknown) => console.error("[hidden-map] the opening hook failed", e));
+    }
     if (who.justOpened && notify) {
       // Once, by its dedupe key, and never a place: the notice says the map is open and where to look.
       await notify({
