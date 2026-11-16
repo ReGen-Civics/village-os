@@ -38,8 +38,10 @@ Not built yet:
 1. Put somebody in a role that holds `hiddenmap.keep` (and, for exports, a second person in a role that holds
    `hiddenmap.export`). On day one nobody's map is open, so the keeper is who vouches the first members through.
 2. Choose what the map is drawn on (`hiddenmap.basemap`). The default is a plain grid, which sends nothing anywhere.
-3. Optionally name the map, rename the layers, change the kinds, or open a layer to every member (module settings:
-   `title`, `labels`, `kinds`, `openLayers`).
+3. On the module card ("The map's words and quests"): name the map, name each layer and the question above its
+   kinds, list the kinds, open a layer to every member, and name the quests that pay for a vouched planting and a
+   return visit (module settings `title`, `labels`, `kindPrompts`, `kinds`, `openLayers`, `plantingQuestId`,
+   `returnVisitQuestId`).
 
 ## The words
 
