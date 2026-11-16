@@ -66,6 +66,29 @@ export function claimOpen(all: readonly { role?: unknown }[]): boolean {
   return !all.some((u) => u?.role === "admin" || u?.role === "founder");
 }
 
+/** Send one recovery letter and log a send that did not send. Never throws. */
+export async function sendRecoveryLetter(
+  deps: Pick<RecoveryDeps, "sendEmail">,
+  user: { id: string; email: string },
+  kind: string,
+  letter: { origin: string; subject: string; html: string },
+): Promise<void> {
+  try {
+    const mail = await deps.sendEmail({ to: [user.email], subject: letter.subject, html: letter.html, origin: letter.origin });
+    if (!mail.sent) {
+      // The member has a 200 in their browser and no letter on the way.
+      // Somebody has to be able to find that, and the reason names the
+      // setting to fix.
+      console.error(
+        `[auth] recovery email NOT SENT for ${user.id} (${kind}): reason=${mail.reason ?? "unknown"}. ` +
+          "The member got a success message and no link.",
+      );
+    }
+  } catch (e) {
+    console.error(`[auth] recovery email FAILED for ${user.id}: the member got a 200 and no link`, e);
+  }
+}
+
 export function register(app: Express, deps: RecoveryDeps): void {
   app.get("/api/auth/claim-status", async (_req: Request, res: Response) => {
     res.json({ open: claimOpen(await deps.members.all()) });
@@ -118,20 +141,11 @@ export function register(app: Express, deps: RecoveryDeps): void {
 <p>If the button does nothing, paste this into your browser:<br>${safeUrl}</p>
 <p>If this wasn't you, nothing has changed. You can ignore this message.</p>`,
             };
-      try {
-        const mail = await deps.sendEmail({ to: [user.email], subject: letter.subject, html: letter.html, origin: letter.origin });
-        if (!mail.sent) {
-          // The member has a 200 in their browser and no letter on the way.
-          // Somebody has to be able to find that, and the reason names the
-          // setting to fix.
-          console.error(
-            `[auth] recovery email NOT SENT for ${user.id} (${verdict.kind}): reason=${mail.reason ?? "unknown"}. ` +
-              "The member got a success message and no link.",
-          );
-        }
-      } catch (e) {
-        console.error(`[auth] recovery email FAILED for ${user.id}: the member got a 200 and no link`, e);
-      }
+      // IN THE BACKGROUND, never awaited (R110). Awaiting the provider made a
+      // real account's answer slower than an unknown address's by one email
+      // round trip, which told a stranger which addresses are members. The
+      // answer below now leaves at the same moment for every address.
+      void sendRecoveryLetter(deps, user, verdict.kind, letter);
       deps.recordAudit(
         verdict.kind === "reset" ? "auth:password-reset-requested" : "auth:claim-link-requested",
         user.id,

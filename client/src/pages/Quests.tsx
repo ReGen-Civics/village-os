@@ -46,6 +46,7 @@ import { usePlaceWords } from "@/components/openWork/placeWords";
 import { useQuestGoals } from "@/components/openWork/useQuestGoals";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { orderByFit, questSizeOf, QUEST_SIZES, type QuestSize } from "@shared/commitment";
+import { useAppWords } from "@/hooks/useAppWords";
 
 type Difficulty = "Beginner" | "Intermediate" | "Advanced";
 
@@ -65,6 +66,7 @@ type Difficulty = "Beginner" | "Intermediate" | "Advanced";
  */
 export default function Quests() {
   const { t } = useLingui();
+  const word = useAppWords();
   // The letter is a member's door: open to anybody signed in, a story page for a visitor (shared/brochure.ts).
   const letterConfig = useGameConfig();
   const letterOn = memberDoorShown(letterConfig, "/love-letter", !!useOptionalAuth()?.user);
@@ -585,11 +587,11 @@ export default function Quests() {
             ) : quests.length === 0 ? (
               <QuietEmpty
                 drawing="meadow"
-                title={t`The meadow is resting`}
+                title={word("empty", "questsTitle") ?? t`The meadow is resting`}
                 door={{ label: t({ message: "Propose a Quest", context: "empty quest board: the one door" }), href: "/propose-quest" }}
                 className="max-w-3xl mx-auto mb-16 justify-center"
               >
-                {t`No Quests posted yet. Post the first one.`}
+                {word("empty", "questsLine") ?? t`No Quests posted yet. Post the first one.`}
               </QuietEmpty>
             ) : roots.on && rootsHidden > 0 ? (
               <QuietEmpty

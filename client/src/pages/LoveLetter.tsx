@@ -23,6 +23,7 @@ import { servedPathsFrom } from "@/hooks/useVillagePaths";
 import { useStoryPageOffAlone } from "@/lib/brochure";
 import { Celebration, scrollBehavior, useReducedMotion } from "@/components/natural";
 import Leaf from "@/components/journey/Leaf";
+import { useAppWords } from "@/hooks/useAppWords";
 
 /**
  * S2 brochure lane, 2026-08-30: this page used to state, nine times, that
@@ -146,6 +147,17 @@ const PATH_LOOK: Record<(typeof LETTER_PATH_IDS)[number], { icon: typeof Users; 
   prosperity: { icon: Sparkles, color: "border-muted-foreground text-muted-foreground" },
 };
 
+/**
+ * A covenant part as its paragraphs, split on blank lines (gap G15): a village
+ * that writes its covenant as many short parts reads one paragraph each, where
+ * one <p> ran them together. The stored text is unchanged, so the letter's
+ * fingerprint does not move. Text with no blank line is one paragraph, as before.
+ */
+export function paragraphsOf(text: string | null | undefined): string[] {
+  const parts = String(text ?? "").split(/\r?\n[ \t]*\r?\n/).map((p) => p.trim()).filter(Boolean);
+  return parts.length ? parts : [String(text ?? "")];
+}
+
 export default function LoveLetter() {
   const { content: legal } = useVillageContent<LegalContent>("legal");
   const { content: covenant } = useVillageContent<CovenantContent>("covenant");
@@ -157,6 +169,8 @@ export default function LoveLetter() {
   const villageName = useVillageName();
   const cfg = useGameConfig();
   const user = useOptionalAuth()?.user ?? null;
+  // The village's own verb for signing, where it set one (gap G7).
+  const word = useAppWords();
   const membership = legal?.membership;
   // The village's own name alone when no entity is published: a name, not a
   // legal claim. Everywhere this file used to say "Amora 508(c)(1)(a)".
@@ -371,7 +385,7 @@ export default function LoveLetter() {
               </h1>
               {user && (
                 <p className="text-base text-foreground mb-8">
-                  {LETTER_WORDS.done}{" "}
+                  {word("letter", "done") ?? LETTER_WORDS.done}{" "}
                   <Link href="/profile" className="font-semibold text-notice underline underline-offset-2">
                     {LETTER_WORDS.kept}
                   </Link>
@@ -438,7 +452,7 @@ export default function LoveLetter() {
             </h1>
             <p className={`text-xl text-muted-foreground max-w-2xl mx-auto break-words${hero ? "" : " invisible"}`}>
               {hero?.lede}
-              {user ? ` ${LETTER_WORDS.readReflect}` : " Read. Reflect. Sign."}
+              {user ? ` ${word("letter", "readReflect") ?? LETTER_WORDS.readReflect}` : " Read. Reflect. Sign."}
             </p>
           </m.div>
 
@@ -451,7 +465,9 @@ export default function LoveLetter() {
           >
             <p className="mb-6 text-foreground">{parts.greeting}</p>
 
-            <p className="mb-6 text-foreground">{parts.opening}</p>
+            {paragraphsOf(parts.opening).map((para, i) => (
+              <p key={`opening-${i}`} className="mb-6 text-foreground">{para}</p>
+            ))}
 
             <p className="mb-6 text-foreground">{parts.joining}</p>
 
@@ -473,7 +489,9 @@ export default function LoveLetter() {
 
             <p className="mb-6 text-foreground">{parts.inReturn}</p>
 
-            <p className="mb-6 text-foreground">{parts.governance}</p>
+            {paragraphsOf(parts.governance).map((para, i) => (
+              <p key={`governance-${i}`} className="mb-6 text-foreground">{para}</p>
+            ))}
 
             {parts.contribution && (
               <p className="mb-6 text-foreground">{parts.contribution}</p>
@@ -494,7 +512,7 @@ export default function LoveLetter() {
             className="bg-muted border border-border rounded-2xl p-6 sm:p-8 md:p-12"
           >
             <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-2 break-words">
-              {user ? LETTER_WORDS.heading(letterTitle) : words.fields.visitorHeading}
+              {user ? (word("letter", "heading", { title: letterTitle }) ?? LETTER_WORDS.heading(letterTitle)) : words.fields.visitorHeading}
             </h2>
             <p className="text-muted-foreground mb-8 break-words">
               {user ? LETTER_WORDS.lede(villageName, pageVars?.member ?? "member") : words.fields.visitorLede}
@@ -713,12 +731,12 @@ export default function LoveLetter() {
                     <span className={still ? "flex-shrink-0" : "nat-breathe flex-shrink-0"} aria-hidden="true">
                       <Leaf size={20} unfurl={false} />
                     </span>
-                    {user ? LETTER_WORDS.busy : "Signing your membership..."}
+                    {user ? (word("letter", "busy") ?? LETTER_WORDS.busy) : "Signing your membership..."}
                   </>
                 ) : (
                   <>
                     <Send className="w-5 h-5 flex-shrink-0" />
-                    <span className="min-w-0 break-words">{user ? LETTER_WORDS.button(villageName) : words.fields.submitLabel}</span>
+                    <span className="min-w-0 break-words">{user ? (word("letter", "button") ?? LETTER_WORDS.button(villageName)) : words.fields.submitLabel}</span>
                   </>
                 )}
               </button>

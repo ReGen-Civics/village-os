@@ -829,7 +829,7 @@ export function register(app: Express, deps: Deps): void {
     await notify({
       userId,
       type: "role_appointed",
-      title: `You were seated as ${seatName}`,
+      title: `You took up the role of ${seatName}`,
       body: null,
       link: "/map/circles",
       actorUserId: actor?.id ?? null,
@@ -1142,7 +1142,7 @@ export function register(app: Express, deps: Deps): void {
       await notify({
         userId: String(req.body.userId),
         type: "role_appointed",
-        title: `You were seated as ${role.name}`,
+        title: `You took up the role of ${role.name}`,
         body: role.aim ? String(role.aim).slice(0, 140) : null,
         link: "/map/circles",
         actorUserId: actor?.id ?? null,
