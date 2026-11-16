@@ -1,6 +1,6 @@
 # Capabilities
 
-Every capability key the platform knows about, what each one lets a member do, and the order the one gate resolves them in. 56 keys, 9 steps.
+Every capability key the platform knows about, what each one lets a member do, and the order the one gate resolves them in. 58 keys, 9 steps.
 
 There is ONE capability gate, `capabilityDecision()` in `shared/capabilities.ts`, and every permission answer in the product comes through it. The order it resolves in IS the policy: it decides whether a warning badge's deny survives an appointment, and whether an administrator still outranks a village on a power that village has taken over.
 
@@ -99,7 +99,7 @@ These rows are not a description of the order. They are answers: the generator c
 
 ## Every capability key
 
-56 keys. `ALL_CAPABILITIES` is a flat list, so they are grouped here by the prefix each key carries in its own name, in the order the list gives them: `quest`, `forum`, `proposal`, `map`, `terms`, `records`, `feed`, `stay`, `exchange`, `health`, `message`, `mechanics`, `event`, `org`, `ballot`, `member`, `intake`, `library`, `story`, `brief`, `dial`, `redemption`, `cash`, `role`, `token`, `pot`, `place`, `module`, `steward`, `comms`, `session`, `companion`, `moon`, `power`, `operator`.
+58 keys. `ALL_CAPABILITIES` is a flat list, so they are grouped here by the prefix each key carries in its own name, in the order the list gives them: `quest`, `forum`, `proposal`, `map`, `terms`, `records`, `feed`, `stay`, `exchange`, `health`, `message`, `mechanics`, `event`, `org`, `ballot`, `member`, `intake`, `library`, `story`, `brief`, `dial`, `redemption`, `cash`, `role`, `token`, `pot`, `place`, `hiddenmap`, `module`, `steward`, `comms`, `session`, `companion`, `moon`, `power`, `operator`.
 
 Four columns need a word before the tables:
 
@@ -286,6 +286,13 @@ Four columns need a word before the tables:
 | `place.tend` | Keep the place registry: load it from the seed, confirm a place, set its readiness, and adopt a stage change | yes | yes | no | no rung | Living places |
 | `place.permit` | Keep a place's permit checklist and its preserve and riparian answers | yes | yes | no | no rung | Living places |
 
+### `hiddenmap`
+
+| Key | What it lets a member do | A warning badge may deny it | A badge may grant it | The village may hold it | Stage that unlocks it | Declared by |
+| --- | --- | --- | --- | --- | --- | --- |
+| `hiddenmap.keep` | Keep the hidden map: vouch for a pin before your own map has opened, hide a pin, and read who looked | yes | yes | yes | no rung | Hidden map |
+| `hiddenmap.export` | Approve another member's request for a copy of the hidden map, as the second of the two people it takes | yes | yes | yes | no rung | Hidden map |
+
 ### `module`
 
 | Key | What it lets a member do | A warning badge may deny it | A badge may grant it | The village may hold it | Stage that unlocks it | Declared by |
@@ -341,19 +348,19 @@ Four columns need a word before the tables:
 
 ## The voices
 
-5 of the 56 keys may never be taken away by a warning badge: `mechanics.propose`, `ballot.vote`, `member.vouch`, `member.superVouch` and `steward.veto`. Each is a member's own say in a decision the village makes. The gate ignores a deny naming one of them, the badge validator refuses to save one, and a migration cleared the ones already stored. Three locks on the same door, because a hand-written UPDATE is invisible to code review by definition and a stored row outlives the admin who wrote it.
+5 of the 58 keys may never be taken away by a warning badge: `mechanics.propose`, `ballot.vote`, `member.vouch`, `member.superVouch` and `steward.veto`. Each is a member's own say in a decision the village makes. The gate ignores a deny naming one of them, the badge validator refuses to save one, and a migration cleared the ones already stored. Three locks on the same door, because a hand-written UPDATE is invisible to code review by definition and a stored row outlives the admin who wrote it.
 
 The rule underneath: waning is not removal. A rule under which unused voice decays over time is legitimate. An act by which one party strips another's earned voice is not, at any tier, held by anybody.
 
 ## The keys no badge may grant
 
-12 of the 56 keys cannot be handed out by a badge: `brief.private`, `role.pay`, `token.mint`, `steward.veto`, `moon.approve`, `moon.approve_alone`, `moon.approve_own`, `power.assign`, `operator.accounts`, `operator.config`, `operator.secrets` and `operator.recover`. Rye ruled on 2026-09-23 that the steward's veto comes from a seat the village votes somebody into and from nowhere else, so that an admin cannot mint a badge and give themselves a veto. Three locks again: the gate ignores a badge naming one of these, the badge validator refuses to save one and says where the seat is actually filled, and a migration cleared the rows already stored.
+12 of the 58 keys cannot be handed out by a badge: `brief.private`, `role.pay`, `token.mint`, `steward.veto`, `moon.approve`, `moon.approve_alone`, `moon.approve_own`, `power.assign`, `operator.accounts`, `operator.config`, `operator.secrets` and `operator.recover`. Rye ruled on 2026-09-23 that the steward's veto comes from a seat the village votes somebody into and from nowhere else, so that an admin cannot mint a badge and give themselves a veto. Three locks again: the gate ignores a badge naming one of these, the badge validator refuses to save one and says where the seat is actually filled, and a migration cleared the rows already stored.
 
 The line this draws is narrow on purpose. A key stays grantable while an ordinary admin route can already put it on a role or a rung, because closing the badge door on those would be a new policy rather than a fix. The keys above are the ones with no admin route left to them at all.
 
 ## The keys a village can take off the admin panel
 
-32 of the 56 keys are marked transferable: `quest.consent`, `forum.moderate`, `proposal.decide`, `map.publish`, `map.curatePhotos`, `feed.announce`, `exchange.manage`, `health.record`, `event.manage`, `org.declare`, `org.seat`, `org.seatAgent`, `org.decide`, `intake.moderate`, `library.keep`, `story.tell`, `brief.private`, `dial.set`, `quest.approve`, `redemption.confirm`, `cash.pay`, `role.pay`, `token.mint`, `pot.steward`, `module.switch`, `steward.veto`, `comms.manage`, `power.assign`, `operator.accounts`, `operator.config`, `operator.secrets` and `operator.recover`.
+34 of the 58 keys are marked transferable: `quest.consent`, `forum.moderate`, `proposal.decide`, `map.publish`, `map.curatePhotos`, `feed.announce`, `exchange.manage`, `health.record`, `event.manage`, `org.declare`, `org.seat`, `org.seatAgent`, `org.decide`, `intake.moderate`, `library.keep`, `story.tell`, `brief.private`, `dial.set`, `quest.approve`, `redemption.confirm`, `cash.pay`, `role.pay`, `token.mint`, `pot.steward`, `hiddenmap.keep`, `hiddenmap.export`, `module.switch`, `steward.veto`, `comms.manage`, `power.assign`, `operator.accounts`, `operator.config`, `operator.secrets` and `operator.recover`.
 
 A key is only marked transferable once every route that REFUSES on it asks the gate in a shape that can carry the break-glass and write the public record. A ceiling an operator cannot climb over is not a ceiling, it is an outage. The keys left out are of two kinds: personal acts, where there is nobody for the key to move to, and keys nothing refuses on yet, where a promise that an admin must reach past the village in the open would have nothing under it.
 
@@ -376,6 +383,7 @@ A module's `capabilities` array in `shared/modules.ts` is what that module ADDS 
 | Village Calendar | `events` | `event.rsvp`, `event.manage` |
 | Funding rounds | `funding-rounds` | `pot.steward` |
 | Living places | `places` | `place.tend`, `place.permit` |
+| Hidden map | `hidden-map` | `hiddenmap.keep`, `hiddenmap.export` |
 | End-of-Moon Review | `moon-review` | `moon.approve`, `moon.approve_alone`, `moon.approve_own` |
 | Live Sessions | `sessions` | `session.template` |
 | Governance | `governance` | `ballot.vote`, `member.vouch` |
@@ -390,10 +398,10 @@ The same facts, in a shape a script can read. Regenerated with the rest of the f
 ```json
 {
   "counts": {
-    "keys": 56,
+    "keys": 58,
     "steps": 9,
     "voices": 5,
-    "villageHoldable": 32,
+    "villageHoldable": 34,
     "badgeUngrantable": 12,
     "climbable": 16,
     "undeclared": 27
@@ -906,6 +914,28 @@ The same facts, in a shape a script can read. Regenerated with the rest of the f
       "stageRung": null,
       "modules": [
         "places"
+      ]
+    },
+    {
+      "key": "hiddenmap.keep",
+      "label": "Keep the hidden map: vouch for a pin before your own map has opened, hide a pin, and read who looked",
+      "deniable": true,
+      "transferable": true,
+      "stageUnlock": null,
+      "stageRung": null,
+      "modules": [
+        "hidden-map"
+      ]
+    },
+    {
+      "key": "hiddenmap.export",
+      "label": "Approve another member's request for a copy of the hidden map, as the second of the two people it takes",
+      "deniable": true,
+      "transferable": true,
+      "stageUnlock": null,
+      "stageRung": null,
+      "modules": [
+        "hidden-map"
       ]
     },
     {

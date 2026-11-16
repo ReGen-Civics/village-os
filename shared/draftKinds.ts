@@ -244,6 +244,8 @@ export const CAPABILITY_CONSEQUENCE: Record<Capability, string> = {
   "pot.steward": "hold a funding pot: open its rounds, set their dates and rubric, and rule on whether an idea fits the pot",
   "place.tend": "keep the village's place registry: load it from the seed, confirm a place, set its readiness, and adopt a change of stage",
   "place.permit": "keep a place's permit checklist and say whether it sits in the preserve or the river buffer",
+  "hiddenmap.keep": "vouch for pins on the hidden map before their own map has opened, hide a pin, and read who looked at the map",
+  "hiddenmap.export": "approve another member's request for a copy of the hidden map, as the second of the two people it takes",
   "module.switch": "turn a module on for the whole village, without a vote",
   "steward.veto":
     "stop a decision the village has already carried, inside the window before it lands, and say why",

@@ -393,7 +393,7 @@ describe("hasCapability truth table", () => {
       expect([...HANDOVER_SET].sort()).toEqual(ALL_CAPABILITIES.filter((c) => TRANSFERABLE[c]).sort());
     });
 
-    it("is thirty-two keys: the nineteen the ruling was given in, the comms power, the decide power, module.switch, cash.pay, power.assign, the four operator powers, role.pay, pot.steward, brief.private and token.mint", () => {
+    it("is thirty-four keys: the nineteen the ruling was given in, the comms power, the decide power, module.switch, cash.pay, power.assign, the four operator powers, role.pay, pot.steward, brief.private, token.mint and the hidden map's two", () => {
       /*
        * A NUMBER AND NOT ONLY A DERIVATION, deliberately.
        *
@@ -468,7 +468,11 @@ describe("hasCapability truth table", () => {
        * "Founders and Treasurers can mint tokens from after launch ... later
        * we'll pass this power to the village." A new key born transferable.
        */
-      expect(HANDOVER_SET).toHaveLength(32);
+      // THIRTY-FOUR WITH THE HIDDEN MAP'S TWO, on Rye's word of 2026-11-15 to the
+      // hidden-map spec's I.10 ask: "go with your recommendations on all of them".
+      expect(HANDOVER_SET).toHaveLength(34);
+      expect(HANDOVER_SET).toContain("hiddenmap.keep");
+      expect(HANDOVER_SET).toContain("hiddenmap.export");
       expect(HANDOVER_SET).toContain("token.mint");
       expect(HANDOVER_SET).toContain("brief.private");
       expect(HANDOVER_SET).toContain("pot.steward");
