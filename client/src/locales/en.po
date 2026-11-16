@@ -70,6 +70,11 @@ msgctxt "change request note kind"
 msgid "Concern"
 msgstr "Concern"
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Done by {role}"
+msgstr "Done by {role}"
+
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "Nothing here is live. A person publishes a change or records a role."
 msgstr "Nothing here is live. A person publishes a change or records a role."
@@ -1943,6 +1948,12 @@ msgctxt "proposed changes"
 msgid "Proposed by {0} on {1}"
 msgstr "Proposed by {0} on {1}"
 
+#: client/src/components/yourList/ReasonSheet.tsx
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "By when (optional)"
+msgstr "By when (optional)"
+
 #: client/src/components/openProposal/MembershipAtApplication.tsx
 msgctxt "membership letter on the open form"
 msgid "Read the {title}"
@@ -2026,6 +2037,11 @@ msgstr "Your target, e.g. 13 of 13 Mondays"
 msgctxt "button that sends a private restorative intake"
 msgid "Send privately"
 msgstr "Send privately"
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "A note (optional)"
+msgstr "A note (optional)"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
@@ -2219,6 +2235,11 @@ msgstr "Show every quest"
 #: client/src/components/governance/GoalsList.tsx
 msgid "A day in this moon (optional)"
 msgstr "A day in this moon (optional)"
+
+#: client/src/components/yourList/ReasonSheet.tsx
+msgctxt "task handed to a role"
+msgid "A note for the role (optional)"
+msgstr "A note for the role (optional)"
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Ways of seeing it that count"
@@ -2893,6 +2914,11 @@ msgstr "How we know it"
 msgctxt "open proposal attachments"
 msgid "Link {0}: web address"
 msgstr "Link {0}: web address"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Why? They'll read this."
+msgstr "Why? They'll read this."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -4316,6 +4342,11 @@ msgstr "Parts of this agreement name people, so they show to members only."
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Send"
+msgstr "Send"
+
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
 msgid "Your notes on the role ({n})"
@@ -5193,6 +5224,11 @@ msgstr "Adopt them for when a place opens"
 msgid "Nothing has been read from {agent} yet."
 msgstr "Nothing has been read from {agent} yet."
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Take it back"
+msgstr "Take it back"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "screen reader name of the conflict agreement editor"
 msgid "The conflict agreement"
@@ -5668,6 +5704,11 @@ msgctxt "founding application review"
 msgid "Commitment not chosen yet"
 msgstr "Commitment not chosen yet"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Declined. They'll see why."
+msgstr "Declined. They'll see why."
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Apply for this role"
 msgstr "Apply for this role"
@@ -5825,6 +5866,11 @@ msgstr "How to switch it off"
 #~ msgid "Start with the open roles and what each one asks of you."
 #~ msgstr "Start with the open roles and what each one asks of you."
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "A change was suggested since it was sent."
+msgstr "A change was suggested since it was sent."
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Time zone where you were born"
@@ -5959,6 +6005,11 @@ msgstr "Filed. The village renews filed roles together."
 msgctxt "sera answers"
 msgid "Something here changed since it was taken. Undo it or take it again before this draft is published."
 msgstr "Something here changed since it was taken. Undo it or take it again before this draft is published."
+
+#: client/src/components/yourList/ReasonSheet.tsx
+msgctxt "task handed to a role"
+msgid "It waits for the role's holder to accept it. You'll see where it stands under Sent."
+msgstr "It waits for the role's holder to accept it. You'll see where it stands under Sent."
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Nobody holds the {intakeRoleLabel} today, so a private intake would reach nobody."
@@ -6417,6 +6468,11 @@ msgctxt "admin protocols editor"
 msgid "Step {n}"
 msgstr "Step {n}"
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "{role} suggested a change. Still waiting."
+msgstr "{role} suggested a change. Still waiting."
+
 #: client/src/pages/Register.tsx
 #~ msgid "The village adopted your application for {forRoles}. Make your account to take them up."
 #~ msgstr "The village adopted your application for {forRoles}. Make your account to take them up."
@@ -6768,6 +6824,11 @@ msgstr "Changed since it was taken"
 msgctxt "landing commons door"
 msgid "See the roles that tend these goals"
 msgstr "See the roles that tend these goals"
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Whoever holds the role sees it under Waiting on you and accepts it, suggests a change, or declines it."
+msgstr "Whoever holds the role sees it under Waiting on you and accepts it, suggests a change, or declines it."
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgid "Each file has to be {mb} MB or less."
@@ -7130,6 +7191,11 @@ msgstr "To be decided in the onboarding process."
 msgid "That is not JSON the platform can read: {problem}"
 msgstr "That is not JSON the platform can read: {problem}"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "It's on your list now."
+msgstr "It's on your list now."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Nothing offered for this role beyond their note."
 msgstr "Nothing offered for this role beyond their note."
@@ -7488,6 +7554,11 @@ msgstr "Name"
 msgctxt "characters page heading"
 msgid "Choose your roots"
 msgstr "Choose your roots"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Send the change"
+msgstr "Send the change"
 
 #: client/src/pages/ResidentJourney.tsx
 msgctxt "resident path ticked off"
@@ -8340,6 +8411,11 @@ msgctxt "proposed changes"
 msgid "{open} waiting"
 msgstr "{open} waiting"
 
+#: client/src/components/profile/WaitingOnYou.tsx
+msgctxt "task handed to a role"
+msgid "Handed to your roles"
+msgstr "Handed to your roles"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Start the tour"
@@ -8962,6 +9038,11 @@ msgctxt "role card rewards: the proposal sets the pay"
 msgid "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract."
 msgstr "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract."
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Declined by {role}"
+msgstr "Declined by {role}"
+
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Ideas are being shaped into quests until {day}"
@@ -9298,6 +9379,12 @@ msgstr "Changes show in gold. Saving updates the role at once and is kept in its
 msgctxt "save bar, which item failed"
 msgid "Role {name}"
 msgstr "Role {name}"
+
+#. placeholder {0}: h.title
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "For {role}: {0}"
+msgstr "For {role}: {0}"
 
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup title"
@@ -9812,6 +9899,11 @@ msgctxt "proposed changes"
 msgid "Taken down if you accept"
 msgstr "Taken down if you accept"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Decline"
+msgstr "Decline"
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "put back"
@@ -9950,6 +10042,11 @@ msgstr "This page isn't taking proposals right now."
 msgctxt "rites"
 msgid "Clear"
 msgstr "Clear"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Note"
+msgstr "Note"
 
 #. placeholder {0}: doc.ownerName
 #: client/src/components/notebook/NotebookPanel.tsx
@@ -10536,6 +10633,12 @@ msgstr "Invoice {ref}"
 msgid "Your saved numbers did not load."
 msgstr "Your saved numbers did not load."
 
+#. placeholder {0}: civilDayWords(h.dueOn)
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "By {0}"
+msgstr "By {0}"
+
 #. placeholder {0}: th.name
 #: client/src/components/circleCard/Hearth.tsx
 msgctxt "circle hearth, a thread"
@@ -10580,6 +10683,11 @@ msgstr "Which of the village's goals for the season does your work in {roleName}
 #: client/src/pages/HiddenMap.tsx
 msgid "You can log places now. They wait on this phone, and your map comes back with signal."
 msgstr "You can log places now. They wait on this phone, and your map comes back with signal."
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Choose a role"
+msgstr "Choose a role"
 
 #. placeholder {0}: cr.review.consents
 #: client/src/pages/ChangeRequests.tsx
@@ -10787,6 +10895,12 @@ msgstr "No paths are open to agents yet."
 #: client/src/pages/HiddenMap.tsx
 msgid "Hidden by a keeper"
 msgstr "Hidden by a keeper"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Task"
+msgstr "Task"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -11171,6 +11285,11 @@ msgctxt "hidden map, one place's details"
 msgid "Withdraw my vouch"
 msgstr "Withdraw my vouch"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "By when"
+msgstr "By when"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application choose, founding roles heading"
 msgid "Filling first: the founding team"
@@ -11208,6 +11327,11 @@ msgstr "Why this price"
 msgctxt "applicant's application status, while you wait"
 msgid "None of this is required. These are open doors to meet us."
 msgstr "None of this is required. These are open doors to meet us."
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "What you sent did not load."
+msgstr "What you sent did not load."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
@@ -11591,6 +11715,11 @@ msgstr "Which agent"
 msgctxt "open proposal sent"
 msgid "Apply for another role too"
 msgstr "Apply for another role too"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Change sent. It still waits for the role."
+msgstr "Change sent. It still waits for the role."
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
@@ -12960,6 +13089,11 @@ msgctxt "the commons: a goal the village has reached"
 msgid "Reached"
 msgstr "Reached"
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "By {by}"
+msgstr "By {by}"
+
 #: client/src/pages/Roles.tsx
 msgid "Decisions move forward when no one has a reasoned objection that the proposal would cause harm or block the aim. Everyone loving them is not the bar."
 msgstr "Decisions move forward when no one has a reasoned objection that the proposal would cause harm or block the aim. Everyone loving them is not the bar."
@@ -13401,6 +13535,11 @@ msgstr "Close"
 msgid "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
 msgstr "Twelve blocks, from purpose to impact, that a group can talk through together: who decides, how conflict is held, how resources move. The workbook prints each block on its own page with room to write, and it can be saved as a Markdown file too."
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Accept"
+msgstr "Accept"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application intro"
 msgid "A starting point we agree together. Choose your commitment, and mark anything you would like to talk through."
@@ -13428,6 +13567,11 @@ msgstr "{filedCount} filed. One action renews every filed role for the next moon
 #: client/src/components/journey/TestRun.tsx
 msgid "This writes nothing. No balance moves, no recognition is recorded, and nothing is issued. It reads your settings and works out what each moon would do."
 msgstr "This writes nothing. No balance moves, no recognition is recorded, and nothing is issued. It reads your settings and works out what each moon would do."
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "From {from}"
+msgstr "From {from}"
 
 #: client/src/components/roleCard/FoundingTeam.tsx
 msgctxt "founding team section lede"
@@ -13702,6 +13846,11 @@ msgstr "Sent"
 #~ msgid "They want to talk about the terms"
 #~ msgstr "They want to talk about the terms"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Nobody holds {role}, so it came to the stewards"
+msgstr "Nobody holds {role}, so it came to the stewards"
+
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "What a drag does"
 msgstr "What a drag does"
@@ -13747,6 +13896,11 @@ msgstr "Starting the run"
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "The season, week by week"
 msgstr "The season, week by week"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Suggest a change"
+msgstr "Suggest a change"
 
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor"
@@ -13838,9 +13992,24 @@ msgctxt "calendar page lede"
 msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
 msgstr "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Waiting for {role}"
+msgstr "Waiting for {role}"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "This role lists no outcomes yet."
 #~ msgstr "This role lists no outcomes yet."
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Role"
+msgstr "Role"
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Sent. It waits for the role to accept it."
+msgstr "Sent. It waits for the role to accept it."
 
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
@@ -13975,6 +14144,11 @@ msgstr "The palette, in words"
 msgctxt "terms step"
 msgid "The terms"
 msgstr "The terms"
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Hand a task to a role"
+msgstr "Hand a task to a role"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page intro, one circle for now"
@@ -14496,6 +14670,12 @@ msgctxt "admin protocols editor"
 msgid "Import a file"
 msgstr "Import a file"
 
+#. placeholder {0}: h.reason
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Why: {0}"
+msgstr "Why: {0}"
+
 #. placeholder {0}: KIND_LABELS[doc.kind]
 #. placeholder {1}: sizeWords(doc.kind, doc.size)
 #. placeholder {2}: dayWords(doc.createdAt)
@@ -14685,6 +14865,12 @@ msgstr "This upload did not reach the server. Nothing changed."
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "Cropped to the dashed box."
 msgstr "Cropped to the dashed box."
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/pages/YourPath.tsx
 #~ msgctxt "your path, the whole path page"
@@ -15178,6 +15364,11 @@ msgstr "Headings"
 msgctxt "a canvas block is loading"
 msgid "Opening {name}"
 msgstr "Opening {name}"
+
+#: client/src/components/profile/HandoffRespondRow.tsx
+msgctxt "task handed to a role"
+msgid "Nobody holds {role}, so it came to the circle's lead"
+msgstr "Nobody holds {role}, so it came to the circle's lead"
 
 #. placeholder {0}: c.by
 #. placeholder {1}: day(c.at)
@@ -17143,6 +17334,11 @@ msgctxt "founding application steps"
 msgid "Continue to {nextName}"
 msgstr "Continue to {nextName}"
 
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "You took it back"
+msgstr "You took it back"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgid "A draft from this queue is still open."
 msgstr "A draft from this queue is still open."
@@ -18554,6 +18750,12 @@ msgctxt "review response"
 msgid "I can live with this"
 msgstr "I can live with this"
 
+#: client/src/components/profile/HandoffRespondRow.tsx
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Cancel"
+msgstr "Cancel"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application value"
 msgid "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done."
@@ -18796,6 +18998,11 @@ msgstr "This is about energy and attention, never hours. You can change it later
 msgctxt "commitment split: no agreement covers the roles"
 msgid "No pay agreement covers these roles yet, so a split is only for your own planning."
 msgstr "No pay agreement covers these roles yet, so a split is only for your own planning."
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Sent"
+msgstr "Sent"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -19492,6 +19699,11 @@ msgstr "Usual times: {windowList}"
 msgctxt "update card: reload the page"
 msgid "Reload"
 msgstr "Reload"
+
+#: client/src/components/yourList/RoleHandoffs.tsx
+msgctxt "task handed to a role"
+msgid "Accepted by {role}"
+msgstr "Accepted by {role}"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "No first task for {roleName}"
