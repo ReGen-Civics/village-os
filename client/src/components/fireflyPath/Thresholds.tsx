@@ -327,7 +327,7 @@ function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: S
           <p className={LEDE}>{sent.message}</p>
           {sent.afterFounding && (
             <p className="text-sm text-foreground" data-after-founding="">
-              {t({ message: "We are filling our founding team first, so it may be a while before we reply. We will write to you as soon as we are ready to talk.", context: "open proposal sent, later role" })}
+              {t({ message: "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk.", context: "open proposal sent, later role" })}
             </p>
           )}
           <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">

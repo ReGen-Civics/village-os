@@ -438,7 +438,7 @@ function commitmentsFor(input: SeatInput): Commitment[] {
     const label = COMMITMENT_LABELS[key];
     if (look === "gilded") out.push({ key, label, look, srWords: SR_WRITTEN });
     else if (look === "dashed") out.push({ key, label, look, srWords: SR_UNWRITTEN });
-    else if (key === "term") out.push({ key, label, look, suffix: "set at seating", srWords: SR_AT_SEATING });
+    else if (key === "term") out.push({ key, label, look, suffix: "set at the start", srWords: SR_AT_SEATING });
     else out.push({ key, label, look, suffix: "the village's", srWords: SR_VILLAGES });
   }
   return out;
@@ -565,7 +565,7 @@ function figuresFor(input: SeatInput, lapse: { read: boolean; lapsed: number }):
       const now = hc - lapse.lapsed;
       out.push({ key: "heldNow", label: "Held now", value: now, tone: now > 0 ? "gold" : null, source: "holderCount - holders[].lapsed" });
     } else {
-      out.push({ key: "seated", label: "Seated", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" });
+      out.push({ key: "seated", label: "Taken", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" });
     }
     const open = Math.max(0, input.seats - hc);
     out.push({
@@ -604,7 +604,7 @@ function stateLineFor(input: SeatInput, lapse: { read: boolean; lapsed: number }
   const hc = input.holderCount ?? 0;
   if (lapse.read && hc > 0 && lapse.lapsed > 0) {
     if (lapse.lapsed === hc) return SHEET_WORDS.everyoneReady;
-    return `${lapse.lapsed} of ${hc} seated ${lapse.lapsed === 1 ? "is" : "are"} ready to be re-chosen.`;
+    return `${lapse.lapsed} of ${hc} team members ${lapse.lapsed === 1 ? "is" : "are"} ready to be re-chosen.`;
   }
   if (input.stateSource === "declared") return SHEET_WORDS.setByHand;
   if (input.stateSource === "derived" && !lapse.read) {
