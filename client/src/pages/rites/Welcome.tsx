@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Trans } from "@lingui/react/macro";
+import { useAuth } from "@/contexts/AuthContext";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 import { Avatar, Chip, Icon, RitesWorld, TopBar, ago } from "@/components/rites/parts";
 import { ritesGet, ritesSend, type DoorView, type PublicView } from "@/components/rites/ritesApi";
@@ -70,6 +71,7 @@ function InterestForm({ door, onDone }: { door: DoorView; onDone: () => void }) 
 }
 
 export default function Welcome() {
+  const { user } = useAuth();
   const [invite] = useState(inviteParam);
   const [data, setData] = useState<PublicView | null>(null);
   const [failed, setFailed] = useState(false);
@@ -279,7 +281,8 @@ export default function Welcome() {
                     ))}
                   </ol>
                 ) : null}
-                {data.articles.href ? (
+                {/* The full Articles, for everyone once their page is public; until then for signed-in members. */}
+                {data.articles.href && (data.articles.linkFor !== "members" || user) ? (
                   <a className="small" style={{ display: "block", marginTop: 10, fontWeight: 600, color: "var(--seal)", textDecoration: "none" }} href={data.articles.href}>
                     {data.articles.linkLabel}
                   </a>

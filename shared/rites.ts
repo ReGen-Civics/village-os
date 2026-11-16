@@ -378,7 +378,8 @@ export interface RitesConfig {
   rites: RiteDef[];
   words: Words;
   welcome: Record<WelcomeKey, string> & { steps: StepDef[]; doors: DoorDef[]; road: StepDef[] };
-  articles: Record<ArticlesKey, string> & { items: ArticleDef[] };
+  /** `linkFor`: who the "read them all" link shows to, everyone or signed-in members (until the page is public). */
+  articles: Record<ArticlesKey, string> & { items: ArticleDef[]; linkFor: "everyone" | "members" };
   letter: Record<LetterKey, string>;
   door: Record<DoorPageKey, string>;
   fleet: Record<FleetKey, string> & { photos: Record<string, string> };
@@ -428,7 +429,7 @@ export const DEFAULT_DOOR: RitesConfig["door"] = {
   scanLine: "Scan to ask to join",
 };
 
-export const DEFAULT_ARTICLES: RitesConfig["articles"] = { ...blank(ARTICLES_LIMITS), items: [] };
+export const DEFAULT_ARTICLES: RitesConfig["articles"] = { ...blank(ARTICLES_LIMITS), items: [], linkFor: "everyone" };
 
 export const DEFAULT_CONFIG: RitesConfig = {
   format: RITES_FORMAT,
@@ -651,6 +652,7 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
 
   const a = isObj(raw.articles) ? raw.articles : raw.articles === undefined ? {} : null;
   if (a === null) problems.push("articles must be an object.");
+  if (a?.linkFor !== undefined && a.linkFor !== "everyone" && a.linkFor !== "members") problems.push('articles.linkFor must be "everyone" or "members".');
   const articleTexts = readTexts<ArticlesKey>(a ?? {}, ARTICLES_LIMITS, DEFAULT_ARTICLES, "articles", problems);
   const items: ArticleDef[] = [];
   if (a?.items !== undefined) {
@@ -769,7 +771,7 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
       rites,
       words,
       welcome,
-      articles: { ...articleTexts, items },
+      articles: { ...articleTexts, items, linkFor: a?.linkFor === "members" ? "members" : "everyone" },
       letter,
       door,
       fleet: { ...fleetTexts, photos },

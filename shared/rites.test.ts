@@ -100,6 +100,8 @@ describe("stamps on a card", () => {
     expect(stampsFor(config.rites, new Set(), ["met", "vow"]).map((s) => s.state)).toEqual(["todo", "todo", "next"]);
     expect(stampsFor(config.rites, new Set(["met"]), ["met", "vow"]).map((s) => s.state)).toEqual(["next", "todo", "on"]);
     expect(parseRitesConfig({ rites: [oath, signed, met], walk: ["ghost"] }).problems).toContain('walk names "ghost", and there is no rite with that id.');
+    expect(parseRitesConfig({ articles: { linkFor: "members" } }).config.articles.linkFor).toBe("members");
+    expect(parseRitesConfig({ articles: { linkFor: "nobody" } }).problems).toContain('articles.linkFor must be "everyone" or "members".');
   });
   it("stamps a rite with its together rites once each", () => {
     expect(stampedTogether(config.rites[0], config.rites)).toEqual(["oath", "signed"]);
