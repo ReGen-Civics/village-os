@@ -22,6 +22,7 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
+import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
 // the active clock now, and it had no caller left here. `sceneStopsFor` and
@@ -7913,7 +7914,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body);
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : null); // menu: gap G5, shared/menuDoc.ts
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -18140,6 +18141,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       ...brochureConfig(),
       villageSourceUrl: servedVillageSourceUrl(stringVar(VILLAGE_SOURCE_URL_KEY)), // the footer's village source link (AGPL section 13): shared/sourceUrl.ts
       site: siteWords(contentRepo.get() ?? null, m),
+      menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
