@@ -263,6 +263,11 @@ msgctxt "sera changes"
 msgid "Check again"
 msgstr ""
 
+#: client/src/pages/rites/ComeAboard.tsx
+msgctxt "rites"
+msgid "Continue with Google"
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgid "{name} is writing a first draft. You can keep going while you wait."
 msgstr "{name} está escribiendo un primer borrador. Puedes seguir mientras esperas."
@@ -411,6 +416,11 @@ msgctxt "sera answers"
 msgid "Kept ours. It stays out of the list until it changes again."
 msgstr ""
 
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites"
+msgid "This page isn't open yet."
+msgstr ""
+
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Reading the history"
@@ -544,10 +554,20 @@ msgctxt "open proposal: the pay ask"
 msgid "No ask given"
 msgstr "No indicó un monto"
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "listening"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Commitment it asks, in percent"
 msgstr "Compromiso que pide, en porcentaje"
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Their invitation, to scan with their phone"
+msgstr ""
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "The restorative steps, one per line"
@@ -604,6 +624,11 @@ msgstr ""
 
 #: client/src/components/journey/TestRun.tsx
 msgid "What this run did not test"
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Nobody has joined yet. A witness opens this rite on their own phone."
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -695,6 +720,11 @@ msgstr ""
 #~ msgctxt "roles page archetypes"
 #~ msgid "Select your archetype to help you find your role"
 #~ msgstr "Elige tu arquetipo para encontrar tu rol"
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Walk beside them"
+msgstr ""
 
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -919,6 +949,11 @@ msgstr "Pago en tokens, el bono sobre el pago"
 msgid "Open the canvas workbook"
 msgstr ""
 
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "underway"
+msgstr ""
+
 #: client/src/components/sessions/HarvestPlant.tsx
 msgctxt "friday harvest, the line under the read back"
 msgid "Nothing is marked as failed. What did not grow goes back to Monday's soil."
@@ -991,6 +1026,11 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Readings and tools picked for {name} are not built yet."
+msgstr ""
+
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "Reading the document..."
 msgstr ""
 
 #: client/src/components/mobile/MobileTabBar.tsx
@@ -1347,6 +1387,12 @@ msgctxt "the care role that hears a conflict first"
 msgid "The {careShown} role."
 msgstr ""
 
+#: client/src/pages/rites/Card.tsx
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Your printed code"
+msgstr ""
+
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, the days as a group"
 msgid "The seven days"
@@ -1373,6 +1419,11 @@ msgstr ""
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
 msgid "Save"
+msgstr ""
+
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "Nothing on the calendar yet."
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -1423,6 +1474,11 @@ msgstr ""
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "module health, demoted module"
 msgid "serving OFF, needs {0}"
+msgstr ""
+
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "done"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
@@ -2041,6 +2097,11 @@ msgctxt "what the launch guide read"
 msgid "References: {0}."
 msgstr ""
 
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites interest form"
+msgid "Your name"
+msgstr ""
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Pick one"
@@ -2201,6 +2262,11 @@ msgstr "Tu avance por los cinco pasos"
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Remove line {0}"
+msgstr ""
+
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "See the gathering"
 msgstr ""
 
 #: client/src/components/modules/BuilderJourney.tsx
@@ -2586,6 +2652,11 @@ msgctxt "founding application choose"
 msgid "No role is open right now. Check back soon."
 msgstr "Ahora mismo no hay ningún rol abierto. Vuelve pronto."
 
+#: client/src/components/profile/InvitePanel.tsx
+msgctxt "rites"
+msgid "Invite with a letter in your own words, or print your code"
+msgstr ""
+
 #. placeholder {0}: doors.firstBlocked
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -2679,6 +2750,11 @@ msgctxt "heading in the Say frame of the conflict block"
 msgid "The restorative steps"
 msgstr ""
 
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "Join the waitlist"
+msgstr ""
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgctxt "hidden map settings"
 msgid "Save"
@@ -2738,6 +2814,11 @@ msgstr "Lo que cuidamos"
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application terms"
 msgid "Partial rewards while you build to your full commitment. We agree the steps together."
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Newcomers"
 msgstr ""
 
 #. placeholder {0}: settings.join(", ")
@@ -3072,6 +3153,11 @@ msgctxt "founding application carried over"
 msgid "We filled in what you wrote in your earlier application: your name, contact, about you, what you bring and your voice note's words. Change anything you like. Answers for this role, your price, references, consent and recordings start fresh."
 msgstr "Rellenamos lo que escribiste en tu solicitud anterior: tu nombre, tu contacto, lo que contaste sobre ti, lo que aportas y las palabras de tu nota de voz. Cambia lo que quieras. Las respuestas para este rol, tu precio, las referencias, el consentimiento y las grabaciones empiezan de cero."
 
+#: client/src/pages/rites/Card.tsx
+msgctxt "rites"
+msgid "Rites and witnessing"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The key was not replaced"
@@ -3317,6 +3403,10 @@ msgctxt "full role card parameters block"
 msgid "About this role"
 msgstr "Sobre este rol"
 
+#: client/src/pages/rites/Door.tsx
+msgid "A code that asks to join through you"
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, roles after the founding team"
 msgid "More roles, opening next"
@@ -3436,6 +3526,11 @@ msgstr "Responsabilidades concretas dentro de un círculo. Una persona puede ocu
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "accessible name of the companion button on a canvas block"
 msgid "Ask about {name}"
+msgstr ""
+
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites welcome pulse"
+msgid "live"
 msgstr ""
 
 #: client/src/components/review/SeraDifferences.tsx
@@ -3970,6 +4065,11 @@ msgstr ""
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "The role card couldn't open just now. You can still send your application."
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Yes"
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
@@ -4602,6 +4702,10 @@ msgctxt "hidden map, one place's details"
 msgid "Sapling"
 msgstr ""
 
+#: client/src/pages/rites/ComeAboard.tsx
+msgid "We couldn't make your account. Try again."
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -4722,6 +4826,11 @@ msgstr ""
 msgid "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 msgstr "Solo las personas que deciden tu propuesta pueden ver tus enlaces y archivos. Ninguna IA los lee. Los borramos cuando borramos tu propuesta, o cuando quitamos tu nombre y tu correo."
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Copied"
+msgstr ""
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Four-letter type (optional)"
@@ -4753,6 +4862,11 @@ msgstr "¿Te hablo en voz alta, con la voz de tu propio navegador? ¿O me quedo 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Ending the run"
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Your witnesses confirm now."
 msgstr ""
 
 #: client/src/components/commitment/CommitmentField.tsx
@@ -4796,6 +4910,10 @@ msgstr ""
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "Copies"
+msgstr ""
+
+#: client/src/pages/rites/ComeAboard.tsx
+msgid "This page isn't open yet."
 msgstr ""
 
 #: client/src/components/openWork/FitsYouCard.tsx
@@ -4862,6 +4980,11 @@ msgstr ""
 msgctxt "companion welcome"
 msgid "Speak aloud"
 msgstr "Hablar en voz alta"
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "on a call"
+msgstr ""
 
 #: client/src/components/journey/TestRun.tsx
 msgctxt "test run section toggle"
@@ -5017,6 +5140,11 @@ msgstr "Agregaste la misma referencia dos veces."
 #: client/src/components/review/SeraCompare.tsx
 msgctxt "sera compare"
 msgid "Read both in full"
+msgstr ""
+
+#: client/src/pages/rites/ComeAboard.tsx
+msgctxt "rites"
+msgid "Password"
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -5208,6 +5336,12 @@ msgstr ""
 msgctxt "commitment on the roles card: the note and history disclosure"
 msgid "A note, and what you said before"
 msgstr "Una nota, y lo que dijiste antes"
+
+#. placeholder {0}: season.goals.length
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "{done} of {0} done"
+msgstr ""
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Each claim it opens is completed by the usual consent on the quest board, and the quest's own reward pays it."
@@ -5726,6 +5860,11 @@ msgstr ""
 msgid "The check did not run ({status})."
 msgstr ""
 
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "The village's rites, their spoken lines, every word on the joining screens, the photos and the colours, in one document. Paste a village-rites/1 file or edit it here."
+msgstr ""
+
 #: client/src/components/Layout.tsx
 #, fuzzy
 msgctxt "site header"
@@ -6149,6 +6288,11 @@ msgctxt "label of the appeal box on the consequences ladder"
 msgid "How someone appeals"
 msgstr ""
 
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites interest form"
+msgid "Leave your name"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Village goals this role serves"
@@ -6211,6 +6355,11 @@ msgstr "{units} {name}, cambiado desde {shared}"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "The map could not be read."
+msgstr ""
+
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites welcome pulse"
+msgid "Quiet for now."
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -6543,6 +6692,11 @@ msgctxt "open work filter: all season goals"
 msgid "Every goal"
 msgstr "Todas las metas"
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Anyone holding the link reads this line. Keep private places and plans out of it."
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that proposes a change to what closing means"
 msgid "Propose a change"
@@ -6572,6 +6726,11 @@ msgstr "También abiertos en la aldea, para cualquiera:"
 msgctxt "pay board"
 msgid "Approved. They issue at launch."
 msgstr "Aprobado. Se emiten en el lanzamiento."
+
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "The rites document"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 msgid "We don't track time. Rewards follow the work you contract for and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks."
@@ -6843,6 +7002,11 @@ msgstr ""
 #~ msgctxt "open proposal review"
 #~ msgid "No references, so a background check instead"
 #~ msgstr "Sin referencias, así que en su lugar una verificación de antecedentes"
+
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites"
+msgid "Thank you. We'll write to you."
+msgstr ""
 
 #. placeholder {0}: i + 1
 #: client/src/components/hiddenMap/CaptureForm.tsx
@@ -7245,6 +7409,11 @@ msgctxt "funding rounds"
 msgid "Share or read ideas"
 msgstr ""
 
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "Print"
+msgstr ""
+
 #: client/src/pages/Approvals.tsx
 msgctxt "approval inbox"
 msgid "The approval inbox is for people who steward roles here."
@@ -7487,6 +7656,10 @@ msgstr ""
 msgid "The five columns are the Decision Matrix of the <0>{creditText}<1/></0>. The answers in this half are the platform's."
 msgstr ""
 
+#: client/src/pages/rites/Door.tsx
+msgid "Make a new code? The old one stops working, printed ones too."
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, how it works"
 msgid "Consent"
@@ -7641,6 +7814,11 @@ msgstr ""
 msgid "You hear back within {replyHours, plural, one {# hour} other {# hours}}."
 msgstr ""
 
+#: client/src/pages/rites/Arrived.tsx
+msgctxt "rites"
+msgid "The village pairs you soon. You'll see them here."
+msgstr ""
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "The five frames of {name}"
 msgstr ""
@@ -7696,6 +7874,12 @@ msgstr ""
 msgctxt "pay board"
 msgid "Save the change"
 msgstr "Guardar el cambio"
+
+#: client/src/pages/rites/ComeAboard.tsx
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "The name you go by"
+msgstr ""
 
 #. placeholder {0}: row.name
 #. placeholder {1}: row.received
@@ -8682,6 +8866,11 @@ msgctxt "founding application refusal"
 msgid "Add up to 3 references."
 msgstr "Agrega hasta 3 referencias."
 
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "A line for them"
+msgstr ""
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "<0><1/>Print the canvas workbook</0> to talk {name} through on paper. The questions under \"Our questions to talk through\" on this card are there too."
 msgstr ""
@@ -9100,6 +9289,11 @@ msgctxt "price popup"
 msgid "Use this price"
 msgstr "Usar este precio"
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Show their invitation again"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -9200,6 +9394,11 @@ msgstr ""
 msgctxt "aligned page, signed out"
 msgid "Sign in"
 msgstr "Iniciar sesión"
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Pair with..."
+msgstr ""
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -9343,6 +9542,11 @@ msgstr "Vence una tarea de tus sesiones"
 msgid "What the pasted list does"
 msgstr ""
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Share it"
+msgstr ""
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "All checked"
@@ -9396,6 +9600,11 @@ msgstr "Hecha esta luna"
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "a safety contact's name"
 msgid "Who"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Copy the link"
 msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -9525,6 +9734,10 @@ msgstr ""
 #. placeholder {0}: refused.join(", ")
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgid "Loaded {done} faces. Not part of the cast, so left out: {0}."
+msgstr ""
+
+#: client/src/pages/rites/Door.tsx
+msgid "Where you met, what you planted"
 msgstr ""
 
 #. placeholder {0}: w.approvedBy
@@ -9762,6 +9975,11 @@ msgctxt "founding application refusal"
 msgid "This page isn't taking proposals right now."
 msgstr "Esta página no está recibiendo propuestas en este momento."
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Clear"
+msgstr ""
+
 #. placeholder {0}: doc.ownerName
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row, who shared it"
@@ -9932,6 +10150,11 @@ msgctxt "funding rounds"
 msgid "Chosen by {names}."
 msgstr ""
 
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites interest form"
+msgid "Email"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "{asker} asked for a new key at {askedAt}. Your co-sign replaces it now. If you did not expect this, decline it: an admin account may be in the wrong hands."
@@ -9967,6 +10190,11 @@ msgstr ""
 msgctxt "voice clip beside an answer"
 msgid "You've recorded {max} clips, the most one application holds. Remove one to record another."
 msgstr "Grabaste {max} respuestas, el máximo que admite una solicitud. Quita una para grabar otra."
+
+#: client/src/pages/rites/ComeAboard.tsx
+msgctxt "rites"
+msgid "or with your email"
+msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "If the village ever closes, its treasury and assets go somewhere. Name where before the village starts: the launch checklist waits for it, and every member reads it at /exit-policy. The platform works nothing out and moves nothing on closing. This is the village's written promise."
@@ -10060,6 +10288,12 @@ msgstr ""
 msgctxt "language picker"
 msgid "Language: {current} ({code})"
 msgstr "Idioma: {current} ({code})"
+
+#: client/src/pages/rites/ComeAboard.tsx
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "Email"
+msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Talk to someone outside the village"
@@ -10288,6 +10522,11 @@ msgstr "Escribe un correo donde podamos contactarte."
 #: client/src/components/admin/AgeBandCorrection.tsx
 msgctxt "admin age band"
 msgid "Confirm {name}'s age band as {0}? The change is recorded with your name."
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Invite somebody"
 msgstr ""
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -10651,6 +10890,11 @@ msgctxt "funding rounds"
 msgid "Saved."
 msgstr ""
 
+#: client/src/pages/rites/ComeAboard.tsx
+msgctxt "rites"
+msgid "Joining here is by invitation. Ask to join, and a member answers you with one."
+msgstr ""
+
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "open the proposal just made"
 msgid "See your proposal"
@@ -10734,6 +10978,11 @@ msgctxt "role draft carry"
 msgid "From your selection"
 msgstr "De tu selección"
 
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "The rites document is saved"
+msgstr ""
+
 #. placeholder {0}: preview.ignored.join(", ")
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "This release does not keep these fields, so they are left out: {0}."
@@ -10773,6 +11022,12 @@ msgstr "Cómo me gusta que me ayuden"
 
 #: client/src/components/admin/MintDesk.tsx
 msgid "Recorded. Awaiting a second steward's sign-off"
+msgstr ""
+
+#. placeholder {0}: read.error
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "This is not JSON yet: {0}"
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -11421,6 +11676,15 @@ msgctxt "admin typography: the role an uploaded font fills"
 msgid "Accent"
 msgstr ""
 
+#: client/src/pages/rites/Arrived.tsx
+#: client/src/pages/rites/Card.tsx
+#: client/src/pages/rites/Door.tsx
+#: client/src/pages/rites/Fleet.tsx
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Sign in"
+msgstr ""
+
 #. placeholder {0}: money(ownMinor)
 #. placeholder {1}: money(p.s.band.lowMinor)
 #. placeholder {2}: money(p.s.band.highMinor)
@@ -11516,6 +11780,11 @@ msgstr ""
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Edits saved"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "A line in your own words"
 msgstr ""
 
 #: client/src/components/QuestSafety.tsx
@@ -11662,6 +11931,11 @@ msgstr "hoy"
 
 #: client/src/components/tracks/FirstSteps.tsx
 msgid "{title}: mark as not done"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Your rites"
 msgstr ""
 
 #: client/src/components/SoundsPanel.tsx
@@ -11829,6 +12103,11 @@ msgstr ""
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
 msgstr "Empieza con: {s}"
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Begin"
+msgstr ""
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "The rule a voucher reads"
@@ -12073,6 +12352,16 @@ msgctxt "pay board"
 msgid "Owed since {since}"
 msgstr "Pendiente desde {since}"
 
+#: client/src/pages/rites/Fleet.tsx
+msgctxt "rites"
+msgid "Vote"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Not now"
+msgstr ""
+
 #: client/src/components/governance/TermsOnOfferField.tsx
 msgid "Loading the terms on offer…"
 msgstr ""
@@ -12080,6 +12369,12 @@ msgstr ""
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgctxt "a part of the Say frame is loading"
 msgid "Opening"
+msgstr ""
+
+#. placeholder {0}: r.todo
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Witness: {0}"
 msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -12406,6 +12701,11 @@ msgctxt "hidden map page"
 msgid "Map"
 msgstr ""
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Put it on the letter"
+msgstr ""
+
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "Reading the queue"
@@ -12602,6 +12902,11 @@ msgstr ""
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "That is not a role card. A role card starts with the line Role card v1."
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "This ceremony was set aside."
 msgstr ""
 
 #: client/src/components/companionWelcome/LensSheet.tsx
@@ -12934,6 +13239,11 @@ msgstr ""
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "Choose a sitting steward"
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Witnessed"
 msgstr ""
 
 #: client/src/components/review/SeraBulk.tsx
@@ -13275,6 +13585,11 @@ msgstr "Por qué este precio (opcional)"
 msgctxt "role draft filter"
 msgid "Only roles that fit"
 msgstr "Solo los roles que encajan"
+
+#: client/src/pages/rites/Card.tsx
+msgctxt "rites"
+msgid "Back to your rite"
+msgstr ""
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Why this change, in a sentence or more"
@@ -13724,6 +14039,11 @@ msgctxt "funding rounds"
 msgid "Both counts agree."
 msgstr ""
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Go back to it"
+msgstr ""
+
 #: client/src/components/MicButton.tsx
 msgctxt "mic button refusal"
 msgid "The microphone is blocked for this site. Allow it in your browser settings to speak."
@@ -13831,6 +14151,11 @@ msgstr ""
 
 #: client/src/components/ConfigUnavailable.tsx
 msgid "Check your connection, then try again."
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Your card"
 msgstr ""
 
 #: client/src/pages/Protocols.tsx
@@ -13952,6 +14277,11 @@ msgstr ""
 msgid "Reading the village's pay settings…"
 msgstr ""
 
+#: client/src/pages/rites/Card.tsx
+msgctxt "rites"
+msgid "you"
+msgstr ""
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "New role from a card"
@@ -14041,6 +14371,11 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Circle"
+msgstr ""
+
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "Make a new code"
 msgstr ""
 
 #: client/src/components/review/SeraDifferences.tsx
@@ -14489,6 +14824,11 @@ msgstr ""
 msgid "Kinds, one a line"
 msgstr ""
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Back to the rites"
+msgstr ""
+
 #: client/src/components/review/SeraOnReview.tsx
 msgctxt "review page"
 msgid "Review"
@@ -14695,6 +15035,11 @@ msgstr "Términos que ofrecemos"
 msgid "Move to its own change request"
 msgstr ""
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Asked at your code"
+msgstr ""
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Renew all filed roles"
 msgstr ""
@@ -14818,6 +15163,17 @@ msgstr ""
 msgid "Take back my yes"
 msgstr "Retirar mi sí"
 
+#: client/src/pages/rites/Card.tsx
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "The whole village"
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "I'm here"
+msgstr ""
+
 #. placeholder {0}: q.title
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -14935,6 +15291,11 @@ msgstr ""
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgctxt "close the public line form without saving"
 msgid "Cancel"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Save the first word"
 msgstr ""
 
 #: client/src/components/commitment/CommitmentField.tsx
@@ -15574,6 +15935,11 @@ msgctxt "sera answers"
 msgid "Withdrawing it ends the village's vote on it, and the votes cast so far are set aside."
 msgstr ""
 
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "No ceremony is open right now."
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "button on a canvas suggestion its author made"
 msgid "Withdraw my suggestion"
@@ -15641,6 +16007,11 @@ msgctxt "protocols install card"
 msgid "Add to your phone"
 msgstr ""
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "Drawing area for your mark"
+msgstr ""
+
 #. placeholder {0}: photos.length
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "{0, plural, one {# photo ready.} other {# photos ready.}}"
@@ -15694,6 +16065,11 @@ msgstr ""
 msgctxt "voice invite"
 msgid "Record another"
 msgstr "Grabar otra"
+
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "Undo my edits"
+msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Only Voice funds {title} ({cost})."
@@ -15778,6 +16154,11 @@ msgctxt "open proposal role"
 msgid "A background check happens for this role whatever the references say."
 msgstr "Para este rol siempre se hace una verificación de antecedentes, sin importar lo que digan las referencias."
 
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "Save the document"
+msgstr ""
+
 #: client/src/components/admin/MintDesk.tsx
 msgid "Issues from the dedicated mint faucet, with a reason, audited. This village can bring at most {capWords} of a token into existence per lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap)."
 msgstr ""
@@ -15829,6 +16210,11 @@ msgstr ""
 msgctxt "calendar moon view: keyboard hint, desktop"
 msgid "The arrow keys walk the days. Home and End go to the first and last day of the moon."
 msgstr "Las flechas recorren los días. Inicio y Fin llevan al primer y al último día de la luna."
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Pair with"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Remove {rn} from your draft"
@@ -16633,6 +17019,11 @@ msgctxt "sera answers"
 msgid "Take {owner}: add to draft"
 msgstr ""
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "witnessed"
+msgstr ""
+
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -16762,6 +17153,11 @@ msgstr "No eligió ninguna meta de “{roleName}”"
 #: client/src/components/roleEdit/EditRoleButton.tsx
 msgctxt "role card, opens the role editor"
 msgid "Edit this role"
+msgstr ""
+
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "That did not save"
 msgstr ""
 
 #: client/src/components/canvas/CanvasSeason.tsx
@@ -17108,6 +17504,11 @@ msgstr "Abrir la bandeja de aprobaciones"
 msgid "Nobody holds it yet."
 msgstr ""
 
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "I'm on the call"
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
 msgid "How your work serves it"
@@ -17126,6 +17527,13 @@ msgctxt "hidden map, one place's details"
 msgid "Saved."
 msgstr ""
 
+#. placeholder {0}: rites.length
+#. placeholder {1}: rites.map((r) => r.todo).join(", ")
+#: client/src/components/admin/RitesConfigPanel.tsx
+msgctxt "rites admin"
+msgid "Reads clean: {0} rites, in this order: {1}."
+msgstr ""
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Save what closing means"
 msgstr ""
@@ -17134,6 +17542,11 @@ msgstr ""
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "{0} vouched"
+msgstr ""
+
+#: client/src/pages/rites/ComeAboard.tsx
+msgctxt "rites"
+msgid "Ask to join"
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -17429,6 +17842,11 @@ msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "tu guía"
 
+#: client/src/components/rites/Letter.tsx
+msgctxt "rites"
+msgid "Opening the letter takes you to the village's welcome."
+msgstr ""
+
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
 msgid "Didn't make it"
@@ -17486,6 +17904,16 @@ msgstr ""
 #: client/src/pages/Roles.tsx
 msgid "Propose this role for next season"
 msgstr "Proponer este rol para la próxima temporada"
+
+#: client/src/pages/rites/Arrived.tsx
+msgctxt "rites"
+msgid "Your first quest"
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Saved"
+msgstr ""
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -17746,6 +18174,12 @@ msgstr "Cómo sería tu primer mes con nosotros, y cuándo podrías empezar."
 msgctxt "open proposal sent"
 msgid "Check your email"
 msgstr "Revisa tu correo"
+
+#: client/src/pages/rites/ComeAboard.tsx
+#: client/src/pages/rites/Welcome.tsx
+msgctxt "rites"
+msgid "I have an account"
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -18194,6 +18628,11 @@ msgctxt "sera answers"
 msgid "Put it to the village"
 msgstr ""
 
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "Your own code opens once you may vouch for somebody."
+msgstr ""
+
 #. placeholder {0}: i + 1
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application steps"
@@ -18239,6 +18678,11 @@ msgstr ""
 #: client/src/components/review/SeraRows.tsx
 msgctxt "sera changes"
 msgid "Conflict"
+msgstr ""
+
+#: client/src/pages/rites/Ceremony.tsx
+msgctxt "rites"
+msgid "This is my mark"
 msgstr ""
 
 #: client/src/components/characters/RolesOpenNow.tsx
@@ -18637,6 +19081,11 @@ msgstr "Hasta tres personas que conozcan tu trabajo. Cada una necesita un nombre
 msgid "The roles you selected: {roleList}."
 msgstr "Los roles que elegiste: {roleList}."
 
+#: client/src/pages/rites/Door.tsx
+msgctxt "rites"
+msgid "I have my invitation already"
+msgstr ""
+
 #: client/src/components/TypographyPanel.tsx
 msgctxt "admin typography: upload role picker"
 msgid "The role this font fills"
@@ -19022,6 +19471,11 @@ msgstr ""
 
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "The approval inbox could not be read. Reload to try again."
+msgstr ""
+
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "rites"
+msgid "Make an invitation"
 msgstr ""
 
 #: client/src/pages/CanvasWorkbook.tsx
@@ -19666,6 +20120,12 @@ msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "If anyone is in danger now, the first call is to local emergency services. These contacts come after that, and nothing here contacts anyone on its own."
+msgstr ""
+
+#: client/src/pages/rites/Card.tsx
+#: client/src/pages/rites/RitesHub.tsx
+msgctxt "module name"
+msgid "Rites"
 msgstr ""
 
 #: client/src/pages/Quests.tsx
