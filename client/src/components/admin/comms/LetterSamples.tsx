@@ -92,7 +92,7 @@ export default function LetterSamples({ password }: { password: string }) {
           type="button"
           onClick={() => send(null)}
           disabled={!letters || busy !== null}
-          className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-teal-deep px-3 py-2 text-sm font-medium text-white hover:bg-teal-deep-dark disabled:opacity-50"
         >
           {busy === "all" ? t({ message: "Sending...", context: "admin letter samples" }) : t({ message: "Send all to me", context: "admin letter samples" })}
         </button>
