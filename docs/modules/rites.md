@@ -46,8 +46,10 @@ in and the rite admits them.
 
 - **Witnessed, never ticked.** A rite with lines, a mark or more than one witness is stamped only by a ceremony;
   any other by one witness's tap. Nobody witnesses their own rite (`refuseWitness`).
-- **Who witnesses.** A member who holds the admitting rite. While nobody does, any admitted member, so the first
-  two members can witness each other.
+- **Who witnesses.** A member who holds the admitting rite. While nobody does, anyone in by the village's own rules
+  (the member rung, or a grant at or above it) or a founder or admin account, so a fresh village's first two can
+  witness each other with no other step.
+- **Numbers are whole tokens:** every balance is the ledger's smallest unit divided by the token's decimals.
 - **The ceremony.** Lines are copied in when it opens. Only the newcomer marks a line spoken, in order. A witness
   confirms only after every line is spoken and the mark is made. The confirmation that reaches the count closes
   the ceremony under its row lock, stamps the rite and its together rites once, fixes the mark, and, for the
