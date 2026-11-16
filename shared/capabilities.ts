@@ -606,11 +606,12 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
   // no live holder the village still decides by its vote path (Article 0.3).
   "place.tend": false,
   "place.permit": false,
-  // The hidden map (spec internal hidden-map I.10 ask). FALSE for the same
-  // reason as the two above: new keys, and joining the handover set is
-  // Rye's word to give. With no live holder the vote path decides (0.3).
-  "hiddenmap.keep": false,
-  "hiddenmap.export": false,
+  // The hidden map (0392). Rye, 2026-11-15, on the spec's I.10 ask: "go with
+  // your recommendations on all of them", so both join the handover set. A
+  // village that holds them decides a hide by its vote; the keeper's queue
+  // and the second signature stay with whoever is seated in the role.
+  "hiddenmap.keep": true,
+  "hiddenmap.export": true,
   // Turning a module on after launch. Its route counts live holders without
   // the admin short-circuit, so the escape hatch this column describes is the
   // village vote itself: with no holder, anybody may propose it.
@@ -784,12 +785,12 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  *
  * ── THIS IS A READING OF THOSE WORDS, AND IT HAS A PRODUCT CONSEQUENCE ─────
  *
- * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 32 keys
- * today. The other 26 are not withheld from anybody: they are personal acts
+ * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 34 keys
+ * today. The other 24 are not withheld from anybody: they are personal acts
  * and deployment plumbing that were never anyone's to hold, and `TRANSFERABLE`
  * carries the reasoning key by key.
  *
- * Read this way, a launched village holds all 32 in the founding seat and has
+ * Read this way, a launched village holds all 34 in the founding seat and has
  * handed over none of them, which is the arc starting rather than finishing.
  * `villageHandoverState` in server/lib/capabilityHolding.ts measures how far
  * along it is, and it asks the narrow question on purpose: a power counts as
@@ -840,9 +841,10 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * moved only the second: 31 and 24. `token.mint` (Rye, 2026-11-15: founders
  * and Treasurers mint from launch, and the power passes to the village later)
  * was born transferable, which moved only the first: 32 and 24.
- * `hiddenmap.keep` and `hiddenmap.export` (the hidden map, 0392) were born held
- * back until Rye gives his word on them (the hidden-map spec, I.10), which
- * moved only the second: 32 and 26.
+ * `hiddenmap.keep` and `hiddenmap.export` (the hidden map, 0392) were born
+ * transferable with Rye's word of 2026-11-15 on the hidden-map spec's I.10
+ * ("go with your recommendations on all of them"), which moved only the
+ * first: 34 and 24.
  *
  * This sentence was itself wrong for one batch, and it is the reason the check
  * below reads the WHOLE paragraph rather than three sentences. It claimed
