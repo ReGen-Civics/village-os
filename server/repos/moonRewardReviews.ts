@@ -1,6 +1,6 @@
 /**
  * The review of an End of Moon line's token shares (`moon_reward_reviews`,
- * drizzle/9999_moon_reward_reviews). The contract is shared/moonRewardReview.ts.
+ * drizzle/0388_moon_reward_reviews). The contract is shared/moonRewardReview.ts.
  *
  * EVERY CHANGE TO A SHARE TAKES THE ROW LOCK SETTLING TAKES. Approving and
  * changing both run inside one transaction that reads the posting and its

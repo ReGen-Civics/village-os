@@ -1,4 +1,4 @@
--- 9999 (the integrator renumbers): the Treasurer's review of an End of Moon line's token shares
+-- 0388: the Treasurer's review of an End of Moon line's token shares
 -- (Rye, 15 Nov 2026: "the token pay and approving or adjusting those numbers (so equity is a
 -- bonus on the pay and it can be adjusted up or down by the treasurer and founders and sent
 -- to their accounts)").
