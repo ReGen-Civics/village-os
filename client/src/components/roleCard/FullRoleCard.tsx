@@ -377,7 +377,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       data-register={register}
     >
       <header className="flex flex-col gap-2">
-        {/* "Paid" is said once, by "This is a paid role" under the title (QA2-16). */}
+        {/* "Paid" is said once, by "This role is rewarded" under the title (QA2-16). */}
         {circleName && <p className={EYEBROW}>{circleName}</p>}
         {showTitle && <H3 className={founding ? "font-display text-3xl leading-tight text-card-foreground sm:text-4xl" : "font-display text-2xl text-card-foreground"}>{String(seat?.name ?? "")}</H3>}
         {machine && <MachineTranslationMark />}

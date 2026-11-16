@@ -287,16 +287,16 @@ describe("figures: every number names its field, and unread is never 0", () => {
 
   it("says Held now only where every holder row carries its lapse flag", () => {
     const stranger = sheet(fromMap(SAMPLE_MAP, false, false));
-    expect(labels(stranger)).toContain("Seated");
+    expect(labels(stranger)).toContain("Taken");
     expect(labels(stranger)).not.toContain("Held now");
     expect(figure(stranger, "seated")!.value).toBe(2);
     // Control: the same seat at the member tier.
     const member = sheet(fromMap(SAMPLE_MAP));
     expect(labels(member)).toContain("Held now");
-    expect(labels(member)).not.toContain("Seated");
+    expect(labels(member)).not.toContain("Taken");
     expect(figure(member, "heldNow")!.value).toBe(1);
-    // The org public tier names people and carries no lapse: Seated.
-    expect(labels(sheet(fromOrgSeat(ORG_PUBLIC_ROW, CIRCLES, PEOPLE_PUBLIC, VILLAGE)))).toContain("Seated");
+    // The org public tier names people and carries no lapse: Taken.
+    expect(labels(sheet(fromOrgSeat(ORG_PUBLIC_ROW, CIRCLES, PEOPLE_PUBLIC, VILLAGE)))).toContain("Taken");
     expect(labels(sheet(fromOrgSeat(ORG_MEMBER_ROW, CIRCLES, PEOPLE_MEMBER, VILLAGE)))).toContain("Held now");
   });
 
@@ -338,7 +338,7 @@ describe("figures: every number names its field, and unread is never 0", () => {
     expect(expired.clock!.key).toBe("seasonDays");
     // The fact says the date and whose date it is; the state line says who is ready.
     expect(expired.facts.term).toMatchObject({ value: "Reached its date on 20 Sep 2026", sub: "The earliest term among its holders." });
-    expect(expired.stateLine).toBe("Everyone seated here is ready to be re-chosen.");
+    expect(expired.stateLine).toBe("Everyone in this role is ready to be re-chosen.");
     // Holders not served: the seat's own past term still never becomes a clock.
     expect(sheet(fromMap(EXPIRED, false, false)).clock!.key).toBe("seasonDays");
     const twoTerms = fromMap({
@@ -381,7 +381,7 @@ describe("figures: every number names its field, and unread is never 0", () => {
     ];
     for (const [tier, input] of tiers) {
       const v = sheet(input);
-      expect(v.stateLine, tier).toBe("Everyone seated here is ready to be re-chosen.");
+      expect(v.stateLine, tier).toBe("Everyone in this role is ready to be re-chosen.");
       expect(v.clock, tier).toMatchObject({ key: "seasonDays" });
       // The date is still a true fact about the seat, and says only that.
       expect(v.facts.term, tier).toMatchObject({ value: "Ends 31 May 2027", sub: "The earliest term among its holders." });
@@ -403,7 +403,7 @@ describe("figures: every number names its field, and unread is never 0", () => {
       ],
     };
     const v = sheet(fromMap(staggered));
-    expect(v.stateLine).toBe("1 of 2 seated is ready to be re-chosen.");
+    expect(v.stateLine).toBe("1 of 2 team members is ready to be re-chosen.");
     expect(v.clock).toMatchObject({ key: "termDays", value: 61, sub: "Term ends 1 Dec 2026", source: "holders[].termEndsAt" });
     // The earliest date reached its date, and the fact says whose date it is.
     expect(v.facts.term).toMatchObject({ value: "Reached its date on 1 Sep 2026", sub: "The earliest term among its holders." });
@@ -471,14 +471,14 @@ describe("figures: every number names its field, and unread is never 0", () => {
 
 describe("the state line, where the badge and the figures meet", () => {
   it("covers every rule, first match first", () => {
-    expect(sheet(fromMap(SAMPLE_MAP)).stateLine).toBe("1 of 2 seated is ready to be re-chosen.");
+    expect(sheet(fromMap(SAMPLE_MAP)).stateLine).toBe("1 of 2 team members is ready to be re-chosen.");
     const bothLapsed = { ...SAMPLE_MAP, holders: SAMPLE_MAP.holders.map((h) => ({ ...h, lapsed: true })) };
-    expect(sheet(fromMap(bothLapsed)).stateLine).toBe("Everyone seated here is ready to be re-chosen.");
+    expect(sheet(fromMap(bothLapsed)).stateLine).toBe("Everyone in this role is ready to be re-chosen.");
     expect(sheet(fromMap({ ...SAMPLE_MAP, seats: 4, holderCount: 3, holders: [...SAMPLE_MAP.holders, { ...SAMPLE_MAP.holders[1], userId: null, name: "Bo" }] })).stateLine).toBe(
-      "2 of 3 seated are ready to be re-chosen.",
+      "2 of 3 team members are ready to be re-chosen.",
     );
     expect(sheet(fromMap(SAMPLE_DECLARED)).stateLine).toBe("This state was set by hand.");
-    expect(sheet(fromMap(EXPIRED, false, false)).stateLine).toBe("Everyone seated here is ready to be re-chosen.");
+    expect(sheet(fromMap(EXPIRED, false, false)).stateLine).toBe("Everyone in this role is ready to be re-chosen.");
     expect(sheet(fromMap(SAMPLE_MAP, false, false)).stateLine).toBe("At least one place is ready to be re-chosen.");
     expect(sheet(fromMap(EMPTY_SEAT)).stateLine).toBeNull();
   });
@@ -493,11 +493,11 @@ describe("the state line, where the badge and the figures meet", () => {
     }
     // Control: the same stranger seat, derived, does make the claim.
     expect(sheet(fromMap({ ...SAMPLE_DECLARED, state: "expired", stateSource: "derived" }, false)).stateLine).toBe(
-      "Everyone seated here is ready to be re-chosen.",
+      "Everyone in this role is ready to be re-chosen.",
     );
   });
 
-  it("hands the badge's glyph the held-now count where it is read, else Seated, and 0 on an open seat", () => {
+  it("hands the badge's glyph the held-now count where it is read, else Taken, and 0 on an open seat", () => {
     expect(sheet(fromMap(SAMPLE_MAP)).badge).toMatchObject({ word: "partial", held: 1 });
     expect(sheet(fromMap(SAMPLE_MAP, false, false)).badge).toMatchObject({ word: "partial", held: 2 });
     expect(sheet(fromMap(SAMPLE_DECLARED)).badge).toMatchObject({ held: 2 });
@@ -637,9 +637,9 @@ describe("the roster: one spot per place", () => {
     ]);
   });
 
-  it("gives a stranger a nameless Seated spot per seating, and says why", () => {
+  it("gives a stranger a nameless Team member spot per seating, and says why", () => {
     const v = sheet(fromMap(SAMPLE_MAP, false, false));
-    expect(v.spots.map((s) => s.title)).toEqual(["Seated", "Seated"]);
+    expect(v.spots.map((s) => s.title)).toEqual(["Team member", "Team member"]);
     expect(v.rosterNote).toBe("Sign in to see who holds it.");
     expect(v.action.kind).toBe("signIn");
     expect(sheet(fromMap(SAMPLE_MAP, false, true)).rosterNote).toBe("Names are not shared on this page.");
@@ -684,7 +684,7 @@ describe("the commitments: seven, one look each", () => {
       nextHolder: "dashed",
       decides: "edged",
     });
-    expect(chip(v, "term")).toMatchObject({ suffix: "set at seating", srWords: ", set when someone takes the role" });
+    expect(chip(v, "term")).toMatchObject({ suffix: "set at the start", srWords: ", set when someone takes the role" });
     expect(chip(v, "decides")).toMatchObject({ suffix: "the village's", srWords: ", the village's way" });
     expect(chip(v, "domain")!.srWords).toBe(", still to be written down");
     expect(v.tally).toEqual({ written: 1, of: 7 });
@@ -693,7 +693,7 @@ describe("the commitments: seven, one look each", () => {
     expect(v.stillToWrite).toBe(
       "Still to be written down: what it decides on, what it answers for, why it matters and how the next holder is chosen. The founding team writes these down.",
     );
-    expect(v.facts.term).toEqual({ label: "Term", value: "Set at seating", sub: "With no date asked, it ends with the season.", isDate: false });
+    expect(v.facts.term).toEqual({ label: "Term", value: "Set when someone takes the role", sub: "With no date asked, it ends with the season.", isDate: false });
     expect(v.facts.wayOfDeciding).toMatchObject({ value: "Consent", sub: "The village's way. Land & Water has not set one of its own." });
     expect(v.facts.nextHolder).toBeNull();
     expect(v.portrait).toEqual({ kind: "sigil", letter: "S" });
@@ -945,9 +945,9 @@ describe("the permission face", () => {
     expect(face(ROLE, null)).toMatchObject({ rungs: null, rungLine: "Asks for co-creator or above. The vote turns away anyone on a lower rung." });
   });
 
-  it("counts Seated, never Held now, and a vote fills its open places", () => {
+  it("counts Taken, never Held now, and a vote fills its open places", () => {
     const v = face();
-    expect(v.figures.map((f) => f.label)).toEqual(["Places", "Seated", "Open places", "Powers"]);
+    expect(v.figures.map((f) => f.label)).toEqual(["Places", "Taken", "Open places", "Powers"]);
     expect(v.spots.map((s) => [s.title, s.sub])).toEqual([
       ["Mara", null],
       ["Open place", "A vote fills this place"],
@@ -1078,6 +1078,6 @@ describe("a figure's label agrees with its number", () => {
       fromPermissionRole({ id: "r1", name: "Keeper", description: "Keeps it.", capabilities: ["exchange.manage"], minStage: null, isExample: false, circleId: null, seats: 1, holderCount: 0, holders: [] }),
       { stages: null, roleWord: "role", now: NOW },
     );
-    expect(role.figures.map((f) => f.label)).toEqual(["Place", "Seated", "Open place", "Power"]);
+    expect(role.figures.map((f) => f.label)).toEqual(["Place", "Taken", "Open place", "Power"]);
   });
 });

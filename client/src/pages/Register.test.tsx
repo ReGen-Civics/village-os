@@ -263,7 +263,7 @@ describe("Register, in a village that joins by invitation", () => {
     linkChecksAs({ inviteOnly: true, valid: true, invitedBy: "Wren", daysLeft: 12, forRoles: ["Garden Steward", "Welcome Host"], name: "Juno Reed", email: "juno@example.com" });
     renderRegister();
 
-    expect(await screen.findByText(/adopted your application for Garden Steward and Welcome Host/)).toBeInTheDocument();
+    expect(await screen.findByText(/said yes to your application for Garden Steward and Welcome Host/)).toBeInTheDocument();
     await waitFor(() => expect((screen.getByLabelText(/^name$/i) as HTMLInputElement).value).toBe("Juno Reed"));
     expect((screen.getByLabelText(/^email$/i) as HTMLInputElement).value).toBe("juno@example.com");
     // Joining to hold roles: the steward's path is the answer, so the picker is not asked again (audit M7).

@@ -613,7 +613,7 @@ export default function Roles() {
                   {t({ message: "Propose a new role", context: "roles page, other ways to join" })}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
-                <p className="mt-1 text-sm text-muted-foreground">{t({ message: "Propose is for a role we do not list. Tell us the role you see, and the village decides.", context: "roles page, other ways to join" })}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t({ message: "Propose is for a role we don't list. Tell us the role you see, and the village decides.", context: "roles page, other ways to join" })}</p>
               </li>
               <li className={TILE}>
                 <Link href="/quests" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`}>
@@ -708,7 +708,7 @@ export default function Roles() {
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
                   <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>
                   <p className="mb-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    {t({ message: "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk.", context: "roles page, roles after the founding team" })}
+                    {t({ message: "We're filling the founding team first, so it may be a while before we reply. You're welcome to apply now, and we'll write to you as soon as we're ready to talk.", context: "roles page, roles after the founding team" })}
                   </p>
                   {/* Hear first about new roles (Rye, 15 Nov 2026): the community calls, and the newsletter when the village has one. */}
                   <p className="mb-6 max-w-2xl text-sm leading-relaxed text-foreground" data-hear-first="">
