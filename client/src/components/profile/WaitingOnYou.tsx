@@ -32,6 +32,13 @@
  *                 holder of the power that seats people, a `consent` row under
  *                 "Asked to consent" for a holder its circle asks. Each opens
  *                 the proposal's own page, `/open-proposals/:id`.
+ *   handoffs      a task a member handed to a role the reader holds (or the
+ *                 circle's lead role, or nobody holds it and the reader is a
+ *                 steward), under its own heading, "Handed to your roles". Read
+ *                 from its own door (`/api/member-tasks/handoffs/waiting`, not
+ *                 the governance module's), so it shows with governance off.
+ *                 The row carries Accept, Suggest a change and Decline
+ *                 (HandoffRespondRow.tsx).
  *
  * NO COUNTS on the heading, as the rest of the board. The group draws nothing
  * at all when nothing waits, and nothing when the read is closed to the
@@ -51,6 +58,10 @@ import { TASK_NOTE_MAX, taskAcceptUrl } from "@shared/sessionTasks";
 import { readWaiting, WAITING_COPY, WAITING_URL, type WaitingAcceptance, type WaitingOpenProposal, type WaitingPayload } from "@shared/waitingOnYou";
 import { TENSION_COPY, type TensionAction } from "@shared/roleTensions";
 import TensionRespondRow from "@/components/roleTension/TensionRespondRow";
+import { useLingui } from "@lingui/react/macro";
+import type { WaitingHandoff } from "@shared/roleTaskHandoff";
+import HandoffRespondRow from "@/components/profile/HandoffRespondRow";
+import { readWaitingHandoffsNow } from "@/components/yourList/handoffApi";
 
 const ROW =
   "group block rounded-2xl border border-border bg-muted px-4 py-3.5 text-foreground hover:border-notice/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -162,7 +173,9 @@ export function AcceptRow({ task, onAccepted }: { task: WaitingAcceptance; onAcc
 
 /** `onShown` hears whether the group draws anything: rows, or the failed line. */
 export default function WaitingOnYou({ onShown }: { onShown?: (shown: boolean) => void }) {
+  const { t } = useLingui();
   const [data, setData] = useState<WaitingPayload | null>(null);
+  const [handoffs, setHandoffs] = useState<WaitingHandoff[]>([]);
   const [failed, setFailed] = useState(false);
   const live = useRef(true);
   const told = useRef(onShown);
@@ -177,9 +190,14 @@ export default function WaitingOnYou({ onShown }: { onShown?: (shown: boolean) =
 
   const load = useCallback(async () => {
     setFailed(false);
+    // Tasks handed to the reader's roles come from their own door, read beside this one.
+    const handed = readWaitingHandoffsNow();
     try {
       const res = await gameFetch(WAITING_URL, { cache: "no-store" });
+      const h = await handed;
       if (!live.current) return;
+      if (h === null) return setFailed(true);
+      setHandoffs(h);
       if (CLOSED.has(res.status)) return setData({ applications: [], drafts: [], toAccept: [], raisedWithYou: [], toConsent: [], openProposals: [] });
       const next = res.ok ? readWaiting(await res.json().catch(() => null)) : null;
       if (!live.current) return;
@@ -201,7 +219,9 @@ export default function WaitingOnYou({ onShown }: { onShown?: (shown: boolean) =
   const openToConsent = (data?.openProposals ?? []).filter((o) => o.ask === "consent");
   const has =
     !!data &&
-    (data.applications.length > 0 || data.drafts.length > 0 || toAccept.length > 0 || raised.length > 0 || toConsent.length > 0 || openToDecide.length > 0 || openToConsent.length > 0);
+    (data.applications.length > 0 || data.drafts.length > 0 || toAccept.length > 0 || raised.length > 0 || toConsent.length > 0 || openToDecide.length > 0 || openToConsent.length > 0 || handoffs.length > 0);
+  const answered = (id: string, keep: WaitingHandoff | null) =>
+    setHandoffs((list) => (keep ? list.map((h) => (h.id === id ? keep : h)) : list.filter((h) => h.id !== id)));
   const accepted = (entryId: number) =>
     setData((d) => (d ? { ...d, toAccept: (d.toAccept ?? []).filter((t) => t.entryId !== entryId) } : d));
   const responded = (id: string, action: TensionAction) =>
@@ -298,6 +318,20 @@ export default function WaitingOnYou({ onShown }: { onShown?: (shown: boolean) =
             {openToConsent.map((o) => (
               <li key={`oc-${o.id}`} data-to-consent={o.id}>
                 <OpenProposalRow row={o} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {handoffs.length > 0 && (
+        <div className="space-y-3 pt-2" data-handed>
+          <h4 id="task-board-handed" className={LABEL_CAPS}>
+            {t({ message: `Handed to your roles`, context: "task handed to a role" })}
+          </h4>
+          <ul className="space-y-3" aria-labelledby="task-board-handed">
+            {handoffs.map((h) => (
+              <li key={`h-${h.id}`}>
+                <HandoffRespondRow h={h} onAnswered={answered} />
               </li>
             ))}
           </ul>
