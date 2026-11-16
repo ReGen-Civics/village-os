@@ -962,6 +962,11 @@ msgstr "(archived)"
 msgid "Your numbers, from every source"
 msgstr "Your numbers, from every source"
 
+#. placeholder {0}: box.items.length
+#: client/src/pages/HiddenMap.tsx
+msgid "{0, plural, one {# capture is waiting on this phone.} other {# captures are waiting on this phone.}}"
+msgstr "{0, plural, one {# capture is waiting on this phone.} other {# captures are waiting on this phone.}}"
+
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "This address is on the suppression list, so nothing can be sent. Discard the letter, or reach the applicant another way."
 msgstr "This address is on the suppression list, so nothing can be sent. Discard the letter, or reach the applicant another way."
@@ -1043,6 +1048,11 @@ msgstr "Day {0} of {total}"
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft with words only"
 msgstr "Draft with words only"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Sending"
+msgstr "Sending"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application sent"
@@ -1546,6 +1556,11 @@ msgstr "Not sent: the village has no sender address yet. Add it in Comms Setting
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
 msgstr "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "A return visit"
+msgstr "A return visit"
 
 #: client/src/components/QuestCard.tsx
 msgctxt "open work card: the quest asks less than the reader can give"
@@ -6425,6 +6440,10 @@ msgctxt "pay board"
 msgid "Cash"
 msgstr "Cash"
 
+#: client/src/pages/HiddenMap.tsx
+msgid "This browser cannot keep captures after the page closes. Keep it open until they go up."
+msgstr "This browser cannot keep captures after the page closes. Keep it open until they go up."
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Nothing is waiting. When an agent proposes a change, it appears here."
@@ -7823,6 +7842,10 @@ msgstr "A required role is hidden from members who say they can give less. Nothi
 msgctxt "first fourteen days strip, the next step"
 msgid "Next: {0}"
 msgstr "Next: {0}"
+
+#: client/src/pages/HiddenMap.tsx
+msgid "This phone could not keep it for later. Try again when you have signal."
+msgstr "This phone could not keep it for later. Try again when you have signal."
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft next"
@@ -9418,6 +9441,11 @@ msgctxt "valuation receipt"
 msgid "Medium range"
 msgstr "Medium range"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Send now"
+msgstr "Send now"
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
 msgid "Nobody holds {role} yet."
@@ -10300,6 +10328,10 @@ msgstr "Nobody has said yet. The seed fills as we say we will come."
 msgid "Which of the village's goals for the season does your work in {roleName} serve? Pick up to {0}, and say how."
 msgstr "Which of the village's goals for the season does your work in {roleName} serve? Pick up to {0}, and say how."
 
+#: client/src/pages/HiddenMap.tsx
+msgid "You can log places now. They wait on this phone, and your map comes back with signal."
+msgstr "You can log places now. They wait on this phone, and your map comes back with signal."
+
 #. placeholder {0}: cr.review.consents
 #: client/src/pages/ChangeRequests.tsx
 msgid "{0, plural, one {# person can live with this version.} other {# people can live with this version.}}"
@@ -10873,6 +10905,11 @@ msgstr "Withdraw my vouch"
 msgctxt "founding application choose, founding roles heading"
 msgid "Filling first: the founding team"
 msgstr "Filling first: the founding team"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Discard"
+msgstr "Discard"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -11692,6 +11729,10 @@ msgstr "Our words, adopted"
 #~ msgctxt "steward front door"
 #~ msgid "Propose a role"
 #~ msgstr "Propose a role"
+
+#: client/src/pages/HiddenMap.tsx
+msgid "Waiting on this phone"
+msgstr "Waiting on this phone"
 
 #: client/src/components/SaveBar.tsx
 msgid "The save could not reach the server."
@@ -12920,6 +12961,10 @@ msgstr "Opening…"
 msgctxt "founding application, the send failed"
 msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
 msgstr "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Saved. Your visit is waiting for a member to confirm it on the quest board."
+msgstr "Saved. Your visit is waiting for a member to confirm it on the quest board."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Your aim for the season"
@@ -14214,6 +14259,10 @@ msgctxt "voice field label: feedback detail"
 msgid "The details"
 msgstr "The details"
 
+#: client/src/pages/HiddenMap.tsx
+msgid "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
+msgstr "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value a member suggests"
 msgid "Your value"
@@ -15005,6 +15054,11 @@ msgstr "Remove value {n}"
 msgctxt "role editor history"
 msgid "Made"
 msgstr "Made"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Try again"
+msgstr "Try again"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -17011,6 +17065,11 @@ msgstr "Read the pasted list"
 msgid "You are backing this quest (pending). The Backer badge comes when the quest is done."
 msgstr "You are backing this quest (pending). The Backer badge comes when the quest is done."
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Saved."
+msgstr "Saved."
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Save what closing means"
 msgstr "Save what closing means"
@@ -17742,6 +17801,11 @@ msgstr "Ask for a copy"
 msgctxt "signing key"
 msgid "The village now signs with key {newKid}"
 msgstr "The village now signs with key {newKid}"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "No signal here"
+msgstr "No signal here"
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -18681,6 +18745,11 @@ msgstr "Add a file"
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Your own figure first, before you see the suggestion (optional)"
 msgstr "Your own figure first, before you see the suggestion (optional)"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "Saved on this phone. It goes up when you have signal."
+msgstr "Saved on this phone. It goes up when you have signal."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application first day"

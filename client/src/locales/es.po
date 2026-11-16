@@ -965,6 +965,11 @@ msgstr ""
 msgid "Your numbers, from every source"
 msgstr ""
 
+#. placeholder {0}: box.items.length
+#: client/src/pages/HiddenMap.tsx
+msgid "{0, plural, one {# capture is waiting on this phone.} other {# captures are waiting on this phone.}}"
+msgstr ""
+
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "This address is on the suppression list, so nothing can be sent. Discard the letter, or reach the applicant another way."
 msgstr ""
@@ -1046,6 +1051,11 @@ msgstr "Día {0} de {total}"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft with words only"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Sending"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -1555,6 +1565,11 @@ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "A return visit"
 msgstr ""
 
 #: client/src/components/QuestCard.tsx
@@ -6442,6 +6457,10 @@ msgctxt "pay board"
 msgid "Cash"
 msgstr "Efectivo"
 
+#: client/src/pages/HiddenMap.tsx
+msgid "This browser cannot keep captures after the page closes. Keep it open until they go up."
+msgstr ""
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Nothing is waiting. When an agent proposes a change, it appears here."
@@ -7849,6 +7868,10 @@ msgstr "Un rol obligatorio se oculta a quienes dicen que pueden dar menos. Nada 
 msgctxt "first fourteen days strip, the next step"
 msgid "Next: {0}"
 msgstr "Lo siguiente: {0}"
+
+#: client/src/pages/HiddenMap.tsx
+msgid "This phone could not keep it for later. Try again when you have signal."
+msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
@@ -9456,6 +9479,11 @@ msgctxt "valuation receipt"
 msgid "Medium range"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Send now"
+msgstr ""
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box"
 msgid "Nobody holds {role} yet."
@@ -10342,6 +10370,10 @@ msgstr "Nadie ha dicho todavía. La semilla se llena cuando decimos que vendremo
 msgid "Which of the village's goals for the season does your work in {roleName} serve? Pick up to {0}, and say how."
 msgstr "¿A qué metas de la temporada de la aldea sirve tu trabajo en “{roleName}”? Elige hasta {0} y cuenta cómo."
 
+#: client/src/pages/HiddenMap.tsx
+msgid "You can log places now. They wait on this phone, and your map comes back with signal."
+msgstr ""
+
 #. placeholder {0}: cr.review.consents
 #: client/src/pages/ChangeRequests.tsx
 msgid "{0, plural, one {# person can live with this version.} other {# people can live with this version.}}"
@@ -10920,6 +10952,11 @@ msgstr ""
 msgctxt "founding application choose, founding roles heading"
 msgid "Filling first: the founding team"
 msgstr "Primero: el equipo fundador"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Discard"
+msgstr ""
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -11741,6 +11778,10 @@ msgstr "Nuestras palabras, adoptadas"
 #~ msgctxt "steward front door"
 #~ msgid "Propose a role"
 #~ msgstr "Proponer un rol"
+
+#: client/src/pages/HiddenMap.tsx
+msgid "Waiting on this phone"
+msgstr ""
 
 #: client/src/components/SaveBar.tsx
 msgid "The save could not reach the server."
@@ -12968,6 +13009,10 @@ msgstr ""
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application, the send failed"
 msgid "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page."
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Saved. Your visit is waiting for a member to confirm it on the quest board."
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -14264,6 +14309,10 @@ msgctxt "voice field label: feedback detail"
 msgid "The details"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the value a member suggests"
 msgid "Your value"
@@ -15058,6 +15107,11 @@ msgstr "Quitar el aporte {n}"
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
 msgid "Made"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Try again"
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -17062,6 +17116,11 @@ msgstr ""
 msgid "You are backing this quest (pending). The Backer badge comes when the quest is done."
 msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Saved."
+msgstr ""
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Save what closing means"
 msgstr ""
@@ -17794,6 +17853,11 @@ msgstr ""
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The village now signs with key {newKid}"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "No signal here"
 msgstr ""
 
 #: client/src/pages/HiddenMap.tsx
@@ -18733,6 +18797,11 @@ msgstr ""
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Your own figure first, before you see the suggestion (optional)"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "Saved on this phone. It goes up when you have signal."
 msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
