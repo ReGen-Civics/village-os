@@ -11,6 +11,7 @@
 import { randomBytes } from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import type { ProposalKind, ProposalStatus } from "../../shared/proposedChanges";
+import type { KeptBefore } from "../../shared/proposalPutBack";
 
 export interface StoredBatch {
   id: string;
@@ -45,6 +46,10 @@ export interface StoredChange {
   approvedBy: string | null;
   approvalNote: string | null;
   error: string | null;
+  /** What was live just before the accept (0398), or null when nothing was kept. */
+  before: KeptBefore;
+  /** On a proposal that puts an earlier change back, that change's id (0398). */
+  reverts: string | null;
 }
 
 const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : v === null || v === undefined ? null : String(v));
@@ -84,7 +89,19 @@ function toChange(r: RowDataPacket): StoredChange {
     approvedBy: r.approved_by === null ? null : String(r.approved_by),
     approvalNote: r.approval_note === null ? null : String(r.approval_note),
     error: r.error_text === null ? null : String(r.error_text),
+    // SQL NULL is "never kept"; the JSON text null is "read, and nothing could be read then". A row the parser cannot read is never kept.
+    before: keptBefore(r.before_json),
+    reverts: r.reverts_id === null || r.reverts_id === undefined ? null : String(r.reverts_id),
   };
+}
+
+function keptBefore(v: unknown): KeptBefore {
+  if (v === null || v === undefined) return null;
+  try {
+    return { value: JSON.parse(String(v)) };
+  } catch {
+    return null;
+  }
 }
 
 const newId = (prefix: string) => `${prefix}_${randomBytes(9).toString("hex")}`;
@@ -108,12 +125,12 @@ export async function nextPosition(pool: Pool, batchId: string): Promise<number>
 
 export async function addChange(
   pool: Pool,
-  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person" },
+  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person"; reverts?: string | null },
 ): Promise<string> {
   const id = newId("pc");
   await pool.query(
-    "INSERT INTO `proposed_changes` (`id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-    [id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind],
+    "INSERT INTO `proposed_changes` (`id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`, `reverts_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    [id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind, c.reverts ?? null],
   );
   return id;
 }
@@ -191,6 +208,33 @@ export async function markUnknown(pool: Pool, id: string, by: string, error: str
     "UPDATE `proposed_changes` SET `status` = 'unknown', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` = 'applying'",
     [by, error.slice(0, 1000), id],
   );
+}
+
+/** The largest value kept as "what was live before". A larger one is not kept, and the page says nothing was kept. */
+export const BEFORE_MAX_BYTES = 1_000_000;
+
+/**
+ * Keep what was live just before this change is applied (0398), on the row that is being applied. Never throws:
+ * a value too large to keep, or a write that fails, leaves the column as it was and the accept goes on.
+ */
+export async function saveBefore(pool: Pool, id: string, before: unknown): Promise<boolean> {
+  try {
+    const text = JSON.stringify(before === undefined ? null : before);
+    if (text.length > BEFORE_MAX_BYTES) return false;
+    const [r] = await pool.query<any>("UPDATE `proposed_changes` SET `before_json` = ? WHERE `id` = ? AND `status` = 'applying'", [text, id]);
+    return Number(r?.affectedRows ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** A proposal that puts this change back and still waits, if there is one. */
+export async function waitingPutBack(pool: Pool, revertsId: string): Promise<string | null> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT `id` FROM `proposed_changes` WHERE `reverts_id` = ? AND (`status` IN ('proposed','failed','unknown','applying')) LIMIT 1",
+    [revertsId],
+  );
+  return rows[0] ? String(rows[0].id) : null;
 }
 
 export async function markAccepted(pool: Pool, id: string, a: { by: string; accepted: Record<string, unknown>; lessons: unknown[]; approvedBy: string; approvalNote: string }): Promise<boolean> {

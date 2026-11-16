@@ -56,6 +56,7 @@ import { listArchetypeRows } from "../repos/archetypes";
 import { villageId } from "./economy";
 import { readConfigDocument } from "../repos/appConfigDocs";
 import { VILLAGE_DOC_KEY } from "./onboarding";
+import { neverPutBack } from "../../shared/proposalPutBack";
 
 export const FAQ_PATHWAYS_FOR_PROPOSALS = ["investor", "steward", "resident", "prosperity"] as const;
 
@@ -360,6 +361,21 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
     }
   } catch {
     return null;
+  }
+}
+
+/**
+ * What to keep as "live before", read just before a change is applied, so it can be proposed back (0398). The same
+ * read the page shows (`liveOf`). A kind that is never put back reads nothing (`keep: false`); a read that fails or
+ * throws keeps null, and never stops the accept.
+ */
+export async function readBefore(deps: KindDeps, run: Run, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<{ keep: false } | { keep: true; value: unknown }> {
+  if (neverPutBack(kind, target)) return { keep: false };
+  try {
+    const value = await liveOf(deps, run, kind, target, body);
+    return { keep: true, value: value === undefined ? null : value };
+  } catch {
+    return { keep: true, value: null };
   }
 }
 
