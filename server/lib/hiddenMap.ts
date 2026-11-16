@@ -24,7 +24,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Pool } from "mysql2/promise";
 import {
-  opening, readConfig, visiblePin, type HiddenMapConfig, type Opening, type PinDot, type PinRecord, type PinView,
+  numberDots, opening, readConfig, visiblePin, type HiddenMapConfig, type Opening, type PinDot, type PinRecord, type PinView,
   type Viewer,
 } from "../../shared/hiddenMap";
 import { stripAndEncode } from "./placePhotos";
@@ -73,7 +73,7 @@ export async function readMap(pool: Pool, villageId: string, viewer: Viewer, con
     const v = visiblePin(viewer, pin, { openLayers: config.openLayers, teaser: dials.teaser });
     if (v) out.push(v);
   }
-  return out;
+  return numberDots(out);
 }
 
 /** Pins awaiting a vouch that this viewer may vouch for: never their own. */
@@ -82,7 +82,7 @@ export async function readQueue(pool: Pool, villageId: string, viewer: Viewer, c
   const pins = await repo.listPins(pool, villageId, viewer.userId, { awaitingBelow: Math.max(1, dials.vouchesPerPin) });
   const out: PinView[] = [];
   for (const pin of pins) {
-    if (pin.ownerUserId === viewer.userId) continue;
+    if (pin.ownerUserId === viewer.userId || pin.layer !== "planting") continue;
     const v = visiblePin(viewer, pin, { openLayers: config.openLayers, teaser: false, queue: true, vouchesPerPin: dials.vouchesPerPin });
     if (v && !("dot" in v)) out.push(v);
   }

@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_CONFIG, coarser, exportGeoJson, mayReadDetail, mayVisit, mayVouch, opening, parsePinInput, project,
+  DEFAULT_CONFIG, coarser, exportGeoJson, mayReadDetail, mayVisit, mayVouch, numberDots, opening, parsePinInput, project,
   readConfig, snap, tileUrl, unproject, validateConfig, validatePoint, visiblePin, visitMayPay,
   type PinRecord, type PinView, type Viewer,
 } from "./hiddenMap";
@@ -71,6 +71,19 @@ describe("visiblePin: the one decision", () => {
     expect(visiblePin(k, pin({ vouches: 0 }), { ...opts, queue: true, vouchesPerPin: 1 })).not.toBeNull();
     expect(visiblePin(k, pin({ vouches: 1 }), { ...opts, queue: true, vouchesPerPin: 1 })).toBeNull();
     expect(visiblePin(k, pin({ vouches: 0 }), opts)).toBeNull();
+  });
+
+  it("puts only plantings in a keeper's queue: no other layer is vouched toward opening", () => {
+    const k = viewer({ keeper: true });
+    expect(visiblePin(k, pin({ layer: "stop", kind: "Overnight" }), { ...opts, queue: true, vouchesPerPin: 1 })).toBeNull();
+    expect(visiblePin(k, pin({ layer: "partner", kind: "Farm" }), { ...opts, queue: true, vouchesPerPin: 1 })).toBeNull();
+  });
+
+  it("never gives a dot the pin's id, and numbers the dots of one answer", () => {
+    const d = visiblePin(viewer(), pin({ id: "hmp-secret" }), { openLayers: [], teaser: true });
+    expect(JSON.stringify(d)).not.toContain("hmp-secret");
+    const mineView = visiblePin(viewer({ userId: "owner" }), pin(), opts)!;
+    expect(numberDots([d!, mineView, d!]).map((v) => v.id)).toEqual(["dot-1", "p1", "dot-2"]);
   });
 
   it("with the teaser on, gives a closed map a dot no finer than about 1 km, with no words or photos", () => {

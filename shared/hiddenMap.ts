@@ -307,12 +307,24 @@ export function visiblePin(viewer: Viewer, pin: PinRecord, opts: VisibilityOptio
   if (pin.hidden) return null;
   if (viewer.open) return full(pin, false);
   if (opts.openLayers.includes(pin.layer)) return full(pin, false);
-  if (opts.queue && viewer.keeper && pin.vouches < Math.max(1, opts.vouchesPerPin ?? 1)) return full(pin, false);
+  // The queue is plantings only: no other layer is ever vouched toward opening. A keeper vouching
+  // sees the exact place, which the capture screen says (QA pass 6, P6-1).
+  if (opts.queue && viewer.keeper && pin.layer === "planting" && pin.vouches < Math.max(1, opts.vouchesPerPin ?? 1)) {
+    return full(pin, false);
+  }
   if (opts.teaser && !opts.queue) {
     const p = snap({ lat: pin.lat, lng: pin.lng }, coarser(pin.precision, "km"));
-    return { id: pin.id, layer: pin.layer, lat: p.lat, lng: p.lng, precision: coarser(pin.precision, "km"), dot: true };
+    // A dot never carries the pin's id: the caller numbers dots per answer (`numberDots`), so a
+    // closed map cannot follow one pin across answers or ask for it by id (QA pass 6, P6-9).
+    return { id: "", layer: pin.layer, lat: p.lat, lng: p.lng, precision: coarser(pin.precision, "km"), dot: true };
   }
   return null;
+}
+
+/** Give each dot in one answer its own throwaway id, in order. Full views keep their ids. */
+export function numberDots<T extends PinView | PinDot>(views: T[]): T[] {
+  let n = 0;
+  return views.map((v) => ("dot" in v ? { ...v, id: `dot-${++n}` } : v));
 }
 
 /** Whether a viewer may read a pin's photos and detail: only a full view carries them. */
