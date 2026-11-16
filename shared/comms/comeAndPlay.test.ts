@@ -54,7 +54,9 @@ describe("the come-and-play cards", () => {
 
   it("paint each card with art the platform ships", () => {
     for (const door of PLAY_DOORS) {
-      expect(existsSync(join(__dirname, "../../client/public", ART_PATH, `${DOOR_ART[door]}.webp`)), door).toBe(true);
+      // ART_PATH is served from server/assets/modules (server/routes/moduleArt.ts).
+      expect(ART_PATH).toBe("/images/modules");
+      expect(existsSync(join(__dirname, "../../server/assets/modules", `${DOOR_ART[door]}.webp`)), door).toBe(true);
     }
   });
 });
