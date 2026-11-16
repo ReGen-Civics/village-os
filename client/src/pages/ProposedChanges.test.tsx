@@ -40,7 +40,7 @@ const ROLE = {
 };
 const PAGE = { ...ROLE, id: "pc_page", kind: "page_content", targetLabel: "Home page", summary: "Reword the headline.", body: { hero: { headline: "A home" } }, live: { hero: { headline: "Welcome" } }, labels: { "hero.headline": "Top: Headline" } };
 
-function stub(opts: { check?: unknown[]; accept?: unknown[] } = {}) {
+function stub(opts: { check?: unknown[]; accept?: unknown[]; acceptBroken?: boolean } = {}) {
   const calls: Array<{ url: string; method: string; body: any }> = [];
   vi.stubGlobal(
     "fetch",
@@ -50,7 +50,7 @@ function stub(opts: { check?: unknown[]; accept?: unknown[] } = {}) {
       const json = (b: unknown) => ({ ok: true, status: 200, json: async () => b });
       if (url === "/api/admin/proposals" && method === "GET") return json({ batches: [{ id: "pcb_1", title: "Phase A content", by: "Fern", at: "2026-11-12T10:00:00.000Z" }], changes: [ROLE, PAGE], decided: [] });
       if (String(url).endsWith("/check")) return json({ results: opts.check ?? [] });
-      if (String(url).endsWith("/accept")) return json({ results: opts.accept ?? [] });
+      if (String(url).endsWith("/accept")) return opts.acceptBroken ? { ok: false, status: 500, json: async () => ({ error: "Internal error" }) } : json({ results: opts.accept ?? [] });
       return json({ success: true });
     }),
   );
@@ -104,5 +104,15 @@ describe("the review page", () => {
     const acc = calls.find((c) => c.url.endsWith("/accept"))!;
     expect(acc.body.items[0]).toEqual({ id: "pc_role", body: { words: { aim: "Edited aim.", accountabilities: ["Books each moon"] } } });
     expect(screen.getByTestId("accept-outcome").textContent).toMatch(/1 accepted, 1 did not land/);
+  });
+
+  it("an accept that did not finish says so, and never reads as nothing landed", async () => {
+    stub({ check: [{ id: "pc_role", ok: true }, { id: "pc_page", ok: true }], acceptBroken: true });
+    render(<ProposedChanges />);
+    await screen.findByText("Phase A content");
+    fireEvent.click(screen.getByLabelText("Select all"));
+    fireEvent.click(screen.getByTestId("accept-selected"));
+    expect(await screen.findByText(/The accept did not finish/)).toBeTruthy();
+    expect(screen.queryByTestId("accept-outcome")).toBeNull();
   });
 });

@@ -3,7 +3,7 @@
  * half, against the built server, is server/groupAdmin.routes.e2e.test.ts.
  */
 import { describe, expect, it } from "vitest";
-import { accountsWithReach, adminGroupsOf, hasAdminReach, type AdminGroup, type GroupHolding } from "./groupAdmin";
+import { accountsWithReach, adminAccessBeyondSeater, adminGroupsOf, hasAdminReach, type AdminGroup, type GroupHolding } from "./groupAdmin";
 import { holdingHasLapsed } from "./stewardship";
 
 const NOW = new Date("2026-11-01T12:00:00Z");
@@ -62,5 +62,24 @@ describe("admin access through a power group", () => {
     expect(accountsWithReach(users, switchedOff, holdings, NOW, holdingHasLapsed, () => false)).toHaveLength(0);
     // And so does removing the only holder.
     expect(accountsWithReach(users, GROUPS, [], NOW, holdingHasLapsed, () => false)).toHaveLength(0);
+  });
+});
+
+describe("admin access is a power the seater must hold", () => {
+  it("a seater who cannot open the panel is refused a group that opens it", () => {
+    const seater = { id: "dee", role: "member" };
+    const reach = hasAdminReach(seater, GROUPS, [hold("dee", "gardeners")], NOW, holdingHasLapsed);
+    expect(reach).toBe(false);
+    expect(adminAccessBeyondSeater(GROUPS[1], reach)).toBe(true);
+  });
+  it("control: the same seater may seat into a group that opens nothing", () => {
+    expect(adminAccessBeyondSeater(GROUPS[2], false)).toBe(false);
+  });
+  it("an admin account, or a live holder of an admin group, may seat into it", () => {
+    expect(adminAccessBeyondSeater(GROUPS[1], hasAdminReach({ id: "a", role: "admin" }, GROUPS, [], NOW, holdingHasLapsed))).toBe(false);
+    expect(adminAccessBeyondSeater(GROUPS[1], hasAdminReach({ id: "s", role: "member" }, GROUPS, [hold("s", "steward-circle")], NOW, holdingHasLapsed))).toBe(false);
+  });
+  it("an example group grants nothing, so it asks nothing", () => {
+    expect(adminAccessBeyondSeater(GROUPS[3], false)).toBe(false);
   });
 });

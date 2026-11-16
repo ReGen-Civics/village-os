@@ -16,7 +16,7 @@
  * failure here leaves every power with the stewards: the state a village is in
  * after launch anyway, and one the stewards change by their own act.
  */
-import type { Pool } from "mysql2/promise";
+import type { Pool, PoolConnection } from "mysql2/promise";
 import { HANDOVER_SET, type Capability } from "../../shared/capabilities";
 import { CAPABILITY_CONSEQUENCE } from "../../shared/draftKinds";
 import { readConfigDocument, writeConfigDocument } from "../repos/appConfigDocs";
@@ -92,6 +92,38 @@ export async function writeLaunchSelection(
 }
 
 /**
+ * THE SELECTION A LAUNCH VOTE OPENED WITH, frozen beside the ballot (audit S3).
+ *
+ * The launch document tells the roll, in plain words, which powers the launch
+ * hands over, read off the live selection when the vote opens. The closer used
+ * to read the live selection again at the close, so whatever the document said
+ * and whatever crossed could differ. The copy is written in the same
+ * transaction that opens the ballot (`openBallot`'s `onOpen`), keyed by the
+ * ballot's id, and the closer moves exactly that copy.
+ *
+ * WHY HERE AND NOT ON THE BALLOT ROW. `ballots` carries no JSON column, and
+ * `doc_markdown` is display copy that a copy edit would break a parser on, so
+ * the copy lives in its own `app_config` document naming the ballot. No
+ * migration.
+ */
+export const LAUNCH_HANDOVER_FROZEN_KEY = "launch-handover-frozen";
+
+export async function freezeLaunchSelection(conn: Pool | PoolConnection, ballotId: string, capabilities: readonly string[], at: Date = new Date()): Promise<void> {
+  await writeConfigDocument(conn, LAUNCH_HANDOVER_FROZEN_KEY, { ballotId, capabilities: onlyHandoverPowers(capabilities), frozenAt: at.toISOString() });
+}
+
+/**
+ * The powers a launch ballot opened with, or null when no copy names this
+ * ballot (a vote opened before the copy existed). A failed read throws, so a
+ * closer never falls back silently on a read error.
+ */
+export async function frozenLaunchSelection(pool: Pool, ballotId: string): Promise<Capability[] | null> {
+  const doc = await readConfigDocument<{ ballotId?: unknown; capabilities?: unknown }>(pool, LAUNCH_HANDOVER_FROZEN_KEY);
+  if (!doc || String(doc.ballotId ?? "") !== ballotId) return null;
+  return onlyHandoverPowers(doc.capabilities);
+}
+
+/**
  * WHETHER THE LAUNCH'S CROSSING IS STILL OWED (R165).
  *
  * The launch hands the village the stewards' selection only when somebody
@@ -116,6 +148,26 @@ export async function readLaunchCrossing(pool: Pool): Promise<LaunchCrossing | n
   }
 }
 
-export async function writeLaunchCrossing(pool: Pool, state: LaunchCrossing, at: Date = new Date()): Promise<void> {
-  await writeConfigDocument(pool, LAUNCH_CROSSING_KEY, { state, at: at.toISOString() });
+export async function writeLaunchCrossing(pool: Pool, state: LaunchCrossing, at: Date = new Date(), launchBallotId: string | null = null): Promise<void> {
+  await writeConfigDocument(pool, LAUNCH_CROSSING_KEY, { state, at: at.toISOString(), ...(launchBallotId ? { launchBallotId } : {}) });
+}
+
+/** The launch ballot whose crossing is owed, when the marker names one. */
+export async function owedLaunchBallotId(pool: Pool): Promise<string | null> {
+  try {
+    const doc = await readConfigDocument<{ launchBallotId?: unknown }>(pool, LAUNCH_CROSSING_KEY);
+    return typeof doc?.launchBallotId === "string" && doc.launchBallotId ? doc.launchBallotId : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * What a launch hands over: the copy its ballot opened with, and the live
+ * selection only for a vote opened before the copy existed (the hand-over
+ * control refused changes while such a vote was open, so the two agree).
+ */
+export async function selectionForLaunch(pool: Pool, launchBallotId: string | null): Promise<Capability[]> {
+  const frozen = launchBallotId ? await frozenLaunchSelection(pool, launchBallotId) : null;
+  return frozen ?? (await readLaunchSelection(pool)).capabilities;
 }

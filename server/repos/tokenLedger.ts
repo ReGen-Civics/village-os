@@ -241,6 +241,25 @@ export async function legRowsForKeys(conn: Pool | PoolConnection, first: string,
   return rows;
 }
 
+/**
+ * The hourly settlement's seat payments to one account for every seat held on
+ * one application, with the seat each paid (`source_ref`). The caller compares
+ * each key byte for byte against the key it expects.
+ */
+export async function roleCycleLegsForApplication(conn: Pool | PoolConnection, applicationId: string, account: string): Promise<RowDataPacket[]> {
+  // Two reads and no join: the two id columns were made by different migrations, and a join across a
+  // collation split refuses.
+  const [seats] = await conn.query<RowDataPacket[]>("SELECT `id` FROM `org_role_assignments` WHERE `application_id` = ?", [applicationId]);
+  const seatIds = seats.map((s) => String(s.id));
+  if (seatIds.length === 0) return [];
+  const [rows] = await conn.query<RowDataPacket[]>(
+    "SELECT `idempotency_key`, `token_type`, `source_ref` AS `seat_id` FROM `token_ledger` " +
+      "WHERE `source` = 'role_cycle' AND `to_account` = ? AND `source_ref` IN (?)",
+    [account, seatIds],
+  );
+  return rows;
+}
+
 /** The faucet accounts, as the ledger_accounts rows mark them. */
 export async function faucetAccountRows(conn: Pool | PoolConnection): Promise<RowDataPacket[]> {
   const [rows] = await conn.query<RowDataPacket[]>(

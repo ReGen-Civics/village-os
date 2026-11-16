@@ -135,6 +135,8 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       lapse: () => ({ currentSeasonId: "s-now", cadence: "season_turn" }),
       stageOf: async () => "guest",
       recordStageEvent: async () => undefined,
+      // An admin reads the pay ceiling while the village keeps pay hidden; nobody else here does.
+      mayReadPay: async () => state.viewer?.id === ADMIN.id,
     } as any);
     server = http.createServer(app);
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -171,6 +173,13 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     return { status: res.status, body: (await res.json()) as any };
+  };
+
+  /** The village's `org.show_pay_ranges`: "true" shows pay to everyone, null puts the default (off) back. */
+  const setPayShown = async (value: string | null) => {
+    if (value === null) await q("DELETE FROM game_variables WHERE config_key = 'org.show_pay_ranges'");
+    else await q("INSERT INTO game_variables (config_key, value) VALUES ('org.show_pay_ranges', ?) ON DUPLICATE KEY UPDATE value = VALUES(value)", [value]);
+    await loadVariables(pool);
   };
 
   const proposal = (over: Record<string, unknown> = {}) => ({
@@ -227,7 +236,9 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const r = await call("GET", "/api/open-proposals/form");
       expect(r.body).toMatchObject({ open: true, village: "Test Village", season: { id: "s-next", name: "Season of Roots", startsOn: "2099-01-01" } });
       expect(r.body.roles.map((x: any) => x.id).sort()).toEqual([gate, well].sort());
-      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, opensLater: false, payCeiling: null });
+      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, opensLater: false });
+      // Pay hidden (org.show_pay_ranges ships off): the ceiling key is absent, never null.
+      expect("payCeiling" in r.body.roles.find((x: any) => x.id === gate)).toBe(false);
       expect(JSON.stringify(r.body)).not.toContain(example);
       expect(JSON.stringify(r.body)).not.toContain(dormant);
     });
@@ -769,6 +780,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     });
 
     it("a role that can be shared: the form offers its minimum; a commitment below it is refused, and the optional ask is kept (Rye, 14 Nov 2026)", async () => {
+      await setPayShown("true");
       await pool.query("UPDATE org_roles SET commitment_min = 60 WHERE id = ?", [gate]); // module-review-ok: a test setting the column it asserts on
       // A listed price, so an amount ask has a cap to be read against (at 60% of $13,000: $7,800, capped at $9,360).
       await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
@@ -791,11 +803,13 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         expect((await readOpenProposal(pool, id))?.body.payAsk).toEqual({ kind: "amount", monthly: 6000 });
       } finally {
         await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
         await pool.query("UPDATE org_roles SET commitment_min = NULL WHERE id = ?", [gate]); // module-review-ok: a test restoring the column it set
       }
     });
 
     it("the 120% cap: an ask just over it at their commitment is refused in words, one at it is taken (Rye, 15 Nov 2026)", async () => {
+      await setPayShown("true");
       await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
       try {
         const card = (commitmentPct: number) => ({
@@ -826,6 +840,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         await send({ card: card(100), email: "atcapfull@example.test", payAsk: ask(15600) });
       } finally {
         await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
       }
       // A role that lists no price has no cap: an amount is refused in words, negotiate is taken.
       const card = {
@@ -837,6 +852,39 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       };
       expect(await call("POST", "/api/open-proposals", proposal({ email: "noprice@example.test", card, payAsk: { kind: "amount", monthly: 5000, per: "month" } }))).toMatchObject({ status: 400, body: { field: "payAsk", error: "This role lists no price yet, so choose to negotiate on the first call." } });
       await send({ card, email: "noprice-negotiate@example.test", payAsk: { kind: "negotiate" } });
+    });
+
+    it("pay hidden (org.show_pay_ranges off): the form carries no ceiling key for a visitor, and an amount ask names no figure; on, and for an admin, it is there", async () => {
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const roleIn = (body: any) => body.roles.find((x: any) => x.id === gate);
+        // Off, signed out: the key is absent and the figure is nowhere in the payload.
+        const hidden = await call("GET", "/api/open-proposals/form");
+        expect("payCeiling" in roleIn(hidden.body)).toBe(false);
+        expect(JSON.stringify(hidden.body)).not.toContain("13000");
+        // An edited post asking an amount meets a role with no listed price: refused, and the cap is not named.
+        const card = {
+          roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+          serves: [{ goalId: "g-roots", how: "" }],
+          commitmentPct: 50,
+          agreed: { loveLetter: true, nda: true },
+          terms: { answers: {} },
+        };
+        const probe = await call("POST", "/api/open-proposals", proposal({ email: "probe@example.test", card, payAsk: { kind: "amount", monthly: 7801, per: "month" } }));
+        expect(probe).toMatchObject({ status: 400, body: { field: "payAsk", error: "This role lists no price yet, so choose to negotiate on the first call." } });
+        expect(JSON.stringify(probe.body)).not.toContain("7,800");
+        // CONTROL: an admin reads it while it is off.
+        state.viewer = ADMIN;
+        expect(roleIn((await call("GET", "/api/open-proposals/form")).body).payCeiling).toEqual({ amount: 13000, currency: "USD", per: "month" });
+        state.viewer = null;
+        // CONTROL: on, everyone reads it.
+        await setPayShown("true");
+        expect(roleIn((await call("GET", "/api/open-proposals/form")).body).payCeiling).toEqual({ amount: 13000, currency: "USD", per: "month" });
+      } finally {
+        state.viewer = null;
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
+      }
     });
 
     it("form v2: a card needs an aim; the 90-day tidy clears the time zone, usual times and earliest start", async () => {

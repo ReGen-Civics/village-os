@@ -27,53 +27,26 @@
 import dns from "dns/promises";
 import net from "net";
 import https from "https";
+import { Readable } from "stream";
 import type { LookupAddress } from "dns";
+import { reservedAddress } from "./outboundAddress";
 
 /** Strip URL brackets and any zone id, so net.isIP sees the bare literal. */
 function bareHost(host: string): string {
   return host.replace(/^\[|\]$/g, "").split("%")[0];
 }
 
-/** Expand an IPv6 literal to eight 16-bit groups, or null if it is malformed. */
-function v6Groups(ip: string): number[] | null {
-  let s = ip.toLowerCase();
-  const m = s.match(/^(.*:)(\d+\.\d+\.\d+\.\d+)$/);
-  if (m) {
-    const o = m[2].split(".").map(Number);
-    s = `${m[1]}${((o[0] << 8) | o[1]).toString(16)}:${((o[2] << 8) | o[3]).toString(16)}`;
-  }
-  const halves = s.split("::");
-  if (halves.length > 2) return null;
-  const head = halves[0] ? halves[0].split(":") : [];
-  const tail = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
-  const fill = halves.length === 2 ? 8 - head.length - tail.length : 0;
-  if (fill < 0 || (halves.length === 1 && head.length !== 8)) return null;
-  const g = [...head, ...Array(fill).fill("0"), ...tail].map((x) => parseInt(x, 16));
-  return g.length === 8 && g.every((x) => Number.isInteger(x) && x >= 0 && x <= 0xffff) ? g : null;
-}
-
-export function ipIsPrivate(raw: string): boolean {
-  const ip = bareHost(raw);
-  if (net.isIPv4(ip)) {
-    const [a, b] = ip.split(".").map(Number);
-    if (a === 10 || a === 127 || a === 0) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 100 && b >= 64 && b <= 127) return true; // CGNAT
-    return false;
-  }
-  if (!net.isIPv6(ip)) return false;
-  const g = v6Groups(ip);
-  if (!g) return true; // unparseable literal: fail closed
-  if (g.slice(0, 5).every((x) => x === 0) && (g[5] === 0xffff || g[5] === 0)) {
-    // v4-mapped (::ffff:a.b.c.d) and v4-compatible (::a.b.c.d), plus :: and ::1
-    if (g[5] === 0 && g[6] === 0 && g[7] <= 1) return true;
-    return ipIsPrivate(`${g[6] >> 8}.${g[6] & 255}.${g[7] >> 8}.${g[7] & 255}`);
-  }
-  if ((g[0] & 0xfe00) === 0xfc00) return true; // fc00::/7
-  if ((g[0] & 0xffc0) === 0xfe80) return true; // fe80::/10
-  return false;
+/**
+ * Whether an address (bracketed or bare, zone id tolerated) is one this
+ * server refuses to dial. NOT a range list of its own: the rules are
+ * `reservedAddress` in ./outboundAddress, the one predicate every outbound
+ * dial shares. This file used to keep its own `ipIsPrivate`, a weaker twin
+ * that read NAT64 (64:ff9b::), 6to4 (2002::), site-local (fec0::/10),
+ * multicast and 224.0.0.0/3 as public, while sitePull.ts held the stronger
+ * copy. Two copies of a security predicate drift; this one was deleted.
+ */
+function refusedAddress(raw: string): boolean {
+  return reservedAddress(bareHost(raw)) !== null;
 }
 
 export interface LinkCheckResult {
@@ -97,7 +70,7 @@ export async function checkToolLink(rawUrl: string): Promise<LinkCheckResult> {
   try {
     const addrs = net.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true });
     for (const a of addrs) {
-      if (ipIsPrivate(a.address)) {
+      if (refusedAddress(a.address)) {
         return { ok: false, status: null, refused: `resolves to a private address (${a.address})` };
       }
     }
@@ -178,7 +151,7 @@ async function dialPinnedJson(
   const addrs = net.isIP(host)
     ? [{ address: host, family: net.isIPv6(host) ? 6 : 4 }]
     : await dns.lookup(host, { all: true });
-  if (addrs.some((a) => ipIsPrivate(a.address))) throw new Error("resolves to a private address");
+  if (!addrs.length || addrs.some((a) => refusedAddress(a.address))) throw new Error("resolves to a private address");
   const vetted = addrs[0];
 
   const payload = method === "POST" && body !== undefined ? JSON.stringify(body) : null;
@@ -242,8 +215,8 @@ async function dialPinned(rawUrl: string, method: "HEAD" | "GET", hops = 0): Pro
   const addrs = net.isIP(host)
     ? [{ address: host, family: net.isIPv6(host) ? 6 : 4 }]
     : await dns.lookup(host, { all: true });
-  const vetted = addrs.find((a) => !ipIsPrivate(a.address));
-  if (!vetted || addrs.some((a) => ipIsPrivate(a.address))) {
+  const vetted = addrs.find((a) => !refusedAddress(a.address));
+  if (!vetted || addrs.some((a) => refusedAddress(a.address))) {
     // ANY private answer disqualifies the host: a round-robin that returns
     // one public and one private address is exactly the attack.
     throw new Error("resolves to a private address");
@@ -305,7 +278,7 @@ export async function guardOutboundUrl(rawUrl: string): Promise<{ ok: boolean; r
   try {
     const addrs = net.isIP(host) ? [{ address: host }] : await dns.lookup(host, { all: true });
     for (const a of addrs) {
-      if (ipIsPrivate(a.address)) return { ok: false, refused: `resolves to a private address (${a.address})` };
+      if (refusedAddress(a.address)) return { ok: false, refused: `resolves to a private address (${a.address})` };
     }
   } catch {
     return { ok: false, refused: "DNS resolution failed" };
@@ -338,7 +311,7 @@ async function dialPinnedText(rawUrl: string, timeoutMs: number, maxBytes: numbe
   const addrs = net.isIP(host)
     ? [{ address: host, family: net.isIPv6(host) ? 6 : 4 }]
     : await dns.lookup(host, { all: true });
-  if (!addrs.length || addrs.some((a) => ipIsPrivate(a.address))) throw new Error("resolves to a private address");
+  if (!addrs.length || addrs.some((a) => refusedAddress(a.address))) throw new Error("resolves to a private address");
   const vetted = addrs[0];
 
   const res = await new Promise<{ status: number; location: string | null; body: string }>((resolve, reject) => {
@@ -380,4 +353,122 @@ async function dialPinnedText(rawUrl: string, timeoutMs: number, maxBytes: numbe
   }
   if (res.status < 200 || res.status >= 300) throw new Error(`upstream answered ${res.status}`);
   return res.body;
+}
+
+/**
+ * The guarded fetch, in fetch's own shape (R169 / R111): `(url, init)` in, a
+ * WHATWG `Response` out, for a client written against `fetch` that must
+ * reach an admin-typed host. The Saberra client is the first; it used to be
+ * handed the global `fetch`, which range-checked nothing and followed every
+ * redirect, so an admin-typed address (or a public host answering 307) could
+ * walk the sync's bearer token to 169.254.169.254.
+ *
+ * Same guarantees as the dialers above: https only, every DNS answer checked
+ * against the one predicate, the connection pinned to the vetted address,
+ * redirects followed BY HAND with every hop re-guarded before it is dialled.
+ * Redirect semantics follow fetch: 307 and 308 resend the method and body,
+ * 301, 302 and 303 become a GET with no body, and the Authorization header is
+ * dropped the moment a hop leaves the original origin, so a redirect can
+ * never carry the token somewhere else.
+ *
+ * The body is streamed back unread: the caller's own byte ceiling (the
+ * Saberra client's 8 MB `readCapped`) counts it, and the caller's
+ * `init.signal` (its 60 second deadline) aborts the dial and the read.
+ */
+export async function guardedFetch(rawUrl: string, init: RequestInit = {}): Promise<Response> {
+  let url = rawUrl;
+  let method = (init.method ?? "GET").toUpperCase();
+  let body = typeof init.body === "string" ? init.body : init.body == null ? null : undefined;
+  if (body === undefined) throw new Error("guardedFetch sends string bodies only");
+  const headers = new Headers(init.headers);
+  const origin = new URL(rawUrl).origin;
+  const signal = init.signal ?? undefined;
+
+  for (let hop = 0; hop <= 5; hop += 1) {
+    signal?.throwIfAborted();
+    const guard = await guardOutboundUrl(url);
+    if (!guard.ok) throw new Error(guard.refused ?? "refused");
+    const target = new URL(url);
+    if (target.origin !== origin) headers.delete("authorization");
+    const res = await dialPinnedStream(target, method, headers, body, signal);
+    const location = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && location) {
+      await res.body?.cancel().catch(() => undefined);
+      url = new URL(location, target).toString();
+      if (res.status !== 307 && res.status !== 308) {
+        method = method === "HEAD" ? "HEAD" : "GET";
+        body = null;
+        headers.delete("content-type");
+        headers.delete("content-length");
+      }
+      continue;
+    }
+    return res;
+  }
+  throw new Error("too many redirects");
+}
+
+/** Statuses a Response may not carry a body for. */
+const NULL_BODY = new Set([101, 204, 205, 304]);
+
+/** One pinned request, its response handed back as a stream. The caller guarded the URL. */
+async function dialPinnedStream(
+  url: URL,
+  method: string,
+  headers: Headers,
+  body: string | null,
+  signal: AbortSignal | undefined,
+): Promise<Response> {
+  const host = bareHost(url.hostname);
+  const addrs = net.isIP(host)
+    ? [{ address: host, family: net.isIPv6(host) ? 6 : 4 }]
+    : await dns.lookup(host, { all: true });
+  // Resolved again here and checked again, because this is the lookup the
+  // connection is pinned to; the guard's own answer is never reused.
+  if (!addrs.length || addrs.some((a) => refusedAddress(a.address))) throw new Error("resolves to a private address");
+  const vetted = addrs[0];
+  const family = (vetted as { family?: number }).family === 6 ? 6 : 4;
+
+  const outHeaders: Record<string, string> = {};
+  headers.forEach((v, k) => { outHeaders[k] = v; });
+  if (body !== null) outHeaders["content-length"] = String(Buffer.byteLength(body));
+
+  return new Promise<Response>((resolve, reject) => {
+    const req = https.request(
+      {
+        protocol: "https:", hostname: host, port: url.port || 443,
+        path: url.pathname + url.search, method, servername: host, headers: outHeaders,
+        ...(signal ? { signal } : {}),
+        lookup: (_h: string, o: any, cb: (e: Error | null, a: string | LookupAddress[], f?: number) => void) => {
+          // Same Node >= 20 array contract as the dialers above.
+          if (o?.all) cb(null, [{ address: vetted.address, family }]);
+          else cb(null, vetted.address, family);
+        },
+      },
+      (r) => {
+        const h = new Headers();
+        for (const [k, v] of Object.entries(r.headers)) {
+          if (v === undefined) continue;
+          for (const one of Array.isArray(v) ? v : [v]) h.append(k, one);
+        }
+        const status = r.statusCode ?? 0;
+        // A status Response cannot hold (outside 200 to 599) would throw here,
+        // inside an event handler, and take the process with it. Rejected.
+        try {
+          if (NULL_BODY.has(status) || method === "HEAD") {
+            r.resume();
+            resolve(new Response(null, { status, headers: h }));
+            return;
+          }
+          resolve(new Response(Readable.toWeb(r) as unknown as ReadableStream<Uint8Array>, { status, headers: h }));
+        } catch (e) {
+          r.destroy();
+          reject(e instanceof Error ? e : new Error(String(e)));
+        }
+      },
+    );
+    req.on("error", reject);
+    if (body !== null) req.write(body);
+    req.end();
+  });
 }

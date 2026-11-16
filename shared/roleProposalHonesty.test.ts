@@ -46,7 +46,7 @@ describe("the operations role", () => {
   });
 
   it("names the guide by a first name, and never by an email", () => {
-    expect(guideName([{ name: "Operations Steward", holders: [{ name: "Rye Cordon" }, { name: "ops@example.org" }] }])).toBe("Rye");
+    expect(guideName([{ name: "Operations Steward", holders: [{ name: "Rye Ashby" }, { name: "ops@example.org" }] }])).toBe("Rye");
     expect(guideName([{ name: "Operations Steward", holders: [{ name: "ops@example.org" }] }])).toBe("Operations Steward");
     expect(guideName([])).toBe(OPS_FALLBACK);
   });

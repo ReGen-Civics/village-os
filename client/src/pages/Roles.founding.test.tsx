@@ -278,6 +278,34 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(document.activeElement).toBe(slot));
   });
 
+  it("QA P1-01: on a wide screen the first role, already shown, still brings its card into view", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    const scroll = vi.fn();
+    const proto = HTMLElement.prototype as any;
+    const before = proto.scrollIntoView;
+    proto.scrollIntoView = scroll;
+    try {
+      renderRoles();
+      const section = await screen.findByRole("region", { name: "Join the founding team" });
+      const slot = section.querySelector("[data-founding-card-slot]") as HTMLElement;
+      // Below the fold, as measured on desktop: 1944px down a 900px window.
+      slot.getBoundingClientRect = () => ({ top: 1944 }) as DOMRect;
+      const first = within(section).getAllByRole("button").find((b) => b.getAttribute("data-founding-role") === "land")!;
+      expect(first.getAttribute("aria-expanded")).toBe("true");
+      fireEvent.click(first);
+      await waitFor(() => expect(scroll).toHaveBeenCalled());
+      expect(first.getAttribute("aria-expanded")).toBe("true");
+      // Already on screen, the page stays where it is.
+      scroll.mockClear();
+      slot.getBoundingClientRect = () => ({ top: 10 }) as DOMRect;
+      fireEvent.click(first);
+      await waitFor(() => expect(document.activeElement).toBe(slot));
+      expect(scroll).not.toHaveBeenCalled();
+    } finally {
+      proto.scrollIntoView = before;
+    }
+  });
+
   it("a card that writes its own shares shows those in place of the village's", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payShape: [{ label: "cash", pct: 70 }, { label: "equity", pct: 30 }], payNote: "This role's own note." }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
     renderRoles();
@@ -390,14 +418,14 @@ describe("QA2-07: Founding Seeders and volunteering are named among the other wa
 });
 
 describe("QA2-02: no second step one under the founding team", () => {
-  it("puts the roots inside Other ways to join, under Find your place in the game, with no Step one", async () => {
+  it("leaves the game behind one quiet door inside Other ways to join, with no Step one (design pass D-04, M3)", async () => {
     renderRoles();
     await screen.findByRole("region", { name: "Join the founding team" });
     const other = screen.getByRole("region", { name: "Other ways to join" });
     expect(within(other).getByRole("heading", { name: "Find your place in the game" })).toBeTruthy();
-    const roots = document.querySelector("[data-archetype-step]") as HTMLElement;
-    expect(roots.getAttribute("data-archetype-step")).toBe("nested");
-    expect(other.contains(roots)).toBe(true);
+    expect(within(other).getByRole("link", { name: /Explore the game/ }).getAttribute("href")).toBe("/roles/select");
+    // The roots live on /roles/select while the founding team leads.
+    expect(document.querySelector("[data-archetype-step]")).toBeNull();
     expect(document.body.textContent).not.toMatch(/Step one/i);
   });
   it("keeps Step one as the page's first step while the founding team is off (control)", async () => {
@@ -527,7 +555,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
 
 describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
   it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
-    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Cordon" }] }));
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const sheet = await within(section).findByTestId("team-sheet");

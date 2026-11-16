@@ -167,15 +167,37 @@ export function baseRpcUrl(env: NodeJS.ProcessEnv = process.env): string {
 export { rpcErrorText } from "./credentialRedaction";
 
 /**
+ * Whether a loopback RPC (http://127.0.0.1, http://localhost) may be dialled
+ * (R111). Yes under NODE_ENV test or development, never otherwise, so a
+ * production image (the Dockerfile sets NODE_ENV=production) and a server
+ * started with no NODE_ENV both refuse it.
+ *
+ * ONE exception, for the acceptance suite: `server/loop.e2e.test.ts` boots the
+ * real built server with NODE_ENV=production, because that is the only honest
+ * boot test, and points it at a local RPC stub. It sets
+ * `VILLAGE_E2E_LOOPBACK_RPC=1`, a variable no deployment sets and the
+ * runbook marks test-only. It is read per call, never cached.
+ */
+export function loopbackRpcAllowed(env: NodeJS.ProcessEnv = process.env): boolean {
+  const mode = (env.NODE_ENV ?? "").trim().toLowerCase();
+  if (mode === "test" || mode === "development") return true;
+  return env.VILLAGE_E2E_LOOPBACK_RPC === "1";
+}
+
+/**
  * The RPC URL is admin-typed, and nothing about storing it checks its range,
  * so without this guard an admin (or anyone who reached that route) could
  * point the village's server at `https://10.0.0.5/…` and read whatever
  * answers, which is exactly the SSRF the pinned dialer exists to close.
  *
  * NOT routed through guardedFetchJson: that helper is https-only, and the
- * loopback exemption is load-bearing — the acceptance test points the
- * platform at http://127.0.0.1, as does anyone running a local anvil node.
- * `redirect: "error"` stops viem hopping off the vetted host afterwards.
+ * loopback exemption is load-bearing for tests and local work: the
+ * acceptance test points the platform at http://127.0.0.1, as does anyone
+ * running a local anvil node. It is NOT honoured in production (R111): a
+ * production server's loopback is its own database and admin ports, and an
+ * admin-typed http://127.0.0.1:3306 there is the SSRF this guard exists for.
+ * See `loopbackRpcAllowed`. `redirect: "error"` stops viem hopping off the
+ * vetted host afterwards.
  */
 async function rpcClient() {
   const url = baseRpcUrl();
@@ -187,6 +209,10 @@ async function rpcClient() {
     return null;
   }
   const isLoopback = host === "127.0.0.1" || host === "localhost";
+  if (isLoopback && !loopbackRpcAllowed()) {
+    console.error("[base-reads] refusing RPC url: loopback is allowed only in test and development");
+    return null;
+  }
   if (!isLoopback) {
     const guard = await guardOutboundUrl(url);
     if (!guard.ok) {

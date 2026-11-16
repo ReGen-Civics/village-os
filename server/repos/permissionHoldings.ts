@@ -164,6 +164,39 @@ export async function userIdsHolding(pool: Pool, roleId: string): Promise<string
 }
 
 /**
+ * Who holds one role and whether a village vote put each of them there (R159).
+ *
+ * `votedIn` is true when the holding's `granted_by` names a `role_seat` ballot
+ * that PASSED and named this member for this role (`userId@roleId`, the shape
+ * `parseSeatRef` reads). Anything else (an administrator's id, a ballot of
+ * another kind, a ballot that did not pass) reads false. The launch asks this
+ * before it adopts an existing steward row, so a row whose holders nobody
+ * voted in cannot carry the powers the launch moves.
+ *
+ * Two reads joined in code, so no comparison crosses two tables' collations.
+ */
+export async function holdersWithVote(pool: Pool, roleId: string): Promise<Array<{ userId: string; grantedBy: string | null; votedIn: boolean }>> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT user_id, granted_by FROM role_holders WHERE role_id = ?",
+    [roleId],
+  );
+  const ballotIds = Array.from(new Set(rows.map((r) => r.granted_by).filter((g): g is string => typeof g === "string" && g.length > 0)));
+  const passed = new Map<string, string>();
+  if (ballotIds.length > 0) {
+    const [ballots] = await pool.query<RowDataPacket[]>(
+      `SELECT id, subject_ref FROM ballots WHERE subject_type = 'role_seat' AND status = 'passed' AND id IN (${ballotIds.map(() => "?").join(",")})`,
+      ballotIds,
+    );
+    for (const b of ballots) passed.set(String(b.id), String(b.subject_ref));
+  }
+  return rows.map((r) => {
+    const userId = String(r.user_id);
+    const grantedBy = r.granted_by == null ? null : String(r.granted_by);
+    return { userId, grantedBy, votedIn: grantedBy !== null && passed.get(grantedBy) === `${userId}@${roleId}` };
+  });
+}
+
+/**
  * Seat somebody, and do nothing at all if they already hold the role.
  *
  * `ON DUPLICATE KEY UPDATE role_id = role_id` against the `(role_id, user_id)`

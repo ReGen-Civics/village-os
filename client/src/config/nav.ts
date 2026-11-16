@@ -70,6 +70,13 @@ export type NavLink = {
    * them alone and hidden at zero. Never anyone else's number.
    */
   count?: "tasks" | "messages";
+  /**
+   * true: shown only to someone signed in. false: shown only to a visitor.
+   * Absent: both. For an entry that earns the bar for a member and sits in a
+   * group for a visitor (design pass D-27: the bar carried nine stops for a
+   * visitor), so the page keeps its door either way.
+   */
+  signedIn?: boolean;
 };
 
 export type NavGroup = {
@@ -130,7 +137,8 @@ export const NAV: readonly NavEntry[] = [
    * ungated for the reason it always was (L1): public and read-only, the
    * platform's own page, so a visitor sees it too.
    */
-  { href: "/modules", label: "Module Library" },
+  // A member's bar only (design pass D-27): a visitor finds it under About.
+  { href: "/modules", label: "Module Library", signedIn: true },
   {
     label: "Community",
     items: [
@@ -297,6 +305,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/team", brochure: true, label: "Our Team" },
       // The other villages this one is linked with: part of what it is.
       { href: "/network", label: "Village Network", module: "network" },
+      // A visitor's door to the library, which a member has on the bar (design pass D-27).
+      { href: "/modules", label: "Module Library", signedIn: false },
     ],
   },
 ];

@@ -47,6 +47,8 @@ function reasonWords(reason: string | null): string {
       return "its ledger key collides with a different posting";
     case "rule":
       return "the ledger refused it";
+    case "equity_meaning":
+      return "the village has not written what Earned Equity means yet, so its share waits until it does";
     default:
       return "it has not been paid yet";
   }

@@ -46,7 +46,7 @@ Either download `village-os-starter-<version>.zip` from the latest release at
 whole repository if you mean to change the code:
 
 ```
-git clone --branch v1.3.12 https://github.com/ReGen-Civics/village-os.git
+git clone --branch v1.3.13 https://github.com/ReGen-Civics/village-os.git
 ```
 
 That is the release this file belongs to. Never clone without `--branch`: the
@@ -104,14 +104,45 @@ is in `server/seeds/templates/` in the full repository.
 ### 7. Put it on the internet (a rented server)
 
 Skip this on a laptop. On a server you rent, point your domain at it, then put
-a web server with HTTPS in front of the village. Caddy is the shortest:
+a web server with HTTPS in front of the village. Caddy is the shortest, and it
+fetches and renews the certificate by itself. Do not run it by hand in a
+terminal: that stops when you log out or the server restarts. Install it as a
+service, which starts on boot and restarts if it crashes.
 
-```
-caddy reverse-proxy --from village.example.org --to localhost:3000
-```
+1. Open ports 80 and 443 on the server's firewall (Caddy needs 80 to get the
+   certificate), and check your domain's DNS record points at the server.
+2. Install Caddy from its own package repository, following
+   <https://caddyserver.com/docs/install>. On Debian and Ubuntu that creates and
+   starts a `caddy` systemd service.
+3. Replace the contents of `/etc/caddy/Caddyfile` with this, using your domain.
+   The village listens on `127.0.0.1:3000`, which only this server can reach, so
+   Caddy is the only way in from outside:
 
-Set `FRONTEND_URL=https://village.example.org` in `.env`, then run
-`docker compose up -d` again so the village reads it.
+   ```
+   village.example.org {
+       reverse_proxy 127.0.0.1:3000
+   }
+   ```
+
+4. Load it and make sure it keeps running after a reboot:
+
+   ```
+   sudo systemctl enable --now caddy
+   sudo systemctl reload caddy
+   sudo systemctl status caddy
+   ```
+
+5. Set `FRONTEND_URL=https://village.example.org` in `.env`, then run
+   `docker compose up -d` again so the village reads it.
+6. **Check HTTPS before you claim.** From another computer, open
+   `https://village.example.org/health`. It should load with no certificate
+   warning and say `"status":"ok"`. If it does not, read
+   `sudo journalctl -u caddy --no-pager | tail -50` (usually the DNS record or
+   port 80 is not right yet) and fix that first.
+
+Claim the village (`/claim`) only at the `https://` address, never over plain
+`http://` and never at `http://server-ip:3000`: the claim sets your admin
+password, and over plain HTTP it crosses the internet in the open.
 
 Nothing outside the server tells you when the village stops answering. Point a
 free uptime checker at `https://village.example.org/health` (it answers `503`
@@ -141,7 +172,7 @@ in your Admin.
 ## Part B: a hosting provider (Railway)
 
 1. Create a project with three things: a MySQL service, a service that runs
-   the image `ghcr.io/regen-civics/village-os:1.3.12`, and a volume on that service
+   the image `ghcr.io/regen-civics/village-os:1.3.13`, and a volume on that service
    mounted at `/app/data`.
 2. On your own computer, get the files (step 2 above) and run
    `node scripts/fork-init.mjs --village-name "Your Village" --admin-email you@example.org --domain village.example.org`.
@@ -178,12 +209,26 @@ Windows, Git Bash or WSL):
 ```
 mkdir -p backups
 docker compose exec -T db sh -c 'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --no-tablespaces village' | gzip > backups/village-$(date +%F).sql.gz
-MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data:ro -v "$PWD/backups":/backup alpine tar czf /backup/uploads-$(date +%F).tar.gz -C /data .
+MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data:ro -v "$PWD/backups":/backup alpine:3.20 tar czf /backup/uploads-$(date +%F).tar.gz -C /data .
 ```
 
 Copy the `backups` folder somewhere else: another disk, another machine, a
 storage service. Do it on a schedule (cron, Task Scheduler), and keep more
 than one day.
+
+**Which backup fits which setup.** On one computer with Docker (this part),
+use the commands above, or the ready script that does the same on a schedule
+and encrypts the result with your own key: `ops/backup/compose-backup.sh`. Its
+header says how to set it up (a public key file, one `crontab -e` line). It
+keeps the dump, the uploads and a copy of `.env` as three encrypted files in
+`backups/`; copying that folder off the computer, and keeping `.env` in a
+password manager as well, is still your job. On a hosting provider such as
+Railway (part B), use the provider's own database backups and volume
+snapshots instead, and the GitHub backup below if you want your own encrypted
+copy. That GitHub backup needs a database reachable from the internet, which
+the compose database is not, so it does not fit the one-computer path. To
+restore the script's files, decrypt each one first with `gpg --decrypt` on the
+machine that holds your private key, then use the commands below.
 
 To restore into a fresh install, put your `.env` back first, then start only
 the database, wait for it to be ready, load both files, and start the village:
@@ -192,7 +237,7 @@ the database, wait for it to be ready, load both files, and start the village:
 docker compose up -d --wait db
 gunzip -c backups/village-DATE.sql.gz | docker compose exec -T db sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" village'
 docker compose create app
-MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data -v "$PWD/backups":/backup alpine tar xzf /backup/uploads-DATE.tar.gz -C /data
+MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data -v "$PWD/backups":/backup alpine:3.20 tar xzf /backup/uploads-DATE.tar.gz -C /data
 docker compose up -d
 ```
 
