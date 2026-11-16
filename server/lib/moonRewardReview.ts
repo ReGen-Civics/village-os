@@ -10,8 +10,14 @@
  *
  * Who may review is `payChangeConfirmers`: every live holder of the cash
  * power and of approve-alone (the founders' and stewards' circles), never the
- * member. The keys come from live seats (`keyHolders`), the same reading the
- * End of Moon approval uses (server/lib/moonReview.ts).
+ * member, read from live seats (`keyHolders`) the way the End of Moon
+ * approval reads them (server/lib/moonReview.ts). An admin who holds neither
+ * through a seat is refused here, even where the one gate's admin pass opens
+ * the review door (security lane, #1349 S3 8).
+ *
+ * Approving and changing decide on rows they hold locked, in the transaction
+ * that writes them (`withRewardRows`, server/repos/moonRewardReviews.ts says
+ * why that closes both races the review found).
  *
  * Nothing here moves cash. A cash line reads as the existing record writes
  * it (`cash_owed`); its "sent" is the transfer a holder of the cash power
@@ -19,22 +25,30 @@
  */
 import type { Pool } from "mysql2/promise";
 import {
-  REWARD_NOTICE_WORDS, REWARD_REVIEW_LIMITS, REWARD_REVIEW_REFUSALS, cashLineStatus, cashTotals, monthBounds, readRewardAdjust, readRewardKeys,
+  NO_APPROVER_WORDS, REWARD_NOTICE_WORDS, REWARD_REVIEW_LIMITS, REWARD_REVIEW_REFUSALS, cashLineStatus, cashTotals, monthBounds, readRewardAdjust, readRewardKeys,
   rewardAdjustRefusal, rewardApproveRefusal, rewardCeiling, tokenLineStatus, tokenTotals,
   type PayBoard, type PayBoardCashLine, type PayBoardMember, type PayBoardTokenLine,
 } from "../../shared/moonRewardReview";
-import { APPROVE_ALONE_CAPABILITY, INVOICE_APPROVE_CAPABILITY, payChangeConfirmers } from "../../shared/moonRecap";
-import { approveRewardReview, rewardLinesBetween, rewardLinesByKeys, rewardLinesFor, replyToRewardChange, setRewardUnits, type RewardLineRow } from "../repos/moonRewardReviews";
+import { APPROVE_ALONE_CAPABILITY, INVOICE_APPROVE_CAPABILITY, payChangeConfirmers, type InvoiceLine } from "../../shared/moonRecap";
+import {
+  awaitingWithoutReview, recordRewardReviews, rewardLinesBetween, rewardLinesByKeys, rewardLinesFor, replyToRewardChange, withRewardRows, writeRewardApproval,
+  writeRewardChange, type RewardLineRow,
+} from "../repos/moonRewardReviews";
 import { cashOwedRowsBetween } from "../repos/cashOwed";
+import { invoicesByIds } from "../repos/moonRecaps";
 import { rowToCashEntry } from "./cashOwed";
 import { MOON_REWARD_SOURCE, settleRewardKeys } from "./moonReward";
 import { readGameStart } from "./gameStart";
 import { fromLedgerUnits, toLedgerUnits } from "./economy";
+import { departedById } from "./departed";
 import type { KeyHolders, Notice } from "./moonReview";
 import type { SettleOutcome } from "../repos/questOwedPostings";
 
 export type Outcome<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 const refuse = (status: number, error: string) => ({ ok: false as const, status, error });
+
+/** One board reads at most this many lines of each kind for a month, and says so when it is cut. */
+export const PAY_BOARD_LIMIT = 2000;
 
 export interface RewardReviewDeps {
   keyHolders: KeyHolders;
@@ -43,7 +57,7 @@ export interface RewardReviewDeps {
   recordEvent(e: { kind: "audit"; text: string; actorUserId: string; entityType: string; entityRef: string; audience: "admin" }): Promise<unknown>;
 }
 
-/** Everyone who may review token pay, before the member is taken out. */
+/** Everyone who may review token pay through a live seat, before any member is taken out. */
 export async function rewardReviewers(keyHolders: KeyHolders): Promise<string[]> {
   const [pay, alone] = await Promise.all([keyHolders(INVOICE_APPROVE_CAPABILITY), keyHolders(APPROVE_ALONE_CAPABILITY)]);
   return payChangeConfirmers({ pay, alone }, "");
@@ -52,8 +66,41 @@ export async function rewardReviewers(keyHolders: KeyHolders): Promise<string[]>
 const iso = (s: number | null): string | null => (s == null ? null : new Date(s * 1000).toISOString());
 const whole = (token: string, units: number): number => fromLedgerUnits(token, units);
 
-/** "Steward, November moon": the line's description reads as its title. */
-function tokenLine(r: RewardLineRow, launched: boolean, nameOf: (id: string) => string | null): PayBoardTokenLine {
+/**
+ * A share recorded before reviews existed has no review row: the migration moved
+ * it to `awaiting`, and this gives it one, read off its invoice line, so it is
+ * reviewed like any other (security lane, #1349 S3 5). Idempotent.
+ */
+export async function reviewUnreviewed(pool: Pool): Promise<number> {
+  const rows = await awaitingWithoutReview(pool, MOON_REWARD_SOURCE);
+  if (rows.length === 0) return 0;
+  const invoiceIdOf = (claimId: string) => (claimId.startsWith("moon:") ? claimId.slice(5) : claimId);
+  const invoices = new Map((await invoicesByIds(pool, Array.from(new Set(rows.map((r) => invoiceIdOf(r.claimId)))))).map((i) => [i.id, i]));
+  await recordRewardReviews(pool, rows.map((r) => {
+    const inv = invoices.get(invoiceIdOf(r.claimId));
+    let line: InvoiceLine | undefined;
+    try {
+      line = inv ? (JSON.parse(inv.linesJson) as InvoiceLine[]).find((l) => l.key === r.sourceRef) : undefined;
+    } catch {
+      line = undefined;
+    }
+    return {
+      idempotencyKey: r.key, invoiceId: invoiceIdOf(r.claimId), userId: r.userId, tokenSlug: r.token, unitsShared: r.units, lineKey: r.sourceRef,
+      // No line to read: 0 holds the share where it is (it can be approved, never raised).
+      lineTotalMinor: line?.reward?.totalMinor ?? 0, cashMinor: line?.reward?.cashMinor ?? 0, currency: line?.currency ?? inv?.currency ?? "",
+    };
+  }));
+  return rows.length;
+}
+
+/** The ceiling for one share, from its line's other share as it stands. Null when it has no review. */
+function ceilingOf(r: RewardLineRow, mates: readonly RewardLineRow[]): number | null {
+  if (!r.review) return null;
+  const other = mates.filter((m) => m.key !== r.key && m.claimId === r.claimId && m.sourceRef === r.sourceRef && m.postingState !== "refused");
+  return rewardCeiling({ lineTotalMinor: r.review.lineTotalMinor, cashMinor: r.review.cashMinor, otherUnits: other.reduce((n, m) => n + whole(m.token, m.units), 0) });
+}
+
+function tokenLine(r: RewardLineRow, all: readonly RewardLineRow[], launched: boolean, nameOf: (id: string) => string | null, noApprover: boolean): PayBoardTokenLine {
   const rv = r.review;
   return {
     key: r.key,
@@ -61,8 +108,8 @@ function tokenLine(r: RewardLineRow, launched: boolean, nameOf: (id: string) => 
     token: r.token,
     sharedUnits: whole(r.token, rv ? rv.unitsShared : r.units),
     units: whole(r.token, r.units),
-    ceiling: rv ? rewardCeiling(rv.lineTotalMinor) : null,
-    status: tokenLineStatus({ postingState: r.postingState, review: rv?.state ?? null, launched }),
+    ceiling: ceilingOf(r, all),
+    status: tokenLineStatus({ postingState: r.postingState, launched }),
     review: rv?.state ?? null,
     change: rv && rv.unitsSet != null ? { by: rv.setBy ? nameOf(rv.setBy) : null, reason: rv.setReason ?? "", at: iso(rv.setAt) } : null,
     approvedBy: rv?.approvedBy ? nameOf(rv.approvedBy) : null,
@@ -70,19 +117,25 @@ function tokenLine(r: RewardLineRow, launched: boolean, nameOf: (id: string) => 
     approvedAlone: rv?.approvedAlone ?? false,
     memberReply: rv?.memberReply ? { text: rv.memberReply, at: iso(rv.memberReplyAt) } : null,
     refusal: r.postingState === "refused" || (r.postingState === "owed" && r.lastError) ? r.lastError : null,
+    noApprover: noApprover && r.postingState === "awaiting",
     createdAt: iso(r.createdAt) as string,
   };
 }
 
 /** Every member's pay approved in one month: cash with where it stands, and token lines with their reviews. */
 export async function payBoard(pool: Pool, viewerId: string, month: string, deps: Pick<RewardReviewDeps, "keyHolders" | "nameOf">): Promise<PayBoard> {
+  await reviewUnreviewed(pool);
   const { from, to } = monthBounds(month);
-  const [cashRows, tokenRows, start, reviewers] = await Promise.all([
-    cashOwedRowsBetween(pool, from, to),
-    rewardLinesBetween(pool, MOON_REWARD_SOURCE, from, to),
+  const [fromS, toS] = [Math.floor(from.getTime() / 1000), Math.floor(to.getTime() / 1000)];
+  const [cashAll, tokenAll, start, reviewers] = await Promise.all([
+    cashOwedRowsBetween(pool, fromS, toS, PAY_BOARD_LIMIT),
+    rewardLinesBetween(pool, MOON_REWARD_SOURCE, fromS, toS, PAY_BOARD_LIMIT),
     readGameStart(pool),
     rewardReviewers(deps.keyHolders),
   ]);
+  const truncated = cashAll.length > PAY_BOARD_LIMIT || tokenAll.length > PAY_BOARD_LIMIT;
+  const cashRows = cashAll.slice(0, PAY_BOARD_LIMIT);
+  const tokenRows = tokenAll.slice(0, PAY_BOARD_LIMIT);
   const ids = new Set<string>([...cashRows.map((r) => String(r.user_id)), ...tokenRows.map((r) => r.userId)]);
   for (const r of cashRows) if (r.paid_by) ids.add(String(r.paid_by));
   for (const r of tokenRows) for (const u of [r.review?.setBy, r.review?.approvedBy]) if (u) ids.add(u);
@@ -108,35 +161,49 @@ export async function payBoard(pool: Pool, viewerId: string, month: string, deps
     };
     member(String(r.user_id)).cash.push(line);
   }
-  for (const r of tokenRows) member(r.userId).tokens.push(tokenLine(r, start.started, nameOf));
+  for (const r of tokenRows) {
+    const noApprover = reviewers.filter((u) => u !== r.userId).length === 0;
+    member(r.userId).tokens.push(tokenLine(r, tokenRows, start.started, nameOf, noApprover));
+  }
   const members = Array.from(byMember.values());
   for (const m of members) {
     m.cashTotals = cashTotals(m.cash);
     m.tokenTotals = tokenTotals(m.tokens);
   }
   members.sort((a, b) => a.name.localeCompare(b.name) || a.userId.localeCompare(b.userId));
-  return { month, launched: start.started, mayReview: reviewers.includes(viewerId), viewerId, members };
+  return { month, launched: start.started, mayReview: reviewers.includes(viewerId), viewerId, members, truncated };
+}
+
+/** Whether this person may review token pay through a live seat (security lane, #1349 S3 8). */
+export async function isLiveReviewer(keyHolders: KeyHolders, userId: string): Promise<boolean> {
+  return (await rewardReviewers(keyHolders)).includes(userId);
 }
 
 /**
  * CHANGE A TOKEN LINE, up or down, with a reason. The member is told and can
- * answer. The line goes back to waiting, so a second person approves it while
- * two or more may (`rewardApproveRefusal`).
+ * answer. The line goes back to awaiting, so it is approved again, by a second
+ * person while two or more may (`rewardApproveRefusal`).
  */
 export async function adjustReward(pool: Pool, actorId: string, body: unknown, deps: RewardReviewDeps): Promise<Outcome<{ key: string; units: number }>> {
   const input = readRewardAdjust(body);
   if (!input.ok) return refuse(400, input.error);
-  const [line] = await rewardLinesByKeys(pool, MOON_REWARD_SOURCE, [input.key]);
-  if (!line || !line.review) return refuse(404, REWARD_REVIEW_REFUSALS.notFound);
-  const no = rewardAdjustRefusal({ actorId, memberId: line.userId, confirmers: (await rewardReviewers(deps.keyHolders)).filter((u) => u !== line.userId) });
-  if (no) return refuse(403, no);
-  if (line.postingState !== "owed") return refuse(409, REWARD_REVIEW_REFUSALS.notOwed);
-  const max = rewardCeiling(line.review.lineTotalMinor);
-  if (input.units > max) return refuse(400, REWARD_REVIEW_REFUSALS.ceiling(max));
-  const from = whole(line.token, line.units);
-  if (!(await setRewardUnits(pool, { key: line.key, units: toLedgerUnits(line.token, input.units), reason: input.reason, by: actorId }))) {
-    return refuse(409, REWARD_REVIEW_REFUSALS.notOwed);
-  }
+  await reviewUnreviewed(pool);
+  const reviewers = await rewardReviewers(deps.keyHolders);
+  type Done = { ok: true; line: RewardLineRow; from: number } | { ok: false; status: number; error: string };
+  const done = await withRewardRows<Done>(pool, MOON_REWARD_SOURCE, [input.key], async (conn, rows, mates) => {
+    const line = rows[0];
+    if (!line || !line.review) return refuse(404, REWARD_REVIEW_REFUSALS.notFound);
+    const no = rewardAdjustRefusal({ actorId, memberId: line.userId, confirmers: reviewers.filter((u) => u !== line.userId) });
+    if (no) return refuse(403, no);
+    if (line.postingState !== "awaiting" && line.postingState !== "owed") return refuse(409, REWARD_REVIEW_REFUSALS.notOwed);
+    if (await departedById(conn, line.userId)) return refuse(409, REWARD_REVIEW_REFUSALS.departed);
+    const max = ceilingOf(line, mates) ?? 0;
+    if (input.units > max) return refuse(400, REWARD_REVIEW_REFUSALS.ceiling(Math.max(0, max)));
+    await writeRewardChange(conn, { key: line.key, units: toLedgerUnits(line.token, input.units), reason: input.reason, by: actorId });
+    return { ok: true, line, from: whole(line.token, line.units) };
+  });
+  if (!done.ok) return done;
+  const { line, from } = done;
   await deps.recordEvent({ kind: "audit", text: `moon_reward:set:${line.key}:${from}->${input.units}`.slice(0, 1000), actorUserId: actorId, entityType: "moon_reward", entityRef: line.key.slice(0, 191), audience: "admin" });
   await deps.notify({
     userId: line.userId,
@@ -157,42 +224,64 @@ export interface ApprovedReward {
 }
 
 /**
- * APPROVE TOKEN LINES, each checked alone. Every line must pass, or nothing is
- * approved and the refusal names the line. After the launch vote the approved
- * lines issue at once, through the owed postings; before it they issue at launch.
+ * APPROVE TOKEN LINES, each checked alone, on rows held locked. Every line
+ * must pass, or nothing is approved and the refusal names the line. After the
+ * launch vote the approved lines issue at once, through the owed postings;
+ * before it they issue at launch.
  */
 export async function approveRewards(pool: Pool, actorId: string, body: unknown, deps: RewardReviewDeps): Promise<Outcome<{ approved: ApprovedReward[] }>> {
   const keys = readRewardKeys(body);
   if (!keys) return refuse(400, REWARD_REVIEW_REFUSALS.keys);
-  const lines = await rewardLinesByKeys(pool, MOON_REWARD_SOURCE, keys);
-  if (lines.length !== keys.length || lines.some((l) => !l.review)) return refuse(404, REWARD_REVIEW_REFUSALS.notFound);
+  await reviewUnreviewed(pool);
   const reviewers = await rewardReviewers(deps.keyHolders);
-  for (const l of lines) {
-    const confirmers = reviewers.filter((u) => u !== l.userId);
-    const no = rewardApproveRefusal({ actorId, memberId: l.userId, setBy: l.review!.unitsSet != null ? l.review!.setBy : null, confirmers });
-    if (no) return refuse(403, `${l.description}: ${no}`);
-    if (l.postingState !== "owed") return refuse(409, `${l.description}: ${REWARD_REVIEW_REFUSALS.notOwed}`);
-    if (l.review!.state === "approved") return refuse(409, `${l.description}: ${REWARD_REVIEW_REFUSALS.approved}`);
+  type Done = { ok: true; lines: Array<{ line: RewardLineRow; alone: boolean }> } | { ok: false; status: number; error: string };
+  const done = await withRewardRows<Done>(pool, MOON_REWARD_SOURCE, keys, async (conn, rows) => {
+    if (rows.length !== keys.length || rows.some((l) => !l.review)) return refuse(404, REWARD_REVIEW_REFUSALS.notFound);
+    const out: Array<{ line: RewardLineRow; alone: boolean }> = [];
+    for (const l of rows) {
+      const confirmers = reviewers.filter((u) => u !== l.userId);
+      // Who changed it is read here, under the lock the approval writes under.
+      const setBy = l.review!.unitsSet != null ? l.review!.setBy : null;
+      const no = rewardApproveRefusal({ actorId, memberId: l.userId, setBy, confirmers });
+      if (no) return refuse(403, `${l.description}: ${no}`);
+      if (l.postingState !== "awaiting") return refuse(409, `${l.description}: ${l.postingState === "owed" ? REWARD_REVIEW_REFUSALS.approved : REWARD_REVIEW_REFUSALS.notOwed}`);
+      if (await departedById(conn, l.userId)) return refuse(409, `${l.description}: ${REWARD_REVIEW_REFUSALS.departed}`);
+      out.push({ line: l, alone: setBy === actorId });
+    }
+    for (const { line, alone } of out) await writeRewardApproval(conn, { key: line.key, by: actorId, alone });
+    return { ok: true, lines: out };
+  });
+  if (!done.ok) return done;
+  for (const { line, alone } of done.lines) {
+    const units = whole(line.token, line.units);
+    await deps.recordEvent({
+      kind: "audit", text: `moon_reward:approved:${line.key}:${units}${alone ? ":alone" : ""}`.slice(0, 1000), actorUserId: actorId,
+      entityType: "moon_reward", entityRef: line.key.slice(0, 191), audience: "admin",
+    });
+    if (alone) {
+      // A lone approval is told to the circle that can seat a second person (security lane, #1349 S3 7).
+      const who = await deps.nameOf(actorId).catch(() => "A Treasurer");
+      for (const u of (await deps.keyHolders("steward.veto").catch(() => [] as string[])).filter((id) => id !== actorId)) {
+        await deps.notify({
+          userId: u, type: "moon_review", title: REWARD_NOTICE_WORDS.aloneTitle, body: REWARD_NOTICE_WORDS.aloneBody(who, line.description, units),
+          link: "/cash-payouts#pay-board", actorUserId: actorId, dedupeKey: `moon_reward:alone:${line.key}:${units}:${u}`.slice(0, 191),
+        }).catch(() => undefined);
+      }
+    }
   }
-  const done: string[] = [];
-  for (const l of lines) {
-    const confirmers = reviewers.filter((u) => u !== l.userId);
-    const alone = l.review!.unitsSet != null && l.review!.setBy === actorId && confirmers.length < 2;
-    if (await approveRewardReview(pool, { key: l.key, by: actorId, alone })) done.push(l.key);
-  }
-  for (const key of done) {
-    await deps.recordEvent({ kind: "audit", text: `moon_reward:approved:${key}`.slice(0, 1000), actorUserId: actorId, entityType: "moon_reward", entityRef: key.slice(0, 191), audience: "admin" });
-  }
+  const approvedKeys = done.lines.map((l) => l.line.key);
   const start = await readGameStart(pool);
-  if (!start.started) return { ok: true, value: { approved: done.map((key) => ({ key, outcome: "issues_at_launch" as const })) } };
-  const settled = await settleRewardKeys(pool, done);
+  if (!start.started) return { ok: true, value: { approved: approvedKeys.map((key) => ({ key, outcome: "issues_at_launch" as const })) } };
+  const settled = await settleRewardKeys(pool, approvedKeys);
   const by = new Map<string, SettleOutcome>(settled.map((o) => [o.key, o]));
   return {
     ok: true,
     value: {
-      approved: done.map((key) => {
+      approved: approvedKeys.map((key) => {
         const o = by.get(key);
-        if (!o || o.outcome === "posted" || o.outcome === "duplicate" || o.outcome === "not_owed") return { key, outcome: "issued" as const };
+        if (!o || o.outcome === "posted" || o.outcome === "duplicate") return { key, outcome: "issued" as const };
+        // A change landed between the approval and the issue: it waits for approval again, and nothing issued.
+        if (o.outcome === "not_owed") return { key, outcome: "still_owed" as const, message: REWARD_REVIEW_REFUSALS.changedFirst };
         return { key, outcome: o.outcome, message: o.message };
       }),
     },
@@ -200,11 +289,13 @@ export async function approveRewards(pool: Pool, actorId: string, body: unknown,
 }
 
 /** A member's own token lines, newest first, with any change and its reason. */
-export async function myRewards(pool: Pool, userId: string, deps: Pick<RewardReviewDeps, "nameOf">): Promise<{ launched: boolean; lines: PayBoardTokenLine[] }> {
-  const [rows, start] = await Promise.all([rewardLinesFor(pool, MOON_REWARD_SOURCE, userId), readGameStart(pool)]);
+export async function myRewards(pool: Pool, userId: string, deps: Pick<RewardReviewDeps, "nameOf" | "keyHolders">): Promise<{ launched: boolean; lines: PayBoardTokenLine[]; noApproverWords: string }> {
+  await reviewUnreviewed(pool);
+  const [rows, start, reviewers] = await Promise.all([rewardLinesFor(pool, MOON_REWARD_SOURCE, userId), readGameStart(pool), rewardReviewers(deps.keyHolders)]);
   const names = new Map<string, string>();
   for (const r of rows) for (const u of [r.review?.setBy, r.review?.approvedBy]) if (u && !names.has(u)) names.set(u, await deps.nameOf(u).catch(() => ""));
-  return { launched: start.started, lines: rows.map((r) => tokenLine(r, start.started, (id) => names.get(id) || null)) };
+  const noApprover = reviewers.filter((u) => u !== userId).length === 0;
+  return { launched: start.started, lines: rows.map((r) => tokenLine(r, rows, start.started, (id) => names.get(id) || null, noApprover)), noApproverWords: NO_APPROVER_WORDS };
 }
 
 /** The member answers a change to their own token line. Whoever changed it is told. */

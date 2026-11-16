@@ -22,10 +22,13 @@
  *     and it is marked;
  *   - approved before the launch vote, it reads "issues at launch" and the
  *     launch pays it; approved after, it issues at once.
- * A changed amount stays at or above one whole unit (a posting is never zero,
- * drizzle/0210) and at or under the pay cap of the line's whole reward
- * (`ROLE_PAY_CAP_PCT`). Nothing here proposes an amount: the number is a
- * person's.
+ * A share waiting for its review is `awaiting`, a posting state no payer
+ * reads; approving it makes it `owed`, and a change makes it `awaiting` again
+ * (the coordinator's ruling, 15 Nov 2026). A changed amount stays at or above
+ * one whole unit (a posting is never zero, drizzle/0210), and the WHOLE LINE,
+ * cash and Earned Equity and Credits together, stays at or under the pay cap
+ * of its reward (`ROLE_PAY_CAP_PCT`, Rye's cap ruling; security lane, #1349
+ * S2 3). Nothing here proposes an amount: the number is a person's.
  *
  * Pure: no pool, no clock.
  */
@@ -63,7 +66,15 @@ export const REWARD_REVIEW_REFUSALS = {
   keys: `Pick at least one line, each once, and at most ${REWARD_REVIEW_LIMITS.approveAtOnce}.`,
   reply: `Write your answer, in at most ${REWARD_REVIEW_LIMITS.reply} characters.`,
   notChanged: "You can answer a change to your token pay once someone has changed it.",
+  departed: "This member has left the village, so their token pay no longer changes or issues.",
+  personOnly: "Token pay is approved and changed by a person, never through the connector.",
+  liveKey: "The pay board is for a Treasurer or a founder seated in a live role.",
+  changedFirst: "It changed before it issued, so it waits for approval again.",
 } as const;
+
+/** What a line says when nobody but its own member may approve it (security lane, #1349 S3 6). */
+export const NO_APPROVER_WORDS =
+  "Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in.";
 
 /** What the member is told when their token pay changes. */
 export const REWARD_NOTICE_WORDS = {
@@ -71,6 +82,9 @@ export const REWARD_NOTICE_WORDS = {
   changedBody: (token: string, from: number, to: number, reason: string) =>
     `${token}: ${from.toLocaleString("en-US")} is now ${to.toLocaleString("en-US")}. ${reason}`,
   replyTitle: "A member answered a change to their token pay",
+  aloneTitle: "Token pay was approved by the only person who could",
+  aloneBody: (who: string, line: string, units: number) =>
+    `${who} approved their own change to ${line}, ${units.toLocaleString("en-US")}, as the only Treasurer or founder who could.`,
 } as const;
 
 /** "2026-11": the month a board reads. Null for anything else. */
@@ -89,9 +103,15 @@ export function monthBounds(month: string): { from: Date; to: Date } {
 /** The month an instant falls in, in UTC. */
 export const monthOf = (d: Date): string => d.toISOString().slice(0, 7);
 
-/** The most whole units a changed amount may be: the pay cap of the line's whole reward, one unit per whole currency unit. */
-export function rewardCeiling(lineTotalMinor: number): number {
-  return Math.floor((Math.max(0, lineTotalMinor) * ROLE_PAY_CAP_PCT) / 100 / 100);
+/**
+ * The most whole units one token share may be changed to: the pay cap of the
+ * line's whole reward, less the line's cash share and less the line's other
+ * token share as it stands. One unit per whole currency unit. Zero or below
+ * means it cannot be changed up at all.
+ */
+export function rewardCeiling(f: { lineTotalMinor: number; cashMinor: number; otherUnits: number }): number {
+  const capMinor = Math.floor((Math.max(0, f.lineTotalMinor) * ROLE_PAY_CAP_PCT) / 100);
+  return Math.floor((capMinor - Math.max(0, f.cashMinor)) / 100) - Math.max(0, f.otherUnits);
 }
 
 export type RewardAdjustInput = { ok: true; key: string; units: number; reason: string } | { ok: false; error: string };
@@ -136,14 +156,11 @@ export function rewardAdjustRefusal(f: { actorId: string; memberId: string; conf
   return null;
 }
 
-/**
- * Where a token line stands. A posting with no review row was recorded
- * before reviews existed and pays as it always did, so it reads as approved.
- */
-export function tokenLineStatus(f: { postingState: "owed" | "posted" | "refused"; review: RewardReviewState | null; launched: boolean }): TokenLineStatus {
+/** Where a token line stands, read off the posting: `awaiting` waits for its review, `owed` is approved. */
+export function tokenLineStatus(f: { postingState: "awaiting" | "owed" | "posted" | "refused"; launched: boolean }): TokenLineStatus {
   if (f.postingState === "posted") return "issued";
   if (f.postingState === "refused") return "refused";
-  if (f.review === "waiting") return "waiting";
+  if (f.postingState === "awaiting") return "waiting";
   return f.launched ? "approved" : "issues_at_launch";
 }
 
@@ -188,6 +205,8 @@ export interface PayBoardTokenLine {
   approvedAlone: boolean;
   memberReply: { text: string; at: string | null } | null;
   refusal: string | null;
+  /** Nobody but the member may approve it: it waits until someone is seated (`NO_APPROVER_WORDS`). */
+  noApprover: boolean;
   createdAt: string;
 }
 
@@ -221,6 +240,8 @@ export interface PayBoard {
   mayReview: boolean;
   viewerId: string;
   members: PayBoardMember[];
+  /** The month held more lines than one board reads; the list is cut. */
+  truncated: boolean;
 }
 
 /** Totals by currency: unpaid lines are owed, sent ones are sent. */

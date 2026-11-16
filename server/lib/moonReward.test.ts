@@ -58,7 +58,7 @@ const PAYERS = {
 };
 const SETTINGS = { hostCountry: { code: "XX", name: "Hostland" }, pilotAck: { text: "This is a pilot.", version: "v1" }, taxForms: [], taxFormRoutes: [], holds: [] };
 const ATTEST = { workCountries: ["US"], daysInHostCountry: 0, statusUnchanged: true, servedAbroad: null, visitorEntryWork: false };
-const HOLDERS: Record<string, string[]> = { "moon.approve": ["m-ops"], "cash.pay": ["m-fin", "m-treas"] };
+const HOLDERS: Record<string, string[]> = { "moon.approve": ["m-ops"], "cash.pay": ["m-fin", "m-treas"], "steward.veto": [] };
 /** 6,500 a moon, the whole reward. */
 const PAY = JSON.stringify({ v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 650_000, per: "moon" } });
 
@@ -75,7 +75,8 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     if (!h) throw new Error(`no handler for ${key}`);
     const out: { status: number; body: any } = { status: 200, body: undefined };
     const res: any = { status(c: number) { out.status = c; return res; }, json(b: unknown) { out.body = b; return res; } };
-    await h({ params: {}, body: {}, query: {}, ...req }, res);
+    const headers: Record<string, string> = req.headers ?? {};
+    await h({ params: {}, body: {}, query: {}, get: (name: string) => headers[name.toLowerCase()], ...req }, res);
     return out;
   };
   const as = (who: string) => { whoami = who; };
@@ -87,7 +88,7 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     await seedEconomy(pool, villageId());
     await loadTokenRegistry(pool);
     await loadVariables(pool);
-    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas"]) {
+    for (const id of ["m-wren", "m-ops", "m-fin", "m-treas", "m-admin"]) {
       await q("INSERT INTO `users` (`id`, `name`, `email`, `password_hash`, `handle`) VALUES (?,?,?,'x',?)", [id, id.slice(2), `${id}@example.test`, id.slice(2)]); // module-review-ok: fixture SQL
     }
     await q("INSERT INTO `org_roles` (`id`, `name`, `accountabilities`) VALUES ('r-water', 'Water keeper', ?)", [JSON.stringify(["Keep the water clean"])]); // module-review-ok: fixture SQL
@@ -134,7 +135,9 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     await q("DELETE FROM `quest_owed_postings` WHERE `source` = ?", [MOON_REWARD_SOURCE]); // module-review-ok: fixture SQL
     await q("DELETE FROM `moon_reward_reviews`"); // module-review-ok: fixture SQL
     HOLDERS["cash.pay"] = ["m-fin", "m-treas"];
+    HOLDERS["steward.veto"] = [];
     notices.length = 0;
+    await q("DELETE FROM `health_events` WHERE `text` LIKE 'moon_reward:%'"); // module-review-ok: fixture SQL
     await villageShape("");
     await equityMeaning("A share of what the village builds together.");
     await recordGameStart(pool, { ballotId: "b-launch", startedBy: "m-ops", note: "Launched for the test." });
@@ -289,7 +292,7 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect(await issued()).toEqual(before);
     const [inv] = await q("SELECT `id` FROM `moon_invoices` WHERE `user_id` = 'm-wren' AND `status` = 'approved'"); // module-review-ok: fixture SQL
     const owed = await q("SELECT `token_slug`, `units`, `state` FROM `quest_owed_postings` WHERE `claim_id` = ?", [lineRewardClaimId(inv.id)]); // module-review-ok: fixture SQL
-    expect(owed.map((r: any) => [r.token_slug, r.state])).toEqual([[EARNED_EQUITY, "owed"]]);
+    expect(owed.map((r: any) => [r.token_slug, r.state])).toEqual([[EARNED_EQUITY, "awaiting"]]);
     // Approved before the vote, it reads "issues at launch" and nothing moves yet.
     expect((await approveTokens()).body.approved.map((a: any) => a.outcome)).toEqual(["issues_at_launch"]);
     expect((await board()).tokens.map((t: any) => t.status)).toEqual(["issues_at_launch"]);
@@ -355,7 +358,7 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect(await retryOwedLineRewards(pool)).toBe("0 posted, 0 still owed, 0 refused");
     expect(await issued()).toEqual(before);
     const row = await board();
-    expect(row.tokens).toMatchObject([{ token: EARNED_EQUITY, sharedUnits: 2600, units: 2600, status: "waiting", ceiling: 7800 }]);
+    expect(row.tokens).toMatchObject([{ token: EARNED_EQUITY, sharedUnits: 2600, units: 2600, status: "waiting", ceiling: 3900 }]);
     expect(row.tokenTotals).toEqual([{ token: EARNED_EQUITY, waiting: 2600, approved: 0, issued: 0 }]);
   });
 
@@ -376,7 +379,8 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect((await call(`POST ${PAY_BOARD_ROUTES.reply}`, { body: { key, text: "Thank you, that was a long week." } })).status).toBe(200);
     expect(notices.some((n) => n.userId === "m-fin" && String(n.body).includes("Thank you"))).toBe(true);
     // The member never approves their own, and whoever changed it does not approve it while another may.
-    expect((await approveTokens("m-wren")).body.error).toContain(REWARD_REVIEW_REFUSALS.ownPay);
+    // The member holds no key, so the door refuses them before the rule would.
+    expect((await approveTokens("m-wren")).body.message).toBe(REWARD_REVIEW_REFUSALS.liveKey);
     const self = await approveTokens("m-fin");
     expect(self.status).toBe(403);
     expect(self.body.error).toContain(REWARD_REVIEW_REFUSALS.otherApproves);
@@ -399,8 +403,8 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect((await approve()).body.approved).toHaveLength(1);
     const [key] = await rewardKeys();
     as("m-fin");
-    // The pay cap of the line's whole reward: 120% of 6,500.
-    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 7801, reason: "Too much." } })).body.error).toBe(REWARD_REVIEW_REFUSALS.ceiling(7800));
+    // The pay cap of the whole line: 120% of 6,500 is 7,800, less the 3,900 cash.
+    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 3901, reason: "Too much." } })).body.error).toBe(REWARD_REVIEW_REFUSALS.ceiling(3900));
     expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 0, reason: "Nothing." } })).body.error).toBe(REWARD_REVIEW_REFUSALS.units);
     expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 2000 } })).body.error).toBe(REWARD_REVIEW_REFUSALS.reason);
     expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 2000, reason: "Part of the moon was leave." } })).status).toBe(200);
@@ -441,5 +445,120 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     const [r] = await q("SELECT `member_reply`, `units_set` FROM `moon_reward_reviews` WHERE `idempotency_key` = ?", [key]); // module-review-ok: fixture SQL
     expect(r.member_reply).toBeNull();
     expect(Number(r.units_set)).toBe(toLedgerUnits(EARNED_EQUITY, 2700));
+  });
+
+  it("S2 1: a change after an approval moves the share back to awaiting, so no payer issues the changed amount unapproved", async () => {
+    await q("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    const before = await issued();
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    const [key] = await rewardKeys();
+    // One person approves it as shared: it is owed, waiting for the launch.
+    expect((await approveTokens("m-fin")).body.approved.map((a: any) => a.outcome)).toEqual(["issues_at_launch"]);
+    expect((await q("SELECT `state` FROM `quest_owed_postings` WHERE `idempotency_key` = ?", [key]))[0].state).toBe("owed"); // module-review-ok: fixture SQL
+    // Then the same person raises it.
+    as("m-fin");
+    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 3500, reason: "A late bonus." } })).status).toBe(200);
+    expect((await q("SELECT `state` FROM `quest_owed_postings` WHERE `idempotency_key` = ?", [key]))[0].state).toBe("awaiting"); // module-review-ok: fixture SQL
+    await recordGameStart(pool, { ballotId: "b-launch", startedBy: "m-ops", note: "Launched for the test." });
+    // The launch sweep and the hourly retry read owed rows only: nothing moves.
+    expect(await settleOwedLineRewards(pool)).toEqual([]);
+    expect(await retryOwedLineRewards(pool)).toBe("0 posted, 0 still owed, 0 refused");
+    expect(await issued()).toEqual(before);
+    // The person who changed it cannot approve it; somebody else does, and the changed amount issues.
+    expect((await approveTokens("m-fin")).status).toBe(403);
+    expect((await approveTokens("m-treas")).body.approved.map((a: any) => a.outcome)).toEqual(["issued"]);
+    expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(3500);
+  });
+
+  it("S2 3: the cap is the whole line's, cash and both token shares together", async () => {
+    await cardShape([{ label: "Cash", pct: 40 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 20 }]);
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    // 6,500 at 40/40/20: 2,600 cash, 2,600 EE, 1,300 Credits. The cap is 7,800 for the line.
+    const row = await board();
+    const eq = row.tokens.find((t: any) => t.token === EARNED_EQUITY);
+    const cr = row.tokens.find((t: any) => t.token === CREDITS);
+    expect([eq.ceiling, cr.ceiling]).toEqual([7800 - 2600 - 1300, 7800 - 2600 - 2600]);
+    as("m-fin");
+    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key: eq.key, units: 3900, reason: "Raised." } })).status).toBe(200);
+    // Raising one share lowers what the other may reach: 7,800 less 2,600 cash less 3,900 EE.
+    const refused = await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key: cr.key, units: 1301, reason: "Raised too." } });
+    expect(refused.body.error).toBe(REWARD_REVIEW_REFUSALS.ceiling(1300));
+  });
+
+  it("S3 5: a share recorded before reviews, moved to awaiting, gets its review from the invoice and is reviewed like any other", async () => {
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    const before = await issued();
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    // As the migration leaves a share from before: awaiting, with no review row.
+    await q("DELETE FROM `moon_reward_reviews`"); // module-review-ok: fixture SQL
+    expect(await settleOwedLineRewards(pool)).toEqual([]);
+    const row = await board();
+    expect(row.tokens[0]).toMatchObject({ status: "waiting", sharedUnits: 2600, ceiling: 3900 });
+    expect((await approveTokens("m-treas")).body.approved.map((a: any) => a.outcome)).toEqual(["issued"]);
+    expect(fromLedgerUnits(EARNED_EQUITY, (await issued()).equity - before.equity)).toBe(2600);
+  });
+
+  it("S3 6 and 7: with only the member able to approve, the line says so; a lone approval is logged and told to the stewards", async () => {
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    HOLDERS["cash.pay"] = ["m-wren"];
+    HOLDERS["steward.veto"] = ["m-ops"];
+    await sendAll();
+    as("m-fin");
+    HOLDERS["cash.pay"] = ["m-fin", "m-wren"];
+    expect((await approve()).body.approved).toHaveLength(1);
+    HOLDERS["cash.pay"] = ["m-wren"];
+    as("m-wren");
+    const mine = await call(`GET ${PAY_BOARD_ROUTES.mine}`);
+    expect(mine.body.lines[0].noApprover).toBe(true);
+    expect(mine.body.noApproverWords).toContain("The stewards can seat another Treasurer");
+    // One Treasurer besides the member: they change it and approve it alone, marked, logged and told.
+    HOLDERS["cash.pay"] = ["m-fin", "m-wren"];
+    const [key] = await rewardKeys();
+    // Holding the key does not let the member approve their own line.
+    expect((await approveTokens("m-wren")).body.error).toContain(REWARD_REVIEW_REFUSALS.ownPay);
+    as("m-fin");
+    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 2800, reason: "A small bonus." } })).status).toBe(200);
+    expect((await approveTokens("m-fin")).status).toBe(200);
+    const audit = await q("SELECT `text` FROM `health_events` WHERE `text` LIKE 'moon_reward:approved:%'"); // module-review-ok: fixture SQL
+    expect(audit.map((r: any) => r.text)).toEqual([`moon_reward:approved:${key}:2800:alone`]);
+    expect(notices.some((n) => n.userId === "m-ops" && n.title === REWARD_NOTICE_WORDS.aloneTitle && String(n.body).includes("2,800"))).toBe(true);
+  });
+
+  it("S3 8 and 10: an admin who holds no key through a seat is refused the board, and the connector is refused a write", async () => {
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    // The test gate passes everybody, as the admin pass would; a live seat is still required.
+    as("m-admin");
+    const out = await call(`GET ${PAY_BOARD_ROUTES.board}`, { query: { month: monthOf(new Date()) } });
+    expect([out.status, out.body.message]).toEqual([403, REWARD_REVIEW_REFUSALS.liveKey]);
+    as("m-treas");
+    const viaConnector = await call(`POST ${PAY_BOARD_ROUTES.approve}`, { body: { keys: await rewardKeys() }, headers: { "x-village-connector": "1" } });
+    expect([viaConnector.status, viaConnector.body.error]).toEqual([403, "person_only"]);
+    as("m-treas");
+    expect((await call(`GET ${PAY_BOARD_ROUTES.board}`, { query: { month: monthOf(new Date()) } })).body.truncated).toBe(false);
+  });
+
+  it("S3 11: a member who has left: their token pay no longer changes, and their words go", async () => {
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    const [key] = await rewardKeys();
+    as("m-fin");
+    expect((await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 2700, reason: "A small bonus." } })).status).toBe(200);
+    await forgetMoonReviews(pool, "m-wren");
+    const [r] = await q("SELECT `set_reason`, `member_reply` FROM `moon_reward_reviews` WHERE `idempotency_key` = ?", [key]); // module-review-ok: fixture SQL
+    expect([r.set_reason, r.member_reply]).toEqual([null, null]);
+    await q("UPDATE `users` SET `email` = 'gone-wren@anonymized.invalid' WHERE `id` = 'm-wren'"); // module-review-ok: fixture SQL
+    try {
+      const refused = await call(`POST ${PAY_BOARD_ROUTES.adjust}`, { body: { key, units: 2600, reason: "Back." } });
+      expect([refused.status, refused.body.error]).toEqual([409, REWARD_REVIEW_REFUSALS.departed]);
+    } finally {
+      await q("UPDATE `users` SET `email` = 'm-wren@example.test' WHERE `id` = 'm-wren'"); // module-review-ok: fixture SQL
+    }
   });
 });

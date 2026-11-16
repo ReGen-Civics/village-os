@@ -5,16 +5,24 @@
 --
 -- THE CONTRACT IS shared/moonRewardReview.ts.
 --
--- One row per owed posting an approved End of Moon invoice records (`quest_owed_postings`,
--- drizzle/0210, source `moon_invoice_reward`), keyed on the same occurrence key. A posting
--- with a review row issues only once the row reads approved. A moon posting recorded before
--- this table existed has no row, and pays as it did.
+-- A share an approved End of Moon invoice records (`quest_owed_postings`, drizzle/0210,
+-- source `moon_invoice_reward`) is written in its own state, `awaiting`, which no payer
+-- reads: the owed-postings sweep, the launch close and the hourly retry all settle `owed`
+-- rows only (the coordinator's ruling, 15 Nov 2026). A review approving it moves it to
+-- `owed`; a change moves it back to `awaiting`.
+--
+-- One review row per share, keyed on the posting's occurrence key.
 --
 --   state            waiting | approved, checked in code
 --   units_shared     what the split gave, in the posting's minor units, never changed
 --   units_set        a Treasurer's or founder's changed amount, NULL while unchanged; the
 --                    posting's own `units` is changed with it, in one transaction
---   line_total_minor the line's whole reward, so a changed amount is held under the pay cap
+--   line_key         the invoice line both of a line's token shares come from
+--   line_total_minor the line's whole reward, and cash_minor its cash share, so a change is
+--                    held under the pay cap of the whole line (cash, Earned Equity and Credits
+--                    together); 0 on a row made for a share recorded before this table, which
+--                    the code reads back off the invoice
+--   set_reason       the reason the member reads, scrubbed when they leave
 --   member_reply     the member's own answer to a change, scrubbed when they leave
 --
 -- EXPAND ONLY. A new table the previous release never reads.
@@ -24,8 +32,10 @@ CREATE TABLE IF NOT EXISTS `moon_reward_reviews` (
   `user_id` varchar(64) NOT NULL,
   `token_slug` varchar(32) NOT NULL,
   `units_shared` bigint NOT NULL,
-  `line_total_minor` bigint NOT NULL,
-  `currency` varchar(8) NOT NULL,
+  `line_key` varchar(120) NOT NULL DEFAULT '',
+  `line_total_minor` bigint NOT NULL DEFAULT 0,
+  `cash_minor` bigint NOT NULL DEFAULT 0,
+  `currency` varchar(8) NOT NULL DEFAULT '',
   `state` varchar(16) NOT NULL DEFAULT 'waiting',
   `units_set` bigint NULL,
   `set_reason` varchar(500) NULL,
@@ -39,5 +49,10 @@ CREATE TABLE IF NOT EXISTS `moon_reward_reviews` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idempotency_key`),
   KEY `moon_reward_reviews_user` (`user_id`, `created_at`),
-  KEY `moon_reward_reviews_created` (`created_at`)
+  KEY `moon_reward_reviews_line` (`invoice_id`, `line_key`)
 ) ENGINE=InnoDB;
+
+-- A share recorded before reviews existed, and not yet paid, waits for one too: nothing pays
+-- unreviewed at launch (security lane, #1349 S3 5). Its review row is made the first time the
+-- pay board reads it.
+UPDATE `quest_owed_postings` SET `state` = 'awaiting' WHERE `source` = 'moon_invoice_reward' AND `state` = 'owed';

@@ -26,7 +26,7 @@
  * pay stays the terms. Counts only reach the Treasurer's queue: no percentage,
  * band or reading (Phase C decision 2 holds; the coordinator, 14 Nov 2026).
  */
-import { moneyWords } from "./seatSettings";
+import { LIMITS as SEAT_LIMITS, moneyWords } from "./seatSettings";
 import type { InvoiceLine, MoonGoal, RecapItem } from "./moonRecap";
 
 /** The village dial, in whole percent. */
@@ -108,6 +108,9 @@ export function confirmAdjustLines(lines: readonly InvoiceLine[], by: string, at
   return lines.map((l) => (l.adjust ? { ...l, adjust: { ...l.adjust, confirmedBy: by, confirmedAt: at } } : { ...l }));
 }
 
+/** The most a proposed amount may be, in minor units: the ceiling a role's terms carry, under `Number.MAX_SAFE_INTEGER`. */
+export const ADJUST_AMOUNT_MAX: number = Math.min(SEAT_LIMITS.amountMinor, Number.MAX_SAFE_INTEGER);
+
 /** Read a Treasurer's proposal from a request. Null amount withdraws it. */
 export function parseAdjustInput(body: unknown): { ok: true; applicationId: string; amountMinor: number | null; reason: string } | { ok: false; error: string } {
   const b = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
@@ -119,6 +122,8 @@ export function parseAdjustInput(body: unknown): { ok: true; applicationId: stri
   if (b.amountMinor === null) return { ok: true, applicationId, amountMinor: null, reason };
   const amountMinor = Number(b.amountMinor);
   if (!Number.isInteger(amountMinor) || amountMinor < 0) return { ok: false, error: ADJUST_REFUSALS.amount };
+  // A typo's ceiling, the one a role's own terms carry, and far inside what a number holds exactly (security audit, S3).
+  if (amountMinor > ADJUST_AMOUNT_MAX) return { ok: false, error: ADJUST_REFUSALS.amountTooLarge };
   return { ok: true, applicationId, amountMinor, reason };
 }
 
@@ -135,6 +140,7 @@ export const ADJUST_REFUSALS = {
   reason: "Give a reason. The member reads it.",
   reasonLong: `A reason is at most ${ADJUST_REASON_MAX} characters.`,
   amount: "An amount is a whole number of minor units, zero or more.",
+  amountTooLarge: "That amount is far past any pay. Check it for a typo.",
   ownPay: "Nobody proposes a change to their own pay.",
   unconfirmed: "This invoice carries a proposed amount. Confirm it first, then approve.",
 } as const;
