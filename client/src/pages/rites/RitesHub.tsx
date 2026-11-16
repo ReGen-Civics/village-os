@@ -84,7 +84,10 @@ function Invite() {
           <label className="f" htmlFor="letter-line" style={{ marginTop: 0 }}>
             <Trans context="rites">A line in your own words</Trans>
           </label>
-          <textarea id="letter-line" className="in" maxLength={200} value={line} onChange={(e) => { setLine(e.target.value); setSaved(false); }} />
+          <textarea id="letter-line" className="in" maxLength={200} value={line} aria-describedby="letter-line-hint" onChange={(e) => { setLine(e.target.value); setSaved(false); }} />
+          <p id="letter-line-hint" className="tiny muted" style={{ marginTop: 6 }}>
+            <Trans context="rites">Anyone holding the link reads this line. Keep private places and plans out of it.</Trans>
+          </p>
           <button
             type="button"
             className="btn gold small"

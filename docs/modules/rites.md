@@ -29,7 +29,9 @@ One document in the module card, `village-rites/1`:
   rite done), `witnesses` (1 to 5), optional `lines` (spoken one at a time) and `gatheringLines` with a
   `gatheringAnswer` (used when the ceremony is held at a gathering), `mark` (the newcomer draws their mark),
   `admits` (at most one rite), `together` (rites stamped in the same moment), `callCounts` (a witness on a live
-  video call counts; default yes), `ink` (`seal` or `alt`) and `place` (`phone`, `site`, `gathering`).
+  video call counts; default yes), `ink` (`seal` or `alt`), `place` (`phone`, `site`, `gathering`), `byModule` (the
+  module that stamps it when the thing itself happens; nobody stamps it by hand) and `pulse` (said on the public
+  pulse when stamped; default yes).
 - `words`: every line these screens show, each with a limit; blank keeps the platform's neutral words.
 - `welcome`, `articles`, `letter`, `door`: the public welcome page, the excerpt of the village's agreement, the
   invitation letter and the door page, with photos as uploaded files or https addresses.
@@ -51,6 +53,10 @@ in and the rite admits them.
   the ceremony under its row lock, stamps the rite and its together rites once, fixes the mark, and, for the
   admitting rite, admits the member (`membershipGranted`, the `member_admitted` mail event). The pulse records the
   first name and the rite's done words.
+- **A rite another module stamps.** `byModule` rites are refused at the stamp and ceremony doors; that module calls
+  `stampRiteFromModule(moduleId, userId, riteId)` (server/routes/rites.ts) when the thing really happens.
+- **The mark is fixed** the moment the witnesses are to confirm it: drawn after the last line, or the last line
+  spoken over a mark already drawn.
 - **The ring.** Every member holding the marked rite, in an order set by a hash of the village's name and the
   member's id: the same for everyone, led by nobody.
 - **The buddy.** A newcomer who arrived on a link from a member who may witness is paired with them the first time

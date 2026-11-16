@@ -121,6 +121,13 @@ export interface RiteDef {
   /** The second stamp ink. */
   ink: "seal" | "alt";
   place: PlaceKey | null;
+  /**
+   * Stamped only by the module named here, when the thing itself happens (the
+   * hidden map's opening stamps "Plant the seven"). Nobody stamps it by hand.
+   */
+  byModule: string;
+  /** Said on the public pulse when stamped (default yes). */
+  pulse: boolean;
 }
 
 export interface StepDef {
@@ -539,6 +546,8 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
   const together = r.together === undefined ? [] : Array.isArray(r.together) ? r.together.map(str) : null;
   if (together === null) problems.push(`${at}.together must be a list of rite ids.`);
   const ink = r.ink === undefined ? "seal" : r.ink;
+  const byModule = r.byModule === undefined ? "" : /^[a-z][a-z0-9-]{0,39}$/.test(String(r.byModule)) ? String(r.byModule) : null;
+  if (byModule === null) problems.push(`${at}.byModule must be a module id.`);
   if (ink !== "seal" && ink !== "alt") problems.push(`${at}.ink must be "seal" or "alt".`);
   return {
     id,
@@ -555,6 +564,8 @@ function readRite(r: unknown, i: number, problems: string[]): RiteDef | null {
     callCounts: r.callCounts === undefined ? true : bool("callCounts"),
     ink: ink === "alt" ? "alt" : "seal",
     place: readPlace(r.place, `${at}.place`, problems),
+    byModule: byModule ?? "",
+    pulse: r.pulse === undefined ? true : bool("pulse"),
   };
 }
 
@@ -590,6 +601,7 @@ export function parseRitesConfig(raw: unknown): { config: RitesConfig; problems:
       if (t === r.id) problems.push(`The rite "${r.id}" names itself in together.`);
     }
     if (r.gatheringLines.length > 0 && r.lines.length === 0) problems.push(`The rite "${r.id}" has gathering lines and no lines.`);
+    if (r.byModule && (r.lines.length > 0 || r.mark || r.admits || r.witnesses > 1)) problems.push(`The rite "${r.id}" is stamped by ${r.byModule}, so it has no lines, mark, witnesses or admission of its own.`);
   }
   if (rites.filter((r) => r.admits).length > 1) problems.push("Only one rite may admit a member.");
 
@@ -827,9 +839,9 @@ export function admittingRite(rites: readonly RiteDef[]): RiteDef | null {
   return rites.find((r) => r.admits) ?? null;
 }
 
-/** A rite stamped by one witness's tap, with no ceremony. */
+/** A rite stamped by one witness's tap, with no ceremony. Never one a module stamps. */
 export function isPlainRite(r: RiteDef): boolean {
-  return r.lines.length === 0 && !r.mark && r.witnesses === 1;
+  return r.lines.length === 0 && !r.mark && r.witnesses === 1 && !r.byModule;
 }
 
 /** The rites one stamp of `r` writes: itself and its together rites, each once. */

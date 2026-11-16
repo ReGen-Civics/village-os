@@ -30,7 +30,7 @@ import { makeInviteDoor } from "../lib/inviteDoor";
 import { hashInviteToken, INVITE_DAYS, mintInviteToken } from "../lib/invites";
 import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { claimInvite, createInviteOn } from "../repos/memberInvites";
-import { register } from "./rites";
+import { register, stampRiteFromModule } from "./rites";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[rites] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -41,6 +41,7 @@ const CONFIG = {
     { id: "vow", todo: "Take the vow", done: "Took the vow", lines: ["I tend the land.", "I keep my word."], mark: true, admits: true, together: ["signed"] },
     { id: "signed", todo: "Sign the charter", done: "Signed the charter", ink: "alt" },
     { id: "met", todo: "Meet your buddy", done: "Met my buddy" },
+    { id: "seven", todo: "Plant seven", done: "Planted seven", byModule: "hidden-map", pulse: false },
   ],
   welcome: { doors: [{ id: "rent", title: "Rent a week" }, { id: "buy", title: "Buy in", interestOnly: true }] },
   door: { title: "A member gave you this." },
@@ -197,7 +198,7 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
 
     as("u-ada");
     const card = await call("GET", "/api/rites/me");
-    expect(card.body.stamps.map((s: any) => [s.id, s.state])).toEqual([["vow", "on"], ["signed", "on"], ["met", "next"]]);
+    expect(card.body.stamps.map((s: any) => [s.id, s.state])).toEqual([["vow", "on"], ["signed", "on"], ["met", "next"], ["seven", "todo"]]);
     expect(card.body.sworn).toBe(true);
     // The mark is fixed now.
     expect((await call("POST", "/api/rites/mark", { strokes: [[[1, 1], [2, 2]]] })).status).toBe(409);
@@ -242,6 +243,32 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     as("u-ada");
     expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "met" })).body.stamped).toEqual(["met"]);
     expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "vow" })).status).toBe(400);
+  });
+
+  it("a rite another module stamps is never stamped by hand, and a quiet rite is never said in public", async () => {
+    as("u-ada");
+    expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "seven" })).status).toBe(403);
+    expect((await call("POST", "/api/rites/ceremonies", { riteId: "seven" })).status).toBe(403);
+    expect(await stampRiteFromModule("some-other-module", "u-cy", "seven")).toEqual([]);
+    expect(await stampRiteFromModule("hidden-map", "u-cy", "seven")).toEqual(["seven"]);
+    expect(await stampRiteFromModule("hidden-map", "u-cy", "seven")).toEqual([]);
+    const [ev] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM health_events WHERE kind = 'rite_stamped' AND text LIKE '%seven%'"); // module-review-ok: reading the scratch schema back
+    expect(Number(ev[0].n)).toBe(0);
+    as("u-cy");
+    expect((await call("GET", "/api/rites/me")).body.stamps.find((s: any) => s.id === "seven").state).toBe("on");
+  });
+
+  it("fixes the mark the moment the witnesses are to confirm it", async () => {
+    as("u-di");
+    const id = (await call("POST", "/api/rites/ceremonies", { riteId: "vow" })).body.id;
+    // Drawn early, before the lines: still the candidate's to change.
+    expect((await call("POST", "/api/rites/mark", { strokes: [[[1, 1], [9, 9]]] })).status).toBe(200);
+    expect((await call("POST", "/api/rites/mark", { strokes: [[[2, 2], [8, 8]]] })).status).toBe(200);
+    await call("POST", `/api/rites/ceremonies/${id}/spoken`, { line: 0 });
+    expect((await call("POST", `/api/rites/ceremonies/${id}/spoken`, { line: 1 })).body.step).toBe("witnessing");
+    // The last line spoken over it: fixed, before any witness confirms.
+    expect((await call("POST", "/api/rites/mark", { strokes: [[[3, 3], [7, 7]]] })).status).toBe(409);
+    await call("POST", `/api/rites/ceremonies/${id}/set-aside`);
   });
 
   it("lets any sworn member pair a newcomer, and only the buddy writes the greeting", async () => {

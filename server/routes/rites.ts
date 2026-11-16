@@ -59,7 +59,7 @@ import { recordEvent } from "../lib/events";
 import type { InviteDoor } from "../lib/inviteDoor";
 import { readInviteToken } from "../lib/invites";
 import { entriesForMember, tokenDef } from "../lib/ledger";
-import { moduleConfig, requireModule } from "../lib/modules";
+import { effectiveLifecycle, moduleConfig, requireModule } from "../lib/modules";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { stageName } from "../lib/villagePaths";
 import { listOrgAssignments, listOrgRoles } from "../lib/orgChart";
@@ -74,6 +74,18 @@ type Deps = Pick<
   JoinAnswerDeps & { invites: InviteDoor };
 
 const HOUR = 60 * 60 * 1000;
+
+/**
+ * THE HOOK FOR A RITE ANOTHER MODULE STAMPS (`byModule` in the village's
+ * document): the hidden map calls this when a member's map really opens, and
+ * nothing else stamps that rite. Answers the rites newly stamped; nothing when
+ * the module is off, the rite is not that module's, or it is already held.
+ */
+let fromModule: ((moduleId: string, userId: string, riteId: string) => Promise<string[]>) | null = null;
+export async function stampRiteFromModule(moduleId: string, userId: string, riteId: string): Promise<string[]> {
+  if (!fromModule || effectiveLifecycle(RITES_MODULE) === "off") return [];
+  return fromModule(moduleId, userId, riteId);
+}
 
 /** The card's word once a member holds the admitting rite: the village's own, else its member stage's name. */
 const memberWordOf = (cfg: RitesConfig) => cfg.words.memberWord || stageName("member");
@@ -98,6 +110,14 @@ const text = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slic
 export function register(app: Express, deps: Deps): void {
   const { authedUser, isAdmin, getPool, members, mayAct, overLimit, clientIp, notify, firstName, projectName, stageOf, submissionsRepo, invites } = deps;
   const answers = joinAnswerDoor(deps);
+  fromModule = async (moduleId, userId, riteId) => {
+    const cfg = ritesConfig();
+    const rite = cfg.rites.find((r) => r.id === riteId);
+    if (!rite || rite.byModule !== moduleId) return [];
+    const fresh = await repo.stamp(getPool(), userId, stampedTogether(rite, cfg.rites), new Date(), null, null);
+    await afterStamp(userId, rite, fresh);
+    return fresh;
+  };
 
   app.use("/api/rites", requireModule(RITES_MODULE));
 
@@ -364,7 +384,7 @@ export function register(app: Express, deps: Deps): void {
       inviter,
       aboard,
       stamps: stampsFor(cfg.rites, new Set(held.keys()), cfg.walk),
-      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !isPlainRite(r), admits: r.admits, place: r.place })),
+      rites: cfg.rites.map((r) => ({ id: r.id, todo: r.todo, done: r.done, spoken: !r.byModule && !isPlainRite(r), admits: r.admits, place: r.place })),
       openCeremonies: ceremonies.filter((c) => c.status === "open").map((c) => ({ id: c.id, riteId: c.riteId })),
       tokens: { record: await tokenLine(cfg.tokens.record, userId), voice: await tokenLine(cfg.tokens.voice, userId) },
       words: Object.fromEntries(Object.entries(cfg.words).map(([k, v]) => [k, /Href$/.test(k) ? v : fill(v, vars)])),
@@ -437,8 +457,13 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`rites-mark:${user.id}`, 60, HOUR)) return refuse(res, 429, "Too many tries. Rest your hand a moment.");
     const got = markPath(body(req).strokes);
     if (!got.ok) return refuse(res, 400, got.error);
-    const kept = await repo.setMark(getPool(), String(user.id), got.path, new Date());
+    const pool = getPool();
+    const kept = await repo.setMark(pool, String(user.id), got.path, new Date());
     if (!kept) return refuse(res, 409, "Your mark is already on record. It stays as you made it.");
+    // Drawn inside a ceremony whose lines are all spoken: the witnesses confirm
+    // this mark, so it is fixed now and can never change under them.
+    const live = (await repo.ceremoniesOfCandidate(pool, String(user.id))).some((c) => c.status === "open" && c.markNeeded && c.spoken >= c.lines.length);
+    if (live) await repo.fixMark(pool, String(user.id), new Date());
     res.json({ path: got.path });
   });
 
@@ -525,6 +550,7 @@ export function register(app: Express, deps: Deps): void {
     const b = body(req);
     const rite = cfg.rites.find((r) => r.id === String(b.riteId ?? ""));
     if (!rite) return refuse(res, 404, "There is no rite by that name here.");
+    if (rite.byModule) return refuse(res, 403, "This rite is stamped when it happens, by the part of the village it belongs to. It has no ceremony.");
     if (isPlainRite(rite)) return refuse(res, 400, "This rite is stamped by a witness. It has no ceremony.");
     const candidateId = b.candidateId ? String(b.candidateId) : String(user.id);
     const candidate: any = await members.byId(candidateId);
@@ -601,6 +627,8 @@ export function register(app: Express, deps: Deps): void {
     const no = refuseSpoken(facts(c, false, 0), c.candidateUserId === String(user.id), line);
     if (no) return refuse(res, 409, no);
     await repo.setSpoken(pool, c.id, line + 1);
+    // The last line spoken over a mark already drawn: that mark is what the witnesses confirm, so it is fixed now.
+    if (c.markNeeded && line + 1 >= c.lines.length && (await repo.markOf(pool, c.candidateUserId))) await repo.fixMark(pool, c.candidateUserId, new Date());
     res.json(await ceremonyView(c.id, String(user.id)));
   });
 
@@ -669,7 +697,8 @@ export function register(app: Express, deps: Deps): void {
     } catch (e) {
       console.warn(`[rites] admitting ${candidateId} after their rite did not finish: ${String((e as Error)?.message ?? e)}`);
     }
-    await recordEvent(pool, { kind: "rite_stamped", text: `${first(candidate?.name)} ${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`, actorUserId: candidateId, originModuleId: RITES_MODULE, audience: "public" });
+    // A rite the village keeps quiet (`pulse: false`, such as one tied to the hidden map) is never said in public.
+    if (rite.pulse) await recordEvent(pool, { kind: "rite_stamped", text: `${first(candidate?.name)} ${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`, actorUserId: candidateId, originModuleId: RITES_MODULE, audience: "public" });
     const pair = await repo.buddyOf(pool, candidateId);
     if (pair) {
       await notify({ userId: pair.buddyUserId, type: "rite_stamped", title: `${first(candidate?.name)} ${rite.done.charAt(0).toLowerCase()}${rite.done.slice(1)}`, link: "/card", dedupeKey: `rite-stamped:${candidateId}:${rite.id}:buddy` });
@@ -716,6 +745,7 @@ export function register(app: Express, deps: Deps): void {
     const b = body(req);
     const rite = cfg.rites.find((r) => r.id === String(b.riteId ?? ""));
     if (!rite) return refuse(res, 404, "There is no rite by that name here.");
+    if (rite.byModule) return refuse(res, 403, "This rite is stamped when it happens, by the part of the village it belongs to. Nobody stamps it by hand.");
     if (!isPlainRite(rite)) return refuse(res, 400, "This rite is completed in a ceremony.");
     const memberId = String(b.userId ?? "");
     const target: any = await members.byId(memberId);
