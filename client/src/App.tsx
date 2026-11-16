@@ -259,6 +259,7 @@ const ModuleDetail = lazyPage(() => import("./pages/ModuleDetail"));
 const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
 const CrowdpoolCampaign = lazyPage(() => import("./pages/CrowdpoolCampaign"));
 const Journal = lazyPage(() => import("./pages/Journal"));
+const HiddenMap = lazyPage(() => import("./pages/HiddenMap"));
 const FundingRounds = lazyPage(() => import("./pages/FundingRounds"));
 const Sessions = lazyPage(() => import("./pages/Sessions"));
 const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
@@ -451,6 +452,8 @@ function Router() {
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}
       <Route path="/journal" component={Journal} />
+      {/* The members-only map of logged places, behind ModuleGate("hidden-map") and sign-in. */}
+      <Route path="/hidden-map" component={HiddenMap} />
       {/* The village chooses which quests to fund, within a pot. Behind
           ModuleGate("funding-rounds") and sign-in. */}
       <Route path="/funding-rounds" component={FundingRounds} />

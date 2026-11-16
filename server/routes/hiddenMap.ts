@@ -138,6 +138,7 @@ export function register(app: Express, deps: Deps): void {
       ownPins: m.who.ownPins,
       keeper: m.who.viewer.keeper,
       mayApproveExports: m.who.opening.open && (await seated(m.user, "hiddenmap.export")),
+      title: c.title,
       labels: c.labels,
       kinds: c.kinds,
       openLayers: c.openLayers,

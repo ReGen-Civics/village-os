@@ -10,6 +10,7 @@
  */
 import type { Capability } from "./capabilities";
 import type { SetupNeed } from "./setupNeeds";
+import { validateConfig as validateHiddenMapConfig } from "./hiddenMap";
 
 export type ModuleLifecycle = "off" | "preview" | "members" | "public";
 
@@ -1571,6 +1572,8 @@ export const MODULES: ModuleDef[] = [
     apiPrefixes: ["/api/hidden-map"],
     // Never public: what it holds stays inside the membership.
     widest: "members",
+    // The map's name, the layer names and kinds, the layers open to all members, and the return-visit quest.
+    validateConfig: validateHiddenMapConfig,
   },
   {
     id: "session-card",

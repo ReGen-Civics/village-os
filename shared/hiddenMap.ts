@@ -65,6 +65,8 @@ export const MAX_PHOTOS_PER_UPLOAD = 4;
 // ── The village's config (module_settings.config) ──────────────────────────
 
 export interface HiddenMapConfig {
+  /** What the village calls the map. */
+  title: string;
   /** What a member reads for each layer. A village names its own. */
   labels: Record<Layer, string>;
   /** The kinds a pin may take, per layer. */
@@ -76,6 +78,7 @@ export interface HiddenMapConfig {
 }
 
 export const DEFAULT_CONFIG: HiddenMapConfig = {
+  title: "Hidden map",
   labels: { planting: "Plantings", partner: "Partner places", stop: "Places to stop" },
   kinds: {
     planting: ["Land project", "Garden", "Public place", "Roadside", "Wild land", "Our own garden"],
@@ -99,7 +102,8 @@ export function readConfig(raw: unknown): HiddenMapConfig {
   }
   const openLayers = Array.isArray(c.openLayers) ? c.openLayers.filter(isLayer) : [];
   const q = c.returnVisitQuestId;
-  return { labels, kinds, openLayers, returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null };
+  const title = typeof c.title === "string" && c.title.trim() ? c.title.trim().slice(0, 40) : DEFAULT_CONFIG.title;
+  return { title, labels, kinds, openLayers, returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null };
 }
 
 /** Structural check before a config write. A human sentence, or null when it is fine. */
@@ -107,6 +111,9 @@ export function validateConfig(raw: unknown): string | null {
   if (raw === null || raw === undefined) return null;
   if (typeof raw !== "object" || Array.isArray(raw)) return "The hidden map's settings must be an object.";
   const c = raw as Record<string, unknown>;
+  if (c.title !== undefined && (typeof c.title !== "string" || !c.title.trim() || c.title.length > 40)) {
+    return "The map's name must be 1 to 40 characters.";
+  }
   if (c.labels !== undefined) {
     if (!c.labels || typeof c.labels !== "object") return "Layer names must be an object keyed by layer.";
     for (const [k, v] of Object.entries(c.labels as object)) {

@@ -1,0 +1,178 @@
+/**
+ * One pin, opened: what it is, its photos and return visits, and the acts a
+ * member may take on it. No name appears anywhere here, by design: a pin says
+ * whether it is yours and how many have vouched for it.
+ */
+import { useCallback, useEffect, useState } from "react";
+import { msg, plural } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { STAGES, type PinView, type Stage } from "@shared/hiddenMap";
+import type { MapMe, VisitView } from "@/lib/hiddenMapApi";
+import { addVisit, getPin, hidePin, newClientId, unvouch, vouch } from "@/lib/hiddenMapApi";
+import PhotoPicker, { type SafePhoto } from "./PhotoPicker";
+import Thumb from "./Thumb";
+import { PRECISION_WORDS } from "./CaptureForm";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, FIELD, H2, HINT, LABEL, NOTE } from "@/components/journey/look";
+
+export const STAGE_WORDS: Record<Stage, MessageDescriptor> = {
+  seed: msg`Seed`,
+  sprout: msg`Sprout`,
+  sapling: msg`Sapling`,
+  tree: msg`Tree`,
+  lost: msg`Didn't make it`,
+};
+
+export default function PinPanel({ id, me, onChanged, onClose }: { id: string; me: MapMe; onChanged: () => void; onClose: () => void }) {
+  const { t, i18n } = useLingui();
+  const [pin, setPin] = useState<PinView | null>(null);
+  const [visits, setVisits] = useState<VisitView[]>([]);
+  const [mayVisit, setMayVisit] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [visiting, setVisiting] = useState(false);
+  const [stage, setStage] = useState<Stage | "">("");
+  const [note, setNote] = useState("");
+  const [photos, setPhotos] = useState<SafePhoto[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const r = await getPin(id);
+      setPin(r.pin);
+      setVisits(r.visits);
+      setMayVisit(r.mayVisit);
+      setProblem(null);
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : t`That pin is not available.`);
+    }
+  }, [id, t]);
+  useEffect(() => { void load(); }, [load]);
+
+  const act = async (fn: () => Promise<unknown>) => {
+    setBusy(true);
+    try {
+      await fn();
+      await load();
+      onChanged();
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : t`That did not go through.`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendVisit = () =>
+    act(async () => {
+      await addVisit(id, { clientId: newClientId(), stageSeen: stage || null, note }, photos.map((p) => p.blob));
+      photos.forEach((p) => URL.revokeObjectURL(p.preview));
+      setPhotos([]);
+      setNote("");
+      setStage("");
+      setVisiting(false);
+    });
+
+  if (problem && !pin) return <section className={CARD}><p className={NOTE}>{problem}</p></section>;
+  if (!pin) return <section className={CARD}><p className={HINT}><Trans>Opening the pin</Trans></p></section>;
+
+  const mayVouch = !pin.mine && (me.open || me.keeper);
+  const ownPhotos = pin.photoIds.filter((p) => !visits.some((v) => v.photoIds.includes(p)));
+  const yours = t`yours`;
+
+  return (
+    <section className={CARD} aria-labelledby="hm-pin">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 id="hm-pin" className={H2}>{pin.title || pin.kind}</h2>
+          <p className={HINT}>
+            {me.labels[pin.layer]} · {pin.kind}
+            {pin.mine ? ` · ${yours}` : ""}
+          </p>
+        </div>
+        <button type="button" className={BTN_SECONDARY} onClick={onClose}><Trans>Close</Trans></button>
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {pin.stage && <span className={CHIP_SOFT}>{i18n._(STAGE_WORDS[pin.stage])}</span>}
+        <span className={CHIP_SOFT}>{t`${plural(pin.vouches, { one: "# vouch", other: "# vouches" })}`}</span>
+        <span className={CHIP_SOFT}><Trans>Shown beyond open members: {i18n._(PRECISION_WORDS[pin.precision])}</Trans></span>
+        {pin.hidden && <span className={CHIP_SOFT}><Trans>Hidden by a keeper</Trans></span>}
+      </div>
+
+      <p className={`${NOTE} mt-4`}>
+        {pin.lat}, {pin.lng}
+      </p>
+      {pin.whatWentIn && <p className={`${NOTE} mt-2`}><span className="font-semibold text-foreground"><Trans>What went in:</Trans> </span>{pin.whatWentIn}</p>}
+      {pin.notes && <p className={`${NOTE} mt-2 whitespace-pre-line`}>{pin.notes}</p>}
+
+      {ownPhotos.length > 0 && (
+        <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {ownPhotos.map((p) => <li key={p}><Thumb id={p} alt={t`A photo of this place`} className="aspect-square w-full" /></li>)}
+        </ul>
+      )}
+
+      {visits.length > 0 && (
+        <div className="mt-6">
+          <h3 className={LABEL}><Trans>Return visits</Trans></h3>
+          <ol className="mt-2 space-y-3">
+            {visits.map((v) => (
+              <li key={v.id} className="rounded-lg border border-border p-3">
+                <p className={HINT}>
+                  {new Date(v.createdAt).toLocaleDateString()}
+                  {v.stageSeen ? ` · ${i18n._(STAGE_WORDS[v.stageSeen])}` : ""}
+                  {v.mine ? ` · ${yours}` : ""}
+                </p>
+                {v.note && <p className={`${NOTE} mt-1`}>{v.note}</p>}
+                {v.photoIds.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {v.photoIds.map((p) => <Thumb key={p} id={p} alt={t`A photo from a return visit`} className="size-20" />)}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <div className="mt-6 flex flex-wrap gap-2">
+        {mayVouch && !pin.vouchedByMe && (
+          <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act(() => vouch(id))}><Trans>Vouch: this is real</Trans></button>
+        )}
+        {pin.vouchedByMe && (
+          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => unvouch(id))}><Trans>Withdraw my vouch</Trans></button>
+        )}
+        {mayVisit && !visiting && (
+          <button type="button" className={BTN_NOTICE} onClick={() => setVisiting(true)}><Trans>Add a return visit</Trans></button>
+        )}
+        {me.keeper && !pin.mine && !pin.hidden && (
+          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => hidePin(id))}><Trans>Hide this pin</Trans></button>
+        )}
+      </div>
+
+      {visiting && (
+        <div className="mt-5 space-y-4 rounded-xl border border-border p-4">
+          <h3 className={LABEL}><Trans>A return visit</Trans></h3>
+          {pin.layer === "planting" && (
+            <label className="block">
+              <span className={LABEL}><Trans>How it is doing</Trans></span>
+              <select className={`${FIELD} mt-1`} value={stage} onChange={(e) => setStage(e.target.value as Stage | "")}>
+                <option value="">{t`Choose`}</option>
+                {STAGES.map((s) => <option key={s} value={s}>{i18n._(STAGE_WORDS[s])}</option>)}
+              </select>
+            </label>
+          )}
+          <PhotoPicker onAdd={(p) => setPhotos((all) => [...all, p])} label={t`Add a photo of it now`} />
+          {photos.length > 0 && <p className={HINT}>{t`${plural(photos.length, { one: "# photo ready.", other: "# photos ready." })}`}</p>}
+          <label className="block">
+            <span className={LABEL}><Trans>A note</Trans></span>
+            <textarea className={`${FIELD} mt-1`} rows={2} maxLength={4000} value={note} onChange={(e) => setNote(e.target.value)} />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={BTN_PRIMARY} disabled={busy || photos.length === 0} onClick={() => void sendVisit()}><Trans>Save the visit</Trans></button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => setVisiting(false)}><Trans>Not now</Trans></button>
+          </div>
+        </div>
+      )}
+      {problem && <p className="mt-3 text-sm text-destructive" role="alert">{problem}</p>}
+    </section>
+  );
+}

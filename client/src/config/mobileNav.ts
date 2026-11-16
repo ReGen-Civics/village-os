@@ -28,6 +28,7 @@ import {
   ListChecks,
   MessagesSquare,
   SquarePen,
+  MapPinned,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
 
@@ -162,6 +163,17 @@ export const FAB_ACTIONS: FabAction[] = [
     module: "journal",
     // On the journal itself the row would link to the page being read.
     anchorPath: "/journal",
+  },
+  {
+    // Logging a place happens out where the place is, so the map sits a thumb
+    // away on the phone, and only while the module is on.
+    key: "hidden-map",
+    label: "Hidden map",
+    href: "/hidden-map",
+    Icon: MapPinned,
+    requiresAuth: true,
+    module: "hidden-map",
+    anchorPath: "/hidden-map",
   },
   {
     key: "quests",
