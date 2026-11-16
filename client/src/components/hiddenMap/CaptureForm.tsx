@@ -83,6 +83,7 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
   const [photos, setPhotos] = useState<SafePhoto[]>([]);
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<string | null>(null);
+  const [staged, setStaged] = useState(false);
 
   const ownPlantings = me.ownPlantings ?? 0;
   const counter = !me.open && layer === "planting" && ownPlantings < me.needed ? t`${ownPlantings + 1} of ${me.needed}` : null;
@@ -183,6 +184,7 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
             label={hero ? t`Add another photo` : t`Add a photo`}
             onLocation={(p) => { if (!point) { setPoint({ lat: p.lat, lng: p.lng }); setFromPhoto(true); } }}
             onAdd={(p) => setPhotos((all) => [...all, p])}
+            onStaged={setStaged}
           />
           {photos.length > 1 && (
             <ul className="flex flex-wrap gap-2">
@@ -262,7 +264,7 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
                   </button>
                 ))}
               </div>
-              <p className={`${HINT} mt-1`}><Trans>Members whose map has opened always see the exact place.</Trans></p>
+              <p className={`${HINT} mt-1`}><Trans>Members whose map has opened always see the exact place, and so does whoever keeps the map while they vouch for it.</Trans></p>
             </fieldset>
             <label className="block">
               <span className={LABEL}><Trans>A name for it</Trans></span>
@@ -294,11 +296,12 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
         )}
 
         <div className="flex flex-wrap items-center gap-3">
-          <button type="button" className={`${BTN_PRIMARY} flex-1`} disabled={busy || !point || !kind} onClick={() => void send()}>
+          <button type="button" className={`${BTN_PRIMARY} flex-1`} disabled={busy || staged || !point || !kind} onClick={() => void send()}>
             {busy ? <Trans>Saving</Trans> : <Trans>Save it</Trans>}
           </button>
           {layer === "planting" && me.plantingPays && <p className={HINT}><Trans>Rewarded once vouched</Trans></p>}
         </div>
+        {staged && <p className={HINT}><Trans>Use the photo or leave it out first.</Trans></p>}
         {said && <p className={HINT} role="status">{said}</p>}
       </div>
     </section>
