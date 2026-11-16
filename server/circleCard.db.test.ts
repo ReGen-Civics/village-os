@@ -177,7 +177,19 @@ describe.skipIf(!configured)("the circle card, on a real schema", () => {
       kind: "shown",
       value: [{ value: "Reciprocity", practice: "We share every harvest before we sell any of it." }],
     });
-    expect(section(card, "domains").term).toBe("CCOS: Domains");
+    // QA P1-08: a visitor reads plain headings, with no framework term and no line about them.
+    expect(section(card, "domains").term).toBeNull();
+    expect(card.header.termsKey).toBeNull();
+    expect(JSON.stringify(card)).not.toContain("CCOS");
+    // A signed-in reader keeps the village's terms.
+    admin = true;
+    try {
+      const member: CircleCard = (await read("c-garden")).body.card;
+      expect(section(member, "domains").term).toBe("CCOS: Domains");
+      expect(member.header.termsKey).toContain("CCOS term");
+    } finally {
+      admin = false;
+    }
   });
 
   it("shows each role filled, partly filled or open, and a visitor gets no holder links", async () => {
@@ -241,7 +253,15 @@ describe.skipIf(!configured)("the circle card, on a real schema", () => {
         ],
       },
     });
-    expect(adoption.term).toBe("CCOS: Signatures");
+    // A visitor reads it with no framework term (QA P1-08); a signed-in reader keeps it.
+    expect(adoption.term).toBeNull();
+    admin = true;
+    try {
+      const member = section((await read("c-garden")).body.card, "adoption") as Extract<CircleSection, { kind: "adoption" }>;
+      expect(member.term).toBe("CCOS: Signatures");
+    } finally {
+      admin = false;
+    }
   });
 
   it("QA2-06: a visitor reads an unwritten circle with no empty headings, and keeps the facts that are true", async () => {

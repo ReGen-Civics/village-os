@@ -60,7 +60,7 @@ export const clipsFullWords = (max: number, i18n: I18n = appI18n): string =>
  * OPEN_WORDS.notSent speaks of the confirmation email, which is not what happened here (Spanish phone QA, 15 Nov 2026).
  */
 export const notSentWords = (i18n: I18n = appI18n): string =>
-  i18n._(msg({ message: "We couldn't send your application. Check your connection and send again: everything you wrote is still saved on this device.", context: "founding application, the send failed" }));
+  i18n._(msg({ message: "We couldn't send your application. Check your connection and send again: everything you wrote is still here on the page.", context: "founding application, the send failed" }));
 
 /** Every refusal the form or the server may hand the applicant, by its shared constant. */
 const PROBLEMS: ReadonlyArray<readonly [string, MessageDescriptor]> = [

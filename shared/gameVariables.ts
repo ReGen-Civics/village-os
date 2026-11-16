@@ -1072,7 +1072,7 @@ export const VARIABLES: VariableDef[] = [
     category: "Quests",
     label: "Founder may self-consent below this many members",
     description:
-      "Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members, an admin or founder may consent to their own claims. Once the village reaches this size, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.",
+      "Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members and has not yet started its Game, an admin or founder may consent to their own claims. Once the village reaches this size or its launch vote carries, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.",
     type: "integer",
     default: "6",
     min: 0,
@@ -2792,7 +2792,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The founding team",
     label: "The note under the pay shape",
     description:
-      "The last line under the pay shape on every role card, like Indicative only. Terms are still being defined and are subject to legal review. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.",
+      "The last line under the pay shape on every role card. When a card lists a price, its footnote already says the first month starts lower and that equity and credit terms are subject to legal review, and this note is added after it, so write only what the footnote does not say. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.",
     type: "text",
     default: "",
   },
@@ -4364,6 +4364,18 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
   }
   if (def.type === "text") {
     if (raw.length > 255) return "Too long (255 characters maximum).";
+    /*
+     * A village's link dials (`org.*_link`) are read through `safeHref`
+     * (shared/otherWays.ts), which shows nothing for a value that is not a page
+     * of this site or an https address. Saving "village.example/webinar" used to
+     * succeed and then render no link anywhere, with nothing saying why. The
+     * same rule is held here, at the door, so the person sees the reason.
+     */
+    if (def.key.startsWith("org.") && def.key.endsWith("_link") && raw.trim() !== "") {
+      const v = raw.trim();
+      const sitePage = v.startsWith("/") && !v.startsWith("//");
+      if (!sitePage && !/^https:\/\/[^\s]+$/i.test(v)) return "Must be a page of this site, such as /steward, or an address that starts with https://. Leave it blank for none.";
+    }
     /*
      * A governance window is a grammar, and a typo in it would close a whole
      * kind of proposal with nothing saying why. The SYNTAX is checked here so

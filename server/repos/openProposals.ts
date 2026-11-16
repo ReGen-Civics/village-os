@@ -160,6 +160,29 @@ export async function invitationSentOf(db: Db, id: string): Promise<{ at: Date; 
 }
 
 /**
+ * The applicant asked for a new invitation from their status page. Kept in the
+ * body beside the invitation's own note, so it needs no migration. Written once:
+ * the first ask's time stands. True when this call wrote it.
+ */
+export async function noteNewInvitationAsked(db: Db, id: string, at: Date): Promise<boolean> {
+  const [result] = await db.query<ResultSetHeader>(
+    "UPDATE open_role_proposals SET body_json = JSON_SET(COALESCE(body_json, JSON_OBJECT()), '$.newInvitationAskedAt', ?) " +
+      "WHERE id = ? AND status = 'adopted' AND anonymised_at IS NULL AND JSON_EXTRACT(body_json, '$.newInvitationAskedAt') IS NULL",
+    [at.toISOString(), id],
+  );
+  return Number(result.affectedRows ?? 0) === 1;
+}
+
+/** When the applicant asked for a new invitation, or null. */
+export async function newInvitationAskedOf(db: Db, id: string): Promise<Date | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.newInvitationAskedAt')) AS at FROM open_role_proposals WHERE id = ? LIMIT 1", [id]);
+  const raw = rows[0]?.at;
+  if (!raw || raw === "null") return null;
+  const at = new Date(String(raw));
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
+/**
  * DECIDE A CONFIRMED PROPOSAL, once (part B): adopted or declined, the moment
  * it was decided, and the decision kept in the body. Guarded on `confirmed`, so
  * of two deciders at once exactly one moves it. True when this call did.
@@ -434,6 +457,15 @@ export async function anonymiseDecidedBefore(db: Db, before: Date, now: Date): P
  * name and address go 90 days on; a proposal left waiting that long is as
  * good as a no. How many.
  */
+/** What `expireUndecidedBefore` is about to close, read first, so the closed letter goes while the address is still here. */
+export async function undecidedBefore(db: Db, before: Date, limit = 500): Promise<StoredOpenProposal[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status = 'confirmed' AND confirmed_at < ? AND anonymised_at IS NULL ORDER BY confirmed_at, id LIMIT ?`,
+    [before, Math.max(1, Math.trunc(limit))],
+  );
+  return rows.map(rowOf);
+}
+
 export async function expireUndecidedBefore(db: Db, before: Date, now: Date): Promise<number> {
   const [result] = await db.query<ResultSetHeader>(
     "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
@@ -441,6 +473,25 @@ export async function expireUndecidedBefore(db: Db, before: Date, now: Date): Pr
     [now, now, before],
   );
   return Number(result.affectedRows ?? 0);
+}
+
+/**
+ * The same close, for these proposals only, under the same guard: the ones the
+ * tidy job read and wrote to first. Returns the ids this call closed, so a
+ * proposal a person decided a moment ago is never stamped as closed.
+ */
+export async function expireUndecided(db: Db, ids: readonly string[], before: Date, now: Date): Promise<string[]> {
+  if (!ids.length) return [];
+  const closed: string[] = [];
+  for (const id of ids) {
+    const [result] = await db.query<ResultSetHeader>(
+      "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", status = 'withdrawn', decided_at = ?, name = NULL, email = NULL, email_key = NULL, anonymised_at = ? " +
+        "WHERE id = ? AND status = 'confirmed' AND confirmed_at < ? AND anonymised_at IS NULL",
+      [now, now, id, before],
+    );
+    if (Number(result.affectedRows ?? 0) === 1) closed.push(id);
+  }
+  return closed;
 }
 
 // ── Links made for one person ───────────────────────────────────────────────

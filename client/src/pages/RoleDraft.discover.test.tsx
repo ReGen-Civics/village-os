@@ -14,7 +14,7 @@ import { IKIGAI_ANSWER_MAX, IKIGAI_KEY } from "@shared/roleDiscover";
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }));
 vi.mock("@/hooks/useVillageName", () => ({ useVillageName: () => "Hollow Oak" }));
-vi.mock("@/components/power/SeatTradingCard", () => ({ default: () => <article /> }));
+vi.mock("@/components/roleCard/FullRoleCard", () => ({ default: () => <article /> }));
 vi.mock("@/hooks/usePageContent", () => ({ usePageContent: () => null }));
 vi.mock("@/components/geneKeys/useMyGeneKeys", () => ({ useMyGeneKeys: () => ({ on: false, mine: null }) }));
 const auth = vi.hoisted(() => ({ user: null as null | { name: string; email: string } }));

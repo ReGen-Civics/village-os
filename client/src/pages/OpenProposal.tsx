@@ -93,7 +93,7 @@ export interface ServedOpenProposal {
   decided: string | null;
   consent: ConsentOut;
   door: { because: DoorReason; words: string };
-  invitation: { state: "open" | "used" | "closed"; sentAt?: string | null; emailed?: boolean | null } | null;
+  invitation: { state: "open" | "used" | "closed"; sentAt?: string | null; emailed?: boolean | null; askedAt?: string | null } | null;
   /** Links and files, sent to the people who decide it and nobody else (Rye, 10 Nov 2026). */
   attached?: ServedAttachments | null;
   /** Their voice note, kept with their tick, for the people who decide it (shared/voiceNotes.ts). */
@@ -616,6 +616,11 @@ export default function OpenProposal() {
                     {p.invitation.sentAt && (
                       <p className="mt-1 text-foreground" data-invitation-sent="">
                         {DECIDE_WORDS.invitationSent(new Date(p.invitation.sentAt).toLocaleString(), p.invitation.emailed !== false)}
+                      </p>
+                    )}
+                    {p.invitation.askedAt && (
+                      <p className="mt-1 font-medium text-foreground" data-new-invitation-asked="">
+                        {DECIDE_WORDS.newInvitationAsked}
                       </p>
                     )}
                     <p className="mt-1 text-foreground">{DECIDE_WORDS.reissueLine}</p>

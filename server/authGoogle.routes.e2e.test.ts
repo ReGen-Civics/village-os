@@ -235,12 +235,19 @@ afterAll(async () => {
   for (const d of [dataDir, bareDataDir]) if (d) fs.rmSync(d, { recursive: true, force: true });
 });
 
+/** The binder cookie the last /start set, as a browser would keep it (R215). */
+let lastBinder = "";
+
 /** Ask /start and read back the state and nonce the server actually minted. */
 async function beginSignIn(next?: string): Promise<{ state: string; nonce: string; location: URL }> {
   const url = `${BASE}/api/auth/google/start${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   const res = await fetch(url, { redirect: "manual" });
   expect(res.status).toBe(302);
   const location = new URL(res.headers.get("location")!);
+  // The binder this "browser" now holds (R215); `callback` sends it back.
+  lastBinder = (res.headers.getSetCookie?.() ?? [])
+    .map((c) => /(?:^|;\s*)village_oauth_bind=([^;]*)/.exec(c)?.[1])
+    .find((v) => v && v.length > 0) ?? "";
   return {
     state: location.searchParams.get("state")!,
     nonce: location.searchParams.get("nonce")!,
@@ -256,10 +263,10 @@ const claimsFor = (over: Record<string, unknown>) => ({
 });
 
 /** Drive the callback and hand back its redirect and its handoff cookie. */
-async function callback(state: string, code = "an-authorization-code") {
+async function callback(state: string, code = "an-authorization-code", binder: string | null = lastBinder) {
   const res = await fetch(
     `${BASE}/api/auth/google/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
-    { redirect: "manual" },
+    { redirect: "manual", headers: binder ? { cookie: `village_oauth_bind=${binder}` } : {} },
   );
   const setCookie = res.headers.getSetCookie?.() ?? [];
   const handoff = setCookie
@@ -685,6 +692,28 @@ describe.skipIf(!DB_CONFIGURED)("attacks the callback has to refuse", () => {
     expect(bad.location).toBe("/login?oauth=error&reason=bad_state");
   });
 
+  it("refuses a REAL state in a browser that did not start it, the login-CSRF link (R215)", async () => {
+    // The attacker presses the button themselves: the state is genuine,
+    // signed and fresh. They sign in at Google as themselves and send the
+    // victim the callback URL. The victim's browser holds no binder for it.
+    const { state, nonce } = await beginSignIn();
+    const attackersBinder = lastBinder;
+    expect(attackersBinder, "start set a binder cookie").toBeTruthy();
+    nextResponse = { status: 200, claims: claimsFor({ nonce, sub: "attacker-sub", email: "attacker@example.org", email_verified: true }) };
+
+    const victimNoBinder = await callback(state, "an-authorization-code", null);
+    expect(victimNoBinder.location).toBe("/login?oauth=error&reason=bad_state");
+    expect(victimNoBinder.cookie, "no handoff for a browser that did not start it").toBeNull();
+
+    const victimOwnBinder = await callback(state, "an-authorization-code", "a-binder-from-the-victims-own-start");
+    expect(victimOwnBinder.location).toBe("/login?oauth=error&reason=bad_state");
+    expect(victimOwnBinder.cookie).toBeNull();
+
+    // Control: the browser that started it gets through with the same state.
+    const own = await callback(state, "an-authorization-code", attackersBinder);
+    expect(own.cookie, "the starting browser signs in").toBeTruthy();
+  });
+
   it("refuses an UNVERIFIED Google address, which is the founder-impersonation attack", async () => {
     // An attacker who registers a Google account carrying the founder's
     // address without holding the mailbox must get nothing.
@@ -1024,6 +1053,10 @@ describe.skipIf(!DB_CONFIGURED)("a village that joins by invitation, at the Goog
     const res = await fetch(`${BASE}/api/auth/google/start?invite=${encodeURIComponent(invite)}`, { redirect: "manual" }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
     expect(res.status).toBe(302);
     const location = new URL(res.headers.get("location")!);
+    // Keep this start's binder, as the browser would, so `callback` sends it (R215).
+    lastBinder = (res.headers.getSetCookie?.() ?? [])
+      .map((c) => /(?:^|;\s*)village_oauth_bind=([^;]*)/.exec(c)?.[1])
+      .find((v) => v && v.length > 0) ?? "";
     return { state: location.searchParams.get("state")!, nonce: location.searchParams.get("nonce")! };
   }
 

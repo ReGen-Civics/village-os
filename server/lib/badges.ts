@@ -365,22 +365,49 @@ export async function badgeGrantsFor(
   pool: Pool,
   userId: string,
   dormant: string[] = [],
-): Promise<{ capabilities: string[]; denies: string[] }> {
+): Promise<{ capabilities: string[]; voteCapabilities: string[]; denies: string[] }> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT b.id, b.capabilities, b.denies FROM badge_awards a JOIN badges b ON b.id = a.badge_id " +
+    "SELECT b.id, b.capabilities, b.denies, a.awarded_by FROM badge_awards a JOIN badges b ON b.id = a.badge_id " +
       "WHERE a.user_id = ? AND b.active = 1 AND (a.expires_at IS NULL OR a.expires_at > NOW())",
     [userId],
   );
   const asleep = new Set(dormant);
   const capabilities = new Set<string>();
+  const voteCapabilities = new Set<string>();
   const denies = new Set<string>();
   for (const r of rows) {
     if (!asleep.has(String(r.id))) {
-      for (const c of parseJsonArray(r.capabilities)) capabilities.add(c);
+      const byVote = isVoteAward(r.awarded_by);
+      for (const c of parseJsonArray(r.capabilities)) {
+        capabilities.add(c);
+        if (byVote) voteCapabilities.add(c);
+      }
     }
     for (const d of parseJsonArray(r.denies)) denies.add(d);
   }
-  return { capabilities: Array.from(capabilities), denies: Array.from(denies) };
+  return { capabilities: Array.from(capabilities), voteCapabilities: Array.from(voteCapabilities), denies: Array.from(denies) };
+}
+
+/**
+ * WHO MADE AN AWARD, AS FAR AS A POWER THE VILLAGE HOLDS IS CONCERNED (R157).
+ *
+ * `awarded_by` is NULL for the earned engine and an administrator's id for an
+ * admin award. A carried `badge_grant` ballot stamps `ballot:<ballotId>`
+ * there, and only the server writes the column, so the stamp cannot be typed
+ * in. The gate counts a badge's grant on a key the village holds only when the
+ * award carries this stamp (`badgeVoteCapabilities`): an award made before the
+ * handover, by an administrator or the engine, stops carrying that power the
+ * moment the village takes it on. No migration: the column already holds who
+ * awarded it, and a vote is who awarded it.
+ */
+export const VOTE_AWARD_PREFIX = "ballot:";
+
+export function voteAwardStamp(ballotId: string): string {
+  return `${VOTE_AWARD_PREFIX}${ballotId}`;
+}
+
+export function isVoteAward(awardedBy: unknown): boolean {
+  return typeof awardedBy === "string" && awardedBy.startsWith(VOTE_AWARD_PREFIX) && awardedBy.length > VOTE_AWARD_PREFIX.length;
 }
 
 export interface AwardRow {
@@ -513,8 +540,12 @@ export async function awardBadge(
   },
 ): Promise<{ reissued: boolean; reissueCount: number }> {
   const { badge, userId } = input;
+  // A carried vote stamps the award as the village's (R157), so the gate keeps
+  // counting it on a key the village holds.
   const award = await upsertAward(pool, {
-    badgeId: badge.id, userId, awardedBy: input.awardedBy, note: input.note, expiresAt: input.expiresAt,
+    badgeId: badge.id, userId,
+    awardedBy: input.ballotId ? voteAwardStamp(input.ballotId) : input.awardedBy,
+    note: input.note, expiresAt: input.expiresAt,
   });
   await notify({
     userId,
@@ -650,6 +681,8 @@ async function metricValues(pool: Pool, metric: string): Promise<Map<string, num
 export async function awardFirstTierNow(pool: Pool, badgeId: string, userId: string): Promise<boolean> {
   const badge = await badgeById(pool, badgeId);
   if (!badge || !badge.active || badge.kind !== "earned" || badge.isExample) return false;
+  // R157: a badge carrying a power the village holds moves only by its vote.
+  if ((await villageHeldKeysOf(pool, badge.capabilities)).length) return false;
   if (!(await recordBadgeTier(pool, badgeId, userId, 1))) return false;
   await upsertAward(pool, { badgeId, userId, count: 1, awardedBy: null });
   return true;
@@ -658,6 +691,8 @@ export async function awardFirstTierNow(pool: Pool, badgeId: string, userId: str
 export interface EvaluateResult {
   badgesEvaluated: number;
   newTiers: { badgeId: string; userId: string; tier: number }[];
+  /** Earned badges not evaluated because they carry a power the village holds (R157). */
+  heldBack: string[];
 }
 
 /**
@@ -675,7 +710,16 @@ export async function evaluateEarnedBadges(pool: Pool): Promise<EvaluateResult> 
     (b) => b.active && b.kind === "earned" && b.rule && !b.isExample,
   );
   const newTiers: EvaluateResult["newTiers"] = [];
+  const heldBack: string[] = [];
   for (const badge of earned) {
+    // R157: a badge carrying a power the village holds hands that power to
+    // whoever wears it, and once the village holds it only a village vote
+    // moves it. The engine is nobody's vote, so it awards no such badge. The
+    // read throws on failure, so the engine stops rather than awarding blind.
+    if ((await villageHeldKeysOf(pool, badge.capabilities)).length) {
+      heldBack.push(badge.id);
+      continue;
+    }
     const rule = badge.rule!;
     const values = await metricValues(pool, rule.metric);
     const [awardRows] = await pool.query<RowDataPacket[]>(
@@ -708,7 +752,7 @@ export async function evaluateEarnedBadges(pool: Pool): Promise<EvaluateResult> 
       await upsertAward(pool, { badgeId: badge.id, userId, count: target, awardedBy: null });
     }
   }
-  return { badgesEvaluated: earned.length, newTiers };
+  return { badgesEvaluated: earned.length, newTiers, heldBack };
 }
 
 /** Open state that blocks module-off: standing warnings are live governance. */

@@ -246,8 +246,23 @@ export function readSections(raw: unknown): SectionsRead {
   };
 }
 
+/**
+ * The sections as a reader who may not see pay figures receives them: the ceiling key ABSENT, never
+ * null with a hint (`org.show_pay_ranges` off, and the reader neither an admin, an editor nor a
+ * holder of `terms.read`). The ceiling is the one amount the sections hold; the shares, notes and
+ * the paid flag are words and percents, and stay.
+ */
+export type ReaderSections = Omit<RoleCardSections, "payCeiling"> & { payCeiling?: PayCeiling | null };
+
+export function sectionsForReader(s: RoleCardSections, seesPay: boolean): ReaderSections {
+  if (seesPay) return s;
+  const out: ReaderSections = { ...s };
+  delete out.payCeiling;
+  return out;
+}
+
 /** Whether a card has any of these sections written. */
-export function hasSections(s: RoleCardSections | null | undefined): boolean {
+export function hasSections(s: RoleCardSections | ReaderSections | null | undefined): boolean {
   if (!s) return false;
   return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote;
 }

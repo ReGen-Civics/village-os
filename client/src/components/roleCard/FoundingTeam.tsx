@@ -132,11 +132,16 @@ export default function FoundingTeam({
           shown={shown}
           cardId={`${headingId}-card`}
           onOpen={(id) => {
-            setOpen(shown === id && !wide ? "" : id);
-            if (shown === id) return;
+            const closing = shown === id && !wide;
+            setOpen(closing ? "" : id);
+            if (closing) return;
+            // QA P1-01: on a wide screen the first role is shown by default, so its button must still bring the card
+            // into view. The scroll is skipped only when the card's top is already in the upper half of the screen.
             requestAnimationFrame(() => {
               const card = document.getElementById(`${headingId}-card`);
-              if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "start", behavior: reducedMotion() ? "auto" : "smooth" });
+              const top = card ? card.getBoundingClientRect().top : -1;
+              const inView = top >= 0 && top < window.innerHeight / 2;
+              if (card && !inView && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "start", behavior: reducedMotion() ? "auto" : "smooth" });
               // Focus follows the eye (a11y sweep P1-3): a keyboard or screen reader user lands on the card they opened.
               card?.focus({ preventScroll: true });
             });

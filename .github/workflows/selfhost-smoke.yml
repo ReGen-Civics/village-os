@@ -211,7 +211,7 @@ jobs:
         if: ${{ !inputs.image }}
         run: |
           set -euo pipefail
-          docker run --rm -v village-os_village-data:/data alpine sh -c 'mkdir -p /data/uploads && chown -R 0:0 /data && chmod 755 /data /data/uploads'
+          docker run --rm -v village-os_village-data:/data alpine:3.20 sh -c 'mkdir -p /data/uploads && chown -R 0:0 /data && chmod 755 /data /data/uploads'
           docker compose restart app
           sleep 10
           for _ in $(seq 1 120); do
@@ -244,7 +244,7 @@ jobs:
           docker compose exec -T app sh -c 'mkdir -p /app/data/uploads && printf canary > /app/data/uploads/smoke-canary.txt'
           mkdir -p backups
           docker compose exec -T db sh -c 'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --no-tablespaces village' | gzip > backups/village-$(date +%F).sql.gz
-          MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data:ro -v "$PWD/backups":/backup alpine tar czf /backup/uploads-$(date +%F).tar.gz -C /data .
+          MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data:ro -v "$PWD/backups":/backup alpine:3.20 tar czf /backup/uploads-$(date +%F).tar.gz -C /data .
           ls -la backups
           gunzip -c backups/village-*.sql.gz | grep -c '^INSERT INTO `users`'
           tar tzf backups/uploads-*.tar.gz | grep -q 'smoke-canary.txt'
@@ -263,7 +263,7 @@ jobs:
           $compose up -d --wait db
           gunzip -c backups/village-$DATE.sql.gz | $compose exec -T db sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" village'
           $compose create app
-          MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data -v "$PWD/backups":/backup alpine tar xzf /backup/uploads-$DATE.tar.gz -C /data
+          MSYS_NO_PATHCONV=1 docker run --rm -v village-os_village-data:/data -v "$PWD/backups":/backup alpine:3.20 tar xzf /backup/uploads-$DATE.tar.gz -C /data
           $compose up -d
           for _ in $(seq 1 120); do
             curl -fsS "$BASE/health" > /dev/null 2>&1 && break

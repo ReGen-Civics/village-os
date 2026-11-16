@@ -29,9 +29,11 @@ import { useAuth } from "@/contexts/AuthContext";
 const RootLine = lazy(() => import("./path/RootLine"));
 
 // The steward and resident pages draw their own journey in the founding register, so a second path strip would show the journey twice (QA2-03).
-const QUIET_EXACT = new Set(["/profile", "/path", "/login", "/register", "/forgot-password", "/set-password", "/verify-email", "/steward", "/resident"]);
+// The selection board, the investor journey and the events page keep their own register too (QA P1-12, QA2-03).
+const QUIET_EXACT = new Set(["/profile", "/path", "/login", "/register", "/forgot-password", "/set-password", "/verify-email", "/steward", "/resident", "/roles/select", "/investor", "/events"]);
 // The founding-team application draws its own "Step N of 6" and keeps the founding register: the game's strip never blends into it (Phase A brief).
-const QUIET_PREFIX = ["/admin", "/project-history", "/journey-to-launch", "/claim", "/application-status", "/sessions/", "/propose-a-role"];
+// A circle's own page is where the founding roles live (QA P1-08); the circles index keeps the strip.
+const QUIET_PREFIX = ["/admin", "/project-history", "/journey-to-launch", "/claim", "/application-status", "/sessions/", "/propose-a-role", "/circles/"];
 
 export function isQuietPath(path: string, stepHref?: string | null): boolean {
   const bare = path.split(/[?#]/)[0] || "/";

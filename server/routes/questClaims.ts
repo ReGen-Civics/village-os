@@ -48,7 +48,7 @@ import { readWorkValue } from "../../shared/workValue";
 import { rewardMultipliersFor } from "../lib/seasonPatterns";
 import { recordEvent } from "../lib/events";
 import { EXAMPLE_REFUSAL_BODY, isExampleRow } from "../lib/examples";
-import { issuanceRefusal } from "../lib/gameStart";
+import { issuanceRefusal, readGameStart } from "../lib/gameStart";
 import { departedById } from "../lib/departed";
 import { tokenDef } from "../lib/ledger";
 import { payBadgeBoosts, questPay, questPayRules, withPayBadges } from "../lib/workPay";
@@ -439,7 +439,12 @@ export function register(app: Express, deps: Deps): void {
       const livingMembers = (await members.all()).filter(
         (u: any) => !u.isExample && u.email && !String(u.email).endsWith("@anonymized.invalid"),
       ).length;
-      const soloFounder = actor.isAdminActor && livingMembers < soloWindow;
+      // THE WINDOW CLOSES WHEN THE GAME STARTS. A founder building alone has
+      // nobody to witness; a village that has voted itself into its Game has,
+      // and after the launch a self-consent mints paid work to the admin who
+      // witnessed it, which is the one thing the witness rule exists to stop.
+      // A failed read throws, so the window fails closed.
+      const soloFounder = actor.isAdminActor && livingMembers < soloWindow && !(await readGameStart(getPool())).started;
       if (!soloFounder) {
         return res.status(403).json({
           error: "You cannot consent to your own claim. Someone else has to witness the work.",

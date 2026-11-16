@@ -1718,7 +1718,8 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
       const proposed = proposals[t.applicationId];
       const proposedMinor = Number.isInteger(proposed) && proposed >= range.minMinor && proposed <= range.maxMinor ? proposed : null;
       const fin = finals[t.applicationId];
-      const finalMinor = Number.isInteger(fin) && fin >= 0 ? fin : null;
+      // Finance's figure counts only inside the range, as the member's own proposal does (security audit, S2).
+      const finalMinor = Number.isInteger(fin) && inRange(fin, range) ? fin : null;
       const chosen = finalMinor ?? proposedMinor;
       out.push({ ...base, key: t.applicationId, kind: "pay", basis: "range", listedAs: null, currency: pay.currency, termsMinor: null, per, range, proposedMinor, finalMinor, amountMinor: chosen === null ? null : prorate(chosen, per, base.daysHeld, moon.days), basisLine: `${moneyWords(range.minMinor, pay.currency)} to ${moneyWords(range.maxMinor, pay.currency)} ${per === "month" ? "a month" : "per moon"}${chosen === null ? "" : `. ${basisLineWords(chosen, pay.currency, per, base.daysHeld, moon.days)}`}` });
     }
@@ -1947,7 +1948,20 @@ export const APPROVAL_REFUSALS = {
   ownConfirm: "Nobody confirms their own pay. Another person holding the cash power confirms it.",
   amountsChanged: "An amount on this invoice changed after you read it. Open it again, check each amount, then confirm.",
   otherConfirms: "Someone other than the person who changed this amount confirms it.",
+  ownRange: "Nobody sets the amount on their own pay. Another person holding the cash power sets it.",
+  approvedNoVoid: "This invoice is approved, so its pay is already owed and it stays as it is. A correction is an adjustment line next moon.",
 } as const;
+
+/** Whether a range amount is inside the range the member agreed to. */
+export function inRange(minor: number, range: { minMinor: number; maxMinor: number }): boolean {
+  return Number.isSafeInteger(minor) && minor >= range.minMinor && minor <= range.maxMinor;
+}
+
+/** The sentence when a range amount is outside its range. */
+export function rangeOutsideRefusal(range: { minMinor: number; maxMinor: number } | null, currency: string): string {
+  if (!range) return "This line has no range to set an amount inside.";
+  return `A range amount is between ${moneyWords(range.minMinor, currency)} and ${moneyWords(range.maxMinor, currency)}.`;
+}
 
 /** What the line, the event and the desk say when the one person who could confirm a change confirmed their own. */
 export const SELF_CONFIRMED_WORDS = "Confirmed by the person who changed it, the only one who could";
