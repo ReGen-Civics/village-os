@@ -340,7 +340,7 @@ import {
 import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
 import { fontRoleOf, fontWeightOf, withUploadedFace } from "./lib/brandFonts";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
-import { CONSTITUTION } from "../shared/constitution";
+import { servedConstitution } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
 import { DEFAULT_MAP_SKIN, sanitiseMapSkin } from "../shared/mapSkin";
 import {
@@ -19948,7 +19948,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         .filter((key) => !MODULES.some((m) => m.variableKeys.includes(key) && shown(m))),
     );
     res.json({
-      constitution: CONSTITUTION,
+      constitution: servedConstitution((id) => LIFECYCLE_RANK[effectiveLifecycle(id)] >= LIFECYCLE_RANK.members),
       variables: allVariables()
         .filter((v) => !hiddenKeys.has(v.key))
         .map((v) => ({

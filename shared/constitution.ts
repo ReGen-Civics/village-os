@@ -26,6 +26,15 @@ export interface ConstitutionLaw {
    * and the live copy editor edits copy.
    */
   note?: { text: string; href: string };
+  /**
+   * The law's plain words for a village whose `module` is below members. A
+   * law may describe something only one module makes possible ("Real money
+   * can buy the village's credit tokens" is true only where the exchange
+   * runs), and a village with that module off would otherwise tell every
+   * visitor something it does not do. The law itself, and what enforces it,
+   * do not change; only the sentence describing it does.
+   */
+  whenModuleOff?: { module: string; plain: string };
 }
 
 export const CONSTITUTION: ConstitutionLaw[] = [
@@ -40,6 +49,11 @@ export const CONSTITUTION: ConstitutionLaw[] = [
     plain:
       "Real money can buy the village's credit tokens, but no token can ever be sold back for money. There is no cash-out path, and adding one is not a setting: it is what keeps village credits from becoming securities.",
     enforcedBy: "No such code path exists; exchange is buy-only (server/lib/exchange.ts)",
+    whenModuleOff: {
+      module: "exchange",
+      plain:
+        "No token can ever be sold back for money. There is no cash-out path, and adding one is not a setting.",
+    },
   },
   {
     title: "Recognition cannot be bought",
@@ -142,3 +156,16 @@ export const CONSTITUTION: ConstitutionLaw[] = [
     enforcedBy: "server/lib/exit.ts + /api/profile/export + anonymizeMember",
   },
 ];
+
+/**
+ * The constitution as a village serves it: each law with the plain words that
+ * are true there. `moduleOn` answers whether a module is at members or wider.
+ * The override field itself is never served.
+ */
+export function servedConstitution(
+  moduleOn: (id: string) => boolean,
+): Array<Omit<ConstitutionLaw, "whenModuleOff">> {
+  return CONSTITUTION.map(({ whenModuleOff, ...law }) =>
+    whenModuleOff && !moduleOn(whenModuleOff.module) ? { ...law, plain: whenModuleOff.plain } : law,
+  );
+}
