@@ -12,6 +12,9 @@
  *      and the other two stay landed.
  *   5. The person fixes the headline and accepts it again: it lands.
  *   6. The lessons read shows the edit, by kind and field.
+ *   7. "Get to know us" (15 Nov 2026): a gathering proposed with no status is on the PUBLIC calendar once accepted,
+ *      and a link dial saved by another process on the same database (the previous release, mid-deploy) shows
+ *      here without a restart.
  *
  * Order-dependent: run the whole file, never a -t slice.
  */
@@ -76,6 +79,7 @@ beforeAll(async () => {
       NODE_ENV: "production",
       PORT: String(PORT),
       SCHEDULER_ENABLED: "0",
+      VARIABLES_REFRESH_SECONDS: "1",
       DATA_DIR: dataDir,
       DATABASE_URL: testDb.url,
       ADMIN_PASSWORD: ADMIN,
@@ -197,5 +201,36 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     expect(role.fields[0]).toMatchObject({ field: "words.aim", changes: [expect.objectContaining({ proposed: "Hold the village's money.", accepted: "Hold the village's money with care, and show the books every moon." })] });
     const page = groups.find((g) => g.kind === "page_content");
     expect(page.fields[0].changes[0]).toMatchObject({ proposed: "A home on the land", accepted: "A home on the land, held together" });
+  });
+
+  it("a gathering proposed with no status is on the public calendar once it is accepted", async () => {
+    expect((await call("PUT", "/api/admin/modules/events/lifecycle", { lifecycle: "public" })).status).toBe(200);
+    const startsAt = new Date(Date.now() + 6 * 86_400_000).toISOString();
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Get to know us: events on the village calendar",
+      items: [{ kind: "setting", target: { method: "POST", path: "/api/admin/events" }, body: { title: "Potluck at the rancho", startsAt }, summary: "Put the potluck on the village calendar." }],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids as string[];
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.json.results, acc.text).toEqual([{ id, ok: true }]);
+    // Signed out, the way a visitor and step 1 of the application read it.
+    const pub = await call("GET", "/api/events", undefined, "");
+    expect(pub.status, pub.text).toBe(200);
+    expect((pub.json.events as any[]).filter((e) => e.title === "Potluck at the rancho").map((e) => e.status)).toEqual(["scheduled"]);
+  });
+
+  it("a link dial saved by another process on the same database shows here without a restart", async () => {
+    const key = "org.founding_tour_link";
+    const read = async () => ((await call("GET", "/api/game/mechanics", undefined, "")).json.variables as any[]).find((v) => v.key === key)?.value;
+    expect(await read()).toBe("");
+    // The previous release, still serving during a deploy, saves the dial: its own cache and the table, never ours.
+    await pool.query("INSERT INTO game_variables (config_key, value, value_type) VALUES (?, ?, 'text')", [key, "https://example.test/tour"]); // module-review-ok: the e2e standing in for a second server on its own scratch schema
+    let seen: unknown = "";
+    for (let i = 0; i < 40 && seen !== "https://example.test/tour"; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      seen = await read();
+    }
+    expect(seen).toBe("https://example.test/tour");
   });
 });

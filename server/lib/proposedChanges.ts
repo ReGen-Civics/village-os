@@ -32,6 +32,7 @@ import {
   proposalNever,
   REVIEW_WORDS,
   routeOf,
+  settingBodyToApply,
   variableNever,
   type ProposalInput,
   type ProposalKind,
@@ -371,8 +372,11 @@ export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind
       const live = (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? {};
       return through("PUT", route.path, { doc: mergeOnto(live, obj(body.doc) ?? {}) });
     }
-    case "setting":
-      return through(route.method, route.path, route.method === "DELETE" && !Object.keys(body).length ? undefined : body);
+    case "setting": {
+      // A new gathering with no status goes on the calendar, for a proposal filed before the filing rule (`settingBodyToApply`).
+      const payload = settingBodyToApply(route.method, route.path, body);
+      return through(route.method, route.path, route.method === "DELETE" && !Object.keys(payload).length ? undefined : payload);
+    }
   }
 }
 
