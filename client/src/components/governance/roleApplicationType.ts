@@ -170,9 +170,9 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
   icon: UserPlus,
   title: "Apply for a role",
   description:
-    "Propose to hold one role or up to three, with what you will have done by the end of the season and the terms you hold them on.",
+    "Propose to join the team in one role or up to three, with what you'll have done by the end of the season and the terms you hold them on.",
   consequence:
-    "Sending puts your proposal and its terms in front of whoever adopts roles: a live holder of that power, or the whole village by vote. Every member can read the terms. A vote names the roles and never you or the money.",
+    "Your proposal and its terms go to whoever welcomes people into roles, or to the whole village by vote. Every member can read the terms. A vote names the roles, never you or the money.",
   opensVote: true,
   // Its route asks terms.read, the member rung, never proposal.open, so the
   // card stays live for a member who may not open the other votes (TypeCards).
@@ -304,7 +304,7 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
           key: "startsNoEarlierThan",
           kind: "date",
           label: "First day",
-          help: "Leave it empty to start as soon as the proposal is adopted. Pick the first day of next season to propose for next season's roles now.",
+          help: "Leave it empty to start as soon as you join the team. Pick the first day of next season to propose for next season's roles now.",
         },
       ],
     },
