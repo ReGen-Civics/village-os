@@ -743,9 +743,11 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
     const caps = typeof roles[0]?.capabilities === "string" ? JSON.parse(roles[0].capabilities) : roles[0]?.capabilities;
     expect([...caps].sort(), "the role carries every one of them").toEqual([...HANDOVER_SET].sort());
     // Rye, 2026-11-01: the launch hands the village only what the stewards
-    // selected, and this village selected nothing.
-    const [holdings] = await pool.query<any[]>("SELECT capability FROM capability_holding"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-    expect(holdings, "and not one of them is the village's yet").toEqual([]);
+    // selected, and this village selected nothing. The one exception is
+    // token.mint (Rye, 2026-11-15): it always crosses at launch, held by the
+    // steward role, so a bare admin stops hand minting (server/lib/tokenMintHandover.ts).
+    const [holdings] = await pool.query<any[]>("SELECT capability, holder_role_id FROM capability_holding"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    expect(holdings.map((h: any) => [String(h.capability), String(h.holder_role_id)]), "and only token.mint is held, by the steward role").toEqual([["token.mint", "steward"]]);
 
     // And the founder was told, on the same spine every other seating uses.
     const [rung] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table

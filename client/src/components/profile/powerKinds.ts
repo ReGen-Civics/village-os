@@ -76,6 +76,7 @@ export const POWER_KIND_OF: Record<Capability, PowerKind> = {
   "redemption.confirm": "value",
   "cash.pay": "value",
   "role.pay": "value",
+  "token.mint": "value",
   "pot.steward": "value",
   "moon.approve": "value",
   "moon.approve_alone": "value",

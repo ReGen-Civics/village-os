@@ -88,6 +88,7 @@ export const SUGGESTION_ROUTE: Record<Capability, SuggestionRoute> = {
   // Batch 101 composes #961 with the valuation set's new key: the routing rule
   // decides, like cash.pay beside it.
   "role.pay": "holders",
+  "token.mint": "holders",
   "pot.steward": "holders",
   "place.tend": "holders",
   "place.permit": "holders",

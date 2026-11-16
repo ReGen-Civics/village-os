@@ -240,6 +240,7 @@ export const CAPABILITY_CONSEQUENCE: Record<Capability, string> = {
   "cash.pay": "read the cash the village owes its members, and mark a payment as made once the money has gone out",
   "role.pay":
     "keep the village's cash budget, which sets how much of each moon's work is paid in cash, and set what a role is worth and pays beside the valuation engine's suggestion, never on a role they hold",
+  "token.mint": "mint a platform token by hand to a member, with a reason that is kept on the record, under the village's per-cycle cap, and never to themselves without a second signer",
   "pot.steward": "hold a funding pot: open its rounds, set their dates and rubric, and rule on whether an idea fits the pot",
   "place.tend": "keep the village's place registry: load it from the seed, confirm a place, set its readiness, and adopt a change of stage",
   "place.permit": "keep a place's permit checklist and say whether it sits in the preserve or the river buffer",

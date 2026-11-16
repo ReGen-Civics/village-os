@@ -36,7 +36,7 @@ import fs from "node:fs";
 import { docsMode } from "./lib/generatedDocs.mjs";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { formatter } from "@lingui/format-po";
 import { compileMessageOrThrow } from "@lingui/message-utils/compileMessage";
 
@@ -139,8 +139,13 @@ async function read(file, locale) {
 function staleSourceIds(committed) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "i18n-extract-"));
   const cfg = path.join(tmp, "lingui.config.mjs");
-  const real = path.join(ROOT, "lingui.config.ts").split(path.sep).join("/");
-  fs.writeFileSync(cfg, `import base from "file:///${real.replace(/^\//, "")}";\nexport default { ...base, rootDir: ${JSON.stringify(ROOT.split(path.sep).join("/"))}, catalogs: base.catalogs.map((c) => ({ ...c, path: ${JSON.stringify(tmp.split(path.sep).join("/"))} + "/{locale}" })) };\n`);
+  // Every value spliced into this generated module goes in through JSON.stringify,
+  // the import specifier included. It used to be pasted between two quote marks
+  // by hand, so a checkout path holding a quote or a backslash would have broken
+  // out of the string and become code (CodeQL js/bad-code-sanitization, alert
+  // 473). pathToFileURL also percent-encodes what a URL cannot carry raw.
+  const real = pathToFileURL(path.join(ROOT, "lingui.config.ts")).href;
+  fs.writeFileSync(cfg, `import base from ${JSON.stringify(real)};\nexport default { ...base, rootDir: ${JSON.stringify(ROOT.split(path.sep).join("/"))}, catalogs: base.catalogs.map((c) => ({ ...c, path: ${JSON.stringify(tmp.split(path.sep).join("/"))} + "/{locale}" })) };\n`);
   const r = spawnSync(process.execPath, [path.join(ROOT, "node_modules", "@lingui", "cli", "dist", "lingui.js"), "extract", "--config", cfg], { cwd: ROOT, encoding: "utf8", env: { ...process.env, NODE_OPTIONS: "--import tsx" } });
   if (r.status !== 0) throw new Error(`lingui extract failed:\n${r.stdout}${r.stderr}`);
   return read(path.join(tmp, "en.po"), "en").then((fresh) => Object.keys(fresh).filter((id) => !fresh[id].obsolete && !(id in committed)).map((id) => ({ message: fresh[id].message ?? id, context: fresh[id].context })));

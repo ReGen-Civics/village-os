@@ -184,7 +184,7 @@ describe("StartHereCard: finding your lines", () => {
     geneKeys.on = true;
     render(<StartHereCard ownerId="u1" me={member()} signing={null} config={config()} />);
     expect(link(/Propose a quest/)).toHaveAttribute("href", "/propose-quest");
-    expect(link("Find your lines")).toHaveAttribute("href", "/profile/gene-keys");
+    expect(link("Find your Gene Key lines")).toHaveAttribute("href", "/profile/gene-keys");
     expect(doors()).toEqual(["/roles", "/profile/gene-keys"]);
     expect(within(card()).getByText(/so the roles and teams we suggest fit you/)).toBeInTheDocument();
   });
@@ -193,7 +193,7 @@ describe("StartHereCard: finding your lines", () => {
     geneKeys.on = true;
     render(<StartHereCard ownerId="u1" me={me()} signing={null} config={config()} />);
     expect(link(/Sign the Love Letter/)).toHaveAttribute("href", "/love-letter");
-    expect(link("Find your lines")).toHaveAttribute("href", "/profile/gene-keys");
+    expect(link("Find your Gene Key lines")).toHaveAttribute("href", "/profile/gene-keys");
     expect(doors().at(-1)).toBe("/profile/gene-keys");
   });
 
@@ -201,16 +201,16 @@ describe("StartHereCard: finding your lines", () => {
     geneKeys.on = true;
     geneKeys.mine = { lines: [2, 5] };
     const { unmount } = render(<StartHereCard ownerId="u1" me={member()} signing={null} config={config()} />);
-    expect(within(card()).queryByRole("link", { name: "Find your lines" })).toBeNull();
+    expect(within(card()).queryByRole("link", { name: "Find your Gene Key lines" })).toBeNull();
     unmount();
     geneKeys.mine = undefined;
     const second = render(<StartHereCard ownerId="u1" me={member()} signing={null} config={config()} />);
-    expect(within(card()).queryByRole("link", { name: "Find your lines" })).toBeNull();
+    expect(within(card()).queryByRole("link", { name: "Find your Gene Key lines" })).toBeNull();
     second.unmount();
     geneKeys.on = false;
     geneKeys.mine = null;
     render(<StartHereCard ownerId="u1" me={member()} signing={null} config={config()} />);
-    expect(within(card()).queryByRole("link", { name: "Find your lines" })).toBeNull();
+    expect(within(card()).queryByRole("link", { name: "Find your Gene Key lines" })).toBeNull();
   });
 });
 

@@ -312,7 +312,7 @@ describe("PathsPanel", () => {
       />,
     );
     expect(screen.getByText("You walk this path.")).toBeTruthy();
-    expect(screen.getByText("You do not walk this path.")).toBeTruthy();
+    expect(screen.getByText("You don't walk this path.")).toBeTruthy();
     expect(screen.getAllByText("What this path asks")).toHaveLength(2);
   });
 
@@ -355,6 +355,6 @@ describe("PathsPanel", () => {
       />,
     );
     expect(screen.getByRole("alert").textContent).toContain("Your session ended");
-    expect(screen.getAllByText("You do not walk this path.")).toHaveLength(2);
+    expect(screen.getAllByText("You don't walk this path.")).toHaveLength(2);
   });
 });
