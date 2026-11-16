@@ -17179,3 +17179,381 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
+msgstr "La Participación Ganada y los Créditos de tu pago. Cada línea se emite a tu cuenta cuando la Tesorería la aprueba."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Token pay, the bonus on the pay"
+msgstr "Pago en tokens, el bono sobre el pago"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Change the amount"
+msgstr "Cambiar la cantidad"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Their answer: {answer}"
+msgstr "Su respuesta: {answer}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Issued to their account"
+msgstr "Emitido a su cuenta"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Token pay"
+msgstr "Pago en tokens"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Your answer"
+msgstr "Tu respuesta"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Why it changed: {reason}"
+msgstr "Por qué cambió: {reason}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Could not issue yet. The Treasurer can see why."
+msgstr "Aún no se pudo emitir. La Tesorería puede ver por qué."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Keep the amount"
+msgstr "Mantener la cantidad"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Approved, issuing to your account"
+msgstr "Aprobado, emitiéndose a tu cuenta"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Approved, issues to your account at launch"
+msgstr "Aprobado, se emite a tu cuenta en el lanzamiento"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Sent from escrow"
+msgstr "Enviado desde el depósito en garantía"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
+msgstr "La Participación Ganada y los Créditos de tu pago. Las líneas aprobadas se emiten a tu cuenta cuando la aldea se lanza."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Send your answer"
+msgstr "Enviar tu respuesta"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Month"
+msgstr "Mes"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "New amount, at most {ceiling}"
+msgstr "Nueva cantidad, como máximo {ceiling}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "No token pay this month."
+msgstr "No hay pago en tokens este mes."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "{units} {name}, changed from {shared}"
+msgstr "{units} {name}, cambiado desde {shared}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "A member"
+msgstr "Una persona miembro"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Nobody was paid this month."
+msgstr "Nadie recibió pago este mes."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Waiting for the Treasurer's approval"
+msgstr "En espera de la aprobación de la Tesorería"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Cash"
+msgstr "Efectivo"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved. They issue at launch."
+msgstr "Aprobado. Se emiten en el lanzamiento."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved by {approvedBy}."
+msgstr "Aprobado por {approvedBy}."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Approved, issuing"
+msgstr "Aprobado, emitiéndose"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Save the change"
+msgstr "Guardar el cambio"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Owed {owed}, sent {sent}"
+msgstr "Pendiente {owed}, enviado {sent}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Reading the month's pay."
+msgstr "Leyendo el pago del mes."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Why it changed. The member reads this and can answer."
+msgstr "Por qué cambió. La persona lo lee y puede responder."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approve selected"
+msgstr "Aprobar lo seleccionado"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "The End of Moon review is not on in this village."
+msgstr "La revisión de Fin de Luna no está activa en esta aldea."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "You answered: {answer}"
+msgstr "Respondiste: {answer}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Each member's cash and token pay for a month: what is owed, what was sent from escrow, and the token pay to approve."
+msgstr "El pago en efectivo y en tokens de cada persona durante un mes: lo pendiente, lo enviado desde el depósito en garantía y el pago en tokens por aprobar."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Changed by {changedBy}: {reason}"
+msgstr "Cambiado por {changedBy}: {reason}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "New amount"
+msgstr "Nueva cantidad"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Owed"
+msgstr "Pendiente"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Issued to your account"
+msgstr "Emitido a tu cuenta"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Owed since {since}"
+msgstr "Pendiente desde {since}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "No cash this month."
+msgstr "No hay efectivo este mes."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approve and issue selected"
+msgstr "Aprobar y emitir lo seleccionado"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved by {approvedBy}, who changed it and was the only one who could."
+msgstr "Aprobado por {approvedBy}, que lo cambió y era la única persona que podía aprobarlo."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Claimed, ready to send"
+msgstr "Reclamado, listo para enviar"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Your token pay"
+msgstr "Tu pago en tokens"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "{units} {name}, changed from {shared}"
+msgstr "{units} {name}, cambiado desde {shared}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Approved and issued."
+msgstr "Aprobado y emitido."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "a holder"
+msgstr "una persona titular"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Earned Equity"
+msgstr "Participación Ganada"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Approved, issues at launch"
+msgstr "Aprobado, se emite en el lanzamiento"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Could not issue"
+msgstr "No se pudo emitir"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Earned Equity"
+msgstr "Participación Ganada"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Recorded {when} by {who}. {reference}"
+msgstr "Registrado el {when} por {who}. {reference}"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Open"
+msgstr "Abrir"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "{token}: {waiting} waiting, {approved} approved, {issued} issued"
+msgstr "{token}: {waiting} en espera, {approved} aprobados, {issued} emitidos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "The village has not launched yet. Approved token pay issues to each account at launch."
+msgstr "La aldea aún no se ha lanzado. El pago en tokens aprobado se emite a cada cuenta en el lanzamiento."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Pay by member"
+msgstr "Pago por persona"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Credits"
+msgstr "Créditos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board status"
+msgid "Waiting for approval"
+msgstr "En espera de aprobación"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Credits"
+msgstr "Créditos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nadie más que esta persona tiene el poder de aprobarlo, así que espera. Las personas custodias pueden nombrar a otra persona tesorera, o la aldea puede elegirla por votación."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "This month has more pay than one board shows. The first 2,000 lines of each kind are here."
+msgstr "Este mes tiene más pagos de los que muestra un tablero. Aquí están las primeras 2.000 líneas de cada tipo."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nadie más tiene todavía el poder de aprobar esto, así que espera. Las personas custodias pueden nombrar a otra persona tesorera, o la aldea puede elegirla por votación."
