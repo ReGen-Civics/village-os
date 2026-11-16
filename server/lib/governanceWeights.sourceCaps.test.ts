@@ -240,10 +240,11 @@ describe.skipIf(!configured)("caps by source on a frozen roll, and resting Voice
     const gone = (await usersRepo(pool).byId(id))!;
     expect(await leftTheVillage(pool, gone)).toBe(true);
     expect(await balanceOf(id), "the balance rests, whole").toBe(V(5_000));
-    const roll = await withoutFormerMembers(pool, [gone, ...(await Promise.all(ROLL.map((r) => usersRepo(pool).byId(r))))]);
+    const present = (await Promise.all(ROLL.map((r) => usersRepo(pool).byId(r)))).filter((u): u is NonNullable<typeof u> => !!u);
+    const roll = await withoutFormerMembers(pool, [gone, ...present]);
     expect(roll.map((u: any) => u.id)).not.toContain(id);
 
-    const back = await usersRepo(pool).update(id, (u: any) => { u.stageGranted = "member"; });
+    const back = (await usersRepo(pool).update(id, (u: any) => { u.stageGranted = "member"; }))!;
     expect(await leftTheVillage(pool, back)).toBe(false);
     const again = await withoutFormerMembers(pool, [back]);
     expect(again.map((u: any) => u.id)).toEqual([id]);
