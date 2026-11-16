@@ -627,6 +627,10 @@ msgctxt "sera answers"
 msgid "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 msgstr "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+msgstr "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view legend"
 msgid "What the marks mean"
@@ -2283,6 +2287,10 @@ msgstr "Today"
 msgctxt "role editor"
 msgid "Saved. The role is updated."
 msgstr "Saved. The role is updated."
+
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. This should not happen; please report it"
+msgstr "FAILING. This should not happen; please report it"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, one"
@@ -8622,6 +8630,11 @@ msgstr "Review after (days)"
 msgid "Reading the village's rows"
 msgstr "Reading the village's rows"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: light or dark page heading"
+msgid "Page look"
+msgstr "Page look"
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup lede"
 msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
@@ -8995,6 +9008,11 @@ msgstr "Select a role to apply for"
 msgctxt "role discover admin"
 msgid "Human Design types"
 msgstr "Human Design types"
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: section of exact colour overrides"
+msgid "Exact colours"
+msgstr "Exact colours"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -10156,6 +10174,10 @@ msgctxt "protocols page"
 msgid "Yes, set it aside"
 msgstr "Yes, set it aside"
 
+#: client/src/components/LookPanel.tsx
+msgid "Exact colours ({overrideCount} set)"
+msgstr "Exact colours ({overrideCount} set)"
+
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
 msgid "Sera's version and this role say the same."
@@ -11069,6 +11091,11 @@ msgstr "We sit within this circle"
 msgctxt "role draft stat"
 msgid "Recruiting"
 msgstr "Recruiting"
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: empty exact colour field"
+msgid "blank"
+msgstr "blank"
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
@@ -12045,6 +12072,11 @@ msgstr "We couldn't send your application. Check your connection and send again:
 #~ msgid "Your aim for the season"
 #~ msgstr "Your aim for the season"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Light"
+msgstr "Light"
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "This deployment cannot open the key, so those pages answer 503. A restore under a different VILLAGE_SECRETS_KEY does this. If the old value is gone for good, make a new key here."
@@ -12601,6 +12633,10 @@ msgctxt "role editor"
 msgid "Kind of pay"
 msgstr "Kind of pay"
 
+#: client/src/components/LookPanel.tsx
+msgid "Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour."
+msgstr "Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour."
+
 #. placeholder {0}: new Date(a.decidedAt).toLocaleDateString()
 #: client/src/components/governance/VillageAgreements.tsx
 msgctxt "the day an agreement was adopted"
@@ -12676,6 +12712,10 @@ msgstr "For now the Anchor Circle holds the whole village: the founders and the 
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Commitment"
 msgstr "Commitment"
+
+#: client/src/components/LookPanel.tsx
+msgid "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
+msgstr "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -15255,6 +15295,11 @@ msgctxt "founding application choose"
 msgid "Choose the role you are applying for. Each application is for one role."
 msgstr "Choose the role you are applying for. Each application is for one role."
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Dark"
+msgstr "Dark"
+
 #: client/src/components/review/SeraMember.tsx
 msgid "Small changes applying by themselves: off."
 msgstr "Small changes applying by themselves: off."
@@ -15517,6 +15562,12 @@ msgstr "A draft from this queue is still open."
 #: client/src/components/characters/OpenNowBadge.tsx
 msgid "{n, plural, one {# role open now} other {# roles open now}}"
 msgstr "{n, plural, one {# role open now} other {# roles open now}}"
+
+#. placeholder {0}: SLOT_WORDS[slot]
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: exact colour field label"
+msgid "{0}, exact value"
+msgstr "{0}, exact value"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "The rounds could not be read just now. Try again in a moment."
