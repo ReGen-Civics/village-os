@@ -124,10 +124,27 @@ export function brochureHidden(doc: unknown): BrochurePath[] {
 export interface BrochureState {
   enabled: boolean;
   hidden: readonly string[];
+  /**
+   * Member doors this village also opens to visitors while the story pages
+   * are off (gap G15: a public home for the letter members sign). Absent or
+   * empty: a member door follows the story switches for a visitor, as before.
+   */
+  open?: readonly string[];
 }
 
-export function brochureState(doc: unknown): { enabled: boolean; hidden: BrochurePath[] } {
-  return { enabled: brochureEnabled(doc), hidden: brochureHidden(doc) };
+/** The member doors a village opened to visitors, from the stored document. Only member doors count. */
+export function brochureOpen(doc: unknown): BrochurePath[] {
+  const raw = doc && typeof doc === "object" ? (doc as { open?: unknown }).open : undefined;
+  if (!Array.isArray(raw)) return [];
+  const listed = new Set(raw.filter((p): p is string => typeof p === "string"));
+  return MEMBER_DOORS.filter((p) => listed.has(p));
+}
+
+export function brochureState(doc: unknown): { enabled: boolean; hidden: BrochurePath[]; open?: BrochurePath[] } {
+  // `open` only when a village opened a door, so every other village's stored
+  // and served switches keep exactly their old shape.
+  const open = brochureOpen(doc);
+  return { enabled: brochureEnabled(doc), hidden: brochureHidden(doc), ...(open.length ? { open } : {}) };
 }
 
 /**
@@ -138,7 +155,11 @@ export function brochureState(doc: unknown): { enabled: boolean; hidden: Brochur
 export function brochurePathServed(state: BrochureState, path: string): boolean {
   const bare = barePath(path);
   if (!SET.has(bare)) return true;
-  return state.enabled && !state.hidden.includes(bare);
+  if (state.hidden.includes(bare)) return false;
+  // A member door the village opened to visitors is served whatever the
+  // master switch says; the master switch still decides `/` and the rest.
+  if (state.open?.includes(bare) && isMemberDoor(bare)) return true;
+  return state.enabled;
 }
 
 /**
@@ -167,6 +188,8 @@ export interface BrochurePatch {
   enabled?: boolean;
   /** `true` shows a page, `false` switches it off. Pages not named keep their state. */
   pages?: Partial<Record<BrochurePath, boolean>>;
+  /** A member door opened to visitors (`true`) or not (`false`), whatever the master switch says. */
+  open?: Partial<Record<BrochurePath, boolean>>;
 }
 
 /**
@@ -177,10 +200,17 @@ export interface BrochurePatch {
 export function brochurePatchProblem(body: unknown): string | null {
   if (!body || typeof body !== "object" || Array.isArray(body)) return "Send enabled, pages, or both.";
   const keys = Object.keys(body);
-  const stray = keys.find((k) => k !== "enabled" && k !== "pages");
-  if (stray) return `"${stray}" is not a switch here. Send enabled, pages, or both.`;
+  const stray = keys.find((k) => k !== "enabled" && k !== "pages" && k !== "open");
+  if (stray) return `"${stray}" is not a switch here. Send enabled, pages, open, or any of them.`;
   if (!keys.length) return "Send enabled, pages, or both.";
-  const { enabled, pages } = body as { enabled?: unknown; pages?: unknown };
+  const { enabled, pages, open } = body as { enabled?: unknown; pages?: unknown; open?: unknown };
+  if ("open" in body) {
+    if (!open || typeof open !== "object" || Array.isArray(open)) return "open must name each page by its address, with true or false.";
+    for (const [path, on] of Object.entries(open)) {
+      if (!isMemberDoor(path) || barePath(path) !== path) return `${path} cannot be opened to visitors on its own. Only ${MEMBER_DOORS.join(", ")} can.`;
+      if (typeof on !== "boolean") return `The visitor switch for ${path} must be true or false.`;
+    }
+  }
   if ("enabled" in body && typeof enabled !== "boolean") return "enabled must be true or false";
   if ("pages" in body) {
     if (!pages || typeof pages !== "object" || Array.isArray(pages)) {
@@ -198,15 +228,22 @@ export function brochurePatchProblem(body: unknown): string | null {
  * The stored document after a change. Pages the change does not name keep
  * their state, so two admins switching two different pages at once both land.
  */
-export function applyBrochurePatch(doc: unknown, patch: BrochurePatch): { enabled: boolean; hidden: BrochurePath[] } {
+export function applyBrochurePatch(doc: unknown, patch: BrochurePatch): { enabled: boolean; hidden: BrochurePath[]; open?: BrochurePath[] } {
   const now = brochureState(doc);
   const hidden = new Set<string>(now.hidden);
   for (const [path, show] of Object.entries(patch.pages ?? {})) {
     if (show === true) hidden.delete(path);
     else if (show === false) hidden.add(path);
   }
+  const open = new Set<string>(now.open ?? []);
+  for (const [path, on] of Object.entries(patch.open ?? {})) {
+    if (on === true) open.add(path);
+    else if (on === false) open.delete(path);
+  }
+  const opened = MEMBER_DOORS.filter((p) => open.has(p));
   return {
     enabled: typeof patch.enabled === "boolean" ? patch.enabled : now.enabled,
     hidden: SWITCHABLE_PAGES.filter((p) => hidden.has(p)),
+    ...(opened.length ? { open: opened } : {}),
   };
 }

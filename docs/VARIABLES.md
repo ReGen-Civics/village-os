@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 246 open and 50 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 246 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 275 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-296 dials in 39 categories. 152 carry a minimum and a maximum. By type: 115 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 6 longtext.
+302 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 6 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -53,7 +53,7 @@ Each dial also says WHEN a change lands. 269 of them as soon as it is saved, and
 | Tools | 2 | 2 | 0 |
 | Accounts & sessions | 2 | 0 | 2 |
 | Email and reminders | 15 | 11 | 4 |
-| Abuse guards | 5 | 0 | 5 |
+| Abuse guards | 11 | 0 | 11 |
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
@@ -253,6 +253,12 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Failed logins per account per 15 minutes | `abuse.login_account_per_quarter_hour` | Abuse guards | integer | `10` | the founder or an admin |
 | Password-reset requests per IP per hour | `abuse.password_reset_per_ip_hourly` | Abuse guards | integer | `10` | the founder or an admin |
 | Investor-packet requests per IP per hour | `abuse.investor_docs_per_ip_hourly` | Abuse guards | integer | `3` | the founder or an admin |
+| Most of the guide's day one account may use | `assistant.account_day_share_percent` | Abuse guards | integer | `25` | the founder or an admin |
+| Fewest guide calls one account may use in a day | `assistant.account_day_share_floor` | Abuse guards | integer | `5` | the founder or an admin |
+| Guide calls a day for visitors with no account | `assistant.anonymous_day_calls` | Abuse guards | integer | `150` | the founder or an admin |
+| Guide calls a day for one address with no account | `assistant.anonymous_address_day_calls` | Abuse guards | integer | `40` | the founder or an admin |
+| Model drafts from a document per account per hour | `documents.model_drafts_per_hour` | Abuse guards | integer | `6` | the founder or an admin |
+| Model drafts from a document per account per day | `documents.model_drafts_per_day` | Abuse guards | integer | `12` | the founder or an admin |
 | Keep handled form submissions for | `retention.submissions_days` | Data lifecycle | integer | `365` | the founder or an admin |
 | Keep read notifications for | `retention.notifications_days` | Data lifecycle | integer | `90` | the founder or an admin |
 | Leave an unreferenced upload alone for | `uploads.orphan_grace_days` | Data lifecycle | integer | `30` | the founder or an admin |
@@ -3106,7 +3112,7 @@ Off by default. When on, links in automated emails pass through the email provid
 
 ## Abuse guards
 
-5 dials. 5 for the founder or an admin.
+11 dials. 11 for the founder or an admin.
 
 ### Registrations per IP per hour
 
@@ -3179,6 +3185,96 @@ How many investor document requests one IP address may make per hour. Each reque
 | Default | `3` |
 | Range | 1 to 100 |
 | Counted in | per hour |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Most of the guide's day one account may use
+
+Each way of asking the guide has its own number of calls a day on the village's key, shared by everyone. This is the most of that one signed-in account may use in a day, so one person asking all day cannot use it up for everybody. Admin tools keep the whole day, and a member who brings their own key pays their own way. 0 means signed-in accounts get no calls on the village's key at all.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.account_day_share_percent` |
+| Type | integer, a whole number |
+| Default | `25` |
+| Range | 0 to 100 |
+| Counted in | % of the day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Fewest guide calls one account may use in a day
+
+A floor under the share above, for a way of asking whose whole day is small: one account may always use at least this many calls a day, while the share is above 0. It is never more than that way's whole day. 0 means no floor.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.account_day_share_floor` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 0 to 1000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Guide calls a day for visitors with no account
+
+The visitor guide and the application's voice drafts answer people with no account. Together, those people may use this many of the public guide's calls a day, and the rest stay for people who are signed in, so a few visitors cannot use up the day. It is never more than the public guide's whole day. 0 means visitors with no account get no guide calls.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.anonymous_day_calls` |
+| Type | integer, a whole number |
+| Default | `150` |
+| Range | 0 to 10000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Guide calls a day for one address with no account
+
+How many of the visitors' calls above one internet address may use in a day. A household or an office behind one connection counts as one address, so keep it above one conversation's worth. 0 means visitors with no account get no guide calls.
+
+| Fact | Value |
+| --- | --- |
+| Key | `assistant.anonymous_address_day_calls` |
+| Type | integer, a whole number |
+| Default | `40` |
+| Range | 0 to 10000 |
+| Counted in | calls a day |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Model drafts from a document per account per hour
+
+How many times one account may ask a model to draft from a document in an hour, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.
+
+| Fact | Value |
+| --- | --- |
+| Key | `documents.model_drafts_per_hour` |
+| Type | integer, a whole number |
+| Default | `6` |
+| Range | 0 to 1000 |
+| Counted in | per hour |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Model drafts from a document per account per day
+
+How many times one account may ask a model to draft from a document in a day, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.
+
+| Fact | Value |
+| --- | --- |
+| Key | `documents.model_drafts_per_day` |
+| Type | integer, a whole number |
+| Default | `12` |
+| Range | 0 to 1000 |
+| Counted in | per day |
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
