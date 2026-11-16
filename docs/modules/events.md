@@ -109,12 +109,34 @@ tombstone. It carries names and never emails: an organiser needs to know who is
 coming, and a downloadable address list is a different feature with its own
 consent question.
 
-## Not built
+## Not built (as of 0059)
 
 No recurrence (`RRULE`), no ActivityPub federation, no per-event visibility
 beyond `draft`, no waitlist when a gathering fills, and no ticketing or
 payments. `is_example` rides on the table but `EXAMPLE_TABLES` is untouched, so
-the standing-examples machinery does not retire these rows.
+the standing-examples machinery does not retire these rows. Recurrence and the
+waitlist have since been built: see the sections below.
+
+## Rhythms by weekday of the month
+
+A rhythm lives in the `recurrence` JSON column (`Recurrence`,
+`shared/gatherings.ts`) and is expanded on read by `expandOccurrences`
+(`server/lib/calendar.ts`). Monthly comes in two shapes: `byMonthDay` (the 15th)
+and `byNthWeekday: { nth, weekday }` (the first Friday). `nth` is 1 to 4 or -1
+for the last; there is no 5. The nth weekday is worked out on the village's
+civil year and month (`nthWeekdayDay`), so the zone only enters when the wall
+time becomes an instant: an evening first Friday in Costa Rica keeps its Friday
+date when UTC has already turned to Saturday, and a fork in a daylight-saving
+zone keeps its wall-clock time across the change. The feed writes it as
+`FREQ=MONTHLY;BYDAY=1FR` (or `-1FR`), and excludes a base start the rule would
+not produce, since RFC 5545 leaves that undefined and the village calendar never
+shows it. No migration: the shape is new JSON in an existing column. A release
+older than this one reads it as no rhythm and shows only the base date.
+
+The organiser picks it from the admin form's Repeats list, which offers the
+weekday rules the start's date answers to. A proposed event (a `setting`
+proposal to `POST /api/admin/events`) carries the same `recurrence` object
+through unchanged.
 
 ## The community half (0088, round 4 lane L5b)
 

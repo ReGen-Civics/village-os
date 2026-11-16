@@ -4293,6 +4293,18 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
   if (def.type === "text") {
     if (raw.length > 255) return "Too long (255 characters maximum).";
     /*
+     * A village's link dials (`org.*_link`) are read through `safeHref`
+     * (shared/otherWays.ts), which shows nothing for a value that is not a page
+     * of this site or an https address. Saving "village.example/webinar" used to
+     * succeed and then render no link anywhere, with nothing saying why. The
+     * same rule is held here, at the door, so the person sees the reason.
+     */
+    if (def.key.startsWith("org.") && def.key.endsWith("_link") && raw.trim() !== "") {
+      const v = raw.trim();
+      const sitePage = v.startsWith("/") && !v.startsWith("//");
+      if (!sitePage && !/^https:\/\/[^\s]+$/i.test(v)) return "Must be a page of this site, such as /steward, or an address that starts with https://. Leave it blank for none.";
+    }
+    /*
      * A governance window is a grammar, and a typo in it would close a whole
      * kind of proposal with nothing saying why. The SYNTAX is checked here so
      * every write path gets it; the cross-key rule (a window has to be longer

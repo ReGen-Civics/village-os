@@ -14,8 +14,8 @@ vi.mock("@/hooks/useVillageName", () => ({ useVillageName: () => "Hollow Oak" })
 // The places registry is asked only while the places module is on (the board's 404, role audit 10 Nov 2026).
 const placesOnRef = { value: true };
 vi.mock("@/modules/ModuleProvider", async (orig) => ({ ...(await orig<typeof import("@/modules/ModuleProvider")>()), useModuleOn: (id: string) => (id === "places" ? placesOnRef.value : true) }));
-// The full card is its own component with its own tests; here it only has to open.
-vi.mock("@/components/power/SeatTradingCard", () => ({ default: ({ input }: { input: { name: string } }) => <article data-testid="full-card">{input.name}</article> }));
+// The full card is its own component with its own tests; here it only has to open (the game register, design pass D-05).
+vi.mock("@/components/roleCard/FullRoleCard", () => ({ default: ({ seat }: { seat: { name: string } }) => <article data-testid="full-card">{seat.name}</article> }));
 
 // The season is one cached read in the app; each test says what it holds.
 const seasonRef = vi.hoisted(() => ({ value: null as unknown }));
