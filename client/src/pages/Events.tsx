@@ -28,10 +28,10 @@ import { storedText, writeStored } from "@/lib/safeStorage";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModule, useModules } from "@/modules/ModuleProvider";
 import { authToken } from "@/lib/gameApi";
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Users, Video } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink, MapPin, Repeat, Users, Video } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_FEATURED, EYEBROW, H1, H2, HINT, WORLD } from "@/components/journey/look";
-import type { CalendarItem, RsvpStatus } from "@shared/gatherings";
+import { describeRecurrence, type CalendarItem, type RsvpStatus } from "@shared/gatherings";
 import { civilDate, lunarYearOf, type YearAnchor } from "@shared/lunar";
 import { moonCountLabel } from "@shared/villageMoon";
 import InfoTip from "@/components/InfoTip";
@@ -287,6 +287,8 @@ export default function Events() {
 
   const itemCard = (g: CalendarItem, showWhen: boolean, surface: "card" | "muted" = "card") => {
     const second = localSecondLine(g, timezone);
+    // Authored rhythms only: a mirrored row (a circle's call, the sky) says its own rhythm where it lives.
+    const rhythm = g.kind === "gathering" || g.kind === "festival" ? describeRecurrence(g.recurrence) : null;
     const key = `${g.id}:${g.occurrenceKey}`;
     return (
       <li key={key} className={`border border-border rounded-xl p-4 sm:p-5 ${surface === "muted" ? "bg-muted" : "bg-card"}`}>
@@ -316,6 +318,12 @@ export default function Events() {
               {showWhen && <span className="text-foreground/60">({whenLabel(g.daysUntil)})</span>}
             </p>
             {second && <p className="text-xs text-muted-foreground/80 mt-0.5 ml-5">{second}</p>}
+            {rhythm && (
+              <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                <Repeat className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                {rhythm}
+              </p>
+            )}
             {g.locationText && (
               <p className="text-sm text-muted-foreground mt-0.5 flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
@@ -370,6 +378,8 @@ export default function Events() {
   const moonTitle = moonName && (moonName.title || moonName.name)
     ? [moonName.title, moonName.name].filter(Boolean).join(", ")
     : t({ message: "This moon", context: "calendar moon view heading, a village with no moon count or names" });
+  /** The moon view is showing: on a phone its name heads the page (the CSS keeps a desktop as it was). */
+  const moonOnPhone = Boolean(payload && cursor && tab === "moon" && moon);
   const chosen = moon && selectedKey ? moon.days.find((d) => d.day.key === selectedKey) ?? null : null;
   const segBtn = (on: boolean) =>
     `jw-btn inline-flex min-h-11 items-center justify-center px-3 py-1.5 text-sm rounded-lg transition-colors ${on ? "bg-notice text-background font-semibold" : "text-foreground hover:bg-muted"}`;
@@ -377,18 +387,33 @@ export default function Events() {
   return (
     <Layout>
       <div className={WORLD}>
-      <section className="pt-8 pb-4 sm:pt-10">
+      <section className="pt-5 pb-3 sm:pt-10 sm:pb-4">
         <div className={`container ${tab === "moon" ? "max-w-6xl" : "max-w-4xl"}`}>
           <p className={EYEBROW}>{t({ message: "Calendar", context: "calendar page eyebrow" })}</p>
-          <h1 className={`${H1} mt-2`}>{t({ message: "Village calendar", context: "calendar page title" })}</h1>
+          {/* On a phone in the moon view the moon's name is the page's heading, so the spiral
+              starts in the first screen (design pass M6). A desktop keeps the page's own title. */}
+          <h1 className={`${H1} mt-2`}>
+            {moonOnPhone ? (
+              <>
+                <span className="sm:hidden">{moonTitle}</span>
+                <span className="hidden sm:inline">{t({ message: "Village calendar", context: "calendar page title" })}</span>
+              </>
+            ) : (
+              t({ message: "Village calendar", context: "calendar page title" })
+            )}
+          </h1>
           {/* R47: the Trail line leads, the tooltip defines the moons, and
-              the two clocks line is the Lore, last and quiet. */}
+              the two clocks line is the Lore, last and quiet. On a phone the words sit
+              behind the "?" (design pass M6). */}
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            {t({ message: "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by.", context: "calendar page lede" })}{" "}
-            <InfoTip tip="The moons are the lunar months the land turns by. The wheel and the grid show them beside the civil calendar, and the village's cycles close when the moon does." label={t({ message: "About the moons", context: "calendar page: tip about moons" })} />
+            <span className="hidden sm:inline">
+              {t({ message: "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by.", context: "calendar page lede" })}{" "}
+            </span>
+            <InfoTip tapBox tip="The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by. The wheel and the grid show the moons beside the civil calendar, and the village's cycles close when the moon does." label={t({ message: "About the moons", context: "calendar page: tip about moons" })} />
           </p>
           {lunar && (
-            <p className="mt-3 inline-flex items-center gap-2 text-sm text-foreground bg-card border border-border rounded-full px-3 py-1.5">
+            // The day panel under the moon says the same on a phone, so the pill waits for a wider screen there.
+            <p className={`mt-3 ${moonOnPhone ? "hidden sm:inline-flex" : "inline-flex"} items-center gap-2 text-sm text-foreground bg-card border border-border rounded-full px-3 py-1.5`}>
               <MoonGlyph phase={lunar.phase} size={16} hemisphere={hemisphere} title={lunar.phaseName} />
               <span>
                 {(() => {
@@ -424,7 +449,8 @@ export default function Events() {
           <div className="flex items-center justify-between gap-2 flex-wrap mb-4">
             <div role="tablist" aria-label={t({ message: "Calendar views", context: "calendar view tabs" })} className="inline-flex flex-wrap rounded-xl border border-border bg-card p-0.5">
               {TAB_IDS.map((id) => (
-                <button key={id} role="tab" type="button" aria-selected={tab === id} onClick={() => pickTab(id)} className={segBtn(tab === id)}>
+                // The year wheel is a desktop's view (design pass M6): a phone offers Moon, Month, Week and List.
+                <button key={id} role="tab" type="button" aria-selected={tab === id} onClick={() => pickTab(id)} className={`${segBtn(tab === id)}${id === "wheel" && tab !== "wheel" ? " max-sm:hidden" : ""}`}>
                   {tabLabel(id)}
                 </button>
               ))}
@@ -456,8 +482,9 @@ export default function Events() {
           {payload && cursor && tab === "moon" && moon && (
             <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-8" data-testid="moon-view">
               <div className="min-w-0">
-                <p className={EYEBROW}>{t({ message: "This moon", context: "calendar moon view eyebrow" })}</p>
-                <h2 className="mt-1 font-display text-3xl leading-tight text-foreground sm:text-4xl">{moonTitle}</h2>
+                {/* On a phone the page's h1 already names the moon (design pass M6). */}
+                <p className={`${EYEBROW} hidden sm:block`}>{t({ message: "This moon", context: "calendar moon view eyebrow" })}</p>
+                <h2 className="mt-1 hidden font-display text-3xl leading-tight text-foreground sm:block sm:text-4xl">{moonTitle}</h2>
                 <p className={`${HINT} mt-1`}>
                   {(() => {
                     const firstDay = dayName(moon.days[0].day);
@@ -465,7 +492,9 @@ export default function Events() {
                     return t({ message: `${firstDay} to ${lastDay}. The new moon is at the centre, and each day is a seed further out.`, context: "calendar moon view: the moon's window" });
                   })()}
                 </p>
-                <p className="mt-1 hidden text-sm text-muted-foreground lg:block">
+                {/* Heard, never shown (design pass D-25): a page does not explain its keys in body copy.
+                    The spiral's focus ring shows the walk to a sighted keyboard user. */}
+                <p className="sr-only">
                   {t({ message: "The arrow keys walk the days. Home and End go to the first and last day of the moon.", context: "calendar moon view: keyboard hint, desktop" })}
                 </p>
                 <div className="-mx-4 mt-4 border-y border-border/60 bg-card/40 sm:mx-0 sm:rounded-2xl sm:border lg:p-2">

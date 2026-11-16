@@ -1,8 +1,8 @@
 /**
- * The welcome's shared pieces (CompanionWelcome.tsx): the browser voice, the
+ * The welcome's shared pieces (CompanionWelcome.tsx): the spoken voice, the
  * speech bubble, the egg, the pet, the bursts and the class strings.
  */
-import { useCallback, useEffect, useState, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Trans } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { PetDrawing } from "@/components/profileDash/CompanionPet";
@@ -10,6 +10,7 @@ import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import type { PetKind, PetTint } from "@shared/companionItems";
 import type { Character } from "@shared/companionPersona";
 import { msg } from "@lingui/core/macro";
+import { pickBrowserVoice } from "@/lib/voice/pickBrowserVoice";
 
 export const MIC_LINE = msg({ message: "The mic uses your browser's speech service (Google, Apple or Microsoft) to turn speech into text. Typing always works.", context: "companion welcome, the mic" });
 
@@ -37,30 +38,95 @@ export async function send(path: string, method: string, body?: unknown): Promis
   }
 }
 
-// ── speaking aloud: the browser's own voice ─────────────────────────────────
+// ── speaking aloud: the best voice the device has ──────────────────────────
+
+/** How long to wait for a browser that loads its voice list late (Chrome) before speaking with its default. */
+export const VOICES_WAIT_MS = 800;
+
+/** A steady, unhurried pace. Character shows in the words; the voice stays natural, at pitch 1. */
+const RATE: Record<Character, number> = { sidekick: 1, trickster: 1, plain: 1, coach: 1, elder: 0.95, poet: 0.97 };
+
+function voicesNow(synth: SpeechSynthesis): SpeechSynthesisVoice[] {
+  try {
+    return typeof synth.getVoices === "function" ? synth.getVoices() ?? [] : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Calls `go` once the voice list is ready, or after VOICES_WAIT_MS, whichever is
+ * first. A browser that cannot report its voices (or a test stub) goes at once.
+ * Returns a cancel.
+ */
+function whenVoicesReady(synth: SpeechSynthesis, go: () => void): () => void {
+  if (typeof synth.getVoices !== "function" || voicesNow(synth).length > 0 || typeof synth.addEventListener !== "function") {
+    go();
+    return () => {};
+  }
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    window.clearTimeout(timer);
+    synth.removeEventListener?.("voiceschanged", finish);
+    go();
+  };
+  const timer = window.setTimeout(finish, VOICES_WAIT_MS);
+  synth.addEventListener("voiceschanged", finish);
+  return () => {
+    done = true;
+    window.clearTimeout(timer);
+    synth.removeEventListener?.("voiceschanged", finish);
+  };
+}
 
 export function useSpeech(on: boolean, character: Character) {
-  const can = typeof window !== "undefined" && "speechSynthesis" in window;
+  const can = typeof window !== "undefined" && "speechSynthesis" in window && !!window.speechSynthesis && typeof SpeechSynthesisUtterance !== "undefined";
+  const pending = useRef<() => void>(() => {});
   const cancel = useCallback(() => {
-    if (can) window.speechSynthesis.cancel();
+    pending.current();
+    pending.current = () => {};
+    if (can) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        /* nothing to stop */
+      }
+    }
   }, [can]);
   const speak = useCallback(
     (text: string, onStart?: () => void, onEnd?: () => void) => {
       if (!on || !can) return;
+      const synth = window.speechSynthesis;
       try {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        // The voice speaks the language the page is in, so a Spanish line is never read by an English voice (Spanish phone QA, 15 Nov 2026).
-        const lang = document.documentElement.lang;
-        if (lang) u.lang = lang;
-        u.rate = ({ plain: 1.1, coach: 1.08, elder: 0.9, poet: 0.92 } as Partial<Record<Character, number>>)[character] ?? 1;
-        u.pitch = character === "sidekick" || character === "trickster" ? 1.25 : 1;
-        u.onstart = () => onStart?.();
-        u.onend = () => onEnd?.();
-        window.speechSynthesis.speak(u);
+        pending.current();
+        synth.cancel();
       } catch {
-        /* a browser with no voice still shows every word */
+        /* nothing to stop */
       }
+      pending.current = whenVoicesReady(synth, () => {
+        pending.current = () => {};
+        try {
+          const u = new SpeechSynthesisUtterance(text);
+          // The voice speaks the language the page is in, so a Spanish line is never read by an English voice (Spanish phone QA, 15 Nov 2026).
+          const lang = document.documentElement.lang;
+          if (lang) u.lang = lang;
+          // The kindest installed voice for that language (Edge "Natural", Apple "Premium", Google), never Windows David or Zira when anything else exists.
+          const voice = pickBrowserVoice(voicesNow(synth), lang || "en");
+          if (voice) {
+            u.voice = voice;
+            if (!lang) u.lang = voice.lang;
+          }
+          u.rate = RATE[character] ?? 1;
+          u.pitch = 1;
+          u.onstart = () => onStart?.();
+          u.onend = () => onEnd?.();
+          synth.speak(u);
+        } catch {
+          /* a browser with no voice still shows every word */
+        }
+      });
     },
     [on, can, character],
   );

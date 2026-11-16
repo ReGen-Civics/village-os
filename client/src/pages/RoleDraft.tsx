@@ -18,7 +18,7 @@
  *   - a member proposes through Propose my roles, which carries several
  *     roles, gold for changed words and season goals tied to the village's
  *     (shared/roleProposals.ts);
- *   - the full card is the same SeatTradingCard /roles draws;
+ *   - the full card is the same FullRoleCard /roles draws under "Read the full card";
  *   - other ways in: a quest on the board (quest, path, role) and a place
  *     looking for a steward.
  *
@@ -36,15 +36,14 @@ import { ArrowRight, Check, Compass, MapPin, Sparkles, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import InfoTip from "@/components/InfoTip";
-import SeatTradingCard from "@/components/power/SeatTradingCard";
-import EditRoleButton from "@/components/roleEdit/EditRoleButton";
-import { useClassNames } from "@/components/power/useClassNames";
+import FullRoleCard from "@/components/roleCard/FullRoleCard";
 import { readsTerms } from "@/components/characters/RolesThatFit";
 import { proposeRoleHref } from "@/components/roleProposal/QuickPath";
 import DiscoverStep from "@/components/roleDraft/DiscoverStep";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, CHIP_SOFT, DOOR, EYEBROW, H1, H2, LEDE, LINK, WORLD } from "@/components/journey/look";
 import SelectStepper from "@/components/roleDraft/SelectStepper";
 import ArtImage from "@/components/roleDraft/ArtImage";
+import { centring } from "@/components/roleDraft/centring";
 import Burst, { reducedMotion } from "@/components/roleDraft/Burst";
 import { Fireflies } from "@/components/journey/nature";
 import { BreathingLoader } from "@/components/natural";
@@ -54,11 +53,9 @@ import { gameFetch, useSeason } from "@/lib/gameApi";
 import { readFoundingTeam } from "@/components/roleCard/roleCardApi";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { readStoredJson, writeStoredJson } from "@/lib/safeStorage";
-import { fromOrgSeat, seasonForSheet } from "@shared/roleSheetInputs";
 import { OPEN_PROPOSAL_MAX_ROLES } from "@shared/openProposals";
 import { roleCardView } from "@shared/roleCardView";
 import { BEING_WRITTEN } from "@shared/roleParams";
-import { termsSlotFor } from "@/components/power/SeatTermsSlot";
 import {
   ROLE_DRAFT_KEY,
   addPick,
@@ -203,7 +200,6 @@ export default function RoleDraft() {
   };
   const cardRef = useRef<HTMLDivElement | null>(null);
   const season = useSeason();
-  const classNames = useClassNames();
 
   const [load, setLoad] = useState<Load>({ kind: "loading" });
   const stored = useMemo(() => {
@@ -328,7 +324,6 @@ export default function RoleDraft() {
     setPicks(next.picks);
   };
 
-  const ctx = { now: new Date(), season: seasonForSheet(season), classNames };
   const pickCount = picks.length;
   const termEnds = form?.term ? civilDayWords(form.term.endsOn, i18n.locale) : "";
   // The village's goals for this season, live (the Season tab in Admin). Done ones drop off.
@@ -417,8 +412,9 @@ export default function RoleDraft() {
             {load.kind === "ready" && roles.length > 0 && !tagsKnown && (
               <p className="mt-1 text-sm text-muted-foreground">{t`This village has not tagged its roles by character for visitors yet, so every role is shown for every character.`}</p>
             )}
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {cast.map((c) => {
+            {/* Doubled tracks, so a short last row sits centred and never leaves a hole (design pass D-21). */}
+            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
+              {cast.map((c, ci) => {
                 const on = chars.includes(c.key);
                 const n = fitCount(c.key);
                 return (
@@ -428,7 +424,7 @@ export default function RoleDraft() {
                     aria-pressed={on}
                     data-on={on}
                     onClick={() => toggleChar(c.key)}
-                    className={`sel-lift jw-pick group relative flex min-h-11 flex-col rounded-2xl border-2 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${on ? "border-notice bg-muted text-foreground" : "border-border bg-card text-card-foreground hover:border-notice/60"}`}
+                    className={`col-span-2 ${centring(ci, cast.length, "base-sm")} sel-lift jw-pick group relative flex min-h-11 flex-col rounded-2xl border-2 text-left shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${on ? "border-notice bg-muted text-foreground" : "border-border bg-card text-card-foreground hover:border-notice/60"}`}
                   >
                     <span className="relative block overflow-hidden rounded-t-xl">
                       <ArtImage portrait src={characterArt(c.key)} className="relative aspect-[4/5] w-full" imgClassName="object-top" />
@@ -572,13 +568,11 @@ export default function RoleDraft() {
                       </div>
                       {isOpen && load.kind === "ready" && (
                         <div ref={cardRef} tabIndex={-1} role="region" aria-label={t`The full card for ${roleName}`} className="scroll-mt-52 border-t border-border p-3 outline-none">
-                          <SeatTradingCard
-                            input={fromOrgSeat(role.raw, load.org.circles, load.org.people, load.org.village, { raiseHand: false })}
-                            ctx={ctx}
-                            embedded
-                            settings={termsSlotFor(role.raw as Record<string, any>)}
-                          />
-                          <EditRoleButton roleId={role.id} className="mt-3" onSaved={() => window.location.reload()} />
+                          {/* The role's words, read slowly (design pass D-05): the full role card in the game
+                              register, with no stat strip and no count of what is written down. The card
+                              above already names the role, and its Select is the one act. */}
+                          <FullRoleCard seat={role.raw as Record<string, any>} showTitle={false} noAct />
+
                         </div>
                       )}
                       <div className="flex gap-2 px-4 pb-4">
