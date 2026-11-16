@@ -66,6 +66,8 @@ import { ensureMemberNo } from "./liveSessions";
 import { TensionSentAlready, itemFromTension } from "./sessionLibrary";
 import type { NotifyInput } from "./notify";
 import type { TensionRow } from "../repos/roleTensions";
+import { dropPlaces, placesFor, thisWeekOf, writePlace } from "./priorities";
+import { PRIORITY_REFUSALS, cleanPlace, type AskPlace, type RaisedAsk } from "../../shared/priorities";
 
 export type Outcome<T> = { ok: true; value: T } | { ok: false; status: number; error: string };
 const refuse = (status: number, error: string): { ok: false; status: number; error: string } => ({ ok: false, status, error });
@@ -218,6 +220,8 @@ export async function respondToTension(
     throw e;
   }
   if (!out.ok) return out;
+  // Answered or brought to the circle, it has left the line.
+  if (action !== "take") await dropPlaces(pool, [id]);
   const stored = await store.tensionById(pool, id);
   if (!stored) return refuse(404, TENSION_REFUSALS.notFound);
   return done(cardOf(stored, who.userId, deps.timeZone()));
@@ -232,6 +236,7 @@ export async function heldTensionsFor(pool: Pool, userId: string, opts: { timeZo
   const open = await store.openTensionsForRoleIds(pool, roleIds);
   if (!open.length) return [];
   const roles = await store.rolesWithCircles(pool, Array.from(new Set(open.map((t) => t.roleId))));
+  const places = await placesFor(pool, open.map((t) => t.id));
   const now = opts.now ?? new Date();
   return open
     .filter((t) => t.text.trim().length > 0)
@@ -246,8 +251,52 @@ export async function heldTensionsFor(pool: Pool, userId: string, opts: { timeZo
         status: t.status === "taken" ? "taken" : "open",
         raisedOn: day(t.createdAt, opts.timeZone),
         overdue: t.status === "open" && isOverdue(t.createdAt, now, opts.timeZone),
+        place: places.get(t.id) ?? null,
       };
     });
+}
+
+// ── A place in line (shared/priorities.ts) ───────────────────────────────────
+
+/**
+ * A live holder who has taken a tension says where it sits on the role's list
+ * and roughly when they expect to pick it up. Both null clears it. Whoever
+ * raised it reads the place on their profile; nobody else does.
+ */
+export async function placeTension(
+  pool: Pool,
+  who: { userId: string },
+  id: string,
+  body: unknown,
+  deps: Pick<TensionDeps, "timeZone">,
+  now = new Date(),
+): Promise<Outcome<AskPlace>> {
+  const t = await store.tensionById(pool, id);
+  if (!t) return refuse(404, TENSION_REFUSALS.notFound);
+  const holders = (await holdersByRole(pool, [t.roleId])).get(t.roleId) ?? [];
+  if (!holders.includes(who.userId)) return refuse(403, TENSION_REFUSALS.notHolder);
+  if (t.status !== "taken") return refuse(409, isOpenTension(t.status) ? PRIORITY_REFUSALS.takeFirst : TENSION_REFUSALS.alreadyAnswered);
+  const c = cleanPlace(body, thisWeekOf(now, deps.timeZone()), (await placesFor(pool, [id])).get(id) ?? null);
+  if (!c.ok) return refuse(400, c.error);
+  await writePlace(pool, id, c.place);
+  return done(c.place);
+}
+
+/** The asks one member raised that nobody has answered yet, oldest first, each with its place in line when a holder said one. */
+export async function raisedAsksFor(pool: Pool, userId: string, timeZone: string): Promise<RaisedAsk[]> {
+  const open = (await store.openTensionsRaisedBy(pool, userId)).filter((t) => t.text.trim());
+  if (!open.length) return [];
+  const [roles, places] = await Promise.all([store.rolesWithCircles(pool, Array.from(new Set(open.map((t) => t.roleId)))), placesFor(pool, open.map((t) => t.id))]);
+  return open.map((t) => ({
+    id: t.id,
+    role: roles.get(t.roleId)?.name || t.roleId,
+    circle: roles.get(t.roleId)?.circle ?? null,
+    text: t.text,
+    status: t.status === "taken" ? "taken" : "open",
+    raisedOn: day(t.createdAt, timeZone),
+    // A place said while it was open never shows: only a taken ask has one.
+    place: t.status === "taken" ? (places.get(t.id) ?? null) : null,
+  }));
 }
 
 /** One role's tensions as `viewer` may see them. Counts for members only. */

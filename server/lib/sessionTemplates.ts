@@ -62,6 +62,8 @@ import { seasonEndInstant } from "./governanceWindows";
 import { assignGoalIds } from "./seasonGoals";
 import { cleanLine, cleanText } from "../../shared/sessions";
 import { isPresentAt, mapSession, namesFor, rolesIn, type MemberLookup, type Outcome, type Refusal } from "./liveSessions";
+import { forgetWeekLines, keepAgendaOrder, markLineFor, putBoardOnAgenda, roomBoard, roomTops, setLineFor, thisWeekOf, weekLinesOf } from "./priorities";
+import { PRIORITY_REFUSALS } from "../../shared/priorities";
 
 const refuse = (status: number, error: string): Refusal => ({ ok: false, status, error });
 const done = <T>(value: T): Outcome<T> => ({ ok: true, value });
@@ -380,6 +382,7 @@ export async function roomView(
   lookup: MemberLookup,
   season: SeasonRef | null = null,
   now = Date.now(),
+  timeZone = "UTC",
 ): Promise<TemplateRoomView | null> {
   const f = await roomFacts(pool, sessionId, who);
   if (!f) return null;
@@ -409,6 +412,15 @@ export async function roomView(
   const goals = season?.goals ?? [];
   const words = <T extends { servesGoalId: string | null; servesGoal: string | null }>(rows: T[]) => rows.map((r) => currentWords(r, goals));
   const readBack = (r: SeriesReadBack | null) => (r ? { ...r, rows: words(r.rows) } : null);
+  const flow = f.template?.flow ?? [];
+  // Each person's top priority (shared/priorities.ts): the people here, by the names the room uses.
+  const tops =
+    flowHas(flow, "top_priorities") || flowHas(flow, "top_priorities_review")
+      ? await roomTops(pool, hereNos.map((no) => ({ no, name: nameOf(no) })), goals, thisWeekOf(new Date(now), timeZone))
+      : null;
+  const board = flowHas(flow, "priority_vote")
+    ? await roomBoard(pool, season, sessionId, (await rooms.itemRows(pool, sessionId)).map((r) => ({ id: Number(r.id), status: String(r.status) })), f.s.state.orderSet)
+    : null;
   return {
     template: f.template
       ? { id: f.template.id, name: f.template.name, category: f.template.category, summary: f.template.summary, flow: f.template.flow }
@@ -426,6 +438,8 @@ export async function roomView(
     shares: words(shares),
     season: f.template && season && season.goals.length ? season : null,
     viewerNo: who.no,
+    tops,
+    board,
   };
 }
 
@@ -581,6 +595,59 @@ export async function patchPriority(
     }
     await repo.writeOutcome(conn, priorityId, outcome, outcome ? sessionId : null, outcome ? f.no : 0, now);
     return done(null);
+  });
+}
+
+/**
+ * Each person's top priority in a meeting (shared/priorities.ts). A person
+ * here sets their own line; the facilitator or the secretary may type one in
+ * for anybody here. Needs a `top_priorities` section.
+ */
+export async function topAct(
+  pool: Pool,
+  sessionId: number,
+  who: RoomAsker,
+  raw: unknown,
+  goals: readonly SeasonGoalRef[],
+  timeZone: string,
+  now = new Date(),
+): Promise<Outcome<null>> {
+  return inTemplatedRoom(pool, sessionId, who, false, async (conn, f) => {
+    if (!flowHas(f.template?.flow ?? [], "top_priorities")) return refuse(400, PRIORITY_REFUSALS.noSection);
+    const hereNos = new Set(
+      (await rooms.peopleRows(conn, sessionId))
+        .map((r) => ({ no: Number(r.member_no), lastSeenMs: r.last_seen_at == null ? null : new Date(r.last_seen_at).getTime() }))
+        .filter((p) => isPresentAt(p, now.getTime()))
+        .map((p) => p.no),
+    );
+    return setLineFor(conn, { sessionId, writerNo: f.no, hosts: f.hosts, hereNos }, raw, goals, thisWeekOf(now, timeZone), now);
+  });
+}
+
+/** Friday marks a person's top priority done, partly or carried over: the person, or a host. Needs a `top_priorities_review` section. */
+export async function topMarkAct(pool: Pool, sessionId: number, who: RoomAsker, forNo: number, raw: unknown, timeZone: string, now = new Date()): Promise<Outcome<null>> {
+  return inTemplatedRoom(pool, sessionId, who, false, async (conn, f) => {
+    if (!flowHas(f.template?.flow ?? [], "top_priorities_review")) return refuse(400, PRIORITY_REFUSALS.noSection);
+    return markLineFor(conn, { writerNo: f.no, hosts: f.hosts }, forNo, raw, thisWeekOf(now, timeZone));
+  });
+}
+
+/**
+ * The season's priority board in a meeting's vote (shared/priorities.ts):
+ * `agenda` puts its open items on this agenda for the room to vote, and
+ * `keep` writes the order the facilitator set back to the board. Hosts only;
+ * needs a `priority_vote` section.
+ */
+export async function boardRoomAct(pool: Pool, sessionId: number, who: RoomAsker, raw: unknown, season: SeasonRef | null, now = new Date()): Promise<Outcome<null>> {
+  const act = bodyOf(raw).act;
+  if (act !== "agenda" && act !== "keep") return refuse(400, PRIORITY_REFUSALS.act);
+  return inTemplatedRoom(pool, sessionId, who, true, async (conn, f) => {
+    if (!flowHas(f.template?.flow ?? [], "priority_vote")) return refuse(400, PRIORITY_REFUSALS.noSection);
+    const room = { sessionId, writerNo: f.no, orderSet: f.s.state.orderSet };
+    const out = act === "agenda" ? await putBoardOnAgenda(conn, room, season, now) : await keepAgendaOrder(conn, room, season);
+    // The agenda changed under the room's own poll, so the room hears it.
+    if (out.ok && act === "agenda") await rooms.bumpVersion(conn, sessionId);
+    return out;
   });
 }
 
@@ -904,12 +971,19 @@ export async function regroupTension(pool: Pool, shareId: number, raw: unknown, 
 
 // ── One member: the export and the erasure ──────────────────────────────────
 
-export async function exportTemplatesFor(pool: Pool, no: number): Promise<{ shares: Record<string, unknown>[]; priorities: Record<string, unknown>[] }> {
+export async function exportTemplatesFor(
+  pool: Pool,
+  no: number,
+): Promise<{ shares: Record<string, unknown>[]; priorities: Record<string, unknown>[]; weekPriorities: Record<string, unknown>[] }> {
   const shares = (await repo.memberShareRows(pool, no)).map((r) => ({ sessionId: Number(r.session_id), kind: String(r.kind), text: String(r.text), at: toIso(r.created_at) }));
   const priorities = (await repo.memberPriorityRows(pool, no)).map((r) => ({ sessionId: Number(r.session_id), text: String(r.text), at: toIso(r.created_at) }));
-  return { shares, priorities };
+  // Each week's top priority they named (shared/priorities.ts).
+  const weekPriorities = (await weekLinesOf(pool, no)).map((l) => ({ weekOf: l.weekOf, text: l.text, servesGoal: l.servesGoal, outcome: l.outcome, at: l.setAt }));
+  return { shares, priorities, weekPriorities };
 }
 
 export async function forgetTemplatesFor(conn: PoolConnection, no: number): Promise<void> {
   await repo.forgetMember(conn, no);
+  // Their weekly top priorities go whole: a line is theirs, never the circle's.
+  await forgetWeekLines(conn, no);
 }

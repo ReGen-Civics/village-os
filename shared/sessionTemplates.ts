@@ -36,6 +36,7 @@
  * written: editable, duplicable, archivable. They carry no village's name.
  */
 import { cleanLine, cleanText } from "./sessions";
+import type { RoomBoard, RoomTops } from "./priorities";
 
 // ── Doors ────────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,8 @@ export const SECTION_KINDS = [
   "priorities_set",
   "priorities_review",
   "carried_over",
+  "top_priorities",
+  "top_priorities_review",
   "close",
   "moon_recaps",
   "moon_goals",
@@ -114,6 +117,8 @@ export const SECTION_KIND_DEFS: Record<SectionKind, { label: string; hint: strin
   priorities_set: { label: "Set this week's priorities", hint: "The chosen priorities are kept for the next meeting in the series to read back." },
   priorities_review: { label: "Read back the priorities", hint: "The priorities the meeting this one feeds from chose, each marked done, partly or carried over." },
   carried_over: { label: "Carried over", hint: "What the meeting this one feeds from carried over, ready to take up again." },
+  top_priorities: { label: "Each person's top priority", hint: "Each person here names the one thing they'll put first this week. It shows on their profile and the team's week." },
+  top_priorities_review: { label: "Each person's top priority, read back", hint: "Each person's top priority for the week, marked done, partly or carried over." },
   close: { label: "Close", hint: "A closing round." },
   moon_recaps: {
     label: "Our moons",
@@ -603,6 +608,10 @@ export interface TemplateRoomView {
   season: SeasonRef | null;
   /** This viewer's member number, so the stick holder sees their own choice. Absent from an older server. */
   viewerNo?: number | null;
+  /** Each person here and their top priority (a `top_priorities` or `top_priorities_review` section, shared/priorities.ts). */
+  tops?: RoomTops | null;
+  /** The season's priority board (a `priority_vote` section, shared/priorities.ts). */
+  board?: RoomBoard | null;
 }
 
 // ── The season (0292) ───────────────────────────────────────────────────────
@@ -1089,7 +1098,8 @@ export const DEFAULT_TEMPLATES: readonly TemplateSeed[] = [
       sec("arrive", "round", "Arriving", 5, "How are you arriving, from 1 to 11?"),
       sec("season", "season_priorities", "This season's priorities", 2, "Read the season's priorities aloud. Each win can name the one it serves."),
       sec("wins", "wins", "Wins and celebrations", 13, "What did you win at this week? Big or small, say it out loud."),
-      sec("review", "priorities_review", "Last Monday's priorities", 15, "For each priority Monday chose: did we tackle it? Done, partly, or carried over."),
+      sec("review", "priorities_review", "Last Monday's priorities", 10, "For each priority Monday chose: did we tackle it? Done, partly, or carried over."),
+      sec("tops", "top_priorities_review", "Each person's top priority", 5, "Each person reads back the one thing they put first this week: done, partly or carried over."),
       sec("week", "agenda", "What happened this week", 15, "Anything the circle needs to hear or settle before the weekend."),
       sec("next", "round", "What to pick up next week", 5, "What should Monday pick up? Partly done and carried over come to Monday on their own."),
       sec("close", "close", "Closing round", 5, "One word each to close the week."),
@@ -1107,8 +1117,9 @@ export const DEFAULT_TEMPLATES: readonly TemplateSeed[] = [
       sec("arrive", "round", "Arriving", 5, "How are you arriving, from 1 to 11?"),
       sec("season", "season_priorities", "This season's priorities", 2, "Read the season's priorities aloud. This week's priorities each name the one they serve."),
       sec("carried", "carried_over", "Carried over from Friday", 8, "What Friday carried over. Take up what still matters."),
-      sec("gather", "agenda", "The biggest things to tackle", 15, "Everyone adds what they think matters most this week."),
-      sec("vote", "priority_vote", "Vote on priorities", 15, "Vote items up and down, and agree together what comes first."),
+      sec("tops", "top_priorities", "Each person's top priority", 5, "Each person names the one thing they'll put first this week, and the season goal it serves."),
+      sec("gather", "agenda", "The biggest things to tackle", 10, "Everyone adds what they think matters most this week."),
+      sec("vote", "priority_vote", "Vote on priorities", 15, "Vote items up and down, and agree together what comes first. The season's priority board can join the vote."),
       sec("set", "priorities_set", "This week's priorities", 10, "Keep the chosen priorities. Friday reads them back."),
       sec("close", "close", "Closing round", 5, "One word each to start the week."),
     ],

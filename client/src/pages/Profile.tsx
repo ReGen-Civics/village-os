@@ -74,6 +74,8 @@ import type { StageAdvance } from "@/components/StageAdvanced";
 import StagePanel from "@/components/profileDash/StagePanel";
 import TodayStrip from "@/components/profileDash/TodayStrip";
 import AsksPanel from "@/components/asks/AsksPanel";
+import MyWeekCard from "@/components/priorities/MyWeekCard";
+import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
 import YourCompanions from "@/components/profileDash/YourCompanions";
 import GuideChoiceCard from "@/components/guide/GuideChoiceCard";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
@@ -562,6 +564,16 @@ export default function Profile() {
             {/* ASKED OF YOU: what other members asked this member, and what they asked (shared/memberAsks.ts). */}
             <div id="waiting" className={`scroll-mt-28 ${tabOf("today")}`}>
               <AsksPanel />
+            </div>
+
+            {/* THIS WEEK AND YOUR ASKS (shared/priorities.ts): your top priority, and where what you asked of a role sits. */}
+            {sessionsOn && (
+              <div id="my-week" className={`scroll-mt-28 empty:hidden ${tabOf("today")}`}>
+                <MyWeekCard />
+              </div>
+            )}
+            <div className={`empty:hidden ${tabOf("today")}`}>
+              <RaisedAsksCard />
             </div>
 
             {/* YOUR COMPANIONS, beside the tasks on a desktop and on the Quests tab on a phone. */}
