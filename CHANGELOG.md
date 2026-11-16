@@ -47,7 +47,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **A Treasury page for whoever holds the money powers.** `/treasury` opens to members who hold `token.mint`, `cash.pay` or approve-alone, without needing admin. "Pay by member" is on it: each member's USD pay (owed, claimed, sent from escrow) and their Earned Equity and Credits to approve or adjust.
 - **AI spending has limits you can set.** Admin dials cap what one account may use (25% of the village's share by default), what visitors may use (150 a day, 40 an hour), and how many documents the assistant reads (6, up to 12). If the village-wide cap can't be checked, AI requests stop instead of running unmetered.
 - **Weak secrets are flagged.** A sign-in secret (`AUTH_TOKEN_SECRET`) shorter than 32 characters still boots but shows red on the launch plan; only a brand-new village with no members refuses to start with one. An `ADMIN_PASSWORD` shorter than 20 characters closes the first-admin and export doors until it is changed.
-- **Make it yours, further** (each one off until a village sets it): a dark page and its own colours, with every colour pair measured for contrast; the game's own colours (paper, stamps, the map, places); its own menu labels, grouping and phone tabs; its own stock faces and portrait style; the words around the app (empty-board lines and the like); how the guide speaks; and the letter members sign opened to visitors, one paragraph per part.
+- **Make it yours, further** (each one off until a village sets it): a dark page and its own colours, with every colour pair measured for contrast; the game's own colours (paper, stamps, the map, places); its own menu labels, grouping and phone tabs; its own stock faces and portrait style; a font for each role (headings, body, accent, labels), its own sounds and its art direction; its own nouns for village, circle, members, gathering and the like, and its own words on notices and in letters; the words around the app (empty-board lines and the like); how the guide speaks; and the letter members sign opened to visitors, one paragraph per part.
 - **Two new modules, both off by default.** *Protocols*: checklists a village walks the same way every time, working on a phone with no signal. *Hidden map*: a members-only map where each member sees their own pins until others vouch for 7 of them (a votable dial), then the whole map opens to them.
 - **Smaller downloads.** Module card art is served by the server instead of riding in the app bundle (616 KB less).
 - A code-scanning finding (CodeQL #489) is fixed.
@@ -76,6 +76,8 @@ Yes, two expand-only migrations: `0389_a_village_keeps_its_protocols` (4 new tab
 - #1395 A village's menu and phone tabs (G5)
 - #1391 The game's own colours (G3)
 - #1401 Batch 184: Treasury page (#1366) and Pay by member (#1399)
+- #1392 Fonts by role, a village's own sounds and art direction (G2, G8, G9)
+- #1397 A village's own nouns and words on notices and letters (G4, G6)
 
 ---
 
