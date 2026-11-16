@@ -183,6 +183,12 @@ per pin per `hiddenmap.visit_pay_days` (default 30). That is the whole of it (`s
 - **The claim names a day, never a place**, because whoever consents quests may not be somebody whose map has opened.
 - The owner's own visits and visits by members whose map is closed open nothing. The visit itself always stands.
 
+**A planting that pays.** Name a quest as `plantingQuestId` too, and every vouched planting is owed one claim for
+its owner on it (`planting_claim_id`, once per pin), by the same gate, lock and consent. The quest board lets a member
+hold one open claim per quest, so a planter's owed claims open one after another: each on the next vouch or the next
+look at the map after the one before it is decided. None is dropped. Its words name a day, never a place. The page
+never says what a planting earns.
+
 ## With no signal
 
 A place or a return visit logged with no signal waits on the phone and goes up once there is signal
@@ -208,6 +214,3 @@ A place or a return visit logged with no signal waits on the phone and goes up o
   opened the map with signal says so.
 - **A closed map learns one number** about everybody else's pins: how many there are (`allPins` on
   `GET /api/hidden-map/me`). Nothing about where.
-**A planting that pays.** Name a quest as `plantingQuestId` too, and a planting opens a claim for its owner on it the
-moment it reaches `hiddenmap.vouches_per_pin` vouches, once per pin (`planting_claim_id`), by the same gate, lock and
-consent. Its words name a day, never a place. The page says "Rewarded once vouched" while one is named.
