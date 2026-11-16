@@ -28,7 +28,13 @@ import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
 import { postOwedOn, type OwedPosting, type OwedRefusalReason } from "../lib/economy";
 import { withDeadlockRetry } from "./quests";
 
-export type OwedState = "owed" | "posted" | "refused";
+/**
+ * `awaiting` is an End of Moon token share waiting for a Treasurer's or
+ * founder's review (server/lib/moonRewardReview.ts). Nothing here settles it:
+ * every payer reads `owed` rows only, so the review's approval, which moves it
+ * to `owed`, is what lets it pay.
+ */
+export type OwedState = "awaiting" | "owed" | "posted" | "refused";
 
 export interface OwedPostingRow extends OwedPosting {
   claimId: string;
@@ -100,11 +106,11 @@ function toRow(r: RowDataPacket): OwedPostingRow {
  * transaction. A row already recorded under the same key is left exactly as
  * it is, whatever state it has reached.
  */
-export async function recordOwed(conn: PoolConnection, claimId: string, owed: OwedPosting[]): Promise<void> {
+export async function recordOwed(conn: PoolConnection, claimId: string, owed: OwedPosting[], state: "owed" | "awaiting" = "owed"): Promise<void> {
   for (const o of owed) {
     await conn.query(
       "INSERT INTO `quest_owed_postings` (`idempotency_key`, `claim_id`, `to_user_id`, `token_slug`, `units`, " +
-        "`decimals`, `from_account`, `source`, `source_ref`, `description`) VALUES (?,?,?,?,?,?,?,?,?,?) " +
+        "`decimals`, `from_account`, `source`, `source_ref`, `description`, `state`) VALUES (?,?,?,?,?,?,?,?,?,?,?) " +
         "ON DUPLICATE KEY UPDATE `idempotency_key` = `idempotency_key`",
       [
         o.idempotencyKey,
@@ -117,6 +123,7 @@ export async function recordOwed(conn: PoolConnection, claimId: string, owed: Ow
         o.source,
         clip(o.sourceRef, 120),
         clip(o.description, 500),
+        state,
       ],
     );
   }
@@ -215,10 +222,10 @@ export async function owedPostingsFor(pool: Pool, claimId: string): Promise<Owed
   return rows.map(toRow);
 }
 
-/** Every row not yet posted, oldest first, which is what a steward's repair list shows. */
+/** Every row not yet posted, oldest first, which is what a steward's repair list shows. A share awaiting its review is the Treasurer's, on the pay board, never repaired here. */
 export async function unsettledOwedPostings(pool: Pool, limit = 200): Promise<OwedPostingRow[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT ${COLUMNS} FROM \`quest_owed_postings\` WHERE \`state\` <> 'posted' ORDER BY \`created_at\`, \`idempotency_key\` LIMIT ?`,
+    `SELECT ${COLUMNS} FROM \`quest_owed_postings\` WHERE \`state\` IN ('owed', 'refused') ORDER BY \`created_at\`, \`idempotency_key\` LIMIT ?`,
     [Math.max(1, Math.min(1000, Math.floor(limit)))],
   );
   return rows.map(toRow);
