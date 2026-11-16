@@ -214,7 +214,7 @@ export const POWERS: readonly PowerEntry[] = [
     capability: "token.mint",
     title: "Minting tokens by hand",
     surface: "Minting a platform token to a member with a reason, and signing a grant that waits for a second signer",
-    routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve"],
+    routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve", "/api/treasury/mint-options"],
   },
   {
     capability: "hiddenmap.keep",
