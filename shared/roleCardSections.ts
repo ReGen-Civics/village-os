@@ -12,7 +12,7 @@
  *   aiSupport         "Digital Companion": one or two sentences on the companion that
  *                     saves the role time
  *   aiCompanion       the companion's animal, one or two words ("Heron")
- *   paid              true draws "This is a paid role" at the top of the card
+ *   paid              true draws "This role is rewarded" at the top of the card
  *   payShape          the SHAPE of the pay, never an amount: each share a label
  *                     and a percent ("Cash 40", "Equity 55", "Credits 5")
  *   payNote           the line under the shape (indicative, under review)
@@ -85,7 +85,7 @@ export const SECTION_WORDS = {
   // The lead, 12 Nov 2026: "'Digital Companion' (capitalised) replaces AI wording" (QA2-09).
   aiSupport: "Digital Companion",
   aiCompanionLabel: "Companion",
-  paid: "This is a paid role",
+  paid: "This role is rewarded",
   payShape: "How rewards work",
   editorHeading: "Who we hope for, and how pay works",
   editorLede: "Shown on the full card to everyone. We're transparent about all compensation and how value in (contributions) equals value out (rewards).",

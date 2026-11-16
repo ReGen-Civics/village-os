@@ -422,7 +422,7 @@ export default function ProposeARole() {
       if (!(g.title.trim() || g.doneWhen.trim() || g.serves)) return;
       const n = i + 1;
       if (!g.title.trim()) add("card", t({ message: `Say what value ${n} brings.`, context: "founding application check" }), `${prefix}-${i}-title`);
-      else if (!g.doneWhen.trim()) add("card", t({ message: `Say how we will know value ${n} is done.`, context: "founding application check" }), `${prefix}-${i}-done`);
+      else if (!g.doneWhen.trim()) add("card", t({ message: `Say how we'll know value ${n} is done.`, context: "founding application check" }), `${prefix}-${i}-done`);
       if (form.kind === "open" && form.goals.length > 0 && !g.serves) add("serves", t({ message: `Choose the season goal value ${n} serves.`, context: "founding application check" }), `${prefix}-${i}-serves`);
     });
     // Every written setting answered and the commitment chosen, in the shared rules' words.
@@ -936,7 +936,7 @@ export default function ProposeARole() {
                 <input id="propose-ramp" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={rampUp} onChange={(e) => setRampUp(e.target.checked)} />
                 <span className="grid gap-1">
                   <span className="font-semibold text-foreground">{t({ message: "I would like a ramp-up", context: "founding application terms" })}</span>
-                  <span className={HINT}>{t({ message: "Partial pay while you build to your full commitment. We agree the steps together.", context: "founding application terms" })}</span>
+                  <span className={HINT}>{t({ message: "Partial rewards while you build to your full commitment. We agree the steps together.", context: "founding application terms" })}</span>
                 </span>
               </label>
               {/* On a desk the rewards stand in the rail beside every step (D-06). */}
@@ -963,7 +963,7 @@ export default function ProposeARole() {
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />
               </div>
               <div className="grid gap-1 text-sm text-muted-foreground">
-                <p data-after-approval="">{t({ message: "We will write to this address with every reply. If we invite you to join, you will get an email with a button to create your profile.", context: "founding application review" })}</p>
+                <p data-after-approval="">{t({ message: "We'll write to this address with every reply. If we invite you to join, you'll get an email with a button to create your profile.", context: "founding application review" })}</p>
                 <p data-kept-for="">{t({ message: `If you don't confirm within ${OPEN_CONFIRM_HOURS} hours, we delete what you sent. If we say no, or say yes and you never make your account, we remove your name and email ${OPEN_ANONYMISE_DAYS} days later.`, context: "founding application review" })}</p>
                 {/* The same words as OPEN_AI_DRAFTS, which the confirmation email carries (Rye, 9 Nov 2026). */}
                 <p data-ai-drafts="">{t`An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing.`}</p>

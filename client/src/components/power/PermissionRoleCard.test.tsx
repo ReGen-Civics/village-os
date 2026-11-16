@@ -67,10 +67,10 @@ describe("PermissionRoleCard", () => {
     expect(document.querySelectorAll('[aria-current="step"]')).toHaveLength(0);
   });
 
-  it("fills an open place by a vote, and counts Seated, never Held now", () => {
+  it("fills an open place by a vote, and counts Taken, never Held now", () => {
     show();
     expect(screen.getAllByText("A vote fills this place")).toHaveLength(2);
-    expect(screen.getByText("Seated")).toBeTruthy();
+    expect(screen.getByText("Taken")).toBeTruthy();
     expect(screen.queryByText("Held now")).toBeNull();
     expect(screen.queryByRole("button", { name: /Apply for this role/ })).toBeNull();
   });
