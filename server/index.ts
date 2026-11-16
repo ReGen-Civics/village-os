@@ -25661,6 +25661,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * so it is sent to `/` instead, keeping any query.
    */
   app.get("/index.html", (req, res) => {
+    // CodeQL js/server-side-unvalidated-url-redirection (alert 487) flags this;
+    // it is a false positive. The target is always "/" followed by the query,
+    // and the query starts at the "?" itself, so the location begins "/?" and
+    // can never be "//host" or a scheme: it stays on this origin whatever the
+    // request carried.
     const q = req.originalUrl.indexOf("?");
     res.redirect(301, q >= 0 ? `/${req.originalUrl.slice(q)}` : "/");
   });

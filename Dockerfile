@@ -44,8 +44,17 @@
 # through node-gyp-build and sharp through @img/sharp-linux-x64, and both pick
 # their glibc prebuilds here. Alpine would send both down the musl path, which
 # is a different set of prebuilds and a compile when one is missing.
+#
+# Pinned by digest (R123): a tag is a name the publisher can move, so the same
+# commit could build on a different base from one day to the next. The digest
+# is the multi-arch index for node:22-bookworm-slim as resolved on 2026-11-15
+# (Docker Hub and mirror.gcr.io agreed). Dependabot has a `docker` entry, but
+# this FROM reads the image through an ARG, which Dependabot may not follow, so
+# do not count on it opening the bump. To refresh by hand, read the index
+# digest and replace the one above (keep the tag beside it for the reader):
+#   docker buildx imagetools inspect node:22-bookworm-slim --format '{{.Manifest.Digest}}'
 
-ARG NODE_IMAGE=node:22-bookworm-slim
+ARG NODE_IMAGE=node:22-bookworm-slim@sha256:e9f565d32859f0cbfb52125eafe8be39390f24dac302dc3cdf566e8ba3ab21ee
 
 
 # ---------------------------------------------------------------------------

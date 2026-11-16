@@ -115,5 +115,11 @@ export function safeImageSrc(src: string | null | undefined): string | undefined
 /** A drop-in `<img>` for character art. `onError` still reports the picture's own address failing. */
 export default function FramelessImg({ src, alt = "", ...rest }: ImgHTMLAttributes<HTMLImageElement> & { src?: string | null }) {
   const shown = useFramelessSrc(safeImageSrc(src));
+  // CodeQL js/xss-through-dom (alert 480) flags this src; it is a false
+  // positive. React sets it as an attribute, never as markup, so it cannot add
+  // elements or handlers. safeImageSrc admits only http(s), blob: and
+  // data:image/ addresses, and useFramelessSrc swaps that for nothing but a
+  // blob: copy it drew itself. An <img> never runs script from any of those,
+  // an SVG data: image included, because image documents are not scripted.
   return <img src={shown} alt={alt} {...rest} />;
 }

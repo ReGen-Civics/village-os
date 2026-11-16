@@ -124,11 +124,26 @@ export function precompressedAssets(opts: PrecompressedOptions): RequestHandler 
   log(`[assets] ${names} precompressed brotli-${manifest.quality} cop${names === 1 ? "y" : "ies"} on offer for /assets`);
   const cacheControl = opts.cacheControl ?? IMMUTABLE_YEAR;
   const checked = new Map<string, Promise<Verified>>();
+  // The names a request may be answered from, keyed by the request's spelling
+  // and holding the manifest's own string. Every file path below is built from
+  // the VALUE, so nothing a request sends is ever joined onto a directory
+  // (CodeQL js/path-injection, alerts 456, 457, 458). A manifest entry that is
+  // absolute, climbs with "..", or would resolve outside the assets directory
+  // is dropped here: the manifest is our own build output, but it is a file on
+  // disk and this is the one place that decides what may be read.
+  const assetsRoot = path.resolve(opts.assetsDir);
+  const servable = new Map<string, string>();
+  for (const name of Object.keys(manifest.files)) {
+    if (path.isAbsolute(name) || name.split(/[\\/]/).includes("..")) continue;
+    const full = path.resolve(assetsRoot, name);
+    if (!full.startsWith(assetsRoot + path.sep)) continue;
+    servable.set(name, name);
+  }
 
   async function verify(rel: string, key: string): Promise<Verified> {
     const entry = manifest!.files[rel];
     try {
-      const source = await fs.promises.readFile(path.join(opts.assetsDir, rel));
+      const source = await fs.promises.readFile(path.join(assetsRoot, rel));
       if (source.length !== entry.bytes) return { key, br: null };
       const hash = crypto.createHash("sha256").update(source).digest("hex").slice(0, entry.sha256.length);
       if (hash !== entry.sha256) return { key, br: null };
@@ -150,22 +165,24 @@ export function precompressedAssets(opts: PrecompressedOptions): RequestHandler 
     } catch {
       return next();
     }
-    // Only a name the build wrote down. Nothing a request says is joined onto a path otherwise.
-    if (!Object.prototype.hasOwnProperty.call(manifest.files, rel)) return next();
+    // Only a name the build wrote down, and from here on the manifest's own
+    // string rather than the request's (see `servable` above).
+    const name = servable.get(rel);
+    if (name === undefined) return next();
     if (!prefersBrotli(req.headers["accept-encoding"])) return next();
 
     let st: fs.Stats;
     try {
-      st = await fs.promises.stat(path.join(opts.assetsDir, rel));
+      st = await fs.promises.stat(path.join(assetsRoot, name));
     } catch {
       return next();
     }
     if (!st.isFile()) return next();
     const key = `${st.size}:${st.mtimeMs}`;
-    let pending = checked.get(rel);
+    let pending = checked.get(name);
     if (!pending || (await pending).key !== key) {
-      pending = verify(rel, key);
-      checked.set(rel, pending);
+      pending = verify(name, key);
+      checked.set(name, pending);
     }
     const { br } = await pending;
     if (!br) return next();
@@ -178,7 +195,7 @@ export function precompressedAssets(opts: PrecompressedOptions): RequestHandler 
       res.statusCode = 304;
       return res.end();
     }
-    res.type(path.extname(rel));
+    res.type(path.extname(name));
     res.setHeader("Content-Encoding", "br");
     res.setHeader("Content-Length", String(br.length));
     if (req.method === "HEAD") return res.end();
