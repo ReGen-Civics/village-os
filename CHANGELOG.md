@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.17 (2026-11-16)
+
+### What changed for your village
+
+- **Only the person who proved an email address can take an applicant's role.** An account that signed up with someone's address but never confirmed it now counts as no account: adoption sends the real invitation, and that invitation takes over the unproven account. A link handed to the person adopting no longer proves the address; only a link that went by email does. When email is set up, the adopter no longer sees the link at all.
+- **The hidden map is complete** (still off by default, members only): its page, where a photo's location is read for the pin and then stripped from the image; return visits that can open a claim on a quest the village names; and capture with no signal, kept on the phone and sent when signal returns.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.3.16 is safe.
+
+### Merged pull requests
+
+- #1378 Hidden map, slice 2: the page
+- #1380 Hidden map, slice 3: return visits
+- #1382 Hidden map, slice 4: capture with no signal
+- #1403 Batch 185: applicant identity (#1354)
+
+---
+
 ## 1.3.16 (2026-11-16)
 
 ### What changed for your village
