@@ -517,9 +517,9 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
               <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
                 placeholder="Reason (required)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 flex-1 min-w-48" />
               <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
-                aria-label={t`What was contributed`} className="text-sm border border-border rounded-lg px-2 py-2 bg-card">
-                <option value="other">{t`Contributed: work or other`}</option>
-                <option value="cash">{t`Contributed: cash`}</option>
+                aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className="text-sm border border-border rounded-lg px-2 py-2 bg-card">
+                <option value="other">{t({ message: "Contributed: work or other", context: "admin mint form, what stood behind a grant" })}</option>
+                <option value="cash">{t({ message: "Contributed: cash", context: "admin mint form, what stood behind a grant" })}</option>
               </select>
               <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
