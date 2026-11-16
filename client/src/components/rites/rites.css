@@ -338,3 +338,4 @@
 
 /* the language selector's row, at the foot of every screen */
 .rites .langbar { max-width: 430px; margin: 0 auto; padding: 8px 20px 110px; background: var(--background); }
+.rites .ceremony .topbar .sigil { color: var(--ceremony); }
