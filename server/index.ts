@@ -4044,7 +4044,7 @@ function deploymentOrigin(): string {
 const googleSignInAvailability = () =>
   resolveGoogleConfig(googleCredentialEnv(), String(process.env.FRONTEND_URL ?? "")); // the client pair from Admin, Integrations first (R171)
 /** Exit and delete: a password, or a fresh Google sign-in for a member with none (server/lib/identityConfirm.ts). */
-const confirmIdentity = makeIdentityGate({ authSecret: AUTH_TOKEN_SECRET, verifyPassword, googleAvailable: () => googleSignInAvailability().available, members: { update: (id, mutate) => members.update(id, mutate) } });
+const confirmIdentity = makeIdentityGate({ authSecret: AUTH_TOKEN_SECRET, verifyPassword, googleAvailable: () => googleSignInAvailability().available, cookiesSecure: () => { const a = googleSignInAvailability(); return a.available && a.config.redirectUri.startsWith("https://"); }, members: { update: (id, mutate) => members.update(id, mutate) } }); // cookiesSecure: the confirm cookie is `__Host-` on https (R041)
 
 /**
  * S16: the notification spine's dependencies. The spine never imports the
