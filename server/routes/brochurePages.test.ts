@@ -15,6 +15,7 @@ const writes: BrochurePatch[] = [];
 vi.mock("../lib/brochurePages", () => ({
   brochurePagesOn: () => stored,
   brochureHiddenPages: () => hidden,
+  brochureOpenPages: () => [],
   updateBrochurePages: async (patch: BrochurePatch) => {
     writes.push(patch);
     const next = applyBrochurePatch({ enabled: stored, hidden }, patch);

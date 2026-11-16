@@ -43,8 +43,8 @@ async function main() {
       PORT: String(PORT),
       DATA_DIR: dataDir,
       DATABASE_URL: db.url,
-      ADMIN_PASSWORD: "fork-preview-admin",
-      AUTH_TOKEN_SECRET: "fork-preview-secret",
+      ADMIN_PASSWORD: "fork-preview-admin-not-a-real-password", // module-review-ok: a throwaway value for a scratch QA server, never a real credential
+      AUTH_TOKEN_SECRET: "fork-preview-token-secret-not-a-real-secret", // module-review-ok: a throwaway value for a scratch QA server, never a real credential
       RESEND_API_KEY: "",
       ANTHROPIC_API_KEY: "",
     },

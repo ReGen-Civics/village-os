@@ -48,6 +48,7 @@ export const GATE_LINES: Record<string, string> = {
   exchange: "Buying this village's own tokens.",
   feed: "The everyday stream: posts, gatherings, and the village's own milestones.",
   forum: "Village conversations by topic, and the proposals that come out of them.",
+  protocols: "The village's checklists, the runs walked today, and who ticked each step.",
   "gene-keys": "Your Gene Keys lines and how you work best, and the six lines your circle holds.",
   rites: "Your card with every rite waiting or stamped, the member who walks beside you, and the ring of marks.",
   "funding-rounds": "This season's funding round: the ideas members have shared, and the quests the village chose to fund.",

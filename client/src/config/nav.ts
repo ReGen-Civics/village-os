@@ -328,6 +328,8 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // button carries the other door (config/mobileNav.ts); both hide while the
   // journal module is off for this viewer.
   { href: "/journal", label: "Journal", module: "journal" },
+  // The village's checklists. Hidden while the module is off for this viewer.
+  { href: "/protocols", label: "Protocols", module: "protocols" },
   // Direct messages and the shared work chats, with the member's own unread
   // count. The shortcuts button carries the other door (config/mobileNav.ts).
   { href: "/messages", label: "Messages", module: "messaging", count: "messages" },

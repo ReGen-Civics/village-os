@@ -45,6 +45,14 @@ import type { Pool } from "mysql2/promise";
 
 import type { AppDeps } from "../lib/appDeps";
 import { markAdminGate } from "../lib/adminGate";
+import {
+  adminPasswordTooShort,
+  passwordDoorThrottled,
+  poolCounter,
+  recordPasswordDoorFailure,
+  SHORT_PASSWORD_ANSWER,
+  shortPasswordLogLine,
+} from "../lib/passwordDoors";
 import { recordEvent } from "../lib/events";
 import { STEWARD_ROLE_ID } from "../lib/capabilityHolding";
 import { holdingHasLapsed } from "../lib/stewardship";
@@ -197,11 +205,23 @@ export function register(app: Express, deps: Deps): void {
           "Set ADMIN_PASSWORD in the environment, redeploy, and try again.",
       });
     }
+    // A password too short to guard every member's data opens nothing here
+    // (audit S2); server/lib/passwordDoors.ts.
+    if (adminPasswordTooShort(expected)) {
+      console.error(shortPasswordLogLine("village-export", expected.length));
+      return res.status(503).json({ error: SHORT_PASSWORD_ANSWER });
+    }
+    // Throttled BEFORE the compare, per IP and for the door as a whole. It used
+    // to be checked after a failed compare, so a right guess past the limit
+    // still took the database.
+    const ip = deps.clientIp(req);
+    const counter = poolCounter(deps.getPool());
+    if (await passwordDoorThrottled(counter, "village-export", ip)) {
+      return res.status(429).set("Retry-After", "3600").json({ error: "Too many attempts." });
+    }
     const offered = req.headers[EXPORT_PASSWORD_HEADER];
     if (!deps.secretEquals(typeof offered === "string" ? offered : undefined, expected)) {
-      if (await deps.overLimit(`village-export:${deps.clientIp(req)}`, 10, 60 * 60 * 1000)) {
-        return res.status(429).json({ error: "Too many attempts." });
-      }
+      await recordPasswordDoorFailure(counter, "village-export", ip);
       return res.status(401).json({ error: "auth_required" });
     }
     if (!takeExportSlot()) {

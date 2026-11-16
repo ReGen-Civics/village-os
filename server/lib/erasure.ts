@@ -2408,6 +2408,8 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "role-holdings-after-tombstone",
   "sessions-after-tombstone",
   "gene-keys-after-tombstone",
+  // Rites: stamps, the mark, ceremonies, buddies, door codes and letter lines are all found by the member's id.
+  "rites-after-tombstone",
   "funding-rounds-after-tombstone",
   "member-tasks-after-tombstone",
   "quest-crews-after-tombstone",

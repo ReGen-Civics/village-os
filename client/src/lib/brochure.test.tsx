@@ -18,7 +18,7 @@ import { Suspense, type ReactElement } from "react";
 import { Route, Router } from "wouter";
 import { memoryLocation } from "wouter/memory-location";
 
-const config = { current: null as null | { brochurePages?: boolean; brochureHidden?: string[] } };
+const config = { current: null as null | { brochurePages?: boolean; brochureHidden?: string[]; brochureOpen?: string[] } };
 // `failed`: every try at the config failed (lib/gameApi.ts, resilience P1-1).
 const configFailed = { current: false };
 vi.mock("@/lib/gameApi", () => ({
@@ -215,3 +215,35 @@ describe("the Love Letter, a member's door (role journey L7)", () => {
     expect(memberDoorShown({ brochurePages: false }, "/housing", true)).toBe(false);
   });
 });
+
+describe("the letter members sign, opened to visitors (gap G15)", () => {
+  beforeEach(() => {
+    config.current = null;
+    auth.current = { user: null, loading: false };
+  });
+
+  it("serves a visitor the letter with the story pages off, when the village opened it", async () => {
+    config.current = { brochurePages: false, brochureHidden: [], brochureOpen: ["/love-letter"] };
+    const loader = vi.fn(async () => ({ default: () => <h1>The Articles</h1> }));
+    visit("/love-letter", "/love-letter", loader);
+    expect(await screen.findByText("The Articles")).toBeTruthy();
+    // The master switch still decides every other story page.
+    expect(storyPageShown(config.current, "/housing")).toBe(false);
+  });
+
+  it("is the not-found page for a visitor when the letter's own switch is off, open or not", async () => {
+    config.current = { brochurePages: false, brochureHidden: ["/love-letter"], brochureOpen: ["/love-letter"] };
+    const loader = vi.fn(async () => ({ default: () => <h1>The Articles</h1> }));
+    visit("/love-letter", "/love-letter", loader);
+    expect(await screen.findByText("Off the trail")).toBeTruthy();
+    expect(loader).not.toHaveBeenCalled();
+  });
+
+  it("stays closed to a visitor in a village that did not open it (today's default)", async () => {
+    config.current = { brochurePages: false, brochureHidden: [] };
+    const loader = vi.fn(async () => ({ default: () => <h1>The Articles</h1> }));
+    visit("/love-letter", "/love-letter", loader);
+    expect(await screen.findByText("Off the trail")).toBeTruthy();
+  });
+});
+

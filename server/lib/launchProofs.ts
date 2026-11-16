@@ -39,6 +39,7 @@ import { PLATFORM_CALLS, integrationHealth, type IntegrationHealth } from "./int
 import { decodeToken, encodeToken } from "./memberTokens";
 import { secretStatus, secretValue, type SecretKey } from "./secrets";
 import { lastStripeDeliveries } from "../repos/stripeDeliveries";
+import { authTokenSecretTooShort, SHORT_AUTH_TOKEN_SECRET_SENTENCE } from "./secretFloors";
 
 export type ProofState = "ok" | "missing" | "partial";
 export interface Proof {
@@ -219,12 +220,19 @@ export function guideKeyProof(f: GuideKeyFacts): Proof {
 
 const PROBE_USER = "launch-check";
 
-export function sessionSecretProof(secret: string | undefined): Proof {
+/**
+ * `tooShort` is the 32-character floor (R113, server/lib/secretFloors.ts),
+ * passed in so the test runner's exemption is decided in one place. A short
+ * secret no longer stops a village in use from booting, so this row is where
+ * an admin sees it: red, and blocking, until it is long.
+ */
+export function sessionSecretProof(secret: string | undefined, tooShort = false): Proof {
   const s = String(secret ?? "");
   if (!s) return { state: "missing", detail: "Signing with a random per-process key. Every restart logs everyone out" };
   if (!s.trim()) {
     return { state: "missing", detail: "AUTH_TOKEN_SECRET is only blank space, so every session is signed with a value anyone could guess" };
   }
+  if (tooShort) return { state: "missing", detail: SHORT_AUTH_TOKEN_SECRET_SENTENCE };
   const back = decodeToken(s, encodeToken(s, PROBE_USER, `${PROBE_USER}@example.invalid`), 30);
   return back?.userId === PROBE_USER
     ? { state: "ok", detail: "A session signed with it verifies, so sessions survive restarts and extra replicas" }
@@ -266,5 +274,5 @@ export const LAUNCH_PROOFS: Record<string, (pool: Pool, env: NodeJS.ProcessEnv) 
       reply: integrationHealth(call.moduleId, call.operation),
     });
   },
-  "session-secret": (_pool, env) => sessionSecretProof(env.AUTH_TOKEN_SECRET),
+  "session-secret": (_pool, env) => sessionSecretProof(env.AUTH_TOKEN_SECRET, authTokenSecretTooShort(env)),
 };

@@ -45,6 +45,7 @@ import {
 } from "@/components/admin/ModuleConfigPanels";
 import SaberraConfigPanel from "@/components/admin/SaberraConfigPanel";
 import RitesConfigPanel from "@/components/admin/RitesConfigPanel";
+import ProtocolsEditor from "@/components/admin/ProtocolsEditor";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 
 /** A variable row as GET /api/admin/variables sends it. */
@@ -103,6 +104,8 @@ const CONFIG_PANELS: Record<string, (p: { password: string }) => ReactElement> =
   saberra: SaberraConfigPanel,
   // The village's rites document, read by the server's own rules before it saves.
   rites: RitesConfigPanel,
+  // The checklists themselves, their import, and the install card's switch.
+  protocols: ProtocolsEditor,
 };
 
 /**

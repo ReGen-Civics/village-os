@@ -90,7 +90,7 @@ function PageTitle() {
   const commitment = config?.project?.commitmentName ?? "";
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
-  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden } : null), [config]);
+  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
 
   // The tab ICON is identity too. index.html ships a neutral platform favicon
   // (a static file cannot know which village it serves); this swaps in the
@@ -269,6 +269,7 @@ const ModuleDetail = lazyPage(() => import("./pages/ModuleDetail"));
 const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
 const CrowdpoolCampaign = lazyPage(() => import("./pages/CrowdpoolCampaign"));
 const Journal = lazyPage(() => import("./pages/Journal"));
+const Protocols = lazyPage(() => import("./pages/Protocols"));
 const FundingRounds = lazyPage(() => import("./pages/FundingRounds"));
 const Sessions = lazyPage(() => import("./pages/Sessions"));
 const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
@@ -470,6 +471,9 @@ function Router() {
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}
       <Route path="/journal" component={Journal} />
+      <Route path="/protocols/practice/:protocolId" component={Protocols} />
+      <Route path="/protocols/run/:id" component={Protocols} />
+      <Route path="/protocols" component={Protocols} />
       {/* The village chooses which quests to fund, within a pot. Behind
           ModuleGate("funding-rounds") and sign-in. */}
       <Route path="/funding-rounds" component={FundingRounds} />

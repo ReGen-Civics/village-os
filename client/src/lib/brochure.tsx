@@ -25,7 +25,10 @@ export function useBrochurePages(): boolean | null {
   return config ? config.brochurePages === true : null;
 }
 
-type Switches = Pick<PublicGameConfig, "brochurePages" | "brochureHidden">;
+type Switches = Pick<PublicGameConfig, "brochurePages" | "brochureHidden" | "brochureOpen">;
+
+/** The switches as the shared rule reads them. */
+const stateOf = (config: Switches) => ({ enabled: config.brochurePages === true, hidden: config.brochureHidden ?? [], open: config.brochureOpen ?? [] });
 
 /**
  * Whether a link to `href` may be drawn: always for an address outside the
@@ -34,7 +37,7 @@ type Switches = Pick<PublicGameConfig, "brochurePages" | "brochureHidden">;
  */
 export function storyPageShown(config: Switches | null | undefined, href: string): boolean {
   if (!config) return !isBrochurePath(href);
-  return brochurePathServed({ enabled: config.brochurePages === true, hidden: config.brochureHidden ?? [] }, href);
+  return brochurePathServed(stateOf(config), href);
 }
 
 /**
@@ -49,7 +52,7 @@ export function storyPageShown(config: Switches | null | undefined, href: string
  */
 export function memberDoorShown(config: Switches | null | undefined, href: string, signedIn: boolean): boolean {
   if (!config) return signedIn || !isBrochurePath(href);
-  return servedTo({ enabled: config.brochurePages === true, hidden: config.brochureHidden ?? [] }, href, signedIn);
+  return servedTo(stateOf(config), href, signedIn);
 }
 
 export function useStoryPageShown(): (href: string) => boolean {
@@ -96,7 +99,9 @@ export function brochurePage(loader: () => Promise<{ default: ComponentType<any>
     // The master switch decides wherever this is mounted; the page's own
     // switch is read off the address it answers. A member's door (the Love
     // Letter) is open to anybody signed in, whatever the switches say.
-    const served = (config.brochurePages === true && storyPageShown(config, location)) || (door && !!auth?.user);
+    // A member door the village opened to visitors (gap G15) is served by
+    // the shared rule itself, with the master switch off.
+    const served = (config.brochurePages === true && storyPageShown(config, location)) || (door && storyPageShown(config, location)) || (door && !!auth?.user);
     return served ? <Page {...props} /> : <NotFound />;
   };
 }

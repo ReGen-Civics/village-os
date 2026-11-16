@@ -124,7 +124,8 @@ function worker(serve: (url: string) => FakeResponse) {
     handlers.activate({ waitUntil: (p: Promise<unknown>) => pending.push(p) });
     await Promise.all(pending);
   };
-  return { visit, network, cached: () => caches.urls(cacheName), assets: () => caches.urls(assetCache), names: caches.names, activate, cacheName, assetCache };
+  const seed = async (name: string) => void (await caches.api.open(name));
+  return { visit, network, cached: () => caches.urls(cacheName), assets: () => caches.urls(assetCache), names: caches.names, activate, seed, cacheName, assetCache };
 }
 
 describe("the map's service worker", () => {
@@ -218,5 +219,16 @@ describe("the map's lifted images", () => {
     await w.visit(img("a"));
     await w.activate();
     expect(w.names().sort()).toEqual([w.assetCache, w.cacheName].sort());
+  });
+
+  it("leaves a module page's own offline shell to its worker, and drops every other old cache", async () => {
+    // protocols-sw.js keeps "protocols-shell-v1" for /protocols with no signal;
+    // a page shell named the same way ("<page>-shell-v<n>") is spared too.
+    const w = worker((url) => response(page([img("a")])));
+    await w.visit(at("aaaaaaaaaaaa"));
+    for (const n of ["protocols-shell-v1", "hidden-map-shell-v2", "grounds-v0", "old-shell", "shell-v1"]) await w.seed(n);
+    await w.activate();
+    expect(w.names()).toEqual(expect.arrayContaining([w.cacheName, "hidden-map-shell-v2", "protocols-shell-v1"]));
+    for (const gone of ["grounds-v0", "old-shell", "shell-v1"]) expect(w.names(), gone).not.toContain(gone);
   });
 });

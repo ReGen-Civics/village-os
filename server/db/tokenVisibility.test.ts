@@ -9,7 +9,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { loadStanding } from "../lib/profile";
 import { publicRules, publicSupply } from "../lib/economy";
-import { allTokens, loadTokenRegistry, tokenNameClash } from "../lib/ledger";
+import { allTokens, loadTokenRegistry, tokenNameClash, unusedTokenSlugs } from "../lib/ledger";
 import { provisionTestDb, testDbConfigured, type TestDb } from "./testDb";
 
 const configured = testDbConfigured();
@@ -147,6 +147,21 @@ describe.skipIf(!configured)("token visibility", () => {
       const refusal = tokenNameClash("Gratitude", "credits");
       expect(refusal).toBeTruthy();
       expect(refusal).toContain("nobody can read");
+    });
+
+    it("lets a village that does not run the bridge take a Base token's name (gap G12)", () => {
+      // The mirror shows on no member surface while the bridge is off, so its
+      // Base name cannot collide with anything a member reads.
+      expect(tokenNameClash(hyphaName(), "credits", { mirrorsShown: false })).toBeNull();
+      // Two platform tokens still never share a name, bridge or not.
+      expect(tokenNameClash("Gratitude", "credits", { mirrorsShown: false })).toBeTruthy();
+    });
+
+    it("names every mirror unused while the bridge is off, and only switched-off tokens while it is on (gap G12)", () => {
+      const mirrors = allTokens().filter((t) => t.governance !== "platform").map((t) => t.slug);
+      const off = allTokens().filter((t) => !t.active).map((t) => t.slug);
+      expect(unusedTokenSlugs(false)).toEqual(Array.from(new Set([...mirrors, ...off])).sort());
+      expect(unusedTokenSlugs(true)).toEqual(off.sort());
     });
 
     it("ALLOWS a name that merely contains a token's name", () => {

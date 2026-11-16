@@ -1,6 +1,6 @@
 # Modules
 
-Everything a village can run: 35 modules, what each one is, what it needs, what it adds to the one capability gate, which dials it owns, and where its routes live.
+Everything a village can run: 36 modules, what each one is, what it needs, what it adds to the one capability gate, which dials it owns, and where its routes live.
 
 This is the registry, read out loud. It describes the platform a fork inherits, and it says nothing about any one village: which modules are actually on is a village's own decision, held in its `module_settings` table.
 
@@ -41,7 +41,7 @@ The four core modules sit outside that. They are always public and the lifecycle
 | `connected` | the vendor bills the village directly and answers for the service; the platform answers for the connector. The credential is a secrets-store entry the village holds and can see as source and last4. That visibility IS the tier: the village has its own account and can revoke it unaided. |
 | `managed` | the platform bills and takes the first call; the vendor sits behind a private escalation the village never sees. The credential is platform-held, env-only, and never returned to a village even masked, because it is not the village's to see. This is the PLATFORM_ASSISTANT_KEY posture generalised, and it is settled policy under hub ADR-49. |
 
-Today the registry holds 34 at `included`, one at `connected`. The tier is a label and never a gate: enabling a module makes no network call, reads no secret and checks no licence. Listings are accepted under contract version 1.2.
+Today the registry holds 35 at `included`, one at `connected`. The tier is a label and never a gate: enabling a module makes no network call, reads no secret and checks no licence. Listings are accepted under contract version 1.2.
 
 ### The data a module holds
 
@@ -51,13 +51,13 @@ Read as the widest thing in the module's own tables: `none`, `village-content`, 
 | --- | --- |
 | `none` | none |
 | `village-content` | seven: `resources`, `health`, `network`, `crowdpool`, `places`, `hypha`, `saberra` |
-| `member-pii` | 28: `quests`, `gratitude`, `progression`, `profiles`, `map`, `forum`, `feed`, `messaging`, `stays`, `automation`, `library`, `badges`, `exchange`, `redemption`, `commerce`, `tools`, `events`, `introductions`, `journal`, `gene-keys`, `funding-rounds`, `session-card`, `moon-review`, `sessions`, `governance`, `canvas`, `conflict-evolution`, `comms` |
+| `member-pii` | 29: `quests`, `gratitude`, `progression`, `profiles`, `map`, `forum`, `feed`, `messaging`, `stays`, `automation`, `library`, `badges`, `exchange`, `redemption`, `commerce`, `tools`, `events`, `introductions`, `journal`, `gene-keys`, `protocols`, `funding-rounds`, `session-card`, `moon-review`, `sessions`, `governance`, `canvas`, `conflict-evolution`, `comms` |
 
 ### What standing one up looks like
 
 | Setup | What it means | Modules |
 | --- | --- | --- |
-| `none` | works the moment it is on. The Go-live card offers itself right after Turn on. | `quests`, `gratitude`, `progression`, `profiles`, `forum`, `feed`, `messaging`, `network`, `introductions`, `journal`, `gene-keys`, `funding-rounds`, `places`, `session-card`, `moon-review`, `sessions`, `governance`, `canvas`, `conflict-evolution` |
+| `none` | works the moment it is on. The Go-live card offers itself right after Turn on. | `quests`, `gratitude`, `progression`, `profiles`, `forum`, `feed`, `messaging`, `network`, `introductions`, `journal`, `gene-keys`, `protocols`, `funding-rounds`, `places`, `session-card`, `moon-review`, `sessions`, `governance`, `canvas`, `conflict-evolution` |
 | `optional` | better with content, honest without it. | `map`, `resources`, `automation`, `health`, `badges`, `crowdpool`, `tools` |
 | `required` | needs real content before going live (a room and a price, a stocked treasury), and the Go-live card waits for readiness. | `stays`, `library`, `exchange`, `redemption`, `commerce`, `events`, `hypha`, `comms`, `saberra` |
 
@@ -65,7 +65,7 @@ Read as the widest thing in the module's own tables: `none`, `village-content`, 
 
 | Shelf | Id | What is on it | Modules |
 | --- | --- | --- | --- |
-| Coordinate | `coordinate` | Plan the work and the days: quests, the calendar, calls, tools. | 7 |
+| Coordinate | `coordinate` | Plan the work and the days: quests, the calendar, calls, tools. | 8 |
 | Recognise | `recognise` | See people: gratitude, the path from guest to co-creator, badges. | 3 |
 | Host and earn | `host-and-earn` | Value moving with care: stays, the shelves, the exchange, payments. | 5 |
 | Know and decide | `know-and-decide` | How the village understands itself: conversations, decisions, power, health. | 11 |
@@ -99,6 +99,7 @@ Read as the widest thing in the module's own tables: `none`, `village-content`, 
 | Introductions | `introductions` | Connect | no | included | member-pii | none | none yet |
 | Journal | `journal` | Know and decide | no | included | member-pii | none | [journal.md](modules/journal.md) |
 | Gene Keys | `gene-keys` | Connect | no | included | member-pii | none | [gene-keys.md](modules/gene-keys.md) |
+| Protocols | `protocols` | Coordinate | no | included | member-pii | none | [protocols.md](modules/protocols.md) |
 | Funding rounds | `funding-rounds` | Coordinate | no | included | member-pii | none | [funding-rounds.md](modules/funding-rounds.md) |
 | Living places | `places` | Know and decide | no | included | village-content | none | [places.md](modules/places.md) |
 | Session Card | `session-card` | Connect | no | included | member-pii | none | [session-card.md](modules/session-card.md) |
@@ -111,7 +112,7 @@ Read as the widest thing in the module's own tables: `none`, `village-content`, 
 | Village Comms | `comms` | Connect | no | included | member-pii | required | [comms.md](modules/comms.md) |
 | Organisational Memory | `saberra` | Know and decide | no | connected | village-content | required | [organisational-memory.md](modules/organisational-memory.md) |
 
-That is 35 modules, four of them core. 29 carry a contract doc under `docs/modules/` and six do not yet; `node scripts/check-module-docs.mjs` holds that second number to a ratchet that only ever falls. Filenames there do not follow module ids, so the mapping is real data and lives in `MODULE_DOCS` in `server/lib/knowledge.ts`, which is where this table reads it.
+That is 36 modules, four of them core. 30 carry a contract doc under `docs/modules/` and six do not yet; `node scripts/check-module-docs.mjs` holds that second number to a ratchet that only ever falls. Filenames there do not follow module ids, so the mapping is real data and lives in `MODULE_DOCS` in `server/lib/knowledge.ts`, which is where this table reads it.
 
 ## The four core modules
 
@@ -272,6 +273,28 @@ The village's calendar: gatherings with a time, a place, a capacity and an RSVP.
 | What a village plants | nothing beyond the platform's own layers |
 | What it needs from you | Say which hemisphere this village is in (`decision`, `before-enable`) |
 | Contract doc | [events.md](modules/events.md) |
+
+### Protocols
+
+Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen.
+
+| Fact | Value |
+| --- | --- |
+| Id | `protocols` |
+| Shelf | Coordinate (`coordinate`) |
+| A village can switch it off | yes, and it ships off. An admin moves it to `preview`, `members`, `public` |
+| Tier | `included` |
+| Data it holds | `member-pii` |
+| Standing it up | `none`, works the moment it is on. The Go-live card offers itself right after Turn on. |
+| Requires | nothing |
+| Recommends | nothing |
+| Capabilities it adds | none |
+| Variable keys it owns | none |
+| API prefixes | `/api/protocols` |
+| What a village plants | nothing beyond the platform's own layers |
+| What it needs from you | nothing beyond its seeds |
+| Contract doc | [protocols.md](modules/protocols.md) |
+| Config it seeds | `showInstallCard` |
 
 ### Funding rounds
 
@@ -937,7 +960,7 @@ Read the other way: `map` cannot be switched off while `resources` is on, `forum
 
 ## The dials a module owns
 
-Game variables are namespaced, and Admin hides a namespace while its module is off. Between them the 35 modules own 112 keys. A key here is a DEFAULT: the database stores changed values only, and a village that has never touched a dial inherits the platform's answer.
+Game variables are namespaced, and Admin hides a namespace while its module is off. Between them the 36 modules own 112 keys. A key here is a DEFAULT: the database stores changed values only, and a village that has never touched a dial inherits the platform's answer.
 
 Ten keys are claimed by more than one module, so switching one module off leaves the dial owned by the other:
 
@@ -984,7 +1007,7 @@ The same facts, for anything that would rather parse than read. Regenerated with
 
 ```json
 {
-  "moduleCount": 35,
+  "moduleCount": 36,
   "coreCount": 4,
   "lifecycle": {
     "off": 0,
@@ -1593,6 +1616,24 @@ The same facts, for anything that would rather parse than read. Regenerated with
         "/api/gene-keys"
       ],
       "contractDoc": "docs/modules/gene-keys.md"
+    },
+    {
+      "id": "protocols",
+      "name": "Protocols",
+      "description": "Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen.",
+      "core": false,
+      "tier": "included",
+      "dataClass": "member-pii",
+      "group": "coordinate",
+      "setup": "none",
+      "requires": [],
+      "recommends": [],
+      "capabilities": [],
+      "variableKeys": [],
+      "apiPrefixes": [
+        "/api/protocols"
+      ],
+      "contractDoc": "docs/modules/protocols.md"
     },
     {
       "id": "funding-rounds",

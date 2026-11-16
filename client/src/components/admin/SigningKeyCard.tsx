@@ -19,7 +19,7 @@ import { API_BASE, authHeaders, refusal } from "./adminApi";
 interface KeyState {
   kid: string;
   createdAt: string;
-  atRest: "sealed" | "plaintext" | "unreadable" | null;
+  atRest: "sealed" | "plaintext" | "unreadable" | "absent" | null;
   canSign: boolean;
   confirmWith: string;
   /** After launch with two or more possible signers: a press asks, and another admin co-signs. */
@@ -118,6 +118,14 @@ export default function SigningKeyCard({ password }: { password: string }) {
           <Trans context="signing key">
             This deployment cannot open the key, so those pages answer 503. A restore under a different
             VILLAGE_SECRETS_KEY does this. If the old value is gone for good, make a new key here.
+          </Trans>
+        </p>
+      )}
+      {state.atRest === "absent" && (
+        <p className="text-xs text-destructive bg-muted border border-border rounded-lg px-3 py-2 mt-2">
+          <Trans context="signing key">
+            This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and
+            restart, and that start makes the key, sealed. Until then those pages answer 503.
           </Trans>
         </p>
       )}

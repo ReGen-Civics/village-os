@@ -90,6 +90,8 @@ export const TARGETS = [
   // beside whom) and not yet through the Module Library Contract clause 13
   // review.
   ["rites", "held", "security review pending (Module Library Contract clause 13)"],
+  // Who ticked which step names people, so members only; no public surface to probe.
+  ["protocols", "members"],
   // HELD. A member-pii module that reached main before the human security
   // review Module Library Contract clause 13 requires. It stays off in every
   // fork until that review closes and Rye signs off; then this line becomes

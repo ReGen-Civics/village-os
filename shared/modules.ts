@@ -1477,6 +1477,34 @@ export const MODULES: ModuleDef[] = [
     // surface; stamps, marks and pairings stay in their tables.
   },
   {
+    id: "protocols",
+    guild: [],
+    tier: "included",
+    // Who ticked which step of which checklist, and when: that names people,
+    // so the widest class is member-pii (drizzle/0389).
+    dataClass: "member-pii",
+    group: "coordinate",
+    // Nothing must be set before it is honest to run: with no checklists the
+    // page says so, and the card is where they are written.
+    setup: "none",
+    name: "Protocols",
+    description:
+      "Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen.",
+    requires: [],
+    recommends: [],
+    capabilities: [],
+    variableKeys: [],
+    apiPrefixes: ["/api/protocols"],
+    defaultConfig: { showInstallCard: true },
+    validateConfig: (c: any) => {
+      if (c == null || typeof c !== "object") return "config must be an object";
+      if (c.showInstallCard !== undefined && typeof c.showInstallCard !== "boolean") return "showInstallCard must be true or false";
+      return null;
+    },
+    // No openStateCheck: nothing here is owed to anybody. Off hides every
+    // surface; protocols and runs stay in their tables and return when it is on.
+  },
+  {
     id: "funding-rounds",
     guild: [],
     setupNeeds: [

@@ -14,10 +14,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import mysql from "mysql2/promise";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { ApplyFailureDetail } from "./migrate";
 import { applyPending } from "./migrate";
-import { renderMaintenanceHtml, startMaintenanceServer } from "./maintenanceMode";
+import { publicDetail, renderMaintenanceHtml, startMaintenanceServer } from "./maintenanceMode";
 import { testDbConfigured } from "./testDb";
 
 describe("the maintenance page's content, per refusal kind", () => {
@@ -32,9 +32,10 @@ describe("the maintenance page's content, per refusal kind", () => {
       const html = renderMaintenanceHtml({ detail, port: 0, instanceLabel: "Riverbend" });
       expect(html).toContain("<html");
       expect(html).toContain("temporarily unavailable");
-      // The raw technical detail is always shown verbatim, so an operator can
-      // act on it without asking the reporter to reproduce anything.
-      expect(html).toContain(detail.message);
+      // R213: the raw database error never reaches the public page. It can
+      // carry table names, a fragment of a row or a host; it goes to the log.
+      expect(html).not.toContain(detail.message);
+      expect(html).toContain("The full error is in the server log.");
       if (detail.kind === "migration-failed") {
         expect(html).toContain(detail.file);
         expect(html).toContain("step 3 of 7");
@@ -63,9 +64,34 @@ describe("the maintenance page's content, per refusal kind", () => {
     expect(html.toLowerCase()).toContain("nothing was moved");
   });
 
+  it("/health names the kind, the file and the step, never the raw error, which goes to the server log", async () => {
+    const raw = "ER_DUP_ENTRY: Duplicate entry 'ada@example.test' for key 'users.email' on db.internal:3306";
+    const detail = { kind: "migration-failed" as const, file: "0099_example.sql", statementIndex: 3, statementsTotal: 7, message: raw };
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const server = startMaintenanceServer({ detail, port: 0, host: "127.0.0.1" });
+    try {
+      await new Promise<void>((resolve) => server.once("listening", () => resolve()));
+      const address = server.address();
+      if (!address || typeof address === "string") throw new Error("expected a bound TCP port");
+      const base = `http://127.0.0.1:${address.port}`;
+      const health = await fetch(`${base}/health`); // module-review-ok: local maintenance server this test just started
+      const body = await health.json();
+      expect(health.status).toBe(503);
+      expect(body.error).toEqual({ kind: "migration-failed", file: "0099_example.sql", step: 3, steps: 7, message: publicDetail(detail) });
+      expect(JSON.stringify(body)).not.toContain("ada@example.test");
+      const page = await (await fetch(`${base}/`)).text(); // module-review-ok: local maintenance server this test just started
+      expect(page).not.toContain("ada@example.test");
+      expect(page).not.toContain("db.internal");
+      expect(err.mock.calls.map((c) => String(c[0])).join(" ")).toContain(raw);
+    } finally {
+      err.mockRestore();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
   it("does not let the instance label or message break the page's HTML", () => {
     const html = renderMaintenanceHtml({
-      detail: { kind: "migration-failed", file: "0001.sql", statementIndex: 1, statementsTotal: 1, message: '<script>alert(1)</script> & "quoted"' },
+      detail: { kind: "migration-failed", file: '<script>alert(1)</script>.sql', statementIndex: 1, statementsTotal: 1, message: '<script>alert(1)</script> & "quoted"' },
       port: 0,
       instanceLabel: '<b>Not Riverbend</b>',
     });
