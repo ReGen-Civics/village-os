@@ -248,6 +248,50 @@ function lightInkOnAll(seed: Hsl, grounds: string[], floor: number): string {
 }
 
 /**
+ * THE GAME TOKENS (gap G3): colours the new modules and the game surfaces read
+ * beyond the slots (paper for anything sworn or signed, a stamp's inks, the
+ * map's water and land, the three places a quest happens). A closed list; each
+ * one names the slot a component falls back to when the village sets nothing,
+ * written `var(--paper, var(--card))` at the point of use. Nothing is emitted
+ * for a token a village did not set, so its fallback stands.
+ */
+export const GAME_TOKENS = {
+  "paper": "--card",
+  "paper-2": "--muted",
+  "paper-foreground": "--card-foreground",
+  "paper-muted": "--muted-foreground",
+  "success": "--color-sage",
+  "ceremony": "--secondary",
+  "seal": "--destructive",
+  "stamp-alt": "--color-sage",
+  "surface-deep": "--background",
+  "glow": "--muted",
+  "place-1": "--chart-2",
+  "place-2": "--primary",
+  "place-3": "--secondary",
+  "map-sea": "--background",
+  "map-land": "--card",
+  "map-line": "--border",
+  "map-water": "--chart-2",
+  "map-grid": "--border",
+  "map-fog": "--background",
+  "destructive": "--destructive",
+} as const satisfies Record<string, string>;
+export type GameToken = keyof typeof GAME_TOKENS;
+
+/** The stored `theme.tokens` map, cleaned: known names only, 6-digit hex only. `font-label` is a stack, cleaned by themeCss. */
+export function sanitizeGameTokens(raw: unknown): Partial<Record<GameToken, string>> {
+  const out: Partial<Record<GameToken, string>> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [k0, v0] of Object.entries(raw as Record<string, unknown>)) {
+    const k = k0.replace(/^--/, "") as GameToken;
+    if (!(k in GAME_TOKENS)) continue;
+    if (typeof v0 === "string" && /^#[0-9a-f]{6}$/i.test(v0.trim())) out[k] = v0.trim().toLowerCase();
+  }
+  return out;
+}
+
+/**
  * The light ink literals index.css ships for the status colours (`@theme
  * inline`). The dark scheme lifts each one for the night page, and Admin's
  * light zone puts these back. brandTokens.test.ts holds them to index.css.
@@ -309,7 +353,7 @@ export function deriveTheme(
   seedHex: string | undefined | null,
   cardId: string | undefined | null,
   accentHex?: string | null,
-  options?: { mode?: unknown; overrides?: unknown } | null,
+  options?: { mode?: unknown; overrides?: unknown; tokens?: unknown } | null,
 ): DerivedTheme | null {
   const seed = seedHex ? hexToHsl(seedHex) : null;
   if (!seed) return null;
@@ -578,13 +622,14 @@ export function deriveTheme(
 
   const mode = themeModeOf(options?.mode);
   const overrides = sanitizeOverrides(options?.overrides);
+  const tokens = sanitizeGameTokens(options?.tokens);
   // A village that chose neither a dark page nor a colour of its own gets
   // exactly what every village got before either existed.
-  if (mode === "light" && Object.keys(overrides).length === 0) {
+  if (mode === "light" && Object.keys(overrides).length === 0 && Object.keys(tokens).length === 0) {
     return { vars, contrast, card, fonts: cardFontStacks(card), mode, lightVars: null };
   }
   const night = { ground: nightGround, panel: nightPanel, raised: nightRaised, ink: nightInk, dim: nightDim, edge: nightEdge, gold: nightGold };
-  return withScheme({ vars, nightPairs: pairs.filter((p) => p.name.startsWith("night ")), adjusted, seed, sat, night, mode, overrides, card });
+  return withScheme({ vars, nightPairs: pairs.filter((p) => p.name.startsWith("night ")), adjusted, seed, sat, night, mode, overrides, tokens, card });
 }
 
 /**
@@ -614,6 +659,7 @@ function withScheme(i: {
   night: { ground: string; panel: string; raised: string; ink: string; dim: string; edge: string; gold: string };
   mode: ThemeMode;
   overrides: Partial<Record<OverrideSlot, string>>;
+  tokens: Partial<Record<GameToken, string>>;
   card: CharacterCard;
 }): DerivedTheme {
   const { night, mode, overrides, seed } = i;
@@ -776,6 +822,31 @@ function withScheme(i: {
       m(`notice ink on ${g.slice(2)}`, out["--color-amber-ink"], out[g], AA_BODY);
     }
     m("destructive text on background", out["--destructive"], out["--background"], AA_BODY);
+  }
+
+  // The game tokens a village set, after the slots, each pair that carries
+  // text measured on what the page will draw. A token's partner is the one
+  // the village set, or the slot it falls back to.
+  const tok = (k: GameToken): string | undefined => i.tokens[k] ?? out[GAME_TOKENS[k]] ?? (k === "success" || k === "stamp-alt" ? out["--color-sage"] ?? LIGHT_STATUS_INKS["--color-sage"] : undefined);
+  for (const [k, v] of Object.entries(i.tokens)) {
+    if (k === "destructive") out["--destructive"] = v as string;
+    else out[`--${k}`] = v as string;
+  }
+  const anyToken = Object.keys(i.tokens).length > 0;
+  if (anyToken) {
+    const inkOnPaper: GameToken[] = ["paper-foreground", "paper-muted", "seal", "stamp-alt"];
+    if (["paper", "paper-2", ...inkOnPaper].some((k) => k in i.tokens)) {
+      for (const k of inkOnPaper) {
+        m(`${k} on paper`, tok(k), tok("paper"), AA_BODY);
+        m(`${k} on paper-2`, tok(k), tok("paper-2"), k === "paper-foreground" || k === "paper-muted" ? AA_BODY : AA_LARGE);
+      }
+    }
+    for (const k of ["success", "ceremony"] as GameToken[]) {
+      if (k in i.tokens) {
+        m(`${k} on background`, tok(k), out["--background"], AA_BODY);
+        m(`${k} on card`, tok(k), out["--card"], AA_LARGE);
+      }
+    }
   }
 
   const anyFail = pairs.some((p) => p.verdict === "fail");

@@ -10,7 +10,7 @@
  */
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { contrastRatio, deriveTheme, LIGHT_STATUS_INKS, OVERRIDE_SLOTS, sanitizeOverrides } from "../../shared/brandTokens";
+import { contrastRatio, deriveTheme, GAME_TOKENS, LIGHT_STATUS_INKS, OVERRIDE_SLOTS, sanitizeGameTokens, sanitizeOverrides } from "../../shared/brandTokens";
 import { buildThemeCss, darkScheme, installBackground, installThemeColour, withScheme } from "./themeCss";
 import fs from "node:fs";
 import path from "node:path";
@@ -160,5 +160,37 @@ describe("the light status inks Admin's light zone restores", () => {
     }
     expect(css).toMatch(/--color-notice: var\(--sheet-notice, #8d5e19\)/);
     expect(css).toMatch(/--color-open: var\(--sheet-open, #3d6e4a\)/);
+  });
+});
+
+describe("the game tokens (gap G3)", () => {
+  const PAPER = { paper: "#f4ead4", "paper-2": "#efe1bf", "paper-foreground": "#2b2116", "paper-muted": "#5a4630", seal: "#8a3b20", "stamp-alt": "#2f6b3a", "map-sea": "#08171b", "place-1": "#8ec5ff" };
+
+  it("emits only what a village set, after the slots, and leaves every other village alone", () => {
+    expect(buildThemeCss({ seed: "#16342a", tokens: {} })).toBe(buildThemeCss({ seed: "#16342a" }));
+    const css = buildThemeCss({ seed: "#0b1a1e", character: "woven", mode: "dark", tokens: { ...PAPER, "font-label": '"IM Fell English SC", Georgia, serif' } });
+    const root = css.slice(css.indexOf(":root:root {"), css.indexOf(".admin-root"));
+    expect(root).toContain("--paper: #f4ead4;");
+    expect(root).toContain("--map-sea: #08171b;");
+    expect(root).toContain('--font-label: "IM Fell English SC", Georgia, serif;');
+    expect(root.indexOf("--paper:")).toBeGreaterThan(root.indexOf("--background:"));
+    expect(root).not.toContain("--glow:");
+  });
+
+  it("measures the inks a village puts on its paper", () => {
+    const ok = deriveTheme("#0b1a1e", "woven", null, { mode: "dark", tokens: PAPER })!;
+    expect(ok.contrast.pairs.filter((p) => p.verdict === "fail")).toEqual([]);
+    expect(ok.contrast.pairs.map((p) => p.name)).toContain("seal on paper");
+    // Gold ink on parchment is 1.5:1 and the report says so.
+    const bad = deriveTheme("#0b1a1e", "woven", null, { mode: "dark", tokens: { ...PAPER, "paper-foreground": "#e9b84a" } })!;
+    expect(bad.contrast.status).toBe("fail");
+    expect(bad.contrast.pairs.find((p) => p.name === "paper-foreground on paper")?.verdict).toBe("fail");
+  });
+
+  it("keeps the closed list and well-formed values, and drops a hostile label face", () => {
+    expect(sanitizeGameTokens({ paper: "#F4EAD4", "--map-fog": "#061114", parrot: "#ffffff", seal: "red" })).toEqual({ paper: "#f4ead4", "map-fog": "#061114" });
+    const css = buildThemeCss({ seed: "#16342a", tokens: { "font-label": "x;}body{display:none" } });
+    expect(css).not.toContain("--font-label");
+    for (const fallback of Object.values(GAME_TOKENS)) expect(fallback.startsWith("--")).toBe(true);
   });
 });
