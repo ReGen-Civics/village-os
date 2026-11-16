@@ -487,6 +487,12 @@ export interface ModuleDef {
   variableKeys: string[];
   /** API prefixes mounted behind requireModule(id). */
   apiPrefixes: string[];
+  /**
+   * The widest lifecycle this module may ever stand at. Absent means public.
+   * A module whose rows must never reach a visitor says "members", and the
+   * lifecycle write refuses anything wider, whatever its dependencies allow.
+   */
+  widest?: ModuleLifecycle;
   /** Named Hypha deep links this module's UI renders. */
   hyphaLinks?: string[];
   /** Show the legal caution card before enabling (funds-bearing modules).
@@ -1518,6 +1524,55 @@ export const MODULES: ModuleDef[] = [
     apiPrefixes: ["/api/place-registry"],
   },
   {
+    id: "hidden-map",
+    guild: [],
+    setupNeeds: [
+      {
+        id: "map-keeper",
+        kind: "hands",
+        ref: "hiddenmap.keep",
+        title: "Seat someone who keeps the hidden map, so the first members can be vouched for",
+        scope: "village",
+        phase: "before-enable",
+        need: "recommended",
+        fixAt: "/admin?tab=circles-map",
+        since: "1.2.0",
+        certainty: "verified",
+        source: "docs/modules/hidden-map.md Setup",
+      },
+      {
+        id: "basemap",
+        kind: "decision",
+        ref: "hiddenmap.basemap",
+        title: "Choose what the hidden map is drawn on",
+        scope: "village",
+        phase: "before-enable",
+        need: "recommended",
+        fixAt: "/modules/hidden-map#setting-hiddenmap.basemap",
+        since: "1.2.0",
+        certainty: "verified",
+        source: "docs/modules/hidden-map.md Setup",
+      },
+    ],
+    tier: "included",
+    // Each pin is tied to the member who logged it, and photos may show
+    // people. No route ever sends the owner, and the photos are stripped and
+    // served only to members who may see the pin (0392).
+    dataClass: "member-pii",
+    group: "know-and-decide",
+    setup: "none",
+    name: "Hidden map",
+    description:
+      "A members-only map of the places your members log, with photos, growth over time and return visits. Each member sees only their own pins until enough of them are vouched for by others, and then the whole map opens.",
+    requires: [],
+    recommends: ["quests"],
+    capabilities: ["hiddenmap.keep", "hiddenmap.export"],
+    variableKeys: [],
+    apiPrefixes: ["/api/hidden-map"],
+    // Never public: what it holds stays inside the membership.
+    widest: "members",
+  },
+  {
     id: "session-card",
     guild: [],
     tier: "included",
@@ -2141,6 +2196,7 @@ export const MODULE_KEY_PREFIXES: Record<string, string> = {
   governance: "governance",
   hypha: "hypha",
   comms: "comms",
+  hiddenmap: "hidden-map",
 };
 
 /**

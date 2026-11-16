@@ -487,6 +487,20 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     hue: 120,
     emblem: "Landmark",
   },
+  "hidden-map": {
+    promise: "A members-only map of the places your members log, which opens to each member once others have vouched for their own.",
+    benefits: [
+      "Log a place from a phone, with its location read from the photo and then removed from it",
+      "Each member sees only their own pins until enough of them are vouched for, then the whole map opens",
+      "Return visits add photos, so a planting is seen growing from seed to tree",
+      "No names beside pins, two people to export, and a record of who looked",
+    ],
+    forWhom: "Villages whose members tend places spread far apart and want a record of them that stays inside the membership.",
+    setupSummary: "Seat someone who keeps the map, so the first members can be vouched for, and choose what it is drawn on.",
+    dataSummary: "Each pin's place, kind, words and photos, tied to the member who logged it and never shown with their name. Photos are stripped of every hidden detail. A record of who read the map, with no places in it.",
+    hue: 160,
+    emblem: "Globe",
+  },
   "session-card": {
     promise: "A card to pull as a session opens, so the room starts present with each other and the day.",
     benefits: [

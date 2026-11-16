@@ -91,6 +91,8 @@ export const SUGGESTION_ROUTE: Record<Capability, SuggestionRoute> = {
   "pot.steward": "holders",
   "place.tend": "holders",
   "place.permit": "holders",
+  "hiddenmap.keep": "holders",
+  "hiddenmap.export": "holders",
   "module.switch": "holders",
   // The veto stays ballot-only (Rye, 2026-09-23). `routeSuggestion` enforces
   // it again, so a dial that one day writes this table cannot flip it.

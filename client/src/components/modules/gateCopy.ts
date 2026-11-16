@@ -53,6 +53,7 @@ export const GATE_LINES: Record<string, string> = {
   governance:
     "Proposals on their way to a vote, the ballots running today, and the outcome of every one that has closed.",
   health: "This village's vital signs, cycle by cycle.",
+  "hidden-map": "The places members have logged, which opens to you once others have vouched for your own.",
   introductions: "What members say they are looking for, and the introductions waiting on a yes.",
   journal:
     "Your own morning and evening pages, a weekly pulse, call debriefs, and a kind road for feedback. Only you read what you write.",

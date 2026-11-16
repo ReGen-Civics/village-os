@@ -149,6 +149,8 @@ export type Capability =
   | "pot.steward" // hold a funding pot: open its rounds, set their dates, rule on whether an idea fits
   | "place.tend" // keep the place registry: import the seed, confirm a match, set readiness, adopt a stage change
   | "place.permit" // keep a place's permit checklist and its preserve and riparian answers
+  | "hiddenmap.keep" // the hidden map: vouch a pin before being open (the bootstrap), hide a pin, read the access log
+  | "hiddenmap.export" // the hidden map: approve another member's export, as the second of two people
   // ── The module switch (Rye, 2026-10-09) ──────────────────────────────────
   //
   // Before launch the founders turn modules on from the library. After launch
@@ -288,6 +290,8 @@ export const ALL_CAPABILITIES: Capability[] = [
   "pot.steward",
   "place.tend",
   "place.permit",
+  "hiddenmap.keep",
+  "hiddenmap.export",
   "module.switch",
   "steward.veto",
   "comms.manage",
@@ -366,6 +370,8 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "pot.steward": "Hold a funding pot: open its rounds, set their dates and rubric, and rule on whether an idea fits",
   "place.tend": "Keep the place registry: load it from the seed, confirm a place, set its readiness, and adopt a stage change",
   "place.permit": "Keep a place's permit checklist and its preserve and riparian answers",
+  "hiddenmap.keep": "Keep the hidden map: vouch for a pin before your own map has opened, hide a pin, and read who looked",
+  "hiddenmap.export": "Approve another member's export of the hidden map, as the second of the two people it takes",
   "module.switch": "Turn a module on for the village",
   "steward.veto": "Stop a carried decision inside its window, and say why",
   "comms.manage": "Run the village's email: its automations, their words, and letters",
@@ -588,6 +594,11 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
   // no live holder the village still decides by its vote path (Article 0.3).
   "place.tend": false,
   "place.permit": false,
+  // The hidden map (spec internal hidden-map I.10 ask). FALSE for the same
+  // reason as the two above: new keys, and joining the handover set is
+  // Rye's word to give. With no live holder the vote path decides (0.3).
+  "hiddenmap.keep": false,
+  "hiddenmap.export": false,
   // Turning a module on after launch. Its route counts live holders without
   // the admin short-circuit, so the escape hatch this column describes is the
   // village vote itself: with no holder, anybody may propose it.
@@ -762,7 +773,7 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * ── THIS IS A READING OF THOSE WORDS, AND IT HAS A PRODUCT CONSEQUENCE ─────
  *
  * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 31 keys
- * today. The other 24 are not withheld from anybody: they are personal acts
+ * today. The other 26 are not withheld from anybody: they are personal acts
  * and deployment plumbing that were never anyone's to hold, and `TRANSFERABLE`
  * carries the reasoning key by key.
  *
@@ -815,6 +826,9 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * 31 and 23. `records.confidential` (role journey L7) was born held back, a
  * key no route gates behind yet and one the alignment binds on top, which
  * moved only the second: 31 and 24.
+ * `hiddenmap.keep` and `hiddenmap.export` (the hidden map, 0392) were born held
+ * back until Rye gives his word on them (the hidden-map spec, I.10), which
+ * moved only the second: 31 and 26.
  *
  * This sentence was itself wrong for one batch, and it is the reason the check
  * below reads the WHOLE paragraph rather than three sentences. It claimed
@@ -1020,6 +1034,10 @@ export const DENIABLE: Record<Capability, boolean> = {
   // permits, and takes no member's voice in a stage change.
   "place.tend": true,
   "place.permit": true,
+  // Jobs too: a warning pauses keeping the hidden map or approving an
+  // export, and takes nothing from the member's own pins or vouches.
+  "hiddenmap.keep": true,
+  "hiddenmap.export": true,
   // A job as well. Pausing it stops somebody switching modules on alone; the
   // village can still propose one, and the vote decides.
   "module.switch": true,
@@ -1203,6 +1221,10 @@ export const BADGE_GRANTABLE: Record<Capability, boolean> = {
   // registry or the permit checklist.
   "place.tend": true,
   "place.permit": true,
+  // Ordinary appointments too: a badge is an honest way to hand somebody
+  // the keeping of the hidden map or the second signature on an export.
+  "hiddenmap.keep": true,
+  "hiddenmap.export": true,
   // An ordinary appointment, the same as `feed.announce`: a badge is an
   // honest way to hand the village's email to somebody.
   "comms.manage": true,

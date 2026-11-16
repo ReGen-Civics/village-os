@@ -314,6 +314,7 @@ const RENDERED = {
   builtByNamespace: "the Built by row",
   pricing: "the Price row",
   withdrawn: "the Withdrawn row",
+  widest: "the Opens no wider than row",
   vendor: "the Counterparty row",
   defaultConfig: "the Config it seeds row, which names the top-level keys",
 };
@@ -534,6 +535,7 @@ export async function collectFacts(root = ROOT) {
     builtByNamespace: m.builtByNamespace ?? null,
     pricing: m.pricing ?? null,
     withdrawn: m.withdrawn ?? null,
+    widest: m.widest ?? null,
     vendor: m.vendor ? { legalName: m.vendor.legalName, url: m.vendor.url, supportEmail: m.vendor.supportEmail } : null,
     configKeys: m.defaultConfig ? Object.keys(m.defaultConfig) : [],
     doc: docs[m.id] ?? null,
@@ -685,6 +687,7 @@ function moduleSection(m, f) {
       `${m.pricing.amount} minor units of ${m.pricing.currency} per ${m.pricing.period}, billed at ${m.pricing.billingUrl}`,
     ]);
   }
+  if (m.widest) rows.push(["Opens no wider than", `${code(m.widest)}, whatever its dependencies allow`]);
   if (m.withdrawn) {
     rows.push([
       "Withdrawn",

@@ -257,6 +257,8 @@ import { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing, register a
 import { lensesOf as companionLensesOf } from "./repos/companions";
 import { exportMemberFundingRounds, fundingRoundsOpenState, register as registerFundingRoundsRoutes } from "./routes/fundingRounds";
 import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry";
+import { register as registerHiddenMapRoutes, sweepHiddenMap } from "./routes/hiddenMap";
+import { exportMemberHiddenMap, hiddenMapDir } from "./lib/hiddenMap";
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
@@ -5059,6 +5061,8 @@ async function startServer() {
     return `${r.users} member(s), ${r.rows} notification(s)`;
   });
   registerJob("retention-sweep", 24 * 60 * 60 * 1000, async () => runRetentionSweep());
+  // The hidden map keeps who-looked rows for a dial's worth of days and lets stale export asks lapse.
+  registerJob("hidden-map-sweep", 24 * 60 * 60 * 1000, async () => sweepHiddenMap(getPool()));
   // Sera's agent, B7: once a day the people who approve moons (live holders of moon.approve or
   // moon.approve_alone, counted the way the gate counts) hear what it did since the last summary,
   // each with an Undo on the bridge panel. The members it acted on are never told by this, and an
@@ -17774,6 +17778,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
+  registerHiddenMapRoutes(app, { authedUser, capabilityCtx, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR) });
   registerMemberTaskRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone: () => getSeasonConfig().timezone });
   registerMemberTaskBridgeRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, notify, timeZone: () => getSeasonConfig().timezone });
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
@@ -25423,6 +25428,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       gratitudeDistributions: await distributionsForMember(pool, user.id),
       seasonPlans: await seasonPlansForMember(pool, user.id), // every version of their season plans, words and seats handed back (server/repos/seasonPlans.ts)
       aligned: await alignmentsForExport(pool, user.id, async (id) => (await members.byId(id))?.name ?? null), // texts they are party to, their own alignment rows and receipts; counterparties as name and capacity only (server/routes/alignments.ts)
+      hiddenMap: await exportMemberHiddenMap(pool, villageId(), user.id), // their own pins (exact, theirs), their visits, and how many photos they added; never anybody else's pin (server/lib/hiddenMap.ts)
       journal: await exportMemberJournal(pool, user.id), // entries, pulse, the feedback yes, sent feedback, and received feedback with no author at any depth (server/lib/journal.ts)
       sessions: await exportMemberSessions(pool, user.id), // live sessions they joined, entries they wrote or hold, and their own answers; arrival words are already erased from closed ones (server/lib/liveSessions.ts)
       companionLenses: await companionLensesOf(pool, user.id), // the private lenses they fed their companions; no birth data exists to export (shared/companionPersona.ts)

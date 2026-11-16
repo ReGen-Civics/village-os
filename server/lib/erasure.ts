@@ -170,6 +170,8 @@ import { forgetStewardActs } from "./stewardship";
 import { eraseIntentsForMember } from "./intents";
 import { forgetMemberNeeds } from "./needs";
 import { forgetMemberJournal } from "./journal";
+import { forgetMemberHiddenMap, hiddenMapDir } from "./hiddenMap";
+import { villageId as currentVillageId } from "./economy";
 import { forgetMemberGeneKeys } from "./geneKeys";
 import { forgetMemberFundingRounds } from "./fundingRounds";
 import { forgetMemberTasks } from "../repos/memberTasks";
@@ -1099,6 +1101,23 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       name: "journal-after-tombstone",
       run: async () => {
         await forgetMemberJournal(pool, target.id);
+      },
+    },
+    {
+      /*
+       * The hidden map (0392): the member's photos are deleted from the disk
+       * and the rows, their vouches, their opening and their who-looked rows
+       * go, and their open export asks are withdrawn. Their pins and visits
+       * stay on the map with nobody attached, because the planting is still
+       * in the ground (spec C2 default).
+       *
+       * AFTER THE TOMBSTONE, for the reason the needs step gives: the routes
+       * write for anybody signed in, and the tombstone is where the member's
+       * sessions die.
+       */
+      name: "hidden-map-after-tombstone",
+      run: async () => {
+        await forgetMemberHiddenMap(pool, currentVillageId(), target.id, hiddenMapDir(deps.uploadsDir));
       },
     },
     {
