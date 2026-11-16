@@ -8153,7 +8153,7 @@ async function startServer() {
     resetPerIpHourly: () => numberVar("abuse.password_reset_per_ip_hourly"),
     recordAudit: recordAuthAudit,
   });
-  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify });
+  const joined = (u: { id: string; name: string; handle: string }) => memberJoined(u, { addActivity, firstName, greeterRoleId: () => stringVar("arrival.greeter_role"), seats: loadRoleHolders, everyone: () => members.all(), notify, stageName });
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
