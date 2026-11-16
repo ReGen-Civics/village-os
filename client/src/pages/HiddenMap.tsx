@@ -29,6 +29,9 @@ import SevenMeter from "@/components/hiddenMap/SevenMeter";
 import OpeningMoment, { openingSeen } from "@/components/hiddenMap/OpeningMoment";
 import CaptureForm, { PRECISION_WORDS, type Capture, type SendAnswer } from "@/components/hiddenMap/CaptureForm";
 import Thumb from "@/components/hiddenMap/Thumb";
+import { useOutbox } from "@/components/hiddenMap/useOutbox";
+import { looksOffline, type OutboxItem } from "@/lib/hiddenMapOutbox";
+import { keepHiddenMapOffline, offlineOwner, readMapSnapshot, writeMapSnapshot } from "@/lib/hiddenMapOffline";
 import {
   addPhotos, answerExport, askExport, createPin, downloadExport, getExports, getMe, getPins, getQueue, Refused,
   type ExportView, type MapMe,
@@ -50,7 +53,15 @@ export default function HiddenMap() {
   const { t } = useLingui();
   const { user } = useAuth();
   const modules = useModules();
-  const on = (modules.modules ?? []).some((m) => m.id === "hidden-map" && m.lifecycle !== "off");
+  const listedOn = (modules.modules ?? []).some((m) => m.id === "hidden-map" && m.lifecycle !== "off");
+  // With no signal the module list cannot be read. A member who opened the map here before has its
+  // words snapshot, which is the module's own answer from then: trust it, and open to logging a place.
+  const noList = modules.failed || (typeof navigator !== "undefined" && navigator.onLine === false && !modules.loaded);
+  // With no signal the profile cannot be read either, so the member is the one the stored token
+  // wrote the snapshot for (QA P6-2 final).
+  const memberId = user ? String(user.id) : noList ? offlineOwner() : null;
+  const keptForOffline = noList && memberId ? readMapSnapshot(memberId) : null;
+  const on = listedOn || keptForOffline !== null;
   const [me, setMe] = useState<MapMe | null>(null);
   const [pins, setPins] = useState<Array<PinView | PinDot>>([]);
   const [problem, setProblem] = useState<string | null>(null);
@@ -59,27 +70,48 @@ export default function HiddenMap() {
   const [shown, setShown] = useState<Record<Layer, boolean>>({ planting: true, partner: true, stop: true });
   const [moment, setMoment] = useState(false);
 
+  const owner = on && memberId ? memberId : null;
+  const [offline, setOffline] = useState(false);
+
   const load = useCallback(async () => {
     try {
       const [m, p] = await Promise.all([getMe(), getPins()]);
       setMe(m);
       setPins(p.pins);
       setProblem(null);
+      setOffline(false);
+      if (owner) writeMapSnapshot(owner, m);
+      // The module is on and the member is in: keep the page for when there is no signal.
+      keepHiddenMapOffline();
     } catch (e) {
-      setProblem(e instanceof Error ? e.message : t`The map could not be read.`);
+      // No signal: open to logging a place from the village's words alone. No pin is kept on the phone.
+      const kept = owner && looksOffline(e) ? readMapSnapshot(owner) : null;
+      if (kept) {
+        setMe((now) => now ?? kept);
+        setOffline(true);
+        setView("log");
+        return;
+      }
+      if (looksOffline(e)) {
+        setProblem(t`There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that.`);
+        return;
+      }
+      setProblem(e instanceof Refused ? e.message : t`The map could not be read.`);
     }
-  }, [t]);
+  }, [t, owner]);
 
   useEffect(() => {
-    if (on && user) void load();
-  }, [on, user, load]);
+    if (on && memberId) void load();
+  }, [on, memberId, load]);
+
+  const box = useOutbox(owner, () => void load());
 
   // The opening moment, once per member and opening, on this device.
   useEffect(() => {
-    if (me?.open && user && !openingSeen(String(user.id), me.openedAt)) setMoment(true);
-  }, [me?.open, me?.openedAt, user]);
+    if (me?.open && memberId && !openingSeen(memberId, me.openedAt)) setMoment(true);
+  }, [me?.open, me?.openedAt, memberId]);
 
-  if (!modules.loaded) {
+  if (!modules.loaded && !keptForOffline) {
     return (
       <Layout>
         <div className="flex min-h-[50vh] items-center justify-center"><BreathingLoader label={t({ message: `Opening the map`, context: "hidden map page" })} /></div>
@@ -87,7 +119,7 @@ export default function HiddenMap() {
     );
   }
   if (!on) return <ModuleGate moduleId="hidden-map" name={t({ message: `Hidden map`, context: "hidden map page" })} />;
-  if (!user) return <SignInToSee moduleId="hidden-map" name={t({ message: `Hidden map`, context: "hidden map page" })} />;
+  if (!memberId) return <SignInToSee moduleId="hidden-map" name={t({ message: `Hidden map`, context: "hidden map page" })} />;
   if (!me) {
     return (
       <Layout>
@@ -108,23 +140,34 @@ export default function HiddenMap() {
   const meWithCounts: MapMe = { ...me, ownPlantings: myPlantings.length };
 
   const send = async (c: Capture): Promise<SendAnswer> => {
+    let madeId: string | undefined;
     try {
       const made = await createPin(c.draft);
+      madeId = made.pin.id;
       if (c.photos.length) await addPhotos(made.pin.id, c.photos);
       await load();
       setSelected(made.pin.id);
       setView("map");
       return { kept: true, said: t`Saved. It is on your map.` };
     } catch (e) {
+      if (owner && looksOffline(e)) {
+        try {
+          await box.add({ kind: "pin", clientId: c.draft.clientId, owner, createdAt: new Date().toISOString(), draft: c.draft, photos: c.photos, pinId: madeId });
+          return { kept: true, said: t`Saved on this phone. It goes up when you have signal.` };
+        } catch {
+          return { kept: false, said: t`This phone could not keep it for later. Try again when you have signal.` };
+        }
+      }
       return { kept: false, said: e instanceof Refused ? e.message : t`That was not saved. Check your signal and try again.` };
     }
   };
+  const queueVisit = async (item: OutboxItem) => box.add(item);
 
   if (moment) {
-    return <OpeningMoment me={me} userId={String(user.id)} pins={pins} onDone={() => setMoment(false)} />;
+    return <OpeningMoment me={me} userId={memberId} pins={pins} onDone={() => setMoment(false)} />;
   }
 
-  const views: Array<{ id: View; label: string }> = [
+  const views: Array<{ id: View; label: string }> = offline ? [{ id: "log", label: t({ message: `Log a place`, context: "hidden map page" }) }] : [
     { id: "map", label: t({ message: `Map`, context: "hidden map page" }) },
     { id: "log", label: t({ message: `Log a place`, context: "hidden map page" }) },
     ...(me.open || me.keeper ? [{ id: "vouch" as View, label: t({ message: `Vouch`, context: "hidden map page" }) }] : []),
@@ -140,6 +183,14 @@ export default function HiddenMap() {
             <h1 className={H1}>{me.title}</h1>
           </header>
 
+          {offline && (
+            <section className="rounded-2xl border border-primary/50 bg-muted p-4" role="status">
+              <p className="font-semibold text-foreground"><Trans context="hidden map page">No signal here</Trans></p>
+              <p className={HINT}><Trans>You can log places now. They wait on this phone, and your map comes back with signal.</Trans></p>
+              <button type="button" className={`${BTN_SECONDARY} mt-3`} onClick={() => void load()}><Trans context="hidden map page">Try again</Trans></button>
+            </section>
+          )}
+
           {!me.open && (
             <section aria-labelledby="hm-meter" className="space-y-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -154,6 +205,31 @@ export default function HiddenMap() {
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-chart-3" /><Trans context="hidden map page">vouched</Trans></li>
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-primary" /><Trans>waiting for a vouch</Trans></li>
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full border border-dashed border-muted-foreground" /><Trans context="hidden map page">still to log</Trans></li>
+              </ul>
+            </section>
+          )}
+
+          {box.items.length > 0 && (
+            <section className={CARD} aria-label={t`Waiting on this phone`}>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="flex-1 font-semibold text-foreground">
+                  {t`${plural(box.items.length, { one: "# capture is waiting on this phone.", other: "# captures are waiting on this phone." })}`}
+                </p>
+                <button type="button" className={BTN_PRIMARY} disabled={box.sending} onClick={() => void box.flush()}>
+                  {box.sending ? <Trans context="hidden map page">Sending</Trans> : <Trans context="hidden map page">Send now</Trans>}
+                </button>
+              </div>
+              {!box.durable && <p className={`${HINT} mt-1`}><Trans>This browser cannot keep captures after the page closes. Keep it open until they go up.</Trans></p>}
+              <ul className="mt-3 space-y-2">
+                {box.items.map((i) => (
+                  <li key={i.clientId} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
+                    <span className="flex-1 text-sm text-foreground">
+                      {i.kind === "pin" ? (i.draft.title || i.draft.kind) : t({ message: `A return visit`, context: "hidden map page" })}
+                      {i.refused ? ` · ${i.refused}` : ""}
+                    </span>
+                    <button type="button" className={BTN_SECONDARY} onClick={() => void box.discard(i.clientId)}><Trans context="hidden map page">Discard</Trans></button>
+                  </li>
+                ))}
               </ul>
             </section>
           )}
@@ -179,7 +255,7 @@ export default function HiddenMap() {
                 </div>
               )}
               <WorldMap pins={visible} basemap={me.basemap} maxTileZoom={me.maxZoom} labels={me.labels} vouchesPerPin={me.vouchesPerPin} selectedId={selected} onSelect={setSelected} height={me.open ? 460 : 360} />
-              {selected && <PinPanel key={selected} id={selected} me={me} onChanged={() => void load()} onClose={() => setSelected(null)} />}
+              {selected && <PinPanel key={selected} id={selected} me={me} owner={owner} onQueueVisit={queueVisit} onChanged={() => void load()} onClose={() => setSelected(null)} />}
 
               {!me.open && (
                 <>

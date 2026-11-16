@@ -284,6 +284,8 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-plant");
     let me = await call(handlers, "GET /api/hidden-map/me");
     expect(me.body).toMatchObject({ open: false, vouchedCount: 6, needed: 7 });
+    expect(typeof me.body.allPins).toBe("number");
+    expect(JSON.stringify(me.body)).not.toMatch(/40\.1/);
     as("m-keep");
     await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: ids[6] }, body: { seen: "in-person" } });
     as("m-plant");

@@ -10,6 +10,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { STAGES, type PinView, type Stage, type VouchWay } from "@shared/hiddenMap";
 import type { MapMe, VisitView } from "@/lib/hiddenMapApi";
 import { addVisit, getPin, hidePin, newClientId, unvouch, vouch } from "@/lib/hiddenMapApi";
+import { looksOffline, type OutboxItem } from "@/lib/hiddenMapOutbox";
 import PhotoPicker, { type SafePhoto } from "./PhotoPicker";
 import Thumb from "./Thumb";
 import { PRECISION_WORDS } from "./CaptureForm";
@@ -30,7 +31,14 @@ export const WAY_WORDS: Record<VouchWay, MessageDescriptor> = {
   photos: msg`The photos leave no doubt`,
 };
 
-export default function PinPanel({ id, me, onChanged, onClose }: { id: string; me: MapMe; onChanged: () => void; onClose: () => void }) {
+export default function PinPanel({ id, me, owner, onQueueVisit, onChanged, onClose }: {
+  id: string;
+  me: MapMe;
+  owner: string | null;
+  onQueueVisit: (item: OutboxItem) => Promise<void>;
+  onChanged: () => void;
+  onClose: () => void;
+}) {
   const { t, i18n } = useLingui();
   const [pin, setPin] = useState<PinView | null>(null);
   const [visits, setVisits] = useState<VisitView[]>([]);
@@ -73,8 +81,16 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
 
   const sendVisit = () =>
     act(async () => {
-      const r = await addVisit(id, { clientId: newClientId(), stageSeen: stage || null, note }, photos.map((p) => p.blob));
-      setVisitNote(r.claimed ? t`Saved. Your visit is waiting for a member to confirm it on the quest board.` : t`Saved.`);
+      const visit = { clientId: newClientId(), stageSeen: stage || null, note };
+      const blobs = photos.map((p) => p.blob);
+      try {
+        const r = await addVisit(id, visit, blobs);
+        setVisitNote(r.claimed ? t`Saved. Your visit is waiting for a member to confirm it on the quest board.` : t({ message: `Saved.`, context: "hidden map, one place's details" }));
+      } catch (e) {
+        if (!owner || !looksOffline(e)) throw e;
+        await onQueueVisit({ kind: "visit", owner, createdAt: new Date().toISOString(), pinId: id, photos: blobs, ...visit });
+        setVisitNote(t`Saved on this phone. It goes up when you have signal.`);
+      }
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotos([]);
       setNote("");

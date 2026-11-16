@@ -28,8 +28,9 @@ Built:
 
 - **S3:** return visits open a claim on the quest the village names (`returnVisitQuestId`), described below.
 
+- **S4:** capture with no signal: an IndexedDB outbox on the phone, described below.
+
 Not built yet:
-- S4: capture with no signal (an IndexedDB outbox).
 - S5 (optional): seed origins from the library.
 
 ## Setup
@@ -189,3 +190,29 @@ hold one open claim per quest, so a planter's owed claims open one after another
 different planting): each on the next vouch or the next
 look at the map after the one before it is decided. None is dropped. Its words name a day, never a place. The page
 never says what a planting earns.
+
+## With no signal
+
+A place or a return visit logged with no signal waits on the phone and goes up once there is signal
+(`client/src/lib/hiddenMapOutbox.ts`).
+
+- **Its own store, IndexedDB**, because the shared offline queue keeps JSON in localStorage and photos do not fit
+  there. Only the safe copies are stored: every photo is re-encoded before it reaches the outbox.
+- **A resend writes nothing twice.** A pin carries the device's `clientId`, and the server writes one pin per client
+  id. Its photos follow one at a time and each leaves the phone as soon as the server takes it, so a lost answer can
+  repeat at most the one photo in flight. A visit is idempotent by its own client id.
+- **It belongs to the member who made it.** Another account signed in on the same phone neither sees nor sends it.
+  The page lists what is waiting, with Send now and Discard.
+- **It sends from the open page:** on load, when the phone comes back online, when the tab returns, and on Send
+  now. It stops at the first failure that is not a refusal and keeps everything from there. A refusal (400, 404,
+  409, 413, 422) is kept with the server's words for the member to read and discard.
+- **The page opens with no signal** (`client/public/hidden-map-sw.js`, scoped to `/hidden-map`, registered by the
+  map page only once the module has answered). It keeps the page's own files and the public reads (theme, game
+  config, the language catalog), network first, so a deploy is never hidden online. Its cache is
+  `hidden-map-shell-v1`, which the main worker's clean-up spares. **It never caches member data, pins, photos or a
+  map tile:** a cached tile set would tell the next person on a shared phone where this member was looking.
+- **A cold open with no signal** opens to logging a place, from a per-member snapshot of the village's words and dials
+  only (`village.offline.hidden-map.<member>`, which `/reset` clears): no pin, count, place or time. A phone that never
+  opened the map with signal says so.
+- **A closed map learns one number** about everybody else's pins: how many there are (`allPins` on
+  `GET /api/hidden-map/me`). Nothing about where.

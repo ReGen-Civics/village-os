@@ -18,21 +18,28 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
+let modulesFailed = false;
 vi.mock("@/modules/ModuleProvider", () => ({
-  useModules: () => ({ loaded: true, modules: [{ id: "hidden-map", lifecycle: "members" }] }),
+  useModules: () =>
+    modulesFailed
+      ? { loaded: true, failed: true, modules: [] }
+      : { loaded: true, failed: false, modules: [{ id: "hidden-map", lifecycle: "members" }] },
 }));
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u-ash", name: "Ash Example" }, loading: false }) }));
+let signedIn: any = { id: "u-ash", name: "Ash Example" };
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: signedIn, loading: false }) }));
 
 let me: any;
 let pins: any[];
+let noSignal = false;
 vi.mock("@/lib/hiddenMapApi", async (orig) => ({
   ...(await orig<typeof import("@/lib/hiddenMapApi")>()),
-  getMe: async () => me,
-  getPins: async () => ({ pins, open: me.open }),
+  getMe: async () => { if (noSignal) throw new TypeError("Failed to fetch"); return me; },
+  getPins: async () => { if (noSignal) throw new TypeError("Failed to fetch"); return { pins, open: me.open }; },
   getQueue: async () => ({ pins: [], mayVouch: false }),
   photoUrl: async () => "blob:x",
 }));
 
+import { TOKEN_KEY } from "@/lib/gameApi";
 import HiddenMap from "./HiddenMap";
 
 beforeAll(() => {
@@ -73,6 +80,9 @@ const pin = (id: string, vouches: number, mine = true) => ({
 
 beforeEach(() => {
   window.localStorage.clear();
+  noSignal = false;
+  modulesFailed = false;
+  signedIn = { id: "u-ash", name: "Ash Example" };
 });
 afterEach(cleanup);
 
@@ -146,5 +156,78 @@ describe("the map opens (screen 10)", () => {
     render(<HiddenMap />);
     await screen.findByRole("tablist");
     expect(screen.queryByText("The map is yours!")).toBeNull();
+  });
+});
+
+describe("opening with no signal (P6-2)", () => {
+  it("opens to logging a place from the words snapshot, with no pin and the map's other views gone", async () => {
+    me = { ...base, open: false };
+    pins = [pin("p1", 1)];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    noSignal = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "Map" })).toBeNull();
+    expect(screen.queryByText("Bed p1")).toBeNull();
+  });
+
+  it("opens from the snapshot even when the module list cannot be read (P6-2)", async () => {
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    noSignal = true;
+    modulesFailed = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+  });
+
+  it("opens offline when the profile cannot be read either, from the snapshot this same session wrote (P6-2 final)", async () => {
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-ash-0123456789abcdef");
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    // No signal: the profile is unreachable, so the member is not known from it.
+    noSignal = true;
+    modulesFailed = true;
+    signedIn = null;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+  });
+
+  it("never opens another session's snapshot offline", async () => {
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-ash-0123456789abcdef");
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    window.localStorage.setItem(TOKEN_KEY, "session-token-for-somebody-else-fedcba98");
+    noSignal = true;
+    modulesFailed = true;
+    signedIn = null;
+    render(<HiddenMap />);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText("No signal here")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Log a place" })).toBeNull();
+  });
+
+  it("says the map could not be read when there is no snapshot", async () => {
+    me = { ...base, open: false };
+    noSignal = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText(/this phone has not opened the map before/)).toBeTruthy();
   });
 });
