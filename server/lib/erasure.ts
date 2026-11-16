@@ -2427,6 +2427,9 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "notebook-after-tombstone",
   "ombuds-asks-after-tombstone",
   "product-subscriptions-after-tombstone",
+  // Season places, gathering circle answers and season crew (0390 to 0392): every
+  // row is found by the member's id, and a second run clears or deletes nothing new.
+  "season-places-after-tombstone",
 ]);
 
 /** Steps after the tombstone a finished erasure is never given, and why. */

@@ -125,6 +125,7 @@ const GIVEN_TO_IT = [
   "notebook-after-tombstone",
   "ombuds-asks-after-tombstone",
   "companions-after-tombstone",
+  "season-places-after-tombstone",
   "product-subscriptions-after-tombstone",
 ];
 
