@@ -40,6 +40,12 @@ describe("CaptureForm", () => {
     await waitFor(() => expect(save.disabled).toBe(false));
   });
 
+  it("says a planting counts toward the map once vouched, and never what it earns", () => {
+    render(<CaptureForm me={{ ...me, plantingPays: true }} onSend={async () => ({ kept: true, said: "" })} />);
+    expect(screen.getByText("Counts toward opening your map once a member vouches for it.")).toBeTruthy();
+    expect(screen.queryByText(/reward/i)).toBeNull();
+  });
+
   it("tells the member a keeper sees the exact place while vouching", () => {
     render(<CaptureForm me={me} onSend={async () => ({ kept: true, said: "" })} />);
     expect(screen.getByText(/whoever keeps the map while they vouch for it/)).toBeTruthy();
