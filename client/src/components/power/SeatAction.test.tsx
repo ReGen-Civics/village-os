@@ -209,7 +209,7 @@ describe("a member who reads terms", () => {
     render(<SeatTradingCard input={fromMapSeat(OPEN, DATA, { signedIn: true })} ctx={CTX} action={<SeatAction circleId="land" applyHref={href} />} />);
     const door = screen.getByRole("link", { name: "Apply for this role: Water Keeper" });
     expect(door.getAttribute("href")).toBe("/propose?type=role_application&seat=seat-water&from=%2Froles%3Fseat%3Dseat-water");
-    expect(screen.getByText("Opens your proposal for this role and its terms. A role holder or the village adopts it.")).toBeTruthy();
+    expect(screen.getByText("Opens your proposal for this role and its terms. A role holder or the village decides.")).toBeTruthy();
     fireEvent.click(door);
     expect(posted).toHaveLength(0);
   });
