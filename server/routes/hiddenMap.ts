@@ -195,6 +195,9 @@ export function register(app: Express, deps: Deps): void {
       // The one thing a closed map learns about everybody else's pins: how many there are.
       allPins: await repo.countAllPins(getPool(), vid()),
       vouchesPerPin: dials().vouchesPerPin,
+      // The member's own admission, so their meter counts what the server counts (QA P3-w-1).
+      admitted: m.who.viewer.admitted !== false,
+      countsFrom: m.who.countsFrom ? m.who.countsFrom.toISOString() : null,
       // Counts and a time, never a place: the opening moment and the closed map's one number.
       planters: await repo.countPlanters(getPool(), vid()),
       ...(await repo.openingOf(getPool(), vid(), String(m.user.id))),
