@@ -547,6 +547,53 @@ if (routes.length < ROUTE_FLOOR) {
   process.exit(1);
 }
 
+/*
+ * THE AUTH DOORS MUST KEEP A LIMIT, GUARDED OR NOT (audit R109).
+ *
+ * The rule above only asks about routes nothing can answer 401 for, and every
+ * door below answers 401: that is what a wrong password IS. So the routes a
+ * guesser actually aims at were invisible to this gate, and deleting the
+ * throttle from sign-in would have passed it. These are named, because they
+ * are a fixed set with a fixed job; each must exist and must be bounded by
+ * the same rule as any other route (an overLimit call, or anything that can
+ * answer 429, in its own body or one hop down). A waiver does not excuse one.
+ *
+ * A door that is renamed or moved fails here as MISSING, so the list follows
+ * the move in the same commit and never silently stops checking it.
+ * ROUTE_LIMITS_REQUIRED (comma-separated "VERB /path") replaces the list for
+ * the self-test's fixture trees, and a fixture tree (ROUTE_LIMITS_ROOT) has
+ * none unless the test sets one, the same as the route floor above.
+ */
+const REQUIRED_BOUNDED = process.env.ROUTE_LIMITS_REQUIRED !== undefined
+  ? process.env.ROUTE_LIMITS_REQUIRED.split(",").map((s) => s.trim()).filter(Boolean)
+  : process.env.ROUTE_LIMITS_ROOT
+    ? []
+    : [
+      "POST /api/auth/login",
+      "POST /api/auth/register",
+      "POST /api/auth/forgot-password",
+      "POST /api/auth/set-password",
+      "POST /api/admin/bootstrap",
+      "GET /api/admin/export/database",
+      "GET /api/auth/google/start",
+      "GET /api/auth/google/callback",
+      "POST /api/auth/google/exchange",
+    ];
+const requiredProblems = [];
+for (const want of REQUIRED_BOUNDED) {
+  const [verb, url] = want.split(/\s+/);
+  const found = routes.filter((r) => r.verb === verb.toLowerCase() && r.url === url);
+  if (!found.length) requiredProblems.push(`    ${want}  is MISSING: no registration of it was read. If it moved or was renamed, update REQUIRED_BOUNDED.`);
+  for (const r of found) {
+    if (!r.bounded) requiredProblems.push(`    ${want}  (${r.file}:${r.line}) has NO LIMIT. An auth door must call overLimit or answer 429 before it does the work.`);
+  }
+}
+if (requiredProblems.length) {
+  console.error(`::error::${requiredProblems.length} auth door(s) lost their rate limit, or could not be found.`);
+  for (const line of requiredProblems) console.error(line);
+  process.exit(1);
+}
+
 const public_ = routes.filter((r) => !r.guarded && !r.staticServe);
 const failing = public_.filter((r) => r.costly && !r.bounded && !r.waiver);
 const waived = public_.filter((r) => r.costly && !r.bounded && r.waiver);
@@ -590,5 +637,5 @@ console.log(
     `and ${bounders.size} bounding function(s) found in the tree; ` +
     `${public_.length} answer anybody, ${public_.filter((r) => r.costly).length} of ` +
     `those spend something a stranger chooses and every one is bounded or waived; ` +
-    `${waived.length} waiver(s) in force.`,
+    `${waived.length} waiver(s) in force; ${REQUIRED_BOUNDED.length} named auth door(s) each keep a limit.`,
 );
