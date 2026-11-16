@@ -16,6 +16,11 @@ msgctxt "admin protocols editor"
 msgid "Archive"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Visited"
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "The model's answer could not be read, so nothing was drafted. The words-only draft still works."
 msgstr ""
@@ -123,6 +128,10 @@ msgctxt "character card, link to every role"
 msgid "see every role"
 msgstr "ver todos los roles"
 
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgid "This photo carries no location. Paste the place or tap the map instead."
+msgstr ""
+
 #: client/src/components/QuestCard.tsx
 #: client/src/pages/QuestDetail.tsx
 msgctxt "open work card: people carrying this quest now"
@@ -159,6 +168,12 @@ msgctxt "role pay"
 msgid "Kind of work"
 msgstr ""
 
+#. placeholder {0}: data.family
+#. placeholder {1}: roleWords[uploadRole]
+#: client/src/components/TypographyPanel.tsx
+msgid "\"{0}\" uploaded and set as the {1} face"
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Detail (optional)"
@@ -167,6 +182,11 @@ msgstr ""
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "A JSON file of protocols (format village-protocols/1). A step's \"who\" names a role on the org chart, or \"anyone\". Importing a protocol that already exists saves a new version of it."
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Planted on"
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -182,11 +202,19 @@ msgctxt "signing key"
 msgid "You asked for a new key at {askedAt}. It waits for another admin to co-sign it, until {lapsesAt}."
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Location read from the photo, then removed from it, with every other hidden detail."
+msgstr ""
+
 #: client/src/App.tsx
 #: client/src/pages/NotFound.tsx
 msgctxt "loading: a page is on its way"
 msgid "Gathering your page"
 msgstr "Reuniendo tu página"
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. hands in soil, seed in a palm, a lantern, rigs circled at a gathering"
+msgstr ""
 
 #: client/src/components/roots/RootsFilterToggle.tsx
 msgctxt "roots filter count"
@@ -302,6 +330,15 @@ msgctxt "open work: the lead card for a visitor"
 msgid "A good place to start"
 msgstr "Un buen lugar para empezar"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Add a photo"
+msgstr ""
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. warm, textured, hand-painted illustration, never photorealistic"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Add a safety contact"
 msgstr ""
@@ -343,6 +380,11 @@ msgstr ""
 #: client/src/pages/Roles.tsx
 #~ msgid "A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person plays it for a season."
 #~ msgstr "Un rol es una responsabilidad con nombre dentro de un círculo, con un propósito, un ámbito y compromisos. El rol pertenece al círculo, y una persona lo desempeña durante una temporada."
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "A return visit"
+msgstr ""
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, copy the crew invite link"
@@ -435,6 +477,10 @@ msgctxt "role editor: the commitment range"
 msgid "Least one person may propose"
 msgstr "Lo mínimo que una persona puede proponer"
 
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Everything a member reads about this map comes from here. Saved now, it shows the moment the module is on."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request step"
 msgid "In review"
@@ -470,6 +516,11 @@ msgstr ""
 msgid "No address on this application"
 msgstr ""
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Labels"
+msgstr ""
+
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
 msgid "Reason"
@@ -500,6 +551,10 @@ msgstr "Compromiso que pide, en porcentaje"
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "The restorative steps, one per line"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "Waiting for a second person"
 msgstr ""
 
 #: client/src/components/roleCard/FoundingTeam.tsx
@@ -536,6 +591,10 @@ msgstr ""
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
 msgid "Sending"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "Saved. It is on your map."
 msgstr ""
 
 #: client/src/components/review/SeraActs.tsx
@@ -579,6 +638,11 @@ msgctxt "open proposal: an agent's proposal"
 msgid "Who keeps it"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Saving"
+msgstr ""
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Paste"
@@ -616,6 +680,10 @@ msgstr ""
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Move up"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "You keep this map, so you can vouch for members' places now."
 msgstr ""
 
 #: client/src/components/roleEdit/BringInCard.tsx
@@ -669,13 +737,28 @@ msgstr ""
 msgid "Your pledge is withdrawn."
 msgstr ""
 
+#. placeholder {0}: value.covers.length
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "{0, plural, one {# area covered.} other {# areas covered.}}"
+msgstr ""
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "How what is left is shared"
+msgstr ""
+
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgctxt "hidden map, the moment the map opens"
+msgid "Members who logged"
 msgstr ""
 
 #: client/src/components/admin/QuestsTab.tsx
 msgctxt "quest editor"
 msgid "Posted, priced by the village's rule"
+msgstr ""
+
+#: client/src/components/hiddenMap/SevenMeter.tsx
+msgctxt "hidden map, progress toward opening the map"
+msgid "{vouched} of {needed} vouched"
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -886,6 +969,11 @@ msgstr ""
 msgid "This address is on the suppression list, so nothing can be sent. Discard the letter, or reach the applicant another way."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Download"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Interviewer role"
@@ -1050,6 +1138,10 @@ msgctxt "founding application intro"
 msgid "Who you are, and why this role, now. A few honest lines is enough: the people who decide read every word."
 msgstr "Quién eres, y por qué este rol, ahora. Bastan unas líneas sinceras: las personas que deciden leen cada palabra."
 
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgid "This phone could not prepare that photo safely, so it was not added. Try a different photo."
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft, only the founding roles are open"
 msgid "No other role is open right now. The founding roles are open:"
@@ -1063,6 +1155,10 @@ msgstr "(lista cuando {doneWhen})"
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We are waiting for your answer."
 msgstr "Estamos esperando tu respuesta."
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "How exactly anyone beyond the open members is ever shown it"
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/openProposal/ContractPrice.tsx
@@ -1231,6 +1327,11 @@ msgstr ""
 msgid "Adopted, and yours from the start of next season: {adoptedNames}."
 msgstr "Adoptados, y tuyos desde el inicio de la próxima temporada: {adoptedNames}."
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Planted"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgctxt "the care role that hears a conflict first"
 msgid "The {careShown} role."
@@ -1269,9 +1370,18 @@ msgctxt "funding rounds"
 msgid "What the village chose"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "It belongs here"
+msgstr ""
+
 #: client/src/pages/Reset.tsx
 msgid "Clearing this site from your device..."
 msgstr "Borrando este sitio de tu dispositivo..."
+
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "<0>Vouching</0> for a newer member's places, with the place in view."
+msgstr ""
 
 #: client/src/components/Layout.tsx
 #, fuzzy
@@ -1622,6 +1732,10 @@ msgstr ""
 msgid "Who approves each kind of decision, who is asked first, who is told, and how it is made. These answers come from the rules this village runs on today, so they change when the village changes them."
 msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "How it is doing"
+msgstr ""
+
 #: client/src/components/SaveBar.tsx
 msgid "You have changes waiting to be saved."
 msgstr ""
@@ -1866,6 +1980,11 @@ msgctxt "companion welcome"
 msgid "Same personality as {cname}"
 msgstr "La misma personalidad que {cname}"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "yours"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Counted by one member, one vote. The count by Voice is shown beside it."
 msgstr ""
@@ -1934,6 +2053,11 @@ msgstr "Eso no nos llegó. Inténtalo de nuevo en un momento."
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request step"
 msgid "In the vote"
+msgstr ""
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "The map's name"
 msgstr ""
 
 #. placeholder {0}: priced(ceiling.amount)
@@ -2033,6 +2157,10 @@ msgstr ""
 #: client/src/components/governance/GoalsList.tsx
 msgid "A day in this moon (optional)"
 msgstr "Un día de esta luna (opcional)"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Ways of seeing it that count"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application check"
@@ -2246,6 +2374,11 @@ msgstr ""
 msgid "Start again from this choice's words"
 msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Close"
+msgstr ""
+
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: label beside today's seed"
 msgid "Today"
@@ -2399,6 +2532,11 @@ msgstr "Tu camino"
 #~ msgid "circles"
 #~ msgstr "círculos"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Hidden map"
+msgstr ""
+
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "Withdraw it"
@@ -2524,6 +2662,11 @@ msgstr "Mes"
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgctxt "heading in the Say frame of the conflict block"
 msgid "The restorative steps"
+msgstr ""
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "Save"
 msgstr ""
 
 #: client/src/components/canvas/DecisionMatrix.tsx
@@ -2654,6 +2797,10 @@ msgstr ""
 msgctxt "role draft step"
 msgid "Scout the open roles"
 msgstr "Explora los roles abiertos"
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "How we know it"
+msgstr ""
 
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -2855,6 +3002,11 @@ msgctxt "a suggestion was sent"
 msgid "Suggested."
 msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Sprout"
+msgstr ""
+
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "Write the public line"
 msgstr ""
@@ -3006,6 +3158,11 @@ msgctxt "thanks composer: allowance spent"
 msgid "You've given your whole allowance this cycle. It refills when the lunar cycle turns."
 msgstr "Ya diste toda tu asignación de este ciclo. Se renueva cuando cambia el ciclo lunar."
 
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgctxt "hidden map, adding photos to a place"
+msgid "Leave it out"
+msgstr ""
+
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Price it with the village's rule (optional)"
@@ -3107,6 +3264,15 @@ msgstr "Todavía ninguna misión abierta hace crecer esto. Sugiere una que sient
 #~ msgctxt "open proposal side by side"
 #~ msgid "First task: {quest}"
 #~ msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Tree"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "{plantings} logged by members so far. Where they are opens with your map."
+msgstr ""
 
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
@@ -3305,6 +3471,11 @@ msgctxt "role editor"
 msgid "Bring in a card"
 msgstr ""
 
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgctxt "hidden map, the moment the map opens"
+msgid "Explore the map"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Who hears it first"
 msgstr ""
@@ -3327,6 +3498,11 @@ msgstr ""
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Decline"
+msgstr ""
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgctxt "hidden map, covering faces in a photo"
+msgid "Start again"
 msgstr ""
 
 #. placeholder {0}: money(suggested)
@@ -3387,6 +3563,10 @@ msgstr ""
 msgid "Nobody has backed this yet."
 msgstr ""
 
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "Now open to you"
+msgstr ""
+
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
 msgid "Add lens"
@@ -3409,6 +3589,11 @@ msgstr "Hecho"
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "the Adopt frame of a canvas block"
 msgid "Adopt: suggestions on {name}"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Vouch"
 msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
@@ -3440,6 +3625,11 @@ msgctxt "funding rounds"
 msgid "Save"
 msgstr ""
 
+#. placeholder {0}: i18n._(PRECISION_WORDS[pin.precision])
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Shown beyond open members: {0}"
+msgstr ""
+
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
 msgid "Use a place name, such as Europe/Lisbon."
@@ -3458,6 +3648,10 @@ msgstr ""
 #: client/src/components/review/SeraMember.tsx
 msgctxt "sera answers"
 msgid "Something in it changed since it was taken, so whoever reads the list sees to it first."
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
@@ -3590,6 +3784,11 @@ msgctxt "open proposal: commitment footnote"
 msgid "The contract sets the pay. As a contractor they may propose more or less than the suggested price."
 msgstr "El contrato fija el pago. Como contratista puede proponer más o menos que el precio sugerido."
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Declined."
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal companion"
 #~ msgid "A little about you, so the people who decide can meet you. Links, files and references are all optional."
@@ -3690,6 +3889,16 @@ msgstr "Cómo seguimos el avance"
 msgctxt "send the question to the guide"
 msgid "Ask"
 msgstr "Preguntar"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Declined"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Vouch"
+msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -3969,6 +4178,11 @@ msgstr ""
 msgid "Goal moved to position {0} of {1}."
 msgstr "La meta pasó a la posición {0} de {1}."
 
+#. placeholder {0}: p.vouches
+#: client/src/pages/HiddenMap.tsx
+msgid "{0, plural, one {Vouched} other {Vouched by # members}}"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Who might do it?"
@@ -3976,6 +4190,11 @@ msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Roughly what would it cost, in {unit}?"
+msgstr ""
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgctxt "hidden map, covering faces in a photo"
+msgid "Nothing covered yet."
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
@@ -4029,6 +4248,10 @@ msgctxt "companion welcome, what the companion says"
 msgid "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable."
 msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. Todo es opcional, privado y se puede borrar."
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Choose where this is first."
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "How this serves the village's purpose, in one line"
 msgstr ""
@@ -4064,6 +4287,11 @@ msgctxt "open proposal side by side"
 msgid "I'll move: {text}"
 msgstr "Voy a impulsar: {text}"
 
+#. placeholder {0}: g.members.length
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgid "{0} pins close together. Zoom in to tell them apart."
+msgstr ""
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: after the lantern arrived"
 msgid "Carry another thanks"
@@ -4072,6 +4300,11 @@ msgstr "Llevar otras gracias"
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
+msgstr ""
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice description field"
+msgid "Description for {kind}"
 msgstr ""
 
 #: client/src/pages/Roles.tsx
@@ -4349,6 +4582,11 @@ msgstr "Lo puede ocupar un agente"
 #~ msgid "Next: review my selection"
 #~ msgstr "Siguiente: revisar mi selección"
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Sapling"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -4363,6 +4601,10 @@ msgstr "Mañanas entre semana"
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Voice starts when the village adopts its own pay settings."
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "A vouch comes from a member who knows the place is real. Nobody vouches for their own. Your name is never shown beside a pin."
 msgstr ""
 
 #: client/src/components/modules/BuilderJourney.tsx
@@ -4536,6 +4778,11 @@ msgstr ""
 #~ msgid "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk."
 #~ msgstr "Primero estamos formando el equipo fundador. Puedes postularte a cualquiera de estos desde ya. Puede que tardemos en responder, y te escribiremos en cuanto estemos listos para conversar."
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Copies"
+msgstr ""
+
 #: client/src/components/openWork/FitsYouCard.tsx
 msgctxt "open work: the one act on the lead card"
 msgid "Take this on"
@@ -4661,6 +4908,10 @@ msgctxt "terms commitment"
 msgid "Your commitment"
 msgstr "Tu compromiso"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Use the photo or leave it out first."
+msgstr ""
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "The Game has started, so these rows change by a vote of the whole village at the structural tier. Suggest a row below, and the member who suggested it files it as a proposal the village decides."
 msgstr ""
@@ -4784,6 +5035,11 @@ msgstr "No tienes nada en el calendario esta semana."
 #~ msgid "Your proposal is with the village now. We read every word, and we write to you by email."
 #~ msgstr "Tu propuesta ya está con la aldea. Leemos cada palabra y te escribimos por correo."
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice title field"
+msgid "Title"
+msgstr ""
+
 #. placeholder {0}: item.by
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -4801,6 +5057,11 @@ msgstr ""
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "screen reader name of the conflict agreement editor"
 msgid "The conflict agreement"
+msgstr ""
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: the save button"
+msgid "Save the notice words"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -4881,6 +5142,11 @@ msgctxt "agent paths, who confirms"
 msgid "The agent"
 msgstr ""
 
+#: client/src/components/hiddenMap/Thumb.tsx
+msgctxt "hidden map, a photo thumbnail"
+msgid "Photo not available"
+msgstr ""
+
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook cover, a line for the date"
 msgid "On"
@@ -4899,6 +5165,10 @@ msgstr ""
 msgctxt "founding application, the steps beside"
 msgid "Your progress"
 msgstr "Tu avance"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Question above its kinds"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose for this role"
@@ -4923,6 +5193,10 @@ msgstr ""
 msgctxt "commitment on the roles card: the note and history disclosure"
 msgid "A note, and what you said before"
 msgstr "Una nota, y lo que dijiste antes"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Each claim it opens is completed by the usual consent on the quest board, and the quest's own reward pays it."
+msgstr ""
 
 #: client/src/components/admin/ConflictDoorFields.tsx
 msgid "Promised reply time, in hours"
@@ -4973,6 +5247,11 @@ msgctxt "a season week in the preview: number, date and title"
 msgid "Week {0}, {1}: {2}"
 msgstr ""
 
+#: client/src/components/hiddenMap/SevenMeter.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "waiting for a vouch"
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "A rough idea is enough. Each member may share {allowance} in this round."
 msgstr ""
@@ -4998,6 +5277,11 @@ msgstr ""
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Approval of AI agents touching applicant data"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Approved."
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
@@ -5115,6 +5399,10 @@ msgctxt "org chart breadcrumb"
 msgid "Circle"
 msgstr ""
 
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "Faces, number plates or anything that says who was there?"
+msgstr ""
+
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Hours it takes"
@@ -5181,16 +5469,30 @@ msgctxt "signing key"
 msgid "an unknown time"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Which layer"
+msgstr ""
+
 #: client/src/pages/Aligned.tsx
 msgctxt "aligned page, signed out"
 msgid "Create an account"
 msgstr "Crear una cuenta"
+
+#: client/src/components/VillageSoundToggle.tsx
+msgid "A short sound at a few moments, such as a quest done or a stage reached. Off until you turn it on, on this device."
+msgstr ""
 
 #. placeholder {0}: card.commitmentPct
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
 msgid "Their commitment: {0}%"
 msgstr "Su compromiso: {0} %"
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgctxt "hidden map, covering faces in a photo"
+msgid "Cover"
+msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -5480,6 +5782,10 @@ msgctxt "admin letter samples"
 msgid "{failed} of {0} did not go out. Sent mail has the details."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "Asked. A second member can approve it now."
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
@@ -5579,6 +5885,11 @@ msgctxt "role editor"
 msgid "See Sera's version"
 msgstr ""
 
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgctxt "hidden map, the map view"
+msgid "Map"
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a read"
 msgid "Read"
@@ -5624,6 +5935,11 @@ msgstr ""
 msgctxt "quest goal thread editor: field"
 msgid "Season goal"
 msgstr "Meta de la temporada"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "That did not go through."
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "What happens after you propose"
@@ -5760,6 +6076,12 @@ msgctxt "answer a note in a review"
 msgid "Answer"
 msgstr ""
 
+#. placeholder {0}: i + 1
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Remove photo {0}"
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
 msgid "What this role asks"
@@ -5842,6 +6164,11 @@ msgctxt "pay board"
 msgid "New amount, at most {ceiling}"
 msgstr "Nueva cantidad, como máximo {ceiling}"
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "A note"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "You have none yet. Gather several changes here and the village votes on them together."
 msgstr ""
@@ -5867,6 +6194,10 @@ msgstr "{units} {name}, cambiado desde {shared}"
 #~ msgid "Six steps. Your name and email come from your account, and your answers are saved on this device as you go."
 #~ msgstr "Seis pasos. Tu nombre y tu correo vienen de tu cuenta, y tus respuestas se guardan en este dispositivo mientras avanzas."
 
+#: client/src/pages/HiddenMap.tsx
+msgid "The map could not be read."
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal side by side"
 #~ msgid "First moon: {quest}"
@@ -5884,6 +6215,11 @@ msgstr ""
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "Proposed through the connector"
+msgstr ""
+
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgctxt "hidden map, adding photos to a place"
+msgid "Add a photo"
 msgstr ""
 
 #: client/src/pages/Events.tsx
@@ -6007,9 +6343,19 @@ msgstr ""
 msgid "No document attached yet."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Downloaded"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
 msgid "Practise again"
+msgstr ""
+
+#. placeholder {0}: pin.vouches
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "{0, plural, one {# vouch} other {# vouches}}"
 msgstr ""
 
 #: client/src/components/openWork/statusWords.ts
@@ -6058,6 +6404,11 @@ msgstr "Cómo se elige"
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Sera has sent no figures for this role to go on."
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Seed"
 msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
@@ -6126,6 +6477,11 @@ msgstr "Con {0}. Hecho cuando: {1}"
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgid "That link has run out or was already used. Send your proposal again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 #~ msgstr "Ese enlace venció o ya se usó. Envía tu propuesta otra vez y abre el nuevo enlace dentro de {OPEN_CONFIRM_HOURS} horas."
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: the search box"
+msgid "Find a notice"
+msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -6289,6 +6645,11 @@ msgctxt "role editor"
 msgid "Interviewers, in order"
 msgstr ""
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice title field"
+msgid "Title for {kind}"
+msgstr ""
+
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
 msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
@@ -6387,6 +6748,10 @@ msgctxt "label before a decision's note"
 msgid "The note:"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "Waiting for a vouch"
+msgstr ""
+
 #. placeholder {0}: i + 1
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
@@ -6460,6 +6825,11 @@ msgstr ""
 #~ msgid "No references, so a background check instead"
 #~ msgstr "Sin referencias, así que en su lugar una verificación de antecedentes"
 
+#. placeholder {0}: i + 1
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Photo {0}, ready to go up"
+msgstr ""
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "The village has not written any rows of its own yet."
 msgstr ""
@@ -6486,6 +6856,10 @@ msgstr ""
 msgctxt "commitment field: one earlier word"
 msgid "{was}% from {from}, {span}"
 msgstr "{was}% desde {from}, {span}"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Saved. Members see it on their next look at the map."
+msgstr ""
 
 #: client/src/pages/StructureReview.tsx
 msgctxt "a live role takes the name an outside service sent"
@@ -6699,6 +7073,11 @@ msgctxt "root picker coverage summary"
 msgid "Not sure? Tag it from the kind of work"
 msgstr "¿No sabes? Etiquétalo según el tipo de trabajo"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "How exactly"
+msgstr ""
+
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgid "Choose which characters a type or a profile line points a newcomer toward. They see these as suggestions they can add or ignore. Their own chart stays in their browser and is never sent. Leave everything unticked and the board suggests nothing."
 msgstr ""
@@ -6787,9 +7166,19 @@ msgstr ""
 msgid "Saved as a draft. Nobody has adopted it yet."
 msgstr ""
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice description field"
+msgid "Description"
+msgstr ""
+
 #: client/src/pages/RoleProposal.tsx
 msgctxt "member door choice"
 msgid "Propose for this moon"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Nothing is waiting."
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -6825,6 +7214,11 @@ msgstr "Tu agradecimiento"
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Conflicts {nConflicts}"
+msgstr ""
+
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgctxt "hidden map, adding photos to a place"
+msgid "Use this photo"
 msgstr ""
 
 #: client/src/pages/FundingRounds.tsx
@@ -6874,6 +7268,11 @@ msgstr ""
 #~ msgctxt "open proposal confirm"
 #~ msgid "Propose again"
 #~ msgstr "Proponer otra vez"
+
+#. placeholder {0}: me.openedBefore
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "{0, plural, one {# member opened the map before you.} other {# members opened the map before you.}}"
+msgstr ""
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -6934,9 +7333,19 @@ msgctxt "heading of the adopted agreements list"
 msgid "The village's agreements"
 msgstr ""
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin: the notice words editor heading"
+msgid "Notices"
+msgstr ""
+
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
 msgid "Published"
+msgstr ""
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: while it saves"
+msgid "Saving…"
 msgstr ""
 
 #: client/src/components/sessions/GatheringSeed.tsx
@@ -7180,6 +7589,10 @@ msgctxt "role access action"
 msgid "Done"
 msgstr ""
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "Your words are saved. Pages show them from the next page a member opens."
+msgstr ""
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Those could not be discarded. Reload and try again."
@@ -7303,6 +7716,10 @@ msgstr "Abrir el calendario"
 #~ msgid "Open menu"
 #~ msgstr "Abrir menú"
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "Your words did not save."
+msgstr ""
+
 #. placeholder {0}: next.ownerName
 #: client/src/components/today/FirstFourteenDays.tsx
 msgctxt "first fourteen days strip, who the next step is with and when"
@@ -7322,6 +7739,15 @@ msgstr "En formación"
 msgctxt "first fourteen days strip, the days as a group"
 msgid "The fourteen days"
 msgstr "Los catorce días"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "A photo of this place"
+msgstr ""
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "The photo you are about to add"
+msgstr ""
 
 #: client/src/components/form/GrowingField.tsx
 msgctxt "character count under a box"
@@ -7364,6 +7790,11 @@ msgstr ""
 msgctxt "role editor: the commitment range"
 msgid "What the role needs in all"
 msgstr "Lo que el rol necesita en total"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "yours"
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -7433,6 +7864,12 @@ msgstr ""
 #: client/src/pages/Reset.tsx
 msgid "A fresh start for this device"
 msgstr "Un nuevo comienzo para este dispositivo"
+
+#. placeholder {0}: me.needed
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgctxt "hidden map, the moment the map opens"
+msgid "{0} {plantings}, vouched"
+msgstr ""
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "The canvas moon is on the village calendar."
@@ -7504,6 +7941,11 @@ msgstr ""
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Started by {starter}, {started}"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: make a moment silent again"
+msgid "Silence"
 msgstr ""
 
 #: client/src/components/review/SeraDifferences.tsx
@@ -7715,10 +8157,19 @@ msgctxt "companion welcome"
 msgid "Start the tour"
 msgstr "Empezar el recorrido"
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the weight range an uploaded font covers"
+msgid "weights, e.g. 400 or 100 900"
+msgstr ""
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "People and roles"
 msgstr "Personas y roles"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "Saved. New notices carry these words."
+msgstr ""
 
 #: client/src/components/roleEdit/CharacterTags.tsx
 #~ msgctxt "role editor characters"
@@ -7768,6 +8219,11 @@ msgstr "Abrir la ficha de este círculo"
 #~ msgid "Your role"
 #~ msgstr "Tu rol"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "About 1 km"
+msgstr ""
+
 #: client/src/components/ConfigUnavailable.tsx
 msgctxt "config card: ask the server again"
 msgid "Try again"
@@ -7782,6 +8238,11 @@ msgstr ""
 msgctxt "companion welcome"
 msgid ". I speak through <0>{engineName}</0>, the guide you chose (change it on your guide card)."
 msgstr ". Hablo a través de <0>{engineName}</0>, la guía que elegiste (cámbiala en tu ficha de guía)."
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "The map"
+msgstr ""
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -7926,6 +8387,11 @@ msgctxt "founding team view: a list of roles"
 msgid "Team sheet"
 msgstr "Hoja del equipo"
 
+#. placeholder {0}: ROLE_LABELS[role].title
+#: client/src/components/TypographyPanel.tsx
+msgid "{0}: the font stack, typed"
+msgstr ""
+
 #: client/src/components/admin/AgeBandCorrection.tsx
 #: client/src/components/QuestSafety.tsx
 msgctxt "age band option"
@@ -7964,6 +8430,11 @@ msgstr "Usar"
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Live now"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: add a moment's sound"
+msgid "Add a sound"
 msgstr ""
 
 #: client/src/components/map/TodayOnTheMap.tsx
@@ -8008,6 +8479,10 @@ msgctxt "heading in the Say frame of the conflict block"
 msgid "The conflict agreement"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "A copy of the map"
+msgstr ""
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "the Learn frame of a canvas block"
 msgid "Learn about {name}"
@@ -8028,6 +8503,11 @@ msgstr "Hasta {PROPOSAL_LINKS_MAX} enlaces, cada uno empezando con https://. Nun
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Approval of AI agents"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "still to log"
 msgstr ""
 
 #: client/src/components/admin/AgreementDocumentUpload.tsx
@@ -8121,6 +8601,10 @@ msgstr ""
 msgctxt "companion welcome"
 msgid "Voice:"
 msgstr "Voz:"
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "What went in is native to this place."
+msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -8264,6 +8748,10 @@ msgstr "Una parte a la vez"
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Pages content"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "The photos leave no doubt"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
@@ -8452,6 +8940,11 @@ msgstr ""
 msgctxt "admin open proposals"
 msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
 msgstr "Solo quienes deciden esta solicitud y quienes administran la aldea la escuchan. Se borra con la solicitud y, a más tardar, 90 días después de la decisión."
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: save the nouns"
+msgid "Save your words"
+msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -8664,6 +9157,11 @@ msgstr ""
 msgctxt "role draft steps"
 msgid "After you apply"
 msgstr "Después de postular"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "What went in:"
+msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, sends the question"
@@ -8919,6 +9417,10 @@ msgstr "Traducción automática"
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "{hoursLeft} quests still need yours"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "Nothing here yet. Log your first place and it appears on your map."
 msgstr ""
 
 #: client/src/components/journal/GuideTasks.tsx
@@ -9544,6 +10046,12 @@ msgstr ""
 msgid "Currency code, such as CRC"
 msgstr ""
 
+#. placeholder {0}: NOUN_SLOTS[slot].many
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: a noun's plural field"
+msgid "More than one: {0}"
+msgstr ""
+
 #: client/src/pages/StructureReview.tsx
 msgid "Another role with this name already updates {liveName}"
 msgstr ""
@@ -9556,6 +10064,10 @@ msgstr "Mostrar solo lo que coincide con mis raíces"
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "toast after a hand mint was refused"
 msgid "Mint failed"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgid "From before your admission, so it does not count toward opening the map"
 msgstr ""
 
 #: client/src/components/TreasurySync.tsx
@@ -9640,6 +10152,10 @@ msgctxt "admin protocols editor"
 msgid "Edit"
 msgstr ""
 
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "<0>Return visits.</0> Find a place others logged and photograph how it is growing."
+msgstr ""
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season"
 msgid "This season"
@@ -9649,6 +10165,11 @@ msgstr "Esta temporada"
 msgctxt "companion welcome"
 msgid "Pick up your welcome"
 msgstr "Retoma tu bienvenida"
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: while a sound uploads"
+msgid "Uploading…"
+msgstr ""
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
@@ -9831,6 +10352,11 @@ msgstr ""
 #~ msgid "Partial pay while you build to your full commitment. We agree the steps together."
 #~ msgstr "Pago parcial mientras llegas a tu compromiso completo. Acordamos los pasos juntos."
 
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgctxt "hidden map, the map view"
+msgid "Zoom out"
+msgstr ""
+
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes, the memory record"
 msgid "Held"
@@ -9931,6 +10457,11 @@ msgstr ""
 msgid "Your idea is withdrawn."
 msgstr ""
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the weight range an uploaded font covers"
+msgid "The weights this file covers"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application split line"
@@ -9946,6 +10477,10 @@ msgctxt "agent proposal"
 msgid "Opening the form"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "What kind of place?"
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgid "No email after a few minutes? Look in spam or promotions, or fix the address and send again. A proposal nobody confirms is deleted on its own."
 #~ msgstr "¿Ningún correo después de unos minutos? Mira en spam o en promociones, o corrige la dirección y envíala de nuevo. Una propuesta que nadie confirma se borra sola."
@@ -9954,6 +10489,10 @@ msgstr ""
 msgctxt "voice field purpose: work with us reciprocity"
 msgid "The exchange you are proposing: amounts, structure, percentages, a blend, or something else."
 msgstr "El intercambio que propones: montos, estructura, porcentajes, una combinación u otra cosa."
+
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgid "Location read from the photo. It is removed from the photo before it goes up."
+msgstr ""
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar day panel heading"
@@ -9993,9 +10532,18 @@ msgctxt "admin quest safety"
 msgid "That did not save. Try again."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "The rest of the map is secret."
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "No paths are open to agents yet."
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+#: client/src/pages/HiddenMap.tsx
+msgid "Hidden by a keeper"
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -10012,6 +10560,10 @@ msgstr "Tu primer mes suele empezar más bajo y sigue lo que entregas."
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgctxt "canvas suggestion form heading"
 msgid "Suggest a change"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgid "That sound did not save."
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -10057,6 +10609,10 @@ msgstr ""
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Save revision {0}"
 msgstr "Guardar la revisión {0}"
+
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgid "Map. Tap to place the pin."
+msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -10106,6 +10662,10 @@ msgstr ""
 msgctxt "open proposal stones"
 msgid "Back"
 msgstr "Atrás"
+
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "The map is yours!"
+msgstr ""
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "The roles you drafted: {roleList}."
@@ -10193,6 +10753,10 @@ msgctxt "the label beside the paper size choices"
 msgid "Paper"
 msgstr ""
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "What your village calls each of these. Blank keeps the platform's word, and a blank plural is worked out from the word. Page words can use them as {circle}, {circles} and so on."
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "They have not agreed to the Love Letter and the NDA."
 #~ msgstr ""
@@ -10273,6 +10837,11 @@ msgctxt "characters page"
 msgid "Your roots did not load, so nothing here is the whole story."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Expired"
+msgstr ""
+
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, the day that is today"
 msgid "today"
@@ -10297,6 +10866,10 @@ msgstr "Cerrar"
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "Helps you find things and proposes changes for you to approve."
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Add a photo of it now"
 msgstr ""
 
 #: client/src/pages/StructureReview.tsx
@@ -10337,6 +10910,11 @@ msgstr ""
 msgctxt "proposal goals list"
 msgid "None in particular"
 msgstr "Ninguna en particular"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Withdraw my vouch"
+msgstr ""
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application choose, founding roles heading"
@@ -10640,6 +11218,11 @@ msgctxt "role draft character count"
 msgid "1 open role fits"
 msgstr "1 rol abierto encaja"
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Not now"
+msgstr ""
+
 #: client/src/pages/Decision.tsx
 msgctxt "decision: a consent reached"
 msgid "The village consented. Nobody named a reason to stop it."
@@ -10668,6 +11251,11 @@ msgstr "Lo que sigue"
 msgctxt "founding application compensation"
 msgid "Equity"
 msgstr "Participación"
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Approve"
+msgstr ""
 
 #: client/src/components/review/SeraRows.tsx
 msgid "Its {n} roles come with it, and leaving the circle out leaves them out too."
@@ -10717,6 +11305,11 @@ msgstr ""
 
 #: client/src/components/journey/TestRun.tsx
 msgid "Background work over this span"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Opening the map"
 msgstr ""
 
 #: client/src/pages/Forum.tsx
@@ -10784,6 +11377,11 @@ msgstr "Grabación {0}"
 
 #: client/src/components/governance/DecisionOutcome.tsx
 msgid "This asks again after <0>a vote too few of us answered</0>."
+msgstr ""
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Accent"
 msgstr ""
 
 #. placeholder {0}: money(ownMinor)
@@ -10855,6 +11453,11 @@ msgstr ""
 msgid "a draft of your story line"
 msgstr "un borrador de tu línea de historia"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Withdraw"
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "while you wait"
 #~ msgid "Paths lit while you wait"
@@ -10883,6 +11486,11 @@ msgctxt "quest safety, ask for the age band"
 msgid "Say your age band once. The village keeps the band, never your birth date."
 msgstr "Indica tu rango de edad una sola vez. La aldea guarda el rango, nunca tu fecha de nacimiento."
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Save it"
+msgstr ""
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application keys"
 msgid "to continue"
@@ -10901,6 +11509,11 @@ msgstr "Las metas de esta temporada"
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
 msgid "Done"
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "No signal here"
 msgstr ""
 
 #: client/src/components/admin/AiSetupBanner.tsx
@@ -11014,6 +11627,11 @@ msgstr "hoy"
 msgid "{title}: mark as not done"
 msgstr ""
 
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin: the village sounds panel heading"
+msgid "Sounds"
+msgstr ""
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing means was not saved"
 msgstr ""
@@ -11054,6 +11672,11 @@ msgstr ""
 #: client/src/pages/RoleDraft.tsx
 msgid "No character picked yet."
 msgstr "Todavía no has elegido ningún personaje."
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Approved"
+msgstr ""
 
 #. needs-native-review
 #: client/src/pages/ProposeARole.tsx
@@ -11152,6 +11775,10 @@ msgctxt "next step box heading"
 msgid "Your next step"
 msgstr "Tu siguiente paso"
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "The notice words did not save."
+msgstr ""
+
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: the stock portraits heading"
 msgid "Faces"
@@ -11161,6 +11788,10 @@ msgstr ""
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
 msgstr "Empieza con: {s}"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "The rule a voucher reads"
+msgstr ""
 
 #: client/src/components/roleCard/cardWordsT.ts
 msgctxt "role track"
@@ -11197,6 +11828,10 @@ msgstr "¿Hablo en voz alta?"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "They will align with the confidentiality agreement once approved."
 msgstr "Se alineará con el acuerdo de confidencialidad una vez aprobada la propuesta."
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Quest that pays for a return visit (its id)"
+msgstr ""
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar legend"
@@ -11281,6 +11916,10 @@ msgstr "Estamos dentro de este círculo"
 msgctxt "role draft stat"
 msgid "Recruiting"
 msgstr "Buscando gente"
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Paste coordinates or a maps link"
+msgstr ""
 
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: empty exact colour field"
@@ -11446,6 +12085,10 @@ msgctxt "an outside contact's name"
 msgid "Name"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "Your places start counting once you are admitted to the village."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
 msgid "Time to review"
@@ -11573,6 +12216,11 @@ msgctxt "admin quest roots"
 msgid "Roots it grows from"
 msgstr ""
 
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "admin identity pack: the picture subjects field"
+msgid "What pictures show"
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "The protocols did not load."
@@ -11582,6 +12230,12 @@ msgstr ""
 msgctxt "applicant's application status, terms"
 msgid "Let's talk"
 msgstr "Hablemos"
+
+#. placeholder {0}: v.point.lat
+#. placeholder {1}: v.point.lng
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Placed at {0}, {1}."
+msgstr ""
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Notice period: {noticeDays} days. Nothing about your departure is automatic. Each step is walked with a person."
@@ -11599,6 +12253,13 @@ msgstr ""
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Add an interviewer"
+msgstr ""
+
+#. placeholder {0}: (p as PinView).title || (p as PinView).kind
+#. placeholder {1}: labels[p.layer]
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgctxt "hidden map, the map view"
+msgid "{0}, {1}"
 msgstr ""
 
 #: client/src/components/roleCard/FoundingLineup.tsx
@@ -11647,6 +12308,11 @@ msgctxt "sera answers"
 msgid "Withdrawn. Each change waits in the list again."
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Where"
+msgstr ""
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy did not download"
 msgstr ""
@@ -11658,6 +12324,10 @@ msgstr "Elegiste roles antes de unirte."
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Ideas are being shaped into quests"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "How did you see it?"
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -11683,6 +12353,16 @@ msgstr ""
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint grants record, decline a grant"
 msgid "Turn it down"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Map"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Reading the queue"
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -11854,6 +12534,10 @@ msgctxt "journal guide tasks heading"
 msgid "{guideName} noticed, for your list"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Members whose map has opened always see the exact place, and so does whoever keeps the map while they vouch for it."
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Share an idea"
@@ -11937,6 +12621,10 @@ msgstr ""
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "Choose one, or write your own."
+msgstr ""
+
+#: client/src/components/VillageSoundToggle.tsx
+msgid "Play the village's sounds"
 msgstr ""
 
 #: client/src/pages/StewardJourney.tsx
@@ -12121,6 +12809,11 @@ msgstr "Roles abiertos"
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols practice run"
 msgid "Practice run"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Return visits"
 msgstr ""
 
 #: client/src/components/review/useSeraActs.ts
@@ -12450,6 +13143,10 @@ msgctxt "calendar turnings"
 msgid "Full moon"
 msgstr "Luna llena"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Every hidden detail is removed from the photo before it goes up."
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page, how it works"
 #~ msgid "Circles"
@@ -12548,6 +13245,11 @@ msgstr ""
 #~ msgid "Which of {roleName}'s outcomes will you move? Pick up to {0}, each with a target."
 #~ msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Choose"
+msgstr ""
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Take this season off? The canvas goes back to canvas order, and every reading stays. The season itself is removed: to load it again you will need its file."
 msgstr ""
@@ -12627,6 +13329,11 @@ msgstr ""
 msgid "The guide never changes the canvas. To change an answer, suggest it under Say on the block. <0>Your profile</0> holds anything it drafted for you."
 msgstr "La guía nunca cambia el lienzo. Para cambiar una respuesta, sugiérela en Decir, dentro del bloque. <0>Tu perfil</0> guarda todo lo que haya redactado para ti."
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "More"
+msgstr ""
+
 #: client/src/pages/Home.tsx
 msgctxt "landing, founding team card title"
 msgid "Founding team"
@@ -12660,6 +13367,10 @@ msgstr ""
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "They want to talk about the terms"
 #~ msgstr "Quiere hablar de las condiciones"
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "What a drag does"
+msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "founding application confirm"
@@ -12831,6 +13542,11 @@ msgctxt "founding application why starter"
 msgid "What I have built before:"
 msgstr "Lo que he construido antes:"
 
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgctxt "hidden map, the moment the map opens"
+msgid "Maps opened"
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "For {roleName}, if the village takes your application forward:"
 #~ msgstr ""
@@ -12875,6 +13591,10 @@ msgctxt "role card focus line, from 60%"
 msgid "Fully focused: {village} is your main work"
 msgstr "Plena dedicación: {village} es tu trabajo principal"
 
+#: client/src/components/hiddenMap/OpeningMoment.tsx
+msgid "Here is every place the members have logged."
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work filter: quests that ask most of a person"
 msgid "Heavy, over 60%"
@@ -12905,6 +13625,14 @@ msgstr "Volver al muro"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "No changes yet. Open any setting with a Suggest button, such as those in <0>Game Mechanics</0>, and add it here."
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "A name for it"
+msgstr ""
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "The palette, in words"
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
@@ -13112,6 +13840,15 @@ msgctxt "loading the Decision Matrix"
 msgid "Reading the matrix"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Notes"
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "From the photo, a pasted place, or a tap on the map."
+msgstr ""
+
 #. placeholder {0}: seasonDateLabel(entry.date)
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "a canvas moon in the season's week map, with its date"
@@ -13221,6 +13958,11 @@ msgctxt "sera changes"
 msgid "Check first {nChecks}"
 msgstr ""
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "What went in"
+msgstr ""
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "The goal"
@@ -13282,6 +14024,10 @@ msgstr "Ver los roles abiertos"
 msgctxt "map light setting"
 msgid "Show my light on the map"
 msgstr "Mostrar mi luz en el mapa"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "That pin is not available."
+msgstr ""
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 msgctxt "founding application know us act"
@@ -13372,6 +14118,11 @@ msgctxt "role draft season"
 msgid "This season's goals: {seasonName}"
 msgstr "Las metas de esta temporada: {seasonName}"
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "I was there"
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Say in a sentence why this is declined. The note is public, like the suggestion."
 msgstr ""
@@ -13382,6 +14133,10 @@ msgstr ""
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{asks, plural, one {# ask waiting} other {# asks waiting}}"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgid "A short sound for each moment, OGG (best) or MP3, under 300 KB. Members hear them only after they turn the village's sounds on, and never with reduced motion. A moment with no file stays silent."
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -13395,6 +14150,11 @@ msgstr ""
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row kind, size and date"
 msgid "{0}, {1}, added {2}"
+msgstr ""
+
+#: client/src/components/hiddenMap/SevenMeter.tsx
+msgctxt "hidden map, progress toward opening the map"
+msgid "{vouched} of {needed}"
 msgstr ""
 
 #: client/src/components/profile/ProgressionPowers.tsx
@@ -13563,6 +14323,10 @@ msgstr "Compromiso y pago"
 msgid "This upload did not reach the server. Nothing changed."
 msgstr ""
 
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "Cropped to the dashed box."
+msgstr ""
+
 #: client/src/pages/YourPath.tsx
 #~ msgctxt "your path, the whole path page"
 #~ msgid "These wait behind the step above. Take them in any order once it is done."
@@ -13596,6 +14360,10 @@ msgstr "añadido, con Gene Keys"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
 #~ msgstr "1 de los roles que elegiste ya no está abierto. Elige entre los roles de abajo."
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Vouch: this is real"
+msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/ProposeARole.tsx
@@ -13661,6 +14429,10 @@ msgstr "De su precio propuesto, con un compromiso del {pct}%."
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "What it is for"
+msgstr ""
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Kinds, one a line"
 msgstr ""
 
 #: client/src/components/review/SeraOnReview.tsx
@@ -13851,6 +14623,10 @@ msgctxt "change request checklist"
 msgid "Changes"
 msgstr ""
 
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgid "Cover them before this goes up. Drag a box over each one. Everything else hidden in the photo is removed for you."
+msgstr ""
+
 #: client/src/components/QuestSafety.tsx
 msgctxt "quest safety, age band"
 msgid "That did not save. Try again."
@@ -13956,6 +14732,10 @@ msgctxt "my token pay"
 msgid "Your token pay"
 msgstr "Tu pago en tokens"
 
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgid "Latitude and longitude grid"
+msgstr ""
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy holds every member's data. If the village carries this at its highest bar, the steward you name may download it once, and every member is told when they do."
 msgstr ""
@@ -13963,6 +14743,11 @@ msgstr ""
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "Choose a file"
+msgstr ""
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "Loading"
 msgstr ""
 
 #: client/src/components/review/SeraBulk.tsx
@@ -13998,6 +14783,11 @@ msgstr "Crece de"
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, switch step"
 msgid "Open Game Mechanics and find \"The guide's helper in Admin\" under Platform."
+msgstr ""
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Headings"
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
@@ -14230,6 +15020,11 @@ msgctxt "your path, the seed drawing"
 msgid "Your path: {0} of {1} steps walked"
 msgstr "Tu camino: {0} de {1} pasos recorridos"
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Withdrawn"
+msgstr ""
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{witness} finished Quest to witness"
@@ -14270,6 +15065,11 @@ msgctxt "role editor"
 msgid "Booking link"
 msgstr ""
 
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "None"
+msgstr ""
+
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgid "Worked out in this browser, in this device's time zone. Nothing you type here is sent."
 msgstr "Se calcula en este navegador, en la zona horaria de este dispositivo. Nada de lo que escribas aquí se envía."
@@ -14283,6 +15083,11 @@ msgstr ""
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Pays today"
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Exact"
 msgstr ""
 
 #: client/src/components/admin/ConflictDoorFields.tsx
@@ -14308,6 +15113,10 @@ msgstr "Abiertos ahora"
 msgctxt "voice invite"
 msgid "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong."
 msgstr "El servicio de voz de tu navegador convierte en texto lo que dices mientras hablas: el de Google en Chrome, el de Apple en Safari. Corrige lo que haya entendido mal."
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "A photo from a return visit"
+msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -14443,6 +15252,10 @@ msgctxt "cycle clock: the moon that turns and the day it turns"
 msgid "Allowances refill when the {month} Moon turns, on {date}."
 msgstr "Las asignaciones se renuevan cuando cambia la Luna de {month}, el {date}."
 
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Quest that pays when a planting is vouched (its id)"
+msgstr ""
+
 #: client/src/pages/Training.tsx
 msgctxt "training chooser: the member's own path"
 msgid "Your path"
@@ -14548,6 +15361,11 @@ msgstr ""
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the role a private intake reaches, when it has no name"
 msgid "intake role"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Decline"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -14661,6 +15479,10 @@ msgstr "Ver todo tu camino"
 msgid "The line could not be saved just now."
 msgstr ""
 
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. night-sea teal, deck green, parchment, lantern gold"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -14722,6 +15544,11 @@ msgctxt "protocols page"
 msgid "Complete"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Log a place"
+msgstr ""
+
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card: the one act"
 msgid "Apply for this role"
@@ -14753,6 +15580,11 @@ msgstr ""
 #: client/src/components/protocols/InstallCard.tsx
 msgctxt "protocols install card"
 msgid "Add to your phone"
+msgstr ""
+
+#. placeholder {0}: photos.length
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "{0, plural, one {# photo ready.} other {# photos ready.}}"
 msgstr ""
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
@@ -14972,6 +15804,10 @@ msgstr "Cerrar"
 msgctxt "founding application check"
 msgid "Tick that you will align with the village's confidentiality agreement once you are approved."
 msgstr "Marca que te alinearás con el acuerdo de confidencialidad de la aldea una vez aprobada tu solicitud."
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "It is saved on your phone and sends when you are back in range."
+msgstr ""
 
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: button"
@@ -15327,6 +16163,11 @@ msgctxt "save bar"
 msgid "Saving."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Open"
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "open proposal sent"
 msgid "Not {sentTo}? Fix the address"
@@ -15359,6 +16200,11 @@ msgstr ""
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Track"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: the village-wide volume"
+msgid "Volume"
 msgstr ""
 
 #: client/src/components/admin/AgentPathTree.tsx
@@ -15441,6 +16287,16 @@ msgstr ""
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Any member"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Opening the pin"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Withdrawn."
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -15538,6 +16394,11 @@ msgstr ""
 msgid "It leaves the village's notebook too."
 msgstr ""
 
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "admin identity pack: the art medium field"
+msgid "The medium"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft stat"
 msgid "Commitment"
@@ -15623,6 +16484,10 @@ msgctxt "role pay"
 msgid "Set this role's pay"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "That was not saved. Check your signal and try again."
+msgstr ""
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "Your departure process is open. The stewards will walk each step with you. Nothing happens automatically."
 msgstr ""
@@ -15636,6 +16501,12 @@ msgstr "Ocupado"
 msgctxt "character card, open the role proposal"
 msgid "Propose a new role"
 msgstr "Proponer un rol nuevo"
+
+#. placeholder {0}: NOUN_SLOTS[slot].one
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: a noun field"
+msgid "Your word for {0}"
+msgstr ""
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
@@ -15713,6 +16584,11 @@ msgstr "Referencia {0}: nombre"
 #~ msgctxt "terms setting"
 #~ msgid "Scoreboard"
 #~ msgstr "Marcador"
+
+#: client/src/components/hiddenMap/CoverTool.tsx
+msgctxt "hidden map, covering faces in a photo"
+msgid "Crop"
+msgstr ""
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, link to open roles"
@@ -15893,6 +16769,11 @@ msgctxt "heading over a module's settings"
 msgid "Its settings"
 msgstr ""
 
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgctxt "hidden map, adding photos to a place"
+msgid "Preparing"
+msgstr ""
+
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
 msgid "Save safety"
@@ -15978,6 +16859,11 @@ msgstr ""
 msgid "Open the agreement, where a member who can open votes proposes a change"
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Downloaded."
+msgstr ""
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "founding application wait"
 msgid "While you wait"
@@ -15988,6 +16874,11 @@ msgstr "Mientras esperas"
 msgctxt "my token pay"
 msgid "Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
 msgstr "Nadie más tiene todavía el poder de aprobar esto, así que espera. Las personas custodias pueden nombrar a otra persona tesorera, o la aldea puede elegirla por votación."
+
+#. placeholder {0}: labels[p.layer]
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgid "A pin somewhere near here ({0})"
+msgstr ""
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card: nobody holds this role yet"
@@ -16017,6 +16908,10 @@ msgstr "Ninguna elegida."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Download this season file"
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Region, about 50 km"
 msgstr ""
 
 #: client/src/components/calendar/MoonSpiral.tsx
@@ -16050,6 +16945,10 @@ msgstr ""
 
 #: client/src/pages/Register.tsx
 msgid "The village said yes to your application for {forRoles}. Make your account to take them up."
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "Counts toward opening your map once a member vouches for it."
 msgstr ""
 
 #. placeholder {0}: i + 1
@@ -16093,6 +16992,10 @@ msgstr ""
 #~ msgctxt "join page link"
 #~ msgid "Select your roles"
 #~ msgstr "Elige tus roles"
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "I saw it on a live call"
+msgstr ""
 
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/AboutYou.tsx
@@ -16163,9 +17066,20 @@ msgstr ""
 msgid "Save what closing means"
 msgstr ""
 
+#. placeholder {0}: me.vouchedCount
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "{0} vouched"
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Imported {count} protocols."
+msgstr ""
+
+#: client/src/components/hiddenMap/SevenMeter.tsx
+msgctxt "hidden map, progress toward opening the map"
+msgid "vouched"
 msgstr ""
 
 #: client/src/components/NextStepBox.tsx
@@ -16395,6 +17309,10 @@ msgctxt "founding team view switch"
 msgid "How to show the team"
 msgstr "Cómo mostrar el equipo"
 
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "Every member sees this layer, before their map opens"
+msgstr ""
+
 #. placeholder {0}: catalyst.aName
 #: client/src/components/journey/EconomicsView.tsx
 msgid "Could not load. Are you signed in as {0}?"
@@ -16447,6 +17365,11 @@ msgctxt "talk it out: the guide, unnamed"
 msgid "your guide"
 msgstr "tu guía"
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Didn't make it"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -16476,6 +17399,10 @@ msgstr ""
 #~ msgctxt "role card rewards: the full role's ceiling"
 #~ msgid "Up to {full} for the full role*"
 #~ msgstr "Hasta {full} por el rol completo*"
+
+#: client/src/components/hiddenMap/PhotoPicker.tsx
+msgid "That photo could not be prepared. Try a different one."
+msgstr ""
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -16648,6 +17575,11 @@ msgstr "Para quienes cuidan y administran: las propuestas que te esperan y las h
 #: client/src/components/roleDraft/DiscoverStep.tsx
 msgid "Optional. You can skip it."
 msgstr "Opcional. Puedes saltártelo."
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Body text"
+msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
@@ -16855,9 +17787,18 @@ msgctxt "price ask: more than one role"
 msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
 msgstr ""
 
+#: client/src/pages/HiddenMap.tsx
+msgid "Ask for a copy"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "The village now signs with key {newKid}"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "vouched"
 msgstr ""
 
 #: client/src/pages/ProposedChanges.tsx
@@ -16942,6 +17883,12 @@ msgctxt "pay board"
 msgid "The village has not launched yet. Approved token pay issues to each account at launch."
 msgstr "La aldea aún no se ha lanzado. El pago en tokens aprobado se emite a cada cuenta en el lanzamiento."
 
+#. placeholder {0}: plantings.toLowerCase()
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Your {0}"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #. placeholder {0}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
@@ -16953,6 +17900,11 @@ msgstr "Propuestas de hasta {0}, el {ROLE_PAY_CAP_PCT}% del precio sugerido."
 msgctxt "circle hearth, we meet"
 msgid "Nobody has said yet. The seed fills as we say we will come."
 msgstr "Nadie ha dicho todavía. La semilla se llena a medida que decimos que vendremos."
+
+#: client/src/components/hiddenMap/SevenMeter.tsx
+msgctxt "hidden map, progress toward opening the map"
+msgid "still to log"
+msgstr ""
 
 #. placeholder {0}: c.minutes
 #: client/src/pages/OpenProposal.tsx
@@ -17094,6 +18046,10 @@ msgctxt "role editor"
 msgid "The pay group of the terms"
 msgstr ""
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Visitors and members can find this role"
@@ -17184,6 +18140,10 @@ msgctxt "drafted letters"
 msgid "Decision letter"
 msgstr ""
 
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgid "Add a return visit"
+msgstr ""
+
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
 msgid "Remove"
@@ -17258,9 +18218,24 @@ msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth. No roles sit here yet."
 msgstr "El fogón de {circleName}. Todavía no hay roles aquí."
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: a typed font stack field"
+msgid "or type a stack"
+msgstr ""
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: replace a moment's sound"
+msgid "Replace"
+msgstr ""
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Decline"
+msgstr ""
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "Saving"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
@@ -17511,6 +18486,12 @@ msgstr ""
 msgid "What the document does not answer yet"
 msgstr ""
 
+#. placeholder {0}: countingPlantings.length
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "{0} logged"
+msgstr ""
+
 #: client/src/pages/ApplicationStatus.tsx
 #~ msgctxt "applicant's application status, adoption"
 #~ msgid "The circle said yes. Your seed is whole."
@@ -17538,6 +18519,11 @@ msgstr "Floreció"
 
 #: client/src/components/governance/SeasonGoalField.tsx
 msgid "The village has not set its goals for this season yet. You can still apply: say in your aim what you would bring."
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Add another photo"
 msgstr ""
 
 #: client/src/components/roleEdit/SectionsFields.tsx
@@ -17568,6 +18554,11 @@ msgctxt "characters page section"
 msgid "Your roots"
 msgstr ""
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: the village's own nouns"
+msgid "Your words for things"
+msgstr ""
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
 msgid "Up to three people who know your work. Each needs a name, how you know them, and an email or phone number."
@@ -17576,6 +18567,11 @@ msgstr "Hasta tres personas que conozcan tu trabajo. Cada una necesita un nombre
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "The roles you selected: {roleList}."
 msgstr "Los roles que elegiste: {roleList}."
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: upload role picker"
+msgid "The role this font fills"
+msgstr ""
 
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, terms"
@@ -17665,6 +18661,10 @@ msgstr ""
 msgid "I know, and I want to adopt anyway"
 msgstr "Lo sé, y quiero adoptarla de todos modos"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "That did not read as a place. Try two numbers, latitude first, or a maps link."
+msgstr ""
+
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: the game colour tokens heading"
 msgid "Game colours"
@@ -17673,6 +18673,11 @@ msgstr ""
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks"
 msgid "That task is no longer open on your list."
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Save the visit"
 msgstr ""
 
 #: client/src/pages/Quests.tsx
@@ -17880,6 +18885,11 @@ msgctxt "pay board status"
 msgid "Waiting for approval"
 msgstr "En espera de aprobación"
 
+#. placeholder {0}: me.needed
+#: client/src/pages/HiddenMap.tsx
+msgid "It opens to you once {0} of yours are vouched."
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Ask to share it"
 msgstr ""
@@ -17891,6 +18901,11 @@ msgstr ""
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note kind"
 msgid "Suggested edit"
+msgstr ""
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: while the nouns save"
+msgid "Saving…"
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -17906,6 +18921,11 @@ msgstr "Postular de nuevo"
 msgctxt "founding application know us fork"
 msgid "Completely new here?"
 msgstr "¿Es tu primera vez por aquí?"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "Vouching"
+msgstr ""
 
 #: client/src/pages/StewardJourney.tsx
 #~ msgid "Take a quest or look around the land first. A role will still be here when you are ready."
@@ -18003,6 +19023,10 @@ msgctxt "shape the role"
 msgid "Add to my application"
 msgstr "Añadir a mi solicitud"
 
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgid "The photo, ready to go up"
+msgstr ""
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment on the roles card: before a first word"
 msgid "One percent of yourself, for all your roles together. The open work and the roles you see will fit it. Only you see this."
@@ -18029,6 +19053,11 @@ msgstr ""
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "a canvas block with no reading"
 msgid "No reading yet"
+msgstr ""
+
+#: client/src/components/hiddenMap/PinPanel.tsx
+msgctxt "hidden map, one place's details"
+msgid "Hide this pin"
 msgstr ""
 
 #: client/src/components/review/SeraMember.tsx
@@ -18142,6 +19171,11 @@ msgctxt "admin quest safety"
 msgid "Safety on site: age, badges and note"
 msgstr ""
 
+#: client/src/components/hiddenMap/WorldMap.tsx
+msgctxt "hidden map, the map view"
+msgid "Zoom in"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "pick which change a note is about"
 msgid "Which change?"
@@ -18155,6 +19189,11 @@ msgstr ""
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Estimated hours"
+msgstr ""
+
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Layers"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
@@ -18241,6 +19280,13 @@ msgstr ""
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Recent runs"
+msgstr ""
+
+#. placeholder {0}: ownPlantings + 1
+#. placeholder {1}: me.needed
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "{0} of {1}"
 msgstr ""
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
@@ -18347,6 +19393,12 @@ msgctxt "how pay works"
 msgid "The Treasurer proposes any change with a reason. You see it and can reply, and nothing is paid until the Treasurer confirms."
 msgstr ""
 
+#. placeholder {0}: me.needed
+#: client/src/pages/HiddenMap.tsx
+msgctxt "hidden map page"
+msgid "Your first {0}"
+msgstr ""
+
 #. placeholder {0}: wholeMoney(toMinor(ownFirst, currency)!, currency)
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Your own figure was {0}."
@@ -18357,6 +19409,11 @@ msgstr ""
 msgctxt "reviewer's terms panel for a proposal"
 msgid "They chose {0}%"
 msgstr "Eligió {0}%"
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Connected"
+msgstr ""
 
 #. placeholder {0}: beat + 1
 #. placeholder {1}: WELCOME_BEATS.length
@@ -18389,6 +19446,11 @@ msgctxt "coming up, the answer to a meeting"
 msgid "I'll be there"
 msgstr "Ahí estaré"
 
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgctxt "hidden map settings"
+msgid "Layer name"
+msgstr ""
+
 #: client/src/components/profile/YourMoveCard.tsx
 msgctxt "profile, what waits on you"
 msgid "Your move"
@@ -18416,6 +19478,11 @@ msgstr "Gracias por avisar. Esta vez te vamos a extrañar."
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
 msgid "No longer suggested"
+msgstr ""
+
+#: client/src/components/hiddenMap/CaptureForm.tsx
+msgctxt "hidden map, logging a place"
+msgid "Log a place"
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -18610,6 +19677,10 @@ msgstr ""
 msgctxt "calendar: go to today"
 msgid "Today"
 msgstr "Hoy"
+
+#: client/src/components/admin/HiddenMapConfigPanel.tsx
+msgid "The map's words and quests"
+msgstr ""
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"

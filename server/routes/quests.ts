@@ -61,7 +61,8 @@ import type { AppDeps } from "../lib/appDeps";
 import type { LimitState } from "../repos/rateHits";
 import { stageIndex } from "../../shared/gameConfig";
 import { stageName } from "../lib/villagePaths";
-import { sceneStopsFor } from "../../shared/questScenes";
+import { sceneHexFor } from "../../shared/questScenes";
+import { deriveOf } from "../lib/themeCss";
 import { cycleBoundsFor } from "../../shared/lunar";
 import { cleanCrewName } from "../lib/crews";
 import { recordEvent } from "../lib/events";
@@ -107,6 +108,7 @@ export const OG_HEIGHT = 630;
 
 type Deps = Pick<
   AppDeps,
+  | "brandRepo"
   | "isAdmin"
   | "authedUser"
   | "adminActor"
@@ -146,6 +148,7 @@ type Deps = Pick<
 
 export function register(app: Express, deps: Deps): void {
   const {
+    brandRepo,
     isAdmin,
     authedUser,
     adminActor,
@@ -502,11 +505,13 @@ export function register(app: Express, deps: Deps): void {
     if (file && fs.existsSync(file)) {
       base = await sharp(file).resize(OG_WIDTH, OG_HEIGHT, { fit: "cover" }).toBuffer();
     } else {
-      const [from, to] = sceneStopsFor(quest.circle);
+      // The village's own colours, the way its board card draws the scene (G9).
+      // A harness that builds these routes without a brand reads the fallbacks.
+      const [from, to] = sceneHexFor(quest.circle, deriveOf((brandRepo?.get?.() as any)?.theme)?.vars ?? null);
       base = await sharp(
         svg(
           `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
-            `<stop offset="0" stop-color="${from.hex}"/><stop offset="1" stop-color="${to.hex}"/>` +
+            `<stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/>` +
             `</linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/>`,
         ),
       )

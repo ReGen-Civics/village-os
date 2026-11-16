@@ -177,6 +177,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/roles", label: "Roles", unlessModule: "map" },
       { href: "/places", label: "Places", module: "map" },
       { href: "/photographs", label: "Photographs", module: "map" },
+      // Members only; the module can never stand at public.
+      { href: "/hidden-map", label: "Hidden map", module: "hidden-map" },
       { href: "/stay", label: "Stay", module: "stays" },
       { href: "/housing", brochure: true, label: "Housing" },
       { href: "/library", label: "Library", module: "library" },

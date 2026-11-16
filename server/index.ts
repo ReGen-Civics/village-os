@@ -23,6 +23,8 @@ import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
+import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
+import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
 import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
@@ -314,6 +316,7 @@ import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskB
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
 import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBDIR } from "./routes/stockAvatars";
 import { register as registerStockArtRoutes } from "./routes/stockArt";
+import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
@@ -337,6 +340,7 @@ import {
   setPasswordLinkRefusal,
 } from "./lib/memberTokens";
 import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
+import { fontRoleOf, fontWeightOf, withUploadedFace } from "./lib/brandFonts";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
 import { CONSTITUTION } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
@@ -4100,6 +4104,8 @@ const notifyDeps: NotifyDeps = {
   origin: deploymentOrigin,
   projectName: () => mergedConfig().project.name,
   brandColour: () => brandColour(getBrand().theme),
+  // The village's own notice words (gap G6), with its name and nouns as {words}.
+  noticeWords: () => ({ words: noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), vars: pageVarsFrom({ ...mergedConfig(), vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any) }),
 };
 
 /** Producer shorthand: fire-and-forget by contract (insertNotification never throws). */
@@ -7934,7 +7940,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : null); // menu: gap G5, shared/menuDoc.ts
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : req.params.section === VOCAB_SECTION ? vocabularyProblem(req.body) : req.params.section === NOTICE_SECTION ? noticeWordsProblem(req.body) : null); // menu G5, nouns G4, notices G6
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -17087,6 +17093,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
 
   registerBrandUploadRoutes(app, { isAdmin, uploadsDir: UPLOADS_DIR });
+  registerBrandSoundRoutes(app, { isAdmin, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
 
   // ── Village font package: upload + licence acknowledgment ────────────────
   // The foundation catalogue (shared/fontCatalog.ts) is all-OFL and always
@@ -17150,25 +17157,23 @@ Send an empty drafts array when you are still listening. A role payload is {name
       }
 
       // Activate in one step: uploading a font and then finding nothing
-      // changed is a support ticket. The face lands FIRST in the display
-      // stack (the role a brand font almost always is); Admin can move it to
-      // body/accent by editing the stacks afterwards.
+      // changed is a support ticket. The face lands FIRST in its role's stack
+      // (display unless the form names body, accent or label), one face per
+      // role (server/lib/brandFonts.ts, gap G2).
       const url = `/api/uploads/${filename}`;
       const current = getBrand();
       const admin = await authedUser(req);
+      const role = fontRoleOf(req.body?.role);
       const next = {
         ...current,
         theme: {
-          ...current.theme,
-          fontFaceName: family,
-          fontFaceUrl: url,
-          fontDisplay: `"${family}", ${current.theme.fontDisplay || '"Raleway", system-ui, sans-serif'}`,
+          ...withUploadedFace(current.theme as Record<string, any>, { family, url, role, weight: fontWeightOf(req.body?.weight) }),
           // The record that makes the ack mean something later.
           fontLicenceAck: { family, by: admin?.name ?? "admin", at: new Date().toISOString(), file: filename },
         },
       };
       await brandRepo.put(next);
-      res.json({ success: true, url, family, activated: "display" });
+      res.json({ success: true, url, family, activated: role });
     });
   });
 
@@ -17828,7 +17833,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
-  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR) });
+  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), visitClaims: { stageOf, roleIdsFor, claimsRepo, questsRepo } });
   registerMemberTaskRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone: () => getSeasonConfig().timezone });
   registerMemberTaskBridgeRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, notify, timeZone: () => getSeasonConfig().timezone });
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
@@ -18184,6 +18189,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
       villageSourceUrl: servedVillageSourceUrl(stringVar(VILLAGE_SOURCE_URL_KEY)), // the footer's village source link (AGPL section 13): shared/sourceUrl.ts
       site: siteWords(contentRepo.get() ?? null, m),
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
+      vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
+      noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
@@ -18549,7 +18556,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // point they used to sit. Express matches in registration order, and
   // /api/quests/field only wins over /api/quests/:id because it comes first.
   registerQuestRoutes(app, {
-    isAdmin, authedUser, adminActor, getPool, uploadsDir: UPLOADS_DIR, members,
+    isAdmin, authedUser, adminActor, getPool, uploadsDir: UPLOADS_DIR, members, brandRepo,
     questsRepo, claimsRepo, crewsRepo, firstName, notify, stageOf, loadRoles, seasonState,
     roleIdsFor, currentPatternId, questConsentRecipients, overLimit, clientIp, projectCurrency: () => mergedConfig().project.fiatCurrency,
     // The share-card raster reads the guard's third answer for itself: it is
