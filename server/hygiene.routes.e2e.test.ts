@@ -279,11 +279,11 @@ describe.skipIf(!DB_CONFIGURED)("the seeded quest board", () => {
  */
 describe.skipIf(!DB_CONFIGURED)("a path that looks like a file fails like one", () => {
   const SHELL = "<div id=\"root\">";
-  const IMAGES = path.resolve(process.cwd(), "dist/public/images/modules");
+  const IMAGES = path.resolve(process.cwd(), "server/assets/modules");
 
   it("still serves every real file, static and generated", async () => {
     const art = fs.readdirSync(IMAGES).find((f) => f.endsWith(".webp"));
-    expect(art, "dist/public/images/modules must hold module art; run pnpm build").toBeTruthy();
+    expect(art, "server/assets/modules must hold module art (server/routes/moduleArt.ts)").toBeTruthy();
     await mapOn(); // /grounds/manifest.json is the map's own probe, so it needs the map on
     const real: Array<[string, RegExp]> = [
       [`/images/modules/${art}`, /image\/webp/],
