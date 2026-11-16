@@ -672,7 +672,7 @@ export default function Quests() {
                   href={eventsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-teal-deep-dark transition flex items-center gap-2"
+                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition flex items-center gap-2"
                 >
                   <Calendar className="w-5 h-5" />
                   Join a Community Call

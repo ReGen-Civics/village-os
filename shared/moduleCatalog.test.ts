@@ -148,8 +148,13 @@ describe("moduleCatalog", () => {
      * switched on, and a village that keeps its org chart private turns it
      * off for both at once.
      */
+    /*
+     * The hidden map joined on 2026-11-15 with ten dials. Every default is a
+     * working village: seven vouched pins open the map, the grid needs no
+     * provider, and region precision is the safest showing.
+     */
     expect(claiming).toEqual([
-      "feed", "forum", "governance", "gratitude",
+      "feed", "forum", "governance", "gratitude", "hidden-map",
       "introductions", "journal", "messaging", "places", "progression", "quests", "sessions",
     ]);
   });

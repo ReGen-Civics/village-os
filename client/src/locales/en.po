@@ -627,6 +627,10 @@ msgctxt "sera answers"
 msgid "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 msgstr "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+msgstr "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar moon view legend"
 msgid "What the marks mean"
@@ -1810,6 +1814,10 @@ msgstr "Until the Game starts, the founders write this agreement. You can read e
 msgid "No goals are set for this season yet."
 msgstr "No goals are set for this season yet."
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "The pictures a member picks from when they make their character: two for each class, in three skin tones. Replace any of them with your village's own. They are cropped to 3:4 and every page shows them."
+msgstr "The pictures a member picks from when they make their character: two for each class, in three skin tones. Replace any of them with your village's own. They are cropped to 3:4 and every page shows them."
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
@@ -2283,6 +2291,10 @@ msgstr "Today"
 msgctxt "role editor"
 msgid "Saved. The role is updated."
 msgstr "Saved. The role is updated."
+
+#: client/src/components/LookPanel.tsx
+msgid "FAILING. This should not happen; please report it"
+msgstr "FAILING. This should not happen; please report it"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work: the goal thread, one"
@@ -2941,6 +2953,10 @@ msgctxt "protocols page"
 msgid "Nothing was waiting."
 msgstr "Nothing was waiting."
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not reset."
+msgstr "That face did not reset."
+
 #: client/src/components/SaveBar.tsx
 msgctxt "save bar"
 msgid "Changes discarded."
@@ -3473,6 +3489,11 @@ msgstr "A decision. It goes into a draft before it is live."
 #~ msgctxt "founding application intro"
 #~ msgid "The value you would bring in your first months, item by item, each tagged to the season goal it serves."
 #~ msgstr "The value you would bring in your first months, item by item, each tagged to the season goal it serves."
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: while a set of stock portraits uploads"
+msgid "Loading the set…"
+msgstr "Loading the set…"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "an outside contact's organisation"
@@ -4066,6 +4087,11 @@ msgctxt "open proposal: an agent's keeper with no name"
 msgid "A member"
 msgstr "A member"
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: upload many stock portraits at once"
+msgid "Load a set"
+msgstr "Load a set"
+
 #: client/src/pages/ProposeARole.tsx
 msgid "Why you, and why now"
 msgstr "Why you, and why now"
@@ -4204,6 +4230,11 @@ msgstr "{0}, added {1}."
 msgctxt "cycle clock: the clock has not answered yet"
 msgid "Reading when allowances refill"
 msgstr "Reading when allowances refill"
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: replace one stock portrait"
+msgid "Replace"
+msgstr "Replace"
 
 #: client/src/components/governance/SeatPicksField.tsx
 msgctxt "role application: link from the roles step to the role picker"
@@ -6078,6 +6109,10 @@ msgstr "Propose a change"
 msgctxt "funding rounds"
 msgid "Withdraw it"
 msgstr "Withdraw it"
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "That face did not save."
+msgstr "That face did not save."
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, roles after the founding team"
@@ -8622,6 +8657,11 @@ msgstr "Review after (days)"
 msgid "Reading the village's rows"
 msgstr "Reading the village's rows"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: light or dark page heading"
+msgid "Page look"
+msgstr "Page look"
+
 #: client/src/components/governance/PriceAsk.tsx
 msgctxt "price popup lede"
 msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
@@ -8842,6 +8882,11 @@ msgstr "Explore the goals"
 msgid "Not synced yet. Press Sync to read every source."
 msgstr "Not synced yet. Press Sync to read every source."
 
+#. placeholder {0}: refused.join(", ")
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgid "Loaded {done} faces. Not part of the cast, so left out: {0}."
+msgstr "Loaded {done} faces. Not part of the cast, so left out: {0}."
+
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
 msgctxt "approved writes"
@@ -8995,6 +9040,11 @@ msgstr "Select a role to apply for"
 msgctxt "role discover admin"
 msgid "Human Design types"
 msgstr "Human Design types"
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: section of exact colour overrides"
+msgid "Exact colours"
+msgstr "Exact colours"
 
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -10156,6 +10206,10 @@ msgctxt "protocols page"
 msgid "Yes, set it aside"
 msgstr "Yes, set it aside"
 
+#: client/src/components/LookPanel.tsx
+msgid "Exact colours ({overrideCount} set)"
+msgstr "Exact colours ({overrideCount} set)"
+
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
 msgid "Sera's version and this role say the same."
@@ -10946,6 +11000,11 @@ msgctxt "next step box heading"
 msgid "Your next step"
 msgstr "Your next step"
 
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: the stock portraits heading"
+msgid "Faces"
+msgstr "Faces"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application why starter"
 msgid "Start with: {s}"
@@ -11070,6 +11129,11 @@ msgctxt "role draft stat"
 msgid "Recruiting"
 msgstr "Recruiting"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: empty exact colour field"
+msgid "blank"
+msgstr "blank"
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
 msgid "a person confirms"
@@ -11145,6 +11209,11 @@ msgstr "Approved by {0} on {1}. {2}"
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
 msgstr "{agent} didn't answer at {lastAt}"
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: go back to the platform's stock portrait"
+msgid "Use the platform's"
+msgstr "Use the platform's"
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -12045,6 +12114,11 @@ msgstr "We couldn't send your application. Check your connection and send again:
 #~ msgid "Your aim for the season"
 #~ msgstr "Your aim for the season"
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Light"
+msgstr "Light"
+
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "This deployment cannot open the key, so those pages answer 503. A restore under a different VILLAGE_SECRETS_KEY does this. If the old value is gone for good, make a new key here."
@@ -12601,6 +12675,10 @@ msgctxt "role editor"
 msgid "Kind of pay"
 msgstr "Kind of pay"
 
+#: client/src/components/LookPanel.tsx
+msgid "Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour."
+msgstr "Dark draws every member page on a dark ground, from your seed. Admin stays light. Needs a seed colour."
+
 #. placeholder {0}: new Date(a.decidedAt).toLocaleDateString()
 #: client/src/components/governance/VillageAgreements.tsx
 msgctxt "the day an agreement was adopted"
@@ -12676,6 +12754,10 @@ msgstr "For now the Anchor Circle holds the whole village: the founders and the 
 msgctxt "reviewer's terms panel for a proposal"
 msgid "Commitment"
 msgstr "Commitment"
+
+#: client/src/components/LookPanel.tsx
+msgid "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
+msgstr "Set any colour exactly. A text colour you leave blank is chosen to read on the ground you set. Every pair is measured below, and a colour you set can fail: the report says so."
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -13369,6 +13451,11 @@ msgstr "Members see how many changes wait and who decides them. The changes them
 msgctxt "voice field purpose: profile bio"
 msgid "A few sentences about who you are and what you bring to the village."
 msgstr "A few sentences about who you are and what you bring to the village."
+
+#: client/src/components/admin/ArchetypesPanel.tsx
+msgctxt "admin character classes: after loading a set of stock portraits"
+msgid "Loaded {done} faces."
+msgstr "Loaded {done} faces."
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Who is asked first:"
@@ -15255,6 +15342,11 @@ msgctxt "founding application choose"
 msgid "Choose the role you are applying for. Each application is for one role."
 msgstr "Choose the role you are applying for. Each application is for one role."
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: page scheme choice"
+msgid "Dark"
+msgstr "Dark"
+
 #: client/src/components/review/SeraMember.tsx
 msgid "Small changes applying by themselves: off."
 msgstr "Small changes applying by themselves: off."
@@ -15517,6 +15609,12 @@ msgstr "A draft from this queue is still open."
 #: client/src/components/characters/OpenNowBadge.tsx
 msgid "{n, plural, one {# role open now} other {# roles open now}}"
 msgstr "{n, plural, one {# role open now} other {# roles open now}}"
+
+#. placeholder {0}: SLOT_WORDS[slot]
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: exact colour field label"
+msgid "{0}, exact value"
+msgstr "{0}, exact value"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "The rounds could not be read just now. Try again in a moment."

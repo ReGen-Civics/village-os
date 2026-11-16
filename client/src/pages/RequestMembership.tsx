@@ -116,7 +116,7 @@ export default function RequestMembership() {
               </p>
               <a
                 href="/events"
-                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <CalendarDays className="h-5 w-5" aria-hidden="true" />
                 See calls and events
@@ -213,7 +213,7 @@ export default function RequestMembership() {
                 <button
                   type="submit"
                   disabled={sending}
-                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-teal-deep-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                 >
                   {sending ? "Sending..." : "Send my request"}
                   {!sending && <ArrowRight className="h-5 w-5" aria-hidden="true" />}

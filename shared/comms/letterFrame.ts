@@ -35,7 +35,7 @@
  * Pure and isomorphic.
  */
 import { deriveTheme } from "../brandTokens";
-import type { EmailVillage } from "./letterHtml";
+import type { EmailVillage, LetterScheme } from "./letterHtml";
 import { escapeHtml, safeUrl } from "./mergeFields";
 
 // ── The palette ─────────────────────────────────────────────────────────────
@@ -75,6 +75,8 @@ export interface LetterPalette {
   fontDisplay: string;
   /** The display face's family name when it is a web font, for the one stylesheet link. */
   webFont: string | null;
+  /** True for a village in the dark scheme: the night rules apply whatever the reader's mail app prefers. */
+  alwaysNight?: boolean;
 }
 
 /** System fonts: the only faces nearly every mail client draws. */
@@ -120,10 +122,32 @@ function webFontOf(stack: string): string | null {
 }
 
 /** The village's palette, derived from its seed exactly as the site and the role card derive theirs. */
-export function letterPalette(seed: string | null, character: string | null): LetterPalette {
-  const derived = deriveTheme(seed, character);
+export function letterPalette(seed: string | null, character: string | null, scheme?: LetterScheme | null): LetterPalette {
+  const derived = scheme
+    ? deriveTheme(seed, character, scheme.accent, { mode: scheme.mode, overrides: scheme.overrides })
+    : deriveTheme(seed, character);
   if (!derived) return NEUTRAL_PALETTE;
   const v = derived.vars;
+  // A village in the dark scheme sends its letters in its own dark colours:
+  // the night rules apply always (not only when the reader's mail app is
+  // dark), drawn from the site's page, card, inks and primary. The day stays
+  // the light derivation for the mail apps that drop a <style> block.
+  if (derived.mode === "dark") {
+    return {
+      ...letterPalette(seed, character),
+      night: {
+        page: v["--background"],
+        card: v["--card"],
+        raised: v["--muted"],
+        ink: v["--card-foreground"],
+        muted: v["--muted-foreground"],
+        accent: v["--primary"],
+        accentText: v["--primary-foreground"],
+        line: v["--border"],
+      },
+      alwaysNight: true,
+    };
+  }
   return {
     day: {
       page: v["--background"],
@@ -179,6 +203,7 @@ function nightRules(p: LetterPalette): string {
   ];
   const plain = rules.map(([sel, body]) => `${sel}{${body}}`).join("\n");
   const ogsc = rules.map(([sel, body]) => `[data-ogsc] ${sel}{${body}}`).join("\n");
+  if (p.alwaysNight) return `${plain}\n${ogsc}`;
   return `@media (prefers-color-scheme: dark){\n${plain}\n}\n${ogsc}`;
 }
 
@@ -286,7 +311,7 @@ function openingWords(text: string): string {
 
 /** The whole letter: the village's band, the words, the signature, the extra section, the footer. */
 export function renderLetterFrame(i: LetterFrameInput): LetterFrame {
-  const p = i.palette ?? letterPalette(i.village.seed, i.village.character);
+  const p = i.palette ?? letterPalette(i.village.seed, i.village.character, i.village.scheme);
   const d = p.day;
   const name = escapeHtml(i.village.name);
   const subject = oneLine(i.subject, 200) || i.village.name;

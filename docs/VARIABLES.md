@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 247 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 248 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 276 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 277 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-303 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 7 longtext.
+304 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Each dial also says WHEN a change lands. 276 of them as soon as it is saved, and
 | Gratitude | 11 | 11 | 0 |
 | Ledger | 17 | 9 | 8 |
 | The Mint | 7 | 6 | 1 |
-| Progression | 34 | 34 | 0 |
+| Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
 | Governance | 51 | 45 | 6 |
 | Tokens | 4 | 1 | 3 |
@@ -134,6 +134,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | A role starts only after: confidentiality | `org.start_after_confidentiality` | Progression | boolean | `false` | the whole village |
 | A role starts only after: membership | `org.start_after_membership` | Progression | boolean | `false` | the whole village |
 | A paid role starts only after its terms | `org.start_after_paid_terms` | Progression | boolean | `false` | the whole village |
+| The style for portraits drawn for members | `characters.forge_style` | Progression | longtext | blank | the whole village |
 | Sending-budget multiplier: Visitor | `progression.multiplier.visitor` | Progression | decimal | `0` | the whole village |
 | Sending-budget multiplier: Guest | `progression.multiplier.guest` | Progression | decimal | `1` | the whole village |
 | Sending-budget multiplier: Immersant | `progression.multiplier.immersant` | Progression | decimal | `1` | the whole village |
@@ -1063,7 +1064,7 @@ What it may be set to:
 
 ## Progression
 
-34 dials. 34 for the whole village.
+35 dials. 35 for the whole village.
 
 ### How often every role reopens
 
@@ -1139,6 +1140,20 @@ When on, a role whose terms carry pay, an allowance or a bonus does not start un
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The style for portraits drawn for members
+
+How a portrait drawn for a member should look, in a few sentences: the medium, the light, the palette and anything to leave out. A portrait provider puts these words before its own. Only the first 1500 characters are used. Leave it empty and a provider draws in its own neutral style. Members who upload their own picture are not affected.
+
+| Fact | Value |
+| --- | --- |
+| Key | `characters.forge_style` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

@@ -105,7 +105,7 @@ import { register as registerGoogleAuthRoutes } from "./routes/authGoogle";
 import { register as registerSignUpRoutes } from "./routes/register";
 import { register as registerInviteRoutes } from "./routes/invites";
 import { register as registerJoinAnswerRoutes } from "./routes/joinAnswers";
-import { register as registerRitesRoutes } from "./routes/rites";
+import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } from "./routes/rites";
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
@@ -261,6 +261,8 @@ import { register as registerProtocolsRoutes } from "./routes/protocols";
 import { lensesOf as companionLensesOf } from "./repos/companions";
 import { exportMemberFundingRounds, fundingRoundsOpenState, register as registerFundingRoundsRoutes } from "./routes/fundingRounds";
 import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry";
+import { register as registerHiddenMapRoutes, sweepHiddenMap } from "./routes/hiddenMap";
+import { exportMemberHiddenMap, hiddenMapDir } from "./lib/hiddenMap";
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
@@ -307,7 +309,8 @@ import { register as registerOnboardingRoutes } from "./routes/onboarding";
 import { exportMemberTasks, register as registerMemberTaskRoutes } from "./routes/memberTasks";
 import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskBridge";
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
-import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR } from "./routes/stockAvatars";
+import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBDIR } from "./routes/stockAvatars";
+import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
@@ -330,7 +333,7 @@ import {
   readSetPasswordToken,
   setPasswordLinkRefusal,
 } from "./lib/memberTokens";
-import { brandColour, sanitizeFontName } from "./lib/themeCss";
+import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
 import { CONSTITUTION } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
@@ -5082,6 +5085,8 @@ async function startServer() {
     return `${r.users} member(s), ${r.rows} notification(s)`;
   });
   registerJob("retention-sweep", 24 * 60 * 60 * 1000, async () => runRetentionSweep());
+  // The hidden map keeps who-looked rows for a dial's worth of days and lets stale export asks lapse.
+  registerJob("hidden-map-sweep", 24 * 60 * 60 * 1000, async () => sweepHiddenMap(getPool()));
   // Sera's agent, B7: once a day the people who approve moons (live holders of moon.approve or
   // moon.approve_alone, counted the way the gate counts) hear what it did since the last summary,
   // each with an Undo on the bridge panel. The members it acted on are never told by this, and an
@@ -17821,6 +17826,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
+  // The rites module tells the map when a member was admitted (only pins from then count) and stamps the rites the
+  // village gives the map when one really opens: no rite id in either module (agreed with vos-hidden-map, verified by pirates-qa).
+  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), admission: ritesAdmission, opened: (u) => stampRitesOfModule("hidden-map", u).then(() => undefined) });
   registerMemberTaskRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone: () => getSeasonConfig().timezone });
   registerMemberTaskBridgeRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, notify, timeZone: () => getSeasonConfig().timezone });
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
@@ -18922,6 +18930,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   registerCharacterPortraitRoutes(app, { authedUser, getPool, uploadsDir: UPLOADS_DIR });
   registerArchetypeAdminRoutes(app, { isAdmin, guardCapability, getPool });
+  registerStockArtRoutes(app, { isAdmin, guardCapability, uploadsDir: UPLOADS_DIR });
   registerPowerAffinityRoutes(app, { isAdmin, guardCapability, getPool });
   // The seat vote registers far below, behind the governance mount, so its opener
   // arrives here deferred and resolves per request (server/routes/powerHands.ts).
@@ -25475,6 +25484,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       gratitudeDistributions: await distributionsForMember(pool, user.id),
       seasonPlans: await seasonPlansForMember(pool, user.id), // every version of their season plans, words and seats handed back (server/repos/seasonPlans.ts)
       aligned: await alignmentsForExport(pool, user.id, async (id) => (await members.byId(id))?.name ?? null), // texts they are party to, their own alignment rows and receipts; counterparties as name and capacity only (server/routes/alignments.ts)
+      hiddenMap: await exportMemberHiddenMap(pool, villageId(), user.id), // their own pins (exact, theirs), their visits, and how many photos they added; never anybody else's pin (server/lib/hiddenMap.ts)
       journal: await exportMemberJournal(pool, user.id), // entries, pulse, the feedback yes, sent feedback, and received feedback with no author at any depth (server/lib/journal.ts)
       sessions: await exportMemberSessions(pool, user.id), // live sessions they joined, entries they wrote or hold, and their own answers; arrival words are already erased from closed ones (server/lib/liveSessions.ts)
       companionLenses: await companionLensesOf(pool, user.id), // the private lenses they fed their companions; no birth data exists to export (shared/companionPersona.ts)
@@ -25559,9 +25569,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       scope: "/",
       display: "standalone",
       orientation: "any",
-      background_color: "#ffffff",
-      // The village's own brand colour, derived the way theme.css derives it.
-      theme_color: brandColour(getBrand().theme),
+      background_color: installBackground(getBrand().theme),
+      // The village's own brand colour, derived the way theme.css derives it (its ground in the dark scheme).
+      theme_color: installThemeColour(getBrand().theme),
       icons: [
         // One entry, `any` sized: the brand icon is an SVG on most forks and
         // a raster on some, and claiming sizes we have not measured would put
@@ -25690,7 +25700,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // The same files at brotli 11, written once by the build: server/lib/precompressedAssets.ts.
   app.use("/assets", precompressedAssets({ assetsDir: ASSETS_DIR, precompressedDir: path.resolve(staticPath, "..", "precompressed") }));
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
-  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR) });
+  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

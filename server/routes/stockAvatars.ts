@@ -40,12 +40,23 @@
  * handles (every caller draws a sigil or a medallion on error) and never as
  * the app's HTML with a 200.
  *
+ * A VILLAGE'S OWN CAST COMES FIRST (gap G10). A village may replace any of
+ * the thirty in Admin (server/routes/stockArt.ts); its copies live in the
+ * uploads volume under `stock-avatars/`, travel with the uploads backup, and
+ * answer the SAME URLs, so the picker, the card, role drafting and every other
+ * caller pick them up with no edit. Only the thirty names are ever looked up
+ * there: anything else (a `../`, a name outside the set, the manifest) never
+ * touches the volume and falls through to the image's own files. A slot the
+ * village has not replaced falls through too, so a half-loaded set is a mixed
+ * cast, never a broken image.
+ *
  * A route module rather than `server/index.ts`, which is ratcheted on lines
  * and routes (scripts/check-server-index-size.mjs).
  */
 import express, { type Express } from "express";
 import fs from "node:fs";
 import path from "node:path";
+import { isStockSlot } from "../lib/characters";
 
 /** The public path. Unchanged since the art shipped; stored nowhere. */
 export const STOCK_AVATAR_URL = "/images/avatars";
@@ -56,15 +67,32 @@ export const STOCK_AVATAR_DIR = path.join("server", "assets", "avatars");
 /** One day, revalidated by ETag after that. See CACHE above. */
 export const STOCK_AVATAR_MAX_AGE_SECONDS = 86400;
 
+/** The folder inside the uploads volume that holds a village's own cast. */
+export const STOCK_ART_SUBDIR = "stock-avatars";
+
 export interface StockAvatarDeps {
   /** Absolute path of the directory holding the drawings. */
   dir: string;
+  /** Absolute path of the village's own cast (`<uploads>/stock-avatars`). Absent: the image's files only. */
+  overrideDir?: string;
 }
 
 export function register(app: Express, deps: StockAvatarDeps): void {
   if (!fs.existsSync(deps.dir)) {
     // Loud and not fatal: the pages draw sigils, and the village still runs.
     console.warn(`[avatars] ${deps.dir} is missing, so stock character art will answer 404 and pages will draw sigils`);
+  }
+  const overrideDir = deps.overrideDir;
+  if (overrideDir) {
+    app.get(`${STOCK_AVATAR_URL}/:file`, (req, res, next) => {
+      const m = /^([a-z-]+)\.webp$/.exec(String(req.params.file ?? ""));
+      if (!m || !isStockSlot(m[1])) return next();
+      const file = path.join(overrideDir, `${m[1]}.webp`);
+      if (!fs.existsSync(file)) return next();
+      res.sendFile(file, { maxAge: STOCK_AVATAR_MAX_AGE_SECONDS * 1000, dotfiles: "deny" }, (err) => {
+        if (err && !res.headersSent) next();
+      });
+    });
   }
   app.use(
     STOCK_AVATAR_URL,
