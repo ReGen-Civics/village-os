@@ -2116,6 +2116,11 @@ msgctxt "a suggestion being sent"
 msgid "Sending…"
 msgstr "Sending…"
 
+#: client/src/components/admin/RoleApplicationsList.tsx
+msgctxt "admin role applications waiting"
+msgid "Role applications"
+msgstr "Role applications"
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "Work and value"
@@ -15409,6 +15414,11 @@ msgstr "What would you do?"
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "Energy and attention. We agree it together."
 msgstr "Energy and attention. We agree it together."
+
+#: client/src/components/admin/RoleApplicationsList.tsx
+msgctxt "admin role applications waiting"
+msgid "Open the role application"
+msgstr "Open the role application"
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 #: client/src/components/canvas/DecisionMatrixRows.tsx
