@@ -28,7 +28,7 @@ import {
   ListChecks,
   MessagesSquare,
   SquarePen,
-  MapPinned,
+  MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
 
@@ -170,7 +170,7 @@ export const FAB_ACTIONS: FabAction[] = [
     key: "hidden-map",
     label: "Hidden map",
     href: "/hidden-map",
-    Icon: MapPinned,
+    Icon: MapPin,
     requiresAuth: true,
     module: "hidden-map",
     anchorPath: "/hidden-map",

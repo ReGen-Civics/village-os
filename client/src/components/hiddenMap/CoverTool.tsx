@@ -12,7 +12,7 @@
  * The preview is the original file, shown from memory on this device only.
  */
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-import { Crop, EyeOff, Trash2 } from "lucide-react";
+import { EyeOff, Frame, Trash2 } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { plural } from "@lingui/core/macro";
 import type { CoverBox } from "@/lib/hiddenMapPhoto";
@@ -81,7 +81,7 @@ export default function CoverTool({ file, value, onChange }: { file: Blob; value
           <EyeOff className="size-4" aria-hidden="true" /> <Trans>Cover</Trans>
         </button>
         <button type="button" role="radio" aria-checked={mode === "crop"} onClick={() => setMode("crop")} className={`${BTN_SECONDARY} ${mode === "crop" ? "border-notice" : ""}`}>
-          <Crop className="size-4" aria-hidden="true" /> <Trans>Crop</Trans>
+          <Frame className="size-4" aria-hidden="true" /> <Trans>Crop</Trans>
         </button>
         {(value.covers.length > 0 || value.crop) && (
           <button type="button" onClick={() => onChange({ covers: [], crop: null })} className={BTN_SECONDARY}>
