@@ -81,7 +81,7 @@ export function permissionSheet(
   const figures: SheetFigure[] = [
     { key: "places", label: countLabel(input.seats, "Place", "Places"), value: input.seats, tone: null, source: "seats" },
     // `holderCount` here counts rows whose term has passed, so it is never "Held now".
-    { key: "seated", label: "Seated", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" },
+    { key: "seated", label: "Taken", value: hc, tone: hc > 0 ? "gold" : null, source: "holderCount" },
     { key: "open", label: countLabel(open, "Open place", "Open places"), value: open, tone: open > 0 ? "living" : null, source: "seats - holderCount" },
     { key: "powers", label: countLabel(input.capabilities.length, "Power", "Powers"), value: input.capabilities.length, tone: null, source: "capabilities.length" },
   ];

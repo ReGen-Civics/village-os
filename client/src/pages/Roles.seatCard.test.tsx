@@ -225,7 +225,7 @@ describe("an opened /roles row", () => {
     // The card's own content: the roster, the holder ready to be re-chosen, the line that says so.
     expect(within(card).getByText("Holding it now")).toBeTruthy();
     expect(within(card).getByText("Mara")).toBeTruthy();
-    expect(within(card).getByText("Everyone seated here is ready to be re-chosen.")).toBeTruthy();
+    expect(within(card).getByText("Everyone in this role is ready to be re-chosen.")).toBeTruthy();
 
     await waitFor(() => expect(asked.some((a) => a.url === "/api/org/roles/water-keeper/history")).toBe(true));
     expect(asked.some((a) => a.url === "/api/org/roles/water-keeper/needs")).toBe(true);

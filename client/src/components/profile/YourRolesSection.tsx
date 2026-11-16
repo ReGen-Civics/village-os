@@ -41,7 +41,7 @@ export const YOUR_ROLES_WORDS = {
   ended: "Its term has ended",
   apply: "Apply for a role",
   plan: "Plan your season",
-  applyLine: "Pick up to three roles in one proposal. The village adopts it, or a role holder does.",
+  applyLine: "Pick up to three roles in one proposal. The village decides, or a role holder does.",
   membersOnly: "Applying for a role opens at the member rung. Once you reach it, you can apply here.",
   openHeading: "Your open proposals",
   fits: "Find roles that fit your character",

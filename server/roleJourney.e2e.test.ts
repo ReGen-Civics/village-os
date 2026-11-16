@@ -205,7 +205,7 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect(page.json.proposal.roles[0].accountabilities).toHaveLength(3);
     const adopted = await call("POST", `/api/governance/open-proposals/${state.proposalId}/adopt`, {}, state.founder);
     expect(adopted.status, JSON.stringify(adopted.json)).toBe(200);
-    const invite = mailTo(APPLICANT.email, /adopted your proposal/).pop();
+    const invite = mailTo(APPLICANT.email, /said yes to your proposal/).pop();
     expect(invite, "the adoption letter went").toBeTruthy();
     // This applicant did not align with the letter on the form, so the letter still sends them to it. The door
     // is served to anybody signed in, story pages on or off (shared/brochure.ts, MEMBER_DOORS). An applicant who
@@ -215,7 +215,7 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
   });
 
   it("the invitation makes the account once; the person is placed on the role, admitted by nothing but their own alignment", async () => {
-    const invite = mailTo(APPLICANT.email, /adopted your proposal/).pop()!;
+    const invite = mailTo(APPLICANT.email, /said yes to your proposal/).pop()!;
     const link = linkIn(invite.body.text, "/register");
     const inviteToken = new URL(link).searchParams.get("invite");
     // The sign-up page names the roles and gives back what the person sent (role audit, 10 Nov 2026).
@@ -267,11 +267,11 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect(refused.status, JSON.stringify(refused.json)).toBe(409);
     expect(refused.json).toMatchObject({ error: "seats_full", canAdoptForWhenASeatOpens: true });
     expect(refused.json.message).toContain("Lead Financial Steward has room for 1 person, and that place is filled");
-    expect(mailTo(SECOND.email, /adopted your proposal/)).toHaveLength(0);
+    expect(mailTo(SECOND.email, /said yes to your proposal/)).toHaveLength(0);
 
     const adopted = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { whenASeatOpens: true }, state.founder);
     expect(adopted.status, JSON.stringify(adopted.json)).toBe(200);
-    const letter = mailTo(SECOND.email, /adopted your proposal/).pop();
+    const letter = mailTo(SECOND.email, /said yes to your proposal/).pop();
     expect(String(letter!.body.text)).toContain("your role starts when a place opens");
     expect(String(letter!.body.text)).not.toContain("within the hour");
     expect(String(letter!.body.text)).not.toContain("Your roles run from");
