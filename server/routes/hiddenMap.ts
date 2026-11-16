@@ -340,7 +340,7 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/hidden-map/exports", async (req, res) => {
     const m = await me(req);
     if (!m) return res.status(401).json({ error: "auth_required" });
-    if (!m.who.viewer.open) return res.status(403).json({ error: "Exports open with your map." });
+    if (!m.who.viewer.open) return res.status(403).json({ error: "This opens with your map." });
     await repo.expireExports(getPool(), vid(), new Date());
     const rows = await repo.listExports(getPool(), vid());
     const uid = String(m.user.id);
@@ -360,12 +360,12 @@ export function register(app: Express, deps: Deps): void {
   app.post("/api/hidden-map/exports", async (req, res) => {
     const m = await me(req);
     if (!m) return res.status(401).json({ error: "auth_required" });
-    if (!m.who.viewer.open) return res.status(403).json({ error: "Exports open with your map." });
+    if (!m.who.viewer.open) return res.status(403).json({ error: "This opens with your map." });
     const precision = req.body?.precision;
     if (!isPrecision(precision)) return res.status(400).json({ error: `Choose how exactly: ${PRECISIONS.join(", ")}.` });
     const uid = String(m.user.id);
     if (await overLimit(`hidden-map-export:${uid}`, EXPORT_ASKS_PER_DAY, 24 * HOUR_MS)) {
-      return res.status(429).json({ error: "Three export asks a day is the most." });
+      return res.status(429).json({ error: "Three asks for a copy a day is the most." });
     }
     const id = newId("hmx");
     const now = new Date();
@@ -379,13 +379,13 @@ export function register(app: Express, deps: Deps): void {
     if (!m) return res.status(401).json({ error: "auth_required" });
     const uid = String(m.user.id);
     if (!m.who.viewer.open || !(await seated(m.user, "hiddenmap.export"))) {
-      return res.status(403).json({ error: "Approving an export is for an open member who holds the export power." });
+      return res.status(403).json({ error: "Approving a copy is for an open member who holds the power to approve one." });
     }
     const id = String(req.params?.id ?? "");
     await repo.expireExports(getPool(), vid(), new Date());
     const row = await repo.getExport(getPool(), vid(), id);
-    if (!row) return res.status(404).json({ error: "No such export." });
-    if (row.requestedBy === uid) return res.status(409).json({ error: "An export takes two people. You asked for this one." });
+    if (!row) return res.status(404).json({ error: "No such request." });
+    if (row.requestedBy === uid) return res.status(409).json({ error: "A copy takes two people. You asked for this one." });
     const now = new Date();
     const moved = await repo.moveExport(getPool(), vid(), id, "pending", to, uid, now, to === "approved" ? new Date(now.getTime() + exportHours() * HOUR_MS) : undefined);
     if (!moved) return res.status(409).json({ error: "Somebody already answered this one, or it expired." });
@@ -400,7 +400,7 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return res.status(401).json({ error: "auth_required" });
     const id = String(req.params?.id ?? "");
     const row = await repo.getExport(getPool(), vid(), id);
-    if (!row || row.requestedBy !== String(user.id)) return res.status(404).json({ error: "No such export of yours." });
+    if (!row || row.requestedBy !== String(user.id)) return res.status(404).json({ error: "No such request of yours." });
     const moved =
       (await repo.moveExport(getPool(), vid(), id, "pending", "withdrawn", null, new Date())) ||
       (await repo.moveExport(getPool(), vid(), id, "approved", "withdrawn", null, new Date()));
@@ -414,11 +414,11 @@ export function register(app: Express, deps: Deps): void {
     const id = String(req.params?.id ?? "");
     await repo.expireExports(getPool(), vid(), new Date());
     const row = await repo.getExport(getPool(), vid(), id);
-    if (!row || row.requestedBy !== uid) return res.status(404).json({ error: "No such export of yours." });
-    if (!m.who.viewer.open) return res.status(403).json({ error: "Exports open with your map." });
+    if (!row || row.requestedBy !== uid) return res.status(404).json({ error: "No such request of yours." });
+    if (!m.who.viewer.open) return res.status(403).json({ error: "This opens with your map." });
     // Once: the move from approved to downloaded is the lock.
     const moved = await repo.moveExport(getPool(), vid(), id, "approved", "downloaded", null, new Date());
-    if (!moved) return res.status(409).json({ error: row.status === "pending" ? "This export is waiting for a second person." : "This export is no longer available." });
+    if (!moved) return res.status(409).json({ error: row.status === "pending" ? "This copy is waiting for a second person." : "This copy is no longer available." });
     const pins = (await readMap(getPool(), vid(), m.who.viewer, config(), { ...dials(), teaser: false })).filter(
       (p): p is PinView => !("dot" in p),
     );

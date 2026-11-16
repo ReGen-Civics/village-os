@@ -4016,7 +4016,7 @@ export const VARIABLES: VariableDef[] = [
     category: "Hidden map",
     label: "How exactly a new pin is shown beyond the open members",
     description:
-      "The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: an export at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.",
+      "The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.",
     type: "choice",
     default: "region",
     choices: [
@@ -4065,7 +4065,7 @@ export const VARIABLES: VariableDef[] = [
     category: "Hidden map",
     label: "Days the record of who looked is kept",
     description:
-      "Every read of the shared map, every vouch and every export is recorded with who and when, and never where. Rows older than this are deleted.",
+      "Every read of the shared map, every vouch and every copy taken is recorded with who and when, and never where. Rows older than this are deleted.",
     type: "integer",
     default: "90",
     min: 7,
@@ -4075,9 +4075,9 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "hiddenmap.export_hours",
     category: "Hidden map",
-    label: "Hours a second member has to approve an export",
+    label: "Hours a second member has to approve a copy of the map",
     description:
-      "An export of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved export the asker has not downloaded expires too.",
+      "A copy of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved copy the asker has not downloaded expires too.",
     type: "integer",
     default: "24",
     min: 1,

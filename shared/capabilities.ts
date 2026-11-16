@@ -379,7 +379,7 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "place.tend": "Keep the place registry: load it from the seed, confirm a place, set its readiness, and adopt a stage change",
   "place.permit": "Keep a place's permit checklist and its preserve and riparian answers",
   "hiddenmap.keep": "Keep the hidden map: vouch for a pin before your own map has opened, hide a pin, and read who looked",
-  "hiddenmap.export": "Approve another member's export of the hidden map, as the second of the two people it takes",
+  "hiddenmap.export": "Approve another member's request for a copy of the hidden map, as the second of the two people it takes",
   "module.switch": "Turn a module on for the village",
   "steward.veto": "Stop a carried decision inside its window, and say why",
   "comms.manage": "Run the village's email: its automations, their words, and letters",
