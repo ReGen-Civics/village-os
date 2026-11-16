@@ -505,8 +505,11 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
 
     // Each decision frees the next, on the planter's next look at the map, until all three are owed nothing.
     for (let i = 1; i <= 2; i++) {
+      // CONSENTED, as a steward would: a decided-and-paid claim must not block the next planting's
+      // (the quest board's own rule blocks on any claim that was not declined).
       const decided = mine.find((x: any) => x.status === "submitted")!;
-      await claims.declineOnce(decided.id, new Date().toISOString());
+      const moved = await claims.consentOnce(decided.id, ["submitted"], (c: any) => { c.status = "consented"; c.resolvedAt = new Date().toISOString(); }, null);
+      expect((moved as any).ok ?? true).not.toBe(false);
       as("m-owed");
       await call(h, "GET /api/hidden-map/me");
       mine = await open();
@@ -516,6 +519,9 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     // Nothing more is owed, so another look opens nothing.
     await call(h, "GET /api/hidden-map/me");
     expect(await open()).toHaveLength(3);
+    // The board's own rule is untouched for every other caller: a consented claim still blocks a plain open.
+    const plain = await claims.openClaim({ ...mine[0]!, id: "claim-plain-retry", status: "claimed" } as any);
+    expect(plain.ok).toBe(false);
     expect(await setModuleConfig("hidden-map", {}, null)).toEqual({ ok: true });
   });
 

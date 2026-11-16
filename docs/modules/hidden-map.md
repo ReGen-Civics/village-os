@@ -184,6 +184,8 @@ per pin per `hiddenmap.visit_pay_days` (default 30). That is the whole of it (`s
 
 **A planting that pays.** Name a quest as `plantingQuestId` too, and every vouched planting is owed one claim for
 its owner on it (`planting_claim_id`, once per pin), by the same gate, lock and consent. The quest board lets a member
-hold one open claim per quest, so a planter's owed claims open one after another: each on the next vouch or the next
+hold one open claim per quest, so a planter's owed claims open one after another (`openClaim`'s
+`whileOpenOnly`: a claim already decided, consented or declined, does not block the next, since each stands for a
+different planting): each on the next vouch or the next
 look at the map after the one before it is decided. None is dropped. Its words name a day, never a place. The page
 never says what a planting earns.
