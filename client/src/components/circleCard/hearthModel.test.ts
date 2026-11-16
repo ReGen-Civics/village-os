@@ -13,6 +13,7 @@ import {
   STONES_MAX,
   TEND_MAX,
   initialOf,
+  labelLines,
   linkedCircles,
   nextGathering,
   plantOf,
@@ -193,5 +194,22 @@ describe("the threads", () => {
       expect(t.label.x).toBeLessThanOrEqual(400 - 56);
     }
     expect(threadsOf([], 5)).toEqual([]);
+  });
+});
+
+describe("a stone's name on the drawing (QA P1-08: cut off on a phone)", () => {
+  it("wraps a long name onto two lines at a space, and drops a note in brackets", () => {
+    expect(labelLines("Legal, Finance & Structure Steward", 3)).toEqual(["Legal, Finance &", "Structure Steward"]);
+    expect(labelLines("Regenerative Land & Building Steward", 3)).toEqual(["Regenerative Land &", "Building Steward"]);
+    expect(labelLines("Community Building Steward (Marketing, Sales & Events)", 3)).toEqual(["Community Building", "Steward"]);
+  });
+  it("keeps a short name whole, and a crowded ring to one short line", () => {
+    expect(labelLines("Water Keeper", 3)).toEqual(["Water Keeper"]);
+    expect(labelLines("Legal, Finance & Structure Steward", 9)).toEqual(["Legal, Finance &…"]);
+  });
+  it("never writes a line longer than twenty characters", () => {
+    for (const n of ["Supercalifragilisticexpialidocious Steward", "A very long role name that goes on and on and on"]) {
+      for (const line of labelLines(n, 3)) expect(line.length, line).toBeLessThanOrEqual(20);
+    }
   });
 });

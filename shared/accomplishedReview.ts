@@ -283,5 +283,7 @@ export const ACCOMPLISHED_WORDS = {
   confirm: "Confirm the amount",
   confirmHint: "These lines carry a proposed amount. Read the member's reply, then confirm before you approve.",
   withdrawn: (role: string) => `The Treasurer withdrew the proposed amount for ${role}, so pay is as agreed. Send your invoice again`,
-  returned: (role: string, amount: string, reason: string) => `The Treasurer proposes ${amount} for ${role}: ${reason}. Read it, reply if you want, and send your invoice again.`,
+  // A reason that already ends its sentence keeps its own mark, never a second one (launch rehearsal F8).
+  returned: (role: string, amount: string, reason: string) =>
+    `The Treasurer proposes ${amount} for ${role}: ${reason.trim()}${/[.!?]$/.test(reason.trim()) ? "" : "."} Read it, reply if you want, and send your invoice again.`,
 } as const;

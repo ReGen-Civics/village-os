@@ -3382,6 +3382,12 @@ nothing can be sent to them." before anything is written, so no allowance is
 spent and no ledger leg posts. A former member keeps their address and is not a
 tombstone, so they can still be paid.
 
+**A fraction of Gratitude is refused, never floored in silence** (launch rehearsal, 15 Nov
+2026). `sendGratitude` used to floor the amount and answer success, so a send of 2.5 moved 2 and took 2
+from the sender's allowance with nothing said about the half. It now refuses a non-whole amount with
+"Send Gratitude in whole amounts, such as 2 or 3." before anything is written, as `checkGive` already
+did on the Hearts door. Gratitude carries no decimals, so a whole amount is the only one either door moves.
+
 **The admin hand-mint refuses a tombstone too.** `POST /api/admin/tokens/:slug/mint`
 used to refuse only a missing recipient, so a steward could issue any platform
 token from `sys:mint` into a tombstone's account, or a standing example's. It now

@@ -121,12 +121,12 @@ const refs = (rows: Array<{ entity_ref: string }>) => rows.map((r) => r.entity_r
 
 describe.skipIf(!configured)("what the solo-founder window records (MySQL)", () => {
   beforeAll(async () => {
-    db = await provisionTestDb();
+    // A founder building alone, BEFORE the launch vote: the only time the
+    // window is open. A quest that pays nothing can be witnessed then, so the
+    // consents that must record here pay nothing.
+    db = await provisionTestDb({ gameStarted: false });
     pool = testPool(db, { connectionLimit: 6 }); // module-review-ok: the suite's own pool onto the scratch schema it provisioned
     await loadTokenRegistry(pool);
-    // Issuance waits for the launch vote, and this village has cast it, so a
-    // consent gets as far as the ledger.
-    await recordGameStart(pool, { ballotId: "ballot-test", startedBy: FOUNDER.id, note: "test village" });
     claims = claimsRepo(pool);
     quests = questsRepo(pool);
 
@@ -175,8 +175,8 @@ describe.skipIf(!configured)("what the solo-founder window records (MySQL)", () 
   });
 
   it("records one row, naming the claim, when the founder's own consent lands", async () => {
-    const id = await ownClaim("landed");
-    expect((await consent(id, { approve: true, amount: 60 })).status).toBe(200);
+    const id = await ownClaim("landed", "");
+    expect((await consent(id, { approve: true })).status).toBe(200);
 
     const rows = await rowsOnceThereAre(1);
     expect(refs(rows)).toEqual([id]);
@@ -199,38 +199,47 @@ describe.skipIf(!configured)("what the solo-founder window records (MySQL)", () 
     // The claim is untouched. (This case was a Gratitude amount the dials
     // refused, until a consent stopped carrying one.)
     const refusedLaunch = await ownClaim("refused-launch", "", { stayCreditReward: 2 });
-    const [saved] = await pool.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-      "SELECT `value` FROM `app_config` WHERE `config_key` = 'game-start'",
-    );
-    await pool.query("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-    try {
-      expect((await consent(refusedLaunch, { approve: true })).status).toBe(409);
-    } finally {
-      const value = saved[0].value;
-      await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-        "INSERT INTO `app_config` (`config_key`, `value`) VALUES ('game-start', ?)",
-        [typeof value === "string" ? value : JSON.stringify(value)],
-      );
-    }
+    expect((await consent(refusedLaunch, { approve: true })).status).toBe(409);
 
     // Role authority is not founder authority, however small the village is.
-    const forSteward = await ownClaim("steward");
+    const forSteward = await ownClaim("steward", "");
     ctl.actor = { ok: true, userId: FOUNDER.id, isAdminActor: false };
-    expect((await consent(forSteward, { approve: true, amount: 60 })).status).toBe(403);
+    expect((await consent(forSteward, { approve: true })).status).toBe(403);
     ctl.actor = { ok: true, userId: FOUNDER.id, isAdminActor: true };
 
     // THE KNOWN POSITIVE, arriving after all three. A row nobody wrote and a
     // row still in flight look identical, so the count means nothing until a
     // consent that must record has landed.
-    const landed = await ownClaim("known-positive");
-    expect((await consent(landed, { approve: true, amount: 60 })).status).toBe(200);
+    const landed = await ownClaim("known-positive", "");
+    expect((await consent(landed, { approve: true })).status).toBe(200);
     const rows = await rowsOnceThereAre(before.length + 1);
     expect(refs(rows)).toEqual([...before, landed].sort());
 
     // And the second press on work already witnessed, which is refused under
     // the claim's own row lock and must leave the record where it was.
-    expect((await consent(landed, { approve: true, amount: 60 })).status).toBe(409);
+    expect((await consent(landed, { approve: true })).status).toBe(409);
     await new Promise((r) => setTimeout(r, 250));
     expect(refs(await windowRows())).toEqual([...before, landed].sort());
+  });
+
+  it("closes the window once the Game has started, whatever the village's size", async () => {
+    const before = refs(await windowRows());
+    await recordGameStart(pool, { ballotId: "ballot-test", startedBy: FOUNDER.id, note: "test village" });
+    try {
+      // A paying quest and a free one: after the launch an admin witnesses
+      // neither of their own, with nobody else in the village yet.
+      const paying = await ownClaim("after-launch");
+      const r = await consent(paying, { approve: true, amount: 60 });
+      expect(r.status).toBe(403);
+      expect(r.body.error).toMatch(/cannot consent to your own claim/);
+      const free = await ownClaim("after-launch-free", "");
+      expect((await consent(free, { approve: true })).status).toBe(403);
+      const [[row]]: any = await pool.query("SELECT status FROM quest_claims WHERE id = ?", [paying]); // module-review-ok: reading back the claim on the S5 scratch schema this suite provisioned
+      expect(row.status).toBe("submitted");
+    } finally {
+      await pool.query("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    }
+    await new Promise((r) => setTimeout(r, 250));
+    expect(refs(await windowRows())).toEqual(before);
   });
 });

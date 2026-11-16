@@ -39,7 +39,7 @@ describe("the application's shared words, said again as messages", () => {
   it("a send that never reached us says so, and never blames the confirmation email", () => {
     const words = notSentWords(en);
     expect(words).not.toBe(OPEN_WORDS.notSent);
-    expect(words).toMatch(/still saved on this device/);
+    expect(words).toMatch(/still here on the page/);
   });
 
   it("a translated catalog changes what the reader sees", () => {

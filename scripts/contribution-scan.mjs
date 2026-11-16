@@ -92,6 +92,37 @@ export const RAW_SQL_PATTERN = new RegExp(
     `|createConnection${TYPE_ARGUMENTS}\\s*\\(`,
 );
 
+/**
+ * ── FETCH PASSED AS A VALUE ─────────────────────────────────────────────────
+ *
+ * The raw-fetch rule used to match only a CALL, `fetch(`. The Saberra sync
+ * did not call fetch; it handed it over, `fetchImpl: fetch as never`, and the
+ * client called it through the parameter. That is the same unguarded dial to
+ * an admin-typed address, and the rule could not see it (R111 / R169). So the
+ * pattern also matches the global `fetch` in a value position: after `:`,
+ * `=`, `(`, `[`, `,`, `?`, `|` or `return`, and followed by `as`, `,`, `)`, `}`,
+ * `;`, `]`, `?`, `|` or the end of the line; `globalThis.fetch` and
+ * `window.fetch` anywhere; and `fetch.bind(`.
+ *
+ * WHY NOT A BARE fetch. Prose and identifiers say "fetch" constantly
+ * (`fetchImpl`, "fetch the page", `typeof fetch` in a type), and a rule that
+ * cries wolf on them is one people learn to waive. The value positions above
+ * are where an expression stands, which a sentence in a string rarely matches.
+ * `typeof fetch` is a type, never a dial, and is not matched.
+ */
+export const RAW_FETCH_PATTERN = new RegExp(
+  [
+    // a call: fetch(...)
+    /(?<![A-Za-z0-9_.$])fetch\s*\(/.source,
+    // the global, reached through its object, called or handed over
+    /\b(?:globalThis|window|global)\.fetch\b/.source,
+    // bound and handed over
+    /(?<![A-Za-z0-9_.$])fetch\.bind\b/.source,
+    // handed over as a value: `fetchImpl: fetch as never`, `f(url, fetch)`, `x ?? fetch;`
+    /(?:[:=(,?|[]|\breturn)\s*fetch\s*(?:\bas\b|[,)};\]?|]|$)/.source,
+  ].join("|"),
+);
+
 /** The id the burn-down ratchet and the intake classifier both key on. */
 export const RAW_SQL_RULE_ID = "raw SQL outside server/repos";
 
@@ -104,7 +135,7 @@ export const CODE_RULES = [
   {
     id: "raw fetch outside guardedFetchJson",
     scope: (f) => /^(server|shared)\//.test(f) && !/^server\/lib\/toolcheck\.ts$/.test(f),
-    pattern: /(?<![A-Za-z0-9_.])fetch\s*\(/,
+    pattern: RAW_FETCH_PATTERN,
     exempt: (line) => /guardedFetchJson/.test(line),
     why: "outbound calls carry a correlation id and land in the call record only when they go through the helper",
   },

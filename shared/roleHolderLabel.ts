@@ -6,7 +6,7 @@
 //
 //   roleWithHolders("Treasurer", [])                        -> "Treasurer"
 //   roleWithHolders("Treasurer", ["Rick Moss"])             -> "Treasurer (Rick)"
-//   roleWithHolders("Steward", ["Rye Cordon", "Jessica"])   -> "Steward (Rye, Jessica)"
+//   roleWithHolders("Steward", ["Rye Ashby", "Jessica"])   -> "Steward (Rye, Jessica)"
 //   roleWithHolders("Steward", five names)                  -> "Steward (A, B, C +2)"
 
 /** How many first names a label prints before it folds the rest into "+N". */

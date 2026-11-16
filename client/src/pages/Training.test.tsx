@@ -30,6 +30,12 @@ vi.mock("@/lib/gameApi", async (importOriginal) => ({
 
 const session = vi.hoisted(() => ({ token: "" as string }));
 
+/** The signed-in member's paths, or null for a visitor. */
+const auth = vi.hoisted(() => ({ paths: null as string[] | null }));
+vi.mock("@/contexts/AuthContext", () => ({
+  useOptionalAuth: () => (auth.paths ? { user: { paths: auth.paths } } : undefined),
+}));
+
 /** Each page's saved words, by content section. */
 const stored = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 vi.mock("@/hooks/useVillageContent", () => ({
@@ -50,6 +56,7 @@ const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200
 
 beforeEach(() => {
   session.token = "";
+  auth.paths = null;
   stored.current = {};
   vi.stubGlobal(
     "fetch",
@@ -132,11 +139,27 @@ describe("/training, the chooser", () => {
     expect(within(links[1]).getByText("For our residents")).toBeTruthy();
   });
 
-  it("asks for no lessons and no record: it only chooses", async () => {
+  it("lists what the training holds, and never asks for the member's record: it only chooses (design pass D-23)", async () => {
     session.token = "t";
     inRouter(<Training />);
     await screen.findByRole("navigation", { name: "Training pages" });
+    const list = await screen.findByRole("region", { name: "What the training holds" });
+    expect(within(list).getAllByRole("listitem").map((li) => li.textContent)).toEqual(["CirclesOptional", "ListeningRequired", "SpeakingRequired"]);
     const asked = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.map((c) => String(c[0]));
-    expect(asked.filter((u) => u.startsWith("/api/training-modules") || u.startsWith("/api/game/training"))).toEqual([]);
+    expect(asked.filter((u) => u.startsWith("/api/game/training"))).toEqual([]);
+  });
+
+  it("marks the member's own path as theirs, and no door for a visitor (design pass D-23)", async () => {
+    auth.paths = ["resident"];
+    const { unmount } = inRouter(<Training />);
+    const nav = await screen.findByRole("navigation", { name: "Training pages" });
+    const [steward, resident] = within(nav).getAllByRole("link");
+    expect(within(resident).getByText("Your path")).toBeTruthy();
+    expect(within(steward).queryByText("Your path")).toBeNull();
+    unmount();
+    auth.paths = null;
+    inRouter(<Training />);
+    await screen.findByRole("navigation", { name: "Training pages" });
+    expect(screen.queryByText("Your path")).toBeNull();
   });
 });

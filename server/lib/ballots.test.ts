@@ -624,6 +624,44 @@ describe.skipIf(!configured)("ballots (MySQL)", () => {
     expect(closed.outcome).toBe("no_quorum");
     expect(closed.quorum).toBeCloseTo(100 / 3, 5);
   });
+
+  it("the launch vote runs its whole window: nobody closes it early as short of participation (launch rehearsal)", async () => {
+    const opened = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-early-close", unityPct: 100, quorumPct: 100 });
+    expect(opened.ok).toBe(true);
+    if (!opened.ok) return;
+    const id = opened.ballot.id;
+    expect((await castVote(pool, id, "u-a", "yes")).ok).toBe(true);
+    // Two of three have not answered, and the window is open: refused, even for a closer who may close early.
+    const early = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "Too slow.", closerMayCloseEarly: true });
+    expect(early.ok).toBe(false);
+    if (early.ok) return;
+    expect(early.error).toContain("runs its whole window");
+    // The control: one no means it can no longer carry, so it may still close early.
+    expect((await castVote(pool, id, "u-b", "no")).ok).toBe(true);
+    const failed = await closeBallot(pool, { ballotId: id, closedBy: "u-admin", outcomeNote: "A no was cast.", closerMayCloseEarly: true });
+    expect(failed.ok).toBe(true);
+    if (!failed.ok) return;
+    expect(failed.outcome).not.toBe("passed");
+  });
+
+  it("the launch vote is not called off over other people's votes, even by an admin (security lane S3)", async () => {
+    const early = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-withdraw-early", unityPct: 100, quorumPct: 100 });
+    expect(early.ok).toBe(true);
+    if (!early.ok) return;
+    // The control: only the caller has voted, so they may still call it off (to change what the launch hands over).
+    expect((await castVote(pool, early.ballot.id, "u-a", "yes")).ok).toBe(true);
+    const own = await withdrawBallot(pool, { ballotId: early.ballot.id, withdrawnBy: "u-a", reason: "Changing the selection.", withdrawerMayDiscardVotes: true });
+    expect(own.ok).toBe(true);
+
+    const late = await openOne({ subjectType: VILLAGE_LAUNCH, subjectRef: "launch-withdraw-late", unityPct: 100, quorumPct: 100 });
+    expect(late.ok).toBe(true);
+    if (!late.ok) return;
+    expect((await castVote(pool, late.ballot.id, "u-b", "yes")).ok).toBe(true);
+    const refused = await withdrawBallot(pool, { ballotId: late.ballot.id, withdrawnBy: "u-admin", reason: "Too slow.", withdrawerMayDiscardVotes: true });
+    expect(refused.ok).toBe(false);
+    if (refused.ok) return;
+    expect(refused.error).toContain("can no longer be called off");
+  });
 });
 
 /**

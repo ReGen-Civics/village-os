@@ -237,12 +237,18 @@ async function resolveTyped(
 export async function sendGratitude(deps: GratitudeDeps, input: SendInput): Promise<SendOutcome> {
   const user = input.fromUser;
   const kind = input.kind ?? "gratitude";
-  // HUMAN, and floored rather than refused, which is this door's own answer to
-  // the question `checkGive` answers with a sentence. Flooring FIRST keeps the
-  // log and the ledger describing one number, so a fraction here costs a
-  // member part of their gift and never splits the two records apart. The two
-  // gratitude doors differ on this, and that is worth knowing rather than
-  // changing under a units sweep.
+  // HUMAN, in whole units. The floor below stays for an amount that is not a
+  // number at all (it reads 0 and is refused as not positive), so the log and
+  // the ledger always describe one number.
+  // A fraction is refused in words, never floored silently: a send of 2.5 used
+  // to answer "success" and send 2, so the sender was told nothing about the
+  // half they lost (launch rehearsal F3, 15 Nov 2026). The same answer the
+  // other door gives (`checkGive`).
+  const asked = Number(input.amount);
+  if (Number.isFinite(asked) && asked > 0 && !Number.isInteger(asked)) {
+    const lo = Math.floor(asked);
+    return { ok: false, status: 400, error: `Send ${recognitionName()} in whole amounts, such as ${lo >= 1 ? `${lo} or ${lo + 1}` : "1"}.` };
+  }
   const amt = Math.floor(Number(input.amount) || 0);
   const typed = String(input.to ?? "").trim();
   if ((!typed && !input.toEmail && !input.toId) || amt <= 0) {

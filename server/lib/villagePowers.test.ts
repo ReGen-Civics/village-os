@@ -9,7 +9,7 @@ const groups = [
   { id: "demo", name: "Demo", capabilities: ["org.seat"], isExample: true },
 ];
 const names: Record<string, { full: string; first: string }> = {
-  rye: { full: "Rye Cordon", first: "Rye" },
+  rye: { full: "Rye Ashby", first: "Rye" },
   ana: { full: "Ana Ruiz", first: "Ana" },
 };
 const input = (over: Partial<VillagePowerInput> = {}): VillagePowerInput => ({
