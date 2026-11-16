@@ -12,6 +12,7 @@ import RewardMoment from "@/components/RewardMoment";
 import SeasonSummaryOffer from "@/components/seasonSummary/SeasonSummaryOffer";
 import TaskCountBadge from "@/components/tasks/TaskCountBadge";
 import MessageCountBadge from "@/components/messages/MessageCountBadge";
+import { anyTreasuryDoor, useTreasuryDoors } from "@/components/treasury/useTreasuryDoors";
 import { altOr, useGameConfig } from "@/lib/gameApi";
 import { NAV, ACCOUNT_MENU, isGroup, type NavLink, type NavGroup } from "@/config/nav";
 import { useVillageMenu } from "@/hooks/useVillageMenu";
@@ -36,7 +37,7 @@ export default function Layout({ children }: LayoutProps) {
   const accountRef = useRef<HTMLDivElement>(null);
   const [location] = useLocation();
   const bare = isBareRoute(location);
-  const { user, logout } = useAuth();
+  const { user, token, logout } = useAuth();
   const { t } = useLingui();
   // Named, so the catalog reads "Your account, {firstName}" and not "{0}".
   const firstName = user?.name.split(" ")[0] ?? "";
@@ -65,6 +66,8 @@ export default function Layout({ children }: LayoutProps) {
   // test rather than a second branch.
   const tokenName = useTokenName("Recognition");
   const role = user?.role;
+  // Asked of the gate once per sign-in (GET /api/treasury/doors); unknown or refused shows nothing.
+  const treasuryOpen = anyTreasuryDoor(useTreasuryDoors(user ? token : null));
   // The brochure pages are the first village's own story (shared/brochure.ts).
   // A village that does not serve them gets none of their menu entries or
   // footer links, and a page it switched off on its own (Admin, Pages, "Show
@@ -80,7 +83,8 @@ export default function Layout({ children }: LayoutProps) {
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.href)) &&
     (!item.roles || (!!role && item.roles.includes(role))) &&
-    (item.signedIn === undefined || item.signedIn === !!user);
+    (item.signedIn === undefined || item.signedIn === !!user) &&
+    (!item.door || (item.door === "treasury" && !!user && treasuryOpen));
 
   // An entry named after a token carries the village's word for it, and its
   // href stays put. Substituted HERE, once, because both the desktop dropdown
