@@ -14,7 +14,7 @@ import { SIGNING_WORDS, type MembershipSigning } from "@shared/membershipSigning
 import { claimMoment } from "@/lib/celebrated";
 import { playMoment } from "@/lib/sound";
 import { onProfileRefresh } from "@/lib/profileRefresh";
-import { formatTokenAmount } from "@/lib/tokenAmount";
+import { formatTokenGrouped } from "@/lib/tokenAmount";
 
 /**
  * S4: the member's journey in numbers, over three live endpoints that had no
@@ -451,7 +451,8 @@ export default function ProfileJourney() {
             <h2 className="text-2xl font-display font-bold text-card-foreground">Where It Came From</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-5">
-            Every movement of {ledger.currency ?? "recognition"} on your account, from the ledger itself.
+            {/* Every token, not only recognition: End of Moon equity lands here too (launch rehearsal F10). */}
+            Every movement on your account, from the ledger itself.
           </p>
           {(ledger.entries ?? []).length === 0 ? (
             <p className="text-sm text-muted-foreground">
@@ -491,7 +492,7 @@ export default function ProfileJourney() {
                       client/src/lib/tokenAmount.ts. */}
                   <span className={`shrink-0 font-semibold ${e.amount < 0 ? "text-destructive" : "text-foreground"}`}>
                     {e.amount > 0 ? "+" : e.amount < 0 ? "-" : ""}
-                    {formatTokenAmount(Math.abs(Number(e.amount)), Number(e.decimals ?? 0))}
+                    {formatTokenGrouped(Math.abs(Number(e.amount)), Number(e.decimals ?? 0))}
                   </span>
                 </div>
               ))}

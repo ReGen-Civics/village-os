@@ -36,6 +36,8 @@
  * The tidy job also takes the name and address off a declined or withdrawn
  * proposal 90 days after it was decided, and off an adopted one whose
  * invitation nobody used in those 90 days (part B, coordinator 2026-10-31).
+ * A confirmed proposal nobody decided in those 90 days is closed, and gets one
+ * kind letter first, keyed per application (server/lib/applicantFollowups.ts).
  *
  * Confirmed proposals wait on the admin's list here.
  *
@@ -98,7 +100,8 @@ import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposal
 import { registerAgentProposals } from "./agentRoleProposals";
 import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
-import { boolVar, numberVar, rawValue } from "../lib/variables";
+import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
+import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { foundingSetupFrom, type FoundingSetup } from "../../shared/foundingApplication";
 import { knowUsLinksFrom, NO_KNOW_US_LINKS, type KnowUsLinks } from "../../shared/knowUsLinks";
 import { listCalendarItems } from "../lib/calendar";
@@ -833,7 +836,8 @@ export function register(app: Express, deps: Deps): void {
   // ── The tidy job (sheet 19i) ──────────────────────────────────────────────
 
   registerJob(TIDY_JOB, TIDY_EVERY_MS, async () => {
-    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir);
+    // TODO(wt/email-invitations): add `footer: renderComeAndPlay` here (server/lib/applicantFollowups.ts ClosingDeps.footer).
+    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir, { postEmail, projectName, siteUrl: site, onboardingRole: () => stringVar("org.onboarding_role") });
     // The kept applications' confirmation emails, tried again (server/lib/openProposalKept.ts).
     const again = await retryOwedConfirmations({ ...letters, getPool, postEmail }, now());
     return again.tried ? `${tidied}, ${again.went} of ${again.tried} owed confirmation emails sent` : tidied;
@@ -873,11 +877,22 @@ export function register(app: Express, deps: Deps): void {
  * account already here made no invitation: that person is a member, and keeps
  * theirs.
  */
-export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string): Promise<string> {
+export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, closing?: ClosingDeps): Promise<string> {
   const deleted = await store.deleteUnconfirmedBefore(pool, new Date(at.getTime() - OPEN_CONFIRM_HOURS * 60 * 60_000));
   const cutoff = new Date(at.getTime() - OPEN_ANONYMISE_DAYS * 24 * 60 * 60_000);
   // Confirmed, and nobody decided it in 90 days: closed as withdrawn, and the name and address go now (red team, 9 Nov).
-  const expired = await store.expireUndecidedBefore(pool, cutoff, at);
+  // With a post office handed in, each one first gets its one closed letter (keyed per application), while the address is still here.
+  let expired: number;
+  let letters = 0;
+  if (closing) {
+    const due = await store.undecidedBefore(pool, cutoff);
+    letters = await sendClosedLetters(pool, closing, due);
+    const closed = await store.expireUndecided(pool, due.map((p) => p.id), cutoff, at);
+    await stampQuietClose(pool, closed, at);
+    expired = closed.length;
+  } else {
+    expired = await store.expireUndecidedBefore(pool, cutoff, at);
+  }
   let anonymised = await store.anonymiseDecidedBefore(pool, cutoff, at);
   for (const p of await store.adoptedDecidedBefore(pool, cutoff)) {
     const invite = await inviteById(pool, openInviteId(p.id));
@@ -895,5 +910,5 @@ export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string):
   const voiced = await store.voiceDecidedBefore(pool, cutoff);
   if (fileDir) for (const id of voiced) await removeVoiceNotes(fileDir, id);
   const voices = await store.clearVoiceOf(pool, voiced);
-  return `${deleted} unconfirmed deleted, ${expired} undecided closed, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
+  return `${deleted} unconfirmed deleted, ${expired} undecided closed${letters ? ` (${letters} closed letters sent)` : ""}, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
 }

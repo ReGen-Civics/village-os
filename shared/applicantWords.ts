@@ -101,6 +101,21 @@ export interface ApplicantMessages {
     closing: string;
   };
 
+  /**
+   * THE CLOSED LETTER: an application nobody answered in time is closed by the
+   * tidy job, and this goes once. Short and kind, points to quests, and is
+   * signed by a role team. No date and no count of days in its words.
+   */
+  closed: {
+    subject(village: string): string;
+    thanks(roles: string, village: string): string;
+    closed: string;
+    quest(url: string): string;
+    page(link: string): string;
+    /** The signature: a role's name, or the village's when no role welcomes people. */
+    signed(team: string): string;
+  };
+
 
   adopt: {
     subject(village: string): string;
@@ -174,8 +189,14 @@ export interface ApplicantMessages {
       review: string;
       decision: string;
       notInvited: string;
+      /** The application was closed because nobody answered it in time. */
+      closed: string;
     };
     notInvited: { heading: string; line: string; program(name: string): string; quests: string; events: string };
+    /** The eyebrow and the card for an application closed because nobody answered it in time. */
+    closed: { step: string; heading: string; line: string; quests: string; roles: string };
+    /** The applicant's own door when their invitation expired: it asks the team, and never makes a new one by itself. */
+    newInvitation: { heading: string; line: string; ask: string; asked: string; failed: string };
     booking: {
       label: string;
       /**
@@ -292,6 +313,15 @@ const en: ApplicantMessages = {
     closing: "We hope to meet you soon.",
   },
 
+  closed: {
+    subject: (v) => `Your application to ${v}`,
+    thanks: (roles, v) => `Thank you for applying to hold ${roles} in ${v}.`,
+    closed: "We weren't able to answer your application in time, so we've closed it. Thank you for your time and interest.",
+    quest: (url) => `We encourage you to explore quests: ${url}`,
+    page: (link) => `Your application's page: ${link}`,
+    signed: (team) => `With care,\nThe ${team} team`,
+  },
+
 
   adopt: {
     subject: (v) => `${v} adopted your proposal`,
@@ -371,6 +401,21 @@ const en: ApplicantMessages = {
       review: "Our move: we read your application with care, then invite you to the conversations or write to thank you.",
       decision: "Our move: the circle weighs everything and decides by consent. We write to you with its answer.",
       notInvited: "Nothing more is needed from you. We have written to you.",
+      closed: "Nothing more is needed from you. This application is closed.",
+    },
+    closed: {
+      step: "Closed",
+      heading: "This application is closed",
+      line: "We weren't able to answer it in time. Thank you for your time and interest. You're welcome to explore:",
+      quests: "Explore quests",
+      roles: "See the open roles",
+    },
+    newInvitation: {
+      heading: "Need a new invitation?",
+      line: "Your invitation to join the team has expired. Ask for a new one, and the team that sends invitations will write to you.",
+      ask: "Send me a new invitation",
+      asked: "Thank you. We've let the team know, and they'll write to you.",
+      failed: "That didn't go through. Please try again.",
     },
     notInvited: {
       heading: "Thank you for applying",
@@ -476,6 +521,16 @@ const es: ApplicantMessages = {
     closing: "Esperamos conocerte pronto.",
   },
 
+  // needs-native-review: the closed letter, new words, 15 Nov 2026
+  closed: {
+    subject: (v) => `Tu postulación a ${v}`,
+    thanks: (roles, v) => `Gracias por postularte para ocupar ${roles} en ${v}.`,
+    closed: "No pudimos responder a tu postulación a tiempo, así que la cerramos. Gracias por tu tiempo y tu interés.",
+    quest: (url) => `Te animamos a explorar misiones: ${url}`,
+    page: (link) => `La página de tu postulación: ${link}`,
+    signed: (team) => `Con cariño,\nEl equipo de ${team}`,
+  },
+
 
   adopt: {
     subject: (v) => `${v} adoptó tu propuesta`,
@@ -556,6 +611,22 @@ const es: ApplicantMessages = {
       review: "Nos toca a nosotros: leemos tu postulación con cuidado, y luego te invitamos a las conversaciones o te escribimos para darte las gracias.",
       decision: "Nos toca a nosotros: el círculo lo considera todo y decide por consentimiento. Te escribimos con su respuesta.",
       notInvited: "No hace falta nada más de tu parte. Ya te escribimos.",
+      closed: "No hace falta nada más de tu parte. Esta postulación está cerrada.", // needs-native-review: new words, 15 Nov 2026
+    },
+    // needs-native-review: the closed card and the new-invitation door, new words, 15 Nov 2026
+    closed: {
+      step: "Cerrada",
+      heading: "Esta postulación está cerrada",
+      line: "No pudimos responderla a tiempo. Gracias por tu tiempo y tu interés. Te invitamos a explorar:",
+      quests: "Explorar misiones",
+      roles: "Ver los roles abiertos",
+    },
+    newInvitation: {
+      heading: "¿Necesitas una nueva invitación?",
+      line: "Tu invitación para unirte al equipo venció. Pide una nueva, y el equipo que envía las invitaciones te escribirá.",
+      ask: "Envíame una nueva invitación",
+      asked: "Gracias. Ya avisamos al equipo, y te escribirán.",
+      failed: "No se pudo enviar. Inténtalo de nuevo.",
     },
     notInvited: {
       heading: "Gracias por postularte",
@@ -673,12 +744,16 @@ export interface StatusServedForView {
   reviewFirst?: boolean;
   /** Our review ended it with the not-invited letter. */
   notInvited?: boolean;
+  /** Closed by the tidy job because nobody answered it in time (server/lib/applicantFollowups.ts). */
+  closed?: boolean;
 }
 
 export interface StatusView {
   heading: string;
   /** The not-invited answer is shown, in place of the older declined one. */
   notInvited: boolean;
+  /** Closed because nobody answered it in time: the closed card is shown, never "you withdrew". */
+  closed: boolean;
   stepWords: string;
   move: string;
   path: Array<{ label: string; state: "done" | "now" | "later" }>;
@@ -735,8 +810,10 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   }
 
   const notInvited = !!s.notInvited && s.outcome === "declined";
+  const quietlyClosed = !!s.closed && s.outcome === "withdrawn";
   let move: string;
   if (s.outcome === "adopted") move = w.move.adopted;
+  else if (quietlyClosed) move = w.move.closed;
   else if (s.outcome === "withdrawn") move = w.move.withdrawn;
   else if (notInvited) move = w.move.notInvited;
   else if (s.outcome === "declined") move = w.move.declined;
@@ -764,7 +841,8 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
   return {
     heading: s.reviewFirst ? w.headingApplication : w.heading,
     notInvited,
-    stepWords: (w.step as Record<string, string>)[stepKey] ?? s.step,
+    closed: quietlyClosed,
+    stepWords: quietlyClosed ? w.closed.step : ((w.step as Record<string, string>)[stepKey] ?? s.step),
     move,
     path,
     booking,
