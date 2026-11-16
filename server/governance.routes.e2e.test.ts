@@ -35,7 +35,7 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -233,7 +233,8 @@ describe.skipIf(!DB_CONFIGURED)("the governance engine, driven", () => {
   it("opens a real ballot: the snapshot freezes the roll, the weights and the dials", async () => {
     // A quorum the village will genuinely miss with one voter, set through the
     // admin door so the ballot snapshots it the way any village's would.
-    const dial = await call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "60" } });
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const dial = await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "60" } }));
     expect(dial.status).toBe(200);
 
     const made = await call("POST", "/api/game/mechanics/proposals", {
