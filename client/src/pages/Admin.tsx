@@ -66,6 +66,7 @@ import type { UploadsSweepReport } from "@shared/uploadsSweep";
 import { CIRCLE_STATUSES } from "@shared/draftKinds";
 import CashPayoutsTab from "@/components/admin/CashPayoutsTab";
 import TypographyPanel from "@/components/TypographyPanel";
+import SoundsPanel from "@/components/SoundsPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
@@ -7245,6 +7246,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             Self-contained component — see client/src/components/TypographyPanel.tsx. */}
         <LookPanel password={password} />
         <TypographyPanel password={password} />
+        <SoundsPanel password={password} />
         <IdentityPackPanel password={password} />
         <MenuPanel password={password} />
       </SetupSection>
