@@ -195,6 +195,25 @@ export async function setPlantingClaim(pool: Pool, villageId: string, pinId: str
   return Number(r?.affectedRows ?? 0) > 0;
 }
 
+/**
+ * A member's vouched plantings still owed a claim on the planting quest, oldest
+ * first. A member holds one open claim per quest at a time (the quest board's
+ * rule), so these open one after another as each claim is decided.
+ */
+export async function owedPlantings(pool: Pool, villageId: string, ownerId: string, perPin: number, limit = 20): Promise<string[]> {
+  const [rows] = await pool.query<any[]>(
+    `SELECT p.id FROM hidden_map_pins p
+      WHERE p.village_id = ? AND p.owner_user_id = ? AND p.layer = 'planting' AND p.hidden_at IS NULL
+        AND p.planting_claim_id IS NULL
+        AND (SELECT COUNT(*) FROM hidden_map_vouches v
+              WHERE v.village_id = p.village_id AND v.pin_id = p.id AND v.withdrawn_at IS NULL
+                AND v.voucher_user_id <> p.owner_user_id) >= ?
+      ORDER BY p.created_at, p.id LIMIT ?`,
+    [villageId, ownerId, Math.max(1, perPin), limit],
+  );
+  return rows.map((r) => String(r.id));
+}
+
 export async function plantingClaimOf(pool: Pool, villageId: string, pinId: string): Promise<string | null> {
   const [rows] = await pool.query<any[]>("SELECT planting_claim_id FROM hidden_map_pins WHERE village_id = ? AND id = ? LIMIT 1", [villageId, pinId]);
   return rows[0]?.planting_claim_id ?? null;
