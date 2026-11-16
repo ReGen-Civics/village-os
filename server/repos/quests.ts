@@ -672,7 +672,14 @@ export interface ClaimsRepo {
    * the route's read and this insert then answers "gone" instead of leaving a
    * claim behind pointing at nothing.
    */
-  openClaim(c: ClaimRecord): Promise<OpenClaimOutcome>;
+  /**
+   * `whileOpenOnly`: block only on a claim still open (claimed or submitted),
+   * so a member may hold a decided claim and open another. For a quest that
+   * pays per piece of work done, where each claim stands for a different piece
+   * (the hidden map's plantings and return visits). Absent, the board's own
+   * rule holds: any claim that was not declined blocks another.
+   */
+  openClaim(c: ClaimRecord, opts?: { whileOpenOnly?: boolean }): Promise<OpenClaimOutcome>;
   /**
    * Consent, as ONE commit: check the status, flip the row, move the value.
    *
@@ -1012,7 +1019,7 @@ export function claimsRepo(pool: Pool): ClaimsRepo {
       return c;
     },
 
-    async openClaim(c) {
+    async openClaim(c, opts) {
       return withDeadlockRetry(async () => {
         const conn = await pool.getConnection();
         try {
@@ -1033,8 +1040,11 @@ export function claimsRepo(pool: Pool): ClaimsRepo {
           // claim: it is the quest handed back, and it must not block the
           // member from picking the quest up again.
           const [held] = await conn.query<RowDataPacket[]>(
-            `${CLAIM_SELECT} WHERE quest_id = ? AND user_id = ? AND status <> 'declined' ` +
-              "ORDER BY claimed_at DESC, id DESC LIMIT 1",
+            opts?.whileOpenOnly
+              ? `${CLAIM_SELECT} WHERE quest_id = ? AND user_id = ? AND status IN ('claimed', 'submitted') ` +
+                  "ORDER BY claimed_at DESC, id DESC LIMIT 1"
+              : `${CLAIM_SELECT} WHERE quest_id = ? AND user_id = ? AND status <> 'declined' ` +
+                  "ORDER BY claimed_at DESC, id DESC LIMIT 1",
             [c.questId, c.userId],
           );
           if (held[0]) {

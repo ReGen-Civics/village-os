@@ -22,6 +22,8 @@ import {
   setMuted,
   setSoundMember,
   soundUrl,
+  loadVillageSounds,
+  villageHasSounds,
   type SoundHandle,
 } from "./sound";
 
@@ -66,7 +68,7 @@ beforeEach(() => {
   setSoundMember("");
   setMuted(false);
   setHapticsEnabled(true);
-  configureSounds({ files: {}, createAudio: undefined, volume: 0.5 });
+  configureSounds({ files: {}, createAudio: undefined, volume: 0.5, startMuted: false });
 });
 
 afterEach(() => {
@@ -77,8 +79,8 @@ afterEach(() => {
 // ── The manifest ────────────────────────────────────────────────────────────
 
 describe("the manifest", () => {
-  it("names five moments and briefs every one of them", () => {
-    expect(SOUND_MOMENTS).toHaveLength(5);
+  it("names the platform's five moments and the new modules' three, and briefs every one of them", () => {
+    expect(SOUND_MOMENTS).toHaveLength(8);
     for (const moment of SOUND_MOMENTS) {
       const spec = SOUND_MANIFEST[moment];
       expect(spec.moment.length).toBeGreaterThan(10);
@@ -331,5 +333,38 @@ describe("reduce motion", () => {
     expect(isMuted()).toBe(false);
     reduceMotion = false;
     await expect(playSound("quest_complete")).resolves.toBe("played");
+  });
+});
+
+// ── A village's own sounds (gap G8) ─────────────────────────────────────────
+
+describe("a village's own sounds", () => {
+  const serve = (body: unknown) => (async () => ({ ok: true, json: async () => body })) as unknown as typeof fetch;
+
+  it("start off for a member who never chose, and play once the member turns them on", async () => {
+    const audio = okAudio();
+    store.clear(); // a member who never chose
+    configureSounds({ createAudio: audio.create });
+    await loadVillageSounds(serve({ volume: 0.4, files: FILES }));
+    expect(villageHasSounds()).toBe(true);
+    expect(isMuted()).toBe(true);
+    expect(await playSound("quest_complete")).toBe("muted");
+    setMuted(false);
+    expect(await playSound("quest_complete")).toBe("played");
+    expect(audio.played).toHaveLength(1);
+  });
+
+  it("leave a village with none silent, and a member's earlier choice standing", async () => {
+    store.clear();
+    await loadVillageSounds(serve({ volume: 0.5, files: {} }));
+    expect(villageHasSounds()).toBe(false);
+    expect(isMuted()).toBe(false);
+    store.set("village.sound.muted", "0");
+    await loadVillageSounds(serve({ volume: 0.5, files: FILES }));
+    expect(isMuted()).toBe(false);
+  });
+
+  it("never throws when the server cannot answer", async () => {
+    await expect(loadVillageSounds((async () => { throw new Error("offline"); }) as unknown as typeof fetch)).resolves.toBeUndefined();
   });
 });

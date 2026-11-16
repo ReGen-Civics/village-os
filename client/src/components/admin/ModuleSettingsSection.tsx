@@ -46,6 +46,7 @@ import {
 import SaberraConfigPanel from "@/components/admin/SaberraConfigPanel";
 import RitesConfigPanel from "@/components/admin/RitesConfigPanel";
 import ProtocolsEditor from "@/components/admin/ProtocolsEditor";
+import HiddenMapConfigPanel from "@/components/admin/HiddenMapConfigPanel";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 
 /** A variable row as GET /api/admin/variables sends it. */
@@ -106,6 +107,8 @@ const CONFIG_PANELS: Record<string, (p: { password: string }) => ReactElement> =
   rites: RitesConfigPanel,
   // The checklists themselves, their import, and the install card's switch.
   protocols: ProtocolsEditor,
+  // The map's name, its layers' words and kinds, and the two quests that pay (QA pass 5, P5-19).
+  "hidden-map": HiddenMapConfigPanel,
 };
 
 /**
