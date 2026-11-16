@@ -9491,9 +9491,9 @@ msgstr "Loaded {done} faces. Not part of the cast, so left out: {0}."
 
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
-msgctxt "approved writes"
-msgid "Approved by {0}"
-msgstr "Approved by {0}"
+#~ msgctxt "approved writes"
+#~ msgid "Approved by {0}"
+#~ msgstr "Approved by {0}"
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: the plain allowance line"
@@ -12302,6 +12302,11 @@ msgstr "Where"
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy did not download"
 msgstr "The copy did not download"
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "I checked its page, and this change is not there yet"
+msgstr "I checked its page, and this change is not there yet"
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "You selected roles before you joined."
@@ -19343,6 +19348,12 @@ msgstr "Sent to {sentTo}. It should arrive in a minute or two."
 msgctxt "admin protocols editor"
 msgid "Check the file"
 msgstr "Check the file"
+
+#. placeholder {0}: w.approvedBy
+#: client/src/components/admin/ApprovedWritesPanel.tsx
+msgctxt "approved writes"
+msgid "The agent says {0} approved it. No person confirmed it in the app."
+msgstr "The agent says {0} approved it. No person confirmed it in the app."
 
 #. placeholder {0}: c.name
 #: client/src/components/roleDraft/ArchetypeStep.tsx

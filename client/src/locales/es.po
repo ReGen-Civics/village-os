@@ -9529,9 +9529,9 @@ msgstr ""
 
 #. placeholder {0}: w.approvedBy
 #: client/src/components/admin/ApprovedWritesPanel.tsx
-msgctxt "approved writes"
-msgid "Approved by {0}"
-msgstr ""
+#~ msgctxt "approved writes"
+#~ msgid "Approved by {0}"
+#~ msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks composer: the plain allowance line"
@@ -12356,6 +12356,11 @@ msgstr ""
 
 #: client/src/components/governance/ExportByVote.tsx
 msgid "The copy did not download"
+msgstr ""
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "I checked its page, and this change is not there yet"
 msgstr ""
 
 #: client/src/components/roleDraft/DraftCarry.tsx
@@ -19402,6 +19407,12 @@ msgstr ""
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Check the file"
+msgstr ""
+
+#. placeholder {0}: w.approvedBy
+#: client/src/components/admin/ApprovedWritesPanel.tsx
+msgctxt "approved writes"
+msgid "The agent says {0} approved it. No person confirmed it in the app."
 msgstr ""
 
 #. placeholder {0}: c.name
