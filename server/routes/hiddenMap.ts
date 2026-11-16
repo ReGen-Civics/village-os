@@ -139,6 +139,8 @@ export function register(app: Express, deps: Deps): void {
       vouchedCount: m.who.opening.vouchedCount,
       needed: m.who.opening.needed,
       ownPins: m.who.ownPins,
+      // The one thing a closed map learns about everybody else's pins: how many there are.
+      allPins: await repo.countAllPins(getPool(), vid()),
       keeper: m.who.viewer.keeper,
       mayApproveExports: m.who.opening.open && (await seated(m.user, "hiddenmap.export")),
       title: c.title,

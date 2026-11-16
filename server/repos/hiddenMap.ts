@@ -156,6 +156,12 @@ export async function countOwnPins(pool: Pool, villageId: string, userId: string
   return Number(rows[0]?.n ?? 0);
 }
 
+/** How many pins the whole map holds, hidden ones aside. A number and nothing about where. */
+export async function countAllPins(pool: Pool, villageId: string): Promise<number> {
+  const [rows] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM hidden_map_pins WHERE village_id = ? AND hidden_at IS NULL", [villageId]);
+  return Number(rows[0]?.n ?? 0);
+}
+
 export async function hasOpened(pool: Pool, villageId: string, userId: string): Promise<boolean> {
   const [rows] = await pool.query<any[]>(
     "SELECT 1 FROM hidden_map_unlocks WHERE village_id = ? AND user_id = ? LIMIT 1",

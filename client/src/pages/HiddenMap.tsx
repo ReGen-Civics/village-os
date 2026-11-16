@@ -10,7 +10,7 @@
  * so no village's words live in this file.
  */
 import { useCallback, useEffect, useState } from "react";
-import { msg } from "@lingui/core/macro";
+import { msg, plural } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import { Trans, useLingui } from "@lingui/react/macro";
 import type { ExportState, Layer, PinDot, PinView, Precision } from "@shared/hiddenMap";
@@ -23,6 +23,8 @@ import WorldMap from "@/components/hiddenMap/WorldMap";
 import PinPanel from "@/components/hiddenMap/PinPanel";
 import CaptureForm, { PRECISION_WORDS, type Capture, type SendAnswer } from "@/components/hiddenMap/CaptureForm";
 import Thumb from "@/components/hiddenMap/Thumb";
+import { useOutbox } from "@/components/hiddenMap/useOutbox";
+import { looksOffline, type OutboxItem } from "@/lib/hiddenMapOutbox";
 import {
   addPhotos, answerExport, askExport, createPin, downloadExport, getExports, getMe, getPins, getQueue, Refused,
   type ExportView, type MapMe,
@@ -67,6 +69,9 @@ export default function HiddenMap() {
     if (on && user) void load();
   }, [on, user, load]);
 
+  const owner = on && user ? String(user.id) : null;
+  const box = useOutbox(owner, () => void load());
+
   if (!modules.loaded) {
     return (
       <Layout>
@@ -87,16 +92,27 @@ export default function HiddenMap() {
   }
 
   const send = async (c: Capture): Promise<SendAnswer> => {
+    let madeId: string | undefined;
     try {
       const made = await createPin(c.draft);
+      madeId = made.pin.id;
       if (c.photos.length) await addPhotos(made.pin.id, c.photos);
       await load();
       setSelected(made.pin.id);
       return { kept: true, said: t`Saved. It is on your map.` };
     } catch (e) {
+      if (owner && looksOffline(e)) {
+        try {
+          await box.add({ kind: "pin", clientId: c.draft.clientId, owner, createdAt: new Date().toISOString(), draft: c.draft, photos: c.photos, pinId: madeId });
+          return { kept: true, said: t`Saved on this phone. It goes up when you have signal.` };
+        } catch {
+          return { kept: false, said: t`This phone could not keep it for later. Try again when you have signal.` };
+        }
+      }
       return { kept: false, said: e instanceof Refused ? e.message : t`That was not saved. Check your signal and try again.` };
     }
   };
+  const queueVisit = async (item: OutboxItem) => box.add(item);
 
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: "map", label: t`Map` },
@@ -132,8 +148,34 @@ export default function HiddenMap() {
                     <Trans>Log your {plantings} with a photo. Each one counts once a member whose map has opened has vouched that it is real.</Trans>
                     {me.keeper ? <> <Trans>You keep this map, so you can vouch for members' pins now.</Trans></> : null}
                   </p>
+                  <p className={`${HINT} mt-1`}>{t`${plural(me.allPins, { one: "# place is on the whole map.", other: "# places are on the whole map." })}`}</p>
                 </div>
               </div>
+            </section>
+          )}
+
+          {box.items.length > 0 && (
+            <section className={CARD} aria-label={t`Waiting on this phone`}>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="flex-1 font-semibold text-foreground">
+                  {t`${plural(box.items.length, { one: "# capture is waiting on this phone.", other: "# captures are waiting on this phone." })}`}
+                </p>
+                <button type="button" className={BTN_PRIMARY} disabled={box.sending} onClick={() => void box.flush()}>
+                  {box.sending ? <Trans>Sending</Trans> : <Trans>Send now</Trans>}
+                </button>
+              </div>
+              {!box.durable && <p className={`${HINT} mt-1`}><Trans>This browser cannot keep captures after the page closes. Keep it open until they go up.</Trans></p>}
+              <ul className="mt-3 space-y-2">
+                {box.items.map((i) => (
+                  <li key={i.clientId} className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-3">
+                    <span className="flex-1 text-sm text-foreground">
+                      {i.kind === "pin" ? (i.draft.title || i.draft.kind) : t`A return visit`}
+                      {i.refused ? ` · ${i.refused}` : ""}
+                    </span>
+                    <button type="button" className={BTN_SECONDARY} onClick={() => void box.discard(i.clientId)}><Trans>Discard</Trans></button>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 
@@ -157,7 +199,7 @@ export default function HiddenMap() {
               </div>
               <WorldMap pins={visible} basemap={me.basemap} maxTileZoom={me.maxZoom} labels={me.labels} selectedId={selected} onSelect={setSelected} height={460} />
               {pins.length === 0 && <p className={HINT}><Trans>Nothing here yet. Log your first place and it appears on your map.</Trans></p>}
-              {selected && <PinPanel key={selected} id={selected} me={me} onChanged={() => void load()} onClose={() => setSelected(null)} />}
+              {selected && <PinPanel key={selected} id={selected} me={me} owner={owner} onQueueVisit={queueVisit} onChanged={() => void load()} onClose={() => setSelected(null)} />}
             </div>
           )}
 

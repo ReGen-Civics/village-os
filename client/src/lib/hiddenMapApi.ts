@@ -16,6 +16,7 @@ export interface MapMe {
   vouchedCount: number;
   needed: number;
   ownPins: number;
+  allPins: number;
   keeper: boolean;
   mayApproveExports: boolean;
   title: string;
