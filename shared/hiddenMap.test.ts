@@ -106,6 +106,11 @@ describe("vouching and visiting", () => {
   it("refuses a self-vouch with 409", () => {
     expect(mayVouch(viewer({ userId: "owner", open: true }), pin())).toMatchObject({ ok: false, status: 409 });
   });
+  it("refuses a member not yet admitted, even with an open map or the keeper's power", () => {
+    expect(mayVouch(viewer({ open: true, admitted: false }), pin())).toMatchObject({ ok: false, status: 403 });
+    expect(mayVouch(viewer({ keeper: true, admitted: false }), pin())).toMatchObject({ ok: false, status: 403 });
+    expect(mayVouch(viewer({ open: true, admitted: true }), pin())).toEqual({ ok: true });
+  });
   it("refuses a member whose map is closed with 403, and lets a keeper through", () => {
     expect(mayVouch(viewer(), pin())).toMatchObject({ ok: false, status: 403 });
     expect(mayVouch(viewer({ keeper: true }), pin())).toEqual({ ok: true });
