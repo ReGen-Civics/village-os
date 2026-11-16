@@ -43,7 +43,7 @@ import {
 import type { AppDeps } from "../lib/appDeps";
 import { villageId } from "../lib/economy";
 import { configOf, photoPath, readMap, readPin, readQueue, storePhoto, whoAmI, type Dials } from "../lib/hiddenMap";
-import { openVisitClaim, type VisitClaimDeps } from "../lib/hiddenMapQuest";
+import { openVisitClaim, plantingClaimNote, type VisitClaimDeps } from "../lib/hiddenMapQuest";
 import { moduleConfig, requireModule } from "../lib/modules";
 import { LocationDataSurvived } from "../lib/placePhotos";
 import { boolVar, numberVar, stringVar } from "../lib/variables";
@@ -316,9 +316,29 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`hidden-map-vouch:${uid}`, VOUCHES_PER_HOUR, HOUR_MS)) {
       return res.status(429).json({ error: "That is a lot of vouches for one hour." });
     }
-    await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", new Date());
+    const now = new Date();
+    await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", now);
     await repo.logAccess(getPool(), vid(), uid, "vouch", { pinId: id });
     const after = await repo.getPin(getPool(), vid(), uid, id);
+    // A planting that has just reached its vouches opens a claim for its owner
+    // on the village's planting quest, once per pin. Paid by the ordinary
+    // consent route and the village's quest.completed rule, like any quest.
+    const plantingQuestId = config().plantingQuestId;
+    const owner = after?.ownerUserId ?? null;
+    if (visitClaims && plantingQuestId && after && owner && after.layer === "planting" && after.vouches >= dials().vouchesPerPin) {
+      try {
+        if (!(await repo.plantingClaimOf(getPool(), vid(), id))) {
+          const ownerUser = (await members.byId(owner)) ?? { id: owner, name: "" };
+          const claimId = await openVisitClaim(
+            { ...visitClaims, getPool },
+            { questId: plantingQuestId, user: { id: owner, name: (ownerUser as any).name ?? "" }, at: now, note: plantingClaimNote(now) },
+          );
+          if (claimId) await repo.setPlantingClaim(getPool(), vid(), id, claimId);
+        }
+      } catch (e) {
+        console.error("[hidden-map] a vouched planting could not open its quest claim", e);
+      }
+    }
     res.json({ vouches: after?.vouches ?? found.record.vouches, vouchedByMe: true });
   });
 

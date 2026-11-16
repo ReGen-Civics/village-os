@@ -33,7 +33,7 @@ import { loadVariables, setVariable } from "../lib/variables";
 import { villageId } from "../lib/economy";
 import * as repo from "../repos/hiddenMap";
 import { claimsRepo as claimsRepoFactory, questsRepo as questsRepoFactory } from "../repos/quests";
-import { openVisitClaim, visitClaimNote } from "../lib/hiddenMapQuest";
+import { openVisitClaim, plantingClaimNote, visitClaimNote } from "../lib/hiddenMapQuest";
 import { register } from "./hiddenMap";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -385,6 +385,12 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     expect(await openVisitClaim(deps, { questId: "q-return-visit", user: { id: "m-visitor", name: "Sky Example" }, at })).toBeNull();
     // A quest that does not exist opens nothing.
     expect(await openVisitClaim(deps, { questId: "q-nope", user: { id: "m-visitor" }, at })).toBeNull();
+  });
+
+  it("a planting's claim carries its own words, a day and never a place", () => {
+    const at = new Date("2026-11-15T12:00:00Z");
+    expect(plantingClaimNote(at)).toBe("A planting, vouched on 2026-11-15.");
+    expect(plantingClaimNote(at)).not.toMatch(/\d+\.\d{3,}/);
   });
 
   it("exports a member's own pins to them, and erasure deletes their photos and leaves the pins unattributed", async () => {

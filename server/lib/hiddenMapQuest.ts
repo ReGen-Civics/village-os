@@ -33,6 +33,11 @@ export function visitClaimNote(at: Date): string {
   return `A return visit, logged on ${at.toISOString().slice(0, 10)}.`;
 }
 
+/** A planting's claim words, once it is vouched. A day, and nothing about where. */
+export function plantingClaimNote(at: Date): string {
+  return `A planting, vouched on ${at.toISOString().slice(0, 10)}.`;
+}
+
 /**
  * Open and submit a claim for this visit. Null when the quest is gone, refuses
  * this member, or they already hold an open claim on it: the visit still
@@ -40,7 +45,7 @@ export function visitClaimNote(at: Date): string {
  */
 export async function openVisitClaim(
   deps: VisitClaimDeps,
-  input: { questId: string; user: { id: string; name?: string | null }; at: Date },
+  input: { questId: string; user: { id: string; name?: string | null }; at: Date; note?: string },
 ): Promise<string | null> {
   const quest: any = await deps.questsRepo.byId(input.questId);
   if (!quest) return null;
@@ -59,6 +64,6 @@ export async function openVisitClaim(
   };
   const taken = await deps.claimsRepo.openClaim(claim as any);
   if (!taken.ok) return null;
-  await deps.claimsRepo.submitOnce(claim.id, { artifactUrl: "", note: visitClaimNote(input.at), at: input.at.toISOString() });
+  await deps.claimsRepo.submitOnce(claim.id, { artifactUrl: "", note: input.note ?? visitClaimNote(input.at), at: input.at.toISOString() });
   return claim.id;
 }
