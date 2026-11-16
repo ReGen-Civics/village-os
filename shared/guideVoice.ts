@@ -25,10 +25,15 @@ export const GUIDE_VOICE_MAX = 1000;
 /** The stored setting, made safe to place in a prompt: one paragraph, no control characters, clipped. */
 export function guideVoiceOf(raw: unknown): string {
   if (typeof raw !== "string") return "";
+  // Bounded before any pattern runs, and lines joined by splitting rather than
+  // by a pattern around the newline, so no input can make the cleaning slow.
   return raw
-    .replace(/[\u0000-\u0008\u000b-\u001f\u007f‪-‮⁦-⁩]/g, "")
-    .replace(/\s*\n\s*/g, " ")
-    .trim()
+    .slice(0, GUIDE_VOICE_MAX * 4)
+    .replace(/[\u0000-\u0008\u000b-\u001f\u007f\u202a-\u202e\u2066-\u2069]/g, "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" ")
     .slice(0, GUIDE_VOICE_MAX)
     .trim();
 }
