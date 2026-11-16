@@ -29,6 +29,7 @@ import type { Express, Request, Response } from "express";
 import type { Pool } from "mysql2/promise";
 import { CONTENT_KINDS, contentTranslationProblem, translatableLocales, type ContentKind } from "../../shared/contentTranslation";
 import type { Capability } from "../../shared/capabilities";
+import { AI_DRAFT_SERVICE } from "../../shared/aiDraftService";
 import { registerAdminEditControl, type AdminEditControl } from "../lib/adminSuggestions";
 import { englishOf, translatableFields, type SourceField, type SourceReaders } from "../lib/contentTranslationSource";
 import { approveDraft, removeTranslation, sourceHash, translationsFor, writeTranslation } from "../repos/contentTranslations";
@@ -49,13 +50,11 @@ export const DRAFTS_PER_HOUR = 12;
 const HOUR_MS = 60 * 60 * 1000;
 
 /**
- * WHO READS THE WORDS A DRAFT SENDS (coordinator, 15 Nov; said the way
- * VOICE_WORDS.heardHint names the browser's speech service). The village and
- * platform keys are Anthropic keys (server/lib/assistant.ts `resolveKey`), so
- * the English of the fields being drafted goes to Anthropic's Claude. The
+ * WHO READS THE WORDS A DRAFT SENDS (coordinator, 15 Nov): the one name in
+ * shared/aiDraftService.ts, which the voice drafts' notice reads too. The
  * editor shows this line beside the Draft button, before anything is sent.
  */
-export const MACHINE_DRAFT_SERVICE = "Anthropic's Claude";
+export const MACHINE_DRAFT_SERVICE = AI_DRAFT_SERVICE;
 export const MACHINE_DRAFT_NOTICE = `Drafting sends the English of these fields to ${MACHINE_DRAFT_SERVICE}, which writes the drafts. Pay words and binding pages are never sent.`;
 
 export interface MachineDraftAsk {

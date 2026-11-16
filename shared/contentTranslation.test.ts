@@ -3,7 +3,7 @@
  * (shared/contentTranslation.ts).
  */
 import { describe, expect, it } from "vitest";
-import { contentTranslationProblem, PROTECTED_PAGES, translatableLocales, translationTarget, type TranslationInput } from "./contentTranslation";
+import { addedUrls, contentTranslationProblem, PROTECTED_PAGES, translatableLocales, translationTarget, type TranslationInput } from "./contentTranslation";
 import { pageSpecForSection } from "./pageContent";
 
 const ok = (over: Partial<TranslationInput> = {}): TranslationInput => ({
@@ -108,5 +108,35 @@ describe("contentTranslationProblem", () => {
 
   it("refuses a status it does not know", () => {
     expect(contentTranslationProblem(ok({ status: "machine" }))).toMatch(/status/);
+  });
+
+  // Security audit, 15 Nov 2026: markup in the English used to switch the markup check off.
+  it("holds a translation's tags to exactly the English's, even when the English has markup", () => {
+    const source = "Hold the <b>legal</b> side of {village}.";
+    expect(contentTranslationProblem(ok({ source, text: "Sostener el lado <b>legal</b> de {village}." }))).toBeNull();
+    expect(contentTranslationProblem(ok({ source, text: "Sostener el lado <B >legal</b> de {village}." }))).toBeNull();
+    expect(contentTranslationProblem(ok({ source, text: 'Sostener el lado <b>legal</b> de {village}. <a href="https://x.example">aqui</a>' }))).toMatch(/markup/);
+    expect(contentTranslationProblem(ok({ source, text: "Sostener el lado <b>legal</b> de {village}.<img src=x onerror=alert(1)>" }))).toMatch(/markup/);
+    expect(contentTranslationProblem(ok({ source, text: "Sostener el lado legal de {village}." }))).toMatch(/markup/);
+    expect(contentTranslationProblem(ok({ source, text: "Sostener el lado <i>legal</i> de {village}." }))).toMatch(/markup/);
+  });
+
+  // Rye, 15 Nov 2026: a machine draft is shown to readers, marked, so it may not add an address.
+  it("refuses a machine draft that adds a web address the English does not have", () => {
+    const draft = (text: string, source = "Hold the legal side of {village}.") => contentTranslationProblem(ok({ status: "ai_draft", text, source }));
+    expect(draft("Sostener lo legal de {village}.")).toBeNull();
+    expect(draft("Sostener lo legal de {village}. Mas en https://evil.example/pay")).toMatch(/web address/);
+    expect(draft("Sostener lo legal de {village}. Visita www.evil.example")).toMatch(/web address/);
+    expect(draft("Sostener lo legal de {village}. Escribe a evil-pay.com")).toMatch(/web address/);
+    expect(draft("Sostener lo legal de {village}. evil.example/pagar")).toMatch(/web address/);
+    expect(draft("Sostener lo legal de {village}. mailto:x@evil.example")).toMatch(/web address/);
+    // The address the English already holds may stay, whatever its case or a full stop after it.
+    expect(draft("Lee https://village.example/rules. antes de {village}.", "Read https://village.example/rules before {village}.")).toBeNull();
+    expect(draft("Lee HTTPS://Village.example/rules antes de {village}.", "Read https://village.example/rules before {village}.")).toBeNull();
+    // A different address in the same place is still added.
+    expect(draft("Lee https://vil1age.example/rules antes de {village}.", "Read https://village.example/rules before {village}.")).toMatch(/web address/);
+    // A person's translation stands in their name, so this check is the machine's.
+    expect(contentTranslationProblem(ok({ status: "approved", text: "Sostener lo legal de {village}. Mas en https://village.example/es" }))).toBeNull();
+    expect(addedUrls("Mas en https://a.example y https://b.example", "See https://a.example")).toEqual(["https://b.example"]);
   });
 });

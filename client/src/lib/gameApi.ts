@@ -115,6 +115,8 @@ export interface PublicGameConfig {
     /** Every registry token's name, by slug (readiness R084). Read through
      *  `useTokenNameFor` (client/src/hooks/useTokenNameFor.ts). Older servers omit it. */
     names?: Record<string, string>;
+    /** Tokens a member never sees: switched off, or a Hypha mirror while its bridge is off (gap G12). */
+    unused?: string[];
   };
   images: BrandImages;
   /** In the village's own words (Admin, Paths & Stages). `description` is absent on an older server. */
@@ -131,6 +133,8 @@ export interface PublicGameConfig {
   /** The story pages this village switched off one by one, while the rest
    *  are served. Absent on an older server, which reads as none. */
   brochureHidden?: string[];
+  /** Member doors opened to visitors while the story pages are off (gap G15). */
+  brochureOpen?: string[];
   /** Site-wide words from Admin, Pages, Whole site. Absent on an older server. */
   site?: {
     footerSignoff: string;

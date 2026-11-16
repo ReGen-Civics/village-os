@@ -20,7 +20,7 @@ import { provisionTestDb, testDbConfigured, E2E_BOOT_DEADLINE_MS } from "../../.
 const DIST = path.resolve(process.cwd(), "dist/index.js");
 const PORT = 6720;
 const BASE = `http://localhost:${PORT}`;
-const ADMIN = "fork-setup-admin";
+const ADMIN = "fork-setup-admin-not-a-real-password";
 
 async function main() {
   if (!testDbConfigured()) throw new Error("TEST_DATABASE_URL is not set");
@@ -38,7 +38,7 @@ async function main() {
         DATA_DIR: dataDir,
         DATABASE_URL: db.url,
         ADMIN_PASSWORD: ADMIN,
-        AUTH_TOKEN_SECRET: "fork-setup-secret",
+        AUTH_TOKEN_SECRET: "fork-setup-token-secret-not-a-real-secret", // module-review-ok: a throwaway value for a scratch QA server, never a real credential
         // The state every fork boots in: no mail provider, no sender.
         RESEND_API_KEY: "",
         EMAIL_FROM: "",

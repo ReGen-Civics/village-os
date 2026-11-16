@@ -190,14 +190,14 @@ interface SigningKeyDoc {
 }
 
 /** How the private half of the loaded key is being held. Reported, never guessed. */
-export type SigningKeyAtRest = "sealed" | "plaintext" | "unreadable";
+export type SigningKeyAtRest = "sealed" | "plaintext" | "unreadable" | "absent";
 
 let cachedKey: SigningKey | null = null;
 let cachedAtRest: SigningKeyAtRest | null = null;
 
 export const NO_SIGNING_KEY_SENTENCE =
-  "this village cannot sign published documents: its signing key is sealed and " +
-  `${VILLAGE_SECRETS_ENV} is unset or does not match`;
+  "this village cannot sign published documents: its signing key is sealed under " +
+  `${VILLAGE_SECRETS_ENV}, which is unset or does not match`;
 
 /** Whether this deployment can sign. False is a refusal, never an unsigned doc. */
 export function canSign(): boolean {
@@ -274,6 +274,26 @@ export async function ensureSigningKey(
   const [existing] = await pool.query<any[]>(
     `SELECT value FROM app_config WHERE config_key = '${SIGNING_KEY_ROW}'`,
   );
+  if (!existing.length && !key) {
+    /*
+     * NO KEY, NO MINT (audit R115). This used to mint the keypair and store
+     * the private half in PLAINTEXT, where it rode in every database dump for
+     * as long as nobody set VILLAGE_SECRETS_KEY. A private key is never stored
+     * unsealed now: the village boots, the signed documents answer 503 (the
+     * same refusal as a key this deployment cannot open), and the first boot
+     * with a valid key mints it sealed. Nothing is written, so no peer ever
+     * pins a key that was exposed at rest.
+     */
+    console.error(
+      `[identity] NO SIGNING KEY: this village will not mint one without ${VILLAGE_SECRETS_ENV}, because the private half ` +
+        `would be stored in plaintext. ${villageSecretsKeyProblem(env)} ` +
+        "Set a valid key (openssl rand -hex 32) and restart; that boot mints the key sealed. Until then the SIGNED documents " +
+        "(/.well-known/village.json, /api/public/org.json, /api/platform/module-usage) answer 503 and alignment receipts are not sealed.",
+    );
+    cachedKey = { kid: "", publicKeyPem: "", privateKeyPem: null, createdAt: "" };
+    cachedAtRest = "absent";
+    return cachedKey;
+  }
   if (!existing.length) {
     const { publicKey, privateKey } = generateKeyPairSync("ed25519");
     const fresh = storedDoc(
@@ -392,7 +412,7 @@ export async function rotateSigningKey(
       error: `A new signing key is sealed under ${VILLAGE_SECRETS_ENV}, and this deployment has no usable one. ${villageSecretsKeyProblem(env)}`,
     };
   }
-  const previousKid = cachedKey?.kid ?? null;
+  const previousKid = cachedAtRest === "absent" ? null : (cachedKey?.kid ?? null);
   const { publicKey, privateKey } = generateKeyPairSync("ed25519");
   const fresh = storedDoc(
     publicKey.export({ type: "spki", format: "pem" }).toString(),
