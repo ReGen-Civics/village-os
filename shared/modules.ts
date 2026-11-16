@@ -1514,6 +1514,40 @@ export const MODULES: ModuleDef[] = [
     // surface; saved results stay in their table and return when it is on.
   },
   {
+    id: "rites",
+    guild: [],
+    tier: "included",
+    // A stamp, a drawn mark, who witnessed whom, who walks beside whom, a
+    // newcomer's own line, and names left at a door: all of it names people
+    // (drizzle/0393_rites_and_invitations.sql).
+    dataClass: "member-pii",
+    group: "connect",
+    // With no rites written the pages say so, and the module card is where
+    // the village writes them.
+    setup: "none",
+    name: "Rites",
+    description:
+      "The steps of passage a village names, stamped on each member's card when another member witnesses them. A spoken rite is held as a ceremony: the newcomer speaks each line from their phone, draws their own mark, and witnesses confirm on theirs, in person or on a live call. One rite can admit a member. Each newcomer is paired with a member who walks beside them, an invitation can carry its maker's own line, each member can print a lasting code that asks to join through them, and a public welcome shows the village's own words and counts with no place attached.",
+    requires: [],
+    recommends: ["governance"],
+    capabilities: [],
+    variableKeys: [],
+    apiPrefixes: ["/api/rites"],
+    defaultConfig: {},
+    // The whole document is checked by the module card before it saves
+    // (shared/rites.ts `parseRitesConfig`, the same rules the reader uses), and
+    // the reader takes only what it can read. Scripts transpile this file on
+    // its own, so the shape check here imports nothing.
+    validateConfig: (c: any) => {
+      if (c == null || typeof c !== "object" || Array.isArray(c)) return "The rites document must be an object.";
+      if (c.format !== undefined && c.format !== "village-rites/1") return 'format must be "village-rites/1".';
+      if (c.rites !== undefined && !Array.isArray(c.rites)) return "rites must be a list.";
+      return null;
+    },
+    // No openStateCheck: a stamp is nothing anybody is owed. Off hides every
+    // surface; stamps, marks and pairings stay in their tables.
+  },
+  {
     id: "protocols",
     guild: [],
     tier: "included",

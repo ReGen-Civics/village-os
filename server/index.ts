@@ -108,6 +108,7 @@ import { register as registerGoogleAuthRoutes } from "./routes/authGoogle";
 import { register as registerSignUpRoutes } from "./routes/register";
 import { register as registerInviteRoutes } from "./routes/invites";
 import { register as registerJoinAnswerRoutes } from "./routes/joinAnswers";
+import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } from "./routes/rites";
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
@@ -8207,6 +8208,7 @@ async function startServer() {
   });
   registerInviteRoutes(app, { authedUser, getPool, members, guardCapability, mayAct, overLimit, clientIp, invites: inviteDoor });
   registerJoinAnswerRoutes(app, { authedUser, getPool, members, guardCapability, submissionsRepo, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, notify }); // Accept emails the invitation, Decline a kind no (sheet A5)
+  registerRitesRoutes(app, { authedUser, isAdmin, getPool, members, mayAct, overLimit, clientIp, notify, firstName, projectName: notifyDeps.projectName, deploymentOrigin, stageOf, submissionsRepo, commsPostOffice, escapeHtml, loadRoles, roleIdsFor, lapseContext, invites: inviteDoor }); // rites, the buddy, the letter and the door code (module `rites`, off by default)
   registerGoogleAuthRoutes(app, {
     authSecret: AUTH_TOKEN_SECRET,
     availability: googleSignInAvailability,
@@ -17847,7 +17849,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
-  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), visitClaims: { stageOf, roleIdsFor, claimsRepo, questsRepo } });
+  // The rites module tells the map when a member was admitted (only pins from then count) and stamps the rites the
+  // village gives the map when one really opens: no rite id in either module (agreed with vos-hidden-map, verified by pirates-qa).
+  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), visitClaims: { stageOf, roleIdsFor, claimsRepo, questsRepo }, admission: ritesAdmission, opened: (u) => stampRitesOfModule("hidden-map", u).then(() => undefined) });
   registerMemberTaskRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone: () => getSeasonConfig().timezone });
   registerMemberTaskBridgeRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, notify, timeZone: () => getSeasonConfig().timezone });
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });

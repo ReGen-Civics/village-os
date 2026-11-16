@@ -115,30 +115,42 @@ async function makeJoinInvite(pool: Pool, submissionId: string, inviterUserId: s
   return { ok: true as const, made: held.value === "made", token, tokenHash: input.tokenHash };
 }
 
-export function register(app: Express, deps: Deps): void {
-  const { authedUser, getPool, members, guardCapability, submissionsRepo, deploymentOrigin, projectName, notify } = deps;
+/** A request found and read, ready to answer. */
+export interface JoinRequestFound {
+  id: string;
+  row: any;
+  account: string | null;
+  address: string | null;
+  typed: string;
+  firstName: string | null;
+}
+
+/** An answer to the desk or the member: the status and the body to send. */
+export interface JoinAnswer {
+  status: number;
+  body: Record<string, unknown>;
+}
+
+export type JoinAnswerDeps = Omit<Deps, "authedUser" | "guardCapability">;
+
+/**
+ * THE TWO ANSWERS, for whoever may give them. The admin routes below ask the
+ * gate on `intake.moderate`; a member answering a request made at their own
+ * door code (server/routes/rites.ts) asks `member.vouch` and that the request
+ * names them. Both answer through these, so a yes is the same yes and a no the
+ * same no, whoever gave it. The invitation is always the answerer's own.
+ */
+export function joinAnswerDoor(deps: JoinAnswerDeps) {
+  const { getPool, members, submissionsRepo, deploymentOrigin, projectName, notify } = deps;
   const postEmail = deps.postEmail ?? ((email: OutgoingEmail) => post(deps.commsPostOffice, email));
 
-  /** The request and the admin answering it, or null after answering the desk. */
-  async function answering(req: any, res: any) {
-    if (!(await guardCapability(req, res, "intake.moderate"))) return null;
-    const user = await authedUser(req);
-    if (!user) {
-      res.status(401).json({ error: "auth_required" });
-      return null;
-    }
-    const id = String(req.params.id ?? "");
+  /** The request by id, or the refusal to send. */
+  function find(id: string): { ok: true; found: JoinRequestFound } | { ok: false; answer: JoinAnswer } {
     const row = submissionsRepo.all().find((s: any) => String(s.id) === id);
-    if (!row) {
-      res.status(404).json({ error: JOIN_ANSWER_WORDS.notFound });
-      return null;
-    }
-    if (String(row.type ?? "") !== JOIN_REQUEST_TYPE) {
-      res.status(400).json({ error: JOIN_ANSWER_WORDS.notARequest });
-      return null;
-    }
+    if (!row) return { ok: false, answer: { status: 404, body: { error: JOIN_ANSWER_WORDS.notFound } } };
+    if (String(row.type ?? "") !== JOIN_REQUEST_TYPE) return { ok: false, answer: { status: 400, body: { error: JOIN_ANSWER_WORDS.notARequest } } };
     const data = (row.data ?? {}) as Record<string, unknown>;
-    return { user, id, row, account: row.userId ? String(row.userId) : null, address: singlePublicAddress(data.email), typed: String(data.email ?? "").trim(), firstName: greetingName(data.name) };
+    return { ok: true, found: { id, row, account: row.userId ? String(row.userId) : null, address: singlePublicAddress(data.email), typed: String(data.email ?? "").trim(), firstName: greetingName(data.name) } };
   }
 
   /** Move the request to `status`, through the one inbox (`submissionsRepo`), the whole list handed back. */
@@ -188,28 +200,26 @@ export function register(app: Express, deps: Deps): void {
     };
   }
 
-  app.post("/api/admin/join-requests/:id/accept", async (req, res) => {
-    const got = await answering(req, res);
-    if (!got) return;
-    const { user, id, row, account, address, typed, firstName } = got;
+  async function accept(user: any, got: JoinRequestFound): Promise<JoinAnswer> {
+    const { id, row, account, address, typed, firstName } = got;
     const pool = getPool();
 
     // Sent while signed in: they have an account already, whatever address they typed. The bell tells them.
     if (account) {
       await setStatus(id, "accepted");
       await ring(row, "accepted");
-      return res.json({ success: true, alreadyMember: true, emailed: false, emailedTo: null, link: null, message: JOIN_ANSWER_WORDS.acceptedAccount });
+      return { status: 200, body: { success: true, alreadyMember: true, emailed: false, emailedTo: null, link: null, message: JOIN_ANSWER_WORDS.acceptedAccount } };
     }
     if (await isMember(address)) {
       await setStatus(id, "accepted");
-      return res.json({ success: true, alreadyMember: true, emailed: false, emailedTo: null, link: null, message: JOIN_ANSWER_WORDS.alreadyMember });
+      return { status: 200, body: { success: true, alreadyMember: true, emailed: false, emailedTo: null, link: null, message: JOIN_ANSWER_WORDS.alreadyMember } };
     }
 
     const made = await makeJoinInvite(pool, id, String(user.id), Number(user.tokenVersion ?? 0));
-    if (!made.ok) return res.status(401).json({ error: "auth_required" });
+    if (!made.ok) return { status: 401, body: { error: "auth_required" } };
     if (!made.made) {
       const used = !!(await inviteById(pool, joinInviteId(id)))?.usedByUserId;
-      return res.status(409).json({ error: used ? JOIN_ANSWER_WORDS.alreadyJoined : JOIN_ANSWER_WORDS.alreadyAccepted });
+      return { status: 409, body: { error: used ? JOIN_ANSWER_WORDS.alreadyJoined : JOIN_ANSWER_WORDS.alreadyAccepted } };
     }
     await setStatus(id, "accepted");
 
@@ -222,28 +232,29 @@ export function register(app: Express, deps: Deps): void {
       const sent = await postEmail(await letter(key, "accepted", { email: address, name: firstName }, acceptLetter({ firstName, village: projectName(), link, days: INVITE_DAYS })));
       if (!WENT.has(sent.status)) why = whyNotSent(sent);
     }
-    res.json({
-      success: true,
-      alreadyMember: false,
-      emailed: why === null,
-      emailedTo: why === null ? address : null,
-      link,
-      message: why === null ? JOIN_ANSWER_WORDS.acceptedEmailed(address as string, INVITE_DAYS) : JOIN_ANSWER_WORDS.acceptedNotEmailed(why),
-    });
-  });
+    return {
+      status: 200,
+      body: {
+        success: true,
+        alreadyMember: false,
+        emailed: why === null,
+        emailedTo: why === null ? address : null,
+        link,
+        message: why === null ? JOIN_ANSWER_WORDS.acceptedEmailed(address as string, INVITE_DAYS) : JOIN_ANSWER_WORDS.acceptedNotEmailed(why),
+      },
+    };
+  }
 
-  app.post("/api/admin/join-requests/:id/decline", async (req, res) => {
-    const got = await answering(req, res);
-    if (!got) return;
+  async function decline(got: JoinRequestFound): Promise<JoinAnswer> {
     const { id, row, account, address, typed, firstName } = got;
     const pool = getPool();
-    if (row.status === "declined") return res.json({ success: true, emailed: false, emailedTo: null, withdrawn: false, message: JOIN_ANSWER_WORDS.alreadyDeclined });
+    if (row.status === "declined") return { status: 200, body: { success: true, emailed: false, emailedTo: null, withdrawn: false, message: JOIN_ANSWER_WORDS.alreadyDeclined } };
 
     // A yes that came first: its link is withdrawn, unless it already made an account. The withdraw
     // matches only an unused row, so a link used at any moment before it is read back as used.
     const invite = await inviteById(pool, joinInviteId(id));
     const withdrawn = invite ? await revokeInvite(pool, invite.id, invite.inviterUserId) : false;
-    if (invite && !withdrawn && (await inviteById(pool, invite.id))?.usedByUserId) return res.status(409).json({ error: JOIN_ANSWER_WORDS.alreadyJoined });
+    if (invite && !withdrawn && (await inviteById(pool, invite.id))?.usedByUserId) return { status: 409, body: { error: JOIN_ANSWER_WORDS.alreadyJoined } };
     await setStatus(id, "declined");
     // Sent while signed in: the bell tells them too, as a status move always did.
     if (account) await ring(row, "declined");
@@ -255,12 +266,52 @@ export function register(app: Express, deps: Deps): void {
       if (!WENT.has(sent.status)) why = whyNotSent(sent);
     }
     const said = why === null ? JOIN_ANSWER_WORDS.declinedEmailed(address as string) : JOIN_ANSWER_WORDS.declinedNotEmailed(why);
-    res.json({
-      success: true,
-      emailed: why === null,
-      emailedTo: why === null ? address : null,
-      withdrawn,
-      message: withdrawn ? `${said} ${JOIN_ANSWER_WORDS.linkWithdrawn}` : said,
-    });
+    return {
+      status: 200,
+      body: {
+        success: true,
+        emailed: why === null,
+        emailedTo: why === null ? address : null,
+        withdrawn,
+        message: withdrawn ? `${said} ${JOIN_ANSWER_WORDS.linkWithdrawn}` : said,
+      },
+    };
+  }
+
+  return { find, accept, decline };
+}
+
+export function register(app: Express, deps: Deps): void {
+  const { authedUser, guardCapability } = deps;
+  const door = joinAnswerDoor(deps);
+
+  /** The request and the admin answering it, or null after answering the desk. */
+  async function answering(req: any, res: any) {
+    if (!(await guardCapability(req, res, "intake.moderate"))) return null;
+    const user = await authedUser(req);
+    if (!user) {
+      res.status(401).json({ error: "auth_required" });
+      return null;
+    }
+    const got = door.find(String(req.params.id ?? ""));
+    if (!got.ok) {
+      res.status(got.answer.status).json(got.answer.body);
+      return null;
+    }
+    return { user, found: got.found };
+  }
+
+  app.post("/api/admin/join-requests/:id/accept", async (req, res) => {
+    const got = await answering(req, res);
+    if (!got) return;
+    const answer = await door.accept(got.user, got.found);
+    res.status(answer.status).json(answer.body);
+  });
+
+  app.post("/api/admin/join-requests/:id/decline", async (req, res) => {
+    const got = await answering(req, res);
+    if (!got) return;
+    const answer = await door.decline(got.found);
+    res.status(answer.status).json(answer.body);
   });
 }

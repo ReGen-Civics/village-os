@@ -183,6 +183,16 @@ const Admin = lazyPage(() => import("./pages/Admin"));
 const Profile = lazyPage(() => import("./pages/Profile"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
+// Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
+const RitesWelcome = lazyPage(() => import("./pages/rites/Welcome"));
+const RitesComeAboard = lazyPage(() => import("./pages/rites/ComeAboard"));
+const RitesArrived = lazyPage(() => import("./pages/rites/Arrived"));
+const RitesCeremony = lazyPage(() => import("./pages/rites/Ceremony"));
+const RitesCard = lazyPage(() => import("./pages/rites/Card"));
+const RitesFleet = lazyPage(() => import("./pages/rites/Fleet"));
+const RitesHub = lazyPage(() => import("./pages/rites/RitesHub"));
+const RitesDoor = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Door })));
+const RitesPacket = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Packet })));
 const Mint = lazyPage(() => import("./pages/Mint"));
 const ProposedChanges = lazyPage(() => import("./pages/ProposedChanges"));
 const PublicProfile = lazyPage(() => import("./pages/PublicProfile"));
@@ -398,6 +408,15 @@ function Router() {
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      <Route path="/welcome" component={RitesWelcome} />
+      <Route path="/aboard" component={RitesComeAboard} />
+      <Route path="/aboard/welcome" component={RitesArrived} />
+      <Route path="/rites" component={RitesHub} />
+      <Route path="/rites/ceremony/:id" component={RitesCeremony} />
+      <Route path="/rites/packet" component={RitesPacket} />
+      <Route path="/card" component={RitesCard} />
+      <Route path="/fleet" component={RitesFleet} />
+      <Route path="/door/:code" component={RitesDoor} />
       {/* AFTER /profile/characters, and that order is the whole point: wouter
           takes the first match, so a :handle route above it would turn the
           class select into a lookup for a member called "characters". */}

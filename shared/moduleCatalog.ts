@@ -474,6 +474,21 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     hue: 160,
     emblem: "Sparkles",
   },
+  rites: {
+    promise: "A newcomer goes from an invitation to a member through rites the village names, each witnessed by somebody already in.",
+    benefits: [
+      "The village names its rites, and each member's card shows them waiting, then stamped when witnessed",
+      "A spoken rite is a ceremony: one line at a time on the newcomer's phone, witnesses confirming on theirs, in person or on a call",
+      "A drawn mark joins a ring of every member's mark, where no name comes first",
+      "Every newcomer walks with a member beside them, the one who invited them first",
+      "Invitations carry their maker's own line, and a printed code asks to join through the member who handed it over",
+    ],
+    forWhom: "Villages where joining is a passage people do together, and somebody already in vouches for each newcomer.",
+    setupSummary: "Paste the village's rites document in the module card: the rites, their lines, the words and the look.",
+    dataSummary: "Which rites each member holds and who witnessed them, each member's drawn mark, who walks beside whom, a newcomer's own line, and names left at a door that is not open yet.",
+    hue: 30,
+    emblem: "Award",
+  },
   "funding-rounds": {
     promise: "Choose together which quests the season funds, within a pot.",
     benefits: [

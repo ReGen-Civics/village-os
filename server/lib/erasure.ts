@@ -173,6 +173,7 @@ import { forgetMemberJournal } from "./journal";
 import { forgetMemberHiddenMap, hiddenMapDir } from "./hiddenMap";
 import { villageId as currentVillageId } from "./economy";
 import { forgetMemberGeneKeys } from "./geneKeys";
+import { forgetMemberRites } from "../repos/rites";
 import { forgetMemberFundingRounds } from "./fundingRounds";
 import { forgetMemberTasks } from "../repos/memberTasks";
 import { forgetTimeZone } from "../repos/memberTimeZone";
@@ -1674,6 +1675,21 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
+       * Rites (drizzle/0393_rites_and_invitations.sql): the member's stamps,
+       * drawn mark, ceremonies, buddy pairings either side, their own line,
+       * door codes and invitation lines go. A stamp they witnessed for
+       * somebody else stays, with no name on it.
+       *
+       * AFTER THE TOMBSTONE, like the steps above: the doors write for anybody
+       * signed in, and the tombstone is where their sessions die.
+       */
+      name: "rites-after-tombstone",
+      run: async () => {
+        await forgetMemberRites(pool, target.id);
+      },
+    },
+    {
+      /*
        * Funding rounds (0338): the member's interaction rows on anonymous ideas
        * are deleted and the rest de-attributed; their ticks go; ideas still in
        * seed are deleted, and ideas already on a round's record stay, shown as
@@ -2426,6 +2442,8 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "role-holdings-after-tombstone",
   "sessions-after-tombstone",
   "gene-keys-after-tombstone",
+  // Rites: stamps, the mark, ceremonies, buddies, door codes and letter lines are all found by the member's id.
+  "rites-after-tombstone",
   "funding-rounds-after-tombstone",
   "member-tasks-after-tombstone",
   "quest-crews-after-tombstone",

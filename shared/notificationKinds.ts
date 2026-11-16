@@ -775,6 +775,33 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   },
 
   // ── People ────────────────────────────────────────────────────────────────
+  // Rites (module `rites`, server/routes/rites.ts): the steps of passage a village names.
+  rite_witness_asked: {
+    group: "people",
+    blurb: "A newcomer is ready for a rite, and you're asked to witness it from your phone.",
+    many: "{n} rites are waiting for a witness.",
+    celebrate: false,
+    waits: true,
+  },
+  rite_stamped: {
+    group: "people",
+    blurb: "A rite was stamped on a member's card.",
+    many: "{n} rites were stamped.",
+    celebrate: false,
+  },
+  rite_buddy_paired: {
+    group: "people",
+    blurb: "You were paired with a newcomer, to walk beside them through their first moon and their rites.",
+    many: "{n} newcomers were paired with you.",
+    celebrate: false,
+  },
+  rite_door_request: {
+    group: "people",
+    blurb: "Somebody asked to join through your printed code, and waits for your answer.",
+    many: "{n} people asked to join through your code.",
+    celebrate: false,
+    waits: true,
+  },
   arrival: {
     group: "people",
     /*
