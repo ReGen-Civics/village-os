@@ -604,7 +604,7 @@ export default function Roles() {
   const otherWaysSection = (
     <>
           {/* OTHER WAYS TO JOIN: clearly secondary to the founding team, and open from the start. */}
-          <section aria-labelledby="other-ways" className="mx-auto mb-14 max-w-4xl" data-other-ways="">
+          <section aria-labelledby="other-ways" className={`mx-auto mb-14 max-w-4xl ${featured.length > 0 ? "border-t border-border pt-10" : ""}`} data-other-ways="">
             <h2 id="other-ways" className={`${H2} mb-2`}>{t({ message: "Other ways to join", context: "roles page, other ways to join" })}</h2>
             <p className="mb-4 text-sm text-muted-foreground">{t({ message: "Not every way in is a founding role. Each of these is open now.", context: "roles page, other ways to join" })}</p>
             <ul className="grid gap-3 sm:grid-cols-2">
@@ -613,7 +613,7 @@ export default function Roles() {
                   {t({ message: "Propose a new role", context: "roles page, other ways to join" })}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
-                <p className="mt-1 text-xs text-muted-foreground">{t({ message: "Propose is for a role we do not list. Tell us the role you see, and the village decides.", context: "roles page, other ways to join" })}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t({ message: "Propose is for a role we do not list. Tell us the role you see, and the village decides.", context: "roles page, other ways to join" })}</p>
               </li>
               <li className={TILE}>
                 <Link href="/quests" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`}>
@@ -627,7 +627,7 @@ export default function Roles() {
                   {otherWays.seeder.title === OTHER_WAYS_DEFAULTS.seederTitle ? t({ message: "Become a Founding Seeder", context: "roles page, other ways to join" }) : otherWays.seeder.title}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {otherWays.seeder.line === OTHER_WAYS_DEFAULTS.seederLine ? t({ message: "Live here one day? Start on the resident path.", context: "roles page, other ways to join" }) : otherWays.seeder.line}
                 </p>
               </li>
@@ -636,7 +636,7 @@ export default function Roles() {
                   {otherWays.gifts.title === OTHER_WAYS_DEFAULTS.giftsTitle ? t({ message: "Offer your gifts", context: "roles page, other ways to join" }) : otherWays.gifts.title}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {otherWays.gifts.line === OTHER_WAYS_DEFAULTS.giftsLine ? t({ message: "Volunteer or work-trade: tell us what you would like to give.", context: "roles page, other ways to join" }) : otherWays.gifts.line}
                 </p>
               </li>
@@ -645,8 +645,21 @@ export default function Roles() {
                 secondary, with no "Step one": the founding application keeps the only steps on the page. */}
             {featured.length > 0 && (
               <div className="mt-8" data-game-way="">
+                {/* One quiet door (design pass D-04, M3): the roots, the season and the board live on
+                    /roles/select, so the paid roles never share a scroll with the game. */}
                 <h3 className="font-display text-2xl leading-tight text-foreground">{t({ message: "Find your place in the game", context: "roles page, other ways to join" })}</h3>
-                <ArchetypeStep nested allShown={showAll} onSeeAll={() => setShowAll(true)} />
+                <p className="mt-2 text-sm text-muted-foreground">{t({ message: "Choose the root you grow from, see this season's goals, and pick the roles you play.", context: "roles page, other ways to join: the game's door" })}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link href="/roles/select" className={BTN_SECONDARY} data-game-door="">
+                    {t({ message: "Explore the game", context: "roles page, other ways to join: the game's door" })}
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
+                  {!showAll && (
+                    <button type="button" onClick={() => setShowAll(true)} className={`min-h-11 text-sm font-medium ${LINK}`}>
+                      {t({ message: "See all roles", context: "roles page archetypes" })}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -766,7 +779,8 @@ export default function Roles() {
           )}
           {heroShown && !leads && otherWaysSection}
 
-          {heroShown && <SeasonGoals />}
+          {/* The season's goals are the game's register: on /roles/select while the founding team leads. */}
+          {heroShown && !leads && <SeasonGoals />}
           {featured.length === 0 && <ArchetypeStep allShown={showAll} onSeeAll={() => setShowAll(true)} />}
 
           <div className="max-w-4xl mx-auto">
@@ -788,7 +802,7 @@ export default function Roles() {
               ].map((item) => (
                 <div key={item.label} className={TILE}>
                   <div className="text-sm font-bold text-foreground mb-1">{item.label}</div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
                 </div>
               ))}
             </m.div>

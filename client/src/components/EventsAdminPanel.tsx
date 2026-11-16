@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ATTENDANCE_MODES, CALENDAR_LAYERS, EVENT_STATUSES, type CalendarItem, type Recurrence } from "@shared/gatherings";
+import {
+  ATTENDANCE_MODES,
+  CALENDAR_LAYERS,
+  EVENT_STATUSES,
+  describeRecurrence,
+  isNthWeek,
+  nthWeekdayRulesFor,
+  type CalendarItem,
+  type Recurrence,
+} from "@shared/gatherings";
 import GatheringEmailSettings from "@/components/comms/GatheringEmailSettings";
 import HostRecapPanel, { hostToolsFor } from "@/components/comms/HostRecapPanel";
 import TimePollEditor from "@/components/admin/comms/TimePollEditor";
@@ -57,21 +66,52 @@ const REPEATS: Array<{ value: string; label: string }> = [
   { value: "solar:either", label: "Every solstice and equinox" },
 ];
 
-function repeatToRecurrence(repeat: string, startsAtLocal: string): Recurrence | null {
+/** The civil date a `datetime-local` value names, as typed: no instant, so no zone can shift it. */
+function typedDate(startsAtLocal: string): { year: number; month: number; day: number } | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(startsAtLocal);
+  return m ? { year: Number(m[1]), month: Number(m[2]), day: Number(m[3]) } : null;
+}
+
+/**
+ * The repeat choices for the start the organiser picked. The month-by-weekday
+ * ones are worked out from that date, the way a desk calendar offers them: a
+ * start on Friday 6 November offers "the first Friday", a start on the 27th
+ * can offer both "the fourth" and "the last". Picking one keeps the start on a
+ * day the rule produces.
+ */
+export function repeatChoicesFor(startsAtLocal: string): Array<{ value: string; label: string }> {
+  const d = typedDate(startsAtLocal);
+  if (!d) return REPEATS;
+  const nth = nthWeekdayRulesFor(d.year, d.month, d.day).map((r) => ({
+    value: `monthly-nth:${r.nth}:${r.weekday}`,
+    label: describeRecurrence({ freq: "monthly", byNthWeekday: r }) ?? "",
+  }));
+  const at = REPEATS.findIndex((r) => r.value === "monthly") + 1;
+  return [...REPEATS.slice(0, at), ...nth, ...REPEATS.slice(at)];
+}
+
+export function repeatToRecurrence(repeat: string, startsAtLocal: string): Recurrence | null {
   if (repeat === "none" || !repeat) return null;
   const start = new Date(startsAtLocal);
   if (repeat === "weekly") return { freq: "weekly", byWeekday: [Number.isNaN(start.getTime()) ? 1 : start.getDay()] };
   if (repeat === "monthly") return { freq: "monthly", byMonthDay: Number.isNaN(start.getTime()) ? 1 : start.getDate() };
+  if (repeat.startsWith("monthly-nth:")) {
+    const [, nthRaw, weekdayRaw] = repeat.split(":");
+    const nth = Number(nthRaw);
+    const weekday = Number(weekdayRaw);
+    if (!isNthWeek(nth) || !Number.isInteger(weekday) || weekday < 0 || weekday > 6) return null;
+    return { freq: "monthly", byNthWeekday: { nth, weekday } };
+  }
   const [freq, on] = repeat.split(":");
   if (freq === "lunar" && (on === "new_moon" || on === "full_moon" || on === "cycle_close")) return { freq: "lunar", on };
   if (freq === "solar" && (on === "solstice" || on === "equinox" || on === "either")) return { freq: "solar", on };
   return null;
 }
 
-function recurrenceToRepeat(r: Recurrence | null | undefined): string {
+export function recurrenceToRepeat(r: Recurrence | null | undefined): string {
   if (!r) return "none";
   if (r.freq === "weekly") return "weekly";
-  if (r.freq === "monthly") return "monthly";
+  if (r.freq === "monthly") return "byNthWeekday" in r ? `monthly-nth:${r.byNthWeekday.nth}:${r.byNthWeekday.weekday}` : "monthly";
   return `${r.freq}:${r.on}`;
 }
 
@@ -400,6 +440,13 @@ export default function EventsAdminPanel({ password }: { password: string }) {
   if (events === null) return <div className="text-center py-12 text-gray-400">Loading...</div>;
 
   const authored = events.filter((g) => g.kind === "gathering" || g.kind === "festival");
+  // A saved weekday rhythm stays visible even after the start moves to a day
+  // that would not offer it, so the select never shows a choice that is not stored.
+  const offered = repeatChoicesFor(form.startsAt);
+  const savedRule = repeatToRecurrence(form.repeat, form.startsAt);
+  const repeatOptions = offered.some((r) => r.value === form.repeat) || !savedRule
+    ? offered
+    : [...offered, { value: form.repeat, label: describeRecurrence(savedRule) ?? form.repeat }];
 
   return (
     <div>
@@ -517,9 +564,9 @@ export default function EventsAdminPanel({ password }: { password: string }) {
             <select id="ev-repeat" value={form.repeat}
               onChange={(e) => setForm({ ...form, repeat: e.target.value })}
               className={`${input} bg-white`}>
-              {REPEATS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+              {repeatOptions.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
-            <p className="text-[11px] text-gray-400 mt-0.5">A moon or sun rhythm lands on the village date of the sky event, at the start's time of day.</p>
+            <p className="text-[11px] text-gray-400 mt-0.5">A moon or sun rhythm lands on the village date of the sky event, at the start's time of day. A weekday of the month is offered from the start's date.</p>
           </div>
           {field("Link (optional)", "link", "text", "https:// or /quests/...")}
           <div className="flex items-center gap-2 pt-5">
@@ -589,7 +636,7 @@ export default function EventsAdminPanel({ password }: { password: string }) {
                     : "text-amber-700 bg-amber-50 border-amber-100"}`}>{g.status}</span>
                   {g.recurrence && (
                     <span className="ml-2 text-[11px] px-1.5 py-0.5 rounded border align-middle text-gray-600 bg-gray-50 border-gray-200">
-                      repeats{g.occurrenceKey ? `, ${g.occurrenceKey}` : ""}
+                      {describeRecurrence(g.recurrence) ?? "repeats"}{g.occurrenceKey ? `, ${g.occurrenceKey}` : ""}
                     </span>
                   )}
                   {g.layer !== "village" && (

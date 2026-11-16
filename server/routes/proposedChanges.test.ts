@@ -6,6 +6,8 @@
  *   - a missing capability at accept is the route's own refusal, shown on the change, which can be fixed and accepted again
  *   - an edited text is accepted exactly as edited, and the lesson records the difference
  *   - drafts save on the server; the connector and an agent account cannot accept
+ *   - a proposed new gathering with no status lands on the calendar, filed before that rule or after it
+ *   - a change that throws on its way to its route is recorded as failed with its reason, and the rest still run
  */
 import http from "node:http";
 import express from "express";
@@ -33,6 +35,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   const faqs: Record<string, any[]> = { steward: [{ id: "ste-1", question: "Who decides?", answer: "The circle." }] };
   // Which routes say no, as the one capability gate would for a person without the power.
   const refuse = new Set<string>();
+  // Which routes hang up without answering, as a loopback that times out or is cut would.
+  const drop = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
@@ -49,6 +53,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     fake.use(express.json());
     fake.use((req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
+      if (drop.has(req.path)) return void req.socket.destroy();
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
       if (req.method === "PUT" && req.path.startsWith("/api/admin/content/")) content[req.path.split("/").pop()!] = req.body;
       if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
@@ -65,6 +70,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     const app = express();
     app.use(express.json());
     app.put("/api/admin/brand", (_req, res) => res.json({ success: true })); // a route a `setting` may name
+    app.post("/api/admin/events", (_req, res) => res.json({ success: true })); // the calendar's new-gathering route, which a `setting` may name
     register(app, {
       authedUser,
       getPool: () => pool,
@@ -92,6 +98,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
 
   beforeEach(async () => {
     refuse.clear();
+    drop.clear();
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
@@ -215,5 +222,44 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(filed.status).toBe(200);
     const [row] = await q("SELECT body_json FROM proposed_changes");
     expect(JSON.parse(row.body_json)).toEqual({ tagline: "Living together" });
+  });
+
+  const GATHERING = { kind: "setting", target: { method: "POST", path: "/api/admin/events" }, body: { title: "Potluck on the land", startsAt: "2026-12-05T23:00:00.000Z" }, summary: "Put the potluck on the calendar." };
+
+  it("a proposed new gathering with no status is filed as scheduled, and accepting it puts it on the calendar", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Calendar", items: [GATHERING, { ...GATHERING, body: { ...GATHERING.body, status: "draft" }, summary: "A draft potluck, on purpose." }] }, AGENT.id);
+    expect(filed.status).toBe(200);
+    const rows = await q("SELECT body_json FROM proposed_changes ORDER BY position");
+    // The reviewer sees the status it will land with, and one the proposal named is kept as written.
+    expect(rows.map((r) => JSON.parse(r.body_json).status)).toEqual(["scheduled", "draft"]);
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: filed.body.ids.map((id: string) => ({ id })) });
+    expect(acc.body.results.map((x: any) => x.ok)).toEqual([true, true]);
+    expect(hits.map((h) => [h.path, h.body.status])).toEqual([["/api/admin/events", "scheduled"], ["/api/admin/events", "draft"]]);
+  });
+
+  it("a gathering proposed before that rule, with no status, is still put on the calendar when it is accepted", async () => {
+    // The shape already waiting in a village's table: filed by the old code, body with no status.
+    await q("INSERT INTO proposed_change_batches (id, title, proposed_by, proposed_by_kind) VALUES ('pcb_old', 'Calendar', ?, 'agent')", [AGENT.id]);
+    await q(
+      "INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind) VALUES ('pc_old', 'pcb_old', 0, 'setting', ?, '/api/admin/events', 'POST', '/api/admin/events', ?, ?, ?, 'agent')",
+      [JSON.stringify(GATHERING.target), GATHERING.summary, JSON.stringify(GATHERING.body), AGENT.id],
+    );
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: "pc_old" }] });
+    expect(acc.body.results).toEqual([{ id: "pc_old", ok: true }]);
+    expect(hits).toHaveLength(1);
+    expect(hits[0].body).toMatchObject({ title: "Potluck on the land", status: "scheduled" });
+  });
+
+  it("a change that never reaches its route is recorded as failed with its reason, and the changes after it still run", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Phase A content", items: [PAGE, FAQ] }, AGENT.id);
+    const [pageId, faqId] = filed.body.ids;
+    drop.add("/api/admin/content/page-home");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId }, { id: faqId }] });
+    expect(acc.status).toBe(200);
+    expect(acc.body.results.map((x: any) => [x.id, x.ok])).toEqual([[pageId, false], [faqId, true]]);
+    expect(acc.body.results[0].error).toContain("did not reach its page");
+    const rows = await q("SELECT id, status, error_text FROM proposed_changes ORDER BY position");
+    expect(rows.map((r) => r.status)).toEqual(["failed", "accepted"]);
+    expect(rows[0].error_text).toContain("did not reach its page");
   });
 });

@@ -228,3 +228,38 @@ describe("the menu restructure (Rye, 2026-10-09)", () => {
     expect(added).toEqual({ "/review": 1, "/powers": 1 });
   });
 });
+
+describe("design pass D-27: a shorter bar for a visitor, the same doors", () => {
+  beforeEach(() => {
+    authMock.mockReset();
+    brochure.on = true;
+    running.modules = [];
+  });
+
+  function shell(who: { id: string; name: string; role?: string } | null) {
+    authMock.mockReturnValue({ user: who, loading: false, logout: vi.fn() });
+    render(
+      <Router>
+        <Layout>
+          <p>page body</p>
+        </Layout>
+      </Router>,
+    );
+  }
+
+  it("keeps the Module Library off a visitor's bar and offers it under About", () => {
+    shell(null);
+    const before = linksTo("/modules").length;
+    fireEvent.click(screen.getAllByRole("button", { name: /About/i })[0]!);
+    expect(linksTo("/modules").length - before).toBe(1);
+    expect(before).toBe(0);
+  });
+
+  it("keeps the Module Library on a member's bar, and adds no second door under About (control)", () => {
+    shell({ id: "u-wren", name: "Wren Ash", role: "member" });
+    const before = linksTo("/modules").length;
+    expect(before).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole("button", { name: /About/i })[0]!);
+    expect(linksTo("/modules").length).toBe(before);
+  });
+});
