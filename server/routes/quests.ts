@@ -506,7 +506,8 @@ export function register(app: Express, deps: Deps): void {
       base = await sharp(file).resize(OG_WIDTH, OG_HEIGHT, { fit: "cover" }).toBuffer();
     } else {
       // The village's own colours, the way its board card draws the scene (G9).
-      const [from, to] = sceneHexFor(quest.circle, deriveOf((brandRepo.get() as any)?.theme)?.vars ?? null);
+      // A harness that builds these routes without a brand reads the fallbacks.
+      const [from, to] = sceneHexFor(quest.circle, deriveOf((brandRepo?.get?.() as any)?.theme)?.vars ?? null);
       base = await sharp(
         svg(
           `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
