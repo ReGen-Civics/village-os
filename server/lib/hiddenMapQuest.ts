@@ -62,7 +62,9 @@ export async function openVisitClaim(
     artifactUrl: "",
     note: "",
   };
-  const taken = await deps.claimsRepo.openClaim(claim as any);
+  // Each claim stands for a different planting or visit, so a decided claim does not
+  // block the next: only one still open does (QA pass 1 final, P1-r-1).
+  const taken = await deps.claimsRepo.openClaim(claim as any, { whileOpenOnly: true });
   if (!taken.ok) return null;
   await deps.claimsRepo.submitOnce(claim.id, { artifactUrl: "", note: input.note ?? visitClaimNote(input.at), at: input.at.toISOString() });
   return claim.id;
