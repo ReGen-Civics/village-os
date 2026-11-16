@@ -35,10 +35,9 @@ const NAV_TIMEOUT_MS = 8000;
 /* Public, the same for every visitor, and needed to draw the page at all. */
 const PUBLIC_GETS = [
   /^\/api\/brand\/theme\.css$/,
-  /^\/api\/config$/,
-  /^\/api\/config\/public$/,
-  /^\/api\/modules\/manifest$/,
-  /^\/api\/protocols\/app\.webmanifest$/,
+  /^\/api\/game\/config$/,
+  /^\/api\/i18n\/catalog\/[A-Za-z-]{2,16}$/,
+  /^\/api\/protocols-app\.webmanifest$/,
   /^\/manifest\.webmanifest$/,
 ];
 

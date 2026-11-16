@@ -1450,7 +1450,9 @@ export const MODULES: ModuleDef[] = [
     // so the widest class is member-pii (drizzle/0389).
     dataClass: "member-pii",
     group: "coordinate",
-    setup: "optional",
+    // Nothing must be set before it is honest to run: with no checklists the
+    // page says so, and the card is where they are written.
+    setup: "none",
     name: "Protocols",
     description:
       "Named checklists the village walks together: opening up, closing down, anything done the same careful way each time. Any member starts a run and ticks the steps, a step can be kept for one role, and a run with a required step still open cannot be marked complete. Every run records who ticked what and when. It works on a phone with no signal and offers to add itself to the home screen.",
