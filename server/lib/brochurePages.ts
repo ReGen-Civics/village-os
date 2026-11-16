@@ -21,7 +21,7 @@ import {
 
 export { isBrochurePath } from "../../shared/brochure";
 
-type Stored = { enabled: boolean; hidden?: BrochurePath[] };
+type Stored = { enabled: boolean; hidden?: BrochurePath[]; open?: BrochurePath[] };
 
 let repo: DbDocument<Stored> | null = null;
 
@@ -48,12 +48,18 @@ export function brochureHiddenPages(): BrochurePath[] {
   return repo ? brochureState(repo.get()).hidden : [];
 }
 
+/** The member doors opened to visitors (gap G15). Empty until boot has loaded them. */
+export function brochureOpenPages(): BrochurePath[] {
+  return repo ? (brochureState(repo.get()).open ?? []) : [];
+}
+
 /**
- * Whether this village serves `path` right now. Every address outside the
- * story pages is served; a story page needs both switches on.
+ * Whether this village serves `path` to a visitor right now. Every address
+ * outside the story pages is served; a story page needs both switches on, or,
+ * for a member door the village opened to visitors, its own switch alone.
  */
 export function brochurePageServed(path: string): boolean {
-  return brochurePathServed({ enabled: brochurePagesOn(), hidden: brochureHiddenPages() }, path);
+  return brochurePathServed({ enabled: brochurePagesOn(), hidden: brochureHiddenPages(), open: brochureOpenPages() }, path);
 }
 
 /**
@@ -67,8 +73,9 @@ export function brochurePageOffAlone(path: string): boolean {
 }
 
 /** Both switches, the way `/api/game/config` hands them to the client. */
-export function brochureConfig(): { brochurePages: boolean; brochureHidden: BrochurePath[] } {
-  return { brochurePages: brochurePagesOn(), brochureHidden: brochureHiddenPages() };
+export function brochureConfig(): { brochurePages: boolean; brochureHidden: BrochurePath[]; brochureOpen?: BrochurePath[] } {
+  const open = brochureOpenPages();
+  return { brochurePages: brochurePagesOn(), brochureHidden: brochureHiddenPages(), ...(open.length ? { brochureOpen: open } : {}) };
 }
 
 /*
@@ -84,7 +91,7 @@ let writing: Promise<unknown> = Promise.resolve();
  * `brochurePageServed()` answers the new value on the very next request and
  * the next page load serves or hides the pages. No restart.
  */
-export function updateBrochurePages(patch: BrochurePatch): Promise<{ enabled: boolean; hidden: BrochurePath[] }> {
+export function updateBrochurePages(patch: BrochurePatch): Promise<{ enabled: boolean; hidden: BrochurePath[]; open?: BrochurePath[] }> {
   const next = writing.then(async () => {
     if (!repo) throw new Error("brochure pages are not loaded yet");
     const doc = applyBrochurePatch(repo.get(), patch);

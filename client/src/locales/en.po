@@ -7629,6 +7629,11 @@ msgstr "A vote to change this agreement is open"
 msgid "Give it a name and say why. Then add the changes, from here or from any setting with a Suggest button."
 msgstr "Give it a name and say why. Then add the changes, from here or from any setting with a Suggest button."
 
+#: client/src/components/admin/SigningKeyCard.tsx
+msgctxt "signing key"
+msgid "This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and restart, and that start makes the key, sealed. Until then those pages answer 503."
+msgstr "This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and restart, and that start makes the key, sealed. Until then those pages answer 503."
+
 #: client/src/components/canvas/CanvasFrameSay.tsx
 msgctxt "heading in the Say frame of the conflict block"
 msgid "The conflict agreement"
@@ -14724,6 +14729,10 @@ msgctxt "role editor history"
 msgid "Changed"
 msgstr "Changed"
 
+#: client/src/components/admin/pages/PageSwitches.tsx
+msgid "Show it to visitors even while the story pages are hidden"
+msgstr "Show it to visitors even while the story pages are hidden"
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application choose"
 msgid "Choose the role you are applying for. Each application is for one role."
@@ -15737,6 +15746,11 @@ msgstr "Optional. You can skip it."
 msgctxt "admin helper panel"
 msgid "Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide."
 msgstr "Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide."
+
+#: client/src/components/companionWelcome/welcomeKit.tsx
+msgctxt "companion welcome, the spoken voice"
+msgid "Speaking aloud may use your browser's online voice (Google or Microsoft), which sends the words I say to that service. Quiet keeps them on your screen only."
+msgstr "Speaking aloud may use your browser's online voice (Google or Microsoft), which sends the words I say to that service. Quiet keeps them on your screen only."
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "That could not be published"

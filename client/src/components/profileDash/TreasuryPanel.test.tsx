@@ -17,6 +17,8 @@ vi.mock("@/lib/gameApi", () => ({
 }));
 vi.mock("@/hooks/useTokenNames", () => ({ useTokenName: () => "Cheers" }));
 vi.mock("@/lib/workPay", () => ({ cashPayWords: () => null, linesWords: () => "", useDisplayRates: () => null }));
+let villageWords: Record<string, string> = {};
+vi.mock("@/hooks/useAppWords", () => ({ useAppWords: () => (_section: string, key: string) => villageWords[key] ?? null }));
 
 import TreasuryPanel from "./TreasuryPanel";
 import type { DashData } from "./useDashData";
@@ -54,5 +56,20 @@ describe("the treasury", () => {
     expect(page()).toMatch(/420/);
     expect(page()).toMatch(/37/);
     expect(page()).not.toMatch(MECHANICS);
+  });
+
+  it("reads the village's own headings where it set them (gap G7)", () => {
+    villageWords = { heading: "Your hold", byMoon: "By tide" };
+    try {
+      render(
+        <Router>
+          <TreasuryPanel data={data} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
+        </Router>,
+      );
+      expect(screen.getByRole("heading", { name: "Your hold" })).toBeInTheDocument();
+      expect(page()).not.toMatch(MECHANICS);
+    } finally {
+      villageWords = {};
+    }
   });
 });
