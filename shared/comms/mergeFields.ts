@@ -150,6 +150,11 @@ export const MERGE_FIELDS: readonly MergeField[] = [
   // it (audit, 2026-10-22). "Gratitude" is the platform's own default name
   // (GAME_CONFIG.currency.name), shown only when a village's name is unknown.
   f("village.tokenName", "common", "text", "Token name", "Your village's name for its recognition token, as Admin, Tokens sets it. The wall on your site carries the same name.", "Gratitude"),
+  // The village's own words (gap G6), as Make it yours, Identity sets them.
+  f("village.member", "common", "text", "What a member is called", "Your word for a member, as Make it yours, Identity sets it.", "member"),
+  f("village.catalyst", "common", "text", "What a catalyst is called", "Your word for whoever looks after the village, as Make it yours, Identity sets it.", "steward"),
+  f("village.role", "common", "text", "What a role is called", "Your word for a role, as Make it yours, Identity sets it.", "role"),
+  f("village.commitment", "common", "text", "What the membership agreement is called", "Your name for the agreement a member signs, as Make it yours, Identity sets it.", "membership agreement"),
   f("person.firstName", "common", "text", "First name", "The reader's first name.", "there"),
   f("person.name", "common", "text", "Full name", "The reader's full name.", "friend"),
   f("links.preferences", "common", "url", "Email choices link", "The reader's own page for choosing which emails they get. Every footer carries it already.", "", true),
