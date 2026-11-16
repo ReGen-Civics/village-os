@@ -345,7 +345,11 @@ equity a village pays for work has to land in a platform token first and be
 claimed across later. It ships as `Earned Equity` because the mirror's own default
 is `Village Equity` and two balances under one name are a balance nobody can read
 (`tokenNameClash` refuses an exact match for the same reason). A village renames it
-like any platform token; the slug never moves. Its kind is `equity`, which keeps it
+like any platform token; the slug never moves. A Hypha mirror's name blocks a platform
+token's only while the Hypha bridge module is on: switched off, the mirror shows on no
+member surface, so a village that does not run the bridge may call its own token by the
+mirror's word (2026-11-15, gap G12; `unusedTokenSlugs` in `server/lib/ledger.ts` names
+the tokens a member never sees, and `/api/game/config` serves them as `currency.unused`). Its kind is `equity`, which keeps it
 off the exchange (only credits trade) and puts it under `exit.keep_pct.equity` when
 a member leaves. **A leaver keeps it, by the founder's ruling of 2026-10-23**
 ("As a general rule members keep their tokens"; asked whether a leaver stays on as

@@ -90,7 +90,7 @@ function PageTitle() {
   const commitment = config?.project?.commitmentName ?? "";
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
-  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden } : null), [config]);
+  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
 
   // The tab ICON is identity too. index.html ships a neutral platform favicon
   // (a static file cannot know which village it serves); this swaps in the

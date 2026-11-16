@@ -522,7 +522,7 @@ export async function publishOrgDraft(
       await deps.notify({
         userId: st.userId,
         type: "role_appointed",
-        title: `You were seated as ${st.seatName}`,
+        title: `You took up the role of ${st.seatName}`,
         body: st.seatAim ? st.seatAim.slice(0, 140) : null,
         link: "/map/circles",
         actorUserId,

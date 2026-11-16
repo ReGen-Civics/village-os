@@ -138,7 +138,7 @@ export function register(app: Express, deps: CarryDeps): void {
         await notify({
           userId: r.userId,
           type: "role_appointed",
-          title: `You were seated as ${r.seatName}`,
+          title: `You took up the role of ${r.seatName}`,
           body: r.seatAim ? String(r.seatAim).slice(0, 140) : null,
           link: "/map/circles",
           actorUserId: actor,

@@ -265,6 +265,87 @@ app.post("/api/walk-log", async (req, res) => { // limit-ok: fixture
   assert.match(w.stdout, /1 waiver\(s\) in force/);
 });
 
+/*
+ * R109: the auth doors answer 401, so the public-route rule never asked about
+ * them. The named list must keep a limit on each, guarded or not.
+ */
+const gateRequiring = (root, required) =>
+  spawnSync(process.execPath, [SCRIPT], {
+    encoding: "utf8",
+    env: { ...process.env, ROUTE_LIMITS_ROOT: root, ROUTE_LIMITS_REQUIRED: required },
+  });
+
+check("a named auth door that answers 401 but has lost its limit FAILS the gate", () => {
+  const root = tree({
+    "server/index.ts": `
+app.post("/api/auth/login", async (req, res) => {
+  if (!req.body.ok) return res.status(401).json({ error: "Invalid credentials" });
+  res.json({ ok: true });
+});
+`,
+  });
+  // The control: without the named list, the 401 hides it from the gate.
+  const blind = gate(root);
+  assert.equal(blind.status, 0, `the control should pass, the door is "guarded":
+${blind.stdout}${blind.stderr}`);
+  const r = gateRequiring(root, "POST /api/auth/login");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /POST \/api\/auth\/login .*has NO LIMIT/);
+});
+
+check("a named auth door with a limit passes, whether the limit is overLimit, a 429, or one hop down", () => {
+  const root = tree({
+    "server/index.ts": `
+app.post("/api/auth/login", async (req, res) => {
+  if (await atLimit("x", 5, 1000)) return res.status(429).json({ error: "slow" });
+  if (!req.body.ok) return res.status(401).json({ error: "no" });
+  res.json({ ok: true });
+});
+app.post("/api/auth/register", async (req, res) => {
+  if (await overLimit(\`register:\${req.ip}\`, 5, 1000)) return;
+  res.json({ ok: true });
+});
+const throttled = async (req: any, res: any) => {
+  if (await overLimit("b", 1, 1)) { res.status(429).end(); return true; }
+  return false;
+};
+app.post("/api/admin/bootstrap", async (req, res) => {
+  if (await throttled(req, res)) return;
+  return res.status(401).json({ error: "no" });
+});
+`,
+  });
+  const r = gateRequiring(root, "POST /api/auth/login, POST /api/auth/register, POST /api/admin/bootstrap");
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /3 named auth door\(s\) each keep a limit/);
+});
+
+check("a named auth door that is missing from the tree FAILS, so a rename cannot stop the check", () => {
+  const root = tree({
+    "server/index.ts": `
+app.post("/api/auth/sign-in", async (req, res) => {
+  if (await overLimit("x", 5, 1000)) return res.status(429).end();
+  res.json({ ok: true });
+});
+`,
+  });
+  const r = gateRequiring(root, "POST /api/auth/login");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /POST \/api\/auth\/login\s+is MISSING/);
+});
+
+check("a waiver does not excuse a named auth door", () => {
+  const root = tree({
+    "server/index.ts": `
+app.post("/api/auth/forgot-password", async (req, res) => { // limit-ok: fixture
+  res.json({ ok: true });
+});
+`,
+  });
+  const r = gateRequiring(root, "POST /api/auth/forgot-password");
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+});
+
 if (failures.length) {
   console.log(`\n  ${failures.length} failure(s) of ${run}: ${failures.join("; ")}`);
   process.exit(1);
