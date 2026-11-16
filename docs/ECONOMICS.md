@@ -539,6 +539,24 @@ villages from the next cycle), so it pays only what a quest, role or proposal na
 is a share of. A blank Earned Equity rule no role names is the ordinary state and is not
 reported as a rule that paid nobody.
 
+**One seat-moon is paid its Earned Equity and Credits once (security audit, S1, 2026-11-15).**
+An approved End of Moon invoice shares each pay line's total reward into cash, Earned Equity and
+Credits (`server/lib/moonReward.ts`, source `moon_invoice_reward`). The hourly settlement used to
+pay the same seat-moon those two tokens again from the role's own list (`role_cycle`), under a
+different key, so the ledger's duplicate never caught it. `runSettlement` now leaves Earned Equity
+and Credits to the invoice for a seat held on an adopted application whose terms carry money (a
+fixed amount or a range, in a currency), as `seatsOnCashRoles` already did for cash. Every other
+token on the role's list is still paid by the settlement, and so is a seat on terms that move no
+money, since its invoice shares nothing out. Terms that cannot be read count as paid by the
+invoice, so a misread never pays twice. At approval, `recordLineRewards` owes no share in a token
+the settlement already paid one of the line's seats that cycle, read by its exact
+`keys.roleCycle` key, which covers a moon paid before this rule.
+
+**An End of Moon Earned Equity share is owed before its meaning is written (S3, 2026-11-15).**
+A line shared while the village has not written what Earned Equity means records that share as an
+owed posting like any other. It used to be dropped with no row. The ledger door (`owedPreflight`)
+refuses it with `equity_meaning`, a reason that leaves the row owed, until the meaning is written.
+
 **An accepted proposal is work (Rye, 2026-10-23: "definitely a work token").** An accepted
 Work With Us proposal is priced like a quest, from the `proposal.accepted` rules (seeded at 10
 Village Voice and 25 Village Credits, Earned Equity on and blank), through `quoteWorkPay`, by
@@ -3363,6 +3381,12 @@ and forum hearts), the Hearts give (`POST /api/gratitude`) and member sends
 nothing can be sent to them." before anything is written, so no allowance is
 spent and no ledger leg posts. A former member keeps their address and is not a
 tombstone, so they can still be paid.
+
+**A fraction of Gratitude is refused, never floored in silence** (launch rehearsal, 15 Nov
+2026). `sendGratitude` used to floor the amount and answer success, so a send of 2.5 moved 2 and took 2
+from the sender's allowance with nothing said about the half. It now refuses a non-whole amount with
+"Send Gratitude in whole amounts, such as 2 or 3." before anything is written, as `checkGive` already
+did on the Hearts door. Gratitude carries no decimals, so a whole amount is the only one either door moves.
 
 **The admin hand-mint refuses a tombstone too.** `POST /api/admin/tokens/:slug/mint`
 used to refuse only a missing recipient, so a steward could issue any platform

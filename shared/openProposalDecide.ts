@@ -148,6 +148,8 @@ export const DECIDE_WORDS = {
   adoptedEmailed: (days: number) => `Adopted. Their invitation went by email. It works once and lasts ${days} days. It is below as well, if they ask you for it.`,
   adoptedNotEmailed: (why: NotSentWhy) => `Adopted. ${NOT_SENT[why]} Copy their invitation below and send it to them yourself.`,
   adoptedAccount: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.",
+  // A proposal for this moon starts its seat the day it is adopted, so it never says "the season's first day" (launch rehearsal F12).
+  adoptedAccountMoon: "Adopted. That address already has an account here, so no invitation was needed: their roles start today, for this moon.",
   accountTold: "They were told by email as well.",
   accountNotTold: (why: NotSentWhy) => `${NOT_SENT[why]} They see it in their notifications when they sign in.`,
   declinedEmailed: "Declined. A kind no went to them by email.",
@@ -158,6 +160,10 @@ export const DECIDE_WORDS = {
   reissue: "Make a new invitation",
   reissueLine: "They have not used their invitation yet. A new one replaces it, and goes to them by email.",
   invitationUsed: "They made their account with their invitation.",
+  /** The applicant pressed "send me a new invitation" on their status page. Nothing was reissued: a holder decides. */
+  newInvitationAsked: "Their invitation expired, and they asked for a new one.",
+  /** The bell's line to the holders who make invitations, by role names only. */
+  newInvitationAskedNotice: (roles: string) => `An applicant for ${roles} asked for a new invitation. Their first one expired.`,
   invitationSent: (when: string, emailed: boolean) => (emailed ? `The invitation went to them by email on ${when}.` : `The invitation was made on ${when}, and the email did not go. Send it again, or hand them the link.`),
   copy: "Copy invitation",
   copied: "Copied",
@@ -424,22 +430,23 @@ export function adoptedAccountLetter(i: AdoptLetterIn & { signIn: string }): { s
  * only reason, and only when they write one), and points to three ways to stay
  * close: a quest, the other open roles, the next season.
  */
-export function declinedLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; site: string; lang?: ApplicantLanguage; note?: string | null }): { subject: string; text: string } {
+export function declinedLetter(i: {
+  firstName: string | null;
+  village: string;
+  roleNames: readonly string[];
+  site: string;
+  lang?: ApplicantLanguage;
+  note?: string | null;
+  /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
+  doorsInBlock?: boolean;
+}): { subject: string; text: string } {
   const w = wordsIn(i.lang);
+  const doors = i.doorsInBlock
+    ? [w.declined.againOwn]
+    : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
   return {
     subject: w.declined.subject(i.village),
-    text: [
-      w.hello(i.firstName),
-      "",
-      w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village),
-      ...noteLines(i.lang, i.note),
-      "",
-      w.declined.stayClose,
-      w.declined.quest(`${i.site}/quests`),
-      w.declined.roles(`${i.site}/roles`),
-      w.declined.again,
-      "",
-    ].join("\n"),
+    text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ""].join("\n"),
   };
 }
 
@@ -529,9 +536,11 @@ export function notInvitedLetter(i: {
   stayClose: StayClose;
   lang?: ApplicantLanguage;
   note?: string | null;
+  /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
+  doorsInBlock?: boolean;
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
-  const doors = [
+  const doors = i.doorsInBlock ? [] : [
     ...(i.stayClose.program ? [w.notInvited.program(i.stayClose.program.name, letterHref(i.site, i.stayClose.program.href))] : []),
     ...(i.stayClose.quests ? [w.notInvited.quest(letterHref(i.site, "/quests"))] : []),
     ...(i.stayClose.events ? [w.notInvited.events(letterHref(i.site, "/events"))] : []),
@@ -548,6 +557,42 @@ export function notInvitedLetter(i: {
       ...(doors.length ? ["", w.notInvited.stayClose, ...doors] : []),
       "",
       w.notInvited.closing,
+      "",
+    ].join("\n"),
+  };
+}
+
+/**
+ * THE CLOSED LETTER: the application waited and nobody answered it in time, so
+ * the tidy job closed it (server/lib/applicantFollowups.ts). One letter, short
+ * and kind: thanks, it is closed, quests, the page, and a role team's name
+ * under it. `team` is the role that welcomes people, or the village's name.
+ * The shared "come and play" block is added under it by the email's one
+ * template, `closedEmailFor` (server/lib/applicantFollowups.ts), never here.
+ */
+export function closedLetter(i: {
+  firstName: string | null;
+  village: string;
+  roleNames: readonly string[];
+  site: string;
+  team: string;
+  statusLink: string | null;
+  lang?: ApplicantLanguage;
+}): { subject: string; text: string } {
+  const w = wordsIn(i.lang);
+  return {
+    subject: w.closed.subject(i.village),
+    text: [
+      w.hello(i.firstName),
+      "",
+      w.closed.thanks(w.list(i.roleNames) || w.aRole, i.village),
+      "",
+      w.closed.closed,
+      "",
+      w.closed.quest(letterHref(i.site, "/quests")),
+      ...(i.statusLink ? ["", w.closed.page(i.statusLink)] : []),
+      "",
+      w.closed.signed(i.team),
       "",
     ].join("\n"),
   };

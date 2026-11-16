@@ -52,15 +52,21 @@ const R47_REWRITTEN = [
  */
 const TOKEN_NAMED = ["path.resident.stories", "path.steward.stories", "path.prosperity-creator.stories"];
 
+/**
+ * The emails moved into the lead's voice on 2026-11-16 ("join the team", never a
+ * hand raised for a seat). Each moved to version 4.
+ */
+const TEAM_VOICED = ["path.steward.welcome", "path.steward.first_step"];
+
 const DAY = 1440;
 
 describe("the default templates", () => {
-  it("hold exactly the keys the spec names, each once, at version 2 where the R47 copy pass rewrote them, 3 where the token got its own name, and 1 elsewhere", () => {
+  it("hold exactly the keys the spec names, each once, at version 2 where the R47 copy pass rewrote them, 3 where the token got its own name, 4 where the lead's voice took over, and 1 elsewhere", () => {
     const keys = DEFAULT_TEMPLATES.map((t) => t.key);
     expect(new Set(keys).size, "a key appears twice").toBe(keys.length);
     expect([...keys].sort()).toEqual([...SPEC_TEMPLATE_KEYS].sort());
     for (const t of DEFAULT_TEMPLATES) {
-      expect(t.version, t.key).toBe(TOKEN_NAMED.includes(t.key) ? 3 : R47_REWRITTEN.includes(t.key) ? 2 : 1);
+      expect(t.version, t.key).toBe(TEAM_VOICED.includes(t.key) ? 4 : TOKEN_NAMED.includes(t.key) ? 3 : R47_REWRITTEN.includes(t.key) ? 2 : 1);
     }
   });
 

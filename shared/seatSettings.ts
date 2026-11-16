@@ -917,7 +917,14 @@ function payWords(p: PaySettings, locale: string): Pick<SettingsRow, "headline" 
   const anyAmount = p.amountMinor !== undefined || p.minMinor !== undefined || p.maxMinor !== undefined;
   if (anyAmount && !p.currency) headline += NO_CURRENCY;
   const lines = p.note ? [p.note] : [];
+  // The figure is the total reward (Rye, 15 Nov 2026), so the words a member aligns with say how it is shared (launch rehearsal F2).
+  if (p.shape && p.shape.length > 0 && p.kind !== "none" && p.kind !== "honorary") lines.push(paySharedLine(p.shape));
   return { headline, lines };
+}
+
+/** "Total reward, shared as Cash 60%, Equity 40%". */
+export function paySharedLine(shape: ReadonlyArray<{ label: string; pct: number }>): string {
+  return `Total reward, shared as ${shape.map((s) => `${s.label} ${s.pct}%`).join(", ")}`;
 }
 
 function allowanceWords(a: AllowanceSettings, locale: string): Pick<SettingsRow, "headline" | "lines"> {

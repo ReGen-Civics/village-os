@@ -127,6 +127,7 @@ export const PAGE_TITLES: Readonly<Record<string, string>> = {
   "/governance": "Governance",
   "/decisions": "Decisions",
   "/propose": "Start a proposal",
+  "/propose-a-role": "Apply", // the founding application (QA P1-17); without it the prefix read "Start a proposal"
   "/role-applications": "Role proposal",
   "/open-proposals": "A proposed role", // somebody with no account proposed it (0305)
   "/reset": "A fresh start", // clears this device's copy of the site (client/src/pages/Reset.tsx)

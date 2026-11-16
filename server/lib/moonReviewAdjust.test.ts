@@ -33,7 +33,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { LUNAR_CLOCK } from "../../shared/cycleClock";
-import { APPROVAL_REFUSALS, MOON_ROUTES, SELF_CONFIRMED_WORDS, seenAmountsOf } from "../../shared/moonRecap";
+import { APPROVAL_REFUSALS, MOON_ROUTES, SELF_CONFIRMED_WORDS, rangeOutsideRefusal, seenAmountsOf } from "../../shared/moonRecap";
 import { ADJUST_REFUSALS } from "../../shared/accomplishedReview";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
@@ -346,5 +346,65 @@ describe.skipIf(!configured)("paid on what we truly accomplish, against a real s
     const mine = await approveInvoice("m-fin");
     expect(mine.body.refused).toEqual([{ id: again.id, reason: APPROVAL_REFUSALS.otherConfirms }]);
     expect((await approveInvoice("m-treas")).body.approved).toEqual([again.id]);
+  });
+
+  // ── Security audit, S2 and S3 ──────────────────────────────────────────
+
+  const RANGE = JSON.stringify({ v: 1, pay: { kind: "range", currency: "USD", minMinor: 80000, maxMinor: 120000, per: "moon" } });
+  const setRangeAs = (by: string, id: string, finalMinor: unknown) => {
+    as(by);
+    return call(`POST ${MOON_ROUTES.setRange}`, { params: { id }, body: { applicationId: "app-water", finalMinor, note: "What we agreed." } });
+  };
+  const rangeInvoice = async () => {
+    await q("UPDATE `seat_applications` SET `settings_json` = ? WHERE `id` = 'app-water'", [RANGE]); // module-review-ok: fixture SQL
+    await addItem("Fixed the pump", "r-water", true);
+    await sendRecap();
+    const sent = await sendInvoice({ rangeProposals: { "app-water": 100000 } });
+    await approveWork();
+    return sent;
+  };
+  const statusOf = async (id: string) => String((await q("SELECT `status` FROM `moon_invoices` WHERE `id` = ?", [id]))[0].status); // module-review-ok: fixture SQL
+
+  it("a member holding the cash power cannot set the amount on their own range line", async () => {
+    HOLDERS["cash.pay"] = ["m-fin", "m-treas", "m-wren"];
+    const sent = await rangeInvoice();
+    expect(await setRangeAs("m-wren", sent.id, 120000)).toEqual({ status: 403, body: { error: APPROVAL_REFUSALS.ownRange } });
+    expect(await statusOf(sent.id)).toBe("waiting");
+    // CONTROL: another holder of the power may.
+    expect((await setRangeAs("m-fin", sent.id, 120000)).status).toBe(200);
+  });
+
+  it("a range amount stays inside its range, and an absurd one is refused", async () => {
+    const sent = await rangeInvoice();
+    const outside = rangeOutsideRefusal({ minMinor: 80000, maxMinor: 120000 }, "USD");
+    for (const finalMinor of [120001, 144000, 79999]) {
+      expect(await setRangeAs("m-fin", sent.id, finalMinor), String(finalMinor)).toEqual({ status: 400, body: { error: outside } });
+    }
+    for (const finalMinor of [1e21, Number.MAX_SAFE_INTEGER + 2]) {
+      expect((await setRangeAs("m-fin", sent.id, finalMinor)).status, String(finalMinor)).toBe(400);
+    }
+    expect(await statusOf(sent.id)).toBe("waiting");
+    expect((await setRangeAs("m-fin", sent.id, 120000)).status).toBe(200);
+  });
+
+  it("an approved invoice is not voided, and its cash stays as the approval left it", async () => {
+    await addItem("Fixed the pump", "r-water", true);
+    await sendRecap();
+    const sent = await sendInvoice();
+    await approveWork();
+    expect((await approveInvoice("m-fin")).body.approved).toEqual([sent.id]);
+    const cashBefore = await q("SELECT `id`, `state` FROM `cash_owed` WHERE `user_id` = 'm-wren'"); // module-review-ok: fixture SQL
+    as("m-treas");
+    expect(await call(`POST ${MOON_ROUTES.voidInvoice}`, { params: { id: sent.id }, body: { note: "Wrong figure." } })).toEqual({ status: 409, body: { error: APPROVAL_REFUSALS.approvedNoVoid } });
+    expect(await statusOf(sent.id)).toBe("approved");
+    expect(await q("SELECT `id`, `state` FROM `cash_owed` WHERE `user_id` = 'm-wren'")).toEqual(cashBefore); // module-review-ok: fixture SQL
+  });
+
+  it("control: an invoice still waiting on Finance is voided as before", async () => {
+    await addItem("Fixed the pump", "r-water", true);
+    await sendRecap();
+    const sent = await sendInvoice();
+    as("m-fin");
+    expect(await call(`POST ${MOON_ROUTES.voidInvoice}`, { params: { id: sent.id }, body: { note: "Wrong figure." } })).toEqual({ status: 200, body: { voided: sent.id } });
   });
 });

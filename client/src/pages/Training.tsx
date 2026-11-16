@@ -1,9 +1,11 @@
 import Layout from "@/components/Layout";
+import { Trans } from "@lingui/react/macro";
 import { authToken, gameFetch } from "@/lib/gameApi";
 import { useState, useEffect, useCallback } from "react";
 import { Link } from "wouter";
 import { ArrowRight, CheckCircle2, Circle, ExternalLink, FileText, GraduationCap, Hand, Radio, Users, Video } from "lucide-react";
 import { usePageContent } from "@/hooks/usePageContent";
+import { useOptionalAuth } from "@/contexts/AuthContext";
 import { Emphasized } from "@/components/PageText";
 import { BreathingLoader } from "@/components/natural";
 import { SeedOfLife } from "@/components/journey/nature";
@@ -11,6 +13,7 @@ import {
   BTN_NOTICE,
   BTN_SECONDARY,
   CARD,
+  CARD_FEATURED,
   CHIP_SOFT,
   DOOR,
   EYEBROW,
@@ -122,10 +125,25 @@ function TrainingChooser() {
   const resident = usePageContent(TRAINING_PAGES.resident);
   const pages: Record<TrainingTrack, ResolvedPage | null> = { steward, resident };
   const ready = steward !== null && resident !== null;
+  // Your own path, marked (design pass D-23): the first training path the member walks, from their profile.
+  const walks = useOptionalAuth()?.user?.paths ?? [];
+  const mine = TRAINING_TRACKS.find((t) => walks.includes(t)) ?? null;
+  // The lessons, listed under the doors so the page says what the training holds before you choose.
+  const [lessons, setLessons] = useState<TrainingModule[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    fetch("/api/training-modules")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => live && setLessons(Array.isArray(d) ? d : []))
+      .catch(() => live && setLessons([]));
+    return () => {
+      live = false;
+    };
+  }, []);
   return (
     <Layout>
       <div className={`${WORLD} py-10 sm:py-16`}>
-        <div className="mx-auto max-w-3xl space-y-8 px-4">
+        <div className="mx-auto max-w-5xl space-y-8 px-4">
           <Hero
             eyebrow="Community training"
             headline="Choose your training"
@@ -136,11 +154,15 @@ function TrainingChooser() {
             <nav aria-label="Training pages" className="grid gap-4 sm:grid-cols-2">
               {TRAINING_TRACKS.map((t) => {
                 const door = pages[t]?.door.fields;
+                const yours = t === mine;
                 return (
                   // Spelled out, so the reachability gate reads each door (trainingPathFor gives the same two).
-                  <Link key={t} href={t === "steward" ? "/training/steward" : "/training/resident"} className={`${CARD} group flex min-h-11 flex-col gap-3 hover:border-notice`}>
-                    <span className={RING} aria-hidden="true">
-                      <GraduationCap className="size-5" />
+                  <Link key={t} href={t === "steward" ? "/training/steward" : "/training/resident"} className={`${yours ? CARD_FEATURED : CARD} group flex min-h-11 flex-col gap-3 hover:border-notice`} data-your-path={yours || undefined}>
+                    <span className="flex items-center gap-3">
+                      <span className={RING} aria-hidden="true">
+                        <GraduationCap className="size-5" />
+                      </span>
+                      {yours ? <span className={EYEBROW}><Trans context="training chooser: the member's own path">Your path</Trans></span> : null}
                     </span>
                     <span className={H2}>{door?.title}</span>
                     <span className={HINT}>{door?.line}</span>
@@ -157,6 +179,30 @@ function TrainingChooser() {
               <BreathingLoader label="Opening the training" />
             </div>
           )}
+          {lessons && lessons.length > 0 ? (
+            <section aria-labelledby="training-list" className={`${CARD} space-y-4`} data-training-list="">
+              <h2 id="training-list" className={H2}>
+                <Trans context="training chooser: the lessons heading">What the training holds</Trans>
+              </h2>
+              <p className={HINT}><Trans context="training chooser: the lessons are one list">Both paths share these lessons for now.</Trans></p>
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {lessons.map((m) => {
+                  const Icon = TYPE_ICON[m.type] ?? FileText;
+                  return (
+                    <li key={m.id} className={`${TILE} flex items-start gap-3`}>
+                      <span className={RING} aria-hidden="true">
+                        <Icon className="size-5" />
+                      </span>
+                      <span className="min-w-0 space-y-1">
+                        <span className="block break-words font-display text-lg text-card-foreground">{m.title}</span>
+                        <span className={CHIP_SOFT}>{m.mandatory === false ? "Optional" : "Required"}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
         </div>
       </div>
     </Layout>

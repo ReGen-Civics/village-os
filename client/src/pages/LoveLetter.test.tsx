@@ -227,7 +227,7 @@ describe("the thank-you says what happens next", () => {
     await waitFor(() => expect(steps()).toHaveLength(3));
     expect(steps()).toEqual([
       "Your letter is with the people who look after joining Fernhollow.",
-      "You will get a notice when they answer, and your profile shows where it stands.",
+      "You'll get a notice when they answer, and your profile shows where it stands.",
       "Members who know you can also vouch for you on your page. 1 of 3 vouches. 2 more people to go.",
     ]);
     expect(screen.getByRole("link", { name: "your page" }).getAttribute("href")).toBe("/profile/tamsin");
@@ -243,7 +243,7 @@ describe("the thank-you says what happens next", () => {
     await settle();
     expect(steps()).toEqual([
       "Your letter is with the people who look after joining Fernhollow.",
-      "You will get a notice when they answer, and your profile shows where it stands.",
+      "You'll get a notice when they answer, and your profile shows where it stands.",
     ]);
     expect(screen.queryByRole("link", { name: "your page" })).toBeNull();
   });

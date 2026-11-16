@@ -311,7 +311,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         {p.wide && p.act && (
           <div className="mt-auto">
             {p.act}
-            <p className={`mt-2 text-center ${HINT}`}>{t({ message: "Six steps. No account needed.", context: "full role card, under the one act" })}</p>
+            <p className={`mt-2 text-center ${HINT}`}>{t({ message: "No account needed.", context: "full role card, under the one act" })}</p>
           </div>
         )}
       </header>

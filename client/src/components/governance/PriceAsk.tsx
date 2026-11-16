@@ -112,7 +112,7 @@ export default function PriceAsk({
       <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
       {/* Across roles (QA-1115 Spanish applicant P1-2): each application is priced once, at its own commitment. */}
       <p className={HINT} data-price-across-roles="">
-        {t({ message: "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% pay like one whole role.", context: "price ask: more than one role" })}
+        {t({ message: "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role.", context: "price ask: more than one role" })}
       </p>
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
@@ -142,8 +142,8 @@ export default function PriceAsk({
             <DialogTitle>{t({ message: "Your price", context: "price popup title" })}</DialogTitle>
             <DialogDescription>
               {suggested
-                ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your pay: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
-                : t({ message: "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
+                ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
+                : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
             </DialogDescription>
           </DialogHeader>
           {cap > 0 && (

@@ -630,7 +630,7 @@ export const GAME_CONFIG: GameConfig = {
     { id: "send-gratitude", when: "gratitude-unspent", label: "Thank someone this cycle", href: "/gratitude" },
     // Gene Keys are a choice a member may skip (Rye, 2026-10-22), and nothing remembers a skip, so this step
     // stands only where the catch-all would: it never hides a letter, a Quest or a thank-you behind it.
-    { id: "gene-keys", when: "no-gene-keys", label: "Find your lines", href: "/profile/gene-keys" },
+    { id: "gene-keys", when: "no-gene-keys", label: "Find your Gene Key lines", href: "/profile/gene-keys" },
     { id: "explore", when: "always", label: "Find your next Quest", href: "/quests" },
   ],
 

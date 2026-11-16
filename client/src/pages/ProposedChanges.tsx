@@ -355,7 +355,13 @@ export default function ProposedChanges() {
       }
       const r = await fetch("/api/admin/proposals/accept", { method: "POST", headers: headers(), body: JSON.stringify({ items }) });
       const d = (await r.json().catch(() => ({}))) as { results?: Array<{ id: string; ok: boolean; error?: string; field?: string | null }> };
-      const results = d.results ?? [];
+      // An answer with no results is not "none landed": it is an accept that did not run. Say so, and reload what stands.
+      if (!r.ok || !Array.isArray(d.results)) {
+        setProblems({ _page: [{ error: t({ message: "The accept did not finish. Reload to see which changes landed, then try the rest again.", context: "proposed changes" }), field: null }] });
+        await load();
+        return;
+      }
+      const results = d.results;
       const landed = results.filter((x) => x.ok).map((x) => changes.find((c) => c.id === x.id)?.summary ?? x.id);
       const failed = results.filter((x) => !x.ok);
       setOutcome({ landed, failed: failed.length });

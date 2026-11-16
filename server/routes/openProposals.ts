@@ -36,6 +36,8 @@
  * The tidy job also takes the name and address off a declined or withdrawn
  * proposal 90 days after it was decided, and off an adopted one whose
  * invitation nobody used in those 90 days (part B, coordinator 2026-10-31).
+ * A confirmed proposal nobody decided in those 90 days is closed, and gets one
+ * kind letter first, keyed per application (server/lib/applicantFollowups.ts).
  *
  * Confirmed proposals wait on the admin's list here.
  *
@@ -98,7 +100,10 @@ import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposal
 import { registerAgentProposals } from "./agentRoleProposals";
 import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
-import { boolVar, numberVar, rawValue } from "../lib/variables";
+import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
+import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
+import { loadEmailVillage } from "../lib/comms/render";
+import { comeAndPlayFor } from "../lib/comms/villageLetter";
 import { foundingSetupFrom, type FoundingSetup } from "../../shared/foundingApplication";
 import { knowUsLinksFrom, NO_KNOW_US_LINKS, type KnowUsLinks } from "../../shared/knowUsLinks";
 import { listCalendarItems } from "../lib/calendar";
@@ -142,6 +147,11 @@ type Deps = Pick<
   now?: () => Date;
   /** A village variable read as a flag. Absent reads as off. */
   boolVar?: (key: string) => boolean;
+  /**
+   * Whether this request may read a role's pay ceiling while `org.show_pay_ranges` is off: an admin or a
+   * holder of `terms.read`. Absent reads as no, so the form then carries no ceiling unless the setting is on.
+   */
+  mayReadPay?: (req: any) => Promise<boolean>;
   /** A text setting: the village's default track (`org.default_track`) for the card gate. */
   stringVar?: (key: string) => string;
   /** The application's village words. Absent: read from the village settings (shared/foundingApplication.ts). */
@@ -398,6 +408,24 @@ export function register(app: Express, deps: Deps): void {
 
   // ── The public side ───────────────────────────────────────────────────────
 
+  /**
+   * The offered roles as one reader may see them. While the village keeps pay hidden (`org.show_pay_ranges`
+   * off), the ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the
+   * setting says read the full terms either way. The form then offers no price ask, only negotiate.
+   */
+  async function seesPay(req: any): Promise<boolean> {
+    return boolVar("org.show_pay_ranges") || (!!deps.mayReadPay && (await deps.mayReadPay(req)));
+  }
+  async function offeredTo(req: any) {
+    const roles = await offered();
+    if (await seesPay(req)) return roles;
+    return roles.map((r) => {
+      const out: Partial<typeof r> = { ...r };
+      delete out.payCeiling;
+      return out;
+    });
+  }
+
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], overLimit, clientIp, ipBucket, villageName: projectName });
 
@@ -415,7 +443,7 @@ export function register(app: Express, deps: Deps): void {
       // The clips beside answers this village takes (Rye, 14 Nov 2026).
       voice: clipLimits(),
       ...(t ? {} : { message: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason }),
-      roles: t ? await offered() : [],
+      roles: t ? await offeredTo(req) : [],
       founding: { ...founding(), knowUsLinks: await knowUsLinks() },
     });
   });
@@ -523,12 +551,14 @@ export function register(app: Express, deps: Deps): void {
     // A commitment below what the role takes from one person is refused, in words (Rye, 14 Nov 2026, ruling 2).
     // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
     const pct = parsed.value.body.card?.commitmentPct;
+    // A poster who may not read the ceiling meets the role as one with no listed price, so no refusal names the figure.
+    const pricesShown = await seesPay(req);
     for (const picked of parsed.value.body.roles) {
       const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
       if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
       const ask = parsed.value.body.payAsk;
-      const ceiling = roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null;
+      const ceiling = pricesShown ? (roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null) : null;
       // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
       if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
       if (ceiling && ask?.kind === "amount") {
@@ -833,7 +863,12 @@ export function register(app: Express, deps: Deps): void {
   // ── The tidy job (sheet 19i) ──────────────────────────────────────────────
 
   registerJob(TIDY_JOB, TIDY_EVERY_MS, async () => {
-    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir);
+    // The closed letter carries the come-and-play block (server/lib/comms/villageLetter.ts): the open ways in for somebody with no account.
+    const footer: ClosingDeps["footer"] = async ({ village, lang }) => {
+      const look = await loadEmailVillage(getPool(), site());
+      return comeAndPlayFor(getPool(), { ...look, name: village || look.name }, { audience: "public", lang, skip: ["quests"] });
+    };
+    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir, { postEmail, projectName, siteUrl: site, onboardingRole: () => stringVar("org.onboarding_role"), footer });
     // The kept applications' confirmation emails, tried again (server/lib/openProposalKept.ts).
     const again = await retryOwedConfirmations({ ...letters, getPool, postEmail }, now());
     return again.tried ? `${tidied}, ${again.went} of ${again.tried} owed confirmation emails sent` : tidied;
@@ -873,11 +908,22 @@ export function register(app: Express, deps: Deps): void {
  * account already here made no invitation: that person is a member, and keeps
  * theirs.
  */
-export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string): Promise<string> {
+export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, closing?: ClosingDeps): Promise<string> {
   const deleted = await store.deleteUnconfirmedBefore(pool, new Date(at.getTime() - OPEN_CONFIRM_HOURS * 60 * 60_000));
   const cutoff = new Date(at.getTime() - OPEN_ANONYMISE_DAYS * 24 * 60 * 60_000);
   // Confirmed, and nobody decided it in 90 days: closed as withdrawn, and the name and address go now (red team, 9 Nov).
-  const expired = await store.expireUndecidedBefore(pool, cutoff, at);
+  // With a post office handed in, each one first gets its one closed letter (keyed per application), while the address is still here.
+  let expired: number;
+  let letters = 0;
+  if (closing) {
+    const due = await store.undecidedBefore(pool, cutoff);
+    letters = await sendClosedLetters(pool, closing, due);
+    const closed = await store.expireUndecided(pool, due.map((p) => p.id), cutoff, at);
+    await stampQuietClose(pool, closed, at);
+    expired = closed.length;
+  } else {
+    expired = await store.expireUndecidedBefore(pool, cutoff, at);
+  }
   let anonymised = await store.anonymiseDecidedBefore(pool, cutoff, at);
   for (const p of await store.adoptedDecidedBefore(pool, cutoff)) {
     const invite = await inviteById(pool, openInviteId(p.id));
@@ -895,5 +941,5 @@ export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string):
   const voiced = await store.voiceDecidedBefore(pool, cutoff);
   if (fileDir) for (const id of voiced) await removeVoiceNotes(fileDir, id);
   const voices = await store.clearVoiceOf(pool, voiced);
-  return `${deleted} unconfirmed deleted, ${expired} undecided closed, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
+  return `${deleted} unconfirmed deleted, ${expired} undecided closed${letters ? ` (${letters} closed letters sent)` : ""}, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
 }

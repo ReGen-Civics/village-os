@@ -69,8 +69,10 @@ import { afterFounding, replyDaysFor } from "./foundingFirst";
 import { trustedAccountFor } from "./applicantAccount";
 import type { DecideDeps } from "./openProposalDecide";
 import { boolVar, numberVar, stringVar } from "./variables";
+import { stayCloseFrom } from "../../shared/comms/comeAndPlay";
 import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
+import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
 
 type Db = Pool | PoolConnection;
@@ -97,12 +99,7 @@ export function reviewFirstOn(deps: Pick<ReviewDeps, "reviewFirst">): boolean {
  * names none, or names one with nowhere to go.
  */
 export function stayCloseProgram(): { name: string; href: string } | null {
-  const name = stringVar("org.stay_close_name").trim().slice(0, 80);
-  const href = stringVar("org.stay_close_link").trim().slice(0, 300);
-  if (!name || !href) return null;
-  if (!href.startsWith("/") && !/^https:\/\/[^\s]+$/i.test(href)) return null;
-  if (href.startsWith("//")) return null;
-  return { name, href };
+  return stayCloseFrom(stringVar("org.stay_close_name"), stringVar("org.stay_close_link"));
 }
 
 const ADOPTING_POWER = "org.seat";
@@ -602,7 +599,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a person. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; url: string | null } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; url: string | null } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -658,6 +655,10 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     reviewFirst: stage !== null,
     notInvited: stage === "not_invited",
     stayClose: stage === "not_invited" ? stayCloseProgram() : null,
+    // Closed by the tidy job because nobody answered in time (server/lib/applicantFollowups.ts): the page says closed, never "you withdrew".
+    closed: how === "withdrawn" && decidedStep?.detail?.quiet === true,
+    // An adopted applicant whose invitation expired unused: the door to ask for a new one, or the thanks once asked.
+    invitation: own && outcome === "adopted" ? await invitationDoorOf(pool, own) : "none",
   };
 }
 

@@ -17,11 +17,14 @@
  * server/lib/oauthAccounts.ts (which account a sign-in becomes). Read the
  * account-linking argument there before changing anything here.
  */
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import type { Express, Request, Response } from "express";
 import {
+  OAUTH_BIND_COOKIE,
   OAUTH_HANDOFF_COOKIE,
   OAUTH_HANDOFF_TTL_MS,
+  OAUTH_STATE_TTL_MS,
+  oauthBindHash,
   createHandoffLedger,
   decodeIdTokenPayload,
   googleAuthUrl,
@@ -47,6 +50,7 @@ import {
   IDENTITY_CONFIRM_COOKIE_PATH,
   IDENTITY_CONFIRM_TTL_MS,
   confirmCookieName,
+  hostCookieName,
   readCookieValue,
   confirmReturnUrl,
   confirmWithFor,
@@ -138,6 +142,19 @@ export function resolveTokenEndpoint(env: Record<string, string | undefined>): s
 /** One cookie by name: the shared reader, which refuses a name sent twice (R041, lib/identityConfirm.ts). */
 function readCookie(req: Request, name: string): string | null {
   return readCookieValue(req.headers.cookie, name);
+}
+
+/** Whether this village signs in over https, so its sign-in cookies carry `__Host-` (R041). */
+function cookiesSecure(avail: GoogleAvailability): boolean {
+  return avail.available && avail.config.redirectUri.startsWith("https://");
+}
+
+/** The binder in this browser matches the hash the state carries (R215). Constant time. */
+function bindMatches(binder: string | null, bind: string | null): boolean {
+  if (!binder || !bind) return false;
+  const got = Buffer.from(oauthBindHash(binder));
+  const want = Buffer.from(bind);
+  return got.length === want.length && timingSafeEqual(got, want);
 }
 
 /** Where a failed sign-in lands, with a reason the page can turn into a sentence. */
@@ -246,9 +263,22 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
     // (server/lib/identityConfirm.ts), which signs nobody in. An unknown word
     // is dropped, and the trip is an ordinary sign-in.
     const confirm = isConfirmAction(req.query.confirm) ? req.query.confirm : null;
+    // R215: a binder in THIS browser, its hash in the state. The callback refuses
+    // a state another browser started, which is what a login-CSRF link is.
+    const secure = cookiesSecure(avail);
+    const binder = randomBytes(24).toString("base64url");
+    res.cookie(hostCookieName(OAUTH_BIND_COOKIE, secure), binder, {
+      httpOnly: true,
+      // Lax survives the top-level navigation back from Google.
+      sameSite: "lax",
+      secure,
+      maxAge: OAUTH_STATE_TTL_MS,
+      path: "/",
+    });
     const state = makeOAuthState(deps.authSecret, next, Date.now(), {
       invite: found && found.ok ? found.id : null,
       confirm,
+      bind: oauthBindHash(binder),
     });
     const parsed = readOAuthState(deps.authSecret, state);
     if (!parsed) return res.status(500).json({ error: "Could not start sign-in." });
@@ -279,6 +309,16 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
     if (typeof req.query.error === "string" && req.query.error) return fail("cancelled");
     if (!code) return fail("no_code");
     if (!state) return fail("bad_state");
+
+    // R215: the state must have been started in THIS browser. The signature
+    // above proves only that this server minted it, and `start` mints one for
+    // anybody, so without this an attacker signs in at Google as themselves and
+    // hands a victim the callback URL. The binder is spent either way.
+    const secure = cookiesSecure(avail);
+    const bindName = hostCookieName(OAUTH_BIND_COOKIE, secure);
+    const binder = readCookie(req, bindName);
+    res.clearCookie(bindName, { path: "/", secure });
+    if (!bindMatches(binder, state.bind)) return fail("bad_state");
 
     /*
      * BOUNDED AFTER THE STATE CHECK, WHICH IS THE ONLY PLACE IT BELONGS.
@@ -374,10 +414,10 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
       const minted = mintConfirmation(deps.authSecret, bySub.id, confirm, Number(bySub.tokenVersion ?? 0));
       const saved = await deps.members.update(bySub.id, (m: any) => recordPending(m, confirm, minted.jti, minted.exp));
       if (!saved) return back(`google_confirm=error&for=${confirm}&reason=account_unavailable`);
-      res.cookie(confirmCookieName(confirm), minted.token, {
+      res.cookie(confirmCookieName(confirm, secure), minted.token, {
         httpOnly: true,
         sameSite: "lax",
-        secure: avail.config.redirectUri.startsWith("https://"),
+        secure,
         maxAge: IDENTITY_CONFIRM_TTL_MS,
         path: IDENTITY_CONFIRM_COOKIE_PATH,
       });
@@ -557,10 +597,11 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
     // cross-site POST. Secure whenever this village is served over https;
     // a Secure cookie on plain http would be dropped, which would break
     // local development silently.
-    res.cookie(OAUTH_HANDOFF_COOKIE, handoff, {
+    // `__Host-` on https (R041): a sibling subdomain cannot plant a handoff of its own.
+    res.cookie(hostCookieName(OAUTH_HANDOFF_COOKIE, secure), handoff, {
       httpOnly: true,
       sameSite: "lax",
-      secure: avail.config.redirectUri.startsWith("https://"),
+      secure,
       maxAge: OAUTH_HANDOFF_TTL_MS,
       path: "/",
     });
@@ -576,13 +617,18 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
    * browser.
    */
   app.post("/api/auth/google/exchange", async (req: Request, res: Response) => {
-    const clear = () => res.clearCookie(OAUTH_HANDOFF_COOKIE, { path: "/" });
     // Bounded like the two doors before it (R109). The handoff is signed and
     // single-use, so this is a ceiling on work, not the defence itself.
     if (await deps.overLimit(`oauth-exchange:${deps.clientIp(req)}`, 60, 60 * 60 * 1000)) {
       return res.status(429).json({ error: "Too many attempts. Try again in a few minutes." });
     }
-    const raw = readCookie(req, OAUTH_HANDOFF_COOKIE);
+    // The same name the callback set: `__Host-` on https (R041). A bare-named
+    // cookie on an https village is never read, which is the point: only this
+    // host could have set the prefixed one.
+    const secure = cookiesSecure(deps.availability());
+    const handoffName = hostCookieName(OAUTH_HANDOFF_COOKIE, secure);
+    const clear = () => res.clearCookie(handoffName, { path: "/", secure });
+    const raw = readCookie(req, handoffName);
     if (!raw) {
       clear();
       return res.status(401).json({ error: "This sign-in has expired. Start again." });

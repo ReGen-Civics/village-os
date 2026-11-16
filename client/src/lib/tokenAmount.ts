@@ -55,6 +55,19 @@ export function formatTokenAmount(units: number, decimals: number): string {
 }
 
 /**
+ * `formatTokenAmount`, grouped for reading: 4,071 rather than 4071 (launch
+ * rehearsal F10). For read-only lists and chips only. An input keeps the
+ * ungrouped form, because a typed "4,071" is not a number `toMinorUnits` reads.
+ */
+export function formatTokenGrouped(units: number, decimals: number): string {
+  const plain = formatTokenAmount(units, decimals);
+  const [whole, frac] = plain.split(".");
+  const sign = whole.startsWith("-") ? "-" : "";
+  const digits = sign ? whole.slice(1) : whole;
+  return `${sign}${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}${frac !== undefined ? `.${frac}` : ""}`;
+}
+
+/**
  * A number that is ALREADY human, to the text a member reads. No division.
  *
  * `formatTokenAmount` is for a payload that carries minor units. Some routes

@@ -283,9 +283,9 @@ function PasswordGate({ onUnlock }: { onUnlock: (pw: string) => void }) {
               <Lock className="w-6 h-6 text-teal-deep" />
             </div>
             <div className="text-center">
-              {/* The name the page gives itself once it opens (its own h1),
-                  so the gate and the page behind it agree. */}
-              <h2 className="font-display text-xl font-bold text-teal-deep">Command Centre</h2>
+              {/* The name the page gives itself once it opens, so the gate and the page behind it agree.
+                  The gate's own h1, so a signed-out page still has its heading (QA P1-16). */}
+              <h1 className="font-display text-xl font-bold text-teal-deep">Command Centre</h1>
               <p className="text-stone-500 text-sm mt-1">
                 {loading || isAdmin
                   ? "Checking your access…"

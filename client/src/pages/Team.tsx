@@ -187,8 +187,8 @@ export default function Team() {
                 on a fork's very first day. */}
             {team !== null && team.length === 0 && people?.visible ? (
               <p className="text-center text-muted-foreground max-w-xl mx-auto">
-                Nobody holds a role here yet. Roles and the people in them appear on this
-                page as the village fills them.
+                No one has joined the team yet. Team members appear on this
+                page as roles are filled.
               </p>
             ) : null}
 
