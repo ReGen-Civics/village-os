@@ -122,7 +122,7 @@ export default function SigningKeyCard({ password }: { password: string }) {
         </p>
       )}
       {state.atRest === "absent" && (
-        <p className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-2">
+        <p className="text-xs text-destructive bg-muted border border-border rounded-lg px-3 py-2 mt-2">
           <Trans context="signing key">
             This village has no signing key yet, because it never stores one unsealed. Set VILLAGE_SECRETS_KEY and
             restart, and that start makes the key, sealed. Until then those pages answer 503.

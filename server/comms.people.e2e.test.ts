@@ -321,17 +321,22 @@ describe.skipIf(!DB_CONFIGURED)("Village Comms, the address book", () => {
     const letters = await call("PUT", "/api/comms/me", { body: { kind: "letters", on: true }, token: memberToken });
     expect(letters.status, letters.text).toBe(200);
     // An email of theirs on the ledger: the password link they ask for.
+    const emailsOf = async () => {
+      const id = await contactIdOf(LEAVER_EMAIL);
+      return { id, rows: id ? await q("SELECT id FROM comms_messages WHERE contact_id = ?", [id]) : [] };
+    };
+    const before = (await emailsOf()).rows.length;
     expect((await call("POST", "/api/auth/forgot-password", { body: { email: LEAVER_EMAIL }, token: null })).status).toBe(200);
     // The letter goes out in the background, so the answer never waits on
-    // the provider (R110); give it a moment to land on the ledger.
+    // the provider (R110). Wait for THAT letter, one more row than before it
+    // was asked for: a row already on the ledger is not this one.
     let contactId = "";
     let theirEmails: any[] = [];
-    for (let i = 0; i < 50 && !theirEmails.length; i++) {
+    for (let i = 0; i < 50 && theirEmails.length <= before; i++) {
       if (i) await new Promise((r) => setTimeout(r, 100));
-      contactId = await contactIdOf(LEAVER_EMAIL);
-      theirEmails = contactId ? await q("SELECT id FROM comms_messages WHERE contact_id = ?", [contactId]) : [];
+      ({ id: contactId, rows: theirEmails } = await emailsOf());
     }
-    expect(theirEmails.length).toBeGreaterThanOrEqual(1);
+    expect(theirEmails.length).toBeGreaterThan(before);
 
     const exported = await call("GET", "/api/profile/export", { token: memberToken });
     expect(exported.status).toBe(200);
