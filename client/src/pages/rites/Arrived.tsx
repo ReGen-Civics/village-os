@@ -119,7 +119,7 @@ export default function Arrived() {
                 <Avatar name={me.buddy.name} src={me.buddy.avatar} large />
                 <div>
                   <p style={{ fontFamily: "var(--font-display)", fontSize: 22, lineHeight: 1 }}>{me.buddy.name}</p>
-                  <p className="small muted">{me.memberWord}</p>
+                  <p className="small muted">{me.buddy.seat ? `${me.buddy.seat}, ${me.memberWord}` : me.memberWord}</p>
                 </div>
               </div>
               {me.buddy.greeting ? <div className="bubble">{me.buddy.greeting}</div> : null}

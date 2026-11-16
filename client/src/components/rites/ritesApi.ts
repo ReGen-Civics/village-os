@@ -70,7 +70,7 @@ export interface MeView {
   admitted: boolean;
   mayWitness: boolean;
   mark: string | null;
-  buddy: { id: string; name: string; handle: string | null; avatar: string | null; greeting: string | null } | null;
+  buddy: { id: string; name: string; handle: string | null; avatar: string | null; greeting: string | null; seat?: string | null } | null;
   inviter: string | null;
   aboard: { doorId: string | null; why: string | null } | null;
   stamps: StampView[];

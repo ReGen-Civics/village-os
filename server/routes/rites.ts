@@ -407,7 +407,9 @@ export function register(app: Express, deps: Deps): void {
     if (!pair) return null;
     const p = (await repo.people(pool, [pair.buddyUserId])).get(pair.buddyUserId);
     if (!p) return null;
-    return { id: p.id, name: first(p.name), handle: p.handle, avatar: p.avatar, greeting: pair.greeting };
+    // The seat they hold, as the crew list names it (QA final run: "Captain", not only the member word).
+    const seat = (await orgRoleNames()).get(p.id)?.[0] ?? null;
+    return { id: p.id, name: first(p.name), handle: p.handle, avatar: p.avatar, greeting: pair.greeting, seat };
   }
 
   app.get("/api/rites/me", async (req, res) => {

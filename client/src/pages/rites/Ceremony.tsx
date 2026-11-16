@@ -169,6 +169,12 @@ export default function Ceremony() {
   useEffect(() => {
     void load();
   }, [load]);
+  // The mark step opens at its top, so the drawing square is in view (QA final run).
+  const step = c?.step;
+  useEffect(() => {
+    if (step === "marking" && c?.you.isCandidate) window.scrollTo({ top: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
   useEffect(() => {
     if (!c || c.step === "sworn" || c.step === "set-aside") return;
     const t = window.setInterval(() => void load(), 2500);

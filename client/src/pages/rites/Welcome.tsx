@@ -126,6 +126,12 @@ export default function Welcome() {
                   <Link className="btn gold" style={{ marginTop: 18 }} href={invite ? `/aboard?invite=${encodeURIComponent(invite)}` : data.inviteOnly && !user ? "/request-membership" : "/aboard"}>
                     {w.cta}
                   </Link>
+                  {/* A returning member on a new phone signs in from here, when this welcome is the home page (QA P4-v4-1). */}
+                  {!user ? (
+                    <a className="btn ghost small" style={{ marginTop: 10 }} href="/login">
+                      <Trans context="rites">I have an account</Trans>
+                    </a>
+                  ) : null}
                 </div>
               </div>
             </div>
