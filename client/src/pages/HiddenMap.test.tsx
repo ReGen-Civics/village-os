@@ -18,8 +18,12 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
+let modulesFailed = false;
 vi.mock("@/modules/ModuleProvider", () => ({
-  useModules: () => ({ loaded: true, modules: [{ id: "hidden-map", lifecycle: "members" }] }),
+  useModules: () =>
+    modulesFailed
+      ? { loaded: true, failed: true, modules: [] }
+      : { loaded: true, failed: false, modules: [{ id: "hidden-map", lifecycle: "members" }] },
 }));
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u-ash", name: "Ash Example" }, loading: false }) }));
 
@@ -73,6 +77,7 @@ const pin = (id: string, vouches: number, mine = true) => ({
 beforeEach(() => {
   window.localStorage.clear();
   noSignal = false;
+  modulesFailed = false;
 });
 afterEach(cleanup);
 
@@ -141,6 +146,20 @@ describe("opening with no signal (P6-2)", () => {
     expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
     expect(screen.queryByRole("tab", { name: "Map" })).toBeNull();
     expect(screen.queryByText("Bed p1")).toBeNull();
+  });
+
+  it("opens from the snapshot even when the module list cannot be read (P6-2)", async () => {
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    noSignal = true;
+    modulesFailed = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
   });
 
   it("says the map could not be read when there is no snapshot", async () => {

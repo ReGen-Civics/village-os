@@ -3,8 +3,9 @@
  * discarding from it, and sending it. Sends on load, when the phone comes back
  * online, and when the tab returns.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { addPhotos, addVisit, createPin } from "@/lib/hiddenMapApi";
+import { authToken } from "@/lib/gameApi";
 import { indexedDbStore, memoryStore, outbox, type FlushResult, type OutboxItem } from "@/lib/hiddenMapOutbox";
 
 export function useOutbox(owner: string | null, onSent: () => void) {
@@ -12,6 +13,9 @@ export function useOutbox(owner: string | null, onSent: () => void) {
   const box = useMemo(() => outbox(durable ?? memoryStore()), [durable]);
   const [items, setItems] = useState<OutboxItem[]>([]);
   const [sending, setSending] = useState(false);
+  // Who is signed in now. A run in flight reads this before every request.
+  const current = useRef(owner);
+  current.current = owner;
 
   const refresh = useCallback(async () => {
     try {
@@ -25,7 +29,18 @@ export function useOutbox(owner: string | null, onSent: () => void) {
     if (!owner) return null;
     setSending(true);
     try {
-      const r = await box.flush(owner, { createPin, addPhotos, addVisit });
+      // The owner's token, pinned for the whole run: no request in it ever carries another session's.
+      const token = authToken();
+      if (!token) return null;
+      const r = await box.flush(
+        owner,
+        {
+          createPin: (d) => createPin(d, token),
+          addPhotos: (id, p) => addPhotos(id, p, token),
+          addVisit: (id, v, p) => addVisit(id, v, p, token),
+        },
+        () => current.current === owner && authToken() === token,
+      );
       if (r.sent > 0) onSent();
       return r;
     } catch {

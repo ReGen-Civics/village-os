@@ -81,6 +81,9 @@ export interface FlushResult {
   stopped: boolean;
 }
 
+/** The signed-in member changed in the middle of a run. */
+class OwnerChanged extends Error {}
+
 /** A refusal the phone should not retry: the server said no to this item. */
 function isRefusal(e: unknown): e is { status: number; message: string } {
   const s = (e as any)?.status;
@@ -105,11 +108,21 @@ export function outbox(store: OutboxStore) {
      * failure that is not a refusal (no signal, the server unwell, signed out)
      * and keeps everything from there on.
      */
-    async flush(owner: string, send: OutboxSender): Promise<FlushResult> {
+    /**
+     * `stillOwner` is asked before every request: the moment the signed-in
+     * member is somebody else, the run stops and keeps everything, so one
+     * member's capture never goes up under another's session (QA P6-r-3).
+     */
+    async flush(owner: string, send: OutboxSender, stillOwner: () => boolean = () => true): Promise<FlushResult> {
       const out: FlushResult = { sent: 0, refused: 0, waiting: 0, stopped: false };
       const items = await mine(owner);
       for (let i = 0; i < items.length; i++) {
         const item = items[i]!;
+        if (!stillOwner()) {
+          out.stopped = true;
+          out.waiting = items.length - i;
+          break;
+        }
         if (item.refused) {
           out.refused++;
           continue;
@@ -122,6 +135,7 @@ export function outbox(store: OutboxStore) {
               await store.put(item);
             }
             while (item.photos.length) {
+              if (!stillOwner()) throw new OwnerChanged();
               await send.addPhotos(item.pinId!, [item.photos[0]!]);
               item.photos = item.photos.slice(1);
               await store.put(item);

@@ -119,6 +119,21 @@ describe("the outbox", () => {
     expect(again.calls).toEqual([]);
   });
 
+  it("stops the moment the signed-in member changes, and sends nothing more under another session (P6-r-3)", async () => {
+    const box = outbox(memoryStore());
+    await box.add(pin("p1", "m-a", 2, "2026-11-15T09:00:00Z"));
+    await box.add(pin("p2", "m-a", 0, "2026-11-15T09:30:00Z"));
+    const s = server();
+    let calls = 0;
+    // The member is still signed in for the pin and its first photo, then somebody else signs in.
+    const r = await box.flush("m-a", s.send, () => ++calls <= 2);
+    expect(r.stopped).toBe(true);
+    expect(s.calls).toEqual(["pin p1", "photos hmp-p1 1"]);
+    const left = await box.pending("m-a");
+    expect(left.map((i) => i.clientId)).toEqual(["p1", "p2"]);
+    expect(left[0]!.photos.length).toBe(1);
+  });
+
   it("sends the oldest first", async () => {
     const box = outbox(memoryStore());
     await box.add(pin("later", "m-a", 0, "2026-11-15T12:00:00Z"));

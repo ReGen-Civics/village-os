@@ -53,7 +53,12 @@ export default function HiddenMap() {
   const { t } = useLingui();
   const { user } = useAuth();
   const modules = useModules();
-  const on = (modules.modules ?? []).some((m) => m.id === "hidden-map" && m.lifecycle !== "off");
+  const listedOn = (modules.modules ?? []).some((m) => m.id === "hidden-map" && m.lifecycle !== "off");
+  // With no signal the module list cannot be read. A member who opened the map here before has its
+  // words snapshot, which is the module's own answer from then: trust it, and open to logging a place.
+  const noList = modules.failed || (typeof navigator !== "undefined" && navigator.onLine === false && !modules.loaded);
+  const keptForOffline = noList && user ? readMapSnapshot(String(user.id)) : null;
+  const on = listedOn || keptForOffline !== null;
   const [me, setMe] = useState<MapMe | null>(null);
   const [pins, setPins] = useState<Array<PinView | PinDot>>([]);
   const [problem, setProblem] = useState<string | null>(null);
@@ -103,7 +108,7 @@ export default function HiddenMap() {
     if (me?.open && user && !openingSeen(String(user.id), me.openedAt)) setMoment(true);
   }, [me?.open, me?.openedAt, user]);
 
-  if (!modules.loaded) {
+  if (!modules.loaded && !keptForOffline) {
     return (
       <Layout>
         <div className="flex min-h-[50vh] items-center justify-center"><BreathingLoader label={t`Opening the map`} /></div>

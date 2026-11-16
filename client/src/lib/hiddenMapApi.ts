@@ -83,8 +83,9 @@ export class Refused extends Error {
   }
 }
 
-const authHeaders = (): Record<string, string> => {
-  const t = authToken();
+/** The member's token, or the one a caller pinned (the outbox sends only with its owner's). */
+const authHeaders = (pinned?: string | null): Record<string, string> => {
+  const t = pinned ?? authToken();
   return t ? { Authorization: `Bearer ${t}` } : {};
 };
 
@@ -104,13 +105,15 @@ export const getPins = async () => json<{ pins: Array<PinView | PinDot>; open: b
 export const getPin = async (id: string) =>
   json<{ pin: PinView; visits: VisitView[]; mayVisit: boolean }>(await gameFetch(`/api/hidden-map/pins/${encodeURIComponent(id)}`));
 
-export const createPin = async (draft: PinDraft) =>
-  json<{ pin: PinView }>(await gameFetch("/api/hidden-map/pins", { method: "POST", body: JSON.stringify(draft) }));
+export const createPin = async (draft: PinDraft, token?: string | null) =>
+  json<{ pin: PinView }>(
+    await gameFetch("/api/hidden-map/pins", { method: "POST", body: JSON.stringify(draft), headers: token ? authHeaders(token) : {} }),
+  );
 
-export async function addPhotos(pinId: string, photos: Blob[]): Promise<{ photoIds: string[] }> {
+export async function addPhotos(pinId: string, photos: Blob[], token?: string | null): Promise<{ photoIds: string[] }> {
   const body = new FormData();
   photos.forEach((p, i) => body.append("photos", p, `photo-${i}.${p.type === "image/jpeg" ? "jpg" : "webp"}`));
-  const res = await fetch(`/api/hidden-map/pins/${encodeURIComponent(pinId)}/photos`, { method: "POST", headers: authHeaders(), body });
+  const res = await fetch(`/api/hidden-map/pins/${encodeURIComponent(pinId)}/photos`, { method: "POST", headers: authHeaders(token), body });
   return json(res);
 }
 
@@ -118,13 +121,14 @@ export async function addVisit(
   pinId: string,
   visit: { clientId: string; stageSeen: Stage | null; note: string },
   photos: Blob[],
+  token?: string | null,
 ): Promise<{ visitId: string; claimed?: boolean }> {
   const body = new FormData();
   body.append("clientId", visit.clientId);
   if (visit.stageSeen) body.append("stageSeen", visit.stageSeen);
   if (visit.note) body.append("note", visit.note);
   photos.forEach((p, i) => body.append("photos", p, `visit-${i}.${p.type === "image/jpeg" ? "jpg" : "webp"}`));
-  const res = await fetch(`/api/hidden-map/pins/${encodeURIComponent(pinId)}/visits`, { method: "POST", headers: authHeaders(), body });
+  const res = await fetch(`/api/hidden-map/pins/${encodeURIComponent(pinId)}/visits`, { method: "POST", headers: authHeaders(token), body });
   return json(res);
 }
 
