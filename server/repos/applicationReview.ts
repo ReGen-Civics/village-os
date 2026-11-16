@@ -17,6 +17,7 @@ import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql
 import { GUT_CRITERION, type GutCheck, type GutAnswer, type InterviewState, type ScoreEntry, type ScoreLevel, type StepKind } from "../../shared/applicationReview";
 import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
+import { holderFirstName } from "../../shared/roleHolderLabel";
 
 type Db = Pool | PoolConnection;
 
@@ -358,7 +359,7 @@ export async function bookingLinksOfMembers(db: Db, userIds: readonly string[]):
   const [rows] = await db.query<RowDataPacket[]>("SELECT id, name, prefs FROM users WHERE id IN (?)", [[...userIds]]);
   return rows.map((r: any) => ({
     userId: String(r.id),
-    firstName: typeof r.name === "string" ? (r.name.trim().split(/\s+/)[0] || null) : null,
+    firstName: holderFirstName(r.name) || null,
     bookingUrl: memberBookingUrl(json(r.prefs)),
   }));
 }

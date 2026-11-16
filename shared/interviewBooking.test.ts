@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bookingLinksText, memberBookingUrl, parseMemberBookingInput, stepBookingLinks } from "./interviewBooking";
+import { bookingLinksText, memberBookingUrl, parseMemberBookingInput, stepBookingFor, stepBookingLinks } from "./interviewBooking";
 import { GUT_CRITERION, gutOfRow, parseCriteria, parseGutInput } from "./applicationReview";
 
 const ANA = "https://calendar.example.test/ana";
@@ -29,6 +29,16 @@ describe("which booking link a conversation offers", () => {
     }
     // CONTROL: a bad personal link falls through to a good role link.
     expect(stepBookingLinks([{ firstName: "Ana", bookingUrl: "http://calendar.example.test/x" }], ROLE)).toEqual([{ who: null, url: ROLE }]);
+  });
+
+  it("names the step Role (First, First) with everyone holding it, links or not", () => {
+    expect(stepBookingFor("Finance Steward", [{ firstName: "Ben", bookingUrl: BEN }, { firstName: "Ana", bookingUrl: ANA }], ROLE)).toEqual({
+      label: "Finance Steward (Ana, Ben)",
+      links: [{ who: "Ana", url: ANA }, { who: "Ben", url: BEN }],
+    });
+    // A holder with no link of their own is still named; the role's link is the way in.
+    expect(stepBookingFor("Finance Steward", [{ firstName: "Ana", bookingUrl: null }], ROLE)).toEqual({ label: "Finance Steward (Ana)", links: [{ who: null, url: ROLE }] });
+    expect(stepBookingFor("Finance Steward", [], null)).toEqual({ label: "Finance Steward", links: [] });
   });
 
   it("writes the links into a letter: the link itself, or one line per person", () => {
@@ -62,17 +72,20 @@ describe("a member's own booking link", () => {
 });
 
 describe("the gut check", () => {
-  it("is optional, and takes yes, no or not sure with one line", () => {
-    expect(parseGutInput({})).toEqual({ ok: true, gut: null });
-    expect(parseGutInput({ gut: null })).toEqual({ ok: true, gut: null });
-    expect(parseGutInput({ gut: { answer: "", note: "" } })).toEqual({ ok: true, gut: null });
+  it("is required: no answer, no scorecard", () => {
+    for (const body of [{}, { gut: null }, { gut: { answer: "", note: "" } }, { gut: { note: "A line alone." } }, null]) {
+      expect(parseGutInput(body), JSON.stringify(body)).toEqual({ ok: false, error: "Pick yes, no or not sure for your gut.", field: "gut" });
+    }
+  });
+
+  it("takes yes, no or not sure, the line optional", () => {
     expect(parseGutInput({ gut: { answer: "yes", note: "  Felt right.  " } })).toEqual({ ok: true, gut: { answer: "yes", note: "Felt right." } });
+    expect(parseGutInput({ gut: { answer: "no" } })).toEqual({ ok: true, gut: { answer: "no", note: "" } });
     expect(parseGutInput({ gut: { answer: "unsure" } })).toEqual({ ok: true, gut: { answer: "unsure", note: "" } });
   });
 
-  it("refuses an unknown answer, a line with no answer, and a long line", () => {
+  it("refuses an unknown answer and a long line", () => {
     expect(parseGutInput({ gut: { answer: "maybe" } }).ok).toBe(false);
-    expect(parseGutInput({ gut: { note: "No answer given." } }).ok).toBe(false);
     expect(parseGutInput({ gut: "yes" }).ok).toBe(false);
     expect(parseGutInput({ gut: { answer: "no", note: "x".repeat(201) } }).ok).toBe(false);
   });

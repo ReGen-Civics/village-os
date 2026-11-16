@@ -41,7 +41,7 @@ interface Served {
   booking: string | null;
   mode: "block" | "split";
   /** The conversation open now and how to book it: the interviewer's own link, else the role's (16 Nov 2026). */
-  bookNow?: { role: string; url: string | null; links?: Array<{ who: string | null; url: string }> } | null;
+  bookNow?: { role: string; label?: string; url: string | null; links?: Array<{ who: string | null; url: string }> } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
   replyDays?: number | null;
   /** Until the first reply, the roles open after the founding team (Rye, 14 Nov 2026). */
@@ -455,6 +455,9 @@ export default function ApplicationStatus() {
               <section aria-label={w.status.booking.label} className={TILE}>
                 {/* One story whatever the role's conversationMode holds: the applicant books each conversation at times they choose, in order. */}
                 <p className="text-foreground">{view.booking.text}</p>
+                {view.booking.book && "links" in view.booking.book && view.booking.book.links.length > 1 && (
+                  <p className="mt-3 font-semibold text-foreground" data-book-heading="">{view.booking.book.label}</p>
+                )}
                 {view.booking.book && "links" in view.booking.book && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {view.booking.book.links

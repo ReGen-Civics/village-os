@@ -742,9 +742,10 @@ export interface StatusServedForView {
   mode: "block" | "split";
   /**
    * The conversation open now and how to book it, null when none is open (server/lib/applicationReview.ts statusOf).
+   * `label` is the role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts).
    * `links` is every way in: one link, or one per person holding the role, by first name. `url` is the first, for an older reader.
    */
-  bookNow?: { role: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }> } | null;
+  bookNow?: { role: string; label?: string; url: string | null; links?: ReadonlyArray<{ who: string | null; url: string }> } | null;
   outcome?: "adopted" | "declined" | "withdrawn" | null;
   referencesGiven?: number | null;
   /** Our review comes before the conversations on this application. */
@@ -764,15 +765,21 @@ export interface StatusView {
   stepWords: string;
   move: string;
   path: Array<{ label: string; state: "done" | "now" | "later" }>;
-  booking: { text: string; book: { links: Array<{ label: string; url: string }> } | { text: string } | null } | null;
+  /**
+   * `book.label` is "Book a time with Role (First, First)". One way in: one door with that label.
+   * Several: the label stands above one door per person, named by first name.
+   */
+  booking: { text: string; book: { label: string; links: Array<{ label: string; url: string }> } | { text: string } | null } | null;
   references: string | null;
 }
 
-/** The status page's booking doors: "Book a time with <role>", once per person when several hold the role. */
-function bookDoors(w: ApplicantMessages["status"], b: NonNullable<StatusServedForView["bookNow"]>): { links: Array<{ label: string; url: string }> } | { text: string } {
+/** The status page's booking doors: "Book a time with Role (First, First)", and each person's link under it when there are several. */
+function bookDoors(w: ApplicantMessages["status"], b: NonNullable<StatusServedForView["bookNow"]>): { label: string; links: Array<{ label: string; url: string }> } | { text: string } {
+  const who = b.label || b.role;
   const links = b.links?.length ? b.links : b.url ? [{ who: null, url: b.url }] : [];
-  if (!links.length) return { text: w.booking.writeNow(b.role) };
-  return { links: links.map((l) => ({ label: links.length > 1 && l.who ? `${w.booking.bookNow(b.role)} (${l.who})` : w.booking.bookNow(b.role), url: l.url })) };
+  if (!links.length) return { text: w.booking.writeNow(who) };
+  const label = w.booking.bookNow(who);
+  return { label, links: links.map((l) => ({ label: links.length > 1 && l.who ? l.who : label, url: l.url })) };
 }
 
 const CONVERSATION_LABEL = /^Conversation with (.+) \((\d+) minutes\)$/;

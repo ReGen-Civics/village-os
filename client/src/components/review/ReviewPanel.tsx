@@ -90,7 +90,7 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
     setSaid(null);
     const body = {
       entries: card.criteria.map((c) => ({ criterionId: c.id, level: entries[c.id]?.level ?? "", evidence: entries[c.id]?.evidence ?? "" })),
-      ...(gut.answer || gut.note.trim() ? { gut: { answer: gut.answer, note: gut.note } } : {}),
+      gut: { answer: gut.answer, note: gut.note },
     };
     const a = await call(`${base}/interviews/${card.mayScore.interviewId}/score`, "POST", body);
     setBusy(false);
@@ -202,7 +202,7 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
             <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={PANEL_WORDS.gutLabel}>
               {GUT_ANSWERS.map((g) => (
                 <label key={g} className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-lg border border-border px-3 text-sm">
-                  <input type="radio" name="gut" value={g} checked={gut.answer === g} onChange={() => setGut((v) => ({ ...v, answer: g }))} />
+                  <input type="radio" name="gut" required value={g} checked={gut.answer === g} onChange={() => setGut((v) => ({ ...v, answer: g }))} />
                   {GUT_WORDS[g]}
                 </label>
               ))}
@@ -218,7 +218,7 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
               />
             </label>
           </fieldset>
-          <button type="submit" disabled={busy} className={PRIMARY}>
+          <button type="submit" disabled={busy || !gut.answer} className={PRIMARY}>
             {PANEL_WORDS.submit}
           </button>
         </form>

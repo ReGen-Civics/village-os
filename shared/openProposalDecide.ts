@@ -459,6 +459,8 @@ export interface InvitedConversation {
   bookingUrl?: string | null;
   /** Every way to book it: the own link of each person holding the role, else the role's (server `stepBookingOf`). Read before `bookingUrl`. */
   bookingLinks?: readonly BookingLink[];
+  /** The role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts). Said in place of `role` when given. */
+  label?: string;
 }
 
 /**
@@ -482,12 +484,12 @@ export function invitedLetter(i: {
     ? [
         "",
         w.invite.conversationsIntro,
-        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.role, c.minutes)}`),
+        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.label || c.role, c.minutes)}`),
         w.invite.total(total),
         "",
         w.invite.booking,
         // The first conversation's own way in. The later ones open in order, each with its own role's link then.
-        firstBooking ? w.invite.bookFirst(first.role, firstBooking) : w.invite.writeFirst(first.role),
+        firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role),
         ...(i.conversations.length > 1 ? [w.invite.laterOpen] : []),
       ]
     : [];

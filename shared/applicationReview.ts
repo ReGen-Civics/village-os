@@ -278,7 +278,8 @@ export function parseScoreInput(body: unknown, criteria: readonly Criterion[]): 
 
 /**
  * THE GUT CHECK (team call): at the end of a conversation the interviewer also
- * says yes, no or not sure, however they get there, with one optional line. It
+ * says yes, no or not sure, however they get there, with one optional line. It is
+ * required for every scorecard (the line stays optional). It
  * rides with the scorecard: kept beside it, read by the same rule
  * (`mayReadScorecards`), never shown to the applicant. It informs and never
  * decides: nothing counts or totals it.
@@ -303,18 +304,20 @@ export interface GutCheck {
   note: string;
 }
 
-export type GutParse = { ok: true; gut: GutCheck | null } | { ok: false; error: string; field: "gut" };
+export type GutParse = { ok: true; gut: GutCheck } | { ok: false; error: string; field: "gut" };
 
-const GUT_PICK = "Pick yes, no or not sure.";
+const GUT_PICK = "Pick yes, no or not sure for your gut.";
 
-/** The gut check in a submitted scorecard (`body.gut`), optional. A line with no answer is refused. */
+/**
+ * The gut check in a submitted scorecard (`body.gut`). REQUIRED (the Operations
+ * lead, 16 Nov 2026): no scorecard goes in without yes, no or not sure. The line
+ * stays optional.
+ */
 export function parseGutInput(body: unknown): GutParse {
   const raw = body && typeof body === "object" ? (body as Record<string, unknown>).gut : undefined;
-  if (raw === undefined || raw === null) return { ok: true, gut: null };
-  if (typeof raw !== "object") return { ok: false, error: GUT_PICK, field: "gut" };
+  if (!raw || typeof raw !== "object") return { ok: false, error: GUT_PICK, field: "gut" };
   const o = raw as Record<string, unknown>;
   const note = typeof o.note === "string" ? o.note.trim() : "";
-  if (o.answer === undefined || o.answer === null || o.answer === "") return note ? { ok: false, error: GUT_PICK, field: "gut" } : { ok: true, gut: null };
   if (!(GUT_ANSWERS as readonly unknown[]).includes(o.answer)) return { ok: false, error: GUT_PICK, field: "gut" };
   if (note.length > GUT_NOTE_MAX) return { ok: false, error: `Keep it to ${GUT_NOTE_MAX} characters.`, field: "gut" };
   return { ok: true, gut: { answer: o.answer as GutAnswer, note } };
@@ -548,7 +551,7 @@ export const PANEL_WORDS = {
   evidenceLabel: "One line of what you heard",
   submit: "Add my scorecard",
   submitted: "Your scorecard is in.",
-  gutLabel: "Your gut",
+  gutLabel: "Your gut: yes, no or not sure",
   gutNoteLabel: "One line (optional)",
   gutRead: "Gut",
   recuse: "Step out of this proposal",

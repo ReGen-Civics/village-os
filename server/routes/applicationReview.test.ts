@@ -235,7 +235,8 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
   const interviews = (id: string) => q("SELECT id, position, interviewer_role_id, minutes, is_final, state FROM application_interviews WHERE application_ref = ? ORDER BY position", [id]);
   const stepKinds = async (id: string) => (await q("SELECT kind, subject FROM application_steps WHERE application_ref = ? ORDER BY id", [id])).map((s: any) => (s.subject ? `${s.kind}:${s.subject}` : s.kind));
   const asks = (id: string) => q("SELECT user_id FROM role_proposal_asks WHERE proposal_id = ? ORDER BY user_id", [id]);
-  const entriesFor = (criteria: Array<{ id: string }>, level = "solid") => ({ entries: criteria.map((c) => ({ criterionId: c.id, level, evidence: `Heard it for ${c.id}.` })) });
+  // Every card carries a gut check: it is required (the Operations lead, 16 Nov 2026).
+  const entriesFor = (criteria: Array<{ id: string }>, level = "solid") => ({ entries: criteria.map((c) => ({ criterionId: c.id, level, evidence: `Heard it for ${c.id}.` })), gut: { answer: "yes", note: "" } });
   const cardOf = async (id: string, as: string) => call("GET", `/api/governance/applications/${id}/scorecards`, undefined, as);
   const score = async (id: string, ivId: number, as: string, level = "solid") => {
     const card = await cardOf(id, as);
@@ -431,11 +432,11 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const { id, confirm } = await confirmed("booklink@example.test");
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const first = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
+        expect(first.body.status.bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: "https://calendar.example.test/channel", links: [{ who: null, url: "https://calendar.example.test/channel" }] });
         // The next conversation opens only once the first is written up, and then offers its own role's way in.
         await score(id, Number((await interviews(id))[0].id), IA.id);
         const second = await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null);
-        expect(second.body.status.bookNow).toEqual({ role: "Data Role", url: null, links: [] });
+        expect(second.body.status.bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
         // Control: an http link is not a booking link.
         await q("UPDATE org_roles SET booking_url = ? WHERE id = ?", ["http://calendar.example.test/data", roleB]);
         expect((await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status.bookNow.url).toBeNull();
@@ -485,7 +486,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         const token = new URL(`${ORIGIN}${confirm.statusPath}`).searchParams.get("token");
         const status = async () => (await call("GET", `/api/application-status/${id}?token=${token}`, undefined, null)).body.status;
         // 1. The interviewer's own link beats the role's.
-        expect((await status()).bookNow).toEqual({ role: "Channel Role", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
+        expect((await status()).bookNow).toEqual({ role: "Channel Role", label: "Channel Role (Iva)", url: IA_LINK, links: [{ who: null, url: IA_LINK }] });
         // 2. CONTROL: cleared, the role's link comes back.
         await saveLink(IA.id, "");
         expect((await status()).bookNow.url).toBe("https://calendar.example.test/channel-role");
@@ -499,12 +500,12 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         expect(JSON.stringify(await status())).not.toContain("hard to read");
         expect(JSON.stringify(await status())).not.toContain("unsure");
         const letter = state.sent.slice(sentBefore).find((m) => m.text.includes("Data Role"));
-        expect(letter?.text).toContain(`Book a time with Data Role: ${IB_LINK}`);
+        expect(letter?.text).toContain(`a conversation with Data Role (Ivo), about 20 minutes. Book a time with Data Role (Ivo): ${IB_LINK}`);
         expect(letter?.text).not.toContain(IB.email);
-        expect((await status()).bookNow).toEqual({ role: "Data Role", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: IB_LINK, links: [{ who: null, url: IB_LINK }] });
         // 3. Neither a person's link nor the role's: nothing to follow, and the page says we write with times.
         await saveLink(IB.id, "");
-        expect((await status()).bookNow).toEqual({ role: "Data Role", url: null, links: [] });
+        expect((await status()).bookNow).toEqual({ role: "Data Role", label: "Data Role (Ivo)", url: null, links: [] });
         expect(JSON.stringify(await status())).not.toContain("@example.test");
       } finally {
         await saveLink(IA.id, "");
@@ -563,16 +564,22 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       }
     });
 
-    it("is optional, and refuses an answer it does not know or a line with no answer, storing nothing", async () => {
+    it("is required: a card without yes, no or not sure is refused, the interview stays open, nothing is stored", async () => {
       const { id } = await confirmed("gutbad@example.test");
       const ivs = await interviews(id);
+      const path = `/api/governance/applications/${id}/interviews/${ivs[0].id}/score`;
+      const criteria = (await cardOf(id, IA.id)).body.scorecards.criteria;
+      const bare = await call("POST", path, { entries: entriesFor(criteria).entries }, IA.id);
+      expect(bare.status).toBe(400);
+      expect(bare.body).toEqual({ error: "Pick yes, no or not sure for your gut.", field: "gut" });
       expect((await withGut(id, Number(ivs[0].id), IA.id, { answer: "maybe" })).status).toBe(400);
       expect((await withGut(id, Number(ivs[0].id), IA.id, { note: "A line with no answer." })).status).toBe(400);
       expect((await withGut(id, Number(ivs[0].id), IA.id, { answer: "yes", note: "x".repeat(201) })).status).toBe(400);
       expect(await q("SELECT 1 FROM application_scores WHERE application_ref = ?", [id])).toEqual([]);
-      // CONTROL: without one, the card goes in as it always did.
-      expect((await score(id, Number(ivs[0].id), IA.id)).status).toBe(200);
-      expect((await cardOf(id, IA.id)).body.scorecards.interviews[0].gut).toBeNull();
+      expect((await interviews(id))[0].state).toBe("open");
+      // CONTROL: with an answer and no line, the card goes in.
+      expect((await withGut(id, Number(ivs[0].id), IA.id, { answer: "unsure" })).status).toBe(200);
+      expect((await cardOf(id, IA.id)).body.scorecards.interviews[0].gut).toEqual({ answer: "unsure", note: "" });
     });
   });
 
@@ -729,13 +736,14 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
         await score(id, Number((await interviews(id))[0].id), IA.id);
         await call("POST", `/api/governance/applications/${id}/recuse`, { reason: "I know them." }, IB.id);
       }
-      expect(await left(old.id)).toMatchObject({ scores: 3, scorers: 1, hash: true });
+      // Three criteria and the gut check, which every card carries (stored as the reserved row `~gut`).
+      expect(await left(old.id)).toMatchObject({ scores: 4, scorers: 1, hash: true });
       await call("POST", `/api/governance/open-proposals/${old.id}/decline`, {}, FOUNDER.id);
 
       // CONTROL: a day later nothing is old enough.
       await tidyOpenProposals(pool, new Date(Date.now() + DAY));
-      expect((await left(old.id)).scores).toBe(3);
-      expect((await left(young.id)).scores).toBe(3);
+      expect((await left(old.id)).scores).toBe(4);
+      expect((await left(young.id)).scores).toBe(4);
 
       await tidyOpenProposals(pool, new Date(Date.now() + 91 * DAY));
       expect(await left(old.id)).toEqual({ scores: 0, scorers: 0, hash: false });
@@ -763,7 +771,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       const third = await confirmed("third@example.test");
       await score(third.id, Number((await interviews(third.id))[0].id), IA.id);
       await forgetMemberReview(pool, IC.id, new Date());
-      expect((await left(third.id)).scores).toBe(3);
+      expect((await left(third.id)).scores).toBe(4);
 
       // The applicant is erased: the review of their application is cleared.
       await score(mine.id, Number((await interviews(mine.id))[0].id), IA.id).catch(() => undefined);

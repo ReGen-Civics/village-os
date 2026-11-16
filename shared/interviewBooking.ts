@@ -15,11 +15,14 @@
  *   2. else the role's own link (`org_roles.booking_url`);
  *   3. else nothing, and the applicant reads "We'll write to you with times".
  *
- * Only a first name and a link leave here. Never an email address.
+ * The step is named "Role (First, First)" (`roleWithHolders`, shared/roleHolderLabel.ts),
+ * and each person's link is listed under it by first name. Only a first name and a link
+ * leave here. Never an email address.
  *
  * Pure: no clock, no database.
  */
 import { BOOKING_URL_MAX, parseBookingUrl } from "./roleBooking";
+import { roleWithHolders } from "./roleHolderLabel";
 
 /** The key in a member's prefs that holds their booking link. */
 export const MEMBER_BOOKING_PREF = "bookingUrl";
@@ -70,6 +73,19 @@ export function stepBookingLinks(holders: readonly StepHolder[], roleBookingUrl:
   if (unique.length > 1) return [...unique].sort((a, b) => (a.who ?? "").localeCompare(b.who ?? "")).map((h) => ({ who: h.who, url: h.url }));
   const role = parseBookingUrl(roleBookingUrl);
   return role ? [{ who: null, url: role }] : [];
+}
+
+/** How one step is booked: who it is with, as "Role (First, First)", and the ways in. */
+export interface StepBooking {
+  /** The role with the first names of the people holding it now (`roleWithHolders`), sorted. */
+  label: string;
+  links: BookingLink[];
+}
+
+/** The step's label and links: every holder is named in the label, whether or not they keep a link. */
+export function stepBookingFor(roleName: string, holders: readonly StepHolder[], roleBookingUrl: unknown): StepBooking {
+  const names = holders.map((h) => h.firstName?.trim() || "").filter(Boolean).sort((a, b) => a.localeCompare(b));
+  return { label: roleWithHolders(roleName, names), links: stepBookingLinks(holders, roleBookingUrl) };
 }
 
 /**
