@@ -20,6 +20,13 @@
  *     first. The settlement leaves these two tokens to the invoice for a seat
  *     held on an adopted application's money terms, so this guards a moon
  *     paid before that rule, or terms that changed.
+ *   - Each share is recorded `awaiting`, its own state, and waits there for a
+ *     Treasurer's or founder's review (Rye, 15 Nov 2026; the coordinator's
+ *     ruling the same day; server/lib/moonRewardReview.ts). Approving it moves
+ *     it to owed, and only then does anything pay it: the approval itself,
+ *     the launch sweep or the hourly retry, which read owed rows only. A
+ *     change moves it back to awaiting, under the same row lock settling
+ *     takes, so a changed amount never pays without a second look.
  * The cash share alone becomes cash owed (`oweApprovedRoleCash`, `cashOfLine`).
  *
  * An allowance line stays cash: it is a cost the role carries, not its reward.
@@ -32,8 +39,9 @@ import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
 import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, keys, toLedgerUnits, villageId, type OwedPosting } from "./economy";
 import { memberAccount } from "./ledger";
-import { owedClaimIdsOfSource, recordOwed, settleOwedForClaim, type SettleOutcome } from "../repos/questOwedPostings";
+import { owedClaimIdsOfSource, recordOwed, settleOwedForClaim, settleOwedPosting, type SettleOutcome } from "../repos/questOwedPostings";
 import { roleCycleLegsForApplication } from "../repos/tokenLedger";
+import { recordRewardReviews, type RewardReviewInsert } from "../repos/moonRewardReviews";
 import { sectionsForMany } from "./roleCardSections";
 import { earnedEquityMeaningWritten } from "./valuationStore";
 import { stringVar } from "./variables";
@@ -90,6 +98,7 @@ export async function recordLineRewards(
   p: { invoiceId: string; cycleId: string; userId: string; invoiceTitle: string; lines: readonly InvoiceLine[] },
 ): Promise<string[]> {
   const owed: OwedPosting[] = [];
+  const reviews: RewardReviewInsert[] = [];
   for (const l of p.lines) {
     if (l.held || !l.reward) continue;
     const shares = [
@@ -118,10 +127,23 @@ export async function recordLineRewards(
         description: `${l.roleNames.join(", ")}, ${p.invoiceTitle}`,
         idempotencyKey: lineRewardKey(p.cycleId, l.key, p.userId, s.token),
       });
+      reviews.push({
+        idempotencyKey: lineRewardKey(p.cycleId, l.key, p.userId, s.token),
+        invoiceId: p.invoiceId,
+        userId: p.userId,
+        tokenSlug: s.token,
+        unitsShared: toLedgerUnits(s.token, s.units),
+        lineKey: l.key,
+        lineTotalMinor: l.reward.totalMinor,
+        cashMinor: l.reward.cashMinor,
+        currency: l.currency ?? "",
+      });
     }
   }
   if (owed.length === 0 || (await departedById(conn, p.userId))) return [];
-  await recordOwed(conn, lineRewardClaimId(p.invoiceId), owed);
+  // Each share waits, `awaiting`, for a Treasurer's or founder's review before anything may pay it (shared/moonRewardReview.ts).
+  await recordOwed(conn, lineRewardClaimId(p.invoiceId), owed, "awaiting");
+  await recordRewardReviews(conn, reviews);
   return owed.map((o) => o.idempotencyKey);
 }
 
@@ -147,6 +169,17 @@ async function settledBySeat(conn: PoolConnection, cycleId: string, applicationI
  */
 export async function settleLineRewards(pool: Pool, invoiceId: string): Promise<SettleOutcome[]> {
   const out = await settleOwedForClaim(pool, lineRewardClaimId(invoiceId));
+  for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
+  return out;
+}
+
+/**
+ * Pay these moon token lines, one row at a time, right after a review approved
+ * them. A row still `awaiting` (a change landed first) is not owed, and moves nothing.
+ */
+export async function settleRewardKeys(pool: Pool, keys: readonly string[]): Promise<SettleOutcome[]> {
+  const out: SettleOutcome[] = [];
+  for (const key of keys) out.push(await settleOwedPosting(pool, key));
   for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
   return out;
 }
