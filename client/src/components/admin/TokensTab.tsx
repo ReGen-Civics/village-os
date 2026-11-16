@@ -26,6 +26,7 @@
  * registry. Keeping the winner buried mid-monolith is how the losers survived.
  */
 import TokenJobsPanel from "./TokenJobsPanel";
+import MintDesk from "./MintDesk";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { ModuleLifecycle } from "@shared/modules";
@@ -34,9 +35,8 @@ import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
 import { tokenModule, tokenModuleIsOff, visibleTokens } from "@/components/admin/tokenCatalog";
 import TokenMeaningField from "./TokenMeaningField";
 import VillageTokensWordField from "./VillageTokensWordField";
-import { formatTokenAmount, smallestUnit } from "@/lib/tokenAmount";
+import { formatTokenAmount } from "@/lib/tokenAmount";
 import { takePrefill } from "@/lib/profilePrefill";
-import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
 
 /**
  * THE ONE PAGE WHERE A TOKEN IS NAMED.
@@ -56,7 +56,6 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ slug: "", name: "", kind: "credit", transferable: false });
-  const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "" });
   const [renaming, setRenaming] = useState<{ slug: string; name: string } | null>(null);
   /**
    * The recognition token's name from a ReGen Civics file (ProfileImport.tsx),
@@ -64,9 +63,6 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
    * here can take a new name, so the words are shown for a founder to place.
    */
   const [handed, setHanded] = useState<{ name: string; found: boolean } | null>(null);
-  /** 0106: grants waiting for a second steward, and the ones already decided. */
-  const [grants, setGrants] = useState<any[]>([]);
-  const [cosignOver, setCosignOver] = useState<number>(0);
 
   /*
    * THIS SCREEN SPEAKS WHOLE TOKENS. The ledger does not.
@@ -75,26 +71,20 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
    * registry except Village Voice carries 0 decimals, where the two are the
    * same number. Voice carries 3, so this tab showed a grant of 10 Voice as
    * "10,000" and its Amount box minted 0.010 Voice to a steward who typed 10.
-   *
-   * The box and the numbers beside it are converted TOGETHER and in the same
-   * commit, which is the whole discipline: a screen that divides its display
-   * and leaves its input posting minor units is worse than one that does
-   * neither, because both raw at least agree with each other.
+   * The mint box and its grants now live in MintDesk.tsx, converted together
+   * there; the issued-to-date figures below are converted here.
    */
-  const decimalsOfSlug = (slug: string): number =>
-    Number(tokens.find((t: any) => t.slug === slug)?.decimals ?? 0) || 0;
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [tRes, pRes, gRes] = await Promise.all([
+      // The grants record is MintDesk's own read (MintDesk.tsx).
+      const [tRes, pRes] = await Promise.all([
         fetch(`${API_BASE}/admin/tokens`, { headers: authHeaders(password) }),
         fetch(`${API_BASE}/admin/players`, { headers: authHeaders(password) }),
-        fetch(`${API_BASE}/admin/mint-requests`, { headers: authHeaders(password) }),
       ]);
       const t = await tRes.json();
       const p = await pRes.json();
-      const g = await gRes.json();
       setTokens(Array.isArray(t.tokens) ? t.tokens : []);
       const name = takePrefill("tokenName");
       if (name) {
@@ -106,8 +96,6 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
       }
       setMintCap(Number(t.mintCapPerCycle) || 0);
       setPlayers(Array.isArray(p) ? p : []);
-      setGrants(Array.isArray(g.requests) ? g.requests : []);
-      setCosignOver(Number(g.cosignOver) || 0);
     } catch { setTokens([]); }
     setLoading(false);
   }, [password]);
@@ -197,74 +185,6 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
       );
       load();
     } catch (e: any) { toast.error(e?.message || "Could not change visibility"); }
-  };
-
-  const doMint = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/tokens/${mint.slug}/mint`, {
-        method: "POST",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          toUserId: mint.toUserId,
-          // HUMAN TOKENS, fractions included, and the conversion is the
-          // ROUTE's. Two lanes fixed "a steward typed 10 Voice and minted a
-          // hundredth" at once, one here and one at
-          // `POST /api/admin/tokens/:slug/mint`, which does
-          // `toLedgerUnits(slug, amt)` on the way in. Converting in both places
-          // multiplies twice, so the screen sends what was typed. The route
-          // refuses, in words, an amount finer than the token holds; it used to
-          // truncate 2.5 to 2 and this toast said "Minted".
-          amount: Number(mint.amount),
-          reason: mint.reason,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      /*
-       * 0106: a grant over `ledger.admin_mint_cosign_over` answers 202 and
-       * moves nothing. Saying "Minted" here would be the product telling a
-       * steward something that did not happen, which is the one thing a
-       * message may never do.
-       */
-      if (data.pending) toast.success(data.message || "Recorded. Awaiting a second steward's sign-off");
-      else toast.success(`Minted: ${data.remaining} left under this cycle's cap`);
-      setMint({ slug: "", toUserId: "", amount: "", reason: "" });
-      load();
-    } catch (e: any) { toast.error(e?.message || "Mint failed"); }
-  };
-
-  /** The SECOND steward agrees. The amount and token come from the record. */
-  const signGrant = async (id: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/admin/mint-requests/${id}/approve`, {
-        method: "POST",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify({}),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success("Signed. The grant is credited");
-      load();
-    } catch (e: any) { toast.error(e?.message || "Could not sign that grant"); }
-  };
-
-  const declineGrant = async (id: string) => {
-    // `?? ""` here would have made Cancel indistinguishable from an empty
-    // reason, so pressing Escape would have turned the grant down instead of
-    // walking away. Null is the cancel and it has to survive to the test.
-    const note = window.prompt("Why are you turning this down? The record keeps it.");
-    if (note === null) return;
-    try {
-      const res = await fetch(`${API_BASE}/admin/mint-requests/${id}/decline`, {
-        method: "POST",
-        headers: authHeaders(password, { "Content-Type": "application/json" }),
-        body: JSON.stringify({ reason: note }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(refusal(data, "failed"));
-      toast.success("Turned down. The cap has its room back");
-      load();
-    } catch (e: any) { toast.error(e?.message || "Could not turn that grant down"); }
   };
 
   /* Every token this village runs, module tokens included while their module
@@ -480,94 +400,9 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-xl p-5">
-            <h3 className="font-semibold text-gray-900 mb-1">Mint by hand</h3>
-            <p className="text-xs text-gray-500 mb-3">
-              Issues from the dedicated mint faucet, with a reason, audited. This village
-              can bring at most {mintCap.toLocaleString()} of a token into existence per
-              lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap).
-              {" "}{MINT_CAP_SCOPE} A busy month of stays or work-exchange quests can use
-              it up before anyone mints anything here.
-              {/* State what is true, then get out of the way (R56). Both of
-                  these are facts about what the route will do, and neither
-                  argues with the village about its own dials. */}
-              {" "}Minting to your own account is refused.
-              {cosignOver > 0
-                ? ` A grant over ${cosignOver.toLocaleString()} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over).`
-                : " A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0)."}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <select value={mint.slug} onChange={(e) => setMint({ ...mint, slug: e.target.value })}
-                className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
-                <option value="">Token…</option>
-                {platformTokens.map((t) => <option key={t.slug} value={t.slug}>{t.name}</option>)}
-              </select>
-              <select value={mint.toUserId} onChange={(e) => setMint({ ...mint, toUserId: e.target.value })}
-                className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
-                <option value="">Member…</option>
-                {players.map((p) => <option key={p.id} value={p.id}>{p.name}{p.handle ? ` (@${p.handle})` : ""}</option>)}
-              </select>
-              <input value={mint.amount} onChange={(e) => setMint({ ...mint, amount: e.target.value })}
-                placeholder="Amount" type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-28" />
-              <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
-                placeholder="Reason (required)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 flex-1 min-w-48" />
-              <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
-                className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
-                Mint
-              </button>
-            </div>
-          </div>
-
-          {/*
-            0106: THE GRANTS RECORD.
-            Every admin sees the same list, waiting first. A queue only its
-            author can read is a drawer, and the point of a second signature is
-            that somebody else saw it. The decided rows stay because who agreed
-            to what, and when, is the record itself.
-          */}
-          {grants.length > 0 && (
-            <div className="border border-gray-200 rounded-xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-1">Grants and their signatures</h3>
-              <p className="text-xs text-gray-500 mb-3">
-                A grant over the threshold moves nothing until a second steward agrees.
-                Whoever asked for it cannot be the one who signs it.
-              </p>
-              <div className="space-y-2">
-                {grants.map((g) => (
-                  <div key={g.id} className="flex flex-wrap items-center gap-3 border border-gray-100 rounded-lg px-3 py-2.5">
-                    <div className="flex-1 min-w-64">
-                      <p className="text-sm text-gray-900">
-                        {/* `admin_mint_requests.amount` holds WHOLE tokens: the route stores
-                            what was typed and converts only at the post. */}
-                        <strong>{Number(g.amount).toLocaleString()} {g.tokenName}</strong>
-                        {" to "}{g.toName ?? g.toUserId}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {g.reason}
-                        {" · asked for by "}{g.requestedByName ?? g.requestedBy}
-                        {g.status === "pending"
-                          ? " · waiting for a second steward"
-                          : ` · ${g.status} by ${g.decidedByName ?? g.decidedBy}${g.decidedAt ? ` on ${new Date(g.decidedAt).toLocaleDateString()}` : ""}`}
-                        {g.decisionNote ? ` · "${g.decisionNote}"` : ""}
-                      </p>
-                    </div>
-                    {g.status === "pending" && (
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => signGrant(g.id)}
-                          className="text-sm bg-teal-deep text-white rounded-lg px-3 py-2 font-medium">
-                          Sign it
-                        </button>
-                        <button onClick={() => declineGrant(g.id)}
-                          className="text-sm border border-gray-200 text-gray-700 rounded-lg px-3 py-2 font-medium">
-                          Turn it down
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* The hand mint and the grants record (MintDesk.tsx), the same
+              piece the Treasury page draws for a token.mint holder. */}
+          <MintDesk password={password} tokens={platformTokens} members={players} mintCap={mintCap} onChanged={load} />
         </div>
       )}
     </div>

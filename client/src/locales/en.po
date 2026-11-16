@@ -518,6 +518,11 @@ msgctxt "test run span"
 msgid "{0} moons, about {1} days."
 msgstr "{0} moons, about {1} days."
 
+#: client/src/pages/Treasury.tsx
+msgctxt "link to the powers page"
+msgid "What We Look After"
+msgstr "What We Look After"
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "If it is not something to mediate"
 msgstr "If it is not something to mediate"
@@ -3608,6 +3613,10 @@ msgctxt "admin menu: the group names"
 msgid "Groups"
 msgstr "Groups"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "Why are you turning this down? The record keeps it."
+msgstr "Why are you turning this down? The record keeps it."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone, and its goals are asked here."
 #~ msgstr "Pick a role on the first stone, and its goals are asked here."
@@ -3744,6 +3753,11 @@ msgstr "{name}? {name}! Oh, I love it. {name} it is. You can rename me any time.
 msgctxt "admin helper, proposal"
 msgid "Applied."
 msgstr "Applied."
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, reason box"
+msgid "Reason (required)"
+msgstr "Reason (required)"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application check"
@@ -4539,6 +4553,10 @@ msgctxt "circle hearth, we meet"
 msgid "One of us said they will be there."
 msgstr "One of us said they will be there."
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "A grant over the threshold moves nothing until a second steward agrees. Whoever asked for it cannot be the one who signs it."
+msgstr "A grant over the threshold moves nothing until a second steward agrees. Whoever asked for it cannot be the one who signs it."
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "Ask a question"
@@ -5010,6 +5028,10 @@ msgstr "Funded"
 #: client/src/pages/ProposeARole.tsx
 msgid "Back to the role"
 msgstr "Back to the role"
+
+#: client/src/components/admin/MintDesk.tsx
+msgid "Could not turn that grant down"
+msgstr "Could not turn that grant down"
 
 #: client/src/components/roots/RootPicker.tsx
 msgctxt "root picker coverage caption"
@@ -6436,6 +6458,10 @@ msgctxt "role editor: who can hold a role"
 msgid "An agent"
 msgstr "An agent"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0)."
+msgstr "A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0)."
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: one earlier word"
 msgid "{was}% from {from}, {span}"
@@ -6812,6 +6838,10 @@ msgstr "That did not reach the village. Check your connection and try again."
 msgctxt "map light setting, offline"
 msgid "That did not reach the server. Your light is unchanged."
 msgstr "That did not reach the server. Your light is unchanged."
+
+#: client/src/components/admin/MintDesk.tsx
+msgid "Minted: {remaining} left under this cycle's cap"
+msgstr "Minted: {remaining} left under this cycle's cap"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel, who answers"
@@ -7665,6 +7695,10 @@ msgstr "People and roles"
 #~ msgctxt "role editor characters"
 #~ msgid "Characters it suits"
 #~ msgstr "Characters it suits"
+
+#: client/src/components/admin/MintDesk.tsx
+msgid "A grant over {cosignWords} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over)."
+msgstr "A grant over {cosignWords} waits for a second steward to agree before anything moves (ledger.admin_mint_cosign_over)."
 
 #: client/src/components/characters/RolesOpenNow.tsx
 #~ msgctxt "character card, propose for one open role"
@@ -8626,6 +8660,10 @@ msgstr "{0}, open"
 #~ msgid "I accept the terms on offer."
 #~ msgstr "I accept the terms on offer."
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "Turned down. The cap has its room back"
+msgstr "Turned down. The cap has its room back"
+
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "formation: the roles held now"
 msgid "Holding it now"
@@ -9474,6 +9512,11 @@ msgctxt "roots filter switch"
 msgid "Show only what matches my roots"
 msgstr "Show only what matches my roots"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "toast after a hand mint was refused"
+msgid "Mint failed"
+msgstr "Mint failed"
+
 #: client/src/components/TreasurySync.tsx
 msgid "{differs} of your numbers differ between sources. The Treasurer has been shown each one."
 msgstr "{differs} of your numbers differ between sources. The Treasurer has been shown each one."
@@ -9882,6 +9925,10 @@ msgctxt "proposed changes"
 msgid "Working"
 msgstr "Working"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "Could not sign that grant"
+msgstr "Could not sign that grant"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar page: today's place in the moon"
 msgid "Today is day {lunarDay} of {moonLength}"
@@ -10087,6 +10134,10 @@ msgctxt "companion welcome"
 msgid "How I like to be helped"
 msgstr "How I like to be helped"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "Recorded. Awaiting a second steward's sign-off"
+msgstr "Recorded. Awaiting a second steward's sign-off"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "Share a concern"
@@ -10224,6 +10275,11 @@ msgstr "Take a quest, alone or with others"
 msgctxt "admin role roots"
 msgid "Save roots"
 msgstr "Save roots"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, member picker placeholder"
+msgid "Member…"
+msgstr "Member…"
 
 #: client/src/pages/Governance.tsx
 msgctxt "governance page section heading"
@@ -11033,6 +11089,10 @@ msgctxt "sera answers"
 msgid "this role"
 msgstr "this role"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "Minting to your own account is refused."
+msgstr "Minting to your own account is refused."
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Change it any time with Quiet at the top."
@@ -11565,6 +11625,11 @@ msgstr "Choose the file to bring in."
 msgid "The name for the {0} group"
 msgstr "The name for the {0} group"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint grants record, decline a grant"
+msgid "Turn it down"
+msgstr "Turn it down"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "The import did not reach the server."
@@ -11595,6 +11660,11 @@ msgstr "We're building the founding team: the people who'll take the village fro
 msgctxt "characters page, the class card's eyebrow"
 msgid "A root"
 msgstr "A root"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, token picker placeholder"
+msgid "Token…"
+msgstr "Token…"
 
 #: client/src/components/review/SeraDifferences.tsx
 #~ msgid "No arrival from {agent} waits in the structure review right now."
@@ -13805,6 +13875,11 @@ msgctxt "proposed changes"
 msgid "Edits not saved"
 msgstr "Edits not saved"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint grants record, approve a grant"
+msgid "Sign it"
+msgstr "Sign it"
+
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
 msgid "pay is set by a person"
@@ -13814,6 +13889,11 @@ msgstr "pay is set by a person"
 msgctxt "role pay"
 msgid "Your figure"
 msgstr "Your figure"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "heading of the hand-mint form"
+msgid "Mint by hand"
+msgstr "Mint by hand"
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -13965,6 +14045,11 @@ msgstr "Cancel"
 #~ msgctxt "commitment field: the history"
 #~ msgid "What you said before"
 #~ msgstr "What you said before"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, token picker"
+msgid "Token to mint"
+msgstr "Token to mint"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -14364,6 +14449,10 @@ msgstr "For {roleName}, if we invite you to the conversations:"
 msgid "A rupture is not an exit. The restorative path comes first, and its content reaches only the people in the room:"
 msgstr "A rupture is not an exit. The restorative path comes first, and its content reaches only the people in the room:"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid "A busy month of stays or work-exchange quests can use it up before anyone mints anything here."
+msgstr "A busy month of stays or work-exchange quests can use it up before anyone mints anything here."
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading of the checklist"
 msgid "Before the vote"
@@ -14646,6 +14735,11 @@ msgctxt "agent paths"
 msgid "No words yet"
 msgstr "No words yet"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "heading of the hand-mint grants record"
+msgid "Grants and their signatures"
+msgstr "Grants and their signatures"
+
 #: client/src/pages/Home.tsx
 #~ msgctxt "landing hero, the founding team line"
 #~ msgid "We're forming the founding team now: paid, multi-year roles that take the village from idea to home."
@@ -14743,6 +14837,10 @@ msgstr "Their card beside the open card"
 msgctxt "open proposal role"
 msgid "A background check happens for this role whatever the references say."
 msgstr "A background check happens for this role whatever the references say."
+
+#: client/src/components/admin/MintDesk.tsx
+msgid "Issues from the dedicated mint faucet, with a reason, audited. This village can bring at most {capWords} of a token into existence per lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap)."
+msgstr "Issues from the dedicated mint faucet, with a reason, audited. This village can bring at most {capWords} of a token into existence per lunar cycle, counted net of what comes back (ledger.admin_mint_cycle_cap)."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "open proposal field"
@@ -14972,6 +15070,11 @@ msgstr "Done"
 msgid "Ask about the canvas"
 msgstr "Ask about the canvas"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, submit button"
+msgid "Mint"
+msgstr "Mint"
+
 #. placeholder {0}: e.method
 #. placeholder {1}: e.path
 #: client/src/components/admin/AgentPathTree.tsx
@@ -15123,6 +15226,11 @@ msgctxt "founding application refusal"
 msgid "Choose the role you are applying for."
 msgstr "Choose the role you are applying for."
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, amount box"
+msgid "Amount"
+msgstr "Amount"
+
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "Read the village's exit policy"
 msgstr "Read the village's exit policy"
@@ -15136,6 +15244,11 @@ msgstr "Any size"
 msgctxt "pay board status"
 msgid "Approved, issues at launch"
 msgstr "Approved, issues at launch"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "hand-mint form, member picker"
+msgid "Member to mint to"
+msgstr "Member to mint to"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "Decision Matrix column, before its answer"
@@ -15958,6 +16071,10 @@ msgstr "More"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for {seasonName}, say what you bring, and send it. You don't need an account."
 #~ msgstr "Pick up to {maxRoles} roles for {seasonName}, say what you bring, and send it. You don't need an account."
+
+#: client/src/components/admin/MintDesk.tsx
+msgid "Signed. The grant is credited"
+msgstr "Signed. The grant is credited"
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
