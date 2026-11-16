@@ -256,6 +256,7 @@ import { register as registerBrandUploadRoutes } from "./routes/brandUploads";
 import { register as registerNeedsRoutes } from "./routes/needs";
 import { exportMemberJournal, register as registerJournalRoutes } from "./routes/journal";
 import { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing, register as registerGeneKeysRoutes } from "./routes/geneKeys";
+import { register as registerProtocolsRoutes } from "./routes/protocols";
 import { lensesOf as companionLensesOf } from "./repos/companions";
 import { exportMemberFundingRounds, fundingRoundsOpenState, register as registerFundingRoundsRoutes } from "./routes/fundingRounds";
 import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry";
@@ -17814,6 +17815,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     },
   });
   registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
+  registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg", quests: { stageOf, roleIdsFor, claimsRepo, questsRepo, questConsentRecipients, notify } });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });

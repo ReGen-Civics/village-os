@@ -57,13 +57,23 @@ self.addEventListener("install", (event) => {
   }
 });
 
+// A module page's own offline shell cache, kept by that page's worker.
+const PAGE_SHELL = /^[a-z0-9-]+-shell-v\d+$/;
+
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       // Drop caches from an older naming scheme so an upgrade cannot leave
-      // megabytes of unreachable artifact behind on someone's phone.
+      // megabytes of unreachable artifact behind on someone's phone. A
+      // module page's own offline shell (a worker scoped to that page, e.g.
+      // protocols-sw.js at /protocols, cache "protocols-shell-v1") is another
+      // worker's cache and is left to it: Cache Storage is shared by the whole
+      // origin, and deleting it here would leave a member with no page the
+      // next time they had no signal. Name such a cache "<page>-shell-v<n>".
       const names = await caches.keys();
-      await Promise.all(names.filter((n) => n !== CACHE && n !== ASSETS).map((n) => caches.delete(n)));
+      await Promise.all(
+        names.filter((n) => n !== CACHE && n !== ASSETS && !PAGE_SHELL.test(n)).map((n) => caches.delete(n)),
+      );
       await self.clients.claim();
     })(),
   );
