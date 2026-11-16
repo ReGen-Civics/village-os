@@ -26,6 +26,7 @@ import { TIER_FLOORS, type Criticality } from "./governanceEngine";
 import { MINT_RULE, SUBJECT_THRESHOLDS, VILLAGE_LAUNCH } from "./ballotSubjects";
 import { isAnchorDateAcceptable } from "./villageMoon";
 import { villageSeasonsProblem } from "./villageSeasons";
+import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
 import { GATHERING_LIMIT_DEFAULT, GATHERING_LIMIT_KEY, REVIEW_DAYS_DEFAULT, REVIEW_DAYS_KEY } from "./changeRequestLimits";
@@ -323,6 +324,61 @@ export const VARIABLES: VariableDef[] = [
       "When on, an account can only be made with an invitation link a member sent, by email sign-up or by Google. Anybody else can still look around, and is asked to send a request to join, which lands in the admin queue. When off, anybody can make an account, and an invitation link still counts as the inviter's vouch.",
     type: "boolean",
     default: "true",
+  },
+  // ── Season places (module `season-places`, shared/seasonPlaces.ts) ────────
+  // Read only while the module is on; each is a dial so every member sees it
+  // and any member may propose a change (Rye, 2026-09-25 and 2026-11-06).
+  {
+    key: "season_places.who",
+    category: "Season places",
+    label: "What takes part each season",
+    // Moving it changes who is asked to propose, which is not a routine tune.
+    criticality: "structural",
+    description:
+      "Who proposes to take part in a season: each circle, which a live holder of any role in it proposes for, or each member for themselves. Places, the waitlist and seasons served are all counted in this unit.",
+    type: "choice",
+    default: "circle",
+    choices: [
+      { value: "circle", label: "Each circle", hint: "A crew proposes together, and holds one place." },
+      { value: "member", label: "Each member", hint: "Every member proposes for themselves." },
+    ],
+  },
+  {
+    key: "season_places.free_after",
+    category: "Season places",
+    label: "Seasons before no proposal is needed",
+    criticality: "structural",
+    description:
+      "After holding a place in this many seasons, a circle takes part in the next one without a proposal. The season it is in now counts. Leave it blank and every season needs a proposal. 0 means nobody ever needs one.",
+    type: "integer",
+    default: "",
+    blank: "every season needs a proposal",
+    unit: "seasons",
+    min: 0,
+    max: 40,
+  },
+  {
+    key: "season_places.cap",
+    category: "Season places",
+    label: "Places in a season",
+    description:
+      "How many circles can take part in one season. Over it, a circle that was adopted, or that has served its seasons, waits in order and takes the first place that frees, and its crew is told. Lowering it removes nobody: places already held stand. Leave it blank for no cap. 0 means no places.",
+    type: "integer",
+    default: "",
+    blank: "no cap",
+    unit: "places",
+    min: 0,
+    max: 100000,
+  },
+  {
+    key: "roles.prerequisites",
+    category: "Governance",
+    label: "What a role asks for before anyone applies",
+    criticality: "structural",
+    description:
+      "Roles that ask for something completed before a member may apply: a product they paid for, a quest consented to them, or both. One entry per role, joined by semicolons: role-id = product:product-id, quest:quest-id. A reversed payment does not count. Leave it blank and no role asks for anything.",
+    type: "text",
+    default: "",
   },
   {
     key: "arrival.greeter_role",
@@ -4320,6 +4376,12 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     // (shared/villageSeasons.ts holds the grammar). Blank passes.
     if (def.key === "calendar.seasons") {
       const problem = villageSeasonsProblem(raw);
+      if (problem) return problem;
+    }
+    // A role's prerequisites are a grammar too (shared/rolePrerequisites.ts),
+    // and a typo would quietly open a role that should ask for something.
+    if (def.key === PREREQUISITES_KEY) {
+      const problem = prerequisitesProblem(raw);
       if (problem) return problem;
     }
     /*

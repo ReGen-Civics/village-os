@@ -487,6 +487,20 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     hue: 120,
     emblem: "Landmark",
   },
+  "season-places": {
+    promise: "Circles take part season by season, with places that fill in order and a waitlist that tells people when a place opens.",
+    benefits: [
+      "Each circle proposes to take part in a season, and the power that places people in roles, or the village, says yes",
+      "After a set number of seasons a circle takes part without asking",
+      "A season can hold a set number of places, and a full season keeps a waitlist in order",
+      "Each gathering can take circles up to a cap its own host sets",
+    ],
+    forWhom: "Villages whose circles come and go with the seasons, such as a travelling gathering or a rotating crew.",
+    setupSummary: "Date the village's seasons, then set the places in a season and the seasons a circle serves before it needs no proposal.",
+    dataSummary: "Which circle took part in which season, the words its crew wrote with the proposal, and the order of the waitlist.",
+    hue: 200,
+    emblem: "CalendarDays",
+  },
   "session-card": {
     promise: "A card to pull as a session opens, so the room starts present with each other and the day.",
     benefits: [

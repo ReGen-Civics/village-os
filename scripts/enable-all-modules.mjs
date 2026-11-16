@@ -107,6 +107,9 @@ export const TARGETS = [
   // Public: a visitor reads the places' public tier, and only while the org
   // chart is public (`map.public_structure`). Village content, no member data.
   ["places", "public"],
+  // HELD on the session-card terms: member-pii (a proposal carries its crew's
+  // words) and not yet through the Module Library Contract clause 13 review.
+  ["season-places", "held", "security review pending (Module Library Contract clause 13)"],
 ];
 
 /** A public probe per module: what a signed-out visitor should be able to reach. */

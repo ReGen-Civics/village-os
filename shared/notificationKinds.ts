@@ -889,6 +889,57 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     many: "{n} powers you hold were acted on from the admin panel.",
     celebrate: false,
   },
+  // Season places (shared/seasonPlaces.ts). Each names the circle and the season, never a person.
+  season_place_waiting: {
+    group: "decisions",
+    blurb: "A circle proposes to take part in a season, and you hold the power that says yes or puts it to the village.",
+    many: "{n} season proposals wait on you.",
+    celebrate: false,
+    waits: true,
+  },
+  season_place_placed: {
+    group: "village",
+    blurb: "A circle you are in has a place in a season.",
+    many: "{n} season places were confirmed.",
+    celebrate: false,
+  },
+  season_place_waitlisted: {
+    group: "village",
+    blurb: "The season is full, so a circle you are in waits in line, and you will hear the moment a place opens.",
+    many: "{n} circles you are in are on a season's waitlist.",
+    celebrate: false,
+  },
+  season_place_opened: {
+    group: "village",
+    blurb: "A place opened in a season, and the line reached a circle you are in.",
+    many: "{n} season places opened for circles you are in.",
+    celebrate: false,
+  },
+  season_place_declined: {
+    group: "village",
+    blurb: "A circle you are in does not take part in a season it proposed for.",
+    many: "{n} season proposals were not adopted.",
+    celebrate: false,
+  },
+  // Circle places at a gathering (shared/circlePlaces.ts).
+  circle_place_going: {
+    group: "village",
+    blurb: "A circle you are in is going to a gathering.",
+    many: "{n} gatherings have a circle you are in going.",
+    celebrate: false,
+  },
+  circle_place_waiting: {
+    group: "village",
+    blurb: "A gathering is full for circles, so a circle you are in waits in line, and you will hear the moment a place opens.",
+    many: "{n} gatherings have a circle you are in on the waitlist.",
+    celebrate: false,
+  },
+  circle_place_opened: {
+    group: "village",
+    blurb: "A place opened at a gathering, and the line reached a circle you are in.",
+    many: "{n} gatherings found a place for a circle you are in.",
+    celebrate: false,
+  },
   waitlist_promoted: {
     group: "village",
     blurb: "A seat opened at a gathering you queued for, and the line reached you.",

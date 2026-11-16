@@ -171,6 +171,8 @@ import { eraseIntentsForMember } from "./intents";
 import { forgetMemberNeeds } from "./needs";
 import { forgetMemberJournal } from "./journal";
 import { forgetMemberGeneKeys } from "./geneKeys";
+import { forgetMemberPlaces } from "../repos/seasonPlaces";
+import { forgetCircleAnswersBy } from "../repos/circlePlaces";
 import { forgetMemberFundingRounds } from "./fundingRounds";
 import { forgetMemberTasks } from "../repos/memberTasks";
 import { forgetTimeZone } from "../repos/memberTimeZone";
@@ -1854,6 +1856,23 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       name: "sera-answers-after-tombstone",
       run: async () => {
         await forgetSeraActor(pool, target.id);
+      },
+    },
+    {
+      /*
+       * Season places (0390, 0391): the words a member wrote with a circle's
+       * season proposal come off, their own rows as a member subject go, and
+       * their name comes off every gathering answer they gave for a circle.
+       * The circle keeps its place: a crew's place is not one person's.
+       *
+       * AFTER THE TOMBSTONE, for the reason the needs step gives: the doors
+       * write for anybody signed in, and the tombstone is where the member's
+       * sessions die.
+       */
+      name: "season-places-after-tombstone",
+      run: async () => {
+        await forgetMemberPlaces(pool, target.id);
+        await forgetCircleAnswersBy(pool, target.id);
       },
     },
     {

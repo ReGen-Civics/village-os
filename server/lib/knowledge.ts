@@ -317,6 +317,7 @@ export const MODULE_DOCS: Readonly<Record<string, string>> = {
   "gene-keys": "gene-keys.md",
   "funding-rounds": "funding-rounds.md",
   places: "places.md",
+  "season-places": "season-places.md",
   // Shipped with its module (2026-10-09). The contract for the room, its six
   // stages and its privacy line; it holds no session's words.
   sessions: "live-sessions.md",
