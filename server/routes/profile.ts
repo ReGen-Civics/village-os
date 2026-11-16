@@ -5,6 +5,8 @@
  *   PUT  /api/profile               name, bio, avatar, handle, paths
  *   POST /api/profile/contribution  a journal entry the member writes
  *   GET  /api/profile/leaving-notices  what deleting their account will cancel
+ *   GET  /api/profile/booking-link     their own booking page link, or null
+ *   PUT  /api/profile/booking-link     save it (https only), or clear it with ""
  *
  * Lifted out of server/index.ts with the handlers unchanged apart from the
  * path validation named below. `HANDLE_RE` came with them: server/index.ts
@@ -43,6 +45,7 @@
  */
 import type { Express } from "express";
 import { claimPaths } from "../../shared/gameConfig";
+import { MEMBER_BOOKING_PREF, memberBookingUrl, parseMemberBookingInput } from "../../shared/interviewBooking";
 import type { AppDeps } from "../lib/appDeps";
 import { isTombstone } from "../lib/oauthAccounts";
 import { subscriptionsState } from "../lib/exit";
@@ -167,5 +170,35 @@ export function register(app: Express, deps: Deps): void {
     const path = req.query?.for === "exit" ? "exit" : "delete";
     const subscriptions = await subscriptionsState(getPool(), String(authed.id), path, FORMER_MEMBER_HOLD);
     res.json({ notices: subscriptions.count > 0 ? [subscriptions] : [] });
+  });
+
+  /**
+   * THE MEMBER'S OWN BOOKING LINK (shared/interviewBooking.ts). An applicant
+   * books a conversation with the person holding that step's role through this
+   * link. https only, checked on the way in and again on every read; an empty
+   * value clears it. Answers only for the signed-in member.
+   */
+  app.get("/api/profile/booking-link", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    res.set("Cache-Control", "no-store").json({ bookingUrl: memberBookingUrl(authed.prefs) });
+  });
+
+  app.put("/api/profile/booking-link", async (req, res) => {
+    const authed = await authedUser(req);
+    if (!authed) return res.status(401).json({ error: "auth_required" });
+    const parsed = parseMemberBookingInput(req.body?.bookingUrl);
+    if (!parsed.ok) return res.status(400).json({ error: parsed.problem });
+    let gone = false;
+    const updated = await members.update(authed.id, (u: any) => {
+      if ((gone = sessionGone(u, authed))) return;
+      const prefs = { ...(u.prefs ?? {}) };
+      if (parsed.value) prefs[MEMBER_BOOKING_PREF] = parsed.value;
+      else delete prefs[MEMBER_BOOKING_PREF];
+      u.prefs = prefs;
+    });
+    if (gone) return res.status(401).json({ error: "auth_required" });
+    if (!updated) return res.status(404).json({ error: "User not found" });
+    res.json({ bookingUrl: memberBookingUrl(updated.prefs) });
   });
 }

@@ -33,6 +33,7 @@ import { andList } from "./openProposals";
 import { LANGUAGES, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { changedIn, currentCommitment, currentWords, openTalks, type CounterOffer, type OfferKey } from "./counterOffer";
 import { TERM_KEYS, type TermAnswers, type TermsWords } from "./termsWords";
+import { bookingLinksText, type BookingLink } from "./interviewBooking";
 
 /** The member page, and the shape of a proposal's id (server/routes/openProposals.ts mints `op-` and 20 hex). */
 export const OPEN_PROPOSAL_ID = /^op-[0-9a-f]{20}$/;
@@ -454,8 +455,12 @@ export function declinedLetter(i: {
 export interface InvitedConversation {
   role: string;
   minutes: number;
-  /** The interviewing role's booking link (`bookingUrl`), https or nothing. Only the first one's is offered. */
+  /** The first way to book it, https or nothing. Only the first conversation's is offered. */
   bookingUrl?: string | null;
+  /** Every way to book it: the own link of each person holding the role, else the role's (server `stepBookingOf`). Read before `bookingUrl`. */
+  bookingLinks?: readonly BookingLink[];
+  /** The role with the people holding it, "Role (First, First)" (shared/roleHolderLabel.ts). Said in place of `role` when given. */
+  label?: string;
 }
 
 /**
@@ -474,16 +479,17 @@ export function invitedLetter(i: {
   const w = wordsIn(i.lang);
   const total = i.conversations.reduce((n, c) => n + c.minutes, 0);
   const first = i.conversations[0];
+  const firstBooking = first ? (bookingLinksText(first.bookingLinks ?? []) ?? first.bookingUrl ?? null) : null;
   const talks = i.conversations.length
     ? [
         "",
         w.invite.conversationsIntro,
-        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.role, c.minutes)}`),
+        ...i.conversations.map((c, n) => `${n + 1}. ${w.invite.conversation(c.label || c.role, c.minutes)}`),
         w.invite.total(total),
         "",
         w.invite.booking,
         // The first conversation's own way in. The later ones open in order, each with its own role's link then.
-        first.bookingUrl ? w.invite.bookFirst(first.role, first.bookingUrl) : w.invite.writeFirst(first.role),
+        firstBooking ? w.invite.bookFirst(first.label || first.role, firstBooking) : w.invite.writeFirst(first.label || first.role),
         ...(i.conversations.length > 1 ? [w.invite.laterOpen] : []),
       ]
     : [];
@@ -631,7 +637,7 @@ export const UPDATE_EMAILS: Record<ApplicantUpdateKind, boolean> = {
 /** One update's title (the email's subject and the profile's headline) and its text. A decider's note rides under the text. */
 export function applicantUpdate(
   kind: ApplicantUpdateKind,
-  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyDays: number | null; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
+  i: { firstName: string | null; village: string; roleNames: readonly string[]; replyDays: number | null; withRole?: string | null; minutes?: number | null; bookingUrl?: string | null; bookingLinks?: readonly BookingLink[]; lang?: ApplicantLanguage; note?: string | null; statusLink?: string | null },
 ): { title: string; text: string } {
   const w = wordsIn(i.lang);
   const u = w.update;
@@ -644,7 +650,7 @@ export function applicantUpdate(
     case "first_reply":
       return { title: u.firstReplyTitle, text: body([u.firstReply(roles), w.replyPromise(i.replyDays)]) };
     case "conversation":
-      return { title: u.conversationTitle, text: body([u.conversation(roles, i.withRole ?? null, i.minutes ?? null, i.bookingUrl ?? null)]) };
+      return { title: u.conversationTitle, text: body([u.conversation(roles, i.withRole ?? null, i.minutes ?? null, bookingLinksText(i.bookingLinks ?? []) ?? i.bookingUrl ?? null)]) };
     case "consent":
       return { title: u.consentTitle, text: body([u.consent(roles)]) };
     case "terms":

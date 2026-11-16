@@ -13,6 +13,7 @@ import SendTokensCard from "@/components/SendTokensCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
 import TimeZoneField from "@/components/TimeZoneField";
+import BookingLinkField from "@/components/BookingLinkField";
 import SeasonSummarySection from "@/components/seasonSummary/SeasonSummarySection";
 import MaturityLadder from "@/components/profile/MaturityLadder";
 import PowersMap from "@/components/profile/PowersMap";
@@ -914,6 +915,7 @@ export default function Profile() {
                 </div>
               )}
               {user && <TimeZoneField /> /* role journey L6 */}
+              {user && <BookingLinkField /> /* applicants book a conversation with you through it */}
               {user && <CashOwedPanel /> /* 0285: cash owed, and the books for whoever holds cash.pay */}
               {user && <SeasonSummarySection /> /* idea 4: your season summed up, shareable as a picture */}
               {/* S47: on-chain holdings, renders nothing until the village turns the economics section on */}

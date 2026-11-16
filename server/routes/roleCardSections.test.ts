@@ -151,7 +151,7 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
 
   beforeEach(async () => {
     holders = new Set();
-    for (const k of ["org.founding_team", "org.founding_team_roles", "org.pay_shape", "org.pay_shape_at_risk", "org.pay_shape_note", "org.show_pay_ranges"]) await setVar(k, null);
+    for (const k of ["org.founding_team", "org.founding_team_roles", "org.pay_shape", "org.pay_shape_at_risk", "org.pay_shape_note", "org.show_pay_ranges", "org.pay_split_amounts"]) await setVar(k, null);
   });
 
   it("the editor saves the sections beside the draft; a member without the power is refused (control: the holder's same save)", async () => {
@@ -349,5 +349,69 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     holders = new Set();
     expect((await call("GET", `/api/org/role-card/${id}`, null)).json.sections).toBeNull();
     expect((await call("GET", `/api/org/role-card/${id}`, "admin-1")).json.sections.payCeiling).toEqual(CEILING);
+  });
+
+  // A CARD'S OWN CHOICE (founding team, 16 Nov 2026): "show" opens the ceiling to everyone with the village switch
+  // off, "hide" closes it to all but admins and the card's editors with the switch on, and back to "village" follows it.
+  async function chooseVisibility(id: string, payVisibility: string) {
+    holders = new Set(["holder-1"]);
+    const r = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { payVisibility } });
+    holders = new Set();
+    return r;
+  }
+
+  it("GET /api/org/role-card/:id: show reaches a visitor while the switch is off; hide keeps it from a visitor, a guest and a terms.read member while it is on", async () => {
+    const id = await rolePricedAt13000();
+    const card = async (who: string | null) => (await call("GET", `/api/org/role-card/${id}`, who)).json;
+    expect((await chooseVisibility(id, "show")).status).toBe(200);
+    for (const who of [null, "guest-1"]) {
+      const r = await card(who);
+      expect(r.sections.payCeiling).toEqual(CEILING);
+      // Who-sees is the editors' business: a reader never receives the choice itself.
+      expect("payVisibility" in r.sections).toBe(false);
+    }
+    expect((await chooseVisibility(id, "hide")).status).toBe(200);
+    await setVar("org.show_pay_ranges", "true");
+    for (const who of [null, "guest-1", "member-1"]) {
+      const r = await card(who);
+      expect("payCeiling" in r.sections).toBe(false);
+      expect(JSON.stringify(r)).not.toContain("13000");
+    }
+    expect((await card("admin-1")).sections.payCeiling).toEqual(CEILING);
+    expect((await card("admin-1")).sections.payVisibility).toBe("hide");
+    holders = new Set(["holder-1"]);
+    expect((await card("holder-1")).sections.payCeiling).toEqual(CEILING);
+    holders = new Set();
+    // Back to the village: the switch decides again, and nothing is stored for the choice.
+    expect((await chooseVisibility(id, "village")).status).toBe(200);
+    expect((await card(null)).sections.payCeiling).toEqual(CEILING);
+    expect("payVisibility" in (await card("admin-1")).sections).toBe(false);
+  });
+
+  it("GET /api/org/founding-team follows each card's own choice, and a choice outside the list is refused", async () => {
+    const id = await rolePricedAt13000();
+    await setVar("org.founding_team_roles", id);
+    await setVar("org.founding_team", "true");
+    const team = async (who: string | null) => (await call("GET", "/api/org/founding-team", who)).json;
+    expect((await chooseVisibility(id, "show")).status).toBe(200);
+    expect((await team(null)).sections[id].payCeiling).toEqual(CEILING);
+    expect((await chooseVisibility(id, "hide")).status).toBe(200);
+    await setVar("org.show_pay_ranges", "true");
+    expect("payCeiling" in (await team(null)).sections[id]).toBe(false);
+    expect("payCeiling" in (await team("member-1")).sections[id]).toBe(false);
+    expect((await team("admin-1")).sections[id].payCeiling).toEqual(CEILING);
+    expect((await chooseVisibility(id, "everyone")).status).toBe(400);
+    for (const k of ["org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
+  });
+
+  it("the village's split switch reaches every reader in villagePay, and a card's own wording is kept on its sections", async () => {
+    const id = await rolePricedAt13000();
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.villagePay.splitAmounts).toBeUndefined();
+    await setVar("org.pay_split_amounts", "true");
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.villagePay.splitAmounts).toBe(true);
+    holders = new Set(["holder-1"]);
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { payWording: "total" } })).status).toBe(200);
+    holders = new Set();
+    expect((await call("GET", `/api/org/role-card/${id}`, "admin-1")).json.sections.payWording).toBe("total");
   });
 });

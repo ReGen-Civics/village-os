@@ -81,6 +81,7 @@ import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
 import { sectionsForMany } from "../lib/roleCardSections";
+import { readsCeiling, type PayReader } from "../../shared/roleCardSections";
 import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt, RANGE_WORDS } from "../../shared/commitmentRange";
 import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
@@ -381,6 +382,8 @@ export function register(app: Express, deps: Deps): void {
         // Applied for now, answered once the founding team is in place (shared/foundingTeam.ts).
         opensLater: opensAfterFounding(foundingIds, [r.id]),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
+        // The card's own choice of who reads that ceiling (absent: the village decides). Read by `offeredTo`, never sent.
+        payVisibility: ceilings.get(r.id)?.payVisibility,
         // The conversations in the role's order, as its public card shows them (role journey L5), so the
         // form and the board can say what happens next (role audit, 10 Nov 2026). The booking link is
         // not here: it is offered once the address is confirmed (L6).
@@ -411,19 +414,23 @@ export function register(app: Express, deps: Deps): void {
   // ── The public side ───────────────────────────────────────────────────────
 
   /**
-   * The offered roles as one reader may see them. While the village keeps pay hidden (`org.show_pay_ranges`
-   * off), the ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the
-   * setting says read the full terms either way. The form then offers no price ask, only negotiate.
+   * The offered roles as one reader may see them, each through the one ceiling gate (`readsCeiling`,
+   * shared/roleCardSections.ts). A card that follows the village: while `org.show_pay_ranges` is off the
+   * ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the setting
+   * says read the full terms either way. A card set to show: everyone. A card set to hide: nobody on this
+   * form, which is an applicant's surface; its editors read the figure on the card and in the editor.
+   * Without a ceiling the form offers no price ask, only negotiate.
    */
-  async function seesPay(req: any): Promise<boolean> {
-    return boolVar("org.show_pay_ranges") || (!!deps.mayReadPay && (await deps.mayReadPay(req)));
+  async function payReaderOf(req: any): Promise<PayReader> {
+    const readsTerms = !!deps.mayReadPay && (await deps.mayReadPay(req));
+    return { villageShows: boolVar("org.show_pay_ranges"), readsTerms, edits: false };
   }
   async function offeredTo(req: any) {
-    const roles = await offered();
-    if (await seesPay(req)) return roles;
+    const [roles, reader] = await Promise.all([offered(), payReaderOf(req)]);
     return roles.map((r) => {
       const out: Partial<typeof r> = { ...r };
-      delete out.payCeiling;
+      if (!readsCeiling(r, reader)) delete out.payCeiling;
+      delete out.payVisibility;
       return out;
     });
   }
@@ -554,13 +561,14 @@ export function register(app: Express, deps: Deps): void {
     // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
     const pct = parsed.value.body.card?.commitmentPct;
     // A poster who may not read the ceiling meets the role as one with no listed price, so no refusal names the figure.
-    const pricesShown = await seesPay(req);
+    const priceReader = await payReaderOf(req);
     for (const picked of parsed.value.body.roles) {
-      const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
+      const offeredRole = roles.find((r) => r.id === picked.roleId);
+      const min = offeredRole?.commitmentMin;
       if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
       const ask = parsed.value.body.payAsk;
-      const ceiling = pricesShown ? (roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null) : null;
+      const ceiling = offeredRole && readsCeiling(offeredRole, priceReader) ? (offeredRole.payCeiling ?? null) : null;
       // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
       if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
       if (ceiling && ask?.kind === "amount") {

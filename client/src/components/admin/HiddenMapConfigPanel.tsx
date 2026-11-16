@@ -13,7 +13,7 @@
  * Colours are the admin palette's tokens (card, border, foreground, muted), so a
  * village's own palette draws it.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { MapPin } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -73,12 +73,16 @@ export function configFromDraft(d: Draft): Record<string, unknown> {
 export default function HiddenMapConfigPanel({ password }: { password: string }) {
   const { t, i18n } = useLingui();
   const { config, loading, save } = useModuleConfig("hidden-map", password);
-  const [draft, setDraft] = useState<Draft>(() => draftOf(null));
+  const [draft, setDraft] = useState<Draft>(() => draftOf(config));
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
+  // The draft follows the loaded config IN THE SAME RENDER, never in an effect after it: an
+  // effect left a window where the form was on screen with the defaults, and a word typed in
+  // that window was overwritten when the effect ran (a red CI shard, 16 Nov 2026).
+  const [draftFor, setDraftFor] = useState<unknown>(config);
+  if (draftFor !== config) {
+    setDraftFor(config);
     setDraft(draftOf(config));
-  }, [config]);
+  }
 
   if (loading) return <p className="text-sm text-muted-foreground"><Trans context="hidden map settings">Loading</Trans></p>;
 

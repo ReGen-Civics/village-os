@@ -237,7 +237,8 @@ export function parseCriteria(raw: unknown): Criterion[] {
     const t = text.trim().slice(0, 200);
     if (!t) continue;
     const given = e && typeof e === "object" && typeof (e as any).id === "string" ? String((e as any).id).trim().slice(0, 40) : "";
-    const id = given && !out.some((c) => c.id === given) ? given : `c${out.length + 1}`;
+    // An id that starts with "~" is the review's own (the gut check, GUT_CRITERION), never a role's criterion.
+    const id = given && !given.startsWith("~") && !out.some((c) => c.id === given) ? given : `c${out.length + 1}`;
     out.push({ id, text: t });
     if (out.length >= CRITERIA_MAX) break;
   }
@@ -271,6 +272,61 @@ export function parseScoreInput(body: unknown, criteria: readonly Criterion[]): 
   }
   if (raw.length !== criteria.length) return { ok: false, error: "That does not match the criteria.", field: "entries" };
   return { ok: true, entries };
+}
+
+// ── The gut check ───────────────────────────────────────────────────────────
+
+/**
+ * THE GUT CHECK (team call): at the end of a conversation the interviewer also
+ * says yes, no or not sure, however they get there, with one optional line. It is
+ * required for every scorecard (the line stays optional). It
+ * rides with the scorecard: kept beside it, read by the same rule
+ * (`mayReadScorecards`), never shown to the applicant. It informs and never
+ * decides: nothing counts or totals it.
+ *
+ * Stored as one more row of the scorecard under GUT_CRITERION, the answer in
+ * `level` and the line in `evidence`, so no migration. A role's criteria can
+ * never take that id (`parseCriteria` refuses ids starting with "~").
+ */
+export const GUT_CRITERION = "~gut";
+export const GUT_ANSWERS = ["yes", "no", "unsure"] as const;
+export type GutAnswer = (typeof GUT_ANSWERS)[number];
+export const GUT_NOTE_MAX = 200;
+
+export const GUT_WORDS: Record<GutAnswer, string> = {
+  yes: "Yes",
+  no: "No",
+  unsure: "Not sure",
+};
+
+export interface GutCheck {
+  answer: GutAnswer;
+  note: string;
+}
+
+export type GutParse = { ok: true; gut: GutCheck } | { ok: false; error: string; field: "gut" };
+
+const GUT_PICK = "Pick yes, no or not sure for your gut.";
+
+/**
+ * The gut check in a submitted scorecard (`body.gut`). REQUIRED (the Operations
+ * lead, 16 Nov 2026): no scorecard goes in without yes, no or not sure. The line
+ * stays optional.
+ */
+export function parseGutInput(body: unknown): GutParse {
+  const raw = body && typeof body === "object" ? (body as Record<string, unknown>).gut : undefined;
+  if (!raw || typeof raw !== "object") return { ok: false, error: GUT_PICK, field: "gut" };
+  const o = raw as Record<string, unknown>;
+  const note = typeof o.note === "string" ? o.note.trim() : "";
+  if (!(GUT_ANSWERS as readonly unknown[]).includes(o.answer)) return { ok: false, error: GUT_PICK, field: "gut" };
+  if (note.length > GUT_NOTE_MAX) return { ok: false, error: `Keep it to ${GUT_NOTE_MAX} characters.`, field: "gut" };
+  return { ok: true, gut: { answer: o.answer as GutAnswer, note } };
+}
+
+/** A stored row read back as a gut check, or null when it is not one or cannot be read. */
+export function gutOfRow(row: { criterionId: string; level: string; evidence: string }): GutCheck | null {
+  if (row.criterionId !== GUT_CRITERION) return null;
+  return (GUT_ANSWERS as readonly string[]).includes(row.level) ? { answer: row.level as GutAnswer, note: row.evidence } : null;
 }
 
 // ── Who may read scorecards ─────────────────────────────────────────────────
@@ -495,6 +551,9 @@ export const PANEL_WORDS = {
   evidenceLabel: "One line of what you heard",
   submit: "Add my scorecard",
   submitted: "Your scorecard is in.",
+  gutLabel: "Your gut: yes, no or not sure",
+  gutNoteLabel: "One line (optional)",
+  gutRead: "Gut",
   recuse: "Step out of this proposal",
   recuseAsk: "Stepping out is recorded. You will not be asked about this proposal again.",
   recuseYes: "Yes, step out",

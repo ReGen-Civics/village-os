@@ -22,6 +22,13 @@
  *                     never live here (lead, 11 Nov evening)
  *   paySplitNote      the words after the split ("To be decided in the
  *                     onboarding process.")
+ *   payVisibility     who reads the ceiling on this card: absent follows the
+ *                     village (`org.show_pay_ranges`), "show" shows it to
+ *                     everyone, "hide" keeps it to the people who edit the card
+ *   payWording        how the ceiling reads: absent follows the village
+ *                     (`org.pay_split_amounts`), "total" is one figure, "split"
+ *                     names each share's amount ("Up to $4,000 in cash and
+ *                     $6,000 in equity a month")
  *
  * NO RANGE AND NO MINIMUM EVER LIVE HERE. The one figure is the ceiling, in its
  * own typed field; a share is a percent of the whole, and an amount written
@@ -47,7 +54,29 @@ export interface RoleCardSections {
   payNote: string;
   payCeiling: PayCeiling | null;
   paySplitNote: string;
+  /** Who reads the ceiling. Absent: the village's switch decides. Only a choice that differs from the village is kept. */
+  payVisibility?: Exclude<PayVisibility, "village">;
+  /** How the ceiling reads. Absent: the village's switch decides. */
+  payWording?: Exclude<PayWording, "village">;
 }
+
+/**
+ * WHO READS A ROLE'S CEILING (founding team, 16 Nov 2026: the controls for the team's decision).
+ *   village  follow `org.show_pay_ranges`: on, everyone; off, only admins, the card's editors and holders of `terms.read`
+ *   show     everyone reads it, whatever the village switch says
+ *   hide     only admins and the card's editors read it, whatever the village switch says
+ */
+export const PAY_VISIBILITIES = ["village", "show", "hide"] as const;
+export type PayVisibility = (typeof PAY_VISIBILITIES)[number];
+
+/**
+ * HOW A ROLE'S CEILING READS.
+ *   village  follow `org.pay_split_amounts`
+ *   total    one figure for the full role, as cards read today
+ *   split    each share of the figure as its own amount, from the shares in force
+ */
+export const PAY_WORDINGS = ["village", "total", "split"] as const;
+export type PayWording = (typeof PAY_WORDINGS)[number];
 
 export const CEILING_PERIODS = ["month", "moon", "year"] as const;
 export type CeilingPeriod = (typeof CEILING_PERIODS)[number];
@@ -75,7 +104,7 @@ export const SECTION_LIMITS = {
   payNoteChars: 300,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -97,6 +126,19 @@ export const SECTION_WORDS = {
   ceilingLabel: "Total compensation up to (one figure, never a range)",
   splitNoteLabel: "The words after the split",
   splitLead: "Default split:",
+  priceOnCard: "The listed price on the card",
+  visibilityLabel: "Who sees the listed price",
+  visibility: {
+    village: "Follow the village setting",
+    show: "Everyone",
+    hide: "Only the people who edit this card",
+  } satisfies Record<PayVisibility, string>,
+  wordingLabel: "How the listed price reads",
+  wording: {
+    village: "Follow the village setting",
+    total: "One figure for the full role",
+    split: "Each share as its own amount",
+  } satisfies Record<PayWording, string>,
   lastEdited: (who: string | null, day: string) => (who ? `Last edited by ${who} on ${day}` : `Last edited on ${day}`),
 } as const;
 
@@ -112,6 +154,8 @@ export const SECTION_PROBLEMS = {
   tooManyShares: `At most ${SECTION_LIMITS.shares} shares.`,
   ceiling: "Write one amount above zero, a currency like USD, and month, moon or year.",
   notSections: "The founding sections arrive as a set of fields.",
+  visibility: "Choose who sees the listed price: the village setting, everyone, or only the card's editors.",
+  wording: "Choose how the listed price reads: the village setting, one figure, or each share's amount.",
 } as const;
 
 export const EMPTY_SECTIONS: RoleCardSections = {
@@ -191,6 +235,12 @@ export function splitLine(shape: readonly PayShare[], note: string): string {
   return `${SECTION_WORDS.splitLead} ${shares}.${note ? ` ${note}` : ""}`;
 }
 
+/** A choice from a closed list, where "village" (or nothing) reads as absent: the village decides. */
+function choice<T extends string>(raw: unknown, allowed: readonly T[]): { ok: true; value: Exclude<T, "village"> | undefined } | { ok: false } {
+  if (raw === null || raw === undefined || raw === "" || raw === "village") return { ok: true, value: undefined };
+  return typeof raw === "string" && (allowed as readonly string[]).includes(raw) ? { ok: true, value: raw as Exclude<T, "village"> } : { ok: false };
+}
+
 /** The pay shape: shares with a name and a whole percent, adding to no more than 100. */
 export function readPayShape(raw: unknown): { ok: true; value: PayShare[] } | { ok: false; problem: string } {
   if (raw === null || raw === undefined) return { ok: true, value: [] };
@@ -239,25 +289,66 @@ export function readSections(raw: unknown): SectionsRead {
   const split = text(o.paySplitNote, SECTION_LIMITS.payNoteChars, SECTION_WORDS.splitNoteLabel);
   if (!split.ok) return { ...split, field: "sections.paySplitNote" };
   if (AMOUNT.test(split.value)) return { ok: false, problem: SECTION_PROBLEMS.amount, field: "sections.paySplitNote" };
+  const visibility = choice(o.payVisibility, PAY_VISIBILITIES);
+  if (!visibility.ok) return { ok: false, problem: SECTION_PROBLEMS.visibility, field: "sections.payVisibility" };
+  const wording = choice(o.payWording, PAY_WORDINGS);
+  if (!wording.ok) return { ok: false, problem: SECTION_PROBLEMS.wording, field: "sections.payWording" };
   const paid = o.paid === true || o.paid === "true" || o.paid === 1;
   return {
     ok: true,
-    value: { idealBackground: bg.value, qualities: q.value, aiSupport: ai.value, aiCompanion: animal.value, paid, payShape: shape.value, payNote: note.value, payCeiling: ceiling.value, paySplitNote: split.value },
+    value: {
+      idealBackground: bg.value,
+      qualities: q.value,
+      aiSupport: ai.value,
+      aiCompanion: animal.value,
+      paid,
+      payShape: shape.value,
+      payNote: note.value,
+      payCeiling: ceiling.value,
+      paySplitNote: split.value,
+      // Kept only when the card chose differently from the village, so a card that never chose stores what it stored before.
+      ...(visibility.value ? { payVisibility: visibility.value } : {}),
+      ...(wording.value ? { payWording: wording.value } : {}),
+    },
   };
 }
 
 /**
- * The sections as a reader who may not see pay figures receives them: the ceiling key ABSENT, never
- * null with a hint (`org.show_pay_ranges` off, and the reader neither an admin, an editor nor a
- * holder of `terms.read`). The ceiling is the one amount the sections hold; the shares, notes and
- * the paid flag are words and percents, and stay.
+ * Who is reading, for the one ceiling gate below. Every surface that sends a ceiling to a reader
+ * (the role card, the founding team, the application form) builds one of these and asks `readsCeiling`.
+ */
+export interface PayReader {
+  /** `org.show_pay_ranges` is on. */
+  villageShows: boolean;
+  /** The reader holds `terms.read` (or is an admin or an editor). */
+  readsTerms: boolean;
+  /** The reader is an admin or holds the card's editor door: they write the figure, so they read it. */
+  edits: boolean;
+}
+
+/**
+ * THE CEILING GATE. The card's own choice wins over the village's switch both ways: "show" opens it to
+ * everyone, "hide" closes it to all but the card's editors. A card that never chose follows the switch,
+ * and with the switch off a holder of `terms.read` still reads it, as the setting says.
+ */
+export function readsCeiling(s: { payVisibility?: RoleCardSections["payVisibility"] } | null | undefined, r: PayReader): boolean {
+  if (r.edits) return true;
+  if (s?.payVisibility === "show") return true;
+  if (s?.payVisibility === "hide") return false;
+  return r.villageShows || r.readsTerms;
+}
+
+/**
+ * The sections as one reader receives them: the ceiling key ABSENT, never null with a hint, when
+ * `readsCeiling` says no. The ceiling is the one amount the sections hold; the shares, notes and the
+ * paid flag are words and percents, and stay. Who-sees is the editors' business, so it reaches only them.
  */
 export type ReaderSections = Omit<RoleCardSections, "payCeiling"> & { payCeiling?: PayCeiling | null };
 
-export function sectionsForReader(s: RoleCardSections, seesPay: boolean): ReaderSections {
-  if (seesPay) return s;
+export function sectionsForReader(s: RoleCardSections, reader: PayReader): ReaderSections {
   const out: ReaderSections = { ...s };
-  delete out.payCeiling;
+  if (!readsCeiling(s, reader)) delete out.payCeiling;
+  if (!reader.edits) delete out.payVisibility;
   return out;
 }
 
@@ -332,6 +423,8 @@ export interface VillagePay {
   atRisk: string;
   /** The footer: indicative only, subject to review. */
   note: string;
+  /** `org.pay_split_amounts`: a card that follows the village names each share's amount. Absent reads as off. */
+  splitAmounts?: boolean;
 }
 
 export const NO_VILLAGE_PAY: VillagePay = { shape: [], atRisk: "", note: "" };
@@ -374,13 +467,59 @@ export function readVillagePayShape(setting: string): PayShare[] {
   return read.ok ? read.value : [];
 }
 
-/** The village's pay block from its three settings, each read cleanly or left out. */
-export function villagePayFrom(settings: { shape: string; atRisk: string; note: string }): VillagePay {
+/** The village's pay block from its settings, each read cleanly or left out. */
+export function villagePayFrom(settings: { shape: string; atRisk: string; note: string; splitAmounts?: boolean }): VillagePay {
   const clean = (t: string, max: number) => {
     const v = String(t ?? "").replace(/\s+/g, " ").trim();
     return v && v.length <= max && !AMOUNT.test(v) && !looksLikePaymentDetails(v) ? v : "";
   };
-  return { shape: readVillagePayShape(settings.shape), atRisk: clean(settings.atRisk, SECTION_LIMITS.payNoteChars), note: clean(settings.note, SECTION_LIMITS.payNoteChars) };
+  return {
+    shape: readVillagePayShape(settings.shape),
+    atRisk: clean(settings.atRisk, SECTION_LIMITS.payNoteChars),
+    note: clean(settings.note, SECTION_LIMITS.payNoteChars),
+    ...(settings.splitAmounts === true ? { splitAmounts: true } : {}),
+  };
+}
+
+// ── Each share as its own amount (founding team, 16 Nov 2026) ──────────────
+
+/** One share of the ceiling as an amount: its label and whole currency units. */
+export interface ShareAmount {
+  label: string;
+  amount: number;
+}
+
+/** Whether this card names each share's amount: its own choice, else the village's. */
+export function splitsAmounts(s: { payWording?: RoleCardSections["payWording"] } | null | undefined, village: Pick<VillagePay, "splitAmounts">): boolean {
+  if (s?.payWording === "split") return true;
+  if (s?.payWording === "total") return false;
+  return village.splitAmounts === true;
+}
+
+/**
+ * The ceiling shared out by the shares in force: each share above 0% as whole units, rounded. Empty when no
+ * share pays anything, so the card falls back to the one figure. Display only: the contract sets the pay.
+ */
+export function ceilingShares(c: PayCeiling, shape: readonly PayShare[]): ShareAmount[] {
+  return shape.filter((s) => s.pct > 0).map((s) => ({ label: s.label, amount: Math.round((c.amount * s.pct) / 100) }));
+}
+
+function moneyIn(amount: number, currency: string, locale: string): string {
+  try {
+    return new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0, minimumFractionDigits: 0 }).format(amount);
+  } catch {
+    return `${amount.toLocaleString(locale)} ${currency}`;
+  }
+}
+
+/** "a, b and c", in English. */
+function andList(parts: readonly string[]): string {
+  return parts.length <= 1 ? (parts[0] ?? "") : `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
+/** "Up to $4,000 in cash and $6,000 in equity a month": the English line for a card that splits its ceiling. */
+export function splitCeilingLine(c: PayCeiling, shares: readonly ShareAmount[], locale = "en-US"): string {
+  return `Up to ${andList(shares.map((s) => `${moneyIn(s.amount, c.currency, locale)} in ${s.label.toLowerCase()}`))} a ${c.per}`;
 }
 
 /**
@@ -397,14 +536,17 @@ export function villagePayFrom(settings: { shape: string; atRisk: string; note: 
 export function cardPay(
   sections: RoleCardSections | null | undefined,
   village: VillagePay,
-): { ceiling: string | null; split: string | null; shape: PayShare[]; atRisk: string; note: string; fromCard: boolean } | null {
+): { ceiling: string | null; split: string | null; shape: PayShare[]; atRisk: string; note: string; fromCard: boolean; shares: ShareAmount[] } | null {
   const own = !!sections && sections.payShape.length > 0;
   const shape = own ? sections!.payShape : village.shape;
   const note = (sections?.payNote || "") || village.note;
+  // Each share as its own amount, when the card (or the village, for a card that follows it) says so and a share pays.
+  const shares = sections?.payCeiling && splitsAmounts(sections, village) ? ceilingShares(sections.payCeiling, shape) : [];
   // The fine print's asterisk (lead, 12 Nov 2026): a note that opens with "*" marks the ceiling with one,
   // and no other note does, so the card never carries an asterisk that points at nothing.
-  const ceiling = sections?.payCeiling ? `${ceilingLine(sections.payCeiling)}${note.startsWith("*") ? "*" : ""}` : null;
+  const line = sections?.payCeiling ? (shares.length ? splitCeilingLine(sections.payCeiling, shares) : ceilingLine(sections.payCeiling)) : null;
+  const ceiling = line ? `${line}${note.startsWith("*") ? "*" : ""}` : null;
   const split = shape.length ? splitLine(shape, sections?.paySplitNote ?? "") : null;
   if (!ceiling && !split) return null;
-  return { ceiling, split, shape, atRisk: village.atRisk, note, fromCard: own };
+  return { ceiling, split, shape, atRisk: village.atRisk, note, fromCard: own, shares };
 }

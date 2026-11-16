@@ -78,7 +78,7 @@ function teamOf(v: unknown): FilledTeamRole[] {
 function payOf(v: any): VillagePay {
   if (!v || typeof v !== "object") return NO_VILLAGE_PAY;
   const shape = Array.isArray(v.shape) ? v.shape.map((x: any) => `${String(x?.label ?? "")} ${String(x?.pct ?? "")}`).join(", ") : "";
-  return villagePayFrom({ shape, atRisk: String(v.atRisk ?? ""), note: String(v.note ?? "") });
+  return villagePayFrom({ shape, atRisk: String(v.atRisk ?? ""), note: String(v.note ?? ""), splitAmounts: v.splitAmounts === true });
 }
 
 /** The founding team, or the section off (marked `failed`) when the read fails: the page never waits on it to show its roles. */
