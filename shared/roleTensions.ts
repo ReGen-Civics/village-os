@@ -194,6 +194,7 @@ export function readHeldTension(v: unknown): HeldTension | null {
   const t = v as Record<string, unknown>;
   if (!isStr(t.id) || !isStr(t.roleId) || !isStr(t.role) || !isStr(t.text) || !isStr(t.raisedOn)) return null;
   if (t.status !== "open" && t.status !== "taken") return null;
+  const place = readPlace(t.place);
   return {
     id: t.id,
     roleId: t.roleId,
@@ -203,7 +204,8 @@ export function readHeldTension(v: unknown): HeldTension | null {
     status: t.status,
     raisedOn: t.raisedOn,
     overdue: t.overdue === true,
-    place: readPlace(t.place),
+    // Only when a holder set one: an older server sends no place, and the row stays as it was.
+    ...(place ? { place } : {}),
   };
 }
 
