@@ -80,7 +80,7 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
     setDraft(draftOf(config));
   }, [config]);
 
-  if (loading) return <p className="text-sm text-muted-foreground"><Trans>Loading</Trans></p>;
+  if (loading) return <p className="text-sm text-muted-foreground"><Trans context="hidden map settings">Loading</Trans></p>;
 
   const setLayer = (field: "labels" | "kindPrompts" | "kinds", l: Layer, v: string) =>
     setDraft((d) => ({ ...d, [field]: { ...d[field], [l]: v } }));
@@ -95,7 +95,7 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
       </p>
 
       <label className="block text-xs text-foreground">
-        <Trans>The map's name</Trans>
+        <Trans context="hidden map settings">The map's name</Trans>
         <input className={`${inputCls} mt-1`} maxLength={40} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
       </label>
 
@@ -104,7 +104,7 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
           <fieldset key={l} className="rounded-lg border border-border p-3">
             <legend className="px-1 text-xs font-semibold text-foreground">{draft.labels[l] || l}</legend>
             <label className="block text-xs text-foreground">
-              <Trans>Layer name</Trans>
+              <Trans context="hidden map settings">Layer name</Trans>
               <input className={`${inputCls} mt-1`} maxLength={40} value={draft.labels[l]} onChange={(e) => setLayer("labels", l, e.target.value)} />
             </label>
             <label className="mt-2 block text-xs text-foreground">
@@ -130,7 +130,7 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
       </div>
 
       <fieldset className="mt-4 rounded-lg border border-border p-3">
-        <legend className="px-1 text-xs font-semibold text-foreground"><Trans>Vouching</Trans></legend>
+        <legend className="px-1 text-xs font-semibold text-foreground"><Trans context="hidden map settings">Vouching</Trans></legend>
         <label className="block text-xs text-foreground">
           <Trans>The rule a voucher reads</Trans>
           <textarea className={`${inputCls} mt-1`} rows={2} maxLength={300} value={draft.vouchRule} onChange={(e) => setDraft({ ...draft, vouchRule: e.target.value })} />
@@ -155,11 +155,11 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="block text-xs text-foreground">
           <Trans>Quest that pays when a planting is vouched (its id)</Trans>
-          <input className={`${inputCls} mt-1`} maxLength={64} value={draft.plantingQuestId} onChange={(e) => setDraft({ ...draft, plantingQuestId: e.target.value })} placeholder={t`None`} />
+          <input className={`${inputCls} mt-1`} maxLength={64} value={draft.plantingQuestId} onChange={(e) => setDraft({ ...draft, plantingQuestId: e.target.value })} placeholder={t({ message: `None`, context: "hidden map settings" })} />
         </label>
         <label className="block text-xs text-foreground">
           <Trans>Quest that pays for a return visit (its id)</Trans>
-          <input className={`${inputCls} mt-1`} maxLength={64} value={draft.returnVisitQuestId} onChange={(e) => setDraft({ ...draft, returnVisitQuestId: e.target.value })} placeholder={t`None`} />
+          <input className={`${inputCls} mt-1`} maxLength={64} value={draft.returnVisitQuestId} onChange={(e) => setDraft({ ...draft, returnVisitQuestId: e.target.value })} placeholder={t({ message: `None`, context: "hidden map settings" })} />
         </label>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
@@ -177,7 +177,7 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
           if (ok) toast.success(t`Saved. Members see it on their next look at the map.`);
         }}
       >
-        {saving ? <Trans>Saving</Trans> : <Trans>Save</Trans>}
+        {saving ? <Trans context="hidden map settings">Saving</Trans> : <Trans context="hidden map settings">Save</Trans>}
       </button>
     </div>
   );

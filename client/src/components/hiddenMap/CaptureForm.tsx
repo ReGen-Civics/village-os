@@ -24,15 +24,15 @@ import WorldMap from "./WorldMap";
 import { BTN_PRIMARY, CARD, FIELD, H2, HINT, LABEL } from "@/components/journey/look";
 
 export const PRECISION_WORDS: Record<Precision, MessageDescriptor> = {
-  exact: msg`Exact`,
-  km: msg`About 1 km`,
+  exact: msg({ message: `Exact`, context: "hidden map, logging a place" }),
+  km: msg({ message: `About 1 km`, context: "hidden map, logging a place" }),
   region: msg`Region, about 50 km`,
 };
 
 const PARTNER_WORDS: Record<PartnerState, MessageDescriptor> = {
-  connected: msg`Connected`,
-  visited: msg`Visited`,
-  planted: msg`Planted`,
+  connected: msg({ message: `Connected`, context: "hidden map, logging a place" }),
+  visited: msg({ message: `Visited`, context: "hidden map, logging a place" }),
+  planted: msg({ message: `Planted`, context: "hidden map, logging a place" }),
 };
 
 export interface Capture {
@@ -86,7 +86,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
   const [staged, setStaged] = useState(false);
 
   const ownPlantings = me.ownPlantings ?? 0;
-  const counter = !me.open && layer === "planting" && ownPlantings < me.needed ? t`${ownPlantings + 1} of ${me.needed}` : null;
+  const counter = !me.open && layer === "planting" && ownPlantings < me.needed ? t({ message: `${ownPlantings + 1} of ${me.needed}`, context: "hidden map, logging a place" }) : null;
 
   const paste = (raw: string) => {
     setPasted(raw);
@@ -146,10 +146,10 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
 
   return (
     <section className={CARD} aria-labelledby="hm-capture">
-      <h2 id="hm-capture" className={H2}><Trans>Log a place</Trans></h2>
+      <h2 id="hm-capture" className={H2}><Trans context="hidden map, logging a place">Log a place</Trans></h2>
       <div className="mt-5 space-y-6">
         {layers.length > 1 && (
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t`Which layer`}>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t({ message: `Which layer`, context: "hidden map, logging a place" })}>
             {layers.map((l) => (
               <button
                 key={l}
@@ -181,7 +181,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
             <p className={HINT}>{counter}</p>
           ) : null}
           <PhotoPicker
-            label={hero ? t`Add another photo` : t`Add a photo`}
+            label={hero ? t({ message: `Add another photo`, context: "hidden map, logging a place" }) : t({ message: `Add a photo`, context: "hidden map, logging a place" })}
             onLocation={(p) => { if (!point) { setPoint({ lat: p.lat, lng: p.lng }); setFromPhoto(true); } }}
             onAdd={(p) => setPhotos((all) => [...all, p])}
             onStaged={setStaged}
@@ -191,7 +191,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
               {photos.map((p, i) => (
                 <li key={p.preview} className="relative">
                   <img src={p.preview} alt={t`Photo ${i + 1}, ready to go up`} className="size-16 rounded-lg object-cover" />
-                  <button type="button" onClick={() => setPhotos((all) => all.filter((x) => x !== p))} className="absolute -right-2 -top-2 flex size-11 items-center justify-center" aria-label={t`Remove photo ${i + 1}`}>
+                  <button type="button" onClick={() => setPhotos((all) => all.filter((x) => x !== p))} className="absolute -right-2 -top-2 flex size-11 items-center justify-center" aria-label={t({ message: `Remove photo ${i + 1}`, context: "hidden map, logging a place" })}>
                     <span className="flex size-6 items-center justify-center rounded-full bg-foreground text-background"><X className="size-3" aria-hidden="true" /></span>
                   </button>
                 </li>
@@ -214,12 +214,12 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
         {layer === "planting" && (
           <>
             <label className="block">
-              <span className="sr-only"><Trans>What went in</Trans></span>
-              <textarea className={FIELD} rows={2} maxLength={2000} value={what} onChange={(e) => setWhat(e.target.value)} placeholder={t`What went in`} />
+              <span className="sr-only"><Trans context="hidden map, logging a place">What went in</Trans></span>
+              <textarea className={FIELD} rows={2} maxLength={2000} value={what} onChange={(e) => setWhat(e.target.value)} placeholder={t({ message: `What went in`, context: "hidden map, logging a place" })} />
             </label>
             <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border p-4">
               <span>
-                <span className="block font-semibold text-foreground"><Trans>It belongs here</Trans></span>
+                <span className="block font-semibold text-foreground"><Trans context="hidden map, logging a place">It belongs here</Trans></span>
                 <span className={HINT}><Trans>What went in is native to this place.</Trans></span>
               </span>
               <input type="checkbox" className="size-6 accent-chart-3" checked={native} onChange={(e) => setNative(e.target.checked)} />
@@ -236,7 +236,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
         )}
 
         <div>
-          <span className={LABEL}><Trans>Where</Trans></span>
+          <span className={LABEL}><Trans context="hidden map, logging a place">Where</Trans></span>
           <p className={HINT}>{point ? `${point.lat}, ${point.lng}` : t`From the photo, a pasted place, or a tap on the map.`}</p>
           {!fromPhoto && (
             <>
@@ -261,7 +261,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
 
         <details className="group rounded-xl border border-border p-4">
           <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between font-semibold text-foreground">
-            <Trans>More</Trans>
+            <Trans context="hidden map, logging a place">More</Trans>
             <ChevronDown className="size-4 transition-transform group-open:rotate-180" aria-hidden="true" />
           </summary>
           <div className="mt-4 space-y-4">
@@ -282,12 +282,12 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
             </label>
             {layer === "planting" && (
               <label className="block">
-                <span className={LABEL}><Trans>Planted on</Trans></span>
+                <span className={LABEL}><Trans context="hidden map, logging a place">Planted on</Trans></span>
                 <input type="date" className={`${FIELD} mt-1`} value={plantedOn} onChange={(e) => setPlantedOn(e.target.value)} />
               </label>
             )}
             <label className="block">
-              <span className={LABEL}><Trans>Notes</Trans></span>
+              <span className={LABEL}><Trans context="hidden map, logging a place">Notes</Trans></span>
               <textarea className={`${FIELD} mt-1`} rows={3} maxLength={4000} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </label>
           </div>
@@ -299,7 +299,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
           <div className="flex items-start gap-3 rounded-xl border border-primary/50 bg-muted p-4" role="status">
             <Info className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
             <p className="text-sm text-foreground">
-              <span className="block font-semibold"><Trans>No signal here</Trans></span>
+              <span className="block font-semibold"><Trans context="hidden map, logging a place">No signal here</Trans></span>
               <Trans>It is saved on your phone and sends when you are back in range.</Trans>
             </p>
           </div>
@@ -307,7 +307,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
 
         <div className="flex flex-wrap items-center gap-3">
           <button type="button" className={`${BTN_PRIMARY} flex-1`} disabled={busy || staged || !point || !kind} onClick={() => void send()}>
-            {busy ? <Trans>Saving</Trans> : <Trans>Save it</Trans>}
+            {busy ? <Trans context="hidden map, logging a place">Saving</Trans> : <Trans context="hidden map, logging a place">Save it</Trans>}
           </button>
           {layer === "planting" && !me.open && <p className={HINT}><Trans>Counts toward opening your map once a member vouches for it.</Trans></p>}
         </div>

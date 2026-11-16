@@ -6,10 +6,11 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_CONFIG, coarser, exportGeoJson, mayReadDetail, mayVisit, mayVouch, numberDots, opening, parsePinInput, project,
+  DEFAULT_CONFIG, LAYERS, MAX_KIND, VOUCH_WAYS, coarser, exportGeoJson, mayReadDetail, mayVisit, mayVouch, numberDots, opening, parsePinInput, project,
   readConfig, snap, tileUrl, unproject, validateConfig, validatePoint, visiblePin, visitMayPay,
   type PinRecord, type PinView, type Viewer,
 } from "./hiddenMap";
+import { HIDDEN_MAP_RULES } from "./modules";
 
 const pin = (over: Partial<PinRecord> = {}): PinRecord => ({
   id: "p1",
@@ -210,6 +211,8 @@ describe("config", () => {
     expect(validateConfig({ kinds: { planting: [] } })).toMatch(/1 to 24/);
     expect(validateConfig({ openLayers: "stop" })).toMatch(/Open layers/);
     expect(validateConfig({ labels: { stop: "Harbours" }, openLayers: ["stop"] })).toBeNull();
+    // The registry's copy of the rules, which the intake scripts need inline, is these rules.
+    expect(HIDDEN_MAP_RULES).toEqual({ layers: [...LAYERS], vouchWays: [...VOUCH_WAYS], maxKind: MAX_KIND });
   });
 });
 

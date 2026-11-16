@@ -24,7 +24,7 @@ export default function Thumb({ id, size = "thumb", alt, className = "" }: { id:
       if (made) URL.revokeObjectURL(made);
     };
   }, [id, size]);
-  if (failed) return <span className={`flex items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground ${className}`}><Trans>Photo not available</Trans></span>;
+  if (failed) return <span className={`flex items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground ${className}`}><Trans context="hidden map, a photo thumbnail">Photo not available</Trans></span>;
   if (!url) return <span className={`block animate-pulse rounded-lg bg-muted ${className}`} aria-hidden="true" />;
   return <img src={url} alt={alt} className={`rounded-lg object-cover ${className}`} />;
 }

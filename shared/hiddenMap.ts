@@ -139,57 +139,13 @@ export function readConfig(raw: unknown): HiddenMapConfig {
   };
 }
 
-/** Structural check before a config write. A human sentence, or null when it is fine. */
-export function validateConfig(raw: unknown): string | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw !== "object" || Array.isArray(raw)) return "The hidden map's settings must be an object.";
-  const c = raw as Record<string, unknown>;
-  if (c.title !== undefined && (typeof c.title !== "string" || !c.title.trim() || c.title.length > 40)) {
-    return "The map's name must be 1 to 40 characters.";
-  }
-  if (c.labels !== undefined) {
-    if (!c.labels || typeof c.labels !== "object") return "Layer names must be an object keyed by layer.";
-    for (const [k, v] of Object.entries(c.labels as object)) {
-      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
-      if (typeof v !== "string" || !v.trim() || v.length > 40) return `The name for ${k} must be 1 to 40 characters.`;
-    }
-  }
-  if (c.kinds !== undefined) {
-    if (!c.kinds || typeof c.kinds !== "object") return "Kinds must be an object keyed by layer.";
-    for (const [k, v] of Object.entries(c.kinds as object)) {
-      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
-      if (!Array.isArray(v) || v.length === 0 || v.length > 24) return `Each layer needs 1 to 24 kinds; ${k} has ${Array.isArray(v) ? v.length : "none"}.`;
-      for (const kind of v) {
-        if (typeof kind !== "string" || !kind.trim() || kind.length > MAX_KIND) return `Each kind is 1 to ${MAX_KIND} characters.`;
-      }
-    }
-  }
-  if (c.openLayers !== undefined) {
-    if (!Array.isArray(c.openLayers) || !c.openLayers.every(isLayer)) return `Open layers must be a list drawn from ${LAYERS.join(", ")}.`;
-  }
-  if (c.kindPrompts !== undefined) {
-    if (!c.kindPrompts || typeof c.kindPrompts !== "object") return "Kind questions must be an object keyed by layer.";
-    for (const [k, v] of Object.entries(c.kindPrompts as object)) {
-      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
-      if (typeof v !== "string" || !v.trim() || v.length > 80) return `The question for ${k} must be 1 to 80 characters.`;
-    }
-  }
-  if (c.vouchWays !== undefined) {
-    if (!Array.isArray(c.vouchWays) || c.vouchWays.length === 0 || !c.vouchWays.every(isVouchWay)) {
-      return `Vouch ways are one or more of ${VOUCH_WAYS.join(", ")}.`;
-    }
-  }
-  if (c.vouchRule !== undefined && (typeof c.vouchRule !== "string" || !c.vouchRule.trim() || c.vouchRule.length > 300)) {
-    return "The vouch rule must be 1 to 300 characters.";
-  }
-  if (c.plantingQuestId !== undefined && c.plantingQuestId !== null) {
-    if (typeof c.plantingQuestId !== "string" || c.plantingQuestId.length > 64) return "The planting quest is a quest id.";
-  }
-  if (c.returnVisitQuestId !== undefined && c.returnVisitQuestId !== null) {
-    if (typeof c.returnVisitQuestId !== "string" || c.returnVisitQuestId.length > 64) return "The return visit quest is a quest id.";
-  }
-  return null;
-}
+/**
+ * Structural check before a config write. A human sentence, or null when it is fine.
+ * It lives in shared/modules.ts, beside the registry entry, because the intake
+ * scripts transpile that file on its own and it may import no other value.
+ * shared/hiddenMap.test.ts pins its copy of the rules to the ones here.
+ */
+export { validateHiddenMapConfig as validateConfig } from "./modules";
 
 // ── Coordinates ─────────────────────────────────────────────────────────────
 

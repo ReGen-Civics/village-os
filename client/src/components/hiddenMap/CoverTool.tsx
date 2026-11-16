@@ -34,16 +34,33 @@ const norm = (a: { x: number; y: number }, b: { x: number; y: number }): CoverBo
 
 export default function CoverTool({ file, value, onChange }: { file: Blob; value: CoverChoice; onChange: (v: CoverChoice) => void }) {
   const { t } = useLingui();
-  const [url, setUrl] = useState<string | null>(null);
+  const [drawn, setDrawn] = useState(false);
+  const canvas = useRef<HTMLCanvasElement>(null);
   const [mode, setMode] = useState<Mode>("cover");
   const [live, setLive] = useState<CoverBox | null>(null);
   const start = useRef<{ x: number; y: number } | null>(null);
   const box = useRef<HTMLDivElement>(null);
 
+  // The photo is painted onto a canvas from its pixels, never handed to the page as an address,
+  // so nothing the member picked is ever read back as markup (CodeQL js/xss-through-dom).
   useEffect(() => {
-    const u = URL.createObjectURL(file);
-    setUrl(u);
-    return () => URL.revokeObjectURL(u);
+    let gone = false;
+    setDrawn(false);
+    if (typeof createImageBitmap !== "function") return;
+    void createImageBitmap(file)
+      .then((bmp) => {
+        const c = canvas.current;
+        if (gone || !c) return bmp.close();
+        c.width = bmp.width;
+        c.height = bmp.height;
+        c.getContext("2d")?.drawImage(bmp, 0, 0);
+        bmp.close();
+        setDrawn(true);
+      })
+      .catch(() => undefined);
+    return () => {
+      gone = true;
+    };
   }, [file]);
 
   const at = (e: ReactPointerEvent) => {
@@ -78,14 +95,14 @@ export default function CoverTool({ file, value, onChange }: { file: Blob; value
       </div>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t`What a drag does`}>
         <button type="button" role="radio" aria-checked={mode === "cover"} onClick={() => setMode("cover")} className={`${BTN_SECONDARY} ${mode === "cover" ? "border-notice" : ""}`}>
-          <EyeOff className="size-4" aria-hidden="true" /> <Trans>Cover</Trans>
+          <EyeOff className="size-4" aria-hidden="true" /> <Trans context="hidden map, covering faces in a photo">Cover</Trans>
         </button>
         <button type="button" role="radio" aria-checked={mode === "crop"} onClick={() => setMode("crop")} className={`${BTN_SECONDARY} ${mode === "crop" ? "border-notice" : ""}`}>
-          <Frame className="size-4" aria-hidden="true" /> <Trans>Crop</Trans>
+          <Frame className="size-4" aria-hidden="true" /> <Trans context="hidden map, covering faces in a photo">Crop</Trans>
         </button>
         {(value.covers.length > 0 || value.crop) && (
           <button type="button" onClick={() => onChange({ covers: [], crop: null })} className={BTN_SECONDARY}>
-            <Trash2 className="size-4" aria-hidden="true" /> <Trans>Start again</Trans>
+            <Trash2 className="size-4" aria-hidden="true" /> <Trans context="hidden map, covering faces in a photo">Start again</Trans>
           </button>
         )}
       </div>
@@ -97,7 +114,12 @@ export default function CoverTool({ file, value, onChange }: { file: Blob; value
         onPointerUp={up}
         onPointerCancel={() => { start.current = null; setLive(null); }}
       >
-        {url && <img src={url} alt={t`The photo you are about to add`} className="pointer-events-none block w-full" draggable={false} />}
+        <canvas
+          ref={canvas}
+          role="img"
+          aria-label={t`The photo you are about to add`}
+          className={`pointer-events-none block h-auto w-full ${drawn ? "" : "hidden"}`}
+        />
         {value.crop && (
           <div className="pointer-events-none absolute border-2 border-dashed border-notice" style={pct(value.crop)} aria-hidden="true" />
         )}
@@ -110,7 +132,7 @@ export default function CoverTool({ file, value, onChange }: { file: Blob; value
       </div>
       <p className={HINT} aria-live="polite">
         {value.covers.length === 0
-          ? t`Nothing covered yet.`
+          ? t({ message: `Nothing covered yet.`, context: "hidden map, covering faces in a photo" })
           : t`${plural(value.covers.length, { one: "# area covered.", other: "# areas covered." })}`}
         {value.crop ? ` ${t`Cropped to the dashed box.`}` : ""}
       </p>

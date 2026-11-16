@@ -39,11 +39,11 @@ type View = "map" | "log" | "vouch" | "export";
 
 const STATE_WORDS: Record<ExportState, MessageDescriptor> = {
   pending: msg`Waiting for a second person`,
-  approved: msg`Approved`,
-  declined: msg`Declined`,
-  withdrawn: msg`Withdrawn`,
-  expired: msg`Expired`,
-  downloaded: msg`Downloaded`,
+  approved: msg({ message: `Approved`, context: "hidden map page" }),
+  declined: msg({ message: `Declined`, context: "hidden map page" }),
+  withdrawn: msg({ message: `Withdrawn`, context: "hidden map page" }),
+  expired: msg({ message: `Expired`, context: "hidden map page" }),
+  downloaded: msg({ message: `Downloaded`, context: "hidden map page" }),
 };
 
 export default function HiddenMap() {
@@ -82,17 +82,17 @@ export default function HiddenMap() {
   if (!modules.loaded) {
     return (
       <Layout>
-        <div className="flex min-h-[50vh] items-center justify-center"><BreathingLoader label={t`Opening the map`} /></div>
+        <div className="flex min-h-[50vh] items-center justify-center"><BreathingLoader label={t({ message: `Opening the map`, context: "hidden map page" })} /></div>
       </Layout>
     );
   }
-  if (!on) return <ModuleGate moduleId="hidden-map" name={t`Hidden map`} />;
-  if (!user) return <SignInToSee moduleId="hidden-map" name={t`Hidden map`} />;
+  if (!on) return <ModuleGate moduleId="hidden-map" name={t({ message: `Hidden map`, context: "hidden map page" })} />;
+  if (!user) return <SignInToSee moduleId="hidden-map" name={t({ message: `Hidden map`, context: "hidden map page" })} />;
   if (!me) {
     return (
       <Layout>
         <div className="flex min-h-[50vh] items-center justify-center">
-          {problem ? <p className={NOTE}>{problem}</p> : <BreathingLoader label={t`Opening the map`} />}
+          {problem ? <p className={NOTE}>{problem}</p> : <BreathingLoader label={t({ message: `Opening the map`, context: "hidden map page" })} />}
         </div>
       </Layout>
     );
@@ -125,10 +125,10 @@ export default function HiddenMap() {
   }
 
   const views: Array<{ id: View; label: string }> = [
-    { id: "map", label: t`Map` },
-    { id: "log", label: t`Log a place` },
-    ...(me.open || me.keeper ? [{ id: "vouch" as View, label: t`Vouch` }] : []),
-    ...(me.open ? [{ id: "export" as View, label: t`Copies` }] : []),
+    { id: "map", label: t({ message: `Map`, context: "hidden map page" }) },
+    { id: "log", label: t({ message: `Log a place`, context: "hidden map page" }) },
+    ...(me.open || me.keeper ? [{ id: "vouch" as View, label: t({ message: `Vouch`, context: "hidden map page" }) }] : []),
+    ...(me.open ? [{ id: "export" as View, label: t({ message: `Copies`, context: "hidden map page" }) }] : []),
   ];
   const visible = pins.filter((p) => shown[p.layer]);
 
@@ -143,22 +143,22 @@ export default function HiddenMap() {
           {!me.open && (
             <section aria-labelledby="hm-meter" className="space-y-3">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 id="hm-meter" className={H2}>{t`Your first ${me.needed}`}</h2>
+                <h2 id="hm-meter" className={H2}>{t({ message: `Your first ${me.needed}`, context: "hidden map page" })}</h2>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-semibold text-chart-3">{t`${me.vouchedCount} vouched`}</span> · {t`${countingPlantings.length} logged`}
+                  <span className="font-semibold text-chart-3">{t({ message: `${me.vouchedCount} vouched`, context: "hidden map page" })}</span> · {t({ message: `${countingPlantings.length} logged`, context: "hidden map page" })}
                 </p>
               </div>
               <SevenMeter needed={me.needed} vouched={me.vouchedCount} logged={countingPlantings.length} />
               {!admitted && <p className={HINT}><Trans>Your places start counting once you are admitted to the village.</Trans></p>}
               <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground" aria-hidden="true">
-                <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-chart-3" /><Trans>vouched</Trans></li>
+                <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-chart-3" /><Trans context="hidden map page">vouched</Trans></li>
                 <li className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-primary" /><Trans>waiting for a vouch</Trans></li>
-                <li className="flex items-center gap-2"><span className="size-2.5 rounded-full border border-dashed border-muted-foreground" /><Trans>still to log</Trans></li>
+                <li className="flex items-center gap-2"><span className="size-2.5 rounded-full border border-dashed border-muted-foreground" /><Trans context="hidden map page">still to log</Trans></li>
               </ul>
             </section>
           )}
 
-          <div role="tablist" aria-label={t`The map`} className="flex flex-wrap gap-2">
+          <div role="tablist" aria-label={t({ message: `The map`, context: "hidden map page" })} className="flex flex-wrap gap-2">
             {views.map((x) => (
               <button key={x.id} type="button" role="tab" aria-selected={view === x.id} onClick={() => setView(x.id)} className={`${BTN_SECONDARY} ${view === x.id ? "border-primary" : ""}`}>
                 {x.label}
@@ -169,7 +169,7 @@ export default function HiddenMap() {
           {view === "map" && (
             <div className="space-y-4">
               {me.open && (
-                <div className="flex flex-wrap gap-2" aria-label={t`Layers`}>
+                <div className="flex flex-wrap gap-2" aria-label={t({ message: `Layers`, context: "hidden map page" })}>
                   {(Object.keys(me.labels) as Layer[]).map((l) => (
                     <label key={l} className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm ${shown[l] ? "border-primary" : "border-border"}`}>
                       <input type="checkbox" checked={shown[l]} onChange={() => setShown((s) => ({ ...s, [l]: !s[l] }))} />
@@ -200,7 +200,7 @@ export default function HiddenMap() {
 
               {mine.length > 0 && (
                 <section aria-labelledby="hm-mine">
-                  <h2 id="hm-mine" className={H2}>{t`Your ${plantings.toLowerCase()}`}</h2>
+                  <h2 id="hm-mine" className={H2}>{t({ message: `Your ${plantings.toLowerCase()}`, context: "hidden map page" })}</h2>
                   <ul className="mt-3 divide-y divide-border">
                     {mine.map((p) => {
                       const vouched = p.vouches >= me.vouchesPerPin;
@@ -225,7 +225,7 @@ export default function HiddenMap() {
               )}
               {pins.length === 0 && <p className={HINT}><Trans>Nothing here yet. Log your first place and it appears on your map.</Trans></p>}
 
-              <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={() => setView("log")}><Trans>Log a place</Trans></button>
+              <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={() => setView("log")}><Trans context="hidden map page">Log a place</Trans></button>
             </div>
           )}
 
@@ -248,8 +248,8 @@ function VouchQueue({ me, onOpen }: { me: MapMe; onOpen: (id: string) => void })
     <section className={CARD} aria-labelledby="hm-queue">
       <h2 id="hm-queue" className={H2}><Trans>Waiting for a vouch</Trans></h2>
       <p className={`${HINT} mt-1`}>{me.vouchRule}</p>
-      {pins === null && <p className={`${HINT} mt-4`}><Trans>Reading the queue</Trans></p>}
-      {pins?.length === 0 && <p className={`${NOTE} mt-4`}><Trans>Nothing is waiting.</Trans></p>}
+      {pins === null && <p className={`${HINT} mt-4`}><Trans context="hidden map page">Reading the queue</Trans></p>}
+      {pins?.length === 0 && <p className={`${NOTE} mt-4`}><Trans context="hidden map page">Nothing is waiting.</Trans></p>}
       <ul className="mt-4 space-y-3">
         {(pins ?? []).map((p) => (
           <li key={p.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
@@ -258,7 +258,7 @@ function VouchQueue({ me, onOpen }: { me: MapMe; onOpen: (id: string) => void })
               <p className="font-semibold text-foreground">{p.title || p.kind}</p>
               <p className={HINT}>{me.labels[p.layer]} · {p.lat}, {p.lng}</p>
             </div>
-            <button type="button" className={BTN_SECONDARY} onClick={() => onOpen(p.id)}><Trans>Open</Trans></button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => onOpen(p.id)}><Trans context="hidden map page">Open</Trans></button>
           </li>
         ))}
       </ul>
@@ -282,13 +282,13 @@ function Copies({ me }: { me: MapMe }) {
     }
     void load();
   };
-  const yours = t`yours`;
+  const yours = t({ message: `yours`, context: "hidden map page" });
   return (
     <section className={CARD} aria-labelledby="hm-copies">
       <h2 id="hm-copies" className={H2}><Trans>A copy of the map</Trans></h2>
       <p className={`${HINT} mt-1`}><Trans>A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos.</Trans></p>
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <select className="min-h-11 rounded-lg border border-border bg-background px-3 text-foreground" value={precision} onChange={(e) => setPrecision(e.target.value as Precision)} aria-label={t`How exactly`}>
+        <select className="min-h-11 rounded-lg border border-border bg-background px-3 text-foreground" value={precision} onChange={(e) => setPrecision(e.target.value as Precision)} aria-label={t({ message: `How exactly`, context: "hidden map page" })}>
           {me.precisions.map((p) => <option key={p} value={p}>{i18n._(PRECISION_WORDS[p])}</option>)}
         </select>
         <button type="button" className={BTN_PRIMARY} onClick={() => void run(() => askExport(precision), t`Asked. A second member can approve it now.`)}><Trans>Ask for a copy</Trans></button>
@@ -302,12 +302,12 @@ function Copies({ me }: { me: MapMe }) {
             </span>
             <span className={HINT}>{i18n._(PRECISION_WORDS[r.precision])} · {new Date(r.createdAt).toLocaleString()} {r.mine ? `· ${yours}` : ""}</span>
             <span className="flex-1" />
-            {r.mine && r.status === "approved" && <button type="button" className={BTN_PRIMARY} onClick={() => void run(() => downloadExport(r.id), t`Downloaded.`)}><Trans>Download</Trans></button>}
-            {r.mine && (r.status === "pending" || r.status === "approved") && <button type="button" className={BTN_SECONDARY} onClick={() => void run(() => answerExport(r.id, "withdraw"), t`Withdrawn.`)}><Trans>Withdraw</Trans></button>}
+            {r.mine && r.status === "approved" && <button type="button" className={BTN_PRIMARY} onClick={() => void run(() => downloadExport(r.id), t({ message: `Downloaded.`, context: "hidden map page" }))}><Trans context="hidden map page">Download</Trans></button>}
+            {r.mine && (r.status === "pending" || r.status === "approved") && <button type="button" className={BTN_SECONDARY} onClick={() => void run(() => answerExport(r.id, "withdraw"), t({ message: `Withdrawn.`, context: "hidden map page" }))}><Trans context="hidden map page">Withdraw</Trans></button>}
             {!r.mine && r.status === "pending" && me.mayApproveExports && (
               <>
-                <button type="button" className={BTN_PRIMARY} onClick={() => void run(() => answerExport(r.id, "approve"), t`Approved.`)}><Trans>Approve</Trans></button>
-                <button type="button" className={BTN_SECONDARY} onClick={() => void run(() => answerExport(r.id, "decline"), t`Declined.`)}><Trans>Decline</Trans></button>
+                <button type="button" className={BTN_PRIMARY} onClick={() => void run(() => answerExport(r.id, "approve"), t({ message: `Approved.`, context: "hidden map page" }))}><Trans context="hidden map page">Approve</Trans></button>
+                <button type="button" className={BTN_SECONDARY} onClick={() => void run(() => answerExport(r.id, "decline"), t({ message: `Declined.`, context: "hidden map page" }))}><Trans context="hidden map page">Decline</Trans></button>
               </>
             )}
           </li>

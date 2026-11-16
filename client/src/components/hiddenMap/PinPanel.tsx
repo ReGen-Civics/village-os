@@ -16,16 +16,16 @@ import { PRECISION_WORDS } from "./CaptureForm";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, FIELD, H2, HINT, LABEL, NOTE } from "@/components/journey/look";
 
 export const STAGE_WORDS: Record<Stage, MessageDescriptor> = {
-  seed: msg`Seed`,
-  sprout: msg`Sprout`,
-  sapling: msg`Sapling`,
-  tree: msg`Tree`,
-  lost: msg`Didn't make it`,
+  seed: msg({ message: `Seed`, context: "hidden map, one place's details" }),
+  sprout: msg({ message: `Sprout`, context: "hidden map, one place's details" }),
+  sapling: msg({ message: `Sapling`, context: "hidden map, one place's details" }),
+  tree: msg({ message: `Tree`, context: "hidden map, one place's details" }),
+  lost: msg({ message: `Didn't make it`, context: "hidden map, one place's details" }),
 };
 
 /** How a voucher saw it, in words a member chooses between. */
 export const WAY_WORDS: Record<VouchWay, MessageDescriptor> = {
-  "in-person": msg`I was there`,
+  "in-person": msg({ message: `I was there`, context: "hidden map, one place's details" }),
   call: msg`I saw it on a live call`,
   photos: msg`The photos leave no doubt`,
 };
@@ -81,11 +81,11 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
     });
 
   if (problem && !pin) return <section className={CARD}><p className={NOTE}>{problem}</p></section>;
-  if (!pin) return <section className={CARD}><p className={HINT}><Trans>Opening the pin</Trans></p></section>;
+  if (!pin) return <section className={CARD}><p className={HINT}><Trans context="hidden map, one place's details">Opening the pin</Trans></p></section>;
 
   const mayVouch = !pin.mine && (me.open || me.keeper);
   const ownPhotos = pin.photoIds.filter((p) => !visits.some((v) => v.photoIds.includes(p)));
-  const yours = t`yours`;
+  const yours = t({ message: `yours`, context: "hidden map, one place's details" });
 
   return (
     <section className={CARD} aria-labelledby="hm-pin">
@@ -97,7 +97,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
             {pin.mine ? ` · ${yours}` : ""}
           </p>
         </div>
-        <button type="button" className={BTN_SECONDARY} onClick={onClose}><Trans>Close</Trans></button>
+        <button type="button" className={BTN_SECONDARY} onClick={onClose}><Trans context="hidden map, one place's details">Close</Trans></button>
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
@@ -110,7 +110,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
       <p className={`${NOTE} mt-4`}>
         {pin.lat}, {pin.lng}
       </p>
-      {pin.whatWentIn && <p className={`${NOTE} mt-2`}><span className="font-semibold text-foreground"><Trans>What went in:</Trans> </span>{pin.whatWentIn}</p>}
+      {pin.whatWentIn && <p className={`${NOTE} mt-2`}><span className="font-semibold text-foreground"><Trans context="hidden map, one place's details">What went in:</Trans> </span>{pin.whatWentIn}</p>}
       {pin.notes && <p className={`${NOTE} mt-2 whitespace-pre-line`}>{pin.notes}</p>}
 
       {ownPhotos.length > 0 && (
@@ -121,7 +121,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
 
       {visits.length > 0 && (
         <div className="mt-6">
-          <h3 className={LABEL}><Trans>Return visits</Trans></h3>
+          <h3 className={LABEL}><Trans context="hidden map, one place's details">Return visits</Trans></h3>
           <ol className="mt-2 space-y-3">
             {visits.map((v) => (
               <li key={v.id} className="rounded-lg border border-border p-3">
@@ -147,13 +147,13 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
           <button type="button" className={BTN_PRIMARY} disabled={busy || vouching} onClick={() => { setVouching(true); setWay(null); }}><Trans>Vouch: this is real</Trans></button>
         )}
         {pin.vouchedByMe && (
-          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => unvouch(id))}><Trans>Withdraw my vouch</Trans></button>
+          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => unvouch(id))}><Trans context="hidden map, one place's details">Withdraw my vouch</Trans></button>
         )}
         {mayVisit && !visiting && (
           <button type="button" className={BTN_NOTICE} onClick={() => setVisiting(true)}><Trans>Add a return visit</Trans></button>
         )}
         {me.keeper && !pin.mine && !pin.hidden && (
-          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => hidePin(id))}><Trans>Hide this pin</Trans></button>
+          <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => hidePin(id))}><Trans context="hidden map, one place's details">Hide this pin</Trans></button>
         )}
       </div>
 
@@ -176,21 +176,21 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
               disabled={busy || !way}
               onClick={() => way && void act(async () => { await vouch(id, way); setVouching(false); })}
             >
-              <Trans>Vouch</Trans>
+              <Trans context="hidden map, one place's details">Vouch</Trans>
             </button>
-            <button type="button" className={BTN_SECONDARY} onClick={() => setVouching(false)}><Trans>Not now</Trans></button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => setVouching(false)}><Trans context="hidden map, one place's details">Not now</Trans></button>
           </div>
         </fieldset>
       )}
 
       {visiting && (
         <div className="mt-5 space-y-4 rounded-xl border border-border p-4">
-          <h3 className={LABEL}><Trans>A return visit</Trans></h3>
+          <h3 className={LABEL}><Trans context="hidden map, one place's details">A return visit</Trans></h3>
           {pin.layer === "planting" && (
             <label className="block">
               <span className={LABEL}><Trans>How it is doing</Trans></span>
               <select className={`${FIELD} mt-1`} value={stage} onChange={(e) => setStage(e.target.value as Stage | "")}>
-                <option value="">{t`Choose`}</option>
+                <option value="">{t({ message: `Choose`, context: "hidden map, one place's details" })}</option>
                 {STAGES.map((s) => <option key={s} value={s}>{i18n._(STAGE_WORDS[s])}</option>)}
               </select>
             </label>
@@ -198,12 +198,12 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
           <PhotoPicker onAdd={(p) => setPhotos((all) => [...all, p])} label={t`Add a photo of it now`} />
           {photos.length > 0 && <p className={HINT}>{t`${plural(photos.length, { one: "# photo ready.", other: "# photos ready." })}`}</p>}
           <label className="block">
-            <span className={LABEL}><Trans>A note</Trans></span>
+            <span className={LABEL}><Trans context="hidden map, one place's details">A note</Trans></span>
             <textarea className={`${FIELD} mt-1`} rows={2} maxLength={4000} value={note} onChange={(e) => setNote(e.target.value)} />
           </label>
           <div className="flex flex-wrap gap-2">
-            <button type="button" className={BTN_PRIMARY} disabled={busy || photos.length === 0} onClick={() => void sendVisit()}><Trans>Save the visit</Trans></button>
-            <button type="button" className={BTN_SECONDARY} onClick={() => setVisiting(false)}><Trans>Not now</Trans></button>
+            <button type="button" className={BTN_PRIMARY} disabled={busy || photos.length === 0} onClick={() => void sendVisit()}><Trans context="hidden map, one place's details">Save the visit</Trans></button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => setVisiting(false)}><Trans context="hidden map, one place's details">Not now</Trans></button>
           </div>
         </div>
       )}
