@@ -109,13 +109,22 @@ describe("pickBrowserVoice", () => {
     expect(pickBrowserVoice([spain], "es")).toBe(spain);
   });
 
-  it("a natural voice from another region beats a robotic one from the preferred region", () => {
+  it("a Costa Rican voice always wins on a Spanish page, even over a natural one", () => {
     const natural = v(
       "Microsoft Dalia Online (Natural) - Spanish (Mexico)",
       "es-MX",
       false
     );
-    const robotic = v("eSpeak Spanish", "es-CR");
+    const plainCr = v("Google español de Costa Rica", "es-CR", false);
+    expect(pickBrowserVoice([natural, plainCr], "es")).toBe(plainCr);
+    expect(pickBrowserVoice([natural, plainCr], "es-MX")).toBe(plainCr);
+    const naturalCr = v("Microsoft Maria Online (Natural) - Spanish (Costa Rica)", "es-CR", false);
+    expect(pickBrowserVoice([plainCr, naturalCr, natural], "es")).toBe(naturalCr);
+  });
+
+  it("outside Costa Rica, a natural voice beats a robotic one from a preferred region", () => {
+    const natural = v("Microsoft Paloma Online (Natural) - Spanish (United States)", "es-US", false);
+    const robotic = v("eSpeak Spanish", "es-MX");
     expect(pickBrowserVoice([robotic, natural], "es")).toBe(natural);
   });
 

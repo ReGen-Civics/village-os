@@ -5,9 +5,11 @@
  * "Zira"), so the companion picks for itself. Language match comes first: only
  * a voice that speaks the page's language is ever considered, because a Spanish
  * line read by an English voice is worse than any robotic Spanish voice. Within
- * the language, the name decides, and the region (es-CR, es-MX, es-US, es-419
- * for Spanish) breaks ties inside one tier, so a natural Mexican voice beats a
- * robotic Costa Rican one. The tiers:
+ * the language, the name decides. Spanish has one exception, set by the
+ * Operations role: a Costa Rican (es-CR) voice always wins, whatever its name
+ * tier, because that is how the village speaks. Among the other Spanish
+ * regions (es-MX, es-US, es-419) the region only breaks ties inside one tier.
+ * The tiers:
  *
  *   1. names with "Natural" or "Neural" (Edge's online voices)
  *   2. "Premium" or "Enhanced" (Apple's downloaded voices)
@@ -120,8 +122,15 @@ export function pickBrowserVoice<V extends VoiceLike>(
     if (isNovelty(v.name)) return;
     const l = langRank(v.lang, lang);
     if (l === null) return;
-    // Name tier, then region, then the list's own order as the last tie-break.
-    const score = nameRank(v) * 10_000 + l * 100 + Math.min(i, 99);
+    // A Costa Rican voice first on any Spanish page, then name tier, then
+    // region, then the list's own order as the last tie-break.
+    const costaRicaFirst =
+      lang.toLowerCase().startsWith("es") && norm(v.lang) === "es-cr" ? 0 : 1;
+    const score =
+      costaRicaFirst * 1_000_000 +
+      nameRank(v) * 10_000 +
+      l * 100 +
+      Math.min(i, 99);
     if (score < bestScore) {
       bestScore = score;
       best = v;
