@@ -32,12 +32,20 @@
 import type { Pool } from "mysql2/promise";
 import type { Capability } from "../../shared/capabilities";
 import { capabilityHoldings, moveCapabilityToVillage, STEWARD_ROLE_ID } from "./capabilityHolding";
-import { TREASURY_ROLE_ID } from "./starterRoles";
 
 export const TOKEN_MINT: Capability = "token.mint";
 
+/**
+ * The seeded Treasury role's id. The same string as `TREASURY_ROLE_ID` in
+ * server/lib/starterRoles.ts, spelled here because importing that file reaches
+ * shared/seatSettings.ts, which no value-moving module may import
+ * (shared/seatSettings.boundary.test.ts). server/tokenMintHandover.db.test.ts
+ * pins the two equal.
+ */
+export const TOKEN_MINT_TREASURY_ROLE_ID = "treasury";
+
 /** The roles that hold `token.mint` from launch, the steward first: it names the holding. */
-export const TOKEN_MINT_ROLE_IDS: readonly string[] = [STEWARD_ROLE_ID, TREASURY_ROLE_ID];
+export const TOKEN_MINT_ROLE_IDS: readonly string[] = [STEWARD_ROLE_ID, TOKEN_MINT_TREASURY_ROLE_ID];
 
 /** The boot step's marker, for a village recorded as started by migration 0112. */
 export const TOKEN_MINT_0112_MARKER = "token-mint-to-stewards-and-treasury-0112-2026-11-15";

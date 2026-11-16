@@ -15,8 +15,10 @@ import {
   TOKEN_MINT,
   TOKEN_MINT_0112_MARKER,
   TOKEN_MINT_STAYS_WITH_ADMIN,
+  TOKEN_MINT_TREASURY_ROLE_ID,
   type TokenMintHandoverDeps,
 } from "./lib/tokenMintHandover";
+import { TREASURY_ROLE_ID } from "./lib/starterRoles";
 import { HANDOVER_SET, isBadgeGrantable, TRANSFERABLE } from "../shared/capabilities";
 
 const DB = testDbConfigured();
@@ -79,6 +81,10 @@ describe("token.mint is a handover power", () => {
     expect(TRANSFERABLE["token.mint"]).toBe(true);
     expect(HANDOVER_SET).toContain("token.mint");
     expect(isBadgeGrantable("token.mint")).toBe(false);
+  });
+
+  it("names the seeded Treasury role by the same id the starter roles use", () => {
+    expect(TOKEN_MINT_TREASURY_ROLE_ID).toBe(TREASURY_ROLE_ID);
   });
 });
 

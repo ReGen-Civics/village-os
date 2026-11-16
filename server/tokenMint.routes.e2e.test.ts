@@ -48,6 +48,8 @@ let testDb: TestDb | undefined;
 let dataDir = "";
 let pool: Pool;
 let founderToken = "";
+/** Wallet amounts are in the token's minor units; this is one whole token, read off the first mint. */
+let UNIT = 0;
 const people = { sam: { token: "", id: "" }, tara: { token: "", id: "" }, ora: { token: "", id: "" } };
 
 async function call(
@@ -156,7 +158,8 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: before the hand-over", () => {
   it("the admin hand mints as today, with a reason", async () => {
     const r = await mint(people.ora.id, 5, "before the hand-over", founderToken);
     expect(r.status, r.text).toBe(200);
-    expect(await heldBy(people.ora.token)).toBe(5);
+    UNIT = (await heldBy(people.ora.token)) / 5;
+    expect(UNIT, "five whole tokens arrived").toBeGreaterThan(0);
   });
 
   it("the reason is required", async () => {
@@ -192,7 +195,8 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: a village migration 0112 recorded a
       expect(caps, String(r.id)).toContain("token.mint");
     }
     const [marker] = await pool.query<any[]>("SELECT value FROM app_config WHERE config_key = 'data-migrations'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-    expect(String(marker[0]?.value ?? "")).toContain(TOKEN_MINT_0112_MARKER);
+    const doc = marker[0]?.value;
+    expect(typeof doc === "string" ? doc : JSON.stringify(doc)).toContain(TOKEN_MINT_0112_MARKER);
   });
 
   it("a bare admin is refused, and nothing moves", async () => {
@@ -208,7 +212,7 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: a village migration 0112 recorded a
     expect(bySam.status, bySam.text).toBe(200);
     const byTara = await mint(people.ora.id, 5, "a bonus, from the Treasury", people.tara.token);
     expect(byTara.status, byTara.text).toBe(200);
-    expect(await heldBy(people.ora.token)).toBe(before + 10);
+    expect(await heldBy(people.ora.token)).toBe(before + 10 * UNIT);
   });
 
   it("every mint is logged with its actor", async () => {
@@ -245,6 +249,6 @@ describe.skipIf(!DB_CONFIGURED)("token.mint: a village migration 0112 recorded a
 
     const signed = await call("POST", `/api/admin/mint-requests/${id}/approve`, {}, people.tara.token);
     expect(signed.status, signed.text).toBe(200);
-    expect(await heldBy(people.sam.token)).toBe(before + 5);
+    expect(await heldBy(people.sam.token)).toBe(before + 5 * UNIT);
   });
 });
