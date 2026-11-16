@@ -38,6 +38,8 @@ import { accomplishedPayLine } from "./accomplishedPayWords";
 import * as api from "./moonApi";
 import type { MyMoonData } from "./moonApi";
 import ItemCard from "./ItemCard";
+/** The member's own token pay from End of Moon (Rye, 15 Nov 2026), its own chunk. */
+const MyTokenPay = lazy(() => import("./MyTokenPay"));
 import GatherPanel from "./GatherPanel";
 import InvoicePanel from "./InvoicePanel";
 import { RoleCardsBlock, ScoreBlock } from "./CoverageAndScore";
@@ -229,6 +231,9 @@ export function MyMoonView({ data, villageRoles, onCycle, reload, initialRoomVie
             </Section>
 
             <InvoicePanel data={data} cycleId={cycleId} editable={editable} reload={reload} />
+            <Suspense fallback={null}>
+              <MyTokenPay />
+            </Suspense>
           </>
         )}
       </div>
