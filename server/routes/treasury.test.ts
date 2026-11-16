@@ -48,7 +48,7 @@ afterAll(async () => { await new Promise<void>((r) => server.close(() => r())); 
 beforeEach(() => { held.clear(); signedIn = true; });
 
 const get = async (path: string) => {
-  const r = await fetch(base + path);
+  const r = await fetch(base + path); // module-review-ok: the test client dialling its own server on localhost
   return { status: r.status, json: await r.json() };
 };
 
