@@ -44,6 +44,7 @@ import {
   ToolsCategoriesEditor,
 } from "@/components/admin/ModuleConfigPanels";
 import SaberraConfigPanel from "@/components/admin/SaberraConfigPanel";
+import HiddenMapConfigPanel from "@/components/admin/HiddenMapConfigPanel";
 import SaveBar, { saveEach, type SaveResult } from "@/components/SaveBar";
 
 /** A variable row as GET /api/admin/variables sends it. */
@@ -100,6 +101,8 @@ const CONFIG_PANELS: Record<string, (p: { password: string }) => ReactElement> =
   // pointed at nothing until this panel existed: the two addresses, the
   // connection, and the one button that pulls.
   saberra: SaberraConfigPanel,
+  // The map's name, its layers' words and kinds, and the two quests that pay (QA pass 5, P5-19).
+  "hidden-map": HiddenMapConfigPanel,
 };
 
 /**
