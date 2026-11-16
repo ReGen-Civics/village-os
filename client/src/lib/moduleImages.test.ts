@@ -25,7 +25,8 @@ import { BUNDLED_MODULE_ART } from "@/components/modules/bundledModuleArt";
  */
 
 const ROOT = path.resolve(__dirname, "..", "..", "..");
-const IMAGE_DIR = path.join(ROOT, "client", "public", "images", "modules");
+// Served by the server since 2026-11-16 (server/routes/moduleArt.ts), out of the client bundle.
+const IMAGE_DIR = path.join(ROOT, "server", "assets", "modules");
 
 describe("module images", () => {
   const files = fs.existsSync(IMAGE_DIR) ? fs.readdirSync(IMAGE_DIR) : [];
@@ -103,7 +104,8 @@ describe("module images", () => {
   /*
    * THE MANIFEST IS WHAT THE CARD READS, SO IT MUST AGREE WITH THIS DIRECTORY.
    *
-   * `ModuleArt` compiles in `client/public/images/modules/manifest.json` and
+   * `ModuleArt` compiles in `server/assets/modules/manifest.json` (by way of
+   * bundledModuleArt.ts) and
    * requests bundled art only for a module the manifest names. Before that it
    * guessed `/images/modules/<id>.webp` for every module, and redemption, which
    * ships no file, cost a wasted request per card: the server answers a missing

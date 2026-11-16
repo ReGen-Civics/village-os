@@ -138,7 +138,10 @@ export const RHETORICAL = /^\s*(what if we could|have you ever|imagine if|ever w
  *    tests read and members never do.
  * A lone "Seat" is the button that seats someone, which is the verb.
  */
-export const SEAT_EXEMPT_DIRS = [/^shared\/__fixtures__\//];
+// server/assets/ holds art shipped in the image (avatars, module cards) and its generator's
+// record: "a council circle of carved seats" there describes furniture in a picture, which no
+// member reads. Every other voice rule still reads those files.
+export const SEAT_EXEMPT_DIRS = [/^shared\/__fixtures__\//, /^server\/assets\//];
 export const SEAT_GATHERING_FILES = [
   /^client\/src\/components\/calendar\//, /^client\/src\/components\/EventsAdminPanel\.tsx$/,
   /^client\/src\/pages\/(Events|Contribute)\.tsx$/,
