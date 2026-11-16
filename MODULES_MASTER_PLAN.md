@@ -291,7 +291,7 @@ for itself by S6.
   founder`. **Founder is the master-admin tier every fork inherits:** implies
   admin everywhere (`requireAdmin` accepts both), can promote/demote admins,
   cannot be demoted by non-founders, and the last founder cannot be demoted at
-  all. Amora's founder: **rieki.cordon@gmail.com**.
+  all. Amora's founder (address withheld).
 - **Mechanism:** `requireAdmin(req)` = valid member token AND role in
   (admin, founder). **While zero admins/founders exist**, `POST
   /api/admin/bootstrap {password, email, name?}` (password = current
