@@ -39,8 +39,8 @@ import {
 const InvoicesDesk = lazy(() => import("@/components/myMoon/InvoicesDesk"));
 /** The moon review's village settings (decision 22), its own chunk: the desk's first page carries none of it. */
 const MoonReviewSettingsPanel = lazy(() => import("./moonReview/MoonReviewSettingsPanel"));
-/** Pay by member (Rye, 15 Nov 2026): in this chunk, closed until opened. A chunk of its own costs a whole block of the dist budget. */
-import PayBoard from "@/components/myMoon/PayBoard";
+/** Pay by member (Rye, 15 Nov 2026): its own lazy chunk, shared by the Admin tab and the /cash-payouts page, so no member page carries it. */
+const PayBoard = lazy(() => import("@/components/myMoon/PayBoard"));
 
 type View = "unpaid" | "paid";
 type ClaimFilter = "all" | "claimed" | "unclaimed";
@@ -285,7 +285,9 @@ export default function CashPayoutsTab({ password, asPage = false }: {
         <InvoicesDesk password={password} />
       </Suspense>
 
-      <PayBoard password={password} />
+      <Suspense fallback={null}>
+        <PayBoard password={password} />
+      </Suspense>
 
       <section aria-label="Totals" className="rounded-xl border border-border bg-white p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
