@@ -59,7 +59,7 @@ function agent(opts: { on: boolean; seat?: Partial<LeadSeatFacts> }) {
       on: async () => opts.on,
       seat: async () => ({ found: true, roleId: "r-gardener", isExample: false, capabilities: ["quest.consent"], grantsAdmin: false, seatingUserId: "u-ana", ...opts.seat }),
       recorded: async (a) => {
-        recorded.push(a);
+        recorded.push({ ...a });
         order.push("recorded");
       },
       settled: async (_a, outcome) => {

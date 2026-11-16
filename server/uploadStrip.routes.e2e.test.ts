@@ -90,13 +90,14 @@ async function postVaultDoc(bytes: Buffer, name: string, type: string) {
 }
 
 /** A form's attachment, through the only door that serves it: an admin's (audit, 15 Nov 2026). */
-async function fetchAttachment(filename: string, token = founderToken): Promise<{ status: number; bytes: Buffer; disposition: string; nosniff: string }> {
+async function fetchAttachment(filename: string, token = founderToken): Promise<{ status: number; bytes: Buffer; disposition: string; nosniff: string; cacheControl: string }> {
   const res = await fetch(`${BASE}/api/admin/submission-attachments/${filename}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); // module-review-ok: the test client dialling the built server on localhost
   return {
     status: res.status,
     bytes: Buffer.from(await res.arrayBuffer()),
     disposition: String(res.headers.get("content-disposition") ?? ""),
     nosniff: String(res.headers.get("x-content-type-options") ?? ""),
+    cacheControl: String(res.headers.get("cache-control") ?? ""),
   };
 }
 
@@ -481,9 +482,11 @@ describe.skipIf(!DB_CONFIGURED)("the one-year header", () => {
     const theirsName = String(theirs.json?.url ?? "").replace("/api/uploads/", "");
     expect(theirsName, "the vault keeps the uploader's own name, so it carries no prefix").toMatch(/^cap-table-/);
 
-    const served = await fetchUpload(mineName);
+    // A form's attachment left the public route altogether (audit, 15 Nov 2026): the admin door answers it, cached by nobody.
+    expect((await fetchUpload(mineName)).status).toBe(404);
+    const served = await fetchAttachment(mineName);
     expect(served.status).toBe(200);
-    expect(served.cacheControl).toBe("private, max-age=31536000, immutable");
+    expect(served.cacheControl).toBe("private, no-store");
 
     const other = await fetchUpload(theirsName);
     expect(other.status).toBe(200);
