@@ -655,7 +655,7 @@ import {
   treasuryStock,
   upsertSettings,
 } from "./lib/exchange";
-import { usersRepo } from "./repos/users";
+import { hasAnyRealUser, usersRepo } from "./repos/users";
 import { distributionsForMember, gratitudeCyclesRepo, gratitudeDistributionsRepo, gratitudeLogRepo } from "./repos/gratitude";
 import { grantsForMember, portraitsForMember } from "./repos/characterPortraits";
 import { charactersForMember } from "./repos/playerCharacters";
@@ -965,7 +965,7 @@ import { closePool, getPool } from "./db/pool";
 import { applyPending, connect as dbConnect } from "./db/migrate";
 import { startMaintenanceServer } from "./db/maintenanceMode";
 import { clientIpConfigFromEnv, clientIpModeLine, deriveClientIp } from "./lib/clientIp";
-import { authTokenSecretProblem } from "./lib/secretFloors";
+import { decideAuthTokenSecretAtBoot } from "./lib/secretFloors";
 import { checkPasswordUniformly, dummyHash } from "./lib/passwordCheck";
 import { adminPasswordTooShort, passwordDoorThrottled, poolCounter, recordPasswordDoorFailure, SHORT_PASSWORD_ANSWER, shortPasswordLogLine } from "./lib/passwordDoors";
 import { alignTableCollations } from "./db/collation";
@@ -1104,13 +1104,9 @@ const adminPasswordIsUsable = ADMIN_PASSWORD !== PLACEHOLDER_ADMIN_PASSWORD;
  * because each replica would sign with a different secret. Set
  * AUTH_TOKEN_SECRET in the environment for stable sessions.
  */
-// R113: a SET secret has a floor, and a short one refuses to boot. Unset keeps
-// the random per-process fallback below. server/lib/secretFloors.ts.
-const authTokenSecretRefusal = authTokenSecretProblem();
-if (authTokenSecretRefusal) {
-  console.error(`[startup] ${authTokenSecretRefusal}`);
-  process.exit(1);
-}
+// R113: a SET secret has a 32-character floor. What boot does about a short
+// one is decided in startServer once the database answers: a village in use
+// boots and warns, only a first start refuses. server/lib/secretFloors.ts.
 const AUTH_TOKEN_SECRET = process.env.AUTH_TOKEN_SECRET || crypto.randomBytes(32).toString("hex");
 if (!process.env.AUTH_TOKEN_SECRET) {
   console.warn(
@@ -4970,6 +4966,18 @@ async function startServer() {
     } finally {
       await conn.end();
     }
+  }
+
+  // R113: a short AUTH_TOKEN_SECRET never takes a village in use down. It
+  // warns on every start and reads red on the launch journey; only a first
+  // start, with nobody in the database, refuses. A failed read boots.
+  {
+    const verdict = await decideAuthTokenSecretAtBoot(process.env, () => hasAnyRealUser(getPool()));
+    if (verdict.action === "refuse") {
+      console.error(verdict.line);
+      process.exit(1);
+    }
+    if (verdict.action === "warn") console.warn(verdict.line);
   }
 
   // S7: the token registry is the tokens TABLE; load it before any handler
