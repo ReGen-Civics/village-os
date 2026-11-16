@@ -99,4 +99,22 @@ describe("WorkPayBlock", () => {
     const { container } = render(<WorkPayBlock pay={pay} variant="full" />);
     expect(container.textContent).toContain("No value set yet");
   });
+  it("prints no money for work valued at zero, and does not call it unvalued", () => {
+    // A village paying only in its own tokens values every quest at 0 (QA P6-r-2).
+    const pay: WorkPay = { value: { minor: 0, currency: "USD" }, lines: [{ token: "earned-equity", name: "ReGen Ship Token", amount: 100 }], source: "own", cadence: "once" };
+    const card = render(<WorkPayBlock pay={pay} />).container.textContent ?? "";
+    expect(card).toContain("100 ReGen Ship Token");
+    expect(card).not.toMatch(/\$|0\.00|paid as/);
+    cleanup();
+    const full = render(<WorkPayBlock pay={pay} variant="full" />).container.textContent ?? "";
+    expect(full).toContain("Paid as 100 ReGen Ship Token.");
+    expect(full).not.toMatch(/Worth|\$|0\.00/);
+    expect(full).not.toContain("No value set yet");
+  });
+
+  it("still leads with the value when it is above zero", () => {
+    const pay: WorkPay = { value: { minor: 10000, currency: "USD" }, lines: [{ token: "earned-equity", name: "ReGen Ship Token", amount: 100 }], source: "own", cadence: "once" };
+    const full = render(<WorkPayBlock pay={pay} variant="full" />).container.textContent ?? "";
+    expect(full).toMatch(/Worth \$100\.00/);
+  });
 });

@@ -184,6 +184,23 @@ export function voiceNames(pay: WorkPay): string[] {
  * What the card leads with. `inquire` when nothing at all is known about the
  * pay, which is the one case the card says to ask.
  */
+/**
+ * The value a card prints as money: none when the work is valued at zero. A
+ * village that pays only in its own tokens sets every value to 0 (a quest must
+ * carry one before it is published), and "Worth $0.00" beside "Paid as 100
+ * tokens" reads as a price on the tokens. Zero is a value someone set, so it
+ * is not "No value set yet" either: the card shows what the work pays and
+ * nothing about money.
+ */
+export function shownValue(pay: WorkPay): WorkPay["value"] {
+  return pay.value && pay.value.minor > 0 ? pay.value : null;
+}
+
+/** True when somebody valued the work at exactly zero. */
+export function valuedAtZero(pay: WorkPay): boolean {
+  return !!pay.value && pay.value.minor === 0;
+}
+
 export function payHeadline(pay: WorkPay): "valued" | "paid-unvalued" | "inquire" {
   if (pay.value) return "valued";
   if (pay.lines.length > 0 || pay.cashPay || cashWords(pay.cash)) return "paid-unvalued";
