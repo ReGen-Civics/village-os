@@ -74,6 +74,12 @@ export interface BrandThemeFields {
    */
   fontFaceName?: string;
   fontFaceUrl?: string;
+  /**
+   * Every uploaded face, one per role (gap G2, server/lib/brandFonts.ts).
+   * Each is cleaned like the one face above, and a face that fails any check
+   * is left out whole.
+   */
+  fontFaces?: Array<{ family?: string; url?: string; role?: string; weight?: string }>;
 }
 
 /** A stack is names, quotes, commas, hyphens, digits, spaces — nothing else. */
@@ -131,6 +137,20 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined): strin
   if (faceName && faceUrl && faceFormat) {
     parts.push(
       `@font-face {\n  font-family: "${faceName}";\n  src: url("${faceUrl}") format("${faceFormat}");\n  font-weight: 100 900;\n  font-display: swap;\n}`,
+    );
+  }
+  // The other uploaded faces, each once (the heading face above may also be
+  // in this list). Four at most, the four roles.
+  const seen = new Set(faceName && faceUrl && faceFormat ? [`${faceName}|${faceUrl}`] : []);
+  for (const f of (Array.isArray(theme.fontFaces) ? theme.fontFaces : []).slice(0, 4)) {
+    const name = sanitizeFontName(f?.family);
+    const url = sanitizeImportUrl(f?.url);
+    const format = url ? fontFormatOf(url) : null;
+    const weight = /^[1-9]00( [1-9]00)?$/.test(String(f?.weight ?? "")) ? String(f!.weight) : "100 900";
+    if (!name || !url || !format || seen.has(`${name}|${url}`)) continue;
+    seen.add(`${name}|${url}`);
+    parts.push(
+      `@font-face {\n  font-family: "${name}";\n  src: url("${url}") format("${format}");\n  font-weight: ${weight};\n  font-display: swap;\n}`,
     );
   }
 

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Trans, useLingui } from "@lingui/react/macro";
+import { ART_FIELD_MAX } from "@shared/artDirection";
 import { announceThemeChange } from "@/lib/liveTheme";
 import { Image } from "@/components/Image";
 import { prepareImageForUpload } from "@/lib/imagePrep";
@@ -108,6 +110,7 @@ function ReferenceTile({ reference, onRemove }: { reference: Reference; onRemove
 }
 
 export default function IdentityPackPanel({ password }: { password: string }) {
+  const { t } = useLingui();
   const [pack, setPack] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -210,6 +213,22 @@ export default function IdentityPackPanel({ password }: { password: string }) {
       <textarea value={pack.never ?? ""} onChange={(e) => setPack({ ...pack, never: e.target.value.slice(0, 1000) })}
         rows={2} placeholder="e.g. no glass towers, no manicured lawns, no stock-photo smiles…"
         className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 mb-4" />
+
+      {/* THE ART DIRECTION (gap G9): what every made picture is drawn in. Read
+          by shared/artDirection.ts, which builds the clause an image prompt
+          carries; a blank field adds nothing. */}
+      {([
+        ["medium", <Trans key="m" context="admin identity pack: the art medium field">The medium</Trans>, t`e.g. warm, textured, hand-painted illustration, never photorealistic`],
+        ["palette", <Trans key="p">The palette, in words</Trans>, t`e.g. night-sea teal, deck green, parchment, lantern gold`],
+        ["subjects", <Trans key="s" context="admin identity pack: the picture subjects field">What pictures show</Trans>, t`e.g. hands in soil, seed in a palm, a lantern, rigs circled at a gathering`],
+      ] as const).map(([field, label, hint]) => (
+        <div key={field}>
+          <label className="block text-sm font-medium text-foreground mb-1" htmlFor={`art-${field}`}>{label}</label>
+          <textarea id={`art-${field}`} value={pack[field] ?? ""} onChange={(e) => setPack({ ...pack, [field]: e.target.value.slice(0, ART_FIELD_MAX[field]) })}
+            rows={2} placeholder={hint}
+            className="w-full text-sm border border-border rounded-lg px-3 py-2 mb-3" />
+        </div>
+      ))}
 
       {/*
         A section heading, styled like its two siblings above and carrying no

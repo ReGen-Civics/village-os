@@ -83,7 +83,14 @@ const newestFirst = (a: FeedItem, b: FeedItem) =>
  * The rows of one group, batched. Exported for the test, and because the
  * batching rule is the part most likely to be argued with later.
  */
-export function batchRows(items: FeedItem[]): FeedRow[] {
+/**
+ * A kind's explanation in the village's own words, where it set them (gap G6,
+ * shared/noticeWords.ts). Defaults to the platform's blurb.
+ */
+export type BlurbFor = (type: string, platform: string) => string;
+const platformBlurb: BlurbFor = (_type, platform) => platform;
+
+export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb): FeedRow[] {
   const buckets = new Map<string, FeedItem[]>();
   for (const it of items) {
     // Read state is IN the key on purpose: see the header.
@@ -105,7 +112,7 @@ export function batchRows(items: FeedItem[]): FeedRow[] {
         items: list,
         type: list[0].type,
         title: manyLine(list[0].type, list.length),
-        detail: kindOf(list[0].type).blurb,
+        detail: blurbFor(list[0].type, kindOf(list[0].type).blurb),
         whole: false,
         link: null,
         unread: list.filter((i) => !i.isRead).length,
@@ -122,7 +129,7 @@ export function batchRows(items: FeedItem[]): FeedRow[] {
         title: it.title,
         // The kind's blurb fills in only where the row carries no body, which
         // is where a reader most needs to be told why the line matters.
-        detail: it.body ? String(it.body) : kindOf(it.type).blurb,
+        detail: it.body ? String(it.body) : blurbFor(it.type, kindOf(it.type).blurb),
         whole: wordsInAppOnly(it.type),
         link: it.link ?? null,
         unread: it.isRead ? 0 : 1,
@@ -138,7 +145,7 @@ export function batchRows(items: FeedItem[]): FeedRow[] {
  * The whole panel: grouped, batched, and ordered so anything unread is at the
  * top without the sections themselves shuffling around under a reader's hand.
  */
-export function buildFeed(items: FeedItem[]): FeedGroup[] {
+export function buildFeed(items: FeedItem[], blurbFor: BlurbFor = platformBlurb): FeedGroup[] {
   const byGroup = new Map<NotificationGroupId, FeedItem[]>();
   for (const it of items) {
     const g = kindOf(it.type).group;
@@ -151,7 +158,7 @@ export function buildFeed(items: FeedItem[]): FeedGroup[] {
   for (const def of NOTIFICATION_GROUPS) {
     const list = byGroup.get(def.id);
     if (!list?.length) continue;
-    const rows = batchRows(list);
+    const rows = batchRows(list, blurbFor);
     groups.push({
       id: def.id,
       title: def.title,

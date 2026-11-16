@@ -4,6 +4,11 @@ import { announceThemeChange } from "@/lib/liveTheme";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { changedKeys } from "@/lib/unsavedChanges";
 import { FONT_CATALOG, offeringsFor, type FontRole } from "@shared/fontCatalog";
+import { Trans, useLingui } from "@lingui/react/macro";
+
+/** The four roles an uploaded face can fill (server/lib/brandFonts.ts, gap G2). */
+const UPLOAD_ROLES = ["display", "body", "accent", "label"] as const;
+type UploadRole = (typeof UPLOAD_ROLES)[number];
 
 /**
  * Admin → Make This Yours → Typography.
@@ -48,6 +53,7 @@ interface ThemeFields {
   fontFaceName?: string;
   fontFaceUrl?: string;
   fontLicenceAck?: { family: string; by: string; at: string };
+  fontFaces?: Array<{ family: string; url: string; role: UploadRole; weight: string }>;
 }
 
 export default function TypographyPanel({ password }: { password: string }) {
@@ -57,7 +63,16 @@ export default function TypographyPanel({ password }: { password: string }) {
   const [uploading, setUploading] = useState(false);
   const [family, setFamily] = useState("");
   const [ack, setAck] = useState(false);
+  const [uploadRole, setUploadRole] = useState<UploadRole>("display");
+  const [weight, setWeight] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const { t } = useLingui();
+  const roleWords: Record<UploadRole, string> = {
+    display: t({ message: "Headings", context: "admin typography: the role an uploaded font fills" }),
+    body: t({ message: "Body text", context: "admin typography: the role an uploaded font fills" }),
+    accent: t({ message: "Accent", context: "admin typography: the role an uploaded font fills" }),
+    label: t({ message: "Labels", context: "admin typography: the role an uploaded font fills" }),
+  };
 
   const load = useCallback(async () => {
     try {
@@ -109,6 +124,8 @@ export default function TypographyPanel({ password }: { password: string }) {
       form.append("file", file);
       form.append("family", family.trim());
       form.append("licenceAck", "true");
+      form.append("role", uploadRole);
+      if (weight.trim()) form.append("weight", weight.trim());
       const res = await fetch("/api/admin/brand/font", {
         method: "POST",
         headers: { Authorization: `Bearer ${password}` },
@@ -116,7 +133,7 @@ export default function TypographyPanel({ password }: { password: string }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? data.error ?? "Upload failed");
-      toast.success(`"${data.family}" uploaded and set as the heading face`);
+      toast.success(t`"${data.family}" uploaded and set as the ${roleWords[uploadRole]} face`);
       setFamily("");
       setAck(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -166,6 +183,15 @@ export default function TypographyPanel({ password }: { password: string }) {
                 {/* An uploaded face or hand-edited stack that matches no offering. */}
                 {current && !matched && <option value="__custom">Custom: {current.slice(0, 40)}</option>}
               </select>
+              {/* Or the stack itself, typed (gap G2): an uploaded face first, then
+                  its fallbacks. The server keeps only what a stack is made of. */}
+              <input
+                value={current}
+                onChange={(e) => setTheme({ ...theme, [field]: e.target.value.slice(0, 300) })}
+                placeholder={t({ message: "or type a stack", context: "admin typography: a typed font stack field" })}
+                aria-label={t`${ROLE_LABELS[role].title}: the font stack, typed`}
+                className="mt-1.5 w-full text-xs border border-border rounded-lg px-2 py-1.5 font-mono"
+              />
               {/* Preview in the actual face — the fonts are bundled, so this renders truthfully. */}
               <p
                 className="mt-1.5 text-base text-gray-700 truncate"
@@ -190,9 +216,19 @@ export default function TypographyPanel({ password }: { password: string }) {
         <h4 className="text-sm font-medium text-gray-900 mb-1">Bring your own font</h4>
         <p className="text-xs text-gray-500 mb-3">
           For a face that isn't in the catalogue. Upload the font file itself (.woff2 is smallest and best;
-          .woff, .ttf and .otf also work). It's stored with your deployment and set as the heading face.
+          .woff, .ttf and .otf also work). It's stored with your deployment and set as the face for the role you pick,
+          one face per role.
         </p>
-        {theme.fontFaceName && theme.fontFaceUrl && (
+        {theme.fontFaces?.length ? (
+          <ul className="text-xs text-muted-foreground mb-3 bg-muted rounded-lg px-3 py-2 list-none">
+            {theme.fontFaces.map((f) => (
+              <li key={f.role}>
+                {roleWords[f.role] ?? f.role}: <span className="font-medium">{f.family}</span> ({f.weight})
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        {!theme.fontFaces?.length && theme.fontFaceName && theme.fontFaceUrl && (
           <p className="text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg px-3 py-2">
             Active custom face: <span className="font-medium">{theme.fontFaceName}</span>
             {theme.fontLicenceAck && (
@@ -206,6 +242,23 @@ export default function TypographyPanel({ password }: { password: string }) {
             onChange={(e) => setFamily(e.target.value)}
             placeholder='Font name, e.g. "Serenity"'
             className="text-sm border border-gray-200 rounded-lg px-2.5 py-2 w-48"
+          />
+          <select
+            value={uploadRole}
+            onChange={(e) => setUploadRole(e.target.value as UploadRole)}
+            aria-label={t({ message: "The role this font fills", context: "admin typography: upload role picker" })}
+            className="text-sm border border-border rounded-lg px-2.5 py-2 bg-card"
+          >
+            {UPLOAD_ROLES.map((r) => (
+              <option key={r} value={r}>{roleWords[r]}</option>
+            ))}
+          </select>
+          <input
+            value={weight}
+            onChange={(e) => setWeight(e.target.value.slice(0, 7))}
+            placeholder={t({ message: "weights, e.g. 400 or 100 900", context: "admin typography: the weight range an uploaded font covers" })}
+            aria-label={t({ message: "The weights this file covers", context: "admin typography: the weight range an uploaded font covers" })}
+            className="text-sm border border-border rounded-lg px-2.5 py-2 w-48"
           />
           <input ref={fileRef} type="file" accept=".woff2,.woff,.ttf,.otf" className="text-xs text-gray-600" />
           <button

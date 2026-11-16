@@ -38,17 +38,12 @@ import { useCallback, useEffect, useState } from "react";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import { haptic, setHapticsEnabled, type HapticIntensity } from "./haptics";
 import { storedText, writeStored } from "./safeStorage";
+import { SOUND_MOMENT_IDS, type SoundMomentId } from "@shared/soundMoments";
 
-/** The five moments the product makes a sound for. */
-export const SOUND_MOMENTS = [
-  "quest_complete",
-  "gratitude",
-  "stage_advance",
-  "notification",
-  "ui_tick",
-] as const;
+/** The moments the product makes a sound for (shared/soundMoments.ts): the platform's five and three for the new modules. */
+export const SOUND_MOMENTS = SOUND_MOMENT_IDS;
 
-export type SoundMoment = (typeof SOUND_MOMENTS)[number];
+export type SoundMoment = SoundMomentId;
 
 export interface SoundSpec {
   /** What a member is being told. */
@@ -102,7 +97,49 @@ export const SOUND_MANIFEST: Record<SoundMoment, SoundSpec> = {
     seconds: [0.05, 0.15],
     maxKb: 50,
   },
+  stamp: {
+    moment: "A stamp landed on a member's record",
+    wanted: "A soft thud of a rubber stamp on paper",
+    seconds: [0.15, 0.4],
+    maxKb: 60,
+  },
+  seal: {
+    moment: "A sealed letter was opened",
+    wanted: "A small wax seal snapping",
+    seconds: [0.2, 0.5],
+    maxKb: 60,
+  },
+  unlock: {
+    moment: "Something opened to a member",
+    wanted: "A short rising tone, two notes",
+    seconds: [0.4, 1.0],
+    maxKb: 80,
+  },
 };
+
+/**
+ * Point the layer at the village's own sounds, read once at boot from
+ * /api/brand/sounds (gap G8). A village that loaded none answers no files, so
+ * every moment stays silent, as it always was. Never throws.
+ */
+const soundListeners = new Set<() => void>();
+/** Subscribe to the village's sounds arriving, for the one control that offers them. */
+export function onVillageSounds(listener: () => void): () => void {
+  soundListeners.add(listener);
+  return () => soundListeners.delete(listener);
+}
+
+export async function loadVillageSounds(fetchImpl: typeof fetch = fetch): Promise<void> {
+  try {
+    const res = await fetchImpl("/api/brand/sounds");
+    if (!res.ok) return;
+    const d = (await res.json()) as { volume?: number; files?: SoundConfig["files"] };
+    if (d?.files && Object.keys(d.files).length) configureSounds({ files: d.files, volume: d.volume, startMuted: true });
+    soundListeners.forEach((l) => l());
+  } catch {
+    /* silence is the default */
+  }
+}
 
 // ── The handle the layer plays through ──────────────────────────────────────
 
@@ -132,6 +169,11 @@ export interface SoundConfig {
   volume?: number;
   /** Test seam. Defaults to the browser's Audio constructor. */
   createAudio?: (src: string) => SoundHandle;
+  /**
+   * Whether a member who never chose starts muted (gap G8). A village's own
+   * sounds start off until a member turns them on; absent keeps what was set.
+   */
+  startMuted?: boolean;
 }
 
 const UPLOADS_BASE = "/api/uploads";
@@ -161,8 +203,20 @@ export function configureSounds(next: SoundConfig): void {
     // installed a stub can never take it out again.
     createAudio: "createAudio" in next ? next.createAudio : config.createAudio,
   };
+  if (typeof next.startMuted === "boolean") {
+    startMuted = next.startMuted;
+    muted = null;
+  }
   handles.clear();
   broken.clear();
+}
+
+/** A member with no stored choice is muted when this is true. False until a village's sounds say otherwise. */
+let startMuted = false;
+
+/** True when the village loaded at least one sound, so a member has something to turn on. */
+export function villageHasSounds(): boolean {
+  return Object.keys(config.files ?? {}).length > 0;
 }
 
 /** The address a moment's audio is served from, or null when none is set. */
@@ -231,7 +285,9 @@ export function setSoundMember(id: string | number | null | undefined): void {
 export function isMuted(): boolean {
   if (muted !== null) return muted;
   if (typeof window === "undefined") return false;
-  muted = read(storageKey()) === "1";
+  const stored = read(storageKey());
+  // No choice yet: the village's default (its own sounds start off).
+  muted = stored === null ? startMuted : stored === "1";
   // The stored preference has to reach the haptics too, and until now only
   // `setMuted` and `setSoundMember` told them about it. Neither runs on a
   // fresh page load, so a member who muted yesterday came back to a silent
