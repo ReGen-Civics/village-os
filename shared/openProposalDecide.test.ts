@@ -49,9 +49,9 @@ describe("open proposals, the decision: the pure half", () => {
   it("the letters name the village, the roles and the next step", () => {
     const base = { firstName: "Rowan", village: "Test Village", roleNames: ["Gate Keeper", "Well Keeper"], season: "Season of Roots", startsOn: "1 January 2099" };
     const yes = adoptedInviteLetter({ ...base, link: "https://v.test/register?invite=abc", days: 14 });
-    expect(yes.subject).toBe("Test Village adopted your proposal");
+    expect(yes.subject).toBe("Test Village said yes to your proposal");
     expect(yes.text).toContain("Hi Rowan,");
-    expect(yes.text).toContain("Test Village adopted your proposal to hold Gate Keeper and Well Keeper next season.");
+    expect(yes.text).toContain("Test Village said yes to your proposal to hold Gate Keeper and Well Keeper next season.");
     expect(yes.text).toContain("https://v.test/register?invite=abc");
     expect(yes.text).toContain("It works once and lasts 14 days. Your roles start when Season of Roots begins, on 1 January 2099.");
     const account = adoptedAccountLetter({ ...base, firstName: null, season: null, signIn: "https://v.test/profile" });
