@@ -73,6 +73,30 @@ function fitAll(pins: ReadonlyArray<{ lat: number; lng: number }>, w: number, h:
   return { center, zoom: MIN_ZOOM };
 }
 
+/** Pins closer than this many pixels are one target: a fingertip cannot tell them apart. */
+const GATHER_PX = 24;
+
+/**
+ * Gather pins whose screen positions sit within a fingertip of each other.
+ * Greedy and in the order given, which is enough for the hundreds a village
+ * logs: each pin joins the first group whose centre is within reach.
+ */
+export function gatherPins<T extends { id: string }>(items: Array<{ p: T; s: { x: number; y: number } }>): Array<{ x: number; y: number; members: T[] }> {
+  const groups: Array<{ x: number; y: number; members: T[] }> = [];
+  for (const { p, s } of items) {
+    const near = groups.find((g) => Math.hypot(g.x - s.x, g.y - s.y) < GATHER_PX);
+    if (near) {
+      const n = near.members.length;
+      near.x = (near.x * n + s.x) / (n + 1);
+      near.y = (near.y * n + s.y) / (n + 1);
+      near.members.push(p);
+    } else {
+      groups.push({ x: s.x, y: s.y, members: [p] });
+    }
+  }
+  return groups;
+}
+
 /** A grid step in degrees that draws a handful of lines at this zoom. */
 function gridStep(zoom: number): number {
   const steps = [30, 15, 10, 5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005, 0.002, 0.001];
@@ -83,6 +107,8 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
   const { t } = useLingui();
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 640, h: height });
+  /** The real width has been read. Framing waits for it, so a 360px phone is never framed as 640px. */
+  const [measured, setMeasured] = useState(false);
   const [view, setView] = useState<{ center: Point; zoom: number } | null>(null);
   const drag = useRef<{ x: number; y: number; cx: number; cy: number; moved: boolean } | null>(null);
   const bm: Basemap = isBasemap(basemap) ? basemap : "none";
@@ -90,21 +116,27 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setSize({ w: el.clientWidth || 640, h: el.clientHeight || height }));
+    const read = () => {
+      if (el.clientWidth > 0) {
+        setSize({ w: el.clientWidth, h: el.clientHeight || height });
+        setMeasured(true);
+      }
+    };
+    const ro = new ResizeObserver(read);
     ro.observe(el);
-    setSize({ w: el.clientWidth || 640, h: el.clientHeight || height });
+    read();
     return () => ro.disconnect();
   }, [height]);
 
   // Frame every pin once, on the first answer that has any.
   const framed = useRef(false);
   useEffect(() => {
-    if (framed.current || size.w < 10) return;
+    if (framed.current || !measured) return;
     if (pins.length || !view) {
       setView(fitAll(pins, size.w, size.h));
       if (pins.length) framed.current = true;
     }
-  }, [pins, size.w, size.h, view]);
+  }, [pins, size.w, size.h, view, measured]);
 
   const v = view ?? { center: { lat: 20, lng: 0 }, zoom: 2 };
   const c = project(v.center, v.zoom);
@@ -227,9 +259,38 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
             ))}
           </svg>
         )}
-        {pins.map((p) => {
-          const s = toScreen(p);
-          if (s.x < -20 || s.y < -20 || s.x > size.w + 20 || s.y > size.h + 20) return null;
+        {gatherPins(pins.map((p) => ({ p, s: toScreen(p) })).filter(({ s }) => s.x >= -20 && s.y >= -20 && s.x <= size.w + 20 && s.y <= size.h + 20)).map((g) => {
+          if (g.members.length > 1) {
+            // Several pins within a fingertip: one button that zooms in on them, or at the deepest
+            // zoom steps through them, so every pin can be reached.
+            const deepest = v.zoom >= MAX_ZOOM;
+            const choosable = g.members.filter((m) => !("dot" in m)).map((m) => m.id);
+            return (
+              <button
+                key={`g-${g.members[0]!.id}`}
+                type="button"
+                disabled={deepest && (!onSelect || choosable.length === 0)}
+                onPointerDown={(e) => e.stopPropagation()}
+                onPointerUp={(e) => e.stopPropagation()}
+                onClick={() => {
+                  if (!deepest) {
+                    const c2 = unproject((cx - size.w / 2 + g.x) / TILE, (cy - size.h / 2 + g.y) / TILE, v.zoom);
+                    setView({ center: c2, zoom: Math.min(MAX_ZOOM, v.zoom + 2) });
+                  } else if (onSelect && choosable.length) {
+                    const at = choosable.indexOf(selectedId ?? "");
+                    onSelect(choosable[(at + 1) % choosable.length]!);
+                  }
+                }}
+                className="absolute flex size-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-background bg-primary text-xs font-bold text-primary-foreground shadow-sm"
+                style={{ left: g.x, top: g.y }}
+                aria-label={t`${g.members.length} pins close together. Zoom in to tell them apart.`}
+              >
+                {g.members.length}
+              </button>
+            );
+          }
+          const p = g.members[0]!;
+          const s = { x: g.x, y: g.y };
           const dot = "dot" in p;
           const chosen = p.id === selectedId;
           return (
@@ -237,11 +298,11 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
               key={p.id}
               type="button"
               disabled={dot || !onSelect}
-              onPointerDown={(e) => e.stopPropagation()}
-              onPointerUp={(e) => e.stopPropagation()}
+              onPointerDown={onSelect ? (e) => e.stopPropagation() : undefined}
+              onPointerUp={onSelect ? (e) => e.stopPropagation() : undefined}
               onClick={() => onSelect?.(p.id)}
               // The hit area is 24px at least (WCAG 2.5.8); the drawn pin sits in its middle.
-              className="absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
+              className={`absolute flex size-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full ${onSelect ? "" : "pointer-events-none"}`}
               style={{ left: s.x, top: s.y }}
               aria-label={dot ? t`A pin somewhere near here (${labels[p.layer]})` : t`${(p as PinView).title || (p as PinView).kind}, ${labels[p.layer]}`}
             >
