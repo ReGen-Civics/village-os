@@ -17105,7 +17105,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
 
   registerBrandUploadRoutes(app, { isAdmin, uploadsDir: UPLOADS_DIR });
-  registerBrandSoundRoutes(app, { isAdmin, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
+  registerBrandSoundRoutes(app, { guardCapability, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
 
   // ── Village font package: upload + licence acknowledgment ────────────────
   // The foundation catalogue (shared/fontCatalog.ts) is all-OFL and always
