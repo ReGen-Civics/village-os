@@ -16,7 +16,18 @@ export interface MapMe {
   vouchedCount: number;
   needed: number;
   ownPins: number;
+  /** How many pins the whole map holds: the one thing a closed map learns about everybody else's. */
   allPins: number;
+  /** How many members have logged a pin. */
+  planters: number;
+  vouchesPerPin: number;
+  openedAt: string | null;
+  openedBefore: number;
+  kindPrompts: Record<Layer, string>;
+  /** Whether the village pays for a planting once it is vouched. */
+  plantingPays: boolean;
+  /** Filled by the page from the member's own pins. */
+  ownPlantings?: number;
   keeper: boolean;
   mayApproveExports: boolean;
   title: string;
@@ -42,6 +53,7 @@ export interface PinDraft {
   notes?: string;
   partnerState?: PartnerState | null;
   plantedOn?: string | null;
+  native?: boolean;
 }
 
 export interface VisitView {

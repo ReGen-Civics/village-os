@@ -189,3 +189,6 @@ A place or a return visit logged with no signal waits on the phone and goes up o
   says so.
 - **A closed map learns one number** about everybody else's pins: how many there are (`allPins` on
   `GET /api/hidden-map/me`). Nothing about where.
+**A planting that pays.** Name a quest as `plantingQuestId` too, and a planting opens a claim for its owner on it the
+moment it reaches `hiddenmap.vouches_per_pin` vouches, once per pin (`planting_claim_id`), by the same gate, lock and
+consent. Its words name a day, never a place. The page says "Rewarded once vouched" while one is named.
