@@ -326,7 +326,7 @@ export function register(app: Express, deps: Deps): void {
   app.get(PAY_BOARD_ROUTES.mine, async (req, res) => {
     const uid = await member(req, res);
     if (!uid) return;
-    res.json(await myRewards(getPool(), uid, { nameOf }));
+    res.json(await myRewards(getPool(), uid, { nameOf, keyHolders: deps.keyHolders }));
   });
   app.post(PAY_BOARD_ROUTES.reply, async (req, res) => {
     const uid = await writer(req, res);

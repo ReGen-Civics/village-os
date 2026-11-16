@@ -2582,12 +2582,15 @@ async function priceClaim(
  *   rule          everything else the ledger or the leg refuses: an unknown or
  *                 Hypha-governed token, a missing account, a bad amount, a key
  *                 too long to store.
+ *   equity_meaning  an End of Moon line's Earned Equity share, while the village
+ *                 has not written what Earned Equity means (Admin, Tokens). The
+ *                 row stays owed and is paid once the meaning is written.
  *
  * INFRASTRUCTURE FAILURES THROW and never come back as a refusal: a lost
  * connection, a deadlock, an exhausted pool. A transient failure must stay owed
  * and retryable, and recording it as refused would stop anybody retrying it.
  */
-export type OwedRefusalReason = "not_launched" | "issuance_cap" | "key_clash" | "rule";
+export type OwedRefusalReason = "not_launched" | "issuance_cap" | "key_clash" | "rule" | "equity_meaning";
 
 /** `balance` is the recipient's balance in the token's MINOR units after the post. */
 export type PostOwedOutcome =
@@ -2616,8 +2619,18 @@ async function owedPreflight(db: Pool | PoolConnection, row: OwedPosting): Promi
   if (await departedById(db, row.toUserId)) return refuse(DEPARTED_RECIPIENT);
   const closed = await issuanceRefusal(db);
   if (closed) return { outcome: "refused", reason: "not_launched", message: closed };
+  // An End of Moon line's Earned Equity share is owed from its approval, and
+  // issued only once the village has written what it is a share of. The source
+  // is `MOON_REWARD_SOURCE` (server/lib/moonReward.ts), spelled here so this
+  // file does not import the module that imports it.
+  if (row.source === "moon_invoice_reward" && row.tokenSlug === EARNED_EQUITY && !String(tokenDef(EARNED_EQUITY)?.description ?? "").trim()) {
+    return { outcome: "refused", reason: "equity_meaning", message: EQUITY_MEANING_UNWRITTEN };
+  }
   return null;
 }
+
+/** Why an End of Moon Earned Equity share waits. */
+export const EQUITY_MEANING_UNWRITTEN = "the village has not written what Earned Equity means yet, so its share stays owed until it does";
 
 function owedTransfer(row: OwedPosting): Parameters<typeof postTransfer>[1] {
   return {
@@ -3276,9 +3289,14 @@ export async function runSettlement(
   // away from the thing it protects the way a second guard beside it could.
   // If this filter is ever loosened, that is the moment an agent starts being
   // paid, and it is the only such moment in the codebase.
+  //
+  // The adopted application's terms ride along too: a seat held through one is
+  // paid its Earned Equity and Credits by its End of Moon invoice (below).
   const [seats] = await pool.query<RowDataPacket[]>(
-    "SELECT a.`id`, a.`org_role_id`, a.`user_id`, r.`value_tokens` FROM `org_role_assignments` a " +
+    "SELECT a.`id`, a.`org_role_id`, a.`user_id`, r.`value_tokens`, sa.`id` AS `adopted_application_id`, sa.`settings_json` AS `application_terms` " +
+      "FROM `org_role_assignments` a " +
       "LEFT JOIN `org_roles` r ON r.`id` = a.`org_role_id` " +
+      "LEFT JOIN `seat_applications` sa ON sa.`id` = a.`application_id` AND sa.`status` = 'adopted' " +
       "WHERE a.`active_holder_key` IS NOT NULL AND a.`holder_kind` = 'member' " +
       "AND a.`user_id` IS NOT NULL AND a.`is_example` = 0",
   );
@@ -3333,11 +3351,24 @@ export async function runSettlement(
   out.unpayable.push(...ruleProblems);
   reportUnpayable(`settlement ${cycleKey}`, ruleProblems);
 
+  /*
+   * ONE SEAT-MOON IS PAID ITS EARNED EQUITY AND CREDITS ONCE (security audit,
+   * S1). A seat held through an adopted application whose terms carry money
+   * is paid by its End of Moon invoice: the line's total reward is shared into
+   * cash, Earned Equity and Credits there (server/lib/moonReward.ts) and a
+   * Treasurer confirms it. Paying the same two tokens here as well paid that
+   * seat's moon twice under two keys. Cash already stays out the same way
+   * (`seatsOnCashRoles`). Every other token on the role's list is still paid
+   * here, since the invoice pays none of it.
+   */
+  const byInvoice = (seat: RowDataPacket, token: string): boolean =>
+    INVOICE_PAID_TOKENS.has(token) && seat.adopted_application_id != null && termsPayByInvoice(seat.application_terms);
   const paid = new Set<string>();
   for (const { seat, quote } of quoted) {
     const userId = String(seat.user_id);
     const seatId = String(seat.id);
     for (const line of quote.lines) {
+      if (byInvoice(seat, line.token)) continue;
       // Already the ledger's own integer, so nothing here converts it a second time.
       const faucet = faucetFor(line.token)!;
       const res = await mint(pool, {
@@ -3389,9 +3420,29 @@ export async function runSettlement(
    * `stewardsThanked`, and reporting "settled" when nothing ever could be
    * costs the village its only signal.
    */
-  const wouldPay = quoted.some((q) => q.quote.lines.length > 0);
+  const wouldPay = quoted.some((q) => q.quote.lines.some((l) => !byInvoice(q.seat, l.token)));
   out.alreadyRun = out.minted.length === 0 && wouldPay;
   return out;
+}
+
+/** The tokens an End of Moon invoice line shares its total reward into, beside cash. */
+const INVOICE_PAID_TOKENS: ReadonlySet<string> = new Set([EARNED_EQUITY, CREDITS]);
+
+/**
+ * Whether an adopted application's terms make an End of Moon pay line that
+ * carries money (`linesFromTerms`, shared/moonRecap.ts): a fixed amount or a
+ * range, in a currency. Terms that cannot be read are counted as paid by the
+ * invoice, so a seat is never paid twice on a misread.
+ */
+function termsPayByInvoice(raw: unknown): boolean {
+  try {
+    const terms = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const pay = terms && typeof terms === "object" ? (terms as { pay?: { kind?: unknown; currency?: unknown } }).pay : undefined;
+    if (!pay) return false;
+    return (pay.kind === "fixed" || pay.kind === "range") && typeof pay.currency === "string" && pay.currency.length > 0;
+  } catch {
+    return true;
+  }
 }
 
 /**

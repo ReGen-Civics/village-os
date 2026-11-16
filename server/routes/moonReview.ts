@@ -26,8 +26,8 @@
  * `/api/cash-owed/transfers` (server/routes/cashOwed.ts).
  */
 import type { Express, Request, Response } from "express";
-import { PAY_BOARD_ROUTES, monthOf, readMonth } from "../../shared/moonRewardReview";
-import { adjustReward, approveRewards, payBoard } from "../lib/moonRewardReview";
+import { PAY_BOARD_ROUTES, REWARD_REVIEW_REFUSALS, monthOf, readMonth } from "../../shared/moonRewardReview";
+import { adjustReward, approveRewards, isLiveReviewer, payBoard } from "../lib/moonRewardReview";
 import { recordEvent } from "../lib/events";
 import {
   APPROVE_ALONE_CAPABILITY, APPROVE_OWN_CAPABILITY, INVOICE_APPROVE_CAPABILITY, MOON_ROUTES, WORK_APPROVE_CAPABILITY, moonDays,
@@ -132,13 +132,21 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
   /**
    * THE TREASURER'S PAY BOARD (Rye, 15 Nov 2026). The door is the cash power or
    * approve-alone, through the one gate; amounts are on it, so the work
-   * approver's key alone does not open it.
+   * approver's key alone does not open it. Then the key must be held through a
+   * live seat: the gate's admin pass opens the review door to an admin who holds
+   * no seat, and it does not open this one (security lane, #1349 S3 8). A write
+   * through the connector is refused by name, whatever its path (S3 10).
    */
-  const payReviewer = async (req: Request, res: Response): Promise<string | null> => {
+  const payReviewer = async (req: Request, res: Response, write = false): Promise<string | null> => {
+    if (write && req.get("x-village-connector")) {
+      res.status(403).json({ error: "person_only", message: REWARD_REVIEW_REFUSALS.personOnly });
+      return null;
+    }
     const who = await reviewer(req, res);
     if (!who) return null;
-    if (who.cash || (await mayAct(req, APPROVE_ALONE_CAPABILITY as Capability)).ok) return who.uid;
-    res.status(403).json({ error: "review_key_required", message: "The pay board is for a Treasurer or a founder." });
+    const keyed = who.cash || (await mayAct(req, APPROVE_ALONE_CAPABILITY as Capability)).ok;
+    if (keyed && (await isLiveReviewer(keyHolders, who.uid))) return who.uid;
+    res.status(403).json({ error: "review_key_required", message: REWARD_REVIEW_REFUSALS.liveKey });
     return null;
   };
   const rewardDeps = {
@@ -156,7 +164,7 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
   });
 
   app.post(PAY_BOARD_ROUTES.adjust, async (req, res) => {
-    const uid = await payReviewer(req, res);
+    const uid = await payReviewer(req, res, true);
     if (!uid) return;
     const out = await adjustReward(getPool(), uid, req.body, rewardDeps);
     if (!out.ok) return fail(res, out);
@@ -164,7 +172,7 @@ export function registerReviewDoors(app: Express, deps: Deps): void {
   });
 
   app.post(PAY_BOARD_ROUTES.approve, async (req, res) => {
-    const uid = await payReviewer(req, res);
+    const uid = await payReviewer(req, res, true);
     if (!uid) return;
     const out = await approveRewards(getPool(), uid, req.body, rewardDeps);
     if (!out.ok) return fail(res, out);
