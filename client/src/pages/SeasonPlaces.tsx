@@ -88,6 +88,10 @@ export default function SeasonPlaces() {
   const step = (done: boolean, now: boolean) =>
     `rounded-xl border p-3 text-center text-sm ${now ? "border-primary bg-primary/10" : done ? "border-chart-3/60" : "border-border"}`;
   const nameOf = (id: string) => crew?.circles.find((c) => c.circleId === id)?.name ?? id;
+  // The place the picked circle holds this season, when places are by circle. Any status short of
+  // taking part gets a line, so "You're in" never sits beside a count that leaves the circle out.
+  const pickedPlace = picked && places?.dials.who === "circle" ? places.places.find((p) => p.subjectId === mine?.pickedCircleId) ?? null : null;
+  const placeUnsettled = picked && places?.dials.who === "circle" && pickedPlace?.status !== "taking_part";
 
   return (
     <Layout>
@@ -114,6 +118,7 @@ export default function SeasonPlaces() {
                     <p className="mt-1 text-sm opacity-80">
                       {W.pickedLine(pickedCircle?.pickedBy ? `${pickedCircle.pickedBy.role} (${pickedCircle.pickedBy.names.join(", ")})` : nameOf(mine?.pickedCircleId ?? ""), mine?.pickedCircleName ?? "")}
                     </p>
+                    {placeUnsettled && <p className="mt-2 text-sm opacity-80">{W.placeUnsettled(mine?.pickedCircleName ?? nameOf(mine?.pickedCircleId ?? ""), pickedPlace?.status ?? null)}</p>}
                   </div>
                 </section>
               )}

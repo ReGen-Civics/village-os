@@ -82,6 +82,15 @@ export const SEASON_WORDS = {
   pickedStamp: "In this season",
   youreIn: "You're in this season!",
   pickedLine: (who: string, circle: string) => `${who} picked you for ${circle}.`,
+  /** Picked into a circle whose own place this season is not settled yet: say so, or the count beside it reads as a contradiction. */
+  placeUnsettled: (circle: string, status: string | null) =>
+    status === "voting"
+      ? `${circle}'s place in this season is being voted on. It counts among the circles taking part once the vote passes.`
+      : status === "proposed"
+        ? `${circle}'s place in this season is waiting for a decision. It counts among the circles taking part once it is placed.`
+        : status === "waitlisted"
+          ? `${circle} is on the season's waitlist. It counts among the circles taking part when a place opens.`
+          : `${circle} has not proposed to take part in this season yet, so it is not counted among the circles taking part.`,
   yourApplication: "Your application",
   anyCircle: "Any circle",
   anyCircleLine: "Whoever picks for any circle can pick you.",
