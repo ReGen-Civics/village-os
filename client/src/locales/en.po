@@ -159,6 +159,12 @@ msgctxt "role pay"
 msgid "Kind of work"
 msgstr "Kind of work"
 
+#. placeholder {0}: data.family
+#. placeholder {1}: roleWords[uploadRole]
+#: client/src/components/TypographyPanel.tsx
+msgid "\"{0}\" uploaded and set as the {1} face"
+msgstr "\"{0}\" uploaded and set as the {1} face"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Detail (optional)"
@@ -187,6 +193,10 @@ msgstr "You asked for a new key at {askedAt}. It waits for another admin to co-s
 msgctxt "loading: a page is on its way"
 msgid "Gathering your page"
 msgstr "Gathering your page"
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. hands in soil, seed in a palm, a lantern, rigs circled at a gathering"
+msgstr "e.g. hands in soil, seed in a palm, a lantern, rigs circled at a gathering"
 
 #: client/src/components/roots/RootsFilterToggle.tsx
 msgctxt "roots filter count"
@@ -301,6 +311,10 @@ msgstr "That did not save."
 msgctxt "open work: the lead card for a visitor"
 msgid "A good place to start"
 msgstr "A good place to start"
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. warm, textured, hand-painted illustration, never photorealistic"
+msgstr "e.g. warm, textured, hand-painted illustration, never photorealistic"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Add a safety contact"
@@ -468,6 +482,11 @@ msgstr "None yet"
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "No address on this application"
 msgstr "No address on this application"
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Labels"
+msgstr "Labels"
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
@@ -4065,6 +4084,11 @@ msgctxt "voice field purpose: propose quest description"
 msgid "The quest you want to do: what you would create, and what it brings to the village."
 msgstr "The quest you want to do: what you would create, and what it brings to the village."
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice description field"
+msgid "Description for {kind}"
+msgstr "Description for {kind}"
+
 #: client/src/pages/Roles.tsx
 #~ msgid "Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on)."
 #~ msgstr "Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on)."
@@ -4780,6 +4804,11 @@ msgstr "Nothing is on the calendar for you this week."
 #~ msgid "Your proposal is with the village now. We read every word, and we write to you by email."
 #~ msgstr "Your proposal is with the village now. We read every word, and we write to you by email."
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice title field"
+msgid "Title"
+msgstr "Title"
+
 #. placeholder {0}: item.by
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -4798,6 +4827,11 @@ msgstr "Nothing has been read from {agent} yet."
 msgctxt "screen reader name of the conflict agreement editor"
 msgid "The conflict agreement"
 msgstr "The conflict agreement"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: the save button"
+msgid "Save the notice words"
+msgstr "Save the notice words"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
@@ -5184,6 +5218,10 @@ msgstr "an unknown time"
 msgctxt "aligned page, signed out"
 msgid "Create an account"
 msgstr "Create an account"
+
+#: client/src/components/VillageSoundToggle.tsx
+msgid "A short sound at a few moments, such as a quest done or a stage reached. Off until you turn it on, on this device."
+msgstr "A short sound at a few moments, such as a quest done or a stage reached. Off until you turn it on, on this device."
 
 #. placeholder {0}: card.commitmentPct
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -6110,6 +6148,11 @@ msgstr "With {0}. Done when: {1}"
 #~ msgid "That link has run out or was already used. Send your proposal again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 #~ msgstr "That link has run out or was already used. Send your proposal again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: the search box"
+msgid "Find a notice"
+msgstr "Find a notice"
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "per month"
@@ -6270,6 +6313,11 @@ msgstr "Pool released: {0} {1}"
 msgctxt "role editor"
 msgid "Interviewers, in order"
 msgstr "Interviewers, in order"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice title field"
+msgid "Title for {kind}"
+msgstr "Title for {kind}"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
@@ -6765,6 +6813,11 @@ msgstr "One role can give the final approval. The interviews take {minutes} minu
 msgid "Saved as a draft. Nobody has adopted it yet."
 msgstr "Saved as a draft. Nobody has adopted it yet."
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: a notice description field"
+msgid "Description"
+msgstr "Description"
+
 #: client/src/pages/RoleProposal.tsx
 msgctxt "member door choice"
 msgid "Propose for this moon"
@@ -6912,10 +6965,20 @@ msgctxt "heading of the adopted agreements list"
 msgid "The village's agreements"
 msgstr "The village's agreements"
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin: the notice words editor heading"
+msgid "Notices"
+msgstr "Notices"
+
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
 msgid "Published"
 msgstr "Published"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgctxt "admin notices: while it saves"
+msgid "Saving…"
+msgstr "Saving…"
 
 #: client/src/components/sessions/GatheringSeed.tsx
 msgctxt "coming up, i'll be there, said once it is taken back"
@@ -7157,6 +7220,10 @@ msgctxt "role access action"
 msgid "Done"
 msgstr "Done"
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "Your words are saved. Pages show them from the next page a member opens."
+msgstr "Your words are saved. Pages show them from the next page a member opens."
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Those could not be discarded. Reload and try again."
@@ -7277,6 +7344,10 @@ msgstr "Open the calendar"
 #: client/src/components/Layout.tsx
 #~ msgid "Open menu"
 #~ msgstr "Open menu"
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "Your words did not save."
+msgstr "Your words did not save."
 
 #. placeholder {0}: next.ownerName
 #: client/src/components/today/FirstFourteenDays.tsx
@@ -7478,6 +7549,11 @@ msgstr "Your walk so far"
 msgctxt "protocols page"
 msgid "Started by {starter}, {started}"
 msgstr "Started by {starter}, {started}"
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: make a moment silent again"
+msgid "Silence"
+msgstr "Silence"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgid "Nothing counts as removed because of a check that failed. A role leaves the list only when {agent} archives it, or when it is missing from two full checks in a row."
@@ -7686,10 +7762,19 @@ msgctxt "companion welcome"
 msgid "Start the tour"
 msgstr "Start the tour"
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the weight range an uploaded font covers"
+msgid "weights, e.g. 400 or 100 900"
+msgstr "weights, e.g. 400 or 100 900"
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "People and roles"
 msgstr "People and roles"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "Saved. New notices carry these words."
+msgstr "Saved. New notices carry these words."
 
 #: client/src/components/roleEdit/CharacterTags.tsx
 #~ msgctxt "role editor characters"
@@ -7897,6 +7982,11 @@ msgctxt "founding team view: a list of roles"
 msgid "Team sheet"
 msgstr "Team sheet"
 
+#. placeholder {0}: ROLE_LABELS[role].title
+#: client/src/components/TypographyPanel.tsx
+msgid "{0}: the font stack, typed"
+msgstr "{0}: the font stack, typed"
+
 #: client/src/components/admin/AgeBandCorrection.tsx
 #: client/src/components/QuestSafety.tsx
 msgctxt "age band option"
@@ -7936,6 +8026,11 @@ msgstr "Use"
 msgctxt "proposed changes"
 msgid "Live now"
 msgstr "Live now"
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: add a moment's sound"
+msgid "Add a sound"
+msgstr "Add a sound"
 
 #: client/src/components/map/TodayOnTheMap.tsx
 msgctxt "circles map, today card"
@@ -8416,6 +8511,11 @@ msgstr "Vote on it again here"
 msgctxt "admin open proposals"
 msgid "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
 msgstr "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision."
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: save the nouns"
+msgid "Save your words"
+msgstr "Save your words"
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -9503,6 +9603,12 @@ msgstr "That did not go through. Try again in a moment."
 msgid "Currency code, such as CRC"
 msgstr "Currency code, such as CRC"
 
+#. placeholder {0}: NOUN_SLOTS[slot].many
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: a noun's plural field"
+msgid "More than one: {0}"
+msgstr "More than one: {0}"
+
 #: client/src/pages/StructureReview.tsx
 msgid "Another role with this name already updates {liveName}"
 msgstr "Another role with this name already updates {liveName}"
@@ -9607,6 +9713,11 @@ msgstr "This season"
 msgctxt "companion welcome"
 msgid "Pick up your welcome"
 msgstr "Pick up your welcome"
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: while a sound uploads"
+msgid "Uploading…"
+msgstr "Uploading…"
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
@@ -9888,6 +9999,11 @@ msgstr "Trying again"
 msgid "Your idea is withdrawn."
 msgstr "Your idea is withdrawn."
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the weight range an uploaded font covers"
+msgid "The weights this file covers"
+msgstr "The weights this file covers"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application split line"
 msgid "Of this, {list} by default; we settle the split together."
@@ -9968,6 +10084,10 @@ msgstr "Your first month often starts lower and follows what you deliver."
 msgctxt "canvas suggestion form heading"
 msgid "Suggest a change"
 msgstr "Suggest a change"
+
+#: client/src/components/SoundsPanel.tsx
+msgid "That sound did not save."
+msgstr "That sound did not save."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card"
@@ -10147,6 +10267,10 @@ msgstr "Share a concern"
 msgctxt "the label beside the paper size choices"
 msgid "Paper"
 msgstr "Paper"
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgid "What your village calls each of these. Blank keeps the platform's word, and a blank plural is worked out from the word. Page words can use them as {circle}, {circles} and so on."
+msgstr "What your village calls each of these. Blank keeps the platform's word, and a blank plural is worked out from the word. Page words can use them as {circle}, {circles} and so on."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "They have not agreed to the Love Letter and the NDA."
@@ -10740,6 +10864,11 @@ msgstr "Recording {0}"
 msgid "This asks again after <0>a vote too few of us answered</0>."
 msgstr "This asks again after <0>a vote too few of us answered</0>."
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Accent"
+msgstr "Accent"
+
 #. placeholder {0}: money(ownMinor)
 #. placeholder {1}: money(p.s.band.lowMinor)
 #. placeholder {2}: money(p.s.band.highMinor)
@@ -10966,6 +11095,11 @@ msgstr "today"
 msgid "{title}: mark as not done"
 msgstr "{title}: mark as not done"
 
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin: the village sounds panel heading"
+msgid "Sounds"
+msgstr "Sounds"
+
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "What closing means was not saved"
 msgstr "What closing means was not saved"
@@ -11102,6 +11236,10 @@ msgstr "Change it any time with Quiet at the top."
 msgctxt "next step box heading"
 msgid "Your next step"
 msgstr "Your next step"
+
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "The notice words did not save."
+msgstr "The notice words did not save."
 
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: the stock portraits heading"
@@ -11519,6 +11657,11 @@ msgctxt "admin quest roots"
 msgid "Roots it grows from"
 msgstr "Roots it grows from"
 
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "admin identity pack: the picture subjects field"
+msgid "What pictures show"
+msgstr "What pictures show"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "The protocols did not load."
@@ -11882,6 +12025,10 @@ msgstr "Governance Canvas workbook"
 msgctxt "sera answers"
 msgid "Choose one, or write your own."
 msgstr "Choose one, or write your own."
+
+#: client/src/components/VillageSoundToggle.tsx
+msgid "Play the village's sounds"
+msgstr "Play the village's sounds"
 
 #: client/src/pages/StewardJourney.tsx
 #~ msgctxt "steward front door"
@@ -12858,6 +13005,10 @@ msgstr "Back to the wall"
 msgid "No changes yet. Open any setting with a Suggest button, such as those in <0>Game Mechanics</0>, and add it here."
 msgstr "No changes yet. Open any setting with a Suggest button, such as those in <0>Game Mechanics</0>, and add it here."
 
+#: client/src/components/IdentityPackPanel.tsx
+msgid "The palette, in words"
+msgstr "The palette, in words"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms step"
 msgid "The terms"
@@ -13330,6 +13481,10 @@ msgstr "If the village asks someone to leave"
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{asks, plural, one {# ask waiting} other {# asks waiting}}"
 msgstr "{asks, plural, one {# ask waiting} other {# asks waiting}}"
+
+#: client/src/components/SoundsPanel.tsx
+msgid "A short sound for each moment, OGG (best) or MP3, under 300 KB. Members hear them only after they turn the village's sounds on, and never with reduced motion. A moment with no file stays silent."
+msgstr "A short sound for each moment, OGG (best) or MP3, under 300 KB. Members hear them only after they turn the village's sounds on, and never with reduced motion. A moment with no file stays silent."
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -13948,6 +14103,11 @@ msgstr "Grows from"
 msgctxt "admin helper, switch step"
 msgid "Open Game Mechanics and find \"The guide's helper in Admin\" under Platform."
 msgstr "Open Game Mechanics and find \"The guide's helper in Admin\" under Platform."
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Headings"
+msgstr "Headings"
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "a canvas block is loading"
@@ -14607,6 +14767,10 @@ msgstr "See your whole path"
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The line could not be saved just now."
 msgstr "The line could not be saved just now."
+
+#: client/src/components/IdentityPackPanel.tsx
+msgid "e.g. night-sea teal, deck green, parchment, lantern gold"
+msgstr "e.g. night-sea teal, deck green, parchment, lantern gold"
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -15308,6 +15472,11 @@ msgctxt "role editor"
 msgid "Track"
 msgstr "Track"
 
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: the village-wide volume"
+msgid "Volume"
+msgstr "Volume"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "FAQs"
@@ -15483,6 +15652,11 @@ msgstr "Their name"
 msgid "It leaves the village's notebook too."
 msgstr "It leaves the village's notebook too."
 
+#: client/src/components/IdentityPackPanel.tsx
+msgctxt "admin identity pack: the art medium field"
+msgid "The medium"
+msgstr "The medium"
+
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft stat"
 msgid "Commitment"
@@ -15581,6 +15755,12 @@ msgstr "Held"
 msgctxt "character card, open the role proposal"
 msgid "Propose a new role"
 msgstr "Propose a new role"
+
+#. placeholder {0}: NOUN_SLOTS[slot].one
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: a noun field"
+msgid "Your word for {0}"
+msgstr "Your word for {0}"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
@@ -16598,6 +16778,11 @@ msgstr "For stewards and admins: proposals waiting on you, and the tools behind 
 msgid "Optional. You can skip it."
 msgstr "Optional. You can skip it."
 
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: the role an uploaded font fills"
+msgid "Body text"
+msgstr "Body text"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide."
@@ -17036,6 +17221,10 @@ msgctxt "role editor"
 msgid "The pay group of the terms"
 msgstr "The pay group of the terms"
 
+#: client/src/components/admin/NoticeWordsPanel.tsx
+msgid "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
+msgstr "Your own title and description for any notice a member gets. Write {default} to keep the platform's title, with the person or the thing it names. {village} and your words for things fill in too. Blank keeps the platform's words."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Visitors and members can find this role"
@@ -17202,6 +17391,16 @@ msgstr "Paid contractor"
 msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth. No roles sit here yet."
 msgstr "The {circleName} hearth. No roles sit here yet."
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: a typed font stack field"
+msgid "or type a stack"
+msgstr "or type a stack"
+
+#: client/src/components/SoundsPanel.tsx
+msgctxt "admin sounds: replace a moment's sound"
+msgid "Replace"
+msgstr "Replace"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -17516,6 +17715,11 @@ msgctxt "characters page section"
 msgid "Your roots"
 msgstr "Your roots"
 
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: the village's own nouns"
+msgid "Your words for things"
+msgstr "Your words for things"
+
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
 msgid "Up to three people who know your work. Each needs a name, how you know them, and an email or phone number."
@@ -17524,6 +17728,11 @@ msgstr "Up to three people who know your work. Each needs a name, how you know t
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "The roles you selected: {roleList}."
 msgstr "The roles you selected: {roleList}."
+
+#: client/src/components/TypographyPanel.tsx
+msgctxt "admin typography: upload role picker"
+msgid "The role this font fills"
+msgstr "The role this font fills"
 
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, terms"
@@ -17833,6 +18042,11 @@ msgstr "The earlier listing is back"
 msgctxt "change request note kind"
 msgid "Suggested edit"
 msgstr "Suggested edit"
+
+#: client/src/components/admin/VocabularyPanel.tsx
+msgctxt "admin identity: while the nouns save"
+msgid "Saving…"
+msgstr "Saving…"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Something you want to understand before you decide."
