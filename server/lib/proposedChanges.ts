@@ -27,6 +27,7 @@
 import type { Pool } from "mysql2/promise";
 import {
   fieldLabel,
+  keptGoalIds,
   mergeOnto,
   neverProposed,
   proposalNever,
@@ -196,6 +197,7 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         const text = typeof g?.text === "string" ? g.text.trim() : "";
         if (!text) return bad(`Goal ${i + 1} needs its words.`, `goals.${i}.text`);
         if (text.length > 200) return bad(`Goal ${i + 1} is longer than 200 characters.`, `goals.${i}.text`);
+        if (g && g.id !== undefined && typeof g.id !== "string") return bad(`Goal ${i + 1}'s id is the id of a goal held now, as text.`, `goals.${i}.id`);
       }
       return ok(`${season.name ?? "Season"} goals`);
     }
@@ -336,7 +338,17 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
         return { ids: (await listOrgRoles(deps.pool)).filter((r) => !r.isExample && isListed(r)).map((r) => r.id) };
       case "season_goals": {
         const season = deps.seasons().find((s) => s.id === String(target.seasonId ?? ""));
-        return season ? { goals: (season.goals ?? []).map((g) => ({ text: g.text, done: !!g.done })) } : null;
+        if (!season) return null;
+        // Row for row beside the proposal: each proposed goal reads against the held goal it keeps (by id, else by words), so a reworded or moved goal shows what it replaces and a new one shows nothing yet.
+        const held = season.goals ?? [];
+        const proposed = Array.isArray(body.goals) ? (body.goals as Array<Record<string, unknown>>).map((g) => obj(g) ?? {}) : [];
+        if (!proposed.length) return { goals: held.map((g) => ({ text: g.text, done: !!g.done })) };
+        return {
+          goals: keptGoalIds(held, proposed).map((id) => {
+            const h = id ? held.find((x) => x.id === id) : undefined;
+            return h ? { text: h.text, done: !!h.done } : null;
+          }),
+        };
       }
       case "onboarding_path":
         return { doc: (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? null };
@@ -417,12 +429,10 @@ export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind
       const at = seasons.findIndex((s) => s.id === String(target.seasonId ?? ""));
       if (at < 0) return { ok: false, error: "This season's goals live on the season list. Save the season's dates in Admin, Season first." };
       const held = Array.isArray(seasons[at].goals) ? (seasons[at].goals as Array<Record<string, unknown>>) : [];
-      // A goal kept word for word keeps its id, so whatever links to it stays linked.
-      const goals = (body.goals as Array<Record<string, unknown>>).map((g) => {
-        const text = String(g.text ?? "").trim();
-        const same = held.find((h) => String(h.text ?? "").trim() === text);
-        return { ...(same?.id ? { id: same.id } : {}), text, done: !!g.done };
-      });
+      // A goal that names a held goal's id, or else matches one word for word, keeps that id, so whatever links to it stays linked (`keptGoalIds`).
+      const proposed = body.goals as Array<Record<string, unknown>>;
+      const ids = keptGoalIds(held, proposed);
+      const goals = proposed.map((g, i) => ({ ...(ids[i] ? { id: ids[i] } : {}), text: String(g.text ?? "").trim(), done: !!g.done }));
       doc.seasons = seasons.map((s, i) => (i === at ? { ...s, goals } : s));
       return through("PUT", "/api/admin/seasons", doc);
     }

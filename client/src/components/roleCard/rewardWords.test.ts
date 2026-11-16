@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { setupI18n } from "@lingui/core";
-import { paysInTokens, rewardWords, TOKEN_TERMS_ALWAYS } from "./rewardWords";
+import { ceilingShares } from "@shared/roleCardSections";
+import { paysInTokens, rewardWords, splitHeadline, TOKEN_TERMS_ALWAYS } from "./rewardWords";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };
@@ -25,5 +26,30 @@ describe("the role card's footnote (Rye, 15 Nov 2026)", () => {
     expect(paysInTokens([{ label: "Cash", pct: 95 }, { label: "Village credits", pct: 5 }])).toBe(true);
     expect(paysInTokens([{ label: "Cash", pct: 100 }])).toBe(false);
     expect(rewardWords(i18n, BAND, 30, "*Indicative.", [{ label: "Earned equity", pct: 10 }]).footnote).toBe(`*At 100% commitment. ${FIRST_MONTH} ${TERMS} Indicative.`);
+  });
+});
+
+describe("the headline, one figure or each share as its own amount (founding team, 16 Nov 2026)", () => {
+  const SHAPE = [
+    { label: "Cash", pct: 40 },
+    { label: "Equity", pct: 60 },
+  ];
+  it("keeps today's listed price when no split is asked", () => {
+    expect(rewardWords(i18n, BAND, 30, "", SHAPE).headline).toBe("Listed price: $9,000 a month for the full role*");
+  });
+  it("names each share's amount from the ceiling when the card splits it", () => {
+    const w = rewardWords(i18n, BAND, 30, "", SHAPE, ceilingShares(BAND, SHAPE));
+    expect(w.headline).toBe("Up to $3,600 in cash and $5,400 in equity a month for the full role*");
+    expect(w.headline).not.toMatch(/—|–/);
+    expect(w.footnote).toContain("*At 100% commitment.");
+  });
+  it("reads a year and a moon in their own words, and three shares as a list", () => {
+    const three = [
+      { label: "Cash", amount: 100 },
+      { label: "Equity", amount: 200 },
+      { label: "Credits", amount: 50 },
+    ];
+    expect(splitHeadline(i18n, { ...BAND, per: "year" }, three)).toBe("Up to $100 in cash, $200 in equity, and $50 in credits a year for the full role*");
+    expect(splitHeadline(i18n, { ...BAND, per: "moon" }, [{ label: "Cash", amount: 100 }])).toBe("Up to $100 in cash a moon for the full role*");
   });
 });

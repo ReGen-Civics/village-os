@@ -15,7 +15,7 @@
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { capAt, ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
-import type { CeilingPeriod, PayCeiling, PayShare } from "@shared/roleCardSections";
+import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
 export interface RewardWords {
@@ -57,7 +57,29 @@ export function paysInTokens(shape: readonly PayShare[] | null | undefined): boo
  * propose; the equity and credits clause (always for now, `TOKEN_TERMS_ALWAYS`; otherwise only when the split
  * in force, the card's else the village's, pays a share above 0% in equity or credits); then the village's note.
  */
-export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = []): RewardWords {
+/**
+ * The headline for a card that names each share's amount (founding team, 16 Nov 2026; `splitsAmounts`,
+ * shared/roleCardSections.ts): "Up to $4,000 in cash and $6,000 in equity a month for the full role*".
+ * The shares are `ceilingShares`: each share above 0% of the full role's figure, in whole units.
+ */
+export function splitHeadline(i18n: I18n, c: PayCeiling, shares: readonly ShareAmount[]): string {
+  const parts = shares.map((s) => {
+    const money = moneyWords(s.amount, c.currency, i18n.locale);
+    const label = s.label.toLowerCase();
+    return i18n._(msg({ message: `${money} in ${label}`, context: "role card rewards: one share of the listed price as its own amount" }));
+  });
+  let list = parts.join(", ");
+  try {
+    list = new Intl.ListFormat(i18n.locale || "en", { style: "long", type: "conjunction" }).format(parts);
+  } catch {
+    /* An engine without ListFormat keeps the commas. */
+  }
+  if (c.per === "year") return i18n._(msg({ message: `Up to ${list} a year for the full role*`, context: "role card rewards: the listed price, each share as its own amount" }));
+  if (c.per === "moon") return i18n._(msg({ message: `Up to ${list} a moon for the full role*`, context: "role card rewards: the listed price, each share as its own amount" }));
+  return i18n._(msg({ message: `Up to ${list} a month for the full role*`, context: "role card rewards: the listed price, each share as its own amount" }));
+}
+
+export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = [], split: readonly ShareAmount[] = []): RewardWords {
   const lo = rangeMin(min);
   const shared = lo < 100;
   const at = exampleShare(min);
@@ -66,7 +88,10 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
   const capFull = perPeriod(i18n, moneyWords(capAt(c.amount, 100), c.currency, i18n.locale), c.per);
   const capShare = perPeriod(i18n, moneyWords(capAt(c.amount, at), c.currency, i18n.locale), c.per);
   return {
-    headline: i18n._(msg({ message: `Listed price: ${full} for the full role*`, context: "role card rewards: the full role's listed price" })),
+    // One figure for the full role, as cards read by default; each share's amount when the card or the village says so.
+    headline: split.length
+      ? splitHeadline(i18n, c, split)
+      : i18n._(msg({ message: `Listed price: ${full} for the full role*`, context: "role card rewards: the full role's listed price" })),
     range: shared
       ? i18n._(msg({ message: `Take on all of it, or part of it: we're open to proposals from ${lo}% to 100%. One person can hold the whole role, or a few people can share it.`, context: "role card rewards: a role that can be shared" }))
       : null,

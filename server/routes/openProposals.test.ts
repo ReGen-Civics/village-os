@@ -887,6 +887,45 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       }
     });
 
+    it("a card's own choice beats the village switch on the form both ways (founding team, 16 Nov 2026)", async () => {
+      const CEILING = { amount: 13000, currency: "USD" as const, per: "month" as const };
+      const roleIn = (body: any) => body.roles.find((x: any) => x.id === gate);
+      const card = {
+        roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+        serves: [{ goalId: "g-roots", how: "" }],
+        commitmentPct: 50,
+        agreed: { loveLetter: true, nda: true },
+        terms: { answers: {} },
+      };
+      try {
+        // SHOW, with the village switch off: a visitor reads the figure, the choice itself is never sent, and an amount ask is read against the cap.
+        await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: CEILING, payVisibility: "show" }, "test");
+        const shown = roleIn((await call("GET", "/api/open-proposals/form")).body);
+        expect(shown.payCeiling).toEqual(CEILING);
+        expect("payVisibility" in shown).toBe(false);
+        const over = await call("POST", "/api/open-proposals", proposal({ email: "show-over@example.test", card, payAsk: { kind: "amount", monthly: 7801, per: "month" } }));
+        expect(over.status).toBe(400);
+        expect(over.body.field).toBe("payAsk");
+        expect(over.body.error).not.toBe("This role lists no price yet, so choose to negotiate on the first call.");
+        // HIDE, with the village switch on: nobody reads it on the form, an admin included, and an amount ask meets no listed price.
+        await setPayShown("true");
+        await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: CEILING, payVisibility: "hide" }, "test");
+        for (const viewer of [null, ADMIN]) {
+          state.viewer = viewer;
+          const body = (await call("GET", "/api/open-proposals/form")).body;
+          expect("payCeiling" in roleIn(body)).toBe(false);
+          expect(JSON.stringify(body)).not.toContain("13000");
+        }
+        state.viewer = null;
+        const probe = await call("POST", "/api/open-proposals", proposal({ email: "hide-probe@example.test", card, payAsk: { kind: "amount", monthly: 5000, per: "month" } }));
+        expect(probe).toMatchObject({ status: 400, body: { field: "payAsk", error: "This role lists no price yet, so choose to negotiate on the first call." } });
+      } finally {
+        state.viewer = null;
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
+      }
+    });
+
     it("form v2: a card needs an aim; the 90-day tidy clears the time zone, usual times and earliest start", async () => {
       const card = {
         roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],

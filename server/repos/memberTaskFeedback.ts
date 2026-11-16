@@ -4,7 +4,6 @@
  * Reads for stewards name their columns and never select `note`: a steward
  * sees that a task was removed and why, never the member's own words.
  */
-import { randomUUID } from "node:crypto";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { DEFAULT_IMPORT_PHRASE, RETENTION_DAYS, type FeedbackAction, type FeedbackContext, type LibraryCode, type ScreenReason } from "../../shared/memberTaskFeedback";
 import type { Queryable } from "./memberTasks";
@@ -179,13 +178,6 @@ export async function reviewQueue(db: Queryable): Promise<{ feedbackId: string; 
 export async function markReviewed(db: Queryable, feedbackId: string): Promise<boolean> {
   const [res] = await db.query<ResultSetHeader>("UPDATE `member_task_feedback` SET `reviewed_at` = NOW() WHERE `feedback_id` = ? AND `review` = 'steward' AND `reviewed_at` IS NULL", [feedbackId]);
   return res.affectedRows === 1;
-}
-
-export async function queueForRole(db: Queryable, roleId: string, title: string, fromUserId: string, feedbackId: string): Promise<void> {
-  await db.query(
-    "INSERT INTO `member_task_role_queue` (`id`, `role_id`, `title`, `from_user_id`, `feedback_id`) VALUES (?,?,?,?,?)",
-    [`rq-${randomUUID()}`, roleId, title, fromUserId, feedbackId],
-  );
 }
 
 export async function roleQueue(db: Queryable): Promise<{ id: string; roleId: string; roleName: string | null; title: string; createdAt: string }[]> {

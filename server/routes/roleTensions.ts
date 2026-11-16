@@ -6,6 +6,8 @@
  *   GET  /api/roles/:id/tensions          RoleTensionsPayload for whoever asks
  *   GET  /api/role-tensions/mine          { tensions: HeldTension[] }, members only
  *   POST /api/role-tensions/:id/respond   { action, note? } -> { tension }, live holders only
+ *   POST /api/role-tensions/:id/place     { position, inWeeks } -> { place }, live holders only, once taken
+ *   GET  /api/role-tensions/raised        { asks: RaisedAsk[] }, the asker's own, members only
  *
  * MEMBERS, NEVER GUESTS. A signed-in account the village has not admitted is a
  * guest (`isAdmitted`, the rule the Live Sessions doors use), and a guest can
@@ -31,7 +33,9 @@ import { effectiveLifecycle } from "../lib/modules";
 import { registerJob } from "../lib/scheduler";
 import {
   heldTensionsFor,
+  placeTension,
   raiseTension,
+  raisedAsksFor,
   remindTensionHolders,
   respondToTension,
   roleTensionsFor,
@@ -41,6 +45,7 @@ import {
 import { roleForTension } from "../repos/roleTensions";
 import { GAME_CONFIG } from "../../shared/gameConfig";
 import { MY_TENSIONS_URL, TENSION_ID, TENSION_LIMITS, TENSION_REFUSALS as R } from "../../shared/roleTensions";
+import { RAISED_ASKS_API } from "../../shared/priorities";
 
 type Deps = Pick<AppDeps, "authedUser" | "isAdmin" | "getPool" | "overLimit" | "notify" | "seasonState">;
 
@@ -134,6 +139,14 @@ export function register(app: Express, deps: Deps): void {
     res.json({ tensions: await heldTensionsFor(getPool(), who.userId, { timeZone: timeZone() }) });
   });
 
+  /** The asks the asker raised that nobody has answered, with each one's place in line (shared/priorities.ts). */
+  app.get(RAISED_ASKS_API, async (req, res) => {
+    const who = await memberOnly(req, res);
+    if (!who) return;
+    res.setHeader("Cache-Control", "private, no-store");
+    res.json({ asks: await raisedAsksFor(getPool(), who.userId, timeZone()) });
+  });
+
   // ── Respond ───────────────────────────────────────────────────────────────
 
   app.post("/api/role-tensions/:id/respond", async (req, res) => {
@@ -145,5 +158,17 @@ export function register(app: Express, deps: Deps): void {
     const id = String(req.params?.id ?? "");
     if (!TENSION_ID.test(id)) return res.status(404).json({ error: R.notFound });
     answer(res, await respondToTension(getPool(), who, id, req.body, tensions), 200, (tension) => ({ tension }));
+  });
+
+  /** A holder says where a taken tension sits on the role's list and the week they expect to pick it up. */
+  app.post("/api/role-tensions/:id/place", async (req, res) => {
+    const who = await memberOnly(req, res);
+    if (!who) return;
+    if (await overLimit(`role-tension-respond:${who.userId}`, TENSION_LIMITS.respondsPerHour, HOUR_MS)) {
+      return res.status(429).json({ error: R.respondsTooMany });
+    }
+    const id = String(req.params?.id ?? "");
+    if (!TENSION_ID.test(id)) return res.status(404).json({ error: R.notFound });
+    answer(res, await placeTension(getPool(), who, id, req.body, tensions), 200, (place) => ({ place }));
   });
 }

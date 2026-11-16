@@ -311,7 +311,8 @@ export async function dueSoonTasks(db: Queryable, from: string, to: string): Pro
 export async function askedForTasks(db: Queryable): Promise<{ id: string; userId: string; title: string; requestedBy: string }[]> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT t.`id`, t.`user_id`, t.`title`, t.`requested_by` FROM `member_tasks` t JOIN `member_task_access` a ON a.`user_id` = t.`user_id` AND a.`list_on` = 1 " +
-      "WHERE t.`status` = 'open' AND t.`requested_by` IS NOT NULL AND t.`created_at` > NOW() - INTERVAL 7 DAY LIMIT 2000",
+      // A task the member accepted from a role handoff names its sender too, and they pressed Accept themselves: no note.
+      "WHERE t.`status` = 'open' AND t.`requested_by` IS NOT NULL AND NOT (t.`source` = 'redirect' AND t.`external_id` IS NOT NULL) AND t.`created_at` > NOW() - INTERVAL 7 DAY LIMIT 2000",
   );
   return rows.map((r) => ({ id: String(r.id), userId: String(r.user_id), title: String(r.title ?? ""), requestedBy: String(r.requested_by) }));
 }

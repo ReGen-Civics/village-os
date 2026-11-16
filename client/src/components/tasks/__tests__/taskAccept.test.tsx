@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { TASK_COPY, TASKS_MINE_URL, taskAcceptUrl, taskUrl } from "@shared/sessionTasks";
 import { WAITING_COPY, WAITING_URL, type WaitingPayload } from "@shared/waitingOnYou";
+import { HANDOFFS_WAITING_URL } from "@shared/roleTaskHandoff";
 import { makeBoard, makeTask, reply } from "./taskFixture";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), message: vi.fn(), error: vi.fn() } }));
@@ -24,6 +25,7 @@ vi.mock("wouter", async (importOriginal) => {
 });
 
 import TaskBoard from "@/components/profile/TaskBoard";
+const handoffsClosed = () => Promise.resolve(new Response(JSON.stringify({ error: "not_found" }), { status: 404 }));
 
 const fetchMock = vi.fn();
 const waitingMock = vi.fn();
@@ -31,7 +33,10 @@ beforeEach(() => {
   fetchMock.mockReset();
   waitingMock.mockReset();
   waitingMock.mockImplementation(async () => reply(404, { error: "not_found" }));
-  vi.stubGlobal("fetch", (url: unknown, init?: unknown) => (String(url) === WAITING_URL ? waitingMock(url, init) : fetchMock(url, init)));
+  // Tasks handed to the reader's roles are read from their own door, closed here, so fetchMock sees the board's reads alone.
+  vi.stubGlobal("fetch", (url: unknown, init?: unknown) =>
+    String(url) === HANDOFFS_WAITING_URL ? handoffsClosed() : String(url) === WAITING_URL ? waitingMock(url, init) : fetchMock(url, init),
+  );
 });
 afterEach(() => vi.unstubAllGlobals());
 

@@ -47,6 +47,10 @@ import {
   parseCriteria,
   parseInterviewerRoles,
   parseScoreInput,
+  parseGutInput,
+  gutOfRow,
+  GUT_CRITERION,
+  type GutCheck,
   REVIEW_FIRST_VARIABLE,
   REVIEW_WORDS,
   reviewStageOf,
@@ -74,6 +78,7 @@ import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
+import { stepBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
 
 type Db = Pool | PoolConnection;
 
@@ -181,14 +186,29 @@ export async function announceReview(deps: Pick<ReviewDeps, "getPool" | "notify"
   await tellInterviewers(deps, start.ref, 1, first.roleId, first.minutes, applicantFirstName);
 }
 
+/**
+ * HOW THE APPLICANT BOOKS ONE STEP: the own links of the people holding its
+ * role now, those who stepped out of this application left out; else the
+ * role's link; else none. The order is `stepBookingLinks`. The step is named
+ * "Role (First, First)" with everyone holding it now (`roleWithHolders`).
+ */
+export async function stepBookingOf(db: Db, ref: string, roleId: string): Promise<StepBooking> {
+  const recused = new Set(await repo.recusedUsers(db, ref));
+  const holders = (await repo.liveHoldersOfRole(db, roleId)).filter((u) => !recused.has(u));
+  const people = await repo.bookingLinksOfMembers(db, holders);
+  const roleUrl = (await repo.bookingUrlsById(db, [roleId])).get(roleId) ?? null;
+  const roleName = (await repo.roleNamesById(db, [roleId])).get(roleId) ?? roleId;
+  return stepBookingFor(roleName, people, roleUrl);
+}
+
 async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
   const pool = deps.getPool();
   // The person who proposed hears the next conversation is asked for, once each (stable part). The first opens as they confirm, and their status email covers it.
   if (kindOfRef(ref) === "open" && deps.tellApplicant && position > 1) {
-    const withRole = (await repo.roleNamesById(pool, [roleId])).get(roleId) ?? null;
-    // The conversation that just opened is booked through its own role's link (12 Nov 2026), or we write with times.
-    const bookingUrl = (await repo.bookingUrlsById(pool, [roleId])).get(roleId) ?? null;
-    await deps.tellApplicant(ref, "conversation", { part: String(position), withRole, minutes, bookingUrl });
+    // The conversation that just opened is booked with the person holding its role (their own link), else the role's link, or we write with times.
+    // It is named "Role (First, First)".
+    const step = await stepBookingOf(pool, ref, roleId);
+    await deps.tellApplicant(ref, "conversation", { part: String(position), withRole: step.label, minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
   }
   const recused = new Set(await repo.recusedUsers(pool, ref));
   for (const userId of await repo.liveHoldersOfRole(pool, roleId)) {
@@ -256,6 +276,8 @@ export async function submitScore(deps: ReviewDeps, p: { ref: string; interviewI
   if ((await repo.recusedUsers(pool, p.ref)).includes(p.scorerId)) return { ok: false, status: 403, error: REVIEW_WORDS.recused };
   const parsed = parseScoreInput(p.body, d.criteria.length ? d.criteria : [...FALLBACK_CRITERIA]);
   if (!parsed.ok) return { ok: false, status: 400, error: parsed.error, ...(parsed.field ? { field: parsed.field } : {}) };
+  const gut = parseGutInput(p.body);
+  if (!gut.ok) return { ok: false, status: 400, error: gut.error, field: gut.field };
 
   let opened: { position: number; roleId: string; minutes: number } | null = null;
   let scoresIn = false;
@@ -270,6 +292,7 @@ export async function submitScore(deps: ReviewDeps, p: { ref: string; interviewI
     if (!(await repo.liveHoldersOfRole(conn, iv.roleId)).includes(p.scorerId)) return { ok: false, status: 403, error: REVIEW_WORDS.notAnInterviewer };
     if (!(await repo.closeInterviewScored(conn, iv.id, p.scorerId, at))) return { ok: false, status: 409, error: REVIEW_WORDS.alreadyScored };
     await repo.insertScores(conn, p.ref, iv.id, p.scorerId, parsed.entries, at);
+    await repo.insertGut(conn, p.ref, iv.id, p.scorerId, gut.gut, at);
     await repo.stampStep(conn, { ref: p.ref, kind: "interview", subject: String(iv.position), at, actorUserId: null });
     const after = list.map((i) => (i.id === iv.id ? { ...i, state: "scored" as const } : i));
     const next = nextAfter(after, iv.position);
@@ -371,6 +394,8 @@ export interface ScorecardView {
     state: string;
     /** Only the viewer's own, or all of them when the rule lets the viewer read. */
     entries: Array<{ criterionId: string; level: string; evidence: string }> | null;
+    /** The interviewer's gut check (yes, no, not sure, and a line), read by the same rule as `entries`. It informs and never decides. */
+    gut: GutCheck | null;
   }>;
   /** The interview this viewer may write now, if any. */
   mayScore: { interviewId: number; position: number; minutes: number } | null;
@@ -411,14 +436,18 @@ export async function scorecardsFor(deps: ReviewDeps, ref: string, viewerId: str
     interviews: interviews.map((i) => {
       const rows = scores.filter((s) => s.interviewId === i.id);
       const own = rows.filter((s) => s.scorerUserId === viewerId);
+      // The gut check is read by the same rule as the scorecard it rides with.
       const shown = mayRead ? rows : own;
+      const cards = shown.filter((s) => s.criterionId !== GUT_CRITERION);
+      const gut = shown.map(gutOfRow).find((g): g is GutCheck => !!g) ?? null;
       return {
         position: i.position,
         roleName: names.get(i.roleId) ?? i.roleId,
         minutes: i.minutes,
         final: i.final,
         state: i.state,
-        entries: shown.length ? shown.map((s) => ({ criterionId: s.criterionId, level: s.level, evidence: s.evidence })) : null,
+        entries: cards.length ? cards.map((s) => ({ criterionId: s.criterionId, level: s.level, evidence: s.evidence })) : null,
+        gut,
       };
     }),
   };
@@ -474,16 +503,23 @@ export async function hasRecused(deps: Pick<ReviewDeps, "getPool">, ref: string,
 
 // ── Our review: invite, or not (Phase A) ────────────────────────────────────
 
+/** `label` is the role with the people holding it: "Role (First, First)". */
+export type ConversationListed = { roleId: string; role: string; label: string; minutes: number; bookingUrl: string | null; bookingLinks: BookingLink[] };
+
 export type ReviewAnswer =
-  | { ok: true; conversations: Array<{ roleId: string; role: string; minutes: number; bookingUrl: string | null }> }
+  | { ok: true; conversations: ConversationListed[] }
   | { ok: false; status: number; error: string; code: "none" | "done" | "gone" };
 
-/** The application's conversations in order, by role name and minutes: what the invitation lists. */
-export async function conversationsOf(db: Db, ref: string): Promise<Array<{ roleId: string; role: string; minutes: number; bookingUrl: string | null }>> {
+/** The application's conversations in order, by role name and minutes, each with how it is booked (`stepBookingOf`): what the invitation lists. */
+export async function conversationsOf(db: Db, ref: string): Promise<ConversationListed[]> {
   const list = await repo.interviewsOf(db, ref);
   const names = await repo.roleNamesById(db, list.map((i) => i.roleId));
-  const links = await repo.bookingUrlsById(db, list.map((i) => i.roleId));
-  return list.map((i) => ({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, minutes: i.minutes, bookingUrl: links.get(i.roleId) ?? null }));
+  const out: ConversationListed[] = [];
+  for (const i of list) {
+    const step = await stepBookingOf(db, ref, i.roleId);
+    out.push({ roleId: i.roleId, role: names.get(i.roleId) ?? i.roleId, label: step.label, minutes: i.minutes, bookingUrl: step.links[0]?.url ?? null, bookingLinks: step.links });
+  }
+  return out;
 }
 
 /** Whether our review still waits on this application: it has a review step and nobody has answered it. */
@@ -598,8 +634,8 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 
 // ── The applicant's status ──────────────────────────────────────────────────
 
-/** The status page's data. Steps, roles and times only: never a score, a note or a person. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; url: string | null } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+/** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -635,9 +671,11 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   const referencesGiven = own && own.body.backgroundCheck ? (own.body.references ?? []).length : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
-  // The conversation open now, and its role's booking link: the later ones are offered only as they open, in order.
+  // The conversation open now, and how to book it (`stepBookingOf`): the later ones are offered only as they open, in order.
+  // When several people hold the role and each keeps a link, each is listed by first name so the applicant can pick.
   const openNow = bookingShown && !outcome ? interviews.find((i) => i.state === "open") ?? null : null;
-  const bookNow = openNow ? { role: names.get(openNow.roleId) ?? openNow.roleId, url: (await repo.bookingUrlsById(pool, [openNow.roleId])).get(openNow.roleId) ?? null } : null;
+  const now = openNow ? await stepBookingOf(pool, ref, openNow.roleId) : null;
+  const bookNow = openNow && now ? { role: names.get(openNow.roleId) ?? openNow.roleId, label: now.label, url: now.links[0]?.url ?? null, links: now.links } : null;
   return {
     ...s,
     roles: (d?.roleIds ?? []).map((id) => roleNames.get(id) ?? id),

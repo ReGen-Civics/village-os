@@ -21,6 +21,11 @@
  *
  * It is here for the question Heart share asks: is the way we work helping
  * people thrive? Behind the `sessions` module, members only.
+ *
+ * ABOVE IT, TWO THINGS EVERYONE SEES (shared/priorities.ts): this week's top
+ * priority for each person, by name, and the season's priority board. The
+ * board is an ordered list, and its order is the circle's own, kept from a
+ * meeting's vote. It ranks priorities and never a person.
  */
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
@@ -42,6 +47,8 @@ import { BTN_QUIET, CHIP, HINT, INPUT, LABEL_CAPS, SOFT, STAGE_LEDE, STAGE_TITLE
 import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { useModules } from "@/modules/ModuleProvider";
+import TeamWeek from "@/components/priorities/TeamWeek";
+import PriorityBoard from "@/components/priorities/PriorityBoard";
 
 const dayLabel = (iso: string) => {
   const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
@@ -173,6 +180,9 @@ export default function SessionSeason() {
 
         {view && (
           <>
+            {seasonId == null && <TeamWeek />}
+            <PriorityBoard seasonId={seasonId} />
+
             {view.season.focus && (
               <section className={LIST_UI.card}>
                 <h2 className={LABEL_CAPS}>{SEASON_COPY.focus}</h2>

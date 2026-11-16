@@ -18,6 +18,14 @@
  *   POST   /api/session-templates/rooms/:sessionId/shares/:shareId/bring
  *   PATCH  /api/session-templates/rooms/:sessionId/shares/:shareId
  *   GET    /api/session-templates/season?season=<id>       SeasonView (0292)
+ *   GET    /api/session-templates/week                      WeekPayload (shared/priorities.ts)
+ *   PUT    /api/session-templates/week
+ *   GET    /api/session-templates/board?season=<id>         BoardPayload
+ *   POST   /api/session-templates/board
+ *   PATCH  /api/session-templates/board/:id
+ *   POST   /api/session-templates/rooms/:sessionId/tops
+ *   PATCH  /api/session-templates/rooms/:sessionId/tops/:no
+ *   POST   /api/session-templates/rooms/:sessionId/board
  *
  * The session's own create door (`POST /api/sessions`, server/routes/
  * liveSessions.ts) takes `templateId` and links the new session here.
@@ -37,11 +45,12 @@ import { isAdmitted } from "../lib/admission";
 import { GAME_CONFIG } from "../../shared/gameConfig";
 import { effectiveLifecycle, requireModule } from "../lib/modules";
 import { bringItem } from "../lib/sessionLibrary";
-import { ensureMemberNo, memberNo, parseId, type MemberLookup, type Outcome } from "../lib/liveSessions";
+import { ensureMemberNo, memberNo, namesFor, parseId, type MemberLookup, type Outcome } from "../lib/liveSessions";
 import {
   addPriority,
   addShare,
   archiveTemplate,
+  boardRoomAct,
   bringShare,
   changeTemplate,
   createTemplate,
@@ -54,12 +63,17 @@ import {
   patchPriority,
   patchEntryServes,
   patchShare,
+  readSeasons,
   regroupTension,
   roomView,
   seasonRefOf,
   seasonView,
   stickAct,
+  topAct,
+  topMarkAct,
 } from "../lib/sessionTemplates";
+import { addBoardItem, boardPayload, patchBoardItem, setOwnLine, thisWeekOf, weekPayload } from "../lib/priorities";
+import { BOARD_API, PRIORITY_REFUSALS, WEEK_API } from "../../shared/priorities";
 import { liveCircles } from "./sessionRhythm";
 import { MOON_REVIEW_MODULE_ID, SEASON_VIEW_API, TEMPLATES_API, TEMPLATE_LIMITS, TEMPLATE_REFUSALS as R } from "../../shared/sessionTemplates";
 
@@ -73,6 +87,13 @@ export function register(app: Express, deps: Deps): void {
   /** The running season's priorities, the only words a priority or a win may name as the one it serves. */
   const season = () => seasonRefOf(seasonState().current);
   const goals = () => season()?.goals ?? [];
+  const timeZone = () => {
+    try {
+      return seasonState().timezone || "UTC";
+    } catch {
+      return "UTC";
+    }
+  };
 
   app.use(TEMPLATES_API, requireModule("sessions"));
   app.use(TEMPLATES_API, async (req: Request, res: Response, next: NextFunction) => {
@@ -209,6 +230,69 @@ export function register(app: Express, deps: Deps): void {
     res.json({ view: view.value });
   });
 
+  // ── Each person's top priority, and the priority board (shared/priorities.ts) ──
+
+  const namesOf = async (nos: number[]) => new Map(Array.from(await namesFor(getPool(), nos, lookup), ([no, n]) => [no, n.name]));
+
+  app.get(WEEK_API, async (req, res) => {
+    const who = await signedIn(req, res, null);
+    if (!who) return;
+    const pool = getPool();
+    res.setHeader("Cache-Control", "private, no-cache");
+    res.json(await weekPayload(pool, await memberNo(pool, who.userId), namesOf, goals(), thisWeekOf(new Date(), timeZone())));
+  });
+
+  app.put(WEEK_API, async (req, res) => {
+    const who = await signedIn(req, res, { key: "session-templates-room", max: TEMPLATE_LIMITS.roomWritesPerHour });
+    if (!who) return;
+    const pool = getPool();
+    const no = await ensureMemberNo(pool, who.userId);
+    const week = thisWeekOf(new Date(), timeZone());
+    const out = await setOwnLine(pool, no, req.body, goals(), week);
+    if (!out.ok) return res.status(out.status).json({ error: out.error });
+    res.json(await weekPayload(pool, no, namesOf, goals(), week));
+  });
+
+  /** The season a board read names: `?season=<id>`, or the running one. */
+  const boardSeason = (raw: unknown) => {
+    const id = typeof raw === "string" && raw ? raw.slice(0, 64) : null;
+    if (!id) return season();
+    const hit = readSeasons(seasonState().seasons).find((x) => x.id === id);
+    return hit ? { id: hit.id, name: hit.name, goals: hit.goals.map((g) => ({ id: g.id, text: g.text })) } : null;
+  };
+
+  app.get(BOARD_API, async (req, res) => {
+    const who = await signedIn(req, res, null);
+    if (!who) return;
+    const verdict = await mayAct(req, "session.template");
+    res.setHeader("Cache-Control", "private, no-cache");
+    res.json(await boardPayload(getPool(), boardSeason(req.query?.season), verdict.ok));
+  });
+
+  /** A keeper of the board: the same people who keep the meeting templates. */
+  const boardKeeper = async (req: Request, res: Response) => {
+    const who = await signedIn(req, res, { key: "session-templates", max: TEMPLATE_LIMITS.writesPerHour });
+    if (!who) return null;
+    if (!(await guardCapability(req, res, "session.template", { status: 403, body: { error: PRIORITY_REFUSALS.mayNotKeep } }))) return null;
+    return who;
+  };
+
+  app.post(BOARD_API, async (req, res) => {
+    if (!(await boardKeeper(req, res))) return;
+    const out = await addBoardItem(getPool(), season(), req.body);
+    if (!out.ok) return res.status(out.status).json({ error: out.error });
+    res.json(await boardPayload(getPool(), season(), true));
+  });
+
+  app.patch(`${BOARD_API}/:id`, async (req, res) => {
+    if (!(await boardKeeper(req, res))) return;
+    const id = idOf(req);
+    if (id == null) return res.status(404).json({ error: PRIORITY_REFUSALS.itemNotFound });
+    const out = await patchBoardItem(getPool(), season(), id, req.body);
+    if (!out.ok) return res.status(out.status).json({ error: out.error });
+    res.json(await boardPayload(getPool(), season(), true));
+  });
+
   // ── The room's panel ──────────────────────────────────────────────────────
 
   const ROOM = `${TEMPLATES_API}/rooms/:sessionId`;
@@ -217,7 +301,7 @@ export function register(app: Express, deps: Deps): void {
   /** Answer a room write with the panel as it now stands. */
   const afterWrite = async (res: Response, sessionId: number, asker: { no: number | null; admin: boolean }, out: Outcome<null>) => {
     if (!out.ok) return res.status(out.status).json({ error: out.error });
-    const view = await roomView(getPool(), sessionId, asker, lookup, season());
+    const view = await roomView(getPool(), sessionId, asker, lookup, season(), Date.now(), timeZone());
     if (!view) return res.status(404).json({ error: R.roomNotFound });
     res.json(view);
   };
@@ -247,7 +331,7 @@ export function register(app: Express, deps: Deps): void {
     if (!who) return;
     const sessionId = sessionOf(req);
     if (sessionId == null) return res.status(404).json({ error: R.roomNotFound });
-    const view = await roomView(getPool(), sessionId, { no: await memberNo(getPool(), who.userId), admin: who.admin }, lookup, season());
+    const view = await roomView(getPool(), sessionId, { no: await memberNo(getPool(), who.userId), admin: who.admin }, lookup, season(), Date.now(), timeZone());
     if (!view) return res.status(404).json({ error: R.roomNotFound });
     res.setHeader("Cache-Control", "private, no-cache");
     res.json(view);
@@ -277,6 +361,26 @@ export function register(app: Express, deps: Deps): void {
     const pid = parseId(req.params?.pid);
     if (pid == null) return res.status(404).json({ error: R.priorityNotFound });
     await afterWrite(res, w.sessionId, w.asker, await patchPriority(getPool(), w.sessionId, w.asker, pid, req.body, goals()));
+  });
+
+  app.post(`${ROOM}/tops`, async (req, res) => {
+    const w = await roomWriter(req, res);
+    if (!w) return;
+    await afterWrite(res, w.sessionId, w.asker, await topAct(getPool(), w.sessionId, w.asker, req.body, goals(), timeZone()));
+  });
+
+  app.patch(`${ROOM}/tops/:no`, async (req, res) => {
+    const w = await roomWriter(req, res);
+    if (!w) return;
+    const forNo = parseId(req.params?.no);
+    if (forNo == null) return res.status(404).json({ error: PRIORITY_REFUSALS.noLine });
+    await afterWrite(res, w.sessionId, w.asker, await topMarkAct(getPool(), w.sessionId, w.asker, forNo, req.body, timeZone()));
+  });
+
+  app.post(`${ROOM}/board`, async (req, res) => {
+    const w = await roomWriter(req, res);
+    if (!w) return;
+    await afterWrite(res, w.sessionId, w.asker, await boardRoomAct(getPool(), w.sessionId, w.asker, req.body, season()));
   });
 
   app.post(`${ROOM}/shares`, async (req, res) => {

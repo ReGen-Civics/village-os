@@ -113,10 +113,11 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
   const publicUrl = `${window.location.origin}${desk.publicPath}`;
 
   return (
-    <details className="mb-6 rounded-xl border border-gray-200 bg-white p-4" data-open-proposals-desk="">
+    // Open whenever an application waits, so none is folded out of sight (Rye, 16 Nov 2026: Graham's was missed here).
+    <details open={desk.proposals.length > 0} className="mb-6 rounded-xl border border-gray-200 bg-white p-4" data-open-proposals-desk="">
       <summary className="flex min-h-10 cursor-pointer items-center gap-2 font-semibold text-gray-900">
         <Link2 className="h-4 w-4" aria-hidden="true" />
-        Role proposals from people with no account
+        Role applications from people with no account
         {desk.proposals.length > 0 && <span className="rounded-full bg-teal-deep px-2 py-0.5 text-xs text-white">{desk.proposals.length}</span>}
       </summary>
 
@@ -217,9 +218,9 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
         </section>
 
         <section className="grid gap-3">
-          <h3 className="text-sm font-semibold text-gray-900">Confirmed proposals</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Confirmed role applications</h3>
           {desk.proposals.length === 0 ? (
-            <p className="text-sm text-gray-500">None yet. A proposal shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
+            <p className="text-sm text-gray-500">None yet. A role application shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
           ) : (
             desk.proposals.map((p) => (
               <article key={p.id} className="grid gap-2 rounded-lg border border-gray-200 p-3 text-sm" data-open-proposal-row={p.id}>
