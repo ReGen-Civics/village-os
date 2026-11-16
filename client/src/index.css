@@ -120,6 +120,12 @@
      (the soft tone, 1.67 to 3.00:1) or to a translucent teal-deep:
      scripts/check-theme-literals.mjs refuses both. */
   --color-teal-deep-dark: var(--tone-brand-hover, #262626);
+  /* The PRIMARY button's hover (`bg-primary text-primary-foreground`). It is
+     the brand hover above unless the village set its own primary or chose the
+     dark scheme, where the primary can carry DARK ink and needs a hover that
+     carries the same ink (shared/brandTokens.ts withScheme). Unset, this is
+     exactly --tone-brand-hover, so a light village's buttons do not move. */
+  --color-primary-hover: var(--primary-hover, var(--tone-brand-hover, #262626));
   --color-teal: var(--tone-brand-soft, #a3a3a3);
   --color-teal-light: var(--tone-brand-mid, #737373);
   --color-aqua: var(--tone-mist, #a3a3a3);
@@ -1746,6 +1752,63 @@ html:has(#sera-changes [data-sera-strip-on]) {
    button keeps its own foreground. */
 .sheet-night .text-primary {
   color: var(--foreground);
+}
+
+/*
+ * THE DARK SCHEME (gap G1, `theme.mode: "dark"`).
+ *
+ * A village that chooses a dark page gets the night layer promoted to :root by
+ * /api/brand/theme.css, and the server marks the shell `data-scheme="dark"`
+ * (client/src/lib/liveTheme.ts keeps the mark in step after an Admin save).
+ * Every semantic token already follows. What does not follow is the frozen
+ * light vocabulary some pages still paint with: `bg-white` panels, numbered
+ * greys, the light washes, and `text-teal-deep` as text. Each is read here off
+ * a token the theme report measures (--card, --muted, --foreground,
+ * --muted-foreground, --border, --tone-brand-text), so those pages draw in the
+ * village's dark colours with no component edit.
+ *
+ * Nothing here applies without the mark, so a light village reads exactly what
+ * it read before. Admin is light by ruling (2026-09-04): theme.css puts the
+ * light palette back on `.admin-root`, and every rule below skips it.
+ * `bg-teal-deep` keeps carrying white text: --tone-brand stays dark enough for
+ * it in both schemes, and only its use AS TEXT moves to --tone-brand-text.
+ */
+:root[data-scheme="dark"] :is(.bg-white, .bg-gray-50, .bg-cream):not(.admin-root *) {
+  background-color: var(--card);
+}
+:root[data-scheme="dark"] :is(.bg-gray-100, .bg-cream-dark, .bg-aqua-light):not(.admin-root *) {
+  background-color: var(--muted);
+}
+:root[data-scheme="dark"] :is(.bg-white\/95, .bg-white\/90):not(.admin-root *) {
+  background-color: color-mix(in srgb, var(--card) 92%, transparent);
+}
+:root[data-scheme="dark"] :is(.bg-white\/80, .bg-white\/70, .bg-white\/60):not(.admin-root *) {
+  background-color: color-mix(in srgb, var(--card) 75%, transparent);
+}
+:root[data-scheme="dark"] :is(.bg-sage-light, .bg-green-light):not(.admin-root *) {
+  background-color: color-mix(in srgb, var(--color-sage) 14%, var(--card));
+}
+:root[data-scheme="dark"] .bg-amber-light:not(.admin-root *) {
+  background-color: color-mix(in srgb, var(--color-amber-ink) 14%, var(--card));
+}
+:root[data-scheme="dark"] :is(.hover\:bg-gray-50, .hover\:bg-gray-100, .hover\:bg-white):hover:not(.admin-root *) {
+  background-color: var(--muted);
+}
+:root[data-scheme="dark"] :is(.text-gray-900, .text-gray-800, .text-gray-700):not(.admin-root *) {
+  color: var(--foreground);
+}
+:root[data-scheme="dark"] :is(.text-gray-600, .text-gray-500, .text-gray-400, .text-gray-300):not(.admin-root *) {
+  color: var(--muted-foreground);
+}
+:root[data-scheme="dark"] :is(.border-gray-100, .border-gray-200, .border-gray-300):not(.admin-root *) {
+  border-color: var(--border);
+}
+:root[data-scheme="dark"] .text-teal-deep:not(.admin-root *) {
+  color: var(--tone-brand-text, var(--foreground));
+}
+/* Depth on a dark ground, as `.sheet-night .shadow-sm` above has it. */
+:root[data-scheme="dark"] .shadow-sm:not(.admin-root *) {
+  box-shadow: var(--sheet-shadow, 0 2px 4px rgb(0 0 0 / 0.4), 0 18px 40px -22px rgb(0 0 0 / 0.9));
 }
 
 /* The foil around a seat card. Read off the night tokens on the same element,

@@ -90,6 +90,19 @@ describe("CompanionWelcome", () => {
     expect(persona).toMatchObject({ character: "plain", help: ["cheer", "no-nag"] });
   });
 
+  // The picker prefers online voices (Edge Natural, Google), so the offer says where the spoken words go (15 Nov 2026).
+  it("says the spoken lines may use the browser's online voice wherever speaking aloud is offered", () => {
+    render(<CompanionWelcome firstName="Rowan" companions={army} payload={payload} startBeat={0} onTab={() => {}} onClose={() => {}} />);
+    const line = screen.getByTestId("speak-line").textContent ?? "";
+    expect(line).toContain("online voice");
+    expect(line).toContain("sends the words");
+    expect(line).not.toMatch(/[–—]|rather than/);
+    cleanup();
+    // The arrival question asked again on a resumed welcome carries it too.
+    render(<CompanionWelcome firstName="Rowan" companions={army} payload={payload} startBeat={1} onTab={() => {}} onClose={() => {}} />);
+    expect(screen.getAllByTestId("speak-line").length).toBeGreaterThan(0);
+  });
+
   it("stores a lens only with the yes ticked, and says what it changes first", async () => {
     render(<CompanionWelcome firstName="Rowan" companions={army} payload={payload} startBeat={3} onTab={() => {}} onClose={() => {}} />);
     // Gene Keys is offered only when the module is on (geneKeys non-null).

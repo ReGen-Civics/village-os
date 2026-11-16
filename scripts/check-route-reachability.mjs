@@ -90,6 +90,11 @@ const ALLOWLIST = {
 
   "/funding-rounds/:id": "reached from its card on /funding-rounds and from the link in each idea's forum thread",
 
+  // One run of a checklist. Its doors are its row on /protocols and the Start button there, which
+  // makes the run and opens it; a run's address is made on the phone, so nothing else can know it.
+  "/protocols/run/:id": "reached from its row and from Start on /protocols; the address is made when the run starts",
+  "/protocols/practice/:protocolId": "one door per protocol, on its card on /protocols; a joining flow may link a village's own protocol here too, by its id",
+
   // Open role proposals (sheet 19i): both arrive by a link somebody was sent,
   // never by a link on the site. The confirm page is the link in the
   // confirmation email, and a token page is a link an admin made for one person.
@@ -106,6 +111,11 @@ const ALLOWLIST = {
   // of the profile cash card, which renders only for a key holder; a nav entry
   // would show every member a page that refuses them. Admins keep their own tab.
   "/cash-payouts": "entered from the profile cash card, shown only to a holder of cash.pay",
+  // The Treasury (Rye, 2026-11-15): the hand mint and the pay queues for a
+  // holder who is not an admin. Its door is the account menu entry, which the
+  // shell shows only when GET /api/treasury/doors opens one of its powers; a
+  // second door anywhere public would show every member a page that refuses them.
+  "/treasury": "the account menu entry, shown only to a holder of token.mint, cash.pay or moon.approve_alone",
 
   // Password flows arrive from an EMAIL, not from the site. The set-password
   // link carries a one-time token and is useless without it, so a nav entry

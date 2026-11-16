@@ -123,6 +123,8 @@ describe.skipIf(!DB_CONFIGURED)("the builders' pool, driven", () => {
         DATABASE_URL: testDb.url,
         ADMIN_PASSWORD: ADMIN,
         AUTH_TOKEN_SECRET: "meter-drive-token-secret", // module-review-ok: a fixture signing secret for a throwaway server on a scratch schema, same as every e2e suite
+        // The signed usage report needs a signing key, and one is minted only sealed (R115).
+        VILLAGE_SECRETS_KEY: "1f".repeat(32), // module-review-ok: fixture sealing key, same as every e2e suite
         RESEND_API_KEY: "",
         ANTHROPIC_API_KEY: "",
       },

@@ -1,5 +1,5 @@
 /**
- * CIRCLE PLACES AT A GATHERING, THE SQL (drizzle/0391). The rules are
+ * CIRCLE PLACES AT A GATHERING, THE SQL (drizzle/0396). The rules are
  * shared/circlePlaces.ts.
  *
  * Every write that can change how many circles are going runs inside

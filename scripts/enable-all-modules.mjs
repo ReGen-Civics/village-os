@@ -86,6 +86,8 @@ export const TARGETS = [
   // A member's own chart, shown only to the members they choose; no public
   // surface to probe.
   ["gene-keys", "members"],
+  // Who ticked which step names people, so members only; no public surface to probe.
+  ["protocols", "members"],
   // HELD. A member-pii module that reached main before the human security
   // review Module Library Contract clause 13 requires. It stays off in every
   // fork until that review closes and Rye signs off; then this line becomes

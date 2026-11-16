@@ -9,6 +9,7 @@ import {
   SWITCHABLE_PAGES,
   applyBrochurePatch,
   brochureHidden,
+  brochureOpen,
   brochurePatchProblem,
   brochurePathServed,
   brochureState,
@@ -79,3 +80,28 @@ describe("a change to the switches", () => {
     expect(applyBrochurePatch(before, { pages: { "/visit": false } })).toEqual({ enabled: true, hidden: ["/visit", "/housing", "/team"] });
   });
 });
+
+describe("a member door opened to visitors (gap G15)", () => {
+  it("is read from the stored document, member doors only", () => {
+    expect(brochureOpen({ open: ["/love-letter", "/housing", 3] })).toEqual(["/love-letter"]);
+    expect(brochureOpen({})).toEqual([]);
+    // No door opened: no `open` at all, so the stored and served shapes are as before.
+    expect(brochureState({ enabled: false })).toEqual({ enabled: false, hidden: [] });
+  });
+
+  it("serves the letter with the master switch off, and nothing else", () => {
+    const state = { enabled: false, hidden: [], open: ["/love-letter"] };
+    expect(brochurePathServed(state, "/love-letter")).toBe(true);
+    expect(brochurePathServed(state, "/housing")).toBe(false);
+    expect(brochurePathServed({ ...state, hidden: ["/love-letter"] }, "/love-letter")).toBe(false);
+    expect(brochurePathServed({ enabled: false, hidden: [] }, "/love-letter")).toBe(false);
+  });
+
+  it("is switched through the same route, and refuses a page that is not a member door", () => {
+    expect(brochurePatchProblem({ open: { "/love-letter": true } })).toBeNull();
+    expect(brochurePatchProblem({ open: { "/housing": true } })).toMatch(/cannot be opened to visitors/);
+    expect(applyBrochurePatch({ enabled: false }, { open: { "/love-letter": true } }).open).toEqual(["/love-letter"]);
+    expect(applyBrochurePatch({ enabled: false, open: ["/love-letter"] }, { open: { "/love-letter": false } })).toEqual({ enabled: false, hidden: [] });
+  });
+});
+

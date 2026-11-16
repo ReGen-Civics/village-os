@@ -90,7 +90,7 @@ function PageTitle() {
   const commitment = config?.project?.commitmentName ?? "";
   const favicon = String(config?.images?.favicon ?? "").trim();
   // Each story page's own switch rides the same config (Admin, Pages).
-  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden } : null), [config]);
+  const switches = useMemo(() => (config ? { brochurePages: config.brochurePages, brochureHidden: config.brochureHidden, brochureOpen: config.brochureOpen } : null), [config]);
 
   // The tab ICON is identity too. index.html ships a neutral platform favicon
   // (a static file cannot know which village it serves); this swaps in the
@@ -254,6 +254,7 @@ const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
 const Review = lazyPage(() => import("./pages/Review"));
 const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
+const Treasury = lazyPage(() => import("./pages/Treasury"));
 const StructureReview = lazyPage(() => import("./pages/StructureReview"));
 const Library = lazyPage(() => import("./pages/Library"));
 const VillageHealth = lazyPage(() => import("./pages/VillageHealth"));
@@ -263,6 +264,7 @@ const ModuleDetail = lazyPage(() => import("./pages/ModuleDetail"));
 const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
 const CrowdpoolCampaign = lazyPage(() => import("./pages/CrowdpoolCampaign"));
 const Journal = lazyPage(() => import("./pages/Journal"));
+const Protocols = lazyPage(() => import("./pages/Protocols"));
 const FundingRounds = lazyPage(() => import("./pages/FundingRounds"));
 const Sessions = lazyPage(() => import("./pages/Sessions"));
 const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
@@ -362,6 +364,8 @@ function Router() {
       <Route path="/review" component={Review} />
       {/* The treasurer's payout list, for a finance role holding cash.pay without admin */}
       <Route path="/cash-payouts" component={CashPayouts} />
+      {/* The hand mint and the pay queues for a holder of token.mint, cash.pay or moon.approve_alone, admin or not */}
+      <Route path="/treasury" component={Treasury} />
       <Route path="/library" component={Library} />
       {/* /village-health, not /health: the server owns /health as the ops probe */}
       <Route path="/village-health" component={VillageHealth} />
@@ -458,6 +462,9 @@ function Router() {
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}
       <Route path="/journal" component={Journal} />
+      <Route path="/protocols/practice/:protocolId" component={Protocols} />
+      <Route path="/protocols/run/:id" component={Protocols} />
+      <Route path="/protocols" component={Protocols} />
       {/* The village chooses which quests to fund, within a pot. Behind
           ModuleGate("funding-rounds") and sign-in. */}
       <Route path="/funding-rounds" component={FundingRounds} />

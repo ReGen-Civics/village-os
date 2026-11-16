@@ -1,4 +1,4 @@
--- 0392: season crew (module season-places, ships off).
+-- 0397: season crew (module season-places, ships off).
 -- Every season starts fresh: each member applies to sail that season, and each
 -- circle's picker for the season picks its crew from everyone who applied, up
 -- to the circle's berths.
@@ -15,7 +15,7 @@
 -- `season_crew_berths`, one row per circle per season that has said how many
 -- it takes. NULL berths is no limit; 0 is none.
 --
--- Picks take the season's lock row (`season_place_locks`, 0390) first, so two
+-- Picks take the season's lock row (`season_place_locks`, 0395) first, so two
 -- circles cannot pick the same person, and a circle cannot pick past its berths.
 --
 -- ERASURE. A member who leaves loses their applications; their name comes off

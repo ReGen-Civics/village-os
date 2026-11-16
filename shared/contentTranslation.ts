@@ -164,6 +164,26 @@ export function translatableLocales(): string[] {
 const placeholders = (s: string) => (s.match(/\{[a-zA-Z][a-zA-Z0-9_]*\}/g) ?? []).map((m) => m.slice(1, -1)).sort();
 const bolds = (s: string) => (s.match(/\*\*/g) ?? []).length;
 const MARKUP = /<\s*\/?\s*[a-z!]/i;
+/** Every tag-like run, `<b>`, `</ b>`, `<a href=...>`, `<!--`, to its end or the text's. */
+const TAGS = /<\s*\/?\s*[a-z!][^<>]*>?/gi;
+/** A tag as compared: case and spacing do not make a different tag. */
+const tagsOf = (s: string) => (s.match(TAGS) ?? []).map((t) => t.toLowerCase().replace(/\s+/g, "")).sort();
+
+/**
+ * Addresses a reader could follow: anything with a scheme (`https://`), the
+ * schemes that need no slashes (`mailto:`, `javascript:`, `data:`, `tel:`),
+ * `www.`, and a bare host with a path or on a name the web resolves
+ * (`example.com`). Compared lowercased with trailing punctuation off, so
+ * "example.com." and "Example.com" are one.
+ */
+const URLS =
+  /\b(?:[a-z][a-z0-9+.-]*:\/\/|(?:mailto|javascript|data|vbscript|tel):|www\.)[^\s<>"'()]+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}\/[^\s<>"'()]*|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:com|org|net|io|co|app|dev|xyz|info|me|ly|gg|link|site|online|top|cr|es|mx|ru|cn|tk|biz|shop|club|live|click)\b/gi;
+const urlsOf = (s: string) => new Set((s.match(URLS) ?? []).map((u) => u.toLowerCase().replace(/[.,;:!?]+$/, "")));
+/** The addresses a translation holds that its English does not. */
+export function addedUrls(text: string, source: string): string[] {
+  const have = urlsOf(source);
+  return Array.from(urlsOf(text)).filter((u) => !have.has(u));
+}
 // eslint-disable-next-line no-control-regex
 const CONTROL = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
@@ -191,7 +211,15 @@ export function contentTranslationProblem(t: TranslationInput): string | null {
   if (!text) return "Write the translation, or leave the English.";
   if (text.length > target.cap) return `That is ${text.length} characters; this field holds ${target.cap}.`;
   if (CONTROL.test(text)) return "The translation holds a character that cannot be shown.";
-  if (MARKUP.test(text) && !MARKUP.test(t.source)) return "A translation is plain words; it may not add markup.";
+  // Tags mirror the English exactly: the same tags, no more and no fewer. A
+  // source that holds markup no longer opens the door to any markup at all.
+  if ((MARKUP.test(text) || MARKUP.test(t.source)) && tagsOf(text).join("|") !== tagsOf(t.source).join("|")) {
+    return MARKUP.test(t.source) ? "Keep the English's markup exactly as it is, and add none." : "A translation is plain words; it may not add markup.";
+  }
+  // A machine is steered by the words it reads, so a poisoned English could
+  // ask it to add a link. Its draft may hold only the addresses the English
+  // already holds; a person who adds one stands behind it in their own name.
+  if (t.status === "ai_draft" && addedUrls(text, t.source).length) return "A machine draft may not add a web address the English does not have.";
   const want = placeholders(t.source);
   const got = placeholders(text);
   if (want.join(",") !== got.join(",")) {

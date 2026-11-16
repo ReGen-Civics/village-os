@@ -17,7 +17,11 @@
  */
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
-import { BARE_ROUTES, TAB_SLOTS } from "@/config/mobileNav";
+import { BARE_ROUTES, TAB_SLOTS, type TabSlot } from "@/config/mobileNav";
+import { NAV, ACCOUNT_MENU, isGroup, type NavLink } from "@/config/nav";
+import { Compass } from "lucide-react";
+import { useVillageMenu } from "@/hooks/useVillageMenu";
+import { moduleIsOn, useModules } from "@/modules/ModuleProvider";
 import { useTokenName } from "@/hooks/useTokenNames";
 import { useLingui } from "@lingui/react/macro";
 
@@ -29,6 +33,28 @@ export function normalisePath(location: string): string {
 /** True where the bottom bar and the FAB are suppressed (config/mobileNav.ts). */
 export function isBareRoute(location: string): boolean {
   return BARE_ROUTES.includes(normalisePath(location));
+}
+
+/** Every menu entry, by address, so a chosen tab finds its label and its gate. */
+const ENTRY_BY_HREF: ReadonlyMap<string, NavLink> = new Map(
+  [...NAV.flatMap((e) => (isGroup(e) ? e.items : [e])), ...ACCOUNT_MENU].map((l) => [l.href, l] as const),
+);
+
+/**
+ * The five slots: the village's four chosen tabs, each in its place, then More.
+ * A chosen address that is no menu entry, is hidden, or whose module is off
+ * keeps the platform's slot there. No choice at all is the platform's bar.
+ */
+export function villageSlots(tabs: readonly string[], labels: Readonly<Record<string, string>>, hidden: readonly string[], open: (module?: string) => boolean): TabSlot[] {
+  if (!tabs.length) return TAB_SLOTS;
+  const out = TAB_SLOTS.slice();
+  tabs.slice(0, 4).forEach((href, i) => {
+    const entry = ENTRY_BY_HREF.get(href);
+    if (!entry || hidden.includes(href) || !open(entry.module) || (entry.unlessModule && open(entry.unlessModule))) return;
+    const platform = TAB_SLOTS.find((s) => s.path === href);
+    out[i] = platform ?? { path: href, label: labels[href] || entry.label, Icon: entry.icon ?? Compass, ...(entry.token ? { token: entry.token } : {}) };
+  });
+  return out;
 }
 
 export default function MobileTabBar() {
@@ -47,6 +73,13 @@ export default function MobileTabBar() {
     "open-mobile-menu": t({ message: "More", context: "bottom tab bar" }),
   };
 
+  // The village's own four tabs (gap G5), each in the place it chose. A tab
+  // whose page is not open (its module off, or hidden) keeps the platform's
+  // tab in that place, so the bar never offers a door that does not open.
+  const menu = useVillageMenu();
+  const modules = useModules();
+  const slots = villageSlots(menu.tabs, menu.labels, menu.hidden, (m) => !m || moduleIsOn(modules, m));
+
   // Sign-in and the other focused, signed-out screens render no bar at all.
   // See BARE_ROUTES for why bottom padding could not close this.
   if (isBareRoute(location)) return null;
@@ -64,8 +97,9 @@ export default function MobileTabBar() {
         style={{ background: "linear-gradient(to right, transparent, var(--tone-brand-soft, #7fb8ac), transparent)" }}
       />
       <div className="grid grid-cols-[repeat(5,minmax(0,1fr))] h-16 items-stretch max-w-2xl mx-auto min-w-0">
-        {TAB_SLOTS.map((s) => {
-          const slot = s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
+        {slots.map((s) => {
+          const own = s.path ? menu.labels[s.path] : undefined;
+          const slot = own ? { ...s, label: own } : s.token ? { ...s, label: tokenName } : { ...s, label: said[s.path ?? s.event ?? ""] ?? s.label };
           const active =
             !!slot.path &&
             (slot.path === "/"

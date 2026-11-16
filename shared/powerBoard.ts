@@ -65,6 +65,8 @@ export const POWER_FAMILY: Record<Capability, PowerFamily> = {
   "pot.steward": "money",
   "place.tend": "land",
   "place.permit": "land",
+  "hiddenmap.keep": "land",
+  "hiddenmap.export": "land",
   "redemption.confirm": "money",
   "exchange.buy": "money",
   "exchange.swap": "money",
@@ -141,6 +143,8 @@ export const HANDOVER_GUIDANCE: Record<Capability, HandoverGuidance> = {
   "pot.steward": "after-practice",
   "place.tend": "after-practice",
   "place.permit": "after-practice",
+  "hiddenmap.keep": "after-practice",
+  "hiddenmap.export": "after-practice",
   "module.switch": "mature-only",
   "dial.set": "mature-only",
   // Settings with no power of their own are structure; accounts, secrets and repair let a village run with no admin at all.

@@ -510,6 +510,17 @@ export async function realMemberIdRows(pool: Pool): Promise<RowDataPacket[]> {
 }
 
 /**
+ * Whether this deployment already has anybody in it: one row that is not a
+ * standing example (a tombstone counts, it was a person). Boot reads it to
+ * tell a first start, which may still refuse a bad setting, from a village in
+ * use, which must never be taken down by one (server/lib/secretFloors.ts).
+ */
+export async function hasAnyRealUser(pool: Pool): Promise<boolean> {
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT 1 AS one FROM users WHERE is_example = 0 LIMIT 1");
+  return rows.length > 0;
+}
+
+/**
  * Whether this id is a tombstone now: the address `writeTombstone` leaves.
  * A missing row is not one, so the caller's own "no such member" answer stands.
  * Read on the caller's connection when it has one, so a check inside a

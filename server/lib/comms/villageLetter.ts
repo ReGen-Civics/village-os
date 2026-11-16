@@ -88,7 +88,7 @@ export async function comeAndPlayFor(
     stayClose: stayCloseFrom(stringVar("org.stay_close_name"), stringVar("org.stay_close_link")),
     skip: o.skip,
     lang: o.lang ?? null,
-    palette: letterPalette(village.seed, village.character),
+    palette: letterPalette(village.seed, village.character, village.scheme),
     hero: await heroOf(pool, village),
   });
 }
@@ -102,7 +102,7 @@ export function letterTeam(village: EmailVillage, lang?: ApplicantLanguage | nul
 export async function dressLetter(pool: Pool, origin: string, words: LetterWords, o: DressOptions): Promise<LetterFrame> {
   const read = o.village ?? (await loadEmailVillage(pool, origin));
   const village: EmailVillage = o.villageName && o.villageName.trim() ? { ...read, name: o.villageName.trim() } : read;
-  const palette = letterPalette(village.seed, village.character);
+  const palette = letterPalette(village.seed, village.character, village.scheme);
   const w = comeAndPlayWords(o.lang);
   const extra = o.comeAndPlay ? await comeAndPlayFor(pool, village, { audience: o.comeAndPlay, lang: o.lang, skip: o.skip }) : null;
   return renderLetterFrame({

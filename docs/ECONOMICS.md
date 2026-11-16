@@ -95,7 +95,7 @@ subtlety in this system; see section 7.
 | A moon closes | `runSettlement` | Pays each holder their role's own list, or the flat `role.cycle` amounts for a role with none, through `quoteWorkPay`, in full |
 | A cycle is closed by an admin | the cycle-close route | Splits `gratitude.pool_per_cycle` of the pool token by recognition received. A human act, never a job |
 | A member thanks another | `give()`, or `sendGratitude()` for a heart | Spends the member's cycle allowance |
-| A holder of `token.mint` mints by hand | the admin mint route | Asks `guardCapability("token.mint")`: the admin before launch, and from launch the founding stewards and the Treasury role (`server/lib/tokenMintHandover.ts`; Rye, 2026-11-15), whoever the village later passes it to. Capped per cycle, a reason is required, cosigned over a threshold, and a grant to yourself waits for a second signer at any amount. A grant waiting for its second signature is approved by `approveMintRequest` (`server/lib/mintRequests.ts`), which the approve route (also `token.mint`) and a carried village vote on the grant both call; the vote cannot sign a grant to the person who asked for it |
+| A holder of `token.mint` mints by hand | the admin mint route | Asks `guardCapability("token.mint")`: the admin before launch, and from launch the founding stewards and the Treasury role (`server/lib/tokenMintHandover.ts`; Rye, 2026-11-15), whoever the village later passes it to. Capped per cycle, a reason is required, cosigned over a threshold, and a grant to yourself waits for a second signer at any amount. A grant waiting for its second signature is approved by `approveMintRequest` (`server/lib/mintRequests.ts`), which the approve route (also `token.mint`) and a carried village vote on the grant both call; the vote cannot sign a grant to the person who asked for it. A holder who is not an admin mints from `/treasury`, whose picker reads `GET /api/treasury/mint-options` (also `token.mint`, reading `ledger.admin_mint_cycle_cap` for the sentence beside the form) and whose writes are these same routes, so the cap, the reason and the second signer bind it unchanged |
 | A member spends | a stay night, a seat fee, a library escrow, a member-to-member send | See section 12 |
 | A member asks to redeem | `requestRedemption`, `server/lib/redemptionStore.ts` | Holds the asked amount in `sys:redemption-hold` when `redemption.holds_on_propose` is on, and holds nothing when it is off. A refusal, a withdrawal or an expiry returns a held amount by reversing the hold |
 | A redemption is confirmed | `settleRedemption`, `server/lib/redemptionStore.ts` | Retires the tokens to `sys:redeemed`, which only ever receives, taking them from the hold if one was taken and from the member otherwise |
@@ -345,7 +345,11 @@ equity a village pays for work has to land in a platform token first and be
 claimed across later. It ships as `Earned Equity` because the mirror's own default
 is `Village Equity` and two balances under one name are a balance nobody can read
 (`tokenNameClash` refuses an exact match for the same reason). A village renames it
-like any platform token; the slug never moves. Its kind is `equity`, which keeps it
+like any platform token; the slug never moves. A Hypha mirror's name blocks a platform
+token's only while the Hypha bridge module is on: switched off, the mirror shows on no
+member surface, so a village that does not run the bridge may call its own token by the
+mirror's word (2026-11-15, gap G12; `unusedTokenSlugs` in `server/lib/ledger.ts` names
+the tokens a member never sees, and `/api/game/config` serves them as `currency.unused`). Its kind is `equity`, which keeps it
 off the exchange (only credits trade) and puts it under `exit.keep_pct.equity` when
 a member leaves. **A leaver keeps it, by the founder's ruling of 2026-10-23**
 ("As a general rule members keep their tokens"; asked whether a leaver stays on as

@@ -721,7 +721,8 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
       "Without AUTH_TOKEN_SECRET the server invents a new signing key every time it starts. " +
       "Nothing looks broken until a deploy silently signs everyone out, or a second copy of the " +
       "service starts and members are logged out at random depending on which one answers. It fails " +
-      "safe, so no forged login is possible; it just quietly makes sessions unreliable.",
+      "safe, so no forged login is possible; it just quietly makes sessions unreliable. " +
+      "Set, it must be at least 32 characters: a shorter one can be guessed from any one session, and this stays red until it is long.",
     severity: "blocking",
     checkKey: "session-secret",
     // An environment variable, so no screen in the village can set it. The

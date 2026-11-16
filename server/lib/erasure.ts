@@ -170,6 +170,8 @@ import { forgetStewardActs } from "./stewardship";
 import { eraseIntentsForMember } from "./intents";
 import { forgetMemberNeeds } from "./needs";
 import { forgetMemberJournal } from "./journal";
+import { forgetMemberHiddenMap, hiddenMapDir } from "./hiddenMap";
+import { villageId as currentVillageId } from "./economy";
 import { forgetMemberGeneKeys } from "./geneKeys";
 import { forgetMemberPlaces } from "../repos/seasonPlaces";
 import { forgetCircleAnswersBy } from "../repos/circlePlaces";
@@ -1126,6 +1128,25 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
+       * The hidden map (0392): the member's photos are deleted from the disk
+       * and the rows, their vouches, their opening and their who-looked rows
+       * go, and their open export asks are withdrawn. Their pins and visits
+       * stay on the map with nobody attached, because the planting is still
+       * in the ground (spec C2 default).
+       *
+       * AFTER THE TOMBSTONE, for the reason the needs step gives: the routes
+       * write for anybody signed in, and the tombstone is where the member's
+       * sessions die. After the invites step, which the invites test pins
+       * directly behind the journal. It finds everything by the member's user
+       * id, so a finished erasure that lacks it is given it (`BACKFILL_BY_ID`).
+       */
+      name: "hidden-map-after-tombstone",
+      run: async () => {
+        await forgetMemberHiddenMap(pool, currentVillageId(), target.id, hiddenMapDir(deps.uploadsDir));
+      },
+    },
+    {
+      /*
        * The bridge to organisational memory (0261): every outbox row filed
        * under the member's code-name loses its words, and the code-name is
        * marked pending a vendor delete. The map entry is NOT dropped: the
@@ -1861,7 +1882,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
-       * Season places (0390, 0391): the words a member wrote with a circle's
+       * Season places (0395, 0396): the words a member wrote with a circle's
        * season proposal come off, their own rows as a member subject go, and
        * their name comes off every gathering answer they gave for a circle.
        * The circle keeps its place: a crew's place is not one person's.
@@ -2381,6 +2402,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "needs-after-tombstone",
   "journal-after-tombstone",
   "invites-after-tombstone",
+  "hidden-map-after-tombstone",
   "saberra-bridge-after-tombstone",
   "seat-application-words-after-tombstone",
   "meet-me-windows-after-tombstone",
@@ -2427,7 +2449,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "notebook-after-tombstone",
   "ombuds-asks-after-tombstone",
   "product-subscriptions-after-tombstone",
-  // Season places, gathering circle answers and season crew (0390 to 0392): every
+  // Season places, gathering circle answers and season crew (0395 to 0397): every
   // row is found by the member's id, and a second run clears or deletes nothing new.
   "season-places-after-tombstone",
 ]);

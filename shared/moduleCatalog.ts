@@ -445,6 +445,21 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     hue: 28,
     emblem: "NotebookPen",
   },
+  protocols: {
+    promise: "The village's careful routines as checklists anyone can walk, even with no signal.",
+    benefits: [
+      "Named checklists, each step required or optional, and a step can be kept for one role",
+      "Any member starts a run and ticks the steps; a run with a required step open cannot be completed",
+      "Every run records who ticked what and when, and several people can tick the same run",
+      "Works on a phone with no signal, and sends what was ticked when the signal returns",
+      "Offers to add itself to a phone's home screen",
+    ],
+    forWhom: "Villages with routines that must be done the same careful way every time.",
+    setupSummary: "Write the checklists on this card, or import a file of them, then switch the module on for members.",
+    dataSummary: "The checklists, and for each run who ticked each step and when.",
+    hue: 200,
+    emblem: "ListChecks",
+  },
   "gene-keys": {
     promise: "Each member's lines and how they work best, so roles and teams fit the people in them.",
     benefits: [
@@ -486,6 +501,20 @@ export const MODULE_CATALOG: Record<string, ModuleCatalogEntry> = {
     dataSummary: "Each place's name, zone, stage, permits and words. Who holds its roles is read from the org chart, never copied.",
     hue: 120,
     emblem: "Landmark",
+  },
+  "hidden-map": {
+    promise: "A members-only map of the places your members log, which opens to each member once others have vouched for their own.",
+    benefits: [
+      "Log a place from a phone, with its location read from the photo and then removed from it",
+      "Each member sees only their own pins until enough of them are vouched for, then the whole map opens",
+      "Return visits add photos, so a planting is seen growing from seed to tree",
+      "No names beside pins, two people for any copy of the map, and a record of who looked",
+    ],
+    forWhom: "Villages whose members tend places spread far apart and want a record of them that stays inside the membership.",
+    setupSummary: "Seat someone who keeps the map, so the first members can be vouched for, and choose what it is drawn on.",
+    dataSummary: "Each pin's place, kind, words and photos, tied to the member who logged it and never shown with their name. Photos are stripped of every hidden detail. A record of who read the map, with no places in it.",
+    hue: 160,
+    emblem: "Globe",
   },
   "season-places": {
     promise: "Circles take part season by season, with places that fill in order and a waitlist that tells people when a place opens.",

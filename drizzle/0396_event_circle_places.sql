@@ -1,4 +1,4 @@
--- 0391: circle places at a gathering (module season-places, ships off).
+-- 0396: circle places at a gathering (module season-places, ships off).
 -- A host gathering can take circles as well as people, up to a cap its host
 -- sets for itself; over it a circle waits in order, and takes the first place
 -- that frees. People still answer the gathering as people (event_rsvps); this

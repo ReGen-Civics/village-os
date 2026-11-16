@@ -46,6 +46,9 @@ export type VariableType = "integer" | "decimal" | "percentage" | "boolean" | "c
  */
 export const LONGTEXT_MAX = 4000;
 
+/** How much of `characters.forge_style` a portrait provider is handed. */
+export const FORGE_STYLE_MAX = 1500;
+
 /**
  * What a `longtext` value becomes before it is validated, stored, or compared.
  *
@@ -2363,6 +2366,87 @@ export const VARIABLES: VariableDef[] = [
     max: 100,
     unit: "per hour",
   },
+  // The guide's day on the village's key, shared fairly (security audit, 15 Nov
+  // 2026; server/lib/assistant.ts and server/routes/villageDocuments.ts read
+  // them). Caps fail closed: 0 means no calls, never unlimited.
+  {
+    key: "assistant.account_day_share_percent",
+    category: "Abuse guards",
+    label: "Most of the guide's day one account may use",
+    description:
+      "Each way of asking the guide has its own number of calls a day on the village's key, shared by everyone. This is the most of that one signed-in account may use in a day, so one person asking all day cannot use it up for everybody. Admin tools keep the whole day, and a member who brings their own key pays their own way. 0 means signed-in accounts get no calls on the village's key at all.",
+    type: "integer",
+    default: "25",
+    min: 0,
+    max: 100,
+    unit: "% of the day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.account_day_share_floor",
+    category: "Abuse guards",
+    label: "Fewest guide calls one account may use in a day",
+    description:
+      "A floor under the share above, for a way of asking whose whole day is small: one account may always use at least this many calls a day, while the share is above 0. It is never more than that way's whole day. 0 means no floor.",
+    type: "integer",
+    default: "5",
+    min: 0,
+    max: 1000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.anonymous_day_calls",
+    category: "Abuse guards",
+    label: "Guide calls a day for visitors with no account",
+    description:
+      "The visitor guide and the application's voice drafts answer people with no account. Together, those people may use this many of the public guide's calls a day, and the rest stay for people who are signed in, so a few visitors cannot use up the day. It is never more than the public guide's whole day. 0 means visitors with no account get no guide calls.",
+    type: "integer",
+    default: "150",
+    min: 0,
+    max: 10000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.anonymous_address_day_calls",
+    category: "Abuse guards",
+    label: "Guide calls a day for one address with no account",
+    description:
+      "How many of the visitors' calls above one internet address may use in a day. A household or an office behind one connection counts as one address, so keep it above one conversation's worth. 0 means visitors with no account get no guide calls.",
+    type: "integer",
+    default: "40",
+    min: 0,
+    max: 10000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "documents.model_drafts_per_hour",
+    category: "Abuse guards",
+    label: "Model drafts from a document per account per hour",
+    description:
+      "How many times one account may ask a model to draft from a document in an hour, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.",
+    type: "integer",
+    default: "6",
+    min: 0,
+    max: 1000,
+    unit: "per hour",
+    ring: "founder",
+  },
+  {
+    key: "documents.model_drafts_per_day",
+    category: "Abuse guards",
+    label: "Model drafts from a document per account per day",
+    description:
+      "How many times one account may ask a model to draft from a document in a day, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.",
+    type: "integer",
+    default: "12",
+    min: 0,
+    max: 1000,
+    unit: "per day",
+    ring: "founder",
+  },
 
   {
     key: "retention.submissions_days",
@@ -2643,6 +2727,24 @@ export const VARIABLES: VariableDef[] = [
       "On, an application waits for our review once its address confirms: a holder of the power to place people in roles invites the applicant to the conversations, in the order the role names them, or sends the not-invited letter, which thanks them and points to open ways to stay close. The first conversation opens only with the invitation, and the circle is asked to consent once the conversations are written up. Off, the first conversation opens as the address confirms. An application keeps the setting it confirmed under.",
     type: "boolean",
     default: "false",
+  },
+  {
+    key: "characters.forge_style",
+    category: "Progression",
+    label: "The style for portraits drawn for members",
+    description:
+      "How a portrait drawn for a member should look, in a few sentences: the medium, the light, the palette and anything to leave out. A portrait provider puts these words before its own. Only the first 1500 characters are used. Leave it empty and a provider draws in its own neutral style. Members who upload their own picture are not affected.",
+    type: "longtext",
+    default: "",
+  },
+  {
+    key: "guide.voice",
+    category: "Companions",
+    label: "How your guide speaks",
+    description:
+      "A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried.",
+    type: "longtext",
+    default: "",
   },
   {
     key: "org.letter_team",
@@ -4059,6 +4161,131 @@ export const VARIABLES: VariableDef[] = [
     min: 1,
     max: 1000,
     unit: "members",
+  },
+
+  // ── The hidden map (module hidden-map, shared/hiddenMap.ts) ───────────────
+  //
+  // READ by server/lib/hiddenMap.ts at the point of use. Every one is a dial
+  // like any other, so the village can propose and vote a change.
+  {
+    key: "hiddenmap.unlock_pins",
+    category: "Hidden map",
+    label: "Vouched pins that open the whole map",
+    description:
+      "How many of a member's own planting pins must be vouched for by somebody else before they see every pin on the hidden map. Until then they see only their own. Once a member's map has opened it stays open, so raising this later only asks more of members who have not opened yet. Zero opens the map to every member who can see the module.",
+    type: "integer",
+    default: "7",
+    min: 0,
+    max: 100,
+    unit: "pins",
+  },
+  {
+    key: "hiddenmap.vouches_per_pin",
+    category: "Hidden map",
+    label: "Vouches one pin needs before it counts",
+    description:
+      "How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet.",
+    type: "integer",
+    default: "1",
+    min: 1,
+    max: 10,
+    unit: "vouches",
+  },
+  {
+    key: "hiddenmap.default_precision",
+    category: "Hidden map",
+    label: "How exactly a new pin is shown beyond the open members",
+    description:
+      "The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.",
+    type: "choice",
+    default: "region",
+    choices: [
+      { value: "region", label: "Region, about 50 km", hint: "The safest. A dot says which part of the country, and nothing nearer." },
+      { value: "km", label: "About 1 km", hint: "Close enough to find the area, too coarse to find the spot." },
+      { value: "exact", label: "Exact", hint: "Only for places that are safe to be found." },
+    ],
+  },
+  {
+    key: "hiddenmap.teaser",
+    category: "Hidden map",
+    label: "Show dots to members whose map has not opened",
+    description:
+      "When on, a member who has not opened the map yet sees every other pin as a plain dot, no finer than about 1 km and never finer than the pin's own setting, with no words, photos or stage. When off, they see their own pins and nothing else about anybody's.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "hiddenmap.basemap",
+    category: "Hidden map",
+    label: "What the hidden map is drawn on",
+    description:
+      "The picture under the pins. Tiles load on each member's own phone from the provider named here, with its credit always on screen, and nothing is stored on the village's server. The provider can see which squares of the world a phone asked for, which is why the zoom below is capped. A grid draws no picture at all and sends nothing anywhere.",
+    type: "choice",
+    default: "none",
+    choices: [
+      { value: "none", label: "A grid of latitude and longitude", hint: "Nothing leaves the phone. No coastline, roads or names." },
+      { value: "osm", label: "OpenStreetMap", hint: "Roads, places and names, drawn by volunteers. Free for light use with the credit shown." },
+      { value: "esri-imagery", label: "Satellite imagery from Esri", hint: "Photographs from above. Free to view with the credit shown." },
+    ],
+  },
+  {
+    key: "hiddenmap.basemap_max_zoom",
+    category: "Hidden map",
+    label: "Closest the picture under the pins will zoom",
+    description:
+      "The deepest zoom at which tiles are asked for. At 13 one tile covers about 5 km, so the provider learns only which 5 km square a member looked at. Pins are still drawn exactly where they are for members who may see them.",
+    type: "integer",
+    default: "13",
+    min: 2,
+    max: 18,
+    unit: "zoom",
+  },
+  {
+    key: "hiddenmap.access_log_days",
+    category: "Hidden map",
+    label: "Days the record of who looked is kept",
+    description:
+      "Every read of the shared map, every vouch and every copy taken is recorded with who and when, and never where. Rows older than this are deleted.",
+    type: "integer",
+    default: "90",
+    min: 7,
+    max: 3650,
+    unit: "days",
+  },
+  {
+    key: "hiddenmap.export_hours",
+    category: "Hidden map",
+    label: "Hours a second member has to approve a copy of the map",
+    description:
+      "A copy of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved copy the asker has not downloaded expires too.",
+    type: "integer",
+    default: "24",
+    min: 1,
+    max: 168,
+    unit: "hours",
+  },
+  {
+    key: "hiddenmap.visit_pay_days",
+    category: "Hidden map",
+    label: "Days between paid return visits to the same pin",
+    description:
+      "When the village names a quest for return visits, a member's visit to the same pin opens a new claim at most this often, so one tree is visited for its story and never farmed.",
+    type: "integer",
+    default: "30",
+    min: 0,
+    max: 365,
+    unit: "days",
+  },
+  {
+    key: "hiddenmap.photo_max_mb",
+    category: "Hidden map",
+    label: "Largest photo a member may add to a pin",
+    description: "The largest single photo, before it is shrunk and every hidden detail in it is removed.",
+    type: "integer",
+    default: "12",
+    min: 1,
+    max: 40,
+    unit: "MB",
   },
 
   // ── Task boards (spec section 17, A6) ─────────────────────────────────────
