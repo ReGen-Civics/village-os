@@ -247,6 +247,7 @@ import { register as registerBadgesRoutes } from "./routes/badges";
 import { register as registerBadgeGrantRoutes } from "./routes/badgeGrants";
 import { register as registerMessagingRoutes } from "./routes/messaging";
 import { register as registerStaysRoutes } from "./routes/stays";
+import { retryOwedLineRewards, settleOwedLineRewards } from "./lib/moonReward";
 import { register as registerSitePullRoutes } from "./routes/sitePull";
 import { register as registerBrandPreviewRoutes } from "./routes/brandPreview";
 import { register as registerBrandUploadRoutes } from "./routes/brandUploads";
@@ -5191,6 +5192,8 @@ async function startServer() {
       (f.skipped.length ? `, ${f.skipped.length} stuck and reported` : "");
   }
   registerJob("exchange-reconcile", 60 * 60 * 1000, runExchangeReconcile);
+  // End of Moon token shares still owed after the launch: the closer pays them once, this retries (server/lib/moonReward.ts).
+  registerJob("moon-reward-owed", 60 * 60 * 1000, async () => retryOwedLineRewards(getPool()));
   // An unanswered redemption ends itself and the held tokens go back in full,
   // through the same door a human uses, so an expiry is never a second way to
   // move value. `redemption.expires_after_days` at 0 means never expire.
@@ -21728,6 +21731,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
         await notifyAdmins("governance", `A carried launch vote could not land: ${b.title}`, `bal:${b.id}:launch-held`);
         return out;
       }
+      // End of Moon shares approved before this vote are paid now; nothing else comes back for them (server/lib/moonReward.ts).
+      await settleOwedLineRewards(getPool()).catch((e) => console.error("[launch] could not pay the moon rewards owed before launch", e));
 
       /*
        * `applied` STAYS EMPTY, and that is a decision rather than an omission.
