@@ -40,6 +40,45 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.16 (2026-11-16)
+
+### What changed for your village
+
+- **A Treasury page for whoever holds the money powers.** `/treasury` opens to members who hold `token.mint`, `cash.pay` or approve-alone, without needing admin. "Pay by member" is on it: each member's USD pay (owed, claimed, sent from escrow) and their Earned Equity and Credits to approve or adjust.
+- **AI spending has limits you can set.** Admin dials cap what one account may use (25% of the village's share by default), what visitors may use (150 a day, 40 an hour), and how many documents the assistant reads (6, up to 12). If the village-wide cap can't be checked, AI requests stop instead of running unmetered.
+- **Weak secrets are flagged.** A sign-in secret (`AUTH_TOKEN_SECRET`) shorter than 32 characters still boots but shows red on the launch plan; only a brand-new village with no members refuses to start with one. An `ADMIN_PASSWORD` shorter than 20 characters closes the first-admin and export doors until it is changed.
+- **Make it yours, further** (each one off until a village sets it): a dark page and its own colours, with every colour pair measured for contrast; the game's own colours (paper, stamps, the map, places); its own menu labels, grouping and phone tabs; its own stock faces and portrait style; the words around the app (empty-board lines and the like); how the guide speaks; and the letter members sign opened to visitors, one paragraph per part.
+- **Two new modules, both off by default.** *Protocols*: checklists a village walks the same way every time, working on a phone with no signal. *Hidden map*: a members-only map where each member sees their own pins until others vouch for 7 of them (a votable dial), then the whole map opens to them.
+- **Smaller downloads.** Module card art is served by the server instead of riding in the app bundle (616 KB less).
+- A code-scanning finding (CodeQL #489) is fixed.
+- 1.3.15 also carried the Treasury naming fix (#1381) and a 168 KB bundle saving (#1383).
+
+### What you must do
+
+- **Self-hosters:** `docker-compose.yml` now publishes the app on `127.0.0.1` only, so put a reverse proxy in front of it. Set `VILLAGE_BIND=0.0.0.0` to publish on every interface as before.
+- Check that `AUTH_TOKEN_SECRET` is at least 32 characters and `ADMIN_PASSWORD` at least 20. The launch plan shows red if the secret is too short.
+
+### Does it touch your data
+
+Yes, two expand-only migrations: `0389_a_village_keeps_its_protocols` (4 new tables) and `0392_a_hidden_map_opens_to_those_who_plant` (7 new tables). The previous release never reads them, so going back to 1.3.15 is safe; the tables stay and are ignored.
+
+### Merged pull requests
+
+- #1384 Module card art served from the server (-616 KB)
+- #1396 Batch 183: AI budget and dials (#1350), CodeQL 489 (#1376), self-host and sign-in hardening (#1353)
+- #1398 The letter members sign, opened to visitors (G15)
+- #1393 Words around the app; unused tokens leave member pages (G7, G12)
+- #1389 How the guide speaks (G13)
+- #1377 Protocols module
+- #1385 Dark page and village colours (G1)
+- #1388 A village's own stock faces (G10)
+- #1369 Hidden map, slice 1
+- #1395 A village's menu and phone tabs (G5)
+- #1391 The game's own colours (G3)
+- #1401 Batch 184: Treasury page (#1366) and Pay by member (#1399)
+
+---
+
 ## 1.3.15 (2026-11-16)
 
 ### What changed for your village
