@@ -304,6 +304,7 @@ import { exportMemberTasks, register as registerMemberTaskRoutes } from "./route
 import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskBridge";
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
 import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR } from "./routes/stockAvatars";
+import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
 import { register as registerWalletRoutes } from "./routes/wallet";
@@ -326,6 +327,7 @@ import {
   setPasswordLinkRefusal,
 } from "./lib/memberTokens";
 import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
+import { fontRoleOf, fontWeightOf, withUploadedFace } from "./lib/brandFonts";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
 import { CONSTITUTION } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
@@ -17046,6 +17048,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   });
 
   registerBrandUploadRoutes(app, { isAdmin, uploadsDir: UPLOADS_DIR });
+  registerBrandSoundRoutes(app, { isAdmin, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
 
   // ── Village font package: upload + licence acknowledgment ────────────────
   // The foundation catalogue (shared/fontCatalog.ts) is all-OFL and always
@@ -17109,25 +17112,23 @@ Send an empty drafts array when you are still listening. A role payload is {name
       }
 
       // Activate in one step: uploading a font and then finding nothing
-      // changed is a support ticket. The face lands FIRST in the display
-      // stack (the role a brand font almost always is); Admin can move it to
-      // body/accent by editing the stacks afterwards.
+      // changed is a support ticket. The face lands FIRST in its role's stack
+      // (display unless the form names body, accent or label), one face per
+      // role (server/lib/brandFonts.ts, gap G2).
       const url = `/api/uploads/${filename}`;
       const current = getBrand();
       const admin = await authedUser(req);
+      const role = fontRoleOf(req.body?.role);
       const next = {
         ...current,
         theme: {
-          ...current.theme,
-          fontFaceName: family,
-          fontFaceUrl: url,
-          fontDisplay: `"${family}", ${current.theme.fontDisplay || '"Raleway", system-ui, sans-serif'}`,
+          ...withUploadedFace(current.theme as Record<string, any>, { family, url, role, weight: fontWeightOf(req.body?.weight) }),
           // The record that makes the ack mean something later.
           fontLicenceAck: { family, by: admin?.name ?? "admin", at: new Date().toISOString(), file: filename },
         },
       };
       await brandRepo.put(next);
-      res.json({ success: true, url, family, activated: "display" });
+      res.json({ success: true, url, family, activated: role });
     });
   });
 
@@ -18505,7 +18506,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // point they used to sit. Express matches in registration order, and
   // /api/quests/field only wins over /api/quests/:id because it comes first.
   registerQuestRoutes(app, {
-    isAdmin, authedUser, adminActor, getPool, uploadsDir: UPLOADS_DIR, members,
+    isAdmin, authedUser, adminActor, getPool, uploadsDir: UPLOADS_DIR, members, brandRepo,
     questsRepo, claimsRepo, crewsRepo, firstName, notify, stageOf, loadRoles, seasonState,
     roleIdsFor, currentPatternId, questConsentRecipients, overLimit, clientIp, projectCurrency: () => mergedConfig().project.fiatCurrency,
     // The share-card raster reads the guard's third answer for itself: it is

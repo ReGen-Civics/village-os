@@ -17,6 +17,7 @@ import { CASH_GIVE_UP_FIELD } from "@shared/cashOwed";
 import LeavingNotices, { useLeavingNotices } from "@/components/LeavingNotices";
 import EmailFromVillage from "@/components/EmailFromVillage";
 import MapLightSetting from "@/components/map/MapLightSetting";
+import VillageSoundToggle from "@/components/VillageSoundToggle";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { TASK_COPY, TASK_EMAIL_PREFS, isTaskEmailPref } from "@shared/sessionTasks";
 
@@ -331,6 +332,9 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
           </span>
         </span>
       </label>
+
+      {/* The village's own sounds (gap G8), offered only when it loaded some. */}
+      <VillageSoundToggle />
 
       {/* The gratitude nudge (server/lib/gratitudeNudge.ts). Off means no bell
           row and no email: it is the one notice that only invites. */}
