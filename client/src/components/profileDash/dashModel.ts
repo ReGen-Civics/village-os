@@ -80,6 +80,8 @@ export interface MoonRow {
   label: string;
   tokens: number;
   voice: number;
+  /** Earned Equity issued in the moon, which End of Moon pays as a share of a role's reward (launch rehearsal F4). */
+  equity: number;
   /** Cash that came due in the moon, and whether all of it has been paid. */
   cashMinor: number;
   cashPaid: boolean;
@@ -93,7 +95,7 @@ export interface MoonRow {
 export function moonRows(
   ledger: ReadonlyArray<{ tokenType: string; amount: number; decimals: number; at: string }>,
   moons: { current: { startsAt: string; endsAt: string } | null; past: ReadonlyArray<{ startsAt: string; endsAt: string; cycleNumber: number }> },
-  tokens: { village: string | null; voice: string | null },
+  tokens: { village: string | null; voice: string | null; equity?: string | null },
   cash: ReadonlyArray<{ amountMinor: number; state: string; owedAt: string }>,
 ): MoonRow[] {
   const windows: Array<{ label: string; startsAt: string; endsAt: string | null }> = [];
@@ -111,6 +113,7 @@ export function moonRows(
       label: w.label,
       tokens: tokens.village ? earnedIn(ledger, tokens.village, w.startsAt, w.endsAt) : 0,
       voice: tokens.voice ? earnedIn(ledger, tokens.voice, w.startsAt, w.endsAt) : 0,
+      equity: tokens.equity ? earnedIn(ledger, tokens.equity, w.startsAt, w.endsAt) : 0,
       cashMinor: due.reduce((n, c) => n + (Number(c.amountMinor) || 0), 0),
       cashPaid: due.length > 0 && due.every((c) => c.state === "paid"),
     };
