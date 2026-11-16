@@ -21,6 +21,7 @@ let villageWords: Record<string, string> = {};
 vi.mock("@/hooks/useAppWords", () => ({ useAppWords: () => (_section: string, key: string) => villageWords[key] ?? null }));
 
 import TreasuryPanel from "./TreasuryPanel";
+import { formatMoney } from "@shared/money";
 import type { DashData } from "./useDashData";
 
 afterEach(cleanup);
@@ -71,5 +72,23 @@ describe("the treasury", () => {
     } finally {
       villageWords = {};
     }
+  });
+
+  it("writes cash owed with its cents, the way the Treasurer's Pay by member writes it (Rye, 16 Nov 2026)", () => {
+    const owed = {
+      ...data,
+      cash: [{ id: "c1", workKind: "moon", workRef: "r1", workTitle: "End of Moon", amountMinor: 610867, currency: "USD", state: "owed", owedAt: "2026-11-10T12:00:00Z", claimedAt: null, paidAt: null, paidNote: null }],
+    } as unknown as DashData;
+    render(
+      <Router>
+        <TreasuryPanel data={owed} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
+      </Router>,
+    );
+    // The purse and the moon's row both read it; whole numbers once rounded it to $6,109.
+    expect(formatMoney(610867, "USD")).toBe("$6,108.67");
+    const purse = screen.getByText("Cash owed to you").closest("li");
+    expect(purse?.textContent).toContain("$6,108.67");
+    expect(page()).toContain("$6,108.67 cash owed");
+    expect(page()).not.toContain("$6,109");
   });
 });
