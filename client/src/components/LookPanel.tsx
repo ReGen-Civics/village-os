@@ -1,12 +1,36 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { CHARACTER_CARDS, OVERRIDE_SLOTS, deriveTheme, sanitizeOverrides } from "@shared/brandTokens";
+import { CHARACTER_CARDS, GAME_TOKENS, OVERRIDE_SLOTS, deriveTheme, sanitizeGameTokens, sanitizeOverrides, type GameToken } from "@shared/brandTokens";
 import { announceThemeChange } from "@/lib/liveTheme";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 import { changedKeys } from "@/lib/unsavedChanges";
 
-const LOOK_KEYS = ["seed", "character", "place", "accent", "mode", "overrides"] as const;
+const LOOK_KEYS = ["seed", "character", "place", "accent", "mode", "overrides", "tokens"] as const;
+
+/** What each game token paints (gap G3). Every name in GAME_TOKENS has a line. */
+const TOKEN_WORDS: Record<GameToken, string> = {
+  "paper": "Paper (anything signed or sworn)",
+  "paper-2": "Second paper",
+  "paper-foreground": "Ink on paper",
+  "paper-muted": "Quiet ink on paper",
+  "success": "Success",
+  "ceremony": "Ceremony",
+  "seal": "Seal ink",
+  "stamp-alt": "Second stamp ink",
+  "surface-deep": "Deepest ground",
+  "glow": "Glow behind a picture",
+  "place-1": "First place",
+  "place-2": "Second place",
+  "place-3": "Third place",
+  "map-sea": "Map sea",
+  "map-land": "Map land",
+  "map-line": "Map lines",
+  "map-water": "Map water",
+  "map-grid": "Map grid",
+  "map-fog": "Map fog",
+  "destructive": "Danger",
+};
 
 /**
  * What each exact-colour slot paints, in a founder's words. Every slot in
@@ -98,6 +122,12 @@ export default function LookPanel({ password }: { password: string }) {
             accent: theme.accent ?? "",
             mode: theme.mode === "dark" ? "dark" : "",
             overrides: sanitizeOverrides(theme.overrides),
+            tokens: {
+              ...sanitizeGameTokens(theme.tokens),
+              ...(typeof theme.tokens?.["font-label"] === "string" && theme.tokens["font-label"].trim()
+                ? { "font-label": theme.tokens["font-label"].trim().slice(0, 300) }
+                : {}),
+            },
           },
         }),
       });
@@ -109,7 +139,14 @@ export default function LookPanel({ password }: { password: string }) {
   };
 
   if (!theme) return null;
-  const derived = deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides });
+  const derived = deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides, tokens: theme.tokens });
+  const tokens: Record<string, string> = theme.tokens && typeof theme.tokens === "object" ? theme.tokens : {};
+  const setToken = (name: string, value: string) => {
+    const next = { ...tokens };
+    if (value) next[name] = value;
+    else delete next[name];
+    setTheme({ ...theme, tokens: next });
+  };
   const overrides: Record<string, string> = theme.overrides && typeof theme.overrides === "object" ? theme.overrides : {};
   const setOverride = (slot: string, value: string) => {
     const next = { ...overrides };
@@ -117,7 +154,7 @@ export default function LookPanel({ password }: { password: string }) {
     else delete next[slot];
     setTheme({ ...theme, overrides: next });
   };
-  const overrideCount = Object.keys(sanitizeOverrides(overrides)).length;
+  const overrideCount = Object.keys(sanitizeOverrides(overrides)).length + Object.keys(sanitizeGameTokens(tokens)).length;
 
   return (
     <div className="bg-white border border-gray-100 rounded-2xl p-6 mt-6">
@@ -290,6 +327,46 @@ export default function LookPanel({ password }: { password: string }) {
               </div>
             );
           })}
+        </div>
+        <p className="text-sm font-medium text-foreground mt-4 mb-1">
+          <Trans context="admin look: the game colour tokens heading">Game colours</Trans>
+        </p>
+        <p className="text-xs text-muted-foreground mb-2 max-w-prose">
+          <Trans>The colours the game's own pieces use: paper, stamps, the map, the places a quest happens. Blank keeps each one on the page colour it falls back to.</Trans>
+        </p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {(Object.keys(GAME_TOKENS) as GameToken[]).map((name) => {
+            const value = tokens[name] ?? "";
+            return (
+              <div key={name} className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#6e7376" /* theme-ok: the colour input's starting point before a founder sets one, never rendered as chrome */}
+                  onChange={(e) => setToken(name, e.target.value)}
+                  aria-label={TOKEN_WORDS[name]}
+                  className="h-8 w-10 shrink-0 rounded border border-border cursor-pointer"
+                />
+                <input
+                  value={value}
+                  onChange={(e) => setToken(name, e.target.value.trim().slice(0, 7))}
+                  placeholder={t({ message: "blank", context: "admin look: empty exact colour field" })}
+                  aria-label={t({ message: `${TOKEN_WORDS[name]}, exact value`, context: "admin look: exact colour field label" })}
+                  className="w-24 shrink-0 text-xs border border-border rounded-lg px-2 py-1.5 font-mono"
+                />
+                <span className="text-xs text-foreground">{TOKEN_WORDS[name]}</span>
+              </div>
+            );
+          })}
+          <div className="flex items-center gap-2 sm:col-span-2">
+            <input
+              value={tokens["font-label"] ?? ""}
+              onChange={(e) => setToken("font-label", e.target.value.slice(0, 300))}
+              placeholder={t({ message: "blank", context: "admin look: empty exact colour field" })}
+              aria-label={t({ message: "Label face, as a font stack", context: "admin look: the label font field" })}
+              className="flex-1 text-xs border border-border rounded-lg px-2 py-1.5 font-mono"
+            />
+            <span className="text-xs text-foreground"><Trans context="admin look: the label font field">Label face</Trans></span>
+          </div>
         </div>
       </details>
 

@@ -54,6 +54,12 @@ export interface BrandThemeFields {
    * page draws is measured on the result, so an override can fail the report.
    */
   overrides?: Record<string, string>;
+  /**
+   * The game tokens (gap G3, GAME_TOKENS in shared/brandTokens.ts): hex values
+   * by name (`paper`, `map-sea`, ...), plus `font-label`, a font stack.
+   * Emitted after the slots; a token left out keeps its slot fallback.
+   */
+  tokens?: Record<string, string>;
   /** URL of a CSS file carrying the village's @font-face declarations. */
   fontImportUrl?: string;
   /** Full font-family stacks; blank = keep the platform default. */
@@ -148,6 +154,10 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined): strin
   if (display) vars.push(`  --font-display: ${display};`);
   if (body) vars.push(`  --font-body: ${body};`);
   if (accent) vars.push(`  --font-accent: ${accent};`);
+  // The label face, the one game token that is a stack. Like every font field,
+  // a value with anything a stack is not made of is dropped whole.
+  const label = derived ? sanitizeFontStack((theme.tokens as Record<string, unknown> | undefined)?.["font-label"]) : null;
+  if (label) vars.push(`  --font-label: ${label};`);
   if (vars.length) parts.push(`:root:root {\n${vars.join("\n")}\n}`);
   // Admin is light by ruling (2026-09-04). In the dark scheme it keeps the
   // light palette on its own root; Admin's Night look (.sheet-night) is its
@@ -203,7 +213,7 @@ export function brandColour(theme: BrandThemeFields | null | undefined): string 
 /** deriveTheme with every theme field it reads, the one place this file calls it with options. */
 export function deriveOf(theme: BrandThemeFields | null | undefined): DerivedTheme | null {
   if (!theme) return null;
-  return deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides });
+  return deriveTheme(theme.seed, theme.character, theme.accent, { mode: theme.mode, overrides: theme.overrides, tokens: theme.tokens });
 }
 
 /**
