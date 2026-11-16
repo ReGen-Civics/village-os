@@ -25,7 +25,7 @@
  */
 import { agentKeySlug, endSeating, listOrgAssignments, seatHolder } from "./orgChart";
 import { resolveSeatTerm, type SeatCalendar } from "../../shared/seatTerms";
-import { listOpenProposals, type StoredOpenProposal } from "../repos/openProposals";
+import { proposalsForAgent, type StoredOpenProposal } from "../repos/openProposals";
 import type { Pool } from "mysql2/promise";
 
 /**
@@ -40,6 +40,11 @@ import type { Pool } from "mysql2/promise";
  * An agent nobody has recorded as kept may be proposed by any member, and that
  * proposal is then the record. One with a recorded keeper is proposed only by
  * that keeper, so no member can say they keep somebody else's agent.
+ *
+ * Read by the agent's id with no cap (audit, 15 Nov 2026), and a claim waiting
+ * on the circle counts as much as an adopted one. The read and the claim it
+ * guards run under one lock per agent (`whileAgentClaimHeld`), so two members
+ * claiming the same unkept agent at once cannot both pass.
  */
 export async function recordedKeepers(pool: Pool, agent: { id: string; name: string }): Promise<Set<string>> {
   const keepers = new Set<string>();
@@ -47,11 +52,14 @@ export async function recordedKeepers(pool: Pool, agent: { id: string; name: str
   for (const a of await listOrgAssignments(pool)) {
     if (a.isAgent && !a.endedAt && a.holderKey === key && a.keeperUserId) keepers.add(a.keeperUserId);
   }
-  for (const p of await listOpenProposals(pool, ["confirmed", "adopted"], 2000)) {
+  for (const p of await proposalsForAgent(pool, agent.id, ["unconfirmed", "confirmed", "adopted"])) {
     if (p.body.agent?.agentUserId === agent.id && p.body.agent.keeperUserId) keepers.add(p.body.agent.keeperUserId);
   }
   return keepers;
 }
+
+/** The keeper check's lock, kept in its repo (server/repos/agentClaimLock.ts) beside the SQL it runs. */
+export { AGENT_CLAIM_BUSY, whileAgentClaimHeld } from "../repos/agentClaimLock";
 
 /** Whether this member may say they keep the agent: nobody recorded yet, or only them. */
 export function mayKeep(keepers: ReadonlySet<string>, memberId: string): boolean {
@@ -66,7 +74,7 @@ export function mayKeep(keepers: ReadonlySet<string>, memberId: string): boolean
 export async function rolesAlreadyAsked(pool: Pool, agent: { id: string; name: string }, roleIds: readonly string[]): Promise<string[]> {
   const wanted = new Set(roleIds);
   const hit = new Set<string>();
-  for (const p of await listOpenProposals(pool, ["unconfirmed", "confirmed"], 2000)) {
+  for (const p of await proposalsForAgent(pool, agent.id, ["unconfirmed", "confirmed"])) {
     if (p.body.agent?.agentUserId !== agent.id) continue;
     for (const r of p.body.roles) if (wanted.has(r.roleId)) hit.add(r.roleId);
   }

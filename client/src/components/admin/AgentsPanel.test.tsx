@@ -175,7 +175,8 @@ describe("the agent accounts panel", () => {
     expect(calls.some((c) => c.url.endsWith("/admin/agent-approvals"))).toBe(true);
     expect(region.textContent).toContain("Changed a role card's words");
     expect(region.textContent).toContain("(r-gardener)");
-    expect(region.textContent).toContain("Approved by The lead");
+    expect(region.textContent).toContain("The agent says The lead approved it. No person confirmed it in the app.");
+    expect(region.textContent).not.toContain("Approved by The lead");
     expect(region.textContent).toContain("Yes, that aim.");
     expect(region.textContent).toContain("In the memory");
     // A write whose memory record was never queued still shows, from the event's own line.

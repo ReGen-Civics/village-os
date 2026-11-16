@@ -1,68 +1,132 @@
-/**
- * WHAT AN ACCEPTED WORK WITH US PROPOSAL PAYS.
- *
- * Rye, 2026-10-23: "definitely a work token. GRATITUDE is only sent from player
- * to player using the send gratitude function, gratitude is not distributed in
- * any other way!" An accepted proposal used to mint
- * `gratitude.proposal_accept_award` (100) Gratitude from the recognition
- * faucet, and that dial is retired.
- *
- * Priced like a quest: the village's enabled `proposal.accepted` rules, through
- * `quoteWorkPay`, in full (no ceiling binds work), with the proposer's badge
- * multipliers. Seeded at Village Voice and Village Credits like a quest
- * (server/lib/economySeed.ts), and set on the Mint panel. One ledger row per
- * token, keyed on the submission, so a re-accept pays once.
- */
-import type { Pool } from "mysql2/promise";
+/**
+
+ * WHAT AN ACCEPTED WORK WITH US PROPOSAL PAYS.
+
+ *
+
+ * Rye, 2026-10-23: "definitely a work token. GRATITUDE is only sent from player
+
+ * to player using the send gratitude function, gratitude is not distributed in
+
+ * any other way!" An accepted proposal used to mint
+
+ * `gratitude.proposal_accept_award` (100) Gratitude from the recognition
+
+ * faucet, and that dial is retired.
+
+ *
+
+ * Priced like a quest: the village's enabled `proposal.accepted` rules, through
+
+ * `quoteWorkPay`, in full (no ceiling binds work), with the proposer's badge
+
+ * multipliers. Seeded at Village Voice and Village Credits like a quest
+
+ * (server/lib/economySeed.ts), and set on the Mint panel. One ledger row per
+
+ * token, keyed on the submission, so a re-accept pays once.
+
+ */
+
+import { ownsItsAddress } from "./applicantAccount";
+import type { Pool } from "mysql2/promise";
+
 import { canConfirm, faucetFor, humanAtScale, mint, quoteWorkPay, rulesFor, type PayBoost } from "./economy";
 import { oweProposalCash } from "./cashOwed";
-import type { WorkValue } from "../../shared/workValue";
-import { tokenDef } from "./ledger";
-import { DEPARTED_RECIPIENT, departedRecipient } from "./departed";
-import { memberFirstName } from "../../shared/memberFirstName";
-
-/** The trigger an accepted proposal fires, in the dotted spelling of `mint_rules`. */
-export const PROPOSAL_TRIGGER = "proposal.accepted";
-
-/** One token an accepted proposal paid, as a member reads it. */
-export interface ProposalPaid {
-  token: string;
-  name: string;
-  amount: number;
-}
-
-export async function payAcceptedProposal(
-  pool: Pool,
-  p: { submissionId: string; userId: string; boost?: PayBoost },
-): Promise<{ ok: boolean; paid: ProposalPaid[]; unpayable: Array<{ token: string; reason: string }> }> {
-  const quote = quoteWorkPay(await rulesFor(pool, PROPOSAL_TRIGGER), null, "proposal", p.boost);
-  const paid: ProposalPaid[] = [];
-  let ok = true;
-  for (const line of quote.lines) {
-    const res = await mint(pool, {
-      toUserId: p.userId,
-      tokenSlug: line.token,
-      amount: line.units,
-      from: faucetFor(line.token)!,
-      source: "proposal_accepted",
-      sourceRef: p.submissionId,
-      description: "Work With Us proposal accepted",
-      // The token belongs in the key: one acceptance pays more than one token.
-      idempotencyKey: `proposal_accepted:${p.submissionId}:${line.token}`,
-    });
-    if (!res.ok) {
-      // Said where it happened, and the acceptance is not marked rewarded, so
-      // a later accept retries; every key here makes a retry pay once.
-      console.error(`[proposals] paying ${line.token} for submission ${p.submissionId} failed: ${res.error}`);
-      ok = false;
-      continue;
-    }
-    paid.push({ token: line.token, name: tokenDef(line.token)?.name ?? line.token, amount: humanAtScale(line.units, line.decimals) });
-  }
-  if (quote.unpayable.length) {
-    console.error(`[proposals] submission ${p.submissionId}: ${quote.unpayable.map((u) => `${u.token}: ${u.reason}`).join("; ")}`);
-  }
-  return { ok, paid, unpayable: quote.unpayable };
+import type { WorkValue } from "../../shared/workValue";
+
+import { tokenDef } from "./ledger";
+
+import { DEPARTED_RECIPIENT, departedRecipient } from "./departed";
+
+import { memberFirstName } from "../../shared/memberFirstName";
+
+
+
+/** The trigger an accepted proposal fires, in the dotted spelling of `mint_rules`. */
+
+export const PROPOSAL_TRIGGER = "proposal.accepted";
+
+
+
+/** One token an accepted proposal paid, as a member reads it. */
+
+export interface ProposalPaid {
+
+  token: string;
+
+  name: string;
+
+  amount: number;
+
+}
+
+
+
+export async function payAcceptedProposal(
+
+  pool: Pool,
+
+  p: { submissionId: string; userId: string; boost?: PayBoost },
+
+): Promise<{ ok: boolean; paid: ProposalPaid[]; unpayable: Array<{ token: string; reason: string }> }> {
+
+  const quote = quoteWorkPay(await rulesFor(pool, PROPOSAL_TRIGGER), null, "proposal", p.boost);
+
+  const paid: ProposalPaid[] = [];
+
+  let ok = true;
+
+  for (const line of quote.lines) {
+
+    const res = await mint(pool, {
+
+      toUserId: p.userId,
+
+      tokenSlug: line.token,
+
+      amount: line.units,
+
+      from: faucetFor(line.token)!,
+
+      source: "proposal_accepted",
+
+      sourceRef: p.submissionId,
+
+      description: "Work With Us proposal accepted",
+
+      // The token belongs in the key: one acceptance pays more than one token.
+
+      idempotencyKey: `proposal_accepted:${p.submissionId}:${line.token}`,
+
+    });
+
+    if (!res.ok) {
+
+      // Said where it happened, and the acceptance is not marked rewarded, so
+
+      // a later accept retries; every key here makes a retry pay once.
+
+      console.error(`[proposals] paying ${line.token} for submission ${p.submissionId} failed: ${res.error}`);
+
+      ok = false;
+
+      continue;
+
+    }
+
+    paid.push({ token: line.token, name: tokenDef(line.token)?.name ?? line.token, amount: humanAtScale(line.units, line.decimals) });
+
+  }
+
+  if (quote.unpayable.length) {
+
+    console.error(`[proposals] submission ${p.submissionId}: ${quote.unpayable.map((u) => `${u.token}: ${u.reason}`).join("; ")}`);
+
+  }
+
+  return { ok, paid, unpayable: quote.unpayable };
+
 }
 
 /**
@@ -106,7 +170,8 @@ export interface AcceptRewardDeps {
   activity(text: string, actorUserId: string, submissionId: string): Promise<void>;
 }
 
-export const firstNameForAward = (name: string): string => memberFirstName(name);
+export const firstNameForAward = (name: string): string => memberFirstName(name);
+
 const firstName = firstNameForAward;
 
 export async function applyAcceptReward(
@@ -119,10 +184,15 @@ export async function applyAcceptReward(
   const { members } = deps;
   if (entry.rewarded) return { rewarded: false };
   const email = String(entry.data?.email ?? "").toLowerCase();
+  // The address typed into a public form proves nothing (audit, 15 Nov 2026): anybody can sign up at a stranger's
+  // address first. So a match by address counts only when that account OWNS the address, the same one rule an
+  // application uses (server/lib/applicantAccount.ts): it proved it, or it is an accepted member. A bare account is
+  // treated exactly as no account. A proposal sent while signed in names its own account and needs no address.
+  const byAddress = !entry.userId && email ? await members.byEmail(email) : null;
   const match =
     (entry.userId ? await members.byId(entry.userId) : null) ??
-    (email ? await members.byEmail(email) : null);
-  if (!match) return { rewarded: false }; // not a registered member; nothing to fold in
+    (byAddress && (await ownsItsAddress(byAddress, pool)) ? byAddress : null);
+  if (!match) return { rewarded: false }; // not a registered member who owns the address; nothing to fold in
   // A proposal sent before its author left pays and owes their tombstone
   // nothing, and nothing is written on its row (round 4, finding 3).
   if (departedRecipient(match)) return { rewarded: false, refused: DEPARTED_RECIPIENT };

@@ -269,6 +269,19 @@ export async function listOpenProposals(db: Db, statuses: readonly OpenProposalS
   return rows.map(rowOf);
 }
 
+/**
+ * Every proposal for one agent account (0374) in these statuses, oldest first, with NO cap (audit, 15 Nov 2026):
+ * who keeps an agent is read from these, and a keeper past a capped list read as nobody, so any member could claim it.
+ */
+export async function proposalsForAgent(db: Db, agentUserId: string, statuses: readonly OpenProposalStatus[]): Promise<StoredOpenProposal[]> {
+  if (statuses.length === 0 || !agentUserId) return [];
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status IN (${statuses.map(() => "?").join(",")}) AND JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.agent.agentUserId')) = ? ORDER BY created_at, id`,
+    [...statuses, agentUserId],
+  );
+  return rows.map(rowOf);
+}
+
 /** Every adopted proposal from one address (its folded key), oldest decision first. */
 export async function adoptedForAddress(db: Db, emailKey: string): Promise<StoredOpenProposal[]> {
   const [rows] = await db.query<RowDataPacket[]>(

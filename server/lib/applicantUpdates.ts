@@ -109,7 +109,7 @@ export function makeApplicantTeller(deps: TellDeps): TellApplicant {
         if (!WENT.has(sent.status)) console.warn(`[open-proposals] the ${kind} update for ${ref} did not go by email: ${sent.status}`);
       }
       // The bell only for an account the proposal is trusted to be: never one matched on an address not yet confirmed.
-      const account = await trustedAccountFor(deps.members, p);
+      const account = await trustedAccountFor(deps.members, p, deps.getPool());
       if (account) await notifyAccount(deps, account, ref, kind, facts, words);
     } catch (e) {
       console.error(`[open-proposals] the ${kind} update for ${ref} was not sent`, e);

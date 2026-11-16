@@ -358,9 +358,15 @@ describe.skipIf(!DB_CONFIGURED)("the files nothing points at", () => {
     // still served, which is the half a disk check alone would miss.
     for (const name of mustSurvive) {
       expect(fs.existsSync(path.join(uploadsDir, name)), `${name} must have survived`).toBe(true);
-      const served = await fetch(`${BASE}/api/uploads/${name}`); // module-review-ok: the test client dialling the built server on localhost
+      // A form's attachment is served only through the admin door since the audit of 15 Nov 2026
+      // (server/lib/submissionAttachments.ts), and a file written to this volume before that is read from here.
+      const attachment = name === heldAttachment;
+      const served = attachment
+        ? await fetch(`${BASE}/api/admin/submission-attachments/${name}`, { headers: { Authorization: `Bearer ${founderToken}` } }) // module-review-ok: the test client dialling the built server on localhost
+        : await fetch(`${BASE}/api/uploads/${name}`); // module-review-ok: the test client dialling the built server on localhost
       expect(served.status, `${name} must still be served`).toBe(200);
       expect(Number(served.headers.get("content-length") ?? 0)).toBeGreaterThan(0);
+      if (attachment) expect((await fetch(`${BASE}/api/uploads/${name}`)).status, "never on the public route").toBe(404); // module-review-ok: the test client dialling the built server on localhost
     }
     // The file nobody here can identify, and the file inside its grace window.
     expect(fs.existsSync(path.join(uploadsDir, foreignFile))).toBe(true);

@@ -37,7 +37,9 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   const refuse = new Set<string>();
   // Which routes hang up without answering, as a loopback that times out or is cut would.
   const drop = new Set<string>();
+  const commitThenDrop = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
+  const slowTarget = { on: false };
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
@@ -51,9 +53,16 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     // A stand-in for the target routes: it records who called, and refuses where the person lacks the power.
     const fake = express();
     fake.use(express.json());
-    fake.use((req, res) => {
+    fake.use(async (req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
       if (drop.has(req.path)) return void req.socket.destroy();
+      // The route does its work, then the answer is lost: a loopback that times out after its target committed.
+      if (commitThenDrop.has(req.path)) {
+        if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
+        return void req.socket.destroy();
+      }
+      // A slow target, so accepts racing for one change are all in flight at once (the race case below).
+      if (slowTarget.on) await new Promise((r) => setTimeout(r, 300));
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
       if (req.method === "PUT" && req.path.startsWith("/api/admin/content/")) content[req.path.split("/").pop()!] = req.body;
       if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
@@ -99,6 +108,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   beforeEach(async () => {
     refuse.clear();
     drop.clear();
+    commitThenDrop.clear();
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
@@ -194,6 +204,19 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     ]);
   });
 
+  it("two accepts of the same change at once apply it once (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    slowTarget.on = true;
+    const both = await Promise.all([1, 2, 3].map(() => call("POST", "/api/admin/proposals/accept", { items: [{ id }] }))).finally(() => (slowTarget.on = false));
+    expect(both.map((r) => r.body.results[0].ok).filter(Boolean)).toHaveLength(1);
+    expect(hits.filter((h) => h.path === "/api/admin/faqs/steward")).toHaveLength(1);
+    expect(faqs.steward.length - before).toBe(1);
+    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [id]);
+    expect(row.status).toBe("accepted");
+  });
+
   it("the dry run names the field and writes nothing", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "Dial", items: [DIAL] }, AGENT.id);
     const id = filed.body.ids[0];
@@ -250,16 +273,48 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(hits[0].body).toMatchObject({ title: "Potluck on the land", status: "scheduled" });
   });
 
-  it("a change that never reaches its route is recorded as failed with its reason, and the changes after it still run", async () => {
+  it("a change whose apply throws is recorded as unknown with its reason, and the changes after it still run", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "Phase A content", items: [PAGE, FAQ] }, AGENT.id);
     const [pageId, faqId] = filed.body.ids;
     drop.add("/api/admin/content/page-home");
     const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId }, { id: faqId }] });
     expect(acc.status).toBe(200);
     expect(acc.body.results.map((x: any) => [x.id, x.ok])).toEqual([[pageId, false], [faqId, true]]);
-    expect(acc.body.results[0].error).toContain("did not reach its page");
+    expect(acc.body.results[0].error).toContain("could not tell whether this change reached its page");
     const rows = await q("SELECT id, status, error_text FROM proposed_changes ORDER BY position");
-    expect(rows.map((r) => r.status)).toEqual(["failed", "accepted"]);
-    expect(rows[0].error_text).toContain("did not reach its page");
+    expect(rows.map((r) => r.status)).toEqual(["unknown", "accepted"]);
+    expect(rows[0].error_text).toContain("could not tell whether this change reached its page");
+    // It still waits on the review page, where a person can see it.
+    expect((await call("GET", "/api/admin/proposals")).body.changes.map((c: any) => [c.id, c.status])).toEqual([[pageId, "unknown"]]);
+  });
+
+  it("a thrown apply that DID land on its route is never applied twice by one more click (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    // The route commits, then the connection drops before the answer: the loopback reads it as a throw.
+    commitThenDrop.add("/api/admin/faqs/steward");
+    const first = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    commitThenDrop.clear();
+    expect(first.body.results[0].ok).toBe(false);
+    expect(faqs.steward.length - before, "the first try landed").toBe(1);
+    // One more click, as the page sends it: refused, and the route is not called again.
+    const hitsBefore = hits.length;
+    const again = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(again.body.results[0]).toMatchObject({ ok: false, code: "check_target" });
+    expect(hits.length).toBe(hitsBefore);
+    expect(faqs.steward.length - before).toBe(1);
+    // CONTROL: a person who checked and says so may try it again; putting it aside works too.
+    const checked = await call("POST", "/api/admin/proposals/accept", { items: [{ id, checked: true }] });
+    expect(checked.body.results[0].ok).toBe(true);
+  });
+
+  it("an unknown change can be put aside", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    const id = filed.body.ids[0];
+    drop.add("/api/admin/content/page-home");
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    const out = await call("POST", "/api/admin/proposals/discard", { ids: [id] });
+    expect(out.body.results[0].ok).toBe(true);
   });
 });

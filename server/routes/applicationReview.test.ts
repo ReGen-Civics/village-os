@@ -89,7 +89,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
     pool = testPool(db, { connectionLimit: 8 });
     await ensureRoleColumns();
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, IA, IB, IC, ID, OUTSIDER, APPLICANT, SEAT_NOT_INTERVIEWER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [FOUNDER, IA, IB, IC, ID, OUTSIDER, APPLICANT, SEAT_NOT_INTERVIEWER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-land', 'Land Circle', '[]', 0), ('c-core', 'Core Circle', '[]', 0)");
     gate = await createOrgRole(pool, { id: "ar-role-lead", name: "Lead Steward", seats: 1, circleId: "c-core", aim: "Hold the money." });
     roleA = await createOrgRole(pool, { id: "ar-role-a", name: "Channel Role", seats: 1, circleId: "c-core", aim: "a" });

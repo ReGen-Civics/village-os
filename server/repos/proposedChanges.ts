@@ -72,7 +72,8 @@ function toChange(r: RowDataPacket): StoredChange {
     draft: json(r.draft_json, null),
     draftBy: r.draft_by === null ? null : String(r.draft_by),
     draftAt: iso(r.draft_at),
-    status: String(r.status) as ProposalStatus,
+    // A row a stopped server left `applying` reads as `unknown` (listOpen only returns those once ten minutes old).
+    status: (String(r.status) === "applying" ? "unknown" : String(r.status)) as ProposalStatus,
     proposedBy: String(r.proposed_by),
     proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent",
     createdAt: iso(r.created_at) ?? "",
@@ -125,7 +126,8 @@ export async function changeById(pool: Pool, id: string): Promise<StoredChange |
 /** What waits (proposed or failed), oldest batch first, in each batch's own order. */
 export async function listOpen(pool: Pool): Promise<{ batches: StoredBatch[]; changes: StoredChange[] }> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT * FROM `proposed_changes` WHERE `status` IN ('proposed','failed') ORDER BY `created_at`, `batch_id`, `position` LIMIT 500",
+    // An `unknown` change, and one left `applying` by a server that stopped, wait too: a person checks its page first.
+    "SELECT * FROM `proposed_changes` WHERE `status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE) ORDER BY `created_at`, `batch_id`, `position` LIMIT 500",
   );
   const changes = rows.map(toChange);
   const ids = Array.from(new Set(changes.map((c) => c.batchId)));
@@ -139,7 +141,7 @@ export async function listOpen(pool: Pool): Promise<{ batches: StoredBatch[]; ch
 
 /** How many wait, for the count on Admin. */
 export async function openCount(pool: Pool): Promise<number> {
-  const [rows] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) AS n FROM `proposed_changes` WHERE `status` IN ('proposed','failed')");
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) AS n FROM `proposed_changes` WHERE `status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE)");
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -160,9 +162,40 @@ export async function saveDraft(pool: Pool, id: string, draft: Record<string, un
   return Number(r?.affectedRows ?? 0) > 0;
 }
 
+/**
+ * Take one change for applying, atomically (audit, 15 Nov 2026): two accepts racing for the same row used to both
+ * read it as proposed and both apply it. Only the caller whose UPDATE changed the row goes on.
+ *
+ * A change whose apply threw (`unknown`), or one left `applying` by a server that stopped, may have reached its page
+ * before the answer was lost: a loopback that timed out AFTER its route committed. Applying it again could make the
+ * thing twice, so it is taken only when the person says they checked the page (`checked`).
+ */
+export async function claimForApplying(pool: Pool, id: string, by: string, checked = false): Promise<boolean> {
+  const [r] = await pool.query<any>(
+    "UPDATE `proposed_changes` SET `status` = 'applying', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND (`status` IN ('proposed','failed')" +
+      (checked ? " OR `status` = 'unknown' OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE)" : "") +
+      ")",
+    [by, id],
+  );
+  return Number(r?.affectedRows ?? 0) === 1;
+}
+
+/** Whether this change waits on a person checking its page first: its apply threw, or a server stopped mid-apply. */
+export function needsACheck(c: Pick<StoredChange, "status">): boolean {
+  return c.status === "unknown";
+}
+
+/** The apply threw: whether the change reached its page is not known. Never retried by a plain accept. */
+export async function markUnknown(pool: Pool, id: string, by: string, error: string): Promise<void> {
+  await pool.query(
+    "UPDATE `proposed_changes` SET `status` = 'unknown', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` = 'applying'",
+    [by, error.slice(0, 1000), id],
+  );
+}
+
 export async function markAccepted(pool: Pool, id: string, a: { by: string; accepted: Record<string, unknown>; lessons: unknown[]; approvedBy: string; approvalNote: string }): Promise<boolean> {
   const [r] = await pool.query<any>(
-    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [a.by, JSON.stringify(a.accepted), JSON.stringify(a.lessons), a.approvedBy.slice(0, 120), a.approvalNote.slice(0, 400), id],
   );
   return Number(r?.affectedRows ?? 0) > 0;
@@ -170,14 +203,14 @@ export async function markAccepted(pool: Pool, id: string, a: { by: string; acce
 
 export async function markFailed(pool: Pool, id: string, by: string, error: string): Promise<void> {
   await pool.query(
-    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [by, error.slice(0, 1000), id],
   );
 }
 
 export async function markDiscarded(pool: Pool, id: string, by: string): Promise<boolean> {
   const [r] = await pool.query<any>(
-    "UPDATE `proposed_changes` SET `status` = 'discarded', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'discarded', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND (`status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE))",
     [by, id],
   );
   return Number(r?.affectedRows ?? 0) > 0;

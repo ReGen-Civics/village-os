@@ -44,7 +44,8 @@ import {
   submitScore,
   type ReviewDeps,
 } from "../lib/applicationReview";
-import { accountFor, decideRule, placeOnRoles } from "../lib/openProposalDecide";
+import { decideRule, placeOnRoles } from "../lib/openProposalDecide";
+import { addressAccount } from "../lib/applicantAccount";
 import { askForNewInvitation } from "../lib/applicantFollowups";
 import { registerJob } from "../lib/scheduler";
 import { boolVar, stringVar } from "../lib/variables";
@@ -265,7 +266,7 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const decide = { ...work, stageOf: deps.stageOf, recordStageEvent: deps.recordStageEvent, lapse: deps.lapse };
     const rule = await decideRule(decide);
     const deciders = rule.who === "live-holders" ? rule.holders : [];
-    const own = await accountFor(deps.members, p.email);
+    const own = await addressAccount(deps.members, p.email, pool);
     if (deciders.some((h) => h !== own)) return res.status(409).json({ error: "someone_can_adopt", message: "A holder of the power to fill roles can adopt this at its page, so it does not go to a vote." });
     if (!own) return res.status(409).json({ error: "needs_an_account", message: "A vote is cast on a member, and this person has no account yet. It can go to the village once they have one." });
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): the account is only the address's once the address answers.

@@ -128,13 +128,30 @@ export interface ToolContext {
     on: () => Promise<boolean>;
     seat: (target: { roleId: string } | { seatingId: string }) => Promise<LeadSeatFacts | null>;
     /**
-     * The record every approved write leaves: one admin-only audit event and one record queued for the village's
-     * organisational memory, both keyed on `writeKey`. Called after the route answered; it never throws back here.
+     * The record every approved write leaves, keyed on `writeKey`: one admin-only audit event saying who the AGENT
+     * says approved it, stored BEFORE the write is dispatched, and it throws when it cannot be stored, so nothing is
+     * written without it (audit, 15 Nov 2026).
      */
-    recorded: (a: { kind: LeadApprovedKind; roleId: string | null; path: string; method: string; subject: LeadApprovalSubject; approvedBy: string; approvalNote: string; summary?: string; writeKey: string }) => Promise<void>;
+    recorded: (a: LeadApprovalRecordInput) => Promise<void>;
+    /** After the route answered: the notice and the memory record for a write, or an event saying it was refused. Never throws. */
+    settled: (a: LeadApprovalRecordInput, outcome: "written" | "refused") => Promise<void>;
   };
   /** Writes one `agent_actions` row. Only the admin and Sera tools record through it. */
   recordAction?: (a: { scope: string; tool: string; method: string | null; path: string | null; echoHash: string; state: "done" | "refused" | "asked" }) => Promise<void>;
+}
+
+/** One lead-approved write as its record names it (server/lib/agentLeadApproval.ts). */
+export interface LeadApprovalRecordInput {
+  kind: LeadApprovedKind;
+  roleId: string | null;
+  path: string;
+  method: string;
+  subject: LeadApprovalSubject;
+  /** Who the agent SAYS approved it, and its words for that approval: the agent's claim, never verified. */
+  approvedBy: string;
+  approvalNote: string;
+  summary?: string;
+  writeKey: string;
 }
 
 /** What a tool answers: a result to show, or a refusal in words. */
@@ -622,30 +639,37 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         await record("refused");
         return { ok: false, error: check.sentence, detail: { reason: check.reason } };
       }
-      // The approval is the connector's record, never the route's input: it is taken out before the route sees the body.
-      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead ? withoutApproval(body) : body ?? {});
-      await record(a.status < 300 ? "done" : "refused");
-      if (a.status >= 300) return refusal("The admin path refused", a);
+      // RECORDED BEFORE IT IS WRITTEN (audit, 15 Nov 2026): keyed on the spent confirm token, so one write is one key
+      // and a retried record is a no-op. A record that cannot be stored stops the write: nothing is dispatched.
+      let approvalRecord: LeadApprovalRecordInput | null = null;
       if (lead && ctx.leadApproved) {
         const approval = readLeadApproval(body);
         if (approval.ok) {
-          // Keyed on the spent confirm token: one write, one key, so a retried record is a no-op. The write has
-          // happened; a record that fails is logged and never turns the answer into a refusal.
-          await ctx.leadApproved
-            .recorded({
-              kind: lead,
-              roleId: seatRoleId,
-              path,
-              method,
-              subject: leadApprovalSubject(lead, path, body, seatRoleId),
-              approvedBy: approval.approvedBy,
-              approvalNote: approval.approvalNote,
-              summary,
-              writeKey: echoHash({ token: String(args.confirmToken) }).slice(0, 24),
-            })
-            .catch((err) => console.error("[agent-mcp] the approval record failed (the write stands)", err));
+          approvalRecord = {
+            kind: lead,
+            roleId: seatRoleId,
+            path,
+            method,
+            subject: leadApprovalSubject(lead, path, body, seatRoleId),
+            approvedBy: approval.approvedBy,
+            approvalNote: approval.approvalNote,
+            summary,
+            writeKey: echoHash({ token: String(args.confirmToken) }).slice(0, 24),
+          };
+          try {
+            await ctx.leadApproved.recorded(approvalRecord);
+          } catch (err) {
+            console.error("[agent-mcp] the approval record failed, so the write was not made", err);
+            await record("refused");
+            return { ok: false, error: "The record of this change could not be kept, so nothing was written. Try again in a moment.", detail: { code: "record_failed" } };
+          }
         }
       }
+      // The approval is the connector's record, never the route's input: it is taken out before the route sees the body.
+      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead ? withoutApproval(body) : body ?? {});
+      await record(a.status < 300 ? "done" : "refused");
+      if (approvalRecord && ctx.leadApproved) await ctx.leadApproved.settled(approvalRecord, a.status < 300 ? "written" : "refused").catch(() => undefined);
+      if (a.status >= 300) return refusal("The admin path refused", a);
       return { ok: true, result: { written: true, echo, answer: a.body } };
     },
   },

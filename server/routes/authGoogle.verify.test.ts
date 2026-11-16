@@ -23,6 +23,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { register } from "./authGoogle";
 import { OAUTH_BIND_COOKIE, OAUTH_HANDOFF_COOKIE, oauthBindHash, makeOAuthState, readOAuthState } from "../lib/oauthGoogle";
 import { makeGoogleLink, readGoogleLink } from "../lib/oauthAccounts";
+import { whenInviteDescribed } from "../lib/inviteDoor";
+
+// An adopted application's invitation, mailed to Wren's address (audit, 15 Nov 2026).
+whenInviteDescribed("inv-gv-", async (id) => ({ roles: ["Gate Keeper"], name: "Wren", email: id === "inv-gv-other" ? "someone-else@example.test" : EMAIL, mailed: true }));
 
 const SECRET = randomBytes(24).toString("hex");
 const CLIENT_ID = "client-id.apps.example";
@@ -74,7 +78,7 @@ function store(rows: any[]) {
   };
 }
 
-function mount(members: any) {
+function mount(members: any, invites?: any) {
   const routes = new Map<string, (req: any, res: any) => Promise<unknown>>();
   const app = {
     get: (p: string, h: any) => routes.set(`GET ${p}`, h),
@@ -104,13 +108,13 @@ function mount(members: any) {
       return change();
     },
     onPasswordEnded: (u: any) => void told.push(u.id),
-    invites: {
+    invites: invites ?? ({
       required: () => false,
       resolve: async () => ({ ok: false, error: "" }),
       claim: async () => null,
       release: async () => {},
       welcome: async () => {},
-    } as any,
+    } as any),
   } as any);
   log.mockRestore();
 
@@ -136,9 +140,9 @@ function mount(members: any) {
     reachEnded,
     told,
     audit,
-    async callback(email = EMAIL) {
+    async callback(email = EMAIL, invite: string | null = null) {
       // The binder `start` would have set in this browser (R215).
-      const state = makeOAuthState(SECRET, "/profile", Date.now(), { bind: oauthBindHash("binder-1") });
+      const state = makeOAuthState(SECRET, "/profile", Date.now(), { bind: oauthBindHash("binder-1"), ...(invite ? { invite } : {}) });
       const nonce = readOAuthState(SECRET, state)!.nonce;
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ id_token: idToken(nonce, email) }), { status: 200, headers: { "content-type": "application/json" } }),
@@ -308,5 +312,48 @@ describe("a Google sign-in onto an account whose address was never proved (R104)
     expect(row.email).toBe(EMAIL);
     expect(row.emailVerifiedAt).toBeTruthy();
     expect(flow.reachEnded).toEqual([]);
+  });
+});
+
+describe("the invited person arriving by Google on an account nobody proved (audit, 15 Nov 2026)", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const invites = () => {
+    const claimed: string[] = [];
+    const welcomed: string[] = [];
+    return {
+      claimed,
+      welcomed,
+      door: {
+        required: () => false,
+        resolve: async () => ({ ok: false, error: "" }),
+        claim: async (_inv: string, userId: string) => (claimed.push(userId), "inviter-1"),
+        release: async () => {},
+        welcome: async (_inviter: string, userId: string) => void welcomed.push(userId),
+      },
+    };
+  };
+
+  it("takes the link the person came by for the row it just proved, so the place the village decided on is made", async () => {
+    const inv = invites();
+    const members = store([planted()]);
+    const flow = mount(members, inv.door);
+    const out = await flow.callback(EMAIL, "inv-gv-1");
+    expect(out.redirect).toBe("/login?oauth=complete&next=%2Fprofile");
+    expect(members.rows.get("u-wren").passwordHash).toBe("");
+    expect(inv.claimed).toEqual(["u-wren"]);
+    expect(inv.welcomed).toEqual(["u-wren"]);
+  });
+
+  it("CONTROL: a link that names another address, or a sign-in onto a row already proved, spends nothing", async () => {
+    const a = invites();
+    await mount(store([planted()]), a.door).callback(EMAIL, "inv-gv-other");
+    expect(a.claimed).toEqual([]);
+    const b = invites();
+    await mount(store([planted({ emailVerifiedAt: PROVED })]), b.door).callback(EMAIL, "inv-gv-1");
+    expect(b.claimed).toEqual([]);
   });
 });
