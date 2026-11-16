@@ -59,6 +59,14 @@ const AVATARS: ReadonlySet<string> = new Set(
   ARCHETYPE_KEYS.flatMap((a) => PRESENTATIONS.flatMap((p) => TONES.map((t) => `${a}-${p}-${t}`))),
 );
 
+/** Every stock slot name (`building-f-deep` and the rest), the closed set a village may replace. */
+export const STOCK_SLOTS: readonly string[] = Array.from(AVATARS).sort();
+
+/** True only for one of the thirty stock slot names, never a path. */
+export function isStockSlot(v: unknown): v is string {
+  return typeof v === "string" && AVATARS.has(v);
+}
+
 export function isPresentation(v: unknown): v is Presentation {
   return typeof v === "string" && (PRESENTATIONS as readonly string[]).includes(v);
 }

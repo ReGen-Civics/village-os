@@ -306,7 +306,8 @@ import { register as registerOnboardingRoutes } from "./routes/onboarding";
 import { exportMemberTasks, register as registerMemberTaskRoutes } from "./routes/memberTasks";
 import { register as registerMemberTaskBridgeRoutes } from "./routes/memberTaskBridge";
 import { register as registerMemberAskRoutes } from "./routes/memberAsks";
-import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR } from "./routes/stockAvatars";
+import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBDIR } from "./routes/stockAvatars";
+import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
@@ -18920,6 +18921,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
   registerCharacterPortraitRoutes(app, { authedUser, getPool, uploadsDir: UPLOADS_DIR });
   registerArchetypeAdminRoutes(app, { isAdmin, guardCapability, getPool });
+  registerStockArtRoutes(app, { isAdmin, guardCapability, uploadsDir: UPLOADS_DIR });
   registerPowerAffinityRoutes(app, { isAdmin, guardCapability, getPool });
   // The seat vote registers far below, behind the governance mount, so its opener
   // arrives here deferred and resolves per request (server/routes/powerHands.ts).
@@ -25688,7 +25690,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // The same files at brotli 11, written once by the build: server/lib/precompressedAssets.ts.
   app.use("/assets", precompressedAssets({ assetsDir: ASSETS_DIR, precompressedDir: path.resolve(staticPath, "..", "precompressed") }));
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
-  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR) });
+  registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below

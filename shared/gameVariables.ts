@@ -45,6 +45,9 @@ export type VariableType = "integer" | "decimal" | "percentage" | "boolean" | "c
  */
 export const LONGTEXT_MAX = 4000;
 
+/** How much of `characters.forge_style` a portrait provider is handed. */
+export const FORGE_STYLE_MAX = 1500;
+
 /**
  * What a `longtext` value becomes before it is validated, stored, or compared.
  *
@@ -2646,6 +2649,15 @@ export const VARIABLES: VariableDef[] = [
       "On, an application waits for our review once its address confirms: a holder of the power to place people in roles invites the applicant to the conversations, in the order the role names them, or sends the not-invited letter, which thanks them and points to open ways to stay close. The first conversation opens only with the invitation, and the circle is asked to consent once the conversations are written up. Off, the first conversation opens as the address confirms. An application keeps the setting it confirmed under.",
     type: "boolean",
     default: "false",
+  },
+  {
+    key: "characters.forge_style",
+    category: "Progression",
+    label: "The style for portraits drawn for members",
+    description:
+      "How a portrait drawn for a member should look, in a few sentences: the medium, the light, the palette and anything to leave out. A portrait provider puts these words before its own. Only the first 1500 characters are used. Leave it empty and a provider draws in its own neutral style. Members who upload their own picture are not affected.",
+    type: "longtext",
+    default: "",
   },
   {
     key: "guide.voice",
