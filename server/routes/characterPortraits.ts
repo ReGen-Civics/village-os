@@ -51,6 +51,8 @@ import {
   writePortrait,
 } from "../lib/characterPortraits";
 import * as portraits from "../repos/characterPortraits";
+import { stringVar } from "../lib/variables";
+import { FORGE_STYLE_MAX } from "../../shared/gameVariables";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "uploadsDir">;
 
@@ -292,6 +294,7 @@ export function register(app: Express, deps: Deps): void {
         presentation: String((req.body ?? {}).presentation ?? "f"),
         tone: String((req.body ?? {}).tone ?? "olive"),
         note: String((req.body ?? {}).note ?? "").slice(0, 500),
+        style: stringVar("characters.forge_style").trim().slice(0, FORGE_STYLE_MAX),
       });
       // A provider's bytes go through the SAME crop and the SAME strip as a
       // member's upload. Nothing about being generated makes a picture trusted.

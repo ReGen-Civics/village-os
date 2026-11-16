@@ -69,6 +69,19 @@ export interface EmailVillage {
    * fallback then reads the platform default.
    */
   tokenName?: string;
+  /**
+   * The rest of the village's look, set only when it chose the dark scheme or
+   * colours of its own (`brand.theme.mode`, `.overrides`, `.accent`). Absent,
+   * a letter derives from the seed and the character alone, as it always has.
+   */
+  scheme?: LetterScheme | null;
+}
+
+/** The look fields a letter reads beyond the seed and the character. */
+export interface LetterScheme {
+  accent: string | null;
+  mode: string | null;
+  overrides: Record<string, string> | null;
 }
 
 /** The words of one email, before any person's values. */

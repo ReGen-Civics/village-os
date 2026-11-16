@@ -115,13 +115,26 @@ export interface EncodedPortrait {
  * what makes the metadata proof cheap enough to run on every suite.
  */
 export async function encodePortrait(input: Buffer, quality = 82): Promise<EncodedPortrait> {
+  return encodeAt(input, PORTRAIT_WIDTH, PORTRAIT_HEIGHT, quality);
+}
+
+/** The stock cast's size: 3:4 at 768 x 1024, the size of the platform's own thirty. */
+export const STOCK_ART_WIDTH = 768;
+export const STOCK_ART_HEIGHT = 1024;
+
+/** A village's own stock drawing: the same crop, encode and strip as a portrait, at the stock size. */
+export async function encodeStockArt(input: Buffer, quality = 80): Promise<EncodedPortrait> {
+  return encodeAt(input, STOCK_ART_WIDTH, STOCK_ART_HEIGHT, quality);
+}
+
+async function encodeAt(input: Buffer, width: number, height: number, quality: number): Promise<EncodedPortrait> {
   const sharp = (await import("sharp")).default;
   const out = await sharp(input)
     // Honour the orientation flag before cropping, then let it go with the rest
     // of the metadata. A portrait that arrives sideways is cropped sideways
     // otherwise, because the flag that would have turned it is stripped.
     .rotate()
-    .resize({ width: PORTRAIT_WIDTH, height: PORTRAIT_HEIGHT, fit: "cover", position: "top" })
+    .resize({ width, height, fit: "cover", position: "top" })
     .webp({ quality })
     .toBuffer({ resolveWithObject: true });
   const markers = await readMetadataMarkers(out.data);
@@ -161,6 +174,11 @@ export interface ForgeRequest {
   tone: string;
   /** Anything the member typed. A provider decides what to do with it. */
   note: string;
+  /**
+   * The village's own style for its portraits (`characters.forge_style`), which
+   * a provider puts before its own neutral prompt. Empty: the provider's own.
+   */
+  style: string;
 }
 
 /**

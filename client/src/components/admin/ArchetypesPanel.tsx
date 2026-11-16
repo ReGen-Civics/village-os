@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { ARCHETYPES, type ArchetypeSeed } from "@shared/archetypes";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 import PowerAffinityPanel from "./PowerAffinityPanel";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /** One class as `GET /api/admin/archetypes` sends it. */
 interface ArchetypeRow {
@@ -683,11 +684,151 @@ export default function ArchetypesPanel({ password }: { password: string }) {
       {/* Which powers suit each class, keyed by the same identifiers this panel
           keeps out of reach. `castKey` moves when a class is added or renamed
           here, so the table's columns follow the cast. */}
+      <StockFaces password={password} names={Object.fromEntries(list.map((r) => [r.key, r.name]))} />
+
       <PowerAffinityPanel
         password={password}
         castKey={list.map((r) => `${r.key}:${r.name}`).join("|")}
         castOrder={list.map((r) => r.key)}
       />
     </div>
+  );
+}
+
+/**
+ * THE VILLAGE'S OWN FACES (gap G10). The thirty stock drawings a member picks
+ * from, by class, two presentations and three skin tones. A village may
+ * replace any of them (server/routes/stockArt.ts): each picture is cropped to
+ * 3:4, stripped and served at the same address, so every page shows it. "Load
+ * a set" takes many files at once and matches them by file name
+ * (`building-f-deep.webp` and so on), refusing any name outside the thirty.
+ */
+function StockFaces({ password, names }: { password: string; names: Record<string, string> }) {
+  const { t } = useLingui();
+  const [slots, setSlots] = useState<string[]>([]);
+  const [replaced, setReplaced] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [said, setSaid] = useState("");
+  const [bust, setBust] = useState(() => Date.now());
+
+  const load = useCallback(async () => {
+    const res = await fetch(`${API_BASE}/admin/characters/stock-art`, { headers: authHeaders(password) }).catch(() => null);
+    const d = res?.ok ? await res.json().catch(() => null) : null;
+    if (d) {
+      setSlots(Array.isArray(d.slots) ? d.slots : []);
+      setReplaced(Array.isArray(d.replaced) ? d.replaced : []);
+    }
+  }, [password]);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const upload = async (slot: string, file: File): Promise<boolean> => {
+    const form = new FormData();
+    form.append("art", file);
+    const res = await fetch(`${API_BASE}/admin/characters/stock-art/${encodeURIComponent(slot)}`, {
+      method: "PUT",
+      headers: authHeaders(password),
+      body: form,
+    }).catch(() => null);
+    if (!res?.ok) {
+      toast.error(refusal(await res?.json().catch(() => null), t`That face did not save.`));
+      return false;
+    }
+    return true;
+  };
+
+  const loadSet = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setBusy(true);
+    let done = 0;
+    const refused: string[] = [];
+    for (const f of Array.from(files)) {
+      const slot = f.name.replace(/\.[a-z0-9]+$/i, "");
+      if (!slots.includes(slot)) {
+        refused.push(f.name);
+        continue;
+      }
+      if (await upload(slot, f)) done += 1;
+    }
+    setBusy(false);
+    setBust(Date.now());
+    await load();
+    setSaid(
+      refused.length
+        ? t`Loaded ${done} faces. Not part of the cast, so left out: ${refused.join(", ")}.`
+        : t({ message: `Loaded ${done} faces.`, context: "admin character classes: after loading a set of stock portraits" }),
+    );
+  };
+
+  const reset = async (slot: string) => {
+    const res = await fetch(`${API_BASE}/admin/characters/stock-art/${encodeURIComponent(slot)}`, {
+      method: "DELETE",
+      headers: authHeaders(password),
+    }).catch(() => null);
+    if (!res?.ok) toast.error(refusal(await res?.json().catch(() => null), t`That face did not reset.`));
+    setBust(Date.now());
+    await load();
+  };
+
+  if (!slots.length) return null;
+  const byClass = new Map<string, string[]>();
+  for (const s of slots) {
+    const key = s.split("-")[0];
+    byClass.set(key, [...(byClass.get(key) ?? []), s]);
+  }
+
+  return (
+    <section className="mt-6" aria-labelledby="stock-faces-h">
+      <h4 id="stock-faces-h" className="font-semibold text-foreground mb-1">
+        <Trans context="admin character classes: the stock portraits heading">Faces</Trans>
+      </h4>
+      <p className="text-xs text-muted-foreground mb-3 max-w-prose">
+        <Trans>
+          The pictures a member picks from when they make their character: two for each class, in three skin tones.
+          Replace any of them with your village's own. They are cropped to 3:4 and every page shows them.
+        </Trans>
+      </p>
+      <label className={`${btnCls} inline-flex items-center mb-3 cursor-pointer`}>
+        <input type="file" accept="image/*" multiple className="sr-only" disabled={busy} onChange={(e) => void loadSet(e.target.files)} />
+        {busy ? <Trans context="admin character classes: while a set of stock portraits uploads">Loading the set…</Trans> : <Trans context="admin character classes: upload many stock portraits at once">Load a set</Trans>}
+      </label>
+      <p aria-live="polite" className="text-xs text-muted-foreground mb-3">{said}</p>
+      {Array.from(byClass.entries()).map(([key, faces]) => (
+        <div key={key} className="mb-4">
+          <p className="text-sm font-medium text-foreground mb-1.5">{names[key] ?? key}</p>
+          <ul className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {faces.map((slot) => {
+              const own = replaced.includes(slot);
+              return (
+                <li key={slot} className="flex flex-col gap-1">
+                  <img src={`/images/avatars/${slot}.webp?v=${bust}`} alt={slot} className="aspect-[3/4] w-full rounded-lg object-cover" loading="lazy" />
+                  <label className={`${moveCls} inline-flex items-center justify-center cursor-pointer`}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (f && (await upload(slot, f))) {
+                          setBust(Date.now());
+                          await load();
+                        }
+                      }}
+                    />
+                    <Trans context="admin character classes: replace one stock portrait">Replace</Trans>
+                  </label>
+                  {own ? (
+                    <button type="button" className={moveCls} onClick={() => void reset(slot)}>
+                      <Trans context="admin character classes: go back to the platform's stock portrait">Use the platform's</Trans>
+                    </button>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </section>
   );
 }
