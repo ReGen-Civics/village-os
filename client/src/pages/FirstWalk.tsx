@@ -105,7 +105,8 @@ export default function FirstWalk() {
                         onClick={() => toggle(s.id)}
                         aria-pressed={isDone}
                         aria-label={isDone ? `Mark "${s.title}" as not seen` : `Mark "${s.title}" as seen`}
-                        className="mt-0.5 shrink-0"
+                        /* A 44px hit area around the 20px check (QA P1-15); the margin gives back the padding, so nothing moves. */
+                        className="-m-3 -mt-2.5 shrink-0 rounded-full p-3"
                       >
                         {isDone
                           ? <CheckCircle2 className="w-5 h-5 text-teal-deep" />

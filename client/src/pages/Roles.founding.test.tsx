@@ -278,6 +278,34 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(document.activeElement).toBe(slot));
   });
 
+  it("QA P1-01: on a wide screen the first role, already shown, still brings its card into view", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    const scroll = vi.fn();
+    const proto = HTMLElement.prototype as any;
+    const before = proto.scrollIntoView;
+    proto.scrollIntoView = scroll;
+    try {
+      renderRoles();
+      const section = await screen.findByRole("region", { name: "Join the founding team" });
+      const slot = section.querySelector("[data-founding-card-slot]") as HTMLElement;
+      // Below the fold, as measured on desktop: 1944px down a 900px window.
+      slot.getBoundingClientRect = () => ({ top: 1944 }) as DOMRect;
+      const first = within(section).getAllByRole("button").find((b) => b.getAttribute("data-founding-role") === "land")!;
+      expect(first.getAttribute("aria-expanded")).toBe("true");
+      fireEvent.click(first);
+      await waitFor(() => expect(scroll).toHaveBeenCalled());
+      expect(first.getAttribute("aria-expanded")).toBe("true");
+      // Already on screen, the page stays where it is.
+      scroll.mockClear();
+      slot.getBoundingClientRect = () => ({ top: 10 }) as DOMRect;
+      fireEvent.click(first);
+      await waitFor(() => expect(document.activeElement).toBe(slot));
+      expect(scroll).not.toHaveBeenCalled();
+    } finally {
+      proto.scrollIntoView = before;
+    }
+  });
+
   it("a card that writes its own shares shows those in place of the village's", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payShape: [{ label: "cash", pct: 70 }, { label: "equity", pct: 30 }], payNote: "This role's own note." }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
     renderRoles();

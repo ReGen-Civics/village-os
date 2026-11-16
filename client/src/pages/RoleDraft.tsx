@@ -330,7 +330,6 @@ export default function RoleDraft() {
 
   const ctx = { now: new Date(), season: seasonForSheet(season), classNames };
   const pickCount = picks.length;
-  const termEnds = form?.term ? civilDayWords(form.term.endsOn, i18n.locale) : "";
   // The village's goals for this season, live (the Season tab in Admin). Done ones drop off.
   const seasonRaw = season as unknown as { current?: SeasonDoc | null } & SeasonDoc | null;
   const seasonDoc: SeasonDoc | null = seasonRaw?.current ?? seasonRaw ?? null;
@@ -365,7 +364,7 @@ export default function RoleDraft() {
             <SelectStepper
               labels={[
                 t({ message: "This season's goals", context: "role draft step" }),
-                t({ message: "Your Ikigai (look it up) and your characters", context: "role draft step" }),
+                t({ message: "Your Ikigai and your characters", context: "role draft step" }),
                 t({ message: "Scout the open roles", context: "role draft step" }),
                 t({ message: "Select up to three", context: "role draft step" }),
                 t({ message: "Apply", context: "role draft step" }),
@@ -713,8 +712,9 @@ export default function RoleDraft() {
                   <li>{t`If it is adopted, a formal invitation to make your account comes to your email.`}</li>
                   <li>{t`Once you are approved into a role, you align with the village's confidentiality agreement (NDA), before you see any confidential records.`}</li>
                   <li>
+                    {/* No cycle end date here (QA P1-06, as QA2-05 on the application): a date in words goes stale. */}
                     {form?.term
-                      ? t`Your role runs from adoption to ${termEnds}. Each month you share what you'll bring the next month.`
+                      ? t`Each month you share what you'll bring the next month.`
                       : t`Your role starts on the first day of next season.`}
                   </li>
                 </ol>

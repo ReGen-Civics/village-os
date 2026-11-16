@@ -360,10 +360,11 @@ describe("the season's goals, the first step", () => {
 });
 
 describe("a village whose proposals are for this moon", () => {
-  it("says the role runs to its last day, by date, and never names the moon to an applicant", async () => {
+  it("names no cycle end date and never names the moon to an applicant (QA P1-06)", async () => {
     serve({ form: { ...OPEN_FORM, term: { kind: "moon", startsOn: "2026-11-09", endsOn: "2026-12-08" } } });
     render(<RoleDraft />);
-    const line = await screen.findByText(/Your role runs from adoption to 8 December 2026. Each month you share what you'll bring the next month./);
+    const line = await screen.findByText("Each month you share what you'll bring the next month.");
     expect(line.textContent).not.toMatch(/moon/i);
+    expect(document.body.textContent).not.toContain("8 December 2026");
   });
 });

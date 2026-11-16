@@ -177,6 +177,12 @@ describe("isQuietPath", () => {
     expect(isQuietPath("/propose-a-role/confirm?token=x")).toBe(true);
     expect(isQuietPath("/proposals")).toBe(false);
   });
+
+  it("QA2-03, still open in QA pass 1: quiet on a circle's page, the selection board, the investor journey and events", () => {
+    for (const p of ["/circles/anchor-circle", "/roles/select", "/roles/select?x=1", "/investor", "/events"]) expect(isQuietPath(p), p).toBe(true);
+    expect(isQuietPath("/circles")).toBe(false);
+    expect(isQuietPath("/roles")).toBe(false);
+  });
 });
 
 describe("chaptersOf", () => {
