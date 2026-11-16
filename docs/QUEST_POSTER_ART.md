@@ -32,8 +32,8 @@ that will display these images, not invented.
 
 ## Where the files live, and why it is not `client/public`
 
-**The uploads volume, served through `/api/uploads/:filename`.** Not
-`client/public/images/`.
+**The uploads volume, served through `/api/uploads/:filename`.** Not an
+images folder under `client/public`.
 
 CI enforces three budgets on `dist/public`: main JS 700 KB, total 6000 KB, and
 400 KB for any single image. Fourteen posters would eat a third of the total
