@@ -102,6 +102,8 @@ import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
+import { loadEmailVillage } from "../lib/comms/render";
+import { comeAndPlayFor } from "../lib/comms/villageLetter";
 import { foundingSetupFrom, type FoundingSetup } from "../../shared/foundingApplication";
 import { knowUsLinksFrom, NO_KNOW_US_LINKS, type KnowUsLinks } from "../../shared/knowUsLinks";
 import { listCalendarItems } from "../lib/calendar";
@@ -836,8 +838,12 @@ export function register(app: Express, deps: Deps): void {
   // ── The tidy job (sheet 19i) ──────────────────────────────────────────────
 
   registerJob(TIDY_JOB, TIDY_EVERY_MS, async () => {
-    // TODO(wt/email-invitations): add `footer: renderComeAndPlay` here (server/lib/applicantFollowups.ts ClosingDeps.footer).
-    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir, { postEmail, projectName, siteUrl: site, onboardingRole: () => stringVar("org.onboarding_role") });
+    // The closed letter carries the come-and-play block (server/lib/comms/villageLetter.ts): the open ways in for somebody with no account.
+    const footer: ClosingDeps["footer"] = async ({ village, lang }) => {
+      const look = await loadEmailVillage(getPool(), site());
+      return comeAndPlayFor(getPool(), { ...look, name: village || look.name }, { audience: "public", lang, skip: ["quests"] });
+    };
+    const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir, { postEmail, projectName, siteUrl: site, onboardingRole: () => stringVar("org.onboarding_role"), footer });
     // The kept applications' confirmation emails, tried again (server/lib/openProposalKept.ts).
     const again = await retryOwedConfirmations({ ...letters, getPool, postEmail }, now());
     return again.tried ? `${tidied}, ${again.went} of ${again.tried} owed confirmation emails sent` : tidied;

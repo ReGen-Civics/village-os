@@ -9,8 +9,9 @@
  *
  *   - the applicant letters: not invited, declined, a join request's no
  *     (server/lib/comms/villageLetter.ts dresses them);
- *   - the 90-day close letter and an expired invitation's letter, once those
- *     letters land: they call `renderComeAndPlay` the same way;
+ *   - the 90-day closed letter, through its footer hook
+ *     (`ClosingDeps.footer` in server/lib/applicantFollowups.ts), and any later
+ *     letter, such as an expired invitation's, the same way;
  *   - any member email, as an optional footer (`composeEmail`'s `comeAndPlay`).
  *
  * ── NEVER A DEAD LINK ───────────────────────────────────────────────────────
@@ -344,7 +345,7 @@ ${
     w.heading,
     w.intro,
     "",
-    ...cards.flatMap((c) => [`${c.title}: ${c.line}`, c.url, ""]),
+    ...cards.flatMap((c) => [`${c.title}: ${c.url}`, c.line, ""]),
     `${w.button}: ${home}`,
   ].join("\n");
 

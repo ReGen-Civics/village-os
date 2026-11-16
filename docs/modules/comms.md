@@ -271,8 +271,11 @@ role, 16 Nov 2026: "a whole bunch of ways to come and play in the village in a b
 - **On the server**, `server/lib/comms/villageLetter.ts`. `dressLetter(pool, origin, words,
   { lang, comeAndPlay: "public" | "members" | false, skip })` reads the village, the modules and
   the settings once and returns the whole letter. `comeAndPlayFor(pool, village, { audience })`
-  returns the block alone. **A letter added later** (the 90-day close, an expired invitation)
-  calls `dressLetter` with `comeAndPlay: "public"` and gets the same invitation.
+  returns the block alone. **The 90-day closed letter** (`closedEmailFor` in
+  `server/lib/applicantFollowups.ts`) takes it through its `footer` hook, wired in the tidy job
+  (`server/routes/openProposals.ts`) without the quests card, which the letter already names.
+  **A letter added later**, such as an expired invitation's, calls `dressLetter` with
+  `comeAndPlay: "public"` and gets the same invitation.
 - **As a footer on a member email**, pass the block as `comeAndPlay` to `composeEmail` (or to
   `renderTemplate`'s context). No template carries it by default.
 - **Who signs:** `org.letter_team`, a team the village names, such as "The Human Operations team",

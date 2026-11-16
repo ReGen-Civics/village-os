@@ -272,7 +272,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     words: { subject: string; text: string; button?: { label: string; url: string } },
     o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean } = {},
   ): Promise<OutgoingEmail> {
-    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false });
+    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName() });
     return {
       idempotencyKey: key,
       kind: "essential",

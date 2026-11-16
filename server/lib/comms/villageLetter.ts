@@ -43,6 +43,12 @@ export interface DressOptions {
   skip?: readonly PlayDoor[];
   /** The village, when the caller already read it for a batch. */
   village?: EmailVillage;
+  /**
+   * The village's name as the letter's own words say it (the route's
+   * `projectName()`), so the band, the signature and the footer never name a
+   * different village from the subject line.
+   */
+  villageName?: string;
 }
 
 const nonBlank = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
@@ -94,7 +100,8 @@ export function letterTeam(village: EmailVillage, lang?: ApplicantLanguage | nul
 
 /** The letter, whole: subject, preheader, HTML and its plain-text twin. */
 export async function dressLetter(pool: Pool, origin: string, words: LetterWords, o: DressOptions): Promise<LetterFrame> {
-  const village = o.village ?? (await loadEmailVillage(pool, origin));
+  const read = o.village ?? (await loadEmailVillage(pool, origin));
+  const village: EmailVillage = o.villageName && o.villageName.trim() ? { ...read, name: o.villageName.trim() } : read;
   const palette = letterPalette(village.seed, village.character);
   const w = comeAndPlayWords(o.lang);
   const extra = o.comeAndPlay ? await comeAndPlayFor(pool, village, { audience: o.comeAndPlay, lang: o.lang, skip: o.skip }) : null;

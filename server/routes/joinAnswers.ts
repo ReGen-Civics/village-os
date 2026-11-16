@@ -175,7 +175,7 @@ export function register(app: Express, deps: Deps): void {
    * the come-and-play block, the open ways in for somebody with no account.
    */
   async function letter(key: string, answer: "accepted" | "declined", to: { email: string; name: string | null }, words: { subject: string; text: string }): Promise<OutgoingEmail> {
-    const dressed = await dressLetter(getPool(), deploymentOrigin(), words, { comeAndPlay: answer === "declined" ? "public" : false });
+    const dressed = await dressLetter(getPool(), deploymentOrigin(), words, { comeAndPlay: answer === "declined" ? "public" : false, villageName: projectName() });
     return {
       idempotencyKey: key,
       kind: "essential",
