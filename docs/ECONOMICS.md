@@ -95,7 +95,7 @@ subtlety in this system; see section 7.
 | A moon closes | `runSettlement` | Pays each holder their role's own list, or the flat `role.cycle` amounts for a role with none, through `quoteWorkPay`, in full |
 | A cycle is closed by an admin | the cycle-close route | Splits `gratitude.pool_per_cycle` of the pool token by recognition received. A human act, never a job |
 | A member thanks another | `give()`, or `sendGratitude()` for a heart | Spends the member's cycle allowance |
-| An admin mints by hand | the admin mint route | Capped per cycle, refused when the admin is the recipient, cosigned over a threshold. A grant waiting for its second signature is approved by `approveMintRequest` (`server/lib/mintRequests.ts`), which the admin route and a carried village vote on the grant both call |
+| A holder of `token.mint` mints by hand | the admin mint route | Asks `guardCapability("token.mint")`: the admin before launch, and from launch the founding stewards and the Treasury role (`server/lib/tokenMintHandover.ts`; Rye, 2026-11-15), whoever the village later passes it to. Capped per cycle, a reason is required, cosigned over a threshold, and a grant to yourself waits for a second signer at any amount. A grant waiting for its second signature is approved by `approveMintRequest` (`server/lib/mintRequests.ts`), which the approve route (also `token.mint`) and a carried village vote on the grant both call; the vote cannot sign a grant to the person who asked for it |
 | A member spends | a stay night, a seat fee, a library escrow, a member-to-member send | See section 12 |
 | A member asks to redeem | `requestRedemption`, `server/lib/redemptionStore.ts` | Holds the asked amount in `sys:redemption-hold` when `redemption.holds_on_propose` is on, and holds nothing when it is off. A refusal, a withdrawal or an expiry returns a held amount by reversing the hold |
 | A redemption is confirmed | `settleRedemption`, `server/lib/redemptionStore.ts` | Retires the tokens to `sys:redeemed`, which only ever receives, taking them from the hold if one was taken and from the member otherwise |
@@ -184,7 +184,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `xstock-<Date.now()>-<Math.random().toString(36).slice(2, 8)>` | `server/index.ts` |
 | `xstock:<slug>:<body>` | `server/index.ts` |
 
-54 distinct shapes across 60 posting site(s), plus 8 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
+54 distinct shapes across 61 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
 <!-- generated:triggers end -->
 
 ---

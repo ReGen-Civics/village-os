@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from "vitest";
 import ICAL from "ical.js";
-import { cleanRecurrence, expandOccurrences, type CalendarRow } from "./calendar";
+import { cleanRecurrence, expandOccurrences, recurrenceRefusal, MAX_DAY_STEPS, MAX_MONTH_STEPS, NTH_WEEKDAY_REFUSAL, RECURRENCE_GENERIC_REFUSAL, type CalendarRow } from "./calendar";
 import { buildIcs, rruleFor, startFollowsRule } from "./icsFeed";
 import { EXAMPLE_MONTH_NAMES } from "./lunarTable";
 import { civilParts } from "../../shared/lunar";
@@ -250,5 +250,55 @@ describe("words and the proposals path", () => {
     expect(read.value.target).toMatchObject({ method: "POST", path: "/api/admin/events" });
     expect(read.value.body.recurrence).toEqual(body.recurrence);
     expect(cleanRecurrence(read.value.body.recurrence)).toEqual({ freq: "monthly", byNthWeekday: { nth: 1, weekday: FRI }, interval: 1 });
+  });
+});
+
+describe("recurrenceRefusal: the sentence a person is shown", () => {
+  it("names the 1st-to-4th-or-last rule when the nth weekday is wrong", () => {
+    for (const nw of [{ nth: 5, weekday: FRI }, { nth: 0, weekday: FRI }, { nth: 1, weekday: 7 }, { nth: 1 }]) {
+      expect(recurrenceRefusal({ freq: "monthly", byNthWeekday: nw })).toBe(NTH_WEEKDAY_REFUSAL);
+    }
+    expect(NTH_WEEKDAY_REFUSAL).toBe("Choose the 1st to 4th or the last weekday of the month.");
+  });
+
+  it("keeps the generic sentence for other refusals, and says nothing for a good rule", () => {
+    expect(recurrenceRefusal({ freq: "daily" })).toBe(RECURRENCE_GENERIC_REFUSAL);
+    expect(recurrenceRefusal({ freq: "monthly", byMonthDay: 40 })).toBe(RECURRENCE_GENERIC_REFUSAL);
+    expect(recurrenceRefusal({ freq: "weekly", byWeekday: [] })).toBe(RECURRENCE_GENERIC_REFUSAL);
+    expect(recurrenceRefusal(firstFriday)).toBeNull();
+    expect(recurrenceRefusal({ freq: "monthly", byMonthDay: 15 })).toBeNull();
+  });
+});
+
+describe("expandOccurrences: an unclamped window cannot loop for long", () => {
+  const HUNDRED_YEARS = new Date("2126-11-06T00:00:00Z");
+  const start = new Date("2026-11-06T00:00:00Z");
+
+  it("monthly, interval 12, over 100 years: quick and inside the caps", () => {
+    const t0 = Date.now();
+    const occ = expandOccurrences(row({ recurrence: { freq: "monthly", byNthWeekday: { nth: 1, weekday: FRI }, interval: 12 } }), start, HUNDRED_YEARS, CR);
+    expect(Date.now() - t0).toBeLessThan(1000);
+    expect(occ.length).toBeGreaterThan(0);
+    // 600 month steps at interval 12 reach at most 50 firings.
+    expect(occ.length).toBeLessThanOrEqual(Math.ceil(MAX_MONTH_STEPS / 12));
+  });
+
+  it("monthly every month stops at the month cap", () => {
+    const occ = expandOccurrences(row({ recurrence: { freq: "monthly", byMonthDay: 15, interval: 1 } }), start, new Date("2526-01-01T00:00:00Z"), CR);
+    expect(occ.length).toBeLessThanOrEqual(MAX_MONTH_STEPS);
+  });
+
+  it("weekly over 100 years stops at the day cap, and every rhythm stays quick", () => {
+    const t0 = Date.now();
+    const weekly = expandOccurrences(row({ recurrence: { freq: "weekly", byWeekday: [FRI], interval: 1 } }), start, HUNDRED_YEARS, CR);
+    expect(weekly.length).toBeLessThanOrEqual(Math.ceil(MAX_DAY_STEPS / 7) + 1);
+    expect(weekly.length).toBeGreaterThan(500);
+    expandOccurrences(row({ recurrence: { freq: "solar", on: "either" } }), start, new Date("3026-01-01T00:00:00Z"), CR);
+    expandOccurrences(row({ recurrence: { freq: "lunar", on: "full_moon" } }), start, new Date("3026-01-01T00:00:00Z"), CR);
+    expect(Date.now() - t0).toBeLessThan(5000);
+  });
+
+  it("a normal window is untouched", () => {
+    expect(keys(row(), "2026-11-01T00:00:00Z", "2027-03-01T00:00:00Z")).toEqual(["2026-11-06", "2026-12-04", "2027-01-01", "2027-02-05"]);
   });
 });
