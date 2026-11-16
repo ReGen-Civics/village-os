@@ -69,6 +69,12 @@ export interface EmailVillage {
    * fallback then reads the platform default.
    */
   tokenName?: string;
+  /**
+   * The village's own words a letter may name (gap G6): what a member is
+   * called, its catalyst, a role, its membership commitment. Present only for
+   * a village that set any of them; a field it left blank reads its fallback.
+   */
+  words?: { member?: string; catalyst?: string; role?: string; commitment?: string };
 }
 
 /** The words of one email, before any person's values. */
@@ -296,6 +302,10 @@ export function composeEmail(input: ComposeInput): ComposedEmail {
     "village.name": village.name,
     "village.url": village.url,
     "village.tokenName": village.tokenName ?? null,
+    "village.member": village.words?.member ?? null,
+    "village.catalyst": village.words?.catalyst ?? null,
+    "village.role": village.words?.role ?? null,
+    "village.commitment": village.words?.commitment ?? null,
     "footer.address": village.postalAddress,
   };
   const tracker: FillTracker = newTracker();

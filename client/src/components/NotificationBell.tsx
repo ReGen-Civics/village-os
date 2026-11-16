@@ -55,6 +55,9 @@ import { Bell, ChevronDown, Settings2 } from "lucide-react";
 import { Link } from "wouter";
 import { Trans } from "@lingui/react/macro";
 import { buildFeed, unreadIdsOf, type FeedRow } from "@/lib/notificationFeed";
+import { noticeBlurb, noticeWordsOf } from "@shared/noticeWords";
+import { useGameConfig } from "@/lib/gameApi";
+import { usePageVars } from "@/hooks/usePageContent";
 import BellTaskActions, { BELL_TASK_TYPES } from "@/components/tasks/BellTaskActions";
 import { forgetAllBellAnswers } from "@/components/tasks/bellAnswers";
 import { useModuleOn } from "@/modules/ModuleProvider";
@@ -141,7 +144,13 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
     if (!memberId) forgetAllBellAnswers();
   }, [memberId]);
 
-  const groups = useMemo(() => buildFeed(state.items), [state.items]);
+  // The village's own explanation for a kind, where it wrote one (gap G6).
+  const noticeCfg = (useGameConfig() as { notices?: unknown } | null)?.notices;
+  const pageVars = usePageVars();
+  const groups = useMemo(() => {
+    const words = noticeWordsOf(noticeCfg);
+    return buildFeed(state.items, (type, platform) => noticeBlurb(words, type, platform, pageVars ?? {}));
+  }, [state.items, noticeCfg, pageVars]);
   const unread = state.unread;
   // The badge counts UNSEEN, not unread. Opening the panel quiets it without
   // touching a single row's read state, which is the whole point: a number

@@ -14,6 +14,7 @@
  * was required in setup and shown nowhere.
  */
 import type { PageVars } from "./types";
+import { nounVars, vocabularyOf } from "../vocabulary";
 
 /** The slice of the public game config the words come from. */
 export interface PageVarSource {
@@ -27,6 +28,8 @@ export interface PageVarSource {
     catalystName?: unknown;
   } | null;
   currency?: { name?: unknown; collectiveName?: unknown; value?: { name?: unknown } | null } | null;
+  /** The village's own nouns (gap G4, shared/vocabulary.ts), resolved by /api/game/config. */
+  vocabulary?: unknown;
 }
 
 export function pageVarsFrom(config: PageVarSource): PageVars {
@@ -49,5 +52,8 @@ export function pageVarsFrom(config: PageVarSource): PageVars {
     value: word(currency?.value?.name, "village tokens"),
     // The umbrella word for every token together, set in Admin then Tokens.
     tokens: word(currency?.collectiveName, "Village Tokens"),
+    // The village's own nouns, `{circle}`, `{circles}`, `{a-circle}` and the
+    // rest (gap G4). The platform's words when the village set none.
+    ...nounVars(vocabularyOf(config.vocabulary)),
   };
 }

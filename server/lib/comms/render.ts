@@ -167,6 +167,17 @@ export async function loadEmailVillage(pool: Pool, origin: string): Promise<Emai
     character: nonBlank(brand?.theme?.character) || null,
     postalAddress: nonBlank(settings?.postalAddress),
     tokenName: nonBlank(tokenDef(RECOGNITION_SLUG)?.name) || nonBlank(brand?.currency?.name) || GAME_CONFIG.currency.name,
+    // The village's own words for letters (gap G6), only when it set any.
+    ...(() => {
+      const words = {
+        member: nonBlank(brand?.project?.memberName),
+        catalyst: nonBlank(brand?.project?.catalystName),
+        role: nonBlank(brand?.project?.roleName),
+        commitment: nonBlank(brand?.project?.commitmentName),
+      };
+      const set = Object.fromEntries(Object.entries(words).filter(([, v]) => v));
+      return Object.keys(set).length ? { words: set } : {};
+    })(),
   };
 }
 
