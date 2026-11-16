@@ -3421,6 +3421,11 @@ msgctxt "admin header, keyboard shortcut for the helper"
 msgid "Ctrl /"
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the label font field"
+msgid "Label face"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgid "The full card for {roleName}"
 msgstr "La ficha completa de {roleName}"
@@ -10686,6 +10691,10 @@ msgstr ""
 msgid "Adds {addedCount}, changes {changedCount}, already there {sameCount}. Nothing is removed. Nothing is saved until you press Save."
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgid "The colours the game's own pieces use: paper, stamps, the map, the places a quest happens. Blank keeps each one on the page colour it falls back to."
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Not every way in is a founding role. Each of these is open now."
@@ -13896,6 +13905,11 @@ msgctxt "pricing desk"
 msgid "As much as, for {0}"
 msgstr ""
 
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the label font field"
+msgid "Label face, as a font stack"
+msgstr ""
+
 #: client/src/components/roots/RootTags.tsx
 msgctxt "roots on a role or quest, the list's name"
 msgid "Grows from"
@@ -15721,6 +15735,7 @@ msgid "{n, plural, one {# role open now} other {# roles open now}}"
 msgstr "{n, plural, one {# rol abierto ahora} other {# roles abiertos ahora}}"
 
 #. placeholder {0}: SLOT_WORDS[slot]
+#. placeholder {0}: TOKEN_WORDS[name]
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: exact colour field label"
 msgid "{0}, exact value"
@@ -17532,6 +17547,11 @@ msgstr ""
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "I know, and I want to adopt anyway"
 msgstr "Lo sé, y quiero adoptarla de todos modos"
+
+#: client/src/components/LookPanel.tsx
+msgctxt "admin look: the game colour tokens heading"
+msgid "Game colours"
+msgstr ""
 
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks"
