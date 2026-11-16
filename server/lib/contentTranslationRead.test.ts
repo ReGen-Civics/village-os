@@ -11,8 +11,8 @@ import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/
 import { pageSpecForSection } from "../../shared/pageContent";
 import { resolvePageRaw } from "../../shared/pageContent/resolve";
 import { overlayPageRaw } from "../../shared/contentTranslationOverlay";
-import { sourceHash, writeTranslation } from "../repos/contentTranslations";
-import { pageEnglishAt, pageTranslation, readerLocale, roleCardTranslation } from "./contentTranslationRead";
+import { approveDraft, sourceHash, writeTranslation } from "../repos/contentTranslations";
+import { machineWritten, pageEnglishAt, pageTranslation, readerLocale, roleCardTranslation } from "./contentTranslationRead";
 import type { RoleCardSections } from "../../shared/roleCardSections";
 
 const configured = testDbConfigured();
@@ -111,6 +111,59 @@ describe.skipIf(!configured)("translated village words, on a real schema", () =>
     // The village rewrites that field: the Spanish of the old words stops showing.
     const stored = { [sid]: { [key]: "Our own new words" } };
     expect(await pageTranslation(pool, STEWARD, stored, "es")).toBeNull();
+  });
+
+  // Rye, 15 Nov 2026: drafts are shown marked until a person approves them. Every
+  // served draft carries the mark on every reader path; approved words never do.
+  it("marks every served draft on the role card and never an approved line, and drops the mark once approved", async () => {
+    const r = { ...role, id: "seed-steward", aim: "Keep the seed.", accountabilities: ["Swap seed", "Store seed"] };
+    const secs = { aiSupport: "An AI drafts the list.", payNote: "", qualities: ["Patient"], idealBackground: [], payShape: [] } as unknown as RoleCardSections;
+    const w = (kind: "role_card" | "role_card_sections", field: string, english: string, text: string, status: "ai_draft" | "approved") =>
+      writeTranslation(pool, { kind, refKey: r.id, field, locale: "es", text, sourceHash: sourceHash(english), status, by: status === "approved" ? "u-mara" : null });
+    await w("role_card", "aim", r.aim, "Guardar la semilla.", "approved");
+    await w("role_card", "accountabilities.0", "Swap seed", "Intercambiar semilla", "ai_draft");
+    await w("role_card", "accountabilities.1", "Store seed", "Guardar semilla", "approved");
+    await w("role_card_sections", "aiSupport", secs.aiSupport, "Una IA redacta la lista.", "ai_draft");
+    const t = (await roleCardTranslation(pool, r, secs, "es"))!;
+    expect(t.machine.sort()).toEqual(["role_card:accountabilities.0", "role_card_sections:aiSupport"]);
+    expect(t.machine).not.toContain("role_card:aim");
+    expect(t.machine).not.toContain("role_card:accountabilities.1");
+
+    expect(await approveDraft(pool, { kind: "role_card", refKey: r.id, field: "accountabilities.0", locale: "es" }, sourceHash("Swap seed"), "u-mara")).toBe(true);
+    expect(await approveDraft(pool, { kind: "role_card_sections", refKey: r.id, field: "aiSupport", locale: "es" }, sourceHash(secs.aiSupport), "u-mara")).toBe(true);
+    const after = (await roleCardTranslation(pool, r, secs, "es"))!;
+    expect(after.seat.accountabilities).toEqual(["Intercambiar semilla", "Guardar semilla"]);
+    expect(after.machine).toEqual([]);
+  });
+
+  it("marks every served draft on a page and never an approved field", async () => {
+    const page = "page-journey-resident";
+    const spec = pageSpecForSection(page)!;
+    const texts: string[] = [];
+    for (const s of spec.sections) for (const f of s.fields) if (f.kind !== "link" && texts.length < 2) texts.push(`${s.id}.${f.key}`);
+    expect(texts.length).toBe(2);
+    const [drafted, approved] = texts;
+    for (const [field, status] of [[drafted, "ai_draft"], [approved, "approved"]] as const) {
+      const english = pageEnglishAt(page, null, field)!;
+      await writeTranslation(pool, { kind: "page_section", refKey: page, field, locale: "es", text: `es ${field}`, sourceHash: sourceHash(english), status, by: status === "approved" ? "u-mara" : null });
+    }
+    const t = (await pageTranslation(pool, page, null, "es"))!;
+    expect(Object.keys(t.fields).sort()).toEqual([drafted, approved].sort());
+    expect(t.machine).toEqual([drafted]);
+    await approveDraft(pool, { kind: "page_section", refKey: page, field: drafted, locale: "es" }, sourceHash(pageEnglishAt(page, null, drafted)!), "u-mara");
+    expect((await pageTranslation(pool, page, null, "es"))!.machine).toEqual([]);
+  });
+
+  it("reads a row with any status but a person's approval as a machine's, and marks it", async () => {
+    const field = firstTextField(STEWARD);
+    const english = pageEnglishAt(STEWARD, null, field)!;
+    await pool.query( // module-review-ok: a test planting a status the store never writes, to prove the reader still marks it
+      "INSERT INTO content_translations (kind, ref_key, field, locale, text, source_hash, status) VALUES ('page_section', ?, ?, 'es', 'Palabras', ?, 'pending') ON DUPLICATE KEY UPDATE status = VALUES(status), text = VALUES(text), source_hash = VALUES(source_hash)",
+      [STEWARD, field, sourceHash(english)],
+    );
+    expect((await pageTranslation(pool, STEWARD, null, "es"))!.machine).toEqual([field]);
+    expect(machineWritten({ status: "approved" })).toBe(false);
+    expect(machineWritten({ status: "ai_draft" })).toBe(true);
   });
 
   it("never answers with a translation of a binding page", async () => {

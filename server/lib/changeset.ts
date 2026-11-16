@@ -1061,6 +1061,24 @@ export async function applyMechanicsProposal(
  * caller: like `recordEvent`, this is a trace of a change that already
  * happened, and a trace that failed must not fail the deed it is a trace OF.
  */
+/**
+ * The amendment ledger's value columns hold 255 characters (0042), and a
+ * longtext dial holds up to LONGTEXT_MAX (a guide's voice, a portrait style,
+ * a process text). A longer value used to fail the whole row ("Data too long
+ * for column 'new_value'"), so the change stood with no line in "Changes to
+ * the Rules". It is recorded clipped instead, with a marker saying so; the
+ * whole value is always the dial's own row.
+ */
+export const LEDGER_VALUE_MAX = 255;
+export const LEDGER_CLIPPED_MARK = " [clipped: the full text is in the setting]";
+export function ledgerValue(v: string | null): string | null {
+  if (v === null || v.length <= LEDGER_VALUE_MAX) return v;
+  // Code points, the unit MySQL counts, so a clip never splits an emoji.
+  const chars = Array.from(v);
+  if (chars.length <= LEDGER_VALUE_MAX) return v;
+  return chars.slice(0, LEDGER_VALUE_MAX - LEDGER_CLIPPED_MARK.length).join("") + LEDGER_CLIPPED_MARK;
+}
+
 export async function recordMechanicsChangeRow(
   pool: Pool,
   key: string,
@@ -1078,8 +1096,8 @@ export async function recordMechanicsChangeRow(
       configKey: key,
       // NULL means "the platform default at the time": the row records the
       // village's act, and not a snapshot of the platform's defaults.
-      oldValue: result.previous === def?.default ? null : result.previous ?? null,
-      newValue: result.value === def?.default ? null : result.value ?? null,
+      oldValue: ledgerValue(result.previous === def?.default ? null : result.previous ?? null),
+      newValue: ledgerValue(result.value === def?.default ? null : result.value ?? null),
       actorUserId,
       source,
       proposalRef: proposalRef ?? null,

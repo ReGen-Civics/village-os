@@ -190,7 +190,13 @@ describe.skipIf(!DB_CONFIGURED)("Village Comms, the post office", () => {
     expect(link.json?.emailed).toBe(true);
 
     for (const origin of ["auth.founder_claim", "auth.first_password", "auth.reset", "auth.admin_password_link"]) {
-      const rows = await rowsFor(origin);
+      // Recovery letters go out in the background (R110), so wait for each
+      // one to finish sending before reading what the post office did.
+      let rows = await rowsFor(origin);
+      for (let i = 0; i < 50 && !(rows.length && rows.every((r: any) => r.status === "sent")); i++) {
+        await new Promise((r) => setTimeout(r, 100));
+        rows = await rowsFor(origin);
+      }
       expect(rows.length, origin).toBeGreaterThanOrEqual(1);
       for (const r of rows) {
         expect(r, origin).toMatchObject({ kind: "essential", status: "sent", to_email: FOUNDER_EMAIL, body_html: null });

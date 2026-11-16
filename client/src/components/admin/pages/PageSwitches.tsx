@@ -10,11 +10,14 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { API_BASE, authHeaders, refusal } from "../adminApi";
-import { isSwitchablePage } from "@shared/brochure";
+import { isMemberDoor, isSwitchablePage } from "@shared/brochure";
+import { Trans } from "@lingui/react/macro";
 
 export interface Switches {
   enabled: boolean;
   hidden: string[];
+  /** Member doors opened to visitors while the story pages are off (gap G15). */
+  open?: string[];
 }
 
 export interface BrochureSwitches {
@@ -25,6 +28,7 @@ export interface BrochureSwitches {
   error: { at: string; text: string } | null;
   setMaster: (on: boolean) => void;
   setPage: (path: string, show: boolean) => void;
+  setOpen: (path: string, open: boolean) => void;
 }
 
 /** Both switches, read once and changed through the one route. */
@@ -39,7 +43,11 @@ export function useBrochureSwitches(password: string): BrochureSwitches {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!alive || !d || typeof d.enabled !== "boolean") return;
-        setState({ enabled: d.enabled, hidden: Array.isArray(d.hidden) ? d.hidden.filter((p: unknown) => typeof p === "string") : [] });
+        setState({
+          enabled: d.enabled,
+          hidden: Array.isArray(d.hidden) ? d.hidden.filter((p: unknown) => typeof p === "string") : [],
+          open: Array.isArray(d.open) ? d.open.filter((p: unknown) => typeof p === "string") : [],
+        });
       })
       .catch(() => {});
     return () => {
@@ -53,7 +61,7 @@ export function useBrochureSwitches(password: string): BrochureSwitches {
    * refusal puts it back where it was and says why beside it.
    */
   const send = useCallback(
-    async (at: string, body: { enabled?: boolean; pages?: Record<string, boolean> }) => {
+    async (at: string, body: { enabled?: boolean; pages?: Record<string, boolean>; open?: Record<string, boolean> }) => {
       const before = state;
       if (before) {
         const hidden = new Set(before.hidden);
@@ -61,7 +69,12 @@ export function useBrochureSwitches(password: string): BrochureSwitches {
           if (show) hidden.delete(p);
           else hidden.add(p);
         }
-        setState({ enabled: body.enabled ?? before.enabled, hidden: Array.from(hidden) });
+        const open = new Set(before.open ?? []);
+        for (const [p, on] of Object.entries(body.open ?? {})) {
+          if (on) open.add(p);
+          else open.delete(p);
+        }
+        setState({ enabled: body.enabled ?? before.enabled, hidden: Array.from(hidden), open: Array.from(open) });
       }
       setBusy(true);
       setError(null);
@@ -73,7 +86,7 @@ export function useBrochureSwitches(password: string): BrochureSwitches {
         });
         const d = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(refusal(d, "That did not save."));
-        setState({ enabled: Boolean(d.enabled), hidden: Array.isArray(d.hidden) ? d.hidden : [] });
+        setState({ enabled: Boolean(d.enabled), hidden: Array.isArray(d.hidden) ? d.hidden : [], open: Array.isArray(d.open) ? d.open : [] });
       } catch (e) {
         if (before) setState(before);
         setError({ at, text: e instanceof Error ? e.message : "That did not save." });
@@ -89,6 +102,7 @@ export function useBrochureSwitches(password: string): BrochureSwitches {
     error,
     setMaster: (on) => void send("all", { enabled: on }),
     setPage: (path, show) => void send(path, { pages: { [path]: show } }),
+    setOpen: (path, open) => void send(path, { open: { [path]: open } }),
   };
 }
 
@@ -130,6 +144,8 @@ export const PAGE_SWITCH_WORDS = {
   on: "Visitors can open this page, and it has its place in the menu and footer.",
   off: "Hidden. The menu and footer leave it out, buttons to it on your other pages go, and its address shows the not-found page. Your words here are kept.",
   allHidden: "All your story pages are hidden right now, so this one is too. Its own switch counts again once they are showing.",
+  openOn: "Visitors can read this page even while your other story pages are hidden.",
+  openOff: "While your story pages are hidden, only signed-in members can open this page.",
   saves: "Saves as soon as you change it.",
 } as const;
 
@@ -139,11 +155,14 @@ export const PAGE_SWITCH_WORDS = {
  * or before the server has said where the switches stand.
  */
 export function PageSwitch({ path, switches }: { path: string; switches: BrochureSwitches }) {
-  const { state, busy, error, setPage } = switches;
+  const { state, busy, error, setPage, setOpen } = switches;
   if (state === null || !isSwitchablePage(path)) return null;
   const shown = !state.hidden.includes(path);
   const id = `page-switch-${path.replace(/[^a-z0-9]+/gi, "-")}`;
-  const line = !shown ? PAGE_SWITCH_WORDS.off : state.enabled ? PAGE_SWITCH_WORDS.on : PAGE_SWITCH_WORDS.allHidden;
+  // A member door (the letter members sign) may open to visitors on its own (gap G15).
+  const door = isMemberDoor(path);
+  const open = door && (state.open ?? []).includes(path);
+  const line = !shown ? PAGE_SWITCH_WORDS.off : state.enabled || open ? PAGE_SWITCH_WORDS.on : PAGE_SWITCH_WORDS.allHidden;
   return (
     <div className="mb-4 border border-border rounded-xl p-4 bg-card">
       <label htmlFor={id} className="inline-flex items-center gap-2 text-sm font-bold text-foreground">
@@ -153,6 +172,15 @@ export function PageSwitch({ path, switches }: { path: string; switches: Brochur
       <p className="text-[11px] text-muted-foreground mt-1">
         {line} {PAGE_SWITCH_WORDS.saves}
       </p>
+      {door && shown && (
+        <>
+          <label htmlFor={`${id}-open`} className="mt-2 inline-flex items-center gap-2 text-sm text-foreground">
+            <input id={`${id}-open`} type="checkbox" checked={open} disabled={busy} onChange={(e) => setOpen(path, e.target.checked)} />
+            <Trans>Show it to visitors even while the story pages are hidden</Trans>
+          </label>
+          <p className="text-[11px] text-muted-foreground mt-1">{open ? PAGE_SWITCH_WORDS.openOn : PAGE_SWITCH_WORDS.openOff}</p>
+        </>
+      )}
       {error?.at === path && <p role="alert" className="text-[11px] text-red-700 mt-1">{error.text}</p>}
     </div>
   );
