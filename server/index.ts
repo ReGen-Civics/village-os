@@ -226,7 +226,7 @@ import { register as registerApplicationCardRoutes, orgRoleExtras } from "./rout
 import { register as registerRoleProposalRoutes } from "./routes/roleProposals";
 import { register as registerOpenProposalRoutes } from "./routes/openProposals";
 import { adminDoorRefusal, register as registerStewardHandoverRoutes } from "./routes/stewardHandover";
-import { powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
+import { freezeLaunchSelection, powerInPlainWords, readLaunchSelection } from "./lib/launchHandover";
 import { register as registerRoleGuideRoutes } from "./routes/roleGuide";
 import { register as registerMapOrgRoutes } from "./routes/mapOrg";
 import { register as registerMapMasterplanRoutes } from "./routes/mapMasterplan";
@@ -3145,6 +3145,7 @@ const holderReads: HolderReads = {
   badgeRows: () => badgeCapabilityRows(getPool()),
   roleHolders: loadPowerHoldings,
   roles: loadRoles,
+  villageHeld: () => villageHeldCapabilities(getPool()),
 };
 const liveHoldersOf = (capability: string): Promise<string[]> => liveHoldersNow(holderReads, capability);
 const powerAssignGate = makePowerAssignGate({ authedUser, capabilityCtx, liveHoldersOf });
@@ -3167,6 +3168,7 @@ async function capabilityCtx(user: any) {
   // badges module is on. Off = zero queries, zero effect: the gate is
   // byte-identical to its pre-badges self.
   let badgeCapabilities: string[] = [];
+  let badgeVoteCapabilities: string[] = [];
   let badgeDenies: string[] = [];
   if (effectiveLifecycle("badges") !== "off") {
     // 0050: a badge declared `seasonal` grants nothing while its season is
@@ -3175,6 +3177,7 @@ async function capabilityCtx(user: any) {
     // enforces on its own side.
     const grants = await badgeGrantsFor(getPool(), user.id, await dormantBadgeIds());
     badgeCapabilities = grants.capabilities;
+    badgeVoteCapabilities = grants.voteCapabilities;
     badgeDenies = grants.denies;
   }
   return {
@@ -3182,6 +3185,8 @@ async function capabilityCtx(user: any) {
     stageIndexOf: stageIndex,
     roleCapabilities: agent ? [] : roleCapabilitiesFor(user.id),
     badgeCapabilities: agent ? [] : badgeCapabilities,
+    // R157: on a key the village holds, only an award a vote made counts.
+    badgeVoteCapabilities: agent ? [] : badgeVoteCapabilities,
     badgeDenies,
     stageUnlockOverrides: stageUnlockOverridesFromVars(),
     // Admins pass every capability gate (shared/capabilities.ts honors this):
@@ -13540,6 +13545,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const slate = await launchSlateProblem(getPool(), req.body?.slate, electorate, firstName);
     if (!slate.ok) return res.status(409).json({ error: slate.error });
     const villageName = mergedConfig().project.name;
+    // Read once: the document says these words and the ballot freezes this copy (audit S3).
+    const handoverSelection = (await readLaunchSelection(getPool())).capabilities;
     const doc = launchProposalDoc({
       villageName,
       quorumPct: dials.quorumPct,
@@ -13550,7 +13557,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       openedOn: new Date().toISOString().slice(0, 10),
       slate: slate.members,
       // Frozen here, in plain words: the hand-over control refuses to change it while this vote is open.
-      handover: (await readLaunchSelection(getPool())).capabilities.map(powerInPlainWords),
+      handover: handoverSelection.map(powerInPlainWords),
       carriedOpen: (await launchStatus(getPool(), launchDeps)).carriedOpen.map((c) => c.title), // host-only rows this vote carries
     });
 
@@ -13567,7 +13574,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
       durationDays: Math.max(1, numberVar("governance.vote_days")),
       openedBy: user.id,
       electorate,
-      onOpen: (conn, ballotId) => insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id),
+      onOpen: async (conn, ballotId) => {
+        await insertSlate(conn, ballotId, slate.members.map((m) => m.id), user.id);
+        // The closer moves this copy, never the live selection (audit S3).
+        await freezeLaunchSelection(conn, ballotId, handoverSelection);
+      },
     });
     if (!result.ok) return res.status(409).json({ error: result.error, ballotId: result.alreadyOpen?.id ?? null });
 
@@ -21330,6 +21341,15 @@ Send an empty drafts array when you are still listening. A role payload is {name
 
       if (!asked || asked.roleId !== roleId) {
         out.held = "This build has no record of what this role would be called, so nothing was created. Report this.";
+        await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
+        return out;
+      }
+      // R159: the closer asks the openers' question again. A ballot opened
+      // before the openers asked it, or written by any other door, could
+      // otherwise create the `steward` row the launch adopts as the founding seat.
+      const reservedAtClose = reservedRoleIdRefusal(roleId);
+      if (reservedAtClose) {
+        out.held = `${reservedAtClose} Nothing was created.`;
         await notifyAdmins("governance", `A carried role declaration could not land: ${b.title}`, `bal:${b.id}:declare-held`);
         return out;
       }

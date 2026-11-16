@@ -789,17 +789,21 @@ describe.skipIf(!DB_CONFIGURED)("everybody answers and everybody agrees", () => 
 
   it("keeps the record when a manual checklist item is ticked afterwards", async () => {
     /*
-     * The clobber this file exists to catch. Every other write to the
-     * launch-state document reads it whole and puts it back whole, so an admin
-     * ticking a checklist item after the vote carried would have erased the
-     * launch if `recordLaunchCarried` wrote the same way. It writes the three
-     * fields in place instead, and this drives the exact sequence.
+     * The clobber this file exists to catch. `confirmManual` used to read the
+     * launch-state document whole and put it back whole, so an admin ticking a
+     * checklist item after the vote carried could erase the launch. It now
+     * writes only its own row and refuses once the village has launched (audit
+     * S3, server/lib/launchConfirmLaunched.test.ts stages the race), so after
+     * the launch both answers are refused and the record stands.
      */
     const before = (await call("GET", "/api/admin/launch")).json;
     expect(String(before.launchedAt)).toBeTruthy();
 
-    expect((await call("POST", "/api/admin/launch/confirm", { body: { id: "backups-drilled", done: false } })).status).toBe(200);
-    expect((await call("POST", "/api/admin/launch/confirm", { body: { id: "backups-drilled", done: true } })).status).toBe(200);
+    for (const done of [false, true]) {
+      const r = await call("POST", "/api/admin/launch/confirm", { body: { id: "backups-drilled", done } });
+      expect(r.status, JSON.stringify(r.json)).toBe(400);
+      expect(String(r.json?.error)).toMatch(/already launched/);
+    }
 
     const after = (await call("GET", "/api/admin/launch")).json;
     expect(after.launchedAt).toBe(before.launchedAt);

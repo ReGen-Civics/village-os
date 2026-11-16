@@ -27,7 +27,8 @@
  * NOT TO BE CONFUSED WITH `server/liveHolders.test.ts`, which is the suite for
  * `liveHoldersOfCapability` in ./roleGrants, the rule this file feeds.
  */
-import { STAGE_UNLOCKS } from "../../shared/capabilities";
+import { STAGE_UNLOCKS, isVillageHeld, type Capability } from "../../shared/capabilities";
+import { isVoteAward } from "./badges";
 import { leftEmptyByRemoval, liveHoldersOfCapability } from "./roleGrants";
 
 /** What the caller knows and this file does not: the caches, and the badge rows. */
@@ -42,6 +43,11 @@ export interface HolderReads {
   roleHolders(): ReadonlyArray<any>;
   /** Every role this village defines, live. */
   roles(): ReadonlyArray<any>;
+  /**
+   * What the village holds, live. On a held key the gate counts only an award
+   * a vote made (R157), so the counter does too. Absent reads as nothing held.
+   */
+  villageHeld?(): Promise<readonly string[]>;
 }
 
 /** A stored list that may be an array or the JSON text of one, or neither. */
@@ -60,10 +66,15 @@ async function badgePlanes(reads: HolderReads): Promise<Record<string, { grants:
   const badges: Record<string, { grants: string[]; denies: string[] }> = {};
   if (reads.badgesLive()) {
     const asleep = new Set(await reads.dormantBadgeIds());
+    const held = reads.villageHeld ? await reads.villageHeld() : [];
     for (const r of await reads.badgeRows()) {
       const row = r as any;
       const plane = (badges[String(row.user_id)] ??= { grants: [], denies: [] });
-      if (!asleep.has(String(row.badge_id))) plane.grants.push(...asList(row.capabilities));
+      if (!asleep.has(String(row.badge_id))) {
+        // The gate's badge step, R157: a held key counts only from a vote's award.
+        const byVote = isVoteAward(row.awarded_by);
+        plane.grants.push(...asList(row.capabilities).filter((c) => byVote || !isVillageHeld(c as Capability, held)));
+      }
       plane.denies.push(...asList(row.denies));
     }
   }
