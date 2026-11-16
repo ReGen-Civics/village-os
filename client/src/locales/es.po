@@ -1277,6 +1277,11 @@ msgctxt "open proposal review, the button's full name"
 msgid "Change {label}"
 msgstr "Cambiar {label}"
 
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, other ways to join: the game's door"
+msgid "Explore the game"
+msgstr ""
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "The helper stays off until your village decides to use AI in Admin. Whoever governs that here says yes first."
@@ -5929,6 +5934,11 @@ msgctxt "the purpose statement is not written"
 msgid "Not written yet."
 msgstr ""
 
+#: client/src/pages/Training.tsx
+msgctxt "training chooser: the lessons are one list"
+msgid "Both paths share these lessons for now."
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "founding application sera"
 msgid "Edit it or keep it. We cannot send your application until you have done one or the other."
@@ -7599,6 +7609,11 @@ msgctxt "funding rounds"
 msgid "Find it on the quest board"
 msgstr ""
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "The accept did not finish. Reload to see which changes landed, then try the rest again."
+msgstr ""
+
 #: client/src/components/Layout.tsx
 #, fuzzy
 msgctxt "site header"
@@ -8909,6 +8924,7 @@ msgid "Circle {name}"
 msgstr ""
 
 #: client/src/components/roleDraft/ArchetypeStep.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "roles page archetypes"
 msgid "See all roles"
 msgstr "Ver todos los roles"
@@ -12239,6 +12255,11 @@ msgctxt "org chart heading"
 msgid "Circles"
 msgstr ""
 
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, other ways to join: the game's door"
+msgid "Choose the root you grow from, see this season's goals, and pick the roles you play."
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading of the review feed"
 msgid "The review"
@@ -13285,6 +13306,11 @@ msgctxt "cycle clock: the moon that turns and the day it turns"
 msgid "Allowances refill when the {month} Moon turns, on {date}."
 msgstr "Las asignaciones se renuevan cuando cambia la Luna de {month}, el {date}."
 
+#: client/src/pages/Training.tsx
+msgctxt "training chooser: the member's own path"
+msgid "Your path"
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a suggestion is being withdrawn"
 msgid "Withdrawing"
@@ -14202,6 +14228,11 @@ msgstr ""
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Too few chose"
+msgstr ""
+
+#: client/src/pages/Training.tsx
+msgctxt "training chooser: the lessons heading"
+msgid "What the training holds"
 msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
