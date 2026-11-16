@@ -22,6 +22,7 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
+import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
 // the active clock now, and it had no caller left here. `sceneStopsFor` and
@@ -16942,6 +16943,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       shape,
       villageWords,
       fence: fenceForPrompt,
+      voice: guideVoiceOf(stringVar("guide.voice")),
     });
 
     const call = await callAssistant({

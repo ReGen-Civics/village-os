@@ -2567,6 +2567,15 @@ export const VARIABLES: VariableDef[] = [
     default: "false",
   },
   {
+    key: "guide.voice",
+    category: "Companions",
+    label: "How your guide speaks",
+    description:
+      "A few sentences on how the village guide should sound: plain or formal, brief or warm, the words it uses and the ones it avoids. The guide reads them before it answers someone shaping a proposal or a role card. They change its tone and wording only; the platform's own rules always hold. Only the first 1000 characters are used. Leave it empty and the guide keeps its platform voice: warm, encouraging, concrete, unhurried.",
+    type: "longtext",
+    default: "",
+  },
+  {
     key: "org.letter_team",
     category: "The village's people",
     label: "The team that signs letters to applicants",
