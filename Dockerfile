@@ -221,6 +221,10 @@ COPY --from=build /app/package.json ./package.json
 #   docs/knowledge/, docs/modules/   server/lib/knowledge.ts:378 and :387
 #   docs/skills/                     server/index.ts:6649
 #   docs/prototypes/grounds-v0.html  server/index.ts:31976 (the Living Map)
+#   server/assets/modules/           server/routes/moduleArt.ts (MODULE_ART_DIR)
+#                                    The module cards' art, served at
+#                                    /images/modules/. Out of dist/public for
+#                                    the same reason as the avatars below.
 #   server/assets/avatars/           server/routes/stockAvatars.ts (STOCK_AVATAR_DIR)
 #                                    The stock character art, served at
 #                                    /images/avatars/. Kept out of dist/public

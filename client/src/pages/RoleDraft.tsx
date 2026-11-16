@@ -538,7 +538,7 @@ export default function RoleDraft() {
                       <dl className="grid grid-cols-2 border-b border-border text-center text-sm">
                         <div className="border-r border-border px-2 py-2">
                           <dt className="text-xs uppercase tracking-widest text-muted-foreground">
-                            <InfoTip triggerClassName="inline-flex min-h-11 items-center px-1" tip={t`We don't track time and we don't pay for it. We pay for contracted work and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks.`}>
+                            <InfoTip triggerClassName="inline-flex min-h-11 items-center px-1" tip={t`We don't track time. Rewards follow the work you contract for and the contributions you lay out each month and season. Commitment is how much energy and attention the role asks.`}>
                               {t({ message: "Commitment", context: "role draft stat" })}
                             </InfoTip>
                           </dt>
@@ -703,7 +703,7 @@ export default function RoleDraft() {
                   <li>{t`You confirm your email within 48 hours.`}</li>
                   <li>{t`You meet the people the role works closest with.`}</li>
                   <li>{t`Each role's circle is asked to consent and pick who they'll co-create with.`}</li>
-                  <li>{t`If it is adopted, a formal invitation to make your account comes to your email.`}</li>
+                  <li>{t`If the circle says yes, an invitation to make your account comes to your email.`}</li>
                   <li>{t`Once you are approved into a role, you align with the village's confidentiality agreement (NDA), before you see any confidential records.`}</li>
                   <li>
                     {/* No cycle end date here (QA P1-06, as QA2-05 on the application): a date in words goes stale. */}
