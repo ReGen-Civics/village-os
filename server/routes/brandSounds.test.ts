@@ -22,7 +22,11 @@ beforeAll(async () => {
   const app = express();
   app.use(express.json());
   register(app, {
-    isAdmin: async () => admin,
+    guardCapability: async (_req: any, res: any) => {
+      if (admin) return true;
+      res.status(401).json({ error: "auth_required" });
+      return false;
+    },
     brandRepo: { put: async (next: any) => { brand = next; }, get: () => brand } as any,
     uploadsDir: uploads,
     getBrand: () => brand,

@@ -116,7 +116,10 @@ export function register(app: Express, deps: Deps): void {
     const questId = config().plantingQuestId;
     if (!visitClaims || !questId) return;
     try {
-      const owed = await repo.owedPlantings(getPool(), vid(), ownerId, dials().vouchesPerPin);
+      // A weekly cap on paid plantings; the rest wait for a later week (security audit, 16 Nov 2026).
+      const perWeek = Math.max(0, Math.floor(numberVar("hiddenmap.paid_plantings_per_week")));
+      const room = perWeek - (await repo.plantingClaimsThisWeek(getPool(), vid(), ownerId));
+      const owed = await repo.owedPlantings(getPool(), vid(), ownerId, dials().vouchesPerPin, Math.min(20, room));
       if (!owed.length) return;
       const ownerUser: any = (await members.byId(ownerId)) ?? { id: ownerId, name: "" };
       for (const pinId of owed) {

@@ -208,6 +208,11 @@ describe("small rules", () => {
     expect(clampToNow("2026-11-16T12:00:00.000Z", now)).toBe("2026-11-15T12:00:00.000Z");
     expect(clampToNow("2026-11-15T11:00:00.000Z", now)).toBe("2026-11-15T11:00:00.000Z");
     expect(clampToNow("garbage", now)).toBe("2026-11-15T12:00:00.000Z");
+    // A floor (the run's own start) lifts an earlier time to it, and never past now.
+    const floor = Date.parse("2026-11-15T10:00:00.000Z");
+    expect(clampToNow("2020-01-01T00:00:00.000Z", now, floor)).toBe("2026-11-15T10:00:00.000Z");
+    expect(clampToNow("2026-11-15T11:00:00.000Z", now, floor)).toBe("2026-11-15T11:00:00.000Z");
+    expect(clampToNow("2020-01-01T00:00:00.000Z", now, now + 60_000)).toBe("2026-11-15T12:00:00.000Z");
   });
 
   it("takes device ids of a sane shape only", () => {

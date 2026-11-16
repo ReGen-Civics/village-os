@@ -19,7 +19,7 @@ import type { AppDeps } from "../lib/appDeps";
 import { writeToVolume } from "../lib/uploads";
 import { SOUND_MOMENT_IDS, type SoundMomentId } from "../../shared/soundMoments";
 
-type Deps = Pick<AppDeps, "isAdmin" | "brandRepo" | "uploadsDir"> & {
+type Deps = Pick<AppDeps, "guardCapability" | "brandRepo" | "uploadsDir"> & {
   /** The brand document as the rest of the server reads it. */
   getBrand(): any;
 };
@@ -50,7 +50,9 @@ export function soundsOf(theme: any): { volume: number; files: Partial<Record<So
 }
 
 export function register(app: Express, deps: Deps): void {
-  const { isAdmin, brandRepo, uploadsDir, getBrand } = deps;
+  // The one gate, as the stock art and the content routes ask it (security audit, 16 Nov 2026):
+  // an admin passes until the village holds story.tell, and a holder passes too.
+  const { guardCapability, brandRepo, uploadsDir, getBrand } = deps;
   const save = async (sounds: ReturnType<typeof soundsOf>) => {
     const current = getBrand();
     await brandRepo.put({ ...current, theme: { ...current.theme, sounds } } as any);
@@ -64,7 +66,7 @@ export function register(app: Express, deps: Deps): void {
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_SOUND_BYTES, files: 1 } });
 
   app.post("/api/admin/brand/sound", async (req, res) => {
-    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    if (!(await guardCapability(req, res, "story.tell"))) return;
     upload.single("file")(req as any, res as any, async (err: any) => {
       if (err) {
         const tooBig = String(err?.code ?? "") === "LIMIT_FILE_SIZE";
@@ -88,7 +90,7 @@ export function register(app: Express, deps: Deps): void {
   });
 
   app.delete("/api/admin/brand/sound/:moment", async (req, res) => {
-    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    if (!(await guardCapability(req, res, "story.tell"))) return;
     const moment = SOUND_MOMENT_IDS.find((m) => m === req.params.moment);
     if (!moment) return res.status(404).json({ error: "There is no such moment." });
     const sounds = soundsOf(getBrand()?.theme);
@@ -98,7 +100,7 @@ export function register(app: Express, deps: Deps): void {
   });
 
   app.put("/api/admin/brand/sounds", async (req, res) => {
-    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    if (!(await guardCapability(req, res, "story.tell"))) return;
     const v = Number(req.body?.volume);
     if (!Number.isFinite(v) || v < 0 || v > 1) return res.status(400).json({ error: "The volume is a number from 0 to 1." });
     const sounds = soundsOf(getBrand()?.theme);

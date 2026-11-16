@@ -233,6 +233,23 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
     await call("POST /api/protocols/runs/:id/set-aside", { params: { id: "run-bbbbbbbb-0002" }, body: {} });
   });
 
+  it("only the starter or a member who ticked a step ends a run, and no tick is dated before its run (audit, 16 Nov)", async () => {
+    const id = "run-dddddddd-0004";
+    whoami = "m-wren";
+    await call("POST /api/protocols/runs", { body: { id, protocolId: "opening-up", version: 1, startedAt: "2026-11-15T09:00:00.000Z" } });
+    whoami = "m-kai";
+    for (const end of ["complete", "set-aside"]) {
+      const r = await call(`POST /api/protocols/runs/:id/${end}`, { params: { id }, body: {} });
+      expect([r.status, r.body.code]).toEqual([403, "not_your_run"]);
+    }
+    const t = await call("POST /api/protocols/runs/:id/ticks", { params: { id }, body: { id: "tick-kai-00003", stepId: "lights", done: true, at: "2020-01-01T00:00:00.000Z" } });
+    expect(t.status).toBe(201);
+    expect(t.body.run.ticks.find((x: any) => x.clientId === "tick-kai-00003").at).toBe("2026-11-15T09:00:00.000Z");
+    const aside = await call("POST /api/protocols/runs/:id/set-aside", { params: { id }, body: { at: "2020-01-01T00:00:00.000Z" } });
+    expect([aside.status, aside.body.run.status, aside.body.run.endedBy, aside.body.run.endedAt]).toEqual([200, "set-aside", "m-kai", "2026-11-15T09:00:00.000Z"]);
+    whoami = "m-wren";
+  });
+
   it("saving an edit makes version 2, the old run keeps version 1, and an identical save writes nothing", async () => {
     admin = true;
     const edited = { ...LIST, steps: [...LIST.steps, { id: "sign", text: "Sign the book" }] };

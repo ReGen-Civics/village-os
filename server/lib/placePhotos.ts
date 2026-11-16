@@ -59,6 +59,7 @@ export interface EncodedPhoto {
  * and a name that moves is a diff nobody can read.
  */
 import { readMetadataMarkers, LocationDataSurvived, writeToVolume } from "./uploads";
+import { MAX_INPUT_PIXELS } from "./uploadVariants";
 export { readMetadataMarkers, LocationDataSurvived };
 
 /**
@@ -70,7 +71,9 @@ export { readMetadataMarkers, LocationDataSurvived };
  */
 export async function stripAndEncode(input: Buffer, maxEdge = PHOTO_MAX_EDGE, quality = 82): Promise<{ bytes: Buffer; width: number; height: number }> {
   const sharp = (await import("sharp")).default;
-  const out = await sharp(input)
+  // A pixel ceiling, as every other upload path has (security audit, 16 Nov 2026): a small
+  // file can claim a huge canvas, and decoding it would take the server's memory.
+  const out = await sharp(input, { limitInputPixels: MAX_INPUT_PIXELS })
     // Honour the orientation flag before resizing, then let it go with the
     // rest of the metadata. A picture that arrives sideways stays sideways
     // otherwise, because the flag that would have turned it is stripped.

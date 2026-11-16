@@ -4199,6 +4199,18 @@ export const VARIABLES: VariableDef[] = [
     unit: "days",
   },
   {
+    key: "hiddenmap.paid_plantings_per_week",
+    category: "Hidden map",
+    label: "Vouched plantings paid per member each week",
+    description:
+      "When the village names a planting quest, how many of one member's vouched plantings open a claim in any seven days. A paid planting also needs a photo and two members vouching for it, whatever the vouches setting above says. More plantings wait and open in a later week. 0 pays none.",
+    type: "integer",
+    default: "5",
+    min: 0,
+    max: 100,
+    unit: "plantings",
+  },
+  {
     key: "hiddenmap.photo_max_mb",
     category: "Hidden map",
     label: "Largest photo a member may add to a pin",
