@@ -449,7 +449,7 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
 
   if (report.seated.length > 0) {
     await deps.addActivity(
-      `The founders this village named and who accepted hold the ${STEWARD_ROLE_NAME} role until ${term.endsOn}, with every power this village has to give, by the vote that started the Game.`,
+      `The founders this village named and who accepted hold the ${STEWARD_ROLE_NAME} role until ${term.endsOn}, with ${stewardPowersWords(report.capabilitiesMoved?.length ?? 0)}, by the vote that started the Game.`,
       STEWARD_ROLE_ID,
     );
   }
@@ -464,4 +464,13 @@ export async function seatFoundersAtLaunch(deps: LaunchSeatingDeps): Promise<Lau
     held: null,
     report,
   };
+}
+
+/**
+ * What the stewards hold after the launch, in words: every power, or every power but the ones the
+ * launch handed the village (launch rehearsal F11). The pulse said "every power" when it was not true.
+ */
+export function stewardPowersWords(movedToVillage: number): string {
+  if (movedToVillage <= 0) return "every power this village has to give";
+  return `every power this village has to give except the ${movedToVillage === 1 ? "one" : movedToVillage} the village now holds itself`;
 }

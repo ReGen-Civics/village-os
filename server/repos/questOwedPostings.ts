@@ -197,6 +197,15 @@ export async function settleOwedForClaim(pool: Pool, claimId: string): Promise<S
   return out;
 }
 
+/** Every claim with a row of this source still owed, in claim order. */
+export async function owedClaimIdsOfSource(pool: Pool, source: string): Promise<string[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT DISTINCT `claim_id` FROM `quest_owed_postings` WHERE `source` = ? AND `state` = 'owed' ORDER BY `claim_id`",
+    [source],
+  );
+  return rows.map((r) => String(r.claim_id));
+}
+
 /** Every row a claim owes or owed, in key order. */
 export async function owedPostingsFor(pool: Pool, claimId: string): Promise<OwedPostingRow[]> {
   const [rows] = await pool.query<RowDataPacket[]>(

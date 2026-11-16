@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { m } from "framer-motion";
 import { authToken } from "@/lib/gameApi";
 import { useTokenName } from "@/hooks/useTokenNames";
-import { formatTokenAmount } from "@/lib/tokenAmount";
+import { formatTokenGrouped } from "@/lib/tokenAmount";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -84,7 +84,7 @@ export default function ProfileSheet() {
                 key={s.token}
                 className="rounded-full border border-border bg-muted px-4 py-2 text-sm font-medium text-card-foreground"
               >
-                {formatTokenAmount(s.balance, s.decimals)} {s.name}
+                {formatTokenGrouped(s.balance, s.decimals)} {s.name}
               </li>
             ))}
           </ul>

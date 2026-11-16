@@ -21,6 +21,7 @@ import { useTokenName } from "@/hooks/useTokenNames";
 import { announceProfileChange } from "@/lib/profileRefresh";
 import { cashPayWords, linesWords, useDisplayRates } from "@/lib/workPay";
 import type { PathParticulars } from "@shared/pathLadders";
+import { PLATFORM_DEFAULT_MODEL } from "@shared/valuation";
 import type { DashData, WalletRowLite } from "./useDashData";
 import { cashSummary, earnedIn, moonRows, pickTokens, whole, wholeMoney, type MoonRow } from "./dashModel";
 import { KICKER, LINK } from "./dashUi";
@@ -57,7 +58,8 @@ const BTN_QUIET = `${BTN} border border-border text-foreground hover:bg-muted`;
 const BODY_HEADING = { fontFamily: "inherit", fontWeight: 600, letterSpacing: "normal" } as const;
 
 const held = (row: WalletRowLite) => row.heldUnits / Math.pow(10, Math.max(0, row.decimals));
-const tokensName = (name: string) => (/tokens?$/i.test(name.trim()) ? name : `${name} tokens`);
+// "Village Credits" is already a plural noun, so it never reads "village credits tokens" (launch rehearsal F4).
+const tokensName = (name: string) => (/(tokens?|s)$/i.test(name.trim()) ? name : `${name} tokens`);
 
 function Purse({
   coin,
@@ -119,6 +121,8 @@ export default function TreasuryPanel({
   const [claiming, setClaiming] = useState(false);
   const [said, setSaid] = useState("");
   const { village, voice } = pickTokens(data.wallet ?? [], config?.currency?.value?.slug);
+  /** The token End of Moon issues as a role's equity share (server `EARNED_EQUITY`), shown per moon beside the rest (launch rehearsal F4). */
+  const equity = (data.wallet ?? []).find((r) => r.token === PLATFORM_DEFAULT_MODEL.tokens.equity) ?? null;
   const cash = data.cash ? cashSummary(data.cash) : null;
   const cycleStart = data.cycle?.startsAt ?? null;
   const thisMoon = (token: string | undefined) => (token && data.ledger && cycleStart ? earnedIn(data.ledger, token, cycleStart) : null);
@@ -149,7 +153,7 @@ export default function TreasuryPanel({
 
   const moons: MoonRow[] =
     data.ledger && data.cycle
-      ? moonRows(data.ledger, { current: data.cycle, past: data.pastMoons ?? [] }, { village: village?.token ?? null, voice: voice?.token ?? null }, data.cash ?? [])
+      ? moonRows(data.ledger, { current: data.cycle, past: data.pastMoons ?? [] }, { village: village?.token ?? null, voice: voice?.token ?? null, equity: equity?.token ?? null }, data.cash ?? [])
       : [];
   const maxTok = Math.max(1, ...moons.map((m) => m.tokens));
   const maxVoice = Math.max(1, ...moons.map((m) => m.voice));
@@ -329,6 +333,9 @@ export default function TreasuryPanel({
                       <span className="h-2.5 rounded bg-dash-voice" style={{ width: `${Math.max(2, Math.round((m.voice / maxVoice) * 40))}%` }} />
                       <span className="text-xs">{whole(m.voice)} {voice.name.toLowerCase()}</span>
                     </div>
+                  ) : null}
+                  {equity && m.equity > 0 ? (
+                    <span className="text-xs">{whole(m.equity)} {equity.name}</span>
                   ) : null}
                   {data.cash ? (
                     <span className="text-xs text-muted-foreground">

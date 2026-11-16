@@ -707,7 +707,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         account: true,
         invitation: null,
         application: { id: placed.applicationId, href: applicationHref(placed.applicationId) },
-        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
+        message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
       });
     }
 
