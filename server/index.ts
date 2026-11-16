@@ -104,6 +104,7 @@ import { register as registerGoogleAuthRoutes } from "./routes/authGoogle";
 import { register as registerSignUpRoutes } from "./routes/register";
 import { register as registerInviteRoutes } from "./routes/invites";
 import { register as registerJoinAnswerRoutes } from "./routes/joinAnswers";
+import { register as registerRitesRoutes } from "./routes/rites";
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
@@ -8150,6 +8151,7 @@ async function startServer() {
   });
   registerInviteRoutes(app, { authedUser, getPool, members, guardCapability, mayAct, overLimit, clientIp, invites: inviteDoor });
   registerJoinAnswerRoutes(app, { authedUser, getPool, members, guardCapability, submissionsRepo, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, notify }); // Accept emails the invitation, Decline a kind no (sheet A5)
+  registerRitesRoutes(app, { authedUser, isAdmin, getPool, members, mayAct, overLimit, clientIp, notify, firstName, projectName: notifyDeps.projectName, deploymentOrigin, stageOf, submissionsRepo, commsPostOffice, escapeHtml, loadRoles, roleIdsFor, invites: inviteDoor }); // rites, the buddy, the letter and the door code (module `rites`, off by default)
   registerGoogleAuthRoutes(app, {
     authSecret: AUTH_TOKEN_SECRET,
     availability: googleSignInAvailability,

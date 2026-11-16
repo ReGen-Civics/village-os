@@ -171,6 +171,7 @@ import { eraseIntentsForMember } from "./intents";
 import { forgetMemberNeeds } from "./needs";
 import { forgetMemberJournal } from "./journal";
 import { forgetMemberGeneKeys } from "./geneKeys";
+import { forgetMemberRites } from "../repos/rites";
 import { forgetMemberFundingRounds } from "./fundingRounds";
 import { forgetMemberTasks } from "../repos/memberTasks";
 import { forgetTimeZone } from "../repos/memberTimeZone";
@@ -1637,6 +1638,21 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       name: "gene-keys-after-tombstone",
       run: async () => {
         await forgetMemberGeneKeys(pool, target.id);
+      },
+    },
+    {
+      /*
+       * Rites (drizzle/9999_rites_and_invitations.sql): the member's stamps,
+       * drawn mark, ceremonies, buddy pairings either side, their own line,
+       * door codes and invitation lines go. A stamp they witnessed for
+       * somebody else stays, with no name on it.
+       *
+       * AFTER THE TOMBSTONE, like the steps above: the doors write for anybody
+       * signed in, and the tombstone is where their sessions die.
+       */
+      name: "rites-after-tombstone",
+      run: async () => {
+        await forgetMemberRites(pool, target.id);
       },
     },
     {
