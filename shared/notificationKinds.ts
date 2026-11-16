@@ -412,6 +412,15 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // The applicant's invitation expired and they asked for a new one (their
+  // status page's door). Nothing is reissued by itself: a holder makes it.
+  application_new_invitation_asked: {
+    group: "decisions",
+    blurb: "An applicant's invitation to join the team expired, and they asked for a new one. You can make it on their proposal's page.",
+    many: "{n} applicants asked for a new invitation.",
+    celebrate: false,
+    waits: true,
+  },
   // The three nudges to propose roles for next season. Bell only; the
   // profile banner says the same thing for as long as it is true.
   role_proposal_window_open: {

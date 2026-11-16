@@ -138,7 +138,8 @@ export function register(app: Express, deps: Deps): void {
       timeZone: state.timezone || "UTC",
       lapse: deps.lapse(),
       tier: await orgTierFor(deps, req),
-      frameworkTerms: deps.boolVar("org.ccos_terms"),
+      // The framework's terms are for members (QA P1-08): a visitor reads plain headings, with no "CCOS" anywhere.
+      frameworkTerms: !!viewer && deps.boolVar("org.ccos_terms"),
       clock: (deps.clock ?? villageClock)(),
       sessionsOn,
       reviewOn: state.current?.endsOn ?? null,

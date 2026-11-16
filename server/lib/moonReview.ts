@@ -513,7 +513,14 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 export type ApproveDeps = Pick<ReviewDeps, "notify" | "keyHolders" | "nameOf"> & {
   /** The moon's last civil day for a cycle id, for the nomad status check. */
   lastDayOf(cycleId: string): string | null;
+  /** The moon as people read it ("10 October to 8 November 2026"), for the cash and ledger lines. */
+  moonWordsOf?(cycleId: string): string | null;
 };
+
+/** "moon of 10 October to 8 November 2026, invoice FAY-2": the cycle id only when no dates can be read. */
+export function invoiceTitleOf(cycleId: string, memberNumber: string | null, moonWords: string | null | undefined): string {
+  return `moon ${moonWords ? `of ${moonWords}` : cycleId}, invoice ${memberNumber}`;
+}
 
 /**
  * ONE INVOICE'S FINANCE APPROVAL, every check a single approval runs. Answers
@@ -556,7 +563,7 @@ async function approveOne(
   const approvedIds = items.filter((i) => i.state === "kept" && i.review === "approved");
   // A line sent before its split was put on it, or whose amount moved since, is shared now (P1-6).
   const lines: InvoiceLine[] = await shareLines(pool, linesOf(invoice).map((l) => ({ ...l, approvedItemIds: approvedIds.filter((i) => i.roleId !== null && l.roleIds.includes(i.roleId)).map((i) => i.id) })));
-  const invoiceTitle = `moon ${invoice.cycleId}, invoice ${invoice.memberNumber}`;
+  const invoiceTitle = invoiceTitleOf(invoice.cycleId, invoice.memberNumber, deps.moonWordsOf?.(invoice.cycleId));
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();

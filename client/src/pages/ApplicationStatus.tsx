@@ -59,6 +59,49 @@ interface Served {
   notInvited?: boolean;
   /** The village's own way to stay close, named in the not-invited answer. */
   stayClose?: { name: string; href: string } | null;
+  /** Closed because nobody answered it in time (server/lib/applicantFollowups.ts). */
+  closed?: boolean;
+  /** An adopted applicant's invitation: "expired" offers the door to ask for a new one, "asked" thanks them. */
+  invitation?: "none" | "expired" | "asked";
+}
+
+/**
+ * THE NEW-INVITATION DOOR: the invitation expired unused. Pressing it tells the
+ * team that sends invitations, once; it never makes a new invitation by itself.
+ * Needs the emailed link, which is what proves who asks.
+ */
+function NewInvitationDoor({ state, askUrl, words, onAsked }: { state: "expired" | "asked"; askUrl: string; words: { heading: string; line: string; ask: string; asked: string; failed: string }; onAsked: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const ask = async () => {
+    setBusy(true);
+    setFailed(false);
+    try {
+      const res = await gameFetch(askUrl, { method: "POST" });
+      if (res.ok) onAsked();
+      else setFailed(true);
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section aria-label={words.heading} className={CARD} data-new-invitation={state}>
+      <h2 className={H2}>{words.heading}</h2>
+      {state === "asked" ? (
+        <p className="mt-1 text-foreground" role="status" data-new-invitation-asked="">{words.asked}</p>
+      ) : (
+        <>
+          <p className="mt-1 text-foreground">{words.line}</p>
+          <button type="button" className={`mt-3 ${BTN_SECONDARY}`} disabled={busy} onClick={() => void ask()} data-ask-new-invitation="">
+            {words.ask}
+          </button>
+          {failed && <p className="mt-2 text-sm text-destructive" role="alert">{words.failed}</p>}
+        </>
+      )}
+    </section>
+  );
 }
 
 interface ServedOffer {
@@ -338,6 +381,24 @@ export default function ApplicationStatus() {
                   )}
                   <a className={DOOR} href="/quests">{w.status.notInvited.quests}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
                   {eventsOn && <a className={DOOR} href="/events">{w.status.notInvited.events}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>}
+                </div>
+              </section>
+            )}
+            {token && (s.invitation === "expired" || s.invitation === "asked") && (
+              <NewInvitationDoor
+                state={s.invitation}
+                askUrl={`/api/application-status/${encodeURIComponent(ref)}/new-invitation?token=${encodeURIComponent(token)}`}
+                words={w.status.newInvitation}
+                onAsked={() => setS((cur) => (cur ? { ...cur, invitation: "asked" } : cur))}
+              />
+            )}
+            {view.closed && (
+              <section aria-label={w.status.closed.heading} className={CARD} data-application-closed="">
+                <h2 className={H2}>{w.status.closed.heading}</h2>
+                <p className="mt-1 text-foreground">{w.status.closed.line}</p>
+                <div className="mt-3 grid gap-2">
+                  <a className={DOOR} href="/quests">{w.status.closed.quests}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
+                  <a className={DOOR} href="/roles">{w.status.closed.roles}<ArrowRight className="size-4 shrink-0" aria-hidden="true" /></a>
                 </div>
               </section>
             )}
