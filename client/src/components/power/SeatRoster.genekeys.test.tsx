@@ -39,7 +39,7 @@ describe("the roster's Gene Keys seal", () => {
       <SeatRoster
         spots={[
           spot({ key: "o", kind: "open", title: "Open", userId: null, pickKey: null }),
-          spot({ key: "n", kind: "nameless", title: "Seated", userId: null, pickKey: null }),
+          spot({ key: "n", kind: "nameless", title: "Team member", userId: null, pickKey: null }),
           spot({ key: "d", kind: "person", title: "Documented Holder", userId: null, pickKey: "Documented Holder" }),
         ]}
         moreOpenLine={null}

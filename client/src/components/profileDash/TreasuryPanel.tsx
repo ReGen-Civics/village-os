@@ -1,7 +1,7 @@
 /**
- * YOUR TREASURY: what you have earned (approved design, 2026-10-30).
+ * YOUR TREASURY: what you hold (approved design, 2026-10-30).
  *
- * Four purses, then earned by moon, what is coming, the latest ledger lines and
+ * Four purses, then by moon, what is coming, the latest ledger lines and
  * what the member holds. Every figure is a door the page already reads
  * (useDashData). Cash is the 0285 record, so this purse SUMMARISES it and the
  * full list with its Claim buttons and the treasurer's books stays in
@@ -10,6 +10,11 @@
  * Whole numbers throughout (Rye, 2026-09-04). Gratitude says what was RECEIVED
  * this cycle and how much is left to SEND, because it only counts when it is
  * sent (Rye, 2026-10-23).
+ *
+ * A token purse names its token and its number, nothing more: no line says what
+ * a token does or how it is gained, because each village sets its own rules
+ * (Rye, 2026-10-22) and counsel's list for the first token village says the
+ * same. TreasuryPanel.test.tsx holds it.
  *
  * A purse whose token this village does not run is left out: a village with no
  * Voice token has three purses, not a Voice purse reading zero.
@@ -189,7 +194,7 @@ export default function TreasuryPanel({
         <div className="flex-1">
           <p className={KICKER}>{seasonName ? `Your treasury · ${seasonName}` : "Your treasury"}</p>
           <h2 id="tr-h" className="m-0 font-display text-[34px] leading-tight sm:text-[38px]">
-            What you have earned
+            What you hold
           </h2>
         </div>
         <a href="#ledger" className={`${LINK} hidden text-sm sm:inline`}>
@@ -271,7 +276,7 @@ export default function TreasuryPanel({
             name={voice.name}
             value={whole(held(voice))}
             delta={thisMoon(voice.token) === null ? "" : `+${whole(thisMoon(voice.token) ?? 0)} this moon`}
-            what="Your weight when the village votes. Earned by showing up, never bought."
+            what={null}
             actions={
               <Link href="/governance" className={`${BTN} ${BTN_FILL.voice}`}>
                 Open ballots
@@ -287,7 +292,7 @@ export default function TreasuryPanel({
             name={thanksName}
             value={whole(data.gratitude.receivedThisCycle)}
             delta="received this cycle"
-            what="Thanks you give from the pool. It only counts when you send it."
+            what={null}
             actions={
               <Link href="/gratitude" className={`${BTN} ${BTN_FILL.thanks}`}>
                 Send {thanksName.toLowerCase()}
@@ -316,7 +321,7 @@ export default function TreasuryPanel({
         {moons.length > 0 ? (
           <div className="hidden min-w-0 flex-[1_1_380px] flex-col gap-3 rounded-[18px] border border-dash-edge bg-dash-raised p-5 sm:flex">
             <h3 className="m-0 text-base" style={BODY_HEADING}>
-              Earned by moon
+              By moon
             </h3>
             {moons.map((m) => (
               <div key={m.label} className="grid grid-cols-[80px_1fr] items-center gap-3">

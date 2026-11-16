@@ -179,3 +179,38 @@ export function testOutcome(answer: { status: string; reason: string | null; sen
   if (answer.status === "skipped" && answer.reason === "bad_address") return "Not sent: your account's email address cannot be written to.";
   return "Not sent: the email provider refused it. Sent mail has the details.";
 }
+
+/** One letter written in code, rendered with sample values in this village's look. */
+export interface SampleLetter {
+  id: string;
+  label: string;
+  subject: string;
+  preheader: string;
+  html: string;
+  text: string;
+}
+
+export interface SampleLetterResult {
+  key: string;
+  status: string;
+  reason: string | null;
+  messageId: string | null;
+}
+
+export async function fetchSampleLetters(password: string): Promise<Answer<{ letters: SampleLetter[] }>> {
+  const res = await fetch(`${API_BASE}/admin/comms/letter-previews`, { headers: authHeaders(password) });
+  return read(res, "The letters could not be read");
+}
+
+/** Sends the chosen sample letters (all six when none are named) to the signed-in admin's own address. */
+export async function sendSampleLetters(
+  password: string,
+  keys: string[] | null,
+): Promise<Answer<{ sentTo: string; results: SampleLetterResult[] }>> {
+  const res = await fetch(`${API_BASE}/admin/comms/letter-previews/send`, {
+    method: "POST",
+    headers: json(password),
+    body: JSON.stringify(keys ? { keys } : {}),
+  });
+  return read(res, "The test letters could not be sent");
+}
