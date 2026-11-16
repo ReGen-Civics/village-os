@@ -31,7 +31,7 @@ import { hashInviteToken, INVITE_DAYS, mintInviteToken } from "../lib/invites";
 import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { claimInvite, createInviteOn } from "../repos/memberInvites";
 import { loadTokenRegistry } from "../lib/ledger";
-import { register, stampRiteFromModule } from "./rites";
+import { register, ritesAdmission, stampRiteFromModule } from "./rites";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[rites] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -277,6 +277,9 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     expect(Number(ev[0].n)).toBe(0);
     as("u-cy");
     expect((await call("GET", "/api/rites/me")).body.stamps.find((s: any) => s.id === "seven").state).toBe("on");
+    // When each was admitted by the vow, for the hidden map's count (QA P3-1): sworn has a time, not yet is null.
+    expect(await ritesAdmission("u-cy")).toBeInstanceOf(Date);
+    expect(await ritesAdmission("u-di")).toBeNull();
   });
 
   it("fixes the mark the moment the witnesses are to confirm it", async () => {

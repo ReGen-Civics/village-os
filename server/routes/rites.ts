@@ -24,6 +24,7 @@
  */
 import { randomBytes } from "node:crypto";
 import type { Express, Request, Response } from "express";
+import type { Pool } from "mysql2/promise";
 
 import {
   DOOR_CODE,
@@ -93,6 +94,22 @@ export async function stampRiteFromModule(moduleId: string, userId: string, rite
   return fromModule(moduleId, userId, riteId);
 }
 
+/**
+ * WHEN A MEMBER WAS ADMITTED BY THE VILLAGE'S RITE, for another module that
+ * counts only what happened from then (the hidden map's `Admission`, QA P3-1,
+ * P3-2): the admitting rite's stamp time; null while they have not taken it;
+ * undefined when the rites module is off or names no admitting rite, so the
+ * caller counts everything as it did before.
+ */
+let getPoolForAdmission: (() => Pool) | null = null;
+export async function ritesAdmission(userId: string): Promise<Date | null | undefined> {
+  if (!getPoolForAdmission || effectiveLifecycle(RITES_MODULE) === "off") return undefined;
+  const rite = admittingRite(ritesConfig().rites);
+  if (!rite) return undefined;
+  const at = (await repo.stampsOf(getPoolForAdmission(), userId)).get(rite.id);
+  return at ? new Date(at) : null;
+}
+
 /** The card's word once a member holds the admitting rite: the village's own, else its member stage's name. */
 const memberWordOf = (cfg: RitesConfig) => cfg.words.memberWord || stageName("member");
 /** The card's word before it: the village's own, else its newcomer stage's name. */
@@ -116,6 +133,7 @@ const text = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slic
 export function register(app: Express, deps: Deps): void {
   const { authedUser, isAdmin, getPool, members, mayAct, overLimit, clientIp, notify, firstName, projectName, stageOf, submissionsRepo, invites } = deps;
   const answers = joinAnswerDoor(deps);
+  getPoolForAdmission = getPool;
   fromModule = async (moduleId, userId, riteId) => {
     const cfg = ritesConfig();
     const rite = cfg.rites.find((r) => r.id === riteId);
