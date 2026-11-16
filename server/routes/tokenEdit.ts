@@ -18,6 +18,7 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { EXAMPLE_REFUSAL_BODY } from "../lib/examples";
 import { loadTokenRegistry, slugFreezeRefusal, tokenDef, tokenNameClash } from "../lib/ledger";
+import { effectiveLifecycle } from "../lib/modules";
 import { mayToggleTransferable } from "../lib/spending";
 import { saveTokenDescription, tokenDescriptionProblem } from "../lib/tokenMeaning";
 import { writeTokenActive, writeTokenName, writeTokenTransferable } from "../repos/tokens";
@@ -64,7 +65,7 @@ export function register(app: Express, deps: Deps): void {
     if (wantsName) {
       const name = String(body.name ?? "").trim().slice(0, 120);
       if (!name) return res.status(400).json({ error: "A display name is required" });
-      const clash = tokenNameClash(name, slug);
+      const clash = tokenNameClash(name, slug, { mirrorsShown: effectiveLifecycle("hypha") !== "off" });
       if (clash) return res.status(409).json({ error: clash });
       await writeTokenName(getPool(), slug, name);
     }
