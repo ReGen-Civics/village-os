@@ -217,6 +217,18 @@ export const POWERS: readonly PowerEntry[] = [
     routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve"],
   },
   {
+    capability: "hiddenmap.keep",
+    title: "Keeping the hidden map",
+    surface: "Vouching for the first members' pins before anybody's map has opened, hiding a pin, and reading who looked at the map",
+    routes: ["/api/hidden-map/pins/:id/hide", "/api/hidden-map/vouch-queue", "/api/hidden-map/access-log"],
+  },
+  {
+    capability: "hiddenmap.export",
+    title: "The second signature on a copy of the hidden map",
+    surface: "Approving or declining another member's request for a copy of the map",
+    routes: ["/api/hidden-map/exports/:id/approve", "/api/hidden-map/exports/:id/decline"],
+  },
+  {
     capability: "pot.steward",
     title: "The village's funding pots",
     surface: "Opening a funding pot and its rounds, and setting when each round moves from ideas to shaping, choosing and harvest",

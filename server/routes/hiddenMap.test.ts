@@ -103,6 +103,14 @@ function deps(pool: any, who: () => string | null, seats: { keep: Set<string>; e
         ...(seats.export.has(user?.id) ? ["hiddenmap.export"] : []),
       ],
     }),
+    // The gate as the routes meet it: a seat in the keeper's role passes, anybody else is refused.
+    guardCapability: async (_req: any, res: any, cap: string) => {
+      const id = who();
+      const held = cap === "hiddenmap.keep" ? seats.keep : seats.export;
+      if (id && held.has(id)) return true;
+      res.status(403).json({ error: "not_yours" });
+      return false;
+    },
     getPool: () => pool,
     overLimit: async () => false,
     members: { all: async () => [{ id: "m-plant", name: "Rowan Example" }, { id: "m-keep", name: "Ash Example" }], count: async () => 2 },

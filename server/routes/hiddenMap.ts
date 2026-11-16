@@ -49,7 +49,7 @@ import { LocationDataSurvived } from "../lib/placePhotos";
 import { boolVar, numberVar, stringVar } from "../lib/variables";
 import * as repo from "../repos/hiddenMap";
 
-type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "getPool" | "overLimit" | "members" | "firstName"> & {
+type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "guardCapability" | "getPool" | "overLimit" | "members" | "firstName"> & {
   /** Where this module's photos live. Never the public uploads directory. */
   photoDir: string;
   /** What a return visit needs to open a claim on the village's quest. Absent: visits pay nothing. */
@@ -86,7 +86,7 @@ function uploadedFiles(req: any): Array<{ buffer: Buffer }> {
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, capabilityCtx, getPool, overLimit, members, firstName, photoDir, visitClaims } = deps;
+  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, visitClaims } = deps;
   const vid = () => villageId();
   const config = () => configOf(moduleConfig(MODULE_ID));
 
@@ -330,7 +330,8 @@ export function register(app: Express, deps: Deps): void {
   app.post("/api/hidden-map/pins/:id/hide", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required" });
-    if (!(await seated(user, "hiddenmap.keep"))) return res.status(403).json({ error: "Hiding a pin is for whoever keeps the hidden map." });
+    // An act, so it asks the one gate: with the power handed to the village, the gate opens the vote path (0.4).
+    if (!(await guardCapability(req, res, "hiddenmap.keep"))) return;
     const id = String(req.params?.id ?? "");
     const hidden = await repo.hidePin(getPool(), vid(), id, String(user.id), new Date());
     if (!hidden) return res.status(404).json({ error: "No such pin, or it is already hidden." });
