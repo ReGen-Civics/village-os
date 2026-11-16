@@ -17418,3 +17418,21 @@ msgstr "En espera de aprobación"
 msgctxt "pay board"
 msgid "Credits"
 msgstr "Créditos"
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nadie más que esta persona tiene el poder de aprobarlo, así que espera. Las personas custodias pueden nombrar a otra persona tesorera, o la aldea puede elegirla por votación."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/PayBoard.tsx
+msgctxt "pay board"
+msgid "This month has more pay than one board shows. The first 2,000 lines of each kind are here."
+msgstr "Este mes tiene más pagos de los que muestra un tablero. Aquí están las primeras 2.000 líneas de cada tipo."
+
+# needs-native-review: new words, 15 Nov 2026
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay"
+msgid "Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in."
+msgstr "Nadie más tiene todavía el poder de aprobar esto, así que espera. Las personas custodias pueden nombrar a otra persona tesorera, o la aldea puede elegirla por votación."

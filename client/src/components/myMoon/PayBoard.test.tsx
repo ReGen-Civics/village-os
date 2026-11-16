@@ -27,11 +27,11 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 const token = (over: Partial<PayBoardTokenLine> = {}): PayBoardTokenLine => ({
   key: "k-1", title: "Water keeper, October moon", token: "earned-equity", sharedUnits: 2600, units: 2600, ceiling: 7800,
   status: "waiting", review: "waiting", change: null, approvedBy: null, approvedAt: null, approvedAlone: false, memberReply: null,
-  refusal: null, createdAt: "2026-11-10T12:00:00.000Z", ...over,
+  refusal: null, noApprover: false, createdAt: "2026-11-10T12:00:00.000Z", ...over,
 });
 
 const board = (over: Partial<PayBoard> = {}, tokens: PayBoardTokenLine[] = [token()]): PayBoard => ({
-  month: "2026-11", launched: true, mayReview: true, viewerId: "m-treas",
+  month: "2026-11", launched: true, mayReview: true, viewerId: "m-treas", truncated: false,
   members: [{
     userId: "m-wren", name: "Wren",
     cash: [
@@ -105,6 +105,14 @@ describe("the Treasurer's pay board", () => {
     expect(screen.queryByRole("checkbox")).toBeNull();
     expect(screen.queryByRole("button", { name: "Change the amount" })).toBeNull();
     expect(screen.getByText(/Approved token pay issues to each account at launch/)).toBeTruthy();
+  });
+});
+
+describe("when the board cannot do its whole job", () => {
+  it("names the fallback on a line only its own member could approve, and says when a month's list is cut", () => {
+    render(<PayBoardView board={board({ truncated: true }, [token({ noApprover: true })])} init={{}} reload={async () => undefined} />);
+    expect(screen.getByTestId("no-approver").textContent).toContain("The stewards can seat another Treasurer");
+    expect(screen.getByRole("status").textContent).toContain("The first 2,000 lines of each kind are here.");
   });
 });
 

@@ -145,6 +145,11 @@ function TokenRow({ line, board, picked, onPick, init, onDone }: {
         </p>
       ) : null}
       {line.refusal ? <p className={`m-0 text-xs ${ERROR}`}>{line.refusal}</p> : null}
+      {line.noApprover ? (
+        <p className="m-0 text-xs text-notice" data-testid="no-approver">
+          <Trans context="pay board">Nobody but this member holds the power to approve it, so it waits. The stewards can seat another Treasurer, or the village can vote one in.</Trans>
+        </p>
+      ) : null}
       {canReview ? (
         <button type="button" className={`${SMALL_BTN} self-start`} aria-expanded={changing} onClick={() => setChanging((v) => !v)}>
           {changing ? <Trans context="pay board">Keep the amount</Trans> : <Trans context="pay board">Change the amount</Trans>}
@@ -254,6 +259,9 @@ export function PayBoardView({ board, init, reload }: { board: PayBoardData; ini
     <div className="flex flex-col gap-3">
       {!board.launched ? (
         <p className={MUTED}><Trans context="pay board">The village has not launched yet. Approved token pay issues to each account at launch.</Trans></p>
+      ) : null}
+      {board.truncated ? (
+        <p role="status" className="m-0 text-sm text-notice"><Trans context="pay board">This month has more pay than one board shows. The first 2,000 lines of each kind are here.</Trans></p>
       ) : null}
       {board.members.length === 0 ? <p className={MUTED}><Trans context="pay board">Nobody was paid this month.</Trans></p> : (
         <ul className="m-0 flex list-none flex-col gap-3 p-0">

@@ -75,6 +75,11 @@ function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise
       <span className={`text-xs ${MUTED}`} data-status={line.status}>{words[line.status]}</span>
       {line.change ? <p className="m-0 text-xs text-foreground"><Trans context="my token pay">Why it changed: {reason}</Trans></p> : null}
       {line.change && line.memberReply ? <p className={`m-0 text-xs ${MUTED}`}><Trans context="my token pay">You answered: {answer}</Trans></p> : null}
+      {line.noApprover ? (
+        <p className="m-0 text-xs text-notice" data-testid="no-approver">
+          <Trans context="my token pay">Nobody else holds the power to approve this yet, so it waits. The stewards can seat another Treasurer, or the village can vote one in.</Trans>
+        </p>
+      ) : null}
       {line.change && !line.memberReply && line.status !== "issued" ? <Reply line={line} onDone={onDone} /> : null}
     </li>
   );
