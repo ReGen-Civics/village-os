@@ -379,7 +379,7 @@ import {
   upcomingByStructure,
   withdrawRsvp,
 } from "./lib/gatherings";
-import { cleanRecurrence, getCalendarItemFor, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
+import { getCalendarItemFor, recurrenceRefusal, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
 import {
   attachWaitlistInfo,
   cancelMeetMe,
@@ -11027,7 +11027,8 @@ async function startServer() {
     }
     if (body.recurrence !== undefined && body.recurrence !== null && body.recurrence !== "") {
       if (typeof body.recurrence !== "object") return "Recurrence must be an object";
-      if (!cleanRecurrence(body.recurrence)) return "Recurrence needs a freq of weekly, monthly, lunar or solar with its days or its sky event";
+      const refusal = recurrenceRefusal(body.recurrence);
+      if (refusal) return refusal;
     }
     if (body.link) {
       const l = String(body.link);
