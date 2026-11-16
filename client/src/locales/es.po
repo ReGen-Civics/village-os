@@ -2944,6 +2944,11 @@ msgctxt "funding rounds"
 msgid "Pot"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the phone tabs"
+msgid "Phone tabs"
+msgstr ""
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Link to a Google Doc shared with anyone who has the link"
@@ -3208,6 +3213,10 @@ msgstr ""
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "label of the season file text box"
 msgid "Season file"
+msgstr ""
+
+#: client/src/components/admin/MenuPanel.tsx
+msgid "Your own word for each menu entry, which ones show, the names of the groups, and the phone's four tabs. An entry keeps its page and who may open it: renaming never moves it, and hiding only takes it out of the menu. Blank keeps the platform's word."
 msgstr ""
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
@@ -3551,6 +3560,11 @@ msgctxt "role card: which piece is open, out of how many"
 msgid "{0} of {1}"
 msgstr "{0} de {1}"
 
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: while it saves"
+msgid "Saving…"
+msgstr ""
+
 #: client/src/components/admin/QuestSafetyEditor.tsx
 msgctxt "admin quest safety"
 msgid "Badges a member needs"
@@ -3591,6 +3605,11 @@ msgstr ""
 msgctxt "pay board"
 msgid "Keep the amount"
 msgstr "Mantener la cantidad"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the group names"
+msgid "Groups"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone, and its goals are asked here."
@@ -5053,6 +5072,11 @@ msgstr ""
 msgctxt "founding application first day"
 msgid "Your first cycle"
 msgstr "Tu primer ciclo"
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the menu entries"
+msgid "Entries"
+msgstr ""
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -7588,6 +7612,11 @@ msgstr ""
 msgid "The guide is reading"
 msgstr "La guía está leyendo"
 
+#. placeholder {0}: e.label
+#: client/src/components/admin/MenuPanel.tsx
+msgid "Show {0} in the menu"
+msgstr ""
+
 #: client/src/components/governance/GoalsList.tsx
 msgid "Three to five is the usual."
 msgstr "Lo habitual son de tres a cinco."
@@ -9164,6 +9193,11 @@ msgstr "Esta página no está recibiendo propuestas en este momento."
 #: client/src/components/notebook/NotebookPanel.tsx
 msgctxt "notebook row, who shared it"
 msgid ", from {0}"
+msgstr ""
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: the save button"
+msgid "Save the menu"
 msgstr ""
 
 #: client/src/pages/Home.tsx
@@ -11572,6 +11606,11 @@ msgctxt "new role from a card"
 msgid "Choose the file to bring in."
 msgstr ""
 
+#. placeholder {0}: g.label
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The name for the {0} group"
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "The import did not reach the server."
@@ -12911,6 +12950,10 @@ msgctxt "proposed changes"
 msgid "Sign in to review proposed changes"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The menu did not save."
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Putting a change to the whole village opens a vote every member is rung about, and this account does not open those yet. Say what you would change to whoever keeps the exit policy."
 msgstr ""
@@ -13409,6 +13452,12 @@ msgstr "hoy"
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "send one suggestion to a vote alone"
 msgid "Send it on its own"
+msgstr ""
+
+#. placeholder {0}: e.label
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: a menu entry label field"
+msgid "Your word for {0}"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -13941,6 +13990,10 @@ msgctxt "add a suggestion to a change request"
 msgid "Add to {targetTitle}"
 msgstr ""
 
+#: client/src/components/admin/MenuPanel.tsx
+msgid "The menu is saved. Members see it on their next page."
+msgstr ""
+
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgctxt "close the public line form without saving"
 msgid "Cancel"
@@ -14011,6 +14064,11 @@ msgstr ""
 
 #: client/src/components/TreasurySync.tsx
 msgid "Sync reads three sources again: this village's records, the Base chain (the public ledger some tokens live on) and Sera (the village's record keeper). It only reads, so nothing is paid or moved. Any difference goes to the Treasurer. You can sync once a minute."
+msgstr ""
+
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin: the village menu editor heading"
+msgid "Menu"
 msgstr ""
 
 #: client/src/components/Layout.tsx
@@ -15864,6 +15922,12 @@ msgstr ""
 
 #: client/src/pages/Register.tsx
 msgid "The village said yes to your application for {forRoles}. Make your account to take them up."
+msgstr ""
+
+#. placeholder {0}: i + 1
+#: client/src/components/admin/MenuPanel.tsx
+msgctxt "admin menu: one of the four phone tabs"
+msgid "Phone tab {0}"
 msgstr ""
 
 #: client/src/pages/Propose.tsx
