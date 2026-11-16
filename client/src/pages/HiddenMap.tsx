@@ -31,7 +31,7 @@ import CaptureForm, { PRECISION_WORDS, type Capture, type SendAnswer } from "@/c
 import Thumb from "@/components/hiddenMap/Thumb";
 import { useOutbox } from "@/components/hiddenMap/useOutbox";
 import { looksOffline, type OutboxItem } from "@/lib/hiddenMapOutbox";
-import { keepHiddenMapOffline, readMapSnapshot, writeMapSnapshot } from "@/lib/hiddenMapOffline";
+import { keepHiddenMapOffline, offlineOwner, readMapSnapshot, writeMapSnapshot } from "@/lib/hiddenMapOffline";
 import {
   addPhotos, answerExport, askExport, createPin, downloadExport, getExports, getMe, getPins, getQueue, Refused,
   type ExportView, type MapMe,
@@ -57,7 +57,10 @@ export default function HiddenMap() {
   // With no signal the module list cannot be read. A member who opened the map here before has its
   // words snapshot, which is the module's own answer from then: trust it, and open to logging a place.
   const noList = modules.failed || (typeof navigator !== "undefined" && navigator.onLine === false && !modules.loaded);
-  const keptForOffline = noList && user ? readMapSnapshot(String(user.id)) : null;
+  // With no signal the profile cannot be read either, so the member is the one the stored token
+  // wrote the snapshot for (QA P6-2 final).
+  const memberId = user ? String(user.id) : noList ? offlineOwner() : null;
+  const keptForOffline = noList && memberId ? readMapSnapshot(memberId) : null;
   const on = listedOn || keptForOffline !== null;
   const [me, setMe] = useState<MapMe | null>(null);
   const [pins, setPins] = useState<Array<PinView | PinDot>>([]);
@@ -67,7 +70,7 @@ export default function HiddenMap() {
   const [shown, setShown] = useState<Record<Layer, boolean>>({ planting: true, partner: true, stop: true });
   const [moment, setMoment] = useState(false);
 
-  const owner = on && user ? String(user.id) : null;
+  const owner = on && memberId ? memberId : null;
   const [offline, setOffline] = useState(false);
 
   const load = useCallback(async () => {
@@ -98,15 +101,15 @@ export default function HiddenMap() {
   }, [t, owner]);
 
   useEffect(() => {
-    if (on && user) void load();
-  }, [on, user, load]);
+    if (on && memberId) void load();
+  }, [on, memberId, load]);
 
   const box = useOutbox(owner, () => void load());
 
   // The opening moment, once per member and opening, on this device.
   useEffect(() => {
-    if (me?.open && user && !openingSeen(String(user.id), me.openedAt)) setMoment(true);
-  }, [me?.open, me?.openedAt, user]);
+    if (me?.open && memberId && !openingSeen(memberId, me.openedAt)) setMoment(true);
+  }, [me?.open, me?.openedAt, memberId]);
 
   if (!modules.loaded && !keptForOffline) {
     return (
@@ -116,7 +119,7 @@ export default function HiddenMap() {
     );
   }
   if (!on) return <ModuleGate moduleId="hidden-map" name={t`Hidden map`} />;
-  if (!user) return <SignInToSee moduleId="hidden-map" name={t`Hidden map`} />;
+  if (!memberId) return <SignInToSee moduleId="hidden-map" name={t`Hidden map`} />;
   if (!me) {
     return (
       <Layout>
@@ -161,7 +164,7 @@ export default function HiddenMap() {
   const queueVisit = async (item: OutboxItem) => box.add(item);
 
   if (moment) {
-    return <OpeningMoment me={me} userId={String(user.id)} pins={pins} onDone={() => setMoment(false)} />;
+    return <OpeningMoment me={me} userId={memberId} pins={pins} onDone={() => setMoment(false)} />;
   }
 
   const views: Array<{ id: View; label: string }> = offline ? [{ id: "log", label: t`Log a place` }] : [

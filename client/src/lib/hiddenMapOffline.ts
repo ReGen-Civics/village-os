@@ -21,10 +21,15 @@
  * the key family `/reset` clears. No pin, count, place or opening time.
  */
 import type { MapMe } from "./hiddenMapApi";
+import { authToken } from "./gameApi";
 
 export const HIDDEN_MAP_SW = "/hidden-map-sw.js";
 export const HIDDEN_MAP_SCOPE = "/hidden-map";
 const SNAPSHOT = "village.offline.hidden-map";
+const OWNER = "village.offline.hidden-map.owner";
+
+/** The last characters of the stored token: enough to tell this session from another, and already on this phone. */
+const tail = (token: string | null) => (token ? token.slice(-16) : "");
 
 /** The fields of /me a cold offline open needs, and nothing that says where or how many. */
 const KEEP = [
@@ -37,8 +42,29 @@ export function writeMapSnapshot(owner: string, me: MapMe): void {
     const kept: Record<string, unknown> = {};
     for (const k of KEEP) kept[k] = (me as any)[k];
     window.localStorage.setItem(`${SNAPSHOT}.${owner}`, JSON.stringify(kept));
+    // Which session wrote it, so a cold open with no profile can still say whose it is.
+    const t = tail(authToken());
+    if (t) window.localStorage.setItem(OWNER, JSON.stringify({ owner, tail: t }));
   } catch {
     /* a private window: no cold open offline, which is fine */
+  }
+}
+
+/**
+ * The member the stored token belongs to, when the profile cannot be read (no
+ * signal): the owner the last snapshot was written for, if and only if it was
+ * written under this same token. Another account's token reads nothing.
+ */
+export function offlineOwner(): string | null {
+  try {
+    const t = tail(authToken());
+    if (!t) return null;
+    const raw = window.localStorage.getItem(OWNER);
+    if (!raw) return null;
+    const kept = JSON.parse(raw);
+    return kept && kept.tail === t && typeof kept.owner === "string" ? kept.owner : null;
+  } catch {
+    return null;
   }
 }
 

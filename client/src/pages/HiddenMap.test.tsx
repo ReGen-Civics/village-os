@@ -25,7 +25,8 @@ vi.mock("@/modules/ModuleProvider", () => ({
       ? { loaded: true, failed: true, modules: [] }
       : { loaded: true, failed: false, modules: [{ id: "hidden-map", lifecycle: "members" }] },
 }));
-vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u-ash", name: "Ash Example" }, loading: false }) }));
+let signedIn: any = { id: "u-ash", name: "Ash Example" };
+vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: signedIn, loading: false }) }));
 
 let me: any;
 let pins: any[];
@@ -80,6 +81,7 @@ beforeEach(() => {
   window.localStorage.clear();
   noSignal = false;
   modulesFailed = false;
+  signedIn = { id: "u-ash", name: "Ash Example" };
 });
 afterEach(cleanup);
 
@@ -184,6 +186,41 @@ describe("opening with no signal (P6-2)", () => {
     render(<HiddenMap />);
     expect(await screen.findByText("No signal here")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+  });
+
+  it("opens offline when the profile cannot be read either, from the snapshot this same session wrote (P6-2 final)", async () => {
+    window.localStorage.setItem("village-auth-token", "session-token-for-ash-0123456789abcdef");
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    // No signal: the profile is unreachable, so the member is not known from it.
+    noSignal = true;
+    modulesFailed = true;
+    signedIn = null;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+  });
+
+  it("never opens another session's snapshot offline", async () => {
+    window.localStorage.setItem("village-auth-token", "session-token-for-ash-0123456789abcdef");
+    me = { ...base, open: false };
+    pins = [];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    window.localStorage.setItem("village-auth-token", "session-token-for-somebody-else-fedcba98");
+    noSignal = true;
+    modulesFailed = true;
+    signedIn = null;
+    render(<HiddenMap />);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText("No signal here")).toBeNull();
+    expect(screen.queryByRole("heading", { name: "Log a place" })).toBeNull();
   });
 
   it("says the map could not be read when there is no snapshot", async () => {
