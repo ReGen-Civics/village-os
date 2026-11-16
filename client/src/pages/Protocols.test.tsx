@@ -69,6 +69,7 @@ const KEPT: ProtocolsPayload = {
       id: "opening-up",
       title: "Opening up",
       summary: "Before anyone arrives.",
+      image: "",
       version: 1,
       status: "active",
       updatedAt: "2026-11-15T00:00:00.000Z",
@@ -81,6 +82,7 @@ const KEPT: ProtocolsPayload = {
   ],
   runs: [],
   viewer: { id: ME, name: "Wren", roleIds: [] },
+  roleHolders: { "r-key": ["Kai"] },
   settings: { showInstallCard: false },
   at: "2026-11-15T09:00:00.000Z",
 };
@@ -127,19 +129,21 @@ describe("with no signal", () => {
     fireEvent.click(lights);
     await waitFor(() => expect(screen.getByRole("checkbox", { name: "Lights on" }).getAttribute("aria-checked")).toBe("true"));
 
-    // The Keyholder's step is not this member's to tick, offline as online.
+    // The Keyholder's step is not this member's to tick, offline as online,
+    // and it names the role first with its holder in parentheses.
     const unlock = screen.getByRole("checkbox", { name: "Front door unlocked" }) as HTMLButtonElement;
     expect(unlock.disabled).toBe(true);
-    expect(screen.getByText("For the Keyholder to tick")).toBeTruthy();
+    expect(screen.getByText("Keyholder (Kai) ticks this one.")).toBeTruthy();
 
-    // A required step is open, so the run cannot be completed.
-    const complete = screen.getByRole("button", { name: "Mark complete" }) as HTMLButtonElement;
-    expect(complete.disabled).toBe(true);
-    expect(screen.getByText(/One required step is still open: Front door unlocked \(Keyholder\)\./)).toBeTruthy();
+    // A required step is open and not this member's: no way to complete, and the page says who it waits for.
+    expect(screen.queryByRole("button", { name: "Mark complete" })).toBeNull();
+    expect(screen.getByText(/Waiting for Keyholder \(Kai\)\./)).toBeTruthy();
+    expect(screen.getByText("1 of 2 done")).toBeTruthy();
 
     const waiting = protocolsQueue().pending(ME);
     expect(waiting.map((r) => r.path.replace(/runs\/[^/]+/, "runs/:id"))).toEqual(["/api/protocols/runs", "/api/protocols/runs/:id/ticks"]);
     expect(await screen.findByText(/2 changes are waiting to send\./)).toBeTruthy();
+    expect(screen.getByText("Opening up works offline")).toBeTruthy();
   });
 
   it("sends the waiting changes, in order, when the signal comes back", async () => {

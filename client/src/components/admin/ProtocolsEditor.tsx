@@ -34,6 +34,7 @@ interface Draft {
   id: string;
   title: string;
   summary: string;
+  image: string;
   steps: ProtocolStep[];
   isNew: boolean;
 }
@@ -162,7 +163,7 @@ export default function ProtocolsEditor({ password }: { password: string }) {
           </ul>
         )}
         {!draft && (
-          <button type="button" className={btnCls} onClick={() => setDraft({ id: "", title: "", summary: "", steps: [blankStep()], isNew: true })}>
+          <button type="button" className={btnCls} onClick={() => setDraft({ id: "", title: "", summary: "", image: "", steps: [blankStep()], isNew: true })}>
             <Trans context="admin protocols editor">New protocol</Trans>
           </button>
         )}
@@ -243,6 +244,21 @@ function DraftForm(props: {
           <Trans context="admin protocols editor">What it is for</Trans>
         </span>
         <textarea className={inputCls} rows={2} maxLength={600} value={draft.summary} onChange={(e) => onChange({ ...draft, summary: e.target.value })} />
+      </label>
+      <label className="block space-y-1 text-sm text-foreground">
+        <span className="font-medium">
+          <Trans context="admin protocols editor">Photo at the top of a run (optional)</Trans>
+        </span>
+        <input
+          className={inputCls}
+          value={draft.image}
+          maxLength={500}
+          placeholder="/api/uploads/..." // i18n-ok: an address shape, not words
+          onChange={(e) => onChange({ ...draft, image: e.target.value })}
+        />
+        <span className="block text-xs text-muted-foreground">
+          <Trans context="admin protocols editor">A path on this site, such as an image you uploaded, or an https address.</Trans>
+        </span>
       </label>
       <ol className="space-y-3">
         {draft.steps.map((s, i) => {

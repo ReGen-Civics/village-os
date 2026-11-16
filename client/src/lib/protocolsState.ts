@@ -18,6 +18,8 @@ export interface ProtocolsPayload {
   protocols: ProtocolView[];
   runs: RunView[];
   viewer: { id: string; name: string; roleIds: string[] };
+  /** First names of each kept-for role's live holders, for "Role (Name) ticks this one". */
+  roleHolders?: Record<string, string[]>;
   settings: { showInstallCard: boolean };
   at: string;
 }
@@ -54,6 +56,7 @@ export function withPending(base: ProtocolsPayload, pending: readonly QueuedRequ
         protocolId: proto.id,
         version: Number(b.version) || proto.version,
         title: proto.title,
+        image: proto.image ?? "",
         steps: proto.steps,
         startedBy: base.viewer.id,
         startedByName: base.viewer.name,

@@ -4,7 +4,7 @@ const CACHE = "protocols-shell-v1";
 const SHELL = "/protocols";
 const BUILD = "/__protocols-shell-build";
 const WAIT_MS = 8e3;
-const PUBLIC = [/^\/api\/brand\/theme\.css$/, /^\/api\/game\/config$/, /^\/api\/i18n\/catalog\/[A-Za-z-]{2,16}$/, /^\/api\/protocols-app\.webmanifest$/, /^\/manifest\.webmanifest$/];
+const PUBLIC = [/^\/api\/brand\/theme\.css$/, /^\/api\/game\/config$/, /^\/api\/i18n\/catalog\/[\w-]{2,16}(\/part\/[\w-]+)?$/, /^\/api\/protocols-app\.webmanifest$/];
 const isAsset = (p) => p.startsWith("/assets/");
 const isPublic = (p) => PUBLIC.some((re) => re.test(p));
 const inScope = (p) => p === SHELL || p.startsWith(SHELL + "/");

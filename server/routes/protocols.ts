@@ -74,18 +74,40 @@ function bodyOf(req: Request): Record<string, unknown> {
 export function register(app: Express, deps: Deps): void {
   const { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName, brandColour, appIcon } = deps;
 
-  /** The org-chart roles this member holds live now: seated, not ended, not lapsed, not an example. */
-  async function liveRoleIds(userId: string): Promise<string[]> {
+  /** Live seatings: a member seated, not ended, not lapsed, not an example, in an active role. */
+  async function liveSeatings(): Promise<Array<{ userId: string; roleId: string }>> {
     const pool = getPool();
     const [assignments, roles] = await Promise.all([listOrgAssignments(pool, lapseContext()), listOrgRoles(pool)]);
     const active = new Set(roles.filter((r) => r.active).map((r) => r.id));
-    return Array.from(
-      new Set(
-        assignments
-          .filter((a) => a.userId === userId && a.holderKind === "member" && !a.isExample && !a.lapsed && active.has(a.orgRoleId))
-          .map((a) => a.orgRoleId),
-      ),
-    );
+    return assignments
+      .filter((a) => a.userId && a.holderKind === "member" && !a.isExample && !a.lapsed && active.has(a.orgRoleId))
+      .map((a) => ({ userId: String(a.userId), roleId: a.orgRoleId }));
+  }
+
+  /** The org-chart roles this member holds live now. */
+  async function liveRoleIds(userId: string): Promise<string[]> {
+    return Array.from(new Set((await liveSeatings()).filter((s) => s.userId === userId).map((s) => s.roleId)));
+  }
+
+  /**
+   * First names of the live holders of each role a step is kept for, so a run
+   * can say "Role (Name) ticks this one" (role first, holder in parentheses,
+   * signed-in views only). Read at request time; stored nowhere.
+   */
+  async function roleHolders(protocols: readonly { steps: ProtocolStep[] }[]): Promise<Record<string, string[]>> {
+    const wanted = new Set<string>();
+    for (const p of protocols) for (const s of p.steps) if (s.who.kind === "role") wanted.add(s.who.roleId);
+    if (wanted.size === 0) return {};
+    const seats = (await liveSeatings()).filter((s) => wanted.has(s.roleId));
+    const names = await repo.memberNames(getPool(), seats.map((s) => s.userId));
+    const out: Record<string, string[]> = {};
+    for (const s of seats) {
+      const first = (names.get(s.userId) ?? "").trim().split(/\s+/)[0] ?? "";
+      if (!first) continue;
+      const list = (out[s.roleId] ??= []);
+      if (!list.includes(first)) list.push(first);
+    }
+    return out;
   }
 
   async function roleTitles(): Promise<Map<string, string>> {
@@ -97,7 +119,7 @@ export function register(app: Express, deps: Deps): void {
   async function views(rows: repo.RunRow[]): Promise<RunView[]> {
     const pool = getPool();
     const ticks = await repo.ticksFor(pool, rows.map((r) => r.id));
-    const versions = new Map<string, { title: string; steps: ProtocolStep[] } | null>();
+    const versions = new Map<string, { title: string; image: string; steps: ProtocolStep[] } | null>();
     for (const r of rows) {
       const k = `${r.protocolId}@${r.version}`;
       if (!versions.has(k)) versions.set(k, await repo.getVersion(pool, r.protocolId, r.version));
@@ -116,6 +138,7 @@ export function register(app: Express, deps: Deps): void {
         protocolId: r.protocolId,
         version: r.version,
         title: v?.title ?? r.protocolId,
+        image: v?.image ?? "",
         steps: v?.steps ?? [],
         startedBy: r.startedBy,
         startedByName: names.get(r.startedBy) ?? "",
@@ -173,9 +196,11 @@ export function register(app: Express, deps: Deps): void {
       repo.listRuns(pool, { recentLimit: RECENT_RUNS }),
       liveRoleIds(String(me.id)),
     ]);
+    const runs = await views(rows);
     res.json({
       protocols,
-      runs: await views(rows),
+      runs,
+      roleHolders: await roleHolders([...protocols, ...runs]),
       viewer: { id: String(me.id), name: String(me.name ?? ""), roleIds },
       settings: protocolsConfig(),
       at: new Date().toISOString(),

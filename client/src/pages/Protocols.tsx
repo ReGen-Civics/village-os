@@ -18,6 +18,7 @@
  */
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Link, useLocation, useParams } from "wouter";
+import { Check, WifiOff } from "lucide-react";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import {
   completionRefusal,
@@ -25,6 +26,7 @@ import {
   openRequiredSteps,
   progress,
   stepStates,
+  type ProtocolStep,
   type ProtocolView,
   type RunView,
 } from "@shared/protocols";
@@ -48,7 +50,7 @@ import {
 } from "@/lib/protocolsState";
 import { keepProtocolsOffline, pointManifestAtProtocols } from "@/lib/protocolsOffline";
 import InstallCard from "@/components/protocols/InstallCard";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, QUIET, TILE, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, HINT, LEDE, LINK, NOTE, WORLD } from "@/components/journey/look";
 
 type Load =
   | { state: "loading" }
@@ -196,11 +198,26 @@ export default function Protocols() {
   return (
     <Layout>
       <div className={WORLD}>
-        <div className="container max-w-3xl space-y-6 py-8 md:py-12">
-          <SyncLine online={online} fresh={load.fresh} savedAt={load.data.at} waiting={waiting} note={note} onSync={() => void sync(true)} />
+        <div className="container max-w-xl space-y-5 py-6 md:py-10">
+          <OfflineBanner
+            online={online}
+            fresh={load.fresh}
+            title={run?.title ?? null}
+            waiting={waiting}
+            note={note}
+            onSync={() => void sync(true)}
+          />
+          {runId && <InstallCard auto={load.data.settings?.showInstallCard !== false} quietLink={false} />}
           {runId ? (
             run ? (
-              <RunPage run={run} viewer={view.viewer} owner={owner!} pending={pendingForRun(pending, run.id)} onChange={() => void sync()} />
+              <RunPage
+                run={run}
+                viewer={view.viewer}
+                holders={view.roleHolders ?? {}}
+                owner={owner!}
+                pending={pendingForRun(pending, run.id)}
+                onChange={() => void sync()}
+              />
             ) : (
               <section className={CARD}>
                 <p className={NOTE}>
@@ -221,30 +238,40 @@ export default function Protocols() {
   );
 }
 
-function SyncLine(props: { online: boolean; fresh: boolean; savedAt: string; waiting: number; note: string | null; onSync: () => void }) {
-  const { online, fresh, savedAt, waiting, note, onSync } = props;
-  const { t } = useLingui();
-  const kept = when(savedAt);
-  const status = !online
-    ? kept
-      ? t({ message: `No signal. Showing what this phone kept on ${kept}.`, context: "protocols page" })
-      : t({ message: `No signal. Showing what this phone kept.`, context: "protocols page" })
-    : fresh
-      ? ""
-      : t({ message: `Showing what this phone kept while it reaches the village.`, context: "protocols page" });
-  if (!status && waiting === 0 && !note) return null;
+/** The design's calm notice (`.banner`): never red, a success-tinted edge and an icon. */
+const BANNER = "flex items-center gap-3 rounded-[14px] border border-open/25 bg-card px-3.5 py-3";
+const BANNER_ICON = "grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-open/15 text-open";
+
+/**
+ * With no signal, or with changes still on the phone, the page says so once,
+ * calmly: the work is kept and will be sent. Online with nothing waiting, it
+ * says nothing at all.
+ */
+function OfflineBanner(props: { online: boolean; fresh: boolean; title: string | null; waiting: number; note: string | null; onSync: () => void }) {
+  const { online, fresh, title, waiting, note, onSync } = props;
+  if (online && fresh && waiting === 0 && !note) return null;
+  const heading = !online || !fresh
+    ? title
+      ? <Trans context="protocols page">{title} works offline</Trans>
+      : <Trans context="protocols page">The protocols work offline</Trans>
+    : <Plural context="protocols page" value={waiting} one="# change to send" other="# changes to send" />;
   return (
-    <div className={`${QUIET} flex flex-wrap items-center justify-between gap-3`} role="status" aria-live="polite">
-      <div className="space-y-1">
-        {status && <p className={HINT}>{status}</p>}
-        {waiting > 0 && (
-          <p className="text-sm font-medium text-foreground">
+    <div className={BANNER} role="status" aria-live="polite">
+      <div className={BANNER_ICON} aria-hidden="true">
+        {online ? <Check className="h-5 w-5" /> : <WifiOff className="h-5 w-5" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[15px] font-semibold text-foreground">{heading}</p>
+        <p className="text-xs text-muted-foreground">
+          {note ?? <Trans context="protocols page">Kept on your phone. It sends when you're back in signal.</Trans>}
+        </p>
+        {waiting > 0 && (!online || !fresh) && (
+          <p className="text-xs text-muted-foreground">
             <Plural context="protocols page" value={waiting} one="# change is waiting to send." other="# changes are waiting to send." />
           </p>
         )}
-        {note && <p className={HINT}>{note}</p>}
       </div>
-      {waiting > 0 && (
+      {online && waiting > 0 && (
         <button type="button" className={BTN_SECONDARY} onClick={onSync}>
           <Trans context="protocols page">Send now</Trans>
         </button>
@@ -271,11 +298,11 @@ function ListPage({ data, onStart }: { data: ProtocolsPayload; onStart: (p: Prot
       </header>
 
       {open.length > 0 && (
-        <section className={CARD} aria-labelledby="open-runs">
+        <section aria-labelledby="open-runs" className="space-y-3">
           <h2 id="open-runs" className={H2}>
             <Trans context="protocols page">Runs in progress</Trans>
           </h2>
-          <ul className="mt-4 space-y-3">
+          <ul className="space-y-3">
             {open.map((r) => (
               <RunRow key={r.id} run={r} />
             ))}
@@ -283,40 +310,45 @@ function ListPage({ data, onStart }: { data: ProtocolsPayload; onStart: (p: Prot
         </section>
       )}
 
-      <section className={CARD} aria-labelledby="all-protocols">
+      <section aria-labelledby="all-protocols" className="space-y-3">
         <h2 id="all-protocols" className={H2}>
           <Trans context="protocols page">Protocols</Trans>
         </h2>
         {data.protocols.length === 0 ? (
-          <p className={`${NOTE} mt-3`}>
+          <p className={NOTE}>
             <Trans context="protocols page">No protocols yet. An admin writes them on the module's page.</Trans>
           </p>
         ) : (
-          <ul className="mt-4 space-y-3">
-            {data.protocols.map((p) => (
-              <li key={p.id} className={`${TILE} flex flex-wrap items-center justify-between gap-3`}>
-                <div className="min-w-0">
-                  <p className="font-display text-lg text-foreground">{p.title}</p>
-                  {p.summary && <p className={HINT}>{p.summary}</p>}
-                  <p className={HINT}>
-                    <Plural context="protocols page" value={p.steps.length} one="# step" other="# steps" />, <Trans context="protocols page">{p.steps.filter((s) => s.required).length} required</Trans>
-                  </p>
-                </div>
-                <button type="button" className={BTN_PRIMARY} onClick={() => onStart(p)}>
-                  <Trans context="protocols page">Start</Trans>
-                </button>
-              </li>
-            ))}
+          <ul className="space-y-4">
+            {data.protocols.map((p) => {
+              const required = p.steps.filter((s) => s.required).length;
+              return (
+                <li key={p.id} className="overflow-hidden rounded-[18px] border border-border bg-card/55">
+                  {p.image ? <Photo src={p.image} title={p.title} /> : null}
+                  <div className="space-y-3 p-4">
+                    {!p.image && <h3 className="font-display text-2xl text-foreground">{p.title}</h3>}
+                    {p.summary && <p className={HINT}>{p.summary}</p>}
+                    <p className="text-xs text-muted-foreground">
+                      <Plural context="protocols page" value={p.steps.length} one="# step" other="# steps" />,{" "}
+                      <Trans context="protocols page">{required} required</Trans>
+                    </p>
+                    <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={() => onStart(p)}>
+                      <Trans context="protocols page">Start</Trans>
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
 
       {ended.length > 0 && (
-        <section className={CARD} aria-labelledby="recent-runs">
+        <section aria-labelledby="recent-runs" className="space-y-3">
           <h2 id="recent-runs" className={H2}>
             <Trans context="protocols page">Recent runs</Trans>
           </h2>
-          <ul className="mt-4 space-y-3">
+          <ul className="space-y-3">
             {ended.map((r) => (
               <RunRow key={r.id} run={r} />
             ))}
@@ -327,18 +359,37 @@ function ListPage({ data, onStart }: { data: ProtocolsPayload; onStart: (p: Prot
   );
 }
 
+/** The design's photo header: the village's own picture, the title over its darkened foot. */
+function Photo({ src, title }: { src: string; title: string }) {
+  return (
+    <div className="relative overflow-hidden">
+      <img src={src} alt="" className="h-[150px] w-full object-cover" style={{ objectPosition: "50% 40%" }} loading="lazy" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/10 to-background/85" aria-hidden="true" />
+      <h3 className="absolute bottom-3 left-4 right-4 font-display text-3xl leading-tight text-foreground">{title}</h3>
+    </div>
+  );
+}
+
 function RunRow({ run }: { run: RunView }) {
   const { t } = useLingui();
-  const p = progress(run.steps, run.ticks);
-  const label = run.status === "complete" ? t({ message: `Complete`, context: "protocols page" }) : run.status === "set-aside" ? t({ message: `Set aside`, context: "protocols page" }) : t({ message: `${p.done} of ${p.total} done`, context: "protocols page" });
+  const p = requiredProgress(run);
+  const label =
+    run.status === "complete"
+      ? t({ message: `Complete`, context: "protocols page" })
+      : run.status === "set-aside"
+        ? t({ message: `Set aside`, context: "protocols page" })
+        : t({ message: `${p.done} of ${p.total} done`, context: "protocols page" });
   const starter = run.startedByName || t({ message: `a member`, context: "protocols page" });
   const started = when(run.startedAt);
   return (
     <li>
-      <Link href={`/protocols/run/${encodeURIComponent(run.id)}`} className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-border bg-muted px-4 py-2 hover:border-notice">
+      <Link
+        href={`/protocols/run/${encodeURIComponent(run.id)}`}
+        className="flex min-h-11 items-center justify-between gap-3 rounded-[14px] border border-border bg-card/55 px-4 py-3 hover:border-notice"
+      >
         <span className="min-w-0">
           <span className="block font-medium text-foreground">{run.title}</span>
-          <span className={HINT}>
+          <span className="text-xs text-muted-foreground">
             <Trans context="protocols page">
               Started by {starter}, {started}
             </Trans>
@@ -350,27 +401,54 @@ function RunRow({ run }: { run: RunView }) {
   );
 }
 
+/** Progress counts the required steps, the ones that decide whether a run can be completed. */
+function requiredProgress(run: RunView): { done: number; total: number } {
+  const states = stepStates(run.steps, run.ticks);
+  const req = run.steps.filter((s) => s.required);
+  return { done: req.filter((s) => states.get(s.id)?.done).length, total: req.length };
+}
+
+const firstName = (name: string | null | undefined) => (name ?? "").trim().split(/\s+/)[0] ?? "";
+
+/** "Role (Ana, Ben)", or the role alone when nobody holds it. Role first, holders in parentheses. */
+function roleWithHolders(roleTitle: string, names: readonly string[] | undefined): string {
+  const list = (names ?? []).slice(0, 3);
+  if (list.length === 0) return roleTitle;
+  const more = (names?.length ?? 0) - list.length;
+  return `${roleTitle} (${list.join(", ")}${more > 0 ? ` +${more}` : ""})`;
+}
+
 function RunPage(props: {
   run: RunView;
   viewer: ProtocolsPayload["viewer"];
+  holders: Record<string, string[]>;
   owner: string;
   pending: QueuedRequest[];
   onChange: () => void;
 }) {
-  const { run, viewer, owner, pending, onChange } = props;
+  const { run, viewer, holders, owner, pending, onChange } = props;
   const { t } = useLingui();
   const [confirmAside, setConfirmAside] = useState(false);
-  const starter = run.startedByName || t({ message: `a member`, context: "protocols page" });
-  const started = when(run.startedAt);
   const ended = when(run.endedAt);
   const ender = run.endedByName || t({ message: `a member`, context: "protocols page" });
-  const someone = t({ message: `a member`, context: "protocols page" });
   const states = stepStates(run.steps, run.ticks);
   const openSteps = openRequiredSteps(run.steps, run.ticks);
-  const p = progress(run.steps, run.ticks);
+  const p = requiredProgress(run);
   const isOpen = run.status === "open";
   const refused = pending.filter((x) => x.refused);
   const me = { id: viewer.id, roleIds: viewer.roleIds };
+  const mine = (s: ProtocolStep) => mayTick(s, me);
+
+  // The one step in front of this member now: the first open required step
+  // they may tick, else the first open optional one.
+  const now =
+    run.steps.find((s) => s.required && !states.get(s.id)?.done && mine(s)) ??
+    run.steps.find((s) => !s.required && !states.get(s.id)?.done && mine(s)) ??
+    null;
+  const waitingOn = openSteps.find((s) => !mine(s)) ?? null;
+
+  // Who else has ticked in this run, by first name, for "with Ana".
+  const others = Array.from(new Set(run.ticks.filter((x) => x.by !== viewer.id).map((x) => firstName(x.byName)).filter(Boolean)));
 
   const toggle = (stepId: string, done: boolean) => {
     queueTick(owner, run.id, stepId, done);
@@ -382,20 +460,48 @@ function RunPage(props: {
     onChange();
   };
 
+  const pct = p.total ? Math.round((p.done / p.total) * 100) : 100;
+  const withOthers = others.join(", ");
+
   return (
     <>
-      <header className="space-y-2">
-        <Link href="/protocols" className={LINK}>
-          <Trans context="protocols page">All protocols</Trans>
-        </Link>
+      <Link href="/protocols" className={`${LINK} text-sm`}>
+        <Trans context="protocols page">All protocols</Trans>
+      </Link>
+
+      {run.image ? (
+        <div className="overflow-hidden rounded-[18px]">
+          <Photo src={run.image} title={run.title} />
+        </div>
+      ) : (
         <h1 className={H1}>{run.title}</h1>
-        <p className={LEDE}>
-          <Trans context="protocols page">
-            Started by {starter}, {started}. {p.done} of {p.total} done.
-          </Trans>
-        </p>
+      )}
+
+      <section aria-label={t({ message: `Progress`, context: "protocols page" })}>
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="font-semibold text-foreground">
+            <Trans context="protocols page">
+              {p.done} of {p.total} done
+            </Trans>
+          </p>
+          {withOthers && (
+            <p className="text-sm text-muted-foreground">
+              <Trans context="protocols page">with {withOthers}</Trans>
+            </p>
+          )}
+        </div>
+        <div
+          className="mt-2 h-2 overflow-hidden rounded-lg bg-foreground/10"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={p.total}
+          aria-valuenow={p.done}
+          aria-label={t({ message: `Required steps done`, context: "protocols page" })}
+        >
+          <i className="block h-full bg-gradient-to-r from-open to-primary" style={{ width: `${pct}%` }} />
+        </div>
         {run.status !== "open" && (
-          <p className="text-base font-medium text-foreground">
+          <p className="mt-3 text-base font-medium text-foreground">
             {run.status === "complete" ? (
               <Trans context="protocols page">
                 Completed by {ender}, {ended}.
@@ -407,18 +513,26 @@ function RunPage(props: {
             )}
           </p>
         )}
-      </header>
+      </section>
 
       {refused.length > 0 && (
-        <section aria-label={t({ message: `Changes the village did not take`, context: "protocols page" })} className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3">
+        <section
+          aria-label={t({ message: `Changes the village did not take`, context: "protocols page" })}
+          className="rounded-[14px] border border-destructive/40 bg-destructive/5 px-4 py-3"
+        >
           <p className="text-sm font-medium text-foreground">
             <Plural context="protocols page" value={refused.length} one="The village did not take # change on this run." other="The village did not take # changes on this run." />
           </p>
           <ul className="mt-2 space-y-2">
             {refused.map((x) => (
               <li key={x.id} className="flex flex-wrap items-center justify-between gap-2">
-                <span className={HINT}>
-                  {kindOf(x) === "tick" ? t({ message: `A tick`, context: "protocols page" }) : kindOf(x) === "start" ? t({ message: `Starting the run`, context: "protocols page" }) : t({ message: `Ending the run`, context: "protocols page" })}: {x.lastError}
+                <span className="text-sm text-muted-foreground">
+                  {kindOf(x) === "tick"
+                    ? t({ message: `A tick`, context: "protocols page" })
+                    : kindOf(x) === "start"
+                      ? t({ message: `Starting the run`, context: "protocols page" })
+                      : t({ message: `Ending the run`, context: "protocols page" })}
+                  : {x.lastError}
                 </span>
                 <span className="flex gap-2">
                   <button type="button" className={BTN_SECONDARY} onClick={() => void protocolsQueue().retry(owner, x.id)}>
@@ -434,81 +548,90 @@ function RunPage(props: {
         </section>
       )}
 
-      <section className={CARD} aria-label={t({ message: `Steps`, context: "protocols page" })}>
-        <ol className="space-y-3">
-          {run.steps.map((s, i) => {
-            const st = states.get(s.id);
-            const allowed = mayTick(s, me);
-            const done = !!st?.done;
-            return (
-              <li key={s.id} className={`${TILE} flex items-start gap-3`}>
-                <button
-                  type="button"
-                  role="checkbox"
-                  aria-checked={done}
-                  aria-label={s.text}
-                  disabled={!isOpen || !allowed}
-                  onClick={() => toggle(s.id, !done)}
-                  className={`mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 text-xl font-bold focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 ${
-                    done ? "border-notice bg-notice text-background" : "border-border bg-card text-transparent"
-                  }`}
+      <ul className="m-0 list-none p-0" aria-label={t({ message: `Steps`, context: "protocols page" })}>
+        {run.steps.map((s, i) => {
+          const st = states.get(s.id);
+          const done = !!st?.done;
+          const allowed = mine(s);
+          const isNow = isOpen && now?.id === s.id;
+          const kept = s.who.kind === "role";
+          const lock = kept && !done && (!allowed || openSteps.some((o) => o.id !== s.id));
+          const who = done ? firstName(st?.byName) : !s.required ? t({ message: `optional`, context: "protocols page" }) : "";
+          const keptFor = s.who.kind === "role" ? roleWithHolders(s.who.roleTitle, holders[s.who.roleId]) : "";
+          return (
+            <li
+              key={s.id}
+              className={`${i === 0 || isNow ? "" : "border-t border-border"} ${isNow ? "my-1 -mx-2 rounded-xl bg-primary/10" : ""} ${!done && !s.required && !isNow ? "opacity-60" : ""}`}
+            >
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={done}
+                aria-label={s.text}
+                disabled={!isOpen || !allowed}
+                onClick={() => toggle(s.id, !done)}
+                className={`flex w-full min-h-11 items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default ${isNow ? "px-2.5 py-3.5" : "px-0.5 py-3"}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`grid h-7 w-7 shrink-0 place-items-center rounded-[8px] border-2 ${
+                    done ? "border-open bg-open text-background" : isNow ? "border-primary" : "border-foreground/40"
+                  } ${lock ? "border-dashed" : ""}`}
                 >
-                  <span aria-hidden="true">✓</span>
-                </button>
-                <div className="min-w-0 flex-1">
-                  <p className="text-base text-foreground">
-                    <span className="text-muted-foreground">{i + 1}. </span>
+                  {done && <Check className="h-4 w-4" strokeWidth={3} />}
+                </span>
+                <span className="min-w-0 flex-1 text-[15.5px]">
+                  <span className={done ? "text-muted-foreground line-through decoration-muted-foreground/50" : isNow ? "font-semibold text-foreground" : "text-foreground"}>
                     {s.text}
-                    {!s.required && (
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        <Trans context="protocols page">(optional)</Trans>
-                      </span>
-                    )}
-                  </p>
-                  {s.detail && <p className={`${HINT} mt-1 whitespace-pre-line`}>{s.detail}</p>}
-                  {s.who.kind === "role" && (
-                    <p className="mt-1 text-sm text-notice">{allowed ? t({ message: `Your step as ${s.who.roleTitle}`, context: "protocols page" }) : t({ message: `For the ${s.who.roleTitle} to tick`, context: "protocols page" })}</p>
+                  </span>
+                  {isNow && s.detail && <span className="mt-0.5 block whitespace-pre-line text-sm text-muted-foreground">{s.detail}</span>}
+                  {kept && !done && (
+                    <span className="mt-0.5 block text-sm text-muted-foreground">
+                      {allowed
+                        ? t({ message: `Yours to tick, as ${keptFor}.`, context: "protocols page" })
+                        : t({ message: `${keptFor} ticks this one.`, context: "protocols page" })}
+                    </span>
                   )}
-                  {st?.by && (
-                    <p className={`${HINT} mt-1`}>
-                      {done
-                        ? t({ message: `Ticked by ${st.byName || someone}, ${when(st.at)}`, context: "protocols page" })
-                        : t({ message: `Unticked by ${st.byName || someone}, ${when(st.at)}`, context: "protocols page" })}
-                    </p>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+                </span>
+                {who && <span className="ml-auto shrink-0 whitespace-nowrap pl-2 text-xs text-muted-foreground">{who}</span>}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
 
       {isOpen && (
-        <section className={`${CARD} space-y-3`} aria-label={t({ message: `Finish`, context: "protocols page" })}>
-          {openSteps.length > 0 ? (
-            <p className={NOTE}>
-              {completionRefusal(openSteps)} <Trans context="protocols page">It can be completed once every required step is ticked.</Trans>
-            </p>
-          ) : (
-            <p className={NOTE}>
-              <Trans context="protocols page">Every required step is ticked.</Trans>
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3">
-            <button type="button" className={BTN_PRIMARY} disabled={openSteps.length > 0} onClick={() => end("complete")}>
+        <section className="space-y-3" aria-label={t({ message: `Finish`, context: "protocols page" })}>
+          {openSteps.length === 0 ? (
+            <button type="button" className={`${BTN_PRIMARY} min-h-[52px] w-full text-base`} onClick={() => end("complete")}>
               <Trans context="protocols page">Mark complete</Trans>
             </button>
+          ) : now && now.required ? (
+            <button type="button" className={`${BTN_PRIMARY} min-h-[52px] w-full text-base`} onClick={() => toggle(now.id, true)}>
+              <Trans context="protocols page">Done: {now.text}</Trans>
+            </button>
+          ) : (
+            <p className={NOTE}>
+              {completionRefusal(openSteps)}{" "}
+              {waitingOn && waitingOn.who.kind === "role" && (
+                <Trans context="protocols page">
+                  Waiting for {roleWithHolders(waitingOn.who.roleTitle, holders[waitingOn.who.roleId])}.
+                </Trans>
+              )}
+            </p>
+          )}
+          <div className="text-center">
             {confirmAside ? (
-              <>
+              <span className="inline-flex flex-wrap justify-center gap-3">
                 <button type="button" className={BTN_SECONDARY} onClick={() => end("set-aside")}>
                   <Trans context="protocols page">Yes, set it aside</Trans>
                 </button>
                 <button type="button" className={BTN_SECONDARY} onClick={() => setConfirmAside(false)}>
                   <Trans context="protocols page">Keep going</Trans>
                 </button>
-              </>
+              </span>
             ) : (
-              <button type="button" className={BTN_SECONDARY} onClick={() => setConfirmAside(true)}>
+              <button type="button" className={`${LINK} min-h-11 text-sm`} onClick={() => setConfirmAside(true)}>
                 <Trans context="protocols page">Set this run aside</Trans>
               </button>
             )}

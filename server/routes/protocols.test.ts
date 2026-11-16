@@ -136,6 +136,8 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
     expect(r.status).toBe(200);
     expect(r.body.protocols.map((p: any) => [p.id, p.version, p.steps.length])).toEqual([["opening-up", 1, 3]]);
     expect(r.body.viewer).toEqual({ id: "m-wren", name: "Wren Alder", roleIds: [] });
+    // The role step's holders by first name, for "Keyholder (Kai) ticks this one".
+    expect(r.body.roleHolders).toEqual({ "role-keyholder": ["Kai"] });
     whoami = "m-kai";
     expect((await call("GET /api/protocols")).body.viewer.roleIds).toEqual(["role-keyholder"]);
   });

@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS `protocol_versions` (
   `summary` text NOT NULL,
   -- JSON: ProtocolStep[] (shared/protocols.ts).
   `steps` mediumtext NOT NULL,
+  -- A photo of the place the protocol is walked, shown at the top of a run.
+  -- A path on this site or an https address; NULL draws the title alone.
+  `image_url` varchar(500) NULL,
   `created_by` varchar(64) NOT NULL,
   `created_at` datetime(3) NOT NULL,
   PRIMARY KEY (`protocol_id`, `version`)

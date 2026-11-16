@@ -22,8 +22,9 @@ with no checklists the page says so.
 
 ## The model
 
-- **Protocol**: a named, ordered list of steps. Each step has its words, optional detail, required (default) or
-  optional, and who may tick it: any member, or the live holder of one org-chart role.
+- **Protocol**: a named, ordered list of steps, with an optional photo drawn at the top of a run (a path on this
+  site or an https address). Each step has its words, optional detail, required (default) or optional, and who may
+  tick it: any member, or the live holder of one org-chart role.
 - **Version**: every save of a protocol is a new row in `protocol_versions`, never an update. A run is pinned to
   the version it started on, so editing a list never rewrites a run already walked. Saving a draft identical to the
   current version writes nothing, so re-importing the same file is harmless.
@@ -40,7 +41,7 @@ chart at the moment the tick arrives, lapse included). The server's answer stand
 
 | Route | Who | What |
 |---|---|---|
-| `GET /api/protocols` | member | active protocols, open and recent runs with ticks and names, the viewer's id, name and live role ids, the card's settings |
+| `GET /api/protocols` | member | active protocols, open and recent runs with ticks and names, the viewer's id, name and live role ids, the first names of each kept-for role's live holders (`roleHolders`), the card's settings |
 | `GET /api/protocols/runs/:id` | member | one run |
 | `POST /api/protocols/runs` | member | start: `{ id, protocolId, version, startedAt }` |
 | `POST /api/protocols/runs/:id/ticks` | member | `{ id, stepId, done, at }` |
@@ -93,12 +94,13 @@ What it does, and why it cannot strand anybody on an old build:
   fails, or gives no answer in 8 seconds, or the browser says it is offline.
 - Vite's hashed `/assets/*` files are kept cache-first; a name is its content, so a kept copy is never wrong.
 - When a fresh page names a different entry script (a deploy), every kept asset of the build before is dropped.
-- Public reads the page needs to draw (`/api/brand/theme.css`, `/api/game/config`, `/api/i18n/catalog/:locale`, the
-  manifests) are network first with the kept copy as fallback.
+- Public reads the page needs to draw (`/api/brand/theme.css`, `/api/game/config`, `/api/i18n/catalog/:locale` and
+  its hashed parts, the protocols manifest) are network first with the kept copy as fallback.
 - **No member data is ever kept in Cache Storage.** Everything that names a member goes through the page's own
   per-member snapshot (below), so a shared phone never shows one member's runs to the next.
 - On the first visit the page's files loaded before the worker existed; the page hands the worker the list of what
-  it loaded (`protocols-warm`), and the next visit opens with no signal.
+  it loaded (`protocols-warm`), and the next visit opens with no signal. That takes a few seconds with signal: a
+  phone that loses signal in the same breath as its very first visit has not kept the page yet.
 - `/reset` unregisters every worker and empties Cache Storage, this one's included, and keeps the queue.
 
 **The page works without the app's own boot.** With no signal, AuthProvider has no user and ModuleProvider ends
@@ -107,7 +109,7 @@ module was on at the last visit), draws from it at once, and lays the waiting qu
 (`client/src/lib/protocolsState.ts`).
 
 Measured with Playwright (Chromium, 390x844): visit online, go offline, reload `/protocols`, start a run, tick,
-complete, go online, and the run arrives on the server.
+complete, go online, and the run arrives on the server; no file the page needs fails on the offline reload.
 
 ### The shared offline queue: `client/src/lib/offlineQueue.ts`
 
@@ -136,6 +138,19 @@ newRequestId(), tokenOwner(token)
   401 stops the run as a session end; 403, 404, 408, 409, 429 stop it and keep everything; 5xx keeps it and, in an
   `ordered` queue, stops the run so nothing overtakes it. A send has 20 seconds before it counts as no connection.
 - `/reset` keeps every `village.queue.*` key.
+
+## The screens
+
+Built to the approved mock-ups (`pirates-onboarding` lane, screen 05 and its design language): a calm offline notice
+(never red), the photo header with the title over it, a meter of required steps done ("15 of 19 done", "with" the
+other members who ticked), one row per step with who ticked it by first name, the step in front of the member
+highlighted with its detail, optional steps faded, a role step drawn dashed with "Role (Name) ticks this one", and
+one main button: tick the step in front of you, or complete once every required step is ticked. Colours come only
+from the village theme (`primary`, `open` for done, `card`, `muted-foreground`), so another village's palette and
+words carry through with nothing of this one's.
+
+Not built from the mock-up, because nothing in a protocol holds it: the reward panel under the list ("+25 tokens")
+and the "Your first quest" label belong to the quest a village links to the protocol, which is `vos-onboarding`'s.
 
 ## Add to your phone
 

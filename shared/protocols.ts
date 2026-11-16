@@ -32,6 +32,7 @@ export const PROTOCOL_SUMMARY_MAX = 600;
 export const STEP_ID_MAX = 64;
 export const STEP_TEXT_MAX = 280;
 export const STEP_DETAIL_MAX = 600;
+export const IMAGE_URL_MAX = 500;
 export const STEPS_MAX = 80;
 export const PROTOCOLS_PER_IMPORT_MAX = 40;
 /** A run or tick id, made on the device. */
@@ -86,6 +87,8 @@ export interface ProtocolDraft {
   id: string;
   title: string;
   summary: string;
+  /** A photo drawn at the top of a run: a path on this site or an https address. "" for none. */
+  image: string;
   steps: ProtocolStep[];
 }
 
@@ -118,6 +121,7 @@ export interface RunView {
   version: number;
   /** The version's words and steps, so a run always renders as it was walked. */
   title: string;
+  image: string;
   steps: ProtocolStep[];
   startedBy: string;
   startedByName: string;
@@ -163,6 +167,10 @@ export function checkProtocolDraft(input: unknown, roleTitles: ReadonlyMap<strin
   if (!isProtocolSlug(id)) problems.push("The protocol id may use lowercase letters, numbers, dashes and underscores.");
   const summary = longText(raw.summary);
   if (summary.length > PROTOCOL_SUMMARY_MAX) problems.push(`Keep the description to ${PROTOCOL_SUMMARY_MAX} characters.`);
+  const image = typeof raw.image === "string" ? raw.image.trim() : "";
+  if (image && (image.length > IMAGE_URL_MAX || !(/^\/[^/]/.test(image) || /^https:\/\/[^\s]+$/.test(image)) || /\s/.test(image))) {
+    problems.push("The photo must be a path on this site or an https address.");
+  }
 
   const rawSteps = Array.isArray(raw.steps) ? raw.steps : [];
   if (rawSteps.length === 0) problems.push("Add at least one step.");
@@ -205,7 +213,7 @@ export function checkProtocolDraft(input: unknown, roleTitles: ReadonlyMap<strin
   });
 
   if (problems.length) return { ok: false, problems };
-  return { ok: true, value: { id, title, summary, steps } };
+  return { ok: true, value: { id, title, summary, image, steps } };
 }
 
 // ── Import ───────────────────────────────────────────────────────────────────
@@ -292,7 +300,7 @@ export function readProtocolImport(input: unknown, roles: readonly ImportRole[])
       }
       return { id: st.id, text: st.text, detail: st.detail, required: st.required, who };
     });
-    const checked = checkProtocolDraft({ id: r.id, title: r.title, summary: r.summary, steps }, titles);
+    const checked = checkProtocolDraft({ id: r.id, title: r.title, summary: r.summary, image: r.image, steps }, titles);
     const label = text(r.title) || `Protocol ${i + 1}`;
     if (!checked.ok) {
       // A role the chart does not hold is said once, below, by its name.

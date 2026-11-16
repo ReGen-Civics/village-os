@@ -20,12 +20,14 @@ import {
   runningInstalled,
   type InstallRoad,
 } from "@/lib/installPrompt";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, HINT, LINK, NOTE, STATEMENT } from "@/components/journey/look";
+import { Smartphone } from "lucide-react";
+import { BTN_PRIMARY, LINK } from "@/components/journey/look";
 
 /** How long the page settles before the card may show by itself. */
 export const OFFER_DELAY_MS = 1500;
 
-export default function InstallCard({ auto }: { auto: boolean }) {
+/** `quietLink`: keep a small "Add to your phone" link when the offer is closed (the list page). */
+export default function InstallCard({ auto, quietLink = true }: { auto: boolean; quietLink?: boolean }) {
   const [road, setRoad] = useState<InstallRoad>(() => installRoad(heldInstallPrompt()));
   const [open, setOpen] = useState(false);
   const [installed, setInstalled] = useState(() => runningInstalled());
@@ -48,6 +50,7 @@ export default function InstallCard({ auto }: { auto: boolean }) {
   };
 
   if (!open) {
+    if (!quietLink) return null;
     return (
       <p className="text-center">
         <button type="button" className={LINK} onClick={() => setOpen(true)}>
@@ -58,61 +61,65 @@ export default function InstallCard({ auto }: { auto: boolean }) {
   }
 
   return (
-    <section className={CARD_FEATURED} aria-labelledby="install-title" role="dialog" aria-modal="false">
-      <p className={EYEBROW}>
-        <Trans context="protocols install card">Works with no signal</Trans>
-      </p>
-      <h2 id="install-title" className={`${STATEMENT} mt-1`}>
-        <Trans context="protocols install card">Add the protocols to your phone</Trans>
-      </h2>
-      {road === "prompt" ? (
-        <>
-          <p className={`${NOTE} mt-2`}>
-            <Trans context="protocols install card">They open from your home screen like an app, and work when there is no signal.</Trans>
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className={BTN_PRIMARY}
-              onClick={async () => {
-                const outcome = await promptInstall();
-                if (outcome === "accepted") setInstalled(true);
-                else if (outcome === "dismissed") dismiss();
-                else setRoad(installRoad(null));
-              }}
-            >
-              <Trans context="protocols install card">Add to home screen</Trans>
-            </button>
-            <button type="button" className={BTN_SECONDARY} onClick={dismiss}>
-              <Trans context="protocols install card">Not now</Trans>
-            </button>
-          </div>
-        </>
-      ) : (
-        <>
-          <ol className={`${NOTE} mt-3 list-decimal space-y-1 pl-5`}>
-            <li>
-              <Trans context="protocols install card">
-                Tap the Share button <span aria-hidden="true">(the square with an arrow)</span> at the bottom of Safari.
-              </Trans>
-            </li>
-            <li>
-              <Trans context="protocols install card">Scroll down and tap Add to Home Screen.</Trans>
-            </li>
-            <li>
-              <Trans context="protocols install card">Tap Add.</Trans>
-            </li>
-          </ol>
-          <p className={`${HINT} mt-3`}>
-            <Trans context="protocols install card">Then open it once from your home screen while you have signal and sign in. After that it works with no signal.</Trans>
-          </p>
-          <div className="mt-4">
-            <button type="button" className={BTN_SECONDARY} onClick={dismiss}>
+    <section className={BANNER} aria-labelledby="install-title" role="dialog" aria-modal="false">
+      <div className={BANNER_ICON} aria-hidden="true">
+        <Smartphone className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h2 id="install-title" className="text-[15px] font-semibold text-foreground">
+          <Trans context="protocols install card">Add the protocols to your phone</Trans>
+        </h2>
+        {road === "prompt" ? (
+          <>
+            <p className="text-xs text-muted-foreground">
+              <Trans context="protocols install card">They open from your home screen like an app, and work when there is no signal.</Trans>
+            </p>
+            <div className="mt-2.5 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                className={`${BTN_PRIMARY} min-h-10 px-4 text-sm`}
+                onClick={async () => {
+                  const outcome = await promptInstall();
+                  if (outcome === "accepted") setInstalled(true);
+                  else if (outcome === "dismissed") dismiss();
+                  else setRoad(installRoad(null));
+                }}
+              >
+                <Trans context="protocols install card">Add to home screen</Trans>
+              </button>
+              <button type="button" className={`${LINK} min-h-10 text-sm`} onClick={dismiss}>
+                <Trans context="protocols install card">Not now</Trans>
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <ol className="mt-1 list-decimal space-y-0.5 pl-5 text-sm text-foreground">
+              <li>
+                <Trans context="protocols install card">
+                  Tap the Share button <span aria-hidden="true">(the square with an arrow)</span> at the bottom of Safari.
+                </Trans>
+              </li>
+              <li>
+                <Trans context="protocols install card">Scroll down and tap Add to Home Screen.</Trans>
+              </li>
+              <li>
+                <Trans context="protocols install card">Tap Add.</Trans>
+              </li>
+            </ol>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              <Trans context="protocols install card">Then open it once from your home screen while you have signal and sign in. After that it works with no signal.</Trans>
+            </p>
+            <button type="button" className={`${LINK} mt-1 min-h-10 text-sm`} onClick={dismiss}>
               <Trans context="protocols install card">Done</Trans>
             </button>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </section>
   );
 }
+
+/** The design's calm notice (`.banner`), the same frame as the page's offline notice. */
+const BANNER = "flex items-start gap-3 rounded-[14px] border border-open/25 bg-card px-3.5 py-3";
+const BANNER_ICON = "grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-open/15 text-open";

@@ -31,7 +31,7 @@ function steps(raw: unknown): ProtocolStep[] {
 
 export async function listProtocols(pool: Pool, opts: { includeArchived?: boolean } = {}): Promise<ProtocolView[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT p.`id`, p.`status`, p.`current_version`, p.`updated_at`, v.`title`, v.`summary`, v.`steps` " +
+    "SELECT p.`id`, p.`status`, p.`current_version`, p.`updated_at`, v.`title`, v.`summary`, v.`steps`, v.`image_url` " +
       "FROM `protocols` p JOIN `protocol_versions` v ON v.`protocol_id` = p.`id` AND v.`version` = p.`current_version` " +
       (opts.includeArchived ? "" : "WHERE p.`status` = 'active' ") +
       "ORDER BY p.`sort_order`, v.`title`",
@@ -40,6 +40,7 @@ export async function listProtocols(pool: Pool, opts: { includeArchived?: boolea
     id: String(r.id),
     title: String(r.title),
     summary: String(r.summary ?? ""),
+    image: r.image_url ? String(r.image_url) : "",
     steps: steps(r.steps),
     version: Number(r.current_version),
     status: (r.status === "archived" ? "archived" : "active") as ProtocolStatus,
@@ -51,13 +52,13 @@ export async function getVersion(
   db: Db,
   protocolId: string,
   version: number,
-): Promise<{ title: string; steps: ProtocolStep[] } | null> {
+): Promise<{ title: string; image: string; steps: ProtocolStep[] } | null> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `title`, `steps` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
+    "SELECT `title`, `steps`, `image_url` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
     [protocolId, version],
   );
   const r = rows[0];
-  return r ? { title: String(r.title), steps: steps(r.steps) } : null;
+  return r ? { title: String(r.title), image: r.image_url ? String(r.image_url) : "", steps: steps(r.steps) } : null;
 }
 
 export async function protocolStatus(db: Db, protocolId: string): Promise<{ status: ProtocolStatus; version: number } | null> {
@@ -92,26 +93,26 @@ export async function saveProtocol(
         [draft.id, draft.title, draft.summary, Number(n ?? 0), by, now, now],
       );
       await conn.query(
-        "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `created_by`, `created_at`) VALUES (?, 1, ?, ?, ?, ?, ?)",
-        [draft.id, draft.title, draft.summary, body, by, now],
+        "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `created_by`, `created_at`) VALUES (?, 1, ?, ?, ?, ?, ?, ?)",
+        [draft.id, draft.title, draft.summary, body, draft.image || null, by, now],
       );
       await conn.commit();
       return { version: 1, created: true, changed: true };
     }
     const current = Number(rows[0].current_version);
     const [cur] = await conn.query<RowDataPacket[]>(
-      "SELECT `title`, `summary`, `steps` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
+      "SELECT `title`, `summary`, `steps`, `image_url` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
       [draft.id, current],
     );
-    const same = cur[0] && String(cur[0].title) === draft.title && String(cur[0].summary ?? "") === draft.summary && String(cur[0].steps) === body;
+    const same = cur[0] && String(cur[0].title) === draft.title && String(cur[0].summary ?? "") === draft.summary && String(cur[0].steps) === body && String(cur[0].image_url ?? "") === draft.image;
     if (same) {
       await conn.commit();
       return { version: current, created: false, changed: false };
     }
     const next = current + 1;
     await conn.query(
-      "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `created_by`, `created_at`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [draft.id, next, draft.title, draft.summary, body, by, now],
+      "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `created_by`, `created_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [draft.id, next, draft.title, draft.summary, body, draft.image || null, by, now],
     );
     await conn.query(
       "UPDATE `protocols` SET `title` = ?, `summary` = ?, `current_version` = ?, `updated_at` = ? WHERE `id` = ?",

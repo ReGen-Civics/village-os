@@ -66,6 +66,16 @@ describe("checking a draft", () => {
     expect(r.ok).toBe(false);
   });
 
+  it("takes a photo as a path on this site or an https address, and nothing else", () => {
+    const with_ = (image: string) => checkProtocolDraft({ title: "x", image, steps: [{ text: "a" }] }, ROLES);
+    expect(with_("/api/uploads/abc.webp").ok).toBe(true);
+    expect(with_("https://example.test/a.webp").ok).toBe(true);
+    expect(with_("").ok).toBe(true);
+    for (const bad of ["javascript:alert(1)", "http://example.test/a.webp", "//evil.test/a.webp", "/a b.webp"]) {
+      expect(with_(bad).ok, bad).toBe(false);
+    }
+  });
+
   it("names the role's current title, whatever the draft carried", () => {
     const r = checkProtocolDraft({ title: "x", steps: [{ text: "a", who: { kind: "role", roleId: "role-keyholder", roleTitle: "Old name" } }] }, ROLES);
     expect(r.ok && r.value.steps[0]!.who).toEqual({ kind: "role", roleId: "role-keyholder", roleTitle: "Keyholder" });
