@@ -12,6 +12,8 @@ import { ADMIN_AREAS, setHomeBaseOn, tabsInArea, type AreaId } from "./adminArea
 import { connectionRows, glanceSentence, readLastGlance, rememberGlance, sinceLastVisit } from "./todayGlance";
 import { waitingRequests } from "./waitingWork";
 import UnifiedInbox from "./UnifiedInbox";
+import RoleApplicationsList from "./RoleApplicationsList";
+import { fetchWaitingRoleApplications, type RoleApplicationRow } from "./roleApplicationsWaiting";
 import { AllClear, FeelSettings, GentleQuests, WeekRecap } from "./AdminFeel";
 
 interface Needs {
@@ -20,10 +22,20 @@ interface Needs {
   word: string;
 }
 
-function needsFrom(submissions: number, blocking: number): Needs {
-  if (submissions > 0) {
-    const noun = submissions === 1 ? "request is" : "requests are";
-    return { sentence: `${submissions} ${noun} waiting.`, shape: "dot", word: "Waiting" };
+/**
+ * Role applications count as requests (Rye, 16 Nov 2026), and the sentence says
+ * how many of the waiting ones they are, so one is never folded out of sight.
+ */
+function needsFrom(submissions: number, blocking: number, roleApplications = 0): Needs {
+  const total = submissions + roleApplications;
+  if (total > 0) {
+    const noun = total === 1 ? "request is" : "requests are";
+    const roles = roleApplications === 0
+      ? ""
+      : total === roleApplications
+        ? (roleApplications === 1 ? ", a role application" : ", all role applications")
+        : roleApplications === 1 ? ", 1 of them a role application" : `, ${roleApplications} of them role applications`;
+    return { sentence: `${total} ${noun} waiting${roles}.`, shape: "dot", word: "Waiting" };
   }
   if (blocking > 0) {
     const noun = blocking === 1 ? "thing needs" : "things need";
@@ -53,6 +65,7 @@ export default function HomeBase({
   const [problem, setProblem] = useState<string | null>(null);
   const [updated, setUpdated] = useState<string | null>(null);
   const [area, setArea] = useState<AreaId>("today");
+  const [roleApps, setRoleApps] = useState<RoleApplicationRow[]>([]);
   const allowed = new Set(groups.flatMap((group) => group.items.map((item) => item.key)));
 
   const load = () => {
@@ -62,12 +75,15 @@ export default function HomeBase({
       fetch(`${API_BASE}/admin/submissions`, { headers: authHeaders(password), signal }).then((r) => (r.ok ? r.json() : [])),
       fetch(`${API_BASE}/admin/launch`, { headers: authHeaders(password), signal }).then((r) => (r.ok ? r.json() : null)),
       fetch(`${API_BASE}/admin/integrations`, { headers: authHeaders(password), signal }).then((r) => (r.ok ? r.json() : {})),
-    ]).then(([subs, launch, integrations]) => {
-      const count = waitingRequests(Array.isArray(subs) ? subs : []);
+      fetchWaitingRoleApplications(password, signal).catch((): RoleApplicationRow[] => []),
+    ]).then(([subs, launch, integrations, apps]) => {
+      const forms = waitingRequests(Array.isArray(subs) ? subs : []);
+      const count = forms + apps.length;
       const blocking = Number(launch?.blockingOpen ?? 0);
       const rows = connectionRows(integrations ?? {});
       const prev = readLastGlance();
-      setNeeds(needsFrom(count, Number.isFinite(blocking) ? blocking : 0));
+      setRoleApps(apps);
+      setNeeds(needsFrom(forms, Number.isFinite(blocking) ? blocking : 0, apps.length));
       setGlance(glanceSentence(count, rows));
       setSince(sinceLastVisit(prev, count));
       rememberGlance(count, rows.filter((row) => row.state !== "working").length);
@@ -106,6 +122,7 @@ export default function HomeBase({
       ) : (
         <p className="text-base text-gray-600">Reading what is waiting...</p>
       )}
+      {!problem && needs && <RoleApplicationsList rows={roleApps} heading="Role applications waiting" />}
       <div className="grid gap-2 sm:grid-cols-2">
         {ADMIN_AREAS.map((item) => (
           <button
