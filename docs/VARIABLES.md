@@ -1844,7 +1844,7 @@ Off, no quest asks anybody's age, and families are welcome on every one. On, a q
 
 ### Founder may self-consent below this many members
 
-Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members, an admin or founder may consent to their own claims. Once the village reaches this size, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.
+Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members and has not yet started its Game, an admin or founder may consent to their own claims. Once the village reaches this size or its launch vote carries, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.
 
 | Fact | Value |
 | --- | --- |
