@@ -62,6 +62,8 @@ describe.skipIf(!configured)("an agent proposed for a role by its keeper, on a r
     notices: [] as Array<{ userId: string; type: string; title: string; dedupeKey: string }>,
   };
 
+  // Who is calling, per request, so two calls in flight at once are two people (the race case below).
+  const viewerOf = (req: any): string | null => (typeof req?.headers?.["x-test-viewer"] === "string" ? req.headers["x-test-viewer"] : state.viewer);
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
   beforeAll(async () => {
@@ -93,15 +95,15 @@ describe.skipIf(!configured)("an agent proposed for a role by its keeper, on a r
       getPool: () => pool,
       overLimit: async () => false,
       clientIp: () => "203.0.113.9",
-      guardCapability: async (_req: any, res: any, cap: string, refusal?: { status: number; body: unknown }) => {
-        const v = state.viewer;
+      guardCapability: async (req: any, res: any, cap: string, refusal?: { status: number; body: unknown }) => {
+        const v = viewerOf(req);
         const ok = !!v && (cap === "terms.read" ? !state.guests.includes(v) : cap === "org.seatAgent" ? state.seatAgent.includes(v) : v === FOUNDER.id);
         if (ok) return true;
         if (refusal) res.status(refusal.status).json(refusal.body);
         else res.status(v ? 403 : 401).json({ error: v ? "forbidden" : "auth_required" });
         return false;
       },
-      authedUser: async () => (state.viewer ? await usersRepo(pool).byId(state.viewer) : null),
+      authedUser: async (req: any) => (viewerOf(req) ? await usersRepo(pool).byId(viewerOf(req) as string) : null),
       commsPostOffice: { getPool: () => pool },
       deploymentOrigin: () => "https://village.example.test",
       projectName: () => "Test Village",
@@ -154,7 +156,7 @@ describe.skipIf(!configured)("an agent proposed for a role by its keeper, on a r
     state.viewer = as;
     const res = await fetch(`${base}${path}`, { // module-review-ok: a test calling its own local server, never an outside host
       method,
-      headers: body === undefined ? {} : { "content-type": "application/json" },
+      headers: { ...(body === undefined ? {} : { "content-type": "application/json" }), ...(as ? { "x-test-viewer": as } : {}) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     return { status: res.status, body: (await res.json()) as any };
@@ -269,6 +271,26 @@ describe.skipIf(!configured)("an agent proposed for a role by its keeper, on a r
       const seized = await propose({ agentUserId: OTHER_AGENT.id }, KEEPER.id);
       expect(seized.status).toBe(403);
       expect(seized.body.error).toBe(AGENT_PROPOSAL_WORDS.keptByAnother);
+    });
+
+    it("reads the keeper by the agent's id however many proposals the village holds (audit, 15 Nov 2026: the list was capped at 2000)", async () => {
+      // Kai's claim is recorded first, then 2,100 other confirmed proposals arrive after it.
+      expect((await propose()).status).toBe(200);
+      const rows: unknown[][] = [];
+      for (let i = 0; i < 2100; i++) rows.push([`op-fill${String(i).padStart(15, "0")}`, "Someone", `fill-${i}@example.test`, `fill-${i}@example.test`, "confirmed", "s-next", JSON.stringify({ roles: [{ roleId: gate, note: "" }], why: "", aim: "" })]);
+      await q("UPDATE open_role_proposals SET created_at = '2001-01-01 00:00:00'");
+      await pool.query("INSERT INTO open_role_proposals (id, name, email, email_key, status, target_season_id, body_json) VALUES ?", [rows]); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+      await q("UPDATE open_role_proposals SET created_at = '2000-06-01 00:00:00' WHERE id LIKE 'op-fill%'");
+      const claim = await propose({ roles: [{ roleId: gate, note: "" }] }, ANA.id);
+      expect(claim.status, JSON.stringify(claim.body)).toBe(403);
+      expect(claim.body.error).toBe(AGENT_PROPOSAL_WORDS.keptByAnother);
+    });
+
+    it("two members claiming the same unkept agent at once: exactly one is recorded as its keeper", async () => {
+      const [a, b] = await Promise.all([propose({}, KEEPER.id), propose({ roles: [{ roleId: gate, note: "" }] }, ANA.id)]);
+      expect([a.status, b.status].sort()).toEqual([200, 403]);
+      const keepers = await q("SELECT DISTINCT JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.agent.keeperUserId')) AS k FROM open_role_proposals WHERE JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.agent.agentUserId')) = ?", [SCRIBE.id]);
+      expect(keepers).toHaveLength(1);
     });
 
     it("never shows a person's terms to the deciders, and refuses a counter-offer on an agent", async () => {

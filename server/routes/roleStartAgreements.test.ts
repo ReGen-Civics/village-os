@@ -91,11 +91,17 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
   const calendar = () => ({ seasons: [NOW_SEASON, NEXT], currentSeasonId: "s-now", timezone: "UTC" });
 
+  /** The invitation's link, read from the adoption letter: since the audit of 15 Nov 2026 it goes to the address alone. */
+  const mailedInvitation = (): string => {
+    const letter = [...state.sent].reverse().find((m) => m.origin === "open_proposal.adopted");
+    return String(letter?.text.split("\n").map((l) => l.trim()).find((l) => /^https?:\/\/\S+\/register\?invite=/.test(l)) ?? "");
+  };
+
   beforeAll(async () => {
     db = await provisionTestDb();
     pool = testPool(db, { connectionLimit: 6 });
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [FOUNDER, ANA]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-land', 'Land Circle', '[]', 0), ('c-core', 'Core Circle', '[]', 0)");
     gate = await createOrgRole(pool, { id: "rsa-role-gate", name: "Gate Keeper", seats: 20, circleId: "c-land", aim: "Open the gate at dawn." });
     founderRole = await createOrgRole(pool, { id: "rsa-role-founder", name: "Founder", seats: 1, circleId: "c-core", aim: "Hold the village." });
@@ -253,7 +259,7 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
     n += 1;
     const id = `u-${label}-${n}`;
     const email = `${label}-${n}@example.test`;
-    await usersRepo(pool).add({ id, name: "Rowan Field", email, passwordHash: "x", paths: [] } as any);
+    await usersRepo(pool).add({ id, name: "Rowan Field", email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     return { id, email };
   };
   const reconfirmed = async (userId: string) => usersRepo(pool).update(userId, (m: any) => stampConfirmed(m, Date.now()));
@@ -356,12 +362,12 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
       dialsOn(true);
       const id = await proposeAndConfirm("season-newcomer@example.test");
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
-      const token = new URL(String(r.body?.invitation?.link)).searchParams.get("invite") as string;
+      const token = new URL(mailedInvitation()).searchParams.get("invite") as string;
       const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
       expect(await door.resolve(token)).toMatchObject({ ok: true, id: openInviteId(id) });
       const newcomer = "u-season-newcomer";
       const inviter = await door.claim(openInviteId(id), newcomer);
-      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "season-newcomer@example.test", passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "season-newcomer@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
       expect(state.notices.some((x) => x.userId === newcomer && x.title === START_WORDS.title(2))).toBe(true);
 
@@ -481,12 +487,12 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
 
       state.dials["org.start_after_membership"] = true;
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
-      const token = new URL(String(r.body?.invitation?.link)).searchParams.get("invite") as string;
+      const token = new URL(mailedInvitation()).searchParams.get("invite") as string;
       const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
       expect(await door.resolve(token)).toMatchObject({ ok: true });
       const newcomer = "u-aligned-applicant";
       const inviter = await door.claim(openInviteId(id), newcomer);
-      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email, passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
 
       // Carried: the account holds the letter in its own name, and the address's text is superseded by it.
@@ -527,12 +533,12 @@ describe.skipIf(!configured)("a role starts only after its agreements, on a real
       expect((await call("GET", `/api/governance/open-proposals/${id}`, undefined, FOUNDER.id)).body.proposal.membership).toEqual({ aligned: false });
       state.dials["org.start_after_membership"] = true;
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
-      const token = new URL(String(r.body?.invitation?.link)).searchParams.get("invite") as string;
+      const token = new URL(mailedInvitation()).searchParams.get("invite") as string;
       const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
       await door.resolve(token);
       const newcomer = "u-unaligned-applicant";
       const inviter = await door.claim(openInviteId(id), newcomer);
-      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email, passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
       const told = state.notices.find((x) => x.userId === newcomer && x.title === START_WORDS.title(1));
       expect(told?.body).toContain(START_WORDS.step.membership);

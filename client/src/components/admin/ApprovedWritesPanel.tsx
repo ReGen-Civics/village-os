@@ -88,7 +88,8 @@ export default function ApprovedWritesPanel({ password }: { password: string }) 
                 )}
                 {w.approvedBy && (
                   <p className="text-xs text-muted-foreground">
-                    <Trans context="approved writes">Approved by {w.approvedBy}</Trans>
+                    {/* The agent typed this name itself; nobody confirmed it in the app (audit, 15 Nov 2026). */}
+                    <Trans context="approved writes">The agent says {w.approvedBy} approved it. No person confirmed it in the app.</Trans>
                   </p>
                 )}
                 {w.approvalNote && <blockquote className="break-words border-l-2 border-border pl-2 text-xs text-foreground">{w.approvalNote}</blockquote>}

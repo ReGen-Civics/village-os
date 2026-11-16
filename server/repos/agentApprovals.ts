@@ -7,6 +7,8 @@ import type { Queryable } from "./memberTasks";
 
 /** The events' entity type for one approved write; its entity ref is the write's key. */
 export const APPROVAL_EVENT_ENTITY = "agent_approval";
+/** A write recorded first and then refused by its route (server/lib/agentLeadApproval.ts, `settleLeadApproval`). */
+export const APPROVAL_REFUSED_ENTITY = "agent_approval_refused";
 
 /** Whether the audit event for this write is already stored. */
 export async function approvalEventExists(db: Queryable, writeKey: string): Promise<boolean> {
@@ -26,8 +28,9 @@ export interface ApprovalEventRow {
 /** The latest approved writes, newest first. */
 export async function recentApprovalEvents(db: Queryable, limit = 50): Promise<ApprovalEventRow[]> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `entity_ref`, `text`, `at` FROM `health_events` WHERE `entity_type` = ? ORDER BY `at` DESC, `id` DESC LIMIT ?",
-    [APPROVAL_EVENT_ENTITY, Math.max(1, Math.min(200, limit))],
+    // A write the route refused after its event was stored (recorded first, server/lib/agentLeadApproval.ts) is left out.
+    "SELECT e.`entity_ref`, e.`text`, e.`at` FROM `health_events` e WHERE e.`entity_type` = ? AND NOT EXISTS (SELECT 1 FROM `health_events` r WHERE r.`entity_type` = ? AND r.`entity_ref` = e.`entity_ref`) ORDER BY e.`at` DESC, e.`id` DESC LIMIT ?",
+    [APPROVAL_EVENT_ENTITY, APPROVAL_REFUSED_ENTITY, Math.max(1, Math.min(200, limit))],
   );
   return rows.map((r) => ({
     writeKey: String(r.entity_ref ?? ""),

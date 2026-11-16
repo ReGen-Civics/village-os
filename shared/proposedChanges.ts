@@ -43,7 +43,8 @@ export const PROPOSAL_KINDS = [
 ] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
 
-export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed"] as const;
+// `unknown`: the apply threw, so whether it reached its page is not known; a person checks before it is tried again.
+export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed", "unknown"] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
 export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
@@ -452,4 +453,7 @@ export const REVIEW_WORDS = {
   noRoute: "There is no such admin route to change.",
   notReader: "The review page is for admins and for holders of the powers its changes need.",
   unreached: "This change did not reach its page, so nothing changed. Try it again.",
+  /** The apply threw or timed out: it may have landed before the answer was lost (audit, 15 Nov 2026). */
+  unknown: "We could not tell whether this change reached its page. Open that page and look. If the change is there, put this one aside. If it is not, tick that you checked and accept it again.",
+  checkFirst: "Check its page first: this change may already be there. Tick that you checked, then accept it again.",
 } as const;
