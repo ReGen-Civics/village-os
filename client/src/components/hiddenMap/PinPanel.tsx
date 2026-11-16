@@ -41,6 +41,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<SafePhoto[]>([]);
   const [busy, setBusy] = useState(false);
+  const [visitNote, setVisitNote] = useState<string | null>(null);
   const [vouching, setVouching] = useState(false);
   const [way, setWay] = useState<VouchWay | null>(null);
 
@@ -72,7 +73,8 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
 
   const sendVisit = () =>
     act(async () => {
-      await addVisit(id, { clientId: newClientId(), stageSeen: stage || null, note }, photos.map((p) => p.blob));
+      const r = await addVisit(id, { clientId: newClientId(), stageSeen: stage || null, note }, photos.map((p) => p.blob));
+      setVisitNote(r.claimed ? t`Saved. Your visit is waiting for a member to confirm it on the quest board.` : t`Saved.`);
       photos.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotos([]);
       setNote("");
@@ -207,6 +209,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
           </div>
         </div>
       )}
+      {visitNote && <p className={`${HINT} mt-3`} role="status">{visitNote}</p>}
       {problem && <p className="mt-3 text-sm text-destructive" role="alert">{problem}</p>}
     </section>
   );

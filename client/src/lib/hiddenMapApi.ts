@@ -122,7 +122,7 @@ export async function addVisit(
   pinId: string,
   visit: { clientId: string; stageSeen: Stage | null; note: string },
   photos: Blob[],
-): Promise<{ visitId: string }> {
+): Promise<{ visitId: string; claimed?: boolean }> {
   const body = new FormData();
   body.append("clientId", visit.clientId);
   if (visit.stageSeen) body.append("stageSeen", visit.stageSeen);

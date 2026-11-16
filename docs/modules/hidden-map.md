@@ -26,8 +26,9 @@ Built:
   with its layers, a pin's detail with vouching and return visits, the vouch queue, and asking for and approving a
   copy.
 
+- **S3:** return visits open a claim on the quest the village names (`returnVisitQuestId`), described below.
+
 Not built yet:
-- S3: return visits opening a quest claim (`returnVisitQuestId`).
 - S4: capture with no signal (an IndexedDB outbox).
 - S5 (optional): seed origins from the library.
 
@@ -167,3 +168,24 @@ All in the `hiddenmap.*` namespace, all votable like every dial: `unlock_pins`, 
   photos are never public.
 - **The map is our own** (`client/src/components/hiddenMap/WorldMap.tsx`): tiles placed by Web Mercator arithmetic,
   or a plain grid. No map library, no new dependency, no change to the content security policy.
+
+## Return visits that pay
+
+Name a quest in the module's settings (`returnVisitQuestId`), and give it whatever reward the village chooses. A
+return visit by an open member to somebody else's pin then opens a claim on that quest and submits it, at most once
+per pin per `hiddenmap.visit_pay_days` (default 30). That is the whole of it (`server/lib/hiddenMapQuest.ts`):
+
+- **No new money path.** The claim completes through the ordinary consent route, which refuses a member consenting
+  their own work, and the village's `quest.completed` rule pays it.
+- **The quest's own gate runs first** (closed, stage, role, safety), and `openClaim` takes the quest's row lock, so a
+  member holding an open claim gets no second one until that one is decided.
+- **The claim names a day, never a place**, because whoever consents quests may not be somebody whose map has opened.
+- The owner's own visits and visits by members whose map is closed open nothing. The visit itself always stands.
+
+**A planting that pays.** Name a quest as `plantingQuestId` too, and every vouched planting is owed one claim for
+its owner on it (`planting_claim_id`, once per pin), by the same gate, lock and consent. The quest board lets a member
+hold one open claim per quest, so a planter's owed claims open one after another (`openClaim`'s
+`whileOpenOnly`: a claim already decided, consented or declined, does not block the next, since each stands for a
+different planting): each on the next vouch or the next
+look at the map after the one before it is decided. None is dropped. Its words name a day, never a place. The page
+never says what a planting earns.
