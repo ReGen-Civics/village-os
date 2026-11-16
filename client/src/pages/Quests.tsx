@@ -290,7 +290,7 @@ export default function Quests() {
                           <span className="block text-xs text-muted-foreground">
                             {c.status === "claimed"
                               ? "In progress. Turn in your work when it's done."
-                              : "Turned in. Waiting on the circle's yes."}
+                              : "Turned in! Waiting on the circle's yes."}
                           </span>
                         </span>
                         <ArrowRight className="w-4 h-4 text-notice shrink-0" />

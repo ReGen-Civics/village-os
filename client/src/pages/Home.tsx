@@ -268,7 +268,7 @@ export default function Home() {
                 <>
                   {" "}
                   {t({
-                    message: "We're forming the founding team now: paid roles that take the village from idea to home, season by season and intended for the long run.",
+                    message: "We're building the founding team: the people who'll take the village from idea to home, season by season.",
                     context: "landing hero, the founding team line",
                   })}
                 </>
@@ -320,7 +320,7 @@ export default function Home() {
             {founding && (
               <li className="min-w-0">
                 <Link href="/roles" className={`${WAY_CARD} border-2 border-notice/60`} data-way="founding">
-                  <span className={EYEBROW}>{t({ message: "Paid roles", context: "landing, founding team card eyebrow" })}</span>
+                  <span className={EYEBROW}>{t({ message: "Roles with rewards", context: "landing, founding team card eyebrow" })}</span>
                   <span className="mt-2 block font-display text-2xl leading-tight text-foreground">
                     {t({ message: "Founding team", context: "landing, founding team card title" })}
                   </span>
