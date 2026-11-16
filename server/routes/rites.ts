@@ -95,6 +95,19 @@ export async function stampRiteFromModule(moduleId: string, userId: string, rite
 }
 
 /**
+ * Every rite the village's document says `moduleId` stamps, stamped for this
+ * member: the hook a module hands its own "it happened" moment to, with no
+ * rite id written in either module (the hidden map's `opened`). Answers the
+ * rites newly stamped.
+ */
+export async function stampRitesOfModule(moduleId: string, userId: string): Promise<string[]> {
+  if (!fromModule || effectiveLifecycle(RITES_MODULE) === "off") return [];
+  const fresh: string[] = [];
+  for (const r of ritesConfig().rites.filter((x) => x.byModule === moduleId)) fresh.push(...(await fromModule(moduleId, userId, r.id)));
+  return fresh;
+}
+
+/**
  * WHEN A MEMBER WAS ADMITTED BY THE VILLAGE'S RITE, for another module that
  * counts only what happened from then (the hidden map's `Admission`, QA P3-1,
  * P3-2): the admitting rite's stamp time; null while they have not taken it;

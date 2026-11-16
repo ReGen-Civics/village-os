@@ -31,7 +31,7 @@ import { hashInviteToken, INVITE_DAYS, mintInviteToken } from "../lib/invites";
 import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { claimInvite, createInviteOn } from "../repos/memberInvites";
 import { loadTokenRegistry } from "../lib/ledger";
-import { register, ritesAdmission, stampRiteFromModule } from "./rites";
+import { register, ritesAdmission, stampRiteFromModule, stampRitesOfModule } from "./rites";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[rites] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -271,7 +271,10 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     expect((await call("POST", "/api/rites/stamps", { userId: "u-cy", riteId: "seven" })).status).toBe(403);
     expect((await call("POST", "/api/rites/ceremonies", { riteId: "seven" })).status).toBe(403);
     expect(await stampRiteFromModule("some-other-module", "u-cy", "seven")).toEqual([]);
-    expect(await stampRiteFromModule("hidden-map", "u-cy", "seven")).toEqual(["seven"]);
+    expect(await stampRitesOfModule("some-other-module", "u-cy")).toEqual([]);
+    // The module's own moment stamps whatever rites the village gave it, named by nobody's code.
+    expect(await stampRitesOfModule("hidden-map", "u-cy")).toEqual(["seven"]);
+    expect(await stampRitesOfModule("hidden-map", "u-cy")).toEqual([]);
     expect(await stampRiteFromModule("hidden-map", "u-cy", "seven")).toEqual([]);
     const [ev] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM health_events WHERE kind = 'rite_stamped' AND text LIKE '%seven%'"); // module-review-ok: reading the scratch schema back
     expect(Number(ev[0].n)).toBe(0);
