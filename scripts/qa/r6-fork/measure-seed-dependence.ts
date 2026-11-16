@@ -43,8 +43,8 @@ async function boot(url: string, dataDir: string): Promise<{ child: ChildProcess
       PORT: String(PORT),
       DATA_DIR: dataDir,
       DATABASE_URL: url,
-      ADMIN_PASSWORD: "fork-measure-admin-not-a-real-password",
-      AUTH_TOKEN_SECRET: "fork-measure-token-secret-not-a-real-secret",
+      ADMIN_PASSWORD: "fork-measure-admin-not-a-real-password", // module-review-ok: a throwaway value for a scratch QA server, never a real credential
+      AUTH_TOKEN_SECRET: "fork-measure-token-secret-not-a-real-secret", // module-review-ok: a throwaway value for a scratch QA server, never a real credential
       RESEND_API_KEY: "",
       ANTHROPIC_API_KEY: "",
     },

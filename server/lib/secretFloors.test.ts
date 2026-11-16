@@ -10,7 +10,7 @@ describe("authTokenSecretProblem", () => {
   });
 
   it("a short set value is refused, and the sentence names the variable and never the value", () => {
-    const said = authTokenSecretProblem(env({ NODE_ENV: "production", AUTH_TOKEN_SECRET: "ci-smoke-not-a-secret" }));
+    const said = authTokenSecretProblem(env({ NODE_ENV: "production", AUTH_TOKEN_SECRET: "ci-smoke-not-a-secret" })); // module-review-ok: a fixture string the length check is run against, never a credential
     expect(said).toContain("AUTH_TOKEN_SECRET is set but is 21 characters");
     expect(said).not.toContain("ci-smoke-not-a-secret");
   });
