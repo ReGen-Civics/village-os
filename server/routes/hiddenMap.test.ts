@@ -32,6 +32,8 @@ import { loadModuleSettings, setModuleLifecycle } from "../lib/modules";
 import { loadVariables, setVariable } from "../lib/variables";
 import { villageId } from "../lib/economy";
 import * as repo from "../repos/hiddenMap";
+import { claimsRepo as claimsRepoFactory, questsRepo as questsRepoFactory } from "../repos/quests";
+import { openVisitClaim, visitClaimNote } from "../lib/hiddenMapQuest";
 import { register } from "./hiddenMap";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -354,6 +356,24 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-new");
     const own = await call(handlers, "GET /api/hidden-map/pins");
     expect(own.body.pins.find((p: any) => p.id === id)?.hidden).toBe(true);
+  });
+
+  it("a visit to somebody else's pin opens a submitted claim on the village's quest, naming a day and never a place", async () => {
+    const quests = questsRepoFactory(pool as any);
+    const claims = claimsRepoFactory(pool as any);
+    await quests.add({ id: "q-return-visit", title: "Return visit", status: "Open", gratitude: "10" } as any);
+    const deps = { getPool: () => pool as any, stageOf: async () => "member", roleIdsFor: () => [], claimsRepo: claims, questsRepo: quests };
+    const at = new Date("2026-11-15T12:00:00Z");
+    const id = await openVisitClaim(deps, { questId: "q-return-visit", user: { id: "m-visitor", name: "Sky Example" }, at });
+    expect(id).toBeTruthy();
+    const claim = await claims.byId(id!);
+    expect(claim?.status).toBe("submitted");
+    expect(claim?.note).toBe(visitClaimNote(at));
+    expect(claim?.note).not.toMatch(/\d+\.\d{3,}/);
+    // An open claim on the same quest blocks a second until it is decided.
+    expect(await openVisitClaim(deps, { questId: "q-return-visit", user: { id: "m-visitor", name: "Sky Example" }, at })).toBeNull();
+    // A quest that does not exist opens nothing.
+    expect(await openVisitClaim(deps, { questId: "q-nope", user: { id: "m-visitor" }, at })).toBeNull();
   });
 
   it("exports a member's own pins to them, and erasure deletes their photos and leaves the pins unattributed", async () => {

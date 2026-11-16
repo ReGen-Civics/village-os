@@ -38,11 +38,12 @@ import crypto from "node:crypto";
 import { hasCapability, type Capability } from "../../shared/capabilities";
 import {
   MAX_NOTES, MAX_PHOTOS_PER_PIN, MAX_PHOTOS_PER_UPLOAD, MODULE_ID, PRECISIONS, exportGeoJson, isClientId, isPrecision,
-  isStage, mayVisit, mayVouch, parsePinInput, visiblePin, type PinView, type Precision, type Stage,
+  isStage, mayVisit, mayVouch, parsePinInput, visiblePin, visitMayPay, type PinView, type Precision, type Stage,
 } from "../../shared/hiddenMap";
 import type { AppDeps } from "../lib/appDeps";
 import { villageId } from "../lib/economy";
 import { configOf, photoPath, readMap, readPin, readQueue, storePhoto, whoAmI, type Dials } from "../lib/hiddenMap";
+import { openVisitClaim, type VisitClaimDeps } from "../lib/hiddenMapQuest";
 import { moduleConfig, requireModule } from "../lib/modules";
 import { LocationDataSurvived } from "../lib/placePhotos";
 import { boolVar, numberVar, stringVar } from "../lib/variables";
@@ -51,6 +52,8 @@ import * as repo from "../repos/hiddenMap";
 type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "getPool" | "overLimit" | "members" | "firstName"> & {
   /** Where this module's photos live. Never the public uploads directory. */
   photoDir: string;
+  /** What a return visit needs to open a claim on the village's quest. Absent: visits pay nothing. */
+  visitClaims?: Omit<VisitClaimDeps, "getPool">;
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -77,7 +80,7 @@ const defaultPrecision = (): Precision => {
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, capabilityCtx, getPool, overLimit, members, firstName, photoDir } = deps;
+  const { authedUser, capabilityCtx, getPool, overLimit, members, firstName, photoDir, visitClaims } = deps;
   const vid = () => villageId();
   const config = () => configOf(moduleConfig(MODULE_ID));
 
@@ -264,7 +267,26 @@ export function register(app: Express, deps: Deps): void {
         const latest = await repo.latestStageSeen(getPool(), vid(), id);
         if (latest) await repo.setStage(getPool(), vid(), id, latest, now);
       }
-      res.status(201).json({ visitId, photoIds });
+      // A visit by an open member to somebody else's pin opens a claim on the
+      // village's return-visit quest, once per window. The visit stands either way.
+      let claimed = false;
+      const questId = config().returnVisitQuestId;
+      if (visitClaims && questId) {
+        const lastPaidAt = await repo.lastPaidVisitAt(getPool(), vid(), uid, id);
+        const windowDays = Math.max(0, Math.floor(numberVar("hiddenmap.visit_pay_days")));
+        if (visitMayPay({ viewer: m.who.viewer, pin, questId, lastPaidAt, now, windowDays })) {
+          try {
+            const claimId = await openVisitClaim({ ...visitClaims, getPool }, { questId, user: m.user, at: now });
+            if (claimId) {
+              await repo.setVisitClaim(getPool(), vid(), visitId, claimId);
+              claimed = true;
+            }
+          } catch (e) {
+            console.error("[hidden-map] a visit could not open its quest claim", e);
+          }
+        }
+      }
+      res.status(201).json({ visitId, photoIds, claimed });
     });
   });
 
