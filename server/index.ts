@@ -349,6 +349,7 @@ import {
   removeFiles,
   stampOf,
 } from "./lib/uploadsSweep";
+import { isAcceptedMember } from "./lib/applicantAccount";
 import { SUBMISSION_ATTACHMENT_DIRNAME, attachmentHeaders, attachmentName, attachmentPath, removeAttachment, sweepUnsentAttachments } from "./lib/submissionAttachments";
 import { uploadVariant } from "./lib/uploadVariants";
 import { isResizableUpload, parseUploadVariant, uploadSrcSet } from "../shared/uploadVariants";
@@ -8141,7 +8142,7 @@ async function startServer() {
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
-    makeHandle: (name) => uniqueHandle(slugifyHandle(name)), endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), // an invitation taking over an unproved account
+    makeHandle: (name) => uniqueHandle(slugifyHandle(name)), endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), acceptedMember: (m) => isAcceptedMember(m, getPool()), // an invitation taking over a bare unproved account, never a member's
     encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v),
   });
   registerInviteRoutes(app, { authedUser, getPool, members, guardCapability, mayAct, overLimit, clientIp, invites: inviteDoor });

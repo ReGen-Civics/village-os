@@ -165,7 +165,7 @@ export async function confirmAndAsk(
     const proposal = await store.confirmOpenProposal(conn, confirmHash, notBefore, at, opts);
     if (!proposal) return null;
     // Trusted only: an address not yet confirmed links to no account here (server/lib/applicantAccount.ts).
-    const own = await trustedAccountFor(deps.members, proposal);
+    const own = await trustedAccountFor(deps.members, proposal, conn);
     const circles: string[] = [];
     for (const r of proposal.body.roles) {
       const c = circleOf.get(r.roleId);

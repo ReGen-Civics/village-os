@@ -56,8 +56,11 @@
  * does (R104, server/routes/authGoogle.ts): in one locked write their password
  * replaces the unproved one, the address is recorded as proved, and
  * tokenVersion moves so every session minted on the old password dies, with
- * the agent reach ended around the write. A PROVED account is left alone and
- * answered as before.
+ * the agent reach ended around the write. A PROVED account, and an ACCEPTED
+ * MEMBER's account (admitted, admin or founder, or seated live:
+ * `isAcceptedMember`, server/lib/applicantAccount.ts), is never taken over and
+ * is answered as before. Such a member's application never goes the
+ * invitation's way at all: it is placed on their account.
  */
 import { randomBytes } from "node:crypto";
 import type { Express, Request } from "express";
@@ -66,7 +69,9 @@ import { cleanName, passwordProblem } from "../../shared/accountRules";
 import { claimPaths } from "../../shared/gameConfig";
 import { describeInvite, type InviteDoor } from "../lib/inviteDoor";
 import { INVITE_REFUSALS, readInviteToken } from "../lib/invites";
-import { provedItsAddress } from "../lib/applicantAccount";
+import { GAME_CONFIG } from "../../shared/gameConfig";
+import { isAdmitted } from "../lib/admission";
+import { isAcceptedMember, provedItsAddress } from "../lib/applicantAccount";
 import { sameAddress } from "../lib/emailVerification";
 import { isTombstone, isUnclaimable } from "../lib/oauthAccounts";
 import { numberVar } from "../lib/variables";
@@ -83,6 +88,8 @@ export interface RegisterDeps {
     byEmail?(email: string): Promise<any>;
     update?(id: string, mutate: (m: any) => void): Promise<any>;
   };
+  /** Whether this row is an accepted member's (`isAcceptedMember` with a live-seat read). Absent: the row's own records decide. */
+  acceptedMember?(row: any): Promise<boolean>;
   /** Ends what an agent holds for this account on both sides of the change (`withAgentReachEnded`). Absent: no take-over. */
   endReachAround?<T>(userId: string, change: () => Promise<T>): Promise<T>;
   hashPassword(password: string): Promise<string>;
@@ -221,9 +228,11 @@ async function takeOverUnproved(
   const { byEmail, update } = deps.members;
   const endReachAround = deps.endReachAround;
   if (!byEmail || !update || !endReachAround) return { ok: false, reason: "not_takeable" };
-  const takeable = (u: any): boolean => !!u && !isUnclaimable(u) && sameAddress(u.email, a.email) && !provedItsAddress(u);
+  // A bare account only: never one that proved the address, never an accepted member's.
+  const takeable = (u: any): boolean => !!u && !isUnclaimable(u) && sameAddress(u.email, a.email) && !provedItsAddress(u) && !isAdmitted(u, GAME_CONFIG.stages) && u.role !== "admin" && u.role !== "founder";
   const row = await byEmail(a.email);
   if (!takeable(row)) return { ok: false, reason: "not_takeable" };
+  if (await (deps.acceptedMember ?? ((r: any) => isAcceptedMember(r)))(row)) return { ok: false, reason: "not_takeable" };
   const userId = String(row.id);
   const inviter = await deps.invites.claim(a.inviteId, userId);
   if (!inviter) return { ok: false, reason: "used" };

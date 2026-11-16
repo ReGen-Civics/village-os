@@ -228,7 +228,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   async function deciding(p: store.StoredOpenProposal, actorId: string) {
     const rule = await decideRule(work);
     // An agent's keeper is its own (0374): they proposed it, so they never decide it.
-    const own = await ownAccountOf(members, p);
+    const own = await ownAccountOf(members, p, getPool());
     // Nobody adopts their own, matched by account AND by the person behind the
     // address: the actor's own address with a +tag, another case or Gmail's dots
     // is still the applicant (coordinator, 9 Nov 2026). A proposal from an

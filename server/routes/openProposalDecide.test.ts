@@ -1064,6 +1064,35 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(idsOf(apps[0].seat_ids)).toEqual([gate]);
     });
 
+    it("an ACCEPTED member with no proof on record (every member from before 0304) is the applicant: placed, the password untouched", async () => {
+      const MEMBER = { id: "u-old-member", name: "Olive Older", email: "old-member@example.test" };
+      await usersRepo(pool).add({ id: MEMBER.id, name: MEMBER.name, email: MEMBER.email, passwordHash: "their-own-hash", tokenVersion: 5, paths: [] } as any);
+      await usersRepo(pool).update(MEMBER.id, (u: any) => {
+        u.membershipGranted = true;
+      });
+      const { id } = await confirmed(MEMBER.email, [gate]);
+      expect((await call("GET", `/api/governance/applications/${id}/status`, undefined, MEMBER.id)).status).toBe(200);
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body).toMatchObject({ account: true, invitation: null });
+      expect(await q("SELECT status FROM seat_applications WHERE candidate_user_id = ?", [MEMBER.id])).toEqual([{ status: "adopted" }]);
+      expect(await q("SELECT id FROM member_invites WHERE id = ?", [openInviteId(id)])).toEqual([]);
+      const row: any = await usersRepo(pool).byId(MEMBER.id);
+      expect(row.passwordHash).toBe("their-own-hash");
+      expect(Number(row.tokenVersion)).toBe(5);
+    });
+
+    it("a seat holder with no proof and no admission on record is an accepted member too", async () => {
+      const SEATED = { id: "u-seated-only", name: "Sid Seated", email: "seated-only@example.test" };
+      await usersRepo(pool).add({ id: SEATED.id, name: SEATED.name, email: SEATED.email, passwordHash: "their-own-hash", paths: [] } as any);
+      await seatHolder(pool, well, { userId: SEATED.id, seasonId: "s-now", termEndsAt: new Date("2036-12-01T00:00:00Z") });
+      const { id } = await confirmed(SEATED.email, [gate]);
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body).toMatchObject({ account: true, invitation: null });
+      expect(((await usersRepo(pool).byId(SEATED.id)) as any).passwordHash).toBe("their-own-hash");
+    });
+
     it("CONTROL: the same account once it proved the address is the applicant, and is placed with no invitation", async () => {
       const PROVEN = { id: "u-proven", name: "PruVen", email: "proven-applicant@example.test" };
       await usersRepo(pool).add({ id: PROVEN.id, name: PROVEN.name, email: PROVEN.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);

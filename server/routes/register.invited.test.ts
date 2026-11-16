@@ -127,6 +127,20 @@ describe("the invited person takes over an account nobody proved at their addres
     expect(d.claims).toEqual([]);
   });
 
+  it("CONTROL: an accepted member's account with no proof on record is never taken over", async () => {
+    const d = door({ existing: { ...planted(), membershipGranted: true } });
+    const r = await d.post("juno@example.test");
+    expect(r.code).toBe(409);
+    expect(d.row()).toMatchObject({ passwordHash: "planted", tokenVersion: 2 });
+    expect(d.claims).toEqual([]);
+    // Nor an admin's or a founder's.
+    for (const role of ["admin", "founder"]) {
+      const e = door({ existing: { ...planted(), role } });
+      expect((await e.post("juno@example.test")).code).toBe(409);
+      expect(e.row().passwordHash).toBe("planted");
+    }
+  });
+
   it("CONTROL: a link the adopter was handed takes nothing over", async () => {
     const d = door({ linkId: "p9h-link", existing: planted() });
     const r = await d.post("juno@example.test");

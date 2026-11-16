@@ -235,7 +235,7 @@ export async function isApplicant(deps: ReviewDeps, ref: string, userId: string)
   // An open proposal is asked now, never by the account stored at confirm: a row confirmed before the
   // audit of 15 Nov 2026 may have stored an account that never proved the address (server/lib/applicantAccount.ts).
   const p = await proposals.readOpenProposal(pool, ref);
-  return !!p && (await trustedAccountFor(deps.members, p)) === userId;
+  return !!p && (await trustedAccountFor(deps.members, p, pool)) === userId;
 }
 
 async function decided(db: Db, ref: string): Promise<boolean> {
@@ -324,7 +324,7 @@ export async function openConsentRound(deps: ReviewDeps, ref: string): Promise<b
   const at = deps.now();
   const closesAt = consentClosesAt(at, deps.calendar().timezone || "UTC");
   const circleOf = new Map((await listOrgRoles(pool)).map((r) => [r.id, r.circleId]));
-  const own = await trustedAccountFor(deps.members, p);
+  const own = await trustedAccountFor(deps.members, p, pool);
   const circles: string[] = [];
   for (const r of p.body.roles) {
     const c = circleOf.get(r.roleId);
