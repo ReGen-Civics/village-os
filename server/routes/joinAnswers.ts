@@ -70,6 +70,7 @@ import {
 } from "../../shared/joinAnswers";
 import type { AppDeps } from "../lib/appDeps";
 import { post } from "../lib/comms/postOffice";
+import { dressLetter } from "../lib/comms/villageLetter";
 import { isExampleUser } from "../lib/examples";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
 import { isTombstone } from "../lib/oauthAccounts";
@@ -115,7 +116,7 @@ async function makeJoinInvite(pool: Pool, submissionId: string, inviterUserId: s
 }
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, getPool, members, guardCapability, submissionsRepo, deploymentOrigin, projectName, escapeHtml, notify } = deps;
+  const { authedUser, getPool, members, guardCapability, submissionsRepo, deploymentOrigin, projectName, notify } = deps;
   const postEmail = deps.postEmail ?? ((email: OutgoingEmail) => post(deps.commsPostOffice, email));
 
   /** The request and the admin answering it, or null after answering the desk. */
@@ -168,20 +169,22 @@ export function register(app: Express, deps: Deps): void {
     return !!m && !isExampleUser(m) && !isTombstone({ email: String(m.email ?? "") });
   }
 
-  /** The letter as an essential email: the person asked for this answer. */
-  function letter(key: string, answer: "accepted" | "declined", to: { email: string; name: string | null }, words: { subject: string; text: string }): OutgoingEmail {
-    const body = words.text
-      .split("\n\n")
-      .map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`)
-      .join("");
+  /**
+   * The letter as an essential email: the person asked for this answer. In the
+   * village's letter frame (server/lib/comms/villageLetter.ts); the no carries
+   * the come-and-play block, the open ways in for somebody with no account.
+   */
+  async function letter(key: string, answer: "accepted" | "declined", to: { email: string; name: string | null }, words: { subject: string; text: string }): Promise<OutgoingEmail> {
+    const dressed = await dressLetter(getPool(), deploymentOrigin(), words, { comeAndPlay: answer === "declined" ? "public" : false, villageName: projectName() });
     return {
       idempotencyKey: key,
       kind: "essential",
       origin: `joining.${answer}`,
       to: { email: to.email, ...(to.name ? { name: to.name } : {}) },
       subject: words.subject,
-      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${body}</body></html>`,
-      text: words.text,
+      html: dressed.html,
+      text: dressed.text,
+      preheader: dressed.preheader,
     };
   }
 
@@ -216,7 +219,7 @@ export function register(app: Express, deps: Deps): void {
     else {
       // Keyed by the link, so a link given again after a no goes out again, and one link never goes twice.
       const key = `join-answer:${id}:accepted:${made.tokenHash.slice(0, 16)}`;
-      const sent = await postEmail(letter(key, "accepted", { email: address, name: firstName }, acceptLetter({ firstName, village: projectName(), link, days: INVITE_DAYS })));
+      const sent = await postEmail(await letter(key, "accepted", { email: address, name: firstName }, acceptLetter({ firstName, village: projectName(), link, days: INVITE_DAYS })));
       if (!WENT.has(sent.status)) why = whyNotSent(sent);
     }
     res.json({
@@ -248,7 +251,7 @@ export function register(app: Express, deps: Deps): void {
     let why: NotSentWhy | null = null;
     if (!address) why = typed ? "bad_address" : "no_address";
     else {
-      const sent = await postEmail(letter(`join-answer:${id}:declined`, "declined", { email: address, name: firstName }, declineLetter({ firstName, village: projectName() })));
+      const sent = await postEmail(await letter(`join-answer:${id}:declined`, "declined", { email: address, name: firstName }, declineLetter({ firstName, village: projectName() })));
       if (!WENT.has(sent.status)) why = whyNotSent(sent);
     }
     const said = why === null ? JOIN_ANSWER_WORDS.declinedEmailed(address as string) : JOIN_ANSWER_WORDS.declinedNotEmailed(why);
