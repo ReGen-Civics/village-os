@@ -11,7 +11,7 @@
  * question above them) is the village's own setting.
  */
 import { useEffect, useState } from "react";
-import { Check, ChevronDown, WifiOff, X } from "lucide-react";
+import { Check, ChevronDown, Info, X } from "lucide-react";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -285,7 +285,7 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
 
         {!online && (
           <div className="flex items-start gap-3 rounded-xl border border-primary/50 bg-muted p-4" role="status">
-            <WifiOff className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+            <Info className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
             <p className="text-sm text-foreground">
               <span className="block font-semibold"><Trans>No signal here</Trans></span>
               <Trans>It is saved on your phone and sends when you are back in range.</Trans>
