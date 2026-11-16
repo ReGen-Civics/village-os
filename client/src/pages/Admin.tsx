@@ -66,6 +66,7 @@ import type { UploadsSweepReport } from "@shared/uploadsSweep";
 import { CIRCLE_STATUSES } from "@shared/draftKinds";
 import CashPayoutsTab from "@/components/admin/CashPayoutsTab";
 import TypographyPanel from "@/components/TypographyPanel";
+import MenuPanel from "@/components/admin/MenuPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
@@ -7245,6 +7246,7 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
         <LookPanel password={password} />
         <TypographyPanel password={password} />
         <IdentityPackPanel password={password} />
+        <MenuPanel password={password} />
       </SetupSection>
 
       <SetupSection {...step} id="numbers" n={4} title="Numbers" subtitle="The editable figures on your site.">
