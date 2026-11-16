@@ -175,6 +175,15 @@ describe("memberJoined", () => {
     expect(sent).toEqual(["u-founder"]);
   });
 
+  it("names the first stage the way the village does (QA P6-18)", async () => {
+    const { host, events } = hostWith({ stageName: (id: string) => (id === "guest" ? "Deckhand" : id) } as any);
+    await memberJoined(newcomer, host);
+    expect(events[0].text).toBe("Wren stepped into the village as a Deckhand");
+    const { host: h2, events: e2 } = hostWith({ stageName: () => "Able Hand" } as any);
+    await memberJoined(newcomer, h2);
+    expect(e2[0].text).toBe("Wren stepped into the village as an Able Hand");
+  });
+
   it("reads the seat at the moment somebody arrives", async () => {
     const { host, sent } = hostWith({ greeterRoleId: () => "role-greeter", seats: async () => [seat()] });
     await memberJoined(newcomer, host);

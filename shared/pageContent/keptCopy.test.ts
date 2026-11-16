@@ -28,7 +28,9 @@ import { describe, expect, it } from "vitest";
 import { adoptedDocument, pageDocumentProblems, pageSectionKey, PAGE_SPECS } from "./index";
 
 /** Page sections the first village holds no copy of, because their spec arrived after it adopted the rest. */
-const NOT_HELD = ["page-governance", "page-circles"];
+// page-app-words (2026-11-15, gap G7): every box is blank by default and blank
+// keeps the platform's translated words, so there is nothing for a kept copy to hold.
+const NOT_HELD = ["page-governance", "page-circles", "page-app-words"];
 const HELD = PAGE_SPECS.filter((spec) => !NOT_HELD.includes(pageSectionKey(spec)));
 
 /**

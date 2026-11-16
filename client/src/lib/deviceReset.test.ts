@@ -36,6 +36,12 @@ describe("isKeptKey", () => {
     expect(isKeptKey("amora-work-with-us-draft")).toBe(true); // brand-ok: the work-with-us form's real key
   });
 
+  it("keeps every offline queue, which is a member's unsent work, and lets a page's snapshot go", () => {
+    expect(isKeptKey("village.queue.protocols")).toBe(true);
+    expect(isKeptKey("village.queue.anything-later")).toBe(true);
+    expect(isKeptKey("village.offline.protocols.user-7")).toBe(false);
+  });
+
   it("keeps the sign-in, under the key now and the key it is moved from", () => {
     expect(isSignInKey(TOKEN_KEY)).toBe(true);
     expect(isSignInKey(LEGACY_TOKEN_KEY)).toBe(true);
