@@ -116,6 +116,11 @@ const ALLOWLIST = {
   // of the profile cash card, which renders only for a key holder; a nav entry
   // would show every member a page that refuses them. Admins keep their own tab.
   "/cash-payouts": "entered from the profile cash card, shown only to a holder of cash.pay",
+  // The Treasury (Rye, 2026-11-15): the hand mint and the pay queues for a
+  // holder who is not an admin. Its door is the account menu entry, which the
+  // shell shows only when GET /api/treasury/doors opens one of its powers; a
+  // second door anywhere public would show every member a page that refuses them.
+  "/treasury": "the account menu entry, shown only to a holder of token.mint, cash.pay or moon.approve_alone",
 
   // Password flows arrive from an EMAIL, not from the site. The set-password
   // link carries a one-time token and is useless without it, so a nav entry

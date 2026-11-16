@@ -22,6 +22,7 @@ import bcrypt from "bcrypt";
 import { securityHeaders } from "./lib/securityHeaders";
 import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shared/gameConfig";
 import { recognitionNameCheck } from "../shared/launchRequirements";
+import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
@@ -112,6 +113,7 @@ import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
 import { matchOnEvent } from "./lib/seraPersonMatch";
 import { register as registerPulseRoutes } from "./routes/pulse";
 import { register as registerPlayersRoutes } from "./routes/players";
+import { register as registerTreasuryRoutes } from "./routes/treasury";
 import { register as registerGroupAdminRoutes } from "./routes/groupAdmin";
 import { villagePowerRows } from "./lib/villagePowers";
 import { GUIDANCE_WORDS, POWER_FAMILIES } from "../shared/powerBoard";
@@ -7931,7 +7933,7 @@ async function startServer() {
     // 0098: `story.tell`. What a village says about itself in public is the
     // clearest case in the set of a power that belongs to the village.
     if (!(await guardCapability(req, res, "story.tell"))) return;
-    const pageProblem = pageContentProblem(req.params.section, req.body);
+    const pageProblem = pageContentProblem(req.params.section, req.body) ?? (req.params.section === MENU_SECTION ? menuDocProblem(req.body) : null); // menu: gap G5, shared/menuDoc.ts
     if (pageProblem) return res.status(400).json({ error: pageProblem });
     if (req.params.section === CANVAS_PUBLIC_SECTION) return res.status(400).json({ error: CANVAS_SECTION_DOOR });
     const content = contentRepo.get();
@@ -18183,6 +18185,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       ...brochureConfig(),
       villageSourceUrl: servedVillageSourceUrl(stringVar(VILLAGE_SOURCE_URL_KEY)), // the footer's village source link (AGPL section 13): shared/sourceUrl.ts
       site: siteWords(contentRepo.get() ?? null, m),
+      menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
@@ -25338,6 +25341,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   // The village pulse and the admin roster, each registered at exactly the
   // point its own routes used to sit. Express matches in registration order.
   registerPulseRoutes(app, { getPool });
+  registerTreasuryRoutes(app, { authedUser, mayAct, guardCapability, members, tokens: () => allTokens(), mintCap: () => numberVar("ledger.admin_mint_cycle_cap") });
   registerPlayersRoutes(app, {
     isAdmin, members, claimsRepo, computeStage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext,
     adminGroupsFor: (id: string) => adminGroupsOf(id, loadRoles() as any, loadPowerHoldings(), new Date(), holdingHasLapsed).map((g) => g.name),

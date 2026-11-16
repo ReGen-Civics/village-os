@@ -14,6 +14,7 @@ import {
   copyPartsIn,
 } from "./client/src/lib/routePreload";
 import { pointAtUnhintedFonts } from "./client/src/lib/unhintedFonts";
+import { mayJoinSharedGroup } from "./client/src/lib/privilegedChunks";
 import { allLazyInBoot, bootIntrudersMessage, judgeRoute, kb, lazyModulesInBoot, pageChunk, routeVerdictMessage, shortId, type BootChunkFacts, type RouteChunkFacts } from "./client/src/lib/bootSet";
 import { CopyCollector, splitLongCopy } from "./client/src/i18n/copySplit";
 import { splitArtifact, type SplitResult } from "./server/lib/groundsSplit";
@@ -524,6 +525,7 @@ function smallGroupOf(id: string, info: ModuleInfoOf, eager: Set<string>, key: R
     !eager.has(id) &&
     !key.has(id) &&
     !SMALL_GROUP_NEVER.test(id) &&
+    mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
     m.importers.length >= 2 &&
     !NATURAL_KIT.test(id) &&
     !PAGE_COPY.test(id) &&
@@ -626,6 +628,7 @@ function keySetPlan(info: GetModuleInfo, ids: () => IterableIterator<string>): R
       !id.startsWith("\0") &&
       !eager.has(id) &&
       !SMALL_GROUP_NEVER.test(id) &&
+      mayJoinSharedGroup(id) && // never the Treasury's or Admin's pieces (client/src/lib/privilegedChunks.ts)
       m.importers.length >= 2 &&
       !NATURAL_KIT.test(id) &&
       !m.importers.some((by) => NATURAL_KIT.test(by))
@@ -790,7 +793,9 @@ function baseChunkOf(id: string, getModuleInfo: GetModuleInfo, getModuleIds: () 
    * KB file and a whole 4 KB block. Nothing imports a page but the
    * router's React.lazy, so the group can never be imported back.
    */
-  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id)) {
+  // A privileged page (Treasury, Admin*, Mint*, Cash*) keeps its own lazy chunk at any size, so its
+  // code never ships to a member who opens a neighbour in a group (client/src/lib/privilegedChunks.ts).
+  if (SMALL_PAGE.test(id) && !eagerModules.has(id) && !key.has(id) && mayJoinSharedGroup(id)) {
     const code = getModuleInfo(id)?.code;
     if (code && code.length < SMALL_PAGE_BYTES) return "smallpages";
     if (SHOPFRONT_PAGES.test(id)) return "shopfront";

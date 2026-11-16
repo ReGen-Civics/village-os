@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 248 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 258 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 277 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-304 dials in 39 categories. 158 carry a minimum and a maximum. By type: 121 integer, 19 decimal, 19 percentage, 41 boolean, 34 choice, 62 text, 8 longtext.
+314 dials in 40 categories. 165 carry a minimum and a maximum. By type: 128 integer, 19 decimal, 19 percentage, 42 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -76,6 +76,7 @@ Each dial also says WHEN a change lands. 277 of them as soon as it is saved, and
 | Exit | 10 | 10 | 0 |
 | Needs | 5 | 5 | 0 |
 | Journal | 2 | 2 | 0 |
+| Hidden map | 10 | 10 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
 | Language | 1 | 1 | 0 |
@@ -386,6 +387,16 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Whether naming the village's needs target is asked before launch | `needs.launch_requirement` | Needs | choice | `recommended` | the whole village |
 | Members who must answer before a pulse average shows | `journal.pulse_floor` | Journal | integer | `1` | the whole village |
 | Every member has a task board unless a steward turns one off | `memberTasks.listDefault` | Journal | boolean | `true` | the whole village |
+| Vouched pins that open the whole map | `hiddenmap.unlock_pins` | Hidden map | integer | `7` | the whole village |
+| Vouches one pin needs before it counts | `hiddenmap.vouches_per_pin` | Hidden map | integer | `1` | the whole village |
+| How exactly a new pin is shown beyond the open members | `hiddenmap.default_precision` | Hidden map | choice | `region` | the whole village |
+| Show dots to members whose map has not opened | `hiddenmap.teaser` | Hidden map | boolean | `false` | the whole village |
+| What the hidden map is drawn on | `hiddenmap.basemap` | Hidden map | choice | `none` | the whole village |
+| Closest the picture under the pins will zoom | `hiddenmap.basemap_max_zoom` | Hidden map | integer | `13` | the whole village |
+| Days the record of who looked is kept | `hiddenmap.access_log_days` | Hidden map | integer | `90` | the whole village |
+| Hours a second member has to approve a copy of the map | `hiddenmap.export_hours` | Hidden map | integer | `24` | the whole village |
+| Days between paid return visits to the same pin | `hiddenmap.visit_pay_days` | Hidden map | integer | `30` | the whole village |
+| Largest photo a member may add to a pin | `hiddenmap.photo_max_mb` | Hidden map | integer | `12` | the whole village |
 | Our agent may make the changes we approve in the chat | `agents.lead_approved_writes` | Connector | boolean | `true` | the whole village |
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
 | How long a live session runs unless its opener says otherwise | `sessions.default_minutes` | Live Sessions | integer | `60` | the whole village |
@@ -5248,6 +5259,169 @@ When on, every member has a task board on their profile unless a steward turns t
 | Type | boolean, on or off |
 | Default | `true` |
 | Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+## Hidden map
+
+10 dials. 10 for the whole village.
+
+### Vouched pins that open the whole map
+
+How many of a member's own planting pins must be vouched for by somebody else before they see every pin on the hidden map. Until then they see only their own. Once a member's map has opened it stays open, so raising this later only asks more of members who have not opened yet. Zero opens the map to every member who can see the module.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.unlock_pins` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 0 to 100 |
+| Counted in | pins |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Vouches one pin needs before it counts
+
+How many different members must vouch that a pin is real before it counts toward its owner opening the map. A vouch comes from a member whose own map has opened, or from a keeper of the hidden map while nobody has opened yet.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.vouches_per_pin` |
+| Type | integer, a whole number |
+| Default | `1` |
+| Range | 1 to 10 |
+| Counted in | vouches |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How exactly a new pin is shown beyond the open members
+
+The starting choice when a member logs a pin. It decides the finest place anybody outside the open members is ever shown: a downloaded copy at a coarser setting, and the dots a member sees before their map opens when that is switched on. Members whose map has opened always see the exact place. The member can change it on each pin.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.default_precision` |
+| Type | choice, one of a fixed list |
+| Default | `region` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+What it may be set to:
+
+- `region` Region, about 50 km. The safest. A dot says which part of the country, and nothing nearer.
+- `km` About 1 km. Close enough to find the area, too coarse to find the spot.
+- `exact` Exact. Only for places that are safe to be found.
+
+### Show dots to members whose map has not opened
+
+When on, a member who has not opened the map yet sees every other pin as a plain dot, no finer than about 1 km and never finer than the pin's own setting, with no words, photos or stage. When off, they see their own pins and nothing else about anybody's.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.teaser` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### What the hidden map is drawn on
+
+The picture under the pins. Tiles load on each member's own phone from the provider named here, with its credit always on screen, and nothing is stored on the village's server. The provider can see which squares of the world a phone asked for, which is why the zoom below is capped. A grid draws no picture at all and sends nothing anywhere.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.basemap` |
+| Type | choice, one of a fixed list |
+| Default | `none` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+What it may be set to:
+
+- `none` A grid of latitude and longitude. Nothing leaves the phone. No coastline, roads or names.
+- `osm` OpenStreetMap. Roads, places and names, drawn by volunteers. Free for light use with the credit shown.
+- `esri-imagery` Satellite imagery from Esri. Photographs from above. Free to view with the credit shown.
+
+### Closest the picture under the pins will zoom
+
+The deepest zoom at which tiles are asked for. At 13 one tile covers about 5 km, so the provider learns only which 5 km square a member looked at. Pins are still drawn exactly where they are for members who may see them.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.basemap_max_zoom` |
+| Type | integer, a whole number |
+| Default | `13` |
+| Range | 2 to 18 |
+| Counted in | zoom |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Days the record of who looked is kept
+
+Every read of the shared map, every vouch and every copy taken is recorded with who and when, and never where. Rows older than this are deleted.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.access_log_days` |
+| Type | integer, a whole number |
+| Default | `90` |
+| Range | 7 to 3650 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Hours a second member has to approve a copy of the map
+
+A copy of the hidden map takes two members: one asks, a different one who may approve says yes. After this many hours an unanswered ask expires, and an approved copy the asker has not downloaded expires too.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.export_hours` |
+| Type | integer, a whole number |
+| Default | `24` |
+| Range | 1 to 168 |
+| Counted in | hours |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Days between paid return visits to the same pin
+
+When the village names a quest for return visits, a member's visit to the same pin opens a new claim at most this often, so one tree is visited for its story and never farmed.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.visit_pay_days` |
+| Type | integer, a whole number |
+| Default | `30` |
+| Range | 0 to 365 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Largest photo a member may add to a pin
+
+The largest single photo, before it is shrunk and every hidden detail in it is removed.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.photo_max_mb` |
+| Type | integer, a whole number |
+| Default | `12` |
+| Range | 1 to 40 |
+| Counted in | MB |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
