@@ -32,6 +32,7 @@
 import { cleanLine, cleanText } from "./sessions";
 import { civilDayWords } from "./seasonPlans";
 import { looksLikePaymentDetails } from "./seatSettings";
+import type { AskPlace } from "./priorities";
 
 export const TENSION_STATUSES = ["open", "taken", "answered", "brought_to_circle"] as const;
 export type TensionStatus = (typeof TENSION_STATUSES)[number];
@@ -172,9 +173,20 @@ export interface HeldTension {
   raisedOn: string;
   /** Open past the reminder line: two business days on the village's clock. */
   overdue: boolean;
+  /** Where a holder said it sits on the role's list, and the week they expect to pick it up (shared/priorities.ts). Absent from an older server. */
+  place?: AskPlace | null;
 }
 
 const isStr = (v: unknown): v is string => typeof v === "string";
+
+/** A place in line as the client trusts it, or null. */
+function readPlace(v: unknown): AskPlace | null {
+  if (!v || typeof v !== "object") return null;
+  const p = v as Record<string, unknown>;
+  const position = typeof p.position === "number" && Number.isInteger(p.position) && p.position > 0 ? p.position : null;
+  const expectWeek = isStr(p.expectWeek) && /^\d{4}-\d{2}-\d{2}$/.test(p.expectWeek) ? p.expectWeek : null;
+  return position == null && expectWeek == null ? null : { position, expectWeek };
+}
 
 /** One held tension as the client trusts it, or null. */
 export function readHeldTension(v: unknown): HeldTension | null {
@@ -191,6 +203,7 @@ export function readHeldTension(v: unknown): HeldTension | null {
     status: t.status,
     raisedOn: t.raisedOn,
     overdue: t.overdue === true,
+    place: readPlace(t.place),
   };
 }
 

@@ -570,7 +570,7 @@ describe.skipIf(!configured)("a live session against a real schema", () => {
       ].sort(),
     );
     expect(JSON.stringify(ben)).not.toContain("Ana Reyes");
-    // A member who never joined a room exports twenty empty lists: the task layer's two, the agenda library's three, the rhythms they set, the circles they follow, their calendar address, the circle calendars they attached, the review dates they set, the advice process's two, what was filled in for them, their agenda votes, and the meeting templates' two included.
+    // A member who never joined a room exports twenty-one empty lists: the task layer's two, the agenda library's three, the rhythms they set, the circles they follow, their calendar address, the circle calendars they attached, the review dates they set, the advice process's two, what was filled in for them, their agenda votes, the meeting templates' two and their weekly top priorities included.
     expect(await exportMemberSessions(pool, "m-never")).toEqual({
       sessions: [],
       items: [],
@@ -592,6 +592,7 @@ describe.skipIf(!configured)("a live session against a real schema", () => {
       agendaVotes: [],
       heartShares: [],
       prioritiesWritten: [],
+      weekPriorities: [],
     });
   });
 
