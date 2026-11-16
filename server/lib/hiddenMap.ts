@@ -45,22 +45,45 @@ export interface WhoAmI {
   viewer: Viewer;
   opening: Opening;
   ownPins: number;
+  /** True only on the read that recorded the opening: the moment to tell the member. */
+  justOpened: boolean;
 }
+
+/**
+ * When a member was admitted, where the village marks admission (a rite, an
+ * oath): pins count toward opening only from then, and a member not yet
+ * admitted neither opens the map nor vouches. `undefined` means the village
+ * marks no admission, and everything counts as before. Supplied by whichever
+ * module records admission; this module records none of its own.
+ */
+export type Admission = (userId: string) => Promise<Date | null | undefined>;
 
 /**
  * Who this member is to the map. Records the opening the first time the count
  * reaches the dial, and from then on reads only the record, so nothing that
  * happens later can close it.
  */
-export async function whoAmI(pool: Pool, villageId: string, userId: string, keeper: boolean, dials: Dials, now: Date = new Date()): Promise<WhoAmI> {
+export async function whoAmI(
+  pool: Pool,
+  villageId: string,
+  userId: string,
+  keeper: boolean,
+  dials: Dials,
+  now: Date = new Date(),
+  admission?: Admission,
+): Promise<WhoAmI> {
+  const since = admission ? await admission(userId) : undefined;
+  const admitted = since !== null;
   const [opened, vouched, ownPins] = await Promise.all([
     repo.hasOpened(pool, villageId, userId),
-    repo.countVouchedPlantings(pool, villageId, userId, dials.vouchesPerPin),
+    admitted ? repo.countVouchedPlantings(pool, villageId, userId, dials.vouchesPerPin, since ?? null) : Promise.resolve(0),
     repo.countOwnPins(pool, villageId, userId),
   ]);
-  const o = opening(vouched, dials.unlockPins, opened);
-  if (o.open && !opened) await repo.recordOpening(pool, villageId, userId, vouched, o.needed, now);
-  return { viewer: { userId, open: o.open, keeper }, opening: o, ownPins };
+  // A member not yet admitted never opens the map, a dial of zero included. An opening already recorded stands.
+  const o = admitted ? opening(vouched, dials.unlockPins, opened) : { open: opened, vouchedCount: 0, needed: Math.max(0, Math.floor(dials.unlockPins)) };
+  const justOpened = o.open && !opened;
+  if (justOpened) await repo.recordOpening(pool, villageId, userId, vouched, o.needed, now);
+  return { viewer: { userId, open: o.open, keeper, admitted }, opening: o, ownPins, justOpened };
 }
 
 /** The map as this viewer may read it. The SQL scope is the first wall; `visiblePin` is the second. */

@@ -137,14 +137,16 @@ export async function insertPin(pool: Pool, villageId: string, id: string, owner
 }
 
 /** Pins the member logged on the planting layer that are not hidden and hold at least `perPin` live vouches from others. */
-export async function countVouchedPlantings(pool: Pool, villageId: string, userId: string, perPin: number): Promise<number> {
+export async function countVouchedPlantings(pool: Pool, villageId: string, userId: string, perPin: number, since: Date | null = null): Promise<number> {
+  // `since`: only pins logged from the member's admission count (a village that marks one).
   const [rows] = await pool.query<any[]>(
     `SELECT COUNT(*) AS n FROM hidden_map_pins p
       WHERE p.village_id = ? AND p.owner_user_id = ? AND p.layer = 'planting' AND p.hidden_at IS NULL
+        AND (? IS NULL OR p.created_at >= ?)
         AND (SELECT COUNT(*) FROM hidden_map_vouches v
               WHERE v.village_id = p.village_id AND v.pin_id = p.id AND v.withdrawn_at IS NULL
                 AND v.voucher_user_id <> p.owner_user_id) >= ?`,
-    [villageId, userId, Math.max(1, perPin)],
+    [villageId, userId, since, since, Math.max(1, perPin)],
   );
   return Number(rows[0]?.n ?? 0);
 }
@@ -209,13 +211,33 @@ export async function recordOpening(pool: Pool, villageId: string, userId: strin
 }
 
 /** A vouch, or a vouch withdrawn and given again. One row per member per pin. */
-export async function upsertVouch(pool: Pool, villageId: string, pinId: string, voucher: string, basis: "open" | "keeper", now: Date): Promise<void> {
+export async function upsertVouch(
+  pool: Pool,
+  villageId: string,
+  pinId: string,
+  voucher: string,
+  basis: "open" | "keeper",
+  now: Date,
+  seen: string | null = null,
+): Promise<void> {
   await pool.query(
-    `INSERT INTO hidden_map_vouches (village_id, pin_id, voucher_user_id, basis, created_at)
-     VALUES (?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE withdrawn_at = NULL, basis = VALUES(basis)`,
-    [villageId, pinId, voucher, basis, now],
+    `INSERT INTO hidden_map_vouches (village_id, pin_id, voucher_user_id, basis, seen, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE withdrawn_at = NULL, basis = VALUES(basis), seen = VALUES(seen)`,
+    [villageId, pinId, voucher, basis, seen, now],
   );
+}
+
+/** How each live vouch on a pin was seen, as counts. No voucher is named. */
+export async function vouchWaysOf(pool: Pool, villageId: string, pinId: string): Promise<Record<string, number>> {
+  const [rows] = await pool.query<any[]>(
+    `SELECT seen, COUNT(*) AS n FROM hidden_map_vouches
+      WHERE village_id = ? AND pin_id = ? AND withdrawn_at IS NULL GROUP BY seen`,
+    [villageId, pinId],
+  );
+  const out: Record<string, number> = {};
+  for (const r of rows) out[String(r.seen ?? "unsaid")] = Number(r.n);
+  return out;
 }
 
 export async function withdrawVouch(pool: Pool, villageId: string, pinId: string, voucher: string, now: Date): Promise<boolean> {

@@ -42,6 +42,11 @@ export const PARTNER_STATES = ["connected", "visited", "planted"] as const;
 export type PartnerState = (typeof PARTNER_STATES)[number];
 
 export const BASEMAPS = ["none", "osm", "esri-imagery"] as const;
+
+/** How a voucher saw a planting. A village chooses which of these count (module settings `vouchWays`). */
+export const VOUCH_WAYS = ["in-person", "call", "photos"] as const;
+export type VouchWay = (typeof VOUCH_WAYS)[number];
+export const isVouchWay = (v: unknown): v is VouchWay => (VOUCH_WAYS as readonly unknown[]).includes(v);
 export type Basemap = (typeof BASEMAPS)[number];
 
 export const isLayer = (v: unknown): v is Layer => (LAYERS as readonly unknown[]).includes(v);
@@ -203,6 +208,11 @@ export function opening(vouchedCount: number, needed: number, alreadyOpen: boole
 export interface Viewer {
   userId: string;
   open: boolean;
+  /**
+   * Whether the member has been admitted, where the village marks admission
+   * (a rite, an oath). Absent means the village marks none, which is admitted.
+   */
+  admitted?: boolean;
   /** Holds `hiddenmap.keep`: may vouch before opening, and sees the queue only. */
   keeper: boolean;
 }
@@ -336,6 +346,9 @@ export function mayReadDetail(view: PinView | PinDot | null): view is PinView {
 export function mayVouch(viewer: Viewer, pin: PinRecord): { ok: true } | { ok: false; status: 403 | 409; error: string } {
   if (pin.ownerUserId !== null && pin.ownerUserId === viewer.userId) {
     return { ok: false, status: 409, error: "A vouch means somebody else." };
+  }
+  if (viewer.admitted === false) {
+    return { ok: false, status: 403, error: "You can vouch once you have been admitted to the village." };
   }
   if (!viewer.open && !viewer.keeper) {
     return { ok: false, status: 403, error: "You can vouch once your own map has opened." };
