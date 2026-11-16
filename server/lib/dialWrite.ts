@@ -39,10 +39,10 @@ import { QUORUM_FALLBACK_KEY, ADMIN_ROUTE_REFUSAL as QUORUM_FALLBACK_ADMIN_ROUTE
 import type { CapabilityVerdict } from "./appDeps";
 import { readGameStart } from "./gameStart";
 import { setVariable } from "./variables";
-import { WEIGHT_CAP_ON_KEY, WEIGHT_CAP_PCT_KEY } from "./governanceWeights";
+import { SOURCE_CAP_KEYS, WEIGHT_CAP_ON_KEY, WEIGHT_CAP_PCT_KEY } from "./governanceWeights";
 
-/** The dials a started Game answers for itself: the mode and token by a governance_mode ballot, the cap by a proposal. */
-export const WEIGHT_KEYS_AFTER_START = new Set(["governance.weight_mode", "governance.weight_token", WEIGHT_CAP_ON_KEY, WEIGHT_CAP_PCT_KEY]);
+/** The dials a started Game answers for itself: the mode and token by a governance_mode ballot, the caps by a proposal. */
+export const WEIGHT_KEYS_AFTER_START = new Set<string>(["governance.weight_mode", "governance.weight_token", WEIGHT_CAP_ON_KEY, WEIGHT_CAP_PCT_KEY, ...SOURCE_CAP_KEYS]);
 
 export const FOUNDER_RING_HELD =
   "This dial is not one the village governs, and the village holds the power to turn dials, " +

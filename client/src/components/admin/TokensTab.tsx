@@ -56,7 +56,9 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
   const [players, setPlayers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ slug: "", name: "", kind: "credit", transferable: false });
-  const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "" });
+  // `contribution`: what stood behind the grant, cash put in or anything else.
+  // A village capping voting weight by source counts the two under separate caps.
+  const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "", contribution: "other" as "cash" | "other" });
   const [renaming, setRenaming] = useState<{ slug: string; name: string } | null>(null);
   /**
    * The recognition token's name from a ReGen Civics file (ProfileImport.tsx),
@@ -216,6 +218,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
           // truncate 2.5 to 2 and this toast said "Minted".
           amount: Number(mint.amount),
           reason: mint.reason,
+          contribution: mint.contribution,
         }),
       });
       const data = await res.json();
@@ -228,7 +231,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
        */
       if (data.pending) toast.success(data.message || "Recorded. Awaiting a second steward's sign-off");
       else toast.success(`Minted: ${data.remaining} left under this cycle's cap`);
-      setMint({ slug: "", toUserId: "", amount: "", reason: "" });
+      setMint({ slug: "", toUserId: "", amount: "", reason: "", contribution: "other" });
       load();
     } catch (e: any) { toast.error(e?.message || "Mint failed"); }
   };
@@ -511,6 +514,11 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                 placeholder="Amount" type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-gray-200 rounded-lg px-3 py-2 w-28" />
               <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
                 placeholder="Reason (required)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 flex-1 min-w-48" />
+              <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
+                aria-label="What was contributed" className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
+                <option value="other">Contributed: work or other</option>
+                <option value="cash">Contributed: cash</option>
+              </select>
               <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
                 Mint
@@ -544,6 +552,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                       </p>
                       <p className="text-xs text-gray-500">
                         {g.reason}
+                        {g.contribution === "cash" ? " · cash put in" : ""}
                         {" · asked for by "}{g.requestedByName ?? g.requestedBy}
                         {g.status === "pending"
                           ? " · waiting for a second steward"

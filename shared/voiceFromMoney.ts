@@ -54,8 +54,13 @@ export const WORK_VOICE_SOURCES: readonly string[] = ["quest_consent", "role_cyc
 /**
  * THE SOURCES THAT ARE MONEY. `dues_dividend` is here because dues are money
  * paid in, and since 2026-11-08 dues earn no Voice at all (clarify C6).
+ *
+ * `admin_mint_cash` is a hand-mint the minting steward marked as cash given
+ * (shared/voiceSourceCaps.ts). It is the "cash" side of the per-source caps on
+ * voting weight, and it is money here for the same reason, so a work-only count
+ * never counts it as work. A hand-mint marked "other" keeps `admin_mint`.
  */
-export const MONEY_VOICE_SOURCES: readonly string[] = [DONATION_VOICE_SOURCE, INVESTMENT_VOICE_SOURCE, "dues_dividend"];
+export const MONEY_VOICE_SOURCES: readonly string[] = [DONATION_VOICE_SOURCE, INVESTMENT_VOICE_SOURCE, "dues_dividend", "admin_mint_cash"];
 
 export type VoiceSourceKind = "work" | "money" | "unclassified";
 

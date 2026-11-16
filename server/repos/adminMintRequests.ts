@@ -12,6 +12,7 @@
  * reads the affected-rows count and tells the loser.
  */
 import type { Pool, RowDataPacket } from "mysql2/promise";
+import type { ContributionKind } from "../../shared/voiceSourceCaps";
 
 export interface MintRequestRow {
   id: string;
@@ -25,10 +26,12 @@ export interface MintRequestRow {
   decidedBy: string | null;
   decidedAt: string | null;
   decisionNote: string | null;
+  /** What stood behind the grant (0388): cash put in, or any other contribution. */
+  contribution: ContributionKind;
 }
 
 const COLUMNS =
-  "id, token_slug, to_user_id, amount, reason, requested_by, requested_at, status, decided_by, decided_at, decision_note";
+  "id, token_slug, to_user_id, amount, reason, requested_by, requested_at, status, decided_by, decided_at, decision_note, contribution_kind";
 
 export function mintRequestRow(r: any): MintRequestRow {
   return {
@@ -43,6 +46,8 @@ export function mintRequestRow(r: any): MintRequestRow {
     decidedBy: r.decided_by ?? null,
     decidedAt: r.decided_at instanceof Date ? r.decided_at.toISOString() : r.decided_at ?? null,
     decisionNote: r.decision_note ?? null,
+    // Anything but a stored "cash" reads as other, the meaning before the tag.
+    contribution: r.contribution_kind === "cash" ? "cash" : "other",
   };
 }
 

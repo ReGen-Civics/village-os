@@ -1582,6 +1582,62 @@ export const VARIABLES: VariableDef[] = [
     max: 100,
     unit: "%",
   },
+  // THE CAPS ON WEIGHT BY SOURCE (shared/voiceSourceCaps.ts). Two optional,
+  // independent ceilings in WHOLE tokens on how much of one member's balance a
+  // ballot counts: the part that came from cash, and the part from everything
+  // else. Each is a switch and a number, like the share cap above, because a 0
+  // must mean zero. Counted when the ballot opens, never clipped at the mint, so
+  // the ledger keeps every contribution in full. Same ring and bar as the mode.
+  {
+    key: "governance.weight_cap_cash_on",
+    category: "Governance",
+    label: "Cap the weight one member counts from cash",
+    ring: "founder",
+    criticality: "constitutional",
+    description:
+      "Turns on a ceiling on how much of one member's weight token balance a ballot counts from cash they put in: Voice from donations, investment, dues, and hand-mints a steward marked as cash. It only matters when the weight mode is token. Nothing is taken from anybody: the balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from cash'. It is off unless you turn it on.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "governance.weight_cap_cash",
+    category: "Governance",
+    label: "The most weight one member counts from cash",
+    ring: "founder",
+    criticality: "constitutional",
+    description:
+      "While the cash cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from cash. A member's balance is split into its cash part and its other part by the share of everything minted to them that came from each, so waning takes from both alike. At 1000, a member holding 3000 that came from cash counts 1000 of it on every ballot, and any part from work or other contributions counts under its own cap. At 0, with the switch on, nothing from cash counts at all, because a cap of zero means zero. To have no cash cap, turn the switch off.",
+    type: "integer",
+    default: "0",
+    min: 0,
+    max: 1000000000,
+    unit: "tokens",
+  },
+  {
+    key: "governance.weight_cap_other_on",
+    category: "Governance",
+    label: "Cap the weight one member counts from other contributions",
+    ring: "founder",
+    criticality: "constitutional",
+    description:
+      "Turns on a ceiling on how much of one member's weight token balance a ballot counts from everything that is not cash: quests, roles, accepted proposals, and hand-mints marked as something other than cash. A source nobody has classified counts here. It only matters when the weight mode is token. The balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from other contributions'. It is off unless you turn it on.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "governance.weight_cap_other",
+    category: "Governance",
+    label: "The most weight one member counts from other contributions",
+    ring: "founder",
+    criticality: "constitutional",
+    description:
+      "While the cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from contributions other than cash. With both caps on, the most any one member counts is the two numbers added together. At 0, with the switch on, nothing from other contributions counts, because a cap of zero means zero. To have no cap on other contributions, turn the switch off.",
+    type: "integer",
+    default: "0",
+    min: 0,
+    max: 1000000000,
+    unit: "tokens",
+  },
   {
     key: "governance.unity_pct",
     category: "Governance",

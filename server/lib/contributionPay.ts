@@ -56,6 +56,8 @@ export const LEDGER_SOURCE_PAYS_A_CONTRIBUTION: Readonly<Record<string, boolean>
   library_intake: true,
   exchange_purchase: true,
   admin_mint: true,
+  // The same hand-mint, marked as cash put in (0388): money counts, as above.
+  admin_mint_cash: true,
   circle_treasury_spend: true,
 
   // Buying something for yourself.

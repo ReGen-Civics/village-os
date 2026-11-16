@@ -473,7 +473,7 @@ import {
   type BallotRow,
 } from "./lib/ballots";
 import {
-  rollWeightsFor,
+  rollEntriesFor, type RollEntry,
   weightModeNow,
   weightTokenProblem,
 } from "./lib/governanceWeights";
@@ -938,6 +938,7 @@ import {
 import { applyAcceptReward } from "./lib/proposalAward";
 import { cashNotGivenUp, statedProposalCash } from "./lib/cashOwed"; // 0285: a proposal's cash, owed when it is accepted; R4-4: deleting gives unpaid cash up
 import { GRATITUDE_ONLY_SENT } from "../shared/workValue";
+import { handMintSource, parseContributionKind } from "../shared/voiceSourceCaps";
 import { buildRetrospective, proposeNextPattern } from "./lib/seasonRetrospective";
 import {
   assertCanPurchase,
@@ -16079,6 +16080,10 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const slug = String(req.params.slug);
     const { toUserId, amount, reason } = req.body ?? {};
+    // What stood behind the grant: cash put in, or any other contribution
+    // (shared/voiceSourceCaps.ts). Absent is "other", today's meaning.
+    const contribution = parseContributionKind(req.body?.contribution);
+    if (!contribution) return res.status(400).json({ error: 'Say what was contributed: "cash" or "other". Nothing was minted' });
     const amt = Number(amount) || 0; // HUMAN, as typed. Finer than the token holds is refused below, never truncated: 2.5 once minted 2 and said "Minted"
     const def = tokenDef(slug);
     if (!def) return res.status(404).json({ error: `unknown token "${slug}"` });
@@ -16177,9 +16182,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
       if (!Number.isInteger(amt)) return res.status(400).json({ error: `${amt} ${def.name} is over the ${threshold} a steward may grant alone, and a grant that waits for a second steward is recorded in whole ${def.name}. Ask for a whole amount. Nothing was recorded` }); // admin_mint_requests.amount is BIGINT
       const requestId = `amr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       await getPool().query(
-        "INSERT INTO admin_mint_requests (id, token_slug, to_user_id, amount, reason, requested_by, status) " +
-          "VALUES (?, ?, ?, ?, ?, ?, 'pending')",
-        [requestId, slug, target.id, amt, String(reason).trim().slice(0, 500), acting.id],
+        "INSERT INTO admin_mint_requests (id, token_slug, to_user_id, amount, reason, requested_by, status, contribution_kind) " +
+          "VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)",
+        [requestId, slug, target.id, amt, String(reason).trim().slice(0, 500), acting.id, contribution],
       );
       void recordEvent(getPool(), {
         kind: "audit",
@@ -16195,6 +16200,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         tokenSlug: slug,
         toUserId: target.id,
         amount: amt,
+        contribution,
         cosignOver: threshold,
         message: `Recorded. ${amt} ${def.name} is over the ${threshold} a village steward may grant alone, so it waits for a second steward to agree`,
       });
@@ -16205,7 +16211,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       to: memberAccount(target.id),
       tokenType: slug,
       amount: toLedgerUnits(slug, amt),
-      source: "admin_mint",
+      source: handMintSource(contribution), // admin_mint, or admin_mint_cash for cash put in
       sourceRef: adminActor(req)?.id,
       description: String(reason).trim().slice(0, 500),
       idempotencyKey: String(req.body?.requestId ?? "").trim()
@@ -20726,18 +20732,16 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * taken out before the gate is asked, whatever a badge grants (Rye,
    * 2026-10-30; `withoutFormerMembers`, server/lib/formerMember.ts).
    */
-  async function buildElectorate(): Promise<Array<{ userId: string; weight: number }>> {
+  async function buildElectorate(): Promise<RollEntry[]> {
     const candidates = await withoutFormerMembers(getPool(), (await members.all()).filter((u: any) => isPresentMember(u, AUTH_TOKEN_SECRET)));
     const eligible: any[] = [];
     for (const u of candidates) {
       const ctx = await capabilityCtx(u);
       if (hasCapability("ballot.vote", ctx)) eligible.push(u);
     }
-    // The whole roll, so the cap on one member's weight (when it is on) is
-    // measured against everybody who may vote, and frozen with them.
-    const snapshot = weightModeNow();
-    const weights = await rollWeightsFor(getPool(), eligible.map((u: any) => String(u.id)), snapshot);
-    return eligible.map((u: any) => ({ userId: String(u.id), weight: weights.get(String(u.id)) ?? 0 }));
+    // The whole roll, so the share cap (when it is on) is measured against
+    // everybody who may vote; caps by source ride each row's basis (0388).
+    return rollEntriesFor(getPool(), eligible.map((u: any) => String(u.id)), weightModeNow());
   }
 
   // The URL, and why a stale one is never an error state, live on `decisionLink`

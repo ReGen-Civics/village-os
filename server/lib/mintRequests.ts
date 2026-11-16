@@ -49,6 +49,7 @@ import { EXAMPLE_REFUSAL_BODY } from "./examples";
 import { mintRecipientRefusal } from "./gratitude";
 import { memberAccount, postTransfer, tokenDef } from "./ledger";
 import { mintCapGuard } from "./mintCap";
+import { handMintSource } from "../../shared/voiceSourceCaps";
 import type { BallotSetup } from "./ballotSetup";
 import { numberVar, stringVar } from "./variables";
 import {
@@ -183,7 +184,8 @@ export async function approveMintRequest(deps: MintRequestDeps, input: ApproveIn
       to: memberAccount(target.id),
       tokenType: request.tokenSlug,
       amount: units,
-      source: "admin_mint",
+      // The tag the grant was asked with, read from the row like every other term of it.
+      source: handMintSource(request.contribution),
       sourceRef: request.id,
       description: request.reason.slice(0, 500),
       idempotencyKey: `admin_mint:req:${request.id}`,
