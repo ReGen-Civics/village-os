@@ -102,14 +102,81 @@ afterAll(async () => {
 describe.skipIf(!configured)("the Words routes", () => {
   it("registers every route the screen calls", () => {
     expect([...setup().handlers.keys()].sort()).toEqual([
+      "GET /api/admin/comms/letter-previews",
       "GET /api/admin/comms/words",
       "GET /api/admin/comms/words/:key",
+      "POST /api/admin/comms/letter-previews/send",
       "POST /api/admin/comms/words/:key/adopt",
       "POST /api/admin/comms/words/:key/preview",
       "POST /api/admin/comms/words/:key/restore",
       "POST /api/admin/comms/words/:key/test",
       "PUT /api/admin/comms/words/:key",
     ]);
+  });
+
+  it("previews the letters written in code, in the village's look, and refuses somebody who may not look", async () => {
+    const { call, sent } = setup();
+    const out = await call("GET", "/api/admin/comms/letter-previews");
+    expect(out.status).toBe(200);
+    const ids = out.body.letters.map((l: any) => l.id);
+    expect(ids).toEqual(["not-invited", "not-invited-es", "declined", "join-declined", "invited", "member-footer"]);
+    const no = out.body.letters.find((l: any) => l.id === "not-invited");
+    expect(no.html).toContain("Come and play!");
+    expect(no.text).toContain("Take a quest: https://village.example.test/quests");
+    expect(sent).toHaveLength(0);
+    const refused = await setup({ mayLook: false }).call("GET", "/api/admin/comms/letter-previews");
+    expect(refused.status).toBe(403);
+  });
+
+  it("sends the sample letters to the caller's own address only, one post per letter, marked as a test", async () => {
+    const { call, sent } = setup();
+    const preview = await call("GET", "/api/admin/comms/letter-previews");
+    const out = await call("POST", "/api/admin/comms/letter-previews/send", {
+      body: { keys: ["declined", "invited"], to: "someone-else@example.test", email: "x@example.test" },
+    });
+    expect(out.status, JSON.stringify(out.body)).toBe(200);
+    expect(out.body.sentTo).toBe(ADMIN.email);
+    expect(out.body.results.map((r: any) => r.key)).toEqual(["declined", "invited"]);
+    expect(out.body.results.every((r: any) => r.status === "sent")).toBe(true);
+    expect(sent).toHaveLength(2);
+    expect(sent.every((m) => m.to === ADMIN.email)).toBe(true);
+    const declined = preview.body.letters.find((l: any) => l.id === "declined");
+    expect(sent[0].subject).toBe(`[Test] ${declined.subject}`);
+    expect(sent[0].html).toBe(declined.html);
+    expect(sent[0].text).toBe(declined.text);
+
+    const ids = out.body.results.map((r: any) => r.messageId);
+    const [rows] = await pool.query<RowDataPacket[]>( // module-review-ok: reading back the scratch schema this suite provisioned
+      "SELECT origin, kind, to_email, idempotency_key FROM comms_messages WHERE id IN (?, ?)",
+      ids,
+    );
+    expect(rows).toHaveLength(2);
+    for (const row of rows) {
+      expect(row).toMatchObject({ origin: "comms.test", kind: "essential", to_email: ADMIN.email });
+      expect(String(row.idempotency_key)).not.toContain("declined");
+    }
+
+    const all = await call("POST", "/api/admin/comms/letter-previews/send");
+    expect(all.body.results.map((r: any) => r.key)).toEqual(["not-invited", "not-invited-es", "declined", "join-declined", "invited", "member-footer"]);
+    expect(sent).toHaveLength(8);
+
+    // Sending the same letter again is never refused as a repeat: a test holds no key a real letter could need.
+    const again = await call("POST", "/api/admin/comms/letter-previews/send", { body: { keys: ["declined"] } });
+    expect(again.body.results[0].status).toBe("sent");
+  });
+
+  it("refuses an unknown letter, an account with no address, and anybody the gate refuses", async () => {
+    const { call, sent } = setup();
+    expect((await call("POST", "/api/admin/comms/letter-previews/send", { body: { keys: ["nope"] } })).status).toBe(400);
+    expect((await call("POST", "/api/admin/comms/letter-previews/send", { body: { keys: "declined" } })).status).toBe(400);
+    const noAddress = setup({ user: { ...ADMIN, email: "" } });
+    const none = await noAddress.call("POST", "/api/admin/comms/letter-previews/send", { body: { to: "typed@example.test" } });
+    expect(none.status).toBe(400);
+    expect(noAddress.sent).toHaveLength(0);
+    const refused = setup({ mayChange: false });
+    expect((await refused.call("POST", "/api/admin/comms/letter-previews/send")).status).toBe(403);
+    expect(refused.sent).toHaveLength(0);
+    expect(sent).toHaveLength(0);
   });
 
   it("sends the test with exactly the subject, HTML and text the preview showed", async () => {

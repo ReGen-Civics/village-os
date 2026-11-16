@@ -56,6 +56,8 @@ export interface RenderContext {
   contactId?: string | null;
   /** Epoch milliseconds the preferences link is signed at. Tests pin it. */
   now?: number;
+  /** The come-and-play block as an optional footer (`comeAndPlayFor` in server/lib/comms/villageLetter.ts). */
+  comeAndPlay?: { html: string; text: string } | null;
 }
 
 export interface RenderedEmail {
@@ -192,6 +194,7 @@ export async function renderTemplate(templateKey: string, vars: MergeValues, ctx
     village: ctx.village,
     kind,
     templateKey,
+    comeAndPlay: ctx.comeAndPlay ?? null,
   });
   return {
     templateKey,

@@ -183,7 +183,7 @@ export default function QuestDetail() {
             <h1 className="font-display text-2xl font-bold text-foreground mb-3">
               {failed
                 ? "The quest board couldn't be loaded just now."
-                : "That quest is not on the board."}
+                : "That quest isn't on the board."}
             </h1>
             <p className="text-muted-foreground mb-8">
               {failed
@@ -327,7 +327,7 @@ export default function QuestDetail() {
           {quest.isExample && (
             <p className="mt-4 text-sm text-muted-foreground bg-amber/10 border border-amber/30 rounded-xl px-4 py-3">
               A standing example. It shows what a quest looks like here until the
-              village posts its own, and it cannot be claimed.
+              village posts its own, and it can't be claimed.
             </p>
           )}
 
@@ -398,7 +398,7 @@ export default function QuestDetail() {
                 </h2>
                 <p className="text-foreground/90 leading-relaxed">{quest.firstStep}</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Fifteen minutes or less. The rest of the quest can wait until you have done this.
+                  Fifteen minutes or less. The rest of the quest can wait until you've done this.
                 </p>
               </div>
             )}
@@ -531,7 +531,7 @@ export default function QuestDetail() {
             {claim?.status === "submitted" && (
               <p className="flex items-center gap-2 text-sm text-blue-700 px-1">
                 <Send className="w-4 h-4" />
-                A steward will review your work soon.
+                Thank you! A steward will look at your work soon.
               </p>
             )}
           </aside>

@@ -157,7 +157,7 @@ export default function YourPath() {
           {also.length > 0 && (
             <section aria-labelledby="path-also-h" className={`${CARD} mt-10 max-w-3xl`} data-path-also="">
               <h2 id="path-also-h" className="font-display text-2xl text-card-foreground">{t({ message: `Also on your path`, context: "your path, the whole path page" })}</h2>
-              <p className={`${HINT} mt-1`}>{t({ message: `These wait behind the step above. Take them in any order once it is done.`, context: "your path, the whole path page" })}</p>
+              <p className={`${HINT} mt-1`}>{t({ message: `These wait behind the step above. Take them in any order once it's done.`, context: "your path, the whole path page" })}</p>
               <ul className="mt-3 grid gap-2">
                 {also.map((a, i) => (
                   <li key={`${a.state}-${i}`}>

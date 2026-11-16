@@ -143,6 +143,8 @@ export const TYPE_CAPABILITY_REFUSALS: Partial<
      * only two doors that are supposed to move it, which is the same hole the
      * admin routes were closed against in `server/lib/roleGrants.ts`.
      */
+    // `token.mint` (Rye, 2026-11-15) is not listed: this list is the voices and the seat, and
+    // BADGE_GRANTABLE already fences token.mint, which the badge_grant closer honours too.
     keys: ["ballot.vote", "member.vouch", "member.superVouch", "steward.veto"],
     why:
       "A badge names people, so handing this one to named individuals would be a few members " +

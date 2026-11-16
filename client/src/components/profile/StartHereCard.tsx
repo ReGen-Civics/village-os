@@ -260,7 +260,7 @@ export default function StartHereCard({ ownerId, me, signing, config, catalogue 
     others = [...(vouchDoor && primary !== vouchDoor ? [vouchDoor] : []), questDoor];
   }
   // Last among the other doors: a member may skip Gene Keys, so this door never stands above a step of the game.
-  if (linesOn && myLines === null) others = [...others, { href: "/profile/gene-keys", label: "Find your lines", after: LINES_AFTER }];
+  if (linesOn && myLines === null) others = [...others, { href: "/profile/gene-keys", label: "Find your Gene Key lines", after: LINES_AFTER }];
 
   return (
     <section

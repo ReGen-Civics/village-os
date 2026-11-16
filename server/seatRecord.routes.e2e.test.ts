@@ -41,7 +41,7 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, E2E_BOOT_DEADLINE_MS, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, E2E_BOOT_DEADLINE_MS, waitForPortFree } from "./db/testDb";
 import { civilDateInstant } from "../shared/seatTerms";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -515,8 +515,9 @@ describe.skipIf(!DB_CONFIGURED)("what a decision changed, read cold by somebody 
       body: { lifecycle: "members", examples: false },
     })).status).toBe(200);
     // A quorum one voter can meet, so the vote carries and the dial applies.
-    expect((await call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "1" } })).status).toBe(200);
-    expect((await call("PUT", "/api/admin/variables/governance.unity_pct", { body: { value: "50" } })).status).toBe(200);
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    expect((await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "1" } }))).status).toBe(200);
+    expect((await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.unity_pct", { body: { value: "50" } }))).status).toBe(200);
 
     const made = await call("POST", "/api/game/mechanics/proposals", {
       body: {

@@ -32,7 +32,7 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -220,7 +220,8 @@ beforeAll(async () => {
   expect(on.status).toBe(200);
   // Objections exist only on consent ballots, so this village decides by
   // consent. Every other village never meets this feature at all.
-  const method = await call("PUT", "/api/admin/variables/governance.default_method", { body: { value: "consent" } });
+  // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+  const method = await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.default_method", { body: { value: "consent" } }));
   expect(method.status, JSON.stringify(method.json)).toBe(200);
 });
 

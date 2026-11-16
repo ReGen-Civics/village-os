@@ -96,6 +96,9 @@ updates:
           - "minor"
           - "patch"
 
+  # Every third-party action is pinned to a full commit SHA with its version in
+  # a trailing comment (R123). Dependabot updates the SHA and the comment
+  # together, so the pin stays current without anybody resolving SHAs by hand.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -110,3 +113,18 @@ updates:
       actions:
         patterns:
           - "*"
+
+  # The base image in the Dockerfile is pinned by digest (R123). This entry
+  # asks for a pull request when the digest behind the tag moves. The FROM
+  # reads the image through `ARG NODE_IMAGE`; the Dockerfile says how to
+  # refresh it by hand if Dependabot does not follow that.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(docker)"

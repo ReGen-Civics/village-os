@@ -3,7 +3,7 @@
  *
  *   "Up to $13,000 a month for the full role*"
  *   "Take on all of it, or part of it: we're open to proposals from 30% to 100%. ..."
- *   "Your proposal sets your pay. ... At 50%, the suggested price is $6,500 a month. You can propose more or less."
+ *   "Your proposal sets your rewards. ... At 50%, the suggested price is $6,500 a month. You can propose more or less."
  *   "*At 100% commitment. Your first month often starts lower and follows what you deliver. ..."
  *
  * The figure is the card's own ceiling (shared/roleCardSections.ts); the share is straight proportional
@@ -71,7 +71,7 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
       ? i18n._(msg({ message: `Take on all of it, or part of it: we're open to proposals from ${lo}% to 100%. One person can hold the whole role, or a few people can share it.`, context: "role card rewards: a role that can be shared" }))
       : null,
     proposal: [
-      i18n._(msg({ message: "Your proposal sets your pay. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract.", context: "role card rewards: the proposal sets the pay" })),
+      i18n._(msg({ message: "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract.", context: "role card rewards: the proposal sets the pay" })),
       shared ? i18n._(msg({ message: `At ${at}%, the suggested price is ${atPrice}.`, context: "role card rewards: the price at an example share" })) : null,
       i18n._(msg({ message: "You can propose more or less.", context: "role card rewards: the proposal sets the pay" })),
     ]

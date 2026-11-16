@@ -40,6 +40,66 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.15 (2026-11-16)
+
+### What changed for your village
+
+- **Founders and Treasurers can create tokens after launch.** A new power, `token.mint`, moves at launch to the steward and Treasury roles (and to them for villages that started before the launch ballot existed). A bare admin can no longer mint after launch, and agents never can. Every mint needs a reason, the cycle cap and co-sign rules still apply, and minting to yourself waits for a second holder. Stewards can pass the power to the village later.
+- **After launch, the vote thresholds change only by vote** (the founder-steward break-glass excepted).
+- **Treasurer pay, in one place.** Admin, Cash payouts, "Pay by member": pick a month and see each member's USD pay as owed, claimed or sent from escrow (date, reference, who recorded it), with totals. Beside it, their Earned Equity and Credits from End of Moon: a Treasurer or founder approves them, or changes them up or down with a reason, within 120% of the whole line. The member sees the change on My Moon ("Your token pay") and can reply. When two or more people can confirm, someone else confirms a change. Approved tokens issue at launch, and at once after it. Pay owed from before this release waits for the same review.
+- **Supply chain:** every workflow step is pinned to an exact version, and the map prototype no longer loads outside code.
+- **Calendar repeats** are bounded, and a bad "nth weekday" gets a clear refusal.
+
+### What you must do
+
+Treasurers: review each member's Equity and Credits in "Pay by member" after End of Moon. Nothing issues until you approve it.
+
+### Does it touch your data
+
+Yes, one expand-only migration: `0388_moon_reward_reviews` adds a new table. The previous release never reads it, so going back to 1.3.14 is safe; the table stays and is ignored.
+
+### Merged pull requests
+
+- #1367 Batch 181: token.mint and vote thresholds (#1332), supply chain (#1351), calendar guards (#1362)
+- #1379 Batch 182: Treasurer pay server (#1349) and page (#1358)
+
+---
+
+## 1.3.14 (2026-11-16)
+
+### What changed for your village
+
+- **Security fixes before launch** (from the final audit):
+  - Google sign-in binds its handoff to the browser that started it, with `__Host-` cookies.
+  - The launch vote needs at least 3 people, and an admin can no longer close it early as "no quorum" or withdraw it once others have voted.
+  - Powers a badge gave before the handover no longer outlast it; the launch seats only the people on its slate.
+  - End of Moon: no double token pay with the hourly role settlement; a Treasurer can't set their own pay line or go past its range or the cap; an approved invoice can't be voided with its payments left live.
+  - Seating someone into a group that opens the admin panel needs the person seating them to be able to open it.
+  - Your founder's personal details are removed from the public code.
+- **Launch rehearsal fixes:**
+  - Earned Equity and Credits from pay approved before the launch are issued when the launch vote carries, and retried hourly after.
+  - Clearer pay words on invoices and the member's pay, and a Treasury tab for members.
+- **Calendar:** events can repeat on the nth weekday of the month (for example the first Friday).
+- **Applicants:** a new-invitation door, a letter when an application closes, and an opt-in AI draft.
+- **Accepted proposals show live** (gatherings, dials), and a failed accept says so.
+- **The hatchery** speaks in a kinder browser voice; design and public-page fixes.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No database migrations. Starting this release does not change your database.
+
+### Merged pull requests
+
+- #1363 Batch 179: launch rehearsal fixes (#1352, #1331, #1334, #1339, #1342)
+- #1364 Batch 180: security fixes (#1330, #1333, #1335, #1336, #1338, #1340, #1341, #1345, #1346) and the launch vote (#1343)
+- #1347, #1348, #1355, #1356, #1357, #1360
+
+---
+
 ## 1.3.13 (2026-11-15)
 
 ### What changed for your village

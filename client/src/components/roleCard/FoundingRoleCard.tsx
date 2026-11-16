@@ -4,7 +4,7 @@
  * information in the role"; approved mockup A, https://claude.ai/artifact/NaavCsufyAEHKowgEdKFAX).
  *
  * Left, the role as a seat: its art (the role's own image, else its first character's art), its
- * circle, its name, its roots, "This is a paid role", four quick facts and the one act, "Apply for
+ * circle, its name, its roots, "This role is rewarded", four quick facts and the one act, "Apply for
  * this role". Right, the role's words as pieces (RolePieces), each with an icon, its lines split
  * into short tiles (shared/rolePieces.ts) and never rewritten.
  *
@@ -311,7 +311,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         {p.wide && p.act && (
           <div className="mt-auto">
             {p.act}
-            <p className={`mt-2 text-center ${HINT}`}>{t({ message: "Six steps. No account needed.", context: "full role card, under the one act" })}</p>
+            <p className={`mt-2 text-center ${HINT}`}>{t({ message: "No account needed.", context: "full role card, under the one act" })}</p>
           </div>
         )}
       </header>
