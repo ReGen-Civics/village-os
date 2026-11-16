@@ -34,8 +34,6 @@ export function soundKindOf(b: Buffer): "ogg" | "mp3" | null {
   return null;
 }
 
-const isMoment = (v: unknown): v is SoundMomentId => (SOUND_MOMENT_IDS as readonly string[]).includes(String(v));
-
 /** The stored map, cleaned: known moments only, file names only. */
 export function soundsOf(theme: any): { volume: number; files: Partial<Record<SoundMomentId, { ogg?: string; mp3?: string }>> } {
   const raw = theme?.sounds && typeof theme.sounds === "object" ? theme.sounds : {};
@@ -72,13 +70,15 @@ export function register(app: Express, deps: Deps): void {
         const tooBig = String(err?.code ?? "") === "LIMIT_FILE_SIZE";
         return res.status(400).json({ error: tooBig ? `A sound is a short one-shot. Keep it under ${MAX_SOUND_BYTES / 1024} KB.` : "That file did not arrive." });
       }
-      const moment = req.body?.moment;
-      if (!isMoment(moment)) return res.status(400).json({ error: `Name the moment this sound is for: ${SOUND_MOMENT_IDS.join(", ")}.` });
+      // The moment comes from the closed list itself, never from the request,
+      // so nothing a caller sends reaches the file name.
+      const moment = SOUND_MOMENT_IDS.find((m) => m === req.body?.moment);
+      if (!moment) return res.status(400).json({ error: `Name the moment this sound is for: ${SOUND_MOMENT_IDS.join(", ")}.` });
       const file = (req as any).file;
       if (!file?.buffer?.length) return res.status(400).json({ error: "Choose a sound file first." });
       const kind = soundKindOf(file.buffer);
       if (!kind) return res.status(400).json({ error: "Not a sound file this site can play. Upload an OGG (best) or an MP3." });
-      const name = `brand-sound-${moment}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${kind}`;
+      const name = `brand-sound-${moment}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${kind === "ogg" ? "ogg" : "mp3"}`;
       writeToVolume(uploadsDir, name, file.buffer);
       const sounds = soundsOf(getBrand()?.theme);
       sounds.files[moment] = { ...(sounds.files[moment] ?? {}), [kind]: name };
@@ -89,8 +89,8 @@ export function register(app: Express, deps: Deps): void {
 
   app.delete("/api/admin/brand/sound/:moment", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
-    const moment = req.params.moment;
-    if (!isMoment(moment)) return res.status(404).json({ error: "There is no such moment." });
+    const moment = SOUND_MOMENT_IDS.find((m) => m === req.params.moment);
+    if (!moment) return res.status(404).json({ error: "There is no such moment." });
     const sounds = soundsOf(getBrand()?.theme);
     delete sounds.files[moment];
     await save(sounds);
