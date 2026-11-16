@@ -211,6 +211,12 @@ export const POWERS: readonly PowerEntry[] = [
     ],
   },
   {
+    capability: "token.mint",
+    title: "Minting tokens by hand",
+    surface: "Minting a platform token to a member with a reason, and signing a grant that waits for a second signer",
+    routes: ["/api/admin/tokens/:slug/mint", "/api/admin/mint-requests/:id/approve"],
+  },
+  {
     capability: "pot.steward",
     title: "The village's funding pots",
     surface: "Opening a funding pot and its rounds, and setting when each round moves from ideas to shaping, choosing and harvest",

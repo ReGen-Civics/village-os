@@ -253,6 +253,44 @@ describe("GET /assets with the precompressed copies", () => {
     }
   });
 
+  it("never reads outside the assets directory, even for a name the manifest carries", async () => {
+    // CodeQL js/path-injection (alerts 456-458). The manifest is build output,
+    // but it is a file on disk: an entry that climbs out with ".." must not
+    // become a path a request can reach. The bytes, hash and copy below are
+    // all correct, so only the containment check stands between the request
+    // and the file.
+    const secret = Buffer.from(bundleLike(9, 8));
+    const outside = path.join(assetsDir, "..", "secret-XyZ999.js");
+    const copy = path.join(preDir, "secret-XyZ999.js.br");
+    const manifestFile = path.join(preDir, "manifest.json");
+    const original = fs.readFileSync(manifestFile, "utf8");
+    fs.writeFileSync(outside, secret);
+    fs.writeFileSync(copy, zlib.brotliCompressSync(secret));
+    try {
+      const m = JSON.parse(original);
+      const sample = Object.values(m.files)[0] as { sha256: string };
+      m.files["../secret-XyZ999.js"] = {
+        bytes: secret.length,
+        sha256: (await import("node:crypto")).createHash("sha256").update(secret).digest("hex").slice(0, sample.sha256.length),
+        br: fs.statSync(copy).size,
+      };
+      fs.writeFileSync(manifestFile, JSON.stringify(m));
+      const base = await listen(appWith(true));
+      for (const p of ["/assets/..%2Fsecret-XyZ999.js", "/assets/%2E%2E%2Fsecret-XyZ999.js"]) {
+        const r = await rawGet(base, p, BR);
+        expect(r.body.equals(fs.readFileSync(copy)), p).toBe(false);
+        expect([400, 403, 404], p).toContain(r.status);
+      }
+      // A name the build wrote, on the same fresh middleware, is still served.
+      const ok = await rawGet(base, "/assets/index-AbC123.js", BR);
+      expect(ok.body.equals(fs.readFileSync(path.join(preDir, "assets", "index-AbC123.js.br")))).toBe(true);
+    } finally {
+      fs.writeFileSync(manifestFile, original);
+      fs.rmSync(outside, { force: true });
+      fs.rmSync(copy, { force: true });
+    }
+  });
+
   it("never serves a copy once the file on disk has changed", async () => {
     const file = path.join(assetsDir, "Route-GhI789.js");
     const original = fs.readFileSync(file);

@@ -766,6 +766,37 @@ const PORT_RELEASE_DEADLINE_MS = 10_000;
  * ports.mjs) make that vanishingly unlikely; a nonce echoed by /health would
  * close it completely and is the next step, not this one.
  */
+/**
+ * TEST-ONLY: run `fn` while this scratch village reads as NOT STARTED, then put
+ * its `game-start` row back exactly as it was.
+ *
+ * Launch decision D2a (server/lib/launchDoors.ts) closes the dial write for the
+ * dials that decide how votes pass once the Game has started, and the fixture
+ * village (`gameStarted`, above) has started. A suite that needs one of those
+ * dials set the way a village set it while it was being built wraps the real
+ * admin dial write in this, so the dial goes through the product's own
+ * validation and cache and nothing in the product grows a door for tests.
+ * `readGameStart` reads the row live on every call, which is what makes this
+ * work with the server running. It is a DB write in the harness, never an HTTP
+ * route or an environment flag. Calls inside `fn` must be sequential: anything
+ * else the server does meanwhile also sees an unstarted Game.
+ */
+export async function asIfBeforeLaunch<T>(
+  conn: { query: (sql: string, values?: unknown[]) => Promise<any> },
+  fn: () => Promise<T>,
+): Promise<T> {
+  const [rows] = await conn.query("SELECT value FROM app_config WHERE config_key = 'game-start'");
+  const saved = (rows as any[])[0]?.value;
+  await conn.query("DELETE FROM app_config WHERE config_key = 'game-start'");
+  try {
+    return await fn();
+  } finally {
+    if (saved !== undefined) {
+      await conn.query("INSERT INTO app_config (config_key, value) VALUES ('game-start', ?)", [typeof saved === "string" ? saved : JSON.stringify(saved)]);
+    }
+  }
+}
+
 export async function waitForPortFree(port: number, host = "127.0.0.1"): Promise<void> {
   const net = await import("node:net");
   const accepting = (): Promise<boolean> =>
