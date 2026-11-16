@@ -817,7 +817,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(invites).toEqual([expect.objectContaining({ inviter_user_id: FOUNDER.id, used_at: null })]);
 
       const mail = state.sent.find((m) => m.origin === "open_proposal.adopted");
-      expect(mail).toMatchObject({ kind: "essential", to: { email: "newcomer@example.test", name: "Rowan" }, subject: "Test Village adopted your proposal" });
+      expect(mail).toMatchObject({ kind: "essential", to: { email: "newcomer@example.test", name: "Rowan" }, subject: "Test Village said yes to your proposal" });
       expect(mail?.text).toContain(linkOf(r.body));
       expect(mail?.text).toContain("Your roles start when Season of Roots begins");
       expect(mail?.idempotencyKey).toMatch(new RegExp(`^open-proposal:${id}:adopted:[0-9a-f]{16}$`));
@@ -1348,7 +1348,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(r.status, JSON.stringify(r.body)).toBe(200);
       const mail = state.sent.find((m) => m.origin === "open_proposal.adopted");
       expect(mail?.text).toContain("Bienvenida.");
-      expect(mail?.text).toContain("adoptó tu propuesta");
+      expect(mail?.text).toContain("aceptó tu propuesta");
       expect((await readOpenProposal(pool, p.id))?.body.note).toBe("Bienvenida.");
       await tidyOpenProposals(pool, new Date(Date.now() + 91 * 24 * 60 * 60_000));
       const after = await readOpenProposal(pool, p.id);

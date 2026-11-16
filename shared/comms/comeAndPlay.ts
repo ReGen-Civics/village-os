@@ -69,7 +69,7 @@ export const DOOR_ROUTES: Record<Exclude<PlayDoor, "newsletter" | "stayClose">, 
 
 /**
  * Each card's illustration: the platform's own module art, the same paintings
- * the Module Library shows (client/public/images/modules), served from the
+ * the Module Library shows (server/assets/modules, at /images/modules), served from the
  * village's own site. They belong to the platform and to no village, so every
  * village's letter can wear them. `comeAndPlay.test.ts` holds each file to
  * existing.
