@@ -82,7 +82,8 @@ import {
 } from "../../shared/openProposalDecide";
 import { consentState, shortDay } from "../../shared/roleProposalConsent";
 import { ADOPTING_POWER, adoptRefusal, applicationHref } from "../../shared/seatApplications";
-import { cleanNote, wordsIn } from "../../shared/applicantWords";
+import { cleanNote, wordsIn, type ApplicantLanguage } from "../../shared/applicantWords";
+import { dressLetter } from "../lib/comms/villageLetter";
 import { languageOf } from "../lib/applicantLanguage";
 import type { SeatCalendar } from "../../shared/seatTerms";
 import type { AppDeps } from "../lib/appDeps";
@@ -146,7 +147,7 @@ const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["
 const STATUS_WORDS = DECIDE_WORDS.status satisfies Record<Exclude<OpenProposalStatus, "unconfirmed">, string>;
 
 export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps): void {
-  const { authedUser, guardCapability, getPool, overLimit, members, deploymentOrigin, projectName, escapeHtml, postEmail } = deps;
+  const { authedUser, guardCapability, getPool, overLimit, members, deploymentOrigin, projectName, postEmail } = deps;
   const now = () => (deps.now ? deps.now() : new Date());
   const tz = () => deps.seatCalendar().timezone || "UTC";
   const site = () => deploymentOrigin().replace(/\/+$/, "");
@@ -259,24 +260,29 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     return holds || asks.some((a) => a.userId === viewerId);
   }
 
-  /** A letter as an essential email: the person asked for this answer. */
-  function letter(key: string, origin: string, to: { email: string; name: string | null }, words: { subject: string; text: string; button?: { label: string; url: string } }): OutgoingEmail {
-    const button = words.button
-      ? `<p><a href="${escapeHtml(words.button.url)}" style="display:inline-block;padding:12px 22px;background:#1f6f5c;color:#ffffff;border-radius:8px;text-decoration:none;font-weight:600">${escapeHtml(words.button.label)}</a></p>`
-      : "";
-    const paras = words.text.split("\n\n").map((para) => `<p>${escapeHtml(para).replace(/\n/g, "<br>")}</p>`);
-    // The button sits under the paragraph that carries the invitation's link.
-    const at = words.button ? paras.findIndex((para) => para.includes(escapeHtml(words.button!.url))) : -1;
-    if (at >= 0) paras.splice(at + 1, 0, button);
-    const body = paras.join("");
+  /**
+   * A letter as an essential email: the person asked for this answer. Dressed
+   * in the village's letter frame (server/lib/comms/villageLetter.ts), signed
+   * by its team; a no carries the come-and-play block, so every answer that
+   * closes a door also opens the village's other ones.
+   */
+  async function letter(
+    key: string,
+    origin: string,
+    to: { email: string; name: string | null },
+    words: { subject: string; text: string; button?: { label: string; url: string } },
+    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean } = {},
+  ): Promise<OutgoingEmail> {
+    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName() });
     return {
       idempotencyKey: key,
       kind: "essential",
       origin,
       to: { email: to.email, ...(to.name ? { name: to.name } : {}) },
       subject: words.subject,
-      html: `<!doctype html><html><body style="font-family:system-ui,sans-serif;color:#1f2937">${body}</body></html>`,
-      text: words.text,
+      html: dressed.html,
+      text: dressed.text,
+      preheader: dressed.preheader,
     };
   }
 
@@ -700,7 +706,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       }
       const why = await sent(
         p.email
-          ? letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }))
+          ? await letter(`open-proposal:${p.id}:adopted`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedAccountLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), signIn: `${site()}/profile`, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
           : null,
       );
       await tell(p.id, "adopted");
@@ -746,7 +752,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // Keyed by the link, so a new invitation goes out again, and one link never goes twice.
     const why = await sent(
       p.email
-        ? letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }))
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village, roleNames: namesOf(roles), reviewed: await reviewedOf(p.id), ...seasonWords(p, at), link, days: INVITE_DAYS, loveLetter: letterLine, note, waitsForSeat }), { lang: languageOf(p) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
@@ -801,7 +807,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note }))
+        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true }), { lang: languageOf(p), comeAndPlay: true })
         : null,
     );
     await tell(p.id, "declined");
@@ -877,7 +883,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? letter(`open-proposal:${p.id}:invited`, "open_proposal.invited", { email: p.email, name: firstName }, invitedLetter({
+        ? await letter(`open-proposal:${p.id}:invited`, "open_proposal.invited", { email: p.email, name: firstName }, invitedLetter({
             firstName,
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
@@ -885,7 +891,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             statusLink: statusLinkFor({ siteUrl: site }, p.id),
             lang: languageOf(p),
             note,
-          }))
+          }), { lang: languageOf(p) })
         : null,
     );
     await tell(p.id, "invited");
@@ -908,7 +914,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? letter(`open-proposal:${p.id}:not-invited`, "open_proposal.not_invited", { email: p.email, name: firstName }, notInvitedLetter({
+        ? await letter(`open-proposal:${p.id}:not-invited`, "open_proposal.not_invited", { email: p.email, name: firstName }, notInvitedLetter({
             firstName,
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
@@ -916,7 +922,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             stayClose: { program: stayCloseProgram(), quests: true, events: effectiveLifecycle("events") === "public" },
             lang: languageOf(p),
             note,
-          }))
+            doorsInBlock: true,
+          }), { lang: languageOf(p), comeAndPlay: true })
         : null,
     );
     await tell(p.id, "not_invited");
@@ -949,7 +956,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     const firstName = greetingName(p.name);
     const why = await sent(
       p.email
-        ? letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }))
+        ? await letter(`open-proposal:${p.id}:adopted:${input.tokenHash.slice(0, 16)}`, "open_proposal.adopted", { email: p.email, name: firstName }, adoptedInviteLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), reviewed: await reviewedOf(p.id), ...seasonWords(p, p.decidedAt ?? now()), link, days: INVITE_DAYS, loveLetter: letterLine, note: p.body.note ?? null, waitsForSeat: (await roomFor(work, p, null)).length > 0 }), { lang: languageOf(p) })
         : null,
     );
     await store.noteInvitationSent(pool, p.id, now(), why === null);

@@ -52,7 +52,12 @@ import {
   wordsDetail,
   type WordsDraft,
 } from "../lib/comms/templates";
-import { requireModule } from "../lib/modules";
+import { effectiveLifecycle, requireModule } from "../lib/modules";
+import { stringVar } from "../lib/variables";
+import { letterTeam } from "../lib/comms/villageLetter";
+import { stayCloseFrom } from "../../shared/comms/comeAndPlay";
+import { renderSampleLetters } from "../../shared/comms/letterSamples";
+import { safeHref } from "../../shared/otherWays";
 import { liveTemplateRow } from "../repos/commsTemplates";
 
 type Deps = Pick<AppDeps, "authedUser" | "guardCapability" | "mayStillSee" | "getPool" | "commsPostOffice">;
@@ -190,6 +195,25 @@ export function register(app: Express, deps: Deps): void {
       // The footer prints it, and Comms Settings is where it is written.
       postalAddressSet: village.postalAddress !== "",
     });
+  });
+
+  /**
+   * THE LETTERS WRITTEN IN CODE, AS THEY WOULD ARRIVE: the applicant letters
+   * and a member email carrying the come-and-play block, in this village's
+   * look, with its live modules and settings and a made-up reader
+   * (shared/comms/letterSamples.ts). A look: it sends and changes nothing.
+   */
+  app.get("/api/admin/comms/letter-previews", moduleGate, async (req, res) => {
+    if (!(await mayLook(req, res))) return;
+    const village = await loadEmailVillage(getPool(), commsPostOffice.origin());
+    const letters = renderSampleLetters({
+      village,
+      lifecycleOf: (id) => effectiveLifecycle(id),
+      newsletter: safeHref(stringVar("org.newsletter_link"), "") || null,
+      stayClose: stayCloseFrom(stringVar("org.stay_close_name"), stringVar("org.stay_close_link")),
+      team: letterTeam(village),
+    });
+    res.json({ letters });
   });
 
   /** One email's words: live, the platform's, every version, and the fields it may use. */

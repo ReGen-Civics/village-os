@@ -102,12 +102,13 @@ export interface ClosingDeps {
   /** The role that welcomes people (`org.onboarding_role`), whose team signs the letter. Empty: the village's name signs. */
   onboardingRole(): string;
   /**
-   * THE ONE HOOK FOR THE "COME AND PLAY" BLOCK. TODO(wt/email-invitations): pass
-   * `renderComeAndPlay(ctx)` here once that lane lands; it returns `{ html, text }`
-   * and is placed under the letter's own words. Absent: the letter goes without it.
-   * This lane builds no block of its own and restyles no layout.
+   * THE ONE HOOK FOR THE "COME AND PLAY" BLOCK: the tidy job passes
+   * `comeAndPlayFor` (server/lib/comms/villageLetter.ts), which returns
+   * `{ html, text }`, placed under the letter's own words. It may answer a
+   * promise, because the block reads the village's look. Absent: the letter
+   * goes without it.
    */
-  footer?(ctx: { village: string; site: string; lang: ReturnType<typeof languageOf> }): { html: string; text: string } | null;
+  footer?(ctx: { village: string; site: string; lang: ReturnType<typeof languageOf> }): { html: string; text: string } | null | Promise<{ html: string; text: string } | null>;
 }
 
 /** The letter's idempotency key: one per application, whatever runs it again. */
@@ -135,7 +136,8 @@ export async function closedEmailFor(pool: Pool, deps: ClosingDeps, p: store.Sto
     statusLink: statusLinkFor({ siteUrl: () => site }, p.id),
     lang: languageOf(p),
   });
-  const footer = deps.footer?.({ village, site, lang: languageOf(p) }) ?? null;
+  const block = (await deps.footer?.({ village, site, lang: languageOf(p) })) ?? null;
+  const footer = block && block.html ? block : null;
   const html =
     words.text
       .split("\n\n")

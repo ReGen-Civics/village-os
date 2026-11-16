@@ -69,6 +69,7 @@ import { afterFounding, replyDaysFor } from "./foundingFirst";
 import { trustedAccountFor } from "./applicantAccount";
 import type { DecideDeps } from "./openProposalDecide";
 import { boolVar, numberVar, stringVar } from "./variables";
+import { stayCloseFrom } from "../../shared/comms/comeAndPlay";
 import { verifyLink } from "./comms/links";
 import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
@@ -98,12 +99,7 @@ export function reviewFirstOn(deps: Pick<ReviewDeps, "reviewFirst">): boolean {
  * names none, or names one with nowhere to go.
  */
 export function stayCloseProgram(): { name: string; href: string } | null {
-  const name = stringVar("org.stay_close_name").trim().slice(0, 80);
-  const href = stringVar("org.stay_close_link").trim().slice(0, 300);
-  if (!name || !href) return null;
-  if (!href.startsWith("/") && !/^https:\/\/[^\s]+$/i.test(href)) return null;
-  if (href.startsWith("//")) return null;
-  return { name, href };
+  return stayCloseFrom(stringVar("org.stay_close_name"), stringVar("org.stay_close_link"));
 }
 
 const ADOPTING_POWER = "org.seat";

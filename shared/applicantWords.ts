@@ -144,6 +144,8 @@ export interface ApplicantMessages {
     quest(url: string): string;
     roles(url: string): string;
     again: string;
+    /** The same invitation to propose again, standing on its own: the letter whose ways in are the come-and-play block (shared/comms/comeAndPlay.ts). */
+    againOwn: string;
   };
 
   page: {
@@ -349,6 +351,7 @@ const en: ApplicantMessages = {
     quest: (url) => `Take a quest: ${url}`,
     roles: (url) => `Look at other open roles: ${url}`,
     again: "Or propose again next season. We would be glad to read it.",
+    againOwn: "You're welcome to propose again next season. We would be glad to read it.",
   },
 
   page: {
@@ -558,6 +561,7 @@ const es: ApplicantMessages = {
     quest: (url) => `Toma una misión: ${url}`,
     roles: (url) => `Mira otros roles abiertos: ${url}`,
     again: "O vuelve a proponer la próxima temporada. Nos dará gusto leerte.",
+    againOwn: "Puedes volver a proponer la próxima temporada. Nos dará gusto leerte.", // needs-native-review: new words, 16 Nov 2026
   },
 
   page: {

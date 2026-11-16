@@ -27,7 +27,7 @@ import { spawn, type ChildProcess } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { provisionTestDb, testDbConfigured, type TestDb, E2E_BOOT_DEADLINE_MS, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, provisionTestDb, testDbConfigured, type TestDb, E2E_BOOT_DEADLINE_MS, waitForPortFree } from "./db/testDb";
 import { verifyDocument } from "./lib/villageExport";
 import { startFakeResend, type FakeResend } from "./testkit/fakeResend";
 import { villageMoonLabel } from "../shared/villageMoon";
@@ -6657,7 +6657,9 @@ describe.skipIf(!DB_CONFIGURED)("the coordination loop, end to end", () => {
     }
 
     // STAGE: a proposal enters sensing. The village asks for two supporters.
-    await api("PUT", "/api/admin/variables/governance.proposal_support_threshold", { value: "2" }, founderToken);
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const bar = await asIfBeforeLaunch(testDb.conn, () => api("PUT", "/api/admin/variables/governance.proposal_support_threshold", { value: "2" }, founderToken));
+    expect(bar.status, JSON.stringify(bar.json)).toBe(200);
     const proposal = await api("POST", "/api/game/mechanics/proposals", {
       title: "Longer sensing, decided by the village itself",
       rationale: "Quiet people need more days to be heard before a vote.",
@@ -6734,8 +6736,11 @@ describe.skipIf(!DB_CONFIGURED)("the coordination loop, end to end", () => {
 
     // THE SNAPSHOT LAW, at route level: the village raises both dials
     // mid-ballot to values that would sink this vote if anything read live.
-    await api("PUT", "/api/admin/variables/governance.unity_pct", { value: "100" }, founderToken);
-    await api("PUT", "/api/admin/variables/governance.quorum_pct", { value: "100" }, founderToken);
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    await asIfBeforeLaunch(testDb.conn, async () => {
+      expect((await api("PUT", "/api/admin/variables/governance.unity_pct", { value: "100" }, founderToken)).status).toBe(200);
+      expect((await api("PUT", "/api/admin/variables/governance.quorum_pct", { value: "100" }, founderToken)).status).toBe(200);
+    });
 
     /*
      * THE CLOCK ENDS THE WINDOW, and the only SQL in this case is what makes

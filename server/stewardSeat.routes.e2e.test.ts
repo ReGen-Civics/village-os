@@ -44,7 +44,7 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 import { civilDateKey } from "../shared/lunar";
 import { civilDateInstant } from "../shared/seatTerms";
@@ -497,7 +497,8 @@ describe.skipIf(!DB_CONFIGURED)("a seat vote across the season's turn is measure
     openerToken = opener.token;
     // co-creator is the rung proposal.open unlocks at, held as a member.
     expect((await call("PUT", `/api/admin/players/${opener.id}/stage`, { body: { stageId: "co-creator" } })).status).toBe(200);
-    const days = await call("PUT", "/api/admin/variables/governance.vote_days", { body: { value: "1" } });
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const days = await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.vote_days", { body: { value: "1" } }));
     expect(days.status, JSON.stringify(days.json)).toBe(200);
 
     const current = await call("GET", "/api/admin/seasons");

@@ -97,6 +97,13 @@ const revised = (key: string, subject: string, preheader: string | null, ...para
  */
 const tokenNamed = (t: DefaultTemplate): DefaultTemplate => ({ ...t, version: 3 });
 
+/**
+ * Words moved into the lead's voice on 2026-11-16 ("join the team", never a
+ * hand raised for a seat), at version 4, so a village holding its own copy is
+ * offered the change on its Words screen.
+ */
+const teamVoiced = (t: DefaultTemplate): DefaultTemplate => ({ ...t, version: 4 });
+
 const list = (...items: string[]): string => items.map((item) => `- ${item}`).join("\n");
 
 const HI = "Hi {{person.firstName}},";
@@ -396,9 +403,9 @@ const INVESTOR: DefaultTemplate[] = [
   ),
 ];
 
-/** The steward path: somebody who wants to help run the village. First step: a hand raised for a seat. */
+/** The steward path: somebody who wants to help run the village. First step: find a role and join the team. */
 const STEWARD: DefaultTemplate[] = [
-  revised(
+  teamVoiced(revised(
     "path.steward.welcome",
     "Welcome to the {{path.name}} path",
     "Start with the path page. Here's what happens next.",
@@ -407,18 +414,18 @@ const STEWARD: DefaultTemplate[] = [
     PATH_PAGE,
     "You chose this path with {{village.name}}, so you'd like to help run the place. Thank you: that's how a village keeps going.",
     "Stewards hold roles: real responsibilities, like keeping the water running or the calendar full, held for a term and then handed on.",
-    "What happens next: over the next three weeks we'll send a few short emails on raising your hand for a role, meeting the people you'd work with, and what the work looks like. Then {{path.contactName}} writes to you personally.",
-  ),
-  revised(
+    "What happens next: we'll send a few short emails on finding a role and joining the team, meeting the people you'd work with, and what the work looks like. Then {{path.contactName}} writes to you personally.",
+  )),
+  teamVoiced(revised(
     "path.steward.first_step",
-    "Raise your hand for a role",
-    "Find a role that fits and tell us you're interested.",
+    "Find your role and join the team",
+    "Find a role that fits and tell us you'd love to join the team.",
     HI,
-    "Your next step: find a role that fits you and raise your hand for it. That says you're interested, and what follows is a conversation.",
-    "Each role says what it's responsible for and how long the term runs, so you know what you'd take on before you ask.",
+    "Your next step: find a role that fits you and tell us you'd love to join the team. What follows is a conversation.",
+    "Each role says what it's responsible for and how long it runs, so you know what you'd take on before you ask.",
     "[Find a role]({{path.nextStepLink}})",
     "If none of them fit yet, reply and tell us what you're good at. New roles open as the village grows.",
-  ),
+  )),
   revised(
     "path.steward.meet_us",
     "Meet the people you'd work with",

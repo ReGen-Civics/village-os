@@ -205,7 +205,7 @@ export default function CrowdpoolCampaign() {
       <section className="py-6 md:py-10 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container max-w-5xl">
           <Link href="/campaigns" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground mb-4">
-            <ArrowLeft className="w-4 h-4" /> All raisings
+            <ArrowLeft className="w-4 h-4" /> Pooling Resources
           </Link>
 
           {!c && !unreachable && (

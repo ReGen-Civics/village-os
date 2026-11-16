@@ -146,6 +146,12 @@ export type Capability =
   // budget sets how much of each moon's work is paid in cash, so one power gives
   // one answer. Every budget write goes through its door (server/routes/budgets.ts).
   | "role.pay" // keep the cash budget, and set what a role is worth and pays
+  // Rye, 2026-11-15: "Founders and Treasurers can mint tokens from after launch
+  // ... later we'll pass this power to the village." The admin hand mint and the
+  // second signature on a waiting grant. Before launch the admin holds it as
+  // today; at launch it crosses to the founding stewards and the Treasury role
+  // (server/lib/tokenMintHandover.ts), and the stewards pass it on later.
+  | "token.mint" // mint a platform token by hand to a member, with a reason, under the cycle cap
   | "pot.steward" // hold a funding pot: open its rounds, set their dates, rule on whether an idea fits
   | "place.tend" // keep the place registry: import the seed, confirm a match, set readiness, adopt a stage change
   | "place.permit" // keep a place's permit checklist and its preserve and riparian answers
@@ -285,6 +291,7 @@ export const ALL_CAPABILITIES: Capability[] = [
   "redemption.confirm",
   "cash.pay",
   "role.pay",
+  "token.mint",
   "pot.steward",
   "place.tend",
   "place.permit",
@@ -363,6 +370,7 @@ export const CAPABILITY_LABELS: Record<Capability, string> = {
   "redemption.confirm": "Confirm that a member was paid, and destroy the tokens they redeemed",
   "cash.pay": "Read the cash the village owes its members, and mark a payment made",
   "role.pay": "Keep the village's cash budget, and set what a role is worth and pays",
+  "token.mint": "Mint a platform token by hand to a member, with a reason, under the village's per-cycle cap",
   "pot.steward": "Hold a funding pot: open its rounds, set their dates and rubric, and rule on whether an idea fits",
   "place.tend": "Keep the place registry: load it from the seed, confirm a place, set its readiness, and adopt a stage change",
   "place.permit": "Keep a place's permit checklist and its preserve and riparian answers",
@@ -582,6 +590,10 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
   // valuation engine. Its route asks `guardCapability`, and a holder of the role
   // being paid is sent to the village instead (the conflict rule).
   "role.pay": true,
+  // Rye, 2026-11-15: founders and Treasurers mint from launch, and the power
+  // passes to the village later. Born transferable, so it is in HANDOVER_SET;
+  // its two routes ask `guardCapability`, so the record and the hatch are there.
+  "token.mint": true,
   "pot.steward": true,
   // Living places (0354). FALSE until Rye says otherwise (spec C8, I.10): the
   // two keys are new, and joining the handover set is his word to give. With
@@ -761,12 +773,12 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  *
  * ── THIS IS A READING OF THOSE WORDS, AND IT HAS A PRODUCT CONSEQUENCE ─────
  *
- * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 31 keys
+ * "All powers" is read here as ALL TRANSFERABLE POWERS, which is 32 keys
  * today. The other 24 are not withheld from anybody: they are personal acts
  * and deployment plumbing that were never anyone's to hold, and `TRANSFERABLE`
  * carries the reasoning key by key.
  *
- * Read this way, a launched village holds all 31 in the founding seat and has
+ * Read this way, a launched village holds all 32 in the founding seat and has
  * handed over none of them, which is the arc starting rather than finishing.
  * `villageHandoverState` in server/lib/capabilityHolding.ts measures how far
  * along it is, and it asks the narrow question on purpose: a power counts as
@@ -814,7 +826,9 @@ export const TRANSFERABLE: Record<Capability, boolean> = {
  * spec Rye accepted on 2026-11-06 naming it so, which moved only the first:
  * 31 and 23. `records.confidential` (role journey L7) was born held back, a
  * key no route gates behind yet and one the alignment binds on top, which
- * moved only the second: 31 and 24.
+ * moved only the second: 31 and 24. `token.mint` (Rye, 2026-11-15: founders
+ * and Treasurers mint from launch, and the power passes to the village later)
+ * was born transferable, which moved only the first: 32 and 24.
  *
  * This sentence was itself wrong for one batch, and it is the reason the check
  * below reads the WHOLE paragraph rather than three sentences. It claimed
@@ -1015,6 +1029,8 @@ export const DENIABLE: Record<Capability, boolean> = {
   "cash.pay": true,
   // The same: a warning takes away setting other people's pay.
   "role.pay": true,
+  // A job: a warning pauses minting for other people, and nobody's own voice.
+  "token.mint": true,
   "pot.steward": true,
   // Jobs, the same as the pot: a warning pauses keeping the registry or the
   // permits, and takes no member's voice in a stage change.
@@ -1198,6 +1214,9 @@ export const BADGE_GRANTABLE: Record<Capability, boolean> = {
   // Not by badge: "the Treasurer" is a holder through the Treasury role
   // (coordinator, 2026-11-06), so a badge is not an honest way to hand it over.
   "role.pay": false,
+  // Not by badge either: minting is held through the steward and Treasury
+  // roles, and a badge would let whoever awards badges hand out issuance.
+  "token.mint": false,
   "pot.steward": true,
   // Ordinary appointments: a badge is an honest way to hand somebody the
   // registry or the permit checklist.
