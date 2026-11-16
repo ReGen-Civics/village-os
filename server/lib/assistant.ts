@@ -33,6 +33,7 @@ import { providerFor, type ProviderId, type ToolResult, type WireMessage } from 
 import { guardedFetchJson } from "./toolcheck";
 import { PLATFORM_CALLS, notePlatformCall, type PlatformCallOutcome } from "./integrations";
 import { seraGuideQuestion, type SeraAsk } from "./seraGuideQuestion";
+import { numberVar } from "./variables";
 
 export type AssistantMode =
   | "proposal"
@@ -121,14 +122,22 @@ export const ASSIST_BURST_PER_HOUR = 30;
  * member-facing mode's day budget is the whole village's, so one free account
  * asking all day could spend it for everybody. Each signed-in caller of a
  * non-admin mode on the village or platform key also counts on a slice of
- * their own, a quarter of the mode's day, checked before the shared bucket so
+ * their own, a share of the mode's day, checked before the shared bucket so
  * a refused slice spends none of it. Admin modes are used by a few named
  * people and keep the whole day; a member's own key pays its own allowance.
+ *
+ * The share and its floor are village dials (`assistant.account_day_share_percent`,
+ * `assistant.account_day_share_floor`; defaults 25 and 5). Caps fail closed:
+ * a share of 0 gives a signed-in account no calls on the shared key at all,
+ * whatever the floor says, and a floor of 0 is no floor.
  */
-export const USER_DAY_SHARE = 0.25;
-export const USER_DAY_SHARE_MIN = 5;
+export const USER_DAY_SHARE_PERCENT_DIAL = "assistant.account_day_share_percent";
+export const USER_DAY_SHARE_FLOOR_DIAL = "assistant.account_day_share_floor";
 export function userDaySlice(spec: ModeSpec): number {
-  return Math.max(USER_DAY_SHARE_MIN, Math.ceil(spec.dailyBudget * USER_DAY_SHARE));
+  const percent = Math.max(0, numberVar(USER_DAY_SHARE_PERCENT_DIAL));
+  if (percent === 0) return 0;
+  const floor = Math.max(0, numberVar(USER_DAY_SHARE_FLOOR_DIAL));
+  return Math.min(spec.dailyBudget, Math.max(floor, Math.ceil((spec.dailyBudget * percent) / 100)));
 }
 
 /**
@@ -146,15 +155,21 @@ export const SHARE_SPENT = "You have used your share of the guide for today. It 
  * a few addresses could spend the day a signed-in applicant or member then
  * found empty. Together, callers with no account may spend this much of the
  * mode's day, and one address (an IPv6 /64 counts as one) this much of that.
+ *
+ * Both are village dials (`assistant.anonymous_day_calls`, default 150, and
+ * `assistant.anonymous_address_day_calls`, default 40). Caps fail closed: 0
+ * means no calls for callers with no account. Only the public `proposal`
+ * mode takes strangers; any other mode a stranger reached would get the same
+ * dials, never more than its own day.
  */
-export const ANON_DAY_SHARE: Partial<Record<AssistantMode, number>> = { proposal: 150 };
-export const ANON_PER_ADDRESS_DAY = 40;
+export const ANON_DAY_DIAL = "assistant.anonymous_day_calls";
+export const ANON_ADDRESS_DAY_DIAL = "assistant.anonymous_address_day_calls";
 
 /** The day slices for a caller with no account on `mode`: their own address (`ipBucket` from shared/openProposals, so a /64 is one), then the strangers' pool. */
 export function anonymousDaySlices(mode: AssistantMode, address: string): Array<{ key: string; max: number }> {
-  const pool = ANON_DAY_SHARE[mode] ?? Math.ceil(ASSISTANT_MODES[mode].dailyBudget * 0.6);
+  const pool = Math.min(ASSISTANT_MODES[mode].dailyBudget, Math.max(0, numberVar(ANON_DAY_DIAL)));
   return [
-    { key: `address:${address}`, max: Math.min(pool, ANON_PER_ADDRESS_DAY) },
+    { key: `address:${address}`, max: Math.min(pool, Math.max(0, numberVar(ANON_ADDRESS_DAY_DIAL))) },
     { key: "anonymous", max: pool },
   ];
 }

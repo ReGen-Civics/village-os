@@ -74,6 +74,7 @@
  * is how `GET /api/canvas/exports/latest` can say whether anything changed.
  */
 import type { Express, Request, Response } from "express";
+import { numberVar } from "../lib/variables";
 import multer from "multer";
 import { randomUUID } from "node:crypto";
 import type { AppDeps } from "../lib/appDeps";
@@ -157,9 +158,12 @@ export const DRAFT_AFTER_ADOPTION =
   "This document is waiting on the village's decision. Once the village adopts it, anyone can draft canvas words from it.";
 
 /** Said when no key is there to use. */
-/** One account's model drafts on the village's key (audit, 15 Nov 2026). */
-export const MODEL_DRAFTS_PER_HOUR = 6;
-export const MODEL_DRAFTS_PER_DAY = 12;
+/**
+ * One account's model drafts on the village's key (audit, 15 Nov 2026), as
+ * village dials (defaults 6 and 12). Caps fail closed: 0 means none.
+ */
+export const MODEL_DRAFTS_HOUR_DIAL = "documents.model_drafts_per_hour";
+export const MODEL_DRAFTS_DAY_DIAL = "documents.model_drafts_per_day";
 export const MODEL_DRAFTS_HOUR_SPENT = "That is a lot of model drafts for one hour. The words-only draft still works, and the model is back in a little while.";
 export const MODEL_DRAFTS_DAY_SPENT = "You have asked the model for a lot of drafts today. The words-only draft still works, and the model is back tomorrow.";
 
@@ -507,10 +511,10 @@ export function register(app: Express, deps: DocumentRouteDeps): void {
     // (security audit, 15 Nov 2026): the shared `member` day is everybody's.
     // A member's own key pays its own allowance in callAssistant.
     if (!memberKey) {
-      if (await overLimit(`documents-model-draft:${me}`, MODEL_DRAFTS_PER_HOUR, 60 * 60 * 1000)) {
+      if (await overLimit(`documents-model-draft:${me}`, Math.max(0, numberVar(MODEL_DRAFTS_HOUR_DIAL)), 60 * 60 * 1000)) {
         return res.status(429).json({ error: MODEL_DRAFTS_HOUR_SPENT });
       }
-      if (await overLimit(`documents-model-draft-day:${me}`, MODEL_DRAFTS_PER_DAY, 24 * 60 * 60 * 1000)) {
+      if (await overLimit(`documents-model-draft-day:${me}`, Math.max(0, numberVar(MODEL_DRAFTS_DAY_DIAL)), 24 * 60 * 60 * 1000)) {
         return res.status(429).json({ error: MODEL_DRAFTS_DAY_SPENT });
       }
     }

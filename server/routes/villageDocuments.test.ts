@@ -58,6 +58,7 @@ let MEMBER_KEY: MemberKey | null = null;
 /** Buckets the limiter stand-in answers "over" for, by prefix, and every bucket it was asked. */
 const LIMITED: string[] = [];
 const LIMIT_ASKED: string[] = [];
+const LIMIT_MAX: number[] = [];
 /** What the model stand-in was sent, one entry per call. */
 const MODEL_CALLS: ModelDraftInput[] = [];
 /** What the model stand-in answers with. */
@@ -135,8 +136,9 @@ describe.skipIf(!configured)("a member's notebook, the picks and the export", ()
       },
       getPool: () => pool,
       firstName: (name: string) => String(name ?? "").trim().split(/\s+/)[0] ?? "",
-      overLimit: async (key: string) => {
+      overLimit: async (key: string, max: number) => {
         LIMIT_ASKED.push(key);
+        LIMIT_MAX.push(max);
         return LIMITED.some((k) => key.startsWith(k));
       },
       clientIp: () => "127.0.0.1",
@@ -462,6 +464,8 @@ describe.skipIf(!configured)("a member's notebook, the picks and the export", ()
         LIMIT_ASKED.length = 0;
         expect((await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).status).toBe(200);
         expect(LIMIT_ASKED).toEqual([`documents-model-draft:${PEOPLE.owner.id}`, `documents-model-draft-day:${PEOPLE.owner.id}`]);
+        // The caps are village dials, 6 an hour and 12 a day by default.
+        expect(LIMIT_MAX.slice(-2)).toEqual([6, 12]);
         LIMITED.push("documents-model-draft-day:");
         expect(await call("POST", `/api/documents/${docId}/draft`, "owner", { mode: "model", consent: true })).toEqual({ status: 429, body: { error: MODEL_DRAFTS_DAY_SPENT } });
         LIMITED.length = 0;

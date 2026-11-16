@@ -2285,6 +2285,87 @@ export const VARIABLES: VariableDef[] = [
     max: 100,
     unit: "per hour",
   },
+  // The guide's day on the village's key, shared fairly (security audit, 15 Nov
+  // 2026; server/lib/assistant.ts and server/routes/villageDocuments.ts read
+  // them). Caps fail closed: 0 means no calls, never unlimited.
+  {
+    key: "assistant.account_day_share_percent",
+    category: "Abuse guards",
+    label: "Most of the guide's day one account may use",
+    description:
+      "Each way of asking the guide has its own number of calls a day on the village's key, shared by everyone. This is the most of that one signed-in account may use in a day, so one person asking all day cannot use it up for everybody. Admin tools keep the whole day, and a member who brings their own key pays their own way. 0 means signed-in accounts get no calls on the village's key at all.",
+    type: "integer",
+    default: "25",
+    min: 0,
+    max: 100,
+    unit: "% of the day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.account_day_share_floor",
+    category: "Abuse guards",
+    label: "Fewest guide calls one account may use in a day",
+    description:
+      "A floor under the share above, for a way of asking whose whole day is small: one account may always use at least this many calls a day, while the share is above 0. It is never more than that way's whole day. 0 means no floor.",
+    type: "integer",
+    default: "5",
+    min: 0,
+    max: 1000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.anonymous_day_calls",
+    category: "Abuse guards",
+    label: "Guide calls a day for visitors with no account",
+    description:
+      "The visitor guide and the application's voice drafts answer people with no account. Together, those people may use this many of the public guide's calls a day, and the rest stay for people who are signed in, so a few visitors cannot use up the day. It is never more than the public guide's whole day. 0 means visitors with no account get no guide calls.",
+    type: "integer",
+    default: "150",
+    min: 0,
+    max: 10000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "assistant.anonymous_address_day_calls",
+    category: "Abuse guards",
+    label: "Guide calls a day for one address with no account",
+    description:
+      "How many of the visitors' calls above one internet address may use in a day. A household or an office behind one connection counts as one address, so keep it above one conversation's worth. 0 means visitors with no account get no guide calls.",
+    type: "integer",
+    default: "40",
+    min: 0,
+    max: 10000,
+    unit: "calls a day",
+    ring: "founder",
+  },
+  {
+    key: "documents.model_drafts_per_hour",
+    category: "Abuse guards",
+    label: "Model drafts from a document per account per hour",
+    description:
+      "How many times one account may ask a model to draft from a document in an hour, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.",
+    type: "integer",
+    default: "6",
+    min: 0,
+    max: 1000,
+    unit: "per hour",
+    ring: "founder",
+  },
+  {
+    key: "documents.model_drafts_per_day",
+    category: "Abuse guards",
+    label: "Model drafts from a document per account per day",
+    description:
+      "How many times one account may ask a model to draft from a document in a day, on the village's key. A member who brings their own key is not counted. 0 means no model drafts on the village's key; the words-only draft always works.",
+    type: "integer",
+    default: "12",
+    min: 0,
+    max: 1000,
+    unit: "per day",
+    ring: "founder",
+  },
 
   {
     key: "retention.submissions_days",

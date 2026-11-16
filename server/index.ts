@@ -200,7 +200,8 @@ import { claimRefusalFor } from "./lib/questClaimGate";
 import { ageBandOf } from "./repos/questSafety";
 import { MAP_REASON_FOR } from "../shared/questClaimGate";
 import { type ConsentActor, register as registerQuestClaimRoutes } from "./routes/questClaims";
-import { countInWindow, limitState, recordHit as recordRateHit } from "./repos/rateHits";
+import { countInWindow, limitState, recordHit as recordRateHit, type LimitState } from "./repos/rateHits";
+import { assistantDayCapPeek, assistantDayCapState, assistantDayRefusal } from "./lib/assistantDayCap";
 import { register as registerHousingRoutes } from "./routes/housing";
 import { register as registerJourneyRoutes } from "./routes/journey";
 import { keepFirstPlanIfUsed } from "./lib/commandCentrePlanDefault";
@@ -4797,9 +4798,10 @@ function clientIp(req: express.Request): string {
   return req.socket.remoteAddress ?? "unknown";
 }
 // Global daily call cap for the AI assistant, so a key can't run away with cost.
-async function assistantDailyCapReached(max: number): Promise<boolean> {
-  const today = new Date().toISOString().slice(0, 10);
-  return overLimit(`assistant-day:${today}`, max, 24 * 60 * 60 * 1000);
+// Fails CLOSED (audit, 15 Nov 2026): `unavailable` when the limiter cannot be
+// read, and both callers refuse on it (server/lib/assistantDayCap.ts).
+async function assistantDailyCapReached(max: number): Promise<LimitState> {
+  return assistantDayCapState((bucket, m, windowMs) => limitState(getPool(), bucket, m, windowMs), max);
 }
 
 /**
@@ -4813,9 +4815,8 @@ async function assistantDailyCapReached(max: number): Promise<boolean> {
  * records its hits per request it actually submits, one each, which is the
  * same accounting the Synthesize button does per click.
  */
-async function assistantDailyCapAtLimit(max: number): Promise<boolean> {
-  const today = new Date().toISOString().slice(0, 10);
-  return atLimit(`assistant-day:${today}`, max, 24 * 60 * 60 * 1000);
+async function assistantDailyCapAtLimit(max: number): Promise<LimitState> {
+  return assistantDayCapPeek((bucket, windowMs) => countInWindow(getPool(), bucket, windowMs), max);
 }
 
 /**
@@ -5645,14 +5646,15 @@ async function startServer() {
     }
 
     let enqueued = "";
+    let dayPeek: LimitState = "under";
     const maxQueue = Number((moduleConfig("automation") as any)?.maxReadyQueue ?? 15);
     const [[queue]] = await getPool().query<any[]>(
       "SELECT COUNT(*) AS n FROM call_syntheses WHERE published_at IS NULL AND is_example = 0",
     );
     if (Number(queue.n) >= maxQueue) {
       enqueued = `; ready queue full at ${queue.n}`;
-    } else if (await assistantDailyCapAtLimit(600)) {
-      enqueued = "; daily cap reached";
+    } else if ((dayPeek = await assistantDailyCapAtLimit(600)) !== "under") {
+      enqueued = dayPeek === "unavailable" ? "; daily cap unreadable, nothing enqueued" : "; daily cap reached";
     } else {
       const room = Math.min(MAX_BATCH_SIZE, maxQueue - Number(queue.n));
       const inputs: BatchRecordingInput[] = [];
@@ -5670,7 +5672,7 @@ async function startServer() {
         // One hit per request that is actually going in, which is what the
         // Synthesize button spends per click. Charged here rather than at the
         // top of the tick so a tick that submits nothing costs nothing.
-        if (await assistantDailyCapReached(600)) { capped = true; break; }
+        if ((await assistantDailyCapReached(600)) !== "under") { capped = true; break; }
         inputs.push({
           recordingId: p.id,
           title: p.title,
@@ -13754,9 +13756,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
     if (Number(queue.n) >= maxQueue) {
       return res.status(409).json({ error: `The ready queue holds ${queue.n} unpublished syntheses. Publish or clear before drafting more (backpressure at ${maxQueue})` });
     }
-    if (await assistantDailyCapReached(600)) {
-      return res.status(429).json({ error: "The assistant's daily budget is spent. Try tomorrow" });
-    }
+    const dayRefusal = assistantDayRefusal(await assistantDailyCapReached(600));
+    if (dayRefusal) return res.status(dayRefusal.status).json({ error: dayRefusal.error });
     const apiKey = getEmailConfig().assistant_api_key || process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return res.status(503).json({ error: "The assistant is not configured (ANTHROPIC_API_KEY). Everything else keeps working" });

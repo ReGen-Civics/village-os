@@ -10,7 +10,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ASSISTANT_MODES,
+  ANON_ADDRESS_DAY_DIAL,
+  ANON_DAY_DIAL,
   ASSIST_BURST_PER_HOUR,
+  USER_DAY_SHARE_FLOOR_DIAL,
+  USER_DAY_SHARE_PERCENT_DIAL,
   LIMITS_UNREADABLE,
   SHARE_SPENT,
   anonymousDaySlices,
@@ -29,6 +33,8 @@ import {
   sanitizeMessages,
   wireAssistant,
 } from "./assistant";
+import { loadVariables } from "./variables";
+import { VARIABLES } from "../../shared/gameVariables";
 
 const OLD_ENV = { ...process.env };
 
@@ -1004,5 +1010,53 @@ describe("a provider's refusal is logged by status and type, never its body", ()
     expect(await providerErrorType(r(JSON.stringify({ error: { type: "rate_limit_error" } })))).toBe("rate_limit_error");
     expect(await providerErrorType(r(JSON.stringify({ error: { type: "my words here" } })))).toBe("unknown");
     expect(await providerErrorType(r("<html>upstream said no</html>"))).toBe("unknown");
+  });
+});
+
+/** The shares are village dials (shared/gameVariables.ts), read through numberVar. */
+async function dials(values: Record<string, string>) {
+  await loadVariables({ query: async () => [Object.entries(values).map(([config_key, value]) => ({ config_key, value }))] } as any);
+}
+
+describe("the shares are village dials, and caps fail closed", () => {
+  afterEach(async () => {
+    await dials({});
+  });
+
+  it("ships the defaults the audit chose", () => {
+    const d = (k: string) => VARIABLES.find((v) => v.key === k);
+    expect(d(USER_DAY_SHARE_PERCENT_DIAL)).toMatchObject({ default: "25", min: 0, ring: "founder" });
+    expect(d(USER_DAY_SHARE_FLOOR_DIAL)).toMatchObject({ default: "5", min: 0, ring: "founder" });
+    expect(d(ANON_DAY_DIAL)).toMatchObject({ default: "150", min: 0, ring: "founder" });
+    expect(d(ANON_ADDRESS_DAY_DIAL)).toMatchObject({ default: "40", min: 0, ring: "founder" });
+    expect(userDaySlice(ASSISTANT_MODES.member)).toBe(25);
+    expect(userDaySlice(ASSISTANT_MODES.synthesize)).toBe(7);
+    expect(anonymousDaySlices("proposal", "a").map((s) => s.max)).toEqual([40, 150]);
+  });
+
+  it("reads a village's own values", async () => {
+    await dials({ [USER_DAY_SHARE_PERCENT_DIAL]: "50", [USER_DAY_SHARE_FLOOR_DIAL]: "0", [ANON_DAY_DIAL]: "90", [ANON_ADDRESS_DAY_DIAL]: "10" });
+    expect(userDaySlice(ASSISTANT_MODES.member)).toBe(50);
+    expect(anonymousDaySlices("proposal", "a").map((s) => s.max)).toEqual([10, 90]);
+  });
+
+  it("never gives one account or the visitors more than the mode's whole day", async () => {
+    await dials({ [USER_DAY_SHARE_FLOOR_DIAL]: "1000", [ANON_DAY_DIAL]: "10000", [ANON_ADDRESS_DAY_DIAL]: "10000" });
+    expect(userDaySlice(ASSISTANT_MODES.member)).toBe(ASSISTANT_MODES.member.dailyBudget);
+    expect(anonymousDaySlices("proposal", "a").map((s) => s.max)).toEqual([250, 250]);
+  });
+
+  it("reads 0, or a blank, as no calls, whatever the floor says", async () => {
+    for (const zero of ["0", ""]) {
+      await dials({ [USER_DAY_SHARE_PERCENT_DIAL]: zero, [ANON_DAY_DIAL]: zero });
+      expect(userDaySlice(ASSISTANT_MODES.member)).toBe(0);
+      expect(anonymousDaySlices("proposal", "a").map((s) => s.max)).toEqual([0, 0]);
+    }
+    // And the engine refuses on a 0 ceiling: the limiter's "count >= max" holds at once.
+    await dials({ [USER_DAY_SHARE_PERCENT_DIAL]: "0" });
+    const h = limiterHarness({ state: (b) => (b.includes(":slice:") ? "over" : "under") });
+    expect(await callAssistant(req({ mode: "member", userId: "u-ana" }))).toEqual({ ok: false, status: 429, error: SHARE_SPENT });
+    expect(h.buckets.find(([b]) => b.includes(":slice:"))?.[1]).toBe(0);
+    expect(h.posts()).toBe(0);
   });
 });
