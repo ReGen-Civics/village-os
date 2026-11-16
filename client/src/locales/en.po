@@ -328,6 +328,11 @@ msgctxt "agent paths, a group"
 msgid "Map"
 msgstr "Map"
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{sent} letters sent to {sentTo}. They should arrive in a minute or two."
+msgstr "{sent} letters sent to {sentTo}. They should arrive in a minute or two."
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "circle standing"
 msgid "Forming"
@@ -1361,6 +1366,11 @@ msgstr "You're still signed in."
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 #~ msgstr "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no sender address yet. Add it in Comms Settings."
+msgstr "Not sent: the village has no sender address yet. Add it in Comms Settings."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
@@ -3079,6 +3089,11 @@ msgstr "Open my moon"
 msgctxt "landing, founding team card eyebrow"
 msgid "Roles with rewards"
 msgstr "Roles with rewards"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Letters as they arrive"
+msgstr "Letters as they arrive"
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgid "Each new moon the village looks again at the block its season chose to grow and at any block a key moment flagged. With neither, the blocks take turns in canvas order."
@@ -5194,6 +5209,12 @@ msgctxt "price popup"
 msgid "Cancel"
 msgstr "Cancel"
 
+#. placeholder {0}: results.length
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{failed} of {0} did not go out. Sent mail has the details."
+msgstr "{failed} of {0} did not go out. Sent mail has the details."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
@@ -7155,6 +7176,11 @@ msgstr "Saved. We told the applicant."
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
 msgstr "See: what the village shows about {name}"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no email provider key yet. Add it in Comms Settings."
+msgstr "Not sent: the village has no email provider key yet. Add it in Comms Settings."
 
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgid "Work it out here"
@@ -9558,6 +9584,11 @@ msgstr "The steps of leaving, one per line"
 msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 msgstr "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
+msgstr "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a canvas suggestion is being set aside by the story's holder"
@@ -14318,6 +14349,11 @@ msgctxt "pricing desk"
 msgid "{0} need your hours"
 msgstr "{0} need your hours"
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send me a test"
+msgstr "Send me a test"
+
 #: client/src/components/power/SeatAction.tsx
 msgctxt "role card button, signed out"
 msgid "Propose for {seatName}"
@@ -16306,6 +16342,11 @@ msgctxt "sera changes"
 msgid "Showing all {nShown} waiting changes"
 msgstr "Showing all {nShown} waiting changes"
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send all to me"
+msgstr "Send all to me"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
 #~ msgid "{goalCount} goals for your first moon"
@@ -16319,6 +16360,11 @@ msgstr "This comes from the village's conflict agreement now, with the care and 
 msgctxt "open proposal side by side"
 msgid "No goal for {roleName}"
 msgstr "No goal for {roleName}"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Loading the letters..."
+msgstr "Loading the letters..."
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft canvas words from this document"
@@ -17157,6 +17203,11 @@ msgctxt "founding application check"
 msgid "Choose the season goal value {n} serves."
 msgstr "Choose the season goal value {n} serves."
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sent to {sentTo}. It should arrive in a minute or two."
+msgstr "Sent to {sentTo}. It should arrive in a minute or two."
+
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"
 #~ msgstr "Propose for these roles"
@@ -17415,6 +17466,11 @@ msgstr "this moon (from its new moon to the next)"
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{0} things to look at before the next stone:"
 #~ msgstr "{0} things to look at before the next stone:"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sending..."
+msgstr "Sending..."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."

@@ -329,6 +329,11 @@ msgctxt "agent paths, a group"
 msgid "Map"
 msgstr ""
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{sent} letters sent to {sentTo}. They should arrive in a minute or two."
+msgstr ""
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "circle standing"
 msgid "Forming"
@@ -1371,6 +1376,11 @@ msgstr "Sigues con tu sesión iniciada."
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 #~ msgstr "Si no confirmas en {confirmHours} horas, borramos lo que enviaste. Si la aldea dice que no, o dice que sí y nunca creas tu cuenta, quitamos tu nombre y tu correo {anonymiseDays} días después."
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no sender address yet. Add it in Comms Settings."
+msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
@@ -3090,6 +3100,11 @@ msgstr "Abrir mi luna"
 #: client/src/pages/Home.tsx
 msgctxt "landing, founding team card eyebrow"
 msgid "Roles with rewards"
+msgstr ""
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Letters as they arrive"
 msgstr ""
 
 #: client/src/components/canvas/CanvasMoon.tsx
@@ -5198,6 +5213,12 @@ msgctxt "price popup"
 msgid "Cancel"
 msgstr "Cancelar"
 
+#. placeholder {0}: results.length
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "{failed} of {0} did not go out. Sent mail has the details."
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that sends a closing policy suggestion"
 msgid "Send the suggestion"
@@ -7182,6 +7203,11 @@ msgstr "Guardado. Se lo dijimos a la persona que propone."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
+msgstr ""
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Not sent: the village has no email provider key yet. Add it in Comms Settings."
 msgstr ""
 
 #: client/src/components/roleDraft/HumanDesignStep.tsx
@@ -9603,6 +9629,11 @@ msgstr ""
 msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 msgstr "El fogón de {circleName}: {0} roles alrededor del fuego, {held} ocupados. Los hilos llegan a {1} círculos vinculados."
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
+msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "a canvas suggestion is being set aside by the story's holder"
@@ -14370,6 +14401,11 @@ msgctxt "pricing desk"
 msgid "{0} need your hours"
 msgstr ""
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send me a test"
+msgstr ""
+
 #: client/src/components/power/SeatAction.tsx
 msgctxt "role card button, signed out"
 msgid "Propose for {seatName}"
@@ -16361,6 +16397,11 @@ msgctxt "sera changes"
 msgid "Showing all {nShown} waiting changes"
 msgstr ""
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Send all to me"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
 #~ msgid "{goalCount} goals for your first moon"
@@ -16374,6 +16415,11 @@ msgstr ""
 msgctxt "open proposal side by side"
 msgid "No goal for {roleName}"
 msgstr "Ninguna meta para “{roleName}”"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Loading the letters..."
+msgstr ""
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Draft canvas words from this document"
@@ -17217,6 +17263,11 @@ msgctxt "founding application check"
 msgid "Choose the season goal value {n} serves."
 msgstr "Elige la meta de la temporada a la que sirve el aporte {n}."
 
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sent to {sentTo}. It should arrive in a minute or two."
+msgstr ""
+
 #: client/src/pages/Propose.tsx
 #~ msgid "Propose for these roles"
 #~ msgstr ""
@@ -17476,6 +17527,11 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "{0} things to look at before the next stone:"
 #~ msgstr "{0} cosas que revisar antes de la siguiente piedra:"
+
+#: client/src/components/admin/comms/LetterSamples.tsx
+msgctxt "admin letter samples"
+msgid "Sending..."
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick up to {maxRoles} roles for this moon, from {moonFrom} to the next new moon on {moonTo}, say what you bring, and send it. Your name and email come from your account."
