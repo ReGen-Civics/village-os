@@ -6,13 +6,13 @@ Provenance: platform
 > `shared/circlePlaces.ts`; the orchestration is `server/lib/seasonPlaces.ts`; every statement is in
 > `server/repos/seasonPlaces.ts` and `server/repos/circlePlaces.ts`; the routes are
 > `server/routes/seasonPlaces.ts` and `server/routes/seasonPlaceGatherings.ts`; the schema is
-> `drizzle/0390_season_places.sql` and `drizzle/0391_event_circle_places.sql`. Role prerequisites live beside it in
+> `drizzle/0390_season_places.sql`, `drizzle/0391_event_circle_places.sql` and `drizzle/0392_season_crew.sql`; season crew is `shared/seasonCrew.ts`, `server/lib/seasonCrew.ts`, `server/repos/seasonCrew.ts`, `server/routes/seasonCrew.ts`. Role prerequisites live beside it in
 > the governance module: `shared/rolePrerequisites.ts`, `server/lib/rolePrerequisites.ts`,
 > `server/routes/rolePrerequisites.ts`.
 
-**Circles propose to take part, season by season, until they have served enough seasons to take part without
-asking. A season can hold a set number of places, with a waitlist in order and a notice the moment a place opens,
-and each gathering can take circles up to a cap its host sets.**
+**Every season starts fresh: members apply, and each circle's picker chooses that season's crew from everyone who
+applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order and a
+notice the moment a place opens, and each gathering can take circles up to a cap its host sets.**
 
 ## Status
 
@@ -29,9 +29,32 @@ Every number is a game variable: every member sees it, anyone may propose a chan
 | `season_places.who` | what takes part each season: `circle` or `member` (structural) | `circle` |
 | `season_places.free_after` | seasons of holding a place after which no proposal is needed; blank means every season needs one; 0 means none ever does (structural) | blank |
 | `season_places.cap` | places in one season; blank is no cap; 0 is no places | blank |
-| `roles.prerequisites` | what each role asks for before anyone applies (governance module, structural) | blank |
+| `season_crew.picker_role` | the role, in each circle, whose live holder picks its crew; blank means the circle's crew picks (structural) | blank |
+| `season_crew.needs_place` | a circle picks a crew only while it holds a place in the season (structural) | off |
+| `roles.prerequisites` | what each role asks for before anyone applies (governance module, structural, longtext with a checked grammar) | blank |
 
-## Taking part in a season
+## The season's crew
+
+Every season starts fresh, and nothing here reads an earlier season.
+
+1. A member applies for the season running now or the next one (`POST /api/season-places/crew/apply`), naming the
+   circle they would like to sail with, or none, with up to 600 characters of words. That circle's pickers hear it.
+2. Each circle's **picker** is a live holder of the role `season_crew.picker_role` names in that circle. With the
+   dial blank, or no live holder of that role, every live role holder in the circle picks, so no circle is left
+   unable to pick.
+3. A picker picks from **everyone who applied**, whichever circle they named, up to the circle's berths for the
+   season (`PUT /api/season-places/crew/circles/:circleId/berths`; blank is no limit). The pick takes the season's
+   lock row, so two circles cannot pick one person and a circle cannot pick past its berths. The person is told
+   "You're crew this season!"
+4. A picker can release a person back to the pool; the person can withdraw.
+5. With `season_crew.needs_place` on, a circle picks only while it holds a place in that season, so the season's
+   cap on places caps how many circles sail.
+6. Everyone sees each circle, who picks for it, its berths and the counts. The pool with names and words is for
+   pickers; an applicant sees their own.
+
+The same picker decides which gatherings the circle signs up for.
+
+## Taking part in a season (circles)
 
 A circle's crew is derived, as the org chart derives a circle's people: every live member holder of an active role
 whose circle it is. A lapsed seating, a documented holder and a seated agent are not crew.
@@ -60,7 +83,7 @@ places are held over it.
 
 A holder of `event.manage` (the power that already sets a gathering's person capacity) turns on "takes circles"
 for a one-off gathering, sets a circle cap (blank is no cap) and whether a circle needs a place in the season the
-gathering starts in (default yes). A crew member signs the circle up; over the cap it waits in order, and a
+gathering starts in (default yes). The circle's picker for the season signs it up; over the cap it waits in order, and a
 circle leaving lets the next one in, with a notice to its crew. The events row is locked first, the same lock and
 order an RSVP takes. People still answer the gathering as people; this is a second count, never instead.
 
@@ -84,10 +107,17 @@ Date the village's seasons (Admin, Season), then set the cap and `free_after` on
 
 ## Privacy and erasure
 
-A row names a circle (or a member under `who = member`), the season and the words the crew wrote. Notices and
+A row names a circle (or a member under `who = member`), the season and the words the crew wrote; a crew
+application names the member, the circle they want and what they wrote. Notices and
 ballot titles name the circle and the season, never a person. When a member leaves, their words come off every
 proposal they wrote, their own member-subject rows go, and their name comes off every gathering answer they gave
-for a circle (`season-places-after-tombstone` in `server/lib/erasure.ts`). A circle keeps its place.
+for a circle, their crew applications go and their name comes off every pick they made
+(`season-places-after-tombstone` in `server/lib/erasure.ts`). A circle keeps its place.
+
+## Screens
+
+None in this module yet. The members' screens (the season application and the pick, the fleet view, a role's
+path of prerequisites) are built to the village's onboarding designs in a later slice, from the routes above.
 
 ## Turning it off
 

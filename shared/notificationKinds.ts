@@ -897,6 +897,25 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  season_crew_applied: {
+    group: "decisions",
+    blurb: "Somebody applied to sail this season with a circle you pick for.",
+    many: "{n} people applied to sail with a circle you pick for.",
+    celebrate: false,
+    waits: true,
+  },
+  season_crew_picked: {
+    group: "village",
+    blurb: "A circle picked you for its crew this season.",
+    many: "{n} circles picked you this season.",
+    celebrate: false,
+  },
+  season_crew_released: {
+    group: "village",
+    blurb: "A circle released your place this season. Your application stands for any circle to pick.",
+    many: "{n} circles released your place.",
+    celebrate: false,
+  },
   season_place_placed: {
     group: "village",
     blurb: "A circle you are in has a place in a season.",

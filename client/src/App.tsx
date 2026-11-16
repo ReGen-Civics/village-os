@@ -220,7 +220,6 @@ const RoleProposal = lazyPage(() => import("./pages/RoleProposal"));
 const NewRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.NewRoleProposal })));
 const SharedRoleProposal = lazyPage(() => import("./pages/RoleProposal").then((m) => ({ default: m.SharedRoleProposal })));
 const SeasonPlans = lazyPage(() => import("./pages/SeasonPlans"));
-const SeasonPlaces = lazyPage(() => import("./pages/SeasonPlaces"));
 const Aligned = lazyPage(() => import("./pages/Aligned"));
 const MySeason = lazyPage(() => import("./pages/MySeason"));
 const Visit = brochurePage(() => import("./pages/Visit"));
@@ -447,7 +446,6 @@ function Router() {
       {/* Your season: your own plan, then the village's page of everyone's, by name. */}
       <Route path="/season-plans/mine" component={MySeason} />
       <Route path="/season-plans" component={SeasonPlans} />
-      <Route path="/season-places" component={SeasonPlaces} />
       <Route path="/aligned" component={Aligned} />
       <Route path="/visit" component={Visit} />
       <Route path="/gratitude" component={GratitudeWall} />

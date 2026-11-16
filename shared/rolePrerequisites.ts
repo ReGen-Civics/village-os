@@ -33,8 +33,8 @@ export type PrerequisiteMap = ReadonlyMap<string, readonly Prerequisite[]>;
 
 const ID = /^[A-Za-z0-9._-]{1,64}$/;
 
-/** At most this many items on one role: a role that asks for more is a quest chain. */
-export const ITEMS_PER_ROLE_MAX = 5;
+/** At most this many items on one role: a path of seven lessons and a fee fits with room to spare. */
+export const ITEMS_PER_ROLE_MAX = 12;
 
 /** Read the dial. A malformed value is refused whole, with the reason, so a typo never silently opens a role. */
 export function parsePrerequisites(raw: unknown): { ok: true; map: PrerequisiteMap } | { ok: false; error: string } {

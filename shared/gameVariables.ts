@@ -371,13 +371,35 @@ export const VARIABLES: VariableDef[] = [
     max: 100000,
   },
   {
+    key: "season_crew.picker_role",
+    category: "Season places",
+    label: "The role that picks a circle's crew",
+    criticality: "structural",
+    description:
+      "Every season starts fresh: each member applies, and each circle's crew for the season is picked from everyone who applied. Name the role whose holder in each circle picks it, as your circles call it. Leave it blank, or leave a circle without a live holder of that role, and every role holder in the circle can pick.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "season_crew.needs_place",
+    category: "Season places",
+    label: "A circle needs a season place to pick a crew",
+    criticality: "structural",
+    description:
+      "When on, a circle picks a crew for a season only while it holds a place in that season, so the places in a season cap how many circles sail.",
+    type: "boolean",
+    default: "false",
+  },
+  {
     key: "roles.prerequisites",
     category: "Governance",
     label: "What a role asks for before anyone applies",
     criticality: "structural",
     description:
       "Roles that ask for something completed before a member may apply: a product they paid for, a quest consented to them, or both. One entry per role, joined by semicolons: role-id = product:product-id, quest:quest-id. A reversed payment does not count. Leave it blank and no role asks for anything.",
-    type: "text",
+    // A paragraph's length because a path of lessons runs to eight items or so,
+    // which overflows 255; the grammar is still checked (validateVariable).
+    type: "longtext",
     default: "",
   },
   {
@@ -4335,6 +4357,10 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     if (stored.length > LONGTEXT_MAX) {
       return `Too long (${LONGTEXT_MAX} characters maximum, this is ${stored.length}).`;
     }
+    // The one longtext that is a grammar rather than prose: a role's
+    // prerequisites (shared/rolePrerequisites.ts). A typo would quietly open a
+    // role that should ask for something, so it is refused at the door.
+    if (def.key === PREREQUISITES_KEY) return prerequisitesProblem(stored);
     return null;
   }
   if (def.type === "text") {
@@ -4376,12 +4402,6 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     // (shared/villageSeasons.ts holds the grammar). Blank passes.
     if (def.key === "calendar.seasons") {
       const problem = villageSeasonsProblem(raw);
-      if (problem) return problem;
-    }
-    // A role's prerequisites are a grammar too (shared/rolePrerequisites.ts),
-    // and a typo would quietly open a role that should ask for something.
-    if (def.key === PREREQUISITES_KEY) {
-      const problem = prerequisitesProblem(raw);
       if (problem) return problem;
     }
     /*

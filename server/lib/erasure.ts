@@ -173,6 +173,7 @@ import { forgetMemberJournal } from "./journal";
 import { forgetMemberGeneKeys } from "./geneKeys";
 import { forgetMemberPlaces } from "../repos/seasonPlaces";
 import { forgetCircleAnswersBy } from "../repos/circlePlaces";
+import { forgetMemberCrew } from "../repos/seasonCrew";
 import { forgetMemberFundingRounds } from "./fundingRounds";
 import { forgetMemberTasks } from "../repos/memberTasks";
 import { forgetTimeZone } from "../repos/memberTimeZone";
@@ -1873,6 +1874,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       run: async () => {
         await forgetMemberPlaces(pool, target.id);
         await forgetCircleAnswersBy(pool, target.id);
+        await forgetMemberCrew(pool, target.id);
       },
     },
     {

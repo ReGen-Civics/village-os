@@ -133,6 +133,10 @@ describe.skipIf(!configured)("season places against a real schema", () => {
     await pool.query("DELETE FROM event_circle_settings"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
     await setVariable(pool, "season_places.cap", "");
     await setVariable(pool, "season_places.free_after", "");
+    await setVariable(pool, "season_crew.picker_role", "");
+    await setVariable(pool, "season_crew.needs_place", "false");
+    await pool.query("DELETE FROM season_crew_applications"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    await pool.query("DELETE FROM season_crew_berths"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
   });
 
   it("refuses a visitor, and a member who is not in the circle", async () => {
@@ -280,6 +284,88 @@ describe.skipIf(!configured)("season places against a real schema", () => {
       const left = await call("POST /api/season-places/gatherings/:eventId/circles/:circleId/leave", { params: { eventId: "ev-host", circleId: "crew-a" } });
       expect(left.body).toMatchObject({ success: true, placeWentTo: 1 });
       expect(told).toEqual([expect.objectContaining({ userId: "u-b1", type: "circle_place_opened", title: "A place opened at Spring gathering. Crew B is going." })]);
+    });
+  });
+
+  describe("season crew: everyone applies, each circle's picker picks", () => {
+    beforeAll(async () => {
+      const lead = await createOrgRole(pool, { id: "crew-a-lead", name: "Lead", circleId: "crew-a", seats: 1 });
+      await seatHolder(pool, lead, { userId: "u-a1" });
+    });
+
+    const apply = (circleId?: string) => call("POST /api/season-places/crew/apply", { body: { circleId, words: "I cook." } });
+    const pick = (id: string, circleId: string) => call("POST /api/season-places/crew/:id/pick", { params: { id }, body: { circleId } });
+
+    it("the named role picks, a crew member who does not hold it cannot, and berths cap the crew", async () => {
+      await setVariable(pool, "season_crew.picker_role", "lead");
+      me = "u-c1";
+      const mine = await apply("crew-a");
+      expect(mine.body).toMatchObject({ success: true, status: "applied" });
+      expect(told).toEqual([expect.objectContaining({ userId: "u-a1", type: "season_crew_applied" })]);
+
+      me = "u-a2";
+      expect((await pick(mine.body.id, "crew-a")).status).toBe(403);
+      // Only a picker sees the pool; everyone sees the counts.
+      const seen = await call("GET /api/season-places/crew");
+      expect(seen.body.pool).toBeNull();
+      expect(seen.body.circles.find((c: any) => c.circleId === "crew-a")).toMatchObject({ pickedBy: { role: "Lead", names: ["Ada"] }, wanted: 1 });
+
+      me = "u-a1";
+      expect((await call("PUT /api/season-places/crew/circles/:circleId/berths", { params: { circleId: "crew-a" }, body: { berths: 1 } })).body.berths).toBe(1);
+      told.length = 0;
+      expect((await pick(mine.body.id, "crew-a")).body).toMatchObject({ success: true, status: "picked" });
+      expect(told).toEqual([expect.objectContaining({ userId: "u-c1", type: "season_crew_picked", title: "You're crew this season! Crew A picked you for Fourth." })]);
+      expect((await call("GET /api/season-places/crew")).body.pool.map((p: any) => p.status)).toEqual(["picked"]);
+
+      me = "u-b1";
+      const second = await apply();
+      me = "u-a1";
+      const full = await pick(second.body.id, "crew-a");
+      expect(full.status).toBe(409);
+      expect(full.body.error).toBe("full");
+    });
+
+    it("never gives one person to two circles, however many pick at once", async () => {
+      me = "u-c1";
+      const a = await apply();
+      // Below the doors: the doors read one shared signed-in user, so two at once is raced at the lock they both take.
+      const { pickOn } = await import("../repos/seasonCrew");
+      const race = await Promise.all(["crew-a", "crew-b"].map((c) => withSeasonLock(pool, "s4", (conn) => pickOn(conn, a.body.id, c, "u-h"))));
+      expect(race.filter(Boolean)).toHaveLength(1);
+    });
+
+    it("a circle with no live picker is picked for by its crew; a season place can be required; release and withdraw", async () => {
+      await setVariable(pool, "season_crew.picker_role", "lead");
+      me = "u-c1";
+      const a = await apply();
+      // Crew B has no Lead, so its crew picks.
+      me = "u-b1";
+      await setVariable(pool, "season_crew.needs_place", "true");
+      const refused = await pick(a.body.id, "crew-b");
+      expect(refused.status).toBe(409);
+      expect(refused.body.error).toBe("needs_place");
+      await setVariable(pool, "season_crew.needs_place", "false");
+      expect((await pick(a.body.id, "crew-b")).body.status).toBe("picked");
+
+      // Crew A's picker cannot release somebody crew B picked.
+      me = "u-a1";
+      expect((await call("POST /api/season-places/crew/:id/release", { params: { id: a.body.id }, body: { circleId: "crew-a" } })).body.error).toBe("not_yours");
+      me = "u-b1";
+      expect((await call("POST /api/season-places/crew/:id/release", { params: { id: a.body.id }, body: { circleId: "crew-b" } })).body.status).toBe("applied");
+      me = "u-b1";
+      expect((await call("POST /api/season-places/crew/:id/withdraw", { params: { id: a.body.id } })).status).toBe(403);
+      me = "u-c1";
+      expect((await call("POST /api/season-places/crew/:id/withdraw", { params: { id: a.body.id } })).body.status).toBe("withdrawn");
+    });
+
+    it("a Landfall is signed up by the circle's picker, not any crew member", async () => {
+      await setVariable(pool, "season_crew.picker_role", "lead");
+      me = "u-h";
+      await call("PUT /api/season-places/gatherings/:eventId/settings", { params: { eventId: "ev-host" }, body: { takesCircles: true, circleCap: null, needsSeasonPlace: false } });
+      me = "u-a2";
+      expect((await call("POST /api/season-places/gatherings/:eventId/circles", { params: { eventId: "ev-host" }, body: { circleId: "crew-a" } })).status).toBe(403);
+      me = "u-a1";
+      expect((await call("POST /api/season-places/gatherings/:eventId/circles", { params: { eventId: "ev-host" }, body: { circleId: "crew-a" } })).body.status).toBe("going");
     });
   });
 

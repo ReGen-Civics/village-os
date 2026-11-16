@@ -64,6 +64,7 @@ import type { LapseContext } from "../lib/orgChart";
 import { registerJob } from "../lib/scheduler";
 import { circleNames } from "../repos/seasonPlaces";
 import { registerGatheringPlaces } from "./seasonPlaceGatherings";
+import { registerSeasonCrew } from "./seasonCrew";
 import {
   admit,
   candidatesOf,
@@ -156,6 +157,7 @@ export function register(app: Express, deps: Deps): void {
 
   app.use("/api/season-places", requireModule(SEASON_PLACES_MODULE));
   registerGatheringPlaces(app, { authedUser, capabilityCtx, guardCapability: deps.guardCapability, getPool, overLimit, notify, lapse, seasonState });
+  registerSeasonCrew(app, { authedUser, getPool, overLimit, firstName, notify, lapse, seasonState });
 
   /** Who decides proposals today: the member door's one rule over the power to place people. */
   async function decideRule(viewer: any) {

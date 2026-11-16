@@ -1545,13 +1545,13 @@ export const MODULES: ModuleDef[] = [
     setup: "none",
     name: "Season places",
     description:
-      "Circles propose to take part, season by season, until they have served enough seasons to take part without asking. A season can hold a set number of places, with a waitlist in order and a notice the moment a place opens, and each gathering can take circles up to a cap its host sets.",
+      "Every season starts fresh: members apply, and each circle's picker chooses that season's crew from everyone who applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order, and each gathering can take circles up to a cap its host sets.",
     // Proposals are decided by the governance module's own road: the power
     // that places people in roles, or a village vote.
     requires: ["governance"],
     recommends: ["events", "commerce"],
     capabilities: [],
-    variableKeys: ["season_places.who", "season_places.free_after", "season_places.cap"],
+    variableKeys: ["season_places.who", "season_places.free_after", "season_places.cap", "season_crew.picker_role", "season_crew.needs_place"],
     apiPrefixes: ["/api/season-places"],
     // No openStateCheck: a place holds no value anybody is owed. Off hides
     // every surface; places and the waitlist stay in their tables.

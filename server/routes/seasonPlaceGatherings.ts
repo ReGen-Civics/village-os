@@ -12,8 +12,9 @@
  * WHO MAY DO WHAT. The settings are the gathering's, so they follow
  * `event.manage`, the power that already sets its person capacity, through
  * `guardCapability` (constitution I.1; the vote path is that power's own,
- * spec C6). A circle is signed up or taken out by a live holder of a role in
- * it, the same crew that proposes it for a season.
+ * spec C6). Which gatherings a circle goes to is its picker's call for the
+ * season (`season_crew.picker_role`, server/lib/seasonCrew.ts), and with no
+ * live picker its crew's.
  */
 import type { Express } from "express";
 import { capabilityDecision } from "../../shared/capabilities";
@@ -33,6 +34,7 @@ import { effectiveLifecycle } from "../lib/modules";
 import type { NotifyInput } from "../lib/notify";
 import type { LapseContext } from "../lib/orgChart";
 import { crews } from "../lib/seasonPlaces";
+import { pickersOf } from "../lib/seasonCrew";
 import {
   circleSettingsOf,
   holdsSeasonPlace,
@@ -148,8 +150,8 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     if (cleanRecurrence(row.recurrence)) return res.status(409).json({ error: "recurring", message: CIRCLE_REFUSALS.recurring });
     if (row.status !== "scheduled" && row.status !== "postponed") return res.status(409).json({ error: "not_open", message: CIRCLE_REFUSALS.closed });
     const circleId = String(req.body?.circleId ?? "").trim();
-    if (!((await crews(pool, lapse())).get(circleId) ?? []).includes(userId)) {
-      return res.status(403).json({ error: "not_crew", message: "A circle is signed up by someone who holds a live role in it." });
+    if (!(await pickersOf(pool, lapse(), circleId)).pickers.includes(userId)) {
+      return res.status(403).json({ error: "not_crew", message: "A circle is signed up by whoever picks its crew this season, or by its crew when nobody does." });
     }
     const name = (await circleNames(pool, [circleId])).get(circleId) ?? circleId;
     if (settings.needsSeasonPlace) {
@@ -180,8 +182,8 @@ export function registerGatheringPlaces(app: Express, deps: GatheringPlaceDeps):
     if (!row) return res.status(404).json(NOT_HERE);
     const pool = getPool();
     const circleId = String(req.params.circleId ?? "");
-    if (!((await crews(pool, lapse())).get(circleId) ?? []).includes(userId)) {
-      return res.status(403).json({ error: "not_crew", message: "Only the circle's own crew can take it out." });
+    if (!(await pickersOf(pool, lapse(), circleId)).pickers.includes(userId)) {
+      return res.status(403).json({ error: "not_crew", message: "A circle is taken out by whoever picks its crew this season, or by its crew when nobody does." });
     }
     const out = await withGatheringLock(pool, row.id, (conn) => leaveOn(conn, row.id, circleId, userId));
     if (!out?.left) return res.status(409).json({ error: "not_signed_up", message: "That circle is not signed up for this gathering." });
