@@ -81,6 +81,25 @@ export const iso = (v: unknown): string =>
 const isKind = (v: unknown): v is CalendarKind => CALENDAR_KINDS.includes(v as CalendarKind);
 const isLayer = (v: unknown): v is CalendarLayer => CALENDAR_LAYERS.includes(v as CalendarLayer);
 
+/** The generic refusal, for a document that is not a recognisable rhythm at all. */
+export const RECURRENCE_GENERIC_REFUSAL = "Recurrence needs a freq of weekly, monthly, lunar or solar with its days or its sky event";
+/** The refusal for a monthly "nth weekday" rule outside the 1st to 4th or last. */
+export const NTH_WEEKDAY_REFUSAL = "Choose the 1st to 4th or the last weekday of the month.";
+
+/**
+ * Why a recurrence document is refused, or null when cleanRecurrence keeps it.
+ * cleanRecurrence stays null-or-value for its many readers; the route that
+ * answers a person asks this for the sentence to show them.
+ */
+export function recurrenceRefusal(raw: unknown): string | null {
+  if (cleanRecurrence(raw)) return null;
+  const r = parseJson<any>(raw, null);
+  if (r && typeof r === "object" && r.freq === "monthly" && r.byNthWeekday && typeof r.byNthWeekday === "object") {
+    return NTH_WEEKDAY_REFUSAL;
+  }
+  return RECURRENCE_GENERIC_REFUSAL;
+}
+
 /** A recurrence document as stored, or null when it is not one we understand. */
 export function cleanRecurrence(raw: unknown): Recurrence | null {
   const r = parseJson<any>(raw, null);
@@ -226,6 +245,15 @@ function overlaps(startsAt: Date, endsAt: Date | null, from: Date, to: Date): bo
 }
 
 /**
+ * Iteration caps, so a caller that forgets to bound its window cannot spin
+ * here. Each is above the widest window a real caller passes (the admin list
+ * reads 20 years: 7,300 days, 240 months).
+ */
+export const MAX_DAY_STEPS = 8000;
+export const MAX_MONTH_STEPS = 600;
+export const MAX_YEAR_STEPS = 200;
+
+/**
  * The instants a recurrence fires on inside [from, to), in village time: a
  * weekly rhythm keeps its wall-clock time across a daylight change, and a
  * lunar or solar rhythm lands on the village date of the sky event at the
@@ -258,7 +286,7 @@ export function expandOccurrences(row: CalendarRow, from: Date, to: Date, timeZo
     const baseWeekStart = baseDay - base.weekday * 86_400_000;
     const firstDay = Math.max(baseDay, civilDayMs(new Date(lo), timeZone));
     const lastDay = civilDayMs(horizon, timeZone);
-    for (let d = firstDay; d <= lastDay && starts.length < 1000; d += 86_400_000) {
+    for (let d = firstDay, steps = 0; d <= lastDay && starts.length < 1000 && steps < MAX_DAY_STEPS; d += 86_400_000, steps++) {
       const dt = new Date(d);
       const weekday = dt.getUTCDay();
       if (!rec.byWeekday.includes(weekday)) continue;
@@ -274,7 +302,8 @@ export function expandOccurrences(row: CalendarRow, from: Date, to: Date, timeZo
     let m = first[1];
     // Months since the base month must be a multiple of the interval.
     const monthsSinceBase = (yy: number, mm: number) => (yy - base.year) * 12 + (mm - base.month);
-    while ((y < last[0] || (y === last[0] && m <= last[1])) && starts.length < 1000) {
+    let monthSteps = 0;
+    while ((y < last[0] || (y === last[0] && m <= last[1])) && starts.length < 1000 && monthSteps++ < MAX_MONTH_STEPS) {
       if (monthsSinceBase(y, m) >= 0 && monthsSinceBase(y, m) % interval === 0) {
         // Either a fixed day (skipped in a month too short for it) or the nth
         // weekday of the village's civil month, worked out on the civil date
@@ -290,7 +319,8 @@ export function expandOccurrences(row: CalendarRow, from: Date, to: Date, timeZo
     }
   } else if (rec.freq === "lunar") {
     const winFrom = new Date(lo - 2 * 86_400_000);
-    const winTo = new Date(horizon.getTime() + 2 * 86_400_000);
+    // Clamped like the other rhythms: no window is worth more than MAX_YEAR_STEPS years of sky.
+    const winTo = new Date(Math.min(horizon.getTime() + 2 * 86_400_000, winFrom.getTime() + MAX_YEAR_STEPS * 366 * 86_400_000));
     let instants: Date[];
     if (rec.on === "new_moon") instants = newMoonsBetween(winFrom, winTo);
     else if (rec.on === "full_moon") instants = fullMoonsBetween(winFrom, winTo);
@@ -315,7 +345,7 @@ export function expandOccurrences(row: CalendarRow, from: Date, to: Date, timeZo
     }
   } else if (rec.freq === "solar") {
     const fromYear = civilParts(new Date(lo), timeZone).year - 1;
-    const toYear = civilParts(horizon, timeZone).year + 1;
+    const toYear = Math.min(civilParts(horizon, timeZone).year + 1, fromYear + MAX_YEAR_STEPS);
     for (let y = fromYear; y <= toYear; y++) {
       const s = seasonInstants(y);
       if (!s) continue;

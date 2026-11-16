@@ -144,6 +144,8 @@ export interface ApplicantMessages {
     quest(url: string): string;
     roles(url: string): string;
     again: string;
+    /** The same invitation to propose again, standing on its own: the letter whose ways in are the come-and-play block (shared/comms/comeAndPlay.ts). */
+    againOwn: string;
   };
 
   page: {
@@ -250,7 +252,7 @@ const en: ApplicantMessages = {
   keepStatusLink: "Your status page link is in the first email we sent you, so you can follow it any time.",
   statusLinkLine: (link) => `Your status page, to follow it any time: ${link}`,
   replyPromise: (days) =>
-    days === null ? "We are filling our founding team first, so it may be a while before we reply. We will write to you as soon as we are ready to talk." : `We reply within ${days} ${days === 1 ? "day" : "days"}.`,
+    days === null ? "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk." : `We reply within ${days} ${days === 1 ? "day" : "days"}.`,
   noteIntro: "A note from us:",
   day: dayIn("en-GB"),
 
@@ -279,14 +281,14 @@ const en: ApplicantMessages = {
     consent: (roles) => `The conversations are written up, and the circle is now doing its process for your proposal to hold ${roles}. Watch your email or status page for next steps.`,
     termsTitle: "The terms for your proposal changed",
     terms: (roles) => `We changed the terms we suggest for your proposal to hold ${roles}. Open your status page to read them, and tell us what you think.`,
-    adoptedTitle: (v) => `${v} adopted your proposal`,
-    adopted: (v, roles, next) => `${v} adopted your proposal to hold ${roles}. ${next}`,
+    adoptedTitle: (v) => `${v} said yes to your proposal`,
+    adopted: (v, roles, next) => `${v} said yes to your proposal to hold ${roles}. ${next}`,
     declinedTitle: (v) => `Your proposal to ${v}`,
     declined: (roles) => `Thank you for proposing to hold ${roles}. We can't say yes this time. We encourage you to explore quests, look at other open roles, or propose again next season.`,
     invitedTitle: "We would love to talk with you",
     invited: (roles) => `We read your application to hold ${roles} with care, and we would love to invite you for the next step to meet the team. The details are in your email.`,
     notInvitedTitle: (v) => `Thank you for applying to ${v}`,
-    notInvited: (roles) => `Thank you for applying to hold ${roles}. We found someone more closely matched to this role. We encourage you to explore quests instead. It is not personal, and we would love to stay in touch.`,
+    notInvited: (roles) => `Thank you for applying to hold ${roles}. We have found someone more closely matched to this role. We encourage you to explore quests, and we'd love to stay in touch.`,
   },
 
   invite: {
@@ -324,8 +326,8 @@ const en: ApplicantMessages = {
 
 
   adopt: {
-    subject: (v) => `${v} adopted your proposal`,
-    headline: (v, roles, forWhen) => `${v} adopted your proposal to hold ${roles} ${forWhen}.`,
+    subject: (v) => `${v} said yes to your proposal`,
+    headline: (v, roles, forWhen) => `${v} said yes to your proposal to hold ${roles} ${forWhen}.`,
     forThisMoon: "this moon",
     forNextSeason: "next season",
     inviteIntro: "Here is your invitation. Use the button to create your profile, or open this link:",
@@ -337,7 +339,7 @@ const en: ApplicantMessages = {
     nextSeasonName: "next season",
     nextAfterProfile: "Then check your profile. Your tasks appear there once your role starts, and it is where we run our sessions and track our work together.",
     button: "Create your profile",
-    signFirst: () => "Before you are seated, align with the Love Letter, the village's membership agreement (aligning is the village's way of signing). Aligning with it is what makes you a member, with a voice in the village's decisions:",
+    signFirst: () => "Before you take the role, align with the Love Letter, the village's membership agreement. Aligning with it makes you a member, with a voice in the village's decisions:",
     headlineReviewed: (v, roles) => `The circle has consented: we would love you to hold ${roles} in ${v}. Welcome.`,
     firstCycle: "We begin with a first cycle together, and at its end either side may choose to end it there.",
   },
@@ -349,6 +351,7 @@ const en: ApplicantMessages = {
     quest: (url) => `Take a quest: ${url}`,
     roles: (url) => `Look at other open roles: ${url}`,
     again: "Or propose again next season. We would be glad to read it.",
+    againOwn: "You're welcome to propose again next season. We would be glad to read it.",
   },
 
   page: {
@@ -419,7 +422,7 @@ const en: ApplicantMessages = {
     },
     notInvited: {
       heading: "Thank you for applying",
-      line: "We will not invite you to the conversations for this role. It is not personal: we found someone more closely matched to it. We would love you to stay close:",
+      line: "We have found someone more closely matched to this role. Thank you for your time and interest. We'd love you to stay close:",
       program: (name) => name,
       quests: "Take a quest",
       events: "Come to an event",
@@ -486,14 +489,14 @@ const es: ApplicantMessages = {
     consent: (roles) => `Las conversaciones ya están escritas, y ahora el círculo sigue su proceso para tu propuesta de ocupar ${roles}. Revisa tu correo o la página de tu estado para los siguientes pasos.`, // needs-native-review: new words, 12 Nov 2026
     termsTitle: "Cambiaron las condiciones de tu propuesta",
     terms: (roles) => `Cambiamos las condiciones que sugerimos para tu propuesta de ocupar ${roles}. Abre la página del estado de tu propuesta para leerlas y cuéntanos qué piensas.`,
-    adoptedTitle: (v) => `${v} adoptó tu propuesta`, // check: "adoptó" for "adopted"
-    adopted: (v, roles, next) => `${v} adoptó tu propuesta para ocupar ${roles}. ${next}`,
+    adoptedTitle: (v) => `${v} aceptó tu propuesta`, // needs-native-review: new words, 16 Nov 2026
+    adopted: (v, roles, next) => `${v} aceptó tu propuesta para ocupar ${roles}. ${next}`, // needs-native-review: new words, 16 Nov 2026
     declinedTitle: (v) => `Tu propuesta a ${v}`,
     declined: (roles) => `Gracias por proponerte para ocupar ${roles}. Esta vez no podemos decir que sí. Te animamos a explorar misiones, ver otros roles abiertos o volver a proponer la próxima temporada.`, // check: "misión" for quest; needs-native-review: new words, 12 Nov 2026
     invitedTitle: "Nos encantaría conversar contigo",
     invited: (roles) => `Leímos con cuidado tu postulación para ocupar ${roles}, y nos encantaría invitarte al siguiente paso para conocer al equipo. Los detalles están en tu correo.`, // check: "postulación" for application; needs-native-review: new words, 12 Nov 2026
     notInvitedTitle: (v) => `Gracias por postularte a ${v}`,
-    notInvited: (roles) => `Gracias por postularte para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Te animamos a explorar misiones. No es algo personal, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 12 Nov 2026
+    notInvited: (roles) => `Gracias por postularte para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Te animamos a explorar misiones, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 16 Nov 2026
   },
 
   // needs-native-review: the invitation and the not-invited letter
@@ -533,8 +536,8 @@ const es: ApplicantMessages = {
 
 
   adopt: {
-    subject: (v) => `${v} adoptó tu propuesta`,
-    headline: (v, roles, forWhen) => `${v} adoptó tu propuesta para ocupar ${roles} ${forWhen}.`,
+    subject: (v) => `${v} aceptó tu propuesta`, // needs-native-review: new words, 16 Nov 2026
+    headline: (v, roles, forWhen) => `${v} aceptó tu propuesta para ocupar ${roles} ${forWhen}.`, // needs-native-review: new words, 16 Nov 2026
     forThisMoon: "esta luna",
     forNextSeason: "la próxima temporada",
     inviteIntro: "Aquí está tu invitación. Usa el botón para crear tu perfil, o abre este enlace:",
@@ -546,7 +549,7 @@ const es: ApplicantMessages = {
     nextSeasonName: "la próxima temporada",
     nextAfterProfile: "Después revisa tu perfil. Allí aparecen tus tareas cuando empiece tu rol, y es donde hacemos nuestras sesiones y seguimos nuestro trabajo juntos.",
     button: "Crea tu perfil",
-    signFirst: () => "Antes de ocupar tu rol, alínea con la Carta de Amor, el acuerdo de membresía de la aldea (alinear es nuestra forma de firmar). Alinear con ella es lo que te hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinear", "membresía"
+    signFirst: () => "Antes de ocupar tu rol, alinéate con la Carta de Amor, el acuerdo de membresía de la aldea. Alinearte con ella te hace miembro, con voz en las decisiones de la aldea:", // check: "Love Letter" name, "alinearte", "membresía"; needs-native-review: new words, 16 Nov 2026
     headlineReviewed: (v, roles) => `El círculo dio su consentimiento: nos encantaría que ocupes ${roles} en ${v}. Bienvenida, bienvenido.`, // check: the welcome, said to anyone
     firstCycle: "Empezamos con un primer ciclo juntos, y al terminar, cualquiera de las dos partes puede decidir cerrarlo ahí.",
   },
@@ -558,6 +561,7 @@ const es: ApplicantMessages = {
     quest: (url) => `Toma una misión: ${url}`,
     roles: (url) => `Mira otros roles abiertos: ${url}`,
     again: "O vuelve a proponer la próxima temporada. Nos dará gusto leerte.",
+    againOwn: "Puedes volver a proponer la próxima temporada. Nos dará gusto leerte.", // needs-native-review: new words, 16 Nov 2026
   },
 
   page: {
@@ -630,7 +634,7 @@ const es: ApplicantMessages = {
     },
     notInvited: {
       heading: "Gracias por postularte",
-      line: "No te invitaremos a las conversaciones para este rol. No es algo personal: encontramos a alguien que encaja más de cerca con él. Nos encantaría que sigas cerca:",
+      line: "Encontramos a alguien que encaja más de cerca con este rol. Gracias por tu tiempo y tu interés. Nos encantaría que sigas cerca:", // needs-native-review: new words, 16 Nov 2026
       program: (name) => name,
       quests: "Toma una misión",
       events: "Ven a un evento",

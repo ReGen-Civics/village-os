@@ -393,20 +393,23 @@ describe.skipIf(!DB_CONFIGURED)("the tokens tab, and what a member sees afterwar
    * `village-voice`: under `governance.weight_mode = token` that balance IS
    * voting weight, so the scaffolding could mint itself the electorate.
    *
-   * A self-grant is refused outright rather than co-signed. Two admins taking
-   * turns is a thing no software rule can stop, so the rule that earns its
-   * place is the one with no ceremony to game: you cannot pay yourself, ask
-   * somebody else to.
+   * A self-grant waits for a second signer, at any amount (Rye, 2026-11-15:
+   * founders and Treasurers mint from pay requests, which can be their own).
+   * Nothing moves until somebody else holding token.mint signs it.
    */
-  it("refuses a self-grant outright, at any amount", async () => {
+  it("holds a self-grant for a second signer, at any amount, and moves nothing", async () => {
     const before = await call("GET", "/api/wallet", undefined, founderToken);
     const held = Number(before.json?.ledger?.[SLUG] ?? 0);
 
     const self = await call("POST", `/api/admin/tokens/${SLUG}/mint`, {
       toUserId: founderId, amount: 25, reason: "paying myself",
     }, founderToken);
-    expect(self.status, `self-grant: ${self.text.slice(0, 200)}`).toBe(403);
-    expect(String(self.json?.error ?? ""), "and says what to do instead").toMatch(/another|someone else|second/i);
+    expect(self.status, `self-grant: ${self.text.slice(0, 200)}`).toBe(202);
+    expect(self.json?.toSelf).toBe(true);
+    expect(String(self.json?.message ?? ""), "and says what happens next").toMatch(/second signer/i);
+    // Declined at once, so the waiting amount does not hold room in the cap the later cases count on.
+    const declined = await call("POST", `/api/admin/mint-requests/${String(self.json?.requestId)}/decline`, { reason: "a test of the hold" }, founderToken);
+    expect(declined.status, declined.text).toBe(200);
 
     const after = await call("GET", "/api/wallet", undefined, founderToken);
     expect(Number(after.json?.ledger?.[SLUG] ?? 0), "not one token moved").toBe(held);

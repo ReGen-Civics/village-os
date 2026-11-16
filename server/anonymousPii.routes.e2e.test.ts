@@ -54,7 +54,8 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { isVoteRuleDial } from "./lib/launchDoors";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 import { deriveGetRoutes, type DerivedRoute } from "./testkit/getRoutes";
 
@@ -177,7 +178,9 @@ async function everyModulePublic(): Promise<string[]> {
 }
 
 async function setVar(key: string, value: string): Promise<void> {
-  await ok("PUT", `/api/admin/variables/${key}`, { value });
+  // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+  const write = () => ok("PUT", `/api/admin/variables/${key}`, { value });
+  await (isVoteRuleDial(key) ? asIfBeforeLaunch(pool, write) : write());
 }
 
 // ── The walk ───────────────────────────────────────────────────────────────

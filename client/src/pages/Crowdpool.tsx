@@ -76,7 +76,7 @@ export default function Crowdpool() {
       <CrowdpoolStyles />
       <section className="py-8 md:py-12 bg-gradient-to-b from-teal-deep/5 to-background">
         <div className="container max-w-3xl text-center">
-          <h1 className="font-display text-4xl font-bold mb-3">Our raisings</h1>
+          <h1 className="font-display text-4xl font-bold mb-3">Pooling Resources</h1>
           {/* R47: the Trail line leads and the tooltip defines the word. The
               ring line is the Lore, last and quiet. */}
           <p className="text-muted-foreground">

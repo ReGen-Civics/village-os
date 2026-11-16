@@ -66,7 +66,7 @@ export const CO_CREATORS_GUIDE_PAGE: PageSpec = {
     },
     {
       id: "ikigai",
-      label: "R-Ikigai",
+      label: "Ikigai",
       shows: "The four overlapping circles and the four boxes beside them.",
       hideable: true,
       fields: [

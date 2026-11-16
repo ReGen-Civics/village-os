@@ -65,11 +65,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(
-  path.dirname(new URL(import.meta.url).pathname).replace(/^\/([A-Za-z]:)/, "$1"),
-  "..",
-);
+// fileURLToPath decodes the URL: a checkout under a folder with a space in its
+// name reads "%20" from `.pathname`, and the template then cannot be found.
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 /** Wrap a single string of prose to `width` columns for terminal printing. */
 function wrap(text, width) {

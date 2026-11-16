@@ -428,6 +428,13 @@ export async function fetchGoogleDocText(link: string, opts: GoogleDocOptions = 
   try {
     let url = `https://docs.google.com/document/d/${id}/export?format=txt`;
     for (let hop = 0; hop <= 3; hop += 1) {
+      // CodeQL js/request-forgery (alert 461) flags this call; it is a false
+      // positive. The member supplies only the document id, and googleDocId
+      // admits [A-Za-z0-9_-]{20,128} and nothing else, so the first URL is
+      // always https://docs.google.com/document/d/<id>/export. A redirect is
+      // followed only to https on docs.google.com or *.googleusercontent.com
+      // (isGoogleExportHost), never to an address the member chose, and at
+      // most three hops. No input reaches the host, port, or scheme.
       const res = await doFetch(url, { redirect: "manual", signal: ctrl.signal, headers: { Accept: "text/plain" } });
       if (res.status >= 300 && res.status < 400) {
         const next = res.headers.get("location");

@@ -44,7 +44,7 @@ export default function LadderChip({
   /** Overrides the look's own icon. */
   icon?: LucideIcon;
   label: string;
-  /** A quieter word after the label, as in "Term set at seating". */
+  /** A quieter word after the label, as in "Term set at the start". */
   suffix?: string;
   /** What the look means here, for a reader who gets no icon and no colour. */
   srWords: string;
@@ -66,7 +66,7 @@ export default function LadderChip({
       {label}
       {/* The space is a text node of its own: a flex container drops it from
           the layout (the gap spaces the chip), and the chip's text still reads
-          "Term set at seating" rather than "Termset at seating". */}
+          "Term set at the start" rather than "Termset at the start". */}
       {suffix ? (
         <>
           {" "}

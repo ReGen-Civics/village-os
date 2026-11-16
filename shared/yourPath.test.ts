@@ -123,7 +123,7 @@ const CASES: Array<{ state: PathState; facts: PathFacts; step: string; after?: s
   { state: "first-quest", facts: account({ member: { trained: true, joining: null, claims: [], budget: { remaining: 0, total: 100 } } }), step: "Take your first quest", href: "/quests" },
   { state: "finish-quest", facts: account({ member: { trained: true, joining: null, claims: [{ status: "claimed" }], budget: { remaining: 0, total: 100 } } }), step: "Turn in your quest", href: "/quests" },
   { state: "thank", facts: account({ member: { trained: true, joining: null, claims: [{ status: "approved" }], budget: { remaining: 40, total: 100 } } }), step: "Thank someone this cycle", href: "/gratitude" },
-  { state: "lines", facts: account({ member: { trained: true, joining: null, claims: [{ status: "approved" }], budget: { remaining: 0, total: 100 }, geneKeysMissing: true } }), step: "Find your lines", href: "/profile/gene-keys" },
+  { state: "lines", facts: account({ member: { trained: true, joining: null, claims: [{ status: "approved" }], budget: { remaining: 0, total: 100 }, geneKeysMissing: true } }), step: "Find your Gene Key lines", href: "/profile/gene-keys" },
   { state: "unconfirmed", facts: visitorFacts(NOW, TZ, { email: "ana@example.org", sentAt: "2026-11-11T12:00:00Z" }), step: "Open the link we sent to ana@example.org", after: "It works until 13 November.", href: null },
   { state: "visitor", facts: visitorFacts(NOW, TZ), step: "Find where you belong", after: "Then tell us about you and the role, a few short questions.", href: "/roles" },
   { state: "explore", facts: account(), step: "Find your next quest", href: "/quests" },

@@ -85,6 +85,13 @@ export interface ComposeInput {
   kind: EmailKind;
   /** Decides the footer's "why you got this" line. */
   templateKey?: string | null;
+  /**
+   * An optional section between the words and the footer: the come-and-play
+   * block (`renderComeAndPlay` in shared/comms/comeAndPlay.ts, or
+   * `comeAndPlayFor` on the server), for a member email that wants to invite
+   * its reader back in. Absent or empty: the email is as it always was.
+   */
+  comeAndPlay?: { html: string; text: string } | null;
 }
 
 export interface ComposedEmail {
@@ -192,6 +199,7 @@ function documentHtml(p: {
   look: { style: EmailStyle; background: string };
   why: string;
   preferencesUrl: string | null;
+  extra?: string | null;
 }): string {
   const s = p.look.style;
   const name = escapeHtml(p.village.name);
@@ -231,7 +239,7 @@ ${logo}<p style="margin:0 0 12px 0;font-family:${s.fontDisplay};font-size:18px;l
 <tr><td style="padding:8px 28px 8px 28px;">
 ${p.inner}
 </td></tr>
-<tr><td style="padding:16px 28px 26px 28px;border-top:1px solid ${s.border};">
+${p.extra ? `<tr><td style="padding:8px 16px 20px 16px;">\n${p.extra}\n</td></tr>\n` : ""}<tr><td style="padding:16px 28px 26px 28px;border-top:1px solid ${s.border};">
 ${footer}
 </td></tr>
 </table>
@@ -319,12 +327,13 @@ export function composeEmail(input: ComposeInput): ComposedEmail {
   const footerTracker = newTracker();
   const why = oneLine(fill(whyYouGotThis(input.templateKey ?? null, input.kind), values, { mode: "text", tracker: footerTracker }).out, 300);
   const preferences = safeUrl(plainValue("links.preferences", values, footerTracker));
+  const extra = input.comeAndPlay && input.comeAndPlay.html ? input.comeAndPlay : null;
 
   return {
     subject,
     preheader,
-    html: documentHtml({ subject, preheader, inner: bodyHtml, village, look, why, preferencesUrl: preferences }),
-    text: `${bodyText}\n\n${footerText(village, why, preferences)}\n`,
+    html: documentHtml({ subject, preheader, inner: bodyHtml, village, look, why, preferencesUrl: preferences, extra: extra?.html ?? null }),
+    text: `${bodyText}\n\n${extra ? `${extra.text.trim()}\n\n` : ""}${footerText(village, why, preferences)}\n`,
     missing: Array.from(tracker.missing).sort(),
     omitted: Array.from(tracker.omitted).sort(),
     unknown: Array.from(tracker.unknown).sort(),
