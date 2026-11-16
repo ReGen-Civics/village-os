@@ -25,6 +25,7 @@ const pin = (over: Partial<PinRecord> = {}): PinRecord => ({
   stage: "seed",
   partnerState: null,
   plantedOn: "2026-11-01",
+  native: false,
   hidden: false,
   createdAt: "2026-11-01T00:00:00Z",
   vouches: 0,
@@ -205,6 +206,12 @@ describe("pin input", () => {
     expect(parsePinInput({ ...body, clientId: "x" }, DEFAULT_CONFIG, "region").ok).toBe(false);
     expect(parsePinInput({ ...body, layer: "partner", kind: "Farm" }, DEFAULT_CONFIG, "region").ok).toBe(false);
     expect(parsePinInput({ ...body, layer: "partner", kind: "Farm", partnerState: "visited" }, DEFAULT_CONFIG, "region").ok).toBe(true);
+  });
+  it("keeps the native mark on plantings only", () => {
+    const r = parsePinInput({ ...body, native: true }, DEFAULT_CONFIG, "region");
+    expect(r.ok && r.pin.native).toBe(true);
+    const stop = parsePinInput({ ...body, layer: "stop", kind: "Overnight", native: true }, DEFAULT_CONFIG, "region");
+    expect(stop.ok && stop.pin.native).toBe(false);
   });
   it("refuses a date that is not a day", () => {
     expect(parsePinInput({ ...body, plantedOn: "yesterday" }, DEFAULT_CONFIG, "region").ok).toBe(false);

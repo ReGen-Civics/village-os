@@ -45,6 +45,10 @@ CREATE TABLE IF NOT EXISTS `hidden_map_pins` (
   `planted_on` date NULL,
   -- A library item the seed came from (optional, slice 5).
   `seed_item_id` varchar(64) NULL,
+  -- The member said what went in belongs to this place (native seed in a wild place).
+  `native_seed` tinyint(1) NOT NULL DEFAULT 0,
+  -- The claim a planting opened on the village's planting quest once it was vouched.
+  `planting_claim_id` varchar(64) NULL,
   `hidden_at` datetime NULL,
   `hidden_by` varchar(64) NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
