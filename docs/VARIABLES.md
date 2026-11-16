@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 258 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 259 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 288 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-314 dials in 40 categories. 165 carry a minimum and a maximum. By type: 128 integer, 19 decimal, 19 percentage, 42 boolean, 36 choice, 62 text, 8 longtext.
+315 dials in 40 categories. 166 carry a minimum and a maximum. By type: 129 integer, 19 decimal, 19 percentage, 42 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -76,7 +76,7 @@ Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and
 | Exit | 10 | 10 | 0 |
 | Needs | 5 | 5 | 0 |
 | Journal | 2 | 2 | 0 |
-| Hidden map | 10 | 10 | 0 |
+| Hidden map | 11 | 11 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
 | Language | 1 | 1 | 0 |
@@ -396,6 +396,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Days the record of who looked is kept | `hiddenmap.access_log_days` | Hidden map | integer | `90` | the whole village |
 | Hours a second member has to approve a copy of the map | `hiddenmap.export_hours` | Hidden map | integer | `24` | the whole village |
 | Days between paid return visits to the same pin | `hiddenmap.visit_pay_days` | Hidden map | integer | `30` | the whole village |
+| Vouched plantings paid per member each week | `hiddenmap.paid_plantings_per_week` | Hidden map | integer | `5` | the whole village |
 | Largest photo a member may add to a pin | `hiddenmap.photo_max_mb` | Hidden map | integer | `12` | the whole village |
 | Our agent may make the changes we approve in the chat | `agents.lead_approved_writes` | Connector | boolean | `true` | the whole village |
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
@@ -5265,7 +5266,7 @@ When on, every member has a task board on their profile unless a steward turns t
 
 ## Hidden map
 
-10 dials. 10 for the whole village.
+11 dials. 11 for the whole village.
 
 ### Vouched pins that open the whole map
 
@@ -5407,6 +5408,21 @@ When the village names a quest for return visits, a member's visit to the same p
 | Default | `30` |
 | Range | 0 to 365 |
 | Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Vouched plantings paid per member each week
+
+When the village names a planting quest, how many of one member's vouched plantings open a claim in any seven days. A paid planting also needs a photo and two members vouching for it, whatever the vouches setting above says. More plantings wait and open in a later week. 0 pays none.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.paid_plantings_per_week` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 0 to 100 |
+| Counted in | plantings |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
