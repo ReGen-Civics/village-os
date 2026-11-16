@@ -6,7 +6,6 @@ import {
   moonRows,
   pickTokens,
   whole,
-  wholeMoney,
 } from "./dashModel";
 import { todayCards } from "./TodayStrip";
 
@@ -86,12 +85,6 @@ describe("treasury arithmetic", () => {
   });
   it("pickTokens never takes the recognition row as the value token", () => {
     expect(pickTokens(realWallet, "gratitude").village).toBeNull();
-  });
-  it("wholeMoney prints whole units of the currency, never cents", () => {
-    expect(wholeMoney(4_500_000, "CRC")).not.toMatch(/[.,]00/);
-    expect(wholeMoney(4_500_000, "CRC")).toMatch(/45,000/);
-    expect(wholeMoney(12_345, "USD")).toBe("$123");
-    expect(wholeMoney(5000, "JPY")).toMatch(/5,000/);
   });
   it("whole rounds once and groups", () => {
     expect(whole(1239.6)).toMatch(/1.?240/);

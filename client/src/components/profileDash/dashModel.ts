@@ -146,17 +146,3 @@ export function pickTokens<T extends { token: string; kind: string; role: string
   };
 }
 
-/**
- * Money in whole units of its currency, "CRC 45,000" for 4,500,000 minor
- * (Rye, 2026-09-04: whole numbers). The currency's own exponent comes off
- * Intl, so a zero-decimal currency is never divided twice.
- */
-export function wholeMoney(amountMinor: number, currency: string): string {
-  try {
-    const digits = new Intl.NumberFormat("en", { style: "currency", currency }).resolvedOptions().maximumFractionDigits ?? 2;
-    const major = Math.round((Number(amountMinor) || 0) / Math.pow(10, digits));
-    return new Intl.NumberFormat("en", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(major);
-  } catch {
-    return `${Math.round(Number(amountMinor) || 0)} ${currency}`;
-  }
-}
