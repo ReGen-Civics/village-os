@@ -5271,6 +5271,11 @@ msgctxt "approved writes, the memory record"
 msgid "Waiting to send"
 msgstr "Waiting to send"
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor, who sees the listed price hint"
+msgid "The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it."
+msgstr "The village setting is Show pay ranges on role cards: while it is off, only people who read terms see the figure. Everyone: this card, the founding team and the application form show the figure to all. Only the people who edit this card: nobody else sees it."
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "That link has been opened many times from this connection. Please wait about an hour and try again."
@@ -7518,6 +7523,11 @@ msgstr "Saving…"
 msgctxt "coming up, i'll be there, said once it is taken back"
 msgid "Thank you for saying. Your circle in the seed is open again."
 msgstr "Thank you for saying. Your circle in the seed is open again."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the listed price, each share as its own amount"
+msgid "Up to {list} a month for the full role*"
+msgstr "Up to {list} a month for the full role*"
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "vendor support link"
@@ -10730,6 +10740,11 @@ msgstr "What is on this day"
 msgid "{title} is fully backed by pledges, so it goes ahead without the pot."
 msgstr "{title} is fully backed by pledges, so it goes ahead without the pot."
 
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: one share of the listed price as its own amount"
+msgid "{money} in {label}"
+msgstr "{money} in {label}"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Working"
@@ -12458,6 +12473,11 @@ msgstr "Agreed"
 msgctxt "about you"
 msgid "Only the people who decide your proposal see your references. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 msgstr "Only the people who decide your proposal see your references. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the listed price, each share as its own amount"
+msgid "Up to {list} a year for the full role*"
+msgstr "Up to {list} a year for the full role*"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -14903,6 +14923,11 @@ msgstr "What we say"
 msgctxt "connector setup panel, step one"
 msgid "In Claude, open Settings, then Connectors, then Add custom connector."
 msgstr "In Claude, open Settings, then Connectors, then Add custom connector."
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor, how the listed price reads hint"
+msgid "Each share as its own amount names what each share below comes to, in cash, equity or credits, for the full role."
+msgstr "Each share as its own amount names what each share below comes to, in cash, equity or credits, for the full role."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "<0>The canvas's own article<1/></0>, where its authors describe the canvas."
@@ -20120,6 +20145,11 @@ msgstr "Your allowance refills when the cycle turns. Sending moves it from your 
 msgctxt "edit one change"
 msgid "Edit"
 msgstr "Edit"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the listed price, each share as its own amount"
+msgid "Up to {list} a moon for the full role*"
+msgstr "Up to {list} a moon for the full role*"
 
 #. placeholder {0}: role?.name ?? "This role"
 #: client/src/components/governance/GoalsList.tsx
