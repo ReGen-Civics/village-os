@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { NOUN_SLOTS, NOUN_SLOT_IDS, nounVars, vocabularyIsDefault, vocabularyOf, vocabularyProblem } from "./vocabulary";
 import { pageVarsFrom } from "./pageContent/vars";
 import { fillVars } from "./pageContent/resolve";
-import { noticeBlurb, noticeTitle, noticeWordsOf, noticeWordsProblem } from "./noticeWords";
+import { noticeBlurb, noticeBlurbsFor, noticeTitle, noticeWordsOf, noticeWordsProblem } from "./noticeWords";
 import { NOTIFICATION_KINDS } from "./notificationKinds";
 
 describe("the village's nouns (G4)", () => {
@@ -24,7 +24,8 @@ describe("the village's nouns (G4)", () => {
   });
 
   it("reach every editable page field, and never take {village} (the name)", () => {
-    const vars = pageVarsFrom({ project: { name: "Harbour" }, vocabulary: { circle: { one: "Ship" }, village: { one: "fleet" } } });
+    // The config serves the vocabulary resolved, and so does the server.
+    const vars = pageVarsFrom({ project: { name: "Harbour" }, vocabulary: vocabularyOf({ circle: { one: "Ship" }, village: { one: "fleet" } }) });
     expect(vars.village).toBe("Harbour");
     expect(vars["village-noun"]).toBe("fleet");
     expect(fillVars("Every {circle} in {village} has its crew. {a-circle}, two {circles}.", vars)).toBe("Every Ship in Harbour has its crew. a Ship, two Ships.");
@@ -52,6 +53,8 @@ describe("the village's notice words (G6)", () => {
     expect(noticeTitle(words, "ballot_opened", "A vote opened: the roof", vars)).toBe("Council called (ordinance): A vote opened: the roof");
     expect(noticeBlurb(words, "ballot_opened", NOTIFICATION_KINDS.ballot_opened.blurb, vars)).toBe("Harbour asks your voice.");
     expect(noticeBlurb(words, "gratitude_received", "platform", vars)).toBe("platform");
+    // What the config serves the bell: only kinds with a description, already filled.
+    expect(noticeBlurbsFor(words, vars)).toEqual({ ballot_opened: "Harbour asks your voice." });
   });
 
   it("clean and cap what is stored, and refuse what the route must not keep", () => {

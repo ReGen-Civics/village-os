@@ -15,6 +15,8 @@
  * a kind the village left alone reads exactly as before.
  */
 
+import { kindOf } from "./notificationKinds";
+
 export const NOTICE_SECTION = "app-notices";
 export const NOTICE_TITLE_MAX = 120;
 export const NOTICE_BLURB_MAX = 300;
@@ -62,6 +64,19 @@ export function fillNoticeWords(template: string, platform: string, vars: Readon
 export function noticeTitle(words: NoticeWords, kind: string, platform: string, vars: Readonly<Record<string, string>>): string {
   const own = words[kind]?.title;
   return (own ? fillNoticeWords(own, platform, vars) : platform).slice(0, 255);
+}
+
+/**
+ * Every kind the village wrote a description for, filled, keyed by kind: what
+ * /api/game/config serves the bell, so the bell needs none of this file.
+ * `{default}` is the platform's own blurb for that kind.
+ */
+export function noticeBlurbsFor(words: NoticeWords, vars: Readonly<Record<string, string>>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [kind, w] of Object.entries(words)) {
+    if (w.blurb) out[kind] = fillNoticeWords(w.blurb, kindOf(kind).blurb, vars);
+  }
+  return out;
 }
 
 /** A notice kind's explanation in the village's words, or the platform's. */

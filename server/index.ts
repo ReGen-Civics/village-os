@@ -24,7 +24,7 @@ import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shar
 import { recognitionNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
-import { NOTICE_SECTION, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
+import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
 import { guidePromptName } from "../shared/guideName";
 // `daysRemainingInCycle` is gone with the clock seam: every consumer reads
 // the active clock now, and it had no caller left here. `sceneStopsFor` and
@@ -18148,7 +18148,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       site: siteWords(contentRepo.get() ?? null, m),
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
-      notices: noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), // the village's own notice words: gap G6
+      noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });
