@@ -51,6 +51,9 @@ CREATE TABLE IF NOT EXISTS `protocol_versions` (
   -- A photo of the place the protocol is walked, shown at the top of a run.
   -- A path on this site or an https address; NULL draws the title alone.
   `image_url` varchar(500) NULL,
+  -- The quest a completed run claims (`quests`.`id`), NULL for none. Kept on
+  -- the version, so a run claims what its version named when it was walked.
+  `quest_id` varchar(64) NULL,
   `created_by` varchar(64) NOT NULL,
   `created_at` datetime(3) NOT NULL,
   PRIMARY KEY (`protocol_id`, `version`)
@@ -67,6 +70,9 @@ CREATE TABLE IF NOT EXISTS `protocol_runs` (
   `status` enum('open','complete','set-aside') NOT NULL DEFAULT 'open',
   `ended_at` datetime(3) NULL,
   `ended_by` varchar(64) NULL,
+  -- The claim completing this run opened on its version's quest
+  -- (`quest_claims`.`id`), set once; NULL when it opened none.
+  `quest_claim_id` varchar(64) NULL,
   PRIMARY KEY (`id`),
   KEY `protocol_runs_status` (`status`, `started_at`),
   KEY `protocol_runs_protocol` (`protocol_id`, `started_at`)

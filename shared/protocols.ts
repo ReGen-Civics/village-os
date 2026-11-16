@@ -19,6 +19,12 @@
  *     device made. Two phones can tick the same run offline and the record is
  *     the union of both; the latest event per step says where it stands.
  *   - A run with a required step not done cannot be completed.
+ *   - A protocol may name one QUEST. The first time a run of it is completed,
+ *     the member who completed it gets an ordinary claim on that quest, handed
+ *     in, so the village's stewards consent it and its rules pay it through the
+ *     same path as any quest (server/lib/workClaim.ts). Nothing pays here.
+ *   - A PRACTICE run never reaches the server: it is walked on the phone, is
+ *     marked as practice, records nothing and claims nothing.
  *
  * COPY RULES. Platform code carries no village's brand, so nothing here names
  * what a village uses its protocols for. No em-dashes.
@@ -89,6 +95,8 @@ export interface ProtocolDraft {
   summary: string;
   /** A photo drawn at the top of a run: a path on this site or an https address. "" for none. */
   image: string;
+  /** The quest a completed run claims, by its id on this village's board. "" for none. */
+  questId: string;
   steps: ProtocolStep[];
 }
 
@@ -99,6 +107,8 @@ export interface ProtocolView extends ProtocolDraft {
   version: number;
   status: ProtocolStatus;
   updatedAt: string;
+  /** The linked quest's title on the board now, "" when none is linked or it is gone. Filled by the route. */
+  questTitle: string;
 }
 
 export interface TickEvent {
@@ -123,6 +133,10 @@ export interface RunView {
   title: string;
   image: string;
   steps: ProtocolStep[];
+  /** The quest the run's version claims on completion, "" for none. */
+  questId: string;
+  /** Whether completing this run opened a claim on that quest. */
+  questClaimed: boolean;
   startedBy: string;
   startedByName: string;
   startedAt: string;
@@ -155,9 +169,15 @@ function longText(v: unknown): string {
 /**
  * Check a draft from Admin or an import. `roleTitles` maps the village's
  * role ids to their titles, so a step naming a role that does not exist is
- * refused by name rather than saved pointing at nothing.
+ * refused by name rather than saved pointing at nothing. `questIds`, when
+ * given (the server gives it), is the board's quests, so a link to a quest
+ * that does not exist is refused the same way; the phone leaves it out.
  */
-export function checkProtocolDraft(input: unknown, roleTitles: ReadonlyMap<string, string>): Checked<ProtocolDraft> {
+export function checkProtocolDraft(
+  input: unknown,
+  roleTitles: ReadonlyMap<string, string>,
+  questIds?: ReadonlySet<string>,
+): Checked<ProtocolDraft> {
   const problems: string[] = [];
   const raw = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
   const title = text(raw.title);
@@ -171,6 +191,9 @@ export function checkProtocolDraft(input: unknown, roleTitles: ReadonlyMap<strin
   if (image && (image.length > IMAGE_URL_MAX || !(/^\/[^/]/.test(image) || /^https:\/\/[^\s]+$/.test(image)) || /\s/.test(image))) {
     problems.push("The photo must be a path on this site or an https address.");
   }
+  const questId = typeof raw.questId === "string" ? raw.questId.trim() : "";
+  if (questId && (questId.length > PROTOCOL_ID_MAX || /\s/.test(questId))) problems.push("That quest id is not one this village uses.");
+  else if (questId && questIds && !questIds.has(questId)) problems.push("Pick a quest that is on the board.");
 
   const rawSteps = Array.isArray(raw.steps) ? raw.steps : [];
   if (rawSteps.length === 0) problems.push("Add at least one step.");
@@ -213,12 +236,17 @@ export function checkProtocolDraft(input: unknown, roleTitles: ReadonlyMap<strin
   });
 
   if (problems.length) return { ok: false, problems };
-  return { ok: true, value: { id, title, summary, image, steps } };
+  return { ok: true, value: { id, title, summary, image, questId, steps } };
 }
 
 // ── Import ───────────────────────────────────────────────────────────────────
 
 export interface ImportRole {
+  id: string;
+  title: string;
+}
+
+export interface ImportQuest {
   id: string;
   title: string;
 }
@@ -229,6 +257,8 @@ export interface ImportResult {
   problems: string[];
   /** Role names the file uses that the org chart does not hold yet. */
   missingRoles: string[];
+  /** Quest names the file uses that the board does not hold yet. */
+  missingQuests: string[];
 }
 
 /**
@@ -239,19 +269,22 @@ export interface ImportResult {
  *       { "id": "opening-up", "title": "Opening up", "summary": "...",
  *         "steps": [
  *           { "id": "lights", "text": "Lights on", "detail": "...", "required": true },
- *           { "text": "Doors unlocked", "role": "Keyholder" } ] } ] }
+ *           { "text": "Doors unlocked", "role": "Keyholder" } ],
+ *         "quest": "Opening up" } ] }
  *
  * A step's `role` is a role's title or id on this village's org chart, matched
  * without case. `"who": "<role>"` says the same, and `"who": "anyone"` (or
  * "any", "member") is any member. A step naming no role may be ticked by any
- * member. `required` defaults to true. Ids are made from the words when left
+ * member. A protocol's `quest` is a quest's id or title on this village's
+ * board, matched the same way; left out, a completed run claims nothing.
+ * `required` defaults to true. Ids are made from the words when left
  * out. Fields the reader does not know (a `source`, an `_about`) are ignored,
  * and `format` may be left out.
  */
 const ANYONE = new Set(["", "anyone", "any", "member", "any member", "everyone"]);
 
-export function readProtocolImport(input: unknown, roles: readonly ImportRole[]): ImportResult {
-  const out: ImportResult = { drafts: [], problems: [], missingRoles: [] };
+export function readProtocolImport(input: unknown, roles: readonly ImportRole[], quests: readonly ImportQuest[] = []): ImportResult {
+  const out: ImportResult = { drafts: [], problems: [], missingRoles: [], missingQuests: [] };
   let doc = input;
   if (typeof doc === "string") {
     try {
@@ -279,6 +312,10 @@ export function readProtocolImport(input: unknown, roles: readonly ImportRole[])
   const byTitle = new Map(roles.map((r) => [r.title.trim().toLowerCase(), r]));
   const titles = new Map(roles.map((r) => [r.id, r.title]));
   const missing = new Set<string>();
+  const questById = new Map(quests.map((q) => [q.id, q]));
+  const questByTitle = new Map(quests.map((q) => [q.title.trim().toLowerCase(), q]));
+  const questIds = new Set(quests.map((q) => q.id));
+  const missingQuests = new Set<string>();
   const ids = new Set<string>();
 
   list.forEach((p, i) => {
@@ -300,8 +337,17 @@ export function readProtocolImport(input: unknown, roles: readonly ImportRole[])
       }
       return { id: st.id, text: st.text, detail: st.detail, required: st.required, who };
     });
-    const checked = checkProtocolDraft({ id: r.id, title: r.title, summary: r.summary, image: r.image, steps }, titles);
+    const questName = text(r.quest) || text(r.questId);
+    let questId = "";
+    if (questName) {
+      const hit = questById.get(questName) ?? questByTitle.get(questName.toLowerCase());
+      if (hit) questId = hit.id;
+      else missingQuests.add(questName);
+    }
     const label = text(r.title) || `Protocol ${i + 1}`;
+    // A quest the board does not hold is said once, below, by its name.
+    if (questName && !questId) return;
+    const checked = checkProtocolDraft({ id: r.id, title: r.title, summary: r.summary, image: r.image, questId, steps }, titles, questIds);
     if (!checked.ok) {
       // A role the chart does not hold is said once, below, by its name.
       const problems = checked.problems.filter((m) => !roleOfStepMissing(m, steps));
@@ -319,6 +365,12 @@ export function readProtocolImport(input: unknown, roles: readonly ImportRole[])
   if (out.missingRoles.length) {
     out.problems.push(
       `Add ${out.missingRoles.length === 1 ? "this role" : "these roles"} to the org chart first, or edit the file: ${out.missingRoles.join(", ")}.`,
+    );
+  }
+  out.missingQuests = Array.from(missingQuests);
+  if (out.missingQuests.length) {
+    out.problems.push(
+      `Post ${out.missingQuests.length === 1 ? "this quest" : "these quests"} on the board first, or edit the file: ${out.missingQuests.join(", ")}.`,
     );
   }
   return out;

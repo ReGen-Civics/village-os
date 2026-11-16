@@ -30,11 +30,18 @@ interface Role {
   title: string;
 }
 
+interface Quest {
+  id: string;
+  title: string;
+  closed: boolean;
+}
+
 interface Draft {
   id: string;
   title: string;
   summary: string;
   image: string;
+  questId: string;
   steps: ProtocolStep[];
   isNew: boolean;
 }
@@ -45,6 +52,7 @@ export default function ProtocolsEditor({ password }: { password: string }) {
   const { t } = useLingui();
   const [protocols, setProtocols] = useState<ProtocolView[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [problems, setProblems] = useState<string[]>([]);
@@ -59,6 +67,7 @@ export default function ProtocolsEditor({ password }: { password: string }) {
       if (!res.ok) throw new Error(refusal(d, t({ message: `The protocols did not load.`, context: "admin protocols editor" })));
       setProtocols(d.protocols ?? []);
       setRoles(d.roles ?? []);
+      setQuests(d.quests ?? []);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t({ message: `The protocols did not load.`, context: "admin protocols editor" }));
     }
@@ -149,9 +158,18 @@ export default function ProtocolsEditor({ password }: { password: string }) {
                   <span className="text-sm text-muted-foreground">
                     <Plural context="admin protocols editor" value={p.steps.length} one="# step" other="# steps" />, <Trans context="admin protocols editor">version {p.version}</Trans>
                   </span>
+                  {p.questId && (
+                    <span className="block text-sm text-muted-foreground">
+                      {p.questTitle ? (
+                        <Trans context="admin protocols editor">A completed run hands in: {p.questTitle}</Trans>
+                      ) : (
+                        <Trans context="admin protocols editor">Its linked quest is no longer on the board, so a completed run claims nothing.</Trans>
+                      )}
+                    </span>
+                  )}
                 </span>
                 <span className="flex gap-2">
-                  <button type="button" className={btnCls} onClick={() => setDraft({ ...p, steps: p.steps.map((s) => ({ ...s })), isNew: false })}>
+                  <button type="button" className={btnCls} onClick={() => setDraft({ ...p, questId: p.questId ?? "", steps: p.steps.map((s) => ({ ...s })), isNew: false })}>
                     <Trans context="admin protocols editor">Edit</Trans>
                   </button>
                   <button type="button" className={btnCls} onClick={() => void setStatus(p, p.status === "archived" ? "active" : "archived")}>
@@ -163,7 +181,7 @@ export default function ProtocolsEditor({ password }: { password: string }) {
           </ul>
         )}
         {!draft && (
-          <button type="button" className={btnCls} onClick={() => setDraft({ id: "", title: "", summary: "", image: "", steps: [blankStep()], isNew: true })}>
+          <button type="button" className={btnCls} onClick={() => setDraft({ id: "", title: "", summary: "", image: "", questId: "", steps: [blankStep()], isNew: true })}>
             <Trans context="admin protocols editor">New protocol</Trans>
           </button>
         )}
@@ -173,6 +191,7 @@ export default function ProtocolsEditor({ password }: { password: string }) {
         <DraftForm
           draft={draft}
           roles={roles}
+          quests={quests}
           problems={problems}
           busy={busy}
           onChange={setDraft}
@@ -213,13 +232,15 @@ export default function ProtocolsEditor({ password }: { password: string }) {
 function DraftForm(props: {
   draft: Draft;
   roles: Role[];
+  quests: Quest[];
   problems: string[];
   busy: boolean;
   onChange: (d: Draft) => void;
   onSave: () => void;
   onCancel: () => void;
 }) {
-  const { draft, roles, problems, busy, onChange, onSave, onCancel } = props;
+  const { draft, roles, quests, problems, busy, onChange, onSave, onCancel } = props;
+  const offered = quests.filter((q) => !q.closed || q.id === draft.questId);
   const { t } = useLingui();
   const setStep = (i: number, patch: Partial<ProtocolStep>) =>
     onChange({ ...draft, steps: draft.steps.map((s, k) => (k === i ? { ...s, ...patch } : s)) });
@@ -258,6 +279,24 @@ function DraftForm(props: {
         />
         <span className="block text-xs text-muted-foreground">
           <Trans context="admin protocols editor">A path on this site, such as an image you uploaded, or an https address.</Trans>
+        </span>
+      </label>
+      <label className="block space-y-1 text-sm text-foreground">
+        <span className="font-medium">
+          <Trans context="admin protocols editor">Quest a completed run hands in (optional)</Trans>
+        </span>
+        <select className={inputCls} value={draft.questId} onChange={(e) => onChange({ ...draft, questId: e.target.value })}>
+          <option value="">{t({ message: `None`, context: "admin protocols editor quest" })}</option>
+          {offered.map((q) => (
+            <option key={q.id} value={q.id}>
+              {q.title}
+            </option>
+          ))}
+        </select>
+        <span className="block text-xs text-muted-foreground">
+          <Trans context="admin protocols editor">
+            The member who completes a run gets a claim on this quest, handed in for a steward to confirm, and the quest's rules pay it as they pay any quest. A practice run never claims it.
+          </Trans>
         </span>
       </label>
       <ol className="space-y-3">

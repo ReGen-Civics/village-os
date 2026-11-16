@@ -17784,7 +17784,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     },
   });
   registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
-  registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg" });
+  registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg", quests: { stageOf, roleIdsFor, claimsRepo, questsRepo, questConsentRecipients, notify } });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
   registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });

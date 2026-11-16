@@ -33,6 +33,10 @@ with no checklists the page says so.
   A step's state is the latest event for it (ties by id), so two phones that ticked offline merge to the same
   answer in any order.
 - **Ending**: complete (refused while a required step is open) or set aside. Both stay in history.
+- **Quest** (optional, on the version): a quest on the village's board. The first time a run is completed, the
+  member who completed it gets an ordinary claim on that quest, already handed in, with the words
+  `Completed the checklist "<title>" on <day>.` (below).
+- **Practice run**: walked on the phone only. Nothing is queued, sent or kept, and no quest is claimed (below).
 
 The same rules run on the phone (offline, from the last role list it was given) and on the server (from the org
 chart at the moment the tick arrives, lapse included). The server's answer stands.
@@ -45,10 +49,10 @@ chart at the moment the tick arrives, lapse included). The server's answer stand
 | `GET /api/protocols/runs/:id` | member | one run |
 | `POST /api/protocols/runs` | member | start: `{ id, protocolId, version, startedAt }` |
 | `POST /api/protocols/runs/:id/ticks` | member | `{ id, stepId, done, at }` |
-| `POST /api/protocols/runs/:id/complete` | member | `{ id, at }` |
+| `POST /api/protocols/runs/:id/complete` | member | `{ id, at }`; the first completion of a linked run opens its quest claim |
 | `POST /api/protocols/runs/:id/set-aside` | member | `{ id, at }` |
 | `GET /api/protocols-app.webmanifest` | anyone, 404 while off | the installed app's manifest (outside the members gate, because a browser fetches a manifest with no session) |
-| `GET /api/admin/protocols` | admin | every protocol, archived included, and the org chart's roles |
+| `GET /api/admin/protocols` | admin | every protocol, archived included, the org chart's roles, and the board's quests for the quest picker |
 | `PUT /api/admin/protocols/:id` | admin | save a draft as the next version |
 | `POST /api/admin/protocols/:id/status` | admin | `{ status: "active" \| "archived" }` |
 | `POST /api/admin/protocols/import` | admin | `{ file, dryRun }`; a real run saves only a clean file |
@@ -69,16 +73,53 @@ The admin routes sit outside the module gate so a founder can write the lists be
       "steps": [
         { "id": "lights", "text": "Lights on.", "who": "anyone", "required": true },
         { "id": "kettle", "text": "Kettle filled.", "required": false },
-        { "id": "unlock", "text": "Front door unlocked.", "who": "Keyholder" } ] } ] }
+        { "id": "unlock", "text": "Front door unlocked.", "who": "Keyholder" } ],
+      "quest": "Opening up" } ] }
 ```
 
 - `format` may be left out; a different one is refused.
 - A step's `who` (or `role`) is a role's title or id on this village's org chart, matched without case; `"anyone"`,
   `"any"`, `"member"` or nothing means any member. A role the chart does not hold is named, once, and nothing from
   that protocol is saved: add the role first.
+- A protocol's `quest` (or `questId`) is a quest's id or title on this village's board, matched without case. A
+  quest the board does not hold is named, once, and nothing from that protocol is saved: post the quest first.
+  Left out, a completed run claims nothing.
 - `required` defaults to true. Ids are made from the words when left out. Unknown fields (`source`, `_about`) are
   ignored.
 - Importing an id that exists saves a new version of it.
+
+## A completed run hands in its quest
+
+`server/lib/workClaim.ts` (`openSubmittedClaim`), called by the complete route.
+
+- **No new pay path.** It opens a claim exactly as the board's own claim route does (`claimRefusalFor`, then
+  `openClaim` under the quest's row lock), hands it in with `submitOnce`, and rings whoever may consent quests, the
+  member who did the work excepted, with the board's own bell (`quest-submission:<claim>:<recipient>`). A steward
+  consents it through the quest routes, which refuse a member consenting their own work, and the village's
+  `quest.completed` rules pay it there. A village with no rule for the quest pays nothing.
+- **Once per run.** Only the call that moves a run from open to complete claims, and the run keeps the claim's id
+  (`protocol_runs.quest_claim_id`), so the queue sending the ending twice, or two phones completing together, opens
+  one claim.
+- **The claimant is the member who completed the run.** A village that wants the claim to be whoever ran the list
+  should have that member complete it.
+- **A claim that cannot open leaves the run complete.** The quest closed, a gate the quest asks (stage, role, age,
+  safety) refusing this member, or the member already holding a claim on it still waiting on a steward: the run
+  stands, `questClaimed` is false, and nothing is retried.
+- The words name the list and the day, nothing a member typed.
+- The page says "Handed in for <quest>. A steward confirms it." on a completed run that opened one, and the list
+  card says what completing hands in.
+
+## Practice
+
+`/protocols/practice/:protocolId`, a link on each protocol's card, and a door a joining flow may link to by the
+protocol's id (the far-away path: someone learning the list before they are there to walk it).
+
+- Walked in the page's memory from the same snapshot, so it opens with no signal. **Nothing is queued, sent or
+  kept**: a reload starts it again, no run exists on the server, and no quest is claimed.
+- Marked "Practice run" at the top, with what it does not do, and "Practice finished. Nothing was recorded." at the
+  end, with Practise again.
+- Every step may be ticked, a role's included; a role step says "In a real run, Role (Name) ticks this one."
+- The offline shell's scope already covers it (`/protocols/...`).
 
 ## Offline
 
@@ -178,3 +219,5 @@ hides every surface and keeps every table.
 - A `protocols.manage` power a role could hold; editing is an admin act for now.
 - Photos, notes or timers on a step; scheduling; notifications.
 - Moving the journal's outbox onto the shared queue.
+- A practice run that survives a reload. It is in memory on purpose, so nothing that looks like a record exists.
+- A claim for each member who ticked. The quest goes to the one member who completed the run.

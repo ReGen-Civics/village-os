@@ -16,6 +16,7 @@ let modulesState: { loaded: boolean; failed: boolean; modules: Array<{ id: strin
   modules: [],
 };
 let routeId: string | undefined;
+let practiceId: string | undefined;
 const navigateTo = vi.fn((to: string) => {
   const m = /\/protocols\/run\/(.+)$/.exec(to);
   routeId = m ? decodeURIComponent(m[1]!) : undefined;
@@ -36,7 +37,7 @@ vi.mock("wouter", () => ({
     </a>
   ),
   useLocation: () => ["/protocols", navigateTo],
-  useParams: () => (routeId ? { id: routeId } : {}),
+  useParams: () => (practiceId ? { protocolId: practiceId } : routeId ? { id: routeId } : {}),
 }));
 
 import { TOKEN_KEY } from "@/lib/gameApi";
@@ -70,6 +71,8 @@ const KEPT: ProtocolsPayload = {
       title: "Opening up",
       summary: "Before anyone arrives.",
       image: "",
+      questId: "q-open",
+      questTitle: "Open the hall",
       version: 1,
       status: "active",
       updatedAt: "2026-11-15T00:00:00.000Z",
@@ -95,6 +98,7 @@ beforeEach(() => {
   signedIn = null;
   modulesState = { loaded: true, failed: true, modules: [] };
   routeId = undefined;
+  practiceId = undefined;
   navigateTo.mockClear();
   fetchMock = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
   vi.stubGlobal("fetch", fetchMock);
@@ -167,6 +171,47 @@ describe("with no signal", () => {
     });
     await waitFor(() => expect(protocolsQueue().pending(ME)).toHaveLength(0));
     expect(sent).toEqual(["/api/protocols/runs", "/api/protocols/runs/:id/ticks"]);
+  });
+});
+
+describe("a practice run", () => {
+  it("is offered on the list, beside the line saying what a real run hands in", async () => {
+    writeSnapshot(PROTOCOLS_SNAPSHOT, ME, KEPT);
+    render(<Protocols />);
+    const practise = await screen.findByText("Practise it first (nothing is recorded)");
+    expect(practise.closest("a")?.getAttribute("href")).toBe("/protocols/practice/opening-up");
+    expect(screen.getByText("Completing it hands in Open the hall for a steward to confirm.")).toBeTruthy();
+  });
+
+  it("is marked as practice, lets every step be ticked, a role's included, and records, queues and sends nothing", async () => {
+    writeSnapshot(PROTOCOLS_SNAPSHOT, ME, KEPT);
+    practiceId = "opening-up";
+    render(<Protocols />);
+    expect(await screen.findByText("Practice run")).toBeTruthy();
+    expect(screen.getByText("Nothing here is recorded or sent, and no quest is claimed. Tick every step to learn the list.")).toBeTruthy();
+    expect(screen.getByText("In a real run, Keyholder (Kai) ticks this one.")).toBeTruthy();
+    for (const name of ["Lights on", "Front door unlocked"]) {
+      const box = screen.getByRole("checkbox", { name }) as HTMLButtonElement;
+      expect(box.disabled).toBe(false);
+      fireEvent.click(box);
+      await waitFor(() => expect(screen.getByRole("checkbox", { name }).getAttribute("aria-checked")).toBe("true"));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Finish practice" }));
+    expect(await screen.findByText("Practice finished. Nothing was recorded.")).toBeTruthy();
+    expect(screen.queryByText(/Handed in for/)).toBeNull();
+    expect(protocolsQueue().pending(ME)).toEqual([]);
+    const writes = fetchMock.mock.calls.filter(([, init]) => (init?.method ?? "GET") !== "GET");
+    expect(writes).toEqual([]);
+    // Practise again starts clean.
+    fireEvent.click(screen.getByRole("button", { name: "Practise again" }));
+    await waitFor(() => expect(screen.getByRole("checkbox", { name: "Lights on" }).getAttribute("aria-checked")).toBe("false"));
+  });
+
+  it("names a protocol this phone does not hold instead of inventing one", async () => {
+    writeSnapshot(PROTOCOLS_SNAPSHOT, ME, KEPT);
+    practiceId = "not-here";
+    render(<Protocols />);
+    expect(await screen.findByText("That protocol is not on this phone. Open the list with signal once, then practise.")).toBeTruthy();
   });
 });
 

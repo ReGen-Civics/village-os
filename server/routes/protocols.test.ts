@@ -7,6 +7,9 @@
  * holder's), and a run with a required step open cannot be completed. And
  * what a founder depends on: a save is a new version, a run keeps the version
  * it started on, and an import saves nothing until the whole file is clean.
+ * And what a steward depends on: completing a run of a protocol linked to a
+ * quest hands in ONE ordinary claim, for whoever completed it, and nothing pays
+ * until a steward consents it through the quest routes.
  *
  * Every person and role here is invented.
  */
@@ -15,7 +18,8 @@ import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { loadModuleSettings, setModuleLifecycle } from "../lib/modules";
 import type { LapseContext } from "../lib/orgChart";
-import { register } from "./protocols";
+import { register, runClaimNote } from "./protocols";
+import { claimsRepo as claimsRepoFactory, questsRepo as questsRepoFactory } from "../repos/quests";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 
@@ -67,6 +71,9 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
   let admin = false;
   let lapse: LapseContext = { currentSeasonId: null, cadence: "never" };
   let handlers: Map<string, Handler>;
+  let claims: ReturnType<typeof claimsRepoFactory>;
+  let questsRepo: ReturnType<typeof questsRepoFactory>;
+  const bells: Array<{ userId: string; title: string; link?: string | null }> = [];
   const q = async (sql: string, params: unknown[] = []) => (await pool.query<any[]>(sql, params))[0]; // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
 
   const call = async (key: string, req: { params?: any; body?: any } = {}) => {
@@ -100,6 +107,9 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
     await q( // module-review-ok: fixture SQL against the S5 scratch schema
       "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `is_example`) VALUES ('seat-kai', 'role-keyholder', 'member', 'm-kai', 'm-kai', 0)",
     );
+    claims = claimsRepoFactory(pool as any);
+    questsRepo = questsRepoFactory(pool as any);
+    await questsRepo.add({ id: "q-shed-check", title: "Shed check", status: "Open", gratitude: "10" } as any);
     const c = collect();
     register(c.app, {
       authedUser: async () => (whoami ? { id: whoami, name: whoami === "m-kai" ? "Kai Moss" : "Wren Alder" } : null),
@@ -110,6 +120,17 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
       projectName: () => "Test Village",
       brandColour: () => "#123456",
       appIcon: () => "/icon.svg",
+      quests: {
+        stageOf: async () => "member",
+        roleIdsFor: () => [],
+        claimsRepo: claims,
+        questsRepo,
+        questConsentRecipients: async () => ["m-kai", "m-wren"],
+        notify: async (n: any) => {
+          bells.push(n);
+          return { ok: true } as any;
+        },
+      },
     } as any);
     handlers = c.handlers;
     admin = true;
@@ -270,6 +291,79 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
 
   it("admin routes refuse a member", async () => {
     expect((await call("GET /api/admin/protocols")).status).toBe(401);
+  });
+
+  const SHED = {
+    title: "Shed check",
+    summary: "",
+    questId: "q-shed-check",
+    steps: [
+      { id: "door", text: "Door shut" },
+      { id: "tools", text: "Tools hung up", required: false },
+    ],
+  };
+  const shedClaims = async () => (await claims.forUser("m-wren")).filter((c: any) => c.questId === "q-shed-check");
+
+  it("a link to a quest the board does not hold is refused by name; a real one saves and members read its title", async () => {
+    admin = true;
+    const bad = await call("PUT /api/admin/protocols/:id", { params: { id: "shed" }, body: { ...SHED, questId: "q-nope" } });
+    expect(bad.status).toBe(400);
+    expect(bad.body.problems).toEqual(["Pick a quest that is on the board."]);
+    const ok = await call("PUT /api/admin/protocols/:id", { params: { id: "shed" }, body: SHED });
+    expect([ok.status, ok.body.version]).toEqual([200, 1]);
+    const ed = await call("GET /api/admin/protocols");
+    expect(ed.body.quests).toContainEqual({ id: "q-shed-check", title: "Shed check", closed: false });
+    admin = false;
+    const shed = (await call("GET /api/protocols")).body.protocols.find((p: any) => p.id === "shed");
+    expect([shed.questId, shed.questTitle]).toEqual(["q-shed-check", "Shed check"]);
+  });
+
+  it("completing a linked run hands in one claim for whoever completed it, rings the other stewards, and a repeat opens none", async () => {
+    const run = "run-shed-00000001";
+    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1 } });
+    // Set aside, never complete: a run that is set aside claims nothing.
+    const aside = "run-shed-aside-01";
+    await call("POST /api/protocols/runs", { body: { id: aside, protocolId: "shed", version: 1 } });
+    expect((await call("POST /api/protocols/runs/:id/set-aside", { params: { id: aside }, body: {} })).body.run.questClaimed).toBe(false);
+    expect(await shedClaims()).toEqual([]);
+
+    await call("POST /api/protocols/runs/:id/ticks", { params: { id: run }, body: { id: "tick-shed-0001", stepId: "door", done: true } });
+    const at = "2026-11-16T09:30:00.000Z";
+    const done = await call("POST /api/protocols/runs/:id/complete", { params: { id: run }, body: { at } });
+    expect(done.status).toBe(200);
+    expect(done.body.run.questClaimed).toBe(true);
+    const mine = await shedClaims();
+    expect(mine).toHaveLength(1);
+    expect([mine[0].status, mine[0].userId, mine[0].note]).toEqual(["submitted", "m-wren", runClaimNote("Shed check", new Date(at))]);
+    expect(mine[0].note).toBe('Completed the checklist "Shed check" on 2026-11-16.');
+    // The stewards are rung, the one who did the work is not.
+    expect(bells.filter((b) => b.link === "/review").map((b) => b.userId)).toEqual(["m-kai"]);
+    expect((await q("SELECT `quest_claim_id` FROM `protocol_runs` WHERE `id` = ?", [run]))[0].quest_claim_id).toBe(mine[0].id); // module-review-ok: fixture SQL against the S5 scratch schema
+
+    // The offline queue sends the ending again: still one claim.
+    const again = await call("POST /api/protocols/runs/:id/complete", { params: { id: run }, body: { at } });
+    expect(again.body.repeat).toBe(true);
+    expect(await shedClaims()).toHaveLength(1);
+  });
+
+  it("a second run completed while the first claim waits on a steward completes and opens no second claim", async () => {
+    const run = "run-shed-00000002";
+    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1 } });
+    await call("POST /api/protocols/runs/:id/ticks", { params: { id: run }, body: { id: "tick-shed-0002", stepId: "door", done: true } });
+    const done = await call("POST /api/protocols/runs/:id/complete", { params: { id: run }, body: {} });
+    expect([done.status, done.body.run.status, done.body.run.questClaimed]).toEqual([200, "complete", false]);
+    expect(await shedClaims()).toHaveLength(1);
+  });
+
+  it("an import names its quest by title, and a quest the board lacks is named once with nothing saved", async () => {
+    admin = true;
+    const file = (quest: string) => JSON.stringify({ protocols: [{ id: "shed-2", title: "Shed check two", quest, steps: [{ text: "Door shut" }] }] });
+    const missing = await call("POST /api/admin/protocols/import", { body: { file: file("Roof check"), dryRun: false } });
+    expect([missing.status, missing.body.missingQuests]).toEqual([400, ["Roof check"]]);
+    expect(missing.body.problems).toEqual(["Post this quest on the board first, or edit the file: Roof check."]);
+    const ok = await call("POST /api/admin/protocols/import", { body: { file: file("shed CHECK"), dryRun: false } });
+    expect(ok.body.saved).toBe(true);
+    expect(ok.body.protocols.find((p: any) => p.id === "shed-2").questId).toBe("q-shed-check");
   });
 
   it("the installed app's manifest starts and stays at /protocols", async () => {

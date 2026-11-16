@@ -31,7 +31,7 @@ function steps(raw: unknown): ProtocolStep[] {
 
 export async function listProtocols(pool: Pool, opts: { includeArchived?: boolean } = {}): Promise<ProtocolView[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT p.`id`, p.`status`, p.`current_version`, p.`updated_at`, v.`title`, v.`summary`, v.`steps`, v.`image_url` " +
+    "SELECT p.`id`, p.`status`, p.`current_version`, p.`updated_at`, v.`title`, v.`summary`, v.`steps`, v.`image_url`, v.`quest_id` " +
       "FROM `protocols` p JOIN `protocol_versions` v ON v.`protocol_id` = p.`id` AND v.`version` = p.`current_version` " +
       (opts.includeArchived ? "" : "WHERE p.`status` = 'active' ") +
       "ORDER BY p.`sort_order`, v.`title`",
@@ -41,6 +41,8 @@ export async function listProtocols(pool: Pool, opts: { includeArchived?: boolea
     title: String(r.title),
     summary: String(r.summary ?? ""),
     image: r.image_url ? String(r.image_url) : "",
+    questId: r.quest_id ? String(r.quest_id) : "",
+    questTitle: "",
     steps: steps(r.steps),
     version: Number(r.current_version),
     status: (r.status === "archived" ? "archived" : "active") as ProtocolStatus,
@@ -48,17 +50,26 @@ export async function listProtocols(pool: Pool, opts: { includeArchived?: boolea
   }));
 }
 
+export interface VersionRow {
+  title: string;
+  image: string;
+  questId: string;
+  steps: ProtocolStep[];
+}
+
 export async function getVersion(
   db: Db,
   protocolId: string,
   version: number,
-): Promise<{ title: string; image: string; steps: ProtocolStep[] } | null> {
+): Promise<VersionRow | null> {
   const [rows] = await db.query<RowDataPacket[]>(
-    "SELECT `title`, `steps`, `image_url` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
+    "SELECT `title`, `steps`, `image_url`, `quest_id` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
     [protocolId, version],
   );
   const r = rows[0];
-  return r ? { title: String(r.title), image: r.image_url ? String(r.image_url) : "", steps: steps(r.steps) } : null;
+  return r
+    ? { title: String(r.title), image: r.image_url ? String(r.image_url) : "", questId: r.quest_id ? String(r.quest_id) : "", steps: steps(r.steps) }
+    : null;
 }
 
 export async function protocolStatus(db: Db, protocolId: string): Promise<{ status: ProtocolStatus; version: number } | null> {
@@ -93,26 +104,32 @@ export async function saveProtocol(
         [draft.id, draft.title, draft.summary, Number(n ?? 0), by, now, now],
       );
       await conn.query(
-        "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `created_by`, `created_at`) VALUES (?, 1, ?, ?, ?, ?, ?, ?)",
-        [draft.id, draft.title, draft.summary, body, draft.image || null, by, now],
+        "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `quest_id`, `created_by`, `created_at`) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)",
+        [draft.id, draft.title, draft.summary, body, draft.image || null, draft.questId || null, by, now],
       );
       await conn.commit();
       return { version: 1, created: true, changed: true };
     }
     const current = Number(rows[0].current_version);
     const [cur] = await conn.query<RowDataPacket[]>(
-      "SELECT `title`, `summary`, `steps`, `image_url` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
+      "SELECT `title`, `summary`, `steps`, `image_url`, `quest_id` FROM `protocol_versions` WHERE `protocol_id` = ? AND `version` = ?",
       [draft.id, current],
     );
-    const same = cur[0] && String(cur[0].title) === draft.title && String(cur[0].summary ?? "") === draft.summary && String(cur[0].steps) === body && String(cur[0].image_url ?? "") === draft.image;
+    const same =
+      cur[0] &&
+      String(cur[0].title) === draft.title &&
+      String(cur[0].summary ?? "") === draft.summary &&
+      String(cur[0].steps) === body &&
+      String(cur[0].image_url ?? "") === draft.image &&
+      String(cur[0].quest_id ?? "") === draft.questId;
     if (same) {
       await conn.commit();
       return { version: current, created: false, changed: false };
     }
     const next = current + 1;
     await conn.query(
-      "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `created_by`, `created_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [draft.id, next, draft.title, draft.summary, body, draft.image || null, by, now],
+      "INSERT INTO `protocol_versions` (`protocol_id`, `version`, `title`, `summary`, `steps`, `image_url`, `quest_id`, `created_by`, `created_at`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [draft.id, next, draft.title, draft.summary, body, draft.image || null, draft.questId || null, by, now],
     );
     await conn.query(
       "UPDATE `protocols` SET `title` = ?, `summary` = ?, `current_version` = ?, `updated_at` = ? WHERE `id` = ?",
@@ -147,6 +164,7 @@ export interface RunRow {
   status: RunStatus;
   endedAt: string | null;
   endedBy: string | null;
+  questClaimId: string | null;
 }
 
 function toRun(r: RowDataPacket): RunRow {
@@ -160,10 +178,11 @@ function toRun(r: RowDataPacket): RunRow {
     status,
     endedAt: r.ended_at ? iso(r.ended_at) : null,
     endedBy: r.ended_by ? String(r.ended_by) : null,
+    questClaimId: r.quest_claim_id ? String(r.quest_claim_id) : null,
   };
 }
 
-const RUN_COLS = "`id`, `protocol_id`, `version`, `started_by`, `started_at`, `status`, `ended_at`, `ended_by`";
+const RUN_COLS = "`id`, `protocol_id`, `version`, `started_by`, `started_at`, `status`, `ended_at`, `ended_by`, `quest_claim_id`";
 
 /** Start a run. A repeat of the same id is a no-op; returns whether this call made it. */
 export async function insertRun(
@@ -200,6 +219,15 @@ export async function endRun(pool: Pool, id: string, status: Exclude<RunStatus, 
   const [res] = await pool.query<ResultSetHeader>(
     "UPDATE `protocol_runs` SET `status` = ?, `ended_at` = ?, `ended_by` = ? WHERE `id` = ? AND `status` = 'open'",
     [status, at, by, id],
+  );
+  return Number(res.affectedRows ?? 0) > 0;
+}
+
+/** Record the claim completing a run opened. Once: a run that already names one keeps it. */
+export async function setRunQuestClaim(pool: Pool, runId: string, claimId: string): Promise<boolean> {
+  const [res] = await pool.query<ResultSetHeader>(
+    "UPDATE `protocol_runs` SET `quest_claim_id` = ? WHERE `id` = ? AND `quest_claim_id` IS NULL",
+    [claimId, runId],
   );
   return Number(res.affectedRows ?? 0) > 0;
 }

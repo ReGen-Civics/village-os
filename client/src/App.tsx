@@ -452,6 +452,7 @@ function Router() {
       <Route path="/gratitude" component={GratitudeWall} />
       {/* A member's own practice, behind ModuleGate("journal") and sign-in. */}
       <Route path="/journal" component={Journal} />
+      <Route path="/protocols/practice/:protocolId" component={Protocols} />
       <Route path="/protocols/run/:id" component={Protocols} />
       <Route path="/protocols" component={Protocols} />
       {/* The village chooses which quests to fund, within a pot. Behind

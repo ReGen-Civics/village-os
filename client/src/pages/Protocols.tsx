@@ -1,5 +1,12 @@
 /**
- * /protocols and /protocols/run/:id: the village's checklists, and a run.
+ * /protocols, /protocols/run/:id and /protocols/practice/:protocolId: the
+ * village's checklists, a run, and a practice run.
+ *
+ * A PRACTICE RUN never leaves this page. It is walked in memory, from the
+ * same snapshot, so it works with no signal; nothing is queued, sent or kept,
+ * no quest is claimed, and every step may be ticked, a role's included, with
+ * the role named as the one who ticks it in a real run. It says it is practice
+ * at the top and again at the end.
  *
  * WORKS WITH NO SIGNAL. With no network the app's own boot cannot say who is
  * signed in (AuthProvider keeps the token and has no user) or which modules are
@@ -92,7 +99,7 @@ export default function Protocols() {
   const { t } = useLingui();
   const { user } = useAuth();
   const modules = useModules();
-  const params = useParams<{ id?: string }>();
+  const params = useParams<{ id?: string; protocolId?: string }>();
   const [, navigate] = useLocation();
   const online = useOnline();
   const token = authToken();
@@ -187,6 +194,9 @@ export default function Protocols() {
   const waiting = pending.filter((p) => !p.refused).length;
   const runId = params.id ? decodeURIComponent(params.id) : null;
   const run = runId ? view.runs.find((r) => r.id === runId) ?? null : null;
+  const practiceId = params.protocolId ? decodeURIComponent(params.protocolId) : null;
+  const practiceOf = practiceId ? view.protocols.find((p) => p.id === practiceId) ?? null : null;
+  const questTitleOf = (protocolId: string) => view.protocols.find((p) => p.id === protocolId)?.questTitle ?? "";
 
   const start = (p: ProtocolView) => {
     if (!owner) return;
@@ -208,7 +218,20 @@ export default function Protocols() {
             onSync={() => void sync(true)}
           />
           {runId && <InstallCard auto={load.data.settings?.showInstallCard !== false} quietLink={false} />}
-          {runId ? (
+          {practiceId ? (
+            practiceOf ? (
+              <PracticeRun key={practiceOf.id} protocol={practiceOf} viewer={view.viewer} holders={view.roleHolders ?? {}} />
+            ) : (
+              <section className={CARD}>
+                <p className={NOTE}>
+                  <Trans context="protocols page">That protocol is not on this phone. Open the list with signal once, then practise.</Trans>
+                </p>
+                <Link href="/protocols" className={`${LINK} mt-3 inline-block`}>
+                  <Trans context="protocols page">All protocols</Trans>
+                </Link>
+              </section>
+            )
+          ) : runId ? (
             run ? (
               <RunPage
                 run={run}
@@ -216,7 +239,15 @@ export default function Protocols() {
                 holders={view.roleHolders ?? {}}
                 owner={owner!}
                 pending={pendingForRun(pending, run.id)}
-                onChange={() => void sync()}
+                questTitle={questTitleOf(run.protocolId)}
+                onTick={(stepId, done) => {
+                  queueTick(owner!, run.id, stepId, done);
+                  void sync();
+                }}
+                onEnd={(how) => {
+                  queueEnd(owner!, run.id, how);
+                  void sync();
+                }}
               />
             ) : (
               <section className={CARD}>
@@ -231,7 +262,7 @@ export default function Protocols() {
           ) : (
             <ListPage data={view} onStart={start} />
           )}
-          {!runId && <InstallCard auto={load.data.settings?.showInstallCard !== false} />}
+          {!runId && !practiceId && <InstallCard auto={load.data.settings?.showInstallCard !== false} />}
         </div>
       </div>
     </Layout>
@@ -332,9 +363,17 @@ function ListPage({ data, onStart }: { data: ProtocolsPayload; onStart: (p: Prot
                       <Plural context="protocols page" value={p.steps.length} one="# step" other="# steps" />,{" "}
                       <Trans context="protocols page">{required} required</Trans>
                     </p>
+                    {p.questTitle && (
+                      <p className="text-xs text-muted-foreground">
+                        <Trans context="protocols page">Completing it hands in {p.questTitle} for a steward to confirm.</Trans>
+                      </p>
+                    )}
                     <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={() => onStart(p)}>
                       <Trans context="protocols page">Start</Trans>
                     </button>
+                    <Link href={`/protocols/practice/${encodeURIComponent(p.id)}`} className={`${LINK} block min-h-11 py-2 text-center text-sm`}>
+                      <Trans context="protocols page">Practise it first (nothing is recorded)</Trans>
+                    </Link>
                   </div>
                 </li>
               );
@@ -418,15 +457,70 @@ function roleWithHolders(roleTitle: string, names: readonly string[] | undefined
   return `${roleTitle} (${list.join(", ")}${more > 0 ? ` +${more}` : ""})`;
 }
 
+/**
+ * A practice run: the protocol's steps, ticked in this page's memory only.
+ * Nothing is queued or sent, so nothing is recorded and no quest is claimed.
+ */
+function PracticeRun({ protocol, viewer, holders }: { protocol: ProtocolView; viewer: ProtocolsPayload["viewer"]; holders: Record<string, string[]> }) {
+  const [ticks, setTicks] = useState<RunView["ticks"]>([]);
+  const [finished, setFinished] = useState<string | null>(null);
+  const run: RunView = {
+    id: `practice-${protocol.id}`,
+    protocolId: protocol.id,
+    version: protocol.version,
+    title: protocol.title,
+    image: protocol.image,
+    steps: protocol.steps,
+    questId: "",
+    questClaimed: false,
+    startedBy: viewer.id,
+    startedByName: viewer.name,
+    startedAt: "",
+    status: finished ? "complete" : "open",
+    endedAt: finished,
+    endedBy: finished ? viewer.id : null,
+    endedByName: finished ? viewer.name : null,
+    ticks,
+  };
+  return (
+    <RunPage
+      run={run}
+      viewer={viewer}
+      holders={holders}
+      owner={viewer.id}
+      pending={[]}
+      questTitle=""
+      practice
+      onTick={(stepId, done) =>
+        setTicks((list) => [
+          ...list,
+          { clientId: `p${String(list.length).padStart(8, "0")}`, stepId, done, by: viewer.id, byName: viewer.name, at: new Date().toISOString() },
+        ])
+      }
+      onEnd={(how) => (how === "complete" ? setFinished(new Date().toISOString()) : undefined)}
+      onPracticeAgain={() => {
+        setTicks([]);
+        setFinished(null);
+      }}
+    />
+  );
+}
+
 function RunPage(props: {
   run: RunView;
   viewer: ProtocolsPayload["viewer"];
   holders: Record<string, string[]>;
   owner: string;
   pending: QueuedRequest[];
-  onChange: () => void;
+  /** The linked quest's title, for the line a completed run shows. */
+  questTitle: string;
+  onTick: (stepId: string, done: boolean) => void;
+  onEnd: (how: "complete" | "set-aside") => void;
+  /** A practice run: every step is the member's to tick, and nothing is recorded. */
+  practice?: boolean;
+  onPracticeAgain?: () => void;
 }) {
-  const { run, viewer, holders, owner, pending, onChange } = props;
+  const { run, viewer, holders, owner, pending, questTitle, onTick, onEnd, practice = false, onPracticeAgain } = props;
   const { t } = useLingui();
   const [confirmAside, setConfirmAside] = useState(false);
   const ended = when(run.endedAt);
@@ -437,7 +531,7 @@ function RunPage(props: {
   const isOpen = run.status === "open";
   const refused = pending.filter((x) => x.refused);
   const me = { id: viewer.id, roleIds: viewer.roleIds };
-  const mine = (s: ProtocolStep) => mayTick(s, me);
+  const mine = (s: ProtocolStep) => practice || mayTick(s, me);
 
   // The one step in front of this member now: the first open required step
   // they may tick, else the first open optional one.
@@ -450,14 +544,10 @@ function RunPage(props: {
   // Who else has ticked in this run, by first name, for "with Ana".
   const others = Array.from(new Set(run.ticks.filter((x) => x.by !== viewer.id).map((x) => firstName(x.byName)).filter(Boolean)));
 
-  const toggle = (stepId: string, done: boolean) => {
-    queueTick(owner, run.id, stepId, done);
-    onChange();
-  };
+  const toggle = (stepId: string, done: boolean) => onTick(stepId, done);
   const end = (how: "complete" | "set-aside") => {
-    queueEnd(owner, run.id, how);
+    onEnd(how);
     setConfirmAside(false);
-    onChange();
   };
 
   const pct = p.total ? Math.round((p.done / p.total) * 100) : 100;
@@ -468,6 +558,19 @@ function RunPage(props: {
       <Link href="/protocols" className={`${LINK} text-sm`}>
         <Trans context="protocols page">All protocols</Trans>
       </Link>
+
+      {practice && (
+        <div className={BANNER} role="note">
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-semibold text-foreground">
+              <Trans context="protocols practice run">Practice run</Trans>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              <Trans context="protocols practice run">Nothing here is recorded or sent, and no quest is claimed. Tick every step to learn the list.</Trans>
+            </p>
+          </div>
+        </div>
+      )}
 
       {run.image ? (
         <div className="overflow-hidden rounded-[18px]">
@@ -500,7 +603,27 @@ function RunPage(props: {
         >
           <i className="block h-full bg-gradient-to-r from-open to-primary" style={{ width: `${pct}%` }} />
         </div>
-        {run.status !== "open" && (
+        {practice && run.status === "complete" && (
+          <div className="mt-3 space-y-3">
+            <p className="text-base font-medium text-foreground">
+              <Trans context="protocols practice run">Practice finished. Nothing was recorded.</Trans>
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" className={BTN_SECONDARY} onClick={onPracticeAgain}>
+                <Trans context="protocols practice run">Practise again</Trans>
+              </button>
+              <Link href="/protocols" className={BTN_SECONDARY}>
+                <Trans context="protocols practice run">Back to the list</Trans>
+              </Link>
+            </div>
+          </div>
+        )}
+        {!practice && run.status === "complete" && run.questClaimed && questTitle && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            <Trans context="protocols page">Handed in for {questTitle}. A steward confirms it.</Trans>
+          </p>
+        )}
+        {!practice && run.status !== "open" && (
           <p className="mt-3 text-base font-medium text-foreground">
             {run.status === "complete" ? (
               <Trans context="protocols page">
@@ -587,9 +710,11 @@ function RunPage(props: {
                   {isNow && s.detail && <span className="mt-0.5 block whitespace-pre-line text-sm text-muted-foreground">{s.detail}</span>}
                   {kept && !done && (
                     <span className="mt-0.5 block text-sm text-muted-foreground">
-                      {allowed
-                        ? t({ message: `Yours to tick, as ${keptFor}.`, context: "protocols page" })
-                        : t({ message: `${keptFor} ticks this one.`, context: "protocols page" })}
+                      {practice
+                        ? t({ message: `In a real run, ${keptFor} ticks this one.`, context: "protocols practice run" })
+                        : allowed
+                          ? t({ message: `Yours to tick, as ${keptFor}.`, context: "protocols page" })
+                          : t({ message: `${keptFor} ticks this one.`, context: "protocols page" })}
                     </span>
                   )}
                 </span>
@@ -604,7 +729,7 @@ function RunPage(props: {
         <section className="space-y-3" aria-label={t({ message: `Finish`, context: "protocols page" })}>
           {openSteps.length === 0 ? (
             <button type="button" className={`${BTN_PRIMARY} min-h-[52px] w-full text-base`} onClick={() => end("complete")}>
-              <Trans context="protocols page">Mark complete</Trans>
+              {practice ? <Trans context="protocols practice run">Finish practice</Trans> : <Trans context="protocols page">Mark complete</Trans>}
             </button>
           ) : now && now.required ? (
             <button type="button" className={`${BTN_PRIMARY} min-h-[52px] w-full text-base`} onClick={() => toggle(now.id, true)}>
@@ -621,7 +746,11 @@ function RunPage(props: {
             </p>
           )}
           <div className="text-center">
-            {confirmAside ? (
+            {practice ? (
+              <Link href="/protocols" className={`${LINK} inline-block min-h-11 py-2 text-sm`}>
+                <Trans context="protocols practice run">Stop practising</Trans>
+              </Link>
+            ) : confirmAside ? (
               <span className="inline-flex flex-wrap justify-center gap-3">
                 <button type="button" className={BTN_SECONDARY} onClick={() => end("set-aside")}>
                   <Trans context="protocols page">Yes, set it aside</Trans>

@@ -58,6 +58,8 @@ export function withPending(base: ProtocolsPayload, pending: readonly QueuedRequ
         title: proto.title,
         image: proto.image ?? "",
         steps: proto.steps,
+        questId: proto.questId ?? "",
+        questClaimed: false,
         startedBy: base.viewer.id,
         startedByName: base.viewer.name,
         startedAt: String(b.startedAt ?? p.queuedAt),

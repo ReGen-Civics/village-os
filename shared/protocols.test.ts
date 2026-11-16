@@ -132,6 +132,33 @@ describe("reading an import file", () => {
   });
 });
 
+describe("a protocol's quest", () => {
+  const roles = [{ id: "role-keyholder", title: "Keyholder" }];
+  const quests = [{ id: "q-open-1", title: "Open the hall" }];
+
+  it("is optional, kept as given, and refused when the board does not hold it", () => {
+    const none = checkProtocolDraft({ title: "x", steps: [{ text: "a" }] }, ROLES, new Set(["q-open-1"]));
+    expect(none.ok && none.value.questId).toBe("");
+    const linked = checkProtocolDraft({ title: "x", questId: "q-open-1", steps: [{ text: "a" }] }, ROLES, new Set(["q-open-1"]));
+    expect(linked.ok && linked.value.questId).toBe("q-open-1");
+    const gone = checkProtocolDraft({ title: "x", questId: "q-gone", steps: [{ text: "a" }] }, ROLES, new Set(["q-open-1"]));
+    expect(!gone.ok && gone.problems).toEqual(["Pick a quest that is on the board."]);
+    // The phone has no board to check against, so it leaves that to the server.
+    expect(checkProtocolDraft({ title: "x", questId: "q-gone", steps: [{ text: "a" }] }, ROLES).ok).toBe(true);
+  });
+
+  it("is read from an import by id or by title without case, and a quest the board lacks is named once", () => {
+    const file = (quest: string) => ({ protocols: [{ title: "Opening up", quest, steps: [{ text: "Lights on" }] }] });
+    expect(readProtocolImport(file("open the HALL"), roles, quests).drafts[0]?.questId).toBe("q-open-1");
+    expect(readProtocolImport(file("q-open-1"), roles, quests).drafts[0]?.questId).toBe("q-open-1");
+    const missing = readProtocolImport(file("Close the hall"), roles, quests);
+    expect(missing.drafts).toEqual([]);
+    expect(missing.missingQuests).toEqual(["Close the hall"]);
+    expect(missing.problems).toEqual(["Post this quest on the board first, or edit the file: Close the hall."]);
+    expect(readProtocolImport({ protocols: [{ title: "Opening up", steps: [{ text: "Lights on" }] }] }, roles, quests).drafts[0]?.questId).toBe("");
+  });
+});
+
 describe("a run's state", () => {
   it("is the latest event per step; on the same instant the larger id wins", () => {
     const s = stepStates(steps, [

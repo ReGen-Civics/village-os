@@ -93,6 +93,7 @@ const ALLOWLIST = {
   // One run of a checklist. Its doors are its row on /protocols and the Start button there, which
   // makes the run and opens it; a run's address is made on the phone, so nothing else can know it.
   "/protocols/run/:id": "reached from its row and from Start on /protocols; the address is made when the run starts",
+  "/protocols/practice/:protocolId": "one door per protocol, on its card on /protocols; a joining flow may link a village's own protocol here too, by its id",
 
   // Open role proposals (sheet 19i): both arrive by a link somebody was sent,
   // never by a link on the site. The confirm page is the link in the

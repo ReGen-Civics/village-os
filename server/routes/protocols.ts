@@ -14,6 +14,13 @@
  * stop and keep everything for later, which is right for a session that ended
  * or a module that is switched off, and wrong for these.
  *
+ * A PROTOCOL MAY NAME A QUEST. The first time a run of it is completed, the
+ * member who completed it gets an ordinary claim on that quest, handed in
+ * (server/lib/workClaim.ts), so the stewards consent it and the village's
+ * rules pay it as they pay any quest. A repeat of the completion opens nothing
+ * more, and a claim that cannot open (the quest is closed, or the member holds
+ * one still waiting) leaves the completed run standing.
+ *
  * Who may tick a role step is read from the org chart at the moment the tick
  * arrives, through `listOrgAssignments` with the lapse context, so a lapsed
  * term ticks nothing. The phone applied the same rule offline from the role
@@ -37,11 +44,24 @@ import {
   type TickEvent,
 } from "../../shared/protocols";
 import * as repo from "../repos/protocols";
+import { questClosed, type QuestsRepo } from "../repos/quests";
+import { openSubmittedClaim, type WorkClaimDeps } from "../lib/workClaim";
 
 type Deps = Pick<
   AppDeps,
   "authedUser" | "isAdmin" | "getPool" | "lapseContext" | "overLimit" | "projectName" | "brandColour" | "appIcon"
->;
+> & {
+  /**
+   * The quest board, to link a protocol to a quest and to claim it when a run
+   * is completed. Absent: protocols link no quest and a run claims nothing.
+   */
+  quests?: Omit<WorkClaimDeps, "getPool" | "questsRepo"> & { questsRepo: Pick<QuestsRepo, "byId" | "all"> };
+};
+
+/** The claim's words: which list, and the day. Nothing a member wrote. */
+export function runClaimNote(title: string, at: Date): string {
+  return `Completed the checklist "${title}" on ${at.toISOString().slice(0, 10)}.`;
+}
 
 export const PROTOCOLS_MODULE = "protocols";
 /** Ended runs a member sees on the page, newest first. */
@@ -72,7 +92,24 @@ function bodyOf(req: Request): Record<string, unknown> {
 }
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName, brandColour, appIcon } = deps;
+  const { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName, brandColour, appIcon, quests } = deps;
+
+  /** The board's quests, for the editor and the import. Empty when there is no board. */
+  async function boardQuests(): Promise<Array<{ id: string; title: string; closed: boolean }>> {
+    if (!quests) return [];
+    return (await quests.questsRepo.all()).map((q: any) => ({ id: String(q.id), title: String(q.title ?? ""), closed: questClosed(q.status) }));
+  }
+
+  /** Fill each protocol's quest title from the board, "" when it is gone. */
+  async function withQuestTitles<T extends { questId: string; questTitle: string }>(list: T[]): Promise<T[]> {
+    if (!quests) return list.map((p) => ({ ...p, questTitle: "" }));
+    const titles = new Map<string, string>();
+    for (const id of Array.from(new Set(list.map((p) => p.questId).filter(Boolean)))) {
+      const q: any = await quests.questsRepo.byId(id);
+      if (q) titles.set(id, String(q.title ?? ""));
+    }
+    return list.map((p) => ({ ...p, questTitle: titles.get(p.questId) ?? "" }));
+  }
 
   /** Live seatings: a member seated, not ended, not lapsed, not an example, in an active role. */
   async function liveSeatings(): Promise<Array<{ userId: string; roleId: string }>> {
@@ -119,7 +156,7 @@ export function register(app: Express, deps: Deps): void {
   async function views(rows: repo.RunRow[]): Promise<RunView[]> {
     const pool = getPool();
     const ticks = await repo.ticksFor(pool, rows.map((r) => r.id));
-    const versions = new Map<string, { title: string; image: string; steps: ProtocolStep[] } | null>();
+    const versions = new Map<string, repo.VersionRow | null>();
     for (const r of rows) {
       const k = `${r.protocolId}@${r.version}`;
       if (!versions.has(k)) versions.set(k, await repo.getVersion(pool, r.protocolId, r.version));
@@ -140,6 +177,8 @@ export function register(app: Express, deps: Deps): void {
         title: v?.title ?? r.protocolId,
         image: v?.image ?? "",
         steps: v?.steps ?? [],
+        questId: v?.questId ?? "",
+        questClaimed: !!r.questClaimId,
         startedBy: r.startedBy,
         startedByName: names.get(r.startedBy) ?? "",
         startedAt: r.startedAt,
@@ -192,7 +231,7 @@ export function register(app: Express, deps: Deps): void {
     if (!me) return res.status(401).json({ error: "auth_required" });
     const pool = getPool();
     const [protocols, rows, roleIds] = await Promise.all([
-      repo.listProtocols(pool),
+      repo.listProtocols(pool).then(withQuestTitles),
       repo.listRuns(pool, { recentLimit: RECENT_RUNS }),
       liveRoleIds(String(me.id)),
     ]);
@@ -290,7 +329,23 @@ export function register(app: Express, deps: Deps): void {
     }
     const now = new Date();
     const at = new Date(clampToNow(String(bodyOf(req).at ?? ""), now.getTime()));
-    await repo.endRun(pool, runId, status, String(me.id), at);
+    const ended = await repo.endRun(pool, runId, status, String(me.id), at);
+    // Only the call that completed the run claims, so a repeat (the offline
+    // queue sending twice) or a race between two phones opens one claim.
+    if (ended && status === "complete" && quests) {
+      try {
+        const version = await repo.getVersion(pool, run.protocolId, run.version);
+        if (version?.questId) {
+          const opened = await openSubmittedClaim(
+            { ...quests, getPool },
+            { questId: version.questId, user: { id: String(me.id), name: me.name ?? "" }, at, note: runClaimNote(version.title, at) },
+          );
+          if (opened.ok) await repo.setRunQuestClaim(pool, runId, opened.claimId);
+        }
+      } catch (e) {
+        console.error(`[protocols] run ${runId}: completed, but its quest claim could not be opened`, e);
+      }
+    }
     res.json({ run: await oneView(runId) });
   }
 
@@ -305,8 +360,9 @@ export function register(app: Express, deps: Deps): void {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const roles = await listOrgRoles(getPool());
     res.json({
-      protocols: await repo.listProtocols(getPool(), { includeArchived: true }),
+      protocols: await withQuestTitles(await repo.listProtocols(getPool(), { includeArchived: true })),
       roles: roles.filter((r) => r.active).map((r) => ({ id: r.id, title: r.name })),
+      quests: await boardQuests(),
       settings: protocolsConfig(),
     });
   });
@@ -314,7 +370,8 @@ export function register(app: Express, deps: Deps): void {
   app.put("/api/admin/protocols/:id", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const b = bodyOf(req);
-    const checked = checkProtocolDraft({ ...b, id: String(req.params.id) }, await roleTitles());
+    const questIds = quests ? new Set((await boardQuests()).map((q) => q.id)) : new Set<string>();
+    const checked = checkProtocolDraft({ ...b, id: String(req.params.id) }, await roleTitles(), questIds);
     if (!checked.ok) return res.status(400).json({ error: checked.problems[0], problems: checked.problems });
     const me = await authedUser(req);
     const saved = await repo.saveProtocol(getPool(), checked.value, String(me?.id ?? "admin"), new Date());
@@ -339,16 +396,18 @@ export function register(app: Express, deps: Deps): void {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const b = bodyOf(req);
     const roles = (await listOrgRoles(getPool())).filter((r) => r.active).map((r) => ({ id: r.id, title: r.name }));
-    const read = readProtocolImport(b.file, roles);
+    const read = readProtocolImport(b.file, roles, await boardQuests());
     const existing = new Map((await repo.listProtocols(getPool(), { includeArchived: true })).map((p) => [p.id, p]));
     const plan = read.drafts.map((d) => ({ id: d.id, title: d.title, steps: d.steps.length, action: existing.has(d.id) ? "update" : "create" }));
     if (b.dryRun !== false || read.problems.length) {
-      return res.status(read.problems.length ? 400 : 200).json({ plan, problems: read.problems, missingRoles: read.missingRoles, saved: false });
+      return res
+        .status(read.problems.length ? 400 : 200)
+        .json({ plan, problems: read.problems, missingRoles: read.missingRoles, missingQuests: read.missingQuests, saved: false });
     }
     const me = await authedUser(req);
     const now = new Date();
     const results = [];
     for (const d of read.drafts) results.push({ id: d.id, ...(await repo.saveProtocol(getPool(), d, String(me?.id ?? "admin"), now)) });
-    res.json({ plan, problems: [], missingRoles: [], saved: true, results, protocols: await repo.listProtocols(getPool(), { includeArchived: true }) });
+    res.json({ plan, problems: [], missingRoles: [], missingQuests: [], saved: true, results, protocols: await repo.listProtocols(getPool(), { includeArchived: true }) });
   });
 }
