@@ -37,6 +37,7 @@ import VillageTokensWordField from "./VillageTokensWordField";
 import { formatTokenAmount, smallestUnit } from "@/lib/tokenAmount";
 import { takePrefill } from "@/lib/profilePrefill";
 import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
+import { Trans, useLingui } from "@lingui/react/macro";
 
 /**
  * THE ONE PAGE WHERE A TOKEN IS NAMED.
@@ -51,6 +52,7 @@ import { MINT_CAP_SCOPE } from "@shared/mintCapWords";
  * everything rather than flash a short registry.
  */
 export default function TokensTab({ password, lifecycles }: { password: string; lifecycles: Record<string, ModuleLifecycle> | null }) {
+  const { t } = useLingui();
   const [tokens, setTokens] = useState<any[]>([]);
   const [mintCap, setMintCap] = useState<number>(0);
   const [players, setPlayers] = useState<any[]>([]);
@@ -515,9 +517,9 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
               <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
                 placeholder="Reason (required)" className="text-sm border border-gray-200 rounded-lg px-3 py-2 flex-1 min-w-48" />
               <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
-                aria-label="What was contributed" className="text-sm border border-gray-200 rounded-lg px-2 py-2 bg-white">
-                <option value="other">Contributed: work or other</option>
-                <option value="cash">Contributed: cash</option>
+                aria-label={t`What was contributed`} className="text-sm border border-border rounded-lg px-2 py-2 bg-card">
+                <option value="other">{t`Contributed: work or other`}</option>
+                <option value="cash">{t`Contributed: cash`}</option>
               </select>
               <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
                 className="text-sm bg-teal-deep text-white rounded-lg px-4 py-2 font-medium disabled:opacity-40">
@@ -552,7 +554,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
                       </p>
                       <p className="text-xs text-gray-500">
                         {g.reason}
-                        {g.contribution === "cash" ? " · cash put in" : ""}
+                        {g.contribution === "cash" ? t` · cash put in` : ""}
                         {" · asked for by "}{g.requestedByName ?? g.requestedBy}
                         {g.status === "pending"
                           ? " · waiting for a second steward"

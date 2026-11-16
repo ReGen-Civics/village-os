@@ -37,6 +37,7 @@
  * village's whole ledger would have to be the tallest thing on that page.
  */
 import { Scale } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 import InfoTip from "@/components/InfoTip";
 import { CrowdFigure } from "./QuorumField";
 import { weightText } from "./voteBars";
@@ -85,7 +86,9 @@ export default function MyStanding({ standing }: { standing: Standing }) {
           <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{standing.why}</p>
           {standing.held != null && standing.held > standing.weight && (
             <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-              You hold {weightText(standing.held)}. A cap counts {weightText(standing.weight)} of it on a ballot, and the rest stays yours.
+              <Trans>
+                You hold {weightText(standing.held)}. A cap counts {weightText(standing.weight)} of it on a ballot, and the rest stays yours.
+              </Trans>
             </p>
           )}
 

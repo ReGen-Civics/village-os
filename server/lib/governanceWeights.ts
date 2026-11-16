@@ -25,6 +25,7 @@ import { boolVar, numberVar, stringVar } from "./variables";
 import { capWeights, fewestHoldersForCap } from "../../shared/governanceShare";
 import { capsInMinor, countedWeight, splitHeld, type SourceCaps } from "../../shared/voiceSourceCaps";
 import { netMintedBySource } from "./heldBySource";
+import { balancesOf } from "../repos/voiceLedger";
 
 /**
  * The share arithmetic, re-exported so a server caller has ONE door to
@@ -230,11 +231,9 @@ async function tokenWeightsWithBasis(
   const problem = weightTokenProblem(slug);
   if (problem) throw new Error(problem);
   const accounts = userIds.map((id) => memberAccount(id));
-  const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT account_id, balance FROM token_balances WHERE token_type = ? AND account_id IN (${accounts.map(() => "?").join(",")})`,
-    [slug, ...accounts],
-  );
-  const byAccount = new Map(rows.map((r) => [String(r.account_id), Number(r.balance)]));
+  // The recomputed cache, read through the repo (recompute, never increment:
+  // the cache is already the truth by the time this reads it).
+  const byAccount = await balancesOf(pool, slug, accounts);
   const caps = snapshot.sourceCaps ? capsInMinor(snapshot.sourceCaps, tokenDef(slug)?.decimals ?? 0) : null;
   const net = caps ? await netMintedBySource(pool, slug, accounts) : new Map<string, Record<string, number>>();
   userIds.forEach((id, i) => {
