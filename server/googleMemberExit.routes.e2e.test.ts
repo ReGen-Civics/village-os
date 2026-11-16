@@ -119,7 +119,9 @@ async function googleRoundTrip(query: string, who: { sub: string; email: string;
     name: who.name,
   };
   const state = location.searchParams.get("state")!;
-  const cb = await fetch(`${BASE}/api/auth/google/callback?code=a-code&state=${encodeURIComponent(state)}`, { redirect: "manual" }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
+  // The binder `start` set in this "browser", sent back as a browser would (R215).
+  const binder = (start.headers.getSetCookie?.() ?? []).map((c) => /(?:^|;\s*)village_oauth_bind=([^;]*)/.exec(c)?.[1]).find((v) => v && v.length > 0) ?? "";
+  const cb = await fetch(`${BASE}/api/auth/google/callback?code=a-code&state=${encodeURIComponent(state)}`, { redirect: "manual", headers: { cookie: `village_oauth_bind=${binder}` } }); // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
   expect(cb.status).toBe(302);
   return { location: cb.headers.get("location") ?? "", setCookies: cb.headers.getSetCookie?.() ?? [] };
 }
@@ -156,7 +158,9 @@ async function confirmWithGoogle(action: string, who: { sub: string; email: stri
   const name = `village_confirm_${action}`;
   const raw = trip.setCookies.find((c) => c.startsWith(`${name}=`)) ?? "";
   expect(raw, "HttpOnly, so no script on the page can read it").toContain("HttpOnly");
-  expect(raw, "sent only to the routes that spend it").toContain("Path=/api/profile");
+  // Path=/ because a `__Host-` cookie must have it on https (R041). It is HttpOnly
+  // and lives minutes, and only the profile routes ever read it.
+  expect(raw, "Path=/, which a __Host- cookie requires").toContain("Path=/;");
   const value = cookieValue(trip.setCookies, name);
   expect(value).toBeTruthy();
   return value;

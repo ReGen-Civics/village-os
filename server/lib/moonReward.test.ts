@@ -76,7 +76,7 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     const out: { status: number; body: any } = { status: 200, body: undefined };
     const res: any = { status(c: number) { out.status = c; return res; }, json(b: unknown) { out.body = b; return res; } };
     const headers: Record<string, string> = req.headers ?? {};
-    await h({ params: {}, body: {}, query: {}, get: (name: string) => headers[name.toLowerCase()], ...req }, res);
+    await h({ params: {}, body: {}, query: {}, headers, ...req }, res);
     return out;
   };
   const as = (who: string) => { whoami = who; };

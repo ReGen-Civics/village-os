@@ -18,8 +18,8 @@ watching the repository.
 "Report a vulnerability", and write it there. The report is visible to the maintainers and to nobody
 else, the conversation happens in that thread, and it becomes the advisory when there is one.
 
-That feature is available on public repositories and has to be switched on by the maintainer. If you
-are reading this and the button is not there, it has not been enabled yet.
+Private vulnerability reporting is switched on for this repository. If you cannot see the button
+(some organisation settings hide it), use the fallback below.
 
 **If private reporting is not available, this is the fallback.** Open an issue whose entire content
 is one line saying you have a security report and need a private channel. Put no details in it: not
@@ -113,3 +113,22 @@ Two things worth checking on your own instance today, whatever else is going on:
   refuses to store a plaintext value when no encryption key is set.
 - Your backups are yours, are encrypted, and have been restored at least once. A backup nobody has
   restored is a hypothesis.
+
+### How you hear about a security fix
+
+Platform security fixes are published as GitHub security advisories on this repository, and every
+release is published on its Releases page. Nothing is emailed to you. Watch both: on the
+repository page choose **Watch, Custom**, tick **Releases** and **Security alerts**, and GitHub
+emails you when either appears. `docs/SECURITY_ADVISORIES.md` lists the dependency advisories
+that were assessed and why they do not apply.
+
+### Checking the image you run
+
+Release images are not signed yet, and no attestation is published, so there is no signature to
+verify. The check available today is the digest. Every release's publish step records the image
+digest in its run summary. To pin by digest, find the digest of the version you run
+(`docker image inspect --format '{{index .RepoDigests 0}}' ghcr.io/regen-civics/village-os:VERSION`
+after pulling) and compare it with the digest in that release's workflow run summary on the
+Actions tab, then set `VILLAGE_OS_IMAGE=ghcr.io/regen-civics/village-os@sha256:...` in `.env`.
+A digest never changes, so a pinned village runs those exact bytes until you change the line.
+`docs/UPGRADING.md` has the steps.

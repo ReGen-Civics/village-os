@@ -86,6 +86,28 @@ export function accountsWithReach<U extends { id: string; role?: unknown }>(
   return users.filter((u) => !isExample(u) && hasAdminReach(u, groups, holdings, now, lapsed));
 }
 
+/**
+ * ADMIN ACCESS IS A POWER THE SEATER MUST HOLD.
+ *
+ * "Give only what you hold" compares a group's capability list with the
+ * seater's, and admin access is not on that list: it is the group's own
+ * switch. So a member holding `proposal.decide` (or `power.assign`) with no
+ * admin access of their own could seat somebody into a group that opens the
+ * panel, which is handing out a power they do not have. Only an account that
+ * can open the panel itself (an admin or founder account, or a live holding
+ * of an admin group) may seat anybody into such a group, or out of it.
+ */
+export function adminAccessBeyondSeater(
+  group: { grantsAdmin?: boolean; isExample?: boolean } | null | undefined,
+  seaterHasReach: boolean,
+): boolean {
+  return group?.grantsAdmin === true && group.isExample !== true && !seaterHasReach;
+}
+
+export const ADMIN_ACCESS_NOT_HELD =
+  "That group opens the admin panel, and you cannot open it yourself, so you cannot seat anybody into it or take anybody out. " +
+  "Somebody who can open the admin panel has to make this change.";
+
 /** The refusal when a change would leave nobody able to open the panel. */
 export const LAST_ADMIN_REFUSAL =
   "That would leave nobody able to open the admin panel. Give somebody else admin access first.";

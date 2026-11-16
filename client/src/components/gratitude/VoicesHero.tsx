@@ -108,9 +108,10 @@ export default function VoicesHero() {
 
   return (
     <section aria-labelledby="voices-h" className="mb-14">
-      <h1 id="voices-h" className="sr-only">
+      {/* An h2: the wall's own heading is the page's one h1 (QA P1-13). */}
+      <h2 id="voices-h" className="sr-only">
         What people here have thanked each other for
-      </h1>
+      </h2>
 
       <div className="columns-1 gap-x-10 sm:columns-2 [&>*]:break-inside-avoid">
         {answer.voices.map((v, i) => (

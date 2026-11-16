@@ -14,10 +14,11 @@ import {
   readProposalInput,
   routeOf,
   SETTING_PREFIXES,
+  settingBodyToApply,
   variableNever,
 } from "./proposedChanges";
 import { adminRequestDecision, parseAgentAdminPaths } from "./agentAdmin";
-import { VARIABLES } from "./gameVariables";
+import { VARIABLES, VARIABLES_BY_KEY, validateVariable } from "./gameVariables";
 import { MODULES } from "./modules";
 import { PAGE_SPECS, pageSectionKey } from "./pageContent";
 
@@ -220,5 +221,35 @@ describe("every setting an admin can change has a proposal kind", () => {
     }
     const uncovered = Array.from(used).filter((p) => !SETTING_PREFIXES.some((pre) => p.startsWith(pre) || p === pre.replace(/\/$/, "")) && !(p in NOT_A_SETTING));
     expect(uncovered).toEqual([]);
+  });
+});
+
+describe("get to know us (15 Nov 2026): what an accepted proposal lands as", () => {
+  const potluck = { title: "Potluck", startsAt: "2026-12-05T23:00:00.000Z" };
+
+  it("a new gathering that names no status lands scheduled; one that names a status keeps it", () => {
+    expect(settingBodyToApply("POST", "/api/admin/events", potluck)).toEqual({ ...potluck, status: "scheduled" });
+    expect(settingBodyToApply("post", "/api/admin/events/", { ...potluck, status: "" })).toMatchObject({ status: "scheduled" });
+    expect(settingBodyToApply("POST", "/api/admin/events", { ...potluck, status: "draft" })).toMatchObject({ status: "draft" });
+    // Only the new-gathering route: an edit keeps whatever status it had, and other routes are untouched.
+    expect(settingBodyToApply("PUT", "/api/admin/events/ev-1", { title: "Potluck" })).toEqual({ title: "Potluck" });
+    expect(settingBodyToApply("POST", "/api/admin/events/calendars", { url: "https://example.test/c.ics" })).toEqual({ url: "https://example.test/c.ics" });
+  });
+
+  it("filing reads the same rule, so the reviewer sees the status it will land with", () => {
+    const r = readProposalInput({ kind: "setting", target: { method: "POST", path: "/api/admin/events" }, body: potluck, summary: "Put the potluck on the calendar." });
+    expect(r.ok && r.value.body).toEqual({ ...potluck, status: "scheduled" });
+  });
+
+  it("a link dial refuses a value the page would never show as a link", () => {
+    const def = VARIABLES_BY_KEY["org.founding_tour_link"];
+    expect(validateVariable(def, "https://village.example/tours/")).toBeNull();
+    expect(validateVariable(def, "/steward")).toBeNull();
+    expect(validateVariable(def, "")).toBeNull();
+    for (const bad of ["village.example/tours", "http://village.example/tours", "//elsewhere.example", "https://a b"]) {
+      expect(validateVariable(def, bad), bad).toMatch(/https:\/\//);
+    }
+    // Every link dial ships a default the rule accepts, or the setting could never be put back.
+    for (const v of VARIABLES.filter((x) => x.key.startsWith("org.") && x.key.endsWith("_link"))) expect(validateVariable(v, v.default), v.key).toBeNull();
   });
 });

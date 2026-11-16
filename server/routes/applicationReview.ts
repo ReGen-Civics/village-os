@@ -7,6 +7,7 @@
  *   GET  /api/application-status/:ref?token=                   the applicant's page, by the emailed link
  *   GET  /api/governance/applications/:ref/status              the applicant's page, signed in
  *   POST /api/application-status/:ref/split?token=             the applicant asks for the conversations over days (D30)
+ *   POST /api/application-status/:ref/new-invitation?token=    the applicant's invitation expired: tell the holders, never reissue
  *   POST /api/governance/applications/:ref/split               the same, signed in as the applicant or a holder
  *   GET  /api/governance/applications/:ref/scorecards          what this reader may read, and what they may write
  *   POST /api/governance/applications/:ref/interviews/:id/score  one interviewer's scorecard
@@ -44,6 +45,7 @@ import {
   type ReviewDeps,
 } from "../lib/applicationReview";
 import { accountFor, decideRule, placeOnRoles } from "../lib/openProposalDecide";
+import { askForNewInvitation } from "../lib/applicantFollowups";
 import { registerJob } from "../lib/scheduler";
 import { boolVar, stringVar } from "../lib/variables";
 import * as repo from "../repos/applicationReview";
@@ -137,6 +139,20 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     const out = await replyOffer(getPool(), ref, req.body?.replies, now());
     if (!out.ok) return res.status(out.status).json({ error: "terms_not_saved", message: out.error, ...(out.key ? { field: out.key } : {}) });
     res.json({ success: true, offer: await applicantOffer(getPool(), ref) });
+  });
+
+  // ── The applicant asks for a new invitation (applicant follow-ups, 15 Nov 2026) ──
+  /* Only when their invitation expired unused. It tells the holders who make invitations, once; it never makes one. */
+
+  app.post("/api/application-status/:ref/new-invitation", async (req, res) => {
+    const ref = refOf(req);
+    const token = typeof req.query.token === "string" ? req.query.token.slice(0, TOKEN_MAX) : "";
+    if (await overLimit(`application-new-invitation:${deps.clientIp ? deps.clientIp(req) : "x"}`, 10, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    // The link proves who asks, the way it does for the status page.
+    if (!ref || kindOfRef(ref) !== "open" || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
+    const out = await askForNewInvitation({ getPool, notify: deps.notify, notifyAdmins: deps.notifyAdmins, now, rule: () => decideRule(work) }, ref);
+    if (!out.ok) return res.status(out.status).json(out.status === 404 ? NOT_HERE : { error: "no_expired_invitation" });
+    res.json({ success: true, invitation: out.door });
   });
 
   // ── Splitting the conversations over days (D30) ───────────────────────────

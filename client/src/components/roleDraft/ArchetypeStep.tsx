@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { ARCHETYPE_PARAM, characterArt } from "@shared/roleDraft";
+import { centring } from "./centring";
 import { BTN_SECONDARY, EYEBROW, LEDE } from "@/components/journey/look";
 import ArtImage from "./ArtImage";
 import { RootGlyph } from "@/components/roots/RootTags";
@@ -71,11 +72,13 @@ export default function ArchetypeStep({ onSeeAll, allShown, nested = false }: { 
         {t({ message: "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five.", context: "roles page archetypes" })}
       </p>
       {cast.length > 0 && (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        // A short last row sits centred, never as a hole (design pass D-21): each card spans two
+        // tracks of a doubled grid, and the first card of a short row starts one track in.
+        <ul className="mt-6 grid gap-4 sm:grid-cols-4 lg:grid-cols-6">
           {cast.map((c, i) => {
             const picks = c.examples.slice(0, 2).map(lower);
             return (
-              <li key={c.key} className="sel-rise flex" style={{ animationDelay: `${i * 70}ms` }}>
+              <li key={c.key} className={`sel-rise flex sm:col-span-2 ${centring(i, cast.length)}`} style={{ animationDelay: `${i * 70}ms` }}>
                 <Link
                   href={`/roles/select?${ARCHETYPE_PARAM}=${encodeURIComponent(c.key)}`}
                   className="sel-lift group flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm hover:border-notice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

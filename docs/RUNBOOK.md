@@ -629,8 +629,8 @@ number is a runbook that fails at the moment it is read.
 | Railway account holder | | | |
 
 Every village's steward and contact also belongs in your own fleet manifest,
-one entry per village. `ops/fleet.json.example` shows the shape, and
-`ops/README.md` says where to put your real copy.
+one entry per village. `ops/fleet.json.example` shows the shape. Copy it to
+a file of your own outside the public tree and fill it in; `ops/README.md` says how.
 
 **What to write down, during and not after:**
 

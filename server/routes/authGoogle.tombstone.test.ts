@@ -16,7 +16,7 @@
 import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { register } from "./authGoogle";
-import { OAUTH_HANDOFF_COOKIE, makeHandoffToken, makeOAuthState, readOAuthState } from "../lib/oauthGoogle";
+import { OAUTH_BIND_COOKIE, OAUTH_HANDOFF_COOKIE, oauthBindHash, makeHandoffToken, makeOAuthState, readOAuthState } from "../lib/oauthGoogle";
 import { makeGoogleLink, readGoogleLink } from "../lib/oauthAccounts";
 
 /** Any signing key does: these routes are mounted on a stand-in app, so a fresh one per run is all they need. */
@@ -101,13 +101,14 @@ function mount(members: Record<string, any>) {
   return {
     minted,
     async callback() {
-      const state = makeOAuthState(SECRET, "/profile");
+      // The binder `start` would have set in this browser (R215).
+      const state = makeOAuthState(SECRET, "/profile", Date.now(), { bind: oauthBindHash("binder-1") });
       const nonce = readOAuthState(SECRET, state)!.nonce;
       vi.spyOn(globalThis, "fetch").mockResolvedValue(
         new Response(JSON.stringify({ id_token: idToken(nonce) }), { status: 200, headers: { "content-type": "application/json" } }),
       );
       const { out, res } = respond();
-      await routes.get("GET /api/auth/google/callback")!({ query: { code: "code-1", state }, headers: {} }, res);
+      await routes.get("GET /api/auth/google/callback")!({ query: { code: "code-1", state }, headers: { cookie: `${OAUTH_BIND_COOKIE}=binder-1` } }, res);
       return out;
     },
     async exchange(handoff: string) {

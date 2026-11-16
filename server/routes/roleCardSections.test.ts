@@ -36,6 +36,8 @@ const USERS: Record<string, { id: string; name: string; role: string }> = {
   "holder-1": { id: "holder-1", name: "Holder One", role: "member" },
   "member-1": { id: "member-1", name: "Member One", role: "member" },
   "admin-1": { id: "admin-1", name: "Admin One", role: "admin" },
+  // Signed in below the member stage, so without `terms.read`: the setting hides pay from them.
+  "guest-1": { id: "guest-1", name: "Guest One", role: "member" },
 };
 let holders = new Set<string>();
 const closers: Record<string, SubjectCloser> = {};
@@ -43,7 +45,7 @@ const SEASON = { current: { id: "s1" }, seasons: [{ id: "s1", startsOn: "2026-01
 
 const userOf = async (req: any) => USERS[String(req.headers["x-user"] ?? "")] ?? null;
 const ctxOf = async (user: any): Promise<CapabilityCtx> => ({
-  stageIndex: 0,
+  stageIndex: user.id === "guest-1" ? -1 : 0,
   stageIndexOf: () => 0,
   roleCapabilities: holders.has(String(user.id)) ? ["org.decide"] : [],
   isAdmin: user.role === "admin",
@@ -289,5 +291,63 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     // CONTROL: with no names shown, one holder's share is nobody's in particular, and stays exact.
     expect((await call("GET", "/api/org/founding-team", null)).json.fill[ops]).toEqual({ heldPct: 100, targetPct: 100, openPct: 0, covered: true });
     for (const k of ["org.public_people", "org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
+  });
+
+  // THE PAY CEILING FOLLOWS org.show_pay_ranges (privacy finding, 15 Nov 2026): off, the key is ABSENT for a
+  // visitor and for a signed-in reader without `terms.read`; on, everyone reads it; an admin, a holder of
+  // `terms.read` and the editor read it either way.
+  const CEILING = { amount: 13000, currency: "USD", per: "month" };
+  async function rolePricedAt13000(): Promise<string> {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { ...SECTIONS, payCeiling: CEILING } })).status).toBe(200);
+    holders = new Set();
+    return id;
+  }
+
+  it("GET /api/org/role-card/:id: off, no ceiling key for a visitor or a reader without terms.read; on, present; an admin, a terms.read member and the editor read it", async () => {
+    const id = await rolePricedAt13000();
+    const card = async (who: string | null) => (await call("GET", `/api/org/role-card/${id}`, who)).json;
+    for (const who of [null, "guest-1"]) {
+      const r = await card(who);
+      expect(r.sections.aiCompanion).toBe("Heron");
+      expect("payCeiling" in r.sections).toBe(false);
+      expect(JSON.stringify(r)).not.toContain("13000");
+    }
+    expect((await card("admin-1")).sections.payCeiling).toEqual(CEILING);
+    expect((await card("member-1")).sections.payCeiling).toEqual(CEILING);
+    holders = new Set(["holder-1"]);
+    expect((await card("holder-1")).sections.payCeiling).toEqual(CEILING);
+    holders = new Set();
+    await setVar("org.show_pay_ranges", "true");
+    expect((await card(null)).sections.payCeiling).toEqual(CEILING);
+    expect((await card("guest-1")).sections.payCeiling).toEqual(CEILING);
+  });
+
+  it("GET /api/org/founding-team: off, no ceiling key for a visitor or a reader without terms.read; on, present; an admin reads it", async () => {
+    const id = await rolePricedAt13000();
+    await setVar("org.founding_team_roles", id);
+    await setVar("org.founding_team", "true");
+    const team = async (who: string | null) => (await call("GET", "/api/org/founding-team", who)).json;
+    for (const who of [null, "guest-1"]) {
+      const r = await team(who);
+      expect(r.sections[id].qualities).toEqual(SECTIONS.qualities);
+      expect("payCeiling" in r.sections[id]).toBe(false);
+      expect(JSON.stringify(r)).not.toContain("13000");
+    }
+    expect((await team("admin-1")).sections[id].payCeiling).toEqual(CEILING);
+    expect((await team("member-1")).sections[id].payCeiling).toEqual(CEILING);
+    await setVar("org.show_pay_ranges", "true");
+    expect((await team(null)).sections[id].payCeiling).toEqual(CEILING);
+    for (const k of ["org.founding_team", "org.founding_team_roles"]) await setVar(k, null);
+  });
+
+  it("a card whose only section is its ceiling reads as no sections to a visitor while pay is hidden", async () => {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { payCeiling: CEILING } })).status).toBe(200);
+    holders = new Set();
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.sections).toBeNull();
+    expect((await call("GET", `/api/org/role-card/${id}`, "admin-1")).json.sections.payCeiling).toEqual(CEILING);
   });
 });

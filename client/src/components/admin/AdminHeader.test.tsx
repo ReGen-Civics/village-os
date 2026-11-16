@@ -17,7 +17,7 @@ function header({ night = false, tab = "tokens", onNight = vi.fn(), onSignOut = 
       villageName="North Wind"
       siteUrl="https://north.example"
       tab={tab}
-      userName="Rye Cordon"
+      userName="Rye Ashby"
       night={night}
       onNight={onNight}
       onSignOut={onSignOut}
@@ -75,7 +75,7 @@ describe("admin header", () => {
     expect(screen.queryByRole("switch", { name: "Night look" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Sign out" })).toBeNull();
     const menu = await openYou();
-    expect(within(menu).getByText("Rye Cordon")).toBeTruthy();
+    expect(within(menu).getByText("Rye Ashby")).toBeTruthy();
     expect(within(menu).getByText(/Handled today on this device: 0/)).toBeTruthy();
     const nightSwitch = within(menu).getByRole("switch", { name: "Night look" });
     expect(nightSwitch.getAttribute("aria-checked")).toBe("false");

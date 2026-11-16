@@ -78,7 +78,7 @@ function setup(o: { admin?: boolean; owner?: "own" | "platform" | "none"; overLi
   const usage: any[] = [];
   register(app, {
     isAdmin: async () => o.admin ?? true,
-    authedUser: async () => ({ id: "u-1", name: "Rye Cordon", role: "admin" }),
+    authedUser: async () => ({ id: "u-1", name: "Rye Ashby", role: "admin" }),
     clientIp: () => "127.0.0.1",
     overLimit: async () => o.overLimit ?? false,
     villageName: () => "North Wind",

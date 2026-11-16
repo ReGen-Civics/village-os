@@ -1844,7 +1844,7 @@ Off, no quest asks anybody's age, and families are welcome on every one. On, a q
 
 ### Founder may self-consent below this many members
 
-Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members, an admin or founder may consent to their own claims. Once the village reaches this size, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.
+Consent normally needs a second person to witness the work: nobody may consent to their own claim. A founder building alone has nobody to ask, so while the village has FEWER than this many members and has not yet started its Game, an admin or founder may consent to their own claims. Once the village reaches this size or its launch vote carries, the witness rule applies to everyone, admins included. 0 means self-consent is never allowed, even for a founder alone.
 
 | Fact | Value |
 | --- | --- |
@@ -3751,7 +3751,7 @@ One line under the shares on every role card, in the village's words, saying whi
 
 ### The note under the pay shape
 
-The last line under the pay shape on every role card, like Indicative only. Terms are still being defined and are subject to legal review. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.
+The last line under the pay shape on every role card. When a card lists a price, its footnote already says the first month starts lower and that equity and credit terms are subject to legal review, and this note is added after it, so write only what the footnote does not say. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.
 
 | Fact | Value |
 | --- | --- |
