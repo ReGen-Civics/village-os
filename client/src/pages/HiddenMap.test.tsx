@@ -25,10 +25,11 @@ vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: { id: "u-ash"
 
 let me: any;
 let pins: any[];
+let noSignal = false;
 vi.mock("@/lib/hiddenMapApi", async (orig) => ({
   ...(await orig<typeof import("@/lib/hiddenMapApi")>()),
-  getMe: async () => me,
-  getPins: async () => ({ pins, open: me.open }),
+  getMe: async () => { if (noSignal) throw new TypeError("Failed to fetch"); return me; },
+  getPins: async () => { if (noSignal) throw new TypeError("Failed to fetch"); return { pins, open: me.open }; },
   getQueue: async () => ({ pins: [], mayVouch: false }),
   photoUrl: async () => "blob:x",
 }));
@@ -71,6 +72,7 @@ const pin = (id: string, vouches: number, mine = true) => ({
 
 beforeEach(() => {
   window.localStorage.clear();
+  noSignal = false;
 });
 afterEach(cleanup);
 
@@ -122,5 +124,29 @@ describe("the map opens (screen 10)", () => {
     render(<HiddenMap />);
     await screen.findByRole("tablist");
     expect(screen.queryByText("The map is yours!")).toBeNull();
+  });
+});
+
+describe("opening with no signal (P6-2)", () => {
+  it("opens to logging a place from the words snapshot, with no pin and the map's other views gone", async () => {
+    me = { ...base, open: false };
+    pins = [pin("p1", 1)];
+    const online = render(<HiddenMap />);
+    await screen.findByText("The rest of the map is secret.");
+    online.unmount();
+
+    noSignal = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText("No signal here")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Log a place" })).toBeTruthy();
+    expect(screen.queryByRole("tab", { name: "Map" })).toBeNull();
+    expect(screen.queryByText("Bed p1")).toBeNull();
+  });
+
+  it("says the map could not be read when there is no snapshot", async () => {
+    me = { ...base, open: false };
+    noSignal = true;
+    render(<HiddenMap />);
+    expect(await screen.findByText(/this phone has not opened the map before/)).toBeTruthy();
   });
 });

@@ -184,9 +184,14 @@ A place or a return visit logged with no signal waits on the phone and goes up o
 - **It sends from the open page:** on load, when the phone comes back online, when the tab returns, and on Send
   now. It stops at the first failure that is not a refusal and keeps everything from there. A refusal (400, 404,
   409, 413, 422) is kept with the server's words for the member to read and discard.
-- **No service worker here.** Opening the page itself with no signal belongs to the village's offline shell; this
-  module registers no worker. A browser with no IndexedDB keeps captures only while the page stays open, and the page
-  says so.
+- **The page opens with no signal** (`client/public/hidden-map-sw.js`, scoped to `/hidden-map`, registered by the
+  map page only once the module has answered). It keeps the page's own files and the public reads (theme, game
+  config, the language catalog), network first, so a deploy is never hidden online. Its cache is
+  `hidden-map-shell-v1`, which the main worker's clean-up spares. **It never caches member data, pins, photos or a
+  map tile:** a cached tile set would tell the next person on a shared phone where this member was looking.
+- **A cold open with no signal** opens to logging a place, from a per-member snapshot of the village's words and dials
+  only (`village.offline.hidden-map.<member>`, which `/reset` clears): no pin, count, place or time. A phone that never
+  opened the map with signal says so.
 - **A closed map learns one number** about everybody else's pins: how many there are (`allPins` on
   `GET /api/hidden-map/me`). Nothing about where.
 **A planting that pays.** Name a quest as `plantingQuestId` too, and a planting opens a claim for its owner on it the

@@ -31,6 +31,7 @@ import CaptureForm, { PRECISION_WORDS, type Capture, type SendAnswer } from "@/c
 import Thumb from "@/components/hiddenMap/Thumb";
 import { useOutbox } from "@/components/hiddenMap/useOutbox";
 import { looksOffline, type OutboxItem } from "@/lib/hiddenMapOutbox";
+import { keepHiddenMapOffline, readMapSnapshot, writeMapSnapshot } from "@/lib/hiddenMapOffline";
 import {
   addPhotos, answerExport, askExport, createPin, downloadExport, getExports, getMe, getPins, getQueue, Refused,
   type ExportView, type MapMe,
@@ -61,22 +62,40 @@ export default function HiddenMap() {
   const [shown, setShown] = useState<Record<Layer, boolean>>({ planting: true, partner: true, stop: true });
   const [moment, setMoment] = useState(false);
 
+  const owner = on && user ? String(user.id) : null;
+  const [offline, setOffline] = useState(false);
+
   const load = useCallback(async () => {
     try {
       const [m, p] = await Promise.all([getMe(), getPins()]);
       setMe(m);
       setPins(p.pins);
       setProblem(null);
+      setOffline(false);
+      if (owner) writeMapSnapshot(owner, m);
+      // The module is on and the member is in: keep the page for when there is no signal.
+      keepHiddenMapOffline();
     } catch (e) {
-      setProblem(e instanceof Error ? e.message : t`The map could not be read.`);
+      // No signal: open to logging a place from the village's words alone. No pin is kept on the phone.
+      const kept = owner && looksOffline(e) ? readMapSnapshot(owner) : null;
+      if (kept) {
+        setMe((now) => now ?? kept);
+        setOffline(true);
+        setView("log");
+        return;
+      }
+      if (looksOffline(e)) {
+        setProblem(t`There is no signal, and this phone has not opened the map before. Open it once with signal and it works offline after that.`);
+        return;
+      }
+      setProblem(e instanceof Refused ? e.message : t`The map could not be read.`);
     }
-  }, [t]);
+  }, [t, owner]);
 
   useEffect(() => {
     if (on && user) void load();
   }, [on, user, load]);
 
-  const owner = on && user ? String(user.id) : null;
   const box = useOutbox(owner, () => void load());
 
   // The opening moment, once per member and opening, on this device.
@@ -137,7 +156,7 @@ export default function HiddenMap() {
     return <OpeningMoment me={me} userId={String(user.id)} pins={pins} onDone={() => setMoment(false)} />;
   }
 
-  const views: Array<{ id: View; label: string }> = [
+  const views: Array<{ id: View; label: string }> = offline ? [{ id: "log", label: t`Log a place` }] : [
     { id: "map", label: t`Map` },
     { id: "log", label: t`Log a place` },
     ...(me.open || me.keeper ? [{ id: "vouch" as View, label: t`Vouch` }] : []),
@@ -152,6 +171,14 @@ export default function HiddenMap() {
           <header>
             <h1 className={H1}>{me.title}</h1>
           </header>
+
+          {offline && (
+            <section className="rounded-2xl border border-primary/50 bg-muted p-4" role="status">
+              <p className="font-semibold text-foreground"><Trans>No signal here</Trans></p>
+              <p className={HINT}><Trans>You can log places now. They wait on this phone, and your map comes back with signal.</Trans></p>
+              <button type="button" className={`${BTN_SECONDARY} mt-3`} onClick={() => void load()}><Trans>Try again</Trans></button>
+            </section>
+          )}
 
           {!me.open && (
             <section aria-labelledby="hm-meter" className="space-y-3">
