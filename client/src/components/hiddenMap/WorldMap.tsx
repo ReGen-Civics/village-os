@@ -36,13 +36,28 @@ export interface WorldMapProps {
   placing?: Point | null;
   labels: Record<Layer, string>;
   height?: number;
+  /** Vouches a pin needs to count; a pin of yours at or above it draws as vouched. */
+  vouchesPerPin?: number;
 }
 
+/** Everybody else's pins, by layer. Theme slots only, so a village's palette draws them. */
 const LAYER_FILL: Record<Layer, string> = {
-  planting: "bg-notice",
-  partner: "bg-primary",
+  planting: "bg-primary/80",
+  partner: "bg-secondary",
   stop: "bg-ring",
 };
+
+/** How one pin draws: yours vouched, yours waiting for a vouch, somebody else's, or a place-free dot. */
+function pinLook(p: PinView | PinDot, vouchesPerPin: number): string {
+  if ("dot" in p) return "size-3 bg-muted-foreground/70";
+  if (p.mine && p.layer === "planting") {
+    return p.vouches >= vouchesPerPin
+      ? "size-5 bg-chart-3 ring-4 ring-chart-3/30"
+      : "size-5 bg-primary outline-2 outline-dashed outline-offset-2 outline-primary";
+  }
+  if (p.mine) return `size-5 ${LAYER_FILL[p.layer]} ring-4 ring-border`;
+  return `size-3.5 ${LAYER_FILL[p.layer]}`;
+}
 
 function fitAll(pins: ReadonlyArray<{ lat: number; lng: number }>, w: number, h: number): { center: Point; zoom: number } {
   if (!pins.length) return { center: { lat: 20, lng: 0 }, zoom: 2 };
@@ -64,7 +79,7 @@ function gridStep(zoom: number): number {
   return steps[Math.min(steps.length - 1, Math.max(0, zoom - 1))]!;
 }
 
-export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSelect, onTap, placing, labels, height = 420 }: WorldMapProps) {
+export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSelect, onTap, placing, labels, height = 420, vouchesPerPin = 1 }: WorldMapProps) {
   const { t } = useLingui();
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 640, h: height });
@@ -217,9 +232,9 @@ export default function WorldMap({ pins, basemap, maxTileZoom, selectedId, onSel
               onPointerDown={(e) => e.stopPropagation()}
               onPointerUp={(e) => e.stopPropagation()}
               onClick={() => onSelect?.(p.id)}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow-sm ${
-                dot ? "size-3 bg-muted-foreground/70" : `size-5 ${LAYER_FILL[p.layer]}`
-              } ${chosen ? "ring-2 ring-ring ring-offset-2" : ""}`}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-background shadow-sm ${pinLook(p, vouchesPerPin)} ${
+                chosen ? "ring-2 ring-ring ring-offset-2" : ""
+              }`}
               style={{ left: s.x, top: s.y }}
               aria-label={dot ? t`A pin somewhere near here (${labels[p.layer]})` : t`${(p as PinView).title || (p as PinView).kind}, ${labels[p.layer]}`}
             />

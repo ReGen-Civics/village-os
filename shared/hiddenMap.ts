@@ -67,6 +67,10 @@ export const MAX_PHOTOS_PER_UPLOAD = 4;
 export interface HiddenMapConfig {
   /** What the village calls the map. */
   title: string;
+  /** The question above each layer's kinds ("What kind of place?"). A village asks in its own words. */
+  kindPrompts: Record<Layer, string>;
+  /** The quest a planting opens a claim on once it is vouched. Null means plantings pay nothing by themselves. */
+  plantingQuestId: string | null;
   /** What a member reads for each layer. A village names its own. */
   labels: Record<Layer, string>;
   /** The kinds a pin may take, per layer. */
@@ -79,6 +83,8 @@ export interface HiddenMapConfig {
 
 export const DEFAULT_CONFIG: HiddenMapConfig = {
   title: "Hidden map",
+  kindPrompts: { planting: "What kind of place?", partner: "What kind of place?", stop: "What kind of stop?" },
+  plantingQuestId: null,
   labels: { planting: "Plantings", partner: "Partner places", stop: "Places to stop" },
   kinds: {
     planting: ["Land project", "Garden", "Public place", "Roadside", "Wild land", "Our own garden"],
@@ -93,8 +99,11 @@ export const DEFAULT_CONFIG: HiddenMapConfig = {
 export function readConfig(raw: unknown): HiddenMapConfig {
   const c = (raw && typeof raw === "object" ? raw : {}) as Partial<HiddenMapConfig>;
   const labels = { ...DEFAULT_CONFIG.labels };
+  const kindPrompts = { ...DEFAULT_CONFIG.kindPrompts };
   const kinds = { ...DEFAULT_CONFIG.kinds };
   for (const l of LAYERS) {
+    const prompt = (c.kindPrompts as any)?.[l];
+    if (typeof prompt === "string" && prompt.trim()) kindPrompts[l] = prompt.trim().slice(0, 80);
     const label = (c.labels as any)?.[l];
     if (typeof label === "string" && label.trim()) labels[l] = label.trim();
     const list = (c.kinds as any)?.[l];
@@ -103,7 +112,16 @@ export function readConfig(raw: unknown): HiddenMapConfig {
   const openLayers = Array.isArray(c.openLayers) ? c.openLayers.filter(isLayer) : [];
   const q = c.returnVisitQuestId;
   const title = typeof c.title === "string" && c.title.trim() ? c.title.trim().slice(0, 40) : DEFAULT_CONFIG.title;
-  return { title, labels, kinds, openLayers, returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null };
+  const pq = c.plantingQuestId;
+  return {
+    title,
+    kindPrompts,
+    plantingQuestId: typeof pq === "string" && pq.trim() ? pq.trim() : null,
+    labels,
+    kinds,
+    openLayers,
+    returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null,
+  };
 }
 
 /** Structural check before a config write. A human sentence, or null when it is fine. */
@@ -133,6 +151,16 @@ export function validateConfig(raw: unknown): string | null {
   }
   if (c.openLayers !== undefined) {
     if (!Array.isArray(c.openLayers) || !c.openLayers.every(isLayer)) return `Open layers must be a list drawn from ${LAYERS.join(", ")}.`;
+  }
+  if (c.kindPrompts !== undefined) {
+    if (!c.kindPrompts || typeof c.kindPrompts !== "object") return "Kind questions must be an object keyed by layer.";
+    for (const [k, v] of Object.entries(c.kindPrompts as object)) {
+      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
+      if (typeof v !== "string" || !v.trim() || v.length > 80) return `The question for ${k} must be 1 to 80 characters.`;
+    }
+  }
+  if (c.plantingQuestId !== undefined && c.plantingQuestId !== null) {
+    if (typeof c.plantingQuestId !== "string" || c.plantingQuestId.length > 64) return "The planting quest is a quest id.";
   }
   if (c.returnVisitQuestId !== undefined && c.returnVisitQuestId !== null) {
     if (typeof c.returnVisitQuestId !== "string" || c.returnVisitQuestId.length > 64) return "The return visit quest is a quest id.";
@@ -229,6 +257,7 @@ export interface PinRecord {
   stage: Stage | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  native: boolean;
   hidden: boolean;
   createdAt: string;
   vouches: number;
@@ -251,6 +280,7 @@ export interface PinView {
   stage: Stage | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  native: boolean;
   hidden: boolean;
   createdAt: string;
   vouches: number;
@@ -292,6 +322,7 @@ function full(pin: PinRecord, mine: boolean): PinView {
     stage: pin.stage,
     partnerState: pin.partnerState,
     plantedOn: pin.plantedOn,
+    native: pin.native,
     hidden: pin.hidden,
     createdAt: pin.createdAt,
     vouches: pin.vouches,
@@ -487,6 +518,8 @@ export interface PinInput {
   notes: string | null;
   partnerState: PartnerState | null;
   plantedOn: string | null;
+  /** What went in belongs to this place. Plantings only. */
+  native: boolean;
 }
 
 const text = (v: unknown, max: number): string | null => {
@@ -542,6 +575,7 @@ export function parsePinInput(
       notes: text(b.notes, MAX_NOTES),
       partnerState,
       plantedOn,
+      native: b.layer === "planting" && b.native === true,
     },
   };
 }
