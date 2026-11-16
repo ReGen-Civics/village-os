@@ -54,7 +54,7 @@ import {
   mintConfirmation,
   recordPending,
 } from "../lib/identityConfirm";
-import type { InviteDoor } from "../lib/inviteDoor";
+import { describeInvite, type InviteDoor } from "../lib/inviteDoor";
 import { readInviteToken } from "../lib/invites";
 
 /** What this module reaches. The complete list. */
@@ -439,12 +439,13 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
       let gone = false;
       let moved = false;
       let ended = false;
+      let provedNow = false;
       const write = () =>
         deps.members.update(decision.userId, (u: any) => {
           if ((gone = isUnclaimable(u))) return;
           if ((moved = !takeOver && holdsUnprovenPassword(u))) return;
           ended = endUnprovenPassword(u);
-          proveAddress(u, identity.email);
+          provedNow = proveAddress(u, identity.email);
           if (linking) u.prefs = { ...(u.prefs ?? {}), googleLink: makeGoogleLink(deps.authSecret, decision.userId, identity.sub) };
         });
       // An agent token is not a session, so the bump alone never reaches one
@@ -457,6 +458,18 @@ export function register(app: Express, deps: GoogleAuthDeps): void {
         console.warn(`[oauth] Google sign-in ended a password nobody proved on ${member.id} (R104)`);
         deps.recordAudit("auth:google-ended-unproven-password", member.id);
         deps.onPasswordEnded(member);
+      }
+      /*
+       * THE INVITED PERSON ARRIVES ON THE ROW THIS SIGN-IN JUST PROVED (audit, 15 Nov 2026). An adopted
+       * application's invitation went to this address, and an account somebody made at it without proving
+       * it is no account to an application (server/lib/applicantAccount.ts). Google has now proved the
+       * address is this person's, so the link they came by is taken for the row and its arrival runs: the
+       * place the village decided on. Only a link that names this very address, and only on the sign-in
+       * that proved it, so an ordinary sign-in never spends somebody's link.
+       */
+      if (state.invite && (ended || provedNow) && sameAddress((await describeInvite(state.invite))?.email, identity.email)) {
+        const inviter = await deps.invites.claim(state.invite, member.id);
+        if (inviter) await deps.invites.welcome(inviter, member.id);
       }
     } else {
       // From crypto, like the email door's (server/routes/register.ts): the id is signed into a session.

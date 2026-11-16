@@ -280,6 +280,12 @@ export type ErasureDeps = {
    */
   uploadsDir: string;
   /**
+   * The private folder a form's attachment is kept in since the audit of 15 Nov 2026
+   * (server/lib/submissionAttachments.ts). An erased member's attachment is taken off it as well as off the
+   * uploads volume, where the door wrote it before.
+   */
+  submissionFileDir?: string;
+  /**
    * The private folder of the public applications' files and recordings
    * (server/lib/proposalFiles.ts). Absent, an erased member's application
    * folders go on the nightly sweep instead, which removes every folder whose
@@ -415,6 +421,12 @@ function unlink(uploadsDir: string, fileName: string): void {
     if (err?.code === "ENOENT") return;
     throw new Error(`could not take "${name}" off the volume: ${err?.message ?? err}`);
   }
+}
+
+/** A form's attachment, off the private folder and off the uploads volume (server/lib/submissionAttachments.ts). */
+function unlinkAttachment(deps: { uploadsDir: string; submissionFileDir?: string }, fileName: string): void {
+  if (deps.submissionFileDir) unlink(deps.submissionFileDir, fileName);
+  unlink(deps.uploadsDir, fileName);
 }
 
 /**
@@ -630,7 +642,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       // "submission-words-after-tombstone", which every record runs.
       name: "submissions",
       run: async () => {
-        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlink(deps.uploadsDir, file));
+        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlinkAttachment(deps, file));
       },
     },
     {
@@ -1293,7 +1305,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
        */
       name: "submission-words-after-tombstone",
       run: async () => {
-        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlink(deps.uploadsDir, file));
+        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlinkAttachment(deps, file));
       },
     },
     {

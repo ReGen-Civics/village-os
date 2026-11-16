@@ -40,6 +40,24 @@
  * waits is trust in this password as the mailbox owner's: until the address is
  * proved, a Google sign-in at it ends the password, and no founder grant or
  * bootstrap raises the row while the password stands.
+ *
+ * ── THE INVITED PERSON TAKES OVER AN ACCOUNT NOBODY PROVED (audit, 15 Nov 2026) ─
+ *
+ * An adopted application's invitation goes to the address the person applied
+ * from. Somebody may have signed up at that address first, with a password the
+ * address never proved, which used to answer the invited person "Email already
+ * exists" and keep them out for good. An application never trusts such an
+ * account (server/lib/applicantAccount.ts), so the adoption went the
+ * invitation's way and the invitation has to be able to arrive.
+ *
+ * So when the link was MAILED to this very address (`InviteFor.mailed`) and the
+ * account at it never proved the address, the person who opened the link from
+ * that mailbox takes the row over, as a Google sign-in at the address already
+ * does (R104, server/routes/authGoogle.ts): in one locked write their password
+ * replaces the unproved one, the address is recorded as proved, and
+ * tokenVersion moves so every session minted on the old password dies, with
+ * the agent reach ended around the write. A PROVED account is left alone and
+ * answered as before.
  */
 import { randomBytes } from "node:crypto";
 import type { Express, Request } from "express";
@@ -48,7 +66,9 @@ import { cleanName, passwordProblem } from "../../shared/accountRules";
 import { claimPaths } from "../../shared/gameConfig";
 import { describeInvite, type InviteDoor } from "../lib/inviteDoor";
 import { INVITE_REFUSALS, readInviteToken } from "../lib/invites";
-import { isTombstone } from "../lib/oauthAccounts";
+import { provedItsAddress } from "../lib/applicantAccount";
+import { sameAddress } from "../lib/emailVerification";
+import { isTombstone, isUnclaimable } from "../lib/oauthAccounts";
 import { numberVar } from "../lib/variables";
 // Village Comms: the one door to the email system (server/lib/commsSink.ts).
 import { commsSink } from "../lib/commsSink";
@@ -59,12 +79,17 @@ export interface RegisterDeps {
   members: {
     existsByEmail(email: string): Promise<boolean>;
     add(member: any): Promise<unknown>;
+    /** For the take-over of an account nobody proved (see the header). Absent: that door stays shut. */
+    byEmail?(email: string): Promise<any>;
+    update?(id: string, mutate: (m: any) => void): Promise<any>;
   };
+  /** Ends what an agent holds for this account on both sides of the change (`withAgentReachEnded`). Absent: no take-over. */
+  endReachAround?<T>(userId: string, change: () => Promise<T>): Promise<T>;
   hashPassword(password: string): Promise<string>;
   makeHandle(name: string): Promise<string>;
   /** Every door in records the join and greets: `memberJoined` in server/lib/arrival.ts. */
   joined(member: { id: string; name: string; handle: string }): Promise<unknown>;
-  encodeToken(userId: string, email: string): string;
+  encodeToken(userId: string, email: string, tokenVersion?: number): string;
   publicUser(member: any): any;
   invites: InviteDoor;
   /**
@@ -113,17 +138,26 @@ export function register(app: Express, deps: RegisterDeps): void {
     const required = deps.invites.required();
     let inviteId: string | null = null;
     // The address an adopted proposal's link was mailed to, when this account is made at that same address (audit P9).
+    // Only a link that went by mail and to nobody else proves its address: one handed to the adopter proves nothing.
     let invitedAddress: string | null = null;
     if (token || required) {
       const found = await deps.invites.resolve(token);
       if (found.ok) {
         inviteId = found.id;
-        invitedAddress = (await describeInvite(found.id))?.email?.trim().toLowerCase() || null;
+        const about = await describeInvite(found.id);
+        invitedAddress = about?.mailed === true ? about.email?.trim().toLowerCase() || null : null;
       }
       else if (required) return res.status(403).json({ error: found.error, code: "invitation_required" });
     }
+    const provesAddress = invitedAddress !== null && invitedAddress === String(email).trim().toLowerCase();
 
     if (await deps.members.existsByEmail(email)) {
+      // The invited person at their own address, over an account that never proved it: theirs to take (header).
+      if (provesAddress && inviteId) {
+        const taken = await takeOverUnproved(deps, { inviteId, email: String(email), password });
+        if (taken.ok) return res.json({ success: true, token: deps.encodeToken(taken.member.id, taken.member.email, Number(taken.member.tokenVersion ?? 0)), user: deps.publicUser(taken.member), tookOver: true });
+        if (taken.reason === "used") return res.status(409).json({ error: INVITE_REFUSALS.used, code: "invitation_used" });
+      }
       return res.status(409).json({ error: "Email already exists" });
     }
     // The suffix comes from crypto. This id is signed into the member's session token, and code
@@ -145,8 +179,9 @@ export function register(app: Express, deps: RegisterDeps): void {
       // ONE EXCEPTION (audit P9): a link that was mailed to this very address
       // and opened by it has already proved the mailbox, so the account starts
       // proved and no second "confirm your address" letter goes out. A link
-      // opened with some other address proves nothing about that one.
-      emailVerifiedAt: invitedAddress !== null && invitedAddress === String(email).trim().toLowerCase() ? new Date().toISOString() : null,
+      // opened with some other address proves nothing about that one, and nor
+      // does a link the email did not carry, which the adopter was handed.
+      emailVerifiedAt: provesAddress ? new Date().toISOString() : null,
       passwordHash: await deps.hashPassword(password),
       handle: await deps.makeHandle(name),
       paths: chosen.paths ?? [],
@@ -171,4 +206,49 @@ export function register(app: Express, deps: RegisterDeps): void {
     if (inviter) await deps.invites.welcome(inviter, userId);
     res.json({ success: true, token: deps.encodeToken(userId, email), user: deps.publicUser(user) });
   });
+}
+
+/**
+ * The take-over (header): the link is taken for the existing row, then one
+ * locked write replaces the unproved password, records the proof and moves
+ * tokenVersion, asked again under the lock. The link is given back if the row
+ * turned out not to be one to take. `used` when somebody took the link first.
+ */
+async function takeOverUnproved(
+  deps: RegisterDeps,
+  a: { inviteId: string; email: string; password: string },
+): Promise<{ ok: true; member: any } | { ok: false; reason: "used" | "not_takeable" }> {
+  const { byEmail, update } = deps.members;
+  const endReachAround = deps.endReachAround;
+  if (!byEmail || !update || !endReachAround) return { ok: false, reason: "not_takeable" };
+  const takeable = (u: any): boolean => !!u && !isUnclaimable(u) && sameAddress(u.email, a.email) && !provedItsAddress(u);
+  const row = await byEmail(a.email);
+  if (!takeable(row)) return { ok: false, reason: "not_takeable" };
+  const userId = String(row.id);
+  const inviter = await deps.invites.claim(a.inviteId, userId);
+  if (!inviter) return { ok: false, reason: "used" };
+  const passwordHash = await deps.hashPassword(a.password);
+  let refused = false;
+  let saved: any = null;
+  try {
+    saved = await endReachAround(userId, () =>
+      update(userId, (u: any) => {
+        if ((refused = !takeable(u))) return;
+        u.passwordHash = passwordHash;
+        u.emailVerifiedAt = new Date().toISOString();
+        u.tokenVersion = (Number(u.tokenVersion) || 0) + 1;
+      }),
+    );
+  } catch (err) {
+    await deps.invites.release(a.inviteId, userId).catch(() => undefined);
+    throw err;
+  }
+  if (!saved || refused) {
+    await deps.invites.release(a.inviteId, userId).catch(() => undefined);
+    return { ok: false, reason: "not_takeable" };
+  }
+  console.warn(`[register] an invitation mailed to the address took over ${userId}, whose password the address never proved`);
+  // The arrival runs for the link this account took: the vouch, and the place the village decided on.
+  await deps.invites.welcome(inviter, userId);
+  return { ok: true, member: saved };
 }

@@ -69,6 +69,7 @@ import TypographyPanel from "@/components/TypographyPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { saveBlob } from "@/lib/notebookCopy";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminQueueState from "@/components/admin/AdminQueueState";
 import { loadSubmissionRows } from "@/components/admin/adminQueueModel";
@@ -833,9 +834,21 @@ export function SubmissionsTab({ password }: { password: string }) {
                           </td>
                           <td className="py-1.5 text-gray-800 whitespace-pre-wrap">
                             {k === "attachment" && v ? (
-                              <a href={`${API_BASE}/uploads/${v}`} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">
+                              // Fetched with the admin's token and saved: the file is on no public address (audit, 15 Nov 2026).
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const r = await fetch(`${API_BASE}/admin/submission-attachments/${encodeURIComponent(String(v))}`, { headers: authHeaders(password) }).catch(() => null);
+                                  if (!r || !r.ok) {
+                                    toast.error("That file could not be opened. It may have been removed.");
+                                    return;
+                                  }
+                                  saveBlob(String(s.data.attachmentName || v), await r.blob());
+                                }}
+                                className="text-teal-deep underline"
+                              >
                                 {s.data.attachmentName || String(v)}
-                              </a>
+                              </button>
                             ) : Array.isArray(v) ? (
                               v.join(", ")
                             ) : (

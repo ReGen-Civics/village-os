@@ -11,7 +11,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Pool } from "mysql2/promise";
 import { handleMcpMessage, MCP_TOOLS, type RouteAnswer, type ToolContext } from "./agentMcp";
 import { CONFIRM_REASON_SENTENCE, mintConfirmToken, verifyConfirmToken } from "./agentTokens";
-import { readLeadSeatFacts, recentApprovedWrites, recordLeadApproval } from "./agentLeadApproval";
+import { readLeadSeatFacts, recentApprovedWrites, recordLeadApproval, settleLeadApproval } from "./agentLeadApproval";
 import { planSend } from "./memberTaskBridge";
 import { approvalRecordKey } from "../../shared/agentApprovalRecord";
 import { leadApprovedBodyProblem, type AgentAdminPathsDoc, type LeadSeatFacts } from "../../shared/agentAdmin";
@@ -37,11 +37,16 @@ const LIST: AgentAdminPathsDoc = {
 function agent(opts: { on: boolean; seat?: Partial<LeadSeatFacts> }) {
   const routes: Array<{ method: string; path: string; body?: unknown }> = [];
   const recorded: Array<Record<string, unknown>> = [];
+  const settled: string[] = [];
+  /** What happened, in order: a record kept, a route called, a write settled. */
+  const order: string[] = [];
+  const answer = { status: 200 };
   const ctx: ToolContext = {
     holderId: "agent-1",
     dispatch: async (method, path, body) => {
       routes.push({ method, path, body });
-      return { status: 200, body: { success: true } } as RouteAnswer;
+      order.push("dispatch");
+      return { status: answer.status, body: answer.status < 300 ? { success: true } : { error: "no" } } as RouteAnswer;
     },
     mintConfirm: (tool, echo) => mintConfirmToken(SIGNER, { action: `mcp:${tool}`, userId: "agent-1", echo }),
     verifyConfirm: (tool, token, echo) => {
@@ -55,10 +60,15 @@ function agent(opts: { on: boolean; seat?: Partial<LeadSeatFacts> }) {
       seat: async () => ({ found: true, roleId: "r-gardener", isExample: false, capabilities: ["quest.consent"], grantsAdmin: false, seatingUserId: "u-ana", ...opts.seat }),
       recorded: async (a) => {
         recorded.push(a);
+        order.push("recorded");
+      },
+      settled: async (_a, outcome) => {
+        settled.push(outcome);
+        order.push(`settled:${outcome}`);
       },
     },
   };
-  return { ctx, routes, recorded };
+  return { ctx, routes, recorded, settled, order, answer };
 }
 
 describe("the role editor refuses pay from an agent, with the switch off or on", () => {
@@ -286,17 +296,40 @@ describe("every lead-approved write through the tool carries the approval (the l
     });
   }
 
-  it("a record that fails never turns the write into a refusal", async () => {
+  it("the record is kept BEFORE the write is dispatched, and the write is settled after (audit, 15 Nov 2026)", async () => {
     const a = agent({ on: true });
     a.ctx.adminPaths = async () => ({ paths: [{ method: "PUT", path: "/api/admin/org/roles/:id", confirm: "agent", label: "x" }] });
-    a.ctx.leadApproved!.recorded = async () => {
-      throw new Error("memory down");
-    };
     const args = { method: "PUT", path: "/api/admin/org/roles/r-gardener", body: { aim: "x", ...approval } };
     const first = await ask(call(args), a.ctx);
     const second = await ask(call({ ...args, confirmToken: first.result.structuredContent.confirmToken }), a.ctx);
     expect(second.result.structuredContent.written).toBe(true);
-    expect(a.routes).toHaveLength(1);
+    expect(a.order).toEqual(["recorded", "dispatch", "settled:written"]);
+  });
+
+  it("a record that cannot be kept stops the write: no route is called (fail closed)", async () => {
+    const a = agent({ on: true });
+    a.ctx.adminPaths = async () => ({ paths: [{ method: "PUT", path: "/api/admin/org/roles/:id", confirm: "agent", label: "x" }] });
+    a.ctx.leadApproved!.recorded = async () => {
+      throw new Error("database down");
+    };
+    const args = { method: "PUT", path: "/api/admin/org/roles/r-gardener", body: { aim: "x", ...approval } };
+    const first = await ask(call(args), a.ctx);
+    const second = await ask(call({ ...args, confirmToken: first.result.structuredContent.confirmToken }), a.ctx);
+    expect(second.result.isError).toBe(true);
+    expect(second.result.structuredContent.detail.code).toBe("record_failed");
+    expect(a.routes).toEqual([]);
+    expect(a.settled).toEqual([]);
+  });
+
+  it("a write its route refuses is settled as refused, after the record that came first", async () => {
+    const a = agent({ on: true });
+    a.answer.status = 409;
+    a.ctx.adminPaths = async () => ({ paths: [{ method: "PUT", path: "/api/admin/org/roles/:id", confirm: "agent", label: "x" }] });
+    const args = { method: "PUT", path: "/api/admin/org/roles/r-gardener", body: { aim: "x", ...approval } };
+    const first = await ask(call(args), a.ctx);
+    const second = await ask(call({ ...args, confirmToken: first.result.structuredContent.confirmToken }), a.ctx);
+    expect(second.result.isError).toBe(true);
+    expect(a.order).toEqual(["recorded", "dispatch", "settled:refused"]);
   });
 });
 
@@ -352,11 +385,16 @@ describe.skipIf(!configured)("the seat's facts and the record, on the real table
     const deps = { pool, agentUserId: "agent-1", tokenPrefix: "vat_ab12", notifyAdmins: async (type: string, _t: string, key: string) => void rung.push({ type, key }) };
     const rec = { kind: "seat" as const, roleId: "r-tend", path: "/api/admin/org/roles/r-tend/holders", method: "POST", approvedBy: "The lead", approvalNote: "Yes, seat Bo as tender. Mail bo@example.test", summary: "Seat Bo in the Tender role.", writeKey: "0123456789abcdef01234567" };
     await recordLeadApproval(deps, rec);
+    await settleLeadApproval(deps, rec, "written");
     await recordLeadApproval(deps, rec);
+    await settleLeadApproval(deps, rec, "written");
     const [rows] = await pool.query<any[]>("SELECT kind, text, actor_user_id, actor_kind, entity_type, entity_ref, audience FROM health_events WHERE entity_ref = ?", [rec.writeKey]); // module-review-ok: reading the scratch schema this suite provisioned
     expect(rows).toHaveLength(1);
     expect(rows[0]).toMatchObject({ kind: "audit", actor_user_id: "agent-1", actor_kind: "agent", audience: "admin", entity_type: "agent_approval" });
-    expect(rows[0].text).toContain("approval from The lead");
+    // The agent's claim, said as its claim (audit, 15 Nov 2026): never "approved by" as if a person confirmed it.
+    expect(rows[0].text).toContain("The agent says The lead approved it");
+    expect(rows[0].text).toContain("No person confirmed this in the app");
+    expect(rows[0].text).not.toMatch(/approval from|approved by/i);
     expect(rows[0].text).toContain("Yes, seat Bo as tender.");
     expect(rows[0].text).toContain("Seat Bo in the Tender role.");
     // The notice dedupes on its key in notify; here it is asked with the same key each time.
@@ -381,7 +419,8 @@ describe.skipIf(!configured)("the seat's facts and the record, on the real table
       },
     };
     const rec = { kind: "role_text" as const, roleId: null, path: "/api/admin/org/roles/r-tend", method: "PUT", approvedBy: "The lead", approvalNote: "Yes, that aim.", writeKey: "fedcba9876543210fedcba98" };
-    await expect(recordLeadApproval(deps, rec)).resolves.toBeUndefined();
+    await recordLeadApproval(deps, rec);
+    await expect(settleLeadApproval(deps, rec, "written")).resolves.toBeUndefined();
     const list = await recentApprovedWrites(pool);
     const failed = list.find((w) => w.writeKey === rec.writeKey);
     expect(failed).toMatchObject({ memory: "none", approvedBy: null });
@@ -393,6 +432,31 @@ describe.skipIf(!configured)("the seat's facts and the record, on the real table
   });
 });
 
+describe.skipIf(!configured)("a write recorded first and then refused, on the real tables", () => {
+  let db: TestDb;
+  let pool: Pool;
+  beforeAll(async () => {
+    db = await provisionTestDb();
+    pool = testPool(db, { connectionLimit: 2 }); // module-review-ok: the suite's own pool onto the scratch schema it provisioned
+  }, 120_000);
+  afterAll(async () => {
+    await pool?.end();
+    await db?.drop();
+  });
+
+  it("keeps its audit event, says it was refused, queues no memory record and leaves it off the recent list", async () => {
+    const queued: string[] = [];
+    const deps = { pool, agentUserId: "agent-1", tokenPrefix: "vat_ab12", notifyAdmins: async () => {}, queue: async (key: string) => void queued.push(key) };
+    const rec = { kind: "role_text" as const, roleId: null, path: "/api/admin/org/roles/r-x", method: "PUT", approvedBy: "The lead", approvalNote: "Yes, that aim.", writeKey: "aaaabbbbccccddddeeeeffff" };
+    await recordLeadApproval(deps, rec);
+    await settleLeadApproval(deps, rec, "refused");
+    const [rows] = await pool.query<any[]>("SELECT entity_type FROM health_events WHERE entity_ref = ? ORDER BY id", [rec.writeKey]); // module-review-ok: reading the scratch schema this suite provisioned
+    expect(rows.map((r) => r.entity_type)).toEqual(["agent_approval", "agent_approval_refused"]);
+    expect(queued).toEqual([]);
+    expect((await recentApprovedWrites(pool)).find((w) => w.writeKey === rec.writeKey)).toBeUndefined();
+  });
+});
+
 describe("the memory outbox sends an approval record as one Governance document", () => {
   const tools = new Map([["save_document", { name: "save_document", inputSchema: { properties: { title: {}, summary: {}, key_points: {}, category: {}, asserted_by: {}, source_date: {} } } }]]);
   const payload = { record: "agent_approval", writeKey: "k1", what: "Changed a role card's words", target: "r-1", method: "PUT", changed: ["aim"], approvedBy: "The lead", approvalNote: "Yes.", at: "2026-11-11T10:00:00.000Z" };
@@ -401,8 +465,10 @@ describe("the memory outbox sends an approval record as one Governance document"
     const plan = planSend(tools as any, { kind: "decision_record", payload });
     expect(plan.tool).toBe("save_document");
     if (plan.tool === null) return;
-    expect(plan.args).toMatchObject({ category: "Governance", asserted_by: "The lead", source_date: "2026-11-11" });
-    expect(String(plan.args.key_points)).toContain("Approval: Yes.");
+    // The agent asserts the record; the person it names confirmed nothing here (audit, 15 Nov 2026).
+    expect(plan.args).toMatchObject({ category: "Governance", asserted_by: "the village connector", source_date: "2026-11-11" });
+    expect(String(plan.args.key_points)).toContain("The agent says The lead approved it. No person confirmed this in the app.");
+    expect(String(plan.args.key_points)).toContain("Approval, in the agent's words: Yes.");
     expect(String(plan.args.title)).toContain("(r-1)");
   });
 

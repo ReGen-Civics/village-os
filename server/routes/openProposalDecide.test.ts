@@ -17,8 +17,10 @@
  *     their own proposal; after a handover nobody decides at the door, and the
  *     page says so.
  *   - ADOPTION: an address with no account gets a one-use invitation named
- *     after the proposal, by essential email, and the decider always gets the
- *     link back with whether it went; an address with an account is raised to
+ *     after the proposal, by essential email, and the decider gets the link
+ *     back only when the email did not go (audit, 15 Nov 2026); an address
+ *     whose account never proved it counts as no account, and the invited
+ *     person takes that account over at sign-up; an address with an account is raised to
  *     the Member stage and given the roles for the target season, which the
  *     season turn seats on its first day; the sign-up an invitation makes is
  *     too, through the door both sign-up routes share.
@@ -56,6 +58,7 @@ import { anonymiseOpenProposal, readOpenProposal } from "../repos/openProposals"
 import { OPEN_WORDS } from "../../shared/openProposals";
 import { usersRepo } from "../repos/users";
 import { register, tidyOpenProposals } from "./openProposals";
+import { register as registerSignUp } from "./register";
 import { foundingSetupFrom, FOUNDING_KEYS } from "../../shared/foundingApplication";
 
 const configured = testDbConfigured();
@@ -106,7 +109,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     pool = testPool(db, { connectionLimit: 6 });
     fileDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-decide-files-"));
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await users.update(HIGH.id, (u: any) => {
       u.stageGranted = "co-creator";
     });
@@ -202,12 +205,19 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     const before = state.viewer;
     state.viewer = as;
     try {
+      const mailBefore = state.sent.length;
       const res = await fetch(`${base}${path}`, { // module-review-ok: a test calling its own local server, never an outside host
         method,
         headers: body === undefined ? {} : { "content-type": "application/json" },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
-      return { status: res.status, body: (await res.json()) as any };
+      const answer = { status: res.status, body: (await res.json()) as any };
+      // The invitation's link now goes only to the address (audit, 15 Nov 2026), so the test reads it from the
+      // letter this call sent, kept beside the answer where the decider is never shown it.
+      const letter = state.sent.slice(mailBefore).find((m) => m.origin === "open_proposal.adopted");
+      const mailed = letter?.text.split("\n").map((l) => l.trim()).find((l) => isLink(l) && l.includes("/register?invite="));
+      if (mailed && answer.body && typeof answer.body === "object") Object.defineProperty(answer.body, "mailedLink", { value: mailed, enumerable: false });
+      return answer;
     } finally {
       state.viewer = before;
     }
@@ -258,7 +268,8 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
 
   const asksOf = (id: string) => q("SELECT user_id, circle_id, answer, reason, UNIX_TIMESTAMP(closes_at) AS closes_s FROM role_proposal_asks WHERE proposal_id = ? ORDER BY user_id", [id]);
   const page = (id: string, as: string | null) => call("GET", `/api/governance/open-proposals/${id}`, undefined, as);
-  const linkOf = (body: any): string => String(body?.invitation?.link ?? "");
+  /** The invitation's link: handed back only when the email did not go, else read from the letter that went. */
+  const linkOf = (body: any): string => String(body?.invitation?.link ?? body?.link ?? body?.mailedLink ?? "");
   const inviteToken = (link: string) => new URL(link).searchParams.get("invite") as string;
   /** A JSON column, as the driver hands it back: parsed already on MySQL, text on MariaDB. */
   const idsOf = (v: unknown): unknown => (Array.isArray(v) ? v : JSON.parse(String(v)));
@@ -765,7 +776,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     });
 
     it("a former member's address is refused: nothing is granted, seated or invited, and declining it still works", async () => {
-      await usersRepo(pool).add({ id: LEFT.id, name: LEFT.name, email: LEFT.email, passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: LEFT.id, name: LEFT.name, email: LEFT.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await q("INSERT INTO exits (id, user_id, status, opened_by) VALUES (?,?,?,?)", ["opd-exit-left", LEFT.id, "resolved", LEFT.id]);
       const { id } = await confirmed(LEFT.email, [gate]);
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
@@ -800,13 +811,16 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
   });
 
   describe("adopting, for an address with no account", () => {
-    it("records the decision, makes one invitation named after the proposal, emails it, and hands the link back", async () => {
+    it("records the decision, makes one invitation named after the proposal, and emails it to the address alone", async () => {
       const { id } = await confirmed("newcomer@example.test");
       const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
       expect(r.status, JSON.stringify(r.body)).toBe(200);
       expect(r.body).toMatchObject({ success: true, status: "adopted", account: false, invitation: { emailed: true } });
       expect(r.body.decided).toMatch(/^Adopted on \d{1,2} \w{3} by the founder's power$/);
       expect(r.body.message).toBe(DECIDE_WORDS.adoptedEmailed(14));
+      // The adopter never holds the link the email carried (audit, 15 Nov 2026): it proves the applicant's address.
+      expect(r.body.invitation.link).toBeNull();
+      expect(JSON.stringify(r.body)).not.toContain("/register?invite=");
       expect(linkOf(r.body).startsWith(`${ORIGIN}/register?invite=`)).toBe(true);
 
       const stored = await readOpenProposal(pool, id);
@@ -872,7 +886,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const newcomer = "u-arrives";
       const inviter = await door.claim(openInviteId(id), newcomer);
       expect(inviter).toBe(FOUNDER.id);
-      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "arrives@example.test", passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "arrives@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
 
       // Rye's ruling: Voice is only for people who signed the membership agreement. Adoption admits nobody;
@@ -911,7 +925,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
       const newcomer = "u-twice";
       const inviter = await door.claim(openInviteId(first.id), newcomer);
-      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "twice@example.test", passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Rowan Field", email: "twice@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
 
       const placed = async () => q("SELECT seat_ids, status FROM seat_applications WHERE candidate_user_id = ?", [newcomer]);
@@ -934,7 +948,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const newcomer = "u-bell";
       const inviter = await door.claim(openInviteId(id), newcomer);
       expect(inviter).toBe(FOUNDER.id);
-      await usersRepo(pool).add({ id: newcomer, name: "Bea Bell", email: "bell@example.test", passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: newcomer, name: "Bea Bell", email: "bell@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, newcomer);
       const at = new Date("2037-01-01T12:00:00Z");
       await runSeasonTurn({
@@ -972,9 +986,11 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const again = await call("POST", `/api/governance/open-proposals/${id}/invitation`, {}, FOUNDER.id);
       expect(again.status, JSON.stringify(again.body)).toBe(200);
       expect(again.body.emailed).toBe(true);
-      expect(again.body.link).not.toBe(linkOf(first.body));
+      // Emailed, so the new link is not handed to the adopter either.
+      expect(again.body.link).toBeNull();
+      expect(linkOf(again.body)).not.toBe(linkOf(first.body));
       expect((await door.resolve(inviteToken(linkOf(first.body)))).ok).toBe(false);
-      expect(await door.resolve(inviteToken(again.body.link))).toMatchObject({ ok: true, id: openInviteId(id) });
+      expect(await door.resolve(inviteToken(linkOf(again.body)))).toMatchObject({ ok: true, id: openInviteId(id) });
       // Somebody without the power cannot.
       expect((await call("POST", `/api/governance/open-proposals/${id}/invitation`, {}, ANA.id)).status).toBe(403);
       // Used: there is nothing to replace.
@@ -982,6 +998,81 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const used = await call("POST", `/api/governance/open-proposals/${id}/invitation`, {}, FOUNDER.id);
       expect(used.status).toBe(409);
       expect(used.body.error).toBe(DECIDE_WORDS.noInvitation);
+    });
+  });
+
+  describe("an account that never proved the address is no account to an application (audit, 15 Nov 2026)", () => {
+    const PLANTED = { id: "u-planted", name: "Pat Planter", email: "planted-victim@example.test" };
+
+    it("is not placed, cannot read the status or answer terms, and the invited person takes it over at sign-up and is placed", async () => {
+      // Somebody signed up at the applicant's address first: a session at once, the address never proved.
+      await usersRepo(pool).add({ id: PLANTED.id, name: PLANTED.name, email: PLANTED.email, passwordHash: "planted-hash", tokenVersion: 3, paths: [] } as any);
+      const { id } = await confirmed(PLANTED.email, [gate]);
+
+      // The application does not belong to the planted account: no status, no terms.
+      expect((await call("GET", `/api/governance/applications/${id}/status`, undefined, PLANTED.id)).status).toBe(404);
+      expect((await call("POST", `/api/governance/applications/${id}/terms`, { replies: {} }, PLANTED.id)).status).toBe(404);
+
+      // Adopting goes the invitation's way: nothing is placed on the planted account.
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body).toMatchObject({ account: false, invitation: { emailed: true, link: null } });
+      expect(await q("SELECT id FROM seat_applications WHERE candidate_user_id = ?", [PLANTED.id])).toEqual([]);
+
+      // The person who reads the mailbox opens the link and signs up at their own address: they take the row over.
+      const token = inviteToken(linkOf(r.body));
+      const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
+      const signUp = express();
+      signUp.use(express.json());
+      registerSignUp(signUp, {
+        overLimit: async () => false,
+        clientIp: () => "203.0.113.9",
+        members: usersRepo(pool),
+        hashPassword: async (pw: string) => `hashed:${pw}`,
+        makeHandle: async () => "rowan-field",
+        joined: async () => undefined,
+        encodeToken: (u: string, _e: string, v?: number) => `t:${u}:${v ?? 0}`,
+        publicUser: (m: any) => ({ id: m.id }),
+        invites: door,
+        sendVerification: async () => undefined,
+        endReachAround: (_id: string, change: () => Promise<any>) => change(),
+      } as any);
+      const srv = http.createServer(signUp);
+      await new Promise<void>((resolve) => srv.listen(0, "127.0.0.1", resolve));
+      try {
+        const port = (srv.address() as { port: number }).port;
+        const made = await fetch(`http://127.0.0.1:${port}/api/auth/register`, { // module-review-ok: a test calling its own local server, never an outside host
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ name: "Rowan Field", email: PLANTED.email, password: "the real person's passphrase", paths: ["steward"], invite: token }),
+        });
+        const body = (await made.json()) as any;
+        expect(made.status, JSON.stringify(body)).toBe(200);
+        expect(body).toMatchObject({ success: true, tookOver: true, user: { id: PLANTED.id }, token: `t:${PLANTED.id}:4` });
+      } finally {
+        await new Promise<void>((resolve) => srv.close(() => resolve()));
+      }
+      const row: any = await usersRepo(pool).byId(PLANTED.id);
+      // The planted password and every session it minted are gone; the address is proved now.
+      expect(row.passwordHash).toBe("hashed:the real person's passphrase");
+      expect(row.emailVerifiedAt).toEqual(expect.any(String));
+      expect(Number(row.tokenVersion)).toBe(4);
+      // And the place the village decided on is made for the person who arrived.
+      const apps = await q("SELECT status, seat_ids FROM seat_applications WHERE candidate_user_id = ?", [PLANTED.id]);
+      expect(apps).toHaveLength(1);
+      expect(apps[0].status).toBe("adopted");
+      expect(idsOf(apps[0].seat_ids)).toEqual([gate]);
+    });
+
+    it("CONTROL: the same account once it proved the address is the applicant, and is placed with no invitation", async () => {
+      const PROVEN = { id: "u-proven", name: "PruVen", email: "proven-applicant@example.test" };
+      await usersRepo(pool).add({ id: PROVEN.id, name: PROVEN.name, email: PROVEN.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+      const { id } = await confirmed(PROVEN.email, [gate]);
+      expect((await call("GET", `/api/governance/applications/${id}/status`, undefined, PROVEN.id)).status).toBe(200);
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body).toMatchObject({ account: true, invitation: null });
+      expect(await q("SELECT status FROM seat_applications WHERE candidate_user_id = ?", [PROVEN.id])).toEqual([{ status: "adopted" }]);
     });
   });
 
@@ -1049,7 +1140,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       try {
         const moon = moonTermFor(new Date(), activeClock(), "UTC");
         const MOONER = { id: "u-mooner", email: "mooner@example.test" };
-        await usersRepo(pool).add({ id: MOONER.id, name: "Mo Oner", email: MOONER.email, passwordHash: "x", paths: [] } as any);
+        await usersRepo(pool).add({ id: MOONER.id, name: "Mo Oner", email: MOONER.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
         const { id } = await confirmed(MOONER.email, [gate]);
         const before = Date.now();
         const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
@@ -1077,7 +1168,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
   describe("the applicant's own card (Rye, 9 Nov 2026)", () => {
     it("is on the page for the decider, and becomes the role application's own words on adoption", async () => {
       const CARDED = { id: "u-carded", email: "carded@example.test" };
-      await usersRepo(pool).add({ id: CARDED.id, name: "Cara Ded", email: CARDED.email, passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: CARDED.id, name: "Cara Ded", email: CARDED.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       const before = state.sent.length;
       const r = await call("POST", "/api/open-proposals", {
         name: "Cara Ded",
@@ -1199,7 +1290,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       state.notices.length = 0;
       const door = makeInviteDoor({ getPool: () => pool, members: usersRepo(pool) });
       const inviter = await door.claim(openInviteId(id), "u-arrives2");
-      await usersRepo(pool).add({ id: "u-arrives2", name: "Rowan Field", email: "arrives2@example.test", passwordHash: "x", paths: [] } as any);
+      await usersRepo(pool).add({ id: "u-arrives2", name: "Rowan Field", email: "arrives2@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
       await door.welcome(inviter as string, "u-arrives2");
       const bell = state.notices.filter((n) => n.type === "applicant_update" && n.userId === "u-arrives2");
       expect(bell.map((n) => n.dedupeKey).sort()).toEqual([`op:${id}:update:adopted:u-arrives2`, `op:${id}:update:confirmed:u-arrives2`, `op:${id}:update:consent:u-arrives2`]);
@@ -1298,7 +1389,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       await q("INSERT INTO comms_contacts (id, village_id, email_key, email, first_source, locale) VALUES ('ct_lang1', 'local', 'es-list@example.test', 'es-list@example.test', 'guest', 'es')");
       expect((await proposeIn("es-list@example.test", { acceptLanguage: "en" })).locale).toBe("es");
       // A member's saved language wins over an English browser, and the address book is silent.
-      await usersRepo(pool).add({ id: "u-es-prof", name: "Pura Vida", email: "es-prof@example.test", passwordHash: "x", paths: [], prefs: { locale: "es" } } as any);
+      await usersRepo(pool).add({ id: "u-es-prof", name: "Pura Vida", email: "es-prof@example.test", passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [], prefs: { locale: "es" } } as any);
       expect((await proposeIn("es-prof@example.test", { acceptLanguage: "en" })).locale).toBe("es");
       // Nothing says Spanish: the village default (English here), never a guess.
       expect((await proposeIn("en-none@example.test", { acceptLanguage: "fr" })).locale).toBe("en");

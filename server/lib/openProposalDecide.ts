@@ -63,11 +63,9 @@ import type { WaitingOpenProposal } from "../../shared/waitingOnYou";
 import type { AppDeps } from "./appDeps";
 import { settleText } from "./alignmentSubjects";
 import { villageHeldCapabilities } from "./capabilityHolding";
-import { isExampleUser } from "./examples";
 import { leftTheVillage } from "./formerMember";
-import type { InvitedArrival } from "./inviteDoor";
+import type { InviteDescriber, InvitedArrival } from "./inviteDoor";
 import type { NotifyInput } from "./notify";
-import { isTombstone } from "./oauthAccounts";
 import { trustedAccountFor } from "./applicantAccount";
 import { listOrgRoles, type LapseContext } from "./orgChart";
 import { adoptApplication, seatsWithoutRoom, settleDepsOf, tellOutcome, wholeSecond, type FullSeat } from "./seatApplicationCloser";
@@ -98,22 +96,12 @@ export interface DecideDeps extends Pick<AppDeps, "members" | "stageOf" | "recor
   projectName?(): string;
 }
 
-/** The address's account here, when it is a real, present person: never an example, never a tombstone. */
-export async function accountFor(members: Pick<AppDeps["members"], "byEmail">, email: string | null): Promise<string | null> {
-  if (!email) return null;
-  const m: any = await members.byEmail(email);
-  return m && !isExampleUser(m) && !isTombstone({ email: String(m.email ?? "") }) ? String(m.id) : null;
-}
-
 /**
- * WHOSE PROPOSAL IT IS, as an account here: the person behind the address, or,
- * for an agent (0374), the member who keeps it and proposed it. That account is
- * never asked about it and never adopts or declines it.
+ * The address's account and the proposal's own account: one rule, kept in
+ * server/lib/applicantAccount.ts (audit, 15 Nov 2026: an account counts as the
+ * address's only once it proved the address). Re-exported for the routes.
  */
-export async function ownAccountOf(members: Pick<AppDeps["members"], "byEmail">, p: Pick<store.StoredOpenProposal, "email" | "body">): Promise<string | null> {
-  if (p.body.agent) return p.body.agent.keeperUserId;
-  return accountFor(members, p.email);
-}
+export { ownAccountOf } from "./applicantAccount";
 
 /**
  * WHO MAY ADOPT OR DECLINE AT THE DOOR TODAY (Rye, 2026-10-31, sheet 24a): the
@@ -547,14 +535,17 @@ export async function placeOnRoles(
  * so the account step finishes the application instead of starting over. Only
  * an adopted proposal answers; anything else reads as an ordinary invitation.
  */
-export function describeFor(deps: Pick<DecideDeps, "getPool">): (inviteId: string) => Promise<{ roles: string[]; name: string | null; email: string | null } | null> {
+export function describeFor(deps: Pick<DecideDeps, "getPool">): InviteDescriber {
   return async (inviteId) => {
     const id = proposalOfInvite(inviteId);
     if (!id) return null;
     const pool = deps.getPool();
     const proposal = await store.readOpenProposal(pool, id);
     if (!proposal || proposal.status !== "adopted") return null;
-    return { roles: await roleNames(pool, proposal), name: proposal.name ?? null, email: proposal.email ?? null };
+    // `mailed`: the link went only to the address, and nobody else was handed it (audit, 15 Nov 2026). A link the
+    // email did not carry was given to the adopter to pass on, so opening it proves nothing about the address.
+    const mailed = (await store.invitationSentOf(pool, proposal.id))?.emailed === true;
+    return { roles: await roleNames(pool, proposal), name: proposal.name ?? null, email: proposal.email ?? null, mailed };
   };
 }
 

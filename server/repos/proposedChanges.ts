@@ -160,9 +160,22 @@ export async function saveDraft(pool: Pool, id: string, draft: Record<string, un
   return Number(r?.affectedRows ?? 0) > 0;
 }
 
+/**
+ * Take one change for applying, atomically (audit, 15 Nov 2026): two accepts racing for the same row used to both
+ * read it as proposed and both apply it. Only the caller whose UPDATE changed the row goes on. A row left `applying`
+ * by a server that died mid-apply is taken again once it is ten minutes old, so nothing is stuck for good.
+ */
+export async function claimForApplying(pool: Pool, id: string, by: string): Promise<boolean> {
+  const [r] = await pool.query<any>(
+    "UPDATE `proposed_changes` SET `status` = 'applying', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND (`status` IN ('proposed','failed') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE))",
+    [by, id],
+  );
+  return Number(r?.affectedRows ?? 0) === 1;
+}
+
 export async function markAccepted(pool: Pool, id: string, a: { by: string; accepted: Record<string, unknown>; lessons: unknown[]; approvedBy: string; approvalNote: string }): Promise<boolean> {
   const [r] = await pool.query<any>(
-    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [a.by, JSON.stringify(a.accepted), JSON.stringify(a.lessons), a.approvedBy.slice(0, 120), a.approvalNote.slice(0, 400), id],
   );
   return Number(r?.affectedRows ?? 0) > 0;
@@ -170,7 +183,7 @@ export async function markAccepted(pool: Pool, id: string, a: { by: string; acce
 
 export async function markFailed(pool: Pool, id: string, by: string, error: string): Promise<void> {
   await pool.query(
-    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [by, error.slice(0, 1000), id],
   );
 }

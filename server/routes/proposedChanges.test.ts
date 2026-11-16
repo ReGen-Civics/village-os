@@ -34,6 +34,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   // Which routes say no, as the one capability gate would for a person without the power.
   const refuse = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
+  const slowTarget = { on: false };
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
@@ -47,8 +48,10 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     // A stand-in for the target routes: it records who called, and refuses where the person lacks the power.
     const fake = express();
     fake.use(express.json());
-    fake.use((req, res) => {
+    fake.use(async (req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
+      // A slow target, so accepts racing for one change are all in flight at once (the race case below).
+      if (slowTarget.on) await new Promise((r) => setTimeout(r, 300));
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
       if (req.method === "PUT" && req.path.startsWith("/api/admin/content/")) content[req.path.split("/").pop()!] = req.body;
       if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
@@ -185,6 +188,19 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(lessons.body.groups).toEqual([
       { kind: "page_content", fields: [{ field: "hero.headline", changes: [expect.objectContaining({ proposed: "A home for families on the land", accepted: "A home on the land, held together", summary: PAGE.summary })] }] },
     ]);
+  });
+
+  it("two accepts of the same change at once apply it once (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    slowTarget.on = true;
+    const both = await Promise.all([1, 2, 3].map(() => call("POST", "/api/admin/proposals/accept", { items: [{ id }] }))).finally(() => (slowTarget.on = false));
+    expect(both.map((r) => r.body.results[0].ok).filter(Boolean)).toHaveLength(1);
+    expect(hits.filter((h) => h.path === "/api/admin/faqs/steward")).toHaveLength(1);
+    expect(faqs.steward.length - before).toBe(1);
+    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [id]);
+    expect(row.status).toBe("accepted");
   });
 
   it("the dry run names the field and writes nothing", async () => {

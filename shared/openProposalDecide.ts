@@ -145,7 +145,7 @@ export const DECIDE_WORDS = {
   } satisfies Record<DoorReason, string>,
 
   // What a decision answers. Every one that sends nothing says what to do instead.
-  adoptedEmailed: (days: number) => `Adopted. Their invitation went by email. It works once and lasts ${days} days. It is below as well, if they ask you for it.`,
+  adoptedEmailed: (days: number) => `Adopted. Their invitation went to them by email. It works once and lasts ${days} days. If it does not reach them, make a new one from this page.`,
   adoptedNotEmailed: (why: NotSentWhy) => `Adopted. ${NOT_SENT[why]} Copy their invitation below and send it to them yourself.`,
   adoptedAccount: "Adopted. That address already has an account here, so no invitation was needed: their roles start on the season's first day.",
   accountTold: "They were told by email as well.",

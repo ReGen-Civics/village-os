@@ -349,6 +349,7 @@ import {
   removeFiles,
   stampOf,
 } from "./lib/uploadsSweep";
+import { SUBMISSION_ATTACHMENT_DIRNAME, attachmentHeaders, attachmentName, attachmentPath, removeAttachment, sweepUnsentAttachments } from "./lib/submissionAttachments";
 import { uploadVariant } from "./lib/uploadVariants";
 import { isResizableUpload, parseUploadVariant, uploadSrcSet } from "../shared/uploadVariants";
 import { planUploadsArchive, streamUploadsArchive } from "./lib/uploadsArchive";
@@ -1065,6 +1066,7 @@ const ORG_CORRECTIONS_SEED_FILE = path.join(SEEDS_DIR, "org-chart-corrections-20
 /** Ledger of one-shot data fixes already applied to this deployment's volume. */
 // migrations.json retired in S12 — the runOnce ledger is app_config 'data-migrations'.
 const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
+const SUBMISSION_FILES_DIR = path.join(DATA_DIR, SUBMISSION_ATTACHMENT_DIRNAME); // a form's attachment, never on the public volume (server/lib/submissionAttachments.ts)
 /**
  * The bootstrap password — used ONCE, to create a deployment's first founder,
  * and inert afterwards.
@@ -2959,7 +2961,7 @@ function withRoleHolderLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 /** The module-local singletons and the volume path the erasure sweep cannot import. */
-const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), notify };
+const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, submissionFileDir: SUBMISSION_FILES_DIR, proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), notify };
 
 /** Role ids a member holds. */
 function roleIdsFor(userId: string): string[] {
@@ -4570,9 +4572,9 @@ async function runRetentionSweep(): Promise<string> {
         const name = path.basename(String((row as any)?.data?.attachment ?? "").trim());
         if (!name || keptFiles.has(name) || !isProposalAttachment(name)) continue;
         try {
-          fs.unlinkSync(path.join(UPLOADS_DIR, name));
+          removeAttachment(SUBMISSION_FILES_DIR, UPLOADS_DIR, name);
         } catch {
-          /* already gone, or never written — the row still goes */
+          /* unreadable now: the row still goes */
         }
       }
       // By id, so a sweep that ages out the whole queue cannot take a
@@ -4581,6 +4583,9 @@ async function runRetentionSweep(): Promise<string> {
       parts.push(`${before.length - keep.length} submission(s)`);
     }
   }
+  // An attachment nobody ever sent with a form goes after two days (server/lib/submissionAttachments.ts).
+  const unsent = sweepUnsentAttachments(SUBMISSION_FILES_DIR, new Set(submissionsRepo.all().map((s: any) => attachmentName(s?.data?.attachment)).filter((n): n is string => !!n)));
+  if (unsent) parts.push(`${unsent} unsent attachment(s)`);
   const bodies = await sweepContactBodies(getPool(), numberVar("map.contact_retention_days"));
   if (bodies) parts.push(`${bodies} contact body(ies)`);
   const idleContacts = await sweepIdleContacts(getPool(), numberVar("comms.retention_months")); if (idleContacts) parts.push(`${idleContacts} unused email contact(s)`); // Village Comms 5.17: nobody written to, nothing on record
@@ -8136,8 +8141,8 @@ async function startServer() {
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
-    makeHandle: (name) => uniqueHandle(slugifyHandle(name)),
-    encodeToken: (userId, email) => encodeToken(AUTH_TOKEN_SECRET, userId, email),
+    makeHandle: (name) => uniqueHandle(slugifyHandle(name)), endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), // an invitation taking over an unproved account
+    encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v),
   });
   registerInviteRoutes(app, { authedUser, getPool, members, guardCapability, mayAct, overLimit, clientIp, invites: inviteDoor });
   registerJoinAnswerRoutes(app, { authedUser, getPool, members, guardCapability, submissionsRepo, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, notify }); // Accept emails the invitation, Decline a kind no (sheet A5)
@@ -17004,7 +17009,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         // The filter above read the browser's claim; this reads the bytes (R107).
         if (clean.kind !== "image" && clean.kind !== "pdf") return res.status(400).json({ error: "Only images or PDF are allowed" });
         const filename = stampedName("proposal", clean.ext || ".bin");
-        writeToVolume(UPLOADS_DIR, filename, clean.bytes);
+        writeToVolume(SUBMISSION_FILES_DIR, filename, clean.bytes); // off the public volume (audit, 15 Nov 2026)
         res.json({ filename, originalName: req.file.originalname });
       } catch (e) {
         if (e instanceof CarriesLocationData) return res.status(400).json({ error: e.message });
@@ -17016,6 +17021,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
         return res.status(400).json({ error: "That file could not be read." });
       }
     });
+  });
+
+  // The only door onto a form's attachment: an admin, private, nosniff, a PDF as a download (server/lib/submissionAttachments.ts).
+  app.get("/api/admin/submission-attachments/:filename", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const found = attachmentPath(SUBMISSION_FILES_DIR, UPLOADS_DIR, req.params.filename);
+    if (!found) return res.status(404).json({ error: "Not found" });
+    res.set(attachmentHeaders(path.basename(found))).send(fs.readFileSync(found));
   });
 
   registerBrandUploadRoutes(app, { isAdmin, uploadsDir: UPLOADS_DIR });
@@ -17433,6 +17446,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   };
   app.get("/api/uploads/:filename", async (req, res) => {
     const safe = path.basename(req.params.filename);
+    // A form's attachment is never served here, a file written to this volume before the change included (audit, 15 Nov 2026).
+    if (attachmentName(safe)) return res.status(404).json({ error: "Not found" });
     /*
      * 0093: a photograph that is hidden or taken down stops being served
      * here, not only in the galleries.

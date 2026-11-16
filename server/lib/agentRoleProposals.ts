@@ -25,7 +25,7 @@
  */
 import { agentKeySlug, endSeating, listOrgAssignments, seatHolder } from "./orgChart";
 import { resolveSeatTerm, type SeatCalendar } from "../../shared/seatTerms";
-import { listOpenProposals, type StoredOpenProposal } from "../repos/openProposals";
+import { proposalsForAgent, type StoredOpenProposal } from "../repos/openProposals";
 import type { Pool } from "mysql2/promise";
 
 /**
@@ -40,6 +40,11 @@ import type { Pool } from "mysql2/promise";
  * An agent nobody has recorded as kept may be proposed by any member, and that
  * proposal is then the record. One with a recorded keeper is proposed only by
  * that keeper, so no member can say they keep somebody else's agent.
+ *
+ * Read by the agent's id with no cap (audit, 15 Nov 2026), and a claim waiting
+ * on the circle counts as much as an adopted one. The read and the claim it
+ * guards run under one lock per agent (`whileAgentClaimHeld`), so two members
+ * claiming the same unkept agent at once cannot both pass.
  */
 export async function recordedKeepers(pool: Pool, agent: { id: string; name: string }): Promise<Set<string>> {
   const keepers = new Set<string>();
@@ -47,10 +52,34 @@ export async function recordedKeepers(pool: Pool, agent: { id: string; name: str
   for (const a of await listOrgAssignments(pool)) {
     if (a.isAgent && !a.endedAt && a.holderKey === key && a.keeperUserId) keepers.add(a.keeperUserId);
   }
-  for (const p of await listOpenProposals(pool, ["confirmed", "adopted"], 2000)) {
+  for (const p of await proposalsForAgent(pool, agent.id, ["unconfirmed", "confirmed", "adopted"])) {
     if (p.body.agent?.agentUserId === agent.id && p.body.agent.keeperUserId) keepers.add(p.body.agent.keeperUserId);
   }
   return keepers;
+}
+
+/** The answer when the lock on an agent's claim could not be had in time. */
+export const AGENT_CLAIM_BUSY = Symbol("agent-claim-busy");
+
+/**
+ * Run `work` while this connection holds the one named lock for claims on this
+ * agent, so the keeper check and the proposal it lets in are one step to every
+ * other claim. AGENT_CLAIM_BUSY when the lock did not come within 5 seconds.
+ */
+export async function whileAgentClaimHeld<T>(pool: Pool, agentUserId: string, work: () => Promise<T>): Promise<T | typeof AGENT_CLAIM_BUSY> {
+  const name = `agent-claim:${agentUserId}`.slice(0, 64);
+  const conn = await pool.getConnection();
+  try {
+    const [rows] = await conn.query<any[]>("SELECT GET_LOCK(?, 5) AS got", [name]);
+    if (Number(rows[0]?.got) !== 1) return AGENT_CLAIM_BUSY;
+    try {
+      return await work();
+    } finally {
+      await conn.query("SELECT RELEASE_LOCK(?)", [name]).catch(() => undefined);
+    }
+  } finally {
+    conn.release();
+  }
 }
 
 /** Whether this member may say they keep the agent: nobody recorded yet, or only them. */
@@ -66,7 +95,7 @@ export function mayKeep(keepers: ReadonlySet<string>, memberId: string): boolean
 export async function rolesAlreadyAsked(pool: Pool, agent: { id: string; name: string }, roleIds: readonly string[]): Promise<string[]> {
   const wanted = new Set(roleIds);
   const hit = new Set<string>();
-  for (const p of await listOpenProposals(pool, ["unconfirmed", "confirmed"], 2000)) {
+  for (const p of await proposalsForAgent(pool, agent.id, ["unconfirmed", "confirmed"])) {
     if (p.body.agent?.agentUserId !== agent.id) continue;
     for (const r of p.body.roles) if (wanted.has(r.roleId)) hit.add(r.roleId);
   }

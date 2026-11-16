@@ -88,6 +88,7 @@ import type { SeatCalendar } from "../../shared/seatTerms";
 import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
+import { anyAddressAccount } from "../lib/applicantAccount";
 import { agreedOf, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
@@ -711,6 +712,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       });
     }
 
+    // No account that proved the address (server/lib/applicantAccount.ts). One only typed at it is still asked one thing:
+    // somebody who left the village is welcomed back by its own act, here as on the account path above.
+    const typedAt = await anyAddressAccount(members, p.email);
+    if (typedAt && (await isFormerMemberAccount(work, typedAt))) return res.status(409).json({ error: "former_member", message: DECIDE_WORDS.formerMember });
     // No account: the invitation and the decision, one transaction under the holder's row lock.
     const token = mintInviteToken();
     const input = { id: openInviteId(p.id), tokenHash: hashInviteToken(token), inviterUserId: actorId, days: INVITE_DAYS };
@@ -742,12 +747,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
+    // The link goes to the address and to nobody else (audit, 15 Nov 2026): a link the adopter could open would let
+    // them make the applicant's account as if they read the applicant's mail. Handed back only when the email did not
+    // go, for the adopter to pass on, and such a link proves no address (`describeFor`, server/lib/openProposalDecide.ts).
     res.json({
       success: true,
       status: "adopted",
       decided,
       account: false,
-      invitation: { link, emailed: why === null },
+      invitation: { link: why === null ? null : link, emailed: why === null },
       application: null,
       message: why === null ? DECIDE_WORDS.adoptedEmailed(INVITE_DAYS) : DECIDE_WORDS.adoptedNotEmailed(why),
     });
@@ -944,7 +952,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     await store.noteInvitationSent(pool, p.id, now(), why === null);
     res.json({
       success: true,
-      link,
+      // Only when the email did not go: the same rule as the adoption above.
+      link: why === null ? null : link,
       emailed: why === null,
       message: `${DECIDE_WORDS.reissued(INVITE_DAYS)} ${why === null ? DECIDE_WORDS.reissuedEmailed : DECIDE_WORDS.reissuedNotEmailed(why)}`,
     });

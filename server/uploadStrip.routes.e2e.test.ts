@@ -89,6 +89,21 @@ async function postVaultDoc(bytes: Buffer, name: string, type: string) {
   return { status: res.status, json, text };
 }
 
+/** A form's attachment, through the only door that serves it: an admin's (audit, 15 Nov 2026). */
+async function fetchAttachment(filename: string, token = founderToken): Promise<{ status: number; bytes: Buffer; disposition: string; nosniff: string }> {
+  const res = await fetch(`${BASE}/api/admin/submission-attachments/${filename}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} }); // module-review-ok: the test client dialling the built server on localhost
+  return {
+    status: res.status,
+    bytes: Buffer.from(await res.arrayBuffer()),
+    disposition: String(res.headers.get("content-disposition") ?? ""),
+    nosniff: String(res.headers.get("x-content-type-options") ?? ""),
+  };
+}
+
+/** The private folder a form's attachment is written to, off the public uploads volume. */
+const attachmentsDir = () => path.join(dataDir, "private-submission-attachments");
+const attachmentsNow = (): string[] => (fs.existsSync(attachmentsDir()) ? fs.readdirSync(attachmentsDir()) : []);
+
 async function fetchUpload(filename: string): Promise<{ status: number; bytes: Buffer; cacheControl: string }> {
   const res = await fetch(`${BASE}/api/uploads/${filename}`); // module-review-ok: the test client dialling the built server on localhost
   return {
@@ -176,15 +191,19 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
     const filename = String(up.json?.filename ?? "");
     expect(filename).toMatch(/^proposal-\d+-[a-z0-9]+\.jpg$/);
 
-    // Off the volume the server wrote it to.
-    const onDisk = fs.readFileSync(path.join(dataDir, "uploads", filename));
+    // Off the private folder the server wrote it to, never the public uploads volume.
+    expect(fs.existsSync(path.join(dataDir, "uploads", filename)), "a form's attachment is not on the public volume").toBe(false);
+    const onDisk = fs.readFileSync(path.join(attachmentsDir(), filename));
     expect((await sharp(onDisk).metadata()).exif, "the stored file still carries EXIF").toBeFalsy();
     expect(onDisk.includes(Buffer.from(FIXTURE_CAMERA)), "the stored file still names the camera").toBe(false);
     expect(onDisk.includes(Buffer.from("Exif")), "the stored file still carries an EXIF container").toBe(false);
 
-    // And through the serving route, which is how a stranger would read it.
-    const served = await fetchUpload(filename);
+    // A stranger holding the name reads nothing; an admin reads it stripped, through their own door.
+    expect((await fetchUpload(filename)).status, "the public uploads route never serves a form's attachment").toBe(404);
+    expect((await fetchAttachment(filename, "")).status, "the admin door asks who is calling").toBe(401);
+    const served = await fetchAttachment(filename);
     expect(served.status).toBe(200);
+    expect(served.nosniff).toBe("nosniff");
     expect((await sharp(served.bytes).metadata()).exif).toBeFalsy();
     expect(served.bytes.includes(Buffer.from(FIXTURE_CAMERA))).toBe(false);
   });
@@ -192,7 +211,7 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
   it("keeps the picture usable: same dimensions, same format", async () => {
     const up = await postAttachment(await geotagged(1600, 1200), "wide.jpg", "image/jpeg");
     expect(up.status, up.text).toBe(200);
-    const onDisk = fs.readFileSync(path.join(dataDir, "uploads", String(up.json.filename)));
+    const onDisk = fs.readFileSync(path.join(attachmentsDir(), String(up.json.filename)));
     const meta = await sharp(onDisk).metadata();
     expect(meta.width, "a scan must come out the size it went in").toBe(1600);
     expect(meta.height).toBe(1200);
@@ -206,7 +225,7 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
     expect(up.status, up.text).toBe(400);
     expect(up.json.error).toContain("GPS coordinates");
     // Refused BEFORE any write: nothing was left on the volume for the sweep.
-    const left = fs.readdirSync(path.join(dataDir, "uploads")).filter((f) => f.endsWith(".pdf"));
+    const left = [...fs.readdirSync(path.join(dataDir, "uploads")), ...attachmentsNow()].filter((f) => f.endsWith(".pdf"));
     expect(left).toEqual([]);
   });
 
@@ -214,8 +233,12 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
     const pdf = buildPdfEmbedding(await plainJpeg(240, 180));
     const up = await postAttachment(pdf, "cv.pdf", "application/pdf");
     expect(up.status, up.text).toBe(200);
-    const onDisk = fs.readFileSync(path.join(dataDir, "uploads", String(up.json.filename)));
+    const onDisk = fs.readFileSync(path.join(attachmentsDir(), String(up.json.filename)));
     expect(onDisk.equals(pdf), "an ordinary PDF must reach the volume byte for byte").toBe(true);
+    // Served to an admin as a download, never inline in the village's origin.
+    const served = await fetchAttachment(String(up.json.filename));
+    expect(served.status).toBe(200);
+    expect(served.disposition).toMatch(/^attachment;/);
   });
 
   it("still refuses the file types it always refused", async () => {
@@ -226,11 +249,11 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
 
   it("refuses bytes that are neither an image nor a PDF, whatever type the browser claimed (R107)", async () => {
     // The type filter reads the browser's claim. The bytes are what is stored.
-    const before = fs.readdirSync(path.join(dataDir, "uploads")).length;
+    const before = fs.readdirSync(path.join(dataDir, "uploads")).length + attachmentsNow().length;
     const up = await postAttachment(Buffer.from("<html><script>alert(1)</script></html>"), "x.html", "image/png");
     expect(up.status, up.text).toBe(400);
     expect(up.text).toContain("Only images or PDF");
-    expect(fs.readdirSync(path.join(dataDir, "uploads")).length, "nothing was written").toBe(before);
+    expect(fs.readdirSync(path.join(dataDir, "uploads")).length + attachmentsNow().length, "nothing was written").toBe(before);
   });
 
   /*
@@ -253,13 +276,14 @@ describe.skipIf(!DB_CONFIGURED)("the public proposal attachment door", () => {
       data: { name: "Cora Leaver", email, message: "I build earth ovens", attachment: filename, attachmentName: "Cora-CV.pdf" },
     }, token);
     expect(sent.status, sent.text).toBe(200);
-    expect((await fetchUpload(filename)).status, "the control: the CV is served to anybody holding its name").toBe(200);
+    expect((await fetchUpload(filename)).status, "a stranger holding its name reads nothing").toBe(404);
+    expect((await fetchAttachment(filename)).status, "the control: an admin reads the CV").toBe(200);
 
     const gone = await call("POST", "/api/profile/delete-account", { password }, token);
     expect(gone.status, gone.text).toBe(200);
 
-    expect((await fetchUpload(filename)).status, "the address answers nothing once they have gone").toBe(404);
-    expect(fs.existsSync(path.join(dataDir, "uploads", filename)), "the file is off the volume").toBe(false);
+    expect((await fetchAttachment(filename)).status, "the admin door answers nothing once they have gone").toBe(404);
+    expect(fs.existsSync(path.join(attachmentsDir(), filename)), "the file is off the private folder").toBe(false);
     const inbox = await call("GET", "/api/admin/submissions");
     expect(inbox.status, inbox.text).toBe(200);
     expect(JSON.stringify(inbox.json), "the inbox no longer names the file").not.toContain(filename);

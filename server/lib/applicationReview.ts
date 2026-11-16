@@ -231,9 +231,9 @@ async function confirmedDetail(db: Db, ref: string): Promise<{ roleIds: string[]
 /** Whether this account is the applicant. By stored account, or for an open proposal by its address's account. */
 export async function isApplicant(deps: ReviewDeps, ref: string, userId: string): Promise<boolean> {
   const pool = deps.getPool();
-  const d = await confirmedDetail(pool, ref);
-  if (d?.applicantUserId === userId) return true;
-  if (kindOfRef(ref) !== "open") return false;
+  if (kindOfRef(ref) !== "open") return (await confirmedDetail(pool, ref))?.applicantUserId === userId;
+  // An open proposal is asked now, never by the account stored at confirm: a row confirmed before the
+  // audit of 15 Nov 2026 may have stored an account that never proved the address (server/lib/applicantAccount.ts).
   const p = await proposals.readOpenProposal(pool, ref);
   return !!p && (await trustedAccountFor(deps.members, p)) === userId;
 }

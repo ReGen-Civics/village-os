@@ -316,9 +316,21 @@ export function register(app: Express, deps: Deps): void {
       const body = finalBody(c, obj(it)?.body);
       // The latest edits are kept even when the change fails, so fixing it starts from them.
       if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
+      // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
+      if (!(await store.claimForApplying(pool, id, uid))) {
+        results.push({ id, ok: false, error: REVIEW_WORDS.notProposed });
+        continue;
+      }
       const kd = kindDeps();
-      const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-      const out = checked.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: checked.error, field: checked.field };
+      let out: { ok: true } | { ok: false; error: string; field?: string | null };
+      try {
+        const checked = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
+        out = checked.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: checked.error, field: checked.field };
+      } catch (e) {
+        // Put back where a person can see it and try again, never left claimed.
+        await store.markFailed(pool, id, uid, String((e as Error)?.message ?? e).slice(0, 400));
+        throw e;
+      }
       if (!out.ok) {
         await store.markFailed(pool, id, uid, out.error);
         await recordEvent(pool, { kind: "proposed_change", text: `A proposed change did not land: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });

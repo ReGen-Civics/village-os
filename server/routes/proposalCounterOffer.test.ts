@@ -83,7 +83,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     pool = testPool(db, { connectionLimit: 6 });
     fileDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-decide-files-"));
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", paths: [] } as any);
+    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await users.update(HIGH.id, (u: any) => {
       u.stageGranted = "co-creator";
     });

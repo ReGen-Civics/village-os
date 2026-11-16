@@ -84,7 +84,8 @@ import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
 import { clearAboutYouDecidedBefore } from "../repos/seatApplications";
-import { accountFor, arrivalFor, confirmAndAsk, describeFor, tellTheCircle } from "../lib/openProposalDecide";
+import { arrivalFor, confirmAndAsk, describeFor, tellTheCircle } from "../lib/openProposalDecide";
+import { addressAccount } from "../lib/applicantAccount";
 import { whenInviteDescribed, whenInvitedArrives } from "../lib/inviteDoor";
 import { alignAtApplication, carryToAccount, type SigningDoor } from "../lib/applicationMembership";
 import { currentLetter } from "../lib/membershipLetter";
@@ -658,7 +659,7 @@ export function register(app: Express, deps: Deps): void {
       if (letter.version !== asked.letterVersion) return;
       await inApplicationTransaction(getPool(), (conn) => alignAtApplication(conn, { letter, email: p.email as string, proposalId: p.id, now: at }));
       // An account already here with this address: carried now, with the signing request a steward accepts.
-      const account = await accountFor(deps.members, p.email);
+      const account = await addressAccount(deps.members, p.email);
       if (account && deps.signings) {
         const m: any = await deps.members.byId(account);
         await carryToAccount(getPool(), deps.signings, { userId: account, name: String(m?.name ?? ""), email: p.email, now: at });
