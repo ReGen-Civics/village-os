@@ -156,7 +156,115 @@ export interface DerivedTheme {
   card: CharacterCard;
   /** Font stacks the card implies (explicit theme.font* fields beat these). */
   fonts: { display: string; body: string; accent: string };
+  /** The scheme the page is drawn in (`theme.mode`). Light unless a village chose dark. */
+  mode: ThemeMode;
+  /**
+   * In the dark scheme only: the light palette Admin keeps (Admin is light by
+   * ruling, 2026-09-04). themeCss emits it on `.admin-root`. Null in light.
+   */
+  lightVars: Record<string, string> | null;
 }
+
+// ── The scheme, and the colours a village sets itself (gap G1) ─────────────
+
+/**
+ * `theme.mode` (DESIGN_TOKENS_SPEC §3.2). Only the exact word "dark" turns the
+ * page dark; anything else, absent included, is light, so a stray value can
+ * never repaint a village.
+ */
+export type ThemeMode = "light" | "dark";
+export function themeModeOf(raw: unknown): ThemeMode {
+  return raw === "dark" ? "dark" : "light";
+}
+
+/**
+ * The slots `theme.overrides` may set (DESIGN_TOKENS_SPEC §3.3). A closed list:
+ * a key outside it is dropped, so an override can only ever name a colour the
+ * platform already reads. Colour slots take `#rrggbb`; `--radius` takes rem.
+ */
+export const OVERRIDE_SLOTS = [
+  "--background", "--foreground", "--card", "--card-foreground", "--popover", "--popover-foreground",
+  "--primary", "--primary-foreground", "--primary-hover", "--secondary", "--secondary-foreground",
+  "--accent", "--accent-foreground", "--muted", "--muted-foreground", "--border", "--input", "--ring",
+  "--destructive", "--destructive-foreground", "--sidebar", "--sidebar-foreground",
+  "--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5",
+  "--tone-brand", "--tone-brand-hover", "--tone-brand-mid", "--tone-brand-soft", "--tone-brand-text",
+  "--tone-brand-band", "--tone-sun", "--tone-sun-on-band", "--tone-mist", "--tone-mist-light", "--tone-cream",
+  "--radius",
+] as const;
+export type OverrideSlot = (typeof OVERRIDE_SLOTS)[number];
+const OVERRIDE_SET: ReadonlySet<string> = new Set(OVERRIDE_SLOTS);
+
+/**
+ * The stored `theme.overrides` map, cleaned. Keys may be written with or
+ * without the leading `--`. A value that is not a 6-digit hex (or, for the
+ * radius, a number of rem from 0 to 1.5) is dropped, never repaired: the
+ * stylesheet is built from what survives, so nothing here reaches CSS raw.
+ */
+export function sanitizeOverrides(raw: unknown): Partial<Record<OverrideSlot, string>> {
+  const out: Partial<Record<OverrideSlot, string>> = {};
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+  for (const [k0, v0] of Object.entries(raw as Record<string, unknown>)) {
+    const k = (k0.startsWith("--") ? k0 : `--${k0}`) as OverrideSlot;
+    if (!OVERRIDE_SET.has(k)) continue;
+    if (k === "--radius") {
+      const n = typeof v0 === "number" ? v0 : typeof v0 === "string" ? Number(v0.trim().replace(/rem$/, "")) : NaN;
+      if (Number.isFinite(n) && n >= 0 && n <= 1.5) out[k] = `${Math.round(n * 1000) / 1000}rem`;
+      continue;
+    }
+    if (typeof v0 === "string" && /^#[0-9a-f]{6}$/i.test(v0.trim())) out[k] = v0.trim().toLowerCase();
+  }
+  return out;
+}
+
+/**
+ * The legible partner for a ground: the current ink when it already clears
+ * `floor`, otherwise whichever of a dark or a light ink of the ground's own
+ * hue reads better, pushed until it clears. Used when a village sets a ground
+ * and leaves its ink to the platform (the `enforce` policy, §3.2).
+ */
+export function inkOn(groundHex: string, currentInk: string | undefined, floor: number): string {
+  if (currentInk && /^#[0-9a-f]{6}$/i.test(currentInk) && contrastRatio(currentInk, groundHex) >= floor) return currentInk;
+  const g = hexToHsl(groundHex) ?? { h: 0, s: 0, l: 0.5 };
+  const dark = hslToHex(atContrast({ h: g.h, s: Math.min(0.45, g.s), l: 0.14 }, groundHex, floor, true));
+  const light = hslToHex(atContrast({ h: g.h, s: Math.min(0.3, g.s), l: 0.95 }, groundHex, floor, false));
+  return contrastRatio(dark, groundHex) >= contrastRatio(light, groundHex) ? dark : light;
+}
+
+/** The ground a pair of grounds shares the worst text on: the one an ink reads least well against. */
+function hardestGround(ink: string, grounds: string[]): string {
+  return grounds.reduce((worst, g) => (contrastRatio(ink, g) < contrastRatio(ink, worst) ? g : worst), grounds[0]);
+}
+
+/** An ink of `hue` that clears `floor` on every ground given, by moving lighter (dark scheme). */
+function lightInkOnAll(seed: Hsl, grounds: string[], floor: number): string {
+  let hex = hslToHex(seed);
+  for (let i = 0; i < 4; i++) {
+    const g = hardestGround(hex, grounds);
+    if (contrastRatio(hex, g) >= floor) break;
+    hex = hslToHex(atContrast(hexToHsl(hex)!, g, floor, false));
+  }
+  return hex;
+}
+
+/**
+ * The light ink literals index.css ships for the status colours (`@theme
+ * inline`). The dark scheme lifts each one for the night page, and Admin's
+ * light zone puts these back. brandTokens.test.ts holds them to index.css.
+ */
+export const LIGHT_STATUS_INKS: Record<string, string> = {
+  "--color-sage": "#3d6e4a",
+  "--color-coral": "#9b4030",
+  "--color-amber-ink": "#8d5e19",
+  "--color-gold": "#a06b1c",
+  "--sheet-notice": "#8d5e19",
+  "--sheet-open": "#3d6e4a",
+};
+/** index.css `:root`'s destructive pair, which Admin's light zone keeps. */
+export const LIGHT_DESTRUCTIVE: Record<string, string> = {
+  "--destructive": "oklch(0.577 0.245 27.325)",
+  "--destructive-foreground": "oklch(0.985 0 0)",
+};
 
 const AA_BODY = 4.5;
 const AA_LARGE = 3.0;
@@ -201,6 +309,7 @@ export function deriveTheme(
   seedHex: string | undefined | null,
   cardId: string | undefined | null,
   accentHex?: string | null,
+  options?: { mode?: unknown; overrides?: unknown } | null,
 ): DerivedTheme | null {
   const seed = seedHex ? hexToHsl(seedHex) : null;
   if (!seed) return null;
@@ -467,7 +576,228 @@ export function deriveTheme(
     "--sheet-earned-highlight-wash-soft": rgbaOf(nightGoldLit, 0.02),
   };
 
-  return { vars, contrast, card, fonts: cardFontStacks(card) };
+  const mode = themeModeOf(options?.mode);
+  const overrides = sanitizeOverrides(options?.overrides);
+  // A village that chose neither a dark page nor a colour of its own gets
+  // exactly what every village got before either existed.
+  if (mode === "light" && Object.keys(overrides).length === 0) {
+    return { vars, contrast, card, fonts: cardFontStacks(card), mode, lightVars: null };
+  }
+  const night = { ground: nightGround, panel: nightPanel, raised: nightRaised, ink: nightInk, dim: nightDim, edge: nightEdge, gold: nightGold };
+  return withScheme({ vars, nightPairs: pairs.filter((p) => p.name.startsWith("night ")), adjusted, seed, sat, night, mode, overrides, card });
+}
+
+/**
+ * THE DARK SCHEME AND THE VILLAGE'S OWN COLOURS (gap G1).
+ *
+ * The night layer above was always the dark world: the role card, the sheet
+ * and Admin's Night look draw on it, and index.css said promoting it to the
+ * page was "a move, not a rewrite". In the dark scheme this is that move. The
+ * page's grounds and inks become the night's, the status inks are lifted to
+ * read on them, and the primary is found where its ink reads best, dark ink on
+ * a light primary when that is the better pair, so a gold button carries dark
+ * ink instead of white.
+ *
+ * Overrides then set any slot from OVERRIDE_SLOTS exactly. A ground a village
+ * sets keeps its ink only if that ink still clears; otherwise the ink is
+ * derived for it (`enforce`). An ink a village sets is kept as given. Every
+ * pair the page draws is then MEASURED on the final values, so an override
+ * can fail, and the report says so (amendment A3): choosing exact colours
+ * costs the guarantee, visibly.
+ */
+function withScheme(i: {
+  vars: Record<string, string>;
+  nightPairs: ContrastPair[];
+  adjusted: boolean;
+  seed: Hsl;
+  sat: (mul: number) => number;
+  night: { ground: string; panel: string; raised: string; ink: string; dim: string; edge: string; gold: string };
+  mode: ThemeMode;
+  overrides: Partial<Record<OverrideSlot, string>>;
+  card: CharacterCard;
+}): DerivedTheme {
+  const { night, mode, overrides, seed } = i;
+  const out: Record<string, string> = { ...i.vars };
+  const set = (k: string) => k in overrides;
+
+  if (mode === "dark") {
+    Object.assign(out, {
+      "--background": night.ground,
+      "--foreground": night.ink,
+      "--card": night.panel,
+      "--card-foreground": night.ink,
+      "--popover": night.panel,
+      "--popover-foreground": night.ink,
+      "--muted": night.raised,
+      "--muted-foreground": night.dim,
+      "--accent": night.raised,
+      "--accent-foreground": night.ink,
+      "--border": night.edge,
+      "--input": night.edge,
+      "--ring": night.gold,
+      "--sidebar": night.panel,
+      "--sidebar-foreground": night.ink,
+      "--sidebar-accent": night.raised,
+      "--sidebar-accent-foreground": night.ink,
+      "--sidebar-border": night.edge,
+      "--sidebar-ring": night.gold,
+    });
+    // The primary: the seed's hue, lifted until it reads as a shape on a
+    // panel (3:1) and a dark ink of its own hue clears AA body on it. Most
+    // seeds land on a light primary with dark ink; that is the dark scheme's
+    // convention, and it is what lets gold be the button.
+    let p: Hsl = { h: seed.h, s: i.sat(1), l: Math.max(0.5, seed.l) };
+    for (let n = 0; n < 50; n++) {
+      const hex = hslToHex(p);
+      const ink = inkOn(hex, undefined, AA_BODY);
+      // Room for the hover too: one step darker must still carry the ink.
+      const hover = hslToHex(atContrast(p, hex, HOVER_STEP, true));
+      if (contrastRatio(hex, night.panel) >= AA_LARGE && contrastRatio(ink, hex) >= AA_BODY && contrastRatio(ink, hover) >= AA_BODY) break;
+      p = { ...p, l: Math.min(0.95, p.l + 0.01) };
+    }
+    out["--primary"] = hslToHex(p);
+    out["--primary-foreground"] = inkOn(out["--primary"], undefined, AA_BODY);
+  }
+
+  for (const [k, v] of Object.entries(overrides)) out[k] = v as string;
+
+  // Inks follow their grounds unless the village set the ink too.
+  const PARTNERS: Array<[string, string]> = [
+    ["--background", "--foreground"],
+    ["--card", "--card-foreground"],
+    ["--popover", "--popover-foreground"],
+    ["--primary", "--primary-foreground"],
+    ["--secondary", "--secondary-foreground"],
+    ["--accent", "--accent-foreground"],
+    ["--sidebar", "--sidebar-foreground"],
+    ["--destructive", "--destructive-foreground"],
+  ];
+  for (const [ground, ink] of PARTNERS) {
+    if (!out[ground] || set(ink)) continue;
+    if (set(ground) || mode === "dark") out[ink] = inkOn(out[ground], out[ink], AA_BODY);
+  }
+  // Muted text lands on the page, the card and the muted panel alike.
+  if (!set("--muted-foreground")) {
+    const grounds = [out["--muted"], out["--card"], out["--background"]];
+    const mf = out["--muted-foreground"];
+    if (grounds.some((g) => contrastRatio(mf, g) < AA_BODY)) {
+      const hardest = hardestGround(mf, grounds);
+      const lighter = luminance(hardest) < 0.18;
+      out["--muted-foreground"] = lighter
+        ? lightInkOnAll(hexToHsl(mf)!, grounds, AA_BODY)
+        : hslToHex(atContrast(hexToHsl(mf)!, hardest, AA_BODY, true));
+    }
+  }
+  // A border the village did not set is re-measured against the panels it
+  // edges (WCAG 1.4.11, 3:1), so an overridden card never strands it.
+  if (mode === "dark" && !set("--border")) {
+    const edges = [out["--card"], out["--muted"], out["--background"]];
+    if (edges.some((g) => contrastRatio(out["--border"], g) < AA_LARGE)) {
+      out["--border"] = lightInkOnAll(hexToHsl(out["--border"])!, edges, AA_LARGE);
+      if (!set("--input")) out["--input"] = out["--border"];
+      if (!("--sidebar-border" in overrides)) out["--sidebar-border"] = out["--border"];
+    }
+  }
+  if (!set("--sidebar-primary") && (set("--primary") || mode === "dark")) {
+    out["--sidebar-primary"] = out["--primary"];
+    out["--sidebar-primary-foreground"] = out["--primary-foreground"];
+  }
+
+  // The primary under the pointer, carrying the primary's own ink. Emitted
+  // only here: a light village with no overrides hovers to --tone-brand-hover
+  // as before, and index.css falls back to it. Darker when the ink allows it
+  // (Rye, 2026-09-21: hover goes darker, never back to the soft tone).
+  if (!set("--primary-hover") && (set("--primary") || set("--primary-foreground") || mode === "dark")) {
+    const prim = out["--primary"];
+    const fg = out["--primary-foreground"];
+    const ph = hexToHsl(prim)!;
+    const darker = hslToHex(atContrast(ph, prim, HOVER_STEP, true));
+    const lighter = hslToHex(atContrast(ph, prim, HOVER_STEP, false));
+    out["--primary-hover"] =
+      contrastRatio(fg, darker) >= AA_BODY && luminance(darker) < luminance(prim) ? darker
+      : contrastRatio(fg, lighter) >= AA_BODY ? lighter
+      : prim;
+  }
+
+  if (mode === "dark") {
+    const grounds = [out["--background"], out["--card"], out["--muted"]];
+    // The brand as TEXT on the night page (`text-teal-deep`). --tone-brand
+    // itself stays dark enough to carry white, because `bg-teal-deep
+    // text-white` is how most of the app draws a brand button.
+    if (!set("--tone-brand-text")) out["--tone-brand-text"] = lightInkOnAll(hexToHsl(out["--tone-brand"])!, grounds, AA_BODY);
+    // The status inks index.css ships are dark inks measured on white. On the
+    // night page they lift, keeping their hues; .sheet-night measured these
+    // roles first (living green, warn, gold).
+    const status: Record<string, Hsl> = {
+      "--color-sage": { h: 140, s: 0.42, l: 0.6 },
+      "--color-coral": { h: 14, s: 0.68, l: 0.63 },
+      "--color-amber-ink": hexToHsl(night.gold)!,
+      "--color-gold": hexToHsl(night.gold)!,
+    };
+    for (const [k, start] of Object.entries(status)) out[k] = lightInkOnAll(start, grounds, AA_BODY);
+    out["--sheet-notice"] = out["--color-amber-ink"];
+    out["--sheet-open"] = out["--color-sage"];
+    if (!set("--destructive")) out["--destructive"] = out["--color-coral"];
+    if (!set("--destructive-foreground")) out["--destructive-foreground"] = inkOn(out["--destructive"], out["--background"], AA_BODY);
+  }
+
+  // Every pair the page draws, measured on what is emitted.
+  const pairs: ContrastPair[] = [...i.nightPairs];
+  const m = (name: string, fg: string | undefined, bg: string | undefined, wanted: number) => {
+    if (!fg || !bg || !/^#[0-9a-f]{6}$/i.test(fg) || !/^#[0-9a-f]{6}$/i.test(bg)) return;
+    const ratio = contrastRatio(fg, bg);
+    pairs.push({ name, fg, bg, ratio: Math.round(ratio * 100) / 100, wanted, verdict: ratio >= wanted ? "pass" : "fail" });
+  };
+  m("ink on background", out["--foreground"], out["--background"], AA_BODY);
+  m("ink on card", out["--card-foreground"], out["--card"], AA_BODY);
+  m("ink on popover", out["--popover-foreground"], out["--popover"], AA_BODY);
+  m("muted text on muted", out["--muted-foreground"], out["--muted"], AA_BODY);
+  m("muted text on card", out["--muted-foreground"], out["--card"], AA_BODY);
+  m("muted text on background", out["--muted-foreground"], out["--background"], AA_BODY);
+  m("primary ink on primary", out["--primary-foreground"], out["--primary"], AA_BODY);
+  m("primary ink on primary hover", out["--primary-foreground"], out["--primary-hover"], AA_BODY);
+  m("ink on accent", out["--secondary-foreground"], out["--secondary"], AA_BODY);
+  m("accent ink on accent", out["--accent-foreground"], out["--accent"], AA_BODY);
+  m("white on brand", "#ffffff", out["--tone-brand"], AA_BODY);
+  m("white on brand hover", "#ffffff", out["--tone-brand-hover"], AA_BODY);
+  m("white on brand band", "#ffffff", out["--tone-brand-band"], AA_BODY);
+  m("accent label on brand band", out["--tone-sun-on-band"], out["--tone-brand-band"], AA_BODY);
+  m("focus ring on background", out["--ring"], out["--background"], AA_LARGE);
+  m("destructive ink on destructive", out["--destructive-foreground"], out["--destructive"], AA_BODY);
+  if (mode === "light") m("muted text on mist-light", out["--muted-foreground"], out["--tone-mist-light"], AA_BODY);
+  // A border is measured where it is the village's choice or the night's
+  // (WCAG 1.4.11, 3:1); the light derivation's soft hairline is decoration.
+  if (mode === "dark" || set("--border")) m("border on card", out["--border"], out["--card"], AA_LARGE);
+  if (mode === "dark") {
+    for (const g of ["--background", "--card", "--muted"] as const) {
+      m(`brand text on ${g.slice(2)}`, out["--tone-brand-text"], out[g], AA_BODY);
+      m(`positive ink on ${g.slice(2)}`, out["--color-sage"], out[g], AA_BODY);
+      m(`warning ink on ${g.slice(2)}`, out["--color-coral"], out[g], AA_BODY);
+      m(`notice ink on ${g.slice(2)}`, out["--color-amber-ink"], out[g], AA_BODY);
+    }
+    m("destructive text on background", out["--destructive"], out["--background"], AA_BODY);
+  }
+
+  const anyFail = pairs.some((p) => p.verdict === "fail");
+  const contrast: ContrastReport = {
+    status: anyFail ? "fail" : i.adjusted ? "adjusted" : "ok",
+    worstRatio: Math.round(Math.min(...pairs.map((p) => p.ratio)) * 100) / 100,
+    pairs,
+  };
+  if (overrides["--radius"]) out["--radius"] = overrides["--radius"];
+  return {
+    vars: out,
+    contrast,
+    card: i.card,
+    fonts: cardFontStacks(i.card),
+    mode,
+    // Admin's light zone: the light derivation as it stands, the status inks
+    // and the destructive colour index.css ships, and the light hover (the
+    // dark primary's hover would otherwise reach Admin's buttons).
+    lightVars: mode === "dark"
+      ? { ...i.vars, ...LIGHT_STATUS_INKS, ...LIGHT_DESTRUCTIVE, "--primary-hover": i.vars["--tone-brand-hover"] }
+      : null,
+  };
 }
 
 /** Resolve a card's FONT_CATALOG ids to full stacks without importing the

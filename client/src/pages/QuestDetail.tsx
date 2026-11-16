@@ -192,7 +192,7 @@ export default function QuestDetail() {
             </p>
             <Link
               href="/quests"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-teal-deep-dark transition"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary-hover transition"
             >
               <ArrowLeft className="w-4 h-4" />
               All quests

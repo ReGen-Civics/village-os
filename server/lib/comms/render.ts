@@ -165,6 +165,12 @@ export async function loadEmailVillage(pool: Pool, origin: string): Promise<Emai
     logoUrl: absoluteLogo(nonBlank(brand?.images?.logo) || GAME_CONFIG.images.logo, site),
     seed: nonBlank(brand?.theme?.seed) || null,
     character: nonBlank(brand?.theme?.character) || null,
+    // Only a village that chose the dark scheme or its own colours carries the
+    // rest of its look into letters; every other village's letters are unchanged.
+    scheme:
+      brand?.theme?.mode === "dark" || (brand?.theme?.overrides && Object.keys(brand.theme.overrides).length)
+        ? { accent: nonBlank(brand?.theme?.accent) || null, mode: nonBlank(brand?.theme?.mode) || null, overrides: brand?.theme?.overrides ?? null }
+        : null,
     postalAddress: nonBlank(settings?.postalAddress),
     tokenName: nonBlank(tokenDef(RECOGNITION_SLUG)?.name) || nonBlank(brand?.currency?.name) || GAME_CONFIG.currency.name,
   };
