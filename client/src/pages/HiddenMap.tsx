@@ -225,7 +225,7 @@ export default function HiddenMap() {
             </div>
           )}
 
-          {view === "log" && <CaptureForm me={meWithCounts} onSend={send} />}
+          {view === "log" && <CaptureForm me={meWithCounts} onSend={send} ownPins={mine} />}
           {view === "vouch" && <VouchQueue me={me} onOpen={(id) => { setSelected(id); setView("map"); }} />}
           {view === "export" && <Copies me={me} />}
         </div>
@@ -243,7 +243,7 @@ function VouchQueue({ me, onOpen }: { me: MapMe; onOpen: (id: string) => void })
   return (
     <section className={CARD} aria-labelledby="hm-queue">
       <h2 id="hm-queue" className={H2}><Trans>Waiting for a vouch</Trans></h2>
-      <p className={`${HINT} mt-1`}><Trans>Vouch only for a place you know is real: you were there, or the photos leave no doubt.</Trans></p>
+      <p className={`${HINT} mt-1`}>{me.vouchRule}</p>
       {pins === null && <p className={`${HINT} mt-4`}><Trans>Reading the queue</Trans></p>}
       {pins?.length === 0 && <p className={`${NOTE} mt-4`}><Trans>Nothing is waiting.</Trans></p>}
       <ul className="mt-4 space-y-3">

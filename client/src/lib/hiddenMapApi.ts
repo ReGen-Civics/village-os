@@ -8,7 +8,7 @@
  * boundary. A photo is read back as a blob for the same reason: an `<img src>`
  * cannot carry a token, and these photos are never public.
  */
-import type { Layer, PartnerState, PinDot, PinView, Precision, Stage } from "@shared/hiddenMap";
+import type { Layer, PartnerState, PinDot, PinView, Precision, Stage, VouchWay } from "@shared/hiddenMap";
 import { authToken, gameFetch } from "./gameApi";
 
 export interface MapMe {
@@ -26,6 +26,8 @@ export interface MapMe {
   kindPrompts: Record<Layer, string>;
   /** Whether the village pays for a planting once it is vouched. */
   plantingPays: boolean;
+  vouchWays: VouchWay[];
+  vouchRule: string;
   /** Filled by the page from the member's own pins. */
   ownPlantings?: number;
   keeper: boolean;
@@ -126,8 +128,10 @@ export async function addVisit(
   return json(res);
 }
 
-export const vouch = async (id: string) =>
-  json<{ vouches: number }>(await gameFetch(`/api/hidden-map/pins/${encodeURIComponent(id)}/vouch`, { method: "POST" }));
+export const vouch = async (id: string, seen: VouchWay) =>
+  json<{ vouches: number }>(
+    await gameFetch(`/api/hidden-map/pins/${encodeURIComponent(id)}/vouch`, { method: "POST", body: JSON.stringify({ seen }) }),
+  );
 
 export const unvouch = async (id: string) =>
   json<{ withdrawn: boolean }>(await gameFetch(`/api/hidden-map/pins/${encodeURIComponent(id)}/vouch`, { method: "DELETE" }));

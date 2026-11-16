@@ -40,8 +40,13 @@ function markSeen(userId: string, openedAt: string) {
 
 export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe; userId: string; pins: ReadonlyArray<PinView | PinDot>; onDone: () => void }) {
   const { t } = useLingui();
-  const button = useRef<HTMLButtonElement>(null);
-  useEffect(() => { button.current?.focus(); }, []);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  // Start at the top: the celebration first, then the scroll down to the button.
+  useEffect(() => {
+    root.current?.scrollTo?.({ top: 0 });
+    heading.current?.focus({ preventScroll: true });
+  }, []);
   const done = () => {
     if (me.openedAt) markSeen(userId, me.openedAt);
     onDone();
@@ -50,10 +55,10 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
   const plantings = me.labels.planting;
 
   return (
-    <div role="dialog" aria-modal="true" aria-labelledby="hm-opened" className="fixed inset-0 z-50 overflow-y-auto bg-background motion-safe:animate-in motion-safe:fade-in">
+    <div ref={root} role="dialog" aria-modal="true" aria-labelledby="hm-opened" className="fixed inset-0 z-50 overflow-y-auto bg-background motion-safe:animate-in motion-safe:fade-in">
       <div className="container max-w-xl space-y-6 py-10">
         <p className={`${EYEBROW} text-center`}>{t`${me.needed} ${plantings}, vouched`}</p>
-        <h1 id="hm-opened" className="text-center font-display text-4xl leading-tight text-foreground sm:text-5xl">
+        <h1 ref={heading} tabIndex={-1} id="hm-opened" className="text-center font-display text-4xl leading-tight text-foreground sm:text-5xl">
           <Trans>The map is yours!</Trans>
         </h1>
         <p className={`${NOTE} text-center`}><Trans>Here is every place the members have logged.</Trans></p>
@@ -95,7 +100,7 @@ export default function OpeningMoment({ me, userId, pins, onDone }: { me: MapMe;
         {me.openedBefore > 0 && (
           <p className={`${NOTE} text-center`}>{t`${plural(me.openedBefore, { one: "# member opened the map before you.", other: "# members opened the map before you." })}`}</p>
         )}
-        <button ref={button} type="button" className={`${BTN_PRIMARY} w-full`} onClick={done}><Trans>Explore the map</Trans></button>
+        <button type="button" className={`${BTN_PRIMARY} w-full`} onClick={done}><Trans>Explore the map</Trans></button>
       </div>
     </div>
   );

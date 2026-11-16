@@ -76,6 +76,10 @@ export interface HiddenMapConfig {
   kindPrompts: Record<Layer, string>;
   /** The quest a planting opens a claim on once it is vouched. Null means plantings pay nothing by themselves. */
   plantingQuestId: string | null;
+  /** The ways of seeing a planting that this village accepts for a vouch. */
+  vouchWays: VouchWay[];
+  /** The rule a voucher reads, in the village's words. */
+  vouchRule: string;
   /** What a member reads for each layer. A village names its own. */
   labels: Record<Layer, string>;
   /** The kinds a pin may take, per layer. */
@@ -90,6 +94,8 @@ export const DEFAULT_CONFIG: HiddenMapConfig = {
   title: "Hidden map",
   kindPrompts: { planting: "What kind of place?", partner: "What kind of place?", stop: "What kind of stop?" },
   plantingQuestId: null,
+  vouchWays: ["in-person", "call", "photos"],
+  vouchRule: "Vouch only for a place you know is real: you were there, or the photos leave no doubt.",
   labels: { planting: "Plantings", partner: "Partner places", stop: "Places to stop" },
   kinds: {
     planting: ["Land project", "Garden", "Public place", "Roadside", "Wild land", "Our own garden"],
@@ -118,10 +124,14 @@ export function readConfig(raw: unknown): HiddenMapConfig {
   const q = c.returnVisitQuestId;
   const title = typeof c.title === "string" && c.title.trim() ? c.title.trim().slice(0, 40) : DEFAULT_CONFIG.title;
   const pq = c.plantingQuestId;
+  const ways = Array.isArray(c.vouchWays) ? c.vouchWays.filter(isVouchWay) : [];
+  const rule = typeof c.vouchRule === "string" && c.vouchRule.trim() ? c.vouchRule.trim().slice(0, 300) : DEFAULT_CONFIG.vouchRule;
   return {
     title,
     kindPrompts,
     plantingQuestId: typeof pq === "string" && pq.trim() ? pq.trim() : null,
+    vouchWays: ways.length ? ways : [...DEFAULT_CONFIG.vouchWays],
+    vouchRule: rule,
     labels,
     kinds,
     openLayers,
@@ -163,6 +173,14 @@ export function validateConfig(raw: unknown): string | null {
       if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
       if (typeof v !== "string" || !v.trim() || v.length > 80) return `The question for ${k} must be 1 to 80 characters.`;
     }
+  }
+  if (c.vouchWays !== undefined) {
+    if (!Array.isArray(c.vouchWays) || c.vouchWays.length === 0 || !c.vouchWays.every(isVouchWay)) {
+      return `Vouch ways are one or more of ${VOUCH_WAYS.join(", ")}.`;
+    }
+  }
+  if (c.vouchRule !== undefined && (typeof c.vouchRule !== "string" || !c.vouchRule.trim() || c.vouchRule.length > 300)) {
+    return "The vouch rule must be 1 to 300 characters.";
   }
   if (c.plantingQuestId !== undefined && c.plantingQuestId !== null) {
     if (typeof c.plantingQuestId !== "string" || c.plantingQuestId.length > 64) return "The planting quest is a quest id.";

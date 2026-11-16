@@ -15,7 +15,7 @@ import { Check, ChevronDown, Info, X } from "lucide-react";
 import { msg } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { PARTNER_STATES, validatePoint, type Layer, type PartnerState, type Point, type Precision } from "@shared/hiddenMap";
+import { PARTNER_STATES, validatePoint, type Layer, type PartnerState, type PinView, type Point, type Precision } from "@shared/hiddenMap";
 import { parseCoordinates } from "@shared/land";
 import type { MapMe, PinDraft } from "@/lib/hiddenMapApi";
 import { newClientId } from "@/lib/hiddenMapApi";
@@ -63,7 +63,7 @@ function useOnline(): boolean {
   return on;
 }
 
-export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Capture) => Promise<SendAnswer> }) {
+export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; onSend: (c: Capture) => Promise<SendAnswer>; ownPins?: readonly PinView[] }) {
   const { t, i18n } = useLingui();
   const online = useOnline();
   const layers = Object.keys(me.labels) as Layer[];
@@ -243,7 +243,17 @@ export default function CaptureForm({ me, onSend }: { me: MapMe; onSend: (c: Cap
               <input className={`${FIELD} mt-2`} value={pasted} onChange={(e) => paste(e.target.value)} placeholder={t`Paste coordinates or a maps link`} aria-label={t`Paste coordinates or a maps link`} />
               {pasteNote && <p className={HINT} aria-live="polite">{pasteNote}</p>}
               <div className="mt-3">
-                <WorldMap pins={[]} basemap={me.basemap} maxTileZoom={me.maxZoom} labels={me.labels} onTap={(p) => { setPoint(p); setFromPhoto(false); }} placing={point} height={240} />
+                <WorldMap
+                  // Framed on the member's own places, so a tap lands near where they plant, not on a whole-world grid.
+                  pins={ownPins.slice(0, 50)}
+                  basemap={me.basemap}
+                  maxTileZoom={me.maxZoom}
+                  labels={me.labels}
+                  vouchesPerPin={me.vouchesPerPin}
+                  onTap={(p) => { setPoint(p); setFromPhoto(false); }}
+                  placing={point}
+                  height={280}
+                />
               </div>
             </>
           )}

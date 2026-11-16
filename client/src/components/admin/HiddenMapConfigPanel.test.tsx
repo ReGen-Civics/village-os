@@ -39,6 +39,8 @@ describe("the hidden map's words on its card", () => {
     const [plantingKinds] = screen.getAllByLabelText("Kinds, one a line");
     fireEvent.change(plantingKinds!, { target: { value: "Seeds\n\nTrees\n" } });
     fireEvent.change(screen.getByLabelText("Quest that pays when a planting is vouched (its id)"), { target: { value: "q-plant" } });
+    fireEvent.change(screen.getByLabelText("The rule a voucher reads"), { target: { value: "A sworn member who saw it planted." } });
+    fireEvent.click(screen.getByLabelText("The photos leave no doubt"));
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(puts).toHaveLength(1));
@@ -51,6 +53,8 @@ describe("the hidden map's words on its card", () => {
       kinds: { planting: ["Seeds", "Trees"] },
       plantingQuestId: "q-plant",
       returnVisitQuestId: null,
+      vouchRule: "A sworn member who saw it planted.",
+      vouchWays: ["in-person", "call"],
     });
     expect(validateConfig(body.config)).toBeNull();
   });
@@ -60,6 +64,7 @@ describe("the hidden map's words on its card", () => {
       title: "M", labels: { planting: "P", partner: "Q", stop: "S" },
       kindPrompts: { planting: "a?", partner: "b?", stop: "c?" },
       kinds: { planting: "x", partner: "y", stop: "z" }, openLayers: [], plantingQuestId: "  ", returnVisitQuestId: "",
+      vouchWays: ["in-person", "call"], vouchRule: "Somebody who saw it planted.",
     });
     expect(out.plantingQuestId).toBeNull();
     expect(out.returnVisitQuestId).toBeNull();

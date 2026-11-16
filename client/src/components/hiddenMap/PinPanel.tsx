@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { msg, plural } from "@lingui/core/macro";
 import type { MessageDescriptor } from "@lingui/core";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { STAGES, type PinView, type Stage } from "@shared/hiddenMap";
+import { STAGES, type PinView, type Stage, type VouchWay } from "@shared/hiddenMap";
 import type { MapMe, VisitView } from "@/lib/hiddenMapApi";
 import { addVisit, getPin, hidePin, newClientId, unvouch, vouch } from "@/lib/hiddenMapApi";
 import PhotoPicker, { type SafePhoto } from "./PhotoPicker";
@@ -23,6 +23,13 @@ export const STAGE_WORDS: Record<Stage, MessageDescriptor> = {
   lost: msg`Didn't make it`,
 };
 
+/** How a voucher saw it, in words a member chooses between. */
+export const WAY_WORDS: Record<VouchWay, MessageDescriptor> = {
+  "in-person": msg`I was there`,
+  call: msg`I saw it on a live call`,
+  photos: msg`The photos leave no doubt`,
+};
+
 export default function PinPanel({ id, me, onChanged, onClose }: { id: string; me: MapMe; onChanged: () => void; onClose: () => void }) {
   const { t, i18n } = useLingui();
   const [pin, setPin] = useState<PinView | null>(null);
@@ -34,6 +41,8 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
   const [note, setNote] = useState("");
   const [photos, setPhotos] = useState<SafePhoto[]>([]);
   const [busy, setBusy] = useState(false);
+  const [vouching, setVouching] = useState(false);
+  const [way, setWay] = useState<VouchWay | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -135,7 +144,7 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
 
       <div className="mt-6 flex flex-wrap gap-2">
         {mayVouch && !pin.vouchedByMe && (
-          <button type="button" className={BTN_PRIMARY} disabled={busy} onClick={() => void act(() => vouch(id))}><Trans>Vouch: this is real</Trans></button>
+          <button type="button" className={BTN_PRIMARY} disabled={busy || vouching} onClick={() => { setVouching(true); setWay(null); }}><Trans>Vouch: this is real</Trans></button>
         )}
         {pin.vouchedByMe && (
           <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => unvouch(id))}><Trans>Withdraw my vouch</Trans></button>
@@ -147,6 +156,32 @@ export default function PinPanel({ id, me, onChanged, onClose }: { id: string; m
           <button type="button" className={BTN_SECONDARY} disabled={busy} onClick={() => void act(() => hidePin(id))}><Trans>Hide this pin</Trans></button>
         )}
       </div>
+
+      {vouching && (
+        <fieldset className="mt-5 space-y-3 rounded-xl border border-border p-4">
+          <legend className={`${LABEL} px-1`}><Trans>How did you see it?</Trans></legend>
+          <p className={HINT}>{me.vouchRule}</p>
+          <div className="flex flex-col gap-2">
+            {me.vouchWays.map((w) => (
+              <label key={w} className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm ${way === w ? "border-primary bg-primary/10" : "border-border"}`}>
+                <input type="radio" name="hm-way" checked={way === w} onChange={() => setWay(w)} />
+                {i18n._(WAY_WORDS[w])}
+              </label>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={BTN_PRIMARY}
+              disabled={busy || !way}
+              onClick={() => way && void act(async () => { await vouch(id, way); setVouching(false); })}
+            >
+              <Trans>Vouch</Trans>
+            </button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => setVouching(false)}><Trans>Not now</Trans></button>
+          </div>
+        </fieldset>
+      )}
 
       {visiting && (
         <div className="mt-5 space-y-4 rounded-xl border border-border p-4">
