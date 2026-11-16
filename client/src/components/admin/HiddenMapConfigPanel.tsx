@@ -17,7 +17,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { MapPin } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { LAYERS, readConfig, type Layer } from "@shared/hiddenMap";
+import { LAYERS, VOUCH_WAYS, readConfig, type Layer, type VouchWay } from "@shared/hiddenMap";
+import { WAY_WORDS } from "@/components/hiddenMap/PinPanel";
 import { useModuleConfig } from "./ModuleConfigPanels";
 
 const inputCls =
@@ -33,6 +34,8 @@ interface Draft {
   openLayers: Layer[];
   plantingQuestId: string;
   returnVisitQuestId: string;
+  vouchWays: VouchWay[];
+  vouchRule: string;
 }
 
 function draftOf(raw: unknown): Draft {
@@ -46,6 +49,8 @@ function draftOf(raw: unknown): Draft {
     openLayers: [...c.openLayers],
     plantingQuestId: c.plantingQuestId ?? "",
     returnVisitQuestId: c.returnVisitQuestId ?? "",
+    vouchWays: [...c.vouchWays],
+    vouchRule: c.vouchRule,
   };
 }
 
@@ -60,11 +65,13 @@ export function configFromDraft(d: Draft): Record<string, unknown> {
     openLayers: d.openLayers,
     plantingQuestId: d.plantingQuestId.trim() || null,
     returnVisitQuestId: d.returnVisitQuestId.trim() || null,
+    vouchWays: d.vouchWays,
+    vouchRule: d.vouchRule.trim(),
   };
 }
 
 export default function HiddenMapConfigPanel({ password }: { password: string }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const { config, loading, save } = useModuleConfig("hidden-map", password);
   const [draft, setDraft] = useState<Draft>(() => draftOf(null));
   const [saving, setSaving] = useState(false);
@@ -121,6 +128,29 @@ export default function HiddenMapConfigPanel({ password }: { password: string })
           </fieldset>
         ))}
       </div>
+
+      <fieldset className="mt-4 rounded-lg border border-border p-3">
+        <legend className="px-1 text-xs font-semibold text-foreground"><Trans>Vouching</Trans></legend>
+        <label className="block text-xs text-foreground">
+          <Trans>The rule a voucher reads</Trans>
+          <textarea className={`${inputCls} mt-1`} rows={2} maxLength={300} value={draft.vouchRule} onChange={(e) => setDraft({ ...draft, vouchRule: e.target.value })} />
+        </label>
+        <p className="mt-2 text-xs text-foreground"><Trans>Ways of seeing it that count</Trans></p>
+        <div className="mt-1 flex flex-wrap gap-3">
+          {VOUCH_WAYS.map((w) => (
+            <label key={w} className="flex min-h-[44px] items-center gap-2 text-xs text-foreground">
+              <input
+                type="checkbox"
+                checked={draft.vouchWays.includes(w)}
+                onChange={(e) =>
+                  setDraft({ ...draft, vouchWays: e.target.checked ? [...draft.vouchWays, w] : draft.vouchWays.filter((x) => x !== w) })
+                }
+              />
+              {i18n._(WAY_WORDS[w])}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         <label className="block text-xs text-foreground">

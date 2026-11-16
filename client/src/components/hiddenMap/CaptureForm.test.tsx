@@ -20,7 +20,7 @@ const me: any = {
   title: "Our map", kindPrompts: { planting: "What went in?", partner: "What kind of place?", stop: "What kind of stop?" },
   labels: { planting: "Plantings", partner: "Partner places", stop: "Stops" },
   kinds: { planting: ["Seeds"], partner: ["Farm"], stop: ["Overnight"] }, openLayers: [], basemap: "none", maxZoom: 13,
-  defaultPrecision: "region", teaser: false, precisions: ["exact", "km", "region"], vouchesPerPin: 1, plantingPays: false,
+  defaultPrecision: "region", teaser: false, precisions: ["exact", "km", "region"], vouchesPerPin: 1, plantingPays: false, vouchWays: ["in-person", "call", "photos"], vouchRule: "Vouch for what you know.",
   openedAt: null, openedBefore: 0,
 };
 
