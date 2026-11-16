@@ -16,6 +16,7 @@ import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { LUNAR_CLOCK } from "../../shared/cycleClock";
 import { MOON_API_PREFIXES, MOON_ROUTES, SERA_CLOSED_NOTE } from "../../shared/moonRecap";
+import { PAY_BOARD_ROUTES } from "../../shared/moonRewardReview";
 import { requireModule } from "../lib/modules";
 import { gatherMoon, loadFrame, memberMoon, moonOf } from "../lib/moonRecap";
 import { MEMBER_MOON_PATH, register } from "./moonRecaps";
@@ -90,6 +91,12 @@ const ROUTES = [
   `POST ${MOON_ROUTES.voidInvoice}`,
   `PUT ${MOON_ROUTES.confirmRoute}`,
   `GET ${MOON_ROUTES.room}`,
+  // The Treasurer's pay board and the member's own token pay (shared/moonRewardReview.ts).
+  `GET ${PAY_BOARD_ROUTES.mine}`,
+  `POST ${PAY_BOARD_ROUTES.reply}`,
+  `GET ${PAY_BOARD_ROUTES.board}`,
+  `POST ${PAY_BOARD_ROUTES.adjust}`,
+  `POST ${PAY_BOARD_ROUTES.approve}`,
 ];
 
 describe("the member doors without a database", () => {

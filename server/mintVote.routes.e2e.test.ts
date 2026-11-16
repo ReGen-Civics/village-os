@@ -36,7 +36,7 @@ import path from "path";
 import mysql from "mysql2/promise";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { asIfBeforeLaunch, testPool, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -343,7 +343,8 @@ describe.skipIf(!DB_CONFIGURED)("the village votes on what it mints", () => {
     await startTheGame();
     // A quorum the ordinary vote would run at. The floor below is what proves
     // the seam is wired, so the village's own number has to be under it.
-    const dial = await call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "20" } });
+    // D2a: a vote-rule dial set as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const dial = await asIfBeforeLaunch(pool, () => call("PUT", "/api/admin/variables/governance.quorum_pct", { body: { value: "20" } }));
     expect(dial.status).toBe(200);
 
     const made = await call("POST", "/api/game/mechanics/proposals", {

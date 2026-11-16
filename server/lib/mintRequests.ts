@@ -103,6 +103,8 @@ const UNDER_A_VOTE =
 async function grantRefusal(
   deps: MintRequestDeps,
   request: MintRequestRow,
+  /** The person signing, or null when a vote decides or a vote is being opened. */
+  signer: string | null = null,
 ): Promise<{ refused: MintDecision; target: null } | { refused: null; target: any }> {
   const def = tokenDef(request.tokenSlug);
   if (!def) return { refused: no(404, `unknown token "${request.tokenSlug}"`), target: null };
@@ -120,9 +122,12 @@ async function grantRefusal(
       target: null,
     };
   }
-  // The rule that has no exception: the person this pays cannot be the person
-  // who asked for it, whoever signs, and whatever the village votes.
-  if (String(target.id) === request.requestedBy) {
+  // A grant that pays the person who asked waits for a SECOND SIGNER (Rye,
+  // 2026-11-15): somebody else holding `token.mint` may sign it, and the
+  // second-steward rule in `approveMintRequest` already keeps that somebody
+  // from being the asker. A vote cannot stand in for that signature, so the
+  // village door still refuses it.
+  if (String(target.id) === request.requestedBy && (signer === null || signer === request.requestedBy)) {
     return { refused: no(403, "This grant pays the steward who asked for it. It cannot be signed", "self_grant_refused"), target: null };
   }
   const cap = numberVar("ledger.admin_mint_cycle_cap"); // whole tokens, and only weighed against 0 here
@@ -158,7 +163,7 @@ export async function approveMintRequest(deps: MintRequestDeps, input: ApproveIn
     return no(409, "A second steward means somebody else. You asked for this grant", "second_steward_required");
   }
   if (!input.viaBallotId && (await openBallotFor(pool, MINT_REQUEST, request.id))) return no(409, UNDER_A_VOTE, "under_a_vote");
-  const checked = await grantRefusal(deps, request);
+  const checked = await grantRefusal(deps, request, input.signer);
   if (checked.refused) return checked.refused;
   const target = checked.target;
 

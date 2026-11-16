@@ -380,7 +380,7 @@ import {
   upcomingByStructure,
   withdrawRsvp,
 } from "./lib/gatherings";
-import { cleanRecurrence, getCalendarItemFor, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
+import { getCalendarItemFor, recurrenceRefusal, isAuthoredKind, iso, listCalendarItems, listCalendarRows } from "./lib/calendar";
 import {
   attachWaitlistInfo,
   cancelMeetMe,
@@ -764,6 +764,7 @@ import { register as registerTokenEditRoutes } from "./routes/tokenEdit";
 import { register as registerVillageExportRoutes } from "./routes/villageExport";
 import { register as registerSigningKeyRoutes } from "./routes/signingKey";
 import { grantCashPayToTreasury, grantMoonReviewKeys, MOON_REVIEW_GRANTS, POT_STEWARD_GRANTS, ROLE_PAY_GRANTS, seedStarterRoles, STEWARD_CIRCLE_GRANTS } from "./lib/starterRoles";
+import { handTokenMintOverFor0112, handTokenMintToStewardsAndTreasury, type TokenMintHandoverDeps } from "./lib/tokenMintHandover"; // Rye, 2026-11-15
 import { endAgentReach, withAgentReachEnded } from "./lib/agentTokens"; // a new password and an admin's revoke end what the agent holds too
 import { proveAddress, raiseToFounder, sendPasswordEndedLetter, sendVerifyLetter } from "./lib/emailVerification"; // R104: an address is proved before its password is trusted
 import { isUnprovedRaise, UNPROVED_RAISE_REFUSAL } from "./lib/founderGrant";
@@ -2063,6 +2064,8 @@ async function ensureDataFiles() {
   await runOnce("steward-circle-role-powers-2026-11-05", () => grantMoonReviewKeys(rolesRepo, STEWARD_CIRCLE_GRANTS, "Steward Circle's role and adoption powers (Rye, 2026-11-01)").then(() => undefined));
   await runOnce("redemption-ceilings-blank-2026-11-05", () => blankZeroRedemptionCeilings(getPool()).then((keys) => { if (keys.length) console.log(`[redemption] a stored 0 ceiling became blank, which is no ceiling: ${keys.join(", ")}`); })); // Rye, 2026-11-05: 0 now means zero
   await runOnce("pot-steward-to-treasury-2026-11-06", () => grantMoonReviewKeys(rolesRepo, POT_STEWARD_GRANTS, "the funding pots power, pot.steward (Rye, 2026-11-06)").then(() => undefined));
+  // A village started before the launch vote existed never ran the launch closer: token.mint goes to its stewards and Treasury here, once (server/lib/tokenMintHandover.ts).
+  try { await handTokenMintOverFor0112({ ...tokenMintHandoverDeps(), gameStart: () => readGameStart(getPool()), applied: () => dataMigrations.get().applied ?? [], markApplied: (id) => dataMigrations.put({ applied: [...(dataMigrations.get().applied ?? []), id] }) }); } catch (e) { console.error("[token.mint] the boot hand-over failed (continuing; the admin keeps hand minting)", e); }
   await runOnce("comms-path-backfill-2026-10", async () => { await backfillPathEnrollments({ getPool, members }); }); // Village Comms 5.11: records paths, sends nothing
 
   // 0054: a starter relationship vocabulary, into an EMPTY table only. Same
@@ -2953,6 +2956,14 @@ function loadRoleHolders(): RoleHolderRow[] {
 const seatGrants = new SeatGrantCache(() => readSeatGrantSnapshot(getPool(), (id) => members.byId(id)));
 const loadPowerHoldings = (): RoleHolderRow[] => effectiveHoldings(loadRoleHolders(), bridgedHoldings(seatGrants.snapshot(), lapseContext())) as RoleHolderRow[];
 
+/** What `token.mint`'s hand-over reads and writes (server/lib/tokenMintHandover.ts): the roles through their repo, live holders as the gate counts them. */
+const tokenMintHandoverDeps = (): TokenMintHandoverDeps => ({
+  pool: getPool(),
+  roles: () => rolesRepo.all() as any[],
+  replaceRoles: (rows) => rolesRepo.replaceAll(rows as any),
+  liveHolders: (roleId) => loadPowerHoldings().filter((h) => h.roleId === roleId && !holdingHasLapsed(h as any)).length,
+});
+
 /**
  * Serializes every role_holders snapshot→mutate→replaceAll cycle. replaceAll
  * yields to the event loop before it swaps the cache, so two overlapping
@@ -3171,7 +3182,7 @@ const rolesCarrying = (capability: string) => rolesCarryingCapability(loadRoles(
  * founder seated in a live role, is closed to it. Money and approvals are a
  * person's.
  */
-const AGENT_NEVER_KEYS = ["cash.pay", "role.pay", "moon.approve", "moon.approve_alone", "moon.approve_own", "steward.veto"] as const;
+const AGENT_NEVER_KEYS = ["cash.pay", "role.pay", "token.mint", "moon.approve", "moon.approve_alone", "moon.approve_own", "steward.veto"] as const;
 
 async function capabilityCtx(user: any) {
   // An agent account holds no power from a role or a badge, whichever writer
@@ -11045,7 +11056,8 @@ async function startServer() {
     }
     if (body.recurrence !== undefined && body.recurrence !== null && body.recurrence !== "") {
       if (typeof body.recurrence !== "object") return "Recurrence must be an object";
-      if (!cleanRecurrence(body.recurrence)) return "Recurrence needs a freq of weekly, monthly, lunar or solar with its days or its sky event";
+      const refusal = recurrenceRefusal(body.recurrence);
+      if (refusal) return refusal;
     }
     if (body.link) {
       const l = String(body.link);
@@ -16085,7 +16097,10 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * disables manual minting entirely.
    */
   app.post("/api/admin/tokens/:slug/mint", async (req, res) => {
-    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    // `token.mint` through the ONE gate (Rye, 2026-11-15): the admin before
+    // launch, the founding stewards and the Treasury role from launch
+    // (server/lib/tokenMintHandover.ts), and whoever the village passes it to.
+    if (!(await guardCapability(req, res, "token.mint"))) return;
     const slug = String(req.params.slug);
     const { toUserId, amount, reason } = req.body ?? {};
     const amt = Number(amount) || 0; // HUMAN, as typed. Finer than the token holds is refused below, never truncated: 2.5 once minted 2 and said "Minted"
@@ -16116,24 +16131,17 @@ Send an empty drafts array when you are still listening. A role payload is {name
      * `governance.weight_mode = token` that balance IS voting weight, so the
      * scaffolding could mint itself the electorate.
      *
-     * REFUSED FLAT, at any amount, rather than co-signed. A self-grant has no
-     * legitimate shape that another steward could not record instead, so a
-     * ceremony here would only be a ceremony to game. There is no dial: R56
-     * says villages set their own dials, and this is not a dial, it is the one
-     * thing the scaffolding may not do to itself.
+     * A GRANT TO YOURSELF WAITS FOR A SECOND SIGNER, at any amount (Rye,
+     * 2026-11-15: founders and Treasurers mint from pay requests, which can be
+     * their own). It is recorded as a pending request below and moves only when
+     * somebody else holding `token.mint` signs it. It was refused flat before.
      *
-     * `adminActor` is set by the `isAdmin` above, so it is present here. It is
-     * checked anyway: an unnamed actor must refuse rather than skip the rule,
-     * because a guard that silently does not run is worse than no guard.
+     * The actor is the signed-in account (`authedUser`): `adminActor` is null
+     * for a steward or Treasurer who is not an admin. An unnamed actor refuses.
      */
-    const acting = adminActor(req);
+    const acting = await authedUser(req);
     if (!acting) return res.status(401).json({ error: "auth_required" });
-    if (acting.id === target.id) {
-      return res.status(403).json({
-        code: "self_grant_refused",
-        error: "You cannot mint to your own account. Ask another steward to record this grant",
-      });
-    }
+    const toSelf = String(acting.id) === String(target.id);
 
     // The dial is WHOLE tokens, and this pre-flight weighs it in whole tokens:
     // `minted` below is `fromLedgerUnits(issuance.net)` and `amt` is what the
@@ -16182,8 +16190,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // raise the co-sign threshold by the token's scale, which is a
     // governance weakening wearing a units fix.
     const threshold = cosignOver();
-    if (threshold > 0 && amt > threshold) {
-      if (!Number.isInteger(amt)) return res.status(400).json({ error: `${amt} ${def.name} is over the ${threshold} a steward may grant alone, and a grant that waits for a second steward is recorded in whole ${def.name}. Ask for a whole amount. Nothing was recorded` }); // admin_mint_requests.amount is BIGINT
+    if (toSelf || (threshold > 0 && amt > threshold)) {
+      const why = toSelf ? "This grant pays you, so it waits for a second signer" : `${amt} ${def.name} is over the ${threshold} a steward may grant alone`;
+      if (!Number.isInteger(amt)) return res.status(400).json({ error: `${why}, and a grant that waits for a second steward is recorded in whole ${def.name}. Ask for a whole amount. Nothing was recorded` }); // admin_mint_requests.amount is BIGINT
       const requestId = `amr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       await getPool().query(
         "INSERT INTO admin_mint_requests (id, token_slug, to_user_id, amount, reason, requested_by, status) " +
@@ -16205,7 +16214,10 @@ Send an empty drafts array when you are still listening. A role payload is {name
         toUserId: target.id,
         amount: amt,
         cosignOver: threshold,
-        message: `Recorded. ${amt} ${def.name} is over the ${threshold} a village steward may grant alone, so it waits for a second steward to agree`,
+        toSelf,
+        message: toSelf
+          ? "Recorded. This grant pays you, so it waits for a second signer to agree"
+          : `Recorded. ${amt} ${def.name} is over the ${threshold} a village steward may grant alone, so it waits for a second steward to agree`,
       });
     }
 
@@ -16215,7 +16227,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       tokenType: slug,
       amount: toLedgerUnits(slug, amt),
       source: "admin_mint",
-      sourceRef: adminActor(req)?.id,
+      sourceRef: String(acting.id),
       description: String(reason).trim().slice(0, 500),
       idempotencyKey: String(req.body?.requestId ?? "").trim()
         ? `admin_mint:${slug}:${String(req.body.requestId).trim().slice(0, 60)}`
@@ -16229,7 +16241,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     void recordEvent(getPool(), {
       kind: "audit",
       text: `mint:${amt}:${slug}`,
-      actorUserId: adminActor(req)?.id ?? null,
+      actorUserId: String(acting.id),
       entityType: "user",
       entityRef: target.id,
       audience: "admin",
@@ -16290,8 +16302,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * cap: `mintCapGuard` re-reads it inside the transfer's own lock.
    */
   app.post("/api/admin/mint-requests/:id/approve", async (req, res) => {
-    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
-    const acting = adminActor(req);
+    if (!(await guardCapability(req, res, "token.mint"))) return; // the second signer holds the same power (Rye, 2026-11-15)
+    const acting = await authedUser(req);
     if (!acting) return res.status(401).json({ error: "auth_required" });
     const out = await approveMintRequest(mintRequestDeps(), { requestId: String(req.params.id), decidedBy: acting.id, signer: acting.id });
     if (!out.ok) return res.status(out.status).json(out.body);
@@ -21816,6 +21828,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
         audit: (text) => { void recordEvent(getPool(), { kind: "audit", text, actorUserId: actorId, entityType: "role", entityRef: STEWARD_ROLE_ID, audience: "admin" }); },
         notifyAdmins: (title, dedupeKey) => notifyAdmins("governance", title, dedupeKey),
       });
+      // token.mint crosses to the stewards just seated and the Treasury role (Rye, 2026-11-15). It never refuses the launch.
+      try {
+        const minted = await handTokenMintToStewardsAndTreasury(tokenMintHandoverDeps(), { ballotId: b.id, note: "The Game started: the founding stewards and the Treasury role mint from today (Rye, 2026-11-15)." });
+        void recordEvent(getPool(), { kind: "audit", text: `launch:token-mint:${minted.moved ? `moved:${minted.holderRoleId}` : minted.reason}`, actorUserId: actorId, entityType: "launch", entityRef: b.id, audience: "admin" });
+      } catch (e) { console.error("[token.mint] the launch hand-over failed; the admin keeps hand minting", e); }
       void recordEvent(getPool(), {
         kind: "audit",
         text: `launch:started-by-ballot:${b.id}`,
@@ -25654,6 +25671,11 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * so it is sent to `/` instead, keeping any query.
    */
   app.get("/index.html", (req, res) => {
+    // CodeQL js/server-side-unvalidated-url-redirection (alert 487) flags this;
+    // it is a false positive. The target is always "/" followed by the query,
+    // and the query starts at the "?" itself, so the location begins "/?" and
+    // can never be "//host" or a scheme: it stays on this origin whatever the
+    // request carried.
     const q = req.originalUrl.indexOf("?");
     res.redirect(301, q >= 0 ? `/${req.originalUrl.slice(q)}` : "/");
   });
