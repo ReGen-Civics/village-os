@@ -85,8 +85,14 @@ const keyWords = (body: { message?: unknown } | null | undefined) => {
 
 type Refused = { kind: "signed-out" } | { kind: "no-key"; text: string } | { kind: "failed"; text: string };
 
-export default function CashPayoutsTab({ password, asPage = false }: {
+export default function CashPayoutsTab({ password, asPage = false, withPayBoard = true }: {
   password: string;
+  /**
+   * Draw "Pay by member" (PayBoard) inside the desk. The Treasury page draws it
+   * once in its own End of Moon section, for approve-alone holders as well, and
+   * passes false so a cash.pay holder does not see it twice.
+   */
+  withPayBoard?: boolean;
   /** On its own page the title is the page's h1; inside the admin panel, which owns the h1, it is an h2. */
   asPage?: boolean;
 }) {
@@ -285,9 +291,11 @@ export default function CashPayoutsTab({ password, asPage = false }: {
         <InvoicesDesk password={password} />
       </Suspense>
 
-      <Suspense fallback={null}>
-        <PayBoard password={password} />
-      </Suspense>
+      {withPayBoard && (
+        <Suspense fallback={null}>
+          <PayBoard password={password} />
+        </Suspense>
+      )}
 
       <section aria-label="Totals" className="rounded-xl border border-border bg-white p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
