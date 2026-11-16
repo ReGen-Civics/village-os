@@ -74,7 +74,8 @@ export default function Layout({ children }: LayoutProps) {
     moduleOn(item.module) &&
     (!item.unlessModule || !moduleOn(item.unlessModule)) &&
     (!item.brochure || storyShown(item.href)) &&
-    (!item.roles || (!!role && item.roles.includes(role)));
+    (!item.roles || (!!role && item.roles.includes(role))) &&
+    (item.signedIn === undefined || item.signedIn === !!user);
 
   // An entry named after a token carries the village's word for it, and its
   // href stays put. Substituted HERE, once, because both the desktop dropdown
@@ -271,7 +272,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className="text-white hover:underline transition-colors text-sm whitespace-nowrap"
+                  className="text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                 >
                   {entry.label}
                 </Link>
@@ -305,7 +306,7 @@ export default function Layout({ children }: LayoutProps) {
                     // Named for a screen reader at every width, because the
                     // visible name below hides between lg and xl.
                     aria-label={t({ message: `Your account, ${firstName}`, context: "site header" })}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                   >
                     <User className="w-4 h-4" />
                     {/* Icon only from lg to xl. Between 1024px and 1280px the
@@ -355,7 +356,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </div>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 px-3 py-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-sm transition-colors whitespace-nowrap">
+              <Link href="/login" className="flex items-center gap-2 px-3 py-1.5 bg-black/10 hover:bg-black/20 rounded-lg text-sm transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep">
                 <User className="w-4 h-4" />
                 <Trans context="site header">Sign in</Trans>
               </Link>
@@ -368,7 +369,7 @@ export default function Layout({ children }: LayoutProps) {
                 href={siteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center gap-1.5 px-3 py-2 border border-white/50 text-white rounded-lg font-medium hover:bg-white/10 transition-colors text-sm whitespace-nowrap"
+                className="inline-flex min-h-11 items-center gap-1.5 px-3 py-2 border border-white/50 text-white rounded-lg font-medium hover:bg-white/10 transition-colors text-sm whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
               >
                 <Trans context="site header">Main Site</Trans>
                 <ExternalLink aria-hidden="true" className="w-3.5 h-3.5" />
@@ -939,7 +940,7 @@ function NavDropdown({
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls={menuId}
-        className="flex items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap"
+        className="flex items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
       >
         {group.label}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
