@@ -184,6 +184,59 @@ const genericUntouched = scanFileLines({ relPath: "server/x.ts", body: genericBo
 check("an untouched generic hit is pre-existing, not a finding", genericUntouched.findings.length, 0);
 check("and is still counted as debt", genericUntouched.preExisting, 2);
 
+// ── 2c. fetch handed over as a value ────────────────────────────────────────
+//
+// THE REGRESSION THIS SECTION EXISTS FOR (R111 / R169). The Saberra sync wrote
+// `fetchImpl: fetch as never` and its client called the parameter, so the dial
+// to an admin-typed address had no guard and no redirect check, and the rule,
+// which matched only `fetch(`, reported the file clean. Each shape below must
+// be a finding; the negatives are the prose and type positions that would make
+// the rule cry wolf if it were widened to a bare word match.
+
+const fetchHits = (line) =>
+  scanFileLines({ relPath: "server/lib/x.ts", body: line, addedSet: null }).findings.filter(
+    (f) => f.ruleId === "raw fetch outside guardedFetchJson",
+  ).length;
+
+for (const line of [
+  "  return { ok: true, client: { baseUrl, token, fetchImpl: fetch as never, timeoutMs } };",
+  "const client = { fetchImpl: fetch };",
+  "const client = { fetchImpl: fetch, token };",
+  "const doFetch = deps.fetchImpl ?? fetch;",
+  "const doFetch = deps.fetchImpl || fetch;",
+  "const f = fetch;",
+  "run(url, fetch);",
+  "run(fetch, url);",
+  "  return fetch;",
+  "const f = globalThis.fetch as unknown as Fetcher;",
+  "const r = await globalThis.fetch(url);",
+  "const f = fetch.bind(globalThis);",
+  "const handlers = [fetch];",
+  "const r = await fetch(url);",
+]) {
+  check(`fetch as a value is a finding: ${line.trim()}`, fetchHits(line), 1);
+}
+
+for (const line of [
+  "  fetchImpl?: typeof fetch;",
+  "type F = Parameters<typeof fetch>[0];",
+  "const r = await guardedFetch(url, init);",
+  "const client = { fetchImpl: guardedFetch };",
+  "const r = await o.fetchImpl(o.baseUrl, init);",
+  'const msg = "we fetch the page, then parse it";',
+  'const why = "the fetch failed";',
+  "const prefetch = 1;",
+  "// fetchImpl: fetch as never (a comment)",
+]) {
+  check(`not a finding: ${line.trim()}`, fetchHits(line), 0);
+}
+
+check(
+  "the guardedFetchJson exemption still holds",
+  fetchHits("const r = await guardedFetchJson(url); fetch(x);"),
+  0,
+);
+
 // ── 3. Against a real repository ─────────────────────────────────────────────
 //
 // The scenarios the whole fix exists for. A throwaway repo, a base commit that

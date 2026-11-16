@@ -145,6 +145,11 @@ type Deps = Pick<
   now?: () => Date;
   /** A village variable read as a flag. Absent reads as off. */
   boolVar?: (key: string) => boolean;
+  /**
+   * Whether this request may read a role's pay ceiling while `org.show_pay_ranges` is off: an admin or a
+   * holder of `terms.read`. Absent reads as no, so the form then carries no ceiling unless the setting is on.
+   */
+  mayReadPay?: (req: any) => Promise<boolean>;
   /** A text setting: the village's default track (`org.default_track`) for the card gate. */
   stringVar?: (key: string) => string;
   /** The application's village words. Absent: read from the village settings (shared/foundingApplication.ts). */
@@ -401,6 +406,24 @@ export function register(app: Express, deps: Deps): void {
 
   // ── The public side ───────────────────────────────────────────────────────
 
+  /**
+   * The offered roles as one reader may see them. While the village keeps pay hidden (`org.show_pay_ranges`
+   * off), the ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the
+   * setting says read the full terms either way. The form then offers no price ask, only negotiate.
+   */
+  async function seesPay(req: any): Promise<boolean> {
+    return boolVar("org.show_pay_ranges") || (!!deps.mayReadPay && (await deps.mayReadPay(req)));
+  }
+  async function offeredTo(req: any) {
+    const roles = await offered();
+    if (await seesPay(req)) return roles;
+    return roles.map((r) => {
+      const out: Partial<typeof r> = { ...r };
+      delete out.payCeiling;
+      return out;
+    });
+  }
+
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], overLimit, clientIp, ipBucket, villageName: projectName });
 
@@ -418,7 +441,7 @@ export function register(app: Express, deps: Deps): void {
       // The clips beside answers this village takes (Rye, 14 Nov 2026).
       voice: clipLimits(),
       ...(t ? {} : { message: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason }),
-      roles: t ? await offered() : [],
+      roles: t ? await offeredTo(req) : [],
       founding: { ...founding(), knowUsLinks: await knowUsLinks() },
     });
   });
@@ -526,12 +549,14 @@ export function register(app: Express, deps: Deps): void {
     // A commitment below what the role takes from one person is refused, in words (Rye, 14 Nov 2026, ruling 2).
     // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
     const pct = parsed.value.body.card?.commitmentPct;
+    // A poster who may not read the ceiling meets the role as one with no listed price, so no refusal names the figure.
+    const pricesShown = await seesPay(req);
     for (const picked of parsed.value.body.roles) {
       const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
       if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
       const ask = parsed.value.body.payAsk;
-      const ceiling = roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null;
+      const ceiling = pricesShown ? (roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null) : null;
       // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
       if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
       if (ceiling && ask?.kind === "amount") {

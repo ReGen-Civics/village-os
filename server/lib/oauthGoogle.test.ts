@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  oauthBindHash,
   OAUTH_HANDOFF_TTL_MS,
   OAUTH_STATE_TTL_MS,
   createHandoffLedger,
@@ -349,5 +350,25 @@ describe("the handoff ledger makes a copied cookie worth one sign-in", () => {
     now += OAUTH_HANDOFF_TTL_MS * 2;
     ledger.claim("new");
     expect(ledger.size).toBe(1);
+  });
+});
+
+import { confirmCookieName, hostCookieName } from "./identityConfirm";
+
+describe("the binder the state carries (R215)", () => {
+  it("round-trips the binder's hash, and drops a value that is not one", () => {
+    const hash = oauthBindHash("a-binder");
+    expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    expect(readOAuthState(SECRET, makeOAuthState(SECRET, null, Date.now(), { bind: hash }))!.bind).toBe(hash);
+    expect(readOAuthState(SECRET, makeOAuthState(SECRET, null))!.bind, "a state minted without one carries none").toBeNull();
+    expect(readOAuthState(SECRET, makeOAuthState(SECRET, null, Date.now(), { bind: "not-a-hash" }))!.bind).toBeNull();
+  });
+});
+
+describe("sign-in cookie names (R041)", () => {
+  it("are __Host- on https and bare on plain http", () => {
+    expect(hostCookieName("village_oauth_handoff", true)).toBe("__Host-village_oauth_handoff");
+    expect(hostCookieName("village_oauth_handoff", false)).toBe("village_oauth_handoff");
+    expect(confirmCookieName("delete-account", true)).toBe("__Host-village_confirm_delete-account");
   });
 });

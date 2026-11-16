@@ -555,7 +555,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
 
 describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
   it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
-    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Cordon" }] }));
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const sheet = await within(section).findByTestId("team-sheet");

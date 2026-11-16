@@ -155,6 +155,7 @@ import {
 } from "../repos/ballotVetoes";
 import {
   holdingsEndingBy,
+  holdersWithVote,
   holdingsForRoles,
   insertHoldingIfAbsent,
   userIdsHolding,
@@ -181,7 +182,7 @@ import {
 import { catalystUserIds } from "../repos/users";
 import { slateFor } from "../repos/stewardSlate";
 import { capabilityHoldings, moveCapabilityToVillage, STEWARD_ROLE_ID } from "./capabilityHolding";
-import { readLaunchCrossing, readLaunchSelection, writeLaunchCrossing } from "./launchHandover";
+import { owedLaunchBallotId, readLaunchCrossing, selectionForLaunch, writeLaunchCrossing } from "./launchHandover";
 import { boolVar, stringVar } from "./variables";
 
 /**
@@ -1548,6 +1549,12 @@ export interface SeatingReport {
   flaggedNotOnSlate: string[];
   /** The term written on every new seating, as an ISO instant. */
   termEndsAt: string | null;
+  /**
+   * R159: holders already in the steward row whom this launch did not name
+   * and no passed `role_seat` vote seated. Present only when the seating was
+   * held for them, in which case nothing was written.
+   */
+  outsideSlate?: string[];
   /** Present only when ok is false. */
   error?: string;
 }
@@ -1742,6 +1749,48 @@ export async function seatCatalystsAsStewards(
    *    the nineteen to a circle of its own keeps every other capability on the
    *    role untouched, because this is a union and not a replacement.
    */
+  const slate = await slateFor(pool, launchBallotId);
+  const named = new Set(slate.map((s) => s.userId));
+  const declined = new Set(slate.filter((s) => s.declinedAt !== null).map((s) => s.userId));
+  const standing = await standingForStewardOn(pool, launchBallotId);
+  const stood = new Set(standing);
+  base.slate = slate.map((s) => s.userId);
+  // Off the rows and not out of the Set, because `slateFor` already orders by
+  // user id and a Set iterates in insertion order rather than in a sorted one.
+  base.declined = slate.filter((s) => s.declinedAt !== null).map((s) => s.userId);
+  base.accepted = base.slate.filter((id) => stood.has(id) && !declined.has(id));
+  base.flaggedNotOnSlate = [...standing].sort().filter((id) => !named.has(id));
+
+  /*
+   * 0. A STEWARD ROW SOMEBODY ELSE FILLED IS NOT ADOPTED (R159).
+   *
+   *    Step 1 grants the role every power in the hand-over set, the veto
+   *    among them, and step 3 entrusts the selection to it. Whoever already
+   *    sits in a `steward` row would hold all of that the moment it is
+   *    granted. So before anything is written, every present holder has to be
+   *    somebody this launch seats (named on the slate and accepted), somebody
+   *    this launch already seated on an earlier run, or somebody a passed
+   *    `role_seat` vote put in this role. Anybody else holds the whole
+   *    seating: nothing is written, nobody is seated and no power moves, and
+   *    the reason names who is in the way.
+   */
+  const accepted = new Set(base.accepted);
+  const outside = (await holdersWithVote(pool, STEWARD_ROLE_ID))
+    .filter((h) => !accepted.has(h.userId) && h.grantedBy !== launchBallotId && !h.votedIn)
+    .map((h) => h.userId)
+    .sort();
+  if (outside.length > 0) {
+    return {
+      ...base,
+      ok: false,
+      outsideSlate: outside,
+      error:
+        `The ${STEWARD_ROLE_NAME} role already has ${outside.length === 1 ? "a holder" : `${outside.length} holders`} the launch did not name and no vote seated. ` +
+        "The launch hands this role the veto and every power it moves, so it seated nobody and moved nothing. " +
+        "Take them out of the role, and the village votes its stewards in with a role_seat ballot.",
+    };
+  }
+
   const existing = await roleCapabilityRow(pool, STEWARD_ROLE_ID);
   if (!existing) {
     await insertRoleIfAbsent(pool, {
@@ -1808,17 +1857,6 @@ export async function seatCatalystsAsStewards(
    *    could not know that while it ran first. Nothing else about the order
    *    changed: the role still carries the powers before they cross.
    */
-  const slate = await slateFor(pool, launchBallotId);
-  const named = new Set(slate.map((s) => s.userId));
-  const declined = new Set(slate.filter((s) => s.declinedAt !== null).map((s) => s.userId));
-  const standing = await standingForStewardOn(pool, launchBallotId);
-  const stood = new Set(standing);
-  base.slate = slate.map((s) => s.userId);
-  // Off the rows and not out of the Set, because `slateFor` already orders by
-  // user id and a Set iterates in insertion order rather than in a sorted one.
-  base.declined = slate.filter((s) => s.declinedAt !== null).map((s) => s.userId);
-  base.accepted = base.slate.filter((id) => stood.has(id) && !declined.has(id));
-  base.flaggedNotOnSlate = [...standing].sort().filter((id) => !named.has(id));
   const catalysts = await catalystUserIds(pool);
   const founding = new Set(catalysts);
   base.acceptedNotFounding = base.accepted.filter((id) => !founding.has(id));
@@ -1936,9 +1974,9 @@ export async function seatCatalystsAsStewards(
       "A power entrusted to a role nobody sits in belongs to nobody at all. " +
       "The stewards hand them over by their own act once the village votes somebody into the role.";
     // Owed now, and the first vote-seating finishes it (R165).
-    if ((await readLaunchCrossing(pool)) !== "crossed") await writeLaunchCrossing(pool, "waiting");
+    if ((await readLaunchCrossing(pool)) !== "crossed") await writeLaunchCrossing(pool, "waiting", new Date(), launchBallotId);
   } else {
-    const crossed = await crossLaunchSelection(pool, launchBallotId, "The village's own hand on this, from the vote that started its Game.");
+    const crossed = await crossLaunchSelection(pool, launchBallotId, "The village's own hand on this, from the vote that started its Game.", launchBallotId);
     base.capabilitiesMoved.push(...crossed.moved);
     base.capabilitiesKeptElsewhere.push(...crossed.keptElsewhere);
     // TRUE ONLY WHEN EVERY SELECTED POWER IS THERE, which is what the caller's own
@@ -1950,7 +1988,7 @@ export async function seatCatalystsAsStewards(
       base.holdingHeld = crossed.refusals.join(" ");
       base.error = base.error ?? base.holdingHeld;
     } else {
-      await writeLaunchCrossing(pool, "crossed");
+      await writeLaunchCrossing(pool, "crossed", new Date(), launchBallotId);
     }
   }
 
@@ -1970,12 +2008,15 @@ export async function crossLaunchSelection(
   pool: Pool,
   ballotId: string,
   note: string,
+  /** The launch ballot whose frozen selection crosses (audit S3). Null reads the live selection. */
+  launchBallotId: string | null,
 ): Promise<{ moved: string[]; keptElsewhere: Array<{ capability: string; holderRoleId: string }>; refusals: string[] }> {
   const moved: string[] = [];
   const keptElsewhere: Array<{ capability: string; holderRoleId: string }> = [];
   const refusals: string[] = [];
   const holderOf = new Map((await capabilityHoldings(pool)).map((h) => [h.capability, h.holderRoleId]));
-  for (const capability of (await readLaunchSelection(pool)).capabilities) {
+  // The selection the launch vote opened with, never one edited since (audit S3).
+  for (const capability of await selectionForLaunch(pool, launchBallotId)) {
     const holder = holderOf.get(capability);
     if (holder && holder !== STEWARD_ROLE_ID) {
       keptElsewhere.push({ capability, holderRoleId: holder });
@@ -1996,8 +2037,9 @@ export async function crossLaunchSelection(
  */
 export async function crossOwedLaunchSelection(pool: Pool, seatingBallotId: string): Promise<Awaited<ReturnType<typeof crossLaunchSelection>> | null> {
   if ((await readLaunchCrossing(pool)) !== "waiting") return null;
-  const crossed = await crossLaunchSelection(pool, seatingBallotId, "The stewards' launch selection, crossing when the village voted somebody into the steward role.");
-  if (crossed.refusals.length === 0) await writeLaunchCrossing(pool, "crossed");
+  const launchBallotId = await owedLaunchBallotId(pool);
+  const crossed = await crossLaunchSelection(pool, seatingBallotId, "The stewards' launch selection, crossing when the village voted somebody into the steward role.", launchBallotId);
+  if (crossed.refusals.length === 0) await writeLaunchCrossing(pool, "crossed", new Date(), launchBallotId);
   return crossed;
 }
 

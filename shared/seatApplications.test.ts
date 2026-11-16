@@ -110,7 +110,7 @@ describe("the words naming who adopts in this village (E8, Rye 2026-10-31)", () 
   const CIRCLE = "The circle consents within 2 business days, or";
 
   it("the role carrying the power, as Role (FirstName), while a role holds it", () => {
-    const f = { villageHolds: false, heldLive: true, groups: [group("Steward Circle", ["Rye Cordon", "Rick Moss"])] };
+    const f = { villageHolds: false, heldLive: true, groups: [group("Steward Circle", ["Rye Ashby", "Rick Moss"])] };
     expect(whoAdoptsWords(f)).toBe("Steward Circle (Rye, Rick) adopts it.");
     expect(whoApprovesWords(f)).toBe(`${CIRCLE} Steward Circle (Rye, Rick) adopts it.`);
     // Several roles read as a choice, and a role nobody holds is left out of it.

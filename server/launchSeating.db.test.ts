@@ -640,6 +640,13 @@ describe.skipIf(!configured)("a founder who already holds the seat", () => {
       "INSERT INTO role_holders (id, role_id, user_id, granted_by, term_ends_at, season_id, term_follows_season) VALUES (?,?,?,?,?,?,?)",
       ["rh-voted-in", STEWARD_ROLE_ID, "cat-1", "bal-earlier-seat", THEIRS_ENDS_AT, "rooting-2026", 0],
     );
+    // The vote that seated them, passed: the launch adopts a holder outside
+    // the slate only when a passed role_seat ballot put them there (R159).
+    await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema
+      "INSERT INTO ballots (id, subject_type, subject_ref, open_key, title, doc_markdown, method, weight_mode, unity_pct, quorum_pct, total_weight, electorate_count, opened_by, opens_at, closes_at, status) " +
+        "VALUES ('bal-earlier-seat','role_seat',?, 'role_seat:cat-1@steward:bal-earlier-seat','Seat Wren','x','majority','equal',50,50,2,2,'cat-2',NOW(),NOW(),'passed')",
+      [`cat-1@${STEWARD_ROLE_ID}`],
+    );
   });
 
   afterAll(async () => {
@@ -665,6 +672,61 @@ describe.skipIf(!configured)("a founder who already holds the seat", () => {
       "SELECT COUNT(*) AS n FROM role_holder_terms WHERE user_id = 'cat-1'",
     );
     expect(Number(terms[0].n), "and no second mandate is opened over the one they hold").toBe(0);
+  });
+});
+
+describe.skipIf(!configured)("a steward row somebody else filled (R159)", () => {
+  let db: TestDb;
+  let pool: Pool;
+  let log: ReturnType<typeof recorder>;
+
+  beforeAll(async () => {
+    db = await provisionTestDb();
+    pool = connect(db.url);
+    await loadVariables(pool);
+    await member(pool, "cat-1", "Wren Alder", "founder");
+    await member(pool, "cat-2", "Iris Fenn", "founder");
+    await member(pool, "mem-9", "Juno Ash", "member");
+    await namedOnTheSlate(pool, "cat-1");
+    await stoodAtLaunch(pool, "cat-1");
+    log = recorder(pool);
+    // A role a member named "Steward", carrying nothing yet, with two holders
+    // an administrator seated and one a vote that FAILED names.
+    await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema
+      "INSERT INTO roles (id, name, capabilities) VALUES (?,?,?)",
+      [STEWARD_ROLE_ID, "Steward", "[]"],
+    );
+    await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema
+      "INSERT INTO role_holders (id, role_id, user_id, granted_by) VALUES ('rh-admin', ?, 'mem-9', 'u-admin'), ('rh-failed', ?, 'cat-2', 'bal-failed-seat')",
+      [STEWARD_ROLE_ID, STEWARD_ROLE_ID],
+    );
+    await pool.query( // module-review-ok: fixture SQL against the S5 scratch schema
+      "INSERT INTO ballots (id, subject_type, subject_ref, open_key, title, doc_markdown, method, weight_mode, unity_pct, quorum_pct, total_weight, electorate_count, opened_by, opens_at, closes_at, status) " +
+        "VALUES ('bal-failed-seat','role_seat',?, 'role_seat:cat-2@steward:bal-failed-seat','Seat Iris','x','majority','equal',50,50,2,2,'cat-1',NOW(),NOW(),'failed')",
+      [`cat-2@${STEWARD_ROLE_ID}`],
+    );
+  });
+
+  afterAll(async () => {
+    await pool?.end();
+    await db?.drop();
+  });
+
+  it("seats nobody, grants the role nothing and moves no power", async () => {
+    const out = await seatFoundersAtLaunch(log.deps());
+    expect(out.ok).toBe(false);
+    expect(out.seated).toEqual([]);
+    expect(out.report?.outsideSlate).toEqual(["cat-2", "mem-9"]);
+    expect(out.report?.error).toMatch(/did not name and no vote seated/);
+    expect(log.admins.length, "an administrator hears about it").toBeGreaterThan(0);
+
+    const [roles]: any = await pool.query("SELECT capabilities FROM roles WHERE id = ?", [STEWARD_ROLE_ID]); // module-review-ok: fixture SQL against the S5 scratch schema
+    const carried = typeof roles[0].capabilities === "string" ? JSON.parse(roles[0].capabilities) : roles[0].capabilities;
+    expect(carried, "the veto never reaches the row").toEqual([]);
+    const [held]: any = await pool.query("SELECT capability FROM capability_holding"); // module-review-ok: fixture SQL against the S5 scratch schema
+    expect(held).toEqual([]);
+    const [seat]: any = await pool.query("SELECT user_id FROM role_holders WHERE role_id = ? AND user_id = 'cat-1'", [STEWARD_ROLE_ID]); // module-review-ok: fixture SQL against the S5 scratch schema
+    expect(seat).toEqual([]);
   });
 });
 

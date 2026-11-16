@@ -14,7 +14,7 @@ describe("roleWithHolders", () => {
   });
 
   it("lists several holders in roster order", () => {
-    expect(roleWithHolders("Steward", ["Rye Cordon", "Jessica Lee"])).toBe("Steward (Rye, Jessica)");
+    expect(roleWithHolders("Steward", ["Rye Ashby", "Jessica Lee"])).toBe("Steward (Rye, Jessica)");
   });
 
   it("folds holders past the cap into +N", () => {
@@ -28,7 +28,7 @@ describe("roleWithHolders", () => {
     expect(holderFirstName("rick@example.org")).toBe("");
     expect(holderFirstName("Rick Moss")).toBe("Rick");
     expect(roleWithHolders("Treasurer", ["rick@example.org"])).toBe("Treasurer");
-    expect(roleWithHolders("Treasurer", ["rick@example.org", "Rye Cordon"])).toBe("Treasurer (Rye)");
+    expect(roleWithHolders("Treasurer", ["rick@example.org", "Rye Ashby"])).toBe("Treasurer (Rye)");
     expect(roleWithHolders("Treasurer", ["rick@example.org"])).not.toContain("@");
   });
 
