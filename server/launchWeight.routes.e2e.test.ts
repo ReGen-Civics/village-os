@@ -308,6 +308,45 @@ afterAll(async () => {
   await testDb?.drop();
 });
 
+/*
+ * MEMBERS ONLY ON THE PUBLIC SURFACES (`membersOnly`, shared/gameVariables.ts).
+ * The four caps on weight by source are accurate in the village and not yet
+ * worded for strangers, so a signed-out visitor reads none of them on the
+ * mechanics feed, its history or the pulse, while a member reads them in full.
+ * Self-contained: it switches one cap on before the Game starts, reads, and
+ * puts it back, so every case below runs on the dials it always did.
+ */
+describe.skipIf(!DB_CONFIGURED)("the caps on weight by source are members-only on the public surfaces", () => {
+  const CAP_KEYS = ["governance.weight_cap_cash_on", "governance.weight_cap_cash", "governance.weight_cap_other_on", "governance.weight_cap_other"];
+
+  it("a signed-out visitor reads none of the four; a signed-in member reads all four", async () => {
+    expect((await call("PUT", "/api/admin/variables/governance.weight_cap_cash_on", { body: { value: "true" } })).status).toBe(200);
+    try {
+      const anon = await call("GET", "/api/game/mechanics", { token: null });
+      expect(anon.status).toBe(200);
+      const anonKeys = (anon.json.variables as any[]).map((v) => v.key);
+      for (const key of CAP_KEYS) expect(anonKeys, key).not.toContain(key);
+      expect(anonKeys, "the rest of the feed is still there").toContain("governance.weight_cap_pct");
+
+      const member = await call("GET", "/api/game/mechanics", { token: wrenToken });
+      const memberKeys = (member.json.variables as any[]).map((v) => v.key);
+      for (const key of CAP_KEYS) expect(memberKeys, key).toContain(key);
+
+      const anonHistory = await call("GET", "/api/game/mechanics/history", { token: null });
+      expect(anonHistory.status).toBe(200);
+      expect(JSON.stringify(anonHistory.json)).not.toContain("weight_cap_cash");
+      const memberHistory = await call("GET", "/api/game/mechanics/history?key=governance.weight_cap_cash_on", { token: wrenToken });
+      expect((memberHistory.json as any[]).length, "the member reads the change").toBeGreaterThan(0);
+
+      const label = "Cap the weight one member counts from cash";
+      const pulse = await call("GET", "/api/game/pulse", { token: null });
+      expect(JSON.stringify(pulse.json)).not.toContain(label);
+    } finally {
+      await call("PUT", "/api/admin/variables/governance.weight_cap_cash_on", { body: { value: "false" } });
+    }
+  });
+});
+
 describe.skipIf(!DB_CONFIGURED)("three heads on the roll, and two of them weigh nothing", () => {
   it("takes the whole weight, which the platform lets a founder do", async () => {
     // Custom mode is a founder dial and allocating is a founder act. Neither

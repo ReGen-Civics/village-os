@@ -25,7 +25,7 @@
  */
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
-import { VARIABLES_BY_KEY } from "../../shared/gameVariables";
+import { VARIABLES_BY_KEY, membersOnlyOnPublic } from "../../shared/gameVariables";
 import { holderFirstName } from "../../shared/roleHolderLabel";
 import { publicAmendment } from "../lib/mechanicsHistory";
 import { rolesHeldBy } from "../repos/companions";
@@ -79,7 +79,11 @@ export function register(app: Express, deps: Deps): void {
     if (key.length > KEY_MAX) return res.status(400).json({ error: "That is not a setting this village has" });
     const viewer = await authedUser(req).catch(() => null);
     const signedIn = !!viewer;
-    const rows = await amendmentRows(getPool(), key || null, limit);
+    // A dial marked members-only is left out of what a signed-out visitor
+    // reads, whole rows and all (`membersOnly`, shared/gameVariables.ts).
+    const rows = (await amendmentRows(getPool(), key || null, limit)).filter(
+      (r) => signedIn || !membersOnlyOnPublic(String(r.config_key)),
+    );
     const names = new Map<string, string>();
     for (const r of rows) {
       const id = r.actor_user_id ? String(r.actor_user_id) : "";

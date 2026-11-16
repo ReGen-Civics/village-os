@@ -19868,7 +19868,9 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * enforce with, so the sentence and the door cannot disagree with the
    * engine.
    */
-  app.get("/api/game/mechanics", async (_req, res) => {
+  app.get("/api/game/mechanics", async (req, res) => {
+    // A dial marked members-only is left out for a signed-out visitor (`membersOnly`).
+    const signedIn = !!(await authedUser(req).catch(() => null));
     // Rank test, not an off test: a module at PREVIEW is invisible to
     // non-admins everywhere else (the identical-404 rule), and this page is
     // anonymous — listing a preview module's dials would leak what the
@@ -19891,7 +19893,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     res.json({
       constitution: CONSTITUTION,
       variables: allVariables()
-        .filter((v) => !hiddenKeys.has(v.key))
+        .filter((v) => !hiddenKeys.has(v.key) && (signedIn || !v.membersOnly))
         .map((v) => ({
           key: v.key,
           category: v.category,

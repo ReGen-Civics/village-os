@@ -194,6 +194,18 @@ export interface VariableDef {
    */
   withheld?: true;
   /**
+   * MEMBERS ONLY ON THE PUBLIC SURFACES. The whole dial, label and value, is
+   * left out of what a signed-out visitor reads: the anonymous mechanics feed
+   * (`GET /api/game/mechanics`), its change history
+   * (`GET /api/game/mechanics/history`) and the public pulse
+   * (`publicSettingLabel`, server/lib/pulseWords.ts). Every signed-in member
+   * still sees it in full and may propose a change to it (constitution I.3),
+   * and Admin is untouched. For a dial whose plain description is accurate for
+   * the village and reads, to a stranger, as a claim the village has not
+   * worded for the public yet. `membersOnlyOnPublic` is the one test.
+   */
+  membersOnly?: true;
+  /**
    * THIS DIAL'S VALUE NOW LIVES IN THE SEALED INTEGRATION SECRETS, under the
    * slot named here (server/lib/secrets.ts). The dial stays listed so the
    * village can still see that the setting exists; its value is never stored
@@ -228,6 +240,15 @@ export function looksLikeCredential(value: unknown): boolean {
     /[?&#](?:api[-_]?key|apikey|key|token|access[-_]?token|secret|auth)=/i.test(value) ||
     /^[a-z][a-z0-9+.-]*:\/\/[^/?#\s@]*:[^/?#\s@]*@/i.test(value)
   );
+}
+
+/**
+ * Whether a signed-out visitor may not read this dial at all (`membersOnly`).
+ * An unknown key answers false: nothing to hide is known about it here, and
+ * every reader already treats an unknown key on its own terms.
+ */
+export function membersOnlyOnPublic(key: string): boolean {
+  return VARIABLES_BY_KEY[key]?.membersOnly === true;
 }
 
 /** Whether the public mechanics feed must hold this dial's value back. */
@@ -1591,6 +1612,9 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "governance.weight_cap_cash_on",
     category: "Governance",
+    // Members only on the public surfaces (`membersOnly`): accurate in the
+    // village, and not yet worded for strangers. The same on all four.
+    membersOnly: true,
     label: "Cap the weight one member counts from cash",
     ring: "founder",
     criticality: "constitutional",
@@ -1602,6 +1626,7 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "governance.weight_cap_cash",
     category: "Governance",
+    membersOnly: true,
     label: "The most weight one member counts from cash",
     ring: "founder",
     criticality: "constitutional",
@@ -1616,6 +1641,7 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "governance.weight_cap_other_on",
     category: "Governance",
+    membersOnly: true,
     label: "Cap the weight one member counts from other contributions",
     ring: "founder",
     criticality: "constitutional",
@@ -1627,6 +1653,7 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "governance.weight_cap_other",
     category: "Governance",
+    membersOnly: true,
     label: "The most weight one member counts from other contributions",
     ring: "founder",
     criticality: "constitutional",
