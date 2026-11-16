@@ -38,7 +38,7 @@ import crypto from "node:crypto";
 import { hasCapability, type Capability } from "../../shared/capabilities";
 import {
   MAX_NOTES, MAX_PHOTOS_PER_PIN, MAX_PHOTOS_PER_UPLOAD, MODULE_ID, PRECISIONS, exportGeoJson, isClientId, isPrecision,
-  isStage, isVouchWay, mayVisit, mayVouch, VOUCH_WAYS, parsePinInput, visiblePin, type PinView, type Precision, type Stage,
+  isStage, isVouchWay, mayVisit, mayVouch, parsePinInput, visiblePin, type PinView, type Precision, type Stage,
 } from "../../shared/hiddenMap";
 import type { AppDeps } from "../lib/appDeps";
 import { villageId } from "../lib/economy";
@@ -187,6 +187,13 @@ export function register(app: Express, deps: Deps): void {
       ownPins: m.who.ownPins,
       keeper: m.who.viewer.keeper,
       mayApproveExports: m.who.opening.open && (await seated(m.user, "hiddenmap.export")),
+      title: c.title,
+      kindPrompts: c.kindPrompts,
+      plantingPays: Boolean(c.plantingQuestId),
+      vouchWays: c.vouchWays,
+      vouchRule: c.vouchRule,
+      // The one thing a closed map learns about everybody else's pins: how many there are.
+      allPins: await repo.countAllPins(getPool(), vid()),
       vouchesPerPin: dials().vouchesPerPin,
       // The member's own admission, so their meter counts what the server counts (QA P3-w-1).
       admitted: m.who.viewer.admitted !== false,
@@ -334,8 +341,9 @@ export function register(app: Express, deps: Deps): void {
     if (!may.ok) return res.status(may.status).json({ error: may.error });
     // How the voucher saw it, said with every vouch and kept beside it with no name.
     const seen = req.body?.seen;
-    if (!isVouchWay(seen)) {
-      return res.status(400).json({ error: `Say how you saw it: ${VOUCH_WAYS.join(", ")}.` });
+    const ways = config().vouchWays;
+    if (!isVouchWay(seen) || !ways.includes(seen)) {
+      return res.status(400).json({ error: `Say how you saw it: ${ways.join(", ")}.` });
     }
     if (await overLimit(`hidden-map-vouch:${uid}`, VOUCHES_PER_HOUR, HOUR_MS)) {
       return res.status(429).json({ error: "That is a lot of vouches for one hour." });

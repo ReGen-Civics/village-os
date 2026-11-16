@@ -21,8 +21,12 @@ Built:
 - **S1, this release:** the rules, every table, pins with photos, vouches, opening, return visits, the two-person
   export, the who-looked log and its retention job, a member's own export and erasure.
 
+- **S2:** the page at `/hidden-map` (Village menu, and a phone shortcut): log a place with photos, the location
+  read from the photo on the device and the photo re-encoded before it leaves, the cover tool for faces, the map
+  with its layers, a pin's detail with vouching and return visits, the vouch queue, and asking for and approving a
+  copy.
+
 Not built yet:
-- S2: the page (capture, reading the location from a photo, the cover tool for faces, the map).
 - S3: return visits opening a quest claim (`returnVisitQuestId`).
 - S4: capture with no signal (an IndexedDB outbox).
 - S5 (optional): seed origins from the library.
@@ -32,8 +36,10 @@ Not built yet:
 1. Put somebody in a role that holds `hiddenmap.keep` (and, for exports, a second person in a role that holds
    `hiddenmap.export`). On day one nobody's map is open, so the keeper is who vouches the first members through.
 2. Choose what the map is drawn on (`hiddenmap.basemap`). The default is a plain grid, which sends nothing anywhere.
-3. Optionally rename the layers, change the kinds, or open a layer to every member (module settings: `labels`,
-   `kinds`, `openLayers`).
+3. On the module card ("The map's words and quests"): name the map, name each layer and the question above its
+   kinds, list the kinds, open a layer to every member, and name the quests that pay for a vouched planting and a
+   return visit (module settings `title`, `labels`, `kindPrompts`, `kinds`, `openLayers`, `plantingQuestId`,
+   `returnVisitQuestId`).
 
 ## The words
 
@@ -47,6 +53,18 @@ Not built yet:
   raising the dial, withdrawing a vouch or hiding a pin never closes a map it opened.
 - **Shown precision:** per pin, exact, about 1 km, or about 50 km. It is the finest anybody outside the open members
   is ever shown. Coarse points snap to the centre of a fixed grid cell (0.01 or 0.5 degrees), never random jitter.
+
+## Vouching and admission
+
+- **A vouch says how it was seen:** in person, on a live call, or from the photos. The village chooses which ways count
+  and writes the rule a voucher reads (module settings `vouchWays`, `vouchRule`). The way is kept on the vouch, and no
+  voucher is ever named beside a pin.
+- **Admission (optional).** A module that records when a member is admitted (a rite, an oath) passes an `admission`
+  hook to this module's routes. Then a pin counts toward opening only from that moment, and a member not yet admitted
+  neither opens the map (a dial of zero included) nor vouches. Without the hook, everything counts as before.
+- **The opening is told once,** as a `hidden_map_opened` notice with no place in it.
+- **An `opened` hook** runs once at that moment for whichever module wires it in `server/index.ts` (a rite to stamp, say).
+  This module never names another.
 
 ## Who sees what
 
@@ -133,3 +151,19 @@ rows and their open export asks, and leaves their pins and visits on the map wit
 All in the `hiddenmap.*` namespace, all votable like every dial: `unlock_pins`, `vouches_per_pin`,
 `default_precision`, `teaser`, `basemap`, `basemap_max_zoom`, `access_log_days`, `export_hours`, `visit_pay_days`,
 `photo_max_mb`.
+
+## On the device
+
+- **The location is read before the photo is touched.** `shared/exifGps.ts` reads the GPS position out of the
+  original JPEG in the browser and fills the pin. Nothing is sent yet.
+- **The photo is re-encoded on the device** (`client/src/lib/hiddenMapPhoto.ts`): drawn onto a canvas and encoded
+  again, so it carries no location, camera or time. It never hands back the original file; a browser that cannot
+  re-encode gets a refusal. The server strips it again and proves it (above).
+- **Faces: a cover tool and a prompt, by choice.** No on-device face detector is reliable in the browsers members
+  carry, and a bundled model is a new dependency against a full budget that still misses faces in profile. So the
+  capture screen asks "Faces, number plates or anything that says who was there?" and a dragged box is pixelated in
+  blocks of at least a twelfth of its short side before the re-encode. A crop trims the edges the same way.
+- **Photos are read with the member's token** and shown from memory. An `<img src>` cannot carry a token, and these
+  photos are never public.
+- **The map is our own** (`client/src/components/hiddenMap/WorldMap.tsx`): tiles placed by Web Mercator arithmetic,
+  or a plain grid. No map library, no new dependency, no change to the content security policy.

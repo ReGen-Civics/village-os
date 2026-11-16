@@ -28,6 +28,7 @@ import {
   ListChecks,
   MessagesSquare,
   SquarePen,
+  MapPin,
 } from "lucide-react";
 import { TASK_BOARD_PATH, TASK_COPY } from "@shared/sessionTasks";
 
@@ -141,6 +142,17 @@ export const FAB_ACTIONS: FabAction[] = [
   },
   { key: "signin", label: "Sign in", href: "/login", Icon: UserPlus, requiresAuth: false },
   { key: "work-with-us", label: "Work with us", href: "/work-with-us", Icon: MessageCircle },
+  {
+    // Logging a place happens out where the place is, so the map is a tap away
+    // on the phone, above the daily pair, and only while the module is on.
+    key: "hidden-map",
+    label: "Hidden map",
+    href: "/hidden-map",
+    Icon: MapPin,
+    requiresAuth: true,
+    module: "hidden-map",
+    anchorPath: "/hidden-map",
+  },
   {
     // A call is something a member reaches for mid-week, a step further from
     // the thumb than the daily pair below it, and only while the module is on.
