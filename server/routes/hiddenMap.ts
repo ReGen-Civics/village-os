@@ -74,6 +74,12 @@ const defaultPrecision = (): Precision => {
   return isPrecision(v) ? v : "region";
 };
 
+/** The files multer read, always as an array: a tampered body can never pass a string or an object here. */
+function uploadedFiles(req: any): Array<{ buffer: Buffer }> {
+  const f = req?.files;
+  return Array.isArray(f) ? f.filter((x) => x && Buffer.isBuffer(x.buffer)) : [];
+}
+
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
@@ -212,8 +218,8 @@ export function register(app: Express, deps: Deps): void {
         const tooBig = err?.code === "LIMIT_FILE_SIZE";
         return res.status(400).json({ error: tooBig ? `That picture is over ${numberVar("hiddenmap.photo_max_mb")} MB.` : err.message || "Upload failed" });
       }
-      const files = (req as any).files as any[] | undefined;
-      if (!files?.length) return res.status(400).json({ error: "Add a photo." });
+      const files = uploadedFiles(req);
+      if (!files.length) return res.status(400).json({ error: "Add a photo." });
       if (held + files.length > MAX_PHOTOS_PER_PIN) return res.status(409).json({ error: `A pin holds ${MAX_PHOTOS_PER_PIN} photos at most.` });
       try {
         const photoIds = await savePhotos(files, id, null, uid);
@@ -245,7 +251,7 @@ export function register(app: Express, deps: Deps): void {
       }
       const stageSeen: Stage | null = body.stageSeen ? (isStage(body.stageSeen) ? body.stageSeen : null) : null;
       if (body.stageSeen && !stageSeen) return res.status(400).json({ error: "The stage is seed, sprout, sapling, tree or lost." });
-      const files = ((req as any).files as any[] | undefined) ?? [];
+      const files = uploadedFiles(req);
       if (!files.length) return res.status(400).json({ error: "A return visit needs a photo." });
       const held = await repo.countPhotos(getPool(), vid(), id);
       if (held + files.length > MAX_PHOTOS_PER_PIN) return res.status(409).json({ error: `A pin holds ${MAX_PHOTOS_PER_PIN} photos at most.` });
