@@ -182,6 +182,19 @@ export async function seatsOnCashRoles(pool: Pool): Promise<RowDataPacket[]> {
   return rows;
 }
 
+/**
+ * Every cash line written in [fromS, toS), seconds since the epoch, oldest first: the Treasurer's pay
+ * board reads one month (shared/moonRewardReview.ts). Compared through UNIX_TIMESTAMP so the database
+ * host's zone cannot shift a month's edge, and read one past `limit` so the board can say it was cut.
+ */
+export async function cashOwedRowsBetween(pool: Pool, fromS: number, toS: number, limit: number): Promise<RowDataPacket[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM `cash_owed` WHERE UNIX_TIMESTAMP(`owed_at`) >= ? AND UNIX_TIMESTAMP(`owed_at`) < ? ORDER BY `owed_at` ASC, `id` ASC LIMIT ?",
+    [fromS, toS, limit + 1],
+  );
+  return rows;
+}
+
 /** How many of one member's rows are still unpaid: owed, or claimed and waiting. */
 export async function unpaidCashCountFor(pool: Pool, userId: string): Promise<number> {
   const [rows] = await pool.query<RowDataPacket[]>(
