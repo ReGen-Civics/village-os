@@ -8,6 +8,7 @@
  * and rolePrerequisites.ts.
  */
 import { authToken } from "@/lib/gameApi";
+import { formatMoneyMinor } from "@/i18n/format";
 
 export async function ask(path: string, method: "GET" | "POST" | "PUT" = "GET", body?: unknown): Promise<{ ok: boolean; status: number; data: any }> {
   const t = authToken();
@@ -164,4 +165,5 @@ export const PATH_WORDS = {
   applyNow: "Apply now",
 } as const;
 
-export const usd = (minor: number) => `$${(minor / 100).toFixed(minor % 100 === 0 ? 0 : 2)}`;
+/** A price in the village's own currency (Admin, Make This Yours), written the reader's way; a bare figure while the village names none. */
+export const priceWords = (minor: number, currency: string) => formatMoneyMinor(minor, currency).trim();

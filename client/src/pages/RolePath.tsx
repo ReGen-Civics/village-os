@@ -22,7 +22,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { BreathingLoader } from "@/components/natural";
 import { BTN_PRIMARY, CARD, EYEBROW, H1, H2, HINT, LEDE, LINK, RING, WORLD } from "@/components/journey/look";
 import { applySeatsHref } from "@shared/seatApplyLinks";
-import { ask, PATH_WORDS as W, roleWithHolders, usd } from "@/components/seasonPlaces/seasonApi";
+import { useGameConfig } from "@/lib/gameApi";
+import { ask, PATH_WORDS as W, priceWords, roleWithHolders } from "@/components/seasonPlaces/seasonApi";
 
 interface PathPayload {
   roleId: string;
@@ -36,6 +37,7 @@ const PANEL = "rounded-2xl border border-border bg-card/60 p-4";
 
 export default function RolePath() {
   const { user } = useAuth();
+  const currency = String(useGameConfig()?.project?.fiatCurrency ?? "").trim().toUpperCase();
   const [, params] = useRoute("/role-path/:roleId");
   const roleId = params?.roleId ?? "";
   const [path, setPath] = useState<PathPayload | null>(null);
@@ -126,7 +128,7 @@ export default function RolePath() {
 
               {fees.map((f) => (
                 <section key={f.id} className="flex items-center gap-4">
-                  {f.amountMinor !== null && <p className="font-display text-3xl text-primary">{usd(f.amountMinor)}</p>}
+                  {f.amountMinor !== null && <p className="font-display text-3xl text-primary">{priceWords(f.amountMinor, currency)}</p>}
                   {f.done
                     ? <span className={HINT}>{W.paid}</span>
                     : <a href={f.href} className={`${BTN_PRIMARY} flex-1`}>{W.pay(f.title)}</a>}
