@@ -40,6 +40,8 @@ const WORD_SPECS = ROLE_CARD_FIELDS.filter((f) => !String(f.key).startsWith("par
 interface Form {
   words: Record<string, string>;
   listed: boolean;
+  /** Shown with a Coming soon badge, even while unlisted, and closed to applications (Rye, 16 Nov 2026). */
+  comingSoon: boolean;
   alwaysChecked: boolean;
   /** Who may hold it (0374): "" is a card that has not said, which reads as either. */
   heldBy: "" | HeldBy;
@@ -73,6 +75,7 @@ function formOf(s: EditorState): Form {
   return {
     words: Object.fromEntries(Object.entries(s.words).map(([k, v]) => [k, text(v)])),
     listed: p.listed ?? true,
+    comingSoon: p.comingSoon ?? false,
     alwaysChecked: p.alwaysChecked ?? false,
     heldBy: p.heldBy ?? "",
     commitmentPct: typeof p.commitmentPct === "number" ? String(p.commitmentPct) : "",
@@ -103,6 +106,7 @@ function bodyOf(f: Form, s: EditorState): SaveBody {
   const has = (k: string) => (s.parameterKeys as string[]).includes(k);
   const parameters: Record<string, unknown> = { recruiting: f.recruiting };
   if (has("listed")) parameters.listed = f.listed;
+  if (has("comingSoon")) parameters.comingSoon = f.comingSoon;
   if (has("alwaysChecked")) parameters.alwaysChecked = f.alwaysChecked;
   if (has("heldBy")) parameters.heldBy = f.heldBy || null;
   if (has("commitmentPct")) parameters.commitmentPct = f.commitmentPct.trim() ? Number(f.commitmentPct) : null;
@@ -284,6 +288,14 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
               {open.lacksToList.length > 0 && !form.listed && (
                 <p className="text-sm text-muted-foreground"><Trans context="role editor">Still to write before it can be listed:</Trans> {open.lacksToList.join(", ")}.</p>
               )}
+            </Frame>
+          )}
+          {has("comingSoon") && (
+            <Frame label={t({ message: "Coming soon", context: "role editor" })} changed={form.comingSoon !== start.comingSoon}>
+              <label className="flex min-h-[44px] items-center gap-2">
+                <input type="checkbox" className="size-5 accent-dash-gold" checked={form.comingSoon} onChange={(e) => set("comingSoon", e.target.checked)} data-testid="role-editor-coming-soon" />
+                <span><Trans context="role editor">Show this role as coming soon: visitors see it with a Coming soon badge, even while it is not listed, and nobody can apply yet</Trans></span>
+              </label>
             </Frame>
           )}
           {has("alwaysChecked") && (

@@ -118,7 +118,7 @@ import { voiceViewerOf } from "../lib/voiceForViewer";
 import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
-import { isListed } from "../../shared/roleListing";
+import { COMING_SOON_WORDS, isComingSoon, isListed } from "../../shared/roleListing";
 import { opensAfterFounding } from "../../shared/foundingTeam";
 import { foundingIdsOf, replyDaysFor } from "../lib/foundingFirst";
 import { gateOf } from "../lib/roleCardProjection";
@@ -361,7 +361,8 @@ export function register(app: Express, deps: Deps): void {
     // Hiring the founding team first (Rye, 14 Nov 2026): every other listed role opens after it.
     const foundingIds = foundingIdsOf(roles);
     return roles
-      .filter((r) => r.active && !r.isExample && isListed(r) && r.circleId && live.has(r.circleId))
+      // A coming-soon role is shown on the public pages but offered by no form (Rye, 16 Nov 2026).
+      .filter((r) => r.active && !r.isExample && isListed(r) && !isComingSoon(r) && r.circleId && live.has(r.circleId))
       .filter((r) => !needsCard || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
       .map((r) => ({
         id: r.id,
@@ -393,6 +394,14 @@ export function register(app: Express, deps: Deps): void {
           ...(s.final ? { finalApproval: true } : {}),
         })),
       }));
+  }
+
+  /** The first coming-soon role a posted form names, by name, or null. Read before the form, so the refusal says why. */
+  async function comingSoonAmong(picked: unknown): Promise<string | null> {
+    const ids = new Set((Array.isArray(picked) ? picked : []).map((r: any) => String(r?.roleId ?? "").trim()).filter(Boolean));
+    if (!ids.size) return null;
+    const hit = (await listOrgRoles(getPool())).find((r) => ids.has(r.id) && !r.isExample && isComingSoon(r));
+    return hit ? hit.name : null;
   }
 
   /** Whether the form opens for this request, and through which link. */
@@ -539,6 +548,9 @@ export function register(app: Express, deps: Deps): void {
     const t = target(mode);
     if (!t) return res.status(409).json({ error: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason });
     const season = t.season;
+    // Coming soon (Rye, 16 Nov 2026): refused in a sentence, before the form's own reading calls it no role at all.
+    const soon = await comingSoonAmong(body.roles);
+    if (soon) return res.status(409).json({ error: COMING_SOON_WORDS.refused(soon), field: "roles", code: "coming_soon" });
     const roles = await offered();
     const outcomes = new Map(roles.map((r) => [r.id, r.accountabilities]));
     const alwaysChecked = new Set(roles.filter((r) => r.alwaysChecked).map((r) => r.id));

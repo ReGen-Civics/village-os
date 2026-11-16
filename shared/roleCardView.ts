@@ -42,6 +42,8 @@ export interface RoleCardView {
   beingWrittenLine: string | null;
   /** Whether Apply may show. */
   applyAllowed: boolean;
+  /** Shown as coming soon: a badge, and a disabled "Coming soon" where Apply would be (shared/roleListing.ts). */
+  comingSoon: boolean;
 }
 
 const list = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "") : []);
@@ -99,7 +101,8 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
     pay,
     beingWritten: held,
     beingWrittenLine: held ? beingWrittenLine({ missing: (Array.isArray(card.missing) ? card.missing : []) as CardPart[] }) : null,
-    applyAllowed: !held,
+    applyAllowed: !held && s.comingSoon !== true,
+    comingSoon: s.comingSoon === true,
   };
 }
 

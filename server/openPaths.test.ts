@@ -72,6 +72,12 @@ describe.skipIf(!configured)("what a class opens (MySQL)", () => {
     await role("unlisted-open", null);
     await pool.query("UPDATE `org_roles` SET `listed` = 0 WHERE `id` IN ('unlisted-fit', 'unlisted-open')"); // module-review-ok: fixture SQL against the scratch schema this suite provisioned
 
+    // Coming soon (Rye, 16 Nov 2026): listed and open by its places, yet in no list and no count here, which
+    // offer roles to apply for. The "fit" and "untagged-null" roles above are the same rows without the mark.
+    await role("soon-fit", JSON.stringify(["catalyzing"]));
+    await role("soon-open", null);
+    await pool.query("UPDATE `org_roles` SET `coming_soon` = 1 WHERE `id` IN ('soon-fit', 'soon-open')"); // module-review-ok: fixture SQL against the scratch schema this suite provisioned
+
     await quest("q-fit", JSON.stringify(["catalyzing"]));
     await quest("q-other", JSON.stringify(["building"]));
     await quest("q-null", null);

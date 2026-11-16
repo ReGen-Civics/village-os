@@ -29,15 +29,44 @@ export function isListed(role: { listed?: boolean | null } | null | undefined): 
 }
 
 /**
+ * COMING SOON (Rye, 16 Nov 2026: "list all the regenerative circle roles but
+ * say they're 'coming soon'"). A role marked coming soon is shown wherever a
+ * listed role is shown, its circle included, with a "Coming soon" badge, and
+ * takes no application: Apply is a disabled "Coming soon", and both apply
+ * routes refuse it. It is shown even while unlisted, because a role whose
+ * card is still being written cannot pass the listing gate, and showing that
+ * it is coming is the point. Clearing the mark puts the role back to what its
+ * `listed` column says.
+ */
+export const COMING_SOON_WORDS = {
+  badge: "Coming soon",
+  badgeHint: "This role is part of the village's plan. It does not take applications yet.",
+  action: "Coming soon",
+  actionLine: "This role opens later. Applications are not taken yet.",
+  refused: (name: string) => `${name} is coming soon. It does not take applications yet.`,
+  editorLabel: "Coming soon",
+  editorHelp: "On, the role shows to visitors with a Coming soon badge, even while unlisted, and nobody can apply for it yet.",
+} as const;
+
+export function isComingSoon(role: { comingSoon?: boolean | null } | null | undefined): boolean {
+  return role?.comingSoon === true;
+}
+
+/** Whether a role is on the discovery surfaces: listed, or marked coming soon. */
+export function isShown(role: { listed?: boolean | null; comingSoon?: boolean | null } | null | undefined): boolean {
+  return isListed(role) || isComingSoon(role);
+}
+
+/**
  * Whether a role is left in a list for one reader.
  * Stewards and admins see every role. A holder sees their own roles.
  * Everyone else sees listed roles only.
  */
 export function visibleTo(
-  role: { id: string; listed?: boolean | null },
+  role: { id: string; listed?: boolean | null; comingSoon?: boolean | null },
   viewer: { seesUnlisted: boolean; ownRoleIds?: ReadonlySet<string> | readonly string[] },
 ): boolean {
-  if (isListed(role) || viewer.seesUnlisted) return true;
+  if (isShown(role) || viewer.seesUnlisted) return true;
   const own = viewer.ownRoleIds;
   if (!own) return false;
   return Array.isArray(own) ? own.includes(role.id) : (own as ReadonlySet<string>).has(role.id);
@@ -50,13 +79,13 @@ export function visibleTo(
  */
 export function circleHasListedRole(
   circleId: string,
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
 ): boolean {
   let any = false;
   for (const r of roles) {
     if (r.circleId !== circleId || r.active === false) continue;
     any = true;
-    if (isListed(r)) return true;
+    if (isShown(r)) return true;
   }
   return !any;
 }
@@ -64,14 +93,15 @@ export function circleHasListedRole(
 /** A circle with at least one live, listed role. */
 function circleListsARole(
   circleId: string,
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
 ): boolean {
-  return roles.some((r) => r.circleId === circleId && r.active !== false && isListed(r));
+  return roles.some((r) => r.circleId === circleId && r.active !== false && isShown(r));
 }
 
-/** A role "invites" applications: a free place not forming, a declared open state, or recruiting. */
+/** A role "invites" applications: a free place not forming, a declared open state, or recruiting. Never while coming soon. */
 const OPEN_STATES = new Set(["open", "partial", "expired"]);
-export function invitesApplications(r: { seats: number; held: number; state: string; recruiting: boolean }): boolean {
+export function invitesApplications(r: { seats: number; held: number; state: string; recruiting: boolean; comingSoon?: boolean | null }): boolean {
+  if (r.comingSoon === true) return false;
   const openPlaces = Math.max(0, r.seats - r.held);
   return (openPlaces > 0 && r.state !== "forming") || OPEN_STATES.has(r.state) || r.recruiting === true;
 }
@@ -140,7 +170,7 @@ export function ownRoleIdsOf(
  */
 export function circlesToShow<C extends { id: string; parentCircleId?: string | null }>(
   circles: readonly C[],
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
   viewer: ListingViewer,
 ): C[] {
   if (viewer.seesUnlisted) return [...circles];
@@ -149,6 +179,8 @@ export function circlesToShow<C extends { id: string; parentCircleId?: string | 
   // goes too, an empty or projected one included. Before, "List only these" hid every role but
   // left eleven projected circles on /api/org and the map, which read as the projected roles
   // still being public. A village that has never unlisted a role keeps its empty circles.
+  // Curating reads the `listed` column itself: a village that unlisted roles and marked some coming soon is still
+  // curating, so its empty circles stay hidden while the circles of its coming-soon roles show.
   const curating = roles.some((r) => r.active !== false && !isListed(r));
   const keep = new Set<string>();
   for (const c of circles) if (curating ? circleListsARole(c.id, roles) : circleHasListedRole(c.id, roles)) keep.add(c.id);

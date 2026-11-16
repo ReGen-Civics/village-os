@@ -91,7 +91,7 @@ async function seedRole(extra: Record<string, unknown> = {}): Promise<{ id: stri
 }
 
 const row = async (id: string) => {
-  const [rows]: any = await pool.query("SELECT aim, domain, recruiting, terms_offer, terms_offer_by FROM org_roles WHERE id = ?", [id]); // module-review-ok: a test reading the table it asserts on
+  const [rows]: any = await pool.query("SELECT aim, domain, recruiting, listed, coming_soon, terms_offer, terms_offer_by FROM org_roles WHERE id = ?", [id]); // module-review-ok: a test reading the table it asserts on
   return rows[0];
 };
 
@@ -204,6 +204,22 @@ describe.skipIf(!configured)("Edit this role", () => {
       const r = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { recruiting: true } });
       expect(r.status).toBe(200);
       expect((await row(id)).recruiting).toBe(1);
+    });
+
+    it("COMING SOON (Rye, 16 Nov 2026): marks an unlisted card coming soon with no listing gate, shows it in the editor, and clears it", async () => {
+      const { id } = await seedRole();
+      // An unfinished, unlisted card: listing it is refused by the gate, marking it coming soon is not.
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { listed: false } })).status).toBe(200);
+      const r = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { comingSoon: true } });
+      expect(r.status, JSON.stringify(r.json)).toBe(200);
+      expect((await row(id)).coming_soon).toBe(1);
+      expect((await row(id)).listed).toBe(0);
+      const editor = await call("GET", `/api/org/role-edit/${id}`, "holder-1");
+      expect(editor.json.state.parameterKeys).toContain("comingSoon");
+      expect(editor.json.state.parameters.comingSoon).toBe(true);
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { comingSoon: "maybe" } })).json.error).toBe("Coming soon is yes or no.");
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { comingSoon: false } })).status).toBe(200);
+      expect((await row(id)).coming_soon).toBe(0);
     });
 
     it("names the listing details in words when this database has no column for them, and writes the ones it has", async () => {

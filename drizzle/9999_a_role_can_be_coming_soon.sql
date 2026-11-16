@@ -1,0 +1,12 @@
+-- 9999 (the integrator renumbers): a role can be marked coming soon (Rye, 16 Nov 2026).
+--
+-- "List all the regenerative circle roles but say they're 'coming soon'."
+-- A role marked coming soon shows wherever a listed role shows, its circle
+-- included, with a Coming soon badge, and takes no application: both apply
+-- routes refuse it (shared/roleListing.ts). Set where roles are edited, as a
+-- role parameter beside always_checked (shared/roleParams.ts).
+--
+-- EXPAND ONLY. One new column with a DEFAULT of 0. The previous release names
+-- none of it, so it keeps reading and writing org_roles unchanged if it is put
+-- back over a migrated database.
+ALTER TABLE org_roles ADD COLUMN coming_soon TINYINT(1) NOT NULL DEFAULT 0;

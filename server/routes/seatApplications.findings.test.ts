@@ -27,6 +27,7 @@ import { runSeasonTurn } from "../lib/seasonTurn";
 import { viewText } from "../lib/alignmentSubjects";
 import { readApplication, seatingsHolding } from "../repos/seatApplications";
 import { textsToSettle } from "../repos/alignments";
+import { COMING_SOON_WORDS } from "../../shared/roleListing";
 import { register } from "./seatApplications";
 
 const LADDER = ["visitor", "guest", "member"];
@@ -567,5 +568,18 @@ describe.skipIf(!configured)("the member door, over a scratch schema", () => {
     await new Promise((r) => setTimeout(r, 200));
     const opened = h.notices.find((x) => x.type === "ballot_opened");
     expect(opened?.body).toMatch(/^Voting is open until \d{1,2} [A-Z][a-z]+ \d{4}\.$/);
+  });
+
+  it("COMING SOON (Rye, 16 Nov 2026): a role marked coming soon is refused in a plain sentence, and opens once the mark is cleared", async () => {
+    const s = await seat("Regenerative Builder");
+    await pool.query("UPDATE org_roles SET coming_soon = 1 WHERE id = ?", [s]); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+    const refused = await apply({ seatIds: [s] });
+    expect(refused.status).toBe(409);
+    expect(refused.body).toMatchObject({ error: COMING_SOON_WORDS.refused("Regenerative Builder"), seatId: s, code: "coming_soon" });
+    expect(refused.body.error).toBe("Regenerative Builder is coming soon. It does not take applications yet.");
+    // CONTROL: the same application goes through once the role is no longer coming soon.
+    await pool.query("UPDATE org_roles SET coming_soon = 0 WHERE id = ?", [s]); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+    const ok = await apply({ seatIds: [s] });
+    expect(ok.status, JSON.stringify(ok.body)).toBe(201);
   });
 });

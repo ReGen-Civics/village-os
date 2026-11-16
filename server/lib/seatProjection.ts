@@ -48,7 +48,7 @@
  */
 import type { ModuleLifecycle } from "../../shared/modules";
 import { roleCard, type CardVillageWords } from "./roleCardProjection";
-import { isListed, visibleTo, type ListingViewer } from "../../shared/roleListing";
+import { isComingSoon, isShown, visibleTo, type ListingViewer } from "../../shared/roleListing";
 import { readTermsOffer } from "../../shared/seatTermsOffer";
 import { overrideInForce, seatState, type OrgAssignment, type OrgRole } from "./orgChart";
 import type { MintRule } from "./economy";
@@ -471,7 +471,10 @@ export function projectSeat(
     criticality: role.criticality,
     recruiting: role.recruiting,
     // The "Not listed" chip: present only when false, and only ever sent to a reader allowed to see an unlisted role.
-    ...(isListed(role) ? {} : { listed: false }),
+    // A coming-soon role is shown to everyone, so it is never sent as unlisted.
+    ...(isShown(role) ? {} : { listed: false }),
+    // The "Coming soon" badge and the disabled Apply (Rye, 16 Nov 2026): present only when set.
+    ...(isComingSoon(role) ? { comingSoon: true } : {}),
     state: seatState(role, held, ctx.now),
     card: roleCard(role, held.length, seatState(role, held, ctx.now), tier, { roleNames: ctx.roleNames, gated: ctx.cardGate, words: ctx.cardWords }),
     holderCount: held.length,

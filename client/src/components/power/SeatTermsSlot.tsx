@@ -25,6 +25,7 @@ import SeatTermsDrawer from "./SeatTermsDrawer";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import RoleCardParams from "./RoleCardParams";
 import { roleCardView } from "@shared/roleCardView";
+import { ComingSoonAction } from "@/components/ComingSoon";
 
 function SeatTermsSlot({ seat }: { seat: Record<string, any> }) {
   const presets = useVillagePresets();
@@ -95,6 +96,8 @@ export function applyHrefFor(seat: Record<string, any> | null | undefined): stri
  * Being written the action is left off and the parameters block says so (role journey PR-C).
  */
 export function guardedAction(seat: Record<string, any> | null | undefined, action: ReactNode): ReactNode {
+  // Coming soon (Rye, 16 Nov 2026): where Apply would be, a disabled "Coming soon", on every host.
+  if (seat && roleCardView(seat).comingSoon) return <ComingSoonAction />;
   return seat && !roleCardView(seat).applyAllowed ? null : action;
 }
 

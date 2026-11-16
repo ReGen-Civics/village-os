@@ -34,6 +34,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { ComingSoonAction } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
@@ -216,6 +217,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <ArrowRight className="size-4" aria-hidden="true" />
       </Link>
     </Fireflies>
+  ) : !noAct && seat?.comingSoon === true ? (
+    // Coming soon (Rye, 16 Nov 2026): the one act is a disabled "Coming soon".
+    <ComingSoonAction />
   ) : null;
 
   // THE POINT OF PAY, drawn once: in the founding card it is the "How rewards work" piece, whose

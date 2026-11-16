@@ -77,6 +77,8 @@ export interface RoleParams {
   commitmentMin: number | null;
   /** The commitment the role needs in all, 1 to 1000. Null: 100. Display only. */
   commitmentTarget: number | null;
+  /** Shown with a "Coming soon" badge and closed to applications (Rye, 16 Nov 2026, shared/roleListing.ts). */
+  comingSoon: boolean;
 }
 
 export const ROLE_PARAM_KEYS = [
@@ -98,6 +100,7 @@ export const ROLE_PARAM_KEYS = [
   "commitmentRequired",
   "commitmentMin",
   "commitmentTarget",
+  "comingSoon",
 ] as const satisfies readonly (keyof RoleParams)[];
 export type RoleParamKey = (typeof ROLE_PARAM_KEYS)[number];
 
@@ -121,6 +124,7 @@ export const ROLE_PARAM_COLUMNS: Record<RoleParamKey, string> = {
   commitmentRequired: "commitment_required",
   commitmentMin: "commitment_min",
   commitmentTarget: "commitment_target",
+  comingSoon: "coming_soon",
 };
 
 export const ROLE_PARAM_LABELS: Record<RoleParamKey, string> = {
@@ -142,6 +146,7 @@ export const ROLE_PARAM_LABELS: Record<RoleParamKey, string> = {
   commitmentRequired: "Commitment required",
   commitmentMin: "Least commitment one person may propose",
   commitmentTarget: "Commitment the role needs in all",
+  comingSoon: "Coming soon",
 };
 
 // ── Parsing ──────────────────────────────────────────────────────────────────
@@ -272,6 +277,7 @@ export function parseRoleParams(body: unknown): Parsed<Partial<RoleParams>> {
     const c = readCommitmentTarget(o.commitmentTarget);
     problems.push(put("commitmentTarget", c.ok ? ok(c.value) : bad<number | null>(c.problem)));
   }
+  if (o.comingSoon !== undefined) problems.push(put("comingSoon", typeof o.comingSoon === "boolean" ? ok(o.comingSoon) : bad<boolean>("Say whether the role is coming soon: true or false.")));
   const first = problems.find((p): p is string => !!p);
   return first ? bad(first) : ok(value);
 }
@@ -288,7 +294,7 @@ export function roleParamColumns(value: Partial<RoleParams>): Array<[string, str
   for (const key of ROLE_PARAM_KEYS) {
     if (!(key in value)) continue;
     const v = value[key];
-    const bound = v === null || v === undefined ? (key === "alwaysChecked" || key === "commitmentRequired" ? 0 : null) : typeof v === "boolean" ? (v ? 1 : 0) : Array.isArray(v) ? JSON.stringify(v) : (v as string | number);
+    const bound = v === null || v === undefined ? (key === "alwaysChecked" || key === "commitmentRequired" || key === "comingSoon" ? 0 : null) : typeof v === "boolean" ? (v ? 1 : 0) : Array.isArray(v) ? JSON.stringify(v) : (v as string | number);
     out.push([ROLE_PARAM_COLUMNS[key], bound]);
   }
   return out;
@@ -326,6 +332,7 @@ export function roleParamsFromRow(r: Record<string, unknown>): RoleParams {
     commitmentRequired: r.commitment_required === 1 || r.commitment_required === true || r.commitment_required === "1",
     commitmentMin: storedCommitmentMin(r.commitment_min),
     commitmentTarget: storedCommitmentTarget(r.commitment_target),
+    comingSoon: r.coming_soon === 1 || r.coming_soon === true || r.coming_soon === "1",
   };
 }
 

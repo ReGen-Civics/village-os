@@ -128,7 +128,8 @@ export async function loadPickOptions(source: PickSource): Promise<PickOption[]>
           holderIds: Array.isArray(r.holders) ? r.holders.map((h: any) => String(h?.userId ?? "")).filter(Boolean) : [],
           ...(r.pay ? { pay: r.pay as WorkPay } : {}),
           // Role journey PR-A: a steward is served unlisted roles too; the role application never offers them.
-          listed: isListed(r),
+          // Nor a coming-soon role, which is shown on the pages but takes no application yet (Rye, 16 Nov 2026).
+          listed: isListed(r) && r.comingSoon !== true,
         }));
     }
     case "circles": {

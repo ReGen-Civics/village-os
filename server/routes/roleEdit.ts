@@ -61,7 +61,7 @@ import { canonicalJson } from "../../shared/canonicalJson";
 import type { PaySettings } from "../../shared/seatSettings";
 import crypto from "node:crypto";
 import { boolVar, stringVar } from "../lib/variables";
-import { isListed } from "../../shared/roleListing";
+import { isShown } from "../../shared/roleListing";
 import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
 import { hasSections, sectionsForReader, villagePayFrom, type PayReader, type RoleCardSections } from "../../shared/roleCardSections";
@@ -206,7 +206,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     const roles = await listOrgRoles(g.getPool());
     const role = roles.find((r) => r.id === String(req.params.id ?? ""));
     const editor = user ? !!(await door(req))?.door : false;
-    if (!role || role.isExample || (!editor && (role.active === false || !isListed(role)))) {
+    if (!role || role.isExample || (!editor && (role.active === false || !isShown(role)))) {
       return res.status(404).json({ error: "no_such_role", message: "There is no role by that id." });
     }
     const pool = g.getPool();
@@ -488,6 +488,7 @@ function parameterLines(state: EditorState, roles: readonly OrgRole[]): Record<s
   const titleOf = (id: string) => roles.find((r) => r.id === id)?.name ?? id;
   const put = (k: string, v: string[]) => v.length && (out[k] = v);
   if (p.listed !== undefined) put("listed", [p.listed ? "Yes" : "No"]);
+  if (p.comingSoon !== undefined) put("comingSoon", [p.comingSoon ? "Yes" : "No"]);
   if (p.alwaysChecked !== undefined) put("alwaysChecked", [p.alwaysChecked ? "Yes" : "No"]);
   if (p.heldBy) put("heldBy", [p.heldBy]);
   if (typeof p.commitmentPct === "number") put("commitmentPct", [`${p.commitmentPct}%`]);

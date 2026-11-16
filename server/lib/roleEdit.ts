@@ -119,7 +119,7 @@ async function storedParameters(pool: Pool, roleId: string, live: readonly Param
   const out: Record<string, unknown> = {};
   for (const k of live) {
     const v = row[PARAMETER_COLUMNS[k]];
-    if (k === "alwaysChecked" || k === "commitmentRequired") out[k] = Number(v) === 1;
+    if (k === "alwaysChecked" || k === "commitmentRequired" || k === "comingSoon") out[k] = Number(v) === 1;
     else if (k === "commitmentPct") out[k] = storedCommitmentPct(v);
     else if (k === "commitmentMin") out[k] = storedCommitmentMin(v);
     else if (k === "commitmentTarget") out[k] = storedCommitmentTarget(v);

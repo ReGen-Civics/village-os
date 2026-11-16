@@ -335,6 +335,33 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect((asAdmin.json as any[]).map((c) => c.id)).toEqual(expect.arrayContaining(["anchor", "back-office"]));
   });
 
+  it("COMING SOON (Rye, 16 Nov 2026): an admin marks an unlisted role coming soon; its circle and the role reach a visitor, flagged and forming, and no form offers it", async () => {
+    const F = state.founder;
+    expect((await call("POST", "/api/admin/circles", { id: "regen-community", name: "Regenerative Community Building" }, F)).status).toBe(200);
+    const made = await call("POST", "/api/admin/org/roles", { name: "Community Weaver", circleId: "regen-community", seats: 1 }, F);
+    const soonId = String(made.json?.id ?? "");
+    expect(soonId).toBeTruthy();
+    expect((await call("PUT", `/api/admin/org/roles/${soonId}`, { listed: false }, F)).status).toBe(200);
+    // CONTROL: unlisted and unmarked, the circle is hidden from a visitor.
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("regen-community");
+
+    const marked = await call("PUT", `/api/admin/org/roles/${soonId}`, { comingSoon: true }, F);
+    expect(marked.status, JSON.stringify(marked.json)).toBe(200);
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).toContain("regen-community");
+    const org = await call("GET", "/api/org");
+    expect(((org.json?.circles ?? []) as any[]).map((c) => c.id)).toContain("regen-community");
+    const row = ((org.json?.roles ?? []) as any[]).find((r) => r.id === soonId);
+    expect(row).toMatchObject({ comingSoon: true, state: "forming" });
+    expect("listed" in row).toBe(false);
+    // Still hidden circles stay hidden: the Filing Clerk's circle above is unmarked.
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("back-office");
+    const form = await call("GET", "/api/open-proposals/form");
+    expect(((form.json?.roles ?? []) as any[]).map((r) => r.id)).not.toContain(soonId);
+    // Cleared, the role goes back to what its listed column says: hidden.
+    expect((await call("PUT", `/api/admin/org/roles/${soonId}`, { comingSoon: false }, F)).status).toBe(200);
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("regen-community");
+  });
+
   // ── The brief's 6.5 steps other lanes own. Each becomes a test, with a control, when its PR lands. ──
   it.todo("PR-A: an unlisted role is absent from the form and the board, and the listed one is offered");
   it.todo("PR-C: the public card carries the parameters and the pay range, and no other terms key");

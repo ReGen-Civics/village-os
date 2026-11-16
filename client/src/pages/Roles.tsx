@@ -4,6 +4,7 @@ import { anchorCircleId } from "@shared/circlePicker";
 import SeasonGoals from "@/components/roleDraft/SeasonGoals";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, H1, H2, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 import NotListedChip from "@/components/NotListedChip";
+import { ComingSoonChip } from "@/components/ComingSoon";
 import Layout from "@/components/Layout";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
@@ -270,9 +271,14 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
-                  {stateWords[role.status]}
-                </span>
+                {/* A coming-soon role says so in place of its state (Rye, 16 Nov 2026). */}
+                {role.raw?.comingSoon === true ? (
+                  <ComingSoonChip role={role.raw} />
+                ) : (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
+                    {stateWords[role.status]}
+                  </span>
+                )}
                 <NotListedChip role={role.raw} />
                 {/* 0374: the card says an agent may hold it (a card that has not said shows nothing). */}
                 {(role.raw?.card?.heldBy === "agent" || role.raw?.card?.heldBy === "either") && (
@@ -546,7 +552,7 @@ export default function Roles() {
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
-  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && r.raw?.listed !== false && r.raw?.comingSoon !== true && !r.isExample && r.status !== "filled") : [];
   const openingNextIds = new Set(openingNext.map((r) => r.id));
   const unlistedCount = (roles ?? []).filter((r) => r.raw?.listed === false).length;
   // Each role appears once: a featured role lives in the founding section. A linked seat is a

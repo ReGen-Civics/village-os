@@ -55,3 +55,20 @@ describe("an unlisted role in the projection", () => {
     expect(ids(other)).not.toContain("hidden");
   });
 });
+
+describe("a coming-soon role in the projection (Rye, 16 Nov 2026)", () => {
+  const soon = { ...base("soon", false), comingSoon: true } as OrgRole;
+  it("reaches a visitor on /api/org and /api/map, flagged coming soon, never as unlisted, and forming while nobody holds it", () => {
+    const org = projectSeats([...ROLES, soon], [], tierOrg, ctx("org"));
+    expect(ids(org)).toEqual(["shown", "also-shown", "soon"]);
+    const row = org.find((r) => r.id === "soon")!;
+    expect(row.comingSoon).toBe(true);
+    expect("listed" in row).toBe(false);
+    expect(row.state).toBe("forming");
+    expect(ids(projectSeats([...ROLES, soon], [], mapSeatTier(false), ctx("map")))).toContain("soon");
+    // CONTROL: a plain role carries no flag and reads open.
+    const plain = org.find((r) => r.id === "shown")!;
+    expect("comingSoon" in plain).toBe(false);
+    expect(plain.state).toBe("open");
+  });
+});
