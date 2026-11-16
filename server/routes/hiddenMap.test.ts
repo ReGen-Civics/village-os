@@ -28,7 +28,7 @@ import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { buildGeotaggedJpeg } from "../lib/exifFixture";
 import { exportMemberHiddenMap, forgetMemberHiddenMap, storePhoto } from "../lib/hiddenMap";
-import { loadModuleSettings, setModuleLifecycle } from "../lib/modules";
+import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { loadVariables, setVariable } from "../lib/variables";
 import { villageId } from "../lib/economy";
 import * as repo from "../repos/hiddenMap";
@@ -95,7 +95,12 @@ function deps(
   who: () => string | null,
   seats: { keep: Set<string>; export: Set<string> },
   photoDir: string,
-  extra: { admission?: (id: string) => Promise<Date | null | undefined>; notify?: (n: any) => Promise<any> } = {},
+  extra: {
+    admission?: (id: string) => Promise<Date | null | undefined>;
+    notify?: (n: any) => Promise<any>;
+    opened?: (id: string) => Promise<void>;
+    visitClaims?: any;
+  } = {},
 ) {
   return {
     ...extra,
@@ -120,7 +125,11 @@ function deps(
     },
     getPool: () => pool,
     overLimit: async () => false,
-    members: { all: async () => [{ id: "m-plant", name: "Rowan Example" }, { id: "m-keep", name: "Ash Example" }], count: async () => 2 },
+    members: {
+      all: async () => [{ id: "m-plant", name: "Rowan Example" }, { id: "m-keep", name: "Ash Example" }],
+      count: async () => 2,
+      byId: async (id: string) => ({ id, name: `${id} Example` }),
+    },
     firstName: (n: string) => String(n).split(" ")[0],
     photoDir,
   } as any;
@@ -379,10 +388,12 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     // A second register over the same schema, with the hook and the bell, for members this test owns.
     const admittedAt = new Map<string, Date | null>([["m-deck", null], ["m-sworn", new Date(Date.now() + 1000)]]);
     const told: any[] = [];
+    const stamped: string[] = [];
     const c = collect();
     register(c.app, deps(pool, () => whoami, seats, photoDir, {
       admission: async (id) => (admittedAt.has(id) ? admittedAt.get(id)! : undefined),
       notify: async (n) => { told.push(n); return { ok: true }; },
+      opened: async (id) => { stamped.push(id); },
     }));
     const h = c.handlers;
     const plant = async (who: string) => {
@@ -413,6 +424,8 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     await call(h, "GET /api/hidden-map/me");
     const notices = told.filter((n) => n.userId === "m-sworn");
     expect(notices).toHaveLength(1);
+    // The opening hook runs once, for the member who opened, and never for one who did not.
+    expect(stamped).toEqual(["m-sworn"]);
     expect(notices[0]).toMatchObject({ type: "hidden_map_opened", link: "/hidden-map", dedupeKey: "hidden-map-opened:m-sworn" });
     expect(JSON.stringify(notices[0])).not.toMatch(/\d+\.\d{3,}/);
     await setVariable(pool as any, "hiddenmap.unlock_pins", "7");
@@ -454,6 +467,49 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     const at = new Date("2026-11-15T12:00:00Z");
     expect(plantingClaimNote(at)).toBe("A planting, vouched on 2026-11-15.");
     expect(plantingClaimNote(at)).not.toMatch(/\d+\.\d{3,}/);
+  });
+
+  it("pays every vouched planting: each owed claim opens once the one before it is decided (P1-r-1)", async () => {
+    const quests = questsRepoFactory(pool as any);
+    const claims = claimsRepoFactory(pool as any);
+    await quests.add({ id: "q-plant", title: "Plant one", status: "Open", gratitude: "100" } as any);
+    expect(await setModuleConfig("hidden-map", { plantingQuestId: "q-plant" }, null)).toEqual({ ok: true });
+    const c = collect();
+    register(c.app, deps(pool, () => whoami, seats, photoDir, {
+      visitClaims: { stageOf: async () => "member", roleIdsFor: () => [], claimsRepo: claims, questsRepo: quests },
+    }));
+    const h = c.handlers;
+    const three: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      as("m-owed");
+      three.push((await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id);
+    }
+    as("m-keep");
+    for (const id of three) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
+
+    const open = async () => (await claims.forUser("m-owed")).filter((x: any) => x.questId === "q-plant");
+    // One open claim at a time, the quest board's rule: the first planting's.
+    let mine = await open();
+    expect(mine).toHaveLength(1);
+    expect(mine[0]!.status).toBe("submitted");
+    // Pins logged in the same second may come in either order; what holds is one pin per claim.
+    const claimed = async () => (await Promise.all(three.map((id) => repo.plantingClaimOf(pool as any, villageId(), id)))).filter(Boolean);
+    expect(await claimed()).toEqual([mine[0]!.id]);
+
+    // Each decision frees the next, on the planter's next look at the map, until all three are owed nothing.
+    for (let i = 1; i <= 2; i++) {
+      const decided = mine.find((x: any) => x.status === "submitted")!;
+      await claims.declineOnce(decided.id, new Date().toISOString());
+      as("m-owed");
+      await call(h, "GET /api/hidden-map/me");
+      mine = await open();
+      expect(mine).toHaveLength(i + 1);
+      expect(new Set(await claimed()).size).toBe(i + 1);
+    }
+    // Nothing more is owed, so another look opens nothing.
+    await call(h, "GET /api/hidden-map/me");
+    expect(await open()).toHaveLength(3);
+    expect(await setModuleConfig("hidden-map", {}, null)).toEqual({ ok: true });
   });
 
   it("exports a member's own pins to them, and erasure deletes their photos and leaves the pins unattributed", async () => {

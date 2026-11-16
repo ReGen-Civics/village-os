@@ -58,6 +58,11 @@ type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "guardCapability" | "
   admission?: Admission;
   /** The bell: the member hears once when their map opens. Absent: nobody is told. */
   notify?: AppDeps["notify"];
+  /**
+   * Called once, the moment a member's map opens (a rite to stamp, say). Wired in
+   * server/index.ts by whichever module cares; this one never names another.
+   */
+  opened?: (userId: string) => Promise<void>;
 };
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -90,7 +95,7 @@ function uploadedFiles(req: any): Array<{ buffer: Buffer }> {
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, visitClaims, admission, notify } = deps;
+  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, visitClaims, admission, notify, opened } = deps;
   const vid = () => villageId();
   const config = () => configOf(moduleConfig(MODULE_ID));
 
@@ -100,11 +105,42 @@ export function register(app: Express, deps: Deps): void {
     return hasCapability(cap, { ...ctx, isAdmin: false });
   };
 
+  /**
+   * Open the claims a member's vouched plantings are owed on the village's
+   * planting quest, oldest first, stopping at the first the quest board refuses
+   * (they already hold an open claim on it, or its gate says no). Each one
+   * waiting opens on the next try after the one before it is decided, so every
+   * vouched planting is paid once and none is dropped (QA pass 1, P1-r-1).
+   */
+  const openOwedPlantingClaims = async (ownerId: string) => {
+    const questId = config().plantingQuestId;
+    if (!visitClaims || !questId) return;
+    try {
+      const owed = await repo.owedPlantings(getPool(), vid(), ownerId, dials().vouchesPerPin);
+      if (!owed.length) return;
+      const ownerUser: any = (await members.byId(ownerId)) ?? { id: ownerId, name: "" };
+      for (const pinId of owed) {
+        const now = new Date();
+        const claimId = await openVisitClaim(
+          { ...visitClaims, getPool },
+          { questId, user: { id: ownerId, name: ownerUser.name ?? "" }, at: now, note: plantingClaimNote(now) },
+        );
+        if (!claimId) break;
+        await repo.setPlantingClaim(getPool(), vid(), pinId, claimId);
+      }
+    } catch (e) {
+      console.error("[hidden-map] a vouched planting could not open its quest claim", e);
+    }
+  };
+
   const me = async (req: any) => {
     const user = await authedUser(req);
     if (!user) return null;
     const keeper = await seated(user, "hiddenmap.keep");
     const who = await whoAmI(getPool(), vid(), String(user.id), keeper, dials(), new Date(), admission);
+    if (who.justOpened && opened) {
+      await opened(String(user.id)).catch((e: unknown) => console.error("[hidden-map] the opening hook failed", e));
+    }
     if (who.justOpened && notify) {
       // Once, by its dedupe key, and never a place: the notice says the map is open and where to look.
       await notify({
@@ -116,6 +152,8 @@ export function register(app: Express, deps: Deps): void {
         dedupeKey: `hidden-map-opened:${String(user.id)}`,
       }).catch((e: unknown) => console.error("[hidden-map] the opening notice did not go", e));
     }
+    // A planter's owed claims open as each earlier one is decided.
+    await openOwedPlantingClaims(String(user.id));
     return { user, who };
   };
 
@@ -344,25 +382,10 @@ export function register(app: Express, deps: Deps): void {
     await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", now, seen);
     await repo.logAccess(getPool(), vid(), uid, "vouch", { pinId: id });
     const after = await repo.getPin(getPool(), vid(), uid, id);
-    // A planting that has just reached its vouches opens a claim for its owner
+    // A planting that has just reached its vouches is owed a claim for its owner
     // on the village's planting quest, once per pin. Paid by the ordinary
     // consent route and the village's quest.completed rule, like any quest.
-    const plantingQuestId = config().plantingQuestId;
-    const owner = after?.ownerUserId ?? null;
-    if (visitClaims && plantingQuestId && after && owner && after.layer === "planting" && after.vouches >= dials().vouchesPerPin) {
-      try {
-        if (!(await repo.plantingClaimOf(getPool(), vid(), id))) {
-          const ownerUser = (await members.byId(owner)) ?? { id: owner, name: "" };
-          const claimId = await openVisitClaim(
-            { ...visitClaims, getPool },
-            { questId: plantingQuestId, user: { id: owner, name: (ownerUser as any).name ?? "" }, at: now, note: plantingClaimNote(now) },
-          );
-          if (claimId) await repo.setPlantingClaim(getPool(), vid(), id, claimId);
-        }
-      } catch (e) {
-        console.error("[hidden-map] a vouched planting could not open its quest claim", e);
-      }
-    }
+    if (after?.ownerUserId && after.layer === "planting") await openOwedPlantingClaims(after.ownerUserId);
     res.json({ vouches: after?.vouches ?? found.record.vouches, vouchedByMe: true });
   });
 
