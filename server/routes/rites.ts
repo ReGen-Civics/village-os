@@ -292,7 +292,7 @@ export function register(app: Express, deps: Deps): void {
   });
 
   app.get("/api/rites/interest", async (req, res) => {
-    if (!(await isAdmin(req))) return refuse(res, 401, "auth_required");
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     res.json({ interest: await repo.interestList(getPool()) });
   });
 
@@ -301,7 +301,7 @@ export function register(app: Express, deps: Deps): void {
   async function signedIn(req: Request, res: Response): Promise<any | null> {
     const user = await authedUser(req);
     if (!user) {
-      refuse(res, 401, "auth_required");
+      res.status(401).json({ error: "auth_required" });
       return null;
     }
     return user;
@@ -834,9 +834,9 @@ export function register(app: Express, deps: Deps): void {
   });
 
   async function answerDoorRequest(req: Request, res: Response, yes: boolean) {
-    const user = await signedIn(req, res);
-    if (!user) return;
-    if (!(await mayAct(req, "member.vouch")).ok) return refuse(res, 403, "Answering a request opens once you may vouch for somebody.");
+    const user = await authedUser(req);
+    if (!user) return res.status(401).json({ error: "auth_required" });
+    if (!(await mayAct(req, "member.vouch")).ok) return res.status(403).json({ error: "Answering a request opens once you may vouch for somebody." });
     const got = answers.find(String(req.params.id ?? ""));
     if (!got.ok) return res.status(got.answer.status).json(got.answer.body);
     if (String((got.found.row.data as any)?.viaMember ?? "") !== String(user.id)) return refuse(res, 403, "This request was made at another member's door.");

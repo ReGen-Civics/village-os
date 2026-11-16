@@ -1642,7 +1642,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
-       * Rites (drizzle/9999_rites_and_invitations.sql): the member's stamps,
+       * Rites (drizzle/0393_rites_and_invitations.sql): the member's stamps,
        * drawn mark, ceremonies, buddy pairings either side, their own line,
        * door codes and invitation lines go. A stamp they witnessed for
        * somebody else stays, with no name on it.

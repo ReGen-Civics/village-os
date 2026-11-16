@@ -1,5 +1,5 @@
 /**
- * The rites module's store (drizzle/9999_rites_and_invitations.sql). Every SQL
+ * The rites module's store (drizzle/0393_rites_and_invitations.sql). Every SQL
  * statement the module runs is here; the rules are shared/rites.ts and the
  * routes server/routes/rites.ts.
  */

@@ -10,7 +10,6 @@
  */
 import type { Capability } from "./capabilities";
 import type { SetupNeed } from "./setupNeeds";
-import { ritesConfigProblem } from "./rites";
 
 export type ModuleLifecycle = "off" | "preview" | "members" | "public";
 
@@ -1449,7 +1448,7 @@ export const MODULES: ModuleDef[] = [
     tier: "included",
     // A stamp, a drawn mark, who witnessed whom, who walks beside whom, a
     // newcomer's own line, and names left at a door: all of it names people
-    // (drizzle/9999_rites_and_invitations.sql).
+    // (drizzle/0393_rites_and_invitations.sql).
     dataClass: "member-pii",
     group: "connect",
     // With no rites written the pages say so, and the module card is where
@@ -1464,7 +1463,16 @@ export const MODULES: ModuleDef[] = [
     variableKeys: [],
     apiPrefixes: ["/api/rites"],
     defaultConfig: {},
-    validateConfig: (c: unknown) => ritesConfigProblem(c),
+    // The whole document is checked by the module card before it saves
+    // (shared/rites.ts `parseRitesConfig`, the same rules the reader uses), and
+    // the reader takes only what it can read. Scripts transpile this file on
+    // its own, so the shape check here imports nothing.
+    validateConfig: (c: any) => {
+      if (c == null || typeof c !== "object" || Array.isArray(c)) return "The rites document must be an object.";
+      if (c.format !== undefined && c.format !== "village-rites/1") return 'format must be "village-rites/1".';
+      if (c.rites !== undefined && !Array.isArray(c.rites)) return "rites must be a list.";
+      return null;
+    },
     // No openStateCheck: a stamp is nothing anybody is owed. Off hides every
     // surface; stamps, marks and pairings stay in their tables.
   },
