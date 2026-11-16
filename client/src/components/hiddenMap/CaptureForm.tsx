@@ -309,7 +309,7 @@ export default function CaptureForm({ me, onSend, ownPins = [] }: { me: MapMe; o
           <button type="button" className={`${BTN_PRIMARY} flex-1`} disabled={busy || staged || !point || !kind} onClick={() => void send()}>
             {busy ? <Trans>Saving</Trans> : <Trans>Save it</Trans>}
           </button>
-          {layer === "planting" && me.plantingPays && <p className={HINT}><Trans>Rewarded once vouched</Trans></p>}
+          {layer === "planting" && !me.open && <p className={HINT}><Trans>Counts toward opening your map once a member vouches for it.</Trans></p>}
         </div>
         {staged && <p className={HINT}><Trans>Use the photo or leave it out first.</Trans></p>}
         {said && <p className={HINT} role="status">{said}</p>}
