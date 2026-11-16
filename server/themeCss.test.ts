@@ -8,6 +8,7 @@ import {
   sanitizeFontStack,
   sanitizeImportUrl,
   themeCssVersion,
+  villageFontOrigins,
   withThemeVersion,
 } from "./lib/themeCss";
 import { register } from "./routes/brandTheme";
@@ -25,7 +26,7 @@ describe("theme.css emission", () => {
     const css = buildThemeCss({
       fontImportUrl: "https://amora.cr/fonts/serenity.css", // brand-ok: test fixture proving a VILLAGE (not the platform) can carry its own font
       fontDisplay: '"Serenity", "Raleway", sans-serif',
-    });
+    }, villageFontOrigins({ project: { siteUrl: "https://amora.cr/" } }, "")); // brand-ok: the village's own site address, as Admin saves it
     expect(css).toContain('@import url("https://amora.cr/fonts/serenity.css");'); // brand-ok: same fixture
     expect(css).toContain('--font-display: "Serenity", "Raleway", sans-serif;');
     // Doubled :root beats the platform defaults regardless of load order.
@@ -43,6 +44,29 @@ describe("theme.css emission", () => {
     expect(sunOf(pinned)).not.toBe(sunOf(derived));
     // An accent alone, with no seed, is still the neutral fork.
     expect(buildThemeCss({ accent: "#b08d57" })).toBe("");
+  });
+
+  it("takes a font URL only from uploads, Google Fonts or the village's own site", () => {
+    const google = "https://fonts.googleapis.com/css2?family=Jost:wght@400;500&display=swap";
+    expect(sanitizeImportUrl(google)).toBe(google);
+    expect(sanitizeImportUrl("https://fonts.gstatic.com/s/jost/v15/a.woff2")).toBe("https://fonts.gstatic.com/s/jost/v15/a.woff2");
+    // Any other host is refused, so a story.tell holder cannot make every
+    // visitor's browser call a server of their choosing.
+    expect(sanitizeImportUrl("https://tracker.example/f.css")).toBeNull();
+    expect(sanitizeImportUrl("https://fonts.googleapis.com.evil.example/f.css")).toBeNull();
+    expect(sanitizeImportUrl("https://evil.example@fonts.googleapis.com.x/f.css")).toBeNull();
+    expect(sanitizeImportUrl("https://village.example/fonts/a.css")).toBeNull();
+    // The village's own site address, and only that host.
+    const own = villageFontOrigins({ project: { siteUrl: "https://village.example/about" } }, "https://app.village.example/");
+    expect(own).toEqual(["https://village.example", "https://app.village.example"]);
+    expect(sanitizeImportUrl("https://village.example/fonts/a.css", own)).toBe("https://village.example/fonts/a.css");
+    expect(sanitizeImportUrl("https://other.example/fonts/a.css", own)).toBeNull();
+    // A refused host emits nothing, the import and the face alike.
+    expect(buildThemeCss({ fontImportUrl: "https://tracker.example/f.css" })).toBe("");
+    expect(buildThemeCss({ fontFaceName: "X", fontFaceUrl: "https://tracker.example/x.woff2" })).toBe("");
+    // An http: or junk site address adds no host.
+    expect(villageFontOrigins({ project: { siteUrl: "http://village.example" } }, "not a url")).toEqual([]);
+    expect(villageFontOrigins(null, "")).toEqual([]);
   });
 
   it("accepts a same-origin uploads path", () => {

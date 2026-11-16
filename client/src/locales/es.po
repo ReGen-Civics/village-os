@@ -18079,9 +18079,10 @@ msgid "Ask me how to do something in Admin, where a setting lives, or what a con
 msgstr ""
 
 #: client/src/components/companionWelcome/welcomeKit.tsx
+#, fuzzy
 msgctxt "companion welcome, the spoken voice"
 msgid "Speaking aloud may use your browser's online voice (Google or Microsoft), which sends the words I say to that service. Quiet keeps them on your screen only."
-msgstr ""
+msgstr "Hablar en voz alta puede usar la voz en línea de tu navegador (Google o Microsoft), que envía a ese servicio las palabras que digo. Silencio las mantiene solo en tu pantalla."
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgid "That could not be published"
