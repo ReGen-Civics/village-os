@@ -228,12 +228,12 @@ export function Ring({ marks, centre, sigil }: { marks: Array<{ path: string; mi
 }
 
 /** A real QR code for `text`, drawn as one path on white. */
-export function Qr({ text, label }: { text: string; label: string }) {
+export function Qr({ text, label, px }: { text: string; label: string; px?: number }) {
   const code = useMemo(() => encodeQr(text), [text]);
   if (!code) return null;
   const size = code.size + 8;
   return (
-    <div className="qr">
+    <div className="qr" style={px ? { width: px, height: px } : undefined}>
       <svg viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label} shapeRendering="crispEdges">
         <rect width={size} height={size} fill="#fff" /> {/* theme-ok: a QR code is dark on white for every camera, whatever the village's palette */}
         <path d={qrPath(code.modules)} fill="#111" /> {/* theme-ok: a QR code is dark on white for every camera, whatever the village's palette */}

@@ -91,6 +91,7 @@ export interface CeremonyView {
   sigil: string;
   village: string;
   place: PlaceKey | null;
+  closedAt?: string | null;
   lines: string[];
   answer: string | null;
   spoken: number;

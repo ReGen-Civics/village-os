@@ -330,6 +330,9 @@ export function register(app: Express, deps: Deps): void {
     if (!name) return refuse(res, 400, "Tell us the name you go by.", "name");
     if (!email) return refuse(res, 400, "Give an email address we can answer you at.", "email");
     // Never the session's account: a stranger asking on a member's phone is the stranger, not that member (QA P2-6).
+    // The same address asking again at the same door, still unanswered, is the same request (QA P2-r-5).
+    const already = requestsFor(String(owner.id)).find((r: any) => r.status === "new" && String(r.data?.email ?? "").toLowerCase() === email.toLowerCase());
+    if (already) return res.json({ success: true, message: fill(ritesConfig().door.sent, { inviter: first(owner.name) }) });
     const entry: any = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       type: JOIN_REQUEST_TYPE,
@@ -487,7 +490,7 @@ export function register(app: Express, deps: Deps): void {
         avatar: p.avatar,
         you: p.id === String(user.id),
         resting: !p.admitted && resting.includes(p.id),
-        roles: Array.from(new Set([...deps.roleIdsFor(p.id).map((r) => roleNames.get(r)).filter(Boolean), ...(orgRoles.get(p.id) ?? [])])),
+        roles: Array.from(new Set([...(orgRoles.get(p.id) ?? []), ...deps.roleIdsFor(p.id).map((r) => roleNames.get(r)).filter(Boolean)])),
         voice: whole(cfg.tokens.voice, voice.get(p.id) ?? 0),
       }))
       .sort((a, b) => Number(a.resting) - Number(b.resting) || b.voice - a.voice || a.name.localeCompare(b.name))
@@ -557,6 +560,7 @@ export function register(app: Express, deps: Deps): void {
       sigil: cfg.sigil,
       village: projectName(),
       place: c.place,
+      closedAt: c.closedAt,
       lines: c.lines,
       answer: c.answer,
       spoken: c.spoken,
@@ -567,7 +571,7 @@ export function register(app: Express, deps: Deps): void {
       mark: mark && MARK_PATH_SHAPE.test(mark.path) ? mark.path : null,
       candidate: { id: c.candidateUserId, name: first(people.get(c.candidateUserId)?.name) },
       witnesses: ws.map((w) => {
-        const roles = Array.from(new Set([...(deps.roleIdsFor(w.userId).map((r) => roleNames.get(r)).filter(Boolean) as string[]), ...(orgRoles.get(w.userId) ?? [])]));
+        const roles = Array.from(new Set([...(orgRoles.get(w.userId) ?? []), ...(deps.roleIdsFor(w.userId).map((r) => roleNames.get(r)).filter(Boolean) as string[])]));
         const nm = first(people.get(w.userId)?.name);
         return {
           id: w.userId,

@@ -7,7 +7,7 @@
  *   - invite somebody with a line in your own words (the letter);
  *   - your printed code, and the requests it brought, answered with one tap.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
@@ -39,13 +39,14 @@ interface Requests {
 /** A letter's link handed over in person: copy it, share it, or let their phone scan it from this one (QA P2-1). */
 function LinkPanel({ link }: { link: string }) {
   const { t } = useLingui();
+  const [copied, setCopied] = useState(false);
   return (
     <div className="panel" style={{ marginTop: 10, display: "grid", gap: 10, justifyItems: "center", textAlign: "center" }}>
-      <Qr text={link} label={t({ message: "Their invitation, to scan with their phone", context: "rites" })} />
+      <Qr px={240} text={link} label={t({ message: "Their invitation, to scan with their phone", context: "rites" })} />
       <p className="tiny" style={{ wordBreak: "break-all" }}>{link}</p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center" }}>
-        <button type="button" className="btn ghost small" onClick={() => void navigator.clipboard?.writeText(link)}>
-          <Trans context="rites">Copy the link</Trans>
+        <button type="button" className="btn ghost small" onClick={() => void navigator.clipboard?.writeText(link).then(() => setCopied(true))}>
+          {copied ? <Trans context="rites">Copied</Trans> : <Trans context="rites">Copy the link</Trans>}
         </button>
         {typeof navigator !== "undefined" && "share" in navigator ? (
           <button type="button" className="btn ghost small" onClick={() => void navigator.share?.({ url: link }).catch(() => undefined)}>
@@ -78,6 +79,7 @@ function Greeting({ newcomerId, initial }: { newcomerId: string; initial: string
 }
 
 function Invite() {
+  const [copied, setCopied] = useState(false);
   const [link, setLink] = useState("");
   const [id, setId] = useState("");
   const [line, setLine] = useState("");
@@ -126,8 +128,8 @@ function Invite() {
             {saved ? <Trans context="rites">Saved</Trans> : <Trans context="rites">Put it on the letter</Trans>}
           </button>
           <p className="small" style={{ marginTop: 12, wordBreak: "break-all" }}>{link}</p>
-          <button type="button" className="btn ghost small" style={{ marginTop: 8 }} onClick={() => void navigator.clipboard?.writeText(link)}>
-            <Trans context="rites">Copy the link</Trans>
+          <button type="button" className="btn ghost small" style={{ marginTop: 8 }} onClick={() => void navigator.clipboard?.writeText(link).then(() => setCopied(true))}>
+            {copied ? <Trans context="rites">Copied</Trans> : <Trans context="rites">Copy the link</Trans>}
           </button>
         </>
       )}
@@ -157,11 +159,14 @@ export default function RitesHub() {
   useEffect(() => {
     if (user) load();
   }, [user, load]);
-  // A bell's link names a section (#requests, #newcomers): go there once it has drawn.
+  // A bell's link names a section (#requests, #newcomers): go there once, after everything above it has drawn (QA P2-3).
+  const scrolled = useRef(false);
   useEffect(() => {
     const hash = typeof window === "undefined" ? "" : window.location.hash.slice(1);
-    if (hash && (requests || newcomers)) document.getElementById(hash)?.scrollIntoView({ block: "start" });
-  }, [requests, newcomers]);
+    if (!hash || scrolled.current || !me || !requests || !newcomers || !open) return;
+    scrolled.current = true;
+    window.requestAnimationFrame(() => document.getElementById(hash)?.scrollIntoView({ block: "start" }));
+  }, [me, requests, newcomers, open]);
 
   if (!user && !loading) {
     return (
@@ -220,7 +225,8 @@ export default function RitesHub() {
                       </Link>
                     ) : r.atGathering || r.callCounts ? (
                       // Where are we: on site, at a gathering (its own lines), or on a call from where they are (QA P2-7, P3).
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        <p className="small muted" style={{ width: "100%" }}>{me.words.ceremonyWhere}</p>
                         {(["site", ...(r.atGathering ? ["gathering"] : []), ...(r.callCounts ? ["phone"] : [])] as Array<"site" | "gathering" | "phone">).map((place) => (
                           <button
                             key={place}

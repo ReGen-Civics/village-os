@@ -73,7 +73,12 @@ function DrawMark({ onDone, busy }: { onDone: (strokes: number[][][]) => void; b
   );
 }
 
-function Sworn({ c }: { c: CeremonyView }) {
+/** A witness who joined may still confirm for ten minutes after the count was reached (QA P1-8, P2-9). */
+const LATE_WITNESS_MS = 10 * 60 * 1000;
+
+function Sworn({ c, onConfirm }: { c: CeremonyView; onConfirm: () => void }) {
+  const mine = c.witnesses.find((x) => x.you);
+  const late = !!mine && !mine.confirmed && !!c.closedAt && Date.now() - new Date(c.closedAt).getTime() < LATE_WITNESS_MS;
   const [me, setMe] = useState<MeView | null>(null);
   const [ring, setRing] = useState<RingView | null>(null);
   useEffect(() => {
@@ -92,6 +97,11 @@ function Sworn({ c }: { c: CeremonyView }) {
         <h1 style={{ fontSize: 38, marginTop: 4 }}>{c.you.isCandidate ? w.swornTitle : `${c.candidate.name}: ${c.rite.done}`}</h1>
         {c.you.isCandidate && w.swornLine ? <p className="muted" style={{ marginTop: 8 }}>{w.swornLine}</p> : null}
         {c.answer ? <p className="sc ember" style={{ marginTop: 10, fontSize: 18 }}>{c.answer}</p> : null}
+        {late ? (
+          <button type="button" className="btn ember" style={{ marginTop: 16 }} onClick={onConfirm}>
+            <Trans context="rites">Witnessed</Trans>
+          </button>
+        ) : null}
       </div>
       {ring && ring.marks.length ? (
         <div className="parch ringwrap">
@@ -183,7 +193,7 @@ export default function Ceremony() {
   if (c.step === "sworn") {
     return (
       <RitesWorld look={c.look} lang={<PageLanguageBar tone="onDark" />}>
-        <Sworn c={c} />
+        <Sworn c={c} onConfirm={() => void act("confirm")} />
       </RitesWorld>
     );
   }

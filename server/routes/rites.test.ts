@@ -323,6 +323,10 @@ describe.skipIf(!configured)("rites and invitations, on a real schema", () => {
     const asked = await call("POST", `/api/rites/door/${mine.body.code}/request`, { name: "Eli Brook", email: "eli@example.test", why: "I saw your garden." });
     expect(asked.status).toBe(200);
     const sub = state.submissions.at(-1);
+    // The same address asking again, unanswered, is the same request (QA P2-r-5).
+    const before = state.submissions.length;
+    expect((await call("POST", `/api/rites/door/${mine.body.code}/request`, { name: "Eli Brook", email: "ELI@example.test" })).status).toBe(200);
+    expect(state.submissions.length).toBe(before);
     expect(sub).toMatchObject({ type: "membership-request", data: { viaMember: "u-ada", name: "Eli Brook" } });
     expect(state.rung.some((n) => n.userId === "u-ada" && n.type === "rite_door_request")).toBe(true);
 
