@@ -336,6 +336,19 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
     case "session_task_back":
     case "session_task_unheld":
       return "daily";
+    // A task handed to a role (server/lib/roleTaskHandoffs.ts). It waits on the
+    // role's holders, so it rides `tasksEmail` like any task: immediate by
+    // default, because a holder who never opens the app never hears it in the
+    // bell, and the sender waits on their answer. A suggested change or a
+    // decline waits on the SENDER, so it rides the same preference. An accept
+    // and a done ask nothing of anyone: the digest's one line each.
+    case "role_task_handed":
+    case "role_task_edited":
+    case "role_task_declined":
+      return p.tasksEmail;
+    case "role_task_accepted":
+    case "role_task_done":
+      return p.tasksEmail === "off" ? "off" : "daily";
     // The agenda library: an item a member brought went onto an agenda, and
     // how it left that session. In the bell only, ON PURPOSE and said here so
     // it is not mistaken for a kind nobody registered: no email preference a

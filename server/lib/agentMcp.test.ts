@@ -424,3 +424,78 @@ describe("the confirm spend book", () => {
     expect(book.size()).toBe(1);
   });
 });
+
+describe("add_agenda_item (sessions.write)", () => {
+  /** A holder whose agenda library answers the way the route does. */
+  function library(answer: RouteAnswer = { status: 200, body: { item: { id: 7, title: "Budget for the three lead roles" } } }) {
+    const base = holder();
+    const calls: Array<{ method: string; path: string; body?: any }> = [];
+    const ctx: ToolContext = {
+      ...base.ctx,
+      dispatch: async (method, path, body) => {
+        calls.push({ method, path, body });
+        if (method === "POST" && path === "/api/sessions/library") return answer;
+        return { status: 404, body: { error: "Not found" } };
+      },
+    };
+    return { ctx, calls };
+  }
+  const args = { title: "Budget for the three lead roles", circleId: "general", aim: "decide", note: "Pay bands first." };
+
+  it("is the only tool sessions.write opens, and no other scope opens it", () => {
+    expect(toolsFor(["sessions.write"]).map((t) => t.name)).toEqual(["add_agenda_item"]);
+    const others = (["moon.read", "tasks.write", "moon.write", "roles.propose", "sera.undoable"] as AgentScope[]).flatMap((s) => toolsFor([s]).map((t) => t.name));
+    expect(others).not.toContain("add_agenda_item");
+  });
+
+  it("refuses a token without sessions.write, and calls no route", async () => {
+    const l = library();
+    const r = await ask(callTool("add_agenda_item", args), ["moon.read", "tasks.write"], l.ctx);
+    expect(r.error.code).toBe(-32602);
+    expect(r.error.message).toContain("sessions.write");
+    expect(l.calls).toEqual([]);
+  });
+
+  it("adds nothing without a confirm token, then exactly once on the matching confirm", async () => {
+    const l = library();
+    const first = await ask(callTool("add_agenda_item", args), ["sessions.write"], l.ctx);
+    const asked = first.result.structuredContent;
+    expect(asked.confirmRequired).toBe(true);
+    expect(asked.echo).toEqual({ method: "POST", path: "/api/sessions/library", body: { title: args.title, aim: "decide", note: "Pay bands first.", circleId: "general" } });
+    expect(l.calls).toEqual([]);
+
+    const second = await ask(callTool("add_agenda_item", { ...args, confirmToken: asked.confirmToken }), ["sessions.write"], l.ctx);
+    expect(second.result.isError).toBe(false);
+    expect(second.result.structuredContent.written).toBe(true);
+    expect(l.calls).toEqual([{ method: "POST", path: "/api/sessions/library", body: { title: args.title, aim: "decide", note: "Pay bands first.", circleId: "general" } }]);
+  });
+
+  it("refuses a token minted for a different item", async () => {
+    const l = library();
+    const first = await ask(callTool("add_agenda_item", args), ["sessions.write"], l.ctx);
+    const r = await ask(callTool("add_agenda_item", { ...args, title: "Something else", confirmToken: first.result.structuredContent.confirmToken }), ["sessions.write"], l.ctx);
+    expect(r.result.isError).toBe(true);
+    expect(r.result.structuredContent.detail.reason).toBe("echo_mismatch");
+    expect(l.calls).toEqual([]);
+  });
+
+  it("checks the title and the aim before anything is asked", async () => {
+    const l = library();
+    expect((await ask(callTool("add_agenda_item", { title: "  " }), ["sessions.write"], l.ctx)).result.structuredContent.error).toContain("title");
+    expect((await ask(callTool("add_agenda_item", { title: "x", aim: "vote" }), ["sessions.write"], l.ctx)).result.structuredContent.error).toContain("report, explore, decide");
+    expect(l.calls).toEqual([]);
+  });
+
+  it("passes the route's refusal on in its words, and says when sessions is off", async () => {
+    const refused = library({ status: 400, body: { error: "There is no circle with that id." } });
+    const t1 = (await ask(callTool("add_agenda_item", args), ["sessions.write"], refused.ctx)).result.structuredContent.confirmToken;
+    const r1 = await ask(callTool("add_agenda_item", { ...args, confirmToken: t1 }), ["sessions.write"], refused.ctx);
+    expect(r1.result.isError).toBe(true);
+    expect(r1.result.structuredContent.error).toContain("There is no circle with that id.");
+
+    const off = library({ status: 404, body: { error: "Not found" } });
+    const t2 = (await ask(callTool("add_agenda_item", args), ["sessions.write"], off.ctx)).result.structuredContent.confirmToken;
+    const r2 = await ask(callTool("add_agenda_item", { ...args, confirmToken: t2 }), ["sessions.write"], off.ctx);
+    expect(r2.result.structuredContent.error).toContain("sessions module is off");
+  });
+});

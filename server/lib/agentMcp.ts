@@ -52,6 +52,8 @@
  */
 import { adminRequestDecision, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts } from "../../shared/agentAdmin";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
+import { LIBRARY_API, LIBRARY_LIMITS } from "../../shared/sessionLibrary";
+import { ITEM_AIMS } from "../../shared/sessions";
 import { echoHash, type AgentScope } from "./agentTokens";
 import { INBOX_TOOLS, TIER_B_TOOLS } from "./agentMcpTierB";
 import { PROPOSAL_TOOLS } from "./agentMcpProposals";
@@ -419,6 +421,59 @@ export const MCP_TOOLS: readonly ToolDef[] = [
       const done = await ctx.dispatch("POST", `/api/member-tasks/me/${encodeURIComponent(task.id)}/${action}`, body);
       if (done.status >= 300) return refusal("The board did not take that", done);
       return { ok: true, result: { written: true, echo, board: done.body } };
+    },
+  },
+  {
+    name: "add_agenda_item",
+    scope: "sessions.write",
+    kind: "write",
+    title: "Add an agenda item",
+    description:
+      "Adds an item to the agenda library, for one circle or for none in particular, exactly as the holder adding it on the sessions page does: it waits there until somebody brings it into a session. Call it first without confirmToken: it writes nothing and answers with what it would add and a confirmToken. Show that to the member, and after their yes call it again with the same arguments and the confirmToken.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: `What the item is, in one line (up to ${LIBRARY_LIMITS.title} characters).` },
+        circleId: { type: "string", description: "The circle whose sessions it is for, from get_roles. Leave it out for no circle in particular." },
+        aim: { type: "string", enum: [...ITEM_AIMS], description: "What the room does with it: report, explore or decide. Optional." },
+        note: { type: "string", description: "Anything the room should read first. Optional, with no email or phone number in it." },
+        confirmToken: { type: "string", description: "From the first call. Leave it out to see what would be added." },
+      },
+      required: ["title"],
+      additionalProperties: false,
+    },
+    routes: [`POST ${LIBRARY_API}`],
+    async run(args, ctx) {
+      const title = typeof args.title === "string" ? args.title.trim() : "";
+      if (!title) return { ok: false, error: "Give the item a title." };
+      if (title.length > LIBRARY_LIMITS.title) return { ok: false, error: `Keep the title to ${LIBRARY_LIMITS.title} characters.` };
+      const note = typeof args.note === "string" && args.note.trim() ? args.note.trim() : null;
+      if (note && note.length > LIBRARY_LIMITS.note) return { ok: false, error: `Keep the note to ${LIBRARY_LIMITS.note} characters.` };
+      const aim = typeof args.aim === "string" && args.aim ? args.aim : null;
+      if (aim && !(ITEM_AIMS as readonly string[]).includes(aim)) return { ok: false, error: `aim is one of ${ITEM_AIMS.join(", ")}.` };
+      const circleId = typeof args.circleId === "string" && args.circleId.trim() ? args.circleId.trim().slice(0, 64) : null;
+      const body = { title, aim, note, circleId };
+      const echo = { method: "POST", path: LIBRARY_API, body };
+      if (args.confirmToken === undefined) {
+        const { token, expiresAt } = ctx.mintConfirm("add_agenda_item", echo);
+        return {
+          ok: true,
+          result: {
+            confirmRequired: true,
+            echo,
+            confirmToken: token,
+            expiresAt,
+            message: "Nothing was added. Show this to the member, and after their yes call add_agenda_item again with the same arguments and this confirmToken.",
+          },
+        };
+      }
+      const check = ctx.verifyConfirm("add_agenda_item", args.confirmToken, echo);
+      if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
+      // The library's own route checks the circle and every limit again, as it does for a tap on the page.
+      const a = await ctx.dispatch("POST", LIBRARY_API, body);
+      if (a.status === 404) return { ok: false, error: "The agenda library is not open here: the sessions module is off in this village." };
+      if (a.status >= 300) return refusal("The agenda library did not take that", a);
+      return { ok: true, result: { written: true, echo, answer: a.body } };
     },
   },
   {

@@ -5,7 +5,7 @@ version: 1.0.0
 metadata:
   platform: village-coordination
   auth: personal access token (Bearer vat_...) minted by the member in their profile under Your agent
-  scopes: moon.read, tasks.write, moon.write, moon.review (admin and sera.undoable only on the accounts allowed them)
+  scopes: moon.read, tasks.write, moon.write, moon.review, sessions.write (admin and sera.undoable only on the accounts allowed them)
   mcp: /api/agent/v1/mcp
   openapi: /api/agent/v1/openapi.json
 ---
@@ -37,6 +37,7 @@ The village connector is a remote MCP server at `VILLAGE_ORIGIN/api/agent/v1/mcp
 | `get_my_seats` | `moon.read` | The member's own role card: the roles they hold, each role's purpose and accountabilities. |
 | `get_season` | `moon.read` | The village's running season and its goals. |
 | `mark_my_task` | `tasks.write` | Press Done, remove (Let go, with a reason) or Undo on one of the member's own board tasks. |
+| `add_agenda_item` | `sessions.write` | Add an item to the agenda library for one circle (its id from `get_roles`) or none, as the member adding it on the sessions page. It waits there until a person brings it into a session. Answers "the sessions module is off" while it is. |
 | `import_moon_pack` | `moon.write` | Import a moon pack (the guide's strict JSON, never with amounts) into the member's Draft recap. The first call answers the preview: what would be added, merged and skipped. |
 | `update_moon_item` | `moon.write` | Change one item on the member's Draft recap. |
 | `set_moon_goals` | `moon.write` | Set the member's goals for next moon. |
