@@ -379,7 +379,9 @@ beforeAll(async () => {
   await everyModulePublic();
   await setVar("map.public_structure", "true");
 
-  // An org role two people hold: one member, one documented.
+  // An org role two people hold: one member, one documented. Its circle is made first: a new role
+  // in a circle the village has not formed is refused (17 Nov 2026).
+  await ok("POST", "/api/admin/circles", { id: seeded.circleId, name: "Community Life Council" });
   const seat = await ok("POST", "/api/admin/org/roles", {
     name: "Welcome Host", circleId: seeded.circleId, seats: 3, aim: "Be the first warm face somebody meets.",
   });

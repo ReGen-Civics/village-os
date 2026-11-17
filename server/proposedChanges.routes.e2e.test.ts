@@ -256,3 +256,115 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     expect(state.circleId).toBe("pc-land");
   });
 });
+
+/*
+ * A NEW ROLE THROUGH THE REVIEW PAGE (17 Nov 2026). Accepting a setting proposal that made a role showed
+ * "Internal server error" on the card. The body below is the one production carried, field for field.
+ */
+describe.skipIf(!DB_CONFIGURED)("a new role proposed as a setting", () => {
+  const ROLE_BODY = {
+    id: "pc-investor-relations-steward",
+    name: "Investor Relations Steward",
+    circleId: "pc-rcb",
+    aim: "Keep the village's investors informed and in good faith.",
+    domain: "Investor updates and the questions investors bring.",
+    accountabilities: ["Send the quarterly update", "Answer investor questions", "Keep the investor list", "Prepare the annual meeting", "Hand questions on to the right circle"],
+    seats: 1,
+    recruiting: false,
+    listed: false,
+  };
+  const propose = (body: Record<string, unknown>, summary: string) =>
+    tool(adminVat, "propose_changes", { batch: summary, items: [{ kind: "setting", target: { method: "POST", path: "/api/admin/org/roles" }, body, summary }] });
+  const logTail = () => logs.join("").split("\n").slice(-40).join("\n");
+  let changeId = "";
+
+  it("the route refuses an unknown circle with a sentence, never a 500", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { ...ROLE_BODY, id: "pc-nowhere-role", circleId: "pc-nowhere" });
+    expect(r.status, r.text).toBe(400);
+    expect(r.json.error).toBe("There is no live circle 'pc-nowhere'. Create the circle first, or choose one that exists.");
+  });
+
+  it("the route refuses an id already taken, live or retired, with a sentence", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: roleId, name: "Another Finance Steward" });
+    expect(r.status, r.text).toBe(409);
+    expect(r.json.error).toBe(`A role with the id '${roleId}' already exists. Choose another id.`);
+    await pool.query("UPDATE org_roles SET active = 0 WHERE id = ?", [roleId]); // module-review-ok: retiring the scratch schema's role to prove a retired id is still taken
+    const retired = await call("POST", "/api/admin/org/roles", { id: roleId, name: "Another Finance Steward" });
+    await pool.query("UPDATE org_roles SET active = 1 WHERE id = ?", [roleId]); // module-review-ok: putting it back for the tests after
+    expect(retired.status, retired.text).toBe(409);
+  });
+
+  it("the route refuses values its columns cannot take, each with a sentence", async () => {
+    const tries: Array<[Record<string, unknown>, string]> = [
+      [{ name: "x".repeat(161) }, "A role's name holds 160 characters at most."],
+      [{ name: "Seats Test", seats: "two" }, "How many people a role holds is a whole number, 1 or more."],
+      [{ name: "Order Test", order: 1.5 }, "A role's order is a whole number."],
+      [{ name: "Criticality Test", criticality: "urgent" }, "A role's criticality is normal or high."],
+      [{ name: "Aim Test", aim: { text: "an object" } }, "A role's aim is text."],
+      [{ name: "Colour Test", color: "a colour name far longer than thirty two" }, "A role's colour holds 32 characters at most."],
+    ];
+    for (const [body, words] of tries) {
+      const r = await call("POST", "/api/admin/org/roles", body);
+      expect(r.status, `${JSON.stringify(body)} ${r.text}`).toBe(400);
+      expect(r.json.error).toBe(words);
+    }
+  });
+
+  it("proposing a role in an unknown circle, or under a taken id, is refused when it is filed", async () => {
+    const nowhere = await propose({ ...ROLE_BODY, circleId: "pc-nowhere" }, "A role in no circle.");
+    expect(JSON.stringify(nowhere.json.result.structuredContent)).toContain("There is no live circle 'pc-nowhere'.");
+    const taken = await propose({ ...ROLE_BODY, id: roleId, circleId: undefined }, "A role under a taken id.");
+    expect(JSON.stringify(taken.json.result.structuredContent)).toContain(`A role with the id '${roleId}' already exists.`);
+  });
+
+  it("production's body, accepted from the review page, lands as one success and keeps the role unlisted", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-rcb", name: "Regenerative Community Building" })).status).toBe(200);
+    const r = await propose(ROLE_BODY, "Add the Investor Relations Steward.");
+    expect(r.json.result.isError, r.text).toBe(false);
+    [changeId] = r.json.result.structuredContent.ids as string[];
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: changeId }] });
+    expect(acc.json.results, `${acc.text}\n${logTail()}`).toEqual([{ id: changeId, ok: true }]);
+    const [rows] = await pool.query<any[]>("SELECT listed, circle_id, recruiting FROM org_roles WHERE id = ?", [ROLE_BODY.id]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(rows).toEqual([{ listed: 0, circle_id: "pc-rcb", recruiting: 0 }]);
+    // Signed out, an unlisted role is not on the public chart.
+    const pub = await call("GET", "/api/org", undefined, "");
+    expect(JSON.stringify(pub.json)).not.toContain(ROLE_BODY.id);
+  });
+
+  it("a retried accept whose earlier try already made the role lands as a success, and makes nothing twice", async () => {
+    const r = await propose({ ...ROLE_BODY, id: "pc-retry-steward", name: "Retry Steward" }, "Add the Retry Steward.");
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids as string[];
+    // The earlier try: the role was made, and the answer was lost on its way back, so the change waits on a check.
+    expect((await call("POST", "/api/admin/org/roles", { ...ROLE_BODY, id: "pc-retry-steward", name: "Retry Steward" })).status).toBe(200);
+    await pool.query("UPDATE proposed_changes SET status = 'unknown' WHERE id = ?", [id]); // module-review-ok: standing in for a loopback whose answer was lost
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id, checked: true }] });
+    expect(acc.json.results, `${acc.text}\n${logTail()}`).toEqual([{ id, ok: true, note: "This role was already made by an earlier try of this change. Nothing was made twice." }]);
+    const [rows] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM org_roles WHERE id = ?", ["pc-retry-steward"]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(Number(rows[0].n)).toBe(1);
+  });
+
+  it("a yes-or-no field sent as words is refused, so listed: \"false\" never lists a role", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: "pc-words-listed", name: "Words Listed", listed: "false" });
+    expect(r.status, r.text).toBe(400);
+    expect(r.json.error).toBe("Whether a role is listed is true or false.");
+  });
+
+  it("a role made with no listed value stays listed, the default", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: "pc-listed-default", name: "Listed By Default" });
+    expect(r.status, r.text).toBe(200);
+    const [rows] = await pool.query<any[]>("SELECT listed FROM org_roles WHERE id = ?", ["pc-listed-default"]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(rows[0].listed === null || rows[0].listed === 1).toBe(true);
+  });
+
+  it("a role that stands when what follows the INSERT fails answers success with a notice, never a 500", async () => {
+    await pool.query("ALTER TABLE org_roles RENAME COLUMN value_minor TO value_minor_away"); // module-review-ok: breaking the value write on the scratch schema, put back below
+    try {
+      const r = await call("POST", "/api/admin/org/roles", { id: "pc-valued-role", name: "Valued Role", valueMinor: 500000 });
+      expect(r.status, `${r.text}\n${logTail()}`).toBe(200);
+      expect(r.json).toEqual({ success: true, id: "pc-valued-role", notice: "The role was created, but saving what it is worth failed: set it again on the role's card." });
+    } finally {
+      await pool.query("ALTER TABLE org_roles RENAME COLUMN value_minor_away TO value_minor"); // module-review-ok: putting the scratch schema back
+    }
+  });
+});

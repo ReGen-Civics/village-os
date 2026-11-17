@@ -189,4 +189,21 @@ describe("what the terminal handler answers", () => {
     expect(sent).toHaveLength(1);
     expect(sent[0]!.status).toBe(409);
   });
+
+  it("a fault with no sentence answers with a short reference, and logs the detail under the same reference", () => {
+    const sent: Array<{ status: number; body: any }> = [];
+    const res = { status: (code: number) => ({ json: (body: unknown) => sent.push({ status: code, body }) }) };
+    const logged: unknown[][] = [];
+    const was = console.error;
+    console.error = (...args: unknown[]) => void logged.push(args);
+    try {
+      respondToTerminalError(new Error("boom"), res);
+    } finally {
+      console.error = was;
+    }
+    expect(sent[0]!.status).toBe(500);
+    expect(sent[0]!.body.error).toBe("Internal server error");
+    expect(sent[0]!.body.ref).toMatch(/^[0-9a-f]{8}$/);
+    expect(String(logged[0]![0])).toBe(`[route error] ref=${sent[0]!.body.ref}`);
+  });
 });
