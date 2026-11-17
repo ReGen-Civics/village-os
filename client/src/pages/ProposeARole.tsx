@@ -794,7 +794,7 @@ export default function ProposeARole() {
           <aside aria-label={t({ message: "Your progress", context: "founding application, the steps beside" })} className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
             <StepTrail labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
           </aside>
-          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips}>
+          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips} link={link || undefined}>
           <form
             ref={formRef}
             onSubmit={submit}

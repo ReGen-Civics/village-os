@@ -141,6 +141,9 @@ const BASE_SECRET_KEYS = [
   // no host variable, so the only way it is ever set is by an admin, sealed.
   // The provider it belongs to is named in server/lib/voiceTranscription.ts.
   "voice_transcription_key",
+  // The same, for Groq's speech-to-text, which has a free tier and is the
+  // first one "auto" asks (the lead, 17 Nov 2026: "preferably free").
+  "voice_transcription_groq_key",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -195,6 +198,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   railway_project_token: null,
   dns_zone_token: null,
   voice_transcription_key: null,
+  voice_transcription_groq_key: null,
 };
 
 /**
