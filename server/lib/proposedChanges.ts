@@ -49,7 +49,7 @@ import { readSections } from "../../shared/roleCardSections";
 import { isListed } from "../../shared/roleListing";
 import { allVariables } from "./variables";
 import { moduleConfig, storedLifecycle } from "./modules";
-import { characterTagsFrom, listOrgRoles, type OrgRole } from "./orgChart";
+import { characterTagsFrom, createRoleProblem, listOrgRoles, newRoleIdOf, type OrgRole } from "./orgChart";
 import { ROLE_WORD_FIELDS } from "./roleProposals";
 import { editorState, labelOf } from "./roleEdit";
 import { listArchetypeRows } from "../repos/archetypes";
@@ -61,6 +61,9 @@ import { neverPutBack } from "../../shared/proposalPutBack";
 import { agendaItemBody, readProposedAgenda } from "../../shared/sessionAgendaProposal";
 import { circleWords } from "../../shared/sessionTasks";
 import { circleRhythmRows } from "../repos/sessionRhythm";
+
+/** The route that makes a new role, checked at filing by `createRoleProblem`. */
+const NEW_ROLE_ROUTE = "/api/admin/org/roles";
 
 export const FAQ_PATHWAYS_FOR_PROPOSALS = ["investor", "steward", "resident", "prosperity"] as const;
 
@@ -233,6 +236,12 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         if (readNever) return bad(readNever.words, "target.readPath", `never_${readNever.key}`);
         if (!deps.routeExists("GET", t.readPath)) return bad(REVIEW_WORDS.noRoute, "target.readPath");
       }
+      // A new role: the same checks the route runs before its INSERT (`createRoleProblem`), so an unknown circle or
+      // a taken id is refused when it is filed, and again in the dry run before it is accepted.
+      if (route.method === "POST" && route.path.replace(/\/+$/, "") === NEW_ROLE_ROUTE) {
+        const problem = await createRoleProblem(deps.pool, b);
+        if (problem) return bad(problem.error, problem.field);
+      }
       return ok(route.path);
     }
   }
@@ -252,6 +261,27 @@ async function agendaMeeting(pool: Pool, circleId: string, rhythmKey: string | n
   const rhythm = (await circleRhythmRows(pool, circleId)).find((r) => String(r.rhythm_key) === rhythmKey);
   if (!rhythm) return { ok: false, error: "That circle keeps no meeting rhythm with that key. Read its rhythms with GET /api/sessions.", field: "target.rhythmKey" };
   return { ok: true, label: `${whose} ${String(rhythm.name ?? "") || "meeting"}` };
+}
+
+/** Said on a retried accept whose role an earlier try already made. */
+export const NEW_ROLE_ALREADY_MADE = "This role was already made by an earlier try of this change. Nothing was made twice.";
+
+/**
+ * Whether the new role this change makes already stands, under its id, with its name and circle: an earlier try of
+ * this same change that landed while its answer was lost. Read only on a RETRIED accept (a change that failed or
+ * whose outcome was unknown), so a second try is recorded as the success it is and never meets its own role as a
+ * taken id (17 Nov 2026).
+ */
+export async function newRoleAlreadyMade(pool: Pool, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<boolean> {
+  if (kind !== "setting") return false;
+  const route = routeOf(kind, target);
+  if (route.method !== "POST" || route.path.replace(/\/+$/, "") !== NEW_ROLE_ROUTE) return false;
+  if (typeof body.id !== "string" && typeof body.name !== "string") return false;
+  const id = newRoleIdOf(body);
+  const role = (await listOrgRoles(pool)).find((r) => r.id === id);
+  if (!role) return false;
+  const circle = typeof body.circleId === "string" && body.circleId ? body.circleId : null;
+  return role.name === String(body.name ?? "New role") && (role.circleId ?? null) === circle;
 }
 
 /** Plain labels for fields a kind knows by name. Every other field reads from its key (`fieldLabel`). */
@@ -422,7 +452,14 @@ export async function readBefore(deps: KindDeps, run: Run, kind: ProposalKind, t
 const routeError = (a: { status: number; body: unknown }): string => {
   const b = obj(a.body);
   const words = b?.message ?? b?.error ?? b?.reason;
-  if (typeof words === "string" && words.trim()) return words.trim().slice(0, 600);
+  // The route's own sentence, always. A fault with none answers "Internal server error" and a reference the
+  // server logged it under (`respondToTerminalError`), so the card carries something the team can find it by.
+  const ref = typeof b?.ref === "string" && /^[0-9a-f]{4,16}$/.test(b.ref) ? b.ref : null;
+  if (typeof words === "string" && words.trim()) {
+    const said = words.trim().slice(0, 600);
+    return ref ? `${said} (reference ${ref}). Give the team this reference and they can find what went wrong.` : said;
+  }
+  if (ref) return `The route answered ${a.status} (reference ${ref}). Give the team this reference and they can find what went wrong.`;
   if (a.status === 401 || a.status === 403) return "The route said no: this needs a power you do not hold here.";
   return `The route answered ${a.status}.`;
 };
@@ -431,14 +468,18 @@ const fieldOf = (a: { body: unknown }): string | undefined => {
   return Array.isArray(f) && typeof f[0] === "string" ? f[0] : undefined;
 };
 
-export type Applied = { ok: true } | { ok: false; error: string; field?: string; status?: number };
+export type Applied = { ok: true; note?: string } | { ok: false; error: string; field?: string; status?: number };
 
 /** Run one accepted change through its target's own route, as the person (`run`). */
 export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<Applied> {
   const route = routeOf(kind, target);
   const through = async (method: Parameters<Run>[0], path: string, payload?: unknown): Promise<Applied> => {
     const a = await run(method, path, payload);
-    if (a.status >= 200 && a.status < 300) return { ok: true };
+    if (a.status >= 200 && a.status < 300) {
+      // A route that landed and says what did not (a new role whose value did not save) is a success with a note.
+      const notice = obj(a.body)?.notice;
+      return typeof notice === "string" && notice.trim() ? { ok: true, note: notice.trim().slice(0, 600) } : { ok: true };
+    }
     return { ok: false, error: routeError(a), field: fieldOf(a), status: a.status };
   };
   switch (kind) {

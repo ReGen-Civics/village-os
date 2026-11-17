@@ -48,7 +48,7 @@ const headers = (): Record<string, string> => {
 };
 
 type StatusFilter = "all" | "waiting" | "decided";
-type Result = { id: string; ok: boolean; error?: string; field?: string | null; stale?: Array<{ id: string; summary: string }> };
+type Result = { id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: Array<{ id: string; summary: string }> };
 
 const faceOfDecided = (d: Decided) => faceOf(d.kind ?? "setting", d.route ?? { method: "PUT", path: "" });
 
@@ -161,7 +161,12 @@ export default function ProposedChanges() {
         await load();
         return;
       }
-      const landed = d.results.filter((x) => x.ok).map((x) => changes.find((c) => c.id === x.id)?.summary ?? x.id);
+      // A change that landed with a note (a role made whose value did not save, or made by an earlier try) shows the note beside it.
+      const landed = d.results.filter((x) => x.ok).map((x) => {
+        const summary = changes.find((c) => c.id === x.id)?.summary ?? x.id;
+        const note = x.note;
+        return note ? t({ message: `${summary} Applied, with a warning: ${note}`, context: "proposed changes" }) : summary;
+      });
       const failed = d.results.filter((x) => !x.ok);
       // The accept read each change's staleness again as it ran: name any that went live over a newer accept.
       const older = d.results

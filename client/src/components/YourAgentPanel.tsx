@@ -59,6 +59,7 @@ const SCOPE_WORDS: Record<string, string> = {
   "sera.undoable": "for Sera's agent account only: link people, suggest tasks and moon items, draft agenda items and switch boards, each one undoable for 30 days",
   "moon.write": "draft your own moon: import a moon pack, change an item, set next moon's goals, each after your yes",
   "moon.review": "for a reviewer: read the review queue and the role signals, never with amounts",
+  "sessions.write": "add items to the agenda library for a circle's sessions, after your yes",
 };
 
 const TIER_WORDS: Record<Profile["aboutTier"], string> = {

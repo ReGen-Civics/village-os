@@ -18,12 +18,27 @@
  *   - and in every case 90 days after the decision, including for somebody who
  *     joined: their written application stays, their voice goes.
  *
- * THE KEPT RECORDING REACHES NO ASSISTANT, agent tool or prompt. It is served
- * by two doors, to the deciders and to the village's admins (admin or founder),
- * and never to an agent caller (server/lib/voiceForViewer.ts). The LIVE sound is heard by
- * the browser's speech service while they talk (Google's in Chrome, Apple's
- * in Safari; see MicButton), which is how the words are written down; the
- * card says so.
+ * AN AI SERVICE MAY WRITE A RECORDING DOWN (the lead, 17 Nov 2026: "It's
+ * okay for them to reach an AI assistant, let's make it all work!"). Two ways
+ * turn what they say into words, and the card says both:
+ *
+ *   - the browser's own speech service hears the LIVE sound while they talk
+ *     (Google's in Chrome, Apple's in Safari; see MicButton);
+ *   - where the browser has none (Firefox, some phones), or it caught too
+ *     little, the applicant may press "Write down my words" and that one take
+ *     goes to the village's transcription service, an AI service the village's
+ *     admins switch on under Integrations (server/lib/voiceTranscription.ts,
+ *     shared/voiceTranscribe.ts). The words come back to their page to read and
+ *     fix before Send; the service's copy is not kept by us, and nothing is
+ *     sent there while the service is off.
+ *
+ *   The words, as the applicant corrected them, may also be summarised by the
+ *   village's AI guide into draft answers ("Draft my answers", shared/voiceDrafts.ts).
+ *
+ * THE KEPT RECORDING IS HEARD BY PEOPLE. Once sent with the application it is
+ * served by two doors, to the deciders and to the village's admins (admin or
+ * founder), and never to an agent caller or an assistant's tools
+ * (server/lib/voiceForViewer.ts).
  *
  * A RECORDING IS WHAT ITS BYTES SAY: WebM, Ogg or MP4 audio, read from the
  * first bytes, never from the name or the browser's word for it.

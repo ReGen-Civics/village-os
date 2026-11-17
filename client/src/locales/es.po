@@ -634,6 +634,11 @@ msgctxt "link to the powers page"
 msgid "What We Look After"
 msgstr ""
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Your words are in the box below. Read them and fix anything we got wrong."
+msgstr "Tus palabras están en el recuadro de abajo. Léelas y corrige lo que hayamos entendido mal."
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "If it is not something to mediate"
 msgstr ""
@@ -866,6 +871,12 @@ msgstr ""
 msgctxt "proposal goals list"
 msgid "Your goals"
 msgstr "Tus metas"
+
+#. placeholder {0}: voiceLength(left)
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note countdown"
+msgid "{0} left"
+msgstr "Quedan {0}"
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -2134,6 +2145,11 @@ msgstr ""
 #: client/src/pages/RoleDraft.tsx
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
 msgstr "No pudimos cargar los roles abiertos en este momento. Recarga la página para intentar de nuevo, o míralos en la página de Roles."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "Applications are closed just now, so recordings can't be written down."
+msgstr "Las solicitudes están cerradas ahora mismo, así que no se pueden escribir las grabaciones."
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -5108,6 +5124,11 @@ msgctxt "no-sign band"
 msgid "The band runs from {belowPct}% under the suggestion to {abovePct}% over it."
 msgstr ""
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "The service heard no words in this recording. Type what you said, or record again."
+msgstr "El servicio no oyó palabras en esta grabación. Escribe lo que dijiste o graba de nuevo."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "For example: the two of us and the care holder"
 msgstr ""
@@ -5238,6 +5259,11 @@ msgstr ""
 msgctxt "price ask summary"
 msgid "Negotiate on the first call if chosen."
 msgstr "Lo negociamos en la primera llamada si te eligen."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "We couldn't write this recording down just now. Your recording is still kept. Try again in a moment, or type what you said."
+msgstr "No pudimos escribir esta grabación ahora mismo. Tu grabación sigue guardada. Inténtalo de nuevo en un momento o escribe lo que dijiste."
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -6134,6 +6160,12 @@ msgstr "Guardado."
 #~ msgid "Working groups with real authority. Each circle has an aim (what it works toward) and a domain (what it decides on), and links back to the {0}."
 #~ msgstr "Grupos de trabajo con autoridad real. Cada círculo tiene un propósito (hacia dónde trabaja) y un ámbito (sobre qué decide), y se vincula con “{0}”."
 
+#. placeholder {0}: voiceLength(VOICE_NOTE_MAX_SECONDS)
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note countdown"
+msgid "This take stops by itself at {0}, and it is kept."
+msgstr "Esta toma se detiene sola a los {0}, y se guarda."
+
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal: sent"
 msgid "See where it stands"
@@ -6588,6 +6620,13 @@ msgctxt "approved writes"
 msgid "No approved writes yet."
 msgstr ""
 
+#. placeholder {0}: VOICE_NOTE_MAX_SECONDS / 60
+#. placeholder {1}: voiceLength(VOICE_NOTE_MAX_SECONDS)
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, before recording"
+msgid "Up to {0} minutes per take. It stops by itself at {1}."
+msgstr "Hasta {0} minutos por toma. Se detiene sola a los {1}."
+
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal"
 #~ msgid "Confirming your proposal"
@@ -6917,6 +6956,11 @@ msgctxt "admin protocols editor"
 msgid "{0, plural, one {# step} other {# steps}}"
 msgstr ""
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, consent line"
+msgid "Your recording is transcribed by an AI service so the team can read it."
+msgstr "Tu grabación la transcribe un servicio de IA para que el equipo pueda leerla."
+
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Work out this role's pay with the valuation engine"
 msgstr ""
@@ -7182,6 +7226,11 @@ msgstr ""
 #: client/src/pages/ExitPolicy.tsx
 msgid "These are the platform's starting terms. The community has not yet written its own. Treat them as a draft to be decided together, not a contract."
 msgstr ""
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "We couldn't read one of your recordings. Record it again."
+msgstr "No pudimos leer una de tus grabaciones. Grábala de nuevo."
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "copy settlement button, done"
@@ -8350,6 +8399,11 @@ msgstr "Ajustar el precio"
 msgid "Remove the row \"{subject}\" from the Decision Matrix? Everyone in the village stops seeing it."
 msgstr ""
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "{summary} Applied, with a warning: {note}"
+msgstr ""
+
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, the switch is on"
 msgid "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
@@ -9466,6 +9520,11 @@ msgstr "Mostrar las {total} metas"
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Until the Anchor approves, an AI agent cannot draft letters to applicants or list the applicants waiting on a holder. It never scores, ranks or summarises a candidate, and a person always sends."
 msgstr ""
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Write down my words"
+msgstr "Escribir mis palabras"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -10947,6 +11006,11 @@ msgstr ""
 #~ msgctxt "open proposal why starter"
 #~ msgid "What brought me here:"
 #~ msgstr "Lo que me trajo aquí:"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "Only takes up to 5 minutes can be written down."
+msgstr "Solo se pueden escribir tomas de hasta 5 minutos."
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "economics view loading"
@@ -13179,6 +13243,11 @@ msgctxt "label of the closing statement box"
 msgid "The village's words"
 msgstr ""
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "A few recordings are being written down already. Try again in a moment."
+msgstr "Ya se están escribiendo algunas grabaciones. Inténtalo de nuevo en un momento."
+
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: the pay ask"
 msgid "Negotiate on the first call if chosen"
@@ -13279,6 +13348,11 @@ msgstr ""
 msgctxt "proposed changes: a list row"
 msgid "New"
 msgstr ""
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "Writing recordings down isn't switched on here. Type what you said instead."
+msgstr "Escribir grabaciones no está activado aquí. Escribe tú lo que dijiste."
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Select up to three roles. The order is your preference."
@@ -13926,6 +14000,11 @@ msgctxt "approval inbox"
 msgid "Approved"
 msgstr ""
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "One recording is too large. Record a shorter one."
+msgstr "Una grabación es demasiado grande. Graba una más corta."
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgid "Decided in the last 30 days"
 msgstr ""
@@ -14181,6 +14260,11 @@ msgstr "{a}, {b} y {c}"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "How your work serves: {goalText}"
 msgstr "Cómo sirve tu trabajo: {goalText}"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Writing down your words. A five-minute take can take a minute."
+msgstr "Escribiendo tus palabras. Una toma de cinco minutos puede tardar un minuto."
 
 #: client/src/components/admin/RoleValueEditor.tsx
 msgctxt "role pay"
@@ -15605,6 +15689,11 @@ msgstr ""
 msgctxt "remove one change"
 msgid "Remove"
 msgstr ""
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "That's a lot of recordings written down for one connection. Type what you said, or try again in an hour."
+msgstr "Son muchas grabaciones escritas para una sola conexión. Escribe lo que dijiste o inténtalo de nuevo en una hora."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card."
@@ -21090,6 +21179,11 @@ msgstr ""
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Applications are closed right now. Your draft stays here, and you can apply when they open."
 #~ msgstr ""
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Write it down again"
+msgstr "Escribirla de nuevo"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Saved as a draft. The exit policy reads it from now on."

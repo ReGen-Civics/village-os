@@ -53,6 +53,7 @@
  * account it makes finishes the adoption at the welcome step
  * (server/lib/inviteDoor.ts).
  */
+import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
 import { commitmentReviewFor } from "../lib/commitmentReview";
@@ -517,11 +518,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if ((await voiceViewerOf(req, getPool(), viewer)).agent) return res.status(404).json(MISSING);
     const bytes = await readVoiceNote(deps.proposalFileDir, p.id, note);
     if (!bytes) return res.status(404).json(MISSING);
-    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    // `?as=mp4`: an MP4/AAC copy, for Safari and every iPhone browser (server/lib/voicePlayback.ts). 415 where none can be made.
+    const mp4 = wantsMp4(req.query.as);
+    const served = mp4 ? await playableCopy(deps.proposalFileDir, p.id, note, bytes) : bytes;
+    if (!served) return res.status(415).json({ error: "no_playable_copy" });
+    res.setHeader("Content-Type", mp4 ? "audio/mp4" : VOICE_NOTE_TYPES[note.kind]);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", "inline");
-    res.send(bytes);
+    res.send(served);
   });
 
   // ── The terms we offer: a counter-offer, one revision per save ─────────────

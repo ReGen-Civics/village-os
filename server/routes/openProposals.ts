@@ -127,7 +127,9 @@ import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
 import { VOICE_CLIPS_CEILING, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
 import { registerVoiceDraft } from "./openProposalVoiceDraft";
+import { registerVoiceTranscribe, type VoiceTranscribeDeps } from "./openProposalVoiceTranscribe";
 import { limitState } from "../repos/rateHits";
+import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
 import { checkProposalFiles, checkVoiceClips, checkVoiceNotes, readVoiceNote, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceClips, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
 
 type Deps = Pick<
@@ -159,6 +161,8 @@ type Deps = Pick<
   stringVar?: (key: string) => string;
   /** The application's village words. Absent: read from the village settings (shared/foundingApplication.ts). */
   founding?: () => FoundingSetup;
+  /** "Write down my words": a suite hands in its own provider switch and call (openProposalVoiceTranscribe.ts). */
+  voiceTranscribe?: Pick<VoiceTranscribeDeps, "enabled" | "transcribe">;
 };
 
 /** The admin's switch for the public link (sheet 19i: on unless switched off). */
@@ -448,6 +452,8 @@ export function register(app: Express, deps: Deps): void {
 
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, villageName: projectName });
+  // "Write down my words" (the lead, 17 Nov 2026): one take to the village's transcription service, behind the same door and caps of its own.
+  registerVoiceTranscribe(app, { door, limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, ...(deps.voiceTranscribe ?? {}) });
 
   app.get("/api/open-proposals/form", async (req, res) => {
     const d = await door(req.query.link);
@@ -837,11 +843,15 @@ export function register(app: Express, deps: Deps): void {
     const note = VOICE_NOTE_ID.test(noteId) ? [...(voice?.notes ?? []), ...(voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
     const bytes = note && deps.proposalFileDir ? await readVoiceNote(deps.proposalFileDir, id, note) : null;
     if (!note || !bytes) return res.status(404).json({ error: "not_found" });
-    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    // `?as=mp4`: an MP4/AAC copy, for Safari and every iPhone browser (server/lib/voicePlayback.ts). 415 where none can be made.
+    const mp4 = wantsMp4(req.query.as);
+    const served = mp4 ? await playableCopy(deps.proposalFileDir!, id, note, bytes) : bytes;
+    if (!served) return res.status(415).json({ error: "no_playable_copy" });
+    res.setHeader("Content-Type", mp4 ? "audio/mp4" : VOICE_NOTE_TYPES[note.kind]);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", "inline");
-    res.send(bytes);
+    res.send(served);
   });
 
   app.put("/api/admin/open-proposals/settings", async (req, res) => {
