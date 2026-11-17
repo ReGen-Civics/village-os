@@ -6469,7 +6469,7 @@ async function startServer() {
    */
   app.disable("x-powered-by");
   app.use(
-    securityHeaders({
+    securityHeaders({ getBrand,
       shellPath: path.join(
         process.env.NODE_ENV === "production" ? path.resolve(__dirname, "public") : path.resolve(__dirname, "..", "dist", "public"),
         "index.html",
