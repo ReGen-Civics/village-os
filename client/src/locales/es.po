@@ -11,6 +11,11 @@ msgstr ""
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
 
+#: client/src/components/roleCard/LeadBuilds.tsx
+msgctxt "under a lead role's card, the roles it will build"
+msgid "Coming soon, under the {leadName}."
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Archive"
@@ -1518,6 +1523,11 @@ msgctxt "module health, demoted module"
 msgid "serving OFF, needs {0}"
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, the list's lead-in"
+msgid "Your pitch covers:"
+msgstr ""
+
 #: client/src/pages/rites/Fleet.tsx
 msgctxt "rites"
 msgid "done"
@@ -2405,6 +2415,11 @@ msgstr ""
 msgid "{notesArePublic} \"Nobody yet\" is an answer."
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, part 3"
+msgid "Your experience building and running something like it"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "A tick"
@@ -3219,6 +3234,11 @@ msgstr ""
 msgid "Write the public line"
 msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: role visibility"
+msgid "Future venture: shown in Future ventures, applied for with a pitch"
+msgstr ""
+
 #: client/src/pages/RoleDraft.tsx
 msgid "This browser won't keep your selection (private mode or site data blocked). It stays until you leave the page."
 msgstr "Este navegador no guardará tu selección (modo privado o datos del sitio bloqueados). Se queda hasta que salgas de la página."
@@ -3351,6 +3371,11 @@ msgstr ""
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Nothing was waiting."
+msgstr ""
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "Who sees this role"
 msgstr ""
 
 #: client/src/components/admin/ArchetypesPanel.tsx
@@ -5770,6 +5795,11 @@ msgctxt "admin menu: the menu entries"
 msgid "Entries"
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "note on a future venture: the card, the application form and its confirmation"
+msgid "Apply to hold this venture: to build it and run it, in partnership with the village. Tell us your vision as a pitch. Terms such as space, partnership and revenue share are shaped together and are subject to legal review."
+msgstr ""
+
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
 msgid "Start from {owner} instead"
@@ -5782,6 +5812,11 @@ msgstr ""
 
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "Faces, number plates or anything that says who was there?"
+msgstr ""
+
+#: client/src/components/ComingSoon.tsx
+msgctxt "a role held for now by the village's digital assistant, never a person"
+msgid "Held for now by our digital assistant."
 msgstr ""
 
 #: client/src/components/valuation/QuestEnginePrice.tsx
@@ -5853,6 +5888,11 @@ msgstr ""
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
 msgid "Which layer"
+msgstr ""
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: role visibility"
+msgid "Open: listed and taking applications now"
 msgstr ""
 
 #: client/src/pages/Aligned.tsx
@@ -6084,6 +6124,11 @@ msgstr "Zona horaria donde naciste"
 msgctxt "companion lens sheet"
 msgid "That could not be deleted just now."
 msgstr "No se pudo borrar en este momento."
+
+#: client/src/components/ComingSoon.tsx
+msgctxt "note on a coming-soon role: the card, the application form and its confirmation"
+msgid "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start."
+msgstr ""
 
 #. placeholder {0}: season.name
 #. placeholder {1}: season.timezone
@@ -6335,6 +6380,11 @@ msgstr ""
 msgctxt "your path, the profile card"
 msgid "See your whole path"
 msgstr "Ver todo tu camino"
+
+#: client/src/components/ComingSoon.tsx
+msgctxt "badge on a role whose interviews start after the lead hires"
+msgid "Coming soon"
+msgstr ""
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -6846,6 +6896,11 @@ msgstr "Los seis pasos de tu solicitud"
 msgid "Put this change to the village"
 msgstr ""
 
+#: client/src/components/power/CircleCard.tsx
+msgctxt "map circle card, a venture to build and run"
+msgid "future venture"
+msgstr ""
+
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece, short"
 msgid "Looks after"
@@ -7237,6 +7292,11 @@ msgctxt "sera answers"
 msgid "Keep ours for 1 change?"
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, part 4"
+msgid "How it would operate, and what you bring: skills, team, capital"
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgctxt "label before a decision's note"
 msgid "The note:"
@@ -7595,6 +7655,11 @@ msgstr "¿No sabes? Etiquétalo según el tipo de trabajo"
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "How exactly"
+msgstr ""
+
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, part 2"
+msgid "How it serves the village, the land and the wider community"
 msgstr ""
 
 #: client/src/components/admin/RoleDiscoverTab.tsx
@@ -9689,6 +9754,11 @@ msgctxt "pay board"
 msgid "Why it changed. The member reads this and can answer."
 msgstr "Por qué cambió. La persona lo lee y puede responder."
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "badge on a role offered as a venture to build and run, applied for with a pitch"
+msgid "Future venture"
+msgstr ""
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"
 msgid "No invoice has been sent yet."
@@ -9804,6 +9874,11 @@ msgstr "La revisión de Fin de Luna no está activa en esta aldea."
 msgctxt "roles page, a connected service's fallback name"
 msgid "the connected service"
 msgstr "el servicio conectado"
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "Circle"
+msgstr ""
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "How it serves the purpose:"
@@ -10142,6 +10217,11 @@ msgstr ""
 msgid "You do not hold the steward role now, so this copy cannot be delivered. It stays unused."
 msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: role visibility"
+msgid "Unlisted: hidden from the public, kept here"
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal send"
 #~ msgid "Send my proposal"
@@ -10237,6 +10317,11 @@ msgstr ""
 msgid "This village has no characters yet, so there is nothing to point toward."
 msgstr ""
 
+#: client/src/components/roleCard/LeadBuilds.tsx
+msgctxt "under a lead steward's card: the coming-soon roles of the circles it leads"
+msgid "Roles this steward will build"
+msgstr ""
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "the closing-policy vote form is loading"
 msgid "Loading..."
@@ -10257,6 +10342,11 @@ msgstr ""
 msgctxt "founding application refusal"
 msgid "This email address already has three proposals waiting today. Check your inbox for the confirmation links, or try again tomorrow."
 msgstr "Este correo ya tiene tres propuestas pendientes hoy. Busca los enlaces de confirmación en tu bandeja de entrada, o inténtalo mañana."
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, future ventures"
+msgid "Pieces of the village we're inviting people to build and run. Apply to hold one, and pitch your vision."
+msgstr ""
 
 #. placeholder {0}: p.title
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -13894,6 +13984,11 @@ msgctxt "sera answers"
 msgid "Keep ours for {n}"
 msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "Moving a role keeps its history, its holders and its applications. A coming-soon role shows under its new circle's steward."
+msgstr ""
+
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
 msgid "Tick the box to say you agree to the background check, or give three references."
@@ -14274,6 +14369,11 @@ msgctxt "hidden map, one place's details"
 msgid "Choose"
 msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "A role someone holds shows as held, with no Apply, whatever this says."
+msgstr ""
+
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "Take this season off? The canvas goes back to canvas order, and every reading stays. The season itself is removed: to load it again you will need its file."
 msgstr ""
@@ -14527,6 +14627,11 @@ msgstr ""
 msgctxt "founding application intro"
 msgid "Read it through once, then send. Nothing reaches us until you confirm your email."
 msgstr "Léela una vez entera y luego envíala. Nada nos llega hasta que confirmes tu correo."
+
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, ventures to build and run, applied for with a pitch"
+msgid "Future ventures"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal beside"
@@ -15543,6 +15648,11 @@ msgstr ""
 msgid "Who is asked first:"
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, part 1"
+msgid "Your concept and offering"
+msgstr ""
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Earned Equity meaning"
@@ -16519,6 +16629,11 @@ msgstr ""
 #~ msgid "Your proposal sets your pay: propose your own price, and we agree it together in your first month's contract."
 #~ msgstr "Tu propuesta fija tu pago: propón tu propio precio, y lo acordamos juntos en el contrato de tu primer mes."
 
+#: client/src/components/power/CircleCard.tsx
+msgctxt "map circle card, a role applied for early, after the lead hires"
+msgid "coming soon"
+msgstr ""
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The commitment we'd agree on"
 msgstr "El compromiso que acordaríamos"
@@ -17209,6 +17324,11 @@ msgstr ""
 #~ msgid "Shown on the draft board, the character page and the map's party filter. Saving makes it the village's choice, so a later guess never replaces it."
 #~ msgstr ""
 
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: role visibility"
+msgid "Coming soon: shown under its circle's steward, applications welcome early"
+msgstr ""
+
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: input label"
 msgid "Your words to the guide"
@@ -17280,9 +17400,9 @@ msgid "Did not land"
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
-msgctxt "role editor"
-msgid "Listed"
-msgstr ""
+#~ msgctxt "role editor"
+#~ msgid "Listed"
+#~ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -17493,6 +17613,11 @@ msgstr ""
 
 #: client/src/pages/RoleMeasures.tsx
 msgid "This page is for administrators. Sign in with an administrator account to see it."
+msgstr ""
+
+#: client/src/components/admin/OrgChartTab.tsx
+msgctxt "admin org chart, a circle with no lead role"
+msgid "No lead"
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -17941,6 +18066,11 @@ msgstr "Solo te escribiremos sobre esta solicitud."
 #~ msgctxt "open proposal sent step"
 #~ msgid "Then the circle reads it, and we write to you by {replyWords}."
 #~ msgstr "Después el círculo la lee y te escribimos antes del {replyWords}."
+
+#: client/src/components/admin/OrgChartTab.tsx
+msgctxt "admin org chart, the role that leads a circle"
+msgid "Lead role"
+msgstr ""
 
 #. placeholder {0}: data.pct
 #. placeholder {1}: priced(r.atCommitment, r.full.currency, r.full.per)
@@ -19515,9 +19645,9 @@ msgid "Your own title and description for any notice a member gets. Write {defau
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
-msgctxt "role editor"
-msgid "Visitors and members can find this role"
-msgstr ""
+#~ msgctxt "role editor"
+#~ msgid "Visitors and members can find this role"
+#~ msgstr ""
 
 #: client/src/components/circles/CirclePicker.tsx
 msgctxt "circle picker"
@@ -19806,6 +19936,16 @@ msgstr "Todavía ningún acuerdo de pago cubre estos roles, así que repartir es
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Sent"
+msgstr ""
+
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor"
+msgid "Choose a circle"
+msgstr ""
+
+#: client/src/components/ComingSoon.tsx
+msgctxt "future venture pitch, part 5"
+msgid "A first financial picture"
 msgstr ""
 
 #: client/src/components/review/SeraDifferences.tsx
@@ -20378,6 +20518,11 @@ msgstr ""
 msgctxt "open proposal confirm"
 msgid "Confirmed"
 msgstr "Confirmado"
+
+#: client/src/components/roleCard/LeadBuilds.tsx
+msgctxt "under a steward's card: a role someone already holds"
+msgid "Held"
+msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/MyTokenPay.tsx
