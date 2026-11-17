@@ -705,9 +705,10 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     waits: true,
   },
   // A task handed to a role (server/lib/roleTaskHandoffs.ts): it waits on the
-  // role's holders, and the sender hears each answer and when it is done. In
-  // the bell only, since no case in emailCadenceFor names them. Nothing
-  // celebrates: each is one person's answer to another.
+  // role's holders, and the sender hears each answer and when it is done. By
+  // email on the member's tasks preference (emailCadenceFor): the hand-on and
+  // the answers that wait on somebody at its pace, an accept and a done in the
+  // digest. Nothing celebrates: each is one person's answer to another.
   role_task_handed: {
     group: "work",
     blurb: "A task was handed to a role you hold. Accept it, suggest a change, or decline it under Waiting on you.",

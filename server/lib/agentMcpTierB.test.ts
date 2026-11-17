@@ -357,7 +357,7 @@ describe("the approval inbox tools (part A)", () => {
     { tool: "propose_page_copy", scope: "pages.propose", args: { section: "home", content: { headline: "Welcome back" } }, path: "/api/agent-proposals/page-copy" },
     { tool: "propose_map_publish", scope: "map.propose", args: { note: "Added the orchard" }, path: "/api/agent-proposals/map-publish" },
   ];
-  const ALL_SCOPES: AgentScope[] = ["moon.read", "tasks.write", "moon.write", "moon.review", "admin", "sera.undoable", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose"];
+  const ALL_SCOPES: AgentScope[] = ["moon.read", "tasks.write", "moon.write", "moon.review", "admin", "sera.undoable", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose", "sessions.write"];
 
   for (const w of INBOX) {
     it(`${w.tool} is listed only under ${w.scope}`, () => {

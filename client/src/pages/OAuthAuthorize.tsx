@@ -16,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 
-type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable";
+type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable" | "sessions.write";
 interface Offer { scope: OfferedScope; write: boolean; ticked: boolean }
 interface Request { clientName: string; redirectHost: string; scopes: Offer[] }
 
@@ -27,6 +27,7 @@ const SCOPE_WORDS: Record<OfferedScope, string> = {
   "moon.review": "If you review recaps: read the review queue and the role signals, never with amounts",
   admin: "As you, an admin: call the admin paths this village opened to agents, each write after a confirm. Erasure, powers, money and secrets stay with people",
   "sera.undoable": "Sera's tools for this agent account: links, suggestions and drafts, each one undoable for 30 days",
+  "sessions.write": "Add items to the agenda library for a circle's sessions, each one after your yes",
 };
 
 export default function OAuthAuthorize() {
