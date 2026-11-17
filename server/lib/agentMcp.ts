@@ -53,7 +53,7 @@
 import { adminRequestDecision, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts } from "../../shared/agentAdmin";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
 import { LIBRARY_API, LIBRARY_LIMITS } from "../../shared/sessionLibrary";
-import { ITEM_AIMS } from "../../shared/sessions";
+import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
 import { echoHash, type AgentScope } from "./agentTokens";
 import { INBOX_TOOLS, TIER_B_TOOLS } from "./agentMcpTierB";
 import { PROPOSAL_TOOLS } from "./agentMcpProposals";
@@ -444,14 +444,18 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     },
     routes: [`POST ${LIBRARY_API}`],
     async run(args, ctx) {
-      const title = typeof args.title === "string" ? args.title.trim() : "";
+      // The library route's own cleaning (cleanBrought), so the echo the member says yes to is what is stored.
+      const title = cleanLine(args.title, LIBRARY_LIMITS.title + 1);
       if (!title) return { ok: false, error: "Give the item a title." };
       if (title.length > LIBRARY_LIMITS.title) return { ok: false, error: `Keep the title to ${LIBRARY_LIMITS.title} characters.` };
-      const note = typeof args.note === "string" && args.note.trim() ? args.note.trim() : null;
+      const note = cleanText(args.note, LIBRARY_LIMITS.note + 1);
       if (note && note.length > LIBRARY_LIMITS.note) return { ok: false, error: `Keep the note to ${LIBRARY_LIMITS.note} characters.` };
+      if (args.aim !== undefined && args.aim !== null && typeof args.aim !== "string") return { ok: false, error: `aim is one of ${ITEM_AIMS.join(", ")}.` };
       const aim = typeof args.aim === "string" && args.aim ? args.aim : null;
       if (aim && !(ITEM_AIMS as readonly string[]).includes(aim)) return { ok: false, error: `aim is one of ${ITEM_AIMS.join(", ")}.` };
-      const circleId = typeof args.circleId === "string" && args.circleId.trim() ? args.circleId.trim().slice(0, 64) : null;
+      if (args.circleId !== undefined && args.circleId !== null && typeof args.circleId !== "string") return { ok: false, error: "circleId is a circle's id, from get_roles." };
+      const circleId = typeof args.circleId === "string" && args.circleId.trim() ? args.circleId.trim() : null;
+      if (circleId && circleId.length > 64) return { ok: false, error: "That is not a circle's id: take it from get_roles." };
       const body = { title, aim, note, circleId };
       const echo = { method: "POST", path: LIBRARY_API, body };
       if (args.confirmToken === undefined) {

@@ -486,6 +486,15 @@ describe("add_agenda_item (sessions.write)", () => {
     expect(l.calls).toEqual([]);
   });
 
+  it("echoes the text the library will store, hidden characters out, and refuses a malformed circle", async () => {
+    const l = library();
+    const r = await ask(callTool("add_agenda_item", { title: "Budget\u202e  for   roles\u200b", note: "a\n\n\n\nb" }), ["sessions.write"], l.ctx);
+    expect(r.result.structuredContent.echo.body).toEqual({ title: "Budget for roles", aim: null, note: "a\n\nb", circleId: null });
+    expect((await ask(callTool("add_agenda_item", { title: "x", circleId: 7 }), ["sessions.write"], l.ctx)).result.isError).toBe(true);
+    expect((await ask(callTool("add_agenda_item", { title: "x", circleId: "c".repeat(65) }), ["sessions.write"], l.ctx)).result.isError).toBe(true);
+    expect(l.calls).toEqual([]);
+  });
+
   it("passes the route's refusal on in its words, and says when sessions is off", async () => {
     const refused = library({ status: 400, body: { error: "There is no circle with that id." } });
     const t1 = (await ask(callTool("add_agenda_item", args), ["sessions.write"], refused.ctx)).result.structuredContent.confirmToken;
