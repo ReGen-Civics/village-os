@@ -88,7 +88,7 @@ export function roleCard(
   opts: { roleNames?: ReadonlyMap<string, string>; gated?: boolean; words?: CardVillageWords },
 ): Record<string, unknown> {
   const { pay, gate } = gateOf(role, opts.words?.defaultTrack);
-  const open = invitesApplications({ seats: role.seats, held, state, recruiting: role.recruiting });
+  const open = invitesApplications({ seats: role.seats, held, state, recruiting: role.recruiting, comingSoon: role.comingSoon, futureVenture: role.futureVenture });
   return {
     complete: gate.complete,
     missing: gate.missing,

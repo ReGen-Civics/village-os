@@ -25,6 +25,7 @@ import SeatTermsDrawer from "./SeatTermsDrawer";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import RoleCardParams from "./RoleCardParams";
 import { roleCardView } from "@shared/roleCardView";
+import { StateNote } from "@/components/ComingSoon";
 
 function SeatTermsSlot({ seat }: { seat: Record<string, any> }) {
   const presets = useVillagePresets();
@@ -95,7 +96,17 @@ export function applyHrefFor(seat: Record<string, any> | null | undefined): stri
  * Being written the action is left off and the parameters block says so (role journey PR-C).
  */
 export function guardedAction(seat: Record<string, any> | null | undefined, action: ReactNode): ReactNode {
-  return seat && !roleCardView(seat).applyAllowed ? null : action;
+  if (seat && !roleCardView(seat).applyAllowed) return null;
+  // Coming soon and Future venture (16 Nov 2026): Apply works the same, with the state's note beside it, on every host.
+  if (seat && (roleCardView(seat).comingSoon || roleCardView(seat).futureVenture)) {
+    return (
+      <div className="space-y-2">
+        <StateNote role={seat} />
+        {action}
+      </div>
+    );
+  }
+  return action;
 }
 
 /**

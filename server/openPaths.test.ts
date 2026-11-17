@@ -72,6 +72,12 @@ describe.skipIf(!configured)("what a class opens (MySQL)", () => {
     await role("unlisted-open", null);
     await pool.query("UPDATE `org_roles` SET `listed` = 0 WHERE `id` IN ('unlisted-fit', 'unlisted-open')"); // module-review-ok: fixture SQL against the scratch schema this suite provisioned
 
+    // Coming soon (Rye, 16 Nov 2026): applied for early, so it is a fit for its class, but it is not Open, so no
+    // "open now" count and no "also open" list has it. The "fit" and "untagged-null" roles above are the same rows unmarked.
+    await role("soon-fit", JSON.stringify(["catalyzing"]));
+    await role("soon-open", null);
+    await pool.query("UPDATE `org_roles` SET `coming_soon` = 1 WHERE `id` IN ('soon-fit', 'soon-open')"); // module-review-ok: fixture SQL against the scratch schema this suite provisioned
+
     await quest("q-fit", JSON.stringify(["catalyzing"]));
     await quest("q-other", JSON.stringify(["building"]));
     await quest("q-null", null);
@@ -85,7 +91,7 @@ describe.skipIf(!configured)("what a class opens (MySQL)", () => {
 
   it("keeps the fit to the roles tagged for the class", async () => {
     const out = await openPathsFor(pool, "local", "catalyzing");
-    expect(out.roles.map((r) => r.id).sort()).toEqual(["fit", "fit-full"]);
+    expect(out.roles.map((r) => r.id).sort()).toEqual(["fit", "fit-full", "soon-fit"]);
   });
 
   it("offers every OPEN role tagged for nobody, NULL and [] alike, and never one tagged for another class", async () => {

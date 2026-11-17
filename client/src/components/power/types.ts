@@ -50,6 +50,10 @@ export interface PowerHolder {
 export interface PowerSeat {
   /** False on a role that is off every discovery surface; sent only to readers who may see it (shared/roleListing.ts). */
   listed?: boolean | null;
+  /** Shown with a "Coming soon" badge and closed to applications (shared/roleListing.ts). Sent only when true. */
+  comingSoon?: boolean;
+  /** A future venture (shared/roleListing.ts). Sent only when true. */
+  futureVenture?: boolean;
   id: string;
   name: string;
   /** The seat's AIM: what it works toward. */

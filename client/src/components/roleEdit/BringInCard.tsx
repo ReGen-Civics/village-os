@@ -30,6 +30,8 @@ function formPatch(key: string, after: unknown): Record<string, unknown> {
   const list = (v: unknown) => (Array.isArray(v) ? v.map(String).join("\n") : "");
   switch (key) {
     case "listed":
+    case "comingSoon":
+    case "futureVenture":
     case "alwaysChecked":
     case "commitmentRequired":
     case "recruiting":

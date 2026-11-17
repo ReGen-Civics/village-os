@@ -58,6 +58,8 @@ export interface EditorOpen {
   /** Whether the reader may read terms, which "Use Sera's range" needs. */
   mayReadTerms: boolean;
   roles: Array<{ id: string; name: string }>;
+  /** The circles the role can move to (absent from an older server). */
+  circles?: Array<{ id: string; name: string }>;
 }
 
 export interface Imported {
@@ -112,6 +114,8 @@ export interface SaveBody {
   archetypes?: string[];
   /** The founding sections as typed; the server reads them with `readSections`. */
   sections?: Record<string, unknown>;
+  /** The circle the role moves to; sent only when it changed. */
+  circleId?: string;
 }
 
 export const readAccess = () => send<{ door: "power" | "admin" | null }>("GET", "/access");
