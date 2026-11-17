@@ -15,3 +15,15 @@ export async function roleHeldBy(db: Pool | PoolConnection, orgRoleId: string): 
   const [rows] = await db.query<RowDataPacket[]>("SELECT held_by FROM org_roles WHERE id = ? LIMIT 1", [orgRoleId]);
   return rows?.[0]?.held_by ?? null;
 }
+
+/** Whether a row holds this role id, live or retired: a retired role keeps its row, so its id is never reused. */
+export async function orgRoleIdTaken(db: Pool | PoolConnection, orgRoleId: string): Promise<boolean> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id FROM org_roles WHERE id = ? LIMIT 1", [orgRoleId]);
+  return rows.length > 0;
+}
+
+/** Whether a circle by this id stands and is live (not dormant), which is where a new role may be made. */
+export async function circleIsLive(db: Pool | PoolConnection, circleId: string): Promise<boolean> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT status FROM circles WHERE id = ? LIMIT 1", [circleId]);
+  return rows.length > 0 && String(rows[0].status ?? "active") !== "dormant";
+}

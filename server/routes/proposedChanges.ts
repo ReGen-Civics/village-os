@@ -40,7 +40,7 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { recordEvent } from "../lib/events";
 import { isAgentAccount } from "../repos/agentAccounts";
-import { applyProposal, checkProposal, labelsFor, liveOf, readBefore, routeExistsIn, whereOf, type KindDeps, type Run } from "../lib/proposedChanges";
+import { applyProposal, checkProposal, labelsFor, liveOf, NEW_ROLE_ALREADY_MADE, newRoleAlreadyMade, readBefore, routeExistsIn, whereOf, type KindDeps, type Run } from "../lib/proposedChanges";
 import * as store from "../repos/proposedChanges";
 import {
   ACCEPT_NOTE,
@@ -373,7 +373,7 @@ export function register(app: Express, deps: Deps): void {
     const pool = getPool();
     const run = runAs(req);
     const name = String(user.name ?? "").trim() || "A person";
-    const results: Array<{ id: string; ok: boolean; error?: string; field?: string | null }> = [];
+    const results: Array<{ id: string; ok: boolean; error?: string; field?: string | null; note?: string }> = [];
     // One after another, each through its own route. A failure stops nothing and undoes nothing.
     for (const it of items) {
       const id = String(obj(it)?.id ?? "");
@@ -404,10 +404,15 @@ export function register(app: Express, deps: Deps): void {
       // A change that throws on its way to its route (the loopback timing out, a read that fails) is THIS change's
       // outcome, recorded, and the loop goes on. It is NOT a plain "failed": the route may have committed before the
       // answer was lost, so it is `unknown`, and a person checks its page before it is tried again (audit, 15 Nov 2026).
-      let out: { ok: true } | { ok: false; error: string; field?: string | null };
+      let out: { ok: true; note?: string } | { ok: false; error: string; field?: string | null };
       try {
-        const valid = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-        if (valid.ok) {
+        // A retry whose earlier try already made the role: that try landed, so this one records it (`newRoleAlreadyMade`).
+        const retried = c.status === "failed" || store.needsACheck(c);
+        const valid = retried && (await newRoleAlreadyMade(pool, c.kind, c.target, body))
+          ? null
+          : await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
+        if (valid === null) out = { ok: true, note: NEW_ROLE_ALREADY_MADE };
+        else if (valid.ok) {
           // What is live now, kept so this change can be proposed back (0400). A read that fails keeps null and never
           // stops the accept; a kind that is never put back reads nothing.
           const before = await readBefore(kd, run, c.kind, c.target, body);
@@ -438,7 +443,7 @@ export function register(app: Express, deps: Deps): void {
         entityRef: id,
         audience: "admin",
       });
-      results.push({ id, ok: true });
+      results.push({ id, ok: true, ...(out.note ? { note: out.note } : {}) });
     }
     res.json({ results, accepted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
   });

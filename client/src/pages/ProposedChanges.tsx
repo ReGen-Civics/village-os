@@ -41,7 +41,7 @@ const headers = (): Record<string, string> => {
 };
 
 type StatusFilter = "all" | "waiting" | "decided";
-type Result = { id: string; ok: boolean; error?: string; field?: string | null };
+type Result = { id: string; ok: boolean; error?: string; field?: string | null; note?: string };
 
 const faceOfDecided = (d: Decided) => faceOf(d.kind ?? "setting", d.route ?? { method: "PUT", path: "" });
 
@@ -154,7 +154,12 @@ export default function ProposedChanges() {
         await load();
         return;
       }
-      const landed = d.results.filter((x) => x.ok).map((x) => changes.find((c) => c.id === x.id)?.summary ?? x.id);
+      // A change that landed with a note (a role made whose value did not save, or made by an earlier try) shows the note beside it.
+      const landed = d.results.filter((x) => x.ok).map((x) => {
+        const summary = changes.find((c) => c.id === x.id)?.summary ?? x.id;
+        const note = x.note;
+        return note ? t({ message: `${summary} Applied, with a warning: ${note}`, context: "proposed changes" }) : summary;
+      });
       const failed = d.results.filter((x) => !x.ok);
       setOutcome({ landed, failed: failed.length });
       setProblems(Object.fromEntries(failed.map((x) => [x.id, [{ error: x.error ?? "", field: x.field ?? null }]])));
