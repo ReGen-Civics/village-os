@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { setupI18n } from "@lingui/core";
 import { ceilingShares } from "@shared/roleCardSections";
-import { paysInTokens, rewardWords, splitHeadline, TOKEN_TERMS_ALWAYS } from "./rewardWords";
+import { bandWords, paysInTokens, rewardWords, splitHeadline, TOKEN_TERMS_ALWAYS } from "./rewardWords";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };
@@ -51,5 +51,29 @@ describe("the headline, one figure or each share as its own amount (founding tea
     ];
     expect(splitHeadline(i18n, { ...BAND, per: "year" }, three)).toBe("Up to $100 in cash, $200 in equity, and $50 in credits a year for the full role*");
     expect(splitHeadline(i18n, { ...BAND, per: "moon" }, [{ label: "Cash", amount: 100 }])).toBe("Up to $100 in cash a moon for the full role*");
+  });
+});
+
+describe("the pay band under the listed price", () => {
+  const RANGE = { kind: "range", currency: "USD", minMinor: 962300, maxMinor: 1202900, per: "month" } as const;
+  it("says the band as one line, in total comp", () => {
+    expect(bandWords(i18n, RANGE, true)).toBe("Band: $9,623 to $12,029 a month in total comp");
+    expect(bandWords(i18n, { ...RANGE, per: "moon" }, true)).toBe("Band: $9,623 to $12,029 a moon in total comp");
+    expect(bandWords(i18n, { ...RANGE, per: undefined }, true)).toBe("Band: $9,623 to $12,029 in total comp");
+  });
+  it("draws nothing while the village hides pay ranges, whatever the payload carries", () => {
+    expect(bandWords(i18n, RANGE, false)).toBeNull();
+  });
+  it("draws nothing for a fixed amount, a missing figure, a missing currency or a band upside down", () => {
+    expect(bandWords(i18n, { kind: "fixed", currency: "USD", amountMinor: 900000, per: "month" }, true)).toBeNull();
+    expect(bandWords(i18n, null, true)).toBeNull();
+    expect(bandWords(i18n, { ...RANGE, maxMinor: undefined }, true)).toBeNull();
+    expect(bandWords(i18n, { ...RANGE, currency: undefined }, true)).toBeNull();
+    expect(bandWords(i18n, { ...RANGE, minMinor: 1202900, maxMinor: 962300 }, true)).toBeNull();
+  });
+  it("leaves the listed price and the 120% cap as they were", () => {
+    const w = rewardWords(i18n, BAND, 100);
+    expect(w.headline).toBe("Listed price: $9,000 a month for the full role*");
+    expect(w.cap).toBe("Proposals up to $10,800 a month, 120% of the listed price.");
   });
 });

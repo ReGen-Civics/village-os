@@ -38,7 +38,7 @@ import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
-import { rewardWords } from "./rewardWords";
+import { bandWords, rewardWords } from "./rewardWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -233,17 +233,23 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
   // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
   const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? []) : null;
+  // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
+  const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
           <p className="font-medium leading-relaxed text-card-foreground" data-testid="pay-cap-words">{reward.cap}</p>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
         </>
       ) : (
-        pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>
+        <>
+          {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+        </>
       )}
       {pay.shape.length > 0 && (
         <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">

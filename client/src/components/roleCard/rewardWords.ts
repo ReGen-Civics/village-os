@@ -17,6 +17,8 @@ import { msg } from "@lingui/core/macro";
 import { capAt, ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
+import type { PublicPay } from "@shared/rolePublicPay";
+import { moneyWords as minorMoneyWords } from "@shared/seatSettings";
 
 export interface RewardWords {
   headline: string;
@@ -114,6 +116,24 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
       .filter(Boolean)
       .join(" "),
   };
+}
+
+/**
+ * THE BAND under the listed price: "Band: $9,623 to $12,029 a month in total comp". Read from the role's
+ * public pay (`card.publicPay`, server/lib/roleCardProjection.ts), which the server sends only for a listed
+ * open role while the village shows pay ranges (`org.show_pay_ranges`). `shown` is the card's own read of
+ * that switch, so an older payload that still carries a range draws nothing while the village hides it.
+ * Null for anything but a range of two whole minor amounts, low to high, in a currency.
+ */
+export function bandWords(i18n: I18n, pay: PublicPay | null | undefined, shown: boolean): string | null {
+  if (!shown || !pay || pay.kind !== "range" || !pay.currency) return null;
+  const { minMinor: lo, maxMinor: hi } = pay;
+  if (!Number.isInteger(lo) || !Number.isInteger(hi) || (lo as number) < 0 || (lo as number) > (hi as number)) return null;
+  const min = minorMoneyWords(lo as number, pay.currency, i18n.locale || "en");
+  const max = minorMoneyWords(hi as number, pay.currency, i18n.locale || "en");
+  if (pay.per === "month") return i18n._(msg({ message: `Band: ${min} to ${max} a month in total comp`, context: "role card rewards: the pay band under the listed price, each month" }));
+  if (pay.per === "moon") return i18n._(msg({ message: `Band: ${min} to ${max} a moon in total comp`, context: "role card rewards: the pay band under the listed price, each moon" }));
+  return i18n._(msg({ message: `Band: ${min} to ${max} in total comp`, context: "role card rewards: the pay band under the listed price, no period" }));
 }
 
 /** The commitment row: "Full or part commitment (from 30%)", or "Full commitment (100%)" for a role offered whole. */

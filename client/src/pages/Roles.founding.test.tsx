@@ -254,6 +254,7 @@ describe("Join the founding team", () => {
     expect(card.textContent).not.toContain("6,750");
     expect(card.textContent).not.toContain("6750");
     expect(card.textContent).not.toContain(RANGE_NOTE);
+    expect(within(pay).queryByTestId("pay-band")).toBeNull();
     const apply = within(card).getAllByRole("link", { name: /Apply for this role/ });
     expect(apply).toHaveLength(1);
     expect(apply[0].getAttribute("href")).toBe("/propose-a-role?role=finance");
@@ -267,6 +268,12 @@ describe("Join the founding team", () => {
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
     await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
+    // The band, one line under the listed price, with the price and the cap kept as they are.
+    const pay = within(section).getByTestId("pay-shape");
+    const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
+    expect(lines.slice(0, 3)).toEqual(["pay-ceiling", "pay-band", "pay-cap-words"]);
+    expect(within(pay).getByTestId("pay-band").textContent).toBe("Band: $6,750 to $9,000 a month in total comp");
+    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
   });
 
   it("opening a role moves focus to its card, where the eye goes (a11y sweep P1-3)", async () => {
