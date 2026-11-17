@@ -1,4 +1,4 @@
--- 9999 (the integrator renumbers): a role can be shown as coming soon, or as a
+-- 0399 (renumbered from 9999 at compose, batch 190): a role can be shown as coming soon, or as a
 -- future venture (Rye, 16 Nov 2026).
 --
 -- A role's four states are Open, Coming soon, Held and Unlisted, and the
