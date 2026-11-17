@@ -2378,6 +2378,11 @@ msgctxt "a public line is being saved"
 msgid "Saving"
 msgstr "Saving"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
+msgstr "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Goal {n}"
@@ -6061,6 +6066,11 @@ msgctxt "founding application know us push"
 msgid "Most people haven't done these yet, and that's fine."
 msgstr "Most people haven't done these yet, and that's fine."
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device."
+msgstr "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device."
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar page: today's place in the moon, with the moon's name"
 msgid "Today is day {lunarDay} of {moonLength} in {said}"
@@ -8227,6 +8237,11 @@ msgstr "Leaning {low}"
 msgctxt "member door choice"
 msgid "Your roles for next season"
 msgstr "Your roles for next season"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going."
+msgstr "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going."
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work filter: quests that ask between a quarter and most of a person"
@@ -11046,6 +11061,11 @@ msgctxt "quest editor"
 msgid "Use this price"
 msgstr "Use this price"
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite: download the recording"
+msgid "Save a copy"
+msgstr "Save a copy"
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "save bar, which item failed"
 msgid "Circle {name}"
@@ -13117,6 +13137,11 @@ msgstr "We'll write to you to find a time."
 msgid "Who do you play? Pick one or more."
 msgstr "Who do you play? Pick one or more."
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again."
+msgstr "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again."
+
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note"
 msgid "Tap the mic in any answer below to say it instead of typing it."
@@ -14018,6 +14043,11 @@ msgstr "Change it in the agreement"
 msgctxt "calendar spiral: what the drawing is"
 msgid "This moon's {n} days on a golden spiral, the new moon at the centre"
 msgstr "This moon's {n} days on a golden spiral, the new moon at the centre"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it."
+msgstr "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it."
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with my pick"
@@ -20508,6 +20538,11 @@ msgstr "The desk could not be read."
 msgctxt "guide data line: the journal stays in the village"
 msgid "Your journal never goes to {outside}."
 msgstr "Your journal never goes to {outside}."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing."
+msgstr "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing."
 
 #: client/src/components/valuation/ValuationReceipt.tsx
 msgid "How this was worked out"
