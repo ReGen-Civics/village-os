@@ -16,8 +16,7 @@ import { useLingui } from "@lingui/react/macro";
 import GrowingField from "@/components/form/GrowingField";
 import { commitmentChoices, type PayAsk } from "@shared/commitmentRange";
 import PriceAsk from "./PriceAsk";
-import { formSplit, withAmounts, type ShapeShare, type Split } from "@shared/proposalSplit";
-import { commitmentFromQuery, splitFromQuery } from "@/components/roleCard/applyChoice";
+import type { ShapeShare, Split } from "@shared/proposalSplit";
 import type { PayCeiling } from "@shared/roleCardSections";
 import {
   COMMITMENT_CHOICES,
@@ -32,8 +31,8 @@ import {
   type TermsWords,
 } from "@shared/termsWords";
 
-// The split control loads when the price step draws it, off /propose-a-role's first view (route-first-view.json).
-const SplitControl = lazy(() => import("@/components/roleCard/SplitControl"));
+// The split and its arithmetic load when the price step draws it, off /propose-a-role's first view (route-first-view.json).
+const TermsSplit = lazy(() => import("./TermsSplit"));
 
 /** A person offering a role starts at 10%: 0% is no commitment at all (final verification, 11 Nov 2026). */
 export const CANDIDATE_COMMITMENTS = COMMITMENT_CHOICES.filter((n) => n >= 10);
@@ -62,16 +61,10 @@ export interface TermsStepValue {
   payAsk?: PayAsk | null;
   /** Their cash, equity and credits split, as they left it (shared/proposalSplit.ts). Null: the role's split in force. */
   paySplit?: Split | null;
-}
-
-/**
- * The split the form shows and sends for one role: the village's offer at their commitment and their split at
- * the price in force (their own price, else the suggested one). Null when the role shows no split.
- */
-export function termsSplit(role: TermsRole | undefined, value: TermsStepValue): { offered: Split; shown: Split } | null {
-  if (!role) return null;
-  const own = value.payAsk?.kind === "amount" ? value.payAsk.monthly : null;
-  return formSplit(role.payShape ?? [], role.ceiling?.amount ?? null, value.commitmentPct, own, value.paySplit ?? null);
+  /** The split the role card's Apply link carried, as written there ("50.50.0"), until the price step reads it. */
+  splitQuery?: string;
+  /** What the price step shows and the application sends, as TermsSplit.tsx works it: their split and whether they changed it. */
+  paySplitView?: { shown: Split; changed: boolean; line: string } | null;
 }
 
 export const EMPTY_TERMS_STEP: TermsStepValue = { answers: {}, commitmentPct: null };
@@ -98,7 +91,7 @@ export default function TermsEight({
   // One role with a pay ceiling: the form shows the most at the chosen commitment, and the optional ask.
   const ceiling = roles.length === 1 ? (roles[0].ceiling ?? null) : null;
   // The split they may adjust (the lead, 17 Nov 2026): one role, with a split on its card.
-  const split = roles.length === 1 ? termsSplit(roles[0], value) : null;
+  const splitRole = roles.length === 1 && (roles[0].payShape?.length ?? 0) > 0 ? roles[0] : null;
   const labels: Record<TermKey, string> = {
     term: t({ message: "Term", context: "terms setting" }),
     clocks: t({ message: "Time", context: "terms setting" }),
@@ -209,10 +202,10 @@ export default function TermsEight({
                 </p>
                 {/* The suggested price from their commitment, and the popup to propose their own (Rye, 14 Nov 2026). */}
                 {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={roles[0]?.suggestions ?? 0} />}
-                {split && (
+                {splitRole && (
                   <div className="mt-4">
                     <Suspense fallback={null}>
-                    <SplitControl idPrefix={idPrefix} split={split.shown} offered={split.offered} onChange={(paySplit) => onChange({ ...value, paySplit })} currency={ceiling?.currency ?? null} per={ceiling?.per ?? null} pct={value.commitmentPct} />
+                      <TermsSplit idPrefix={idPrefix} role={splitRole} value={value} onChange={onChange} />
                     </Suspense>
                   </div>
                 )}
@@ -246,7 +239,7 @@ export function draftTerms(v: TermsStepValue): { answers: TermAnswers; commitmen
 }
 
 /** A saved draft's split percents as the step holds them: the amounts are worked again at the price in force. */
-export const splitOfDraft = (pcts: ShapeShare[] | null | undefined): Split | null => (pcts?.length ? withAmounts(pcts, null) : null);
+export const splitOfDraft = (pcts: ShapeShare[] | null | undefined): Split | null => (pcts?.length ? { total: null, shares: pcts.map((p) => ({ label: p.label, pct: p.pct })) } : null);
 
 /**
  * What the role card's Apply link carried (client/src/components/roleCard/applyChoice.ts): the commitment chosen on
@@ -255,13 +248,14 @@ export const splitOfDraft = (pcts: ShapeShare[] | null | undefined): Split | nul
  */
 export function withCardChoice(v: TermsStepValue, search: string, role: Pick<TermsRole, "commitmentMin" | "payShape"> | undefined): TermsStepValue {
   if (!role) return v;
-  const pct = commitmentFromQuery(search, role.commitmentMin);
-  const pcts = splitFromQuery(search, role.payShape ?? []);
-  return { ...v, ...(pct !== null ? { commitmentPct: pct } : {}), ...(pcts ? { paySplit: withAmounts(pcts, null) } : {}) };
+  const q = new URLSearchParams(search);
+  const n = Number(q.get("commitment"));
+  const pct = commitmentChoices(role.commitmentMin).includes(n) ? n : null;
+  const split = q.get("split");
+  return { ...v, ...(pct !== null ? { commitmentPct: pct } : {}), ...(split && role.payShape?.length ? { splitQuery: split.slice(0, 64) } : {}) };
 }
 
 /** The split the application sends for one role (shared/proposalSplit.ts): every share, with amounts when there is a price. */
-export function splitBody(v: TermsStepValue, role: TermsRole | undefined): { paySplit?: { shares: Split["shares"] } } {
-  const s = termsSplit(role, v);
-  return s ? { paySplit: { shares: s.shown.shares } } : {};
+export function splitBody(v: TermsStepValue): { paySplit?: { shares: Split["shares"] } } {
+  return v.paySplitView ? { paySplit: { shares: v.paySplitView.shown.shares } } : {};
 }

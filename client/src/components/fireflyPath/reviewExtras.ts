@@ -14,7 +14,6 @@
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
-import { splitChanged, type Split } from "@shared/proposalSplit";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
@@ -29,7 +28,7 @@ const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}�
 
 export function reviewExtras(
   i18n: I18n = appI18n,
-  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; showCap?: boolean; split?: { offered: Split; shown: Split } | null },
+  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; showCap?: boolean; split?: { line?: string } | null },
 ): ReviewExtra[] {
   const out: ReviewExtra[] = [];
   if (p.ceiling) {
@@ -52,20 +51,8 @@ export function reviewExtras(
     const capped = cap > 0 ? `${line} · ${i18n._(msg({ message: `Proposals up to ${priced(cap)}`, context: "founding application review: the cap on a proposal" }))}` : line;
     out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${capped} · ${short(ask.why)}` : capped });
   }
-  if (p.split) {
-    const { offered, shown } = p.split;
-    const parts = shown.shares.map((s) =>
-      typeof s.amount === "number" && p.ceiling
-        ? i18n._(msg({ message: `${s.pct}% ${s.label} (${moneyWords(s.amount, p.ceiling.currency, i18n.locale)})`, context: "founding application review: one share of the split, with its amount" }))
-        : i18n._(msg({ message: `${s.pct}% ${s.label}`, context: "founding application review: one share of the split" })),
-    );
-    const said = parts.join(", ");
-    out.push({
-      step: p.termsStep,
-      label: i18n._(msg({ message: "Your split", context: "founding application review" })),
-      line: splitChanged(offered, shown) ? i18n._(msg({ message: `${said} · changed from the village's split`, context: "founding application review: a split they changed" })) : said,
-    });
-  }
+  // The split's line is worked where the split is (governance/TermsSplit.tsx), so its words load with it.
+  if (p.split?.line) out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your split", context: "founding application review" })), line: p.split.line });
   const n = p.notes.length;
   if (n > 0) {
     out.push({

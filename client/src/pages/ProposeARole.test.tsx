@@ -331,8 +331,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     render(<ProposeARole />);
     await screen.findByRole("heading", { level: 1, name: /^Apply: / });
     expect((screen.getByLabelText("Your commitment") as HTMLSelectElement).value).toBe("60");
-    // At 60% of $13,000 the suggested price is $7,800; the card's 50/50/0 split is shown at it.
-    expect((screen.getByLabelText("Cash, percent of the total") as HTMLInputElement).value).toBe("50");
+    // At 60% of $13,000 the suggested price is $7,800; the card's 50/50/0 split is shown at it (the control loads lazily).
+    await waitFor(() => expect((screen.getByLabelText("Cash, percent of the total") as HTMLInputElement).value).toBe("50"));
     expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3900");
     expect(screen.getByText("You can change this split for your proposal. Type a percent or an amount.")).toBeTruthy();
     // By amount: credits $780 is 10%, the others give way in proportion.
@@ -343,6 +343,9 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fillValue();
     fireEvent.click(await screen.findByLabelText(LETTER.intent));
     fireEvent.click(screen.getByLabelText(/confidentiality agreement before I see/));
+    // Review & submit says the split, and that they changed it.
+    walk();
+    expect(document.querySelector("[data-review]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780) · changed from the village's split");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.card.commitmentPct).toBe(60);
@@ -352,6 +355,7 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] }, FORM.roles[1]] };
     await applyFor("r-gate", SPLIT);
     await completeAll();
+    await screen.findByLabelText("Cash, percent of the total");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 60, amount: 3900 }, { label: "Equity", pct: 40, amount: 2600 }] });

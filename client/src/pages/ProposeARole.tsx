@@ -71,7 +71,7 @@ import { IKIGAI_KEY, ikigaiFromStored, whyFromIkigai } from "@shared/roleDiscove
 import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
 import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
-import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, termsSplit, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
+import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
@@ -522,7 +522,7 @@ export default function ProposeARole() {
         locale: i18n.locale,
         ...(membership.kind === "aligned" ? { membership: { letterVersion: membership.letterVersion } } : {}),
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
-        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep, role ? { id: role.id, name: role.name, ceiling: role.payCeiling ?? null, payShape: role.payShape } : undefined), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
+        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
       // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
       const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
@@ -965,7 +965,7 @@ export default function ProposeARole() {
             {/* STEP 6: review & submit. Everything read back, the agreements, then send. */}
             <section {...panel(5)}>
               {heading(5)}
-              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: role ? termsSplit({ id: role.id, name: role.name, ceiling: role.payCeiling ?? null, payShape: role.payShape }, termsStep) : null })} />
+              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null })} />
               <div data-agreements="" className="scroll-mt-24">
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />

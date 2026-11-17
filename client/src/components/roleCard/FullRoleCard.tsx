@@ -40,8 +40,6 @@ import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type Vil
 import { roleCardView } from "@shared/roleCardView";
 import { rewardWords } from "./rewardWords";
 import { bandWords } from "./payBandWords";
-import { useCommitmentChoice } from "./useCommitmentChoice";
-import { choiceQuery } from "./applyChoice";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -60,7 +58,7 @@ import { shownCommitment } from "@shared/focusLine";
 import { useVillageName } from "@/hooks/useVillageName";
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
-const CommitmentPicker = lazy(() => import("./CommitmentPicker"));
+const CardCommitment = lazy(() => import("./CardCommitment"));
 
 export type CardRegister = "founding" | "game";
 
@@ -218,8 +216,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
   const apply = !noAct && mayApply(seat);
   // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
-  const { choice, setPct, setSplit, sliding } = useCommitmentChoice(seat?.card?.commitmentMin ?? null, sections?.payCeiling ?? null, pay?.shape ?? []);
-  const choiceLink = choiceQuery(sliding ? choice.pct : null, choice.split, choice.offered);
+  const [choiceLink, setChoiceLink] = useState("");
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
@@ -301,7 +298,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       })()}
       {!noAct && (
         <Suspense fallback={null}>
-          <CommitmentPicker idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} publicPay={seat?.card?.publicPay} showsRange={showsRange} choice={choice} onPct={setPct} onSplit={setSplit} />
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} />
         </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}

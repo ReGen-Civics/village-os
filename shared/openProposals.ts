@@ -22,7 +22,7 @@
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
 import { storedVoiceOf, type StoredVoice } from "./voiceNotes";
 import { payAskOf, readPayAsk, type PayAsk } from "./commitmentRange";
-import { proposalSplitOf, type ProposalSplit } from "./proposalSplit";
+import { proposalSplitOf, type ProposalSplit } from "./proposalSplitStored";
 import { applicantSteps, cleanNote, isApplicantLanguage, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { termOf, type OpenProposalTerm } from "./openProposalTerm";
 import { cardOf, parseCard, type OpenProposalCard } from "./openProposalCard";

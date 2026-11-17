@@ -37,25 +37,9 @@ export interface ShapeShare {
   pct: number;
 }
 
-/** One share of a split: its label, a whole percent and, when the split has a total, a whole amount. */
-export interface SplitShare {
-  label: string;
-  pct: number;
-  amount?: number;
-}
-
-/** A split at one total: the shares and the total they add up to (null when no price is readable). */
-export interface Split {
-  total: number | null;
-  shares: SplitShare[];
-}
-
-/** What an application keeps: the village's offer at the person's commitment, and what they proposed. */
-export interface ProposalSplit {
-  commitmentPct: number | null;
-  offered: Split;
-  proposed: Split;
-}
+export type { ProposalSplit, Split, SplitShare } from "./proposalSplitStored";
+export { proposalSplitOf } from "./proposalSplitStored";
+import type { Split, SplitShare } from "./proposalSplitStored";
 
 export const SPLIT_WORDS = {
   shape: "Your split must name the role's shares, each a whole percent, adding up to 100.",
@@ -213,31 +197,6 @@ export function readProposedSplit(raw: unknown, shape: readonly ShapeShare[], to
   }
   if (!shares.every((s) => whole(s.amount) && (s.amount as number) >= 0) || shares.reduce((a, s) => a + (s.amount as number), 0) !== total) return { ok: false, problem: SPLIT_WORDS.amounts };
   return { ok: true, value: { total, shares } };
-}
-
-/** A split as stored, read tolerantly: anything unreadable is null. */
-function splitOf(raw: unknown): Split | null {
-  if (!raw || typeof raw !== "object") return null;
-  const o = raw as Record<string, unknown>;
-  if (!Array.isArray(o.shares)) return null;
-  const shares: SplitShare[] = [];
-  for (const s of o.shares.slice(0, 12)) {
-    if (!s || typeof s !== "object") return null;
-    const x = s as Record<string, unknown>;
-    if (typeof x.label !== "string" || !whole(x.pct)) return null;
-    shares.push({ label: x.label.slice(0, 40), pct: x.pct, ...(whole(x.amount) ? { amount: x.amount } : {}) });
-  }
-  return { total: whole(o.total) ? o.total : null, shares };
-}
-
-/** The stored offered-and-proposed pair, read tolerantly. */
-export function proposalSplitOf(raw: unknown): ProposalSplit | null {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const o = raw as Record<string, unknown>;
-  const offered = splitOf(o.offered);
-  const proposed = splitOf(o.proposed);
-  if (!offered || !proposed || !proposed.shares.length) return null;
-  return { commitmentPct: whole(o.commitmentPct) ? o.commitmentPct : null, offered, proposed };
 }
 
 /**
