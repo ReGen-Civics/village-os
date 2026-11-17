@@ -3,6 +3,7 @@
  */
 import type { ProposalKind } from "@shared/proposedChanges";
 import type { PutBackVerdict } from "@shared/proposalPutBack";
+import type { StaleBy } from "@shared/proposalConflicts";
 
 export interface Where {
   label: string;
@@ -28,8 +29,12 @@ export interface Proposal {
   by: string;
   byKind: "agent" | "person";
   at: string;
+  /** Its place in its batch; older servers sent none. */
+  position?: number;
   /** When this proposal puts an earlier change back, that change's id. */
   reverts?: string | null;
+  /** Accepts made since it was proposed that wrote what it writes; older servers sent none. */
+  stale?: StaleBy[];
 }
 
 export interface Batch {

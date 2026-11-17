@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /**
  * /admin/proposals, as cards (16 Nov 2026). Pinned:
- *   1. A batch is a card: its title, who proposed it, how many changes, the kinds; the newest waiting batch is open.
+ *   1. A batch is a card: its title, who proposed it, how many changes, the kinds; waiting batches read OLDEST first
+ *      and the oldest is open.
  *   2. Each kind reads as before and after: page words word by word, a variable before and after, an event as a
  *      small card, season goals row by row with a reorder and a rewording, a whole document with a field taken out.
  *   3. Flags come off the route: whole document, public page, money words, a calendar event, priorities.
@@ -11,6 +12,8 @@
  *   7. A failure keeps its reason on its card; an accept that did not finish says so.
  *   8. The filters narrow by status, kind, page and proposer.
  *   9. The history shows who decided, what went live, the reader's edits and a reason a change did not land.
+ *  11. Conflicts (17 Nov 2026): two waiting changes that write the same thing name each other, a stale one says it
+ *      would put back older words, a summary counts them, and accepting the older asks once and never blocks.
  *  10. An accepted change offers "Propose putting it back" when it kept what was live before, which files a new
  *      proposal; otherwise one plain line says why. A waiting put-back says what it is.
  */
@@ -26,6 +29,7 @@ import ProposedChanges from "./ProposedChanges";
 
 afterEach(() => {
   cleanup();
+  BATCHES_SERVED = null;
   vi.unstubAllGlobals();
 });
 
@@ -34,6 +38,7 @@ const ROLE = {
   ...base,
   id: "pc_role",
   batchId: "pcb_1",
+  position: 0,
   kind: "role_card",
   target: { roleId: "fin" },
   targetLabel: "Lead Finance Steward card",
@@ -48,6 +53,7 @@ const PAGE = {
   ...base,
   id: "pc_page",
   batchId: "pcb_1",
+  position: 1,
   kind: "page_content",
   target: { section: "page-home" },
   targetLabel: "Home page",
@@ -112,6 +118,7 @@ const INVESTOR = {
   where: { label: "Investor page", href: "/investor" },
 };
 
+let BATCHES_SERVED: unknown[] | null = null;
 const BATCHES = [
   { id: "pcb_1", title: "Phase A content", by: "Sera Companion", byKind: "agent", at: "2026-11-12T10:00:00.000Z" },
   { id: "pcb_2", title: "Season and calendar", by: "Fern", byKind: "person", at: "2026-11-14T10:00:00.000Z" },
@@ -138,7 +145,7 @@ function stub(opts: { changes?: unknown[]; check?: unknown[]; accept?: unknown[]
       const method = init?.method ?? "GET";
       calls.push({ url: String(url), method, body: init?.body ? JSON.parse(String(init.body)) : null });
       const json = (b: unknown) => ({ ok: true, status: 200, json: async () => b });
-      if (url === "/api/admin/proposals" && method === "GET") return json({ timezone: "America/Costa_Rica", batches: BATCHES, changes: opts.changes ?? [ROLE, PAGE], decided: opts.decided ?? [] });
+      if (url === "/api/admin/proposals" && method === "GET") return json({ timezone: "America/Costa_Rica", batches: BATCHES_SERVED ?? BATCHES, changes: opts.changes ?? [ROLE, PAGE], decided: opts.decided ?? [] });
       if (String(url).endsWith("/check")) return json({ results: opts.check ?? [] });
       if (String(url).endsWith("/accept")) return opts.acceptBroken ? { ok: false, status: 500, json: async () => ({ error: "Internal error" }) } : json({ results: opts.accept ?? [] });
       if (String(url).endsWith("/discard")) return json({ results: [] });
@@ -151,23 +158,26 @@ function stub(opts: { changes?: unknown[]; check?: unknown[]; accept?: unknown[]
 const openBatch = (id: string) => fireEvent.click(screen.getByTestId(`batch-toggle-${id}`));
 
 describe("a batch is a card", () => {
-  it("names the batch, who proposed it, how many changes and the kinds, and opens the newest", async () => {
-    stub({ changes: [ROLE, PAGE, DIAL, EVENT] });
+  it("names the batch, who proposed it, how many changes and the kinds, and opens the oldest", async () => {
+    // Served newest first, read oldest first, and the page says so.
+    stub({ changes: [DIAL, EVENT, PAGE, ROLE] });
+    BATCHES_SERVED = [BATCHES[1], BATCHES[0]];
     render(<ProposedChanges />);
     const older = await screen.findByTestId("batch-pcb_1");
     const newer = screen.getByTestId("batch-pcb_2");
-    // Waiting first, newest batch first.
-    expect(newer.compareDocumentPosition(older) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(older.compareDocumentPosition(newer) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByTestId("waiting-order").textContent).toBe("Oldest first, so you accept in the order they were proposed.");
     expect(within(older).getByRole("heading", { name: "Phase A content" })).toBeTruthy();
     expect(within(older).getByTestId("batch-summary").textContent).toMatch(/2 changes, landing on Roles page and Home page/);
     expect(within(older).getByTestId("batch-facts").textContent).toContain("Sera Companion, an agent");
     expect(within(older).getByTestId("batch-kinds").textContent).toMatch(/Role card.*Page words/);
-    // The newest batch is open; the older one lists its changes in one line each until opened.
+    // The oldest batch is open, its changes in the batch's own order; the newer lists its changes in one line each until opened.
+    const role = within(older).getByTestId("proposal-pc_role");
+    expect(role.compareDocumentPosition(within(older).getByTestId("proposal-pc_page")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(newer).queryByTestId("proposal-pc_dial")).toBeNull();
+    expect(within(newer).getByTestId("row-pc_dial").textContent).toContain("Promise a reply within ten days.");
+    openBatch("pcb_2");
     expect(within(newer).getByTestId("proposal-pc_dial")).toBeTruthy();
-    expect(within(older).queryByTestId("proposal-pc_role")).toBeNull();
-    expect(within(older).getByTestId("row-pc_role").textContent).toContain("Give the card a clearer aim.");
-    openBatch("pcb_1");
-    expect(within(older).getByTestId("proposal-pc_role")).toBeTruthy();
   });
 });
 
@@ -410,5 +420,70 @@ describe("propose putting it back", () => {
     render(<ProposedChanges />);
     const card = await screen.findByTestId("proposal-pc_dial");
     expect(within(card).getByTestId("puts-back").textContent).toBe("Puts back an earlier change");
+  });
+});
+
+describe("conflicts", () => {
+  // Two waiting changes on the same card's aim, a day apart, and a third drafted before a later accept.
+  const OLD_AIM = { ...ROLE, id: "pc_aim_old", batchId: "pcb_1", position: 0, summary: "Older aim", at: "2026-11-12T10:00:00.000Z" };
+  const NEW_AIM = { ...ROLE, id: "pc_aim_new", batchId: "pcb_2", position: 0, summary: "Newer aim", at: "2026-11-14T10:00:00.000Z", body: { words: { aim: "Tend the money." } } };
+  const STALE_PAGE = { ...PAGE, batchId: "pcb_2", position: 1, at: "2026-11-14T10:00:00.000Z", stale: [{ id: "pc_done", summary: "Warmer headline", acceptedAt: "2026-11-15T10:00:00.000Z" }] };
+
+  it("names the other change on both cards, flags a stale one, and counts them at the top", async () => {
+    stub({ changes: [NEW_AIM, OLD_AIM, STALE_PAGE] });
+    render(<ProposedChanges />);
+    const older = await screen.findByTestId("proposal-pc_aim_old");
+    expect(within(older).getByTestId("conflict-flags").textContent).toBe("Also changed by “Newer aim”, proposed later. Accept one, then look again.");
+    openBatch("pcb_2");
+    const newer = screen.getByTestId("proposal-pc_aim_new");
+    expect(within(newer).getByTestId("conflict-flags").textContent).toBe("Also changed by “Older aim”, proposed earlier. Accept one, then look again.");
+    const page = screen.getByTestId("proposal-pc_page");
+    expect(within(page).getByTestId("conflict-flags").textContent).toBe("Drafted before “Warmer headline” was accepted. Accepting it would put back older words.");
+    const summary = screen.getByTestId("conflict-summary").textContent;
+    expect(summary).toContain("One pair of waiting changes writes the same thing.");
+    expect(summary).toContain("One waiting change was drafted before a later accept.");
+  });
+
+  it("a change on another field of the same card raises nothing", async () => {
+    stub({ changes: [OLD_AIM, { ...NEW_AIM, body: { words: { domain: "The ledger." } } }] });
+    render(<ProposedChanges />);
+    const older = await screen.findByTestId("proposal-pc_aim_old");
+    expect(within(older).queryByTestId("conflict-flags")).toBeNull();
+    expect(screen.queryByTestId("conflict-summary")).toBeNull();
+  });
+
+  it("accepting the older asks once, Not yet takes it back, and Yes accepts it anyway", async () => {
+    const calls = stub({ changes: [OLD_AIM, NEW_AIM], check: [{ id: "pc_aim_old", ok: true }], accept: [{ id: "pc_aim_old", ok: true }] });
+    render(<ProposedChanges />);
+    const older = await screen.findByTestId("proposal-pc_aim_old");
+    fireEvent.click(within(older).getByTestId("accept-pc_aim_old"));
+    expect(within(older).getByTestId("conflict-confirm-pc_aim_old").textContent).toContain("A later change also edits this. Accept this one anyway?");
+    expect(calls.some((c) => c.url.endsWith("/check") || c.url.endsWith("/accept"))).toBe(false);
+    fireEvent.click(within(older).getByTestId("conflict-confirm-no-pc_aim_old"));
+    expect(within(older).queryByTestId("conflict-confirm-pc_aim_old")).toBeNull();
+    fireEvent.click(within(older).getByTestId("accept-pc_aim_old"));
+    fireEvent.click(within(older).getByTestId("conflict-confirm-yes-pc_aim_old"));
+    await screen.findByTestId("accept-outcome");
+    expect(calls.find((c) => c.url.endsWith("/accept"))!.body.items.map((i: any) => i.id)).toEqual(["pc_aim_old"]);
+  });
+
+  it("the newer accepts without a question, and an accept that went live over a newer one says so", async () => {
+    const calls = stub({ changes: [OLD_AIM, NEW_AIM], check: [{ id: "pc_aim_new", ok: true }], accept: [{ id: "pc_aim_new", ok: true, stale: [{ id: "pc_x", summary: "Someone else's aim" }] }] });
+    render(<ProposedChanges />);
+    await screen.findByTestId("proposal-pc_aim_old");
+    openBatch("pcb_2");
+    fireEvent.click(screen.getByTestId("accept-pc_aim_new"));
+    expect(screen.queryByTestId("conflict-confirm-pc_aim_new")).toBeNull();
+    await screen.findByTestId("accept-outcome");
+    expect(calls.some((c) => c.url.endsWith("/accept"))).toBe(true);
+    expect(screen.getByTestId("accept-older").textContent).toBe("“Newer aim” was drafted before “Someone else's aim” was accepted. Look at its page to check the words.");
+  });
+
+  it("Accept all on a batch with a later conflict says so in its one question", async () => {
+    stub({ changes: [OLD_AIM, NEW_AIM] });
+    render(<ProposedChanges />);
+    const batch = await screen.findByTestId("batch-pcb_1");
+    fireEvent.click(within(batch).getByTestId("batch-accept-all"));
+    expect(within(batch).getByTestId("batch-confirm-conflict").textContent).toBe("A later change also edits one of these.");
   });
 });
