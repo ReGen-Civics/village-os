@@ -35,6 +35,7 @@ export const CHANGE_FACES = [
   "season_priorities",
   "onboarding",
   "calendar_event",
+  "meeting_agenda",
   "admin_setting",
 ] as const;
 export type ChangeFace = (typeof CHANGE_FACES)[number];
@@ -68,6 +69,8 @@ export function faceOf(kind: ProposalKind, route: RouteRef): ChangeFace {
       return "season_priorities";
     case "onboarding_path":
       return "onboarding";
+    case "session_agenda":
+      return "meeting_agenda";
     case "setting":
       return CALENDAR_ROUTE.test(route.path) && route.path !== "/api/admin/events/calendars" ? "calendar_event" : "admin_setting";
   }
@@ -379,4 +382,28 @@ export function goalLines(value: unknown): Array<{ text: string; done: boolean }
   const goals = value && typeof value === "object" ? (value as Record<string, unknown>).goals : null;
   if (!Array.isArray(goals)) return [];
   return goals.map((g) => (g && typeof g === "object" ? { text: String((g as Record<string, unknown>).text ?? ""), done: !!(g as Record<string, unknown>).done } : { text: String(g ?? ""), done: false }));
+}
+
+// ── A meeting's agenda ──────────────────────────────────────────────────────
+
+/** One proposed agenda item as the review card lists it. */
+export interface AgendaLine {
+  title: string;
+  kind: string;
+  detail: string;
+  ownerRole: string;
+}
+
+/**
+ * The items a `session_agenda` proposal would add, in order, read leniently from the body the person would accept
+ * (their edits included), so the card shows what they are about to accept even before it passes the check.
+ */
+export function agendaLines(body: unknown): AgendaLine[] {
+  const items = body && typeof body === "object" ? (body as Record<string, unknown>).items : null;
+  if (!Array.isArray(items)) return [];
+  const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  return items.map((it) => {
+    const o = it && typeof it === "object" ? (it as Record<string, unknown>) : {};
+    return { title: s(o.title), kind: s(o.kind), detail: s(o.detail), ownerRole: s(o.ownerRole) };
+  });
 }

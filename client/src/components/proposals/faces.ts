@@ -3,7 +3,7 @@
  * the macros that compile them.
  * Keyed by the unions in shared/proposalReview.ts, so a new face or flag fails the compiler here.
  */
-import { CalendarDays, CalendarPlus, Coins, Files, FileText, Footprints, Globe2, Layers, Link2, ListChecks, MessageCircleQuestion, Settings2, SlidersHorizontal, Sprout, UserRound, type LucideIcon } from "lucide-react";
+import { CalendarDays, CalendarPlus, ClipboardList, Coins, Files, FileText, Footprints, Globe2, Layers, Link2, ListChecks, MessageCircleQuestion, Settings2, SlidersHorizontal, Sprout, UserRound, type LucideIcon } from "lucide-react";
 import type { ChangeFace, ChangeFlag } from "@shared/proposalReview";
 
 export const FACE_ICON: Record<ChangeFace, LucideIcon> = {
@@ -16,6 +16,7 @@ export const FACE_ICON: Record<ChangeFace, LucideIcon> = {
   season_priorities: Sprout,
   onboarding: Footprints,
   calendar_event: CalendarDays,
+  meeting_agenda: ClipboardList,
   admin_setting: Settings2,
 };
 

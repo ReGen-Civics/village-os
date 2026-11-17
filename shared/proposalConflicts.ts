@@ -80,6 +80,8 @@ export function footprintOf(kind: ProposalKind, target: Record<string, unknown>,
       return fields(path, out);
     }
     case "faq_add":
+    // Agenda items are each made new, so they never write over anything.
+    case "session_agenda":
       return null;
     case "faq_edit":
     case "faq_remove":

@@ -36,6 +36,7 @@
  * given the focus.
  */
 import { useEffect, useRef, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { ChevronDown } from "lucide-react";
 import { AIM_DEFS } from "@shared/sessions";
@@ -53,7 +54,7 @@ import {
   type LibraryPayload,
 } from "@shared/sessionLibrary";
 import { gameFetch } from "@/lib/gameApi";
-import BroughtForm, { type BroughtValues } from "./BroughtForm";
+import BroughtForm, { type BroughtValues, type CircleMeetings } from "./BroughtForm";
 import ClampedNote from "./ClampedNote";
 import { useHash } from "./useHash";
 import { BTN_DANGER, BTN_QUIET, BTN_SECONDARY, CHIP, HINT, LABEL_CAPS, PANEL } from "./roomUi";
@@ -105,10 +106,17 @@ function StatusLine({ card }: { card: LibraryCard }) {
   );
 }
 
+/** "For the Thursday sync": which of its circle's meetings an item waits for. */
+function ForMeeting({ name }: { name: string | null }) {
+  const { t } = useLingui();
+  return <p className="mt-1 text-sm text-muted-foreground">{name ? t({ message: `For the meeting: ${name}`, context: "agenda item, the meeting it waits for" }) : t`For one of the circle's meetings`}</p>;
+}
+
 function BroughtCard({
   card,
   circles,
   myCircleIds,
+  meetings,
   lit,
   onChanged,
   onGone,
@@ -116,6 +124,7 @@ function BroughtCard({
   card: LibraryCard;
   circles: { id: string; name: string }[];
   myCircleIds: readonly string[];
+  meetings?: CircleMeetings;
   lit: boolean;
   onChanged: () => Promise<void> | void;
   onGone: () => void;
@@ -166,17 +175,18 @@ function BroughtCard({
   };
 
   const startEdit = () => {
-    opened.current = { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId };
+    opened.current = { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId, rhythmKey: card.rhythmKey ?? null };
     setMode("edit");
   };
 
   const save = (v: BroughtValues) => {
-    const was = opened.current ?? { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId };
+    const was = opened.current ?? { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId, rhythmKey: card.rhythmKey ?? null };
     const patch: Record<string, unknown> = {};
     if (v.title !== was.title) patch.title = v.title;
     if (v.aim !== was.aim) patch.aim = v.aim;
     if ((v.note ?? null) !== (was.note ?? null)) patch.note = v.note ?? "";
     if (card.canMoveCircle && v.circleId !== was.circleId) patch.circleId = v.circleId;
+    if ((v.rhythmKey ?? null) !== (was.rhythmKey ?? null)) patch.rhythmKey = v.rhythmKey ?? null;
     if (!Object.keys(patch).length) {
       backToRead();
       return;
@@ -195,9 +205,10 @@ function BroughtCard({
           idBase={`brought-edit-${card.id}`}
           circles={circles}
           myCircleIds={myCircleIds}
-          initial={opened.current ?? { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId }}
+          initial={opened.current ?? { title: card.title, aim: card.aim, note: card.note, circleId: card.circleId, rhythmKey: card.rhythmKey ?? null }}
           initialCircleName={card.circleName}
           circleLocked={!card.canMoveCircle}
+          meetings={meetings}
           busy={busy}
           error={error}
           onSubmit={save}
@@ -211,6 +222,7 @@ function BroughtCard({
             <span>{card.mine ? LIBRARY_COPY.broughtByYou(when) : LIBRARY_COPY.broughtBy(card.broughtBy, when)}</span>
           </p>
           {card.source && <p className="mt-1 text-sm text-muted-foreground">{LIBRARY_SOURCE_LINE[card.source.kind](card.source.label)}</p>}
+          {card.rhythmKey && <ForMeeting name={card.rhythmName ?? meetings?.[card.circleId ?? ""]?.find((m) => m.key === card.rhythmKey)?.label ?? null} />}
           <StatusLine card={card} />
           {card.changedBy && <p className="mt-1 text-xs text-muted-foreground">{LIBRARY_COPY.changedBy(card.changedBy)}</p>}
           {card.note && <ClampedNote text={card.note} />}
@@ -267,10 +279,13 @@ function BroughtCard({
 export default function WaitingForCircle({
   library,
   circles,
+  meetings,
   onChanged,
 }: {
   library: LibraryPayload;
   circles: { id: string; name: string }[];
+  /** Each circle's meetings, from Coming up, for "Which meeting is it for?" (0401). */
+  meetings?: CircleMeetings;
   onChanged: () => Promise<void> | void;
 }) {
   const [adding, setAdding] = useState(false);
@@ -332,7 +347,7 @@ export default function WaitingForCircle({
   const add = async (v: BroughtValues) => {
     setBusy(true);
     setError(null);
-    const said = await send(LIBRARY_API, "POST", { title: v.title, aim: v.aim, note: v.note, circleId: v.circleId });
+    const said = await send(LIBRARY_API, "POST", { title: v.title, aim: v.aim, note: v.note, circleId: v.circleId, ...(v.rhythmKey ? { rhythmKey: v.rhythmKey } : {}) });
     if (said) {
       setBusy(false);
       setError(said);
@@ -348,6 +363,7 @@ export default function WaitingForCircle({
     card: c,
     circles,
     myCircleIds: library.myCircleIds,
+    meetings,
     lit: lit === c.id,
     onChanged,
     // A withdrawn card leaves; the focus goes to the section's heading.
@@ -369,6 +385,7 @@ export default function WaitingForCircle({
               idBase="brought-new"
               circles={circles}
               myCircleIds={library.myCircleIds}
+              meetings={meetings}
               busy={busy}
               error={error}
               onSubmit={(v) => void add(v)}

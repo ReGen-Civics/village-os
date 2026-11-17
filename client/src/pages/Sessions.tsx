@@ -69,7 +69,7 @@ import {
   cleanLine,
   type SessionListRow,
 } from "@shared/sessions";
-import { LIBRARY_COPY, LIBRARY_REFUSALS, offeredFor, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
+import { LIBRARY_COPY, LIBRARY_REFUSALS, offeredFor, waitsForMeeting, type LibraryCard, type LibraryPayload } from "@shared/sessionLibrary";
 import { RHYTHM_COPY, type ComingUpPayload, type ComingUpRow } from "@shared/sessionRhythm";
 import { TEMPLATES_API, type SessionTemplate, type TemplatesPayload } from "@shared/sessionTemplates";
 import Layout from "@/components/Layout";
@@ -128,6 +128,16 @@ const inRange = (n: number) =>
   Number.isInteger(n) && n >= SESSION_LIMITS.durationMin && n <= SESSION_LIMITS.durationMax;
 
 /** Tolerant read: a missing or odd field reads as empty, never as a crash. */
+/** Each circle's meetings, from Coming up, for "Which meeting is it for?": a rhythm's name, or how it meets. */
+function meetingsOf(comingUp: ComingUpPayload): Record<string, { key: string; label: string }[]> {
+  const out: Record<string, { key: string; label: string }[]> = {};
+  for (const row of comingUp.rows) {
+    const lines = Array.isArray(row.rhythms) ? row.rhythms : [];
+    out[row.circleId] = lines.map((l) => ({ key: l.key, label: l.name ? `${l.name} (${l.words})` : l.words }));
+  }
+  return out;
+}
+
 function readPayload(body: unknown): ListPayload {
   const b = (body && typeof body === "object" ? body : {}) as Record<string, unknown>;
   const rows = (v: unknown): SessionListRow[] =>
@@ -330,7 +340,10 @@ export default function Sessions() {
     setDuration(String(row.durationMin));
     setDurationTouched(true);
     const items = load.kind === "ready" ? load.data.library.items : [];
-    setPicked(offeredFor(items, row.circleId).filter((c) => c.circleId === row.circleId).map((c) => c.id));
+    // An item for another of the circle's meetings is offered, and left for the person to choose (0401).
+    const keys = new Set((row.rhythms ?? []).map((l) => l.key));
+    const meetingKey = row.nextFrom === "rhythm" ? (row.nextRhythmKey ?? null) : null;
+    setPicked(offeredFor(items, row.circleId).filter((c) => c.circleId === row.circleId && waitsForMeeting(c.rhythmKey, meetingKey, keys)).map((c) => c.id));
     setStartError(null);
     startForm.current?.closest("section")?.scrollIntoView?.({ block: "start" });
     window.requestAnimationFrame(() => document.getElementById("sessions-start-title")?.focus({ preventScroll: true }));
@@ -468,7 +481,7 @@ export default function Sessions() {
                   onGetReady={getReady}
                   onChanged={fetchList}
                 />
-                <WaitingForCircle library={load.data.library} circles={load.data.circles} onChanged={fetchList} />
+                <WaitingForCircle library={load.data.library} circles={load.data.circles} meetings={meetingsOf(load.data.comingUp)} onChanged={fetchList} />
                 <CircleDecisions circles={load.data.circles} keepCircleIds={load.data.comingUp.keepCircleIds} myCircleIds={load.data.library.myCircleIds} />
                 <AdviceProcess />
                 <CirclePulse circles={load.data.circles} keepCircleIds={load.data.comingUp.keepCircleIds} myCircleIds={load.data.library.myCircleIds} />

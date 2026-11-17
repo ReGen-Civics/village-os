@@ -3,13 +3,15 @@
  * door is the "Doors" list in shared/sessionRhythm.ts, the contract, and every
  * rule behind a door is server/lib/sessionRhythm.ts:
  *
- *   PUT    /api/sessions/circles/:circleId/rhythm        RhythmInput -> { row }
- *   POST   /api/sessions/circles/:circleId/rhythm/skip   { key } -> { row }
+ *   PUT    /api/sessions/circles/:circleId/rhythm        RhythmInput (+ rhythmKey?) -> { row }
+ *   POST   /api/sessions/circles/:circleId/rhythms       RhythmInput -> { row, rhythmKey }, another rhythm (0401)
+ *   POST   /api/sessions/circles/:circleId/rhythm/skip   { key, rhythmKey? } -> { row }
  *   GET    /api/sessions/circles/:circleId/summary       CircleSessionsSummary
- *   PUT    /api/sessions/circles/:circleId/calendar      { url } -> { ownCalendar, read, row }
+ *   PUT    /api/sessions/circles/:circleId/calendar      { url, titleFilter? } -> { ownCalendar, read, row }
+ *   PATCH  /api/sessions/circles/:circleId/calendar      { titleFilter } -> { ownCalendar, row }
  *   DELETE /api/sessions/circles/:circleId/calendar      -> { row }
  *
- * The last two attach and detach a circle's own calendar (the contract is
+ * The last three attach, filter and detach a circle's own calendar (the contract is
  * shared/sessionCalendar.ts). Each attach is read at once from outside, so
  * they share a daily bucket of their own.
  *
@@ -43,9 +45,11 @@ import { mirrorRhythms } from "../lib/sessionCalendar";
 import {
   COMING_UP_EVERY_MS,
   COMING_UP_JOB,
+  addRhythm,
   attachOwnCalendarFor,
   circleSummary,
   detachOwnCalendarFor,
+  filterOwnCalendarFor,
   runComingUpNotes,
   setRhythm,
   skipMeeting,
@@ -114,6 +118,12 @@ export function register(app: Express, deps: Deps): void {
     answer(res, await mirrored(await setRhythm(getPool(), who, circleIdOf(req), req.body, rhythm)), (v) => ({ row: v.row }));
   });
 
+  app.post(`${CIRCLES_API}/:circleId/rhythms`, async (req, res) => {
+    const who = await signedIn(req, res, true);
+    if (!who) return;
+    answer(res, await mirrored(await addRhythm(getPool(), who, circleIdOf(req), req.body, rhythm)), (v) => ({ row: v.row, rhythmKey: v.rhythmKey }));
+  });
+
   app.post(`${CIRCLES_API}/:circleId/rhythm/skip`, async (req, res) => {
     const who = await signedIn(req, res, true);
     if (!who) return;
@@ -135,6 +145,12 @@ export function register(app: Express, deps: Deps): void {
     const who = await ownCalendarAsker(req, res);
     if (!who) return;
     answer(res, await attachOwnCalendarFor(getPool(), who, circleIdOf(req), req.body, rhythm), (v) => v);
+  });
+
+  app.patch(`${CIRCLES_API}/:circleId/calendar`, async (req, res) => {
+    const who = await ownCalendarAsker(req, res);
+    if (!who) return;
+    answer(res, await filterOwnCalendarFor(getPool(), who, circleIdOf(req), req.body, rhythm), (v) => v);
   });
 
   app.delete(`${CIRCLES_API}/:circleId/calendar`, async (req, res) => {

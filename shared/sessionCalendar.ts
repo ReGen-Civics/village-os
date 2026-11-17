@@ -66,7 +66,13 @@ import { circleWords } from "./sessionTasks";
  */
 export const FOLLOW_API = `${CIRCLES_API}/following`;
 
-/** Attach (PUT `{ url }`) or detach (DELETE) a circle's own calendar: the circle's members and admins. */
+/**
+ * Attach (PUT `{ url, titleFilter? }`), filter (PATCH `{ titleFilter }`) or
+ * detach (DELETE) a circle's own calendar: the circle's members and admins.
+ * The filter (0401) is a word or phrase: only events whose title holds it
+ * count as the circle's meetings, so a calendar with other things on it can
+ * be attached safely. "" counts every timed event, as before.
+ */
 export function ownCalendarUrl(circleId: string): string {
   return `${CIRCLES_API}/${encodeURIComponent(circleId)}/calendar`;
 }
@@ -80,6 +86,8 @@ export const EVERY_CIRCLE = "*";
 export const MIRROR_SOURCE = "sessions";
 
 export const CALENDAR_LIMITS = {
+  /** A circle's own calendar's title filter, at most. */
+  titleFilter: 80,
   /** New addresses, per member, per day. */
   keysPerDay: 10,
   /** Saves of the circles followed, per member, per hour. */
@@ -127,6 +135,30 @@ export interface OwnCalendarView {
   lastReadAt: string | null;
   /** How the last read went. */
   status: "ok" | "failed" | "never";
+  /** The word an event's title must hold to count, or null for every timed event (0401). Absent from an older server. */
+  titleFilter?: string | null;
+}
+
+/** Text folded for a match: lower case, accents off, spaces collapsed, so "Reunión" holds "reunion". */
+function fold(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/** Does an event's title hold the filter? An empty filter takes every title. */
+export function titleMatches(title: string, filter: string | null | undefined): boolean {
+  const f = fold(filter ?? "");
+  return !f || fold(title).includes(f);
+}
+
+/** A title filter from a body: one line, clipped, "" for none. */
+export function readTitleFilter(v: unknown): string {
+  if (typeof v !== "string") return "";
+  return v.replace(/[\u0000-\u001f\u007f]/g, "").replace(/\s+/g, " ").trim().slice(0, CALENDAR_LIMITS.titleFilter).trim();
+}
+
+/** The village calendar's title for one of a circle's named rhythms: "Anchor circle: Thursday sync". */
+export function rhythmMeetingTitle(circleName: string, rhythmName: string | null | undefined): string {
+  return rhythmName ? `${circleWords(circleName)}: ${rhythmName}` : meetingTitle(circleName);
 }
 
 export interface FollowInput {
