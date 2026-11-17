@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.20 (2026-11-17)
+
+### What changed for your village
+
+- **An accepted change can be put back, by the same review.** On the review page, an accepted change now keeps what was live just before it, and its card offers "Propose putting it back". That files a new proposal carrying the earlier value, marked "Puts back an earlier change". It changes nothing by itself: someone accepts it like any other proposal. Some changes cannot be put back this way, and the card says why in one line: a change that made something new or took something away, season goals, a field the change added, a change accepted before this release (nothing was kept then), and a change that already has a put-back waiting.
+- **Each side of the no-sign band is its own village setting.** The band is the range around the valuation engine's suggested pay or price where one person's word is enough. It was the same distance under and over the suggestion. Two settings in Admin now set each side: "How far under the suggestion one person may set pay" (`valuation.band_below_pct`) and its partner for above (`valuation.band_above_pct`), each a whole percent from 0 to 100. Setting 20 under and 0 over, for example, gives a band from 80% to 100% of the suggestion. Both are blank by default, and blank follows the valuation model, so the band stays where it was. The role pay screen and the pricing desk now say the band in words.
+- Two form tests now wait for the coming-soon note, which loads after the form. Villages see no difference.
+
+### What you must do
+
+Nothing. Both band settings start blank, so nothing moves until a village sets one. Accepted changes from before this release show "nothing kept" and offer no put-back.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.19 undo it |
+|---|---|---|
+| `0400_a_proposal_keeps_what_was_live` | Adds two empty columns to proposed changes (what was live before an accept, and which change a proposal puts back) and an index on the second. Changes no existing value. From now on each accept fills in the first column. | No. The columns and the index stay and 1.3.19 ignores them, so going back is safe. Values kept while on 1.3.20 stay in place. |
+
+### Merged pull requests
+
+- #1421 Review page: propose putting an accepted change back
+- #1427 Batch 191: ProposeARole tests wait for the lazy note (#1426)
+- #1428 Let a village set each side of the valuation engine's no-sign band
+
+---
+
 ## 1.3.19 (2026-11-16)
 
 ### What changed for your village
