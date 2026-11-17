@@ -2722,9 +2722,11 @@ export async function exportMemberSessions(pool: Pool, userId: string): Promise<
   /** Meeting templates (0291): what they shared around the talking stick, and the priorities they wrote. */
   heartShares: Record<string, unknown>[];
   prioritiesWritten: Record<string, unknown>[];
+  /** Each week's top priority they named (shared/priorities.ts). */
+  weekPriorities: Record<string, unknown>[];
 }> {
   const no = await memberNo(pool, userId);
-  if (no == null) return { sessions: [], items: [], entries: [], responses: [], tasks: [], taskAnswers: [], library: [], libraryTakes: [], libraryNotes: [], rhythmsSet: [], circlesFollowed: [], calendarAddress: [], ownCalendarsAttached: [], reviewsSet: [], adviceAsked: [], adviceGiven: [], filledIn: [], agendaVotes: [], heartShares: [], prioritiesWritten: [] };
+  if (no == null) return { sessions: [], items: [], entries: [], responses: [], tasks: [], taskAnswers: [], library: [], libraryTakes: [], libraryNotes: [], rhythmsSet: [], circlesFollowed: [], calendarAddress: [], ownCalendarsAttached: [], reviewsSet: [], adviceAsked: [], adviceGiven: [], filledIn: [], agendaVotes: [], heartShares: [], prioritiesWritten: [], weekPriorities: [] };
   const sessions = (await repo.memberSessionRows(pool, no)).map((r) => ({
     id: Number(r.id),
     title: String(r.title ?? ""),
@@ -2819,8 +2821,8 @@ export async function exportMemberSessions(pool: Pool, userId: string): Promise<
     at: toIso(r.updated_at),
   }));
   // Meeting templates (0291): what they shared around the talking stick, and the priorities they wrote.
-  const { shares: heartShares, priorities: prioritiesWritten } = await exportTemplatesFor(pool, no);
-  return { sessions, items, entries, responses, tasks, taskAnswers, library, libraryTakes, libraryNotes, rhythmsSet, circlesFollowed, calendarAddress, ownCalendarsAttached, reviewsSet, adviceAsked, adviceGiven, filledIn, agendaVotes, heartShares, prioritiesWritten };
+  const { shares: heartShares, priorities: prioritiesWritten, weekPriorities } = await exportTemplatesFor(pool, no);
+  return { sessions, items, entries, responses, tasks, taskAnswers, library, libraryTakes, libraryNotes, rhythmsSet, circlesFollowed, calendarAddress, ownCalendarsAttached, reviewsSet, adviceAsked, adviceGiven, filledIn, agendaVotes, heartShares, prioritiesWritten, weekPriorities };
 }
 
 /**

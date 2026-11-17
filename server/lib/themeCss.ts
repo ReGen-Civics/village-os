@@ -16,9 +16,13 @@
  * it were hostile — these fields are admin-written today, but "only admins
  * can inject a stylesheet" is not a security posture. The rules:
  *
- *  - The import URL must be https or a same-origin /api/uploads path, and is
+ *  - The import URL must be a same-origin /api/uploads path or https on an
+ *    allowed host (FONT_HOSTS, plus the village's own site address), and is
  *    emitted inside url("…") with quotes/backslashes/parens stripped, so it
- *    cannot close the wrapper and start a new rule.
+ *    cannot close the wrapper and start a new rule. Any https host used to
+ *    pass, so whoever held story.tell could make every visitor's browser call
+ *    a server of their choosing. The CSP's style-src and font-src name the
+ *    same hosts (server/lib/securityHeaders.ts), so the two agree.
  *  - Font stacks may contain only what a font stack is made of: names,
  *    quotes, commas, hyphens, digits, spaces. One brace or semicolon and the
  *    whole value is discarded rather than "cleaned" — a filter that repairs
@@ -92,7 +96,41 @@ export function sanitizeFontStack(value: unknown): string | null {
   return v;
 }
 
-export function sanitizeImportUrl(value: unknown): string | null {
+/**
+ * The outside hosts a village's fonts may come from: Google Fonts' stylesheet
+ * host and its font-file host. Everything else is the village's own (its
+ * uploads, its own site address) or refused.
+ */
+export const FONT_HOSTS: readonly string[] = ["https://fonts.googleapis.com", "https://fonts.gstatic.com"];
+
+/** The https origin of a URL, or null (blank, http:, not a URL). */
+function httpsOriginOf(raw: unknown): string | null {
+  const v = String(raw ?? "").trim();
+  if (!v) return null;
+  try {
+    const u = new URL(v);
+    return u.protocol === "https:" ? u.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The village's own font origins: its public site address (Admin's "Main
+ * website" link, `project.siteUrl` in the brand document) and the deployment's
+ * FRONTEND_URL. Only https ones count.
+ */
+export function villageFontOrigins(brand: unknown, frontendUrl: unknown = process.env.FRONTEND_URL): string[] {
+  const project = brand && typeof brand === "object" ? (brand as { project?: { siteUrl?: unknown } }).project : undefined;
+  const out = new Set<string>();
+  for (const raw of [project?.siteUrl, frontendUrl]) {
+    const o = httpsOriginOf(raw);
+    if (o) out.add(o);
+  }
+  return Array.from(out);
+}
+
+export function sanitizeImportUrl(value: unknown, ownOrigins: readonly string[] = []): string | null {
   if (typeof value !== "string") return null;
   const v = value.trim();
   if (!v || v.length > 500) return null;
@@ -101,6 +139,11 @@ export function sanitizeImportUrl(value: unknown): string | null {
   if (!/^https:\/\/[^\s]+$/.test(v) && !/^\/api\/uploads\/[A-Za-z0-9._-]+$/.test(v)) return null;
   // Characters that could terminate url("…") or smuggle a second rule.
   if (/["'()\\<>]/.test(v.replace(/^https:\/\//, ""))) return null;
+  // An https URL must be on an allowed host: Google Fonts or the village's own.
+  if (v.startsWith("https://")) {
+    const origin = httpsOriginOf(v);
+    if (!origin || !(FONT_HOSTS.includes(origin) || ownOrigins.includes(origin))) return null;
+  }
   return v;
 }
 
@@ -120,19 +163,24 @@ export function fontFormatOf(url: string): string | null {
   return { woff2: "woff2", woff: "woff", ttf: "truetype", otf: "opentype" }[ext] ?? null;
 }
 
-export function buildThemeCss(theme: BrandThemeFields | null | undefined): string {
+/**
+ * `ownOrigins` is villageFontOrigins(brand): the village's own https hosts a
+ * font may come from besides Google Fonts. Left out, only uploads and Google
+ * Fonts pass.
+ */
+export function buildThemeCss(theme: BrandThemeFields | null | undefined, ownOrigins: readonly string[] = []): string {
   if (!theme) return "";
   const parts: string[] = [];
 
   // @import must precede every other rule — CSS discards it otherwise.
-  const importUrl = sanitizeImportUrl(theme.fontImportUrl);
+  const importUrl = sanitizeImportUrl(theme.fontImportUrl, ownOrigins);
   if (importUrl) parts.push(`@import url("${importUrl}");`);
 
   // The uploaded package. All three pieces — clean name, clean URL, known
   // format — or nothing: a partial declaration would LOOK configured while
   // rendering the fallback, which is the worst of both.
   const faceName = sanitizeFontName(theme.fontFaceName);
-  const faceUrl = sanitizeImportUrl(theme.fontFaceUrl);
+  const faceUrl = sanitizeImportUrl(theme.fontFaceUrl, ownOrigins);
   const faceFormat = faceUrl ? fontFormatOf(faceUrl) : null;
   if (faceName && faceUrl && faceFormat) {
     parts.push(
@@ -144,7 +192,7 @@ export function buildThemeCss(theme: BrandThemeFields | null | undefined): strin
   const seen = new Set(faceName && faceUrl && faceFormat ? [`${faceName}|${faceUrl}`] : []);
   for (const f of (Array.isArray(theme.fontFaces) ? theme.fontFaces : []).slice(0, 4)) {
     const name = sanitizeFontName(f?.family);
-    const url = sanitizeImportUrl(f?.url);
+    const url = sanitizeImportUrl(f?.url, ownOrigins);
     const format = url ? fontFormatOf(url) : null;
     const weight = /^[1-9]00( [1-9]00)?$/.test(String(f?.weight ?? "")) ? String(f!.weight) : "100 900";
     if (!name || !url || !format || seen.has(`${name}|${url}`)) continue;

@@ -337,7 +337,9 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
 
   it("completing a linked run hands in one claim for whoever completed it, rings the other stewards, and a repeat opens none", async () => {
     const run = "run-shed-00000001";
-    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1 } });
+    // A past start, as the other runs here have: the route clamps `at` to between the start and
+    // now, so a run that starts today would move the note to today's date.
+    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1, startedAt: "2026-11-16T09:00:00.000Z" } });
     // Set aside, never complete: a run that is set aside claims nothing.
     const aside = "run-shed-aside-01";
     await call("POST /api/protocols/runs", { body: { id: aside, protocolId: "shed", version: 1 } });

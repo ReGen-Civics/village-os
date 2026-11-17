@@ -248,6 +248,64 @@ export function labelsFor(kind: ProposalKind, target: Record<string, unknown>, b
   return out;
 }
 
+/** Where a change lands: the page a visitor or member reads it on, and its address, for "See it live". */
+export interface Where {
+  label: string;
+  href: string | null;
+}
+
+const SETTING_PAGES: ReadonlyArray<[RegExp, (m: RegExpMatchArray) => Where]> = [
+  [/^\/api\/admin\/investor-summary$/, () => ({ label: "Investor page", href: "/investor" })],
+  [/^\/api\/admin\/events(?:\/[^/]+)?$/, () => ({ label: "Calendar", href: "/events" })],
+  [/^\/api\/admin\/brand(?:\/.*)?$/, () => ({ label: "Home page", href: "/" })],
+  [/^\/api\/admin\/visit-config$/, () => ({ label: "Visit page", href: "/visit" })],
+  [/^\/api\/admin\/work-with-us-config$/, () => ({ label: "Work with us page", href: "/work-with-us" })],
+  [/^\/api\/admin\/seasons$/, () => ({ label: "Season", href: "/admin?tab=season" })],
+  [/^\/api\/admin\/land$/, () => ({ label: "Map", href: "/map" })],
+  [/^\/api\/org\/role-edit\/([^/]+)$/, (m) => ({ label: "Roles page", href: `/roles?seat=${m[1]}` })],
+  [/^\/api\/org\/circles\/([^/]+)$/, (m) => ({ label: "Circles page", href: `/circles/${m[1]}` })],
+];
+
+/** Where this change lands, read off its kind and target; Admin when nothing nearer is known. */
+export function whereOf(kind: ProposalKind, target: Record<string, unknown>): Where {
+  const t = (k: string) => String(target[k] ?? "");
+  switch (kind) {
+    case "page_content": {
+      const spec = pageSpecForSection(t("section"));
+      return spec ? { label: `${spec.label} page`, href: spec.path } : { label: t("section"), href: null };
+    }
+    case "faq_add":
+    case "faq_edit":
+    case "faq_remove": {
+      const p = t("pathway");
+      return { label: `${p.charAt(0).toUpperCase()}${p.slice(1)} page`, href: `/${encodeURIComponent(p)}` };
+    }
+    case "role_card":
+      return { label: "Roles page", href: `/roles?seat=${encodeURIComponent(t("roleId"))}` };
+    case "role_listing":
+      return { label: "Roles page", href: "/roles" };
+    case "variable":
+      return { label: "Admin, Variables", href: "/admin?tab=variables" };
+    case "module_lifecycle":
+    case "module_config": {
+      const def = MODULES_BY_ID[t("id")];
+      return { label: def ? def.name : t("id"), href: def ? `/modules/${encodeURIComponent(def.id)}` : "/admin?tab=modules" };
+    }
+    case "season_goals":
+      return { label: "Season", href: "/admin?tab=season" };
+    case "onboarding_path":
+      return { label: "Onboarding path", href: "/profile" };
+    case "setting": {
+      const path = t("path");
+      for (const [re, at] of SETTING_PAGES) {
+        const m = path.match(re);
+        if (m) return at(m);
+      }
+      return { label: "Admin", href: "/admin" };
+    }
+  }
+}
+
 /** What is live now, in the proposal's shape. Null when there is nothing yet (a new FAQ) or it cannot be read. */
 export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<unknown> {
   try {

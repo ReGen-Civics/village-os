@@ -53,8 +53,12 @@
  *    Carriage returns are normalised first, as the HTML parser does.
  *  - style: 'unsafe-inline', because React writes style attributes and the
  *    dialog scroll lock injects a <style>. Styles cannot read the token.
- *    https: because a village's brand theme may @import any https font CSS
- *    (server/lib/themeCss.ts), and fonts follow it.
+ *    Outside hosts: Google Fonts (fonts.googleapis.com for styles,
+ *    fonts.gstatic.com for fonts) and the village's own site address, the
+ *    same list the theme accepts a font URL from (FONT_HOSTS and
+ *    villageFontOrigins in server/lib/themeCss.ts). It was https: while the
+ *    theme took any https host, which let a story.tell holder point every
+ *    visitor's browser at a server of their own.
  *  - img/media: https:, data:, blob:. Brand images and email previews may
  *    point anywhere; blob: is image previews and downloads.
  *  - connect: this origin and the beacon's collector. No chunk fetches
@@ -125,6 +129,7 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import type { NextFunction, Request, RequestHandler, Response } from "express";
+import { FONT_HOSTS, villageFontOrigins } from "./themeCss";
 
 /** The two URLs that serve the map artifact, and nothing else under /grounds/. */
 export const ARTIFACT_PATH = /^\/grounds\/(?:index|grounds-[A-Za-z0-9]+)\.html\/?$/i;
@@ -225,14 +230,18 @@ export function buildAppPolicy(opts: {
   scriptHashes: string[];
   analyticsOrigin?: string | null;
   reportUri?: string | null;
+  /** The village's own https font origins (villageFontOrigins). */
+  fontOrigins?: readonly string[];
 }): string {
   const extra = opts.analyticsOrigin ? [opts.analyticsOrigin] : [];
+  const own = (opts.fontOrigins ?? []).filter((o) => /^https:\/\/[A-Za-z0-9.-]+(:\d+)?$/.test(o));
+  const [fontCss, fontFiles] = FONT_HOSTS;
   return [
     "default-src 'self'",
     ["script-src 'self'", ...opts.scriptHashes, CLOUDFLARE_BEACON_SCRIPT, ...extra].join(" "),
-    "style-src 'self' 'unsafe-inline' https:",
+    ["style-src 'self' 'unsafe-inline'", fontCss, ...own].join(" "),
     "img-src 'self' data: blob: https:",
-    "font-src 'self' data: https:",
+    ["font-src 'self' data:", fontFiles, ...own].join(" "),
     ["connect-src 'self'", CLOUDFLARE_BEACON_CONNECT, ...extra].join(" "),
     "media-src 'self' data: blob: https:",
     "frame-src 'self'",
@@ -263,6 +272,8 @@ export interface SecurityHeaderOptions {
   /** The built SPA shell (dist/public/index.html), read for its inline-script hashes. */
   shellPath: string;
   env?: NodeJS.ProcessEnv;
+  /** The brand document, read for the village's own font hosts. */
+  getBrand?: () => unknown;
 }
 
 /**
@@ -281,15 +292,31 @@ export function securityHeaders(opts: SecurityHeaderOptions): RequestHandler {
     console.warn("[security-headers] CSP_REPORT_URI is not a plain https URL; sending no report directives.");
   }
   const artifactPolicy = buildArtifactPolicy(reportUri);
-  let appPolicy: string | null = null;
-  let fallback: string | null = null;
+  let appPolicy: { hashes: string[]; analytics: string | null } | null = null;
+  let fallback: { hashes: string[]; analytics: string | null } | null = null;
+  // The font hosts can change in Admin, so the policy is built per distinct
+  // list and kept for that list.
+  let built: { key: string; policy: string } | null = null;
+  const withFonts = (base: { hashes: string[]; analytics: string | null }): string => {
+    let origins: string[] = [];
+    try {
+      origins = villageFontOrigins(opts.getBrand?.(), env.FRONTEND_URL);
+    } catch {
+      origins = [];
+    }
+    const key = JSON.stringify([base, origins]);
+    if (built && built.key === key) return built.policy;
+    const policy = buildAppPolicy({ scriptHashes: base.hashes, analyticsOrigin: base.analytics, reportUri, fontOrigins: origins });
+    built = { key, policy };
+    return policy;
+  };
   let lookedAt = 0;
   let warnedMissing = false;
 
   const policyForApp = (): string => {
-    if (appPolicy) return appPolicy;
+    if (appPolicy) return withFonts(appPolicy);
     const now = Date.now();
-    if (fallback && now - lookedAt < 30_000) return fallback;
+    if (fallback && now - lookedAt < 30_000) return withFonts(fallback);
     lookedAt = now;
     let html: string | null = null;
     try {
@@ -297,14 +324,10 @@ export function securityHeaders(opts: SecurityHeaderOptions): RequestHandler {
     } catch {
       html = null;
     }
-    const built = buildAppPolicy({
-      scriptHashes: html ? inlineScriptHashes(html) : [],
-      analyticsOrigin: html ? analyticsOriginOf(html) : null,
-      reportUri,
-    });
-    if (html) appPolicy = built;
+    const base = { hashes: html ? inlineScriptHashes(html) : [], analytics: html ? analyticsOriginOf(html) : null };
+    if (html) appPolicy = base;
     else {
-      fallback = built;
+      fallback = base;
       // In production a missing shell means the path here and `staticPath`
       // in server/index.ts have come apart, and the shell's inline script is
       // being refused on every page. Say so once, naming the file.
@@ -313,7 +336,7 @@ export function securityHeaders(opts: SecurityHeaderOptions): RequestHandler {
         console.warn(`[security-headers] no shell at ${opts.shellPath}; its inline scripts get no hash and will be refused.`);
       }
     }
-    return built;
+    return withFonts(base);
   };
 
   return (req: Request, res: Response, next: NextFunction) => {

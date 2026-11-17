@@ -13,6 +13,7 @@ import SendTokensCard from "@/components/SendTokensCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
 import TimeZoneField from "@/components/TimeZoneField";
+import BookingLinkField from "@/components/BookingLinkField";
 import SeasonSummarySection from "@/components/seasonSummary/SeasonSummarySection";
 import MaturityLadder from "@/components/profile/MaturityLadder";
 import PowersMap from "@/components/profile/PowersMap";
@@ -73,6 +74,8 @@ import type { StageAdvance } from "@/components/StageAdvanced";
 import StagePanel from "@/components/profileDash/StagePanel";
 import TodayStrip from "@/components/profileDash/TodayStrip";
 import AsksPanel from "@/components/asks/AsksPanel";
+import MyWeekCard from "@/components/priorities/MyWeekCard";
+import RaisedAsksCard from "@/components/priorities/RaisedAsksCard";
 import YourCompanions from "@/components/profileDash/YourCompanions";
 import GuideChoiceCard from "@/components/guide/GuideChoiceCard";
 import TreasuryPanel from "@/components/profileDash/TreasuryPanel";
@@ -563,6 +566,16 @@ export default function Profile() {
               <AsksPanel />
             </div>
 
+            {/* THIS WEEK AND YOUR ASKS (shared/priorities.ts): your top priority, and where what you asked of a role sits. */}
+            {sessionsOn && (
+              <div id="my-week" className={`scroll-mt-28 empty:hidden ${tabOf("today")}`}>
+                <MyWeekCard />
+              </div>
+            )}
+            <div className={`empty:hidden ${tabOf("today")}`}>
+              <RaisedAsksCard />
+            </div>
+
             {/* YOUR COMPANIONS, beside the tasks on a desktop and on the Quests tab on a phone. */}
             <div className={tabOf("quests")}>
               <YourCompanions />
@@ -902,6 +915,7 @@ export default function Profile() {
                 </div>
               )}
               {user && <TimeZoneField /> /* role journey L6 */}
+              {user && <BookingLinkField /> /* applicants book a conversation with you through it */}
               {user && <CashOwedPanel /> /* 0285: cash owed, and the books for whoever holds cash.pay */}
               {user && <SeasonSummarySection /> /* idea 4: your season summed up, shareable as a picture */}
               {/* S47: on-chain holdings, renders nothing until the village turns the economics section on */}

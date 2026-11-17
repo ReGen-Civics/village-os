@@ -811,7 +811,8 @@ keep changing what it looks like and how its meeting flows.
 - **A template is a row, never code.** Name, category, a sentence on what it is for, the usual
   circle and length, and an ordered FLOW of sections. Each section has a kind, a title, a prompt
   and minutes. The kinds are `round`, `talking_stick`, `wins`, `agenda`, `priority_vote`,
-  `priorities_set`, `priorities_review`, `carried_over` and `close`; the words a member reads are
+  `priorities_set`, `priorities_review`, `carried_over`, `top_priorities`, `top_priorities_review`
+  and `close`; the words a member reads are
   always the section's own title and prompt.
 - **Who keeps them.** Every admitted member reads them. Making, changing, duplicating, ordering
   and archiving ask the one gate for `session.template`, which opens at the member rung, the same
@@ -870,6 +871,39 @@ keep changing what it looks like and how its meeting flows.
 - **Who writes in the room.** Moving the stick and setting or marking priorities is the
   facilitator, the secretary or a joined admin, while the room is open. Capturing a share and
   bringing one to a later session is anybody in the room.
+
+## Priorities everyone can see
+
+Contract `shared/priorities.ts`; rules `server/lib/priorities.ts`; statements
+`server/repos/priorities.ts`; doors under `/api/session-templates` (the week, the board, the room's
+acts) and beside the role tension doors (an ask's place in line). No new table: three `app_config`
+documents, each written under a row lock (`week-priorities`, `priority-board`, `ask-places`). From
+a team call: each person shares their top priority every week, the group sees its priorities on one
+ranked list, and whoever asks a role for something can see where it sits and roughly when it will be
+picked up, so nothing has to be chased.
+
+- **Each person's top priority for the week.** One line, and the season goal it serves if any. A
+  member sets it on their profile ("Your top priority this week"), or a Monday meeting captures it
+  in a `top_priorities` section: a person here sets their own, and the facilitator or the secretary
+  may type one in for anybody here. The line carries forward until it is replaced. A Friday
+  `top_priorities_review` section reads each person's line back, marked done, partly or carried
+  over by the person or a host. The seeded Monday and Friday templates carry both sections; a
+  village that already has them adds the sections in the template editor. "The season so far"
+  opens with this week's lines, by name, A to Z; a line older than eight weeks drops off.
+- **The priority board.** The group's priorities for the season, each with the season goal it
+  serves, an owner role and a status (not started, under way, done, set aside), on one ordered list
+  on "The season so far". The people who keep the meeting templates (`session.template`) add items
+  and change their words, owner and status. The ORDER is the circle's and moves only in a meeting:
+  under a `priority_vote` section a host puts the board's open items on the agenda, the room votes
+  them like any agenda item, the facilitator sets the order, and "Keep this order on the board"
+  writes it back. Keeping is refused until the order is set, so the board never takes a raw score.
+  A new item goes to the end.
+- **An ask's place in line.** Once a holder has taken a tension raised with their role, their row
+  in Waiting on you lets them say where it sits on their list and the week they expect to pick it up
+  (this week to 26 weeks ahead, kept as that week's Monday). Whoever raised it reads "Number 14 on
+  the role's list. Expected around the week of ..." on their profile, under "Where your asks sit".
+  An answer or a bring to the circle takes it off the line. Nothing counts days late. A task handed
+  to a role is a separate flow and has no place in line yet.
 
 ## How it rhymes with the rest of the game
 
@@ -950,7 +984,8 @@ gave reads as a member's with its note removed. A send they pressed reads as sen
 
 Meeting templates go in the same transaction (`forgetTemplatesFor`): what they said or kept around a
 talking stick is deleted, since its words are theirs, and a priority they wrote stays the circle's
-plan with its author set to 0.
+plan with its author set to 0. Their weekly top priorities go whole from the `week-priorities` document, and come with them in
+their export as `weekPriorities`.
 
 The agenda library goes in the same transaction too, after every session row is held: the items they
 brought go (their takes stay, holding no words), a take they made reads as taken by nobody, where they

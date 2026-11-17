@@ -33,6 +33,7 @@ import { languageOf } from "./applicantLanguage";
 import { STATUS_LINK_STARTS } from "../../shared/applicantWords";
 import { signLink } from "./comms/links";
 import { replyDaysFor } from "./foundingFirst";
+import type { BookingLink } from "../../shared/interviewBooking";
 
 const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
 
@@ -51,8 +52,10 @@ export interface UpdateFacts {
   part?: string;
   withRole?: string | null;
   minutes?: number | null;
-  /** The opened conversation's role booking link, https or null. */
+  /** The opened conversation's first booking link, https or null. */
   bookingUrl?: string | null;
+  /** Every way to book it (`stepBookingOf`): one link, or one per person holding the role. */
+  bookingLinks?: readonly BookingLink[];
 }
 
 export type TellApplicant = (ref: string, kind: ApplicantUpdateKind, facts?: UpdateFacts) => Promise<void>;
@@ -78,6 +81,7 @@ async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUr
     withRole: facts.withRole ?? null,
     minutes: facts.minutes ?? null,
     bookingUrl: facts.bookingUrl ?? null,
+    bookingLinks: facts.bookingLinks ?? [],
     lang: languageOf(p),
     note: p.body.note ?? null,
     // Only the letters that ask the applicant to open the page carry the link; the rest never pointed there.
