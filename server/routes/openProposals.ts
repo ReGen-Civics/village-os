@@ -130,7 +130,7 @@ import { registerVoiceDraft } from "./openProposalVoiceDraft";
 import { registerVoiceTranscribe, type VoiceTranscribeDeps } from "./openProposalVoiceTranscribe";
 import { startWaitingRun, writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
 import { providersNow, readTranscriptionChoice, transcriptionSettings, writeTranscriptionChoice } from "../lib/voiceTranscription";
-import { TRANSCRIPTION_CHOICES, VOICE_TRANSCRIBE_WAITING_PATH, VOICE_TRANSCRIPTION_SETTINGS_PATH, transcriptionChoiceOf } from "../../shared/voiceTranscribe";
+import { TRANSCRIPTION_CHOICES, transcriptionChoiceOf } from "../../shared/voiceTranscribe";
 import { limitState } from "../repos/rateHits";
 import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
 import { checkProposalFiles, checkVoiceClips, checkVoiceNotes, readVoiceNote, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceClips, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
@@ -839,9 +839,8 @@ export function register(app: Express, deps: Deps): void {
    * holds the caps, the run and its log line.
    */
   const storedDeps = (): StoredTranscribeDeps => ({ getPool, proposalFileDir: deps.proposalFileDir, providers: () => providersNow(getPool()), ...(deps.storedTranscribe ?? {}) });
+  /** After the capability gate: the admin, a person, who may hear it (as the Listen door asks), or null with the 404 sent. */
   const adminHearer = async (req: any, res: any): Promise<string | null> => {
-    res.setHeader("Cache-Control", "private, no-store");
-    if (!(await guardCapability(req, res, "intake.moderate"))) return null;
     const me = await authedUser(req);
     if (!(await voiceViewerOf(req, getPool(), me)).admin) {
       res.status(404).json({ error: "not_found" });
@@ -849,7 +848,9 @@ export function register(app: Express, deps: Deps): void {
     }
     return String(me?.id ?? "admin");
   };
-  app.post(VOICE_TRANSCRIBE_WAITING_PATH, async (req, res) => {
+  app.post("/api/admin/open-proposals/voice/transcribe-waiting", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const who = await adminHearer(req, res);
     if (!who) return;
     const waiting = await store.listOpenProposals(getPool(), ["confirmed"]);
@@ -857,6 +858,8 @@ export function register(app: Express, deps: Deps): void {
     res.status(out.status).json(out.body);
   });
   app.post("/api/admin/open-proposals/:id/voice/:noteId/transcribe", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
     const who = await adminHearer(req, res);
     if (!who) return;
     const id = String(req.params.id ?? "");
@@ -874,12 +877,12 @@ export function register(app: Express, deps: Deps): void {
    * Integrations. Whoever may write the village's provider keys may choose
    * between them. The keys themselves stay in the secrets plane.
    */
-  app.get(VOICE_TRANSCRIPTION_SETTINGS_PATH, async (req, res) => {
+  app.get("/api/admin/voice-transcription", async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     if (!(await guardCapability(req, res, "operator.secrets"))) return;
     res.json(await transcriptionSettings(getPool()));
   });
-  app.put(VOICE_TRANSCRIPTION_SETTINGS_PATH, async (req, res) => {
+  app.put("/api/admin/voice-transcription", async (req, res) => {
     res.setHeader("Cache-Control", "no-store");
     if (!(await guardCapability(req, res, "operator.secrets"))) return;
     const raw = req.body?.choice;

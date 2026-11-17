@@ -23,7 +23,7 @@ import { useLingui } from "@lingui/react/macro";
 import { Play } from "lucide-react";
 import { gameFetch } from "@/lib/gameApi";
 import { appleEngine } from "./useVoiceRecorder";
-import { learnLength } from "./TakePlayer";
+import { learnLength } from "./learnLength";
 import { VOICE_WORDS, voiceLength, type WrittenWords } from "@shared/voiceNotes";
 
 /** "Write down the words" and the AI transcript, loaded only where a recording is drawn (StoredWords.tsx). */
@@ -104,7 +104,7 @@ export function PlayVoice({ href, seconds, label, fetcher = gameFetch }: { href:
     if (!blob) return void (setUrl(null), setState("failed"));
     setUrl(URL.createObjectURL(blob));
   };
-  if (url) return <audio controls autoPlay src={url} aria-label={label} onLoadedMetadata={learnLength} onError={() => void refused()} className="h-10 w-full max-w-md" data-voice-heard-player="" />;
+  if (url) return <audio controls autoPlay src={url} aria-label={label} onLoadedMetadata={(e) => learnLength(e.currentTarget)} onError={() => void refused()} className="h-10 w-full max-w-md" data-voice-heard-player="" />;
   return (
     <span className="inline-flex flex-wrap items-center gap-2" data-play-voice="">
       <button
@@ -143,7 +143,7 @@ export function VoiceHeard({ voice }: { voice: ServedVoice | null | undefined })
             <li key={note.id} className="grid gap-2 rounded-xl border border-border bg-muted p-3" data-voice-note={note.id}>
               <span className="text-sm font-semibold text-foreground">{t({ message: `Recording ${i + 1}`, context: "voice note, deciders" })}</span>
               <PlayVoice href={note.href} seconds={note.seconds} label={t({ message: `Recording ${i + 1}`, context: "voice note, deciders" })} />
-              <StoredWordsSlot href={note.href} written={voice.written?.[note.id]} on={!!voice.transcribeOn} poster={postAsMember} />
+              <StoredWordsSlot href={`${note.href}/transcribe`} written={voice.written?.[note.id]} on={!!voice.transcribeOn} poster={postAsMember} />
             </li>
           ))}
         </ul>
@@ -161,7 +161,7 @@ export function VoiceHeard({ voice }: { voice: ServedVoice | null | undefined })
               <span className="text-sm font-semibold text-foreground">{c.label}</span>
               <PlayVoice href={c.href} seconds={c.seconds} label={c.label} />
               {c.words && <p className="whitespace-pre-line break-words text-sm text-muted-foreground">{c.words}</p>}
-              <StoredWordsSlot href={c.href} written={voice.written?.[c.id]} on={!!voice.transcribeOn} poster={postAsMember} />
+              <StoredWordsSlot href={`${c.href}/transcribe`} written={voice.written?.[c.id]} on={!!voice.transcribeOn} poster={postAsMember} />
             </li>
           ))}
         </ul>

@@ -16,7 +16,7 @@ import { ArrowRight, Copy, Link2 } from "lucide-react";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { PlayVoice, StoredWordsSlot, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
-import { STORED_TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_WAITING_PATH } from "@shared/voiceTranscribe";
+import { STORED_TRANSCRIBE_WORDS } from "@shared/voiceTranscribe";
 
 interface DeskLink {
   id: string;
@@ -80,7 +80,10 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
   /** A recording through the admin door, with this desk's own sign-in (server/routes/openProposals.ts). */
   const hear = useCallback((href: string) => fetch(href, { headers: authHeaders(password) }), [password]);
   /** "Write down the words" through the admin door, with the same sign-in. */
-  const writeDown = useCallback((href: string) => fetch(href, { method: "POST", headers: authHeaders(password) }), [password]);
+  const writeDown = useCallback(
+    (id: string, noteId: string) => fetch(`${API_BASE}/admin/open-proposals/${encodeURIComponent(id)}/voice/${encodeURIComponent(noteId)}/transcribe`, { method: "POST", headers: authHeaders(password) }),
+    [password],
+  );
   const [running, setRunning] = useState(false);
   const call = useCallback(
     async (url: string, method = "GET", body?: unknown) => {
@@ -128,7 +131,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
   const transcribeAll = async () => {
     setRunning(true);
     try {
-      const res = await fetch(VOICE_TRANSCRIBE_WAITING_PATH, { method: "POST", headers: authHeaders(password) });
+      const res = await fetch(`${API_BASE}/admin/open-proposals/voice/transcribe-waiting`, { method: "POST", headers: authHeaders(password) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok && res.status !== 409) throw new Error(typeof d?.error === "string" ? d.error : STORED_TRANSCRIBE_WORDS.unavailable);
       if (res.status === 409) toast(typeof d?.error === "string" ? d.error : STORED_TRANSCRIBE_WORDS.running);
@@ -261,7 +264,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
               <button type="button" className={BUTTON} disabled={running} onClick={() => void transcribeAll()} data-transcribe-waiting-button="">
                 {t({ message: "Transcribe all waiting", context: "admin open proposals" })}
               </button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 {t({ message: `${waiting} recordings have no words yet. Each is written down by an AI service and kept with its application, marked as an AI transcript.`, context: "admin open proposals" })}
               </span>
             </div>
@@ -290,10 +293,10 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 </ul>
                 <p className="whitespace-pre-line break-words text-gray-800">{p.why}</p>
                 {clipOf(p, "why") && <PlayVoice href={clipOf(p, "why")!.href} seconds={clipOf(p, "why")!.seconds} label={clipOf(p, "why")!.label} fetcher={hear} />}
-                {clipOf(p, "why") && <StoredWordsSlot href={clipOf(p, "why")!.href} written={p.voice?.written?.[clipOf(p, "why")!.id]} on={!!desk.transcribeOn} poster={writeDown} />}
+                {clipOf(p, "why") && <StoredWordsSlot href={clipOf(p, "why")!.href} written={p.voice?.written?.[clipOf(p, "why")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "why")!.id)} />}
                 {p.aim && <p className="break-words text-gray-600">Aim: {p.aim}</p>}
                 {clipOf(p, "aim") && <PlayVoice href={clipOf(p, "aim")!.href} seconds={clipOf(p, "aim")!.seconds} label={clipOf(p, "aim")!.label} fetcher={hear} />}
-                {clipOf(p, "aim") && <StoredWordsSlot href={clipOf(p, "aim")!.href} written={p.voice?.written?.[clipOf(p, "aim")!.id]} on={!!desk.transcribeOn} poster={writeDown} />}
+                {clipOf(p, "aim") && <StoredWordsSlot href={clipOf(p, "aim")!.href} written={p.voice?.written?.[clipOf(p, "aim")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "aim")!.id)} />}
                 {p.voice && (p.voice.notes.length > 0 || otherClips(p).length > 0) && (
                   <div className="grid gap-2 rounded-lg border border-border p-3" data-admin-voice="">
                     <p className="font-semibold text-foreground">{t({ message: "Their voice", context: "admin open proposals" })}</p>
@@ -306,7 +309,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                       <div key={n.id} className="grid gap-1">
                         <span className="text-sm text-foreground">{t({ message: `Recording ${i + 1}`, context: "admin open proposals" })}</span>
                         <PlayVoice href={n.href} seconds={n.seconds} label={t({ message: `Recording ${i + 1}`, context: "admin open proposals" })} fetcher={hear} />
-                        <StoredWordsSlot href={n.href} written={p.voice?.written?.[n.id]} on={!!desk.transcribeOn} poster={writeDown} />
+                        <StoredWordsSlot href={n.href} written={p.voice?.written?.[n.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, n.id)} />
                       </div>
                     ))}
                     {otherClips(p).map((c) => (
@@ -314,7 +317,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                         <span className="text-sm text-foreground">{c.label}</span>
                         <PlayVoice href={c.href} seconds={c.seconds} label={c.label} fetcher={hear} />
                         {c.words && <span className="whitespace-pre-line break-words text-sm text-muted-foreground">{c.words}</span>}
-                        <StoredWordsSlot href={c.href} written={p.voice?.written?.[c.id]} on={!!desk.transcribeOn} poster={writeDown} />
+                        <StoredWordsSlot href={c.href} written={p.voice?.written?.[c.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, c.id)} />
                       </div>
                     ))}
                   </div>

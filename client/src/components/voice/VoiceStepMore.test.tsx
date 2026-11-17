@@ -291,6 +291,7 @@ describe("a fresh recording shows its length before it is played", () => {
     Object.defineProperty(audio, "duration", { configurable: true, get: () => duration });
     Object.defineProperty(audio, "currentTime", { configurable: true, get: () => time, set: (v: number) => void (time = v) });
     await act(async () => void audio.dispatchEvent(new Event("loadedmetadata")));
+    await settle();
     expect(time).toBe(1e7);
     // The browser read it through and learned its length: back to the start, and the total shows.
     duration = 33;
@@ -305,6 +306,7 @@ describe("a fresh recording shows its length before it is played", () => {
     Object.defineProperty(audio, "duration", { configurable: true, get: () => 33 });
     Object.defineProperty(audio, "currentTime", { configurable: true, get: () => time, set: (v: number) => void (time = v) });
     await act(async () => void audio.dispatchEvent(new Event("loadedmetadata")));
+    await settle();
     expect(time).toBe(0);
   });
 });

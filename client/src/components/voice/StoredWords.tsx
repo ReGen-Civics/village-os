@@ -41,7 +41,7 @@ function refusalWords(said: string, i18n: I18n): string {
 }
 
 export interface StoredWordsProps {
-  /** The recording's Listen door; its transcribe door is the same address with `/transcribe`. */
+  /** The recording's "write it down" door (shared/voiceTranscribe.ts): its Listen door with `/transcribe`. */
   href: string;
   written?: WrittenWords | null;
   /** Whether a recording can be written down now. */
@@ -60,7 +60,7 @@ export default function StoredWords({ href, written: first, on, poster }: Stored
     setBusy(true);
     setSaid("");
     try {
-      const res = await poster(`${href}/transcribe`);
+      const res = await poster(href);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return setSaid(refusalWords(typeof data?.error === "string" ? data.error : STORED_TRANSCRIBE_WORDS.unavailable, i18n));
       if (data?.written && typeof data.written.text === "string") setWritten(data.written as WrittenWords);

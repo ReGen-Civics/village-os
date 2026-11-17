@@ -25,7 +25,7 @@ afterEach(() => {
 const settle = async () => {
   for (let i = 0; i < 8; i += 1) await act(async () => void (await new Promise((r) => setTimeout(r, 0))));
 };
-const HREF = "/api/admin/open-proposals/op-0123456789abcdef0123/voice/pv-0123456789abcdef";
+const HREF = "/api/admin/open-proposals/op-0123456789abcdef0123/voice/pv-0123456789abcdef/transcribe";
 
 describe("one kept recording", () => {
   it("writes it down at a press, and shows the words marked as an AI transcript", async () => {
@@ -38,7 +38,7 @@ describe("one kept recording", () => {
     expect(container.querySelector("[data-ai-transcript]")).toBeNull();
     await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Write down the words" })));
     await settle();
-    expect(asked).toEqual([`${HREF}/transcribe`]);
+    expect(asked).toEqual([HREF]);
     expect(container.querySelector("[data-ai-transcript]")?.textContent).toBe("AI transcript, written down by Groq's Whisper. Not checked by the applicant.Cuido la puerta.");
     expect(screen.getByRole("button", { name: "Write it down again" })).toBeTruthy();
   });
