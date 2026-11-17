@@ -8,9 +8,12 @@
 # that day waited for a person.
 #
 # This runs when `release` completes. It sends nothing unless that run was a
-# TAG push and concluded success: built, booted, published, and pulled back
+# TAG release and concluded success: built, booted, published, and pulled back
 # through the self-host smoke. A receiving workflow can therefore check the
-# same verdict and find it already final.
+# same verdict and find it already final. A tag release is a tag push, or a
+# dispatch of release.yml on a tag (tag-release.yml does that when the tag was
+# pushed with GITHUB_TOKEN). release.yml refuses a dispatch on any other ref,
+# so a dispatched run that concluded success was on a version tag.
 #
 # SET UP, in Settings > Secrets and variables > Actions:
 #   variable RELEASE_NOTIFY_REPOS   the repositories to tell, comma separated,
@@ -36,7 +39,7 @@ permissions:
 jobs:
   notify:
     if: >-
-      github.event.workflow_run.event == 'push'
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')
       && github.event.workflow_run.conclusion == 'success'
       && startsWith(github.event.workflow_run.head_branch, 'v')
     runs-on: ubuntu-latest
