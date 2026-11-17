@@ -21541,3 +21541,39 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 17 Nov 2026
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it."
+msgstr "Este navegador no escribe tus palabras mientras hablas. Tu grabación se guarda, y puedes escribir lo que dijiste en el recuadro de abajo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going."
+msgstr "Esa grabación llegó al límite de 5 minutos y se detuvo sola. Está guardada abajo. Graba otra para seguir."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing."
+msgstr "La grabación se detuvo antes de que pulsaras Detener, quizás porque otra aplicación necesitó el micrófono. Lo que dijiste hasta entonces está guardado abajo: escúchalo y graba otra si falta algo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again."
+msgstr "No llegó ningún sonido a la grabación, así que no hay nada que guardar. Revisa que tu micrófono esté encendido y graba de nuevo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device."
+msgstr "Este navegador no puede reproducir la grabación aquí. Sigue guardada, y va con tu solicitud cuando marques la casilla de abajo. Puedes guardar una copia en este dispositivo."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite: download the recording"
+msgid "Save a copy"
+msgstr "Guardar una copia"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough."
+msgstr "Tu navegador no escribió ninguna palabra esta vez. Escribe unas líneas sobre lo que dijiste, o déjalo vacío: tu grabación es suficiente."

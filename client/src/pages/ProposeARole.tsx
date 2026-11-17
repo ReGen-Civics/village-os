@@ -42,7 +42,7 @@
 import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
-import { EMPTY_VOICE, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
+import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -280,6 +280,8 @@ export default function ProposeARole() {
   const me = useOptionalAuth()?.user ?? null;
   const { t, i18n } = useLingui();
 
+  // Recordings live only on this page until Send (never in the draft), so leaving or reloading asks first.
+  useAskBeforeLeaving(!sent && (voice.takes.length > 0 || Object.keys(voice.clips).length > 0));
   useEffect(() => {
     // The role a card's Apply link (or the draft board) named: the first the village still offers.
     const wanted = new URLSearchParams(window.location.search).getAll("role").map((r) => r.trim()).filter(Boolean);

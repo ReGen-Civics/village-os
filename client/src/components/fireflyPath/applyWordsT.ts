@@ -21,7 +21,7 @@ type StaticKeys<T> = { [K in keyof T]: T[K] extends string ? K : never }[keyof T
 /** The voice lines an applicant reads, by their key in VOICE_WORDS. */
 export type VoiceKey = Extract<
   StaticKeys<typeof VOICE_WORDS>,
-  "inviteTitle" | "inviteBody" | "record" | "recordAnother" | "stop" | "skip" | "reopen" | "heardLabel" | "heardHint" | "consent" | "kept" | "notKept" | "clipRecord" | "clipStop" | "clipAgain" | "clipRemove" | "clipLabel" | "noTranscribe" | "micBlocked" | "noMic" | "nearEnd"
+  "inviteTitle" | "inviteBody" | "record" | "recordAnother" | "stop" | "skip" | "reopen" | "heardLabel" | "heardHint" | "consent" | "kept" | "notKept" | "clipRecord" | "clipStop" | "clipAgain" | "clipRemove" | "clipLabel" | "noTranscribe" | "micBlocked" | "noMic" | "nearEnd" | "noEngine" | "reachedLimit" | "cutShort" | "emptyTake" | "cantPlay" | "saveCopy" | "heardNothing"
 >;
 
 const VOICE: Record<VoiceKey, MessageDescriptor> = {
@@ -46,6 +46,13 @@ const VOICE: Record<VoiceKey, MessageDescriptor> = {
   micBlocked: msg({ message: "The microphone is blocked for this site. Allow it in your browser settings, or type your answers.", context: "voice invite" }),
   noMic: msg({ message: "No microphone was found on this device. Typing works just as well.", context: "voice invite" }),
   nearEnd: msg({ message: "About 30 seconds left in this recording.", context: "voice invite" }),
+  noEngine: msg({ message: "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it.", context: "voice invite" }),
+  reachedLimit: msg({ message: "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going.", context: "voice invite" }),
+  cutShort: msg({ message: "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing.", context: "voice invite" }),
+  emptyTake: msg({ message: "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again.", context: "voice invite" }),
+  cantPlay: msg({ message: "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device.", context: "voice invite" }),
+  saveCopy: msg({ message: "Save a copy", context: "voice invite: download the recording" }),
+  heardNothing: msg({ message: "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough.", context: "voice invite" }),
 };
 
 /** One voice line in the reader's language. */

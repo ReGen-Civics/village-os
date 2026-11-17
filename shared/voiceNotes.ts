@@ -197,6 +197,14 @@ export const VOICE_WORDS = {
   micBlocked: "The microphone is blocked for this site. Allow it in your browser settings, or type your answers.",
   noMic: "No microphone was found on this device. Typing works just as well.",
   nearEnd: "About 30 seconds left in this recording.",
+  // When a recording ends or plays other than as planned (an applicant, 17 Nov 2026): what happened, and what to do.
+  noEngine: "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it.",
+  reachedLimit: `That recording reached the ${VOICE_NOTE_MAX_SECONDS / 60}-minute limit and stopped by itself. It is kept below. Record another to keep going.`,
+  cutShort: "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing.",
+  emptyTake: "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again.",
+  cantPlay: "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device.",
+  saveCopy: "Save a copy",
+  heardNothing: "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough.",
   // Refusals, each with what to do.
   tooMany: `Send up to ${VOICE_NOTES_MAX} recordings.`,
   tooBig: "One recording is too large. Record a shorter one.",
