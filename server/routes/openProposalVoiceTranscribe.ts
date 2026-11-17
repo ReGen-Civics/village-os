@@ -9,6 +9,11 @@
  * Registered from routes/openProposals.ts, which hands over its own door and
  * limiter, so server/index.ts gains no line for it.
  *
+ * BY ITSELF (the lead, 17 Nov 2026: "actually make it automatic and the button
+ * is to turn it off!"). The page sends each take and clip as soon as it is
+ * recorded, while the applicant's switch is on; closing the request (the
+ * switch turned off, or the page left) aborts the provider call.
+ *
  * WHO CAN ASK. Anybody the application is open to, as with "Draft my answers"
  * (openProposalVoiceDraft.ts): an applicant has no account. So the same kind
  * of caps stand in front of it, each failing closed, because each stands in
@@ -35,7 +40,7 @@ import {
   VOICE_TRANSCRIBE_PER_DAY,
   VOICE_TRANSCRIBE_PER_HOUR,
 } from "../../shared/voiceTranscribe";
-import { transcribeTake, transcriptionProvider, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
+import { transcribeTake, type ReadyProvider, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 
 const HOUR_MS = 60 * 60 * 1000;
 /** The multipart wrapping around one take: its headers and the three small fields. */
@@ -48,31 +53,41 @@ export interface VoiceTranscribeDeps {
   authedUser?: (req: Request) => Promise<{ id: string | number } | null>;
   clientIp: (req: Request) => string;
   ipBucket: (ip: string) => string;
-  /** Whether a provider is configured; tests hand in their own. */
-  enabled?: () => boolean;
+  /** The providers the admin's choice asks now, in order (server/lib/voiceTranscription.ts `providersNow`). */
+  providers?: () => Promise<readonly ReadyProvider[]>;
+  /** Whether any provider would be asked; tests hand in their own. */
+  enabled?: () => boolean | Promise<boolean>;
   /** The provider call; tests hand in their own. */
   transcribe?: (input: TranscribeInput) => Promise<TranscribeResult>;
 }
 
 export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps): void {
-  const enabled = deps.enabled ?? (() => transcriptionProvider() !== null);
-  const transcribe = deps.transcribe ?? ((input: TranscribeInput) => transcribeTake(input));
+  const providers = deps.providers ?? (async () => []);
+  const enabled = deps.enabled ?? (async () => (await providers()).length > 0);
+  const transcribe = deps.transcribe ?? (async (input: TranscribeInput) => transcribeTake(input, { providers: await providers() }));
+  const isOn = async () => {
+    try {
+      return await enabled();
+    } catch {
+      return false;
+    }
+  };
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: VOICE_NOTE_MAX_BYTES, files: 1, fields: 4, fieldSize: 4096, parts: 6 },
   }).single("voice");
   let reading = 0;
 
-  app.get(VOICE_TRANSCRIBE_PATH, (_req, res) => {
+  app.get(VOICE_TRANSCRIBE_PATH, async (_req, res) => {
     res.setHeader("Cache-Control", "no-store");
-    res.json({ on: enabled() });
+    res.json({ on: await isOn() });
   });
 
   app.post(
     VOICE_TRANSCRIBE_PATH,
-    (req: Request, res: Response, next: NextFunction) => {
+    async (req: Request, res: Response, next: NextFunction) => {
       res.setHeader("Cache-Control", "no-store");
-      if (!enabled()) return void res.status(404).json({ error: TRANSCRIBE_WORDS.off, on: false });
+      if (!(await isOn())) return void res.status(404).json({ error: TRANSCRIBE_WORDS.off, on: false });
       const length = Number(req.headers["content-length"]);
       if (!Number.isFinite(length) || length > VOICE_NOTE_MAX_BYTES + ENVELOPE_BYTES) {
         return void res.status(Number.isFinite(length) ? 413 : 411).json({ error: VOICE_WORDS.tooBig });
@@ -118,7 +133,13 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
         }
 
         const lang = typeof body.lang === "string" ? body.lang : undefined;
-        const got = await transcribe({ bytes, kind, lang });
+        // The applicant turned writing down off, or left: the call stops (the lead, 17 Nov 2026: the switch cancels one already running).
+        const stop = new AbortController();
+        res.on("close", () => {
+          if (!res.writableEnded) stop.abort();
+        });
+        const got = await transcribe({ bytes, kind, lang, signal: stop.signal });
+        if (!got.ok && got.reason === "cancelled") return res.status(499).end();
         if (!got.ok) return res.status(got.reason === "off" ? 404 : 503).json({ error: got.reason === "off" ? TRANSCRIBE_WORDS.off : TRANSCRIBE_WORDS.unavailable });
         if (!got.text) return res.status(200).json({ text: "", note: TRANSCRIBE_WORDS.heardNothing });
         return res.json({ text: got.text });

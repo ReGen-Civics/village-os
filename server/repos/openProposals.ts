@@ -19,6 +19,7 @@
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { openBodyOf, OPEN_PROPOSAL_STATUSES, type OpenProposalBody, type OpenProposalStatus } from "../../shared/openProposals";
 import { OPEN_INVITE_PREFIX, type OpenDecision } from "../../shared/openProposalDecide";
+import type { WrittenWords } from "../../shared/voiceNotes";
 
 type Db = Pool | PoolConnection;
 
@@ -566,6 +567,37 @@ export async function clearVoiceOf(db: Db, ids: readonly string[]): Promise<numb
   if (!ids.length) return 0;
   const [result] = await db.query<ResultSetHeader>("UPDATE open_role_proposals SET body_json = JSON_REMOVE(body_json, '$.voice') WHERE id IN (?) AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL", [ids]);
   return Number(result.affectedRows ?? 0);
+}
+
+/**
+ * Keep an AI transcript of one kept recording or clip with its proposal (the
+ * lead, 17 Nov 2026; shared/voiceNotes.ts `written`). Under the row lock, and
+ * only while the proposal still holds that recording, so a tidy that took the
+ * voice meanwhile wins. True when written.
+ */
+export async function setVoiceWritten(pool: Pool, id: string, noteId: string, words: WrittenWords): Promise<boolean> {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const p = await readOpenProposal(conn, id, true);
+    const voice = p?.body.voice;
+    if (!voice || ![...voice.notes, ...(voice.clips ?? [])].some((n) => n.id === noteId)) {
+      await conn.rollback();
+      return false;
+    }
+    const written = { ...(voice.written ?? {}), [noteId]: words };
+    const [result] = await conn.query<ResultSetHeader>(
+      "UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.voice.written', CAST(? AS JSON)) WHERE id = ? AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL",
+      [JSON.stringify(written), id],
+    );
+    await conn.commit();
+    return Number(result.affectedRows ?? 0) === 1;
+  } catch (e) {
+    await conn.rollback().catch(() => undefined);
+    throw e;
+  } finally {
+    conn.release();
+  }
 }
 
 /** Which of these proposals still keep their links and files: rows that exist and are not anonymised (Rye, 10 Nov 2026). */

@@ -135,6 +135,21 @@ export interface VoiceClip extends VoiceNote {
   words: string;
 }
 
+/**
+ * A kept recording written down by an AI service after it was sent, at an
+ * admin's or a decider's press (the lead, 17 Nov 2026: "Transcribe them!
+ * They've personally consented with me."; shared/voiceTranscribe.ts). Always
+ * shown as an AI transcript, never as the applicant's own words, and it goes
+ * with the recording: `clearVoiceOf` takes the whole voice part.
+ */
+export interface WrittenWords {
+  text: string;
+  /** When it was written down, ISO. */
+  at: string;
+  /** Which service wrote it down (shared/voiceTranscribe.ts TranscriptionProviderId). */
+  by: string;
+}
+
 /** What the proposal keeps: the tick, the recordings and the words the browser heard, as the applicant corrected them. */
 export interface StoredVoice {
   consent: true;
@@ -142,6 +157,27 @@ export interface StoredVoice {
   transcript: string;
   /** Clips beside answers, when they recorded any. */
   clips?: VoiceClip[];
+  /** AI transcripts of kept recordings and clips, by recording id. */
+  written?: Record<string, WrittenWords>;
+}
+
+/** The most words one AI transcript of a kept recording holds. */
+export const VOICE_WRITTEN_MAX = 6000;
+const WRITTEN_BY = /^[a-z]{2,12}$/;
+
+/** The AI transcripts kept with a voice part, only for recordings it still holds. Never throws. */
+export function writtenWordsOf(raw: unknown, ids: ReadonlySet<string>): Record<string, WrittenWords> {
+  const o = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const out: Record<string, WrittenWords> = {};
+  for (const [id, w] of Object.entries(o)) {
+    if (!VOICE_NOTE_ID.test(id) || !ids.has(id) || !w || typeof w !== "object") continue;
+    const one = w as Record<string, unknown>;
+    const text = typeof one.text === "string" ? one.text.slice(0, VOICE_WRITTEN_MAX) : "";
+    const at = typeof one.at === "string" && !Number.isNaN(Date.parse(one.at)) ? one.at : "";
+    const by = typeof one.by === "string" && WRITTEN_BY.test(one.by) ? one.by : "";
+    if (text.trim() && at && by) out[id] = { text, at, by };
+  }
+  return out;
 }
 
 /** One clip as the form describes it beside its bytes. */
@@ -311,5 +347,6 @@ export function storedVoiceOf(raw: unknown): StoredVoice | null {
     .filter((c): c is VoiceClip => !!c)
     .slice(0, VOICE_CLIPS_CEILING);
   if (!notes.length && !transcript.trim() && !clips.length) return null;
-  return { consent: true, notes, transcript, ...(clips.length ? { clips } : {}) };
+  const written = writtenWordsOf(o.written, new Set([...notes.map((n) => n.id), ...clips.map((c) => c.id)]));
+  return { consent: true, notes, transcript, ...(clips.length ? { clips } : {}), ...(Object.keys(written).length ? { written } : {}) };
 }
