@@ -84,6 +84,19 @@ export function pickType(): string | undefined {
   });
 }
 
+/** While `when` holds, closing or reloading the page asks first (the browser's own question). */
+export function useAskBeforeLeaving(when: boolean) {
+  useEffect(() => {
+    if (!when) return;
+    const ask = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", ask);
+    return () => window.removeEventListener("beforeunload", ask);
+  }, [when]);
+}
+
 export interface FinishedTake {
   blob: Blob;
   seconds: number;
@@ -150,15 +163,7 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
   );
 
   // While a recording runs, leaving or reloading the page asks first: the sound is only on this page until Send.
-  useEffect(() => {
-    if (!recording) return;
-    const ask = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = "";
-    };
-    window.addEventListener("beforeunload", ask);
-    return () => window.removeEventListener("beforeunload", ask);
-  }, [recording]);
+  useAskBeforeLeaving(recording);
 
   const listen = () => {
     const SR = speechEngine();

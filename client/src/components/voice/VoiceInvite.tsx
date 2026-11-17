@@ -28,6 +28,7 @@ import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
 /** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
 export { VoiceClipsProvider } from "./VoiceClips";
+export { useAskBeforeLeaving } from "./useVoiceRecorder";
 export { clipLimitsOf, type VoiceClipLimits } from "@shared/voiceNotes";
 
 export interface VoiceTake {
