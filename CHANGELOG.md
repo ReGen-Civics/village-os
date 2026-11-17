@@ -50,6 +50,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **A circle can keep several named meetings.** A circle that meets more than once a week, for example "Monday all-staff" and "Thursday steward sync", can now set a rhythm for each, with its own name, day, time and length. Its existing rhythm stays as its first one. An agenda item can wait for one named meeting, or for the circle's next meeting whichever it is, as every existing item already does. A circle's own calendar can be read through a title word, so only events whose title carries that word count; blank keeps every timed event, as today.
 - **Agenda items can be proposed for review.** A new proposal kind, `session_agenda`, carries agenda items for a circle. Accepted with a meeting named, they go on that meeting's agenda; with none named, they land on the circle's open agenda, which works for a circle with no rhythm at all. The connector can read the circles' meetings to fill one in.
 - **A member's own AI agent can add agenda items.** A new connector scope, `sessions.write`, opens one tool, `add_agenda_item`: an item in the agenda library for a circle, or for none in particular, added as the member after their yes to the exact item. It brings nothing into a session and changes no agenda already set; a person does that in the room. Nothing changes until a member ticks the scope when they connect their agent.
+- **A member's own AI agent can hand a task to a role.** The connector tool `hand_task_to_role`, under the existing `tasks.write` scope, sends a new task to a role exactly as the profile's form does, after the member's yes to the exact task and role. The role's holders still accept, suggest a change or decline it; nothing is accepted on its own.
 - **A task handed to a role arrives by email.** Being handed a task, and a suggested change or a decline on one you sent, now follow the member's Task emails preference (immediate by default). An accept and a done go in the daily digest. Before, all five showed in the bell only. A member who set Task emails to Off hears nothing new.
 - For maintainers: a release can now be tagged by running the `tag-release.yml` workflow with the version. It checks five things before it tags: the version is a plain X.Y.Z, the commit is on main, `package.json`, `PLATFORM_VERSION`, a changelog section and the compose file's default image all name it, no such tag exists yet, and CI passed on a push run at that exact commit. Then it pushes the tag and the usual release build runs. Villages see no difference.
 
@@ -73,6 +74,7 @@ Yes, one expand-only migration:
 - #1434 Several named rhythms per circle, agenda items for one meeting or the open agenda, a calendar title filter, and the session_agenda proposal kind
 - #1435 Connector agenda tool (sessions.write) and handoff emails
 - #1436 Tag a release by dispatching tag-release.yml
+- #1437 Connector tool hand_task_to_role (tasks.write)
 
 ---
 

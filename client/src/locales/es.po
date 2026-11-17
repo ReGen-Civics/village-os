@@ -246,6 +246,10 @@ msgstr ""
 #~ msgid "Your draft holds three. Take one off to draft another."
 #~ msgstr ""
 
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Saved. Only events titled with \"{word}\" count as {name} meetings."
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "founding application sera"
 msgid "three draft value items"
@@ -1173,6 +1177,10 @@ msgstr "Tu primer mes empieza más bajo y sigue lo que entregas."
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks: adds a suggested task"
 msgid "Add to my list"
+msgstr ""
+
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Leave it empty and every timed event counts. Case and accents do not matter."
 msgstr ""
 
 #. placeholder {0}: p.done
@@ -2332,6 +2340,11 @@ msgctxt "agent paths"
 msgid "No path matches that search."
 msgstr ""
 
+#. placeholder {0}: line.name || line.words
+#: client/src/components/sessions/ComingUp.tsx
+msgid "Stop \"{0}\"? The circle's other meetings stay as they are."
+msgstr ""
+
 #: client/src/components/proposalDrafts/AskSera.tsx
 msgctxt "sera draft mark"
 msgid "Draft from {name}"
@@ -2495,6 +2508,11 @@ msgstr "No encontramos un micrófono en este dispositivo. Escribir funciona igua
 msgctxt "talk it out: quick start button"
 msgid "Help me make it clearer"
 msgstr "Ayúdame a que quede más claro"
+
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgctxt "a circle's own calendar, change its title filter"
+msgid "Which events count"
+msgstr ""
 
 #: client/src/components/roleDraft/IkigaiDoor.tsx
 #~ msgctxt "role draft discover"
@@ -3904,6 +3922,10 @@ msgctxt "companion welcome"
 msgid "Add lens"
 msgstr "Añadir lente"
 
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Every timed event counts."
+msgstr ""
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgctxt "the Sense frame of a canvas block"
 msgid "Sense: readings of {name}"
@@ -4355,6 +4377,11 @@ msgstr ""
 msgctxt "thanks web: nothing this moon yet"
 msgid "No threads yet this moon. The first thanks carried draws one."
 msgstr "Aún no hay hilos esta luna. Las primeras gracias que alguien lleve dibujan uno."
+
+#: client/src/components/sessions/WaitingForCircle.tsx
+msgctxt "agenda item, the meeting it waits for"
+msgid "For the meeting: {name}"
+msgstr ""
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, no date on the quest"
@@ -4861,6 +4888,10 @@ msgctxt "role draft heading"
 msgid "Other ways in"
 msgstr "Otras formas de entrar"
 
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Save which events count"
+msgstr ""
+
 #. placeholder {0}: wholeMoney(s.expected.totalMinor, model.currency)
 #. placeholder {1}: wholeMoney(s.range.lowTotalMinor, model.currency)
 #. placeholder {2}: wholeMoney(s.range.highTotalMinor, model.currency)
@@ -5103,6 +5134,11 @@ msgstr ""
 #: client/src/components/notebook/NotebookExport.tsx
 msgctxt "canvas export button, busy"
 msgid "Building the pack"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: kind of change"
+msgid "Meeting agenda"
 msgstr ""
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -5363,6 +5399,11 @@ msgstr "Tu compromiso"
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "Use the photo or leave it out first."
+msgstr ""
+
+#. placeholder {0}: circleWords(row.circleName)
+#: client/src/components/sessions/ComingUp.tsx
+msgid "Added. The {0} has another meeting."
 msgstr ""
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
@@ -6414,6 +6455,10 @@ msgstr "Sugeriste 1 cambio al rol. Si cambia el trabajo, di cómo cambia el prec
 #~ msgid "Leave it blank"
 #~ msgstr ""
 
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Optional. For a calendar that holds other things too: only events whose title holds this word become the circle's meetings."
+msgstr ""
+
 #: client/src/components/TreasurySync.tsx
 msgid "One of your numbers differs between sources. The Treasurer has been shown it."
 msgstr ""
@@ -6432,6 +6477,11 @@ msgstr ""
 msgctxt "companion welcome"
 msgid "What {companionName} will do with it"
 msgstr "Lo que {companionName} hará con esto"
+
+#. placeholder {0}: view.titleFilter
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Only events titled with \"{0}\" count."
+msgstr ""
 
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
@@ -8083,6 +8133,12 @@ msgctxt "role card rewards: the listed price, each share as its own amount"
 msgid "Up to {list} a month for the full role*"
 msgstr ""
 
+#. placeholder {0}: line.next.words
+#: client/src/components/sessions/ComingUp.tsx
+msgctxt "sessions coming up, one rhythm's next meeting"
+msgid "Next: {0}"
+msgstr ""
+
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "vendor support link"
 msgid "Support"
@@ -9029,6 +9085,10 @@ msgctxt "config card: ask the server again"
 msgid "Try again"
 msgstr ""
 
+#: client/src/components/sessions/ComingUp.tsx
+msgid "Stopped. That meeting has left Coming up."
+msgstr ""
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgctxt "role access state"
 msgid "Given"
@@ -9127,6 +9187,10 @@ msgstr "El prado descansa"
 #~ msgctxt "founding application draft"
 #~ msgid "We kept your answers from last time. References and files are never saved, so add them again."
 #~ msgstr "Guardamos tus respuestas de la última vez. Las referencias y los archivos nunca se guardan, así que añádelos de nuevo."
+
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Only events whose title holds"
+msgstr ""
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "org chart, a sample circle or role"
@@ -9670,6 +9734,11 @@ msgstr ""
 #~ msgctxt "open proposal"
 #~ msgid "Parts of this form"
 #~ msgstr "Partes de este formulario"
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: agenda item kind"
+msgid "For consent"
+msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "No outcome of {roleName} picked"
@@ -10658,6 +10727,10 @@ msgctxt "roles page: the founding team read failed"
 msgid "We couldn't load the founding team just now."
 msgstr "No pudimos cargar el equipo fundador en este momento."
 
+#: client/src/components/sessions/BroughtForm.tsx
+msgid "Its next meeting, whichever comes first"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Protocols"
@@ -10857,6 +10930,12 @@ msgstr "Nuestra revisión: leemos cada solicitud y te escribimos con una invitac
 msgctxt "open proposal: the applicant's suggestions on the role card"
 msgid "What they would make of the role"
 msgstr "Lo que haría con el rol"
+
+#. placeholder {0}: it.ownerRole
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: agenda item"
+msgid "Owner role: {0}"
+msgstr ""
 
 #. placeholder {0}: counts.flagged
 #: client/src/components/valuation/PricingDesk.tsx
@@ -11107,6 +11186,10 @@ msgstr "Los giros que dan forma a este año están en la página de <0>Festivale
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "If you approve"
+msgstr ""
+
+#: client/src/components/sessions/BroughtForm.tsx
+msgid "Which meeting is it for?"
 msgstr ""
 
 #: client/src/components/admin/OrgChartTab.tsx
@@ -12393,6 +12476,10 @@ msgstr "Bajar la meta {n}"
 msgid "Kept in this browser only. Nothing is sent until you send your proposal."
 msgstr "Se guarda solo en este navegador. No se envía nada hasta que envíes tu propuesta."
 
+#: client/src/components/sessions/RhythmForm.tsx
+msgid "For example, Thursday sync"
+msgstr ""
+
 #. placeholder {0}: m.daysStale
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "days since a milestone was touched"
@@ -13567,6 +13654,11 @@ msgctxt "proposed changes"
 msgid "I checked its page, and this change is not there yet"
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: agenda item kind"
+msgid "For a decision"
+msgstr ""
+
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "You selected roles before you joined."
 msgstr "Elegiste roles antes de unirte."
@@ -13683,6 +13775,10 @@ msgstr ""
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, step four"
 msgid "In a chat, ask Claude about your moon. It asks you before it changes anything."
+msgstr ""
+
+#: client/src/components/sessions/RhythmForm.tsx
+msgid "What does the circle call this meeting?"
 msgstr ""
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -13998,6 +14094,11 @@ msgstr "Ordenadas según cuánto encaja cada una con el {memberPct}% que puedes 
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Approved"
+msgstr ""
+
+#: client/src/components/sessions/ComingUp.tsx
+msgctxt "sessions coming up, add a rhythm to a circle"
+msgid "Add another meeting"
 msgstr ""
 
 #: client/src/components/voice/VoiceStepMore.tsx
@@ -14985,6 +15086,12 @@ msgstr "Exigente, más de 60%"
 #: client/src/pages/ApplicationStatus.tsx
 msgid "What would you like to talk about?"
 msgstr "¿Sobre qué te gustaría hablar?"
+
+#. placeholder {0}: circleWords(row.circleName)
+#: client/src/components/sessions/ComingUp.tsx
+msgctxt "sessions coming up, the list of one circle's meeting rhythms"
+msgid "The {0}'s meetings"
+msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "What will be done when it is finished?"
@@ -16184,6 +16291,10 @@ msgstr ""
 msgid "This is outside the suggestion's band, so give a reason. A second Treasurer or a steward then signs it, or the village decides."
 msgstr ""
 
+#: client/src/components/sessions/WaitingForCircle.tsx
+msgid "For one of the circle's meetings"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "{required} required"
@@ -16522,6 +16633,11 @@ msgstr ""
 msgctxt "site header"
 msgid "Sign in or join"
 msgstr "Iniciar sesión o unirse"
+
+#: client/src/components/sessions/ComingUp.tsx
+msgctxt "sessions coming up, a rhythm with no meeting ahead"
+msgid "Nothing coming up"
+msgstr ""
 
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: opens every power, grouped"
@@ -16879,6 +16995,11 @@ msgstr ""
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The commitment we'd agree on"
 msgstr "El compromiso que acordaríamos"
+
+#: client/src/components/sessions/ComingUp.tsx
+msgctxt "sessions coming up, save a new rhythm"
+msgid "Add the meeting"
+msgstr ""
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
@@ -17675,6 +17796,10 @@ msgstr ""
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, the season goal an item serves"
 msgid "Serves: {0}"
+msgstr ""
+
+#: client/src/components/sessions/OwnCalendarPanel.tsx
+msgid "Saved. Every timed event on the calendar counts as a {name} meeting."
 msgstr ""
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
@@ -19011,6 +19136,10 @@ msgctxt "role access state"
 msgid "Not needed"
 msgstr ""
 
+#: client/src/components/sessions/RhythmForm.tsx
+msgid "Optional. A name tells one of the circle's meetings from another."
+msgstr ""
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
 msgid "Time"
@@ -19345,6 +19474,11 @@ msgstr "La semilla de esta reunión: {0} de {SEED_CIRCLES} círculos llenos"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "Round name, such as the season it funds"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: agenda item kind"
+msgid "For discussion"
 msgstr ""
 
 #: client/src/components/roleDraft/SeasonGoals.tsx
@@ -21035,6 +21169,11 @@ msgstr ""
 
 #: client/src/components/review/SeraMember.tsx
 msgid "{agent} suggests {n} small change for the chart"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "No agenda items yet"
 msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
