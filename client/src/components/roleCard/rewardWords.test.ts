@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { setupI18n } from "@lingui/core";
 import { ceilingShares } from "@shared/roleCardSections";
-import { bandWords, paysInTokens, rewardWords, splitHeadline, TOKEN_TERMS_ALWAYS } from "./rewardWords";
+import { paysInTokens, rewardWords, splitHeadline, TOKEN_TERMS_ALWAYS } from "./rewardWords";
+import { bandWords } from "./payBandWords";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };

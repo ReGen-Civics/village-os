@@ -256,7 +256,8 @@ describe("Join the founding team", () => {
     expect(card.textContent).not.toContain(RANGE_NOTE);
     expect(within(pay).queryByTestId("pay-band")).toBeNull();
     // The callout shows wherever the piece shows pay, ranges hidden or not.
-    expect(within(pay).getByTestId("value-callout").textContent).toContain("Value in equals value out.");
+    // Loaded lazily, off the route's first view (guard-route-first-views).
+    expect((await within(pay).findByTestId("value-callout")).textContent).toContain("Value in equals value out.");
     const apply = within(card).getAllByRole("link", { name: /Apply for this role/ });
     expect(apply).toHaveLength(1);
     expect(apply[0].getAttribute("href")).toBe("/propose-a-role?role=finance");
@@ -272,6 +273,7 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
     // The band, one line under the listed price, with the price and the cap kept as they are.
     const pay = within(section).getByTestId("pay-shape");
+    await within(pay).findByTestId("value-callout");
     const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
     // No cap line (lead, 17 Nov 2026): the listed price is the high end the card shows.
     expect(lines).not.toContain("pay-cap-words");

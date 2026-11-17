@@ -5,12 +5,12 @@
  * A disclosure popover, never a hover tooltip, so it works on a phone and from a keyboard: a tap, a click,
  * Enter or Space opens and closes it; Escape closes it and puts focus back on the control; a tap outside
  * closes it. The panel opens in the flow under the callout, so it never runs off a narrow screen.
- * Words in rewardWords.ts (`valueExplainerWords`).
+ * Words in valueExplainerWords.ts. Loaded lazily by FullRoleCard, so none of this rides a route's first view.
  */
 import { useEffect, useId, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { valueExplainerWords } from "./rewardWords";
+import { valueExplainerWords } from "./valueExplainerWords";
 
 export default function ValueCallout() {
   const { t, i18n } = useLingui();

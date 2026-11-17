@@ -14,11 +14,9 @@
 // a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
+import { ceilingAt, rangeMin } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
-import type { PublicPay } from "@shared/rolePublicPay";
-import { moneyWords as minorMoneyWords } from "@shared/seatSettings";
 
 export interface RewardWords {
   headline: string;
@@ -120,17 +118,6 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
  * that switch, so an older payload that still carries a range draws nothing while the village hides it.
  * Null for anything but a range of two whole minor amounts, low to high, in a currency.
  */
-export function bandWords(i18n: I18n, pay: PublicPay | null | undefined, shown: boolean): string | null {
-  if (!shown || !pay || pay.kind !== "range" || !pay.currency) return null;
-  const { minMinor: lo, maxMinor: hi } = pay;
-  if (!Number.isInteger(lo) || !Number.isInteger(hi) || (lo as number) < 0 || (lo as number) > (hi as number)) return null;
-  const min = minorMoneyWords(lo as number, pay.currency, i18n.locale || "en");
-  const max = minorMoneyWords(hi as number, pay.currency, i18n.locale || "en");
-  if (pay.per === "month") return i18n._(msg({ message: `Band: ${min} to ${max} a month in total comp`, context: "role card rewards: the pay band under the listed price, each month" }));
-  if (pay.per === "moon") return i18n._(msg({ message: `Band: ${min} to ${max} a moon in total comp`, context: "role card rewards: the pay band under the listed price, each moon" }));
-  return i18n._(msg({ message: `Band: ${min} to ${max} in total comp`, context: "role card rewards: the pay band under the listed price, no period" }));
-}
-
 /** The commitment row: "Full or part commitment (from 30%)", or "Full commitment (100%)" for a role offered whole. */
 export function commitmentRowWords(i18n: I18n, min: number | null | undefined): string {
   const lo = rangeMin(min);
@@ -139,59 +126,3 @@ export function commitmentRowWords(i18n: I18n, min: number | null | undefined): 
     : i18n._(msg({ message: "Full commitment (100%)", context: "role card fact: a role offered whole" }));
 }
 
-/**
- * THE PAY BAND THE EXPLAINER NAMES, as a percent of a role's price: 80% to 100%. HARDCODED for now (lead,
- * 17 Nov 2026). The village's own band lives in `valuation.band_below_pct` and `valuation.band_above_pct`
- * (shared/gameVariables.ts), laid over the valuation model on the server (server/lib/valuationStore.ts);
- * neither reaches the public role card's read today, so the figures here are the band the lead named.
- * The cap the explainer names (120%) is ROLE_PAY_CAP_PCT itself, as a percent only: no cap amount is ever shown
- * to a member or an applicant (lead, 17 Nov 2026).
- */
-export const EXPLAINER_BAND = { lowPct: 80, highPct: 100 } as const;
-
-export interface ValueExplainerWords {
-  callout: string;
-  open: string;
-  parts: Array<{ key: "price" | "agreement" | "aim"; heading: string; text: string }>;
-}
-
-/** "Value in equals value out.", the control that opens its explainer, and the explainer's three parts. */
-export function valueExplainerWords(i18n: I18n = appI18n, band: { lowPct: number; highPct: number } = EXPLAINER_BAND, capPct: number = ROLE_PAY_CAP_PCT): ValueExplainerWords {
-  const { lowPct, highPct } = band;
-  return {
-    callout: i18n._(msg({ message: "Value in equals value out.", context: "role card rewards: the callout beside the price" })),
-    open: i18n._(msg({ message: "How rewards are set", context: "role card rewards: the control that opens the value explainer" })),
-    parts: [
-      {
-        key: "price",
-        heading: i18n._(msg({ message: "How the price is set", context: "role card rewards explainer: heading" })),
-        text: i18n._(
-          msg({
-            message: `Each role's price comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from ${lowPct}% to ${highPct}% of that price, in total comp. Proposals can go up to ${capPct}%, and the figure for that will show once the team agrees it.`,
-            context: "role card rewards explainer: how the price is set",
-          }),
-        ),
-      },
-      {
-        key: "agreement",
-        heading: i18n._(msg({ message: "Your agreement", context: "role card rewards explainer: heading" })),
-        text: i18n._(
-          msg({
-            message: "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver.",
-            context: "role card rewards explainer: your agreement",
-          }),
-        ),
-      },
-      {
-        key: "aim",
-        heading: i18n._(msg({ message: "What we're aiming for", context: "role card rewards explainer: heading" })),
-        text: i18n._(
-          msg({
-            message: "What you put in comes back to you fairly, in cash and in equity toward a home on the land. We track value out as carefully as value in, and we shape this together each season.",
-            context: "role card rewards explainer: what we're aiming for",
-          }),
-        ),
-      },
-    ],
-  };
-}

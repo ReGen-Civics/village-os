@@ -38,8 +38,8 @@ import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
-import { bandWords, rewardWords } from "./rewardWords";
-import ValueCallout from "./ValueCallout";
+import { rewardWords } from "./rewardWords";
+import { bandWords } from "./payBandWords";
 import { useCommitmentChoice } from "./useCommitmentChoice";
 import { choiceQuery } from "./applyChoice";
 import { paidRoleLine } from "./cardWordsT";
@@ -68,6 +68,10 @@ export type CardRegister = "founding" | "game";
 export function applyHrefForRole(roleId: string, choice = ""): string {
   return `/propose-a-role?role=${encodeURIComponent(roleId)}${choice ? `&${choice}` : ""}`;
 }
+
+// The value callout and its explainer (lead, 17 Nov 2026), loaded when a card draws its pay, so neither rides the first
+// view of a route that shows a card (guard-route-first-views, scripts/route-first-view.json).
+const ValueCallout = lazy(() => import("./ValueCallout"));
 
 /** Whether this reader may apply for the seat: a live, open, complete card. */
 export function mayApply(seat: Record<string, any>): boolean {
@@ -250,7 +254,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <>
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
-          <ValueCallout />
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
         </>
@@ -258,7 +264,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <>
           {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
-          <ValueCallout />
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
         </>
       )}
       {pay.shape.length > 0 && (

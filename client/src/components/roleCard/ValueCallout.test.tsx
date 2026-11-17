@@ -8,7 +8,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { setupI18n } from "@lingui/core";
 import ValueCallout from "./ValueCallout";
 import { ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
-import { EXPLAINER_BAND, valueExplainerWords } from "./rewardWords";
+import { EXPLAINER_BAND, valueExplainerWords } from "./valueExplainerWords";
 
 afterEach(cleanup);
 
