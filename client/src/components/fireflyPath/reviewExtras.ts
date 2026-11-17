@@ -2,8 +2,10 @@
  * THE REVIEW'S OTHER LINES (applicant journey QA, 15 Nov 2026): the price and the notes on the role card both
  * go with the application, so Review & submit says them too, each with a way back to its step.
  *
- * The cap on a proposal stays a backend rule and is never shown to an applicant (the lead, 17 Nov 2026), so the
- * price line names no cap. The split line (shared/proposalSplit.ts) says each share, and says when they changed it.
+ * The cap at their commitment (Rye, 15 Nov 2026: proposals go up to 120% of the suggested price) is drawn only
+ * for a reviewer or an admin who asks for it (`showCap`). The applicant's own Review & submit never shows a cap
+ * amount (lead, 17 Nov 2026), so it is off unless a caller turns it on.
+ * The split line (shared/proposalSplit.ts) says each share, and says when they changed it.
  *
  * Kept beside ApplySteps.tsx because pages/ProposeARole.tsx holds the file-lines ceiling.
  */
@@ -11,7 +13,7 @@
 // a file that imports it and skips one that only uses `msg`.
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { askPeriod, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
 import { splitChanged, type Split } from "@shared/proposalSplit";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
@@ -27,7 +29,7 @@ const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}�
 
 export function reviewExtras(
   i18n: I18n = appI18n,
-  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; split?: { offered: Split; shown: Split } | null },
+  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; showCap?: boolean; split?: { offered: Split; shown: Split } | null },
 ): ReviewExtra[] {
   const out: ReviewExtra[] = [];
   if (p.ceiling) {
@@ -45,7 +47,10 @@ export function reviewExtras(
         : diff !== null
           ? i18n._(msg({ message: `${priced(ask.monthly, askPeriod(ask))} (${signedPct(diff)} on the suggestion)`, context: "founding application review: the price" }))
           : priced(ask.monthly, askPeriod(ask));
-    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${line} · ${short(ask.why)}` : line });
+    // The cap amount, for reviewers and admins only: never on an applicant's surface (lead, 17 Nov 2026).
+    const cap = p.showCap === true ? capAt(c.amount, p.pct && p.pct > 0 ? p.pct : 100) : 0;
+    const capped = cap > 0 ? `${line} · ${i18n._(msg({ message: `Proposals up to ${priced(cap)}`, context: "founding application review: the cap on a proposal" }))}` : line;
+    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${capped} · ${short(ask.why)}` : capped });
   }
   if (p.split) {
     const { offered, shown } = p.split;
