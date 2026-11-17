@@ -180,9 +180,9 @@ export default function OwnCalendarPanel({
                         setError(null);
                         setFiltering({ circleId: c.id, word: view.titleFilter ?? "" });
                       }}
-                      aria-label={`${t`Which events count`}: ${OWN_CALENDAR_COPY.attachedLine(c.name, view.host, view.last4)}`}
+                      aria-label={`${t({ message: "Which events count", context: "a circle's own calendar, change its title filter" })}: ${OWN_CALENDAR_COPY.attachedLine(c.name, view.host, view.last4)}`}
                     >
-                      {t`Which events count`}
+                      {t({ message: "Which events count", context: "a circle's own calendar, change its title filter" })}
                     </button>
                   )}
                   {asking !== c.id && (

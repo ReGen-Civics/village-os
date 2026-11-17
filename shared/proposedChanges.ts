@@ -26,6 +26,7 @@
  * Pure: no database, no Express. The server half is server/lib/proposedChanges.ts.
  */
 import { ALWAYS_A_PERSON } from "./agentAdmin";
+import { AGENDA_PROPOSAL_ROUTE } from "./sessionAgendaProposal";
 
 export const PROPOSAL_KINDS = [
   "role_card",
@@ -39,6 +40,7 @@ export const PROPOSAL_KINDS = [
   "role_listing",
   "season_goals",
   "onboarding_path",
+  "session_agenda",
   "setting",
 ] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
@@ -62,6 +64,8 @@ export const KIND_WORDS: Record<ProposalKind, string> = {
   role_listing: "Which roles are listed: list only these. target {}; body {ids}.",
   season_goals: "A season's goals, the whole list in its new order. target {seasonId}; body {goals: [{id?, text, done?}]}. A goal that replaces a goal held now, reworded or moved, carries that goal's id, so the quests and moon items linked to it stay linked; a goal with no id keeps one only when its words match a held goal exactly.",
   onboarding_path: "The village's onboarding path document. target {}; body {doc}.",
+  session_agenda:
+    "Agenda items for one circle's meeting on /sessions. target {circleId, rhythmKey?}: rhythmKey names one of the circle's meeting rhythms (read them with GET /api/sessions, comingUp.rows[].rhythms[].key); left out, the items wait for the circle's next meeting, whichever rhythm. body {items: [{title, detail?, kind: consent | decision | discussion, ownerRole?}]}, at most 20. Each accepted item is added by the person accepting, through the member's own door.",
   setting: "Any other admin setting, through its own route. target {method, path, readPath?}; body the route's own body.",
 };
 
@@ -90,6 +94,8 @@ export function routePatternFor(kind: Exclude<ProposalKind, "setting">): { metho
       return { method: "PUT", path: "/api/admin/seasons" };
     case "onboarding_path":
       return { method: "PUT", path: "/api/admin/onboarding-path" };
+    case "session_agenda":
+      return { method: AGENDA_PROPOSAL_ROUTE.method, path: AGENDA_PROPOSAL_ROUTE.path };
   }
 }
 
@@ -132,6 +138,12 @@ export interface NeverRule {
 
 const rule = (key: string) => ALWAYS_A_PERSON.find((r) => r.key === key)!;
 
+/**
+ * The member's own door for an agenda item (`session_agenda`). Its path names the Live Sessions module, which the
+ * secrets rule's "sessions" (sign-in sessions) would otherwise read as a sign-in: this one route, POST only, is not.
+ */
+const isAgendaDoor = (m: string, p: string) => m === AGENDA_PROPOSAL_ROUTE.method && p === AGENDA_PROPOSAL_ROUTE.path;
+
 /** A page section or an FAQ pathway names words, never a power: blank that one segment before the powers rule reads it. */
 const WORDS_SEGMENT = /^(\/api\/admin\/(?:content|faqs)\/)[^/]+((?:\/[^/]+)?)$/i;
 const withoutWords = (p: string) => p.replace(WORDS_SEGMENT, "$1_$2");
@@ -144,7 +156,7 @@ export const NEVER_PROPOSED: readonly NeverRule[] = [
   {
     key: "secrets",
     words: "Secrets, integration keys, passwords and sign-in are always a person's act, and are never proposed.",
-    test: (m, p) => rule("secrets").test(m, p) || rule("accounts").test(m, p) || /password|oauth|webhook|sessions?(\/|$)|tokens?(\/|$)/i.test(p),
+    test: (m, p) => rule("secrets").test(m, p) || rule("accounts").test(m, p) || /password|oauth|webhook|tokens?(\/|$)/i.test(p) || (!isAgendaDoor(m, p) && /sessions?(\/|$)/i.test(p)),
   },
   {
     key: "erasure",

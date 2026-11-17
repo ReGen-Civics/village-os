@@ -20,7 +20,7 @@ import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/journey/look";
-import { faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
+import { agendaLines, faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
 import { fieldDiffs, valueAt } from "@shared/proposedChanges";
 import type { PutBackBlock } from "@shared/proposalPutBack";
 import { EventCard, FieldDiffs, RowsDiff } from "./Diff";
@@ -39,6 +39,7 @@ const FACE_WORDS: Record<ChangeFace, MessageDescriptor> = {
   season_priorities: msg({ message: "Season priorities", context: "proposed changes: kind of change" }),
   onboarding: msg({ message: "Onboarding path", context: "proposed changes: kind of change" }),
   calendar_event: msg({ message: "Calendar event", context: "proposed changes: kind of change" }),
+  meeting_agenda: msg({ message: "Meeting agenda", context: "proposed changes: kind of change" }),
   admin_setting: msg({ message: "Admin setting", context: "proposed changes: kind of change" }),
 };
 
@@ -142,6 +143,40 @@ function Head({ face, summary, targetLabel, where, flags, aside }: { face: Chang
   );
 }
 
+/** How a proposed agenda item asks to be held, keyed by the kind's words; anything else reads as written. */
+const AGENDA_KIND_WORDS: Record<string, MessageDescriptor> = {
+  consent: msg({ message: "For consent", context: "proposed changes: agenda item kind" }),
+  decision: msg({ message: "For a decision", context: "proposed changes: agenda item kind" }),
+  discussion: msg({ message: "For discussion", context: "proposed changes: agenda item kind" }),
+};
+
+/** A proposed agenda: each item as it would wait for its meeting (the meeting is named in the card's head). */
+function AgendaItems({ body }: { body: Record<string, unknown> }) {
+  const { i18n } = useLingui();
+  const items = agendaLines(body);
+  if (!items.length) {
+    return (
+      <p className="text-sm italic text-muted-foreground">
+        <Trans context="proposed changes">No agenda items yet</Trans>
+      </p>
+    );
+  }
+  return (
+    <ol className="grid gap-2" data-testid="agenda-items">
+      {items.map((it, i) => (
+        <li key={i} className="rounded-xl border border-border bg-muted p-3">
+          <p className="break-words font-semibold text-foreground">{it.title}</p>
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <span className={CHIP_SOFT}>{AGENDA_KIND_WORDS[it.kind] ? i18n._(AGENDA_KIND_WORDS[it.kind]) : it.kind}</span>
+            {it.ownerRole && <span>{i18n._(msg({ message: `Owner role: ${it.ownerRole}`, context: "proposed changes: agenda item" }))}</span>}
+          </p>
+          {it.detail && <p className="mt-1 whitespace-pre-line break-words text-sm text-foreground">{it.detail}</p>}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /** The change itself, as before and after, chosen by what it is. `before` is what is live; `after` what would be. */
 function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: { face: ChangeFace; kind: string; before: unknown; after: Record<string, unknown>; labels: Record<string, string>; zone: string; whole: boolean; plain?: boolean }) {
   if (kind === "faq_remove") {
@@ -159,6 +194,7 @@ function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: {
     const a = goalLines(after).map((g) => g.text);
     return plain ? <RowsDiff before={a} after={a} testId="goals-diff" /> : <RowsDiff before={b} after={a} testId="goals-diff" />;
   }
+  if (face === "meeting_agenda") return <AgendaItems body={after} />;
   if (face === "calendar_event") {
     const changes = before && typeof before === "object" && !plain ? fieldChanges(before, after).filter((f) => f.changed) : [];
     return (

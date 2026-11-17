@@ -109,7 +109,7 @@ function StatusLine({ card }: { card: LibraryCard }) {
 /** "For the Thursday sync": which of its circle's meetings an item waits for. */
 function ForMeeting({ name }: { name: string | null }) {
   const { t } = useLingui();
-  return <p className="mt-1 text-sm text-muted-foreground">{name ? t`For the meeting: ${name}` : t`For one of the circle's meetings`}</p>;
+  return <p className="mt-1 text-sm text-muted-foreground">{name ? t({ message: `For the meeting: ${name}`, context: "agenda item, the meeting it waits for" }) : t`For one of the circle's meetings`}</p>;
 }
 
 function BroughtCard({

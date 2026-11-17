@@ -251,7 +251,7 @@ function Row({
           </div>
           {row.gathering && <GatheringSeed row={{ ...row, gathering: row.gathering }} lead={lead} onChanged={onChanged} onSaid={onSaid} />}
           {several && (
-            <ul aria-label={t`The ${circleWords(row.circleName)}'s meetings`} className="mt-3 space-y-2">
+            <ul aria-label={t({ message: `The ${circleWords(row.circleName)}'s meetings`, context: "sessions coming up, the list of one circle's meeting rhythms" })} className="mt-3 space-y-2">
               {lines.map((line) => {
                 const lineId = `${anchor}-${line.key}`;
                 return (
@@ -265,7 +265,7 @@ function Row({
                         </p>
                         <p id={`${lineId}-when`} className="text-sm text-muted-foreground">
                           {line.name ? `${line.words} · ` : ""}
-                          {line.next ? t`Next: ${line.next.words}` : t`Nothing coming up`} · {RHYTHM_COPY.waiting(line.waiting)}
+                          {line.next ? t({ message: `Next: ${line.next.words}`, context: "sessions coming up, one rhythm's next meeting" }) : t({ message: "Nothing coming up", context: "sessions coming up, a rhythm with no meeting ahead" })} · {RHYTHM_COPY.waiting(line.waiting)}
                         </p>
                         {row.canKeep && (
                           <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -319,12 +319,12 @@ function Row({
               )}
               {canAdd && editing !== ADDING && (
                 <button ref={addButton} type="button" className={BTN_QUIET} disabled={busy || editing != null} aria-describedby={`${anchor}-circle`} onClick={() => setEditing(ADDING)}>
-                  {t`Add another meeting`}
+                  {t({ message: "Add another meeting", context: "sessions coming up, add a rhythm to a circle" })}
                 </button>
               )}
             </div>
           )}
-          {editing === ADDING && form(ADDING, null, { saveLabel: t`Add the meeting` })}
+          {editing === ADDING && form(ADDING, null, { saveLabel: t({ message: "Add the meeting", context: "sessions coming up, save a new rhythm" }) })}
           {error && editing == null && (
             <p role="alert" className="mt-2 text-sm font-medium text-destructive">
               {error}

@@ -58,6 +58,9 @@ import { villageId } from "./economy";
 import { readConfigDocument } from "../repos/appConfigDocs";
 import { VILLAGE_DOC_KEY } from "./onboarding";
 import { neverPutBack } from "../../shared/proposalPutBack";
+import { agendaItemBody, readProposedAgenda } from "../../shared/sessionAgendaProposal";
+import { circleWords } from "../../shared/sessionTasks";
+import { circleRhythmRows } from "../repos/sessionRhythm";
 
 export const FAQ_PATHWAYS_FOR_PROPOSALS = ["investor", "steward", "resident", "prosperity"] as const;
 
@@ -215,6 +218,14 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       if (!r.ok) return bad(r.error, "doc");
       return ok("Onboarding path");
     }
+    case "session_agenda": {
+      const read = readProposedAgenda(t, b);
+      if (!read.ok) return bad(read.error, read.field);
+      const where = await agendaMeeting(deps.pool, read.value.circleId, read.value.rhythmKey);
+      if (!where.ok) return bad(where.error, where.field);
+      const n = read.value.items.length;
+      return ok(`${n === 1 ? "1 agenda item" : `${n} agenda items`} for ${where.label}`);
+    }
     case "setting": {
       if (!deps.routeExists(route.method, route.path)) return bad(REVIEW_WORDS.noRoute, "target.path");
       if (typeof t.readPath === "string") {
@@ -225,6 +236,20 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       return ok(route.path);
     }
   }
+}
+
+/**
+ * The meeting a proposed agenda lands on, in words: "the Anchor circle's Thursday steward sync", or "the Anchor
+ * circle's next meeting". A circle that is not a live one, or a rhythm it does not keep, is refused with its field.
+ */
+async function agendaMeeting(pool: Pool, circleId: string, rhythmKey: string | null): Promise<{ ok: true; label: string } | { ok: false; error: string; field: string }> {
+  const circle = (await villageCircles(pool)).find((c) => c.id === circleId && c.live);
+  if (!circle) return { ok: false, error: "That circle is not one of the village's live circles.", field: "target.circleId" };
+  const whose = `the ${circleWords(circle.name)}'s`;
+  if (!rhythmKey) return { ok: true, label: `${whose} next meeting` };
+  const rhythm = (await circleRhythmRows(pool, circleId)).find((r) => String(r.rhythm_key) === rhythmKey);
+  if (!rhythm) return { ok: false, error: "That circle keeps no meeting rhythm with that key. Read its rhythms with GET /api/sessions.", field: "target.rhythmKey" };
+  return { ok: true, label: `${whose} ${String(rhythm.name ?? "") || "meeting"}` };
 }
 
 /** Plain labels for fields a kind knows by name. Every other field reads from its key (`fieldLabel`). */
@@ -296,6 +321,8 @@ export function whereOf(kind: ProposalKind, target: Record<string, unknown>): Wh
       return { label: "Season", href: "/admin?tab=season" };
     case "onboarding_path":
       return { label: "Onboarding path", href: "/profile" };
+    case "session_agenda":
+      return { label: "Sessions, agenda items", href: "/sessions" };
     case "setting": {
       const path = t("path");
       for (const [re, at] of SETTING_PAGES) {
@@ -361,6 +388,9 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
       }
       case "onboarding_path":
         return { doc: (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? null };
+      case "session_agenda":
+        // New items: nothing is live in their place.
+        return null;
       case "setting": {
         const readPath = String(target.readPath ?? target.path ?? "");
         const a = await run("GET", readPath);
@@ -463,6 +493,19 @@ export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind
     case "onboarding_path": {
       const live = (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? {};
       return through("PUT", route.path, { doc: mergeOnto(live, obj(body.doc) ?? {}) });
+    }
+    case "session_agenda": {
+      // Read again as the person accepted it (their edits included); each item through the member's own door, as them.
+      const read = readProposedAgenda(target, body);
+      if (!read.ok) return { ok: false, error: read.error, field: read.field };
+      for (let i = 0; i < read.value.items.length; i++) {
+        const done = await through("POST", route.path, agendaItemBody(read.value, read.value.items[i]));
+        if (!done.ok) {
+          const landed = i === 0 ? "None of the items was added." : i === 1 ? "Item 1 was added; the rest were not." : `Items 1 to ${i} were added; the rest were not.`;
+          return { ...done, error: `Item ${i + 1}: ${done.error} ${landed}`, field: done.field ?? `items.${i}` };
+        }
+      }
+      return { ok: true };
     }
     case "setting": {
       // A new gathering with no status goes on the calendar, for a proposal filed before the filing rule (`settingBodyToApply`).

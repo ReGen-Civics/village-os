@@ -255,4 +255,77 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     expect(state.parameters.comingSoon).toBe(true);
     expect(state.circleId).toBe("pc-land");
   });
+
+  it("THE MEETING'S AGENDA (17 Nov 2026): an agent reads a circle's meetings, proposes items for one of them, and they wait for that meeting only once a person accepts", async () => {
+    expect((await call("PUT", "/api/admin/modules/sessions/lifecycle", { lifecycle: "members" })).status).toBe(200);
+    expect((await call("POST", "/api/admin/circles", { id: "pc-anchor", name: "Anchor" })).status).toBe(200);
+    // Two rhythms, set by the founder (an admin keeps any circle's rhythm): Thursdays first, then a named Monday one.
+    const thu = await call("PUT", "/api/sessions/circles/pc-anchor/rhythm", { kind: "weekly", weekday: 4, everyWeeks: 1, time: "13:00", durationMin: 120, name: "Thursday steward sync" });
+    expect(thu.status, thu.text).toBe(200);
+    const mon = await call("POST", "/api/sessions/circles/pc-anchor/rhythms", { kind: "weekly", weekday: 1, everyWeeks: 1, time: "12:00", durationMin: 90, name: "Monday all-staff" });
+    expect(mon.status, mon.text).toBe(200);
+
+    // The agent reads the meetings through admin_request, though the village's own list does not name the path.
+    const read = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions" });
+    expect(read.json.result.isError, read.text).toBe(false);
+    const rows = read.json.result.structuredContent?.comingUp?.rows;
+    expect(Array.isArray(rows), read.text.slice(0, 600)).toBe(true);
+    const row = (rows as any[]).find((r) => r.circleId === "pc-anchor");
+    const thursday = (row.rhythms as any[]).find((l) => l.name === "Thursday steward sync");
+    expect(thursday.key).toBe("main");
+    const summary = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions/circles/pc-anchor/summary" });
+    expect(summary.json.result.isError, summary.text).toBe(false);
+    // An agent write to the same door stays refused: items reach a meeting through a proposal only.
+    const write = await tool(adminVat, "admin_request", { method: "POST", path: "/api/sessions/library", body: { title: "Payroll", circleId: "pc-anchor" }, summary: "Add payroll to the Thursday agenda." });
+    expect(write.json.result.isError).toBe(true);
+    expect((await call("GET", "/api/sessions")).json.library.items).toEqual([]);
+
+    // Filing checks the shape and the meeting.
+    const bad = await tool(adminVat, "propose_changes", {
+      batch: "Thursday, wrong",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-anchor", rhythmKey: "rnothere" }, body: { items: [{ title: "Payroll", kind: "decision" }] }, summary: "Payroll for Thursday." }],
+    });
+    expect(JSON.stringify(bad.json.result.structuredContent)).toMatch(/no meeting rhythm with that key/);
+    const badKind = await tool(adminVat, "propose_changes", {
+      batch: "Thursday, wrong kind",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-anchor" }, body: { items: [{ title: "Payroll", kind: "vote" }] }, summary: "Payroll for Thursday." }],
+    });
+    expect(JSON.stringify(badKind.json.result.structuredContent)).toMatch(/kind is one of consent, decision, discussion/);
+
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Thursday steward sync",
+      items: [
+        {
+          kind: "session_agenda",
+          target: { circleId: "pc-anchor", rhythmKey: thursday.key },
+          body: {
+            items: [
+              { title: "Adopt the water agreement", kind: "consent", detail: "Draft is in the shared folder.", ownerRole: "Water Steward" },
+              { title: "Guest house opening", kind: "discussion" },
+            ],
+          },
+          summary: "Put two items on Thursday's steward sync.",
+        },
+      ],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    // Nothing waits until a person accepts; the review page names the meeting.
+    expect((await call("GET", "/api/sessions")).json.library.items).toEqual([]);
+    const page = await call("GET", "/api/admin/proposals");
+    const change = page.json.changes.find((c: any) => c.id === id);
+    expect(change.targetLabel).toBe("2 agenda items for the Anchor circle's Thursday steward sync");
+    expect(change.where).toEqual({ label: "Sessions, agenda items", href: "/sessions" });
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.json.results, acc.text).toEqual([{ id, ok: true }]);
+    const items = (await call("GET", "/api/sessions")).json.library.items as any[];
+    expect(items.map((i) => [i.title, i.aim, i.circleId, i.rhythmKey, i.rhythmName, i.mine])).toEqual([
+      ["Adopt the water agreement", "decide", "pc-anchor", "main", "Thursday steward sync", true],
+      ["Guest house opening", "explore", "pc-anchor", "main", "Thursday steward sync", true],
+    ]);
+    expect(items[0].note).toBe("For consent.\n\nOwner role: Water Steward.\n\nDraft is in the shared folder.");
+    // They wait for Thursday, never Monday.
+    const lines = ((await call("GET", "/api/sessions")).json.comingUp.rows as any[]).find((x) => x.circleId === "pc-anchor").rhythms as any[];
+    expect(Object.fromEntries(lines.map((l) => [l.name, l.waiting]))).toEqual({ "Thursday steward sync": 2, "Monday all-staff": 0 });
+  });
 });
