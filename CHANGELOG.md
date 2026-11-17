@@ -52,6 +52,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **The review page for proposed changes is easier to read.** Each batch and each change shows as a card, with the change as before and after, plain flags (a public page, money words, a calendar event and the like), filters, and a history of what was decided and by whom. Accepting works as it did.
 - **Season goals keep their links when reworded.** Rewording or moving a goal in a proposal keeps it the same goal, so the quests, moon items and tasks linked to it stay linked. An admin can also move links left behind by an earlier rewording onto the goal that replaced it.
 - **Rites and invitations** (a new module, off by default): rites the village names, spoken ones sworn in a ceremony with witnesses present or on a call, a mark each member draws, a buddy beside each newcomer, an inviter's own line on an invitation, and a member's lasting door code for a printed QR.
+- **Fonts load only from places the village trusts:** its own uploads, Google Fonts and the village's own site.
 - **Smaller fixes.** A member's cash owed shows its cents, the same figure the Treasurer sees. A quest valued at zero shows what it pays and no longer reads "Worth $0.00". The public game rules page no longer says money can buy tokens in a village where the exchange is off. On the hidden map, a paid planting needs its own photo and two members vouching, with at most 5 a week (a dial). Only the person who started a protocol run, or someone who ticked a step on it, can end it.
 
 ### What you must do
@@ -81,6 +82,7 @@ Yes, one expand-only migration:
 - #1416 Priorities everyone can see: weekly top priority, a priority board, an ask's place in line
 - #1417 Review page as cards: batches, before and after, flags, filters, history
 - #1418 Batch 188: role applications on Admin Today and Inbox (#1413)
+- #1420 Batch 189: font hosts allowlist and the Spanish online-voice line (#1408)
 
 ---
 
