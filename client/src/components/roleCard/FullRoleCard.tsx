@@ -39,6 +39,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { bandWords, rewardWords } from "./rewardWords";
+import ValueCallout from "./ValueCallout";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -241,6 +242,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <>
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <ValueCallout />
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
         </>
@@ -248,6 +250,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <>
           {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <ValueCallout />
         </>
       )}
       {pay.shape.length > 0 && (
