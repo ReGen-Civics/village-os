@@ -22,28 +22,28 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 260 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 262 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 289 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 291 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-316 dials in 40 categories. 166 carry a minimum and a maximum. By type: 129 integer, 19 decimal, 19 percentage, 43 boolean, 36 choice, 62 text, 8 longtext.
+318 dials in 40 categories. 168 carry a minimum and a maximum. By type: 131 integer, 19 decimal, 19 percentage, 43 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
 | Membership | 3 | 3 | 0 |
 | Village | 5 | 4 | 1 |
 | Gratitude | 11 | 11 | 0 |
-| Ledger | 17 | 9 | 8 |
+| Ledger | 19 | 11 | 8 |
 | The Mint | 7 | 6 | 1 |
 | Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
@@ -123,6 +123,8 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Most one member may redeem per cycle, in money | `redemption.max_per_member_per_cycle` | Ledger | decimal | blank, which is no ceiling | the whole village |
 | How redemption works here | `redemption.process_text` | Ledger | longtext | blank | the founder or an admin |
 | Most the village will redeem per cycle, in money | `redemption.max_village_per_cycle` | Ledger | decimal | blank, which is no ceiling | the whole village |
+| How far under the suggestion one person may set pay | `valuation.band_below_pct` | Ledger | integer | blank, which is follows the valuation model | the whole village |
+| How far over the suggestion one person may set pay | `valuation.band_above_pct` | Ledger | integer | blank, which is follows the valuation model | the whole village |
 | Voice needed before a member can claim | `economy.voice_claim_threshold` | The Mint | integer | `100` | the whole village |
 | Earned equity needed before a member can claim | `economy.equity_claim_threshold` | The Mint | integer | `1` | the whole village |
 | How many days Claims Week stays open | `economy.claims_week_days` | The Mint | integer | `7` | the whole village |
@@ -712,7 +714,7 @@ How many separate taps of appreciation one member can leave for another in a cyc
 
 ## Ledger
 
-17 dials. 9 for the whole village, 8 for the founder or an admin.
+19 dials. 11 for the whole village, 8 for the founder or an admin.
 
 ### Issuance cap per lunar cycle
 
@@ -961,6 +963,38 @@ Counted across every member's requests in a lunar cycle, the ones still waiting 
 | Default | blank, which is no ceiling |
 | Range | 0 to 1000000000 |
 | Left blank | no ceiling, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How far under the suggestion one person may set pay
+
+The valuation engine suggests a figure for a role's pay or a quest's price. A figure from this far under the suggestion up to the top of the band is set by one person's word. A figure lower than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 20 means the band starts at 80% of it, and 0 means nothing under the suggestion is inside. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.
+
+| Fact | Value |
+| --- | --- |
+| Key | `valuation.band_below_pct` |
+| Type | integer, a whole number |
+| Default | blank, which is follows the valuation model |
+| Range | 0 to 100 |
+| Counted in | % |
+| Left blank | follows the valuation model, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How far over the suggestion one person may set pay
+
+The other side of the same band. A figure from the bottom of the band up to this far over the suggestion is set by one person's word. A figure higher than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 0 means the suggestion itself is the top of the band, and 10 means up to 110% of it. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.
+
+| Fact | Value |
+| --- | --- |
+| Key | `valuation.band_above_pct` |
+| Type | integer, a whole number |
+| Default | blank, which is follows the valuation model |
+| Range | 0 to 100 |
+| Counted in | % |
+| Left blank | follows the valuation model, and 0 is the number zero |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

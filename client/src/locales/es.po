@@ -3833,6 +3833,11 @@ msgctxt "founding application value"
 msgid "The village has not set its goals for this season yet. You can still apply: say in each item what it brings."
 msgstr "La aldea todavía no ha definido sus metas para esta temporada. Aun así puedes postular: di en cada aporte lo que trae."
 
+#: client/src/components/valuation/NoSignBandNote.tsx
+msgctxt "no-sign band"
+msgid "The band is the suggestion itself."
+msgstr ""
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
 msgid "Proposed by the member who keeps it. The circle decides by consent, as for a person."
@@ -5066,6 +5071,11 @@ msgctxt "companion welcome"
 msgid "Four-letter type (optional)"
 msgstr "Tipo de cuatro letras (opcional)"
 
+#: client/src/components/valuation/NoSignBandNote.tsx
+msgctxt "no-sign band"
+msgid "The band runs from {belowPct}% under the suggestion to {abovePct}% over it."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "For example: the two of us and the care holder"
 msgstr ""
@@ -5136,6 +5146,11 @@ msgstr ""
 #~ msgctxt "roles page, roles after the founding team"
 #~ msgid "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk."
 #~ msgstr "Primero estamos formando el equipo fundador. Puedes postularte a cualquiera de estos desde ya. Puede que tardemos en responder, y te escribiremos en cuanto estemos listos para conversar."
+
+#: client/src/components/valuation/NoSignBandNote.tsx
+msgctxt "no-sign band"
+msgid "Inside it, one person's word sets the figure."
+msgstr ""
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -7740,6 +7755,11 @@ msgstr ""
 msgctxt "open proposal link label placeholder"
 msgid "What it is"
 msgstr "Qué es"
+
+#: client/src/components/valuation/NoSignBandNote.tsx
+msgctxt "no-sign band"
+msgid "The band runs from the suggestion itself up to {abovePct}% over it."
+msgstr ""
 
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
@@ -20637,6 +20657,11 @@ msgstr ""
 
 #: client/src/components/admin/RoleListingPanel.tsx
 msgid "The earlier listing is back"
+msgstr ""
+
+#: client/src/components/valuation/NoSignBandNote.tsx
+msgctxt "no-sign band"
+msgid "The band runs from {belowPct}% under the suggestion up to the suggestion itself."
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
