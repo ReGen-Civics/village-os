@@ -40,6 +40,35 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.19 (2026-11-16)
+
+### What changed for your village
+
+- **Roles can show as Coming soon, Future venture, Held or Unlisted, besides Open.**
+  - **Coming soon** roles are listed under the steward who leads their circle, as "Roles this steward will build", with a Coming soon tag. People can apply now through the same form. The card, the form and the confirmation all say: "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start."
+  - **Future ventures** have their own section, with no lead. The card, the form and the confirmation show the five parts of a pitch.
+  - **Held** roles show as held, with no Apply button.
+  - **Unlisted** roles stay hidden, as before.
+- **In Admin:** each role card has a "Who sees this role" choice and a circle picker. Moving a role keeps its id and history. Each circle has a "Lead role" picker, which decides whose list its coming-soon roles appear under. A circle with nothing left to show disappears for visitors.
+
+### What you must do
+
+Nothing. Every role keeps the state it had. Nothing becomes Coming soon or a Future venture until someone sets it.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.18 undo it |
+|---|---|---|
+| `0399_a_role_can_be_coming_soon` | Adds two role columns, coming soon and future venture, both off by default. Changes no existing value. | No. The columns stay and 1.3.18 ignores them, so going back is safe. |
+
+### Merged pull requests
+
+- #1424 Batch 190: roles coming soon and future venture (#1419)
+
+---
+
 ## 1.3.18 (2026-11-17)
 
 ### What changed for your village
