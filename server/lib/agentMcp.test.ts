@@ -511,7 +511,7 @@ describe("add_agenda_item (sessions.write)", () => {
 
 describe("hand_task_to_role (tasks.write)", () => {
   /** A holder whose task routes answer the way the real ones do. People are in the targets, and must never come back out. */
-  function handoffs(post: RouteAnswer = { status: 201, body: { id: "rq-00000000-0000-4000-8000-000000000001" } }) {
+  function handoffs(post: RouteAnswer = { status: 201, body: { id: "rq-00000000-0000-4000-8000-000000000001" } }, listOn = true) {
     const base = holder();
     const calls: Array<{ method: string; path: string; body?: any }> = [];
     const ctx: ToolContext = {
@@ -519,6 +519,7 @@ describe("hand_task_to_role (tasks.write)", () => {
       dispatch: async (method, path, body) => {
         calls.push({ method, path, body });
         if (method === "GET" && path === "/api/member-tasks/redirect-targets") {
+          if (!listOn) return { status: 403, body: { error: "list_off" } };
           return { status: 200, body: { people: [{ id: "u-9", name: "Ana Example" }], roles: [{ id: "r-fin", name: "Finance steward" }, { id: "r-ops", name: "Operations steward" }] } };
         }
         if (method === "POST" && path === "/api/member-tasks/handoffs") return post;
@@ -568,7 +569,7 @@ describe("hand_task_to_role (tasks.write)", () => {
 
   it("lists the roles when no role is named, and never reads out people", async () => {
     const h = handoffs();
-    const r = await ask(callTool("hand_task_to_role", { title: "x" }), ["tasks.write"], h.ctx);
+    const r = await ask(callTool("hand_task_to_role", {}), ["tasks.write"], h.ctx);
     expect(r.result.isError).toBe(true);
     expect(r.result.structuredContent.detail.roles).toEqual([{ id: "r-fin", name: "Finance steward" }, { id: "r-ops", name: "Operations steward" }]);
     expect(JSON.stringify(r.result)).not.toContain("Ana Example");
@@ -582,8 +583,22 @@ describe("hand_task_to_role (tasks.write)", () => {
     const r = await ask(callTool("hand_task_to_role", { roleId: "r-fin", title: "Reconcile\u200b   receipts\u202e", note: "a\n\n\n\nb" }), ["tasks.write"], h.ctx);
     expect(r.result.structuredContent.echo.body).toEqual({ roleId: "r-fin", title: "Reconcile receipts", note: "a\n\nb", dueOn: null });
     expect((await ask(callTool("hand_task_to_role", { ...args, dueOn: "next friday" }), ["tasks.write"], h.ctx)).result.structuredContent.error).toContain("YYYY-MM-DD");
+    expect((await ask(callTool("hand_task_to_role", { ...args, dueOn: "2099-13-45" }), ["tasks.write"], h.ctx)).result.structuredContent.error).toContain("YYYY-MM-DD");
     expect((await ask(callTool("hand_task_to_role", { ...args, title: " " }), ["tasks.write"], h.ctx)).result.structuredContent.error).toContain("title");
     expect(posts(h.calls)).toEqual([]);
+  });
+
+  it("says in words when the member's task list is off, on the read and on the send", async () => {
+    const off = handoffs(undefined, false);
+    const r = await ask(callTool("hand_task_to_role", args), ["tasks.write"], off.ctx);
+    expect(r.result.isError).toBe(true);
+    expect(r.result.structuredContent.error).toContain("task list is off");
+    expect(r.result.structuredContent.error).not.toContain("list_off");
+
+    const sendOff = handoffs({ status: 403, body: { error: "list_off" } });
+    const token = (await ask(callTool("hand_task_to_role", args), ["tasks.write"], sendOff.ctx)).result.structuredContent.confirmToken;
+    const r2 = await ask(callTool("hand_task_to_role", { ...args, confirmToken: token }), ["tasks.write"], sendOff.ctx);
+    expect(r2.result.structuredContent.error).toContain("task list is off");
   });
 
   it("passes the route's refusal on in its words", async () => {

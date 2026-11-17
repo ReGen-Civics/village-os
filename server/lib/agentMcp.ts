@@ -54,7 +54,8 @@ import { adminRequestDecision, leadApprovalSubject, leadApprovedBodyProblem, lea
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
 import { LIBRARY_API, LIBRARY_LIMITS } from "../../shared/sessionLibrary";
 import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
-import { HANDOFF_LIMITS, HANDOFFS_URL } from "../../shared/roleTaskHandoff";
+import { HANDOFF_LIMITS, HANDOFF_REFUSALS, HANDOFFS_URL } from "../../shared/roleTaskHandoff";
+import { isDayKey } from "../../shared/memberTasks";
 import { echoHash, type AgentScope } from "./agentTokens";
 import { INBOX_TOOLS, TIER_B_TOOLS } from "./agentMcpTierB";
 import { PROPOSAL_TOOLS } from "./agentMcpProposals";
@@ -430,7 +431,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     kind: "write",
     title: "Hand a task to a role",
     description:
-      "Sends a new task to one of the village's roles, exactly as the holder does from their profile: it waits on the role's holders (or, while nobody holds it, the circle's lead, then the stewards), who accept it, suggest a change or decline it, and the holder hears each answer. Nothing is accepted on its own. Call it first without confirmToken: it writes nothing and answers with the task, the role's name and a confirmToken. Show that to the member, and after their yes call it again with the same arguments and the confirmToken. Call it with no roleId to see the roles a task can go to.",
+      "Hands a new task to one of the village's roles, exactly as the holder does from their profile: it waits on the role's holders (or, while nobody holds it, the circle's lead, then the stewards), who accept it, suggest a change or decline it, and the holder hears each answer. Nothing is accepted on its own. Call it first without confirmToken: it writes nothing and answers with the task, the role's name and a confirmToken. Show that to the member, and after their yes call it again with the same arguments and the confirmToken. Call it with no roleId (a title is not needed then) to see the roles a task can go to.",
     inputSchema: {
       type: "object",
       properties: {
@@ -445,30 +446,34 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     },
     routes: ["GET /api/member-tasks/redirect-targets", `POST ${HANDOFFS_URL}`],
     async run(args, ctx) {
+      // A member whose own task list is off gets 403 list_off from both routes (memberTaskBridge `member`, roleTaskHandoffs `sender`).
+      const listOff = (a: RouteAnswer) => a.status === 403 && (a.body as { error?: unknown } | null)?.error === "list_off";
+      if (args.roleId !== undefined && args.roleId !== null && typeof args.roleId !== "string") return { ok: false, error: "roleId is a role's id." };
+      const roleId = typeof args.roleId === "string" ? args.roleId.trim() : "";
+
+      // The roles a task can go to, read live: the same list the profile's form offers. People are never read out.
+      const targets = await ctx.dispatch("GET", "/api/member-tasks/redirect-targets");
+      if (listOff(targets)) return { ok: false, error: `Tasks cannot be handed on from here. ${HANDOFF_REFUSALS.listOff}` };
+      if (targets.status !== 200) return refusal("The roles could not be read", targets);
+      const roles = (Array.isArray((targets.body as { roles?: unknown })?.roles) ? (targets.body as { roles: unknown[] }).roles : [])
+        .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+        .map((r) => ({ id: String(r.id ?? ""), name: String(r.name ?? "") }))
+        .filter((r) => r.id);
+      if (!roleId) return { ok: false, error: "Name the role: roleId, one of the roles listed here.", detail: { roles } };
+      const role = roles.find((r) => r.id === roleId);
+      if (!role) return { ok: false, error: "That role is not one a task can go to now. Pick one listed here.", detail: { roles } };
+
       // The handoff route's own cleaning (parseHandoffWords), so the echo the member says yes to is what is sent.
       const title = cleanLine(args.title, HANDOFF_LIMITS.title + 1);
       if (!title) return { ok: false, error: "Say what the task is: a title." };
       if (title.length > HANDOFF_LIMITS.title) return { ok: false, error: `Keep the title to ${HANDOFF_LIMITS.title} characters.` };
       const note = cleanText(args.note, HANDOFF_LIMITS.note + 1);
       if (note && note.length > HANDOFF_LIMITS.note) return { ok: false, error: `Keep the note to ${HANDOFF_LIMITS.note} characters.` };
-      if (args.dueOn !== undefined && args.dueOn !== null && args.dueOn !== "" && (typeof args.dueOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(args.dueOn))) {
-        return { ok: false, error: "dueOn is a day as YYYY-MM-DD." };
+      // The shape and a real date here; "from the village's today on" stays with the route, which knows the village's day.
+      if (args.dueOn !== undefined && args.dueOn !== null && args.dueOn !== "" && !isDayKey(args.dueOn)) {
+        return { ok: false, error: "dueOn is a real day as YYYY-MM-DD." };
       }
       const dueOn = typeof args.dueOn === "string" && args.dueOn ? args.dueOn : null;
-      if (args.roleId !== undefined && args.roleId !== null && typeof args.roleId !== "string") return { ok: false, error: "roleId is a role's id." };
-
-      // The roles a task can go to, read live: the same list the profile's form offers. People are never read out.
-      const targets = await ctx.dispatch("GET", "/api/member-tasks/redirect-targets");
-      if (targets.status === 404) return { ok: false, error: "Tasks cannot be handed on here: the task list is off in this village." };
-      if (targets.status !== 200) return refusal("The roles could not be read", targets);
-      const roles = (Array.isArray((targets.body as { roles?: unknown })?.roles) ? (targets.body as { roles: unknown[] }).roles : [])
-        .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
-        .map((r) => ({ id: String(r.id ?? ""), name: String(r.name ?? "") }))
-        .filter((r) => r.id);
-      const roleId = typeof args.roleId === "string" ? args.roleId.trim() : "";
-      if (!roleId) return { ok: false, error: "Name the role: roleId, one of the roles listed here.", detail: { roles } };
-      const role = roles.find((r) => r.id === roleId);
-      if (!role) return { ok: false, error: "That role is not one a task can go to now. Pick one listed here.", detail: { roles } };
 
       const body = { roleId: role.id, title, note, dueOn };
       const echo = { method: "POST", path: HANDOFFS_URL, role: role.name, body };
@@ -489,6 +494,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
       if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
       // The route checks the role is live, the day is from today on, and its hourly limit, as it does for the form.
       const a = await ctx.dispatch("POST", HANDOFFS_URL, body);
+      if (listOff(a)) return { ok: false, error: `The task was not handed on. ${HANDOFF_REFUSALS.listOff}` };
       if (a.status >= 300) return refusal("The task was not handed on", a);
       return { ok: true, result: { written: true, echo, id: (a.body as { id?: unknown } | null)?.id ?? null } };
     },
