@@ -4,7 +4,7 @@
  * the role's minimum and hides while ranges are off; the split edits both ways and always adds up; the card's
  * choice rides the Apply link; the deciders see a badge only for a split the applicant changed.
  */
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { setupI18n } from "@lingui/core";
@@ -13,6 +13,7 @@ import { bandAt, bandAtWords, offersSlider, sliderSteps, totalAgainstBand } from
 import { choiceQuery, commitmentFromQuery, splitFromQuery } from "./applyChoice";
 import CommitmentPicker, { useCommitmentChoice } from "./CommitmentPicker";
 import SplitControl from "./SplitControl";
+import FullRoleCard, { applyHrefForRole } from "./FullRoleCard";
 import SplitReview from "@/components/openProposal/SplitReview";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
@@ -105,7 +106,8 @@ function Card({ showsRange }: { showsRange: boolean }) {
 describe("the picker on the card", () => {
   it("slides the band and the split's amounts together, with a spoken value", () => {
     render(<Card showsRange />);
-    expect(screen.getByText("Band: $9,623 to $12,029 a month in total comp")).toBeTruthy();
+    // At 100% the card's own band line says it; the picker adds none.
+    expect(screen.queryByText(/^Band/)).toBeNull();
     const slider = screen.getByLabelText("Your commitment") as HTMLInputElement;
     expect(slider.getAttribute("aria-valuetext")).toBe("100% commitment, $9,623 to $12,029");
     fireEvent.change(slider, { target: { value: "30" } });
@@ -114,6 +116,7 @@ describe("the picker on the card", () => {
   });
   it("draws no band while the village hides ranges", () => {
     render(<Card showsRange={false} />);
+    fireEvent.change(screen.getByLabelText("Your commitment"), { target: { value: "50" } });
     expect(screen.queryByText(/^Band/)).toBeNull();
     expect(screen.getByLabelText("Your commitment")).toBeTruthy();
   });
@@ -132,5 +135,37 @@ describe("the deciders' view of the split", () => {
     const rows = [...document.querySelectorAll("[data-split-row]")].map((r) => [r.getAttribute("data-split-row"), r.getAttribute("data-split-row-changed"), r.textContent]);
     expect(rows[0]).toEqual(["Cash", "yes", "Cashchanged60% · $3,60050% · $3,000"]);
     expect(rows[2][1]).toBe("no");
+  });
+});
+
+describe("the slider on the full role card", () => {
+  const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanion: "", paid: true, payShape: SHAPE, payNote: "", payCeiling: CEILING, paySplitNote: "" };
+  const seat = (card: Record<string, unknown>) => ({ id: "finance", name: "Lead Finance Steward", aim: "Keep the books true.", state: "open", archetypes: [], card });
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+  it("draws the slider and the split on a role taken from 30%, and moves the split's amounts with it", async () => {
+    render(<FullRoleCard seat={seat({ commitmentMin: 30 })} sections={SECTIONS} register="founding" allPieces />);
+    const slider = (await screen.findByLabelText("Your commitment")) as HTMLInputElement;
+    expect(slider.min).toBe("30");
+    fireEvent.change(slider, { target: { value: "50" } });
+    // At 50% of $12,029 the listed price is $6,014, shared 60/40/0.
+    expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3608");
+  });
+  it("draws no slider on a role offered whole, and still offers the split (control)", async () => {
+    render(<FullRoleCard seat={seat({})} sections={SECTIONS} register="founding" allPieces />);
+    expect(await screen.findByLabelText("Cash, percent of the total")).toBeTruthy();
+    expect(screen.queryByLabelText("Your commitment")).toBeNull();
+  });
+  it("draws neither inside an application or for the people deciding (noAct)", async () => {
+    render(<FullRoleCard seat={seat({ commitmentMin: 30 })} sections={SECTIONS} register="founding" allPieces noAct />);
+    await screen.findAllByTestId("pay-shape");
+    expect(screen.queryByLabelText("Your commitment")).toBeNull();
+    expect(screen.queryByLabelText("Cash, percent of the total")).toBeNull();
+  });
+  it("the Apply link carries what the reader chose", () => {
+    expect(applyHrefForRole("finance", "commitment=50&split=50.50.0")).toBe("/propose-a-role?role=finance&commitment=50&split=50.50.0");
+    expect(applyHrefForRole("finance")).toBe("/propose-a-role?role=finance");
   });
 });

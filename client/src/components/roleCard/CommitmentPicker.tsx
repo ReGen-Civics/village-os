@@ -3,7 +3,8 @@
  * listed price at it split by hand into the shape in force. What the reader chooses here rides the Apply link
  * into the application's price step (applyChoice.ts), where it is saved with the proposal.
  *
- * The band shows only while the village shows pay ranges; the split's amounts only while the reader may see the
+ * The band at the commitment shows only below 100% (the card's band line says the full band) and only while the
+ * village shows pay ranges; the split's amounts only while the reader may see the
  * listed price (the card already drops a price the reader may not read). Display only: the contract sets the pay.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -76,7 +77,8 @@ export default function CommitmentPicker({
   return (
     <div className="grid gap-3" data-commitment-picker="">
       {sliding && <CommitmentSlider idPrefix={idPrefix} min={min} value={choice.pct} onChange={onPct} amounts={spoken} />}
-      {sliding && band && (
+      {/* At 100% the card's own band line already says it (bandWords, under the listed price). */}
+      {sliding && band && choice.pct < 100 && (
         <p className="leading-relaxed text-card-foreground" aria-live="polite" data-pay-band-at="">
           {bandAtWords(i18n, band)}
         </p>
