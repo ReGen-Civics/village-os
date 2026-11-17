@@ -40,6 +40,7 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 - **A member's own AI agent can add agenda items.** A new connector scope, `sessions.write`, opens one tool, `add_agenda_item`: an item in the agenda library for a circle, or for none in particular, added as the member after their yes to the exact item. It brings nothing into a session and changes no agenda already set; a person does that in the room. Nothing changes until a member ticks the scope when they connect their agent.
 - **A task handed to a role arrives by email.** Being handed a task, and a suggested change or a decline on one you sent, now follow the member's Task emails preference (immediate by default). An accept and a done go in the daily digest. Before, all five showed in the bell only. A member who set Task emails to Off hears nothing new.
+- **A member's own AI agent can hand a task to a role.** The connector tool `hand_task_to_role`, under the existing `tasks.write` scope, sends a new task to a role exactly as the profile's form does, after the member's yes to the exact task and role. The role's holders still accept, suggest a change or decline it; nothing is accepted on its own.
 
 ---
 
