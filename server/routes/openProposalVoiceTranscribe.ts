@@ -34,6 +34,8 @@ import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind } from "../../shared/v
 import {
   TRANSCRIBE_WORDS,
   VOICE_TRANSCRIBE_AT_ONCE,
+  VOICE_TRANSCRIBE_CLIPS_PER_CONNECTION_DAY,
+  VOICE_TRANSCRIBE_CLIPS_PER_HOUR,
   VOICE_TRANSCRIBE_MAX_SECONDS,
   VOICE_TRANSCRIBE_PATH,
   VOICE_TRANSCRIBE_PER_CONNECTION_DAY,
@@ -74,7 +76,7 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
   };
   const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: VOICE_NOTE_MAX_BYTES, files: 1, fields: 4, fieldSize: 4096, parts: 6 },
+    limits: { fileSize: VOICE_NOTE_MAX_BYTES, files: 1, fields: 6, fieldSize: 4096, parts: 8 },
   }).single("voice");
   let reading = 0;
 
@@ -121,11 +123,18 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
         const me = deps.authedUser ? await deps.authedUser(req).catch(() => null) : null;
         const uid = me?.id !== undefined && me?.id !== null ? String(me.id) : null;
         const who = uid ? `user:${uid}` : `ip:${bucket}`;
-        const caps: Array<[string, number, number, 429 | 503]> = [
-          [`open-proposal:voice-transcribe:${who}`, VOICE_TRANSCRIBE_PER_HOUR, HOUR_MS, 429],
-          [`open-proposal:voice-transcribe:daily-${who}`, VOICE_TRANSCRIBE_PER_CONNECTION_DAY, 24 * HOUR_MS, 429],
-          ["open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY, 24 * HOUR_MS, 503],
-        ];
+        // A clip beside an answer has its own count, apart from the takes (shared/voiceTranscribe.ts).
+        const clip = body.kind === "clip";
+        const caps: Array<[string, number, number, 429 | 503]> = clip
+          ? [
+              [`open-proposal:voice-transcribe:clips-${who}`, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, HOUR_MS, 429],
+              [`open-proposal:voice-transcribe:clips-daily-${who}`, VOICE_TRANSCRIBE_CLIPS_PER_CONNECTION_DAY, 24 * HOUR_MS, 429],
+            ]
+          : [
+              [`open-proposal:voice-transcribe:${who}`, VOICE_TRANSCRIBE_PER_HOUR, HOUR_MS, 429],
+              [`open-proposal:voice-transcribe:daily-${who}`, VOICE_TRANSCRIBE_PER_CONNECTION_DAY, 24 * HOUR_MS, 429],
+            ];
+        caps.push(["open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY, 24 * HOUR_MS, 503]);
         for (const [key, max, windowMs, status] of caps) {
           const got = await deps.limitState(key, max, windowMs);
           if (got === "unavailable") return res.status(503).json({ error: TRANSCRIBE_WORDS.unavailable });

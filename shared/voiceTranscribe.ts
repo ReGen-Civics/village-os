@@ -5,7 +5,7 @@
  * application and server/routes/openProposalVoiceTranscribe.ts.
  *
  *   GET  /api/open-proposals/voice-transcribe          { on }
- *   POST /api/open-proposals/voice-transcribe          multipart: `voice` (one take), `seconds`, `lang`, `link`
+ *   POST /api/open-proposals/voice-transcribe          multipart: `voice` (one take or clip), `seconds`, `lang`, `link`, `kind` (take | clip)
  *                                                      -> { text }
  *
  * WHEN IT RUNS (the lead, 17 Nov 2026: "actually make it automatic and the
@@ -40,6 +40,15 @@ export const VOICE_TRANSCRIBE_PATH = "/api/open-proposals/voice-transcribe";
 export const VOICE_TRANSCRIBE_PER_HOUR = 6;
 /** The same, in a day. */
 export const VOICE_TRANSCRIBE_PER_CONNECTION_DAY = 12;
+/**
+ * CLIPS HAVE THEIR OWN COUNT (the lead, 17 Nov 2026: it should "just work for
+ * applicants mid-process"). A clip beside an answer is short, and with
+ * writing down automatic an applicant records many, so clips are counted apart
+ * from takes: a connection's clips never use up its takes' hour or day.
+ */
+export const VOICE_TRANSCRIBE_CLIPS_PER_HOUR = 20;
+export const VOICE_TRANSCRIBE_CLIPS_PER_CONNECTION_DAY = 40;
+
 /** Every take written down for the whole village in a day: at most 300 minutes of audio. */
 export const VOICE_TRANSCRIBE_PER_DAY = 60;
 /** Takes being written down at once, across the village. */

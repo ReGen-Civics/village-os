@@ -164,13 +164,15 @@ function refusalWords(said: string, i18n: I18n): string {
 }
 
 /** One recording to the service. Resolves its words, a refusal in the server's words, or null when cancelled. */
-export async function sendForWords(blob: Blob, seconds: number, link?: string): Promise<{ text: string } | { error: string } | null> {
+export async function sendForWords(blob: Blob, seconds: number, link?: string, what: "take" | "clip" = "take"): Promise<{ text: string } | { error: string } | null> {
   running.get(blob)?.abort();
   const stop = new AbortController();
   running.set(blob, stop);
   try {
     const fd = new FormData();
     fd.append("seconds", String(seconds));
+    // Clips have their own count on the server, so short clips never use up the takes' hour (shared/voiceTranscribe.ts).
+    fd.append("kind", what);
     fd.append("lang", speechLang());
     if (link) fd.append("link", link);
     fd.append("voice", blob, `take.${voiceKindOfType(blob.type)}`);
@@ -193,7 +195,7 @@ type Phase = { kind: "idle" } | { kind: "busy" } | { kind: "done" } | { kind: "s
  * Send one recording by itself once it exists, while the service and the
  * switch are on, and offer the button otherwise. `apply` puts the words in.
  */
-function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean, link: string | undefined, apply: (text: string) => string | null) {
+function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean, link: string | undefined, apply: (text: string) => string | null, what: "take" | "clip" = "take") {
   const { t, i18n } = useLingui();
   const on = useTranscriptionOn();
   const auto = useAutoWriteDown();
@@ -203,7 +205,7 @@ function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean,
 
   const go = async (b: Blob) => {
     setPhase({ kind: "busy" });
-    const got = await sendForWords(b, seconds, link);
+    const got = await sendForWords(b, seconds, link, what);
     if (!got) return setPhase({ kind: "stopped" });
     if ("error" in got) return setPhase({ kind: "said", words: refusalWords(got.error, i18n) });
     const note = applyRef.current(got.text);
@@ -329,7 +331,7 @@ function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepCl
     }
     if (blob) setClipWords(blob, text.slice(0, VOICE_CLIP_WORDS_MAX));
     return note;
-  });
+  }, "clip");
   if (!w.on) return null;
   if (!clip) return <AutoSwitch compact />;
   return (

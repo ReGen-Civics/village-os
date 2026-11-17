@@ -174,7 +174,8 @@ describe("write down my words, by itself, with a switch to turn it off", () => {
     expect(posts()[0].url).toBe(VOICE_TRANSCRIBE_PATH);
     expect(fd.get("seconds")).toBe("300");
     expect((fd.get("voice") as File).type).toBe("audio/webm");
-    expect(Array.from(fd.keys()).sort()).toEqual(["lang", "seconds", "voice"]);
+    expect(Array.from(fd.keys()).sort()).toEqual(["kind", "lang", "seconds", "voice"]);
+    expect(fd.get("kind")).toBe("take");
     // The live engine had caught "I keep": the service's words fill the box in its place.
     expect(latest.transcript).toBe("I keep the gate at dawn, every day.");
     expect(latest.takes[0].written).toBe(true);
@@ -259,6 +260,8 @@ describe("a clip beside an answer gets its words written down too", () => {
     await settle();
     expect(posts()).toHaveLength(1);
     expect((posts()[0].init!.body as FormData).get("link")).toBe("tok-123");
+    // Counted as a clip on the server, apart from the takes.
+    expect((posts()[0].init!.body as FormData).get("kind")).toBe("clip");
     expect(why).toBe("I keep the gate at dawn, every day.");
     expect(voice.clips.why).toMatchObject({ words: "I keep the gate at dawn, every day.", written: true });
   });

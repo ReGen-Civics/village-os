@@ -14,7 +14,7 @@ import http from "node:http";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
-import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
+import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
 import { HTTP_PROVIDERS, languageHint, transcribeTake, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 import { registerVoiceTranscribe } from "./openProposalVoiceTranscribe";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
@@ -118,6 +118,20 @@ describe("the door, over real HTTP", () => {
     // CONTROL: another connection still has its own hour.
     state.ip = "198.51.100.4";
     expect((await send(TINY_WEBM_OPUS)).status).toBe(200);
+  });
+
+  it("clips have their own count: they never use up the takes' hour, and stop at their own", async () => {
+    const clipSend = () => send(TINY_WEBM_OPUS, { seconds: "40", lang: "es-CR", kind: "clip" });
+    // Twenty clips in an hour, far past the six takes, all written down.
+    for (let i = 0; i < VOICE_TRANSCRIBE_CLIPS_PER_HOUR; i += 1) expect((await clipSend()).status, `clip ${i + 1}`).toBe(200);
+    // The takes' hour is untouched by them.
+    for (let i = 0; i < VOICE_TRANSCRIBE_PER_HOUR; i += 1) expect((await send(TINY_WEBM_OPUS)).status, `take ${i + 1}`).toBe(200);
+    // Each count stops at its own end, with the same plain words, and nothing more is sent.
+    const sentSoFar = state.calls.length;
+    expect(await clipSend()).toEqual({ status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } });
+    expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } });
+    expect(state.calls).toHaveLength(sentSoFar);
+    expect(sentSoFar).toBe(VOICE_TRANSCRIBE_CLIPS_PER_HOUR + VOICE_TRANSCRIBE_PER_HOUR);
   });
 
   it("caps the whole village at its day, across connections", async () => {
