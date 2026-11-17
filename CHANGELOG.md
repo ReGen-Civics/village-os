@@ -40,6 +40,52 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.18 (2026-11-17)
+
+### What changed for your village
+
+- **Interviews book with the person who holds them.** Each member can save their own booking link on their profile. An applicant's next conversation now offers the link of whoever holds that interviewing seat, named as "Role (First, First)", then the role's own link, then "We'll write to you with times". No email address is ever shown. Every scorecard now asks for a gut answer (yes, no or not sure, with one optional line). It is required, the applicant never sees it, and nothing counts it.
+- **Role applications cannot be missed.** Admin's Today counts and lists every waiting role application, from people with an account and from people without one, with a link straight to each. The Inbox shows the same list.
+- **Each role card chooses who sees its listed price.** It can follow the village switch (the default, so nothing changes until someone picks), show the price to everyone, or hide it from all but admins and the card's editors. A new village setting, off by default, can show each share's amount ("up to this much in cash and this much in equity a month").
+- **Hand a task to a role.** From their profile a member can send a task to one of the village's roles, with a note and an optional date. The role's holders accept it, suggest a change, or decline with a reason. The sender hears each answer and sees where every task they sent stands.
+- **Priorities everyone can see.** Each person shares one top priority a week, set on their profile or in the Monday meeting, and Friday's meeting marks it done, partly or carried over. The season's group priorities sit on one ordered board that the circle orders by vote. Whoever raised a tension with a role can see its place in that role's line and roughly when it will be picked up.
+- **The review page for proposed changes is easier to read.** Each batch and each change shows as a card, with the change as before and after, plain flags (a public page, money words, a calendar event and the like), filters, and a history of what was decided and by whom. Accepting works as it did.
+- **Season goals keep their links when reworded.** Rewording or moving a goal in a proposal keeps it the same goal, so the quests, moon items and tasks linked to it stay linked. An admin can also move links left behind by an earlier rewording onto the goal that replaced it.
+- **Rites and invitations** (a new module, off by default): rites the village names, spoken ones sworn in a ceremony with witnesses present or on a call, a mark each member draws, a buddy beside each newcomer, an inviter's own line on an invitation, and a member's lasting door code for a printed QR.
+- **Fonts load only from places the village trusts:** its own uploads, Google Fonts and the village's own site.
+- **Smaller fixes.** A member's cash owed shows its cents, the same figure the Treasurer sees. A quest valued at zero shows what it pays and no longer reads "Worth $0.00". The public game rules page no longer says money can buy tokens in a village where the exchange is off. On the hidden map, a paid planting needs its own photo and two members vouching, with at most 5 a week (a dial). Only the person who started a protocol run, or someone who ticked a step on it, can end it.
+
+### What you must do
+
+Nothing. If you want applicants to see a different price on a role card, or each share's amount, set it in the role editor under "The listed price on the card".
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.17 undo it |
+|---|---|---|
+| `0393_rites_and_invitations` | Adds 9 new tables for rites and invitations. Changes no existing table or value. | No. The tables stay and the previous release ignores them, so going back is safe. |
+
+### Merged pull requests
+
+- #1390 Rites and invitations (module, off)
+- #1394 Game Mechanics says nothing about buying tokens where the exchange is off
+- #1400 A quest valued at zero shows what it pays
+- #1406 Batch 186: Protocols and Hidden map audit follow-ups
+- #1409 Batch 187: members see cents (#1407)
+- #1410 Season goals proposals keep goal ids when a goal is reworded or moved
+- #1411 Book each conversation with its interviewer, and add a gut check to the scorecard
+- #1412 Give each role card its own say over who sees its listed price
+- #1414 Hand a task to a role: holders accept, suggest a change, or decline
+- #1415 A season's goal links move off a goal id a rewording replaced
+- #1416 Priorities everyone can see: weekly top priority, a priority board, an ask's place in line
+- #1417 Review page as cards: batches, before and after, flags, filters, history
+- #1418 Batch 188: role applications on Admin Today and Inbox (#1413)
+- #1420 Batch 189: font hosts allowlist and the Spanish online-voice line (#1408)
+
+---
+
 ## 1.3.17 (2026-11-16)
 
 ### What changed for your village

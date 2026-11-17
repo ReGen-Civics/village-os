@@ -14,6 +14,7 @@ import InfoTip from "@/components/InfoTip";
 import { gameFetch, useSeason } from "@/lib/gameApi";
 import { PeopleLockNote, type PeopleTier } from "@/components/PeopleLock";
 import SeatAction from "@/components/power/SeatAction";
+import { ComingSoonChip } from "@/components/ComingSoon";
 import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/SeatTermsSlot";
 import SeatHistory from "@/components/power/SeatHistory";
 import SeatSheet from "@/components/power/SeatSheet";
@@ -87,7 +88,7 @@ interface CircleEntry {
   domain?: string;
   members?: string;
   /** The seats this circle carries, which are its focus areas. Each opens its card. */
-  seats: Array<{ id: string; name: string }>;
+  seats: Array<{ id: string; name: string; comingSoon?: boolean; futureVenture?: boolean }>;
   icon?: string;
   color?: string;
   /** Optional scene override (motif id or /api/uploads/…); keywords otherwise. */
@@ -226,6 +227,7 @@ function CircleCard({ circle, expanded, onToggle, index, onOpenSeat, coordinator
                         style={{ background: hue }}
                       >
                         {s.name}
+                        {(s.comingSoon || s.futureVenture) && <ComingSoonChip role={s} className="ml-2" />}
                       </button>
                     ))}
                   </div>
@@ -345,7 +347,7 @@ export default function Circles() {
               // not yet started running, which is what "future" always meant.
               stage: String(c.status ?? "active") === "active" ? "today" : "future",
               // The seats a circle carries ARE its focus areas.
-              seats: seats.filter((s: any) => s.name).map((s: any) => ({ id: String(s.id), name: String(s.name) })),
+              seats: seats.filter((s: any) => s.name).map((s: any) => ({ id: String(s.id), name: String(s.name), ...(s.comingSoon === true ? { comingSoon: true } : {}), ...(s.futureVenture === true ? { futureVenture: true } : {}) })),
               /*
                * These two travelled from the admin form into the database and
                * were then deleted by `/api/org`'s projection, one line before

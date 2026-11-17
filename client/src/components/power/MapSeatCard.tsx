@@ -24,6 +24,7 @@ import { authToken, useSeason } from "@/lib/gameApi";
 import { useHypha } from "@/modules/ModuleProvider";
 import { fromMapSeat, seasonForSheet } from "@shared/roleSheetInputs";
 import NotListedChip from "@/components/NotListedChip";
+import { ComingSoonChip } from "@/components/ComingSoon";
 import SeatAction from "./SeatAction";
 import SeatHistory from "./SeatHistory";
 import SeatTradingCard from "./SeatTradingCard";
@@ -54,6 +55,11 @@ export default function MapSeatCard({
       {seat.listed === false && (
         <p className="mb-2">
           <NotListedChip role={seat} />
+        </p>
+      )}
+      {(seat.comingSoon === true || seat.futureVenture === true) && (
+        <p className="mb-2">
+          <ComingSoonChip role={seat} />
         </p>
       )}
       <SeatTradingCard

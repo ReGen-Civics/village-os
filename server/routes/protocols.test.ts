@@ -337,7 +337,9 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
 
   it("completing a linked run hands in one claim for whoever completed it, rings the other stewards, and a repeat opens none", async () => {
     const run = "run-shed-00000001";
-    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1 } });
+    // A past start, as the other runs here have: the route clamps `at` to between the start and
+    // now, so a run that starts today would move the note to today's date.
+    await call("POST /api/protocols/runs", { body: { id: run, protocolId: "shed", version: 1, startedAt: "2026-11-16T09:00:00.000Z" } });
     // Set aside, never complete: a run that is set aside claims nothing.
     const aside = "run-shed-aside-01";
     await call("POST /api/protocols/runs", { body: { id: aside, protocolId: "shed", version: 1 } });
@@ -345,14 +347,18 @@ describe.skipIf(!testDbConfigured())("protocols against a real schema", () => {
     expect(await shedClaims()).toEqual([]);
 
     await call("POST /api/protocols/runs/:id/ticks", { params: { id: run }, body: { id: "tick-shed-0001", stepId: "door", done: true } });
-    const at = "2026-11-16T09:30:00.000Z";
+    // A moment after the run started and before now, so the server's clamp (between the run's
+    // start and now) keeps it as sent whatever day the suite runs on. A fixed date here went
+    // red on every run after the day it was written.
+    const at = new Date(Date.now() - 1000).toISOString();
+    const day = at.slice(0, 10);
     const done = await call("POST /api/protocols/runs/:id/complete", { params: { id: run }, body: { at } });
     expect(done.status).toBe(200);
     expect(done.body.run.questClaimed).toBe(true);
     const mine = await shedClaims();
     expect(mine).toHaveLength(1);
     expect([mine[0].status, mine[0].userId, mine[0].note]).toEqual(["submitted", "m-wren", runClaimNote("Shed check", new Date(at))]);
-    expect(mine[0].note).toBe('Completed the checklist "Shed check" on 2026-11-16.');
+    expect(mine[0].note).toBe(`Completed the checklist "Shed check" on ${day}.`);
     // The stewards are rung, the one who did the work is not.
     expect(bells.filter((b) => b.link === "/review").map((b) => b.userId)).toEqual(["m-kai"]);
     expect((await q("SELECT `quest_claim_id` FROM `protocol_runs` WHERE `id` = ?", [run]))[0].quest_claim_id).toBe(mine[0].id); // module-review-ok: fixture SQL against the S5 scratch schema

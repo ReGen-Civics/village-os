@@ -29,6 +29,8 @@ import { readCommitmentMin, readCommitmentTarget } from "./commitmentRange";
 /** Every parameter key, in the order the editor and the card text show them. */
 export const PARAMETER_KEYS = [
   "listed",
+  "comingSoon",
+  "futureVenture",
   "recruiting",
   "alwaysChecked",
   "heldBy",
@@ -54,6 +56,8 @@ export type ParameterKey = (typeof PARAMETER_KEYS)[number];
 /** The `org_roles` column each key writes. `recruiting` is the door and has always been there. */
 export const PARAMETER_COLUMNS: Record<ParameterKey, string> = {
   listed: "listed",
+  comingSoon: "coming_soon",
+  futureVenture: "future_venture",
   recruiting: "recruiting",
   alwaysChecked: "always_checked",
   heldBy: "held_by",
@@ -115,6 +119,10 @@ export interface Interviewer {
 /** The parameters of one role, as the editor holds them. A key left out is a key left alone. */
 export type ParameterValues = {
   listed?: boolean;
+  /** Shown with a "Coming soon" badge, even while unlisted, and closed to applications (shared/roleListing.ts). */
+  comingSoon?: boolean;
+  /** Shown in "Future ventures", with no lead, and applied for with a pitch (shared/roleListing.ts). */
+  futureVenture?: boolean;
   recruiting?: boolean;
   /** A background check happens for this role whatever the references say (0370). */
   alwaysChecked?: boolean;
@@ -217,6 +225,8 @@ export const interviewMinutesTotal = (list: readonly Interviewer[]): number => l
 export function readParameter(key: ParameterKey, raw: unknown, isRole: (id: string) => boolean = () => true): Read<ParameterValues[ParameterKey]> {
   switch (key) {
     case "listed":
+    case "comingSoon":
+    case "futureVenture":
     case "alwaysChecked":
     case "commitmentRequired":
     case "recruiting": {
@@ -226,6 +236,10 @@ export function readParameter(key: ParameterKey, raw: unknown, isRole: (id: stri
       return no(
         key === "listed"
           ? "Listed is yes or no."
+          : key === "comingSoon"
+            ? "Coming soon is yes or no."
+          : key === "futureVenture"
+            ? "Future venture is yes or no."
           : key === "alwaysChecked"
             ? "Always background-checked is yes or no."
             : key === "commitmentRequired"
@@ -381,6 +395,8 @@ export interface ParameterCardSpec {
 /** Every parameter heading, in the order a card writes them. */
 export const PARAMETER_CARD_FIELDS: readonly ParameterCardSpec[] = [
   { key: "listed", heading: "Listed", list: false, oneLine: true, aliases: ["is it listed"], limit: "Yes or no: whether visitors and members find this role." },
+  { key: "comingSoon", heading: "Coming soon", list: false, oneLine: true, aliases: [], limit: "Yes or no: whether the role shows under its circle's steward as coming soon, applied for early." },
+  { key: "futureVenture", heading: "Future venture", list: false, oneLine: true, aliases: [], limit: "Yes or no: whether the role shows in Future ventures, applied for with a pitch." },
   { key: "alwaysChecked", heading: "Always background-checked", list: false, oneLine: true, aliases: ["background check"], limit: "Yes or no: whether a check happens for this role whatever the references say." },
   { key: "heldBy", heading: "Who can hold it", list: false, oneLine: true, aliases: ["held by"], limit: "Person, agent or either: whether a person, an agent or either may hold this role." },
   { key: "commitmentPct", heading: "Commitment percent", list: false, oneLine: true, aliases: ["commitment it asks"], limit: "A whole percent from 1 to 100: how much of a person the role asks." },
