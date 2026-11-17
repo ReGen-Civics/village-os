@@ -25,6 +25,7 @@ import { DEFAULT_CLIP_LIMITS, isClipField, voiceLength, type VoiceClipLimits } f
 import { clipsFullWords, voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport } from "./useVoiceRecorder";
 import { forField } from "@/components/form/fieldName";
+import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import type { VoiceState } from "./VoiceInvite";
 
 interface ClipsContext {
@@ -63,7 +64,8 @@ export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onW
       if (gone) URL.revokeObjectURL(gone.url);
       return { ...v, clips: rest };
     });
-  const problem = recorder.problem === "blocked" ? voiceWord("micBlocked") : recorder.problem === "noMic" ? voiceWord("noMic") : null;
+  // A clip that reaches its limit says so on its own timer; every other ending is said here.
+  const problem = recorder.problem === "limit" ? null : recorderProblemWords(recorder.problem);
   const btn = "inline-flex min-h-11 items-center gap-2 rounded-full border border-border px-3 text-sm font-medium text-foreground hover:border-notice disabled:opacity-50";
 
   return (
@@ -85,7 +87,7 @@ export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onW
         )}
         {mine && !recorder.recording && (
           <>
-            <audio controls preload="metadata" src={mine.url} aria-label={forField(voiceWord("clipLabel"), fieldName)} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
+            <TakePlayer url={mine.url} type={mine.blob.type} name={field} label={forField(voiceWord("clipLabel"), fieldName)} className="h-10 min-w-0 max-w-full flex-1 basis-40" />
             <span className="text-sm tabular-nums text-muted-foreground">{voiceLength(mine.seconds)}</span>
             <button type="button" onClick={remove} aria-label={forField(voiceWord("clipRemove"), fieldName)} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
               <Trash2 className="size-4" aria-hidden="true" />
@@ -95,7 +97,7 @@ export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onW
         )}
       </div>
       {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground">{recorder.live}</p>}
-      {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{voiceWord("noTranscribe")}</p>}
+      {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{recorder.engine ? voiceWord("noTranscribe") : voiceWord("noEngine")}</p>}
       {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}
       {full && <p className={HINT}>{clipsFullWords(ctx.limits.max)}</p>}
       {mine && !ctx.voice.consent && (
