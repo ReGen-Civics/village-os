@@ -587,7 +587,8 @@ export async function setVoiceWritten(pool: Pool, id: string, noteId: string, wo
     }
     const written = { ...(voice.written ?? {}), [noteId]: words };
     const [result] = await conn.query<ResultSetHeader>(
-      "UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.voice.written', CAST(? AS JSON)) WHERE id = ? AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL",
+      // JSON_EXTRACT(?, '$') makes the map a JSON value on MySQL and MariaDB alike (MariaDB has no CAST AS JSON).
+      "UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.voice.written', JSON_EXTRACT(?, '$')) WHERE id = ? AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL",
       [JSON.stringify(written), id],
     );
     await conn.commit();
