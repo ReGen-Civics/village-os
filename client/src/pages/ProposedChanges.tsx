@@ -17,9 +17,10 @@
  * batch first. "Recently decided" is a history of the same cards: what went live (and what the reader changed
  * first), or what was put aside, who decided and when, and the reason a change did not land.
  *
- * NO "PUT IT BACK". What was live before a change was accepted is not kept with the change, so there is no before
- * value to propose back. Keeping it is one new column on proposed_changes; until then the history shows what went
- * live and the page link to check it.
+ * PROPOSE PUTTING IT BACK. An accepted change keeps what was live just before it (0400). Its history card offers
+ * "Propose putting it back", which files a NEW proposal carrying that value; it waits here like any other and moves
+ * nothing until a person accepts it. A change accepted before that release, or one of a kind that is never put back,
+ * says why in one plain line (shared/proposalPutBack.ts).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
@@ -110,6 +111,19 @@ export default function ProposedChanges() {
       return { ...all, [id]: body };
     });
     setProblems((p) => ({ ...p, [id]: [] }));
+  };
+
+  /** File a new proposal that puts an accepted change back. Nothing is applied: it joins the waiting list. */
+  const putBack = async (d: Decided): Promise<string | null> => {
+    try {
+      const r = await fetch(`/api/admin/proposals/${encodeURIComponent(d.id)}/put-back`, { method: "POST", headers: headers() });
+      const body = (await r.json().catch(() => ({}))) as { message?: string };
+      if (!r.ok) return body.message || t({ message: "That could not be filed. Reload and try again.", context: "proposed changes" });
+      await load();
+      return null;
+    } catch {
+      return t({ message: "That could not be filed. Reload and try again.", context: "proposed changes" });
+    }
   };
 
   /** Accept these changes: the dry run first, then each through its own route as this person, in order. */
@@ -398,7 +412,7 @@ export default function ProposedChanges() {
                   byKind={items[0]?.proposedByKind}
                   items={items}
                   zone={zone}
-                  renderDecided={(d) => <DecidedCard key={d.id} d={d} zone={zone} />}
+                  renderDecided={(d) => <DecidedCard key={d.id} d={d} zone={zone} onPutBack={putBack} />}
                 />
               ))}
             </section>

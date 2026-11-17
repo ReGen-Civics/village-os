@@ -15,13 +15,14 @@
  * put aside, who decided and when.
  */
 import { useState, type ReactNode } from "react";
-import { Bot, Check, ExternalLink, PenLine, UserRound, X } from "lucide-react";
+import { Bot, Check, ExternalLink, PenLine, Undo2, UserRound, X } from "lucide-react";
 import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/journey/look";
 import { faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
 import { fieldDiffs, valueAt } from "@shared/proposedChanges";
+import type { PutBackBlock } from "@shared/proposalPutBack";
 import { EventCard, FieldDiffs, RowsDiff } from "./Diff";
 import { FACE_ICON, FLAG_ICON } from "./faces";
 import { Field, asText, nodePaths } from "./ProposalEditor";
@@ -50,6 +51,20 @@ const FLAG_WORDS: Record<ChangeFlag, MessageDescriptor> = {
   calendar_event: msg({ message: "Creates a calendar event", context: "proposed changes: flag" }),
   priorities_links: msg({ message: "Changes priorities and their links", context: "proposed changes: flag" }),
 };
+
+/** Why "Propose putting it back" is not offered, keyed by the union so a new reason fails the compiler. */
+const PUT_BACK_WORDS: Record<PutBackBlock, MessageDescriptor> = {
+  not_accepted: msg({ message: "Only an accepted change can be proposed back.", context: "proposed changes: put back" }),
+  not_kept: msg({ message: "This change was accepted before the page kept what was live, so there is nothing to put back.", context: "proposed changes: put back" }),
+  unread: msg({ message: "What was live before could not be read when this was accepted, so there is nothing to put back.", context: "proposed changes: put back" }),
+  made_new: msg({ message: "This change made something new. Taking it away is its own change, on its own page.", context: "proposed changes: put back" }),
+  took_away: msg({ message: "This change took something away. Making it again is its own change, on its own page.", context: "proposed changes: put back" }),
+  goal_links: msg({ message: "Season goals carry links to quests and moon items, and putting the list back could cut them. Change the goals in Admin, Season.", context: "proposed changes: put back" }),
+  added_fields: msg({ message: "This change set fields that were not there before, and putting it back cannot take them away. Change them on the page itself.", context: "proposed changes: put back" }),
+  already_waiting: msg({ message: "A proposal putting this back is already waiting above.", context: "proposed changes: put back" }),
+};
+
+export const putBackWords = (i18n: I18n, reason: PutBackBlock): string => i18n._(PUT_BACK_WORDS[reason]);
 
 export const flagWords = (i18n: I18n, flag: ChangeFlag): string => i18n._(FLAG_WORDS[flag]);
 
@@ -193,6 +208,12 @@ export default function ChangeCard({ change: c, body, zone, problems, saved, bus
         flags={flags}
         aside={
           <p className={HINT}>
+            {c.reverts && (
+              <span className={`${CHIP_SOFT} mr-2`} data-testid="puts-back">
+                <Undo2 className="size-3.5" aria-hidden="true" />
+                <Trans context="proposed changes">Puts back an earlier change</Trans>
+              </span>
+            )}
             {edited && (
               <span className={`${CHIP_SOFT} mr-2`}>
                 <Trans context="proposed changes">Edited by you</Trans>
@@ -276,8 +297,58 @@ export function ByWho({ name, kind }: { name: string; kind?: "agent" | "person" 
   );
 }
 
+/** The put-back row on an accepted change: the action, or one plain line saying why there is none. */
+function PutBack({ d, onPutBack }: { d: Decided; onPutBack?: (d: Decided) => Promise<string | null> }) {
+  const { i18n } = useLingui();
+  const [state, setState] = useState<"idle" | "filing" | "filed">("idle");
+  const [problem, setProblem] = useState<string | null>(null);
+  const verdict = d.putBack ?? { can: false as const, reason: "not_kept" as const };
+  // Once filed, the reload marks it as waiting; the reader still sees what they just did.
+  if (!verdict.can && state !== "filed") {
+    return (
+      <p className={`${HINT} border-t border-border pt-4`} data-testid="put-back-none" data-reason={verdict.reason}>
+        {putBackWords(i18n, verdict.reason)}
+      </p>
+    );
+  }
+  const file = async () => {
+    if (!onPutBack) return;
+    setState("filing");
+    setProblem(null);
+    const err = await onPutBack(d);
+    if (err) {
+      setProblem(err);
+      setState("idle");
+    } else setState("filed");
+  };
+  return (
+    <div className="space-y-2 border-t border-border pt-4">
+      {state === "filed" ? (
+        <p className="text-sm text-open" role="status" data-testid="put-back-filed">
+          <Trans context="proposed changes">Filed. It waits above like any other change, and nothing moves until someone accepts it.</Trans>
+        </p>
+      ) : (
+        <>
+          <button type="button" className={BTN_SECONDARY} disabled={state === "filing" || !onPutBack} onClick={() => void file()} data-testid={`put-back-${d.id}`}>
+            <Undo2 className="size-4" aria-hidden="true" />
+            {state === "filing" ? <Trans context="proposed changes">Filing</Trans> : <Trans context="proposed changes">Propose putting it back</Trans>}
+          </button>
+          <p className={HINT}>
+            <Trans context="proposed changes">This files a new proposal with what was live before. Nothing changes until someone accepts it.</Trans>
+          </p>
+        </>
+      )}
+      {problem && (
+        <p role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {problem}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** A decided change, in the history. */
-export function DecidedCard({ d, zone }: { d: Decided; zone: string }) {
+export function DecidedCard({ d, zone, onPutBack }: { d: Decided; zone: string; onPutBack?: (d: Decided) => Promise<string | null> }) {
   const { i18n } = useLingui();
   const route = d.route ?? { method: "PUT", path: "" };
   const kind = d.kind ?? "setting";
@@ -337,6 +408,7 @@ export function DecidedCard({ d, zone }: { d: Decided; zone: string }) {
           )}
         </div>
       )}
+      {took && <PutBack d={d} onPutBack={onPutBack} />}
     </article>
   );
 }

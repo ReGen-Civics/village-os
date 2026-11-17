@@ -8,6 +8,8 @@
  *   - drafts save on the server; the connector and an agent account cannot accept
  *   - a proposed new gathering with no status lands on the calendar, filed before that rule or after it
  *   - a change that throws on its way to its route is recorded as failed with its reason, and the rest still run
+ *   - an accept keeps what was live just before it, and "propose putting it back" files a new proposal carrying it,
+ *     applying nothing; kinds that are never put back keep nothing and say why
  */
 import http from "node:http";
 import express from "express";
@@ -38,6 +40,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   // Which routes hang up without answering, as a loopback that times out or is cut would.
   const drop = new Set<string>();
   const commitThenDrop = new Set<string>();
+  // Reads (GET) that hang up, as a loopback read that fails would; the writes still answer.
+  const dropGet = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
   const slowTarget = { on: false };
 
@@ -56,6 +60,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     fake.use(async (req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
       if (drop.has(req.path)) return void req.socket.destroy();
+      if (req.method === "GET" && dropGet.has(req.path)) return void req.socket.destroy();
       // The route does its work, then the answer is lost: a loopback that times out after its target committed.
       if (commitThenDrop.has(req.path)) {
         if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
@@ -109,6 +114,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     refuse.clear();
     drop.clear();
     commitThenDrop.clear();
+    dropGet.clear();
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
@@ -345,5 +351,92 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
     const out = await call("POST", "/api/admin/proposals/discard", { ids: [id] });
     expect(out.body.results[0].ok).toBe(true);
+  });
+
+  // ── Putting it back ────────────────────────────────────────────────────────
+
+  it("an accept keeps what was live before, and putting it back files a proposal carrying exactly that, applying nothing", async () => {
+    const wasLive = JSON.parse(JSON.stringify(content["page-home"]));
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(JSON.parse(row.before_json)).toEqual(wasLive);
+
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: true });
+
+    hits.length = 0;
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(200);
+    expect(back.body).toMatchObject({ success: true, applied: false, reverts: id });
+    expect(hits, "proposing it back moved nothing live").toHaveLength(0);
+    const [made] = await q("SELECT kind, target_json, body_json, status, reverts_id, proposed_by, proposed_by_kind FROM proposed_changes WHERE id = ?", [back.body.id]);
+    expect(made).toMatchObject({ kind: "page_content", status: "proposed", reverts_id: id, proposed_by: ADMIN.id, proposed_by_kind: "person" });
+    expect(JSON.parse(made.target_json)).toEqual(PAGE.target);
+    // The fields the change sent, each with the value it held before.
+    expect(JSON.parse(made.body_json)).toEqual({ hero: { headline: wasLive.hero.headline } });
+
+    // It waits on the page marked as putting the original back, and the original offers no second one.
+    const after = await call("GET", "/api/admin/proposals");
+    expect(after.body.changes.map((c: any) => [c.id, c.reverts])).toEqual([[back.body.id, id]]);
+    expect(after.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: false, reason: "already_waiting" });
+    expect((await call("POST", `/api/admin/proposals/${id}/put-back`)).body.reason).toBe("already_waiting");
+
+    // A person accepts it like any other, and the page reads as it did.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: back.body.id }] })).body.results[0].ok).toBe(true);
+    expect(content["page-home"]).toEqual(wasLive);
+  });
+
+  it("a variable put back carries the old live value exactly", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Dial", items: [DIAL] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    const before = JSON.parse(row.before_json);
+    expect(before).toEqual({ value: expect.anything() });
+    expect(before.value).not.toBe("10");
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(200);
+    const [made] = await q("SELECT body_json FROM proposed_changes WHERE id = ?", [back.body.id]);
+    expect(JSON.parse(made.body_json)).toEqual(before);
+  });
+
+  it("a read that fails keeps null and the accept still lands; there is then nothing to put back", async () => {
+    const BRAND = { kind: "setting", target: { method: "PUT", path: "/api/admin/brand" }, body: { tagline: "Living together" }, summary: "A new tagline." };
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Brand", items: [BRAND] }, AGENT.id);
+    const id = filed.body.ids[0];
+    dropGet.add("/api/admin/brand");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.body.results).toEqual([{ id, ok: true }]);
+    expect(hits.map((h) => `${h.method} ${h.path}`)).toEqual(["GET /api/admin/brand", "PUT /api/admin/brand"]);
+    const [row] = await q("SELECT status, before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(row).toEqual({ status: "accepted", before_json: "null" });
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: false, reason: "unread" });
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(409);
+    expect(await q("SELECT id FROM proposed_changes")).toHaveLength(1);
+  });
+
+  it("a new calendar event keeps nothing and is never put back; a change accepted before this release says so", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Calendar", items: [GATHERING] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    expect(hits.map((h) => h.method), "the calendar was never read").toEqual(["POST"]);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(row.before_json).toBeNull();
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back).toMatchObject({ status: 409, body: { reason: "made_new" } });
+
+    // The shape every change accepted before 0400 has: accepted, nothing kept.
+    await q(
+      "INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind, status, decided_by, decided_at, accepted_json) VALUES ('pc_was', ?, 1, 'variable', ?, 'Dial', 'PUT', '/api/admin/variables/org.applicant_reply_days', 'Older change', ?, ?, 'agent', 'accepted', ?, CURRENT_TIMESTAMP(3), ?)",
+      [filed.body.batchId, JSON.stringify(DIAL.target), JSON.stringify(DIAL.body), AGENT.id, ADMIN.id, JSON.stringify(DIAL.body)],
+    );
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === "pc_was").putBack).toEqual({ can: false, reason: "not_kept" });
+    expect((await call("POST", "/api/admin/proposals/pc_was/put-back")).body.reason).toBe("not_kept");
+    expect((await call("POST", "/api/admin/proposals/pc_nope/put-back")).status).toBe(404);
   });
 });

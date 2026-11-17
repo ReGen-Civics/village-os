@@ -12,6 +12,7 @@
  *   POST /api/admin/proposals/check      the dry run: each edited change read by its own validator, nothing written
  *   POST /api/admin/proposals/accept     accept a selection, in order, each through its own route AS THE PERSON
  *   POST /api/admin/proposals/discard    put a selection aside
+ *   POST /api/admin/proposals/:id/put-back  file a NEW proposal that puts an accepted change back; applies nothing
  *
  * ACCEPTING IS A PERSON'S ACT. Each change runs over the loopback with the
  * accepting person's own authorization, so the one capability gate and the
@@ -21,6 +22,13 @@
  * through the connector, is refused at accept and discard, and
  * `ALWAYS_A_PERSON` (shared/agentAdmin.ts) keeps these paths off the agent
  * paths list whatever an admin writes there.
+ *
+ * PUTTING IT BACK. Just before each change is applied, what is live is read the
+ * way the page reads it (`liveOf`) and kept on the change (0400). A failed read
+ * keeps null and the accept goes on. "Propose putting it back" files a new
+ * proposal, same kind and target, carrying what was live before and marked as
+ * putting back the original; a person accepts it here like any other
+ * (shared/proposalPutBack.ts says where it is never offered, and why).
  *
  * WHO OPENS THE PAGE. An admin, or a live holder of a power these changes need
  * (story.tell, org.decide, org.seat, dial.set), the way the approval inbox
@@ -32,7 +40,7 @@ import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { recordEvent } from "../lib/events";
 import { isAgentAccount } from "../repos/agentAccounts";
-import { applyProposal, checkProposal, labelsFor, liveOf, routeExistsIn, whereOf, type KindDeps, type Run } from "../lib/proposedChanges";
+import { applyProposal, checkProposal, labelsFor, liveOf, readBefore, routeExistsIn, whereOf, type KindDeps, type Run } from "../lib/proposedChanges";
 import * as store from "../repos/proposedChanges";
 import {
   ACCEPT_NOTE,
@@ -45,6 +53,7 @@ import {
   type ProposalInput,
 } from "../../shared/proposedChanges";
 import { APPROVAL_FIELDS } from "../../shared/agentAdmin";
+import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -58,6 +67,18 @@ const WINDOW = 10 * 60_000;
 const firstName = (name: unknown) => String(name ?? "").trim().split(/\s+/)[0] || "Someone";
 const obj = (v: unknown): Record<string, unknown> | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
 const withoutApproval = (b: Record<string, unknown>) => Object.fromEntries(Object.entries(b).filter(([k]) => !(APPROVAL_FIELDS as readonly string[]).includes(k)));
+
+/** Why a change cannot be proposed back, in words for a caller that is not the page (the page has its own). */
+const PUT_BACK_REFUSED: Record<import("../../shared/proposalPutBack").PutBackBlock, string> = {
+  not_accepted: "Only an accepted change can be proposed back.",
+  not_kept: "What was live before this change was not kept, so there is nothing to put back. Changes accepted from now on keep it.",
+  unread: "What was live before this change could not be read when it was accepted, so there is nothing to put back.",
+  made_new: "This change made something new. Taking it away is its own change, on its own page.",
+  took_away: "This change took something away. Making it again is its own change, on its own page.",
+  goal_links: "A season's goals carry links to quests and moon items, which putting the list back could cut. Change the goals in Admin, Season.",
+  added_fields: "This change set fields that were not there before, and putting it back cannot take them away. Change them on the page itself.",
+  already_waiting: "A proposal putting this change back is already waiting on the review page.",
+};
 
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, isAdmin, overLimit, members, liveHoldersOf, port, clientIp } = deps;
@@ -259,15 +280,22 @@ export function register(app: Express, deps: Deps): void {
         by: names.get(c.proposedBy) ?? "Someone",
         byKind: c.proposedByKind,
         at: c.createdAt,
+        reverts: c.reverts,
       });
     }
+    // A change that already has a put-back waiting is not offered another.
+    const waitingBack = new Set(changes.map((c) => c.reverts).filter((x): x is string => !!x));
+    const putBack = (c: store.StoredChange): PutBackVerdict => {
+      const v = putBackVerdict(c);
+      return v.can && waitingBack.has(c.id) ? { can: false, reason: "already_waiting" } : v;
+    };
     res.set("Cache-Control", "no-store").json({
       // Every time on the page is read in village time, named when it is not the reader's own.
       timezone: deps.seasonState().timezone || "UTC",
       batches: batches.map((b) => ({ id: b.id, title: b.title, by: names.get(b.proposedBy) ?? firstName(""), byKind: b.proposedByKind, at: b.createdAt })),
       changes: served,
       // The history: what was proposed, what was accepted (the person's edits included), who decided and when, and
-      // the last reason a change did not land, which a discarded change keeps. What was live before is not kept.
+      // the last reason a change did not land, which a discarded change keeps, and whether it may be proposed back.
       decided: decided.map((c) => {
         const b = decidedBatches.get(c.batchId);
         return {
@@ -291,6 +319,8 @@ export function register(app: Express, deps: Deps): void {
           by: names.get(c.decidedBy ?? "") ?? "Someone",
           at: c.decidedAt,
           edited: (c.lessons ?? []).length,
+          reverts: c.reverts,
+          putBack: putBack(c),
         };
       }),
     });
@@ -377,7 +407,13 @@ export function register(app: Express, deps: Deps): void {
       let out: { ok: true } | { ok: false; error: string; field?: string | null };
       try {
         const valid = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-        out = valid.ok ? await applyProposal(kd, run, c.kind, c.target, body) : { ok: false as const, error: valid.error, field: valid.field };
+        if (valid.ok) {
+          // What is live now, kept so this change can be proposed back (0400). A read that fails keeps null and never
+          // stops the accept; a kind that is never put back reads nothing.
+          const before = await readBefore(kd, run, c.kind, c.target, body);
+          if (before.keep) await store.saveBefore(pool, id, before.value);
+          out = await applyProposal(kd, run, c.kind, c.target, body);
+        } else out = { ok: false as const, error: valid.error, field: valid.field };
       } catch (e) {
         const error = `${REVIEW_WORDS.unknown} (${String((e as Error)?.message ?? e).slice(0, 200)})`;
         await store.markUnknown(pool, id, uid, error);
@@ -405,6 +441,42 @@ export function register(app: Express, deps: Deps): void {
       results.push({ id, ok: true });
     }
     res.json({ results, accepted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
+  });
+
+  app.post("/api/admin/proposals/:id/put-back", async (req, res) => {
+    const user = await reader(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    if (await overLimit(`proposals-file:${uid}`, 60, WINDOW)) return res.status(429).json({ error: "too_many", message: "That is a lot of proposals in a few minutes. Wait a little." });
+    const pool = getPool();
+    const c = await store.changeById(pool, String(req.params.id ?? "").slice(0, 60));
+    if (!c) return res.status(404).json({ error: "not_found", message: REVIEW_WORDS.gone });
+    const back = putBackOf(c, c.summary);
+    if (!back.ok) return res.status(409).json({ error: "cannot_put_back", reason: back.reason, message: PUT_BACK_REFUSED[back.reason] });
+    const waiting = await store.waitingPutBack(pool, c.id);
+    if (waiting) return res.status(409).json({ error: "cannot_put_back", reason: "already_waiting", id: waiting, message: PUT_BACK_REFUSED.already_waiting });
+    // Read by the same check every proposal passes. What was live may no longer pass today's rules; then nothing is filed.
+    const p = back.proposal;
+    const checked = await checkProposal(kindDeps(), { kind: p.kind, target: p.target, body: p.body, summary: p.summary });
+    if (!checked.ok) return res.status(400).json({ error: "refused", message: `Nothing was filed. ${checked.error}`, ...(checked.field ? { field: checked.field } : {}) });
+    const kind = (await isAgentAccount(pool, uid)) || req.get("x-village-connector") ? "agent" : "person";
+    const batch = await store.batchById(pool, c.batchId);
+    const title = `Putting back: ${(batch?.title || c.summary).replace(/\s+/g, " ").trim()}`.slice(0, PROPOSAL_LIMITS.title);
+    const batchId = await store.addBatch(pool, { title, proposedBy: uid, proposedByKind: kind });
+    const newId = await store.addChange(pool, {
+      batchId, position: 0, kind: p.kind, target: p.target, targetLabel: checked.label, routeMethod: checked.method, routePath: checked.path,
+      summary: p.summary, body: p.body, proposedBy: uid, proposedByKind: kind, reverts: c.id,
+    });
+    await recordEvent(pool, {
+      kind: "proposed_change",
+      text: `A change was proposed back to what was live before it: ${c.summary.slice(0, 140)}`,
+      actorUserId: uid,
+      actorKind: kind === "agent" ? "agent" : "human",
+      entityType: "proposed_change_batch",
+      entityRef: batchId,
+      audience: "admin",
+    });
+    res.json({ success: true, batchId, id: newId, reverts: c.id, applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
   });
 
   app.post("/api/admin/proposals/discard", async (req, res) => {

@@ -11,6 +11,8 @@
  *   7. A failure keeps its reason on its card; an accept that did not finish says so.
  *   8. The filters narrow by status, kind, page and proposer.
  *   9. The history shows who decided, what went live, the reader's edits and a reason a change did not land.
+ *  10. An accepted change offers "Propose putting it back" when it kept what was live before, which files a new
+ *      proposal; otherwise one plain line says why. A waiting put-back says what it is.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -369,5 +371,44 @@ describe("the history", () => {
     expect(within(two).getByTestId("decided-status").textContent).toBe("Discarded by Fern");
     expect(within(two).getByTestId("decided-error").textContent).toContain("This needs the power to turn the village's dials.");
     expect(screen.getByTestId("history-batch").textContent).toContain("Last week's words");
+  });
+});
+
+describe("propose putting it back", () => {
+  const accepted = DECIDED[0];
+  const kept = { ...accepted, id: "pc_kept", putBack: { can: true } };
+  const event = { ...accepted, id: "pc_ev", kind: "setting", target: { method: "POST", path: "/api/admin/events" }, route: { method: "POST", path: "/api/admin/events" }, putBack: { can: false, reason: "made_new" } };
+  const old = { ...accepted, id: "pc_before" }; // an older server, or a change accepted before this release: no putBack
+
+  it("offers it where a before value was kept, files a new proposal, and applies nothing", async () => {
+    const calls = stub({ changes: [], decided: [kept] });
+    render(<ProposedChanges />);
+    const card = await screen.findByTestId("decided-pc_kept");
+    fireEvent.click(within(card).getByTestId("put-back-pc_kept"));
+    await waitFor(() => expect(screen.getByTestId("put-back-filed")).toBeTruthy());
+    const posts = calls.filter((c) => c.method === "POST");
+    expect(posts.map((c) => c.url)).toEqual(["/api/admin/proposals/pc_kept/put-back"]);
+    // The page reloads, so the new proposal shows up waiting.
+    expect(calls.filter((c) => c.url === "/api/admin/proposals" && c.method === "GET").length).toBe(2);
+  });
+
+  it("says why in one plain line where it is not offered, and offers nothing on a discarded change", async () => {
+    stub({ changes: [], decided: [event, old, DECIDED[1]] });
+    render(<ProposedChanges />);
+    const ev = await screen.findByTestId("decided-pc_ev");
+    expect(within(ev).queryByTestId("put-back-pc_ev")).toBeNull();
+    expect(within(ev).getByTestId("put-back-none").textContent).toBe("This change made something new. Taking it away is its own change, on its own page.");
+    const before = screen.getByTestId("decided-pc_before");
+    expect(within(before).getByTestId("put-back-none").getAttribute("data-reason")).toBe("not_kept");
+    expect(within(before).getByTestId("put-back-none").textContent).toContain("nothing to put back");
+    const discarded = screen.getByTestId("decided-pc_old2");
+    expect(within(discarded).queryByTestId("put-back-none")).toBeNull();
+  });
+
+  it("a waiting proposal that puts a change back says so", async () => {
+    stub({ changes: [{ ...DIAL, reverts: "pc_old" }] });
+    render(<ProposedChanges />);
+    const card = await screen.findByTestId("proposal-pc_dial");
+    expect(within(card).getByTestId("puts-back").textContent).toBe("Puts back an earlier change");
   });
 });

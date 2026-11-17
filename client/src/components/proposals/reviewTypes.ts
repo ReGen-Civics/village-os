@@ -2,6 +2,7 @@
  * What GET /api/admin/proposals answers (server/routes/proposedChanges.ts), as the review page reads it.
  */
 import type { ProposalKind } from "@shared/proposedChanges";
+import type { PutBackVerdict } from "@shared/proposalPutBack";
 
 export interface Where {
   label: string;
@@ -27,6 +28,8 @@ export interface Proposal {
   by: string;
   byKind: "agent" | "person";
   at: string;
+  /** When this proposal puts an earlier change back, that change's id. */
+  reverts?: string | null;
 }
 
 export interface Batch {
@@ -58,6 +61,9 @@ export interface Decided {
   by: string;
   at: string | null;
   edited: number;
+  reverts?: string | null;
+  /** Whether "Propose putting it back" is offered; older servers sent nothing, which reads as not kept. */
+  putBack?: PutBackVerdict;
 }
 
 export interface ReviewPayload {
