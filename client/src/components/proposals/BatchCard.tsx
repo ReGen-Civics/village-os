@@ -69,9 +69,11 @@ export interface BatchCardProps {
   onAcceptAll: () => void;
   onDiscardAll: () => void;
   renderChange: (c: Proposal) => ReactNode;
+  /** How many of its changes a later waiting change also writes; the batch's one question says so. */
+  laterConflicts?: number;
 }
 
-export default function BatchCard({ batch, items, zone, expanded, onToggle, busy, onAcceptAll, onDiscardAll, renderChange }: BatchCardProps) {
+export default function BatchCard({ batch, items, zone, expanded, onToggle, busy, onAcceptAll, onDiscardAll, renderChange, laterConflicts = 0 }: BatchCardProps) {
   const { i18n, t } = useLingui();
   const [confirming, setConfirming] = useState<Confirming>(null);
   const yes = useRef<HTMLButtonElement>(null);
@@ -127,6 +129,11 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
                     <Plural context="proposed changes: confirm a batch" value={n} one="Discard this change? Nothing goes live." other="Discard all # changes? Nothing goes live." />
                   )}
                 </p>
+                {confirming === "accept" && laterConflicts > 0 && (
+                  <p className="text-sm text-foreground" data-testid="batch-confirm-conflict">
+                    <Plural context="proposed changes: confirm a batch" value={laterConflicts} one="A later change also edits one of these." other="A later change also edits # of these." />
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-2">
                   <button
                     ref={yes}
