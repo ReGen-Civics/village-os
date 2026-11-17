@@ -10,6 +10,7 @@
  *   importedRowsFor   those meetings as calendar rows, for a follower's feed
  *   attachOwnCalendar attach or replace one, and read it at once
  *   detachOwnCalendar detach one
+ *   filterOwnCalendar change which titles count (0401)
  *   retireGoneCircleCalendars  detach the calendars of circles that are no longer live
  *
  * ── WHAT COUNTS AS A MEETING ─────────────────────────────────────────────
@@ -19,6 +20,13 @@
  * week") is not a call: both stay on the village calendar and in a follower's
  * feed, where they read as what they are, and neither becomes the circle's
  * next meeting, its start card or its day-before notice.
+ *
+ * AND, WHEN THE CIRCLE SET ONE, WHOSE TITLE HOLDS ITS FILTER (0401): a word
+ * or phrase, matched without regard to case or accents. A calendar with other
+ * things on it ("Garden sync", "Dentist") can then be attached, and only the
+ * events titled with the word become the circle's meetings: under Coming up,
+ * in the day-before notice and in a follower's feed. The village's own Events
+ * calendar still imports the whole calendar, as every subscription does.
  *
  * ── WHAT A MEMBER IS TOLD ────────────────────────────────────────────────
  *
@@ -46,7 +54,7 @@ import * as room from "../repos/liveSessions";
 import type { Outcome, Refusal } from "./liveSessions";
 import { SESSION_LIMITS } from "../../shared/sessions";
 import { RHYTHM_LIMITS, villageKey, type Meeting } from "../../shared/sessionRhythm";
-import { OWN_CALENDAR_COPY, OWN_CALENDAR_REFUSALS, type OwnCalendarView } from "../../shared/sessionCalendar";
+import { OWN_CALENDAR_COPY, OWN_CALENDAR_REFUSALS, readTitleFilter, titleMatches, type OwnCalendarView } from "../../shared/sessionCalendar";
 
 const refuse = (status: number, error: string): Refusal => ({ ok: false, status, error });
 const DAY_MS = 86_400_000;
@@ -55,6 +63,8 @@ export interface OwnCalendar {
   circleId: string;
   externalId: string;
   view: OwnCalendarView;
+  /** The word an event's title must hold to count, "" for every timed event. */
+  titleFilter: string;
 }
 
 /** A meeting from a circle's own calendar: when, what it is called, and how long. */
@@ -64,12 +74,13 @@ export interface ImportedMeeting {
   durationMin: number;
 }
 
-function viewOf(sub: ExternalCalendarView): OwnCalendarView {
+function viewOf(sub: ExternalCalendarView, titleFilter = ""): OwnCalendarView {
   return {
     host: sub.urlHost,
     last4: sub.urlLast4,
     lastReadAt: sub.lastPolledAt,
     status: sub.lastStatus === "ok" ? "ok" : sub.lastStatus === "failed" ? "failed" : "never",
+    titleFilter: titleFilter || null,
   };
 }
 
@@ -84,7 +95,8 @@ export async function ownCalendars(pool: Pool): Promise<Map<string, OwnCalendar>
   const subs = new Map((await listExternalCalendars(pool)).map((c) => [c.id, c]));
   for (const row of rows) {
     const sub = subs.get(String(row.external_calendar_id));
-    if (sub) out.set(String(row.circle_id), { circleId: String(row.circle_id), externalId: sub.id, view: viewOf(sub) });
+    const titleFilter = String(row.title_filter ?? "");
+    if (sub) out.set(String(row.circle_id), { circleId: String(row.circle_id), externalId: sub.id, view: viewOf(sub, titleFilter), titleFilter });
   }
   return out;
 }
@@ -103,10 +115,12 @@ export async function importedNext(
   const out = new Map<string, ImportedMeeting>();
   if (!own.size) return out;
   const circleOf = new Map(Array.from(own.values()).map((o) => [o.externalId, o.circleId]));
+  const filterOf = new Map(Array.from(own.values()).map((o) => [o.circleId, o.titleFilter]));
   const rows = (await store.importedRows(pool, Array.from(circleOf.keys()), now, new Date(now.getTime() + lookAheadDays * DAY_MS))).map(rowToCalendarRow);
   for (const r of rows) {
     const circleId = r.externalSourceId ? circleOf.get(r.externalSourceId) : undefined;
     if (!circleId || out.has(circleId) || r.status !== "scheduled" || r.allDay) continue;
+    if (!titleMatches(r.title, filterOf.get(circleId))) continue;
     const endsAt = r.endsAt ?? new Date(r.startsAt.getTime() + SESSION_LIMITS.durationDefault * 60_000);
     if (endsAt.getTime() <= now.getTime()) continue;
     const minutes = Math.round((endsAt.getTime() - r.startsAt.getTime()) / 60_000);
@@ -123,10 +137,12 @@ export async function importedNext(
 
 /** The meetings of these circles' own calendars in a window, as calendar rows, for a follower's feed. */
 export async function importedRowsFor(pool: Pool, own: ReadonlyMap<string, OwnCalendar>, circleIds: ReadonlySet<string> | "all", from: Date, to: Date): Promise<CalendarRow[]> {
-  const ids = Array.from(own.values())
-    .filter((o) => circleIds === "all" || circleIds.has(o.circleId))
-    .map((o) => o.externalId);
-  return (await store.importedRows(pool, ids, from, to)).map(rowToCalendarRow);
+  const chosen = Array.from(own.values()).filter((o) => circleIds === "all" || circleIds.has(o.circleId));
+  const filterOf = new Map(chosen.map((o) => [o.externalId, o.titleFilter]));
+  // Only the events titled with a circle's filter travel as its meetings.
+  return (await store.importedRows(pool, chosen.map((o) => o.externalId), from, to))
+    .map(rowToCalendarRow)
+    .filter((r) => titleMatches(r.title, r.externalSourceId ? filterOf.get(r.externalSourceId) : ""));
 }
 
 /**
@@ -145,20 +161,39 @@ export async function attachOwnCalendar(
   const b = input.raw && typeof input.raw === "object" ? (input.raw as Record<string, unknown>) : {};
   const url = typeof b.url === "string" ? b.url.trim() : "";
   if (!url) return refuse(400, OWN_CALENDAR_REFUSALS.urlNeeded);
+  const titleFilter = readTitleFilter(b.titleFilter);
   if (!villageSecretsConfigured()) return refuse(409, OWN_CALENDAR_REFUSALS.noSecretsKey);
   const added = await addExternalCalendar(pool, { name: OWN_CALENDAR_COPY.subscriptionName(input.circleName), url, layer: "circle", createdBy: input.userId });
   if (!added.ok) return refuse(400, memberWords(added.error));
   // The swap holds the circle's row, so two attaches at once leave one calendar and no orphan.
   const swapped = await room.inTransaction(pool, async (conn): Promise<Outcome<string | null>> => {
     const [before] = await store.ownCalendarRow(conn, input.circleId, true);
-    await store.putOwnCalendar(conn, { circleId: input.circleId, externalId: added.calendar.id, setByNo: input.setByNo, now: input.now });
+    await store.putOwnCalendar(conn, { circleId: input.circleId, externalId: added.calendar.id, setByNo: input.setByNo, now: input.now, titleFilter });
     return { ok: true, value: before ? String(before.external_calendar_id) : null };
   });
   const previous = swapped.ok ? swapped.value : null;
   if (previous && previous !== added.calendar.id) await removeExternalCalendar(pool, previous, input.userId);
   const read = await pollExternalCalendar(pool, added.calendar.id, { timezone: input.zone, now: input.now, fetchText: input.fetchText });
   const sub = await getExternalCalendar(pool, added.calendar.id);
-  return { ok: true, value: { view: viewOf(sub ?? added.calendar), read: read.ok } };
+  return { ok: true, value: { view: viewOf(sub ?? added.calendar, titleFilter), read: read.ok } };
+}
+
+/**
+ * Change which events of a circle's own calendar count as its meetings: a
+ * word or phrase their titles hold, or "" for every timed event. The address
+ * is not asked for again and never read back.
+ */
+export async function filterOwnCalendar(pool: Pool, circleId: string, raw: unknown): Promise<Outcome<{ view: OwnCalendarView }>> {
+  const b = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const titleFilter = readTitleFilter(b.titleFilter);
+  if (!(await store.writeOwnCalendarFilter(pool, circleId, titleFilter))) {
+    // affectedRows is 0 for a filter written over the same one: ask whether the calendar is there at all.
+    const [row] = await store.ownCalendarRow(pool, circleId);
+    if (!row) return refuse(404, OWN_CALENDAR_REFUSALS.noneAttached);
+  }
+  const own = (await ownCalendars(pool)).get(circleId);
+  if (!own) return refuse(404, OWN_CALENDAR_REFUSALS.noneAttached);
+  return { ok: true, value: { view: own.view } };
 }
 
 /**

@@ -68,6 +68,7 @@ import {
   type ItemAim,
 } from "./sessions";
 import { circleWords } from "./sessionTasks";
+import { readRhythmKey } from "./sessionRhythm";
 
 // ── Doors ────────────────────────────────────────────────────────────────────
 
@@ -239,6 +240,14 @@ export interface LibraryCard {
   note: string | null;
   circleId: string | null;
   circleName: string | null;
+  /**
+   * The meeting it waits for (0401): one of its circle's rhythms by key, or
+   * null for the circle's next meeting, whichever rhythm. Absent from an older
+   * server.
+   */
+  rhythmKey?: string | null;
+  /** That rhythm's name, or null for none. */
+  rhythmName?: string | null;
   /** The bringer's name, or SESSION_SOMEONE. */
   broughtBy: string;
   /** The viewer brought it. */
@@ -281,6 +290,22 @@ export interface LibraryInput {
   note?: string | null;
   /** A live circle's id, or null for no circle in particular. */
   circleId?: string | null;
+  /** One of that circle's rhythms by key, or null for its next meeting, whichever rhythm. Needs a circle. */
+  rhythmKey?: string | null;
+}
+
+/**
+ * Does an item for meeting `itemKey` wait for a meeting of rhythm
+ * `meetingKey`? An item for no meeting in particular ("" or null) waits for
+ * every one of its circle's meetings, as items did before a circle had
+ * several rhythms; so does one whose rhythm the circle no longer keeps
+ * (`circleKeys`), so nothing waits for a meeting that will never come. A
+ * meeting from the circle's own calendar (`meetingKey` null) takes only the
+ * items for any meeting.
+ */
+export function waitsForMeeting(itemKey: string | null | undefined, meetingKey: string | null, circleKeys: ReadonlySet<string>): boolean {
+  if (!itemKey || !circleKeys.has(itemKey)) return true;
+  return itemKey === meetingKey;
 }
 
 // ── The rules, as pure functions ─────────────────────────────────────────────
@@ -411,8 +436,18 @@ function readCircle(v: unknown, circleIds: ReadonlySet<string>): Clean<string | 
   return typeof v === "string" && circleIds.has(v) ? { ok: true, value: v } : { ok: false, status: 400, error: SESSION_REFUSALS.circleUnknown };
 }
 
+/** A meeting's key from a body: null for none, refused when it does not read. Whether the circle keeps it is the server's to ask. */
+function readMeeting(v: unknown): Clean<string | null> {
+  if (v == null || v === "") return { ok: true, value: null };
+  const key = readRhythmKey(v);
+  return key ? { ok: true, value: key } : { ok: false, status: 400, error: LIBRARY_REFUSALS.meetingUnknown };
+}
+
 /** A new item's fields, cleaned and clipped. The circle is checked against the village's live circles. */
-export function cleanBrought(raw: unknown, circleIds: ReadonlySet<string>): Clean<{ title: string; aim: ItemAim | null; note: string | null; circleId: string | null }> {
+export function cleanBrought(
+  raw: unknown,
+  circleIds: ReadonlySet<string>,
+): Clean<{ title: string; aim: ItemAim | null; note: string | null; circleId: string | null; rhythmKey?: string }> {
   const b = bodyOf(raw);
   const title = cleanLine(b.title, LIBRARY_LIMITS.title);
   if (!title) return { ok: false, status: 400, error: SESSION_REFUSALS.itemTitleNeeded };
@@ -420,16 +455,20 @@ export function cleanBrought(raw: unknown, circleIds: ReadonlySet<string>): Clea
   if (!aim.ok) return aim;
   const circle = readCircle(b.circleId, circleIds);
   if (!circle.ok) return circle;
-  return { ok: true, value: { title, aim: aim.value, note: cleanText(b.note, LIBRARY_LIMITS.note), circleId: circle.value } };
+  const meeting = readMeeting(b.rhythmKey);
+  if (!meeting.ok) return meeting;
+  if (meeting.value && !circle.value) return { ok: false, status: 400, error: LIBRARY_REFUSALS.meetingUnknown };
+  // A key only when one was named, so an item for the circle's next meeting reads as it always did.
+  return { ok: true, value: { title, aim: aim.value, note: cleanText(b.note, LIBRARY_LIMITS.note), circleId: circle.value, ...(meeting.value ? { rhythmKey: meeting.value } : {}) } };
 }
 
 /** The fields a change sends. A key left out is left alone; a note sent empty is cleared. */
 export function cleanBroughtPatch(
   raw: unknown,
   circleIds: ReadonlySet<string>,
-): Clean<{ title?: string; aim?: ItemAim | null; note?: string | null; circleId?: string | null }> {
+): Clean<{ title?: string; aim?: ItemAim | null; note?: string | null; circleId?: string | null; rhythmKey?: string | null }> {
   const b = bodyOf(raw);
-  const out: { title?: string; aim?: ItemAim | null; note?: string | null; circleId?: string | null } = {};
+  const out: { title?: string; aim?: ItemAim | null; note?: string | null; circleId?: string | null; rhythmKey?: string | null } = {};
   if (has(b, "title")) {
     const title = cleanLine(b.title, LIBRARY_LIMITS.title);
     if (!title) return { ok: false, status: 400, error: SESSION_REFUSALS.itemTitleNeeded };
@@ -445,6 +484,11 @@ export function cleanBroughtPatch(
     const circle = readCircle(b.circleId, circleIds);
     if (!circle.ok) return circle;
     out.circleId = circle.value;
+  }
+  if (has(b, "rhythmKey")) {
+    const meeting = readMeeting(b.rhythmKey);
+    if (!meeting.ok) return meeting;
+    out.rhythmKey = meeting.value;
   }
   return { ok: true, value: out };
 }
@@ -627,6 +671,7 @@ export const LIBRARY_REFUSALS = {
   tensionNotYours: "Only whoever named it, the session's facilitator or secretary, or an admin can send it on.",
   alreadySent: "That tension has been sent to agenda items already.",
   circleGone: "That circle isn't one of the village's circles now. Choose again.",
+  meetingUnknown: "That meeting isn't one of this circle's. Choose again, or any meeting.",
 } as const;
 
 /** The words on the notices the person who added an item receives. In the bell only. */

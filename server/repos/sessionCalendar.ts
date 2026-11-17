@@ -74,7 +74,7 @@ export async function touchKey(q: Queryable, no: number, now: Date): Promise<voi
 
 // ── A circle's own calendar ─────────────────────────────────────────────────
 
-const OWN_COLUMNS = "`circle_id`, `external_calendar_id`, `set_by_no`, `created_at`";
+const OWN_COLUMNS = "`circle_id`, `external_calendar_id`, `set_by_no`, `created_at`, `title_filter`";
 
 /** Every circle's own calendar. */
 export async function ownCalendarRows(q: Queryable): Promise<RowDataPacket[]> {
@@ -87,12 +87,20 @@ export async function ownCalendarRow(q: Queryable, circleId: string, lock = fals
 }
 
 /** A circle's own calendar, taking the place of the one before. */
-export async function putOwnCalendar(q: Queryable, row: { circleId: string; externalId: string; setByNo: number; now: Date }): Promise<void> {
+export async function putOwnCalendar(q: Queryable, row: { circleId: string; externalId: string; setByNo: number; now: Date; titleFilter?: string }): Promise<void> {
   await q.query(
-    "INSERT INTO `live_session_circle_calendars` (`circle_id`, `external_calendar_id`, `set_by_no`, `created_at`) VALUES (?, ?, ?, ?) " +
-      "ON DUPLICATE KEY UPDATE `external_calendar_id` = VALUES(`external_calendar_id`), `set_by_no` = VALUES(`set_by_no`), `created_at` = VALUES(`created_at`)",
-    [row.circleId, row.externalId, row.setByNo, row.now],
+    "INSERT INTO `live_session_circle_calendars` (`circle_id`, `external_calendar_id`, `set_by_no`, `created_at`, `title_filter`) VALUES (?, ?, ?, ?, ?) " +
+      "ON DUPLICATE KEY UPDATE `external_calendar_id` = VALUES(`external_calendar_id`), `set_by_no` = VALUES(`set_by_no`), `created_at` = VALUES(`created_at`), " +
+      "`title_filter` = VALUES(`title_filter`)",
+    // '' is every timed event (0401): the column is NOT NULL.
+    [row.circleId, row.externalId, row.setByNo, row.now, row.titleFilter ?? ""],
   );
+}
+
+/** A circle's own calendar's title filter alone (0401). Hands back 1 or 0. */
+export async function writeOwnCalendarFilter(q: Queryable, circleId: string, titleFilter: string): Promise<number> {
+  const [r] = await q.query<any>("UPDATE `live_session_circle_calendars` SET `title_filter` = ? WHERE `circle_id` = ?", [titleFilter, circleId]);
+  return Number(r.affectedRows ?? 0);
 }
 
 export async function deleteOwnCalendar(q: Queryable, circleId: string): Promise<void> {

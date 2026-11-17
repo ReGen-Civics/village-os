@@ -35,7 +35,7 @@
 import type { Recurrence } from "./gatherings";
 import type { OwnCalendarView } from "./sessionCalendar";
 import { civilParts, fullMoonsBetween, newMoonsBetween, zonedTimeToUtc } from "./lunar";
-import { SESSION_LIMITS, SESSION_REFUSALS, SESSIONS_API } from "./sessions";
+import { SESSION_LIMITS, SESSION_REFUSALS, SESSIONS_API, cleanLine } from "./sessions";
 import { circleWords } from "./sessionTasks";
 
 // ── Doors ────────────────────────────────────────────────────────────────────
@@ -44,9 +44,19 @@ import { circleWords } from "./sessionTasks";
  * Every door. A refusal is `{ error: <a sentence> }` with a 4xx status.
  *
  *   GET  /api/sessions                                  gains `comingUp: ComingUpPayload`
- *   PUT  /api/sessions/circles/:circleId/rhythm         RhythmInput -> { row: ComingUpRow | null }
- *   POST /api/sessions/circles/:circleId/rhythm/skip    { key } -> { row: ComingUpRow | null }
+ *   PUT  /api/sessions/circles/:circleId/rhythm         RhythmInput (+ rhythmKey?) -> { row: ComingUpRow | null }
+ *   POST /api/sessions/circles/:circleId/rhythms        RhythmInput -> { row: ComingUpRow | null, rhythmKey }, add another meeting
+ *   POST /api/sessions/circles/:circleId/rhythm/skip    { key, rhythmKey? } -> { row: ComingUpRow | null }
  *   GET  /api/sessions/circles/:circleId/summary        CircleSessionsSummary
+ *
+ * SEVERAL RHYTHMS PER CIRCLE (0401). A circle may keep up to
+ * `RHYTHM_LIMITS.perCircle` named rhythms ("Monday all-staff", "Thursday
+ * steward sync"), each with its own day, time, length and skips. The first is
+ * the one 0271 kept, under the key `MAIN_RHYTHM`, so every door keeps its old
+ * meaning when it names no `rhythmKey`: a PUT sets or stops the first rhythm,
+ * and a skip finds the rhythm whose coming meeting has that date. A client
+ * that knows nothing of `rhythms` still reads `rhythm` (the first rhythm) and
+ * `rhythmNext` (the soonest meeting of any of them).
  *
  * The circle's doors take four or five segments, so none is read as a room
  * (`/api/sessions/:id` and its fixed words take one and two).
@@ -59,6 +69,31 @@ export function rhythmUrl(circleId: string): string {
 
 export function rhythmSkipUrl(circleId: string): string {
   return `${rhythmUrl(circleId)}/skip`;
+}
+
+/** POST here adds another rhythm to the circle. */
+export function rhythmsUrl(circleId: string): string {
+  return `${CIRCLES_API}/${encodeURIComponent(circleId)}/rhythms`;
+}
+
+/** The key of a circle's first rhythm: the row 0271 kept, one per circle. */
+export const MAIN_RHYTHM = "main";
+
+/** A rhythm key as a door reads it: a short word of lowercase letters and digits. */
+export const RHYTHM_KEY = /^[a-z0-9]{1,24}$/;
+
+/** A key from a body, or null for none. */
+export function readRhythmKey(v: unknown): string | null {
+  return typeof v === "string" && RHYTHM_KEY.test(v.trim()) ? v.trim() : null;
+}
+
+/**
+ * Where a rhythm sits on the village calendar: the circle's id for its first
+ * rhythm (so a meeting mirrored before 0401 keeps its id and its answers), and
+ * `<circle>~<key>` for each further one.
+ */
+export function rhythmSourceId(circleId: string, rhythmKey: string): string {
+  return rhythmKey === MAIN_RHYTHM ? circleId : `${circleId}~${rhythmKey}`;
 }
 
 export function circleSummaryUrl(circleId: string): string {
@@ -93,20 +128,28 @@ export const RHYTHM_LIMITS = {
   remindHours: 24,
   /** Set or skip, per member, per hour. */
   writesPerHour: 60,
+  /** How many rhythms one circle keeps. */
+  perCircle: 6,
+  /** A rhythm's name, at most. */
+  name: 80,
 } as const;
 
 // ── Wire shapes ──────────────────────────────────────────────────────────────
 
 /** What a member sends to set a rhythm, or to clear it. Times are the village's, "HH:MM"; dates "YYYY-MM-DD". */
 export type RhythmInput =
-  | { kind: "weekly"; weekday: number; everyWeeks: number; time: string; startsOn?: string; durationMin?: number }
-  | { kind: "moon"; on: MoonMeeting; time: string; durationMin?: number }
-  | { kind: "once"; on: string; time: string; durationMin?: number }
+  | { kind: "weekly"; weekday: number; everyWeeks: number; time: string; startsOn?: string; durationMin?: number; name?: string }
+  | { kind: "moon"; on: MoonMeeting; time: string; durationMin?: number; name?: string }
+  | { kind: "once"; on: string; time: string; durationMin?: number; name?: string }
   | { kind: "none" };
 
 /** One row of `live_session_rhythms`, as the rules read it. */
 export interface StoredRhythm {
   circleId: string;
+  /** `MAIN_RHYTHM` for the circle's first rhythm, its own key for each further one. Absent reads as the first. */
+  rhythmKey?: string;
+  /** What the circle calls it, "" for no name. */
+  name?: string;
   kind: RhythmKind;
   recurrence: Recurrence | null;
   /** The village date of the first meeting, YYYY-MM-DD. A weekly rhythm counts its weeks from its week. */
@@ -117,7 +160,23 @@ export interface StoredRhythm {
 }
 
 /** What a rhythm input stores. */
-export type RhythmRecord = Omit<StoredRhythm, "circleId">;
+export type RhythmRecord = Omit<StoredRhythm, "circleId" | "rhythmKey" | "name">;
+
+/** One of a circle's rhythms, as "Coming up" lists it under the circle. */
+export interface RhythmLine {
+  key: string;
+  /** What the circle calls it, or "" for no name. */
+  name: string;
+  /** "Every Monday at 12:00". */
+  words: string;
+  /** Its own next meeting, which its skip names, or null when nothing is coming. */
+  next: (Meeting & { words: string }) | null;
+  durationMin: number;
+  /** The circle's waiting agenda items for this rhythm's next meeting, as this viewer may see them: those for this meeting and those for any meeting. */
+  waiting: number;
+  /** For the form: the rhythm as it is now, a weekly one starting from its next meeting. */
+  input: RhythmInput;
+}
 
 /** One meeting: when, and its key (the village date, YYYY-MM-DD), which a skip names. */
 export interface Meeting {
@@ -149,8 +208,14 @@ export interface ComingUpRow {
   /** The viewer is one of the circle's members, or an admin. */
   mine: boolean;
   canKeep: boolean;
-  /** For the form: the rhythm as it is now, a weekly one starting from its next meeting, so a change keeps the circle's week. `none` while the circle has no rhythm. */
+  /** For the form: the rhythm as it is now, a weekly one starting from its next meeting, so a change keeps the circle's week. `none` while the circle has no rhythm. The circle's FIRST rhythm, for a client that knows of one only. */
   rhythm: RhythmInput;
+  /** Every rhythm of the circle, soonest first (0401). */
+  rhythms?: RhythmLine[];
+  /** Which rhythm the next meeting comes from, or null when it comes from the circle's own calendar. */
+  nextRhythmKey?: string | null;
+  /** That rhythm's name, or null for none. */
+  nextName?: string | null;
   /**
    * "I'll be there" for this meeting (Phase C, the Gathering). A circle's
    * rhythm is mirrored onto the village calendar as one gathering
@@ -194,6 +259,8 @@ export interface ComingUpPayload {
 export interface CircleSessionsSummary {
   circleId: string;
   rhythm: { words: string; kind: RhythmKind } | null;
+  /** Each rhythm by name, soonest first (0401). */
+  rhythms?: { key: string; name: string; words: string }[];
   next: (Meeting & { words: string }) | null;
   /** ISO instant the circle last met (a closed session two or more people were in). */
   lastMetAt: string | null;
@@ -242,6 +309,8 @@ export function cleanRhythm(raw: unknown): Clean<RhythmInput> {
   if (!time) return { ok: false, status: 400, error: RHYTHM_REFUSALS.timeNeeded };
   const duration = readDuration(b.durationMin);
   if (!duration.ok) return duration;
+  const named = readName(b.name);
+  const name = named ? { name: named } : {};
   if (b.kind === "weekly") {
     const weekday = Number(b.weekday);
     if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6) return { ok: false, status: 400, error: RHYTHM_REFUSALS.weekdayNeeded };
@@ -253,15 +322,20 @@ export function cleanRhythm(raw: unknown): Clean<RhythmInput> {
       if (!d) return { ok: false, status: 400, error: RHYTHM_REFUSALS.dateNeeded };
       startsOn = d;
     }
-    return { ok: true, value: { kind: "weekly", weekday, everyWeeks, time, ...(startsOn ? { startsOn } : {}), durationMin: duration.value } };
+    return { ok: true, value: { kind: "weekly", weekday, everyWeeks, time, ...(startsOn ? { startsOn } : {}), durationMin: duration.value, ...name } };
   }
   if (b.kind === "moon") {
     if (b.on !== "new_moon" && b.on !== "full_moon") return { ok: false, status: 400, error: RHYTHM_REFUSALS.moonNeeded };
-    return { ok: true, value: { kind: "moon", on: b.on, time, durationMin: duration.value } };
+    return { ok: true, value: { kind: "moon", on: b.on, time, durationMin: duration.value, ...name } };
   }
   const on = readDate(b.on);
   if (!on) return { ok: false, status: 400, error: RHYTHM_REFUSALS.dateNeeded };
-  return { ok: true, value: { kind: "once", on, time, durationMin: duration.value } };
+  return { ok: true, value: { kind: "once", on, time, durationMin: duration.value, ...name } };
+}
+
+/** A rhythm's name from a body: one line, hidden characters out, clipped. "" or absent is no name. */
+export function readName(v: unknown): string {
+  return cleanLine(v, RHYTHM_LIMITS.name) ?? "";
 }
 
 // ── The arithmetic, pure ─────────────────────────────────────────────────────
@@ -388,14 +462,51 @@ export function nextMeetings(r: StoredRhythm, from: Date, zone: string, count = 
  * (a new time, a new length) keeps the circle's week.
  */
 export function rhythmAsInput(r: StoredRhythm, nextKey?: string): RhythmInput {
+  const name = r.name ? { name: r.name } : {};
   if (r.recurrence?.freq === "weekly") {
     const weekday = r.recurrence.byWeekday[0] ?? new Date(keyDay(r.startsOn)).getUTCDay();
-    return { kind: "weekly", weekday, everyWeeks: r.recurrence.interval ?? 1, time: r.time, ...(nextKey ? { startsOn: nextKey } : {}), durationMin: r.durationMin };
+    return { kind: "weekly", weekday, everyWeeks: r.recurrence.interval ?? 1, time: r.time, ...(nextKey ? { startsOn: nextKey } : {}), durationMin: r.durationMin, ...name };
   }
   if (r.recurrence?.freq === "lunar" && (r.recurrence.on === "new_moon" || r.recurrence.on === "full_moon")) {
-    return { kind: "moon", on: r.recurrence.on, time: r.time, durationMin: r.durationMin };
+    return { kind: "moon", on: r.recurrence.on, time: r.time, durationMin: r.durationMin, ...name };
   }
-  return { kind: "once", on: r.startsOn, time: r.time, durationMin: r.durationMin };
+  return { kind: "once", on: r.startsOn, time: r.time, durationMin: r.durationMin, ...name };
+}
+
+/** A rhythm's key, the first rhythm's when it has none. */
+export function keyOf(r: Pick<StoredRhythm, "rhythmKey">): string {
+  return r.rhythmKey || MAIN_RHYTHM;
+}
+
+/**
+ * The soonest coming meeting of any of a circle's rhythms, with the rhythm it
+ * belongs to. Two meetings at the same instant go to the rhythm listed first
+ * (the first rhythm, then the others as they were added).
+ */
+export function soonestOf(rs: readonly StoredRhythm[], from: Date, zone: string): { rhythm: StoredRhythm; meeting: Meeting } | null {
+  let best: { rhythm: StoredRhythm; meeting: Meeting } | null = null;
+  for (const r of rs) {
+    const m = nextMeetings(r, from, zone, 1)[0];
+    if (m && (!best || Date.parse(m.at) < Date.parse(best.meeting.at))) best = { rhythm: r, meeting: m };
+  }
+  return best;
+}
+
+/**
+ * Which rhythm a skip names. With a key, that rhythm. Without one (an older
+ * client, which knew one rhythm), the first rhythm whose next meetings hold
+ * that date, so "Skip this one" on a row whose next meeting came from a
+ * further rhythm skips that meeting and no other.
+ */
+export function rhythmForSkip(rs: readonly StoredRhythm[], key: string, rhythmKey: string | null, from: Date, zone: string): StoredRhythm | null {
+  if (rhythmKey) return rs.find((r) => keyOf(r) === rhythmKey) ?? null;
+  return rs.find((r) => nextMeetings(r, from, zone, RHYTHM_LIMITS.skipAhead).some((m) => m.key === key)) ?? null;
+}
+
+/** "Monday all-staff: Every Monday at 12:00", or the bare words for a rhythm with no name. */
+export function namedRhythmWords(r: StoredRhythm, now?: Date, zone?: string): string {
+  const words = rhythmWords(r, now, zone);
+  return r.name ? `${r.name}: ${words}` : words;
 }
 
 /**
@@ -533,6 +644,8 @@ export const RHYTHM_REFUSALS = {
   tooFar: `Choose a first meeting in the next ${RHYTHM_LIMITS.lookAheadDays} days.`,
   noRhythm: "This circle has no meeting rhythm yet.",
   skipUnknown: "That meeting isn't one of this circle's next ones.",
+  rhythmUnknown: "That meeting rhythm isn't one of this circle's.",
+  tooMany: `A circle keeps at most ${RHYTHM_LIMITS.perCircle} meeting rhythms.`,
   circleUnknown: SESSION_REFUSALS.circleUnknown,
   slowDown: SESSION_REFUSALS.slowDown,
 } as const;
@@ -541,6 +654,8 @@ export const RHYTHM_REFUSALS = {
 export const RHYTHM_NOTICES = {
   /** `when` is `meetingPhrase`: "tomorrow at 18:00". */
   comingUp: (circleName: string, when: string): string => `The ${circleWords(circleName)} meets ${when}`,
+  /** The same for a named rhythm: "The Anchor circle meets tomorrow at 12:00: Monday all-staff". */
+  comingUpNamed: (circleName: string, when: string, name: string): string => `The ${circleWords(circleName)} meets ${when}: ${name}`,
   /** The line under it: what is waiting for the meeting. */
   agenda: (titles: readonly string[], more: number): string =>
     titles.length === 0

@@ -54,18 +54,19 @@ const none = <T>(list: readonly T[]): boolean => list.length === 0;
 
 const LIBRARY_COLUMNS =
   "`id`, `circle_id`, `title`, `aim`, `note`, `note_by_no`, `brought_by_no`, `status`, `session_id`, `session_item_id`, " +
-  "`edited_by_no`, `created_at`, `updated_at`, `settled_at`";
+  "`edited_by_no`, `created_at`, `updated_at`, `settled_at`, `rhythm_key`";
 
 // ── One item ────────────────────────────────────────────────────────────────
 
 export async function insertItemRow(
   q: Queryable,
-  row: { circleId: string | null; title: string; aim: string | null; note: string | null; broughtByNo: number; now: Date },
+  row: { circleId: string | null; title: string; aim: string | null; note: string | null; broughtByNo: number; now: Date; rhythmKey?: string | null },
 ): Promise<number> {
   const [r] = await q.query<any>(
     "INSERT INTO `live_session_library` (`circle_id`, `title`, `aim`, `note`, `note_by_no`, `brought_by_no`, `status`, `session_id`, " +
-      "`session_item_id`, `edited_by_no`, `created_at`, `updated_at`, `settled_at`) VALUES (?, ?, ?, ?, NULL, ?, 'waiting', NULL, NULL, NULL, ?, ?, NULL)",
-    [row.circleId, row.title, row.aim, row.note, row.broughtByNo, row.now, row.now],
+      "`session_item_id`, `edited_by_no`, `created_at`, `updated_at`, `settled_at`, `rhythm_key`) VALUES (?, ?, ?, ?, NULL, ?, 'waiting', NULL, NULL, NULL, ?, ?, NULL, ?)",
+    // '' is "the circle's next meeting, whichever rhythm" (0401): the column is NOT NULL.
+    [row.circleId, row.title, row.aim, row.note, row.broughtByNo, row.now, row.now, row.rhythmKey ?? ""],
   );
   return Number(r.insertId);
 }
@@ -130,13 +131,13 @@ export async function waitingCountBy(q: Queryable, no: number): Promise<number> 
 export async function writeWords(
   q: Queryable,
   id: number,
-  row: { title: string; aim: string | null; note: string | null; noteByNo: number | null; circleId: string | null; editedByNo: number | null; now: Date },
+  row: { title: string; aim: string | null; note: string | null; noteByNo: number | null; circleId: string | null; editedByNo: number | null; now: Date; rhythmKey: string | null },
 ): Promise<number> {
   return affected(
     q,
     "UPDATE `live_session_library` SET `title` = ?, `aim` = ?, `note` = ?, `note_by_no` = ?, `circle_id` = ?, `edited_by_no` = ?, " +
-      "`updated_at` = ? WHERE `id` = ? AND `status` = 'waiting'",
-    [row.title, row.aim, row.note, row.noteByNo, row.circleId, row.editedByNo, row.now, id],
+      "`updated_at` = ?, `rhythm_key` = ? WHERE `id` = ? AND `status` = 'waiting'",
+    [row.title, row.aim, row.note, row.noteByNo, row.circleId, row.editedByNo, row.now, row.rhythmKey ?? "", id],
   );
 }
 
