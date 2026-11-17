@@ -29,7 +29,7 @@
  * in one file.
  */
 import type { Express, Request, Response } from "express";
-import { THEME_HREF, buildThemeCss, darkScheme, themeCssVersion, withScheme, withThemeVersion, type BrandThemeFields } from "../lib/themeCss";
+import { THEME_HREF, buildThemeCss, darkScheme, themeCssVersion, villageFontOrigins, withScheme, withThemeVersion, type BrandThemeFields } from "../lib/themeCss";
 
 /** The brand document, read as it stands on each request. Only its `theme` is used here. */
 export type GetBrand = () => unknown;
@@ -58,10 +58,14 @@ function themeOf(brand: unknown): BrandThemeFields | null {
 type Scheme = { ground: string } | null;
 let last: { key: string; css: string; version: string; scheme: Scheme } | null = null;
 function currentTheme(getBrand: GetBrand): { css: string; version: string; scheme: Scheme } {
-  const theme = themeOf(getBrand());
-  const key = JSON.stringify(theme);
+  const brand = getBrand();
+  const theme = themeOf(brand);
+  // The village's own font hosts are part of the key: a new site address in
+  // Admin changes which font URLs pass, so it must rebuild the stylesheet.
+  const origins = villageFontOrigins(brand);
+  const key = JSON.stringify([theme, origins]);
   if (last && last.key === key) return last;
-  const css = buildThemeCss(theme);
+  const css = buildThemeCss(theme, origins);
   last = { key, css, version: themeCssVersion(css), scheme: darkScheme(theme) };
   return last;
 }
