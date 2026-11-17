@@ -62,7 +62,7 @@ import { Link, useParams } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { doorBackOf } from "@shared/seatApplyLinks";
 import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
-import { StateNote } from "@/components/ComingSoon";
+import { LazyStateNote } from "@/components/ComingSoonLazy";
 import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage";
@@ -772,7 +772,7 @@ export default function ProposeARole() {
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
         {/* Coming soon or a future venture (16 Nov 2026): its own note says the later start, so the founding-team note steps aside. */}
-        {role.comingSoon || role.futureVenture ? <StateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
+        {role.comingSoon || role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
         {setup.updatedNote && (
           <p className="mt-2 text-sm text-foreground" data-updated-note="">
