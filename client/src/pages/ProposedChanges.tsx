@@ -13,8 +13,14 @@
  * through its own route as this person, in order; one that fails keeps its reason on its card and the rest land.
  * Edits save to the server as they type, so leaving and coming back keeps them.
  *
- * The filter row narrows by waiting or decided, by kind, by page and by who proposed. Waiting comes first, newest
- * batch first. "Recently decided" is a history of the same cards: what went live (and what the reader changed
+ * The filter row narrows by waiting or decided, by kind, by page and by who proposed. Waiting comes first, OLDEST
+ * batch first and oldest change first inside it (the lead, 17 Nov 2026), so the list is accepted in the order it was
+ * proposed. "Recently decided" stays newest first.
+ *
+ * CONFLICTS (shared/proposalConflicts.ts). Two waiting changes that write the same thing each name the other; a
+ * waiting change drafted before a later accept that wrote the same thing says it would put back older words. A
+ * summary at the top counts them. Accepting a change that a later waiting one also writes asks once on its card.
+ * Nothing is blocked: the person decides. "Recently decided" is a history of the same cards: what went live (and what the reader changed
  * first), or what was put aside, who decided and when, and the reason a change did not land.
  *
  * PROPOSE PUTTING IT BACK. An accepted change keeps what was live just before it (0400). Its history card offers
@@ -24,12 +30,13 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import { authToken } from "@/lib/gameApi";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
 import { CHANGE_FACES, faceOf, type ChangeFace } from "@shared/proposalReview";
+import { conflictCounts, oldestFirst, waitingConflicts } from "@shared/proposalConflicts";
 import BatchCard, { HistoryBatch } from "@/components/proposals/BatchCard";
 import ChangeCard, { DecidedCard, faceWords } from "@/components/proposals/ChangeCard";
 import { setAt } from "@/components/proposals/ProposalEditor";
@@ -41,7 +48,7 @@ const headers = (): Record<string, string> => {
 };
 
 type StatusFilter = "all" | "waiting" | "decided";
-type Result = { id: string; ok: boolean; error?: string; field?: string | null };
+type Result = { id: string; ok: boolean; error?: string; field?: string | null; stale?: Array<{ id: string; summary: string }> };
 
 const faceOfDecided = (d: Decided) => faceOf(d.kind ?? "setting", d.route ?? { method: "PUT", path: "" });
 
@@ -60,7 +67,7 @@ export default function ProposedChanges() {
   const [problems, setProblems] = useState<Record<string, Problem[]>>({});
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Record<string, "saving" | "saved" | "failed">>({});
-  const [outcome, setOutcome] = useState<{ landed: string[]; failed: number } | null>(null);
+  const [outcome, setOutcome] = useState<{ landed: string[]; failed: number; older?: Array<{ summary: string; by: string }> } | null>(null);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState<StatusFilter>("all");
   const [kind, setKind] = useState<ChangeFace | "">("");
@@ -156,7 +163,11 @@ export default function ProposedChanges() {
       }
       const landed = d.results.filter((x) => x.ok).map((x) => changes.find((c) => c.id === x.id)?.summary ?? x.id);
       const failed = d.results.filter((x) => !x.ok);
-      setOutcome({ landed, failed: failed.length });
+      // The accept read each change's staleness again as it ran: name any that went live over a newer accept.
+      const older = d.results
+        .filter((x) => x.ok && x.stale?.length)
+        .map((x) => ({ summary: changes.find((c) => c.id === x.id)?.summary ?? x.id, by: x.stale![x.stale!.length - 1].summary }));
+      setOutcome({ landed, failed: failed.length, older });
       setProblems(Object.fromEntries(failed.map((x) => [x.id, [{ error: x.error ?? "", field: x.field ?? null }]])));
       if (failed.length) setOpen((o) => ({ ...o, ...Object.fromEntries(list.map((c) => [c.batchId, true])) }));
       await load();
@@ -193,12 +204,13 @@ export default function ProposedChanges() {
   const keep = (c: { kind?: Proposal["kind"]; route?: { method: string; path: string }; where?: { label: string } }, by: string) =>
     (!kind || faceOf(c.kind ?? "setting", c.route ?? { method: "PUT", path: "" }) === kind) && (!page || c.where?.label === page) && (!who || by === who);
 
-  // Waiting first, newest batch first.
+  // Waiting first, OLDEST first (the lead, 17 Nov 2026): batches by when they were proposed, and the changes in each
+  // the same way, so accepting down the page accepts in the order things were proposed.
   const waiting = useMemo(
     () =>
       [...batches]
-        .sort((a, b) => b.at.localeCompare(a.at))
-        .map((b) => ({ batch: b, items: changes.filter((c) => c.batchId === b.id && keep(c, b.by)) }))
+        .sort((a, b) => oldestFirst(a, b))
+        .map((b) => ({ batch: b, items: changes.filter((c) => c.batchId === b.id && keep(c, b.by)).sort(oldestFirst) }))
         .filter((g) => g.items.length > 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [batches, changes, kind, page, who],
@@ -216,7 +228,15 @@ export default function ProposedChanges() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decided, kind, page, who]);
 
-  // The newest waiting batch opens by itself; the rest fold until asked.
+  // Which waiting changes write the same thing, read on what would be accepted (the reader's edits included), across
+  // every batch and whatever the filters hide.
+  const conflicts = useMemo(
+    () => waitingConflicts(changes.map((c) => ({ id: c.id, at: c.at, position: c.position, kind: c.kind, target: c.target, route: c.route, body: edits[c.id] ?? c.body, summary: c.summary }))),
+    [changes, edits],
+  );
+  const counts = useMemo(() => conflictCounts(conflicts, Object.fromEntries(changes.map((c) => [c.id, c.stale]))), [conflicts, changes]);
+
+  // The oldest waiting batch opens by itself; the rest fold until asked.
   const firstWaiting = waiting[0]?.batch.id;
   const isOpen = (id: string) => open[id] ?? id === firstWaiting;
 
@@ -328,6 +348,15 @@ export default function ProposedChanges() {
                   ))}
                 </ul>
               )}
+              {(outcome.older ?? []).map((o, i) => {
+                const summary = o.summary;
+                const other = o.by;
+                return (
+                  <p key={`older-${i}`} className="text-sm text-foreground" data-testid="accept-older">
+                    <Trans context="proposed changes: conflict">“{summary}” was drafted before “{other}” was accepted. Look at its page to check the words.</Trans>
+                  </p>
+                );
+              })}
               {outcome.failed > 0 && (
                 <p className={HINT}>
                   <Trans context="proposed changes">The ones that did not land are still below, each with its reason. Fix them and accept again.</Trans>
@@ -346,6 +375,28 @@ export default function ProposedChanges() {
               <h2 id="waiting-heading" className="sr-only">
                 <Trans context="proposed changes">Waiting</Trans>
               </h2>
+              {waiting.length > 0 && (
+                <p className={HINT} data-testid="waiting-order">
+                  <Trans context="proposed changes">Oldest first, so you accept in the order they were proposed.</Trans>
+                </p>
+              )}
+              {(counts.pairs > 0 || counts.stale > 0) && (
+                <div className="space-y-1 rounded-2xl border border-notice/50 bg-card p-4 shadow-sm" role="status" data-testid="conflict-summary">
+                  {counts.pairs > 0 && (
+                    <p className="font-semibold text-card-foreground">
+                      <Plural context="proposed changes: conflict" value={counts.pairs} one="One pair of waiting changes writes the same thing." other="# pairs of waiting changes write the same thing." />
+                    </p>
+                  )}
+                  {counts.stale > 0 && (
+                    <p className="font-semibold text-card-foreground">
+                      <Plural context="proposed changes: conflict" value={counts.stale} one="One waiting change was drafted before a later accept." other="# waiting changes were drafted before a later accept." />
+                    </p>
+                  )}
+                  <p className={HINT}>
+                    <Trans context="proposed changes: conflict">Each one is flagged on its card. Accept one, then look again.</Trans>
+                  </p>
+                </div>
+              )}
               {waiting.length === 0 && (
                 <div className={CARD}>
                   <p className={HINT}>
@@ -368,10 +419,12 @@ export default function ProposedChanges() {
                   busy={busy}
                   onAcceptAll={() => void accept(items)}
                   onDiscardAll={() => void discard(items)}
+                  laterConflicts={items.filter((c) => (conflicts[c.id] ?? []).some((o) => o.later)).length}
                   renderChange={(c) => (
                     <ChangeCard
                       key={c.id}
                       change={c}
+                      conflicts={conflicts[c.id] ?? []}
                       body={edits[c.id] ?? c.body}
                       zone={zone}
                       problems={problems[c.id] ?? []}
