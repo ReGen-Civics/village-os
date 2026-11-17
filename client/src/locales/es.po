@@ -8399,6 +8399,11 @@ msgstr "Ajustar el precio"
 msgid "Remove the row \"{subject}\" from the Decision Matrix? Everyone in the village stops seeing it."
 msgstr ""
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "{summary} Applied, with a warning: {note}"
+msgstr ""
+
 #: client/src/components/agent/ConnectorSetupPanel.tsx
 msgctxt "connector setup panel, the switch is on"
 msgid "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
