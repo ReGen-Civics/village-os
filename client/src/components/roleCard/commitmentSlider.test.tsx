@@ -132,7 +132,7 @@ describe("the deciders' view of the split", () => {
   it("badges a hand-changed split and marks each changed share, offered beside proposed", () => {
     render(<SplitReview split={{ commitmentPct: 50, offered, proposed: setPercent(offered, 0, 50) }} currency="USD" />);
     expect(screen.getByText("Split changed by applicant")).toBeTruthy();
-    const rows = [...document.querySelectorAll("[data-split-row]")].map((r) => [r.getAttribute("data-split-row"), r.getAttribute("data-split-row-changed"), r.textContent]);
+    const rows = Array.from(document.querySelectorAll("[data-split-row]")).map((r) => [r.getAttribute("data-split-row"), r.getAttribute("data-split-row-changed"), r.textContent]);
     expect(rows[0]).toEqual(["Cash", "yes", "Cashchanged60% · $3,60050% · $3,000"]);
     expect(rows[2][1]).toBe("no");
   });
