@@ -271,7 +271,10 @@ describe("Join the founding team", () => {
     // The band, one line under the listed price, with the price and the cap kept as they are.
     const pay = within(section).getByTestId("pay-shape");
     const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
-    expect(lines.slice(0, 3)).toEqual(["pay-ceiling", "pay-band", "pay-cap-words"]);
+    expect(lines.slice(0, 2)).toEqual(["pay-ceiling", "pay-band"]);
+    // No cap line (lead, 17 Nov 2026): the listed price is the high end the card shows.
+    expect(lines).not.toContain("pay-cap-words");
+    expect(pay.textContent).not.toContain("Proposals up to");
     expect(within(pay).getByTestId("pay-band").textContent).toBe("Band: $6,750 to $9,000 a month in total comp");
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
   });
@@ -521,14 +524,15 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
     expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
-    // The 120% cap (Rye, 15 Nov 2026): for the full role, and at the example share.
-    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month for the full role, 120% of the listed price. At 50%, up to $5,400 a month.");
+    // No cap line (lead, 17 Nov 2026): the 120% cap is a backend rule, never drawn on the card.
+    expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
+    expect(piece.textContent).not.toContain("Proposals up to");
+    expect(piece.textContent).not.toContain("120%");
+    expect(piece.textContent).not.toContain("$5,400");
+    expect(piece.textContent).not.toContain("$10,800");
     // The footnote (Rye, 15 Nov 2026): the first month with no figure, and the equity and credits clause because the
     // village's split pays 55% in equity and 5% in credits; then the village's own note.
     expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. Your first month often starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. ${VILLAGE_PAY.note}`);
-    // The cap sits beside the listed price, before the range.
-    const order = Array.from(piece.querySelectorAll("[data-testid]")).map((e) => e.getAttribute("data-testid"));
-    expect(order.indexOf("pay-cap-words")).toBe(order.indexOf("pay-ceiling") + 1);
     // One footnote (copy sweep): the village's own note is not drawn beside it.
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
     expect(piece.textContent).not.toContain("full band");
@@ -542,7 +546,8 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
     expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
     expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("At ");
-    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month, 120% of the listed price.");
+    expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
+    expect(piece.textContent).not.toContain("Proposals up to");
   });
   it("shows only the split when no ceiling is written", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payCeiling: null }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });

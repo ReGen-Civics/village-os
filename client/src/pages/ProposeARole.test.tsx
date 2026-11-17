@@ -290,11 +290,16 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
-    // The cap at 50% of a $13,000 band: 120% of the $6,500 suggestion.
-    expect(dialog.querySelector("[data-price-popup-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
-    // Past the cap: the popup says why and will not save it.
+    // The cap (120% of the $6,500 suggestion at 50%, $7,800) is enforced and never shown (lead, 17 Nov 2026).
+    expect(dialog.querySelector("[data-price-popup-cap]")).toBeNull();
+    expect(dialog.textContent).not.toContain("Proposals up to");
+    expect(dialog.textContent).not.toContain("$7,800");
+    // Past the cap: the popup refuses it in plain words, with no figure, and will not save it.
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "7801" } });
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call.");
+    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
-    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's above $7,800 a month, the most a proposal can ask at 50%: 120% of the suggested price. Choose $7,800 a month or less.");
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).not.toContain("$");
     expect(dialog.querySelector("[data-price-above-band]")).toBeNull();
     expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
     // At the cap: taken.
@@ -305,7 +310,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
     fireEvent.click(within(dialog).getByText("Use this price"));
     expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $7,800 a month (+20% on the suggestion).");
-    expect(document.querySelector("[data-price-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
+    expect(document.querySelector("[data-price-cap]")).toBeNull();
+    expect((document.querySelector("[data-price-ask]") as HTMLElement).textContent).not.toContain("Proposals up to");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     // Stored with the period the price was written in (QA F7): the role's ceiling period.
