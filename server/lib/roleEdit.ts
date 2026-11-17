@@ -119,7 +119,7 @@ async function storedParameters(pool: Pool, roleId: string, live: readonly Param
   const out: Record<string, unknown> = {};
   for (const k of live) {
     const v = row[PARAMETER_COLUMNS[k]];
-    if (k === "alwaysChecked" || k === "commitmentRequired") out[k] = Number(v) === 1;
+    if (k === "alwaysChecked" || k === "commitmentRequired" || k === "comingSoon" || k === "futureVenture") out[k] = Number(v) === 1;
     else if (k === "commitmentPct") out[k] = storedCommitmentPct(v);
     else if (k === "commitmentMin") out[k] = storedCommitmentMin(v);
     else if (k === "commitmentTarget") out[k] = storedCommitmentTarget(v);
@@ -195,6 +195,12 @@ export interface EditRequest {
   archetypes?: unknown;
   /** The founding sections, whole; absent leaves them alone. Saved beside the draft, never into it. */
   sections?: unknown;
+  /**
+   * The circle the role moves to (Rye, 16 Nov 2026: "move a role between circles without a code change").
+   * The role keeps its id, so its history, holders and applications move with it. The draft's own check
+   * refuses a circle that does not exist.
+   */
+  circleId?: unknown;
 }
 
 export type EditOutcome =
@@ -208,6 +214,7 @@ export function labelOf(key: string): string {
   if (key === "whyItMatters") return "Why it matters";
   if (key === "termsOffer") return "Pay on offer";
   if (key === "recruiting") return "Door";
+  if (key === "circleId") return "Circle";
   if (key === "accountabilities") return "What you can count on me for";
   const word = ROLE_CARD_FIELDS.find((f) => f.key === key);
   if (word) return word.heading;
@@ -244,6 +251,13 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
     const read = parseRoleWords(body.words, "words", ROLE_WORD_FIELDS, role as unknown as Record<string, unknown>);
     if (!read.ok) return bad(read.error, 400, [read.field]);
     for (const [k, v] of Object.entries(read.value as RoleWords)) payload[k] = v === null && ROLE_WORD_FIELDS.lists.has(k) ? [] : v;
+  }
+
+  // The circle, only when it changes.
+  if (body.circleId !== undefined && body.circleId !== null) {
+    const to = typeof body.circleId === "string" ? body.circleId.trim() : "";
+    if (!to) return bad("Choose the circle this role sits in.", 400, ["circleId"]);
+    if (to !== (role.circleId ?? "")) payload.circleId = to;
   }
 
   // The parameters.
@@ -357,6 +371,7 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
 
 const BEFORE_COLUMN: Record<string, string> = {
   name: "name",
+  circleId: "circle_id",
   aim: "aim",
   domain: "domain",
   accountabilities: "accountabilities",

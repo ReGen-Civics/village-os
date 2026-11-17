@@ -54,8 +54,8 @@ const LISTED = "(r.`listed` IS NULL OR r.`listed` <> 0)";
 const LIVE_SEATINGS =
   "(SELECT COUNT(*) FROM `org_role_assignments` a WHERE a.`org_role_id` = r.`id` AND a.`ended_at` IS NULL AND a.`is_example` = 0 AND a.`is_agent` = 0)";
 
-/** Open now: recruiting, or a place nobody holds. */
-const OPEN_NOW = `(r.\`recruiting\` = 1 OR r.\`seats\` > ${LIVE_SEATINGS})`; // voice-ok: `seats` is the org_roles column in SQL, never copy
+/** Open now: recruiting, or a place nobody holds. Never a coming-soon role: it is applied for early, but it is not Open (shared/roleListing.ts). */
+const OPEN_NOW = `(r.\`coming_soon\` = 0 AND r.\`future_venture\` = 0 AND (r.\`recruiting\` = 1 OR r.\`seats\` > ${LIVE_SEATINGS}))`; // voice-ok: `seats` is the org_roles column in SQL, never copy
 
 function toPathRole(r: RowDataPacket): OpenPathRole {
   return {

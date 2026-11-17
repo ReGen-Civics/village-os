@@ -335,6 +335,47 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect((asAdmin.json as any[]).map((c) => c.id)).toEqual(expect.arrayContaining(["anchor", "back-office"]));
   });
 
+  it("COMING SOON (Rye, 16 Nov 2026): an admin shows an unlisted role as coming soon; its circle and the role reach a visitor, the form offers it early, and the circle can be renamed, led and emptied by a move", async () => {
+    const F = state.founder;
+    expect((await call("POST", "/api/admin/circles", { id: "regen-community", name: "Regenerative Community Building" }, F)).status).toBe(200);
+    const made = await call("POST", "/api/admin/org/roles", { name: "Community Weaver", circleId: "regen-community", seats: 1 }, F);
+    const soonId = String(made.json?.id ?? "");
+    expect(soonId).toBeTruthy();
+    expect((await call("PUT", `/api/admin/org/roles/${soonId}`, { listed: false }, F)).status).toBe(200);
+    // CONTROL: unlisted and unmarked, the circle is hidden from a visitor and the form does not offer the role.
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("regen-community");
+    expect(((await call("GET", "/api/open-proposals/form")).json?.roles ?? []).map((r: any) => r.id)).not.toContain(soonId);
+
+    const marked = await call("PUT", `/api/admin/org/roles/${soonId}`, { comingSoon: true }, F);
+    expect(marked.status, JSON.stringify(marked.json)).toBe(200);
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).toContain("regen-community");
+    const row = ((await call("GET", "/api/org")).json?.roles ?? []).find((r: any) => r.id === soonId);
+    expect(row).toMatchObject({ comingSoon: true, state: "forming" });
+    expect("listed" in row).toBe(false);
+    // No pay range on a coming-soon card until the budget decisions are made.
+    expect(row.card?.publicPay).toBeUndefined();
+    // Applied for early, through the same form, which is told it is coming soon.
+    const offered = ((await call("GET", "/api/open-proposals/form")).json?.roles ?? []).find((r: any) => r.id === soonId);
+    expect(offered).toMatchObject({ comingSoon: true });
+    // The Filing Clerk's circle above is unmarked, and stays hidden.
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("back-office");
+
+    // A circle renamed and given its lead, without touching the role.
+    const renamed = await call("PUT", "/api/admin/circles/regen-community", { name: "Community Building", leadRoleId: state.roleId }, F);
+    expect(renamed.status, JSON.stringify(renamed.json)).toBe(200);
+    const circle = ((await call("GET", "/api/org")).json?.circles ?? []).find((c: any) => c.id === "regen-community");
+    expect(circle).toMatchObject({ name: "Community Building", leadRoleId: state.roleId });
+    // Its role moved out: same id, still coming soon, and the emptied circle leaves the visitor's list.
+    expect((await call("PUT", `/api/admin/org/roles/${soonId}`, { circleId: "back-office" }, F)).status).toBe(200);
+    const after = ((await call("GET", "/api/org")).json?.roles ?? []).find((r: any) => r.id === soonId);
+    expect(after).toMatchObject({ circleId: "back-office", comingSoon: true });
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("regen-community");
+
+    // Cleared, the role goes back to what its listed column says: hidden, and its circle with it.
+    expect((await call("PUT", `/api/admin/org/roles/${soonId}`, { comingSoon: false }, F)).status).toBe(200);
+    expect(((await call("GET", "/api/circles")).json as any[]).map((c) => c.id)).not.toContain("back-office");
+  });
+
   // ── The brief's 6.5 steps other lanes own. Each becomes a test, with a control, when its PR lands. ──
   it.todo("PR-A: an unlisted role is absent from the form and the board, and the listed one is offered");
   it.todo("PR-C: the public card carries the parameters and the pay range, and no other terms key");

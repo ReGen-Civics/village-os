@@ -51,7 +51,7 @@ export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
 
 /** What each kind names, in plain words, for the connector's description and a refusal. */
 export const KIND_WORDS: Record<ProposalKind, string> = {
-  role_card: "A role card: words, listing details, pay on offer, characters and the founding sections. target {roleId}; body any of {words, parameters, pay, archetypes, sections}.",
+  role_card: "A role card: words, listing details, pay on offer, characters and the founding sections. target {roleId}; body any of {words, parameters, pay, archetypes, sections, circleId}. parameters.comingSoon true shows the role as coming soon (applied for early); parameters.listed false with comingSoon false unlists it.",
   page_content: "A page's words. target {section}, such as page-home; body the fields to change, merged onto the page as it stands.",
   faq_add: "A new FAQ. target {pathway}; body {question, answer}.",
   faq_edit: "An FAQ reworded. target {pathway, id}; body {question, answer}.",
