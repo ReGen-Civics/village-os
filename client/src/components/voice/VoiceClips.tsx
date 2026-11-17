@@ -18,7 +18,7 @@
  * `VoiceClipsProvider`. Anywhere else, no provider, no button: the member
  * forms that share those fields are unchanged.
  */
-import { createContext, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { createContext, lazy, Suspense, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Circle, Square, Trash2 } from "lucide-react";
 import { HINT } from "@/components/journey/look";
 import { DEFAULT_CLIP_LIMITS, isClipField, voiceLength, type VoiceClipLimits } from "@shared/voiceNotes";
@@ -32,16 +32,28 @@ interface ClipsContext {
   voice: VoiceState;
   setVoice: Dispatch<SetStateAction<VoiceState>>;
   limits: VoiceClipLimits;
+  /** The application's own link, when it came through one: the transcription door is the same door as the form. */
+  link?: string;
 }
 
 const Clips = createContext<ClipsContext | null>(null);
 
-export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMITS, children }: ClipsContext & { children: ReactNode }) {
-  return <Clips.Provider value={{ voice, setVoice, limits }}>{children}</Clips.Provider>;
+/** The clip's words written down by themselves, and the AI line before its first recording (VoiceStepMore.tsx), loaded after the page. */
+const More = lazy(() => import("./VoiceStepMore"));
+
+export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMITS, link, children }: Omit<ClipsContext, "limits"> & { limits?: VoiceClipLimits; children: ReactNode }) {
+  return <Clips.Provider value={{ voice, setVoice, limits, link }}>{children}</Clips.Provider>;
 }
 
 /** The record button, the clip and, until it is given, the tick. Nothing without a provider, a recorder, or clips allowed. */
-export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onWords: (words: string) => void; /** The answer's own label, so each control is named for it (components/form/fieldName.ts). */ fieldName?: string }) {
+export function ClipBar({ field, onWords, fieldName = "", answer }: {
+  field: string;
+  onWords: (words: string) => void;
+  /** The answer's own label, so each control is named for it (components/form/fieldName.ts). */
+  fieldName?: string;
+  /** The answer itself, so the clip's written-down words can replace what the live engine caught there. */
+  answer?: { value: string; set: (next: string) => void; maxLength?: number };
+}) {
   const ctx = useContext(Clips);
   const [support] = useState(voiceSupport);
   const recorder = useVoiceRecorder((take) => {
@@ -99,6 +111,18 @@ export function ClipBar({ field, onWords, fieldName = "" }: { field: string; onW
       {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground">{recorder.live}</p>}
       {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{recorder.engine ? voiceWord("noTranscribe") : voiceWord("noEngine")}</p>}
       {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}
+      {!recorder.recording && (
+        <Suspense fallback={null}>
+          <More
+            part="clip"
+            field={field}
+            clip={mine}
+            answer={answer}
+            link={ctx.link}
+            setClipWords={(blob, words) => ctx.setVoice((v) => (v.clips[field]?.blob === blob ? { ...v, clips: { ...v.clips, [field]: { ...v.clips[field], words, written: true } } } : v))}
+          />
+        </Suspense>
+      )}
       {full && <p className={HINT}>{clipsFullWords(ctx.limits.max)}</p>}
       {mine && !ctx.voice.consent && (
         <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm" data-voice-clip-consent="">

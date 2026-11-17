@@ -30,6 +30,9 @@ import { readOpenProposal } from "../repos/openProposals";
 import { usersRepo } from "../repos/users";
 import { ATTACHMENT_WORDS } from "../../shared/proposalAttachments";
 import { OPEN_UPLOAD_MAX_BYTES, OPEN_UPLOADS_AT_ONCE, register, tidyOpenProposals } from "./openProposals";
+import { waitingRunSettled } from "./openProposalVoiceWritten";
+import type { TranscribeInput, TranscribeResult } from "../lib/voiceTranscription";
+import { STORED_TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_STORED_PER_HOUR, VOICE_TRANSCRIBE_WAITING_PATH } from "../../shared/voiceTranscribe";
 
 const configured = testDbConfigured();
 /** The image ships ffmpeg (Dockerfile); a machine without one skips the copy cases, said out loud. */
@@ -54,6 +57,16 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   let gate = "";
   let dir = "";
   const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult, admin: false, role: "admin" };
+  /** "Write down the words" on a kept recording: a stand-in service, a counting limiter, and the log lines. */
+  const stored = {
+    on: true,
+    calls: [] as TranscribeInput[],
+    answer: (input: TranscribeInput): TranscribeResult => ({ ok: true, text: `Words of a ${input.kind} recording, ${input.bytes.length} bytes.`, by: "groq" }),
+    hold: null as Promise<void> | null,
+    limiter: "counting" as "counting" | "unavailable",
+    hits: new Map<string, number>(),
+    logs: [] as string[],
+  };
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
   beforeAll(async () => {
@@ -96,6 +109,21 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       stageOf: async () => "guest",
       recordStageEvent: async () => undefined,
       proposalFileDir: dir,
+      storedTranscribe: {
+        providers: async () => (stored.on ? [{ id: "local", local: { bin: "x", model: "x", threads: 1 } }] : []),
+        transcribe: async (input: TranscribeInput) => {
+          stored.calls.push(input);
+          if (stored.hold) await stored.hold;
+          return stored.on ? stored.answer(input) : { ok: false, reason: "off" };
+        },
+        limitState: async (key: string, max: number) => {
+          if (stored.limiter === "unavailable") return "unavailable";
+          const n = (stored.hits.get(key) ?? 0) + 1;
+          stored.hits.set(key, n);
+          return n > max ? "over" : "under";
+        },
+        log: (line: string) => stored.logs.push(line),
+      },
     } as any);
     server = http.createServer(app);
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -116,6 +144,12 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     state.answer = { status: "sent", messageId: "m-1" };
     state.admin = false;
     state.role = "admin";
+    stored.on = true;
+    stored.calls.length = 0;
+    stored.hold = null;
+    stored.limiter = "counting";
+    stored.hits.clear();
+    stored.logs.length = 0;
   });
 
   let n = 0;
@@ -517,6 +551,133 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       await tidyOpenProposals(pool, new Date(), dir);
       expect((await readOpenProposal(pool, id))?.body.voice).toBeUndefined();
       expect((await fs.promises.readdir(path.join(dir, id))).filter((f) => f.startsWith("pv-"))).toEqual([]);
+    });
+  });
+
+  /*
+   * WRITING DOWN A KEPT RECORDING, on Admin's applications panel (the lead, 17
+   * Nov 2026: "Transcribe them! They've personally consented with me.").
+   */
+  describe("write down the words, on Admin's panel", () => {
+    /** A confirmed application with one recording and one clip. */
+    const confirmedWithVoice = async (name = "Rowan Field") => {
+      const r = await postClips(
+        proposal({ name, voice: { consent: true, seconds: [42], transcript: "", clips: [{ field: "why", seconds: 18, words: "" }] } }),
+        [{ name: "voice-1.webm", bytes: WEBM }],
+        [{ name: "why.webm", bytes: WEBM }],
+      );
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      const id = lastId();
+      await q("UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ? WHERE id = ?", [new Date(), id]);
+      const voice = (await readOpenProposal(pool, id))!.body.voice!;
+      return { id, note: voice.notes[0], clip: voice.clips![0] };
+    };
+    const desk = async () => fetch(`${base}/api/admin/open-proposals`).then((res) => res.json() as Promise<any>); // module-review-ok: a test calling its own local server
+    const writeDown = async (id: string, noteId: string) => {
+      const res = await fetch(`${base}/api/admin/open-proposals/${id}/voice/${noteId}/transcribe`, { method: "POST" }); // module-review-ok: a test calling its own local server
+      return { status: res.status, body: (await res.json().catch(() => ({}))) as any };
+    };
+
+    it("writes one recording and one clip down, keeps the words with the application as an AI transcript, and logs no word of them", async () => {
+      const { id, note, clip } = await confirmedWithVoice("Ash Wilder");
+      state.admin = true;
+      const before = (await desk()).proposals.find((p: any) => p.id === id);
+      expect((await desk()).transcribeOn).toBe(true);
+      expect(before.voice.written).toEqual({});
+      const one = await writeDown(id, note.id);
+      expect(one.status, JSON.stringify(one.body)).toBe(200);
+      expect(one.body.written).toEqual({ text: `Words of a webm recording, ${WEBM.length} bytes.`, by: "groq", at: expect.any(String) });
+      expect((await writeDown(id, clip.id)).status).toBe(200);
+      // Kept with the application, by recording, and on the desk.
+      const kept = (await readOpenProposal(pool, id))!.body.voice!.written!;
+      expect(Object.keys(kept).sort()).toEqual([note.id, clip.id].sort());
+      const after = (await desk()).proposals.find((p: any) => p.id === id);
+      expect(after.voice.written[note.id].text).toBe(one.body.written.text);
+      // The recording sent was the kept file, checked by its fingerprint.
+      expect(stored.calls.map((c) => c.bytes.equals(WEBM))).toEqual([true, true]);
+      // One line a run: ids, the service and the outcome; never the words, never the name.
+      expect(stored.logs).toHaveLength(2);
+      expect(stored.logs[0]).toContain(`proposal=${id} recording=${note.id}`);
+      expect(stored.logs[0]).toContain("by=groq result=written");
+      expect(stored.logs.join("\n")).not.toContain("Words of");
+      expect(stored.logs.join("\n")).not.toContain("Ash");
+    });
+
+    it("only the village's admins, a person, on a confirmed application: everybody else is answered as if there were nothing", async () => {
+      const { id, note } = await confirmedWithVoice();
+      expect((await writeDown(id, note.id)).status).toBe(401);
+      state.admin = true;
+      state.role = "member";
+      expect((await writeDown(id, note.id)).status).toBe(404);
+      state.role = "admin";
+      expect((await writeDown(id, "pv-0000000000000000")).status).toBe(404);
+      await q("UPDATE open_role_proposals SET status = 'declined' WHERE id = ?", [id]);
+      expect((await writeDown(id, note.id)).status).toBe(404);
+      expect(stored.calls).toEqual([]);
+      // CONTROL: the same admin on a confirmed application is heard.
+      await q("UPDATE open_role_proposals SET status = 'confirmed' WHERE id = ?", [id]);
+      expect((await writeDown(id, note.id)).status).toBe(200);
+    });
+
+    it("caps a person's hour and the village's day, fails closed when the limiter cannot be read, and says so when it is switched off", async () => {
+      const { id, note } = await confirmedWithVoice();
+      state.admin = true;
+      stored.hits.set("voice-written:u-desk", VOICE_TRANSCRIBE_STORED_PER_HOUR);
+      expect(await writeDown(id, note.id)).toEqual({ status: 429, body: { error: STORED_TRANSCRIBE_WORDS.tooMany } });
+      stored.hits.clear();
+      stored.hits.set("voice-written:day", 10_000);
+      expect(await writeDown(id, note.id)).toEqual({ status: 429, body: { error: STORED_TRANSCRIBE_WORDS.dayFull } });
+      stored.limiter = "unavailable";
+      expect(await writeDown(id, note.id)).toEqual({ status: 503, body: { error: STORED_TRANSCRIBE_WORDS.unavailable } });
+      expect(stored.calls).toEqual([]);
+      expect(stored.logs.every((l) => l.endsWith("result=capped"))).toBe(true);
+      stored.limiter = "counting";
+      stored.hits.clear();
+      stored.on = false;
+      expect((await desk()).transcribeOn).toBe(false);
+      expect((await writeDown(id, note.id)).body.error).toBe(STORED_TRANSCRIBE_WORDS.off);
+      expect((await readOpenProposal(pool, id))!.body.voice!.written).toBeUndefined();
+    });
+
+    it("Transcribe all waiting: every recording with no words yet, one after another, never one already written, and one run at a time", async () => {
+      const a = await confirmedWithVoice();
+      const b = await confirmedWithVoice();
+      state.admin = true;
+      // One already written: the run leaves it alone.
+      expect((await writeDown(a.id, a.note.id)).status).toBe(200);
+      stored.calls.length = 0;
+      let release!: () => void;
+      stored.hold = new Promise<void>((r) => (release = r));
+      const waitingBefore = (await desk()).proposals.reduce((n: number, p: any) => n + [...(p.voice?.notes ?? []), ...(p.voice?.clips ?? [])].filter((r: any) => !p.voice.written[r.id]).length, 0);
+      const start = await fetch(`${base}${VOICE_TRANSCRIBE_WAITING_PATH}`, { method: "POST" }); // module-review-ok: a test calling its own local server
+      expect(start.status).toBe(202);
+      expect(await start.json()).toEqual({ started: Math.min(waitingBefore, 40), waiting: waitingBefore });
+      // A second press while it runs is told so, and starts nothing.
+      const again = await fetch(`${base}${VOICE_TRANSCRIBE_WAITING_PATH}`, { method: "POST" }); // module-review-ok: a test calling its own local server
+      expect(again.status).toBe(409);
+      expect(((await again.json()) as any).error).toBe(STORED_TRANSCRIBE_WORDS.running);
+      release();
+      await waitingRunSettled();
+      expect(stored.calls).toHaveLength(Math.min(waitingBefore, 40));
+      for (const x of [a, b]) {
+        const written = (await readOpenProposal(pool, x.id))!.body.voice!.written!;
+        expect(Object.keys(written).sort()).toEqual([x.note.id, x.clip.id].sort());
+      }
+      // CONTROL: nothing waits now, and a press starts nothing.
+      const none = await fetch(`${base}${VOICE_TRANSCRIBE_WAITING_PATH}`, { method: "POST" }); // module-review-ok: a test calling its own local server
+      expect(await none.json()).toEqual({ started: 0, waiting: 0 });
+      state.admin = false;
+      expect((await fetch(`${base}${VOICE_TRANSCRIBE_WAITING_PATH}`, { method: "POST" })).status).toBe(401); // module-review-ok: a test calling its own local server
+    });
+
+    it("the AI transcript goes with the recording when the voice part goes", async () => {
+      const { id, note } = await confirmedWithVoice();
+      state.admin = true;
+      expect((await writeDown(id, note.id)).status).toBe(200);
+      await q("UPDATE open_role_proposals SET status = 'declined', decided_at = ? WHERE id = ?", [new Date(Date.now() - 91 * 24 * 60 * 60_000), id]);
+      await tidyOpenProposals(pool, new Date(), dir);
+      const raw = (await q("SELECT body_json FROM open_role_proposals WHERE id = ?", [id]))[0]?.body_json;
+      expect(JSON.stringify(raw ?? "")).not.toContain("Words of");
     });
   });
 });

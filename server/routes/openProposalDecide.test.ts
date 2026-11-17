@@ -106,6 +106,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     notices: [] as Array<{ userId: string; type: string; title: string; body?: string | null; link?: string | null; dedupeKey: string }>,
     adminNotices: [] as Array<{ type: string; title: string; key: string }>,
     stageEvents: [] as Array<{ userId: string; from: string; to: string; reason: string }>,
+    writtenLog: [] as string[],
   };
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
@@ -181,6 +182,13 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       },
       sessionsOn: () => false,
       proposalFileDir: fileDir,
+      // "Write down the words" on a kept recording: a stand-in service, no limit hit, the log kept (openProposalVoiceWritten.ts).
+      storedTranscribe: {
+        providers: async () => [{ id: "local", local: { bin: "x", model: "x", threads: 1 } }],
+        transcribe: async () => ({ ok: true, text: "Cuido la puerta cada mañana.", by: "local" }),
+        limitState: async () => "under",
+        log: (line: string) => state.writtenLog.push(line),
+      },
     } as any);
     server = http.createServer(app);
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -767,6 +775,41 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect((await listen(voice.clips[0].href, FOUNDER.id)).status).toBe(200);
       expect((await listen(voice.clips[0].href, MO.id)).status).toBe(404);
       expect((await page(id, MO.id)).body.proposal.voice).toBeNull();
+    });
+
+    /*
+     * WRITE DOWN THE WORDS, for the deciders (the lead, 17 Nov 2026: "Transcribe
+     * them! They've personally consented with me."). The same people as the
+     * Listen door, by the same checks; the words are kept as an AI transcript.
+     */
+    it("a decider writes a kept recording down; it is kept and shown as an AI transcript; nobody else may, and no agent", async () => {
+      const id = await withVoice("voice-written@example.test");
+      const before = (await page(id, FOUNDER.id)).body.proposal.voice;
+      expect(before.transcribeOn).toBe(true);
+      expect(before.written).toEqual({});
+      const href = before.notes[0].href as string;
+      const post = async (as: string | null, headers: Record<string, string> = {}) => {
+        state.viewer = as;
+        try {
+          return await fetch(`${base}${href}/transcribe`, { method: "POST", headers }); // module-review-ok: a test calling its own local server
+        } finally {
+          state.viewer = null;
+        }
+      };
+      expect((await post(MO.id)).status).toBe(404);
+      expect((await post(null)).status).toBe(401);
+      expect((await post(FOUNDER.id, { "x-village-connector": "1" })).status).toBe(404);
+      expect(state.writtenLog).toEqual([]);
+      const ok = await post(FOUNDER.id);
+      expect(ok.status).toBe(200);
+      expect(((await ok.json()) as any).written).toMatchObject({ text: "Cuido la puerta cada mañana.", by: "local" });
+      const after = (await page(id, FOUNDER.id)).body.proposal.voice;
+      expect(after.written[before.notes[0].id].text).toBe("Cuido la puerta cada mañana.");
+      // An asked holder decides it too, and reads it; a member who does not, reads nothing of it.
+      expect((await page(id, ANA.id)).body.proposal.voice.written[before.notes[0].id]).toBeTruthy();
+      expect(JSON.stringify((await page(id, MO.id)).body)).not.toContain("Cuido");
+      expect(state.writtenLog).toHaveLength(1);
+      expect(state.writtenLog[0]).toMatch(/^\[voice-written\] decider proposal=op-[0-9a-f]+ recording=pv-[0-9a-f]+ seconds=42 by=local result=written ms=\d+$/);
     });
 
     it("a recording changed on disk since it was sent is not played", async () => {

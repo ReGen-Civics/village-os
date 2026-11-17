@@ -44,7 +44,7 @@ export default function MicInput({
         <MicButton disabled={rest.disabled} onText={said} fieldName={fieldName} />
       </span>
     </div>
-    {clip && <ClipBar field={clip} onWords={said} fieldName={fieldName} />}
+    {clip && <ClipBar field={clip} onWords={said} fieldName={fieldName} answer={{ value, set: onChange, maxLength: rest.maxLength }} />}
     </div>
   );
 }

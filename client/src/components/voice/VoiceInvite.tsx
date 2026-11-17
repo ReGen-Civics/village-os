@@ -31,7 +31,7 @@ export { VoiceClipsProvider } from "./VoiceClips";
 export { useAskBeforeLeaving } from "./useVoiceRecorder";
 export { clipLimitsOf, type VoiceClipLimits } from "@shared/voiceNotes";
 
-/** The step's later additions (limit note, countdown, "Write down my words"), loaded after the page: the first view is at its budget. */
+/** The step's later additions (limit note and the AI switch, countdown, words written down), loaded after the page: the first view is at its budget. */
 const MoreLazy = lazy(() => import("./VoiceStepMore"));
 /** "Draft my answers" too: drawn only once there are words, so it waits for them off the first view. */
 const VoiceDrafts = lazy(() => import("./VoiceDrafts").then((m) => ({ default: m.VoiceDrafts })));
@@ -172,7 +172,8 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
                 <Trash2 className="size-4" aria-hidden="true" />
                 {t({ message: "Remove", context: "voice note" })}
               </button>
-              {!recorder.recording && <More part="transcribe" index={i} state={latest} onChange={onChange} link={drafting?.link} />}
+              {/* Drawn while another take records too, so a take still being written down is never cut off. */}
+              <More part="transcribe" index={i} state={latest} onChange={onChange} link={drafting?.link} />
             </li>
           ))}
         </ul>

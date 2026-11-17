@@ -21733,3 +21733,113 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour."
+msgstr "Son muchas grabaciones escritas para una sola conexión. Tu grabación sigue guardada. Escribe lo que dijiste, o inténtalo de nuevo en una hora."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Writing down your words. A five-minute take can take a minute or two."
+msgstr "Escribiendo tus palabras. Una toma de cinco minutos puede tardar uno o dos minutos."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Your words are in the box. Read them and fix anything we got wrong."
+msgstr "Tus palabras están en el cuadro. Léelas y corrige lo que hayamos entendido mal."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Stopped. Nothing more is sent. Your recording is kept."
+msgstr "Detenido. No se envía nada más. Tu grabación queda guardada."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, consent line"
+msgid "Your recording is transcribed by an AI service so the team can read it. You can turn this off."
+msgstr "Un servicio de IA transcribe tu grabación para que el equipo pueda leerla. Puedes desactivarlo."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription switch"
+msgid "Write down my words automatically"
+msgstr "Escribir mis palabras automáticamente"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "You changed this answer, so we left it as you wrote it. The written-down words go with your clip."
+msgstr "Cambiaste esta respuesta, así que la dejamos como la escribiste. Las palabras escritas van con tu clip."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "Groq's Whisper"
+msgstr "Whisper de Groq"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "OpenAI"
+msgstr "OpenAI"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "the village's own Whisper"
+msgstr "el propio Whisper de la aldea"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "That's a lot of recordings written down in an hour. Try again later."
+msgstr "Son muchas grabaciones escritas en una hora. Inténtalo más tarde."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "The village has written down as many recordings as it may today. Try again tomorrow."
+msgstr "La aldea ya escribió todas las grabaciones que puede hoy. Inténtalo mañana."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "We couldn't write this recording down just now. The recording is still kept. Try again in a moment."
+msgstr "No pudimos escribir esta grabación ahora. La grabación sigue guardada. Inténtalo de nuevo en un momento."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "Writing recordings down isn't switched on. An admin can switch it on under Integrations."
+msgstr "Escribir grabaciones no está activado. Una persona administradora puede activarlo en Integraciones."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "The service heard no words in this recording."
+msgstr "El servicio no oyó palabras en esta grabación."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript label"
+msgid "AI transcript, written down by {0}. Not checked by the applicant."
+msgstr "Transcripción de IA, escrita por {0}. La persona solicitante no la revisó."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Write it down again"
+msgstr "Escribirla de nuevo"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Write down the words"
+msgstr "Escribir las palabras"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Writing down the words. A five-minute recording can take a minute or two."
+msgstr "Escribiendo las palabras. Una grabación de cinco minutos puede tardar uno o dos minutos."
+
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Writing down {0} recordings. Each appears here as it finishes."
+msgstr "Escribiendo {0} grabaciones. Cada una aparece aquí al terminar."
+
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Transcribe all waiting"
+msgstr "Transcribir todas las pendientes"
+
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "{waiting} recordings have no words yet. Each is written down by an AI service and kept with its application, marked as an AI transcript."
+msgstr "{waiting} grabaciones aún no tienen palabras. Un servicio de IA escribe cada una y se guarda con su solicitud, marcada como transcripción de IA."
