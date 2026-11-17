@@ -677,6 +677,43 @@ export const VARIABLES: VariableDef[] = [
     min: 0,
     max: 1000000000,
   },
+  // ── The valuation engine's no-sign band ──────────────────────────────────
+  //
+  // Inside the band one setter's word sets a role's pay or a quest's price;
+  // outside it, a reason and a second signer, or the village. The band used to
+  // be one symmetric dial on the valuation model (`engine.bandPct`, plus or
+  // minus 10). These two let a village set each side on its own, such as a
+  // band from 20% under the suggestion up to the suggestion itself. Blank
+  // follows the valuation model, which is plus or minus 10 unless a saved
+  // version says otherwise, so a village that sets nothing sees no change.
+  // The server lays them over the model it prices with (`currentModel`,
+  // server/lib/valuationStore.ts), so every surface reads one band.
+  {
+    key: "valuation.band_below_pct",
+    category: "Ledger",
+    label: "How far under the suggestion one person may set pay",
+    description:
+      "The valuation engine suggests a figure for a role's pay or a quest's price. A figure from this far under the suggestion up to the top of the band is set by one person's word. A figure lower than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 20 means the band starts at 80% of it, and 0 means nothing under the suggestion is inside. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.",
+    type: "integer",
+    default: "",
+    blank: "follows the valuation model",
+    unit: "%",
+    min: 0,
+    max: 100,
+  },
+  {
+    key: "valuation.band_above_pct",
+    category: "Ledger",
+    label: "How far over the suggestion one person may set pay",
+    description:
+      "The other side of the same band. A figure from the bottom of the band up to this far over the suggestion is set by one person's word. A figure higher than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 0 means the suggestion itself is the top of the band, and 10 means up to 110% of it. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.",
+    type: "integer",
+    default: "",
+    blank: "follows the valuation model",
+    unit: "%",
+    min: 0,
+    max: 100,
+  },
   // ── R73, 2026-08-29: one allowance, one per-recipient rule ────────────────
   //
   // Three dials used to live here and just above. The economy engine carried

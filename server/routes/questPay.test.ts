@@ -16,9 +16,10 @@
  *      the new price onto it (C8).
  */
 import mysql from "mysql2/promise";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb } from "../db/testDb";
 import { saveModelVersion } from "../lib/valuationStore";
+import { setVariable } from "../lib/variables";
 import { claimsRepo, questsRepo, type ClaimsRepo, type QuestsRepo } from "../repos/quests";
 import { modelForVillage } from "../../shared/valuationEngine";
 import type { ValuationModel } from "../../shared/valuation";
@@ -153,6 +154,34 @@ describe.skipIf(!configured)("setting a quest's price with the Treasurer and the
     const signed = await call("POST /api/valuation/settings/:id/sign", { params: { id: waiting.body.settingId } });
     expect(signed.status, JSON.stringify(signed.body)).toBe(200);
     expect(((await quests.byId(id)) as any).valueMinor).toBe(far);
+  });
+
+  describe("the village's own band, 20% under the suggestion up to the suggestion itself", () => {
+    const band = async (below: string, above: string) => {
+      for (const [k, v] of [["valuation.band_below_pct", below], ["valuation.band_above_pct", above]] as const) {
+        const r = await setVariable(pool, k, v);
+        expect(r.ok, r.error).toBe(true);
+      }
+    };
+    afterEach(async () => band("", ""));
+
+    it("sets a price at 80% of the suggestion on one word, and holds one a little over it for a second signer", async () => {
+      await band("20", "0");
+      const low = await makeQuest();
+      const edge = await setPrice(low, Math.round(expectedTotal * 0.8));
+      expect(edge.status, JSON.stringify(edge.body)).toBe(200);
+      expect(edge.body.state).toBe("set");
+      const high = await makeQuest();
+      const over = Math.round(expectedTotal * 1.05);
+      expect((await setPrice(high, over)).status).toBe(400);
+      expect((await setPrice(high, over, { reason: "Urgency or short notice" })).body.state).toBe("awaiting_second");
+    });
+
+    it("sends the desk the band dials, so its in-band count matches the server", async () => {
+      await band("20", "0");
+      const desk = await call("GET /api/quests/pricing-desk");
+      expect(desk.body.model.engine).toMatchObject({ bandBelowPct: 20, bandAbovePct: 0 });
+    });
   });
 
   it("a setter holding an open claim on the quest never prices it by their word alone", async () => {

@@ -17,7 +17,7 @@
  *   6. A role that pays its setter always waits (the conflict rule).
  */
 import mysql from "mysql2/promise";
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { testPool, provisionTestDb, testDbConfigured, type TestDb } from "../db/testDb";
 import { createOrgRole, listOrgRoles, seatHolder, updateOrgRole } from "../lib/orgChart";
 import { saveModelVersion } from "../lib/valuationStore";
@@ -25,6 +25,7 @@ import { modelForVillage } from "../../shared/valuationEngine";
 import type { ValuationModel } from "../../shared/valuation";
 import { register } from "./valuation";
 import { getDraft } from "../lib/orgDrafts";
+import { setVariable } from "../lib/variables";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 function collect() {
@@ -151,6 +152,45 @@ describe.skipIf(!configured)("setting a role's pay with the Treasurer and the al
     expect(role.valueTokens.find((t: any) => t.token === MODEL.tokens.voice)?.amount).toBe(Math.floor(role.valueMinor / 100));
     const rec = await call("GET /api/org/roles/:id/pay/settings", { params: { id } });
     expect(rec.body.settings[0]).toMatchObject({ state: "set", suggestedMinor: expectedTotal, setMinor: figure, setterId: "treasurer-1", inside: true });
+  });
+
+  describe("the village's own band, 20% under the suggestion up to the suggestion itself", () => {
+    const band = async (below: string, above: string) => {
+      for (const [k, v] of [["valuation.band_below_pct", below], ["valuation.band_above_pct", above]] as const) {
+        const r = await setVariable(pool, k, v);
+        expect(r.ok, r.error).toBe(true);
+      }
+    };
+    afterEach(async () => band("", ""));
+
+    it("sends the band dials on the model every page prices with", async () => {
+      await band("20", "0");
+      const out = await call("GET /api/valuation/model");
+      expect(out.body.model.engine).toMatchObject({ bandBelowPct: 20, bandAbovePct: 0 });
+      const s = await call("POST /api/valuation/suggest", { body: { work: WORK } });
+      expect(s.body.payees[0].band).toEqual({ lowMinor: Math.round(expectedTotal * 0.8), highMinor: expectedTotal });
+    });
+
+    it("sets 85% of the suggestion on one word, which the platform's band would not", async () => {
+      const id = await makeRole();
+      const figure = Math.round(expectedTotal * 0.85);
+      await band("20", "0");
+      const out = await setPay(id, figure);
+      expect(out.status, JSON.stringify(out.body)).toBe(200);
+      expect(out.body).toMatchObject({ state: "set", decision: { inside: true, needs: "none" } });
+      const rec = await call("GET /api/org/roles/:id/pay/settings", { params: { id } });
+      expect(rec.body.settings[0]).toMatchObject({ bandLowMinor: Math.round(expectedTotal * 0.8), bandHighMinor: expectedTotal, inside: true });
+    });
+
+    it("asks a reason and a second signer a little over the suggestion, which the platform's band would let stand", async () => {
+      const id = await makeRole();
+      await band("20", "0");
+      const over = await setPay(id, Math.round(expectedTotal * 1.05));
+      expect(over.status).toBe(400);
+      expect(over.body.error).toMatch(/reason/);
+      const held = await setPay(id, Math.round(expectedTotal * 1.05), { reason: "Urgency or short notice" });
+      expect(held.body).toMatchObject({ state: "awaiting_second", decision: { inside: false, needs: "second" } });
+    });
   });
 
   it("asks a written reason outside the band, and writes nothing without one", async () => {
