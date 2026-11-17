@@ -67,7 +67,7 @@ export default function GrowingField({
     />
   );
   const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
-  const clipBar = clip ? <ClipBar field={clip} onWords={said} fieldName={fieldName} /> : null;
+  const clipBar = clip ? <ClipBar field={clip} onWords={said} fieldName={fieldName} answer={{ value, set: onChange, maxLength: rest.maxLength }} /> : null;
   const max = typeof rest.maxLength === "number" && rest.maxLength > 0 ? rest.maxLength : 0;
   const count = counter && max ? <CharacterCount used={value.length} max={max} id={rest.id ? `${rest.id}-count` : undefined} /> : null;
   if (!mic) return clipBar || count ? <div>{box}{count}{clipBar}</div> : box;

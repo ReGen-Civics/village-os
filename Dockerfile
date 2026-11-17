@@ -201,13 +201,51 @@ RUN mkdir /tmp/ffmpeg-src \
  && ./configure --prefix=/opt/ffmpeg --disable-everything --disable-autodetect --disable-doc --disable-debug \
       --disable-ffplay --disable-ffprobe --disable-network --disable-x86asm --enable-small --disable-shared --enable-static \
       --enable-protocol=file,pipe --enable-demuxer=matroska,ogg,mov --enable-decoder=opus,vorbis,aac \
-      --enable-parser=opus,vorbis,aac --enable-encoder=aac --enable-muxer=mp4,ipod \
+      --enable-parser=opus,vorbis,aac --enable-encoder=aac,pcm_s16le --enable-muxer=mp4,ipod,wav \
       --enable-filter=abuffer,abuffersink,aresample,aformat,anull \
  && make -j"$(nproc)" \
  && make install \
  && strip /opt/ffmpeg/bin/ffmpeg \
  && /opt/ffmpeg/bin/ffmpeg -hide_banner -encoders | grep -q " aac " \
+ && /opt/ffmpeg/bin/ffmpeg -hide_banner -encoders | grep -q " pcm_s16le " \
  && rm -rf /tmp/ffmpeg-src /tmp/ffmpeg.tar.xz
+# (pcm_s16le and the WAV muxer: the 16 kHz WAV the `whisper` stage's model
+# reads, made from a recording before it is written down. A few KB.)
+
+
+# ---------------------------------------------------------------------------
+# whisper: writing a recording down with no key and no outside service.
+#
+# The lead, 17 Nov 2026: "Look for other options that are free". With no
+# transcription key typed, server/lib/voiceTranscription.ts (provider `local`)
+# runs this whisper.cpp on the server's own cores: ffmpeg above makes a 16 kHz
+# WAV, this writes the words down. Nothing leaves the server.
+#
+# The model is Whisper `base`, multilingual (Spanish and English alike),
+# quantised to q5_1: 60 MB. Measured on 2026-11-17 on a 5-minute recording,
+# two threads of a 2.1 GHz Xeon: 66 s and 312 MB of memory, in Spanish and in
+# English; one thread took 108 s. `small` took 191 s and 579 MB and dropped
+# whole sentences of the same Spanish take, and the English-only `base.en`
+# dropped a passage the multilingual model kept, so neither earns its place.
+# One recording runs at a time (LOCAL_WAITING_MAX queue in the provider).
+#
+# Built for any x86-64 with AVX2 (GGML_NATIVE=OFF), without OpenMP, so the
+# binary needs only libstdc++, which the node base already has. About 3 MB.
+# The source is pinned by the commit of tag v1.9.5, the model by its sha256.
+# ---------------------------------------------------------------------------
+FROM base AS whisper
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc g++ make cmake libc6-dev \
+ && rm -rf /var/lib/apt/lists/*
+ADD --keep-git-dir=false https://github.com/ggml-org/whisper.cpp.git#d1be6fde11ac6e0407606b4e42fe72d34add8037 /tmp/whisper-src
+ADD --checksum=sha256:422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898 https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base-q5_1.bin /opt/whisper/ggml-base-q5_1.bin
+RUN cd /tmp/whisper-src \
+ && cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DGGML_NATIVE=OFF -DGGML_OPENMP=OFF \
+      -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_SERVER=OFF \
+ && cmake --build build -j"$(nproc)" --target whisper-cli \
+ && strip -o /opt/whisper/whisper-cli build/bin/whisper-cli \
+ && /opt/whisper/whisper-cli --help > /dev/null 2>&1 \
+ && rm -rf /tmp/whisper-src
 
 
 # ---------------------------------------------------------------------------
@@ -228,6 +266,10 @@ RUN apt-get update \
 
 # The voice note's player for Safari and iPhones (the ffmpeg stage above).
 COPY --from=ffmpeg /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
+# Writing a recording down with no key (the whisper stage above): the program
+# and its model, where server/lib/voiceTranscription.ts looks by default.
+COPY --from=whisper /opt/whisper/whisper-cli /usr/local/bin/whisper-cli
+COPY --from=whisper /opt/whisper/ggml-base-q5_1.bin /opt/whisper/ggml-base-q5_1.bin
 
 ENV NODE_ENV=production
 ENV PORT=3000

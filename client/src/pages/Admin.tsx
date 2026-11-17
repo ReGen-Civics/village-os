@@ -56,6 +56,7 @@ import { limitNav, simpleNav } from "@/components/admin/adminFeelState";
 import { TourCard } from "@/components/admin/AdminFeel";
 
 const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
+const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
 const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
@@ -946,6 +947,10 @@ export function IntegrationsTab({ password }: { password: string }) {
       <SecretsKeyBanner status={data?.villageSecretsKey} />
       {keySaved && <div className="mb-6"><ConnectorSetupPanel moment="key" isAdmin password={password} person="admin" /></div>}
       <SigningKeyCard password={password} />
+      {/* Which service writes voice recordings down (the lead, 17 Nov 2026); its keys are cards below. */}
+      <Suspense fallback={null}>
+        <VoiceTranscriptionPicker password={password} />
+      </Suspense>
       {loading && !data ? <div className="text-center py-12 text-gray-400">Loading…</div> : (
         <div className="w-full space-y-5">
           {/* The one value that flows the OTHER way: what to paste into Stripe. */}

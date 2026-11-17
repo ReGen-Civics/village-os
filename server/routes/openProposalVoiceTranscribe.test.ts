@@ -14,8 +14,8 @@ import http from "node:http";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
-import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
-import { DEFAULT_TRANSCRIPTION_PROVIDER, languageHint, transcribeTake, transcriptionProvider, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
+import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
+import { HTTP_PROVIDERS, languageHint, transcribeTake, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 import { registerVoiceTranscribe } from "./openProposalVoiceTranscribe";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
 
@@ -31,7 +31,10 @@ describe("the door, over real HTTP", () => {
     limiter: "counting" as "counting" | "unavailable",
     hits: new Map<string, number>(),
     calls: [] as TranscribeInput[],
-    answer: { ok: true, text: "I keep the gate at dawn." } as TranscribeResult,
+    answer: { ok: true, text: "I keep the gate at dawn.", by: "groq" } as TranscribeResult,
+    /** Hold the provider call until the asker goes away, and note whether it was told to stop. */
+    hold: false,
+    stopped: [] as boolean[],
     ip: "203.0.113.9",
   };
 
@@ -50,6 +53,11 @@ describe("the door, over real HTTP", () => {
       enabled: () => state.on,
       transcribe: async (input) => {
         state.calls.push(input);
+        if (state.hold) {
+          await new Promise<void>((resolve) => input.signal?.addEventListener("abort", () => resolve()));
+          state.stopped.push(!!input.signal?.aborted);
+          return { ok: false, reason: "cancelled" };
+        }
         return state.answer;
       },
     });
@@ -68,8 +76,10 @@ describe("the door, over real HTTP", () => {
     state.limiter = "counting";
     state.hits.clear();
     state.calls.length = 0;
-    state.answer = { ok: true, text: "I keep the gate at dawn." };
+    state.answer = { ok: true, text: "I keep the gate at dawn.", by: "groq" };
     state.ip = "203.0.113.9";
+    state.hold = false;
+    state.stopped.length = 0;
   });
 
   const send = async (bytes: Buffer, fields: Record<string, string> = { seconds: "300", lang: "es-CR" }, type = "audio/webm;codecs=opus") => {
@@ -110,6 +120,35 @@ describe("the door, over real HTTP", () => {
     expect((await send(TINY_WEBM_OPUS)).status).toBe(200);
   });
 
+  it("clips have their own count: they never use up the takes' hour, and stop at their own", async () => {
+    const clipSend = () => send(TINY_WEBM_OPUS, { seconds: "40", lang: "es-CR", kind: "clip" });
+    // Twenty clips in an hour, far past the six takes, all written down.
+    for (let i = 0; i < VOICE_TRANSCRIBE_CLIPS_PER_HOUR; i += 1) expect((await clipSend()).status, `clip ${i + 1}`).toBe(200);
+    // The takes' hour is untouched by them.
+    for (let i = 0; i < VOICE_TRANSCRIBE_PER_HOUR; i += 1) expect((await send(TINY_WEBM_OPUS)).status, `take ${i + 1}`).toBe(200);
+    // Each count stops at its own end, with the same plain words, and nothing more is sent.
+    const sentSoFar = state.calls.length;
+    expect(await clipSend()).toEqual({ status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } });
+    expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } });
+    expect(state.calls).toHaveLength(sentSoFar);
+    expect(sentSoFar).toBe(VOICE_TRANSCRIBE_CLIPS_PER_HOUR + VOICE_TRANSCRIBE_PER_HOUR);
+  });
+
+  it("the village's day counts clips apart too: a day full of takes still writes clips down, and clips stop at their own 200", async () => {
+    const clipSend = () => send(TINY_WEBM_OPUS, { seconds: "40", lang: "es-CR", kind: "clip" });
+    state.hits.set("open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY);
+    // The takes' day is full: a take is refused, a clip is written down.
+    expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
+    expect((await clipSend()).status).toBe(200);
+    // The clips' own day full: a clip is refused with nothing sent, and a take is counted on its own day again.
+    state.hits.set("open-proposal:voice-transcribe:clips-day", VOICE_TRANSCRIBE_CLIPS_PER_DAY);
+    const sent = state.calls.length;
+    expect(await clipSend()).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
+    expect(state.calls).toHaveLength(sent);
+    state.hits.set("open-proposal:voice-transcribe:day", 0);
+    expect((await send(TINY_WEBM_OPUS)).status).toBe(200);
+  });
+
   it("caps the whole village at its day, across connections", async () => {
     state.hits.set("open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY);
     expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
@@ -137,62 +176,48 @@ describe("the door, over real HTTP", () => {
     expect((await send(TINY_WEBM_OPUS, { seconds: "300" })).status).toBe(200);
   });
 
+  it("an applicant who turns writing down off (the page aborts its request) stops the provider call", async () => {
+    state.hold = true;
+    const stop = new AbortController();
+    const fd = new FormData();
+    fd.append("seconds", "300");
+    fd.append("voice", new Blob([new Uint8Array(TINY_WEBM_OPUS)], { type: "audio/webm" }), "take.webm");
+    const going = fetch(`${base}${VOICE_TRANSCRIBE_PATH}`, { method: "POST", body: fd, signal: stop.signal }).catch((e) => e); // module-review-ok: a test calling its own local server
+    for (let i = 0; i < 100 && state.calls.length === 0; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(state.calls).toHaveLength(1);
+    stop.abort();
+    await going;
+    for (let i = 0; i < 100 && state.stopped.length === 0; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(state.stopped).toEqual([true]);
+  });
+
   it("a provider that fails says the recording is kept, and an empty answer says nothing was heard", async () => {
     state.answer = { ok: false, reason: "failed" };
     expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
-    state.answer = { ok: true, text: "" };
+    state.answer = { ok: true, text: "", by: "local" };
     expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 200, body: { text: "", note: TRANSCRIBE_WORDS.heardNothing } });
   });
 });
 
 describe("the provider call", () => {
-  const provider = { def: DEFAULT_TRANSCRIPTION_PROVIDER, key: "test-key-not-real" };
-
-  it("with no key typed (or the store not loaded), there is no provider and nothing is sent", async () => {
-    expect(transcriptionProvider({} as NodeJS.ProcessEnv)).toBeNull();
-    let called = false;
-    const got = await transcribeTake({ bytes: TINY_WEBM_OPUS, kind: "webm" }, { provider: null, fetchImpl: (async () => ((called = true), new Response("{}"))) as any });
-    expect(got).toEqual({ ok: false, reason: "off" });
-    expect(called).toBe(false);
-  });
-
-  it("posts the one take to the provider's fixed address with the key, its format and the language, and reads the words", async () => {
-    const seen: Array<{ url: string; init: { headers: Record<string, string>; body: Uint8Array } }> = [];
-    const fetchImpl = (async (url: string, init: { headers: Record<string, string>; body: Uint8Array }) => {
-      seen.push({ url, init });
-      return new Response(JSON.stringify({ text: "  Hola, cuido la puerta.  " }), { status: 200, headers: { "content-type": "application/json" } });
-    }) as any;
-    const got = await transcribeTake({ bytes: TINY_WEBM_OPUS, kind: "webm", lang: "es-CR" }, { provider, fetchImpl });
-    expect(got).toEqual({ ok: true, text: "Hola, cuido la puerta." });
-    expect(seen[0].url).toBe(DEFAULT_TRANSCRIPTION_PROVIDER.url);
-    expect(seen[0].init.headers.Authorization).toBe("Bearer test-key-not-real");
-    // The bytes the pinned dialer sends, read back as the provider reads them: a form.
-    const form = await new Response(seen[0].init.body, { headers: { "content-type": seen[0].init.headers["Content-Type"] } }).formData();
-    const file = form.get("file") as File;
-    expect(file.type).toBe("audio/webm");
-    expect(Buffer.from(await file.arrayBuffer()).equals(TINY_WEBM_OPUS)).toBe(true);
-    expect(form.get("model")).toBe(DEFAULT_TRANSCRIPTION_PROVIDER.model);
-    expect(form.get("language")).toBe("es");
-    // Nothing else of an application is in the post.
-    expect(Array.from(form.keys()).sort()).toEqual(["file", "language", "model", "response_format"]);
-  });
+  const provider = { id: "groq" as const, def: HTTP_PROVIDERS.groq, key: "test-key-not-real" };
 
   it("goes through the pinned-IP dialer by default, which refuses an address that is not public", async () => {
     // The default path is toolcheck's guardedFetch: a provider address resolving privately is never dialled.
-    const local = { def: { ...DEFAULT_TRANSCRIPTION_PROVIDER, url: "https://127.0.0.1:9/v1/audio/transcriptions" }, key: "test-key-not-real" };
-    expect(await transcribeTake({ bytes: TINY_WEBM_OPUS, kind: "webm" }, { provider: local })).toEqual({ ok: false, reason: "failed" });
+    const local = { id: "groq" as const, def: { ...HTTP_PROVIDERS.groq, url: "https://127.0.0.1:9/v1/audio/transcriptions" }, key: "test-key-not-real" };
+    expect(await transcribeTake({ bytes: TINY_WEBM_OPUS, kind: "webm" }, { providers: [local] })).toEqual({ ok: false, reason: "failed" });
   });
 
   it("a refusal, a failure and a reply with no words never throw", async () => {
     const answer = (status: number, body: string) => (async () => new Response(body, { status })) as any;
-    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { provider, fetchImpl: answer(401, "{}") })).toEqual({ ok: false, reason: "refused" });
-    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { provider, fetchImpl: answer(429, "{}") })).toEqual({ ok: false, reason: "failed" });
-    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { provider, fetchImpl: answer(500, "{}") })).toEqual({ ok: false, reason: "failed" });
-    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { provider, fetchImpl: answer(200, "not json") })).toEqual({ ok: false, reason: "failed" });
+    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { providers: [provider], fetchImpl: answer(401, "{}") })).toEqual({ ok: false, reason: "refused" });
+    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { providers: [provider], fetchImpl: answer(429, "{}") })).toEqual({ ok: false, reason: "failed" });
+    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { providers: [provider], fetchImpl: answer(500, "{}") })).toEqual({ ok: false, reason: "failed" });
+    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { providers: [provider], fetchImpl: answer(200, "not json") })).toEqual({ ok: false, reason: "failed" });
     const thrown = (async () => {
       throw new Error("offline");
     }) as any;
-    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { provider, fetchImpl: thrown })).toEqual({ ok: false, reason: "failed" });
+    expect(await transcribeTake({ bytes: MP4, kind: "m4a" }, { providers: [provider], fetchImpl: thrown })).toEqual({ ok: false, reason: "failed" });
   });
 
   it("sends a language hint only when the page's language reads as one", () => {

@@ -14,7 +14,7 @@
 // a file that imports it and skips one that only uses `msg`, which ships its English uncompiled (CI, 15 Nov 2026).
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { capAt, ceilingAt, rangeMin, ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
+import { ceilingAt, rangeMin } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 
@@ -23,8 +23,6 @@ export interface RewardWords {
   /** Null for a role offered at 100% only. */
   range: string | null;
   proposal: string;
-  /** The cap on a proposal for the full role, 120% of the listed price (Rye, 15 Nov 2026). */
-  cap: string;
   footnote: string;
 }
 
@@ -51,7 +49,7 @@ export function paysInTokens(shape: readonly PayShare[] | null | undefined): boo
 }
 
 /**
- * The headline is the LISTED price, with the cap beside it (steelman, 15 Nov 2026): "Up to" read as a ceiling
+ * The headline is the LISTED price, the high end the card shows (steelman, 15 Nov 2026; no cap line since 17 Nov 2026): "Up to" read as a ceiling
  * beside "you can propose more". The footnote (Rye, 15 Nov 2026): the commitment, "Your first month often
  * starts lower and follows what you deliver." with no figure, because the amount is the applicant's to
  * propose; the equity and credits clause (always for now, `TOKEN_TERMS_ALWAYS`; otherwise only when the split
@@ -85,8 +83,6 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
   const at = exampleShare(min);
   const full = perPeriod(i18n, moneyWords(c.amount, c.currency, i18n.locale), c.per);
   const atPrice = perPeriod(i18n, moneyWords(ceilingAt(c.amount, at), c.currency, i18n.locale), c.per);
-  const capFull = perPeriod(i18n, moneyWords(capAt(c.amount, 100), c.currency, i18n.locale), c.per);
-  const capShare = perPeriod(i18n, moneyWords(capAt(c.amount, at), c.currency, i18n.locale), c.per);
   return {
     // One figure for the full role, as cards read by default; each share's amount when the card or the village says so.
     headline: split.length
@@ -102,9 +98,8 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
     ]
       .filter(Boolean)
       .join(" "),
-    cap: shared
-      ? i18n._(msg({ message: `Proposals up to ${capFull} for the full role, ${ROLE_PAY_CAP_PCT}% of the listed price. At ${at}%, up to ${capShare}.`, context: "role card rewards: the cap on a proposal, a role that can be shared" }))
-      : i18n._(msg({ message: `Proposals up to ${capFull}, ${ROLE_PAY_CAP_PCT}% of the listed price.`, context: "role card rewards: the cap on a proposal" })),
+    // No cap line (lead, 17 Nov 2026): the 120% cap is a backend rule (capAt, ROLE_PAY_CAP_PCT), and the card shows the
+    // listed price as the high end, with the band under it where the village shows pay ranges.
     footnote: [
       i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
       i18n._(msg({ message: "Your first month often starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first month" })),
@@ -116,6 +111,13 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
   };
 }
 
+/**
+ * THE BAND under the listed price: "Band: $9,623 to $12,029 a month in total comp". Read from the role's
+ * public pay (`card.publicPay`, server/lib/roleCardProjection.ts), which the server sends only for a listed
+ * open role while the village shows pay ranges (`org.show_pay_ranges`). `shown` is the card's own read of
+ * that switch, so an older payload that still carries a range draws nothing while the village hides it.
+ * Null for anything but a range of two whole minor amounts, low to high, in a currency.
+ */
 /** The commitment row: "Full or part commitment (from 30%)", or "Full commitment (100%)" for a role offered whole. */
 export function commitmentRowWords(i18n: I18n, min: number | null | undefined): string {
   const lo = rangeMin(min);
@@ -123,3 +125,4 @@ export function commitmentRowWords(i18n: I18n, min: number | null | undefined): 
     ? i18n._(msg({ message: `Full or part commitment (from ${lo}%)`, context: "role card fact: a role that can be shared" }))
     : i18n._(msg({ message: "Full commitment (100%)", context: "role card fact: a role offered whole" }));
 }
+
