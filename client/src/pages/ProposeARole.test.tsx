@@ -318,6 +318,44 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.payAsk).toBeUndefined();
   });
+  it("THE SPLIT (the lead, 17 Nov 2026): the card's commitment and split arrive by the Apply link, both edit by hand, and the proposal sends them", async () => {
+    const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }] }, FORM.roles[1]] };
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate&commitment=60&split=50.50.0");
+    serve(SPLIT);
+    render(<ProposeARole />);
+    await screen.findByRole("heading", { level: 1, name: /^Apply: / });
+    expect((screen.getByLabelText("Your commitment") as HTMLSelectElement).value).toBe("60");
+    // At 60% of $13,000 the suggested price is $7,800; the card's 50/50/0 split is shown at it.
+    expect((screen.getByLabelText("Cash, percent of the total") as HTMLInputElement).value).toBe("50");
+    expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3900");
+    expect(screen.getByText("You can change this split for your proposal. Type a percent or an amount.")).toBeTruthy();
+    // By amount: credits $780 is 10%, the others give way in proportion.
+    fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "780" } });
+    expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
+    fillAbout();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
+    fillValue();
+    fireEvent.click(await screen.findByLabelText(LETTER.intent));
+    fireEvent.click(screen.getByLabelText(/confidentiality agreement before I see/));
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.card.commitmentPct).toBe(60);
+    expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 45, amount: 3510 }, { label: "Equity", pct: 45, amount: 3510 }, { label: "Credits", pct: 10, amount: 780 }] });
+  });
+  it("an untouched split is sent as the role's own, and a role with no split sends none (control)", async () => {
+    const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] }, FORM.roles[1]] };
+    await applyFor("r-gate", SPLIT);
+    await completeAll();
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 60, amount: 3900 }, { label: "Equity", pct: 40, amount: 2600 }] });
+    cleanup();
+    await applyFor("r-gate", SHARED);
+    await completeAll();
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.paySplit).toBeUndefined();
+  });
   it("a role with no minimum keeps the usual choices and asks nothing about pay (control)", async () => {
     await applyFor();
     const pick = screen.getByLabelText("Your commitment") as HTMLSelectElement;
@@ -573,7 +611,9 @@ describe("the six steps", () => {
     const review = document.querySelector("[data-review]") as HTMLElement;
     const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
     expect(price.textContent).toContain("Your price");
-    expect(price.textContent).toContain("The suggested price, $6,500 a month · Proposals up to $7,800 a month");
+    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    // The cap stays a backend rule and is never shown to an applicant (the lead, 17 Nov 2026).
+    expect(price.textContent).not.toContain("Proposals up to");
     const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
     expect(notes.textContent).toContain("Your notes on the role (1)");
     expect(notes.textContent).toContain("A legal review each quarter.");
