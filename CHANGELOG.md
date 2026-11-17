@@ -38,9 +38,46 @@ made at the time.
 
 To word with Rye and the Legal session for the next release, left out of 1.3.0 on purpose: the invoice and pay half of the approvals module; what work states it pays, Earned Equity, cash owed, draft invoices and the cash-payouts page; and the flat role mint going blank (#776) with the seeded dues note being blanked. Everything else up to 1.3.0 is in its entry below.
 
+---
+
+## 1.3.21 (2026-11-17)
+
+### What changed for your village
+
+- **The review page lists waiting changes oldest first, and flags changes that write the same thing.** Waiting batches and the changes in them now read from the oldest proposal to the newest, and the page says so. The history of decided changes stays newest first. When two waiting changes write the same thing (the same page words, setting, role card field, variable, season goals and so on), each card names the other one and a summary at the top counts them. A change is marked stale when something accepted after it was proposed wrote the same thing, and its card says accepting it would put back older words. Accepting a change that a later one also writes asks once on its card, and Accept all says so in its one question. Nothing is blocked or rejected: the reviewer decides.
+- **Making a role from the review page explains every refusal.** Accepting a proposal that makes a new role could show "Internal server error", and a retry then failed again on the role the first try had already made. Now every problem is checked before the role is saved (an unknown or dormant circle, an id already in use or retired, a name or field that is too long, seats, order, criticality, yes-or-no fields, accountabilities and the card's parameters) and each one answers with a plain sentence. The same checks run when the proposal is filed and again before it is accepted. A retry whose earlier try already made the same role is recorded as done, with a note, so nothing is made twice. If the role is saved but something after it is not (a value, or a season pattern), the accept succeeds and the review page shows a warning saying what was left out. A failure with no sentence now shows a short reference the steward can quote, and the detail is in the server log.
+- **The voice step writes down recordings with no key needed, and plays on every browser.** The image now carries its own speech-to-text (whisper.cpp with a small multilingual model), so a village transcribes recordings on its own server, with nothing sent anywhere. For speed, an admin can paste a free Groq key under Admin, Integrations; an OpenAI key also works, and the picker there shows which service is in use or turns transcription Off. Applicant takes and the short clips beside answers are written down automatically, behind a clear "Write down my words automatically" switch the applicant can turn off; words they typed are never written over. Admins and the people deciding get "Write down the words" beside each kept recording and a "Transcribe all waiting" button; those words are saved labelled as an AI transcript the applicant has not checked, and deleted with the recording. Recordings stop clearly at 5:00, Safari plays an MP4 copy, and the player shows a new take's full length before play. Takes and clips have separate limits.
+- **A role card shows its pay band, and explains how pay is set.** When a village shows pay ranges, the Rewards piece reads the band under the listed price, for example "Band: $9,623 to $12,029 a month in total comp". A "Value in equals value out." callout opens a short explainer of how the price is set, the contractor agreement and what the village is aiming for. The proposal cap (120% of the listed price) is still enforced but no longer shown to applicants as an amount, on the card, the price step or Review & submit.
+- **A circle can keep several named meetings.** A circle that meets more than once a week, for example "Monday all-staff" and "Thursday steward sync", can now set a rhythm for each, with its own name, day, time and length. Its existing rhythm stays as its first one. An agenda item can wait for one named meeting, or for the circle's next meeting whichever it is, as every existing item already does. A circle's own calendar can be read through a title word, so only events whose title carries that word count; blank keeps every timed event, as today.
+- **Agenda items can be proposed for review.** A new proposal kind, `session_agenda`, carries agenda items for a circle. Accepted with a meeting named, they go on that meeting's agenda; with none named, they land on the circle's open agenda, which works for a circle with no rhythm at all. The connector can read the circles' meetings to fill one in.
 - **A member's own AI agent can add agenda items.** A new connector scope, `sessions.write`, opens one tool, `add_agenda_item`: an item in the agenda library for a circle, or for none in particular, added as the member after their yes to the exact item. It brings nothing into a session and changes no agenda already set; a person does that in the room. Nothing changes until a member ticks the scope when they connect their agent.
-- **A task handed to a role arrives by email.** Being handed a task, and a suggested change or a decline on one you sent, now follow the member's Task emails preference (immediate by default). An accept and a done go in the daily digest. Before, all five showed in the bell only. A member who set Task emails to Off hears nothing new.
 - **A member's own AI agent can hand a task to a role.** The connector tool `hand_task_to_role`, under the existing `tasks.write` scope, sends a new task to a role exactly as the profile's form does, after the member's yes to the exact task and role. The role's holders still accept, suggest a change or decline it; nothing is accepted on its own.
+- **A task handed to a role arrives by email.** Being handed a task, and a suggested change or a decline on one you sent, now follow the member's Task emails preference (immediate by default). An accept and a done go in the daily digest. Before, all five showed in the bell only. A member who set Task emails to Off hears nothing new.
+- For maintainers: a release can now be tagged by running the `tag-release.yml` workflow with the version. It checks five things before it tags: the version is a plain X.Y.Z, the commit is on main, `package.json`, `PLATFORM_VERSION`, a changelog section and the compose file's default image all name it, no such tag exists yet, and CI passed on a push run at that exact commit. Then it pushes the tag and the usual release build runs. Villages see no difference.
+
+### What you must do
+
+Nothing, but know that voice transcription is now ON by default: recordings are written down on your own server with no key, and nothing leaves it. To stop it, choose Off under Admin, Integrations. The image is about 70 MB larger for the speech model. Each circle's existing rhythm, agenda items and attached calendars keep working as they did. The `sessions.write` scope is offered only when a member connects their agent.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.20 undo it |
+|---|---|---|
+| `0401_a_circle_keeps_several_rhythms` | Adds a new table for a circle's further rhythms, and three columns that start blank: a name on each existing rhythm, the meeting an agenda item waits for, and the title word on a circle's calendar. Changes no existing value. | No. The new table and columns stay, and 1.3.20 ignores them, so going back is safe. Each circle keeps its first rhythm as before; rhythms added on 1.3.21 wait unread, and agenda items tied to one meeting show for the circle's next meeting. |
+
+### Merged pull requests
+
+- #1431 Review page: oldest first, and flag changes that write the same thing
+- #1432 A new role from the review page: a sentence for every refusal, and no failure for a role that stands
+- #1433 Voice step: written down on every browser, played on every browser, cut off clearly at 5:00
+- #1434 Several named rhythms per circle, agenda items for one meeting or the open agenda, a calendar title filter, and the session_agenda proposal kind
+- #1435 Connector agenda tool (sessions.write) and handoff emails
+- #1436 Tag a release by dispatching tag-release.yml
+- #1437 Connector tool hand_task_to_role (tasks.write)
+- #1438 Role card pay band, the Value callout, and no cap amount shown to applicants
+- #1440 Voice step: transcription with no key (on-server Whisper), Groq free tier, automatic with an opt-out, transcribe kept recordings
 
 ---
 
