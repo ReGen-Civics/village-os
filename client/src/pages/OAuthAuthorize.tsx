@@ -23,7 +23,7 @@ interface Request { clientName: string; redirectHost: string; scopes: Offer[] }
 const SCOPE_WORDS: Record<OfferedScope, string> = {
   "moon.read": "Read your moon, your roles, the season and your task board",
   "moon.write": "Draft your own moon: import a moon pack, change an item, set next moon's goals, each after your yes",
-  "tasks.write": "Mark your own board tasks Done, Let go or Undo, each one after your yes",
+  "tasks.write": "Mark your own board tasks Done, Let go or Undo, and hand a task to a role, each one after your yes",
   "moon.review": "If you review recaps: read the review queue and the role signals, never with amounts",
   admin: "As you, an admin: call the admin paths this village opened to agents, each write after a confirm. Erasure, powers, money and secrets stay with people",
   "sera.undoable": "Sera's tools for this agent account: links, suggestions and drafts, each one undoable for 30 days",

@@ -4,10 +4,13 @@
  *
  *   - A clear limit: "Up to 5 minutes per take" before recording, a countdown in
  *     the last minute, and the hard stop at 5:00 with the limit message.
- *   - "Write down my words": drawn only while the village's service is on, sends
- *     the one take with its length and language, and puts the words in the box
- *     for the applicant to fix, replacing what the live engine caught for that
- *     take and nothing they typed.
+ *   - Writing the words down (the lead: "actually make it automatic and the
+ *     button is to turn it off!"): while the village's service is on, each take
+ *     and clip goes by itself with its length and language, behind a switch
+ *     shown before recording that turns it off and cancels a send running; the
+ *     words go in the box for the applicant to fix, replacing what the live
+ *     engine caught and nothing they typed.
+ *   - A fresh recording's player shows its length before it is played.
  *   - Playback on Safari: a WebM is swapped for its MP4/AAC copy.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -16,7 +19,10 @@ import { useState } from "react";
 import { VOICE_WORDS } from "@shared/voiceNotes";
 import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH } from "@shared/voiceTranscribe";
 import { EMPTY_VOICE, VoiceInvite, type VoiceState, type VoiceTake } from "./VoiceInvite";
-import { countdownLeft, forgetTranscriptionOn, withWrittenWords } from "./VoiceStepMore";
+import { countdownLeft, forgetTranscriptionOn, placeWords, withWrittenWords } from "./VoiceStepMore";
+import { VoiceClipsProvider } from "./VoiceClips";
+import { TakePlayer } from "./TakePlayer";
+import GrowingField from "@/components/form/GrowingField";
 import { PlayVoice, mp4Href, wantsMp4Copy } from "./VoiceHeard";
 
 const WEBM = () => new Blob([new Uint8Array([0x1a, 0x45, 0xdf, 0xa3, 1, 2, 3, 4])], { type: "audio/webm" });
@@ -45,11 +51,15 @@ class FakeRecorder {
 let calls: Array<{ url: string; init?: RequestInit }> = [];
 let serviceOn = true;
 let answer: { status: number; body: unknown } = { status: 200, body: { text: "I keep the gate at dawn, every day." } };
+/** Hold every POST until the page aborts it. */
+let hold = false;
 
 beforeEach(() => {
   calls = [];
   serviceOn = true;
   answer = { status: 200, body: { text: "I keep the gate at dawn, every day." } };
+  hold = false;
+  window.sessionStorage.clear();
   forgetTranscriptionOn();
   vi.stubGlobal("MediaRecorder", FakeRecorder);
   Object.defineProperty(navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => ({ getTracks: () => [], getAudioTracks: () => [] }) } });
@@ -57,6 +67,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
     calls.push({ url, init });
     if (url === VOICE_TRANSCRIBE_PATH && (!init || !init.method)) return new Response(JSON.stringify({ on: serviceOn }), { status: 200 });
+    if (hold) return new Promise<Response>((_resolve, reject) => init?.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
     return new Response(JSON.stringify(answer.body), { status: answer.status });
   });
 });
@@ -115,8 +126,10 @@ describe("the countdown and the hard stop", () => {
   });
 });
 
-describe("write down my words", () => {
+describe("write down my words, by itself, with a switch to turn it off", () => {
   const take = (words?: string): VoiceTake => ({ blob: WEBM(), seconds: 300, url: "blob:take", words });
+  const posts = () => calls.filter((c) => c.init?.method === "POST");
+  const autoSwitch = () => screen.getByRole("switch", { name: "Write down my words automatically" }) as HTMLInputElement;
 
   it("replaces what the live engine caught for that take, keeps what was typed, and adds where nothing was caught", () => {
     const v: VoiceState = { ...EMPTY_VOICE, takes: [take("I keep the"), take()], transcript: "I keep the\n\nTyped by me." };
@@ -132,48 +145,172 @@ describe("write down my words", () => {
     expect(withWrittenWords(v, 0, "  ")).toBe(v);
   });
 
-  it("while the service is off, no button and no AI line are drawn, and nothing is sent", async () => {
+  it("a clip's words replace what was caught in the answer, are added where nothing was, and leave an edited answer alone", () => {
+    expect(placeWords("I keep the", "I keep the", "I keep the gate.", 500)).toEqual({ text: "I keep the gate.", placed: true });
+    expect(placeWords("Typed first.", "", "Then said.", 500).placed).toBe(true);
+    expect(placeWords("Typed first.", "", "Then said.", 500).text).toContain("Then said.");
+    expect(placeWords("I rewrote it all.", "I keep the", "I keep the gate.", 500)).toEqual({ text: "I rewrote it all.", placed: false });
+  });
+
+  it("while the service is off, no switch, no AI line and no button are drawn, and nothing is sent", async () => {
     serviceOn = false;
     const { container } = render(<Card start={{ ...EMPTY_VOICE, takes: [take()] }} />);
     await settle();
     expect(container.querySelector("[data-voice-limit-note]")).not.toBeNull();
     expect(container.querySelector("[data-voice-ai-line]")).toBeNull();
+    expect(container.querySelector("[data-voice-auto-switch]")).toBeNull();
     expect(container.querySelector("[data-voice-transcribe-button]")).toBeNull();
-    expect(calls.filter((c) => c.init?.method === "POST")).toEqual([]);
+    expect(posts()).toEqual([]);
   });
 
-  it("while on: says an AI service writes it down, sends the one take, and puts the words in the box to fix", async () => {
+  it("automatic by default: the consent line and the switch (on) show before recording, and a take is sent as soon as it exists", async () => {
     let latest: VoiceState = EMPTY_VOICE;
-    const { container } = render(<Card start={{ ...EMPTY_VOICE, takes: [take()] }} seen={(v) => (latest = v)} />);
+    const { container } = render(<Card start={{ ...EMPTY_VOICE, takes: [take("I keep")], transcript: "I keep" }} seen={(v) => (latest = v)} />);
     await settle();
-    expect(container.querySelector("[data-voice-ai-line]")?.textContent).toBe(TRANSCRIBE_WORDS.consentLine);
-    expect(container.querySelector("[data-voice-transcribe]")?.textContent).toContain(TRANSCRIBE_WORDS.consentLine);
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Write down my words" }));
-    });
-    await settle();
-    const post = calls.find((c) => c.init?.method === "POST")!;
-    expect(post.url).toBe(VOICE_TRANSCRIBE_PATH);
-    const fd = post.init!.body as FormData;
+    expect(container.querySelector("[data-voice-limit-note] [data-voice-ai-line]")?.textContent).toBe(TRANSCRIBE_WORDS.consentLine);
+    expect(autoSwitch().checked).toBe(true);
+    expect(posts()).toHaveLength(1);
+    const fd = posts()[0].init!.body as FormData;
+    expect(posts()[0].url).toBe(VOICE_TRANSCRIBE_PATH);
     expect(fd.get("seconds")).toBe("300");
     expect((fd.get("voice") as File).type).toBe("audio/webm");
-    expect(Array.from(fd.keys()).sort()).toEqual(["lang", "seconds", "voice"]);
+    expect(Array.from(fd.keys()).sort()).toEqual(["kind", "lang", "seconds", "voice"]);
+    expect(fd.get("kind")).toBe("take");
+    // The live engine had caught "I keep": the service's words fill the box in its place.
     expect(latest.transcript).toBe("I keep the gate at dawn, every day.");
-    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("I keep the gate at dawn, every day.");
-    expect(screen.getByRole("button", { name: "Write it down again" })).toBeTruthy();
+    expect(latest.takes[0].written).toBe(true);
+    // No button while it runs by itself, and a redraw never sends it twice.
+    expect(container.querySelector("[data-voice-transcribe-button]")).toBeNull();
+    await settle();
+    expect(posts()).toHaveLength(1);
   });
 
-  it("a refusal is said in the reader's words, and the box is left as it was", async () => {
+  it("the switch turned off before recording stops the send; the take offers the button instead, and the choice is remembered for the visit", async () => {
+    const first = render(<Card />);
+    await settle();
+    await act(async () => void fireEvent.click(autoSwitch()));
+    expect(autoSwitch().checked).toBe(false);
+    expect(window.sessionStorage.getItem("voice-write-down-automatically")).toBe("off");
+    first.unmount();
+    // A new page in the same visit reads the choice back.
+    forgetTranscriptionOn();
+    let latest: VoiceState = EMPTY_VOICE;
+    render(<Card start={{ ...EMPTY_VOICE, takes: [take()] }} seen={(v) => (latest = v)} />);
+    await settle();
+    expect(autoSwitch().checked).toBe(false);
+    expect(posts()).toEqual([]);
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Write down my words" })));
+    await settle();
+    expect(posts()).toHaveLength(1);
+    expect(latest.transcript).toBe("I keep the gate at dawn, every day.");
+  });
+
+  it("turning the switch off while a take is being written down cancels it, and the box is left as it was", async () => {
+    hold = true;
+    let latest: VoiceState = EMPTY_VOICE;
+    const { container } = render(<Card start={{ ...EMPTY_VOICE, takes: [take()], transcript: "Mine." }} seen={(v) => (latest = v)} />);
+    await settle();
+    expect(posts()).toHaveLength(1);
+    const signal = posts()[0].init!.signal!;
+    expect(signal.aborted).toBe(false);
+    await act(async () => void fireEvent.click(autoSwitch()));
+    await settle();
+    expect(signal.aborted).toBe(true);
+    expect(latest.transcript).toBe("Mine.");
+    expect(latest.takes).toHaveLength(1);
+    expect(container.querySelector("[data-voice-transcribe-said]")?.textContent).toBe("Stopped. Nothing more is sent. Your recording is kept.");
+  });
+
+  it("a cap that is hit is said plainly, the take is kept, and the box is left as it was", async () => {
     answer = { status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } };
     let latest: VoiceState = EMPTY_VOICE;
     const { container } = render(<Card start={{ ...EMPTY_VOICE, takes: [take()], transcript: "Mine." }} seen={(v) => (latest = v)} />);
     await settle();
-    await act(async () => {
-      fireEvent.click(screen.getByRole("button", { name: "Write down my words" }));
-    });
-    await settle();
-    expect(container.querySelector("[data-voice-transcribe-said]")?.textContent).toBe(TRANSCRIBE_WORDS.tooMany);
+    expect(container.querySelector("[data-voice-transcribe-said]")?.textContent).toBe(
+      "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour.",
+    );
     expect(latest.transcript).toBe("Mine.");
+    expect(latest.takes).toHaveLength(1);
+    // The button is there to try again by hand.
+    expect(screen.getByRole("button", { name: "Write down my words" })).toBeTruthy();
+  });
+});
+
+describe("a clip beside an answer gets its words written down too", () => {
+  function Form({ seen }: { seen?: (v: VoiceState, why: string) => void }) {
+    const [voice, setVoice] = useState<VoiceState>(EMPTY_VOICE);
+    const [why, setWhy] = useState("");
+    seen?.(voice, why);
+    return (
+      <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={{ max: 12, seconds: 60 }} link="tok-123">
+        <GrowingField aria-label="Why" clip="why" value={why} onChange={setWhy} />
+      </VoiceClipsProvider>
+    );
+  }
+
+  it("shows the AI line and the switch before the first clip, sends the clip by itself, and puts its words in the answer", async () => {
+    let voice: VoiceState = EMPTY_VOICE;
+    let why = "";
+    const { container } = render(<Form seen={(v, w) => ((voice = v), (why = w))} />);
+    await settle();
+    expect(container.querySelector("[data-voice-clip] [data-voice-ai-line]")?.textContent).toBe(TRANSCRIBE_WORDS.consentLine);
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Record this answer: Why" })));
+    await settle();
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Stop: Why" })));
+    await settle();
+    expect(posts()).toHaveLength(1);
+    expect((posts()[0].init!.body as FormData).get("link")).toBe("tok-123");
+    // Counted as a clip on the server, apart from the takes.
+    expect((posts()[0].init!.body as FormData).get("kind")).toBe("clip");
+    expect(why).toBe("I keep the gate at dawn, every day.");
+    expect(voice.clips.why).toMatchObject({ words: "I keep the gate at dawn, every day.", written: true });
+  });
+
+  it("with the switch off, nothing is sent until the clip's own button is pressed", async () => {
+    window.sessionStorage.setItem("voice-write-down-automatically", "off");
+    let why = "";
+    render(<Form seen={(_v, w) => (why = w)} />);
+    await settle();
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Record this answer: Why" })));
+    await settle();
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Stop: Why" })));
+    await settle();
+    expect(posts()).toEqual([]);
+    await act(async () => void fireEvent.click(screen.getByRole("button", { name: "Write down my words" })));
+    await settle();
+    expect(posts()).toHaveLength(1);
+    expect(why).toBe("I keep the gate at dawn, every day.");
+  });
+
+  const posts = () => calls.filter((c) => c.init?.method === "POST");
+});
+
+describe("a fresh recording shows its length before it is played", () => {
+  it("seeks far past the end when the player cannot read the length, then comes back to the start", async () => {
+    render(<TakePlayer url="blob:take" type="audio/webm" name="voice-1" />);
+    const audio = document.querySelector("[data-voice-player]") as HTMLAudioElement;
+    let duration = Infinity;
+    let time = 0;
+    Object.defineProperty(audio, "duration", { configurable: true, get: () => duration });
+    Object.defineProperty(audio, "currentTime", { configurable: true, get: () => time, set: (v: number) => void (time = v) });
+    await act(async () => void audio.dispatchEvent(new Event("loadedmetadata")));
+    await settle();
+    expect(time).toBe(1e7);
+    // The browser read it through and learned its length: back to the start, and the total shows.
+    duration = 33;
+    await act(async () => void audio.dispatchEvent(new Event("durationchange")));
+    expect(time).toBe(0);
+  });
+
+  it("leaves a player that knows its length alone", async () => {
+    render(<TakePlayer url="blob:take" type="audio/mp4" name="voice-1" />);
+    const audio = document.querySelector("[data-voice-player]") as HTMLAudioElement;
+    let time = 0;
+    Object.defineProperty(audio, "duration", { configurable: true, get: () => 33 });
+    Object.defineProperty(audio, "currentTime", { configurable: true, get: () => time, set: (v: number) => void (time = v) });
+    await act(async () => void audio.dispatchEvent(new Event("loadedmetadata")));
+    await settle();
+    expect(time).toBe(0);
   });
 });
 

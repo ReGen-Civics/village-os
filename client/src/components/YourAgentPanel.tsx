@@ -54,7 +54,7 @@ const SCOPE_WORDS: Record<string, string> = {
   "intents.write": "post what you seek or offer, after your yes",
   "map.draft": "read the masterplan and draft the village map for you to review and publish",
   "moon.read": "read your moon, your roles, the season and your task board",
-  "tasks.write": "mark your own board tasks Done, Let go or Undo, after your yes",
+  "tasks.write": "mark your own board tasks Done, Let go or Undo, and hand a task to a role, each after your yes",
   admin: "call the admin paths the village has opened to agents, as you, with your own admin checks (admins only)",
   "sera.undoable": "for Sera's agent account only: link people, suggest tasks and moon items, draft agenda items and switch boards, each one undoable for 30 days",
   "moon.write": "draft your own moon: import a moon pack, change an item, set next moon's goals, each after your yes",

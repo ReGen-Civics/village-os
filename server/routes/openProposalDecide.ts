@@ -54,6 +54,8 @@
  * (server/lib/inviteDoor.ts).
  */
 import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
+import { writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
+import { providersNow } from "../lib/voiceTranscription";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
 import { commitmentReviewFor } from "../lib/commitmentReview";
@@ -132,6 +134,8 @@ export type DecideRouteDeps = Pick<
   now?: () => Date;
   /** Where a proposal's attached files live (server/lib/proposalFiles.ts). Absent: no file is served. */
   proposalFileDir?: string;
+  /** "Write down the words" on a kept recording: a suite hands in its own provider, limiter and log (openProposalVoiceWritten.ts). */
+  storedTranscribe?: Partial<Pick<StoredTranscribeDeps, "transcribe" | "limitState" | "log" | "providers" | "now">>;
 };
 
 const BASE = "/api/governance/open-proposals";
@@ -364,6 +368,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
           transcript: p.body.voice.transcript,
           // Clips beside answers (Rye, 14 Nov 2026), each with the answer it belongs to and the words heard while it ran.
           clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: voiceNoteHref(p.id, c.id) })),
+          // AI transcripts of these recordings (the lead, 17 Nov 2026), marked as such on the page, and whether one can be asked for now.
+          written: p.body.voice.written ?? {},
+          transcribeOn: (await (deps.storedTranscribe?.providers ?? (() => providersNow(pool)))()).length > 0,
         }
       : null;
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
@@ -527,6 +534,28 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", "inline");
     res.send(served);
+  });
+
+  /*
+   * WRITE DOWN ONE KEPT RECORDING, for the people who decide it (the lead, 17
+   * Nov 2026: "Transcribe them! They've personally consented with me."). The
+   * same people as the Listen door above, by the same checks; the words are
+   * kept with the application as an AI transcript (openProposalVoiceWritten.ts).
+   */
+  app.post(`${BASE}/:id/voice/:noteId/transcribe`, async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    const viewer = await reader(req, res);
+    if (!viewer) return;
+    const viewerId = String(viewer.id);
+    const p = await found(req, res);
+    if (!p) return;
+    const noteId = String(req.params.noteId ?? "");
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(p.body.voice?.notes ?? []), ...(p.body.voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
+    const asks = (await asksFor(getPool(), [p.id])).get(p.id) ?? [];
+    if (!note || !decidesIt(await deciding(p, viewerId), asks, viewerId)) return res.status(404).json(MISSING);
+    if ((await voiceViewerOf(req, getPool(), viewer)).agent) return res.status(404).json(MISSING);
+    const out = await writeDownStored({ getPool, proposalFileDir: deps.proposalFileDir, providers: () => providersNow(getPool()), ...(deps.storedTranscribe ?? {}) }, p, note, `user:${viewerId}`, "decider");
+    res.status(out.status).json(out.body);
   });
 
   // ── The terms we offer: a counter-offer, one revision per save ─────────────
