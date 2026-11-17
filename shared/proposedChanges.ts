@@ -65,7 +65,7 @@ export const KIND_WORDS: Record<ProposalKind, string> = {
   season_goals: "A season's goals, the whole list in its new order. target {seasonId}; body {goals: [{id?, text, done?}]}. A goal that replaces a goal held now, reworded or moved, carries that goal's id, so the quests and moon items linked to it stay linked; a goal with no id keeps one only when its words match a held goal exactly.",
   onboarding_path: "The village's onboarding path document. target {}; body {doc}.",
   session_agenda:
-    "Agenda items for one circle's meeting on /sessions. target {circleId, rhythmKey?}: rhythmKey names one of the circle's meeting rhythms (read them with GET /api/sessions, comingUp.rows[].rhythms[].key); left out, the items wait for the circle's next meeting, whichever rhythm. body {items: [{title, detail?, kind: consent | decision | discussion, ownerRole?}]}, at most 20. Each accepted item is added by the person accepting, through the member's own door.",
+    "Open agenda items for a circle on /sessions. target {circleId}: the items wait as the circle's open agenda items, whether or not it keeps a meeting rhythm, and the next session anyone opens for the circle takes them up. Add rhythmKey only to tie them to one of its meeting rhythms (GET /api/sessions, comingUp.rows[].rhythms[].key). body {items: [{title, detail?, kind: consent | decision | discussion, ownerRole?}]}, at most 20. Each accepted item is added by the person accepting, through the member's own door.",
   setting: "Any other admin setting, through its own route. target {method, path, readPath?}; body the route's own body.",
 };
 

@@ -11,9 +11,12 @@
  * the agenda library's own rules answer for it. Nothing new is stored: an
  * accepted item is an ordinary agenda item waiting for its meeting.
  *
- *   target {circleId, rhythmKey?}   the circle, and one of its meeting rhythms
- *                                   by key (0401); none is its next meeting,
- *                                   whichever rhythm
+ *   target {circleId, rhythmKey?}   the circle. With no rhythmKey (the usual
+ *                                   case, the lead, 17 Nov 2026) the items are
+ *                                   the circle's open agenda items, which need
+ *                                   no rhythm and wait for whichever session
+ *                                   the circle opens next; a rhythmKey (0401)
+ *                                   ties them to one of its meeting rhythms
  *   body   {items: [{title, detail?, kind, ownerRole?}]}
  *          kind is consent, decision or discussion
  *

@@ -166,6 +166,25 @@ describe("an agenda item for one meeting", () => {
     );
   });
 
+  it("adds an open item for a circle with no rhythm at all, and lists it under the circle", async () => {
+    const quiet = [{ id: "quiet", name: "Quiet" }];
+    const waiting: LibraryPayload = {
+      items: [
+        { id: 7, title: "Name a facilitator", aim: "decide", note: null, circleId: "quiet", circleName: "Quiet", rhythmKey: null, broughtBy: "Rosa", mine: true, broughtAt: "2026-11-17T10:00:00.000Z", status: "waiting", session: null, settledAt: null, backAt: null, changedBy: null, canEdit: true, canMoveCircle: true, canWithdraw: true, canBringAgain: false, source: null },
+      ],
+      myCircleIds: ["quiet"],
+    };
+    render(<WaitingForCircle library={waiting} circles={quiet} meetings={{}} onChanged={() => undefined} />);
+    expect(screen.getByText("Name a facilitator")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: LIBRARY_COPY.bringButton }));
+    fireEvent.change(screen.getByLabelText(LIBRARY_COPY.titleLabel), { target: { value: "Season dates" } });
+    expect(screen.queryByLabelText("Which meeting is it for?")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: LIBRARY_COPY.addButton }));
+    await waitFor(() =>
+      expect(calls).toEqual([{ path: "/api/sessions/library", method: "POST", body: { title: "Season dates", aim: null, note: null, circleId: "quiet" } }]),
+    );
+  });
+
   it("never asks for a circle with one meeting", () => {
     render(<WaitingForCircle library={library} circles={circles} meetings={{ anchor: [meetings.anchor[1]] }} onChanged={() => undefined} />);
     fireEvent.click(screen.getByRole("button", { name: LIBRARY_COPY.bringButton }));

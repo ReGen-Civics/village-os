@@ -328,4 +328,26 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     const lines = ((await call("GET", "/api/sessions")).json.comingUp.rows as any[]).find((x) => x.circleId === "pc-anchor").rhythms as any[];
     expect(Object.fromEntries(lines.map((l) => [l.name, l.waiting]))).toEqual({ "Thursday steward sync": 2, "Monday all-staff": 0 });
   });
+
+  it("OPEN AGENDA ITEMS (the lead, 17 Nov 2026): items proposed for a circle with no rhythm at all wait as its open agenda, and the connector reads them", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-quiet", name: "Quiet" })).status).toBe(200);
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Quiet circle agenda",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-quiet" }, body: { items: [{ title: "Name a facilitator", kind: "decision" }] }, summary: "Add one open item for the Quiet circle." }],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    const change = (await call("GET", "/api/admin/proposals")).json.changes.find((c: any) => c.id === id);
+    expect(change.targetLabel).toBe("1 agenda item for the Quiet circle's open agenda");
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).json.results).toEqual([{ id, ok: true }]);
+    const list = (await call("GET", "/api/sessions")).json;
+    // The circle keeps no rhythm, so it has no row under Coming up; its open item waits all the same.
+    expect((list.comingUp.rows as any[]).some((x) => x.circleId === "pc-quiet")).toBe(false);
+    expect((list.library.items as any[]).filter((i) => i.circleId === "pc-quiet").map((i) => [i.title, i.status, i.rhythmKey])).toEqual([["Name a facilitator", "waiting", null]]);
+    // The connector reads it, through the list and through the circle's own summary.
+    const read = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions" });
+    expect((read.json.result.structuredContent.library.items as any[]).some((i) => i.circleId === "pc-quiet" && i.title === "Name a facilitator")).toBe(true);
+    const summary = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions/circles/pc-quiet/summary" });
+    expect(summary.json.result.structuredContent).toMatchObject({ circleId: "pc-quiet", rhythm: null, next: null, waiting: 1 });
+  });
 });

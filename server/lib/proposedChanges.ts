@@ -239,14 +239,16 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
 }
 
 /**
- * The meeting a proposed agenda lands on, in words: "the Anchor circle's Thursday steward sync", or "the Anchor
- * circle's next meeting". A circle that is not a live one, or a rhythm it does not keep, is refused with its field.
+ * Where a proposed agenda lands, in words: "the Anchor circle's Thursday steward sync" for one of its meetings, or
+ * "the Anchor circle's open agenda" for its open items, which wait for whichever meeting the circle holds next and
+ * need no rhythm. A circle that is not a live one, or a rhythm it does not keep, is refused with its field.
  */
 async function agendaMeeting(pool: Pool, circleId: string, rhythmKey: string | null): Promise<{ ok: true; label: string } | { ok: false; error: string; field: string }> {
   const circle = (await villageCircles(pool)).find((c) => c.id === circleId && c.live);
   if (!circle) return { ok: false, error: "That circle is not one of the village's live circles.", field: "target.circleId" };
   const whose = `the ${circleWords(circle.name)}'s`;
-  if (!rhythmKey) return { ok: true, label: `${whose} next meeting` };
+  // No meeting named: the circle's open agenda items, which need no rhythm at all (the lead, 17 Nov 2026).
+  if (!rhythmKey) return { ok: true, label: `${whose} open agenda` };
   const rhythm = (await circleRhythmRows(pool, circleId)).find((r) => String(r.rhythm_key) === rhythmKey);
   if (!rhythm) return { ok: false, error: "That circle keeps no meeting rhythm with that key. Read its rhythms with GET /api/sessions.", field: "target.rhythmKey" };
   return { ok: true, label: `${whose} ${String(rhythm.name ?? "") || "meeting"}` };
