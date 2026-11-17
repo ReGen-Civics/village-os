@@ -336,6 +336,7 @@ export const ANONYMISE_REMOVES = [
   "$.voice",
   "$.selfKnowledge",
   "$.payAsk",
+  "$.paySplit",
 ] as const;
 
 /** What anonymising leaves: the application's substance, with nothing that names or reaches the person. */

@@ -11,6 +11,8 @@ import { askPeriod, priceDifferencePct, signedPct, type PayAsk } from "@shared/c
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
+import type { ProposalSplit } from "@shared/proposalSplit";
+import SplitReview from "./SplitReview";
 
 export interface CommitmentReviewData {
   pct: number | null;
@@ -19,6 +21,8 @@ export interface CommitmentReviewData {
   ask: PayAsk | null;
   /** How many changes they suggested to the role card. */
   suggestionCount?: number;
+  /** The village's split at their commitment beside the one they proposed, when they sent one. */
+  split?: ProposalSplit | null;
   roles: Array<{ roleId: string; full: PayCeiling | null; atCommitment: number | null; heldPct: number; targetPct: number; withThisPct: number }>;
 }
 
@@ -66,6 +70,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <p className="mt-0.5 whitespace-pre-wrap break-words text-foreground">{data.ask.why}</p>
         </div>
       )}
+      <SplitReview split={data.split} currency={data.roles.find((r) => r.full)?.full?.currency ?? null} />
       {(data.suggestionCount ?? 0) > 0 && (
         <p className="text-sm text-muted-foreground" data-suggestion-count="">
           {data.suggestionCount === 1

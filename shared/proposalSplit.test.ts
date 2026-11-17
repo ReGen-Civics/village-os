@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changedShares, offeredSplit, proposalSplitOf, readProposedSplit, retotal, setAmount, setPercent, shapePercents, shareOut, splitChanged, splitTotal, withAmounts } from "./proposalSplit";
+import { changedShares, formSplit, offeredSplit, proposalSplitOf, readProposedSplit, retotal, setAmount, setPercent, shapePercents, shareOut, splitChanged, splitTotal, withAmounts } from "./proposalSplit";
 
 const SHAPE = [
   { label: "Cash", pct: 60 },
@@ -118,5 +118,27 @@ describe("the split the server keeps", () => {
     expect(proposalSplitOf(JSON.parse(JSON.stringify(pair)))).toEqual(pair);
     expect(proposalSplitOf({ offered: {}, proposed: {} })).toBeNull();
     expect(proposalSplitOf("x")).toBeNull();
+  });
+});
+
+describe("the split a form draws", () => {
+  it("offers the shape at the suggested price and keeps a typed split while its total holds", () => {
+    const first = formSplit(SHAPE, 10000, 50, null, null)!;
+    expect(first.offered.total).toBe(5000);
+    expect(first.shown).toEqual(first.offered);
+    const typed = setAmount(first.shown, 1, 2222);
+    expect(formSplit(SHAPE, 10000, 50, null, typed)!.shown).toEqual(typed);
+  });
+  it("works the amounts again at their own price, keeping their percents", () => {
+    const typed = setPercent(formSplit(SHAPE, 10000, 50, null, null)!.shown, 0, 50);
+    const at = formSplit(SHAPE, 10000, 50, 6000, typed)!;
+    expect(at.offered.total).toBe(5000);
+    expect(pcts(at.shown)).toEqual([50, 50, 0]);
+    expect(amounts(at.shown)).toEqual([3000, 3000, 0]);
+  });
+  it("is null with no shape, and drops a split naming other shares", () => {
+    expect(formSplit([], 10000, 50, null, null)).toBeNull();
+    const other = withAmounts([{ label: "Gold", pct: 100 }], 5000);
+    expect(formSplit(SHAPE, 10000, 50, null, other)!.shown.shares.map((s) => s.label)).toEqual(["Cash", "Equity", "Credits"]);
   });
 });

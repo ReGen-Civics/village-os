@@ -20,6 +20,7 @@ import type { TermAnswers } from "@shared/termsWords";
 import type { DraftMarks } from "@shared/seraDrafts";
 import { pieceSuggestionsOf, type PieceSuggestion } from "@shared/pieceSuggestions";
 import { payAskOf, type PayAsk } from "@shared/commitmentRange";
+import type { ShapeShare } from "@shared/proposalSplit";
 
 export const DRAFT_VERSION = 1;
 export const DRAFT_DAYS = 30;
@@ -43,7 +44,8 @@ export interface ApplyDraft {
   aim: string;
   items: ProposalGoal[];
   marks: DraftMarks;
-  terms: { answers: TermAnswers; commitmentPct: number | null; payAsk?: PayAsk | null };
+  /** `paySplit`: the split's percents as they left it (shared/proposalSplit.ts); the amounts are worked again on return. */
+  terms: { answers: TermAnswers; commitmentPct: number | null; payAsk?: PayAsk | null; paySplit?: ShapeShare[] | null };
   rampUp: boolean;
   practical: { timeZone: string; windows: string[]; earliestStart: string };
   /** What they would make of the role card, piece by piece (shared/pieceSuggestions.ts). Their own words, so it waits here with the rest. */
@@ -73,7 +75,7 @@ export function toDraft(d: Omit<ApplyDraft, "savedAt">, now: Date): ApplyDraft {
     aim: d.aim,
     items: d.items.map((g) => ({ ...g })),
     marks: { ...(d.marks.aim ? { aim: d.marks.aim } : {}), ...(d.marks.story ? { story: d.marks.story } : {}) },
-    terms: { answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk ?? null },
+    terms: { answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk ?? null, paySplit: d.terms.paySplit ? d.terms.paySplit.map((x) => ({ label: x.label, pct: x.pct })) : null },
     rampUp: d.rampUp,
     practical: { timeZone: d.practical.timeZone, windows: [...d.practical.windows], earliestStart: d.practical.earliestStart },
     pieceSuggestions: d.pieceSuggestions.map((x) => ({ ...x })),
@@ -108,9 +110,20 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     aim: str(o.aim, 300),
     items,
     marks: { ...(str(o.marks?.aim, 300) ? { aim: str(o.marks.aim, 300) } : {}), ...(str(o.marks?.story, 300) ? { story: str(o.marks.story, 300) } : {}) },
-    terms: { answers: o.terms?.answers && typeof o.terms.answers === "object" && !Array.isArray(o.terms.answers) ? o.terms.answers : {}, commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null, payAsk: payAskOf(o.terms?.payAsk) },
+    terms: { answers: o.terms?.answers && typeof o.terms.answers === "object" && !Array.isArray(o.terms.answers) ? o.terms.answers : {}, commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null, payAsk: payAskOf(o.terms?.payAsk), paySplit: splitPercentsOf(o.terms?.paySplit) },
     rampUp: o.rampUp === true,
     practical: { timeZone: str(o.practical?.timeZone, 64), windows: strs(o.practical?.windows, 6, 40), earliestStart: str(o.practical?.earliestStart, 10) },
     pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions),
   };
+}
+
+/** A saved split's percents, read back: a short list of labels with whole percents adding to 100, else none. */
+function splitPercentsOf(raw: unknown): ShapeShare[] | null {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > 12) return null;
+  const out: ShapeShare[] = [];
+  for (const x of raw) {
+    if (!x || typeof x !== "object" || typeof (x as any).label !== "string" || !Number.isInteger((x as any).pct) || (x as any).pct < 0 || (x as any).pct > 100) return null;
+    out.push({ label: String((x as any).label).slice(0, 40), pct: (x as any).pct });
+  }
+  return out.reduce((a, s) => a + s.pct, 0) === 100 ? out : null;
 }

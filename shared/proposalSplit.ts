@@ -239,3 +239,17 @@ export function proposalSplitOf(raw: unknown): ProposalSplit | null {
   if (!offered || !proposed || !proposed.shares.length) return null;
   return { commitmentPct: whole(o.commitmentPct) ? o.commitmentPct : null, offered, proposed };
 }
+
+/**
+ * The split a form draws: the village's offer at the commitment, and the person's split at the price in force.
+ * Their split (`stored`) is kept as typed while its total still holds, worked again at a new total with their
+ * percents kept, and replaced by the shape in force when it names other shares. Null for a role with no shape.
+ */
+export function formSplit(shape: readonly ShapeShare[], fullBand: number | null | undefined, pct: number | null | undefined, ownPrice: number | null | undefined, stored: Split | null | undefined): { offered: Split; shown: Split } | null {
+  if (!shape.length) return null;
+  const offered = offeredSplit(shape, splitTotal(fullBand, pct, null));
+  const total = splitTotal(fullBand, pct, ownPrice);
+  const fits = !!stored && stored.shares.length === offered.shares.length && stored.shares.every((s, i) => s.label === offered.shares[i].label);
+  const base = fits ? (stored as Split) : offeredSplit(shape, total);
+  return { offered, shown: base.total === total ? base : retotal(base, total) };
+}

@@ -2,8 +2,8 @@
  * THE REVIEW'S OTHER LINES (applicant journey QA, 15 Nov 2026): the price and the notes on the role card both
  * go with the application, so Review & submit says them too, each with a way back to its step.
  *
- * The price line also says the cap at their commitment (Rye, 15 Nov 2026): proposals go up to 120% of the
- * suggested price, the full role's cap before a commitment is chosen.
+ * The cap on a proposal stays a backend rule and is never shown to an applicant (the lead, 17 Nov 2026), so the
+ * price line names no cap. The split line (shared/proposalSplit.ts) says each share, and says when they changed it.
  *
  * Kept beside ApplySteps.tsx because pages/ProposeARole.tsx holds the file-lines ceiling.
  */
@@ -11,7 +11,8 @@
 // a file that imports it and skips one that only uses `msg`.
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, ceilingAt, priceDifferencePct, signedPct, type PayAsk } from "@shared/commitmentRange";
+import { splitChanged, type Split } from "@shared/proposalSplit";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
@@ -26,7 +27,7 @@ const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}鈥
 
 export function reviewExtras(
   i18n: I18n = appI18n,
-  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }> },
+  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; split?: { offered: Split; shown: Split } | null },
 ): ReviewExtra[] {
   const out: ReviewExtra[] = [];
   if (p.ceiling) {
@@ -44,9 +45,21 @@ export function reviewExtras(
         : diff !== null
           ? i18n._(msg({ message: `${priced(ask.monthly, askPeriod(ask))} (${signedPct(diff)} on the suggestion)`, context: "founding application review: the price" }))
           : priced(ask.monthly, askPeriod(ask));
-    const cap = capAt(c.amount, p.pct && p.pct > 0 ? p.pct : 100);
-    const capped = cap > 0 ? `${line} 路 ${i18n._(msg({ message: `Proposals up to ${priced(cap)}`, context: "founding application review: the cap on a proposal" }))}` : line;
-    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${capped} 路 ${short(ask.why)}` : capped });
+    out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${line} 路 ${short(ask.why)}` : line });
+  }
+  if (p.split) {
+    const { offered, shown } = p.split;
+    const parts = shown.shares.map((s) =>
+      typeof s.amount === "number" && p.ceiling
+        ? i18n._(msg({ message: `${s.pct}% ${s.label} (${moneyWords(s.amount, p.ceiling.currency, i18n.locale)})`, context: "founding application review: one share of the split, with its amount" }))
+        : i18n._(msg({ message: `${s.pct}% ${s.label}`, context: "founding application review: one share of the split" })),
+    );
+    const said = parts.join(", ");
+    out.push({
+      step: p.termsStep,
+      label: i18n._(msg({ message: "Your split", context: "founding application review" })),
+      line: splitChanged(offered, shown) ? i18n._(msg({ message: `${said} 路 changed from the village's split`, context: "founding application review: a split they changed" })) : said,
+    });
   }
   const n = p.notes.length;
   if (n > 0) {

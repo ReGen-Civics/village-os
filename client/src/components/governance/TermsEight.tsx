@@ -15,6 +15,9 @@ import { useLingui } from "@lingui/react/macro";
 import GrowingField from "@/components/form/GrowingField";
 import { commitmentChoices, type PayAsk } from "@shared/commitmentRange";
 import PriceAsk from "./PriceAsk";
+import SplitControl from "@/components/roleCard/SplitControl";
+import { formSplit, withAmounts, type ShapeShare, type Split } from "@shared/proposalSplit";
+import { commitmentFromQuery, splitFromQuery } from "@/components/roleCard/applyChoice";
 import type { PayCeiling } from "@shared/roleCardSections";
 import {
   COMMITMENT_CHOICES,
@@ -44,6 +47,8 @@ export interface TermsRole {
   ceiling?: PayCeiling | null;
   /** How many changes the applicant suggested to the role card, for the price popup's nudge. */
   suggestions?: number;
+  /** The split in force on the role's card (its own shares, else the village's): the form offers it to adjust. */
+  payShape?: ShapeShare[];
 }
 
 export interface TermsStepValue {
@@ -52,6 +57,18 @@ export interface TermsStepValue {
   commitmentPct: number | null;
   /** Their optional pay ask (Rye, 14 Nov 2026): a monthly amount, or "negotiate on the first call if chosen". */
   payAsk?: PayAsk | null;
+  /** Their cash, equity and credits split, as they left it (shared/proposalSplit.ts). Null: the role's split in force. */
+  paySplit?: Split | null;
+}
+
+/**
+ * The split the form shows and sends for one role: the village's offer at their commitment and their split at
+ * the price in force (their own price, else the suggested one). Null when the role shows no split.
+ */
+export function termsSplit(role: TermsRole | undefined, value: TermsStepValue): { offered: Split; shown: Split } | null {
+  if (!role) return null;
+  const own = value.payAsk?.kind === "amount" ? value.payAsk.monthly : null;
+  return formSplit(role.payShape ?? [], role.ceiling?.amount ?? null, value.commitmentPct, own, value.paySplit ?? null);
 }
 
 export const EMPTY_TERMS_STEP: TermsStepValue = { answers: {}, commitmentPct: null };
@@ -77,6 +94,8 @@ export default function TermsEight({
   const { t } = useLingui();
   // One role with a pay ceiling: the form shows the most at the chosen commitment, and the optional ask.
   const ceiling = roles.length === 1 ? (roles[0].ceiling ?? null) : null;
+  // The split they may adjust (the lead, 17 Nov 2026): one role, with a split on its card.
+  const split = roles.length === 1 ? termsSplit(roles[0], value) : null;
   const labels: Record<TermKey, string> = {
     term: t({ message: "Term", context: "terms setting" }),
     clocks: t({ message: "Time", context: "terms setting" }),
@@ -187,6 +206,11 @@ export default function TermsEight({
                 </p>
                 {/* The suggested price from their commitment, and the popup to propose their own (Rye, 14 Nov 2026). */}
                 {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={roles[0]?.suggestions ?? 0} />}
+                {split && (
+                  <div className="mt-4">
+                    <SplitControl idPrefix={idPrefix} split={split.shown} offered={split.offered} onChange={(paySplit) => onChange({ ...value, paySplit })} currency={ceiling?.currency ?? null} per={ceiling?.per ?? null} pct={value.commitmentPct} />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -210,3 +234,29 @@ function choicesFor(roles: ReadonlyArray<TermsRole>): readonly number[] {
 
 // Kept so a test can hold the lines the lead named word for word.
 export { COMMITMENT_HINT, SET_TOGETHER, TERMS_HINT };
+
+/** The terms as the saved draft keeps them: the split's percents only (client/src/components/fireflyPath/applyDraft.ts). */
+export function draftTerms(v: TermsStepValue): { answers: TermAnswers; commitmentPct: number | null; payAsk?: PayAsk | null; paySplit: ShapeShare[] | null } {
+  return { answers: v.answers, commitmentPct: v.commitmentPct, payAsk: v.payAsk ?? null, paySplit: v.paySplit ? v.paySplit.shares.map((s) => ({ label: s.label, pct: s.pct })) : null };
+}
+
+/** A saved draft's split percents as the step holds them: the amounts are worked again at the price in force. */
+export const splitOfDraft = (pcts: ShapeShare[] | null | undefined): Split | null => (pcts?.length ? withAmounts(pcts, null) : null);
+
+/**
+ * What the role card's Apply link carried (client/src/components/roleCard/applyChoice.ts): the commitment chosen on
+ * the slider, and the split when the reader changed it. Each only when it fits this role; the link wins over a
+ * draft, because it is the reader's latest choice.
+ */
+export function withCardChoice(v: TermsStepValue, search: string, role: Pick<TermsRole, "commitmentMin" | "payShape"> | undefined): TermsStepValue {
+  if (!role) return v;
+  const pct = commitmentFromQuery(search, role.commitmentMin);
+  const pcts = splitFromQuery(search, role.payShape ?? []);
+  return { ...v, ...(pct !== null ? { commitmentPct: pct } : {}), ...(pcts ? { paySplit: withAmounts(pcts, null) } : {}) };
+}
+
+/** The split the application sends for one role (shared/proposalSplit.ts): every share, with amounts when there is a price. */
+export function splitBody(v: TermsStepValue, role: TermsRole | undefined): { paySplit?: { shares: Split["shares"] } } {
+  const s = termsSplit(role, v);
+  return s ? { paySplit: { shares: s.shown.shares } } : {};
+}
