@@ -1,4 +1,4 @@
--- 0398: a proposed change keeps what was live before it was accepted.
+-- 0400: a proposed change keeps what was live before it was accepted.
 --
 -- The review page (/admin/proposals) offers "Propose putting it back" on an
 -- accepted change. That needs the value that was live just before the accept,

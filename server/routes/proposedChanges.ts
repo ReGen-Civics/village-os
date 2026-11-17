@@ -24,7 +24,7 @@
  * paths list whatever an admin writes there.
  *
  * PUTTING IT BACK. Just before each change is applied, what is live is read the
- * way the page reads it (`liveOf`) and kept on the change (0398). A failed read
+ * way the page reads it (`liveOf`) and kept on the change (0400). A failed read
  * keeps null and the accept goes on. "Propose putting it back" files a new
  * proposal, same kind and target, carrying what was live before and marked as
  * putting back the original; a person accepts it here like any other
@@ -408,7 +408,7 @@ export function register(app: Express, deps: Deps): void {
       try {
         const valid = await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
         if (valid.ok) {
-          // What is live now, kept so this change can be proposed back (0398). A read that fails keeps null and never
+          // What is live now, kept so this change can be proposed back (0400). A read that fails keeps null and never
           // stops the accept; a kind that is never put back reads nothing.
           const before = await readBefore(kd, run, c.kind, c.target, body);
           if (before.keep) await store.saveBefore(pool, id, before.value);

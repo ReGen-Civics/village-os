@@ -2,7 +2,7 @@
  * PROPOSE PUTTING IT BACK (the review page, /admin/proposals). Pure: no database, no Express.
  *
  * When a change is accepted, what was live just before it is read the way the page reads it (`liveOf`,
- * server/lib/proposedChanges.ts) and kept on the change (`before_json`, migration 0398). On a decided, accepted
+ * server/lib/proposedChanges.ts) and kept on the change (`before_json`, migration 0400). On a decided, accepted
  * change that kept it, the page offers "Propose putting it back". That FILES A NEW PROPOSAL: same kind, same
  * target, the body carrying the value that was live before, marked as putting back the original. Nothing is
  * applied; a person accepts it like any other proposal, through the same dry run and the same route.

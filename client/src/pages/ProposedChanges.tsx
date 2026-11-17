@@ -17,7 +17,7 @@
  * batch first. "Recently decided" is a history of the same cards: what went live (and what the reader changed
  * first), or what was put aside, who decided and when, and the reason a change did not land.
  *
- * PROPOSE PUTTING IT BACK. An accepted change keeps what was live just before it (0398). Its history card offers
+ * PROPOSE PUTTING IT BACK. An accepted change keeps what was live just before it (0400). Its history card offers
  * "Propose putting it back", which files a NEW proposal carrying that value; it waits here like any other and moves
  * nothing until a person accepts it. A change accepted before that release, or one of a kind that is never put back,
  * says why in one plain line (shared/proposalPutBack.ts).

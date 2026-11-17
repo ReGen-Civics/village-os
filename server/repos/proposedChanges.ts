@@ -46,9 +46,9 @@ export interface StoredChange {
   approvedBy: string | null;
   approvalNote: string | null;
   error: string | null;
-  /** What was live just before the accept (0398), or null when nothing was kept. */
+  /** What was live just before the accept (0400), or null when nothing was kept. */
   before: KeptBefore;
-  /** On a proposal that puts an earlier change back, that change's id (0398). */
+  /** On a proposal that puts an earlier change back, that change's id (0400). */
   reverts: string | null;
 }
 
@@ -214,7 +214,7 @@ export async function markUnknown(pool: Pool, id: string, by: string, error: str
 export const BEFORE_MAX_BYTES = 1_000_000;
 
 /**
- * Keep what was live just before this change is applied (0398), on the row that is being applied. Never throws:
+ * Keep what was live just before this change is applied (0400), on the row that is being applied. Never throws:
  * a value too large to keep, or a write that fails, leaves the column as it was and the accept goes on.
  */
 export async function saveBefore(pool: Pool, id: string, before: unknown): Promise<boolean> {

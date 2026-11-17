@@ -373,7 +373,7 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
 }
 
 /**
- * What to keep as "live before", read just before a change is applied, so it can be proposed back (0398). The same
+ * What to keep as "live before", read just before a change is applied, so it can be proposed back (0400). The same
  * read the page shows (`liveOf`). A kind that is never put back reads nothing (`keep: false`); a read that fails or
  * throws keeps null, and never stops the accept.
  */

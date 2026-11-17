@@ -429,7 +429,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
     expect(back).toMatchObject({ status: 409, body: { reason: "made_new" } });
 
-    // The shape every change accepted before 0398 has: accepted, nothing kept.
+    // The shape every change accepted before 0400 has: accepted, nothing kept.
     await q(
       "INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind, status, decided_by, decided_at, accepted_json) VALUES ('pc_was', ?, 1, 'variable', ?, 'Dial', 'PUT', '/api/admin/variables/org.applicant_reply_days', 'Older change', ?, ?, 'agent', 'accepted', ?, CURRENT_TIMESTAMP(3), ?)",
       [filed.body.batchId, JSON.stringify(DIAL.target), JSON.stringify(DIAL.body), AGENT.id, ADMIN.id, JSON.stringify(DIAL.body)],
