@@ -889,7 +889,7 @@ const rpcError = (id: string | number | null, code: number, message: string, dat
 });
 
 const INSTRUCTIONS =
-  "This connector reads the member's own moon, roles and task board, and presses their own board for them. Every write asks first: call it without confirmToken, show the member what it would do, and call again with the token after their yes. It never sends, approves, issues or pays anything, and it never shows an amount or a pay route.";
+  "This connector reads the member's own moon, roles and task board, and presses their own board for them. Every write asks first: call it without confirmToken, show the member what it would do, and call again with the token after their yes. It never sends money or recaps, approves, issues or pays anything, and it never shows an amount or a pay route.";
 
 /** Answer one JSON-RPC message. Never throws: a tool's failure is a result with isError. */
 export async function handleMcpMessage(message: unknown, call: McpCall): Promise<McpReply> {
