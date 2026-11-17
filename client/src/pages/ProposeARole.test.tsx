@@ -900,28 +900,29 @@ describe("the sent threshold", () => {
     const note = "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.";
     const soon = { ...FORM, roles: [{ ...FORM.roles[0], comingSoon: true, opensLater: true }, FORM.roles[1]] };
     await applyFor("r-gate", soon, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
-    expect(document.querySelector("[data-coming-soon-note]")?.textContent).toBe(note);
+    // The note's module loads lazily (the form's first-view budget), so it lands after the form.
+    await waitFor(() => expect(document.querySelector("[data-coming-soon-note]")?.textContent).toBe(note));
     // Its own note says the later start, so the founding-team note steps aside.
     expect(document.querySelector("[data-opens-later]")).toBeNull();
     await completeAll();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
     sendNow();
     await screen.findByRole("heading", { name: "Check your email" });
-    expect(document.querySelector('[data-threshold="sent"] [data-coming-soon-note]')?.textContent).toBe(note);
+    await waitFor(() => expect(document.querySelector('[data-threshold="sent"] [data-coming-soon-note]')?.textContent).toBe(note));
     expect(document.querySelector("[data-after-founding]")).toBeNull();
   });
 
   it("FUTURE VENTURE: the form and its confirmation say what holding one means and the pitch's five parts", async () => {
     const venture = { ...FORM, roles: [{ ...FORM.roles[0], futureVenture: true, opensLater: true }, FORM.roles[1]] };
     await applyFor("r-gate", venture, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
-    expect(document.querySelectorAll("[data-venture-note] li")).toHaveLength(5);
+    await waitFor(() => expect(document.querySelectorAll("[data-venture-note] li")).toHaveLength(5));
     expect(document.querySelector("[data-coming-soon-note]")).toBeNull();
     expect(document.querySelector("[data-opens-later]")).toBeNull();
     await completeAll();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
     sendNow();
     await screen.findByRole("heading", { name: "Check your email" });
-    expect(document.querySelectorAll('[data-threshold="sent"] [data-venture-note] li')).toHaveLength(5);
+    await waitFor(() => expect(document.querySelectorAll('[data-threshold="sent"] [data-venture-note] li')).toHaveLength(5));
   });
 
   it("names the role's conversations in order after sending", async () => {
