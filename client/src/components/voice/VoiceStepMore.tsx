@@ -30,10 +30,12 @@ import { msg } from "@lingui/core/macro";
 import { Sparkles } from "lucide-react";
 import { BTN_SECONDARY, HINT } from "@/components/journey/look";
 import { speechLang } from "@/lib/speechLang";
-import { spokenInto } from "@/components/form/MicInput";
-import { VOICE_CLIP_WORDS_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
+import { VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH } from "@shared/voiceTranscribe";
 import type { ClipTake, VoiceState } from "./VoiceInvite";
+
+/** shared/voiceNotes.ts VOICE_CLIP_WORDS_MAX, held here so this chunk asks the shared module for nothing the first view does not already carry (voiceNotes.test.ts holds the two equal). */
+export const CLIP_WORDS_MAX = 2000;
 
 /** The last minute of a take: when the countdown shows. */
 export const COUNTDOWN_FROM_SECONDS = 60;
@@ -48,7 +50,7 @@ export function countdownLeft(elapsed: number, max: number = VOICE_NOTE_MAX_SECO
 export function placeWords(text: string, caught: string, words: string, max: number): { text: string; placed: boolean } {
   const c = caught.trim();
   if (c && text.includes(c)) return { text: text.replace(c, words).slice(0, max), placed: true };
-  if (!c) return { text: spokenInto(text, words, max), placed: true };
+  if (!c) return { text: (text.trim() ? `${text.trimEnd()} ${words}` : words).slice(0, max), placed: true };
   return { text, placed: false };
 }
 
@@ -328,7 +330,7 @@ function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepCl
       if (placed.placed) answer.set(placed.text);
       else note = t({ message: "You changed this answer, so we left it as you wrote it. The written-down words go with your clip.", context: "voice transcription" });
     }
-    if (blob) setClipWords(blob, text.slice(0, VOICE_CLIP_WORDS_MAX));
+    if (blob) setClipWords(blob, text.slice(0, CLIP_WORDS_MAX));
     return note;
   });
   if (!w.on) return null;
