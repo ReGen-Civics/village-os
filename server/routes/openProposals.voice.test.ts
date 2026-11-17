@@ -11,6 +11,7 @@
  *   - The tidy job: a voice note goes with the name and address, and 90 days
  *     after the decision even from a proposal that keeps everything else.
  */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
@@ -19,7 +20,7 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { VOICE_WORDS } from "../../shared/voiceNotes";
+import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -219,6 +220,56 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     expect((await readOpenProposal(pool, recent))?.body.voice?.notes).toHaveLength(1);
     expect((await fs.promises.readdir(path.join(dir, recent))).filter((f) => f.startsWith("pv-"))).toHaveLength(1);
   });
+  /*
+   * FIVE MINUTES, KEPT WHOLE (an applicant, 17 Nov 2026: "I just recorded like 5 minutes").
+   * A recording at the page's limit, at the size each browser makes it, goes in and
+   * comes back through Admin's door byte for byte. Chrome's WebM measured 4.86 MB
+   * for 300 s at its own default rate (Playwright, a fake microphone, 17 Nov 2026);
+   * Safari's MP4 and Firefox's Ogg are given the same weight and more, and the page
+   * now asks for 64 kbit/s, about half of that.
+   */
+  it("keeps a five-minute recording in each format a browser makes, and plays every byte of it back", async () => {
+    const ogg = Buffer.concat([Buffer.from([0x4f, 0x67, 0x67, 0x53, 0, 2, 0, 0, 0, 0, 0, 0]), Buffer.alloc(64, 3)]);
+    const fiveMinutes = (head: Buffer, mb: number) => {
+      const body = crypto.randomBytes(Math.round(mb * 1024 * 1024));
+      head.copy(body, 0, 0, head.length);
+      return body;
+    };
+    const cases: Array<{ name: string; type: string; bytes: Buffer; kind: string }> = [
+      { name: "voice-1.webm", type: "audio/webm;codecs=opus", bytes: fiveMinutes(WEBM, 4.9), kind: "webm" },
+      { name: "voice-2.m4a", type: "audio/mp4", bytes: fiveMinutes(MP4, 7.5), kind: "m4a" },
+      { name: "voice-3.ogg", type: "audio/ogg;codecs=opus", bytes: fiveMinutes(ogg, 4.9), kind: "ogg" },
+    ];
+    // All three at once: the post stays inside the upload's total, so a person who talks for the full fifteen minutes is kept.
+    const total = cases.reduce((s, c) => s + c.bytes.length, 0);
+    expect(total).toBeLessThan(OPEN_UPLOAD_MAX_BYTES);
+    const r = await postVoice(proposal(ticked([300, 300, 300], "Five minutes about the land.")), cases);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    const id = lastId();
+    const voice = (await readOpenProposal(pool, id))?.body.voice;
+    expect(voice?.notes.map((n) => [n.kind, n.seconds, n.size])).toEqual(cases.map((c) => [c.kind, 300, c.bytes.length]));
+    await q("UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ? WHERE id = ?", [new Date(), id]);
+    state.admin = true;
+    const desk = await fetch(`${base}/api/admin/open-proposals`).then((res) => res.json() as Promise<any>); // module-review-ok: a test calling its own local server
+    const row = desk.proposals.find((p: any) => p.id === id);
+    expect(row.voice.notes.map((n: any) => n.seconds)).toEqual([300, 300, 300]);
+    for (const [i, c] of cases.entries()) {
+      const play = await fetch(`${base}${row.voice.notes[i].href}`); // module-review-ok: a test calling its own local server
+      expect(play.status).toBe(200);
+      expect(play.headers.get("content-type")).toBe({ webm: "audio/webm", m4a: "audio/mp4", ogg: "audio/ogg" }[c.kind]);
+      expect(Buffer.from(await play.arrayBuffer()).equals(c.bytes), c.name).toBe(true);
+    }
+  });
+
+  it("refuses a recording over the note's own size with the voice named, keeping nothing", async () => {
+    const before = await folders();
+    const big = Buffer.concat([WEBM, Buffer.alloc(VOICE_NOTE_MAX_BYTES, 1)]);
+    const r = await postVoice(proposal(ticked([300])), [{ name: "voice-1.webm", bytes: big, type: "audio/webm" }]);
+    expect(r.status).toBe(413);
+    expect(r.body).toEqual({ error: VOICE_WORDS.tooBig, field: "voice" });
+    expect(await folders()).toEqual(before);
+  });
+
   describe("clips beside answers (Rye, 14 Nov 2026)", () => {
     const withClips = (clips: Array<{ field: string; seconds: number; words: string }>) => ({ voice: { consent: true, seconds: [30], transcript: "", clips } });
 

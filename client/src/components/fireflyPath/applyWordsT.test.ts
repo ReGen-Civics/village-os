@@ -13,7 +13,7 @@ const en = setupI18n({ locale: "en", messages: { en: {} } });
 
 describe("the application's shared words, said again as messages", () => {
   it("each voice line reads, in English, exactly as VOICE_WORDS has it", () => {
-    const keys: VoiceKey[] = ["inviteTitle", "inviteBody", "record", "recordAnother", "stop", "skip", "reopen", "heardLabel", "heardHint", "consent", "kept", "notKept", "clipRecord", "clipStop", "clipAgain", "clipRemove", "clipLabel", "noTranscribe", "micBlocked", "noMic", "nearEnd"];
+    const keys: VoiceKey[] = ["inviteTitle", "inviteBody", "record", "recordAnother", "stop", "skip", "reopen", "heardLabel", "heardHint", "consent", "kept", "notKept", "clipRecord", "clipStop", "clipAgain", "clipRemove", "clipLabel", "noTranscribe", "micBlocked", "noMic", "nearEnd", "noEngine", "reachedLimit", "cutShort", "emptyTake", "cantPlay", "saveCopy", "heardNothing"];
     for (const k of keys) expect(voiceWord(k, en)).toBe(VOICE_WORDS[k]);
     expect(clipsFullWords(12, en)).toBe(VOICE_WORDS.clipsFull(12));
   });

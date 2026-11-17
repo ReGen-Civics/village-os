@@ -280,6 +280,18 @@ export default function ProposeARole() {
   const me = useOptionalAuth()?.user ?? null;
   const { t, i18n } = useLingui();
 
+  // Recordings live only on this page until Send (they are never saved in the draft), so leaving or reloading asks first.
+  const unsentVoice = !sent && (voice.takes.length > 0 || Object.keys(voice.clips).length > 0);
+  useEffect(() => {
+    if (!unsentVoice) return;
+    const ask = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", ask);
+    return () => window.removeEventListener("beforeunload", ask);
+  }, [unsentVoice]);
+
   useEffect(() => {
     // The role a card's Apply link (or the draft board) named: the first the village still offers.
     const wanted = new URLSearchParams(window.location.search).getAll("role").map((r) => r.trim()).filter(Boolean);

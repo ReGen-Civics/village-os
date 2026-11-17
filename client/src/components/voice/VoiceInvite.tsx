@@ -24,6 +24,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/jou
 import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
+import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
 /** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
 export { VoiceClipsProvider } from "./VoiceClips";
@@ -126,7 +127,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
   };
   const anything = value.takes.length > 0 || value.transcript.trim() !== "" || Object.keys(value.clips).length > 0;
   const left = VOICE_NOTE_MAX_SECONDS - recorder.elapsed;
-  const problem = recorder.problem === "blocked" ? voiceWord("micBlocked") : recorder.problem === "noMic" ? voiceWord("noMic") : null;
+  const problem = recorderProblemWords(recorder.problem);
 
   return (
     <section aria-labelledby={`${id}-h`} tabIndex={-1} className="grid scroll-mt-24 gap-4 rounded-2xl border-2 border-notice/60 bg-card p-5 shadow-sm outline-none" data-voice-invite="">
@@ -152,7 +153,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
               <span className="text-sm font-semibold text-foreground">
                 {t({ message: `Recording ${i + 1}`, context: "voice note" })} <span className="font-normal tabular-nums text-muted-foreground">{voiceLength(take.seconds)}</span>
               </span>
-              <audio controls preload="metadata" src={take.url} className="h-10 min-w-0 flex-1 basis-48" />
+              <TakePlayer url={take.url} type={take.blob.type} name={`voice-${i + 1}`} />
               <button type="button" onClick={() => remove(i)} className="inline-flex min-h-11 items-center gap-1 px-2 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground">
                 <Trash2 className="size-4" aria-hidden="true" />
                 {t({ message: "Remove", context: "voice note" })}
@@ -197,8 +198,8 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
                 : ""}
           </p>
           {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground" data-voice-live="">{recorder.live}</p>}
-          {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{voiceWord("noTranscribe")}</p>}
-          {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}
+          {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status" data-voice-no-words="">{recorder.engine ? voiceWord("noTranscribe") : voiceWord("noEngine")}</p>}
+          {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status" data-voice-problem={recorder.problem ?? ""}>{problem}</p>}
         </div>
       )}
 
@@ -207,6 +208,12 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
           <label htmlFor={`${id}-heard`} className={LABEL}>
             {voiceWord("heardLabel")}
           </label>
+          {/* Nothing written down (no speech engine, or it could not hear): say so, so an empty box never reads as a fault. */}
+          {!recorder.recording && value.takes.length > 0 && !value.transcript.trim() && (
+            <p className="text-sm text-foreground" data-voice-heard-nothing="">
+              {voiceWord("heardNothing")}
+            </p>
+          )}
           <GrowingField id={`${id}-heard`} minRows={3} maxLength={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
           <p className={HINT}>{voiceWord("heardHint")}</p>
           {drafting && !recorder.recording && <VoiceDrafts heard={value.transcript} drafting={drafting} />}
@@ -231,3 +238,4 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
     </section>
   );
 }
+
