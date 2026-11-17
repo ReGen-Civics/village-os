@@ -1,16 +1,18 @@
 /**
  * THE CARD'S COMMITMENT AND SPLIT (the lead, 17 Nov 2026): the slider, the band at the chosen commitment, and the
- * listed price at it split by hand into the shape in force. What the reader chooses here rides the Apply link
+ * listed price at it split by hand into the shape in force. Loaded lazily (FullRoleCard.tsx), so the routes that
+ * draw the card do not carry it in their first view; its state lives in useCommitmentChoice.ts.
+ * What the reader chooses here rides the Apply link
  * into the application's price step (applyChoice.ts), where it is saved with the proposal.
  *
  * The band at the commitment shows only below 100% (the card's band line says the full band) and only while the
  * village shows pay ranges; the split's amounts only while the reader may see the
  * listed price (the card already drops a price the reader may not read). Display only: the contract sets the pay.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { rangeMin } from "@shared/commitmentRange";
-import { offeredSplit, retotal, splitTotal, type ShapeShare, type Split } from "@shared/proposalSplit";
+import type { Split } from "@shared/proposalSplit";
+import type { CommitmentChoice } from "./useCommitmentChoice";
 import type { PayCeiling } from "@shared/roleCardSections";
 import type { PublicPay } from "@shared/rolePublicPay";
 import { moneyWords } from "@shared/roleRewardWords";
@@ -18,35 +20,6 @@ import CommitmentSlider from "./CommitmentSlider";
 import SplitControl from "./SplitControl";
 import { bandAt, bandAtWords, bandEnds, offersSlider } from "./commitmentWords";
 import { perPeriod } from "./rewardWords";
-
-export interface CommitmentChoice {
-  pct: number;
-  split: Split;
-  offered: Split;
-}
-
-/**
- * The reader's choice, starting at 100% and the shape in force. A new commitment keeps their percents and works
- * the amounts again, and the village's split follows it, so "changed" always compares at the same total.
- */
-export function useCommitmentChoice(min: number | null | undefined, ceiling: PayCeiling | null | undefined, shape: readonly ShapeShare[]) {
-  const key = shape.map((s) => `${s.label}:${s.pct}`).join(",");
-  const start = (pct: number): CommitmentChoice => {
-    const offered = offeredSplit(shape, splitTotal(ceiling?.amount, pct, null));
-    return { pct, split: offered, offered };
-  };
-  const [choice, setChoice] = useState<CommitmentChoice>(() => start(100));
-  // The card's shape or price arrives after the first draw (it is read on mount): start again from it.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => setChoice(start(100)), [key, ceiling?.amount, min]);
-  const setPct = (pct: number) =>
-    setChoice((c) => {
-      const total = splitTotal(ceiling?.amount, pct, null);
-      return { pct, split: retotal(c.split, total), offered: offeredSplit(shape, total) };
-    });
-  const setSplit = (split: Split) => setChoice((c) => ({ ...c, split }));
-  return { choice, setPct, setSplit, sliding: offersSlider(min), lo: rangeMin(min) };
-}
 
 export default function CommitmentPicker({
   idPrefix,

@@ -30,7 +30,7 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -40,7 +40,7 @@ import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type Vil
 import { roleCardView } from "@shared/roleCardView";
 import { bandWords, rewardWords } from "./rewardWords";
 import ValueCallout from "./ValueCallout";
-import CommitmentPicker, { useCommitmentChoice } from "./CommitmentPicker";
+import { useCommitmentChoice } from "./useCommitmentChoice";
 import { choiceQuery } from "./applyChoice";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
@@ -58,6 +58,9 @@ import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
 import { useVillageName } from "@/hooks/useVillageName";
+
+// The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
+const CommitmentPicker = lazy(() => import("./CommitmentPicker"));
 
 export type CardRegister = "founding" | "game";
 
@@ -289,7 +292,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         );
       })()}
       {!noAct && (
-        <CommitmentPicker idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} publicPay={seat?.card?.publicPay} showsRange={showsRange} choice={choice} onPct={setPct} onSplit={setSplit} />
+        <Suspense fallback={null}>
+          <CommitmentPicker idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} publicPay={seat?.card?.publicPay} showsRange={showsRange} choice={choice} onPct={setPct} onSplit={setSplit} />
+        </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
       {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}

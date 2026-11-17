@@ -11,11 +11,11 @@
  * the eyebrow over each setting, gold focus, 44px targets. One component for both doors, the open
  * form and the member door, so they cannot drift apart.
  */
+import { lazy, Suspense } from "react";
 import { useLingui } from "@lingui/react/macro";
 import GrowingField from "@/components/form/GrowingField";
 import { commitmentChoices, type PayAsk } from "@shared/commitmentRange";
 import PriceAsk from "./PriceAsk";
-import SplitControl from "@/components/roleCard/SplitControl";
 import { formSplit, withAmounts, type ShapeShare, type Split } from "@shared/proposalSplit";
 import { commitmentFromQuery, splitFromQuery } from "@/components/roleCard/applyChoice";
 import type { PayCeiling } from "@shared/roleCardSections";
@@ -31,6 +31,9 @@ import {
   type TermKey,
   type TermsWords,
 } from "@shared/termsWords";
+
+// The split control loads when the price step draws it, off /propose-a-role's first view (route-first-view.json).
+const SplitControl = lazy(() => import("@/components/roleCard/SplitControl"));
 
 /** A person offering a role starts at 10%: 0% is no commitment at all (final verification, 11 Nov 2026). */
 export const CANDIDATE_COMMITMENTS = COMMITMENT_CHOICES.filter((n) => n >= 10);
@@ -208,7 +211,9 @@ export default function TermsEight({
                 {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={roles[0]?.suggestions ?? 0} />}
                 {split && (
                   <div className="mt-4">
+                    <Suspense fallback={null}>
                     <SplitControl idPrefix={idPrefix} split={split.shown} offered={split.offered} onChange={(paySplit) => onChange({ ...value, paySplit })} currency={ceiling?.currency ?? null} per={ceiling?.per ?? null} pct={value.commitmentPct} />
+                    </Suspense>
                   </div>
                 )}
               </div>

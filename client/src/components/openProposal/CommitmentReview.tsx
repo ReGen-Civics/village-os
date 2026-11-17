@@ -12,7 +12,10 @@ import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
 import type { ProposalSplit } from "@shared/proposalSplit";
-import SplitReview from "./SplitReview";
+import { lazy, Suspense } from "react";
+
+// Loaded when an application carries a split.
+const SplitReview = lazy(() => import("./SplitReview"));
 
 export interface CommitmentReviewData {
   pct: number | null;
@@ -70,7 +73,11 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           <p className="mt-0.5 whitespace-pre-wrap break-words text-foreground">{data.ask.why}</p>
         </div>
       )}
-      <SplitReview split={data.split} currency={data.roles.find((r) => r.full)?.full?.currency ?? null} />
+      {data.split && (
+        <Suspense fallback={null}>
+          <SplitReview split={data.split} currency={data.roles.find((r) => r.full)?.full?.currency ?? null} />
+        </Suspense>
+      )}
       {(data.suggestionCount ?? 0) > 0 && (
         <p className="text-sm text-muted-foreground" data-suggestion-count="">
           {data.suggestionCount === 1
