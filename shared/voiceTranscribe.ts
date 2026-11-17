@@ -48,6 +48,8 @@ export const VOICE_TRANSCRIBE_PER_CONNECTION_DAY = 12;
  */
 export const VOICE_TRANSCRIBE_CLIPS_PER_HOUR = 20;
 export const VOICE_TRANSCRIBE_CLIPS_PER_CONNECTION_DAY = 40;
+/** Every clip written down for the whole village in a day, apart from the takes' 60: well inside Groq's free 2,000 requests a day, and nothing at all on the server's own Whisper. */
+export const VOICE_TRANSCRIBE_CLIPS_PER_DAY = 200;
 
 /** Every take written down for the whole village in a day: at most 300 minutes of audio. */
 export const VOICE_TRANSCRIBE_PER_DAY = 60;

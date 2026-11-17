@@ -35,6 +35,7 @@ import {
   TRANSCRIBE_WORDS,
   VOICE_TRANSCRIBE_AT_ONCE,
   VOICE_TRANSCRIBE_CLIPS_PER_CONNECTION_DAY,
+  VOICE_TRANSCRIBE_CLIPS_PER_DAY,
   VOICE_TRANSCRIBE_CLIPS_PER_HOUR,
   VOICE_TRANSCRIBE_MAX_SECONDS,
   VOICE_TRANSCRIBE_PATH,
@@ -134,7 +135,8 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
               [`open-proposal:voice-transcribe:${who}`, VOICE_TRANSCRIBE_PER_HOUR, HOUR_MS, 429],
               [`open-proposal:voice-transcribe:daily-${who}`, VOICE_TRANSCRIBE_PER_CONNECTION_DAY, 24 * HOUR_MS, 429],
             ];
-        caps.push(["open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY, 24 * HOUR_MS, 503]);
+        // The village's day, also counted apart: 60 takes, 200 clips.
+        caps.push(clip ? ["open-proposal:voice-transcribe:clips-day", VOICE_TRANSCRIBE_CLIPS_PER_DAY, 24 * HOUR_MS, 503] : ["open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY, 24 * HOUR_MS, 503]);
         for (const [key, max, windowMs, status] of caps) {
           const got = await deps.limitState(key, max, windowMs);
           if (got === "unavailable") return res.status(503).json({ error: TRANSCRIBE_WORDS.unavailable });

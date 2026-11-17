@@ -14,7 +14,7 @@ import http from "node:http";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
-import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
+import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
 import { HTTP_PROVIDERS, languageHint, transcribeTake, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 import { registerVoiceTranscribe } from "./openProposalVoiceTranscribe";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
@@ -132,6 +132,21 @@ describe("the door, over real HTTP", () => {
     expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 429, body: { error: TRANSCRIBE_WORDS.tooMany } });
     expect(state.calls).toHaveLength(sentSoFar);
     expect(sentSoFar).toBe(VOICE_TRANSCRIBE_CLIPS_PER_HOUR + VOICE_TRANSCRIBE_PER_HOUR);
+  });
+
+  it("the village's day counts clips apart too: a day full of takes still writes clips down, and clips stop at their own 200", async () => {
+    const clipSend = () => send(TINY_WEBM_OPUS, { seconds: "40", lang: "es-CR", kind: "clip" });
+    state.hits.set("open-proposal:voice-transcribe:day", VOICE_TRANSCRIBE_PER_DAY);
+    // The takes' day is full: a take is refused, a clip is written down.
+    expect(await send(TINY_WEBM_OPUS)).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
+    expect((await clipSend()).status).toBe(200);
+    // The clips' own day full: a clip is refused with nothing sent, and a take is counted on its own day again.
+    state.hits.set("open-proposal:voice-transcribe:clips-day", VOICE_TRANSCRIBE_CLIPS_PER_DAY);
+    const sent = state.calls.length;
+    expect(await clipSend()).toEqual({ status: 503, body: { error: TRANSCRIBE_WORDS.unavailable } });
+    expect(state.calls).toHaveLength(sent);
+    state.hits.set("open-proposal:voice-transcribe:day", 0);
+    expect((await send(TINY_WEBM_OPUS)).status).toBe(200);
   });
 
   it("caps the whole village at its day, across connections", async () => {
