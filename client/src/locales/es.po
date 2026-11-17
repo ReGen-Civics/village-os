@@ -2089,6 +2089,12 @@ msgctxt "economics view heading"
 msgid "Module health"
 msgstr ""
 
+#. placeholder {0}: counts.pairs
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: conflict"
+msgid "{0, plural, one {One pair of waiting changes writes the same thing.} other {# pairs of waiting changes write the same thing.}}"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Until the Game starts, the founders write this agreement. You can read every frame here."
 msgstr ""
@@ -2178,6 +2184,11 @@ msgstr ""
 #: client/src/components/journey/LaunchGuide.tsx
 msgctxt "what the launch guide read"
 msgid "References: {0}."
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Not yet"
 msgstr ""
 
 #: client/src/components/priorities/PlaceInLine.tsx
@@ -3441,6 +3452,11 @@ msgstr ""
 msgid "Your Ikigai answers are saved in this browser. Nothing has been sent."
 msgstr "Tus respuestas de Ikigai se guardan en este navegador. No se ha enviado nada."
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed earlier. Accept one, then look again."
+msgstr ""
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Back this quest, in {unit}"
 msgstr ""
@@ -3601,6 +3617,12 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Other ways to join"
 msgstr "Otras formas de unirte"
+
+#. placeholder {0}: counts.stale
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: conflict"
+msgid "{0, plural, one {One waiting change was drafted before a later accept.} other {# waiting changes were drafted before a later accept.}}"
+msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "The confidentiality agreement is not promised"
@@ -4126,6 +4148,11 @@ msgstr ""
 msgctxt "pay board"
 msgid "Keep the amount"
 msgstr "Mantener la cantidad"
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: conflict"
+msgid "“{summary}” was drafted before “{other}” was accepted. Look at its page to check the words."
+msgstr ""
 
 #: client/src/components/admin/MenuPanel.tsx
 msgctxt "admin menu: the group names"
@@ -5756,6 +5783,11 @@ msgstr "Volver al rol"
 
 #: client/src/components/admin/MintDesk.tsx
 msgid "Could not turn that grant down"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "A later change also edits this. Accept this one anyway?"
 msgstr ""
 
 #: client/src/components/roots/RootPicker.tsx
@@ -7451,6 +7483,11 @@ msgstr ""
 msgid "A second steward is not asked for at any amount (ledger.admin_mint_cosign_over is 0)."
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Also changed by “{other}”, proposed later. Accept one, then look again."
+msgstr ""
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment field: one earlier word"
 msgid "{was}% from {from}, {span}"
@@ -8142,6 +8179,11 @@ msgstr ""
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, add an item"
 msgid "Add a priority"
+msgstr ""
+
+#: client/src/components/proposals/BatchCard.tsx
+msgctxt "proposed changes: confirm a batch"
+msgid "{laterConflicts, plural, one {A later change also edits one of these.} other {A later change also edits # of these.}}"
 msgstr ""
 
 #: client/src/components/notebook/NotebookDocument.tsx
@@ -9251,6 +9293,11 @@ msgstr ""
 #: client/src/components/roleDraft/DraftCarry.tsx
 #~ msgid "You drafted roles before you joined."
 #~ msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Yes, accept"
+msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
@@ -13086,6 +13133,11 @@ msgstr ""
 msgid "The cover role: who hears it when the care role cannot"
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Confirm accepting this change"
+msgstr ""
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application value"
 msgid "How we will know it is done"
@@ -15707,6 +15759,11 @@ msgctxt "age band option"
 msgid "Under 16"
 msgstr "Menos de 16"
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: conflict"
+msgid "Drafted before “{other}” was accepted. Accepting it would put back older words."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "An example, to read and not to copy"
 msgstr ""
@@ -15825,6 +15882,11 @@ msgstr "Tu pregunta"
 #: client/src/components/roleEdit/SeraPanel.tsx
 msgctxt "role editor sera"
 msgid "Here now:"
+msgstr ""
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: conflict"
+msgid "Each one is flagged on its card. Accept one, then look again."
 msgstr ""
 
 #: client/src/pages/Events.tsx
@@ -18995,6 +19057,11 @@ msgstr ""
 
 #: client/src/components/journey/TestRun.tsx
 msgid "One thing would not work as set"
+msgstr ""
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "Oldest first, so you accept in the order they were proposed."
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
