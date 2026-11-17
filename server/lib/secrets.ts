@@ -136,6 +136,11 @@ const BASE_SECRET_KEYS = [
   "base_rpc_url",
   "railway_project_token",
   "dns_zone_token",
+  // The voice step's transcription service (the lead, 17 Nov 2026): one
+  // provider's key, typed under Admin, Integrations, and nowhere else. It has
+  // no host variable, so the only way it is ever set is by an admin, sealed.
+  // The provider it belongs to is named in server/lib/voiceTranscription.ts.
+  "voice_transcription_key",
 ] as const;
 export type BaseSecretKey = (typeof BASE_SECRET_KEYS)[number];
 
@@ -189,6 +194,7 @@ const BASE_ENV_FALLBACK: Record<BaseSecretKey, string | null> = {
   base_rpc_url: "BASE_RPC_URL",
   railway_project_token: null,
   dns_zone_token: null,
+  voice_transcription_key: null,
 };
 
 /**

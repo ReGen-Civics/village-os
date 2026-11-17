@@ -29,6 +29,9 @@
  *   - DECLINING sets decided_at, so the tidy job finds it, and sends a kind no.
  *   - The task board: an asked holder's consent row, a decider's adopt row.
  */
+import { spawnSync } from "node:child_process";
+import { voiceNoteKind } from "../../shared/voiceNotes";
+import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
 import { checkConsentVersion } from "../../shared/proposalAbout";
 import { moonTermFor } from "../../shared/openProposalTerm";
 import { activeClock } from "../lib/gratitude-cycles";
@@ -78,6 +81,10 @@ const HIGH = { id: "u-high", name: "Hal Pine", email: "hal@example.test" };
 const LEFT = { id: "u-left", name: "Lee Gone", email: "left@example.test" };
 /** An account whose address sends an application while our email is down: kept, the address not confirmed. */
 const KEPT = { id: "u-kept", name: "Kit Wren", email: "kit-kept@example.test" };
+
+/** The image ships ffmpeg (Dockerfile); a machine without one skips the copy case, said out loud. */
+const HAS_FFMPEG = spawnSync("ffmpeg", ["-hide_banner", "-version"], { stdio: "ignore" }).status === 0;
+if (!HAS_FFMPEG) console.warn("[openProposalDecide] no ffmpeg here: the MP4 copy case is SKIPPED. A skip is not a pass.");
 
 describe.skipIf(!configured)("open role proposals, the decision, on a real schema", () => {
   let db: TestDb;
@@ -627,7 +634,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     const HEARD = "I have kept the gate on my own road for six years.";
 
     /** Send with one ticked recording and its words, as somebody with no account, and confirm. */
-    const withVoice = async (email: string) => {
+    const withVoice = async (email: string, bytes: Buffer = WEBM) => {
       const before = state.sent.length;
       const fd = new FormData();
       fd.append("proposal", JSON.stringify({
@@ -638,7 +645,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
         aim: "The gate opens at dawn every day.",
         voice: { consent: true, seconds: [42], transcript: HEARD },
       }));
-      fd.append("voice", new Blob([WEBM], { type: "audio/webm" }), "voice-1.webm");
+      fd.append("voice", new Blob([new Uint8Array(bytes)], { type: "audio/webm" }), "voice-1.webm");
       const res = await fetch(`${base}/api/open-proposals`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
       expect(res.status, await res.clone().text()).toBe(200);
       const mail = state.sent[before];
@@ -716,6 +723,26 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect((await listen(href, null)).status).toBe(401);
       expect((await listen(href.replace(/pv-[0-9a-f]+$/, "pv-0000000000000000"), FOUNDER.id)).status).toBe(404);
       expect((await listen(href.replace(/pv-[0-9a-f]+$/, "..%2F..%2Fsecret"), FOUNDER.id)).status).toBe(404);
+    });
+
+    /*
+     * EVERY BROWSER PLAYS IT (the lead, 17 Nov 2026). Chrome's WebM, asked for
+     * with `?as=mp4`, comes back as an MP4/AAC copy Safari and iPhones play, to
+     * the same deciders and nobody else; the original is unchanged.
+     */
+    it.skipIf(!HAS_FFMPEG)("the voice door hands a decider on Safari an MP4/AAC copy of Chrome's WebM, and nobody else gets one", async () => {
+      const id = await withVoice("voice-safari@example.test", TINY_WEBM_OPUS);
+      const href = (await page(id, FOUNDER.id)).body.proposal.voice.notes[0].href as string;
+      const copy = await listen(`${href}?as=mp4`, FOUNDER.id);
+      expect(copy.status).toBe(200);
+      expect(copy.headers.get("content-type")).toBe("audio/mp4");
+      expect(copy.headers.get("cache-control")).toBe("private, no-store");
+      expect(voiceNoteKind(new Uint8Array(await copy.arrayBuffer()))).toBe("m4a");
+      // The original is still the bytes the browser made.
+      const original = await listen(href, FOUNDER.id);
+      expect(Buffer.from(await original.arrayBuffer()).equals(TINY_WEBM_OPUS)).toBe(true);
+      expect((await listen(`${href}?as=mp4`, MO.id)).status).toBe(404);
+      expect((await listen(`${href}?as=mp4`, null)).status).toBe(401);
     });
 
     it("a clip beside an answer reaches the deciders with its answer and words, and plays through the same door", async () => {

@@ -125,6 +125,8 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
   const engine = useRef<any>(null);
   const stream = useRef<MediaStream | null>(null);
   const timer = useRef<number | null>(null);
+  /** The hard stop, set for the limit itself, so a take ends at 5:00 and not on the next tick after it. */
+  const cutoff = useRef<number | null>(null);
   const began = useRef(0);
   const finals = useRef("");
   const interim = useRef("");
@@ -137,6 +139,8 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
   const release = () => {
     if (timer.current !== null) window.clearInterval(timer.current);
     timer.current = null;
+    if (cutoff.current !== null) window.clearTimeout(cutoff.current);
+    cutoff.current = null;
     try {
       engine.current?.abort?.();
     } catch {
@@ -320,6 +324,11 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
       setElapsed(s);
       if (s >= limit.current) stopFor("limit");
     }, 250);
+    // The limit, exactly (the lead, 17 Nov 2026: "cut them off at 5 min"): the interval above only notices on its next tick.
+    cutoff.current = window.setTimeout(() => {
+      setElapsed(limit.current);
+      stopFor("limit");
+    }, limit.current * 1000);
     // No speech engine at all (Firefox): the recording runs, and the person is told the words will not appear.
     if (!speechEngine()) setNoWords(true);
     listen();

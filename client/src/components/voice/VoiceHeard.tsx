@@ -11,11 +11,18 @@
  * no download link is drawn. Words heard sit beside each clip and folded
  * under the main note: what the browser heard, in their words, unchecked. No
  * AI summary of a person is ever shown here.
+ *
+ * EVERY BROWSER PLAYS IT (the lead, 17 Nov 2026). A recording made in Chrome or
+ * Firefox is WebM or Ogg, which Safari and iPhones may refuse. Where this
+ * browser says it cannot play what came, or is Safari's engine, the MP4/AAC
+ * copy is asked for instead (`?as=mp4`, server/lib/voicePlayback.ts), and a
+ * player that fails on the original tries the copy once before saying so.
  */
 import { useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Play } from "lucide-react";
 import { gameFetch } from "@/lib/gameApi";
+import { appleEngine } from "./useVoiceRecorder";
 import { VOICE_WORDS, voiceLength } from "@shared/voiceNotes";
 
 export interface ServedClip {
@@ -33,6 +40,16 @@ export interface ServedVoice {
   clips?: ServedClip[];
 }
 
+/** The door's address for the MP4/AAC copy of a recording. */
+export const mp4Href = (href: string) => `${href}${href.includes("?") ? "&" : "?"}as=mp4`;
+
+/** Whether this browser should be handed the MP4/AAC copy of a recording of this type. */
+export function wantsMp4Copy(type: string, canPlay: (type: string) => string = (t) => document.createElement("audio").canPlayType(t), apple: boolean = appleEngine()): boolean {
+  const base = type.split(";")[0].trim().toLowerCase();
+  if (!base || base === "audio/mp4") return false;
+  return apple || canPlay(base) === "";
+}
+
 /** One recording: a play button that fetches it, then the player. */
 export function PlayVoice({ href, seconds, label, fetcher = gameFetch }: { href: string; seconds: number; label: string; /** How to fetch it: the member sign-in by default; Admin hands in its own. */ fetcher?: (href: string) => Promise<Response> }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -43,18 +60,34 @@ export function PlayVoice({ href, seconds, label, fetcher = gameFetch }: { href:
     },
     [url],
   );
+  const [triedCopy, setTriedCopy] = useState(false);
+  const copy = async (): Promise<Blob | null> => {
+    setTriedCopy(true);
+    const res = await fetcher(mp4Href(href)).catch(() => null);
+    return res?.ok ? res.blob() : null;
+  };
   const listen = async () => {
     setState("loading");
     try {
       const res = await fetcher(href);
       if (!res.ok) throw new Error(String(res.status));
-      setUrl(URL.createObjectURL(await res.blob()));
+      let blob = await res.blob();
+      // Safari and iPhones: the MP4/AAC copy, when this browser cannot play what came (and the original when no copy can be made).
+      if (wantsMp4Copy(res.headers.get("content-type") ?? blob.type)) blob = (await copy()) ?? blob;
+      setUrl(URL.createObjectURL(blob));
       setState("idle");
     } catch {
       setState("failed");
     }
   };
-  if (url) return <audio controls autoPlay src={url} aria-label={label} className="h-10 w-full max-w-md" />;
+  // The player refused the original after all: try the copy once, then say so.
+  const refused = async () => {
+    if (triedCopy) return void (setUrl(null), setState("failed"));
+    const blob = await copy();
+    if (!blob) return void (setUrl(null), setState("failed"));
+    setUrl(URL.createObjectURL(blob));
+  };
+  if (url) return <audio controls autoPlay src={url} aria-label={label} onError={() => void refused()} className="h-10 w-full max-w-md" data-voice-heard-player="" />;
   return (
     <span className="inline-flex flex-wrap items-center gap-2" data-play-voice="">
       <button

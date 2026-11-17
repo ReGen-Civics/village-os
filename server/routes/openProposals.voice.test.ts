@@ -20,7 +20,9 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
+import { spawnSync } from "node:child_process";
+import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
+import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -30,6 +32,9 @@ import { ATTACHMENT_WORDS } from "../../shared/proposalAttachments";
 import { OPEN_UPLOAD_MAX_BYTES, OPEN_UPLOADS_AT_ONCE, register, tidyOpenProposals } from "./openProposals";
 
 const configured = testDbConfigured();
+/** The image ships ffmpeg (Dockerfile); a machine without one skips the copy cases, said out loud. */
+const HAS_FFMPEG = spawnSync("ffmpeg", ["-hide_banner", "-version"], { stdio: "ignore" }).status === 0;
+if (!HAS_FFMPEG) console.warn("[openProposals.voice] no ffmpeg here: the MP4 copy cases are SKIPPED. A skip is not a pass.");
 if (!configured) console.warn("[openProposals.voice] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
 
 const ORIGIN = "https://village.example.test";
@@ -268,6 +273,133 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     expect(r.status).toBe(413);
     expect(r.body).toEqual({ error: VOICE_WORDS.tooBig, field: "voice" });
     expect(await folders()).toEqual(before);
+  });
+
+  /*
+   * A TAB LEFT OPEN ON THE OLD PAGE (the lead, 17 Nov 2026: "make sure that it's
+   * all going to work if they leave it open and try to submit"). An applicant's
+   * tab may still run release 1.3.19's page, with a take in memory, and press
+   * Send after the server is newer. `applicationRequest119` below is that
+   * page's own builder, copied verbatim from v1.3.19
+   * (client/src/components/voice/VoiceInvite.tsx, with `voiceKindOfType` and
+   * the transcript cap from its shared/voiceNotes.ts), so this posts exactly
+   * the field names, file names, types and sizes it sends: `proposal` as JSON,
+   * recordings as `voice` named `voice-<n>.<kind>`, typed with the recorder's
+   * own mimeType, at the browser's own bitrate (1.3.19 asked for none: Chrome
+   * measured 4.86 MB for five minutes).
+   */
+  describe("an application from the 1.3.19 page, still open in a tab", () => {
+    const VOICE_TRANSCRIPT_MAX_119 = 12000;
+    function voiceKindOfType119(type: string): "webm" | "ogg" | "m4a" {
+      const t = type.toLowerCase();
+      if (t.includes("mp4") || t.includes("aac") || t.includes("m4a")) return "m4a";
+      if (t.includes("ogg")) return "ogg";
+      return "webm";
+    }
+    type Take119 = { blob: Blob; seconds: number; url: string };
+    type State119 = { takes: Take119[]; transcript: string; consent: boolean; skipped: boolean; clips: Record<string, Take119 & { words: string }> };
+    function voiceSent119(v: State119): boolean {
+      return v.consent && (v.takes.length > 0 || v.transcript.trim() !== "" || Object.keys(v.clips).length > 0);
+    }
+    function applicationRequest119(proposal: Record<string, unknown>, files: readonly File[], voice: State119): RequestInit {
+      const sent = voiceSent119(voice);
+      const clips = sent ? Object.entries(voice.clips) : [];
+      const body = sent
+        ? {
+            ...proposal,
+            voice: {
+              consent: true,
+              seconds: voice.takes.map((t) => t.seconds),
+              transcript: voice.transcript.trim().slice(0, VOICE_TRANSCRIPT_MAX_119),
+              ...(clips.length ? { clips: clips.map(([field, c]) => ({ field, seconds: c.seconds, words: c.words })) } : {}),
+            },
+          }
+        : proposal;
+      const takes = sent ? voice.takes : [];
+      if (!files.length && !takes.length && !clips.length) return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+      const fd = new FormData();
+      fd.append("proposal", JSON.stringify(body));
+      for (const f of files) fd.append("files", f, f.name);
+      takes.forEach((t, i) => fd.append("voice", t.blob, `voice-${i + 1}.${voiceKindOfType119(t.blob.type)}`));
+      clips.forEach(([field, c]) => fd.append("clips", c.blob, `${field}.${voiceKindOfType119(c.blob.type)}`));
+      return { method: "POST", body: fd };
+    }
+    const fiveMinutes = (head: Buffer, mb: number) => {
+      const body = crypto.randomBytes(Math.round(mb * 1024 * 1024));
+      head.copy(body, 0, 0, head.length);
+      return body;
+    };
+    const take = (bytes: Buffer, type: string, seconds: number): Take119 => ({ blob: new Blob([new Uint8Array(bytes)], { type }), seconds, url: "blob:old-tab" });
+
+    it("keeps a five-minute WebM from Chrome and a five-minute MP4 from Safari, sent by the old page, and plays every byte back", async () => {
+      const cases = [
+        { bytes: fiveMinutes(WEBM, 4.86), type: "audio/webm;codecs=opus", kind: "webm" },
+        // Older Safari: MP4 at its own default rate, given more weight than Chrome's.
+        { bytes: fiveMinutes(MP4, 4.9), type: "audio/mp4", kind: "m4a" },
+      ];
+      const voice: State119 = { takes: cases.map((c) => take(c.bytes, c.type, 300)), transcript: "", consent: true, skipped: false, clips: {} };
+      const res = await fetch(`${base}/api/open-proposals`, applicationRequest119(proposal(), [], voice)); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const id = lastId();
+      const kept = (await readOpenProposal(pool, id))?.body.voice;
+      expect(kept?.notes.map((n) => [n.kind, n.seconds, n.size])).toEqual(cases.map((c) => [c.kind, 300, c.bytes.length]));
+      // An empty "What we heard" from a browser with no speech engine is an application like any other.
+      expect(kept?.transcript).toBe("");
+      await q("UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ? WHERE id = ?", [new Date(), id]);
+      state.admin = true;
+      const desk = await fetch(`${base}/api/admin/open-proposals`).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
+      const row = desk.proposals.find((p: any) => p.id === id);
+      for (const [i, c] of cases.entries()) {
+        const play = await fetch(`${base}${row.voice.notes[i].href}`); // module-review-ok: a test calling its own local server
+        expect(play.status).toBe(200);
+        expect(Buffer.from(await play.arrayBuffer()).equals(c.bytes)).toBe(true);
+      }
+      // Safari's MP4 is its own playable copy, made with no ffmpeg at all.
+      const mp4 = await fetch(`${base}${row.voice.notes[1].href}?as=mp4`); // module-review-ok: a test calling its own local server
+      expect(mp4.headers.get("content-type")).toBe("audio/mp4");
+      expect(Buffer.from(await mp4.arrayBuffer()).equals(cases[1].bytes)).toBe(true);
+    });
+
+    it("keeps the old page's three takes with their words, and a clip beside an answer, as it sent them", async () => {
+      const voice: State119 = {
+        takes: [take(WEBM, "audio/webm;codecs=opus", 300), take(WEBM, "audio/webm", 12), take(Buffer.concat([Buffer.from([0x4f, 0x67, 0x67, 0x53, 0, 2, 0, 0, 0, 0, 0, 0]), Buffer.alloc(64, 3)]), "audio/ogg;codecs=opus", 40)],
+        transcript: "  I keep the gate.  ",
+        consent: true,
+        skipped: false,
+        clips: { why: { ...take(MP4, "audio/mp4", 20), words: "Because the gate is shut." } },
+      };
+      const res = await fetch(`${base}/api/open-proposals`, applicationRequest119(proposal(), [], voice)); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const kept = (await readOpenProposal(pool, lastId()))?.body.voice;
+      expect(kept?.notes.map((n) => [n.kind, n.seconds])).toEqual([["webm", 300], ["webm", 12], ["ogg", 40]]);
+      expect(kept?.transcript).toBe("I keep the gate.");
+      expect(kept?.clips?.map((c) => [c.field, c.kind, c.words])).toEqual([["why", "m4a", "Because the gate is shut."]]);
+    });
+
+    it.skipIf(!HAS_FFMPEG)("a real WebM from the old page plays on Safari through Admin's door, as an MP4/AAC copy", async () => {
+      const voice: State119 = { takes: [take(TINY_WEBM_OPUS, "audio/webm;codecs=opus", 2)], transcript: "", consent: true, skipped: false, clips: {} };
+      const res = await fetch(`${base}/api/open-proposals`, applicationRequest119(proposal(), [], voice)); // module-review-ok: a test calling its own local server
+      expect(res.status, await res.clone().text()).toBe(200);
+      const id = lastId();
+      await q("UPDATE open_role_proposals SET status = 'confirmed', confirmed_at = ? WHERE id = ?", [new Date(), id]);
+      state.admin = true;
+      const row = (await fetch(`${base}/api/admin/open-proposals`).then((r) => r.json() as Promise<any>)).proposals.find((p: any) => p.id === id); // module-review-ok: a test calling its own local server
+      const copy = await fetch(`${base}${row.voice.notes[0].href}?as=mp4`); // module-review-ok: a test calling its own local server
+      expect(copy.status).toBe(200);
+      expect(copy.headers.get("content-type")).toBe("audio/mp4");
+      expect(voiceNoteKind(new Uint8Array(await copy.arrayBuffer()))).toBe("m4a");
+      // An agent, holding the same desk, gets no copy either.
+      expect((await fetch(`${base}${row.voice.notes[0].href}?as=mp4`, { headers: { "x-village-connector": "1" } })).status).toBe(404); // module-review-ok: a test calling its own local server
+    });
+  });
+
+  it("with no transcription key typed, the real door says it is off and refuses a take", async () => {
+    expect((await fetch(`${base}/api/open-proposals/voice-transcribe`).then((r) => r.json() as Promise<any>)).on).toBe(false); // module-review-ok: a test calling its own local server
+    const fd = new FormData();
+    fd.append("seconds", "10");
+    fd.append("voice", new Blob([new Uint8Array(TINY_WEBM_OPUS)], { type: "audio/webm" }), "take.webm");
+    const res = await fetch(`${base}/api/open-proposals/voice-transcribe`, { method: "POST", body: fd }); // module-review-ok: a test calling its own local server
+    expect(res.status).toBe(404);
   });
 
   describe("clips beside answers (Rye, 14 Nov 2026)", () => {

@@ -378,8 +378,10 @@ async function dialPinnedText(rawUrl: string, timeoutMs: number, maxBytes: numbe
 export async function guardedFetch(rawUrl: string, init: RequestInit = {}): Promise<Response> {
   let url = rawUrl;
   let method = (init.method ?? "GET").toUpperCase();
-  let body = typeof init.body === "string" ? init.body : init.body == null ? null : undefined;
-  if (body === undefined) throw new Error("guardedFetch sends string bodies only");
+  // Bytes too (the voice step's transcription upload, 17 Nov 2026): a multipart body the caller built, sent as is.
+  let body: string | Uint8Array | null | undefined =
+    typeof init.body === "string" || init.body instanceof Uint8Array ? init.body : init.body == null ? null : undefined;
+  if (body === undefined) throw new Error("guardedFetch sends string or byte bodies only");
   const headers = new Headers(init.headers);
   const origin = new URL(rawUrl).origin;
   const signal = init.signal ?? undefined;
@@ -416,7 +418,7 @@ async function dialPinnedStream(
   url: URL,
   method: string,
   headers: Headers,
-  body: string | null,
+  body: string | Uint8Array | null,
   signal: AbortSignal | undefined,
 ): Promise<Response> {
   const host = bareHost(url.hostname);
