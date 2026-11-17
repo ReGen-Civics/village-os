@@ -370,6 +370,11 @@ msgctxt "hidden map, logging a place"
 msgid "Add a photo"
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "Season goals carry links to quests and moon items, and putting the list back could cut them. Change the goals in Admin, Season."
+msgstr ""
+
 #: client/src/components/IdentityPackPanel.tsx
 msgid "e.g. warm, textured, hand-painted illustration, never photorealistic"
 msgstr ""
@@ -763,6 +768,11 @@ msgstr ""
 
 #: client/src/components/LookPanel.tsx
 msgid "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "What was live before could not be read when this was accepted, so there is nothing to put back."
 msgstr ""
 
 #: client/src/pages/Events.tsx
@@ -10486,6 +10496,11 @@ msgstr ""
 #~ msgid "Roughly: {hours}"
 #~ msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "This change was accepted before the page kept what was live, so there is nothing to put back."
+msgstr ""
+
 #. placeholder {0}: row.updatedBy.name || aFounder
 #. placeholder {1}: readingDate(row.updatedAt)
 #: client/src/components/canvas/DecisionMatrixRows.tsx
@@ -10685,6 +10700,11 @@ msgstr "Primero marca la casilla para decir que sí."
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Facts updated since yesterday: {nFacts}"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "This change took something away. Making it again is its own change, on its own page."
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -11912,6 +11932,11 @@ msgstr "Todavía no se ha alineado con la carta de membresía."
 msgctxt "pay board"
 msgid "Changed by {changedBy}: {reason}"
 msgstr "Cambiado por {changedBy}: {reason}"
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "Filing"
+msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: the list of threads"
@@ -14989,6 +15014,11 @@ msgctxt "404 page heading"
 msgid "Off the trail"
 msgstr "Fuera del sendero"
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "This files a new proposal with what was live before. Nothing changes until someone accepts it."
+msgstr ""
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
 msgid "It holds no live access token, so it reaches nothing through the village's connector today."
@@ -15557,6 +15587,11 @@ msgstr ""
 
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "Cropped to the dashed box."
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "A proposal putting this back is already waiting above."
 msgstr ""
 
 #: client/src/components/profile/HandoffRespondRow.tsx
@@ -16579,6 +16614,11 @@ msgstr "Las asignaciones se renuevan cuando cambia la Luna de {month}, el {date}
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Quest that pays when a planting is vouched (its id)"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "Only an accepted change can be proposed back."
 msgstr ""
 
 #: client/src/pages/Training.tsx
@@ -18200,6 +18240,11 @@ msgstr ""
 msgid "A draft from this queue is still open."
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "Propose putting it back"
+msgstr ""
+
 #: client/src/components/priorities/RoomPriorities.tsx
 msgid "Once the room has voted, set the agenda's order. Then keep it on the board."
 msgstr ""
@@ -18439,6 +18484,11 @@ msgstr ""
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
 msgid "It holds no live access token, so it reaches nothing through the village's connector today."
+msgstr ""
+
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes"
+msgid "That could not be filed. Reload and try again."
 msgstr ""
 
 #: client/src/components/review/AgentProposalsCard.tsx
@@ -18829,6 +18879,11 @@ msgstr ""
 msgctxt "roles page, hear first: join a call and sign up"
 msgid "and"
 msgstr "y"
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "This change made something new. Taking it away is its own change, on its own page."
+msgstr ""
 
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
@@ -19495,6 +19550,11 @@ msgctxt "hidden map, progress toward opening the map"
 msgid "still to log"
 msgstr ""
 
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "Filed. It waits above like any other change, and nothing moves until someone accepts it."
+msgstr ""
+
 #. placeholder {0}: c.minutes
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: our review, a conversation's length"
@@ -19902,6 +19962,11 @@ msgstr ""
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Details on the card"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes"
+msgid "Puts back an earlier change"
 msgstr ""
 
 #: client/src/components/roleDraft/DraftCarry.tsx
@@ -20734,6 +20799,11 @@ msgstr "{ofYou}% de ti"
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgid "What the canvas says about it"
+msgstr ""
+
+#: client/src/components/proposals/ChangeCard.tsx
+msgctxt "proposed changes: put back"
+msgid "This change set fields that were not there before, and putting it back cannot take them away. Change them on the page itself."
 msgstr ""
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
