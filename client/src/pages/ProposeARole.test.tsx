@@ -579,7 +579,10 @@ describe("the six steps", () => {
     const review = document.querySelector("[data-review]") as HTMLElement;
     const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
     expect(price.textContent).toContain("Your price");
-    expect(price.textContent).toContain("The suggested price, $6,500 a month · Proposals up to $7,800 a month");
+    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    // No cap amount on the applicant's own review (lead, 17 Nov 2026): 120% of $6,500 is $7,800.
+    expect(review.textContent).not.toContain("Proposals up to");
+    expect(review.textContent).not.toContain("$7,800");
     const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
     expect(notes.textContent).toContain("Your notes on the role (1)");
     expect(notes.textContent).toContain("A legal review each quarter.");
