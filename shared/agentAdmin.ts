@@ -62,6 +62,19 @@ export const DEFAULT_AGENT_ADMIN_PATHS: AgentAdminPathsDoc = {
   ],
 };
 
+/**
+ * READS THE CONNECTOR ALWAYS HAS, beside the village's list (the Operations Steward, 17 Nov 2026: an agent finds
+ * Thursday's meeting and sees what is already on it before it proposes items for it). GET only: each answers what
+ * the token's holder would read on /sessions, as them, so the circles' coming meetings and the agenda items waiting
+ * for them, under the agenda library's own visibility rule. They are code, so a village whose stored list predates
+ * them has them too. Every write stays closed: an agenda item reaches a meeting through propose_changes, kind
+ * `session_agenda`, and a person accepts it.
+ */
+export const SHIPPED_AGENT_READS: readonly AllowedAdminPath[] = [
+  { method: "GET", path: "/api/sessions", confirm: "agent", label: "Live Sessions: coming meetings, each circle's rhythms, and the waiting agenda items" },
+  { method: "GET", path: "/api/sessions/circles/:circleId/summary", confirm: "agent", label: "One circle's meetings: its rhythms, next meeting and what waits for it" },
+];
+
 /** The things an agent never does through the connector, whatever the allow-list says. */
 export type PersonMode =
   /** Refused for every method. */
@@ -232,7 +245,7 @@ export function adminRequestDecision(method: string, path: string, doc: AgentAdm
   if (/[?#%]/.test(bare) || !segmentsOf(bare)) return { ok: false, code: "bad_path", words: "path is a plain path starting with /api/, with no query string and no dots." };
   const person = alwaysAPerson(m, bare, selfUserId, opts);
   if (person) return { ok: false, code: "always_a_person", words: person.words };
-  const entry = doc.paths.find((e) => e.method === m && pathMatches(e.path, bare));
+  const entry = doc.paths.find((e) => e.method === m && pathMatches(e.path, bare)) ?? (m === "GET" ? SHIPPED_AGENT_READS.find((e) => pathMatches(e.path, bare)) : undefined);
   if (!entry) {
     return { ok: false, code: "not_allowed", words: "That admin path is not open to agents in this village. An admin who is a person can add it to the agent paths list." };
   }

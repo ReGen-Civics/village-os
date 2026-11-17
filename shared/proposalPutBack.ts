@@ -41,6 +41,7 @@ export type KeptBefore = { value: unknown } | null;
 export function neverPutBack(kind: ProposalKind, target: Record<string, unknown>): PutBackBlock | null {
   switch (kind) {
     case "faq_add":
+    case "session_agenda":
       return "made_new";
     case "faq_remove":
       return "took_away";
