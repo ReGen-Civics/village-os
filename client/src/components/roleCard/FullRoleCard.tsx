@@ -30,7 +30,7 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -39,6 +39,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { rewardWords } from "./rewardWords";
+import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -62,6 +63,10 @@ export type CardRegister = "founding" | "game";
 export function applyHrefForRole(roleId: string): string {
   return `/propose-a-role?role=${encodeURIComponent(roleId)}`;
 }
+
+// The value callout and its explainer (lead, 17 Nov 2026), loaded when a card draws its pay, so neither rides the first
+// view of a route that shows a card (guard-route-first-views, scripts/route-first-view.json).
+const ValueCallout = lazy(() => import("./ValueCallout"));
 
 /** Whether this reader may apply for the seat: a live, open, complete card. */
 export function mayApply(seat: Record<string, any>): boolean {
@@ -233,17 +238,28 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
   // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
   const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? []) : null;
+  // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
+  const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
-          <p className="font-medium leading-relaxed text-card-foreground" data-testid="pay-cap-words">{reward.cap}</p>
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
         </>
       ) : (
-        pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>
+        <>
+          {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
+        </>
       )}
       {pay.shape.length > 0 && (
         <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
