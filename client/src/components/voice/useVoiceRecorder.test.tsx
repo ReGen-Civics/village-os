@@ -156,6 +156,27 @@ describe("how a recording ends", () => {
     expect(hook.result.current.recording).toBe(false);
     expect(hook.result.current.problem).toBe("limit");
   });
+
+  /*
+   * THE HARD STOP IS AT 5:00 EXACTLY (the lead, 17 Nov 2026: "cut them off at 5
+   * min"). A tab in the background gets its interval slowed to once a minute or
+   * less, so the running clock alone could let a take run on. The stop is its
+   * own timer, set for the limit itself.
+   */
+  it("stops at exactly the limit even when the running clock never ticks (a tab in the background)", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "setTimeout", "clearTimeout", "Date"] });
+    // The clock's interval never fires, as a throttled tab's may not.
+    vi.spyOn(window, "setInterval").mockImplementation((() => 0) as any);
+    const { takes, hook } = recorder(300);
+    await act(async () => hook.result.current.start());
+    await act(async () => void vi.advanceTimersByTime(299_999));
+    expect(hook.result.current.recording).toBe(true);
+    await act(async () => void vi.advanceTimersByTime(1));
+    expect(hook.result.current.recording).toBe(false);
+    expect(takes).toHaveLength(1);
+    expect(takes[0].seconds).toBe(300);
+    expect(hook.result.current.problem).toBe("limit");
+  });
 });
 
 describe("the words heard while it records", () => {

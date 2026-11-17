@@ -172,6 +172,45 @@ RUN pnpm run build
 
 
 # ---------------------------------------------------------------------------
+# ffmpeg: a small one, for playing a voice note on every browser.
+#
+# Chrome, Android and Firefox record an applicant's voice as WebM or Ogg with
+# Opus inside; Safari and every iPhone browser play MP4 with AAC inside and may
+# refuse the others. server/lib/voicePlayback.ts makes an MP4/AAC copy with
+# this binary the first time a decider on such a browser presses Listen.
+#
+# Debian's own ffmpeg package was measured on this base on 2026-11-17 at 472 MB
+# of image (it brings video, hardware and display libraries). This build has
+# only what that one job needs: the Opus, Vorbis and AAC decoders, the AAC
+# encoder, the WebM, Ogg and MP4 containers, and the file protocol. It adds
+# about 3.5 MB to the image and about 40 seconds to a cold build, and the layer
+# is cached until this stage changes. No assembly (--disable-x86asm): a voice
+# note is small enough that the plain C path takes a second or two.
+#
+# The source is pinned by its sha256, which was checked against the FFmpeg
+# release signing key (FCF986EA15E6E293A5644F10B4322F04D67658D8) when pinned.
+# ---------------------------------------------------------------------------
+FROM base AS ffmpeg
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc make libc6-dev xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+ADD --checksum=sha256:733984395e0dbbe5c046abda2dc49a5544e7e0e1e2366bba849222ae9e3a03b1 https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz /tmp/ffmpeg.tar.xz
+RUN mkdir /tmp/ffmpeg-src \
+ && tar -xJf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg-src --strip-components=1 \
+ && cd /tmp/ffmpeg-src \
+ && ./configure --prefix=/opt/ffmpeg --disable-everything --disable-autodetect --disable-doc --disable-debug \
+      --disable-ffplay --disable-ffprobe --disable-network --disable-x86asm --enable-small --disable-shared --enable-static \
+      --enable-protocol=file,pipe --enable-demuxer=matroska,ogg,mov --enable-decoder=opus,vorbis,aac \
+      --enable-parser=opus,vorbis,aac --enable-encoder=aac --enable-muxer=mp4,ipod \
+      --enable-filter=abuffer,abuffersink,aresample,aformat,anull \
+ && make -j"$(nproc)" \
+ && make install \
+ && strip /opt/ffmpeg/bin/ffmpeg \
+ && /opt/ffmpeg/bin/ffmpeg -hide_banner -encoders | grep -q " aac " \
+ && rm -rf /tmp/ffmpeg-src /tmp/ffmpeg.tar.xz
+
+
+# ---------------------------------------------------------------------------
 # runtime: what actually ships.
 # ---------------------------------------------------------------------------
 FROM base AS runtime
@@ -186,6 +225,9 @@ FROM base AS runtime
 RUN apt-get update \
  && apt-get install -y --no-install-recommends tini \
  && rm -rf /var/lib/apt/lists/*
+
+# The voice note's player for Safari and iPhones (the ffmpeg stage above).
+COPY --from=ffmpeg /opt/ffmpeg/bin/ffmpeg /usr/local/bin/ffmpeg
 
 ENV NODE_ENV=production
 ENV PORT=3000

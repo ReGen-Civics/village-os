@@ -16,7 +16,7 @@
  * The page owns the state (`VoiceState`) so Send can carry it;
  * `applicationRequest` builds the post.
  */
-import { useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useRef, useState, type ComponentProps } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { Mic, Square, Trash2 } from "lucide-react";
 import GrowingField from "@/components/form/GrowingField";
@@ -25,17 +25,30 @@ import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, voiceKin
 import { voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
 import { TakePlayer, recorderProblemWords } from "./TakePlayer";
-import { VoiceDrafts, type VoiceDrafting } from "./VoiceDrafts";
+import type { VoiceDrafting } from "./VoiceDrafts";
 /** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
 export { VoiceClipsProvider } from "./VoiceClips";
 export { useAskBeforeLeaving } from "./useVoiceRecorder";
 export { clipLimitsOf, type VoiceClipLimits } from "@shared/voiceNotes";
+
+/** The step's later additions (limit note, countdown, "Write down my words"), loaded after the page: the first view is at its budget. */
+const MoreLazy = lazy(() => import("./VoiceStepMore"));
+/** "Draft my answers" too: drawn only once there are words, so it waits for them off the first view. */
+const VoiceDrafts = lazy(() => import("./VoiceDrafts").then((m) => ({ default: m.VoiceDrafts })));
+const More = (p: ComponentProps<typeof MoreLazy>) => (
+  <Suspense fallback={null}>
+    <MoreLazy {...p} />
+  </Suspense>
+);
 
 export interface VoiceTake {
   blob: Blob;
   seconds: number;
   /** An address for the page's own player, made on this device. */
   url: string;
+  /** The words the live engine caught in this take, and whether the transcription service wrote it down since (VoiceStepMore.tsx). */
+  words?: string;
+  written?: boolean;
 }
 
 /** A clip beside one answer (components/voice/VoiceClips.tsx): the recording and the words heard while it ran. */
@@ -101,7 +114,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
     const v = latest.v;
     if (v.takes.length >= VOICE_NOTES_MAX) return;
     const transcript = take.words ? (v.transcript.trim() ? `${v.transcript.trimEnd()}\n\n${take.words}` : take.words).slice(0, VOICE_TRANSCRIPT_MAX) : v.transcript;
-    onChange({ ...v, takes: [...v.takes, { blob: take.blob, seconds: take.seconds, url: URL.createObjectURL(take.blob) }], transcript });
+    onChange({ ...v, takes: [...v.takes, { blob: take.blob, seconds: take.seconds, url: URL.createObjectURL(take.blob), words: take.words }], transcript });
   };
   const recorder = useVoiceRecorder(took);
   // The live region speaks at the start, at the near-end warning and at the stop, never the running time (a11y sweep P2-10).
@@ -159,6 +172,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
                 <Trash2 className="size-4" aria-hidden="true" />
                 {t({ message: "Remove", context: "voice note" })}
               </button>
+              {!recorder.recording && <More part="transcribe" index={i} state={latest} onChange={onChange} link={drafting?.link} />}
             </li>
           ))}
         </ul>
@@ -166,6 +180,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
 
       {support.record && (
         <div className="grid gap-2">
+          {!recorder.recording && value.takes.length < VOICE_NOTES_MAX && <More part="limit" />}
           {recorder.recording ? (
             <button type="button" onClick={recorder.stop} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-destructive px-6 font-semibold text-destructive-foreground" data-voice-stop="">
               <Square className="size-4" aria-hidden="true" />
@@ -187,7 +202,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
               </span>
             </p>
           )}
-          {recorder.recording && left <= 30 && <p className="text-sm font-medium text-foreground">{voiceWord("nearEnd")}</p>}
+          {recorder.recording && left <= 60 && <More part="countdown" elapsed={recorder.elapsed} />}
           {/* Always drawn, so a screen reader is listening before the words change. */}
           <p className="sr-only" role="status" data-voice-said="">
             {recorder.recording
@@ -217,7 +232,11 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
           )}
           <GrowingField id={`${id}-heard`} minRows={3} maxLength={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
           <p className={HINT}>{voiceWord("heardHint")}</p>
-          {drafting && !recorder.recording && <VoiceDrafts heard={value.transcript} drafting={drafting} />}
+          {drafting && !recorder.recording && (
+            <Suspense fallback={null}>
+              <VoiceDrafts heard={value.transcript} drafting={drafting} />
+            </Suspense>
+          )}
         </div>
       )}
 
