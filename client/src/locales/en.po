@@ -283,6 +283,16 @@ msgstr "Save and update the role"
 #~ msgid "Everyone who reads your proposal sees a wish to talk about the terms."
 #~ msgstr "Everyone who reads your proposal sees a wish to talk about the terms."
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: heading"
+msgid "Your agreement"
+msgstr "Your agreement"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Writing down your words. A five-minute take can take a minute or two."
+msgstr "Writing down your words. A five-minute take can take a minute or two."
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "Check again"
@@ -515,6 +525,12 @@ msgctxt "sera draft mark"
 msgid "Keep this"
 msgstr "Keep this"
 
+#. placeholder {0}: Number(d?.started) || 0
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Writing down {0} recordings. Each appears here as it finishes."
+msgstr "Writing down {0} recordings. Each appears here as it finishes."
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgctxt "button that suggests a change to what closing means"
 msgid "Suggest a change"
@@ -548,6 +564,11 @@ msgstr "Publish the draft"
 msgctxt "circle hearth, who holds what"
 msgid "Who holds what"
 msgstr "Who holds what"
+
+#: client/src/components/roleCard/ValueCallout.tsx
+msgctxt "role card rewards explainer: close"
+msgid "Close"
+msgstr "Close"
 
 #. placeholder {0}: x.label
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
@@ -638,9 +659,9 @@ msgid "What We Look After"
 msgstr "What We Look After"
 
 #: client/src/components/voice/VoiceStepMore.tsx
-msgctxt "voice transcription"
-msgid "Your words are in the box below. Read them and fix anything we got wrong."
-msgstr "Your words are in the box below. Read them and fix anything we got wrong."
+#~ msgctxt "voice transcription"
+#~ msgid "Your words are in the box below. Read them and fix anything we got wrong."
+#~ msgstr "Your words are in the box below. Read them and fix anything we got wrong."
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "If it is not something to mediate"
@@ -715,6 +736,11 @@ msgstr "Saving"
 msgctxt "new role from a card"
 msgid "Paste"
 msgstr "Paste"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "Writing recordings down isn't switched on. An admin can switch it on under Integrations."
+msgstr "Writing recordings down isn't switched on. An admin can switch it on under Integrations."
 
 #: client/src/components/map/TodayOnTheMap.tsx
 msgctxt "circles map, today card"
@@ -1030,6 +1056,11 @@ msgstr "A draft for the box"
 #: client/src/components/journey/TestRun.tsx
 msgid "Every rule this run reached would pay what it says it pays."
 msgstr "Every rule this run reached would pay what it says it pays."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Write down the words"
+msgstr "Write down the words"
 
 #: client/src/components/modules/BuilderJourney.tsx
 msgctxt "module library, builder section"
@@ -1406,6 +1437,11 @@ msgctxt "funding rounds"
 msgid "A short name"
 msgstr "A short name"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "No key and no outside service: the recording never leaves the server. About a minute for a five-minute take, one at a time."
+msgstr "No key and no outside service: the recording never leaves the server. About a minute for a five-minute take, one at a time."
+
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "founding card piece, short"
 msgid "Delivers"
@@ -1679,6 +1715,11 @@ msgstr "You're still signed in."
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
 #~ msgstr "If you don't confirm within {confirmHours} hours, we delete what you sent. If the village says no, or says yes and you never make your account, we remove your name and email {anonymiseDays} days later."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "The service heard no words in this recording."
+msgstr "The service heard no words in this recording."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"
@@ -2098,6 +2139,11 @@ msgstr "Module health"
 msgctxt "proposed changes: conflict"
 msgid "{0, plural, one {One pair of waiting changes writes the same thing.} other {# pairs of waiting changes write the same thing.}}"
 msgstr "{0, plural, one {One pair of waiting changes writes the same thing.} other {# pairs of waiting changes write the same thing.}}"
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "not ready"
+msgstr "not ready"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Until the Game starts, the founders write this agreement. You can read every frame here."
@@ -3014,6 +3060,11 @@ msgctxt "role track"
 msgid "AI"
 msgstr "AI"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Groq only"
+msgstr "Groq only"
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role prompt"
 msgid "How would you deliver this piece? What, and by when."
@@ -3240,6 +3291,11 @@ msgstr "Who adopts on this block"
 msgid "Nobody has named a top priority yet this week."
 msgstr "Nobody has named a top priority yet this week."
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription provider"
+msgid "Groq"
+msgstr "Groq"
+
 #: client/src/components/roleCard/cardWordsT.ts
 msgctxt "role fill"
 msgid "{held}% held · {open}% open"
@@ -3279,6 +3335,16 @@ msgstr "Suggested."
 msgctxt "hidden map, one place's details"
 msgid "Sprout"
 msgstr "Sprout"
+
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: heading"
+msgid "What we're aiming for"
+msgstr "What we're aiming for"
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription provider"
+msgid "this server's Whisper"
+msgstr "this server's Whisper"
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "Write the public line"
@@ -3437,6 +3503,11 @@ msgctxt "save bar"
 msgid "Changes discarded."
 msgstr "Changes discarded."
 
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "OpenAI"
+msgstr "OpenAI"
+
 #: client/src/components/governance/ExportByVote.tsx
 msgctxt "database export"
 msgid "Download the copy"
@@ -3492,6 +3563,11 @@ msgstr "Add to mine"
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "This disagreement stays in the round's record for everyone to see."
 msgstr "This disagreement stays in the round's record for everyone to see."
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Paid per minute. Needs the OpenAI key below."
+msgstr "Paid per minute. Needs the OpenAI key below."
 
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
@@ -3621,6 +3697,11 @@ msgstr "More roles, opening next"
 msgctxt "workbook section heading"
 msgid "Key moments"
 msgstr "Key moments"
+
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "{waiting} recordings have no words yet. Each is written down by an AI service and kept with its application, marked as an AI transcript."
+msgstr "{waiting} recordings have no words yet. Each is written down by an AI service and kept with its application, marked as an AI transcript."
 
 #: client/src/components/SaveBar.tsx
 msgid "That did not save. Your changes are still here."
@@ -4670,9 +4751,9 @@ msgstr "How this serves the village's purpose, in one line"
 
 #. placeholder {0}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap before a commitment is chosen"
-msgid "Proposals for the full role go up to {0}."
-msgstr "Proposals for the full role go up to {0}."
+#~ msgctxt "price ask: the cap before a commitment is chosen"
+#~ msgid "Proposals for the full role go up to {0}."
+#~ msgstr "Proposals for the full role go up to {0}."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
@@ -4728,9 +4809,9 @@ msgid "This role opens after the founding team. You are welcome to apply now. We
 msgstr "This role opens after the founding team. You are welcome to apply now. We are filling the founding team first, so it may be a while before we reply."
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
-msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
-msgstr "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+#~ msgctxt "role card rewards: the cap on a proposal, a role that can be shared"
+#~ msgid "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
+#~ msgstr "Proposals up to {capFull} for the full role, {ROLE_PAY_CAP_PCT}% of the listed price. At {at}%, up to {capShare}."
 
 #: client/src/components/calendar/MoonSpiral.tsx
 msgctxt "calendar spiral: label beside the full moon"
@@ -5029,6 +5110,11 @@ msgstr "Voice starts when the village adopts its own pay settings."
 msgid "A vouch comes from a member who knows the place is real. Nobody vouches for their own. Your name is never shown beside a pin."
 msgstr "A vouch comes from a member who knows the place is real. Nobody vouches for their own. Your name is never shown beside a pin."
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Automatic (recommended)"
+msgstr "Automatic (recommended)"
+
 #: client/src/components/modules/BuilderJourney.tsx
 msgctxt "module library, builder section"
 msgid "Anyone can build for this platform, with an AI agent at your side. Five steps take you from an idea to a card on this page, in every village."
@@ -5262,6 +5348,11 @@ msgctxt "funding rounds"
 msgid "Talk about it"
 msgstr "Talk about it"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Off"
+msgstr "Off"
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
 msgid "One of us said they will be there."
@@ -5308,6 +5399,11 @@ msgctxt "circles map, today card"
 msgid "Fireflies gather at a circle's hearth when people meet there. A light shows only for members who turned theirs on, and never with a name."
 msgstr "Fireflies gather at a circle's hearth when people meet there. A light shows only for members who turned theirs on, and never with a name."
 
+#: client/src/components/roleCard/payBandWords.ts
+msgctxt "role card rewards: the pay band under the listed price, each month"
+msgid "Band: {min} to {max} a month in total comp"
+msgstr "Band: {min} to {max} a month in total comp"
+
 #. placeholder {0}: f.name
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -5352,6 +5448,11 @@ msgstr "Weekend afternoons"
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "It goes to {powerHolder} instead."
 msgstr "It goes to {powerHolder} instead."
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup: above the cap, with no figure"
+msgid "That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call."
+msgstr "That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call."
 
 #: client/src/pages/FundingRounds.tsx
 msgid "The pot is open."
@@ -5690,6 +5791,11 @@ msgctxt "companion welcome"
 msgid "Personal companion"
 msgstr "Personal companion"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Applicants' voice recordings are written down by themselves as they record (they can turn it off), and admins can write down kept recordings on the applications panel. The keys for Groq and OpenAI are the cards below."
+msgstr "Applicants' voice recordings are written down by themselves as they record (they can turn it off), and admins can write down kept recordings on the applications panel. The keys for Groq and OpenAI are the cards below."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, applies the proposed change"
 msgid "Apply"
@@ -5977,6 +6083,11 @@ msgctxt "voice note, deciders"
 msgid "Recording {0}"
 msgstr "Recording {0}"
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, consent line"
+msgid "Your recording is transcribed by an AI service so the team can read it. You can turn this off."
+msgstr "Your recording is transcribed by an AI service so the team can read it. You can turn this off."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal field"
 #~ msgid "(optional)"
@@ -6007,6 +6118,11 @@ msgstr "The canvas baseline"
 #~ msgctxt "roles page season"
 #~ msgid "This season: {0}."
 #~ msgstr "This season: {0}."
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Groq when its key is set, then OpenAI when its key is set, then this server's own Whisper. If one fails, the next is tried."
+msgstr "Groq when its key is set, then OpenAI when its key is set, then this server's own Whisper. If one fails, the next is tried."
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -6204,6 +6320,11 @@ msgstr "Saved."
 msgctxt "voice note countdown"
 msgid "This take stops by itself at {0}, and it is kept."
 msgstr "This take stops by itself at {0}, and it is kept."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour."
+msgstr "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour."
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal: sent"
@@ -6644,6 +6765,11 @@ msgctxt "how pay works"
 msgid "Your goals for the moon are what we agree to, and we work toward them, because that's what we're here for. This is an early-stage project, and what it needs can change mid-moon. So we stay responsive, and we're paid on what we truly accomplish."
 msgstr "Your goals for the moon are what we agree to, and we work toward them, because that's what we're here for. This is an early-stage project, and what it needs can change mid-moon. So we stay responsive, and we're paid on what we truly accomplish."
 
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "The village has written down as many recordings as it may today. Try again tomorrow."
+msgstr "The village has written down as many recordings as it may today. Try again tomorrow."
+
 #. placeholder {0}: report.refusals.length
 #: client/src/components/journey/TestRun.tsx
 msgid "{0} things would not work as set"
@@ -6863,6 +6989,11 @@ msgctxt "language picker"
 msgid "Choose a language"
 msgstr "Choose a language"
 
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Write it down again"
+msgstr "Write it down again"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Hours until someone who reaches out hears back"
 msgstr "Hours until someone who reaches out hears back"
@@ -6991,9 +7122,9 @@ msgid "{0, plural, one {# step} other {# steps}}"
 msgstr "{0, plural, one {# step} other {# steps}}"
 
 #: client/src/components/voice/VoiceStepMore.tsx
-msgctxt "voice note, consent line"
-msgid "Your recording is transcribed by an AI service so the team can read it."
-msgstr "Your recording is transcribed by an AI service so the team can read it."
+#~ msgctxt "voice note, consent line"
+#~ msgid "Your recording is transcribed by an AI service so the team can read it."
+#~ msgstr "Your recording is transcribed by an AI service so the team can read it."
 
 #: client/src/components/admin/RoleValueEditor.tsx
 msgid "Work out this role's pay with the valuation engine"
@@ -7511,6 +7642,11 @@ msgctxt "founding application sera"
 msgid "Edit it or keep it. We cannot send your application until you have done one or the other."
 msgstr "Edit it or keep it. We cannot send your application until you have done one or the other."
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: how the price is set"
+msgid "Each role's price comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from {lowPct}% to {highPct}% of that price, in total comp. Proposals can go up to {capPct}%, and the figure for that will show once the team agrees it."
+msgstr "Each role's price comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from {lowPct}% to {highPct}% of that price, in total comp. Proposals can go up to {capPct}%, and the figure for that will show once the team agrees it."
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "Your message reached {reached, plural, one {# person} other {# people}} holding the {intakeRoleLabel}. They read it in their notifications here. Your words were not emailed."
 msgstr "Your message reached {reached, plural, one {# person} other {# people}} holding the {intakeRoleLabel}. They read it in their notifications here. Your words were not emailed."
@@ -7663,6 +7799,11 @@ msgctxt "character card section heading"
 msgid "Roles open now"
 msgstr "Roles open now"
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: what we're aiming for"
+msgid "What you put in comes back to you fairly, in cash and in equity toward a home on the land. We track value out as carefully as value in, and we shape this together each season."
+msgstr "What you put in comes back to you fairly, in cash and in equity toward a home on the land. We track value out as carefully as value in, and we shape this together each season."
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application value"
 msgid "The season goal it serves"
@@ -7714,6 +7855,11 @@ msgstr "In the memory"
 msgctxt "founding application confirm"
 msgid "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
 msgstr "That link has run out or was already used. Send your application again, and open the new link within {OPEN_CONFIRM_HOURS} hours."
+
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Transcribe all waiting"
+msgstr "Transcribe all waiting"
 
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 msgctxt "founding application know us act"
@@ -8427,6 +8573,11 @@ msgstr "Answer"
 msgctxt "price ask: open the popup"
 msgid "Adjust the price"
 msgstr "Adjust the price"
+
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards: the control that opens the value explainer"
+msgid "How rewards are set"
+msgstr "How rewards are set"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Remove the row \"{subject}\" from the Decision Matrix? Everyone in the village stops seeing it."
@@ -9572,6 +9723,11 @@ msgstr "The public line for {name}"
 msgid "Waiting for a holder of the role to take it."
 msgstr "Waiting for a holder of the role to take it."
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Saved"
+msgstr "Saved"
+
 #: client/src/components/path/YourPathCard.tsx
 msgctxt "your path, the profile card"
 msgid "Your path"
@@ -9690,6 +9846,11 @@ msgstr "No role is open to an agent right now."
 msgctxt "level-up moment, under the door"
 msgid "the village saw what you carried."
 msgstr "the village saw what you carried."
+
+#: client/src/components/roleCard/payBandWords.ts
+msgctxt "role card rewards: the pay band under the listed price, no period"
+msgid "Band: {min} to {max} in total comp"
+msgstr "Band: {min} to {max} in total comp"
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "a button that opens a new matrix row"
@@ -9920,6 +10081,11 @@ msgctxt "protocols page"
 msgid "The village did not take every change. Each one says why, on its run."
 msgstr "The village did not take every change. Each one says why, on its run."
 
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription switch"
+msgid "Write down my words automatically"
+msgstr "Write down my words automatically"
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Required steps done"
@@ -10077,6 +10243,11 @@ msgstr "After you apply"
 msgctxt "hidden map, one place's details"
 msgid "What went in:"
 msgstr "What went in:"
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Free tier, fast, Spanish and English. Needs the Groq key below."
+msgstr "Free tier, fast, Spanish and English. Needs the Groq key below."
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, sends the question"
@@ -10356,6 +10527,11 @@ msgstr "The restorative path"
 msgid "{title}: mark as done"
 msgstr "{title}: mark as done"
 
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "We couldn't write this recording down just now. The recording is still kept. Try again in a moment."
+msgstr "We couldn't write this recording down just now. The recording is still kept. Try again in a moment."
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal card"
 #~ msgid "The quest"
@@ -10427,6 +10603,12 @@ msgstr "Send now"
 msgctxt "next step box"
 msgid "Nobody holds {role} yet."
 msgstr "Nobody holds {role} yet."
+
+#. placeholder {0}: byWords(shown.by, i18n)
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript label"
+msgid "AI transcript, written down by {0}. Not checked by the applicant."
+msgstr "AI transcript, written down by {0}. Not checked by the applicant."
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "We don't pay for hours. We pay for contracted work and the contributions you lay out each moon and season. Hours are an estimate: full time is roughly 30 to 40 hours a week, half time roughly 20."
@@ -10801,9 +10983,9 @@ msgstr "The count is being made. Open this page again in a moment."
 #. placeholder {0}: priced(cap)
 #. placeholder {1}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup: above the cap"
-msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
-msgstr "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+#~ msgctxt "price popup: above the cap"
+#~ msgid "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
+#~ msgstr "That's above {0}, the most a proposal can ask at {capPct}%: {ROLE_PAY_CAP_PCT}% of the suggested price. Choose {1} or less."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "This file cannot be loaded as it is:"
@@ -11050,6 +11232,11 @@ msgstr "Written on {0}"
 msgctxt "voice transcription refusal"
 msgid "Only takes up to 5 minutes can be written down."
 msgstr "Only takes up to 5 minutes can be written down."
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Voice transcription: which service"
+msgstr "Voice transcription: which service"
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "economics view loading"
@@ -13293,6 +13480,11 @@ msgstr "Negotiate on the first call if chosen"
 msgid "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
 msgstr "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards: the callout beside the price"
+msgid "Value in equals value out."
+msgstr "Value in equals value out."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "The door is open: this role is looking for someone"
@@ -13899,6 +14091,11 @@ msgstr "This season's goals"
 msgid "Why, in one sentence"
 msgstr "Why, in one sentence"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "OpenAI only"
+msgstr "OpenAI only"
+
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
 msgid "Decided"
@@ -14281,6 +14478,11 @@ msgctxt "voice invite"
 msgid "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it."
 msgstr "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it."
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: heading"
+msgid "How the price is set"
+msgstr "How the price is set"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with my pick"
 #~ msgstr "Propose with my pick"
@@ -14313,9 +14515,9 @@ msgid "How your work serves: {goalText}"
 msgstr "How your work serves: {goalText}"
 
 #: client/src/components/voice/VoiceStepMore.tsx
-msgctxt "voice transcription"
-msgid "Writing down your words. A five-minute take can take a minute."
-msgstr "Writing down your words. A five-minute take can take a minute."
+#~ msgctxt "voice transcription"
+#~ msgid "Writing down your words. A five-minute take can take a minute."
+#~ msgstr "Writing down your words. A five-minute take can take a minute."
 
 #: client/src/components/admin/RoleValueEditor.tsx
 msgctxt "role pay"
@@ -14518,6 +14720,11 @@ msgstr "Asking now."
 msgctxt "calendar turnings"
 msgid "Full moon"
 msgstr "Full moon"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "Groq's Whisper"
+msgstr "Groq's Whisper"
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "Every hidden detail is removed from the photo before it goes up."
@@ -14913,6 +15120,11 @@ msgstr "Open {0}"
 msgctxt "calendar page lede"
 msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
 msgstr "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript refusal"
+msgid "That's a lot of recordings written down in an hour. Try again later."
+msgstr "That's a lot of recordings written down in an hour. Try again later."
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -15747,9 +15959,9 @@ msgid "Remove"
 msgstr "Remove"
 
 #: client/src/components/voice/VoiceStepMore.tsx
-msgctxt "voice transcription refusal"
-msgid "That's a lot of recordings written down for one connection. Type what you said, or try again in an hour."
-msgstr "That's a lot of recordings written down for one connection. Type what you said, or try again in an hour."
+#~ msgctxt "voice transcription refusal"
+#~ msgid "That's a lot of recordings written down for one connection. Type what you said, or try again in an hour."
+#~ msgstr "That's a lot of recordings written down for one connection. Type what you said, or try again in an hour."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card."
@@ -15788,6 +16000,11 @@ msgstr "Birth date"
 msgctxt "label of a suggested edit's reason"
 msgid "Why (optional)"
 msgstr "Why (optional)"
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Recordings are written down by {order}, in that order."
+msgstr "Recordings are written down by {order}, in that order."
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Outside the village: {outsideList}."
@@ -16087,6 +16304,11 @@ msgctxt "sera answers"
 msgid "Edit: start from ours"
 msgstr "Edit: start from ours"
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: your agreement"
+msgid "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver."
+msgstr "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver."
+
 #: client/src/components/admin/RoleListingPanel.tsx
 msgctxt "role listing panel heading"
 msgid "Listed roles"
@@ -16166,9 +16388,9 @@ msgid "We have your application. Our confirmation email didn't go out, so we'll 
 msgstr "We have your application. Our confirmation email didn't go out, so we'll write to you at {sentTo} soon."
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the cap on a proposal"
-msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
-msgstr "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+#~ msgctxt "role card rewards: the cap on a proposal"
+#~ msgid "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
+#~ msgstr "Proposals up to {capFull}, {ROLE_PAY_CAP_PCT}% of the listed price."
 
 #: client/src/components/priorities/priorityWords.ts
 msgctxt "priority board, an item's status"
@@ -16936,6 +17158,11 @@ msgctxt "map circle card, a role applied for early, after the lead hires"
 msgid "coming soon"
 msgstr "coming soon"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "This server only"
+msgstr "This server only"
+
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The commitment we'd agree on"
 msgstr "The commitment we'd agree on"
@@ -17640,6 +17867,11 @@ msgctxt "role editor: role visibility"
 msgid "Coming soon: shown under its circle's steward, applications welcome early"
 msgstr "Coming soon: shown under its circle's steward, applications welcome early"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Which service writes recordings down"
+msgstr "Which service writes recordings down"
+
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: input label"
 msgid "Your words to the guide"
@@ -17719,6 +17951,11 @@ msgstr "Did not land"
 msgctxt "pay board"
 msgid "Earned Equity"
 msgstr "Earned Equity"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Your words are in the box. Read them and fix anything we got wrong."
+msgstr "Your words are in the box. Read them and fix anything we got wrong."
 
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Anyone here can suggest a change. The village decides."
@@ -18008,6 +18245,11 @@ msgctxt "open proposal, founding application"
 msgid "These are optional. Someone who lives far away may not have been able to come yet."
 msgstr "These are optional. Someone who lives far away may not have been able to come yet."
 
+#: client/src/components/roleCard/payBandWords.ts
+msgctxt "role card rewards: the pay band under the listed price, each moon"
+msgid "Band: {min} to {max} a moon in total comp"
+msgstr "Band: {min} to {max} a moon in total comp"
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Runs in progress"
@@ -18222,6 +18464,11 @@ msgstr "The village hasn't set its next season yet, so there's nothing to propos
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "Notice before leaving, in days"
 msgstr "Notice before leaving, in days"
+
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript"
+msgid "Writing down the words. A five-minute recording can take a minute or two."
+msgstr "Writing down the words. A five-minute recording can take a minute or two."
 
 #: client/src/components/protocols/InstallCard.tsx
 msgctxt "protocols install card"
@@ -18504,6 +18751,11 @@ msgstr "The season"
 msgctxt "founding application steps"
 msgid "Continue to {nextName}"
 msgstr "Continue to {nextName}"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "You changed this answer, so we left it as you wrote it. The written-down words go with your clip."
+msgstr "You changed this answer, so we left it as you wrote it. The written-down words go with your clip."
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -18983,6 +19235,11 @@ msgctxt "invoice desk"
 msgid "Sera: {there}."
 msgstr "Sera: {there}."
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription provider"
+msgid "OpenAI"
+msgstr "OpenAI"
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, conflict steps heading"
 msgid "How we evolve through conflict"
@@ -19300,6 +19557,11 @@ msgctxt "admin role roots"
 msgid "Roots saved"
 msgstr "Roots saved"
 
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Nothing writes recordings down now: the voice step works as it always did."
+msgstr "Nothing writes recordings down now: the voice step works as it always did."
+
 #: client/src/pages/Roles.tsx
 msgid "Propose this role for next season"
 msgstr "Propose this role for next season"
@@ -19530,6 +19792,11 @@ msgstr "Turn it on. It also needs the village's own Anthropic key on the server.
 msgctxt "role draft step"
 msgid "Select up to three"
 msgstr "Select up to three"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Stopped. Nothing more is sent. Your recording is kept."
+msgstr "Stopped. Nothing more is sent. Your recording is kept."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal card window"
@@ -19806,6 +20073,11 @@ msgstr "How much you give"
 #~ msgid "The contract sets the pay, at or under what the role pays at their commitment."
 #~ msgstr "The contract sets the pay, at or under what the role pays at their commitment."
 
+#: client/src/components/voice/StoredWords.tsx
+msgctxt "AI transcript, who wrote it"
+msgid "the village's own Whisper"
+msgstr "the village's own Whisper"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "The village has not launched yet. Approved token pay issues to each account at launch."
@@ -19819,9 +20091,9 @@ msgstr "Your {0}"
 
 #. placeholder {0}: priced(cap)
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the cap on a proposal"
-msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
-msgstr "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+#~ msgctxt "price ask: the cap on a proposal"
+#~ msgid "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
+#~ msgstr "Proposals up to {0}, {ROLE_PAY_CAP_PCT}% of the suggested price."
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -20009,6 +20281,11 @@ msgstr "Practise it first (nothing is recorded)"
 msgctxt "agent paths"
 msgid "A person confirms"
 msgstr "A person confirms"
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "When tension between people needs repair, these are the steps we follow:"
@@ -20220,6 +20497,11 @@ msgstr "The cover role, which hears a request when the care role cannot"
 msgctxt "role card rewards: the proposal sets the pay"
 msgid "You can propose more or less."
 msgstr "You can propose more or less."
+
+#: client/src/components/admin/VoiceTranscriptionPicker.tsx
+msgctxt "voice transcription choice"
+msgid "Nothing is written down by a service. Applicants type, or use their browser's own speech service."
+msgstr "Nothing is written down by a service. Applicants type, or use their browser's own speech service."
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "The newest decisions on {name}, with the note each was decided with, where one was written."
