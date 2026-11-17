@@ -71,4 +71,18 @@ describe("a coming-soon role in the projection (Rye, 16 Nov 2026)", () => {
     expect("comingSoon" in plain).toBe(false);
     expect(plain.state).toBe("open");
   });
+
+  it("flags a future venture the same way, and a role only an agent holds without naming the agent", () => {
+    const venture = { ...base("venture", false), futureVenture: true } as OrgRole;
+    const byAgent = base("by-agent", true);
+    const byPerson = base("by-person", true);
+    const agent = { ...held("by-agent", "u-agent"), isAgent: true, holderKind: "documented", userId: null, displayName: "Sera" } as OrgAssignment;
+    const rows = projectSeats([venture, byAgent, byPerson], [agent, held("by-person", "u1")], tierOrg, ctx("org"));
+    expect(rows.find((r) => r.id === "venture")).toMatchObject({ futureVenture: true, state: "forming" });
+    const a = rows.find((r) => r.id === "by-agent")!;
+    expect(a.heldByAgent).toBe(true);
+    expect(JSON.stringify(a)).not.toContain("Sera");
+    // CONTROL: a role a person holds carries no agent flag.
+    expect("heldByAgent" in rows.find((r) => r.id === "by-person")!).toBe(false);
+  });
 });

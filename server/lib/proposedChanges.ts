@@ -53,6 +53,7 @@ import { characterTagsFrom, listOrgRoles, type OrgRole } from "./orgChart";
 import { ROLE_WORD_FIELDS } from "./roleProposals";
 import { editorState, labelOf } from "./roleEdit";
 import { listArchetypeRows } from "../repos/archetypes";
+import { villageCircles } from "../repos/roleProposals";
 import { villageId } from "./economy";
 import { readConfigDocument } from "../repos/appConfigDocs";
 import { VILLAGE_DOC_KEY } from "./onboarding";
@@ -79,7 +80,7 @@ export type Checked = { ok: true; label: string; method: string; path: string } 
 const obj = (v: unknown): Record<string, unknown> | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
 const bad = (error: string, field?: string, code?: string): Checked => ({ ok: false, error, ...(field ? { field } : {}), ...(code ? { code } : {}) });
 const pick = (from: Record<string, unknown> | null | undefined, keys: string[]) => Object.fromEntries(keys.map((k) => [k, from?.[k] ?? null]));
-const ROLE_CARD_KEYS = ["words", "parameters", "pay", "archetypes", "sections"];
+const ROLE_CARD_KEYS = ["words", "parameters", "pay", "archetypes", "sections", "circleId"];
 
 async function roleOf(pool: Pool, id: string): Promise<{ role: OrgRole | null; roles: OrgRole[] }> {
   const roles = await listOrgRoles(pool);
@@ -101,7 +102,7 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       if (!role) return bad("There is no role by that id.", "target.roleId");
       if (role.isExample) return bad("A standing example is never changed.", "target.roleId");
       const extra = Object.keys(b).filter((k) => !ROLE_CARD_KEYS.includes(k));
-      if (extra.length) return bad(`A role card change carries words, parameters, pay, archetypes or sections. Not: ${extra.slice(0, 6).join(", ")}.`, extra[0]);
+      if (extra.length) return bad(`A role card change carries words, parameters, pay, archetypes, sections or circleId. Not: ${extra.slice(0, 6).join(", ")}.`, extra[0]);
       if (!Object.keys(b).length) return bad("Say what to change on the card.");
       if (b.words !== undefined) {
         const read = parseRoleWords(b.words, "words", ROLE_WORD_FIELDS, role as unknown as Record<string, unknown>);
@@ -116,6 +117,11 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
           const r = readParameter(k as ParameterKey, v, (rid) => roleIds.has(rid));
           if (!r.ok) return bad(r.problem, `parameters.${k}`);
         }
+      }
+      // The circle the role moves to (Rye, 16 Nov 2026): a circle this village has.
+      if (b.circleId !== undefined) {
+        const to = typeof b.circleId === "string" ? b.circleId.trim() : "";
+        if (!to || !(await villageCircles(deps.pool)).some((c) => c.id === to)) return bad("There is no circle by that id.", "circleId");
       }
       if (b.pay !== undefined) {
         const r = readPayGroup(b.pay);
@@ -228,6 +234,7 @@ export function labelsFor(kind: ProposalKind, target: Record<string, unknown>, b
     for (const k of Object.keys(obj(body.parameters) ?? {})) out[`parameters.${k}`] = labelOf(k);
     if ("pay" in body) out.pay = "Pay on offer";
     if ("archetypes" in body) out.archetypes = "Characters it suits";
+    if ("circleId" in body) out.circleId = "Circle";
   }
   if (kind === "page_content") {
     const spec = pageSpecForSection(String(target.section ?? ""));
@@ -254,6 +261,7 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
         if (obj(body.parameters)) out.parameters = pick(s.parameters as Record<string, unknown>, Object.keys(obj(body.parameters)!));
         if ("pay" in body) out.pay = s.pay;
         if ("archetypes" in body) out.archetypes = s.archetypes;
+        if ("circleId" in body) out.circleId = role.circleId ?? null;
         if (obj(body.sections)) out.sections = pick(s.sections as unknown as Record<string, unknown>, Object.keys(obj(body.sections)!));
         return out;
       }

@@ -57,7 +57,7 @@ export default function MapSeatCard({
           <NotListedChip role={seat} />
         </p>
       )}
-      {seat.comingSoon === true && (
+      {(seat.comingSoon === true || seat.futureVenture === true) && (
         <p className="mb-2">
           <ComingSoonChip role={seat} />
         </p>

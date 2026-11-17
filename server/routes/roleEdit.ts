@@ -61,6 +61,7 @@ import { canonicalJson } from "../../shared/canonicalJson";
 import type { PaySettings } from "../../shared/seatSettings";
 import crypto from "node:crypto";
 import { boolVar, stringVar } from "../lib/variables";
+import { villageCircles } from "../repos/roleProposals";
 import { isShown } from "../../shared/roleListing";
 import { foundingRoles, foundingTeamFilled } from "../../shared/foundingTeam";
 import { otherWaysFrom } from "../../shared/otherWays";
@@ -332,6 +333,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       lacksToList: listingProblems(state),
       mayReadTerms: await g.canReadTerms(req),
       roles: found.roles.filter((r) => !r.isExample && r.id !== found.role.id).map((r) => ({ id: r.id, name: r.name })),
+      // The circles a role can move to (Rye, 16 Nov 2026), the village's own, dormant ones included.
+      circles: (await villageCircles(pool)).map((c) => ({ id: c.id, name: c.name })),
       words: PARAMETER_CARD_FIELDS.map((f) => ({ key: f.key, heading: f.heading, limit: f.limit })),
     });
   });
@@ -429,6 +432,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       pay: body.pay,
       archetypes: body.archetypes,
       sections: body.sections,
+      circleId: body.circleId,
     });
     if (!out.ok) return res.status(out.status).json({ error: out.error, message: out.error, ...(out.fields ? { fields: out.fields } : {}) });
     const found = await roleOf(res, String(req.params.id ?? ""));
@@ -489,6 +493,7 @@ function parameterLines(state: EditorState, roles: readonly OrgRole[]): Record<s
   const put = (k: string, v: string[]) => v.length && (out[k] = v);
   if (p.listed !== undefined) put("listed", [p.listed ? "Yes" : "No"]);
   if (p.comingSoon !== undefined) put("comingSoon", [p.comingSoon ? "Yes" : "No"]);
+  if (p.futureVenture !== undefined) put("futureVenture", [p.futureVenture ? "Yes" : "No"]);
   if (p.alwaysChecked !== undefined) put("alwaysChecked", [p.alwaysChecked ? "Yes" : "No"]);
   if (p.heldBy) put("heldBy", [p.heldBy]);
   if (typeof p.commitmentPct === "number") put("commitmentPct", [`${p.commitmentPct}%`]);

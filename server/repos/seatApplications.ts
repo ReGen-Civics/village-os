@@ -435,15 +435,13 @@ export interface SeatForCapacity {
   active: boolean;
   isExample: boolean;
   expiresEachSeason: boolean | null;
-  /** Shown as coming soon and closed to applications (shared/roleListing.ts). */
-  comingSoon: boolean;
 }
 
 /** The seats an application names, locked when handed a transaction's connection. */
 export async function seatsForUpdate(db: Db, seatIds: readonly string[], lock = false): Promise<SeatForCapacity[]> {
   if (seatIds.length === 0) return [];
   const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT id, name, aim, seats, active, is_example, expires_each_season, coming_soon FROM org_roles WHERE id IN (${seatIds.map(() => "?").join(",")})${lock ? " FOR UPDATE" : ""}`,
+    `SELECT id, name, aim, seats, active, is_example, expires_each_season FROM org_roles WHERE id IN (${seatIds.map(() => "?").join(",")})${lock ? " FOR UPDATE" : ""}`,
     [...seatIds],
   );
   return rows.map((r: any) => ({
@@ -454,7 +452,6 @@ export async function seatsForUpdate(db: Db, seatIds: readonly string[], lock = 
     active: !!r.active,
     isExample: !!r.is_example,
     expiresEachSeason: r.expires_each_season === null || r.expires_each_season === undefined ? null : !!r.expires_each_season,
-    comingSoon: Number(r.coming_soon) === 1,
   }));
 }
 

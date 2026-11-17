@@ -29,32 +29,85 @@ export function isListed(role: { listed?: boolean | null } | null | undefined): 
 }
 
 /**
- * COMING SOON (Rye, 16 Nov 2026: "list all the regenerative circle roles but
- * say they're 'coming soon'"). A role marked coming soon is shown wherever a
- * listed role is shown, its circle included, with a "Coming soon" badge, and
- * takes no application: Apply is a disabled "Coming soon", and both apply
- * routes refuse it. It is shown even while unlisted, because a role whose
- * card is still being written cannot pass the listing gate, and showing that
- * it is coming is the point. Clearing the mark puts the role back to what its
- * `listed` column says.
+ * A ROLE'S STATES (Rye, 16 Nov 2026, and the Operations Steward's fifth):
+ *
+ *   Open            listed, taking applications now. Today only the lead roles.
+ *   Coming soon     shown under the steward who leads its circle ("Roles this
+ *                   steward will build") and applied for early, through the same
+ *                   one-role flow, with the note below on the card, the form and
+ *                   the confirmation.
+ *   Future venture  shown in its own "Future ventures" section, with no lead, and
+ *                   applied for with a pitch (the prompts below).
+ *   Held            someone holds it: shown as held, with no Apply. Derived from
+ *                   the seatings, never stored. A role only an agent holds says so
+ *                   by the agent's name; a person is named only as the village's
+ *                   people setting allows (seatProjection.ts).
+ *   Unlisted        hidden from the public, kept in the admin view.
+ *
+ * Coming soon and Future venture are columns beside `listed`, and either is
+ * shown even while unlisted: a short card cannot pass the listing gate until its
+ * lead is in place, and being seen is the point. Clearing the mark puts the role
+ * back to what `listed` says.
  */
+export type RoleVisibility = "open" | "comingSoon" | "futureVenture" | "unlisted";
+
 export const COMING_SOON_WORDS = {
   badge: "Coming soon",
-  badgeHint: "This role is part of the village's plan. It does not take applications yet.",
-  action: "Coming soon",
-  actionLine: "This role opens later. Applications are not taken yet.",
-  refused: (name: string) => `${name} is coming soon. It does not take applications yet.`,
-  editorLabel: "Coming soon",
-  editorHelp: "On, the role shows to visitors with a Coming soon badge, even while unlisted, and nobody can apply for it yet.",
+  note: "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.",
+  leadBuilds: "Roles this steward will build",
+  ventureBadge: "Future venture",
+  ventures: "Future ventures",
+  ventureNote:
+    "Apply to hold this venture: to build it and run it, in partnership with the village. Tell us your vision as a pitch. Terms such as space, partnership and revenue share are shaped together and are subject to legal review.",
+  pitch: [
+    "Your concept and offering",
+    "How it serves the village, the land and the wider community",
+    "Your experience building and running something like it",
+    "How it would operate, and what you bring: skills, team, capital",
+    "A first financial picture",
+  ],
 } as const;
+
+/** The state a role's columns read as, for the editor's one choice. Held is derived from the seatings and is not here. */
+export function visibilityOf(role: { listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null }): RoleVisibility {
+  if (role.futureVenture === true) return "futureVenture";
+  if (role.comingSoon === true) return "comingSoon";
+  return isListed(role) ? "open" : "unlisted";
+}
+
+/** The columns one choice writes. Coming soon and Future venture leave `listed` as it is, so clearing them returns the role to it. */
+export function columnsOfVisibility(v: RoleVisibility): { listed?: boolean; comingSoon: boolean; futureVenture: boolean } {
+  if (v === "comingSoon") return { comingSoon: true, futureVenture: false };
+  if (v === "futureVenture") return { comingSoon: false, futureVenture: true };
+  return { listed: v === "open", comingSoon: false, futureVenture: false };
+}
+
+/**
+ * THE ROLES A STEWARD WILL BUILD: the live coming-soon roles in the circles
+ * whose lead is this role (`circles.lead_role_id`), in the chart's order. A
+ * future venture has no lead and is never here. The circle says who leads it, so
+ * a role moved to another circle moves to that circle's lead with nothing else to set.
+ */
+export function rolesLeadWillBuild<R extends { id: string; circleId?: string | null; comingSoon?: boolean | null; futureVenture?: boolean | null; active?: boolean; isExample?: boolean }>(
+  leadRoleId: string,
+  roles: readonly R[],
+  circles: ReadonlyArray<{ id: string; leadRoleId?: string | null }>,
+): R[] {
+  const led = new Set(circles.filter((c) => c.leadRoleId && c.leadRoleId === leadRoleId).map((c) => c.id));
+  return roles.filter((r) => r.id !== leadRoleId && !!r.circleId && led.has(r.circleId) && r.comingSoon === true && r.futureVenture !== true && r.active !== false && r.isExample !== true);
+}
 
 export function isComingSoon(role: { comingSoon?: boolean | null } | null | undefined): boolean {
   return role?.comingSoon === true;
 }
 
-/** Whether a role is on the discovery surfaces: listed, or marked coming soon. */
-export function isShown(role: { listed?: boolean | null; comingSoon?: boolean | null } | null | undefined): boolean {
-  return isListed(role) || isComingSoon(role);
+export function isFutureVenture(role: { futureVenture?: boolean | null } | null | undefined): boolean {
+  return role?.futureVenture === true;
+}
+
+/** Whether a role is on the discovery surfaces: listed, or marked coming soon or a future venture. */
+export function isShown(role: { listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null } | null | undefined): boolean {
+  return isListed(role) || isComingSoon(role) || isFutureVenture(role);
 }
 
 /**
@@ -63,7 +116,7 @@ export function isShown(role: { listed?: boolean | null; comingSoon?: boolean | 
  * Everyone else sees listed roles only.
  */
 export function visibleTo(
-  role: { id: string; listed?: boolean | null; comingSoon?: boolean | null },
+  role: { id: string; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null },
   viewer: { seesUnlisted: boolean; ownRoleIds?: ReadonlySet<string> | readonly string[] },
 ): boolean {
   if (isShown(role) || viewer.seesUnlisted) return true;
@@ -79,7 +132,7 @@ export function visibleTo(
  */
 export function circleHasListedRole(
   circleId: string,
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null; active?: boolean }>,
 ): boolean {
   let any = false;
   for (const r of roles) {
@@ -93,15 +146,19 @@ export function circleHasListedRole(
 /** A circle with at least one live, listed role. */
 function circleListsARole(
   circleId: string,
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null; active?: boolean }>,
 ): boolean {
   return roles.some((r) => r.circleId === circleId && r.active !== false && isShown(r));
 }
 
-/** A role "invites" applications: a free place not forming, a declared open state, or recruiting. Never while coming soon. */
+/**
+ * A role "invites" applications: a free place not forming, a declared open state, or recruiting.
+ * A coming-soon role takes applications, but is not Open, so its card shows no pay range (Rye, 16 Nov 2026:
+ * no pay ranges until the budget decisions are made).
+ */
 const OPEN_STATES = new Set(["open", "partial", "expired"]);
-export function invitesApplications(r: { seats: number; held: number; state: string; recruiting: boolean; comingSoon?: boolean | null }): boolean {
-  if (r.comingSoon === true) return false;
+export function invitesApplications(r: { seats: number; held: number; state: string; recruiting: boolean; comingSoon?: boolean | null; futureVenture?: boolean | null }): boolean {
+  if (r.comingSoon === true || r.futureVenture === true) return false;
   const openPlaces = Math.max(0, r.seats - r.held);
   return (openPlaces > 0 && r.state !== "forming") || OPEN_STATES.has(r.state) || r.recruiting === true;
 }
@@ -170,7 +227,7 @@ export function ownRoleIdsOf(
  */
 export function circlesToShow<C extends { id: string; parentCircleId?: string | null }>(
   circles: readonly C[],
-  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; active?: boolean }>,
+  roles: ReadonlyArray<{ circleId?: string | null; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null; active?: boolean }>,
   viewer: ListingViewer,
 ): C[] {
   if (viewer.seesUnlisted) return [...circles];

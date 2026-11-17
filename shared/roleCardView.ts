@@ -42,8 +42,10 @@ export interface RoleCardView {
   beingWrittenLine: string | null;
   /** Whether Apply may show. */
   applyAllowed: boolean;
-  /** Shown as coming soon: a badge, and a disabled "Coming soon" where Apply would be (shared/roleListing.ts). */
+  /** Coming soon (shared/roleListing.ts): a badge, and the interviews note beside Apply. */
   comingSoon: boolean;
+  /** A future venture (shared/roleListing.ts): its badge, and the pitch prompts beside Apply. */
+  futureVenture: boolean;
 }
 
 const list = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && x.trim() !== "") : []);
@@ -95,14 +97,16 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
   if (typeof card.budgetLine === "string" && card.budgetLine.trim()) rows.push({ id: "budget", label: "Budget line", lines: [card.budgetLine.trim()] });
 
   const pay = card.publicPay && typeof card.publicPay === "object" ? publicPayWords(card.publicPay as PublicPay, locale) : null;
-  const held = card.gated === true && card.complete !== true;
+  // A coming-soon role is applied for early on its short card, so the village's "complete card" hold does not apply.
+  const held = card.gated === true && card.complete !== true && s.comingSoon !== true && s.futureVenture !== true;
   return {
     rows,
     pay,
     beingWritten: held,
     beingWrittenLine: held ? beingWrittenLine({ missing: (Array.isArray(card.missing) ? card.missing : []) as CardPart[] }) : null,
-    applyAllowed: !held && s.comingSoon !== true,
-    comingSoon: s.comingSoon === true,
+    applyAllowed: !held,
+    comingSoon: s.comingSoon === true && s.futureVenture !== true,
+    futureVenture: s.futureVenture === true,
   };
 }
 

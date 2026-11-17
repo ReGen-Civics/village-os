@@ -222,6 +222,24 @@ describe.skipIf(!configured)("Edit this role", () => {
       expect((await row(id)).coming_soon).toBe(0);
     });
 
+    it("MOVES a role to another circle (Rye, 16 Nov 2026), keeping its id and its history, and refuses an unknown circle", async () => {
+      const { id } = await seedRole();
+      await pool.query("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-moved-to', 'Land and Building Circle', '[]', 0)"); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { words: { aim: "A new aim" } })).status).toBe(200);
+      const moved = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { circleId: "c-moved-to" });
+      expect(moved.status, JSON.stringify(moved.json)).toBe(200);
+      expect(moved.json.changed).toEqual(["Circle"]);
+      expect(moved.json.state.circleId).toBe("c-moved-to");
+      // Its history is still its own: both changes, under the same id.
+      const history = await call("GET", `/api/org/role-edit/${id}/history`, "holder-1");
+      expect(history.json.entries.length).toBeGreaterThanOrEqual(2);
+      // The editor offers the circles a role can move to.
+      expect((await call("GET", `/api/org/role-edit/${id}`, "holder-1")).json.circles.map((c: any) => c.id)).toContain("c-moved-to");
+      const nowhere = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { circleId: "no-such-circle" });
+      expect(nowhere.status).toBe(409);
+      expect(nowhere.json.error).toMatch(/circle does not exist/);
+    });
+
     it("names the listing details in words when this database has no column for them, and writes the ones it has", async () => {
       const { id } = await seedRole();
       const live = await liveParameterKeys(pool);

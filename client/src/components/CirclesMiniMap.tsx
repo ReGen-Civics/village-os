@@ -43,6 +43,7 @@ export interface MiniSeat {
   holderCount?: number;
   /** A coming-soon role (shared/roleListing.ts) is drawn, and never counted as open. */
   comingSoon?: boolean;
+  futureVenture?: boolean;
 }
 
 /* The ground the map draws on, so this reads as a window and not a card.
@@ -85,7 +86,7 @@ export default function CirclesMiniMap({
       layout: layoutNestedMap(inputs),
       byId: new Map(circles.map((c) => [c.id, c])),
       openSeats: seats.reduce(
-        (n, s) => n + (s.comingSoon === true ? 0 : Math.max(0, Number(s.seats ?? 1) - Number(s.holderCount ?? 0))),
+        (n, s) => n + (s.comingSoon === true || s.futureVenture === true ? 0 : Math.max(0, Number(s.seats ?? 1) - Number(s.holderCount ?? 0))),
         0,
       ),
     };

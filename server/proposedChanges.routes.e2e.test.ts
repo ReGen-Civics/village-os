@@ -233,4 +233,26 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     }
     expect(seen).toBe("https://example.test/tour");
   });
+
+  it("COMING SOON (Rye, 16 Nov 2026): a role_card proposal marks a role coming soon and moves it to a circle, landing only on a person's accept; an unknown circle is refused at filing", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-land", name: "Regenerative Land & Building" })).status).toBe(200);
+    const refused = await tool(adminVat, "propose_changes", {
+      batch: "A move nowhere",
+      items: [{ kind: "role_card", target: { roleId }, body: { circleId: "pc-nowhere" }, summary: "Move it nowhere." }],
+    });
+    expect(JSON.stringify(refused.json.result.structuredContent)).toMatch(/no circle by that id/);
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Coming soon roles",
+      items: [{ kind: "role_card", target: { roleId }, body: { parameters: { comingSoon: true }, circleId: "pc-land" }, summary: "Show the Lead Finance Steward as coming soon under Land & Building." }],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    // Nothing live moves until a person accepts.
+    expect((await call("GET", `/api/org/role-edit/${roleId}`)).json.state.parameters.comingSoon).toBe(false);
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.json.results, acc.text).toEqual([{ id, ok: true }]);
+    const state = (await call("GET", `/api/org/role-edit/${roleId}`)).json.state;
+    expect(state.parameters.comingSoon).toBe(true);
+    expect(state.circleId).toBe("pc-land");
+  });
 });

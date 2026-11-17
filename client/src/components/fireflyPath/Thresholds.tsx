@@ -14,6 +14,7 @@
  * (scripts/check-file-lines.mjs); the page re-exports ConfirmProposal.
  */
 import type { ComponentProps } from "react";
+import { ComingSoonNote, VentureNote } from "@/components/ComingSoon";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
@@ -42,6 +43,10 @@ export interface SentNote {
   replyDays: number | null;
   /** The roles applied for open after the founding team (Rye, 14 Nov 2026): the reply waits, and the page says so. */
   afterFounding?: boolean;
+  /** The role applied for is coming soon (Rye, 16 Nov 2026): the confirmation repeats that interviews may take a while. */
+  comingSoon?: boolean;
+  /** The role applied for is a future venture: the confirmation repeats what holding one means and what the pitch covers. */
+  futureVenture?: boolean;
   /** Kept although our confirmation email failed (server/lib/openProposalKept.ts): the application is in, the address not confirmed yet. */
   kept?: boolean;
   /** The applicant's own status page, shown once here when no email could carry it. Only an address of its own. */
@@ -275,6 +280,8 @@ function KeptThreshold({ sent, roles, onAnother }: { sent: SentNote; roles: Comp
           </div>
           <ConfirmedHeading title={t({ message: "We have your application", context: "open proposal kept" })} />
           <p className={LEDE}>{sent.message}</p>
+          <ComingSoonNote show={sent.comingSoon === true && sent.futureVenture !== true} />
+          <VentureNote show={sent.futureVenture === true} />
           {sent.statusPath && (
             <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">
               <Fireflies block className="w-full sm:w-auto">
@@ -325,7 +332,9 @@ function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: S
           </div>
           <ConfirmedHeading title={t({ message: "Check your email", context: "open proposal sent" })} />
           <p className={LEDE}>{sent.message}</p>
-          {sent.afterFounding && (
+          <ComingSoonNote show={sent.comingSoon === true && sent.futureVenture !== true} />
+          <VentureNote show={sent.futureVenture === true} />
+          {sent.afterFounding && !sent.comingSoon && !sent.futureVenture && (
             <p className="text-sm text-foreground" data-after-founding="">
               {t({ message: "We're filling our founding team first, so it may be a while before we reply. We'll write to you as soon as we're ready to talk.", context: "open proposal sent, later role" })}
             </p>

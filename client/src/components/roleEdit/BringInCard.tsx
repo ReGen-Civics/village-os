@@ -31,6 +31,7 @@ function formPatch(key: string, after: unknown): Record<string, unknown> {
   switch (key) {
     case "listed":
     case "comingSoon":
+    case "futureVenture":
     case "alwaysChecked":
     case "commitmentRequired":
     case "recruiting":

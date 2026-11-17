@@ -61,7 +61,6 @@
  * /api/governance prefix, which is what keeps the module's gate in front of it.
  */
 import { publicTermsOf } from "../../shared/seatTermsOffer";
-import { COMING_SOON_WORDS } from "../../shared/roleListing";
 import { judgeTermsStep, writtenKeys } from "../../shared/termsWords";
 import { OFFER_LABELS, OFFER_WORDS, openTalks } from "../../shared/counterOffer";
 import { baseOf, deciderOffer, loadSubject, saveOffer } from "../lib/counterOffer";
@@ -663,8 +662,6 @@ export function register(app: Express, deps: Deps): void {
         return answer(409, { error: `${seat.name} is one of the platform's example roles. Apply for one of this village's own.`, seatId: id });
       }
       if (!seat.active) return answer(409, { error: `${seat.name} is not a role the village fills right now.`, seatId: id });
-      // Coming soon (Rye, 16 Nov 2026): shown to everyone, applied for by nobody yet.
-      if (seat.comingSoon) return answer(409, { error: COMING_SOON_WORDS.refused(seat.name), seatId: id, code: "coming_soon" });
       const here = live.filter((l) => l.orgRoleId === id);
       if (here.some((l) => l.userId === userId)) continue; // already seated: the terms will link to that seating
       // An application for a later day is counted when that day comes.

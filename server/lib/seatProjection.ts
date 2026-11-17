@@ -48,7 +48,7 @@
  */
 import type { ModuleLifecycle } from "../../shared/modules";
 import { roleCard, type CardVillageWords } from "./roleCardProjection";
-import { isComingSoon, isShown, visibleTo, type ListingViewer } from "../../shared/roleListing";
+import { isComingSoon, isFutureVenture, isShown, visibleTo, type ListingViewer } from "../../shared/roleListing";
 import { readTermsOffer } from "../../shared/seatTermsOffer";
 import { overrideInForce, seatState, type OrgAssignment, type OrgRole } from "./orgChart";
 import type { MintRule } from "./economy";
@@ -475,6 +475,11 @@ export function projectSeat(
     ...(isShown(role) ? {} : { listed: false }),
     // The "Coming soon" badge and the disabled Apply (Rye, 16 Nov 2026): present only when set.
     ...(isComingSoon(role) ? { comingSoon: true } : {}),
+    // A future venture (the Operations Steward, 16 Nov 2026): its own section, no lead, a pitch. Present only when set.
+    ...(isFutureVenture(role) ? { futureVenture: true } : {}),
+    // Held by an agent alone (Rye, 16 Nov 2026: a held role may say a non-person holds it). A flag, never the
+    // agent's name, which stays off every public surface (PUBLIC_AGENT_NAME above).
+    ...(held.length > 0 && held.every((h) => h.isAgent) ? { heldByAgent: true } : {}),
     state: seatState(role, held, ctx.now),
     card: roleCard(role, held.length, seatState(role, held, ctx.now), tier, { roleNames: ctx.roleNames, gated: ctx.cardGate, words: ctx.cardWords }),
     holderCount: held.length,

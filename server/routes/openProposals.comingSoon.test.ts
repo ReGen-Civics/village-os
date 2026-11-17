@@ -1,11 +1,11 @@
 /**
- * COMING SOON AT THE NO-ACCOUNT DOOR (Rye, 16 Nov 2026: "list all the
- * regenerative circle roles but say they're 'coming soon'"), over real HTTP and
- * the scratch schema.
+ * COMING SOON AT THE NO-ACCOUNT DOOR (Rye, 16 Nov 2026), over real HTTP and the
+ * scratch schema.
  *
- * What is pinned: the open form offers no coming-soon role, a proposal naming
- * one is refused with a plain sentence that names the role (never "no role by
- * that id"), and clearing the mark opens the door again.
+ * What is pinned: a coming-soon role is applied for early through the same
+ * form, even while unlisted, and the form is told it is coming soon so it and
+ * its confirmation can say interviews may take a while. An unlisted role
+ * without the mark is offered nowhere.
  */
 import fs from "node:fs";
 import http from "node:http";
@@ -16,7 +16,6 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { checkConsentVersion } from "../../shared/proposalAbout";
-import { COMING_SOON_WORDS } from "../../shared/roleListing";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -117,22 +116,39 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
   const consent = () => ({ given: true, version: checkConsentVersion() });
   const form = async () => (await fetch(`${base}/api/open-proposals/form`)).json() as Promise<any>; // module-review-ok: a test calling its own local server
 
-  it("offers no coming-soon role on the form, refuses one in a sentence, and opens again once the mark is cleared", async () => {
-    // CONTROL first: the role is offered and taken while it is not coming soon.
-    expect((await form()).roles.map((r: any) => r.id)).toContain(gate);
-    expect((await postJson(proposal({ checkConsent: consent() }))).status).toBe(200);
+  it("offers an unlisted coming-soon role on the form, flagged, and takes the application; unmarked, it is offered nowhere", async () => {
+    await q("UPDATE org_roles SET listed = 0 WHERE id = ?", [gate]);
+    // CONTROL: unlisted and unmarked, the role is not offered and a proposal naming it is not taken.
+    expect((await form()).roles.map((r: any) => r.id)).not.toContain(gate);
+    expect((await postJson(proposal({ checkConsent: consent() }))).status).toBe(400);
 
     await q("UPDATE org_roles SET coming_soon = 1 WHERE id = ?", [gate]);
     try {
-      expect((await form()).roles.map((r: any) => r.id)).not.toContain(gate);
+      const offered = (await form()).roles.find((r: any) => r.id === gate);
+      expect(offered).toMatchObject({ id: gate, comingSoon: true });
       state.sent.length = 0;
-      const refused = await postJson(proposal({ checkConsent: consent() }));
-      expect(refused).toEqual({ status: 409, body: { error: COMING_SOON_WORDS.refused("Gate Keeper"), field: "roles", code: "coming_soon" } });
-      expect(refused.body.error).toBe("Gate Keeper is coming soon. It does not take applications yet.");
-      expect(state.sent).toHaveLength(0);
+      const taken = await postJson(proposal({ checkConsent: consent() }));
+      expect(taken.status, JSON.stringify(taken.body)).toBe(200);
+      expect(state.sent).toHaveLength(1);
     } finally {
-      await q("UPDATE org_roles SET coming_soon = 0 WHERE id = ?", [gate]);
+      await q("UPDATE org_roles SET coming_soon = 0, listed = NULL WHERE id = ?", [gate]);
     }
-    expect((await postJson(proposal({ checkConsent: consent() }))).status).toBe(200);
+    // A future venture is offered the same way, flagged as one.
+    await q("UPDATE org_roles SET listed = 0, future_venture = 1 WHERE id = ?", [gate]);
+    try {
+      expect((await form()).roles.find((r: any) => r.id === gate)).toMatchObject({ futureVenture: true });
+      expect((await postJson(proposal({ checkConsent: consent() }))).status).toBe(200);
+    } finally {
+      await q("UPDATE org_roles SET future_venture = 0, listed = NULL WHERE id = ?", [gate]);
+    }
+    // Held: every place taken, the role is marked for the chooser, and a direct application is still taken (audit B3).
+    await q("INSERT INTO org_role_assignments (id, org_role_id, holder_kind, display_name, holder_key) VALUES ('ops-held-1', ?, 'documented', 'Kyra', 'documented:kyra'), ('ops-held-2', ?, 'documented', 'Via', 'documented:via')", [gate, gate]);
+    try {
+      expect((await form()).roles.find((r: any) => r.id === gate)).toMatchObject({ held: true });
+    } finally {
+      await q("DELETE FROM org_role_assignments WHERE id IN ('ops-held-1', 'ops-held-2')");
+    }
+    // CONTROL: a plain listed role carries no flag.
+    expect("comingSoon" in (await form()).roles.find((r: any) => r.id === gate)).toBe(false);
   });
 });

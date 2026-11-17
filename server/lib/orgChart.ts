@@ -306,7 +306,7 @@ export const ROLE_COLS =
   // The commitment range (Rye, 14 Nov 2026, shared/commitmentRange.ts): the least one person may propose, and what the role needs in all.
   "commitment_min, commitment_target, " +
   // Coming soon (Rye, 16 Nov 2026, shared/roleListing.ts): shown with a badge, closed to applications.
-  "coming_soon";
+  "coming_soon, future_venture";
 
 export const ASSIGN_COLS =
   // `is_example` rides along so the flag travels through every SELECT. It was
@@ -581,8 +581,8 @@ export function seatState(
   const list: Array<{ lapsed?: boolean }> =
     typeof holders === "number" ? Array.from({ length: holders }, () => ({}) as { lapsed?: boolean }) : holders;
   const live = list.length;
-  // A coming-soon role nobody holds is not calling anyone yet: it reads as forming, never as an opening (shared/roleListing.ts).
-  if (live <= 0) return role.comingSoon === true ? "forming" : "open";
+  // A coming-soon role or a future venture nobody holds is applied for early, but it is not Open: it reads as forming, never as an opening (shared/roleListing.ts).
+  if (live <= 0) return role.comingSoon === true || role.futureVenture === true ? "forming" : "open";
   const current = list.filter((h) => !h.lapsed).length;
   if (current === 0) return "expired";
   if (current < role.seats) return "partial";

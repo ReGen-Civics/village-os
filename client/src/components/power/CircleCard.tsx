@@ -197,8 +197,10 @@ export default function CircleCard({
                   />
                 </svg>
                 <span className="flex-1 min-w-0 truncate text-foreground">{s.name}</span>
-                {s.comingSoon ? (
-                  <span className="text-[11px] text-muted-foreground shrink-0"><Trans context="map circle card, a role that takes no applications yet">coming soon</Trans></span>
+                {s.futureVenture ? (
+                  <span className="text-[11px] text-muted-foreground shrink-0"><Trans context="map circle card, a venture to build and run">future venture</Trans></span>
+                ) : s.comingSoon ? (
+                  <span className="text-[11px] text-muted-foreground shrink-0"><Trans context="map circle card, a role applied for early, after the lead hires">coming soon</Trans></span>
                 ) : (
                   s.vacant && <span className="text-[11px] text-amber-700 shrink-0">open</span>
                 )}

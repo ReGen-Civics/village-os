@@ -93,7 +93,7 @@ import { whenInviteDescribed, whenInvitedArrives } from "../lib/inviteDoor";
 import { alignAtApplication, carryToAccount, type SigningDoor } from "../lib/applicationMembership";
 import { currentLetter } from "../lib/membershipLetter";
 import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
-import { inApplicationTransaction } from "../repos/seatApplications";
+import { inApplicationTransaction, liveSeatingsOf } from "../repos/seatApplications";
 import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
 import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
 import { inviteById } from "../repos/memberInvites";
@@ -118,7 +118,7 @@ import { voiceViewerOf } from "../lib/voiceForViewer";
 import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
-import { COMING_SOON_WORDS, isComingSoon, isListed } from "../../shared/roleListing";
+import { isComingSoon, isFutureVenture, isShown } from "../../shared/roleListing";
 import { opensAfterFounding } from "../../shared/foundingTeam";
 import { foundingIdsOf, replyDaysFor } from "../lib/foundingFirst";
 import { gateOf } from "../lib/roleCardProjection";
@@ -360,10 +360,15 @@ export function register(app: Express, deps: Deps): void {
     const ceilings = await sectionsForMany(pool, roles.map((r) => r.id));
     // Hiring the founding team first (Rye, 14 Nov 2026): every other listed role opens after it.
     const foundingIds = foundingIdsOf(roles);
+    // Held (Rye, 16 Nov 2026): a role whose places are all taken is marked, so the form's chooser offers no Apply for it.
+    // A link straight to it still takes an application, adopted only for when a place opens (audit B3).
+    const taken = new Map<string, number>();
+    for (const s of await liveSeatingsOf(pool, roles.map((r) => r.id))) taken.set(s.orgRoleId, (taken.get(s.orgRoleId) ?? 0) + 1);
     return roles
-      // A coming-soon role is shown on the public pages but offered by no form (Rye, 16 Nov 2026).
-      .filter((r) => r.active && !r.isExample && isListed(r) && !isComingSoon(r) && r.circleId && live.has(r.circleId))
-      .filter((r) => !needsCard || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
+      // A coming-soon role takes applications early, through this same form (Rye, 16 Nov 2026), even while
+      // unlisted and before its card is complete: its card is short until its lead is in place.
+      .filter((r) => r.active && !r.isExample && isShown(r) && r.circleId && live.has(r.circleId))
+      .filter((r) => !needsCard || isComingSoon(r) || isFutureVenture(r) || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
       .map((r) => ({
         id: r.id,
         name: r.name,
@@ -382,6 +387,11 @@ export function register(app: Express, deps: Deps): void {
         commitmentMin: r.commitmentMin ?? null,
         // Applied for now, answered once the founding team is in place (shared/foundingTeam.ts).
         opensLater: opensAfterFounding(foundingIds, [r.id]),
+        // Coming soon (Rye, 16 Nov 2026): the form and its confirmation say interviews may take a while to start.
+        ...(isComingSoon(r) ? { comingSoon: true } : {}),
+        // A future venture: the form asks for a pitch, by its five prompts.
+        ...(isFutureVenture(r) ? { futureVenture: true } : {}),
+        ...((taken.get(r.id) ?? 0) >= r.seats ? { held: true } : {}),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
         // The card's own choice of who reads that ceiling (absent: the village decides). Read by `offeredTo`, never sent.
         payVisibility: ceilings.get(r.id)?.payVisibility,
@@ -394,14 +404,6 @@ export function register(app: Express, deps: Deps): void {
           ...(s.final ? { finalApproval: true } : {}),
         })),
       }));
-  }
-
-  /** The first coming-soon role a posted form names, by name, or null. Read before the form, so the refusal says why. */
-  async function comingSoonAmong(picked: unknown): Promise<string | null> {
-    const ids = new Set((Array.isArray(picked) ? picked : []).map((r: any) => String(r?.roleId ?? "").trim()).filter(Boolean));
-    if (!ids.size) return null;
-    const hit = (await listOrgRoles(getPool())).find((r) => ids.has(r.id) && !r.isExample && isComingSoon(r));
-    return hit ? hit.name : null;
   }
 
   /** Whether the form opens for this request, and through which link. */
@@ -548,9 +550,6 @@ export function register(app: Express, deps: Deps): void {
     const t = target(mode);
     if (!t) return res.status(409).json({ error: mode === "moon" ? OPEN_WORDS.noCurrentSeason : OPEN_WORDS.noSeason });
     const season = t.season;
-    // Coming soon (Rye, 16 Nov 2026): refused in a sentence, before the form's own reading calls it no role at all.
-    const soon = await comingSoonAmong(body.roles);
-    if (soon) return res.status(409).json({ error: COMING_SOON_WORDS.refused(soon), field: "roles", code: "coming_soon" });
     const roles = await offered();
     const outcomes = new Map(roles.map((r) => [r.id, r.accountabilities]));
     const alwaysChecked = new Set(roles.filter((r) => r.alwaysChecked).map((r) => r.id));
