@@ -14,8 +14,8 @@
  * `DecidedCard` is the same card in the history: what went live (and what the reader changed first), or what was
  * put aside, who decided and when.
  */
-import { useState, type ReactNode } from "react";
-import { Bot, Check, ExternalLink, PenLine, Undo2, UserRound, X } from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Bot, Check, ExternalLink, History as HistoryIcon, TriangleAlert, PenLine, Undo2, UserRound, X } from "lucide-react";
 import type { I18n, MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -23,6 +23,7 @@ import { BTN_PRIMARY, BTN_SECONDARY, CHIP_SOFT, HINT, LINK } from "@/components/
 import { faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace, type ChangeFlag } from "@shared/proposalReview";
 import { fieldDiffs, valueAt } from "@shared/proposedChanges";
 import type { PutBackBlock } from "@shared/proposalPutBack";
+import type { ConflictWith, StaleBy } from "@shared/proposalConflicts";
 import { EventCard, FieldDiffs, RowsDiff } from "./Diff";
 import { FACE_ICON, FLAG_ICON } from "./faces";
 import { Field, asText, nodePaths } from "./ProposalEditor";
@@ -171,7 +172,47 @@ function ChangeBody({ face, kind, before, after, labels, zone, whole, plain }: {
   return <FieldDiffs fields={plain ? fieldChanges(null, after).map((f) => ({ ...f, changed: true })) : fieldChanges(before, after, whole)} labels={labels} plain={plain} testId="field-diffs" />;
 }
 
+/**
+ * What else writes what this change writes (shared/proposalConflicts.ts): each waiting change it collides with, and
+ * each accept since it was proposed. Named plainly; the person decides which goes live.
+ */
+export function ConflictFlags({ conflicts, stale }: { conflicts: readonly ConflictWith[]; stale: readonly StaleBy[] }) {
+  if (!conflicts.length && !stale.length) return null;
+  return (
+    <ul className="space-y-2" data-testid="conflict-flags">
+      {conflicts.map((o) => {
+        const other = o.summary;
+        return (
+          <li key={`c-${o.id}`} className="flex items-start gap-2 rounded-xl border border-notice/50 bg-notice/10 px-3 py-2 text-sm text-foreground" data-conflict={o.id} data-later={o.later ? "1" : "0"}>
+            <TriangleAlert className="mt-0.5 size-4 shrink-0 text-notice" aria-hidden="true" />
+            <span>
+              {o.later ? (
+                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed later. Accept one, then look again.</Trans>
+              ) : (
+                <Trans context="proposed changes: conflict">Also changed by “{other}”, proposed earlier. Accept one, then look again.</Trans>
+              )}
+            </span>
+          </li>
+        );
+      })}
+      {stale.map((s) => {
+        const other = s.summary;
+        return (
+          <li key={`s-${s.id}`} className="flex items-start gap-2 rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-foreground" data-stale={s.id}>
+            <HistoryIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+            <span>
+              <Trans context="proposed changes: conflict">Drafted before “{other}” was accepted. Accepting it would put back older words.</Trans>
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 export interface ChangeCardProps {
+  /** The other waiting changes that write what this one writes. */
+  conflicts?: readonly ConflictWith[];
   change: Proposal;
   body: Record<string, unknown>;
   zone: string;
@@ -185,9 +226,16 @@ export interface ChangeCardProps {
   onDiscard: () => void;
 }
 
-export default function ChangeCard({ change: c, body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
+export default function ChangeCard({ change: c, conflicts = [], body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
   const { t } = useLingui();
   const [editing, setEditing] = useState(false);
+  // Accepting a change that a later waiting one also writes asks once, on the card. It never blocks.
+  const [confirming, setConfirming] = useState(false);
+  const yes = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (confirming) yes.current?.focus();
+  }, [confirming]);
+  const laterConflict = conflicts.some((o) => o.later);
   const [json, setJson] = useState(false);
   const face = faceOf(c.kind, c.route);
   const flags = flagsOf(c.kind, c.route, c.target, body);
@@ -230,6 +278,8 @@ export default function ChangeCard({ change: c, body, zone, problems, saved, bus
         }
       />
 
+      <ConflictFlags conflicts={conflicts} stale={c.stale ?? []} />
+
       {c.status === "failed" && c.error && !problems.length && (
         <p role="alert" className="rounded-xl border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="last-try">
           <Trans context="proposed changes">Last try did not land: {c.error}</Trans>
@@ -258,8 +308,34 @@ export default function ChangeCard({ change: c, body, zone, problems, saved, bus
         <ChangeBody face={face} kind={c.kind} before={c.live} after={body} labels={c.labels} zone={zone} whole={whole} />
       )}
 
+      {confirming && (
+        <div className="space-y-3 rounded-xl border border-notice/60 bg-card p-4" role="group" aria-label={t({ message: "Confirm accepting this change", context: "proposed changes: conflict" })} data-testid={`conflict-confirm-${c.id}`}>
+          <p className="font-semibold text-card-foreground">
+            <Trans context="proposed changes: conflict">A later change also edits this. Accept this one anyway?</Trans>
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              ref={yes}
+              type="button"
+              className={BTN_PRIMARY}
+              disabled={busy}
+              onClick={() => {
+                setConfirming(false);
+                onAccept();
+              }}
+              data-testid={`conflict-confirm-yes-${c.id}`}
+            >
+              <Trans context="proposed changes: conflict">Yes, accept</Trans>
+            </button>
+            <button type="button" className={BTN_SECONDARY} onClick={() => setConfirming(false)} data-testid={`conflict-confirm-no-${c.id}`}>
+              <Trans context="proposed changes: conflict">Not yet</Trans>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-2 border-t border-border pt-4">
-        <button type="button" className={BTN_PRIMARY} disabled={busy || (c.status === "unknown" && !checkedPage)} onClick={onAccept} data-testid={`accept-${c.id}`}>
+        <button type="button" className={BTN_PRIMARY} disabled={busy || (c.status === "unknown" && !checkedPage)} onClick={() => (laterConflict ? setConfirming(true) : onAccept())} data-testid={`accept-${c.id}`}>
           <Check className="size-4" aria-hidden="true" />
           {busy ? <Trans context="proposed changes">Working</Trans> : <Trans context="proposed changes">Accept</Trans>}
         </button>

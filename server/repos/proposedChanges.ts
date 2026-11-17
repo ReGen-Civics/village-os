@@ -171,6 +171,18 @@ export async function listDecided(pool: Pool, limit: number, onlyAccepted = fals
   return rows.map(toChange);
 }
 
+/**
+ * Accepted changes decided after `since`, oldest accept first: what may have moved under a change proposed then
+ * (shared/proposalConflicts.ts, `staleAgainst`). Capped, as the page's history is.
+ */
+export async function acceptedSince(pool: Pool, since: Date, limit = 500): Promise<StoredChange[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM `proposed_changes` WHERE `status` = 'accepted' AND `decided_at` > ? ORDER BY `decided_at` LIMIT ?",
+    [since, Math.max(1, Math.min(1000, limit))],
+  );
+  return rows.map(toChange);
+}
+
 export async function saveDraft(pool: Pool, id: string, draft: Record<string, unknown> | null, by: string): Promise<boolean> {
   const [r] = await pool.query<any>(
     "UPDATE `proposed_changes` SET `draft_json` = ?, `draft_by` = ?, `draft_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND `status` IN ('proposed','failed')",

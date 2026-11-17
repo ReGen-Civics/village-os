@@ -353,6 +353,37 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(out.body.results[0].ok).toBe(true);
   });
 
+  // ── Conflicts: a waiting change drafted before a later accept (the lead, 17 Nov 2026) ─────────────────────
+
+  it("two proposals on one role card: accepting the newer marks the older stale, on the page and again at its accept", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-conflict'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-conflict', 'Keeper of the Books', 'Keep the books.', 1, 1)");
+    const aim = (words: string, summary: string) => ({ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { aim: words } }, summary });
+    const older = (await call("POST", "/api/admin/proposals", { batch: "First pass", items: [aim("Hold the money.", "Older aim")] }, AGENT.id)).body.ids[0];
+    await new Promise((r) => setTimeout(r, 20));
+    const newer = (await call("POST", "/api/admin/proposals", { batch: "Second pass", items: [aim("Tend the money.", "Newer aim")] }, AGENT.id)).body.ids[0];
+    // Another field on the same card, proposed first: it never collides.
+    const apart = (await call("POST", "/api/admin/proposals", { batch: "Words", items: [{ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { domain: "The ledger." } }, summary: "Domain" }] }, AGENT.id)).body.ids[0];
+
+    const before = await call("GET", "/api/admin/proposals");
+    expect(before.body.changes.map((c: any) => [c.id, c.stale])).toEqual([[older, []], [newer, []], [apart, []]]);
+
+    // The newer is accepted first. Nothing moved under it, so it carries no flag.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer }] })).body.results).toEqual([{ id: newer, ok: true }]);
+
+    // The older was drafted against the aim the newer has just replaced: the page says so, naming it.
+    const after = await call("GET", "/api/admin/proposals");
+    const byId = Object.fromEntries(after.body.changes.map((c: any) => [c.id, c]));
+    expect(byId[older].stale).toEqual([{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }]);
+    expect(byId[apart].stale, "another field on the same card is not stale").toEqual([]);
+
+    // Accepting it anyway is the person's call: it lands, and the answer carries the flag read at accept time.
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: older }] });
+    expect(acc.body.results).toEqual([{ id: older, ok: true, stale: [{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }] }]);
+    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [older]);
+    expect(row.status, "a stale change is never rejected").toBe("accepted");
+  });
+
   // ── Putting it back ────────────────────────────────────────────────────────
 
   it("an accept keeps what was live before, and putting it back files a proposal carrying exactly that, applying nothing", async () => {

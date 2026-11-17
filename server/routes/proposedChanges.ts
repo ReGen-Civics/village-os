@@ -30,6 +30,11 @@
  * putting back the original; a person accepts it here like any other
  * (shared/proposalPutBack.ts says where it is never offered, and why).
  *
+ * OLDER WORDS (the lead, 17 Nov 2026). Each waiting change is served with the accepts made since it was proposed
+ * that wrote what it writes (`staleAgainst`, shared/proposalConflicts.ts): it was drafted against an older live
+ * value. The accept reads that again for each change as it runs and answers it beside the result, so the page's
+ * warning is never itself out of date. It never stops or rejects an accept.
+ *
  * WHO OPENS THE PAGE. An admin, or a live holder of a power these changes need
  * (story.tell, org.decide, org.seat, dial.set), the way the approval inbox
  * reads. The route behind each change still decides whether this person may
@@ -54,12 +59,28 @@ import {
 } from "../../shared/proposedChanges";
 import { APPROVAL_FIELDS } from "../../shared/agentAdmin";
 import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
+import { staleAgainst, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
   port: () => number;
   clientIp: (req: express.Request) => string;
 };
+
+/** An accepted change as the conflict rules read it: what went live, and when. */
+const acceptedRecord = (c: store.StoredChange): AcceptedRecord => ({
+  id: c.id,
+  kind: c.kind,
+  target: c.target,
+  route: { method: c.routeMethod, path: c.routePath },
+  body: c.accepted ?? c.body,
+  summary: c.summary,
+  decidedAt: c.decidedAt ?? "",
+});
+
+/** The accepts since this change was proposed that wrote what it writes (shared/proposalConflicts.ts). */
+const staleOf = (c: store.StoredChange, body: Record<string, unknown>, accepted: readonly AcceptedRecord[]): StaleBy[] =>
+  staleAgainst({ id: c.id, at: c.createdAt, kind: c.kind, target: c.target, route: { method: c.routeMethod, path: c.routePath }, body }, accepted);
 
 /** The powers whose holders open the page besides an admin. */
 const READERS = ["story.tell", "org.decide", "org.seat", "dial.set"] as const;
@@ -260,6 +281,10 @@ export function register(app: Express, deps: Deps): void {
       const name = (await members.byId(b.proposedBy))?.name;
       names.set(b.proposedBy, b.proposedByKind === "agent" ? String(name ?? "").trim() || "An agent" : firstName(name));
     }
+    // What was accepted since the oldest waiting change was proposed: a waiting change drafted before a later accept
+    // that wrote the same thing is stale, and says so on its card.
+    const oldest = changes.reduce<string | null>((m, c) => (!m || c.createdAt < m ? c.createdAt : m), null);
+    const acceptedLater = oldest ? (await store.acceptedSince(pool, new Date(oldest))).map(acceptedRecord) : [];
     const served = [];
     for (const c of changes) {
       served.push({
@@ -280,7 +305,9 @@ export function register(app: Express, deps: Deps): void {
         by: names.get(c.proposedBy) ?? "Someone",
         byKind: c.proposedByKind,
         at: c.createdAt,
+        position: c.position,
         reverts: c.reverts,
+        stale: staleOf(c, c.draft ?? c.body, acceptedLater),
       });
     }
     // A change that already has a put-back waiting is not offered another.
@@ -373,7 +400,7 @@ export function register(app: Express, deps: Deps): void {
     const pool = getPool();
     const run = runAs(req);
     const name = String(user.name ?? "").trim() || "A person";
-    const results: Array<{ id: string; ok: boolean; error?: string; field?: string | null; note?: string }> = [];
+    const results: Array<{ id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: StaleBy[] }> = [];
     // One after another, each through its own route. A failure stops nothing and undoes nothing.
     for (const it of items) {
       const id = String(obj(it)?.id ?? "");
@@ -393,6 +420,10 @@ export function register(app: Express, deps: Deps): void {
         continue;
       }
       const body = finalBody(c, obj(it)?.body);
+      // Read again now, so the page's warning is never itself out of date: the accepts since this change was proposed
+      // that wrote what it writes, an earlier item of this same accept included. It informs; it never stops the accept.
+      const stale = staleOf(c, body, (await store.acceptedSince(pool, new Date(c.createdAt))).map(acceptedRecord));
+      const staleOut = stale.length ? { stale } : {};
       // The latest edits are kept even when the change fails, so fixing it starts from them.
       if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
       // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
@@ -423,13 +454,13 @@ export function register(app: Express, deps: Deps): void {
         const error = `${REVIEW_WORDS.unknown} (${String((e as Error)?.message ?? e).slice(0, 200)})`;
         await store.markUnknown(pool, id, uid, error);
         await recordEvent(pool, { kind: "proposed_change", text: `A proposed change may or may not have landed, so it waits on a check: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
-        results.push({ id, ok: false, error, field: null });
+        results.push({ id, ok: false, error, field: null, ...staleOut });
         continue;
       }
       if (!out.ok) {
         await store.markFailed(pool, id, uid, out.error);
         await recordEvent(pool, { kind: "proposed_change", text: `A proposed change did not land: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
-        results.push({ id, ok: false, error: out.error, field: out.field ?? null });
+        results.push({ id, ok: false, error: out.error, field: out.field ?? null, ...staleOut });
         continue;
       }
       const lessons = fieldDiffs(c.body, body);
@@ -443,7 +474,7 @@ export function register(app: Express, deps: Deps): void {
         entityRef: id,
         audience: "admin",
       });
-      results.push({ id, ok: true, ...(out.note ? { note: out.note } : {}) });
+      results.push({ id, ok: true, ...(out.note ? { note: out.note } : {}), ...staleOut });
     }
     res.json({ results, accepted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
   });
