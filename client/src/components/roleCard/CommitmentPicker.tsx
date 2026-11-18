@@ -20,6 +20,7 @@ import CommitmentSlider from "./CommitmentSlider";
 import SplitControl from "./SplitControl";
 import { bandAt, bandAtWords, bandEnds, offersSlider } from "./commitmentWords";
 import { perPeriod } from "./rewardWords";
+import { MoonText } from "@/components/MoonWord";
 
 export default function CommitmentPicker({
   idPrefix,
@@ -53,7 +54,7 @@ export default function CommitmentPicker({
       {/* The band at the slider's commitment, 100% included, so the slider always has one current figure (18 Nov 2026). */}
       {sliding && band && (
         <p className="leading-relaxed text-card-foreground" aria-live="polite" data-pay-band-at="">
-          {bandAtWords(i18n, band, true)}
+          <MoonText text={bandAtWords(i18n, band, true)} />
         </p>
       )}
       {choice.split.shares.length > 0 && (

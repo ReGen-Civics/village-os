@@ -93,7 +93,9 @@ describe("focus follows the step (red team U10)", () => {
 
 describe("no error before any input (red team U11)", () => {
   const PICK = "Pick the role you are proposing for.";
-  const NO_GOALS = /^Add at least one goal for your first month/;
+  const NO_GOALS_RE = /^Add at least one goal for your first moon/;
+  // The moon word wears its tip (MoonWord.tsx), so the error runs across elements: match the element that holds it whole.
+  const NO_GOALS = (_: string, el: Element | null) => !!el && NO_GOALS_RE.test(el.textContent ?? "") && !Array.from(el.children).some((c) => NO_GOALS_RE.test(c.textContent ?? ""));
   const SHORT_WHY = /^"Why you" needs at least 30 characters/;
 
   it("arriving at a step shows no error; leaving a field shows its own; Next then Back shows the step's", async () => {

@@ -56,6 +56,7 @@ import { useLocale } from "@/i18n/LocaleProvider";
 import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
+import { MoonText } from "@/components/MoonWord";
 import { useVillageName } from "@/hooks/useVillageName";
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
@@ -253,18 +254,18 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
-          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
-          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><MoonText text={reward.headline} /></p>
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
           </Suspense>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
-          <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
+          <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words"><MoonText text={reward.proposal} /></p>
         </>
       ) : (
         <>
           {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
-          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
           </Suspense>
@@ -308,7 +309,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
+      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote"><MoonText text={reward.footnote} /></p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else
           the village's) is the footnote's fine print, so it is not drawn again here. */}
       {pay.note && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}

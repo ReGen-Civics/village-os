@@ -3029,7 +3029,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The founding team",
     label: "The note under the pay shape",
     description:
-      "The last line under the pay shape on every role card. When a card lists a price, its footnote already says the first month starts lower and that equity and credit terms are subject to legal review, and this note is added after it, so write only what the footnote does not say. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.",
+      "The last line under the pay shape on every role card. When a card lists a price, its footnote already says the first moon starts lower and that equity and credit terms are subject to legal review, and this note is added after it, so write only what the footnote does not say. No amounts. A role's card may write its own. A note that starts with * puts a matching * after the card's total compensation line, so it reads as that line's fine print. Empty, no note.",
     type: "text",
     default: "",
   },

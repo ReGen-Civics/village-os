@@ -18,6 +18,7 @@ import { useLingui } from "@lingui/react/macro";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { BLANK_GOAL, GOAL_LIMITS, goalDateWindow, goalsNudge, type ProposalGoal } from "@shared/proposalGoals";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
+import { MoonText } from "@/components/MoonWord";
 import type { DraftableGoal } from "@shared/seraDrafts";
 
 const FIELD = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -112,10 +113,12 @@ export default function GoalsList({
   return (
     <div className="grid gap-3" data-goals-list="">
       <p className="text-sm text-muted-foreground">
-        {t`These are your goals for your first month. Once you are seated, we issue your tasks on your profile each month. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the month.`}
+        <MoonText text={t`These are your goals for your first moon. Once you are seated, we issue your tasks on your profile each moon. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the moon.`} />
       </p>
       <p className="text-sm text-muted-foreground" data-accomplished-pay="">
-        {t`Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.`}
+        <MoonText
+          text={t`Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.`}
+        />
       </p>
       {assist}
       <ol className="grid gap-3" aria-label={t({ message: "Your goals", context: "proposal goals list" })}>
@@ -214,7 +217,7 @@ export default function GoalsList({
                   </label>
                 )}
                 <label className="grid gap-1 text-sm font-medium text-foreground" htmlFor={fid(key, "date")}>
-                  {t`A day in this month (optional)`}
+                  <MoonText text={t`A day in this moon (optional)`} />
                   <input id={fid(key, "date")} type="date" className={FIELD} min={span.min} max={span.max} value={g.date} onChange={(e) => set(i, { date: e.target.value })} />
                 </label>
               </div>
@@ -237,14 +240,18 @@ export default function GoalsList({
       </div>
       {nudge && (
         <p className="text-sm text-muted-foreground" data-goals-nudge="">
-          {nudge === "few"
-            ? t`Most people list three to five goals for a month. You can send fewer, and we will read what you give us.`
-            : t`Most people list three to five goals for a month. More is allowed, and a shorter list is easier to read and to check.`}
+          <MoonText
+            text={
+              nudge === "few"
+                ? t`Most people list three to five goals for a moon. You can send fewer, and we will read what you give us.`
+                : t`Most people list three to five goals for a moon. More is allowed, and a shorter list is easier to read and to check.`
+            }
+          />
         </p>
       )}
       {problem && (
         <p role="alert" className="text-sm font-medium text-destructive">
-          {problem}
+          <MoonText text={problem} />
         </p>
       )}
       <p role="status" aria-live="polite" className="sr-only">

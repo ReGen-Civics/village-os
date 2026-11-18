@@ -30,7 +30,8 @@ const titles = () => screen.getAllByLabelText("The goal").map((e) => (e as HTMLI
 describe("the goals list", () => {
   it("adds a goal with fields inline, focuses it, and states that tasks come later and both are tracked", () => {
     render(<Harness />);
-    expect(screen.getByText(/we issue your tasks on your profile each month/)).toBeTruthy();
+    // The moon words wear the tip (MoonWord.tsx), so the sentence runs across elements: read it whole.
+    expect(document.body.textContent).toMatch(/we issue your tasks on your profile each moon/);
     expect(screen.getByText(/track both your goals and your tasks for your compensation/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Add a goal" }));
     expect(document.activeElement).toBe(screen.getByLabelText("The goal"));
@@ -38,7 +39,7 @@ describe("the goals list", () => {
     fireEvent.change(screen.getByLabelText("Done when"), { target: { value: "it is open by seven" } });
     fireEvent.change(screen.getByLabelText("The role goal it moves"), { target: { value: "Open at dawn" } });
     fireEvent.change(screen.getByLabelText("The season goal it serves (optional)"), { target: { value: "sg1" } });
-    fireEvent.change(screen.getByLabelText("A day in this month (optional)"), { target: { value: "2026-11-20" } });
+    fireEvent.change(screen.getByLabelText("A day in this moon (optional)"), { target: { value: "2026-11-20" } });
     expect(latest).toEqual([{ title: "Open the gate", doneWhen: "it is open by seven", moves: "Open at dawn", serves: "sg1", date: "2026-11-20", roleId: "r1" }]);
     expect(parseGoals(latest, { roleGoalsOf: () => ROLES[0]!.goals, seasonKeys: new Set(["sg1"]), today: "2026-11-10" }).ok).toBe(true);
   });
