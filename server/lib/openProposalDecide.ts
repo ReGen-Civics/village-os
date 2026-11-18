@@ -46,6 +46,7 @@ import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
 import { roleTermsOf, termsPerRole, type RoleTerms } from "../../shared/openProposals";
 import type { PayAsk } from "../../shared/commitmentRange";
+import type { ProposalSplit } from "../../shared/proposalSplitStored";
 import { isCommitment, notesAsText, overallChoice } from "../../shared/termsWords";
 import { baseOf } from "./counterOffer";
 import { contractPriceOf, payGroupOf, type ContractPrice } from "../../shared/contractPrice";
@@ -353,11 +354,14 @@ export function settingsOfAgreed(agreed: Agreed, term: { endsOn: string } | null
  */
 export async function contractPriceFor(db: Pool, proposal: store.StoredOpenProposal, agreed: Agreed, part?: AgreementPart): Promise<ContractPrice | null> {
   const ids = part?.roleIds ?? proposal.body.roles.map((r) => r.roleId);
-  return contractPriceForRoles(db, ids, agreed.commitmentPct ?? null, part ? part.terms.payAsk : (proposal.body.payAsk ?? null));
+  // Each role of several brings its own ask and split (the lead, 17 Nov 2026); otherwise the proposal's.
+  return part
+    ? contractPriceForRoles(db, ids, agreed.commitmentPct ?? null, part.terms.payAsk, part.terms.paySplit)
+    : contractPriceForRoles(db, ids, agreed.commitmentPct ?? null, proposal.body.payAsk ?? null, proposal.body.paySplit ?? null);
 }
 
-/** The price for one agreement: the first of its roles that lists a band, at the agreed commitment, with the ask given for it. */
-export async function contractPriceForRoles(db: Pool, ids: readonly string[], commitmentPct: number | null, ask: PayAsk | null): Promise<ContractPrice | null> {
+/** The price for one agreement: the first of its roles that lists a band, at the agreed commitment, with the ask and the split given for it. */
+export async function contractPriceForRoles(db: Pool, ids: readonly string[], commitmentPct: number | null, ask: PayAsk | null, split: ProposalSplit | null): Promise<ContractPrice | null> {
   const sections = await sectionsForMany(db, [...ids]);
   const ceiling = ids.map((id) => sections.get(id)?.payCeiling ?? null).find((c) => !!c) ?? null;
   const price = contractPriceOf(ceiling, commitmentPct, ask);
@@ -366,7 +370,7 @@ export async function contractPriceForRoles(db: Pool, ids: readonly string[], co
   // showed them, its own shares, else the village's (the lead, 18 Nov 2026, replacing P1-6's "follows the card").
   const role = ids.find((id) => sections.get(id)?.payCeiling) ?? ids[0];
   const shown = cardPay(sections.get(role) ?? null, villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: "", note: "" }))?.shape ?? [];
-  const shape = adoptedShape(shown, proposal.body.paySplit?.proposed);
+  const shape = adoptedShape(shown, split?.proposed);
   return shape.length ? { ...price, shape } : price;
 }
 
