@@ -665,7 +665,8 @@ describe("the terms", () => {
   it("shows the village's pay shape as the role cards do: shares only, the onboarding line, the plain word on risk beside the footer, and the ramp-up option", async () => {
     await applyFor();
     const shape = document.querySelector("[data-comp-shape]") as HTMLElement;
-    expect(Array.from(shape.querySelectorAll("[data-share-pct]")).map((d) => d.textContent)).toEqual(["40%", "55%", "5%"]);
+    // No fixed tiles beside the split they edit above (production check of 1.3.24).
+    expect(shape.querySelectorAll("[data-share-pct]")).toHaveLength(0);
     // The split in force as a sentence (adopted 15 Nov 2026).
     expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 40% is paid in cash, 55% in Earned Equity and 5% in credits by default; we settle the split together.");
     expect(shape.querySelector("[data-at-risk]")?.textContent).toBe(SETUP.atRisk);
@@ -677,11 +678,12 @@ describe("the terms", () => {
     expect(screen.getByLabelText(/I would like a ramp-up/)).toBeTruthy();
   });
 
-  it("with no shape written the village sees the placeholder at N%, and no line it has not written", async () => {
+  it("with no shape written the village sees no tiles and no line it has not written", async () => {
     await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [], atRisk: "", footer: "" } });
     const shape = document.querySelector("[data-comp-shape]") as HTMLElement;
-    expect(Array.from(shape.querySelectorAll("dt")).map((d) => d.textContent)).toEqual(["Cash", "Equity", "Credits"]);
-    expect(Array.from(shape.querySelectorAll("[data-share-pct]")).map((d) => d.textContent)).toEqual(["N%", "N%", "N%"]);
+    expect(shape.querySelectorAll("[data-share-pct]")).toHaveLength(0);
+    // The rail says the onboarding line, never a placeholder split.
+    expect(document.querySelector("[data-rewards-beside] [data-split-line]")?.textContent).toBe("To be decided in the onboarding process.");
     expect(shape.querySelector("[data-at-risk]")).toBeNull();
     expect(shape.querySelector("[data-comp-footer]")).toBeNull();
     // No split: the old line.
@@ -1176,7 +1178,9 @@ describe("design G2: the desk and the panes", () => {
     const rail = document.querySelector("[data-rewards-beside]") as HTMLElement;
     expect(rail.closest("aside")).toBe(document.querySelector("[data-role-beside]")?.closest("aside"));
     expect(rail.textContent).toContain("How rewards work");
-    expect(Array.from(rail.querySelectorAll("dd")).map((d) => d.textContent)).toEqual(["40%", "55%", "5%"]);
+    // No fixed tiles beside the split they edit (production check of 1.3.24): the village's default in one line.
+    expect(rail.querySelectorAll("dd")).toHaveLength(0);
+    expect(rail.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");
     // On the terms step the shape the phone reads steps aside on a desk.
     expect((document.querySelector("[data-comp-shape]") as HTMLElement).parentElement?.className).toContain("lg:hidden");
   });

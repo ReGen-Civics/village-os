@@ -14,6 +14,10 @@ import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { COMMITMENT_CHOICES } from "@shared/termsWords";
 import { OFFER_WORD_MAX } from "@shared/counterOffer";
+import { askPeriod, ceilingAt, type PayAsk } from "@shared/commitmentRange";
+import type { PayCeiling } from "@shared/roleCardSections";
+import { moneyWords } from "@shared/roleRewardWords";
+import { perPeriod } from "@/components/roleCard/rewardWords";
 import { gameFetch } from "@/lib/gameApi";
 import SaveBar, { type SaveResult } from "@/components/SaveBar";
 
@@ -33,6 +37,23 @@ export interface ServedDeciderOffer {
   ourCommitment: number | null;
   history: Array<{ n: number; at: string; by: string; changes: Array<{ key: string; label: string; from: string | null; to: string | null }> }>;
   openTalks: string[];
+  /** Each role's commitment and price, as asked and as countered (the lead, 18 Nov 2026). Absent or empty: none to counter. */
+  roles?: ServedRoleRow[];
+}
+
+export interface ServedRoleRow {
+  roleId: string;
+  name: string;
+  first: boolean;
+  theirCommitment: number | null;
+  ourCommitment: number | null;
+  commitmentChanged: boolean;
+  commitmentState: "accept" | "talk" | "waiting";
+  ask: PayAsk | null;
+  ceiling: PayCeiling | null;
+  ourPrice: number | null;
+  priceChanged: boolean;
+  priceState: "accept" | "talk" | "waiting";
 }
 
 const PANEL = "rounded-2xl border border-border bg-card p-5 shadow-sm sm:p-6";
@@ -49,16 +70,27 @@ function day(iso: string): string {
 }
 
 export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { offer: ServedDeciderOffer; mayEdit: boolean; savePath: string; onSaved: () => void }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [words, setWords] = useState<Record<string, string>>({});
   const [pct, setPct] = useState<string>("");
+  /** Each role's countered commitment and price, typed and not saved yet. */
+  const [roleEdits, setRoleEdits] = useState<Record<string, { commitmentPct?: string; price?: string }>>({});
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
 
   const wordsFor = (k: string, current: string | null) => (k in words ? words[k] : (current ?? ""));
   const edits = offer.rows.filter((r) => r.key in words && (words[r.key] ?? "").trim() !== (r.current ?? "").trim());
   const commitmentEdit = pct !== "" && Number(pct) !== offer.ourCommitment;
-  const dirty = edits.length > 0 || commitmentEdit;
+  const roleRows = offer.roles ?? [];
+  const roleChanges = roleRows
+    .map((r) => {
+      const e = roleEdits[r.roleId] ?? {};
+      const c = !r.first && e.commitmentPct !== undefined && e.commitmentPct !== "" && Number(e.commitmentPct) !== r.ourCommitment ? { commitmentPct: Number(e.commitmentPct) } : {};
+      const p = e.price !== undefined && e.price.trim() !== "" && Number(e.price) !== r.ourPrice ? { price: Number(e.price) } : {};
+      return Object.keys(c).length || Object.keys(p).length ? { roleId: r.roleId, ...c, ...p } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => !!x);
+  const dirty = edits.length > 0 || commitmentEdit || roleChanges.length > 0;
 
   const save = async (): Promise<SaveResult> => {
     setBusy(true);
@@ -70,6 +102,7 @@ export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { of
           expectedRevision: offer.revision,
           words: Object.fromEntries(edits.map((r) => [r.key, words[r.key]])),
           ...(commitmentEdit ? { commitmentPct: Number(pct) } : {}),
+          ...(roleChanges.length ? { roles: roleChanges } : {}),
         }),
         cache: "no-store",
       });
@@ -81,6 +114,7 @@ export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { of
       }
       setWords({});
       setPct("");
+      setRoleEdits({});
       setSaid({ ok: true, text: t`Saved. We told the applicant.` });
       onSaved();
       return { ok: true };
@@ -95,6 +129,7 @@ export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { of
   const discard = () => {
     setWords({});
     setPct("");
+    setRoleEdits({});
   };
 
   const choiceWords = (c: "accept" | "talk") => (c === "accept" ? t({ message: `I accept`, context: "reviewer's terms panel for a proposal" }) : t({ message: `Let's talk`, context: "reviewer's terms panel for a proposal" }));
@@ -166,6 +201,68 @@ export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { of
         </li>
       </ul>
 
+      {/* EACH ROLE ON ITS OWN TERMS (the lead, 18 Nov 2026): its commitment (the first role's is above) and its price. */}
+      {roleRows.length > 0 && (
+        <ul className="mt-4 grid gap-3" data-role-counters="">
+          {roleRows.map((r) => {
+            const e = roleEdits[r.roleId] ?? {};
+            const money = (n: number) => (r.ceiling ? perPeriod(i18n, moneyWords(n, r.ceiling.currency, i18n.locale), r.ceiling.per) : String(n));
+            const at = r.ourCommitment ?? r.theirCommitment;
+            const suggested = r.ceiling && at ? ceilingAt(r.ceiling.amount, at) : null;
+            const asked = r.ask?.kind === "amount" && (!r.ceiling || askPeriod(r.ask) === r.ceiling.per) ? r.ask.monthly : null;
+            return (
+              <li key={r.roleId} className={TILE} data-role-counter={r.roleId}>
+                <h3 className="font-semibold text-foreground">{r.name}</h3>
+                {!r.first && (
+                  <div className="mt-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm text-foreground">{r.theirCommitment == null ? t`They have not chosen` : t({ message: `They chose ${r.theirCommitment}%`, context: "reviewer's terms panel, one role's commitment" })}</p>
+                      {r.commitmentChanged && <span className={CHIP} data-role-state="commitment">{stateWords(r.commitmentState)}</span>}
+                    </div>
+                    {mayEdit ? (
+                      <label className="mt-2 block">
+                        <span className="text-sm font-semibold text-foreground">{t({ message: `The commitment we'd agree on for ${r.name}`, context: "reviewer's terms panel, one role's commitment" })}</span>
+                        <select value={e.commitmentPct ?? String(r.ourCommitment ?? "")} onChange={(ev) => setRoleEdits((m) => ({ ...m, [r.roleId]: { ...m[r.roleId], commitmentPct: ev.target.value } }))} className={`${FIELD} mt-1 min-h-11`}>
+                          {r.ourCommitment == null && <option value="">{t({ message: `Choose`, context: "reviewer's terms panel for a proposal" })}</option>}
+                          {COMMITMENT_CHOICES.filter((c) => c >= 10).map((c) => (
+                            <option key={c} value={c}>
+                              {c}%
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : (
+                      r.ourCommitment != null && <p className="mt-1 text-sm text-foreground">{t({ message: `We'd agree ${r.ourCommitment}%`, context: "reviewer's terms panel for a proposal" })}</p>
+                    )}
+                  </div>
+                )}
+                <div className="mt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm text-foreground" data-role-asked="">
+                      {asked !== null
+                        ? t({ message: `Their price: ${money(asked)}`, context: "reviewer's terms panel, one role's price" })
+                        : r.ask?.kind === "negotiate"
+                          ? t({ message: "They chose to negotiate on the first call.", context: "reviewer's terms panel, one role's price" })
+                          : t({ message: "They asked no price of their own.", context: "reviewer's terms panel, one role's price" })}
+                    </p>
+                    {r.priceChanged && <span className={CHIP} data-role-state="price">{stateWords(r.priceState)}</span>}
+                  </div>
+                  {suggested !== null && <p className="mt-1 text-sm text-muted-foreground">{t({ message: `Suggested at ${at}%: ${money(suggested)}`, context: "reviewer's terms panel, one role's price" })}</p>}
+                  {mayEdit && r.ceiling ? (
+                    <label className="mt-2 block">
+                      <span className="text-sm font-semibold text-foreground">{t({ message: `The price we'd agree on for ${r.name}, each ${r.ceiling.per}`, context: "reviewer's terms panel, one role's price" })}</span>
+                      <input inputMode="numeric" value={e.price ?? (r.ourPrice != null ? String(r.ourPrice) : "")} onChange={(ev) => setRoleEdits((m) => ({ ...m, [r.roleId]: { ...m[r.roleId], price: ev.target.value.replace(/[^0-9]/g, "") } }))} className={`${FIELD} mt-1 min-h-11 sm:max-w-xs`} />
+                    </label>
+                  ) : (
+                    r.priceChanged && r.ourPrice != null && <p className="mt-1 text-sm text-foreground">{t({ message: `We'd agree ${money(r.ourPrice)}`, context: "reviewer's terms panel, one role's price" })}</p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
       {mayEdit && (
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button type="button" disabled={busy || !dirty} onClick={() => void save()} className={BTN_PRIMARY}>
@@ -181,7 +278,7 @@ export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { of
 
       {mayEdit && (
         <SaveBar
-          count={edits.length + (commitmentEdit ? 1 : 0)}
+          count={edits.length + (commitmentEdit ? 1 : 0) + roleChanges.length}
           onSave={save}
           onDiscard={discard}
           what={t({ message: `Revision ${offer.revision + 1} of the terms`, context: "save bar, the counter-offer being saved" })}

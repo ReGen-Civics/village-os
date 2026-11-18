@@ -50,4 +50,28 @@ describe("the counter-offer keeps what was typed", () => {
     expect(posted[0]).toMatchObject({ expectedRevision: 1, words: { ending: "Two moons' notice." } });
     expect(unsavedCount()).toBe(0);
   });
+
+  it("counters each role's commitment and price on its own, and posts them with the revision (the lead, 18 Nov 2026)", async () => {
+    const posted: any[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: { body?: string }) => {
+        posted.push(JSON.parse(String(init?.body ?? "{}")));
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }),
+    );
+    const ROLES: ServedDeciderOffer["roles"] = [
+      { roleId: "r1", name: "Gate Keeper", first: true, theirCommitment: 60, ourCommitment: 60, commitmentChanged: false, commitmentState: "accept", ask: { kind: "amount", monthly: 5000 }, ceiling: { amount: 10000, currency: "USD", per: "month" }, ourPrice: 5000, priceChanged: false, priceState: "accept" },
+      { roleId: "r2", name: "Well Keeper", first: false, theirCommitment: 40, ourCommitment: 40, commitmentChanged: false, commitmentState: "accept", ask: null, ceiling: { amount: 8000, currency: "USD", per: "month" }, ourPrice: null, priceChanged: false, priceState: "accept" },
+    ];
+    render(<TermsWeOffer offer={{ ...OFFER, roles: ROLES }} mayEdit savePath="/api/x/terms" onSaved={() => {}} />);
+    // The first role's commitment is countered above, with the rest of the terms: no second control for it.
+    expect(screen.queryByLabelText("The commitment we'd agree on for Gate Keeper")).toBeNull();
+    fireEvent.change(screen.getByLabelText("The commitment we'd agree on for Well Keeper"), { target: { value: "60" } });
+    fireEvent.change(screen.getByLabelText("The price we'd agree on for Well Keeper, each month"), { target: { value: "4,500" } });
+    expect(document.querySelector('[data-role-counter="r2"]')?.textContent).toContain("They asked no price of their own.");
+    fireEvent.click(screen.getByRole("button", { name: "Save revision 2" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toMatchObject({ expectedRevision: 1, roles: [{ roleId: "r2", commitmentPct: 60, price: 4500 }] });
+  });
 });

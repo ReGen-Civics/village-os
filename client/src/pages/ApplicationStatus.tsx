@@ -114,6 +114,8 @@ interface ServedOffer {
     ours: string;
     theirs: { choice: "accept" | "talk"; note: string } | null;
     theirCommitment: number | null;
+    /** A role's price they proposed, in words (the lead, 18 Nov 2026: each role's price can be countered). */
+    theirsText?: string;
     state: "accept" | "talk" | "waiting";
     reply: { choice: "accept" | "talk"; note: string } | null;
   }>;
@@ -160,7 +162,7 @@ export function ChangedTerms({ offer, answerUrl, onSaved }: { offer: ServedOffer
             <p className="whitespace-pre-wrap break-words text-foreground">{r.ours}</p>
             <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t({ message: `What you answered`, context: "applicant's application status, terms" })}</p>
             <p className="whitespace-pre-wrap break-words text-foreground">
-              {r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : t`You did not answer this one.`}
+              {r.theirsText ? r.theirsText : r.theirCommitment != null ? `${r.theirCommitment}%` : r.theirs ? `${choice(r.theirs.choice)}${r.theirs.note ? `: ${r.theirs.note}` : ""}` : t`You did not answer this one.`}
             </p>
             {offer.mayAnswer && (
               <fieldset className="mt-3">

@@ -26,7 +26,7 @@ export interface CommitmentReviewData {
   suggestionCount?: number;
   /** The village's split at their commitment beside the one they proposed, when they sent one. */
   split?: ProposalSplit | null;
-  roles: Array<{ roleId: string; full: PayCeiling | null; atCommitment: number | null; heldPct: number; targetPct: number; withThisPct: number; own?: OwnTerms }>;
+  roles: Array<{ roleId: string; full: PayCeiling | null; atCommitment: number | null; heldPct: number; targetPct: number; withThisPct: number; own?: OwnTerms; counteredPrice?: number }>;
 }
 
 /** One role's own terms on a proposal naming several roles, each with its own commitment (the lead, 17 Nov 2026). */
@@ -140,6 +140,11 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
                   </p>
                 );
               })()}
+              {typeof r.counteredPrice === "number" && r.full && (
+                <p data-role-countered-price="">
+                  {t({ message: `Our counter-offer on the price: ${priced(r.counteredPrice, r.full.currency, r.full.per)}.`, context: "open proposal: one role's countered price" })}
+                </p>
+              )}
               <p data-commitment-coverage="">
                 {t({ message: `Held now: ${r.heldPct}% of ${r.targetPct}%. With this application: ${r.withThisPct}% of ${r.targetPct}%.`, context: "open proposal: how full the role would be" })}
               </p>

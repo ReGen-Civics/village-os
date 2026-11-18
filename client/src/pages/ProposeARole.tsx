@@ -107,7 +107,7 @@ interface FormRole {
   timeCommitment?: string | null;
   /** The role's suggested wording for the eight settings and the commitment it asks (joining lane PR 3). */
   terms?: { words?: TermsWords; commitmentPct?: number | null }; commitmentMin?: number | null; payCeiling?: import("@shared/roleCardSections").PayCeiling | null; payShape?: import("@shared/proposalSplit").ShapeShare[]; // the commitment range (Rye, 14 Nov 2026) and the split in force (17 Nov)
-  conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>; held?: boolean;
+  conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>; held?: boolean; stillRecruiting?: boolean;
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
   alwaysChecked?: boolean;
@@ -260,6 +260,9 @@ export default function ProposeARole() {
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
       setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk, paySplit: splitOfDraft(d.terms.paySplit) });
+      // The roles added before the reload, each on its own terms, then any more the link names (the lead, 17 Nov 2026).
+      const kept = (own?.extras ?? []).filter((x) => x.roleId !== roleId && form.roles.some((r) => r.id === x.roleId)).map((x) => ({ roleId: x.roleId, terms: { answers: {}, commitmentPct: x.terms.commitmentPct, payAsk: x.terms.payAsk, paySplit: splitOfDraft(x.terms.paySplit) } }));
+      if (kept.length) setExtras((now) => [...kept, ...now.filter((x) => !kept.some((k) => k.roleId === x.roleId))].slice(0, OPEN_APPLY_ROLES - 1));
       setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
@@ -275,9 +278,9 @@ export default function ProposeARole() {
     writeStoredJson(
       "local",
       draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions }, new Date()),
+      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date()),
     );
-  }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
+  }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions, extras]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
   useEffect(() => {
@@ -294,7 +297,7 @@ export default function ProposeARole() {
 
   const role = useMemo(() => (form.kind === "open" && roleId ? (form.roles.find((r) => r.id === roleId) ?? null) : null), [form, roleId]);
   /** A role as The terms read it: its words, commitment range, price and split, and its circle. */
-  const asTerms = (r: FormRole) => ({ id: r.id, name: r.name, circle: r.circle, held: r.held, words: r.terms?.words, commitmentPct: r.terms?.commitmentPct ?? null, commitmentMin: r.commitmentMin ?? null, ceiling: r.payCeiling ?? null, payShape: r.payShape, suggestions: r.id === roleId ? pieceSuggestions.length : 0 });
+  const asTerms = (r: FormRole) => ({ id: r.id, name: r.name, circle: r.circle, held: r.held, stillRecruiting: r.stillRecruiting, comingSoon: r.comingSoon, futureVenture: r.futureVenture, words: r.terms?.words, commitmentPct: r.terms?.commitmentPct ?? null, commitmentMin: r.commitmentMin ?? null, ceiling: r.payCeiling ?? null, payShape: r.payShape, suggestions: r.id === roleId ? pieceSuggestions.length : 0 });
   const extraRoles = extras.map((x) => (form.kind === "open" ? form.roles.find((r) => r.id === x.roleId) : undefined));
   /** An added role's commitment: none chosen yet, or below what the role takes from one person. */
   const extraRoleCheck = (x: ExtraRole, r: FormRole | undefined) => (x.terms.commitmentPct === null ? "none" : x.terms.commitmentPct < (r?.commitmentMin ?? 0) ? "below" : null);
@@ -656,6 +659,8 @@ export default function ProposeARole() {
   // Several roles: each one's commitment, and the commitments added (the lead, 17 Nov 2026).
   const eachRole = [`${commitment}% ${role.name}`, ...extras.map((x, i) => `${x.terms.commitmentPct}% ${extraRoles[i]?.name ?? ""}`)].join(", ");
   const allPct = (commitment ?? 0) + extras.reduce((n, x) => n + (x.terms.commitmentPct ?? 0), 0);
+  // Each role's own price and split on Review & submit, then the total (production check of 1.3.24).
+  const reviewRoles = extras.length ? [{ name: role.name, ceiling: role.payCeiling, pct: commitment, ask: termsStep.payAsk, split: termsStep.paySplitView }, ...extras.map((x, i) => ({ name: extraRoles[i]?.name ?? "", ceiling: extraRoles[i]?.payCeiling, pct: x.terms.commitmentPct, ask: x.terms.payAsk, split: x.terms.paySplitView }))] : undefined;
   /** Review & submit: each step in a line, with a way back to it. */
   const review: Array<[number, string]> = [
     [0, ways === 0 ? t({ message: "Nothing to tick", context: "founding application review" }) : t({ message: `${ticked} of ${ways} done`, context: "founding application review" })],
@@ -901,7 +906,7 @@ export default function ProposeARole() {
             {/* STEP 6: review & submit. Everything read back, the agreements, then send. */}
             <section {...panel(5)}>
               {heading(5)}
-              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null })} />
+              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null, roles: reviewRoles })} />
               <div data-agreements="" className="scroll-mt-24">
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />
@@ -926,7 +931,7 @@ export default function ProposeARole() {
           {/* A desk has the width: the role stays beside the step. */}
           <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
             <RoleBeside role={role} pct={pct} />
-            <RewardsBeside setup={setup} />
+            <RewardsBeside setup={setup} splits={[{ name: role.name, line: termsStep.paySplitView?.line ?? "" }, ...extras.map((x, i) => ({ name: extraRoles[i]?.name ?? "", line: x.terms.paySplitView?.line ?? "" }))].filter((x) => x.line)} />
           </aside>
         </div>
       )}

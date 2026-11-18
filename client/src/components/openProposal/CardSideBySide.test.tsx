@@ -30,4 +30,17 @@ describe("CardSideBySide gaps", () => {
     const { container } = render(<CardSideBySide roles={[ROLE]} membershipAligned card={card([{ roleId: "lfs", moves: [], firstMoon: [] }])} />);
     expect(container.textContent).toContain("No goal of Lead Finance Steward picked");
   });
+
+  it("a role added to the application reads the goals written once, and is never marked as having none (the lead, 18 Nov 2026)", () => {
+    const OTHER = { id: "well", name: "Well Keeper", accountabilities: [], commitmentPct: 100 };
+    const { container } = render(
+      <CardSideBySide roles={[ROLE, OTHER]} membershipAligned card={card([{ roleId: "lfs", moves: [], firstMoon: [{ quest: "A cash view every Monday", doneWhen: "every circle has it", serves: "g1" }] }])} />,
+    );
+    expect(container.textContent).not.toContain("No goal for Well Keeper");
+    expect(container.querySelector('[data-side-by-side="well"]')?.textContent).toContain("A cash view every Monday");
+    // CONTROL: with no goal written at all, every role says so.
+    cleanup();
+    const none = render(<CardSideBySide roles={[ROLE, OTHER]} membershipAligned card={card([{ roleId: "lfs", moves: [], firstMoon: [] }])} />);
+    expect(none.container.textContent).toContain("No goal for Well Keeper");
+  });
 });

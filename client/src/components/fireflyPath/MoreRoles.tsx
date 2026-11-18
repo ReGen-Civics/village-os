@@ -21,6 +21,12 @@ import { CommitmentFor, EMPTY_TERMS_STEP, type TermsRole, type TermsStepValue } 
 export interface MoreRolesRole extends TermsRole {
   circle: string;
   held?: boolean;
+  /** Every place taken, still recruiting: offered, marked "More players welcome". */
+  stillRecruiting?: boolean;
+  /** Applied for early (the lead, 16 Nov 2026): offered, marked as coming soon. */
+  comingSoon?: boolean;
+  /** A future venture asks for a pitch of its own: never added here. */
+  futureVenture?: boolean;
 }
 
 /** A role added after the first, with its own commitment, price ask and split. */
@@ -58,7 +64,14 @@ export default function MoreRoles({
   const { t, i18n } = useLingui();
   const byId = new Map(offered.map((r) => [r.id, r]));
   const chosen = new Set([first.id, ...extras.map((x) => x.roleId)]);
-  const addable = offered.filter((r) => !chosen.has(r.id) && !r.held);
+  // Open roles, held roles still recruiting and coming-soon roles; never a fully held role or a future venture.
+  const addable = offered.filter((r) => !chosen.has(r.id) && !r.held && !r.futureVenture);
+  const optionName = (r: MoreRolesRole) =>
+    r.comingSoon
+      ? t({ message: `${r.name} (coming soon)`, context: "founding application, a coming-soon role to add" })
+      : r.stillRecruiting
+        ? t({ message: `${r.name}: More players welcome`, context: "founding application, a held role that is still recruiting, to add" })
+        : r.name;
   const circles = Array.from(new Set(addable.map((r) => r.circle)));
   const set = (i: number, terms: TermsStepValue) => onChange(extras.map((x, j) => (j === i ? { ...x, terms } : x)));
   const remove = (i: number) => onChange(extras.filter((_, j) => j !== i));
@@ -119,7 +132,7 @@ export default function MoreRoles({
               <optgroup key={c} label={c}>
                 {addable.filter((r) => r.circle === c).map((r) => (
                   <option key={r.id} value={r.id}>
-                    {r.name}
+                    {optionName(r)}
                   </option>
                 ))}
               </optgroup>

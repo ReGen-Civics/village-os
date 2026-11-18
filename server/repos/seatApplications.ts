@@ -53,6 +53,20 @@ export interface StoredApplication {
   authorityRef: string | null;
   decidedAt: Date | null;
   createdAt: Date;
+  /**
+   * THE APPLICATIONS ONE PROPOSAL MADE, TOGETHER (the lead, 18 Nov 2026): a proposal naming several roles becomes one
+   * application per role, and the village decides them in ONE vote. Every one names the whole group, the first one
+   * leading: the ballot is opened on it. Kept as `answers.together` (written with JSON_SET, so every other write
+   * keeps it). Absent: the application stands alone.
+   */
+  together?: string[];
+}
+
+/** The group an application's answers name, when it names one of two or more that includes itself. */
+function togetherOf(id: string, raw: unknown): string[] | undefined {
+  const o = json<Record<string, unknown> | null>(raw, null);
+  const list = o && Array.isArray(o.together) ? o.together.map(String).filter((x) => /^sa-[a-z0-9-]{1,80}$/i.test(x)).slice(0, 6) : [];
+  return list.length > 1 && list.includes(id) ? list : undefined;
 }
 
 const COLUMNS =
@@ -103,8 +117,21 @@ function rowToApplication(r: any): StoredApplication {
     authorityRef: r.authority_ref ?? null,
     decidedAt: instant(r.decided_at),
     createdAt: instant(r.created_at) as Date,
+    ...(togetherOf(String(r.id), r.answers) ? { together: togetherOf(String(r.id), r.answers) } : {}),
   };
 }
+
+/** Name the group on every application in it (see `together`). In the caller's transaction. */
+export async function setTogether(db: Db, ids: readonly string[]): Promise<void> {
+  if (ids.length < 2) return;
+  await db.query(
+    `UPDATE seat_applications SET answers = JSON_SET(COALESCE(answers, JSON_OBJECT()), '$.together', CAST(? AS JSON)) WHERE id IN (${ids.map(() => "?").join(",")})`,
+    [JSON.stringify(ids), ...ids],
+  );
+}
+
+/** The application a group's ballot is opened on: the first of the group, else itself. */
+export const leadOf = (a: Pick<StoredApplication, "id" | "together">): string => a.together?.[0] ?? a.id;
 
 export interface NewApplication {
   id: string;
@@ -584,26 +611,44 @@ export interface ApplicationBallot {
   status: string;
   landingStatus: string | null;
   landsAt: Date | null;
+  /** The group's lead, when this ballot decides this application with others (`together`): its closer acts for all. */
+  ledBy?: string;
 }
 
 /** The newest `role_application` ballot on each of these applications, in any state (red team U1, D4, D8). */
 export async function latestBallotsFor(db: Db, applicationIds: readonly string[]): Promise<Map<string, ApplicationBallot>> {
   const out = new Map<string, ApplicationBallot>();
   if (applicationIds.length === 0) return out;
+  // An application decided with others in one vote (`together`) reads its group's ballot, opened on the group's lead.
+  const [apps] = await db.query<RowDataPacket[]>(`SELECT id, answers FROM seat_applications WHERE id IN (${applicationIds.map(() => "?").join(",")})`, [...applicationIds]);
+  const lead = new Map<string, string>();
+  for (const r of apps as any[]) {
+    const group = togetherOf(String(r.id), r.answers);
+    if (group && group[0] !== String(r.id)) lead.set(String(r.id), group[0]);
+  }
+  const refs = Array.from(new Set(applicationIds.concat(Array.from(lead.values()))));
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT id, subject_ref, status, landing_status, lands_at FROM ballots WHERE subject_type = 'role_application' " +
-      `AND subject_ref IN (${applicationIds.map(() => "?").join(",")}) ORDER BY opens_at, id`,
-    [...applicationIds],
+      `AND subject_ref IN (${refs.map(() => "?").join(",")}) ORDER BY opens_at, id`,
+    [...refs],
   );
   // Oldest first, so the newest of each wins.
+  const bySubject = new Map<string, ApplicationBallot>();
   for (const r of rows as any[]) {
-    out.set(String(r.subject_ref), {
+    bySubject.set(String(r.subject_ref), {
       id: String(r.id),
       applicationId: String(r.subject_ref),
       status: String(r.status),
       landingStatus: r.landing_status === null || r.landing_status === undefined ? null : String(r.landing_status),
       landsAt: instant(r.lands_at),
     });
+  }
+  for (const id of applicationIds) {
+    const own = bySubject.get(id);
+    const group = lead.has(id) ? bySubject.get(lead.get(id) as string) : undefined;
+    // The application's own ballot, else the one its group's vote is on, marked as led by another.
+    if (own) out.set(id, own);
+    else if (group) out.set(id, { ...group, applicationId: id, ledBy: group.applicationId });
   }
   return out;
 }

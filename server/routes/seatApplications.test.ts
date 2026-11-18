@@ -39,7 +39,7 @@ import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/
 import { ballotById, openBallotFor } from "../lib/ballots";
 import type { LandingDeps, SubjectCloser } from "../lib/applyDue";
 import { createOrgRole, seatHolder } from "../lib/orgChart";
-import { readApplication, rewriteTermsOffer, seatingsHolding } from "../repos/seatApplications";
+import { latestBallotsFor, readApplication, rewriteTermsOffer, seatingsHolding, setTogether } from "../repos/seatApplications";
 import { register, seatFromApplication } from "./seatApplications";
 import { WAITING_COPY } from "../../shared/waitingOnYou";
 
@@ -504,6 +504,44 @@ describe.skipIf(!configured)("applying, adopting and seating, on a real schema",
     expect(r.body.status).toBe("voting");
     expect((await readApplication(pool, a.body.id))!.status).toBe("voting");
     expect((await h.call("POST", `/api/governance/role-applications/${a.body.id}/put-to-village`)).status).toBe(409);
+  });
+
+  it("ONE VOTE FOR A PROPOSAL'S ROLES (the lead, 18 Nov 2026): the applications made together go to the village in one ballot, and its landing adopts them all", async () => {
+    h.state.holders = ["u-hal"];
+    const first = await apply({ seatIds: [await seat("Together one")] });
+    const second = await apply({ seatIds: [await seat("Together two")] });
+    expect([first.body.status, second.body.status]).toEqual(["awaiting-holder", "awaiting-holder"]);
+    await setTogether(pool, [first.body.id, second.body.id]);
+    h.state.viewer = { id: "u-hal", stage: "member" };
+    // Sent from either one, the vote opens on the group's lead and names both.
+    const r = await h.call("POST", `/api/governance/role-applications/${second.body.id}/put-to-village`);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    expect(r.body.applications.map((x: { id: string }) => x.id)).toEqual([first.body.id, second.body.id]);
+    expect((await readApplication(pool, first.body.id))!.status).toBe("voting");
+    expect((await readApplication(pool, second.body.id))!.status).toBe("voting");
+    const ballot = (await openBallotFor(pool, "role_application", first.body.id))!;
+    expect(ballot.title).toMatch(/Together one/);
+    expect(ballot.title).toMatch(/Together two/);
+    // CONTROL: no second ballot on the other application; it reads its group's.
+    expect(await openBallotFor(pool, "role_application", second.body.id)).toBeNull();
+    expect((await latestBallotsFor(pool, [second.body.id])).get(second.body.id)).toMatchObject({ id: ballot.id, ledBy: first.body.id });
+    const routed = await land(first.body.id);
+    expect(routed.applied).toEqual([`seat_application:${first.body.id}`, `seat_application:${second.body.id}`]);
+    expect((await readApplication(pool, first.body.id))!.status).not.toBe("voting");
+    expect((await readApplication(pool, second.body.id))!.status).not.toBe("voting");
+  });
+
+  it("a group's vote that does not carry marks every application in it not adopted", async () => {
+    h.state.holders = ["u-hal"];
+    const first = await apply({ seatIds: [await seat("Lost together one")] });
+    const second = await apply({ seatIds: [await seat("Lost together two")] });
+    await setTogether(pool, [first.body.id, second.body.id]);
+    h.state.viewer = { id: "u-hal", stage: "member" };
+    expect((await h.call("POST", `/api/governance/role-applications/${first.body.id}/put-to-village`)).status).toBe(200);
+    const ballot = (await openBallotFor(pool, "role_application", first.body.id))!;
+    await h.closers.role_application!.settle(ballot, "failed", "Not this season.", "governance");
+    expect((await readApplication(pool, first.body.id))!.status).toBe("not-adopted");
+    expect((await readApplication(pool, second.body.id))!.status).toBe("not-adopted");
   });
 
   // ── The closer ───────────────────────────────────────────────────────────

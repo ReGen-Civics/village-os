@@ -109,13 +109,32 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
     // listed price as the high end, with the band under it where the village shows pay ranges.
     footnote: [
       i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
-      i18n._(msg({ message: "Your first moon often starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first moon" })),
+      i18n._(msg({ message: "Your first moon starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first moon" })),
       TOKEN_TERMS_ALWAYS || paysInTokens(shape) ? i18n._(msg({ message: "Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the footnote, equity and credits" })) : null,
-      String(note ?? "").replace(/^\*\s*/, "").trim(),
+      // The card's or the village's note, without what the footnote already says (production check of 1.3.24).
+      notSaidTwice(String(note ?? "").replace(/^\*\s*/, "").trim()),
     ]
       .filter(Boolean)
       .join(" "),
   };
+}
+
+/**
+ * A note's sentences without the ones the footnote already says: the first month or moon starting lower, the
+ * equity and credit terms awaiting legal review, and the default split (said once, with the split). One footnote
+ * (production check of 1.3.24: each was said twice when a village's note repeated them).
+ */
+export function notSaidTwice(note: string): string {
+  const sentences = note.match(/[^.!?]+[.!?]*/g) ?? [];
+  return sentences
+    .map((x) => x.trim())
+    .filter((x) => x && !/starts? lower/i.test(x) && !/legal review/i.test(x) && !/^default split/i.test(x) && !/^\d{1,3}% cash\b/i.test(x))
+    .join(" ");
+}
+
+/** A split note's sentences without one that restates the split itself ("Default split: ...", "60% cash, 40% equity"). */
+export function splitNotRestated(note: string): string {
+  return (note.match(/[^.!?]+[.!?]*/g) ?? []).map((x) => x.trim()).filter((x) => x && !/^default split/i.test(x) && !/^\d{1,3}% cash\b/i.test(x)).join(" ");
 }
 
 /**

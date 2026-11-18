@@ -401,6 +401,8 @@ export function register(app: Express, deps: Deps): void {
         ...(isFutureVenture(r) ? { futureVenture: true } : {}),
         // A full role still recruiting is not marked: more players welcome, so the chooser offers it (the lead, 17 Nov 2026).
         ...((taken.get(r.id) ?? 0) >= r.seats && r.recruiting !== true ? { held: true } : {}),
+        // Every place taken and still recruiting: offered, marked "More players welcome" (production check of 1.3.24).
+        ...((taken.get(r.id) ?? 0) >= r.seats && r.recruiting === true ? { stillRecruiting: true } : {}),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
         // The split in force (the card's own shares, else the village's), so the form offers it to adjust (the lead, 17 Nov 2026).
         // Shares only, never an amount: every card shows them already.

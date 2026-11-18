@@ -273,7 +273,7 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (p.addressUnconfirmed) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
     const placed = await placeOnRoles(decide, { account: own, proposal: p, adopterId: actorId, authority: "village-vote", adopt: false });
     if (!placed.ok) return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
-    res.json({ success: true, application: { id: placed.applicationId, href: applicationHref(placed.applicationId) }, ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}), next: "Send it to the village from its application page.", back: openProposalHref(p.id) });
+    res.json({ success: true, application: { id: placed.applicationId, href: applicationHref(placed.applicationId) }, ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}), next: placed.applicationIds ? "Send them to the village from any of their application pages: one vote decides every role." : "Send it to the village from its application page.", back: openProposalHref(p.id) });
   });
 
   // ── The clock: reminders only ─────────────────────────────────────────────

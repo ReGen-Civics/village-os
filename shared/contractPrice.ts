@@ -22,7 +22,8 @@ import { ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { PayCeiling } from "./roleCardSections";
 import { minorDigits, moneyWords } from "./seatSettings";
 
-export type ContractPriceSource = "ask" | "suggested" | "negotiate";
+/** `countered`: the price the people who seat the role countered with, and the applicant accepted (the lead, 18 Nov 2026). */
+export type ContractPriceSource = "ask" | "suggested" | "negotiate" | "countered";
 
 export interface ContractPrice {
   kind: "fixed";
@@ -44,6 +45,7 @@ export const CONTRACT_PRICE_WORDS = {
   ask: (pct: number) => `From their price ask, at ${pct}% commitment.`,
   suggested: (pct: number) => `The suggested price: the listed price at ${pct}% commitment.`,
   negotiate: (pct: number) => `They chose to negotiate on the first call. This is the suggested price at ${pct}% commitment until a price is agreed.`,
+  countered: (pct: number) => `From our counter-offer on the price, at ${pct}% commitment.`,
   capped: ` Their ask was above ${ROLE_PAY_CAP_PCT}% of the listed price, so it is held there.`,
   heading: "Pay this contract will record",
   none: "This role lists no price, so the contract records no pay. A Treasurer writes it.",
@@ -59,6 +61,18 @@ function asContract(whole: number, per: PayCeiling["per"], currency: string): { 
  * The pay group adoption writes, from the role's band, the agreed commitment and the price ask. Null with
  * no band, or a band that prices to nothing.
  */
+/**
+ * The price with a counter-offer on it (the lead, 18 Nov 2026): the countered amount, in the role's own period, as the
+ * price agreed, held to the same cap a price ask is. Without one, `contractPriceOf` as it always was.
+ */
+export function contractPriceWith(ceiling: PayCeiling | null | undefined, agreedPct: number | null | undefined, ask: PayAsk | null | undefined, countered: number | null): ContractPrice | null {
+  if (countered === null || !ceiling) return contractPriceOf(ceiling, agreedPct, ask);
+  const price = contractPriceOf(ceiling, agreedPct, { kind: "amount", monthly: countered, per: ceiling.per });
+  if (!price) return null;
+  const pct = typeof agreedPct === "number" && agreedPct > 0 && agreedPct <= 100 ? agreedPct : 100;
+  return { ...price, source: "countered", note: `${CONTRACT_PRICE_WORDS.countered(pct)}${price.capped ? CONTRACT_PRICE_WORDS.capped : ""}` };
+}
+
 export function contractPriceOf(ceiling: PayCeiling | null | undefined, agreedPct: number | null | undefined, ask: PayAsk | null | undefined): ContractPrice | null {
   if (!ceiling || !Number.isInteger(ceiling.amount) || ceiling.amount <= 0) return null;
   const pct = typeof agreedPct === "number" && agreedPct > 0 && agreedPct <= 100 ? agreedPct : 100;

@@ -221,7 +221,7 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
     const r = await call(
       "POST",
       "/api/open-proposals",
-      { name: "Rowan Field", email, roles: roles.map((roleId) => ({ roleId, note: "I keep books for a living." })), why: "I want to hold the money well.", aim: "A clear budget by the next moon." },
+      { name: "Rowan Field", email, roles: roles.map((roleId, i) => ({ roleId, note: "I keep books for a living.", ...(i ? { commitmentPct: 50 } : {}) })), why: "I want to hold the money well.", aim: "A clear budget by the next moon." },
       null,
     );
     expect(r.status, JSON.stringify(r.body)).toBe(200);
@@ -628,6 +628,23 @@ describe.skipIf(!configured)("application review, on a real schema", () => {
       expect(rows).toEqual([expect.objectContaining({ candidate_user_id: APPLICANT.id, status: "awaiting-holder" })]);
       // The proposal itself was not adopted by this door.
       expect((await q("SELECT status FROM open_role_proposals WHERE id = ?", [id]))[0].status).toBe("confirmed");
+    });
+
+    it("a proposal for several roles becomes one application per role, named together for ONE vote, and the answer lists them all (the lead, 18 Nov 2026)", async () => {
+      state.powerHolders = [];
+      // One application per role per address while it waits (shared/applicationAgain.ts): the earlier ones close first.
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status = 'confirmed'", [APPLICANT.email]);
+      const { id } = await confirmed(APPLICANT.email, [roleC, roleD]);
+      const out = await call("POST", `/api/governance/open-proposals/${id}/to-the-village`, {}, IA.id);
+      expect(out.status, JSON.stringify(out.body)).toBe(200);
+      const ids = out.body.applications.map((a: { id: string }) => a.id);
+      expect(ids).toHaveLength(2);
+      expect(out.body.application.id).toBe(ids[0]);
+      const rows = await q("SELECT id, status, JSON_EXTRACT(answers, '$.together') AS together FROM seat_applications WHERE id IN (?, ?) ORDER BY id", ids);
+      for (const r of rows) {
+        expect(r.status).toBe("awaiting-holder");
+        expect(typeof r.together === "string" ? JSON.parse(r.together) : r.together).toEqual(ids);
+      }
     });
 
     it("says an account is needed first for a stranger, and refuses while a holder can adopt", async () => {

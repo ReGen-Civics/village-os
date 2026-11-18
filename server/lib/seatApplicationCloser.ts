@@ -508,26 +508,39 @@ export function settleDepsOf(deps: NoticeDeps & { calendar: () => SeatCalendar }
  */
 export function seatApplicationCloser(deps: SeatApplicationCloserDeps): SubjectCloser {
   const now = () => deps.now?.() ?? new Date();
+  /**
+   * ONE VOTE FOR A PROPOSAL'S ROLES (the lead, 18 Nov 2026): a ballot opened on a group's lead decides every
+   * application in the group (`together`, server/repos/seatApplications.ts). Alone, the group is the application.
+   */
+  const groupOf = async (ref: string): Promise<string[]> => {
+    const lead = await readApplication(deps.getPool(), ref);
+    return lead?.together ?? [ref];
+  };
 
   return {
     settle: async (b: BallotRow, outcome, _note, actorId) => {
       // A carried vote changes nothing at the close: the landing does it.
       if (outcome === "passed") return nothing();
       const pool = deps.getPool();
-      const moved = await setStatus(pool, b.subjectRef, ["voting"], "not-adopted", { decided: true });
-      const app = await readApplication(pool, b.subjectRef);
-      if (moved && app) {
-        await deps.notify({
-          userId: app.candidateUserId,
-          type: "governance",
-          title: applicationNoticeTitle("not-adopted", await seatNamesOf(pool, app)),
-          body: null,
-          link: applicationHref(app.id),
-          actorUserId: actorId,
-          dedupeKey: `bal:${b.id}:sa-not-adopted`,
-        });
+      let told: string | null = null;
+      for (const ref of await groupOf(b.subjectRef)) {
+        const moved = await setStatus(pool, ref, ["voting"], "not-adopted", { decided: true });
+        const app = await readApplication(pool, ref);
+        if (app) told = app.candidateUserId;
+        if (moved && app) {
+          await deps.notify({
+            userId: app.candidateUserId,
+            type: "governance",
+            title: applicationNoticeTitle("not-adopted", await seatNamesOf(pool, app)),
+            body: null,
+            link: applicationHref(app.id),
+            actorUserId: actorId,
+            // The lead keeps the key it always had; each other application in the group has its own.
+            dedupeKey: ref === b.subjectRef ? `bal:${b.id}:sa-not-adopted` : `bal:${b.id}:sa-not-adopted:${ref}`,
+          });
+        }
       }
-      return { applied: [], held: null, proposerTold: app?.candidateUserId ?? null };
+      return { applied: [], held: null, proposerTold: told };
     },
 
     execute: async (b: BallotRow, actorId) => {
@@ -552,40 +565,40 @@ export function seatApplicationCloser(deps: SeatApplicationCloserDeps): SubjectC
           draftId = applied.draftId;
         }
       }
-      const { outcome, app, textId } = await adoptApplication(
-        deps.getPool(),
-        b.subjectRef,
-        ["voting"],
-        { via: "ballot", ref: b.id, authority: b.id },
-        { now: now(), lapse: deps.lapse(), calendar: deps.calendar() },
-      );
-      if (draftId && (outcome.kind === "lost" || outcome.kind === "cannot" || !app)) await revertDraft(pool, draftId);
-      if (outcome.kind === "lost" || !app) {
-        return {
-          applied: [],
-          held: "The application this vote would adopt is no longer waiting on a vote, so nothing was changed.",
-          proposerTold: null,
-        };
+      const applied: string[] = [];
+      const held: string[] = [];
+      let told: string | null = null;
+      let leadAdopted = false;
+      for (const ref of await groupOf(b.subjectRef)) {
+        const { outcome, app, textId } = await adoptApplication(
+          deps.getPool(),
+          ref,
+          ["voting"],
+          { via: "ballot", ref: b.id, authority: b.id },
+          { now: now(), lapse: deps.lapse(), calendar: deps.calendar() },
+        );
+        if (ref === b.subjectRef) leadAdopted = !(outcome.kind === "lost" || outcome.kind === "cannot" || !app);
+        if (outcome.kind === "lost" || !app) {
+          held.push("The application this vote would adopt is no longer waiting on a vote, so nothing was changed.");
+          continue;
+        }
+        told = app.candidateUserId;
+        await tellOutcome(deps, app, outcome, b.id, actorId);
+        if (textId) await settleText(settleDepsOf(deps, now), textId);
+        if (outcome.kind === "held-full") held.push("A role this application names had no free place when the vote landed, so nobody was seated and the application is held.");
+        else if (outcome.kind === "cannot") held.push(outcome.why);
+        else applied.push(`seat_application:${app.id}`);
       }
-      await tellOutcome(deps, app, outcome, b.id, actorId);
-      if (textId) await settleText(settleDepsOf(deps, now), textId);
-      if (outcome.kind === "held-full") {
-        return {
-          applied: [],
-          held: "A role this application names had no free place when the vote landed, so nobody was seated and the application is held.",
-          proposerTold: app.candidateUserId,
-        };
-      }
-      if (outcome.kind === "cannot") return { applied: [], held: outcome.why, proposerTold: app.candidateUserId };
-      return { applied: [`seat_application:${app.id}`], held: null, proposerTold: app.candidateUserId };
+      if (draftId && !leadAdopted) await revertDraft(pool, draftId);
+      return { applied, held: held.length ? held.join(" ") : null, proposerTold: told };
     },
 
     onWithdraw: async (b: BallotRow) => {
-      await setStatus(deps.getPool(), b.subjectRef, ["voting"], "withdrawn", { decided: true });
+      for (const ref of await groupOf(b.subjectRef)) await setStatus(deps.getPool(), ref, ["voting"], "withdrawn", { decided: true });
     },
 
     onUnlanded: async (b: BallotRow) => {
-      await setStatus(deps.getPool(), b.subjectRef, ["voting"], "not-adopted", { decided: true });
+      for (const ref of await groupOf(b.subjectRef)) await setStatus(deps.getPool(), ref, ["voting"], "not-adopted", { decided: true });
     },
   };
 }
