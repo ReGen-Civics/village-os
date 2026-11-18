@@ -957,6 +957,11 @@ export const SUBJECT_NOUN: Record<string, string> = {
    */
   database_export: "One copy of the village's database",
   /*
+   * ALSO NOT A WIZARD TYPE. A funding round's held quests, decided by the
+   * village when its two counts disagree (server/lib/fundingRounds.ts).
+   */
+  funding_divergence: "The quests a funding round's two counts disagree on",
+  /*
    * The vote mode became something the village decides on 2026-09-02 (Q8),
    * with its own subject type so it can carry the constitutional bar. The
    * noun is what is being decided, which is how every vote after it will be

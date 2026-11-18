@@ -92,7 +92,8 @@ describe.skipIf(!configured)("funding rounds: grow, choose and harvest", () => {
       members: { all: async () => people, count: async () => people.length },
       // Saving a quest takes a moment, so two racing reads really do overlap.
       questsRepo: { add: async (quest: any) => { await new Promise((r) => setTimeout(r, 50)); quests.push(quest); }, all: async () => quests },
-      electorate: async () => people.map((p) => ({ userId: p.id, weight: voice.get(p.id) ?? 0 })),
+      roll: async () => people.map((p) => p.id),
+      countedVoice: async (_pool: unknown, ids: readonly string[]) => ({ byUser: new Map(ids.map((id) => [id, voice.get(id) ?? 0])), unclassified: [] }),
     } as any);
     handlers = c.handlers;
 
