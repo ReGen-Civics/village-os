@@ -8,6 +8,7 @@ import { useLingui } from "@lingui/react/macro";
 import type { ContractPriceSource } from "@shared/contractPrice";
 import { moneyWords } from "@shared/seatSettings";
 import { ROLE_PAY_CAP_PCT } from "@shared/rolePayMath";
+import { MoonText } from "@/components/MoonWord";
 
 export interface ContractPriceData {
   amountMinor: number;
@@ -44,7 +45,9 @@ export default function ContractPrice({ data }: { data: ContractPriceData | null
       <h2 id="op-contract-price" className="text-lg font-bold text-foreground">
         {t({ message: "Pay the contract will record", context: "open proposal: the contract's pay" })}
       </h2>
-      <p className="font-display text-2xl text-foreground" data-contract-price-figure="">{figure}</p>
+      <p className="font-display text-2xl text-foreground" data-contract-price-figure="">
+        <MoonText text={figure} />
+      </p>
       <p className="text-sm text-muted-foreground">{from}</p>
       {data.capped && (
         <p className="text-sm text-foreground" data-contract-price-capped="">

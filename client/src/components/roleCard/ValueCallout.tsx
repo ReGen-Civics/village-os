@@ -11,6 +11,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Info, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { valueExplainerWords } from "./valueExplainerWords";
+import { MoonText } from "@/components/MoonWord";
 
 export default function ValueCallout() {
   const { t, i18n } = useLingui();
@@ -65,7 +66,9 @@ export default function ValueCallout() {
             {words.parts.map((p) => (
               <section key={p.key} data-explainer-part={p.key}>
                 <p className="text-xs font-semibold uppercase tracking-widest text-notice">{p.heading}</p>
-                <p className="mt-1 leading-relaxed text-card-foreground">{p.text}</p>
+                <p className="mt-1 leading-relaxed text-card-foreground">
+                  <MoonText text={p.text} />
+                </p>
               </section>
             ))}
           </div>

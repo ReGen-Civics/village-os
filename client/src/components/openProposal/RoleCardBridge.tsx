@@ -20,6 +20,7 @@ import { CARD_LIMITS, CARD_WINDOWS, type FirstMoonGoal } from "@shared/openPropo
 import { BLANK_GOAL, type ProposalGoal } from "@shared/proposalGoals";
 import { TERM_KEYS, TERM_LABELS, type TermAnswers } from "@shared/termsWords";
 import GoalsList from "@/components/governance/GoalsList";
+import { MoonText } from "@/components/MoonWord";
 
 export interface RoleCardState {
   /** The role's goal (one of its accountabilities) -> target. */
@@ -120,7 +121,7 @@ export function RoleAsks({
         </fieldset>
       )}
       <fieldset className="grid gap-2">
-        <legend className="text-sm font-semibold text-card-foreground">{t`Your goals for your first month in ${roleName}`}</legend>
+        <legend className="text-sm font-semibold text-card-foreground"><MoonText text={t`Your goals for your first moon in ${roleName}`} /></legend>
         <GoalsList
           idPrefix={`card-${roleId}-goals`}
           goals={value.goals}

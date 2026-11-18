@@ -21,6 +21,7 @@ import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_M
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
+import { MoonText } from "@/components/MoonWord";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const FIELD = "w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring";
@@ -98,7 +99,7 @@ export default function PriceAsk({
       <p className="text-sm font-semibold text-foreground">{t({ message: "Your price", context: "price ask heading" })}</p>
       {suggested ? (
         <p className="text-foreground" data-suggested-price="">
-          {t({ message: `Suggested: ${priced(suggested)}, from your commitment of ${pct}%.`, context: "price ask: the suggested price" })}
+          <MoonText text={t({ message: `Suggested: ${priced(suggested)}, from your commitment of ${pct}%.`, context: "price ask: the suggested price" })} />
         </p>
       ) : (
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
@@ -112,7 +113,7 @@ export default function PriceAsk({
       </p>
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
-          {summary}
+          <MoonText text={summary} />
         </p>
       )}
       <button
@@ -137,9 +138,13 @@ export default function PriceAsk({
           <DialogHeader>
             <DialogTitle>{t({ message: "Your price", context: "price popup title" })}</DialogTitle>
             <DialogDescription>
-              {suggested
-                ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
-                : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
+              <MoonText
+                text={
+                  suggested
+                    ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
+                    : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })
+                }
+              />
             </DialogDescription>
           </DialogHeader>
           <fieldset className="grid gap-2" data-price-popup="">
@@ -147,7 +152,7 @@ export default function PriceAsk({
             {suggested && (
               <label className="flex min-h-11 items-center gap-2 text-foreground">
                 <input type="radio" name={`${idPrefix}-price`} className="size-5 accent-notice" checked={choice === "suggested"} onChange={() => setChoice("suggested")} />
-                {t({ message: `Take the suggested price, ${priced(suggested)}`, context: "price popup choice" })}
+                <MoonText text={t({ message: `Take the suggested price, ${priced(suggested)}`, context: "price popup choice" })} />
               </label>
             )}
             <label className="flex min-h-11 items-center gap-2 text-foreground">
@@ -180,7 +185,7 @@ export default function PriceAsk({
                   </p>
                 ) : typed > ceiling.amount && (
                   <p className="text-sm text-foreground" data-price-above-band="">
-                    {t({ message: `That's above ${priced(ceiling.amount)}, the most for the full role. You can still propose it.`, context: "price popup: above the full band" })}
+                    <MoonText text={t({ message: `That's above ${priced(ceiling.amount)}, the most for the full role. You can still propose it.`, context: "price popup: above the full band" })} />
                   </p>
                 )}
               </div>

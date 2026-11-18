@@ -56,6 +56,7 @@ import { useLocale } from "@/i18n/LocaleProvider";
 import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
+import { MoonText } from "@/components/MoonWord";
 import { useVillageName } from "@/hooks/useVillageName";
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
@@ -253,8 +254,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
-          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
-          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><MoonText text={reward.headline} /></p>
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
           </Suspense>
@@ -264,7 +265,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       ) : (
         <>
           {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
-          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
           </Suspense>
