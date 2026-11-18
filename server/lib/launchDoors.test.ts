@@ -17,6 +17,9 @@ vi.mock("./villageFloors", () => ({ floorDialRefusal: vi.fn(async () => null) })
 
 import {
   GOVERNANCE_DIALS_CLOSE_AT_LAUNCH,
+  ISSUANCE_DIAL_CLOSED_AT_LAUNCH,
+  ISSUANCE_DIALS_CLOSED_AT_LAUNCH,
+  closesAtLaunch,
   VOTE_RULE_DIAL_CLOSED_AT_LAUNCH,
   VOTE_RULE_DIAL_EXTRAS,
   isVoteRuleDial,
@@ -47,7 +50,7 @@ describe("D2a: the dials that decide how votes pass", () => {
     ]) expect(isVoteRuleDial(k), k).toBe(true);
   });
   it("leaves ordinary dials and the founder's brake alone", () => {
-    for (const k of ["gratitude.base_budget", "ledger.admin_mint_cycle_cap", "governance.auto_apply_enabled", "governance.hub_url"]) {
+    for (const k of ["gratitude.base_budget", "governance.auto_apply_enabled", "governance.hub_url"]) {
       expect(isVoteRuleDial(k), k).toBe(false);
     }
   });
@@ -69,7 +72,7 @@ describe("D2a: the dials that decide how votes pass", () => {
 
 describe("the refusals follow the house voice", () => {
   it("carries no em or en dash and no contrast framing", () => {
-    for (const s of [VOTE_RULE_DIAL_CLOSED_AT_LAUNCH]) {
+    for (const s of [VOTE_RULE_DIAL_CLOSED_AT_LAUNCH, ISSUANCE_DIAL_CLOSED_AT_LAUNCH]) {
       expect(s).not.toMatch(/[–—]/);
       expect(s.toLowerCase()).not.toContain("rather than");
     }
@@ -124,5 +127,43 @@ describe("D2a through the dial write itself", () => {
     started = true;
     const a = await writeDial(dialDeps({ source: "override", reachedPast: true }), {} as any, "governance.quorum_pct", "30");
     expect(a.status).toBe(200);
+  });
+});
+
+describe("the issuance cap closes at launch beside the vote rules (2026-11-18)", () => {
+  beforeEach(() => { started = false; });
+  const CAP = "ledger.admin_mint_cycle_cap";
+
+  it("is named, is an open-ring dial the village's vote can reach, and is no vote rule", () => {
+    expect(ISSUANCE_DIALS_CLOSED_AT_LAUNCH).toContain(CAP);
+    expect(ringOf(VARIABLES_BY_KEY[CAP]!)).toBe("open");
+    expect(closesAtLaunch(CAP)).toBe(true);
+    expect(isVoteRuleDial(CAP)).toBe(false);
+    expect(voteRuleDialClosed(CAP, false, false), "before launch").toBe(false);
+    expect(voteRuleDialClosed(CAP, true, false), "after launch").toBe(true);
+    expect(voteRuleDialClosed(CAP, true, true), "founder-steward broke the glass").toBe(false);
+  });
+
+  it("before launch the founder sets it", async () => {
+    const a = await writeDial(dialDeps({}), {} as any, CAP, "500");
+    expect(a.status).toBe(200);
+  });
+
+  it("after launch a plain admin is refused and told it is the village's vote", async () => {
+    started = true;
+    const a = await writeDial(dialDeps({}), {} as any, CAP, "500000");
+    expect(a.status).toBe(409);
+    expect(a.body.error).toBe(ISSUANCE_DIAL_CLOSED_AT_LAUNCH);
+    expect(a.body.proposeInstead).toBe(true);
+  });
+
+  it("after launch the founder seated as a steward who broke the glass may still write it", async () => {
+    started = true;
+    const a = await writeDial(dialDeps({ source: "override", reachedPast: true }), {} as any, CAP, "500");
+    expect(a.status).toBe(200);
+  });
+
+  it("CONTROL: with the flag off, the cap writes after launch as before", () => {
+    expect(voteRuleDialClosed(CAP, true, false, false)).toBe(false);
   });
 });
