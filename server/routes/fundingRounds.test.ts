@@ -32,8 +32,14 @@ const ROUTES = [
   "PUT /api/funding-rounds/rounds/:id/marks",
   "POST /api/funding-rounds/ideas/:id/pledges",
   "DELETE /api/funding-rounds/pledges/:id",
+  "PATCH /api/funding-rounds/pots/:id/counted-voice",
 ];
-const STEWARD_ROUTES = ["POST /api/funding-rounds/pots", "POST /api/funding-rounds/pots/:id/rounds", "PATCH /api/funding-rounds/rounds/:id/dates"];
+const STEWARD_ROUTES = [
+  "POST /api/funding-rounds/pots",
+  "POST /api/funding-rounds/pots/:id/rounds",
+  "PATCH /api/funding-rounds/rounds/:id/dates",
+  "PATCH /api/funding-rounds/pots/:id/counted-voice",
+];
 
 function collect() {
   const handlers = new Map<string, Handler>();
@@ -103,7 +109,7 @@ describe("funding rounds doors, no database", () => {
     const c = collect();
     register(c.app, deps(null, () => "m-someone", { stewards: new Set(), people: () => [], asked }));
     for (const key of STEWARD_ROUTES) expect((await call(c.handlers, key, { params: { id: "x" } })).status, key).toBe(403);
-    expect(asked).toEqual(["pot.steward", "pot.steward", "pot.steward"]);
+    expect(asked).toEqual(STEWARD_ROUTES.map(() => "pot.steward"));
   });
 });
 
