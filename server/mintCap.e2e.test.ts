@@ -32,7 +32,8 @@ import { createHmac } from "crypto";
 import { spawn, type ChildProcess } from "child_process";
 import mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFree } from "./db/testDb";
+import { closesAtLaunch } from "./lib/launchDoors";
+import { asIfBeforeLaunch, provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 import { HAND_MINT_SOURCES, MINT_CAP_KEY, mintCycleStart, readCycleIssuance } from "./lib/mintCap";
 import { CIRCLE_BONUS_SOURCE, payCircleBonus } from "./lib/circleBonus";
@@ -154,7 +155,10 @@ describe.skipIf(!DB_CONFIGURED)("the per-cycle cap counts issuance, net, from ev
   };
 
   const setVar = async (key: string, value: string) => {
-    const r = await call("PUT", `/api/admin/variables/${key}`, { value }, founderToken);
+    // The issuance cap closes to the dial write once the Game starts (server/lib/launchDoors.ts),
+    // so a fixture sets it as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const write = () => call("PUT", `/api/admin/variables/${key}`, { value }, founderToken);
+    const r = await (closesAtLaunch(key) ? asIfBeforeLaunch(testDb!.conn, write) : write());
     expect(r.status, `${key} := ${value}: ${r.text.slice(0, 200)}`).toBe(200);
   };
 

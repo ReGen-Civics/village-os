@@ -65,7 +65,9 @@ const sign = (payload: string, secret: string, at = Math.floor(Date.now() / 1000
 
 describe("which launch rows these readers answer", () => {
   it("names four real rows on the journey", () => {
-    expect(Object.keys(LAUNCH_PROOFS).sort()).toEqual(["assistant-key", "session-secret", "stripe-keys", "stripe-webhook"]);
+    expect(Object.keys(LAUNCH_PROOFS).sort()).toEqual([
+      "admin-password", "assistant-key", "break-glass-email", "session-secret", "stripe-keys", "stripe-webhook",
+    ]);
     for (const key of Object.keys(LAUNCH_PROOFS)) {
       expect(LAUNCH_REQUIREMENTS.some((r) => r.checkKey === key), key).toBe(true);
     }

@@ -36,7 +36,8 @@ import os from "os";
 import path from "path";
 import { spawn, type ChildProcess } from "child_process";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
+import { closesAtLaunch } from "./lib/launchDoors";
+import { asIfBeforeLaunch, provisionTestDb, testDbConfigured, type TestDb, waitForPortFree } from "./db/testDb";
 import { waitForHealth } from "./db/e2eBoot";
 
 const DB_CONFIGURED = testDbConfigured();
@@ -144,7 +145,10 @@ describe.skipIf(!DB_CONFIGURED)("a village runs caps and treasuries side by side
   };
 
   const setVar = async (key: string, value: string) => {
-    const r = await call("PUT", `/api/admin/variables/${key}`, { value }, founderToken);
+    // The issuance cap closes to the dial write once the Game starts (server/lib/launchDoors.ts),
+    // so a fixture sets it as the village set it before launch (server/db/testDb.ts `asIfBeforeLaunch`).
+    const write = () => call("PUT", `/api/admin/variables/${key}`, { value }, founderToken);
+    const r = await (closesAtLaunch(key) ? asIfBeforeLaunch(testDb!.conn, write) : write());
     expect(r.status, `${key} := ${value}: ${r.text.slice(0, 200)}`).toBe(200);
   };
 
