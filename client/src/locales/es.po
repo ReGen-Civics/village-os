@@ -1265,9 +1265,9 @@ msgid "Check {sentTo}. We sent a link to confirm it's you. Your application reac
 msgstr "Revisa {sentTo}. Te enviamos un enlace para confirmar que eres tú. Tu solicitud nos llega cuando lo abres."
 
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price ask: the first month"
-msgid "Your first month starts lower and follows what you deliver."
-msgstr "Tu primer mes empieza más bajo y sigue lo que entregas."
+#~ msgctxt "price ask: the first month"
+#~ msgid "Your first month starts lower and follows what you deliver."
+#~ msgstr "Tu primer mes empieza más bajo y sigue lo que entregas."
 
 #: client/src/components/journal/GuideTasks.tsx
 msgctxt "journal guide tasks: adds a suggested task"
@@ -1898,6 +1898,11 @@ msgctxt "roles page, role state"
 msgid "Partly held"
 msgstr "Ocupado en parte"
 
+#: client/src/components/MoonWord.tsx
+msgctxt "tooltip on the word moon, applicant pages"
+msgid "We work in moon cycles, from new moon to new moon."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "The care role: who hears a request first"
 msgstr ""
@@ -2519,8 +2524,8 @@ msgid "Show every quest"
 msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-#~ msgid "A day in this moon (optional)"
-#~ msgstr "Un día de esta luna (opcional)"
+msgid "A day in this moon (optional)"
+msgstr "Un día de esta luna (opcional)"
 
 #: client/src/components/yourList/ReasonSheet.tsx
 msgctxt "task handed to a role"
@@ -2793,6 +2798,11 @@ msgstr ""
 msgctxt "calendar spiral: label beside today's seed"
 msgid "Today"
 msgstr "Hoy"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the proposal sets the pay"
+msgid "Your proposal sets your rewards. Tell us what you'd deliver each moon and how much of yourself that takes; that becomes your contract."
+msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -5161,8 +5171,8 @@ msgid "Keep ours for {n} changes?"
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
-#~ msgid "Your goals for your first moon in {roleName}"
-#~ msgstr "Tus metas para tu primera luna en “{roleName}”"
+msgid "Your goals for your first moon in {roleName}"
+msgstr "Tus metas para tu primera luna en “{roleName}”"
 
 #. placeholder {0}: r.liveHolders
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -5271,6 +5281,11 @@ msgstr ""
 msgctxt "role application: link from the roles step to the role picker"
 msgid "Pick more roles"
 msgstr "Elegir más roles"
+
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: your agreement"
+msgid "You work as a contractor. Your proposal says what you'll deliver each moon and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver."
+msgstr ""
 
 #. placeholder {0}: i + 1
 #: client/src/components/companionWelcome/LensSheet.tsx
@@ -6255,8 +6270,8 @@ msgstr "Cada tipo de trabajo y las raíces de las que crece"
 #~ msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-#~ msgid "Most people list three to five goals for a moon. More is allowed, and a shorter list is easier to read and to check."
-#~ msgstr "La mayoría de las personas anota de tres a cinco metas por luna. Puedes poner más, y una lista corta es más fácil de leer y de revisar."
+msgid "Most people list three to five goals for a moon. More is allowed, and a shorter list is easier to read and to check."
+msgstr "La mayoría de las personas anota de tres a cinco metas por luna. Puedes poner más, y una lista corta es más fácil de leer y de revisar."
 
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "role card rewards: a role that can be shared"
@@ -6448,9 +6463,9 @@ msgid "No pay on offer"
 msgstr ""
 
 #: client/src/components/roleCard/valueExplainerWords.ts
-msgctxt "role card rewards explainer: your agreement"
-msgid "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each month you recap what you delivered, and pay follows what you deliver."
-msgstr ""
+#~ msgctxt "role card rewards explainer: your agreement"
+#~ msgid "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each month you recap what you delivered, and pay follows what you deliver."
+#~ msgstr ""
 
 #: client/src/components/openWork/placeWords.ts
 msgctxt "open work: where a quest happens"
@@ -9514,8 +9529,8 @@ msgid "{0}% {1}"
 msgstr ""
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
-msgid "Your goals for your first month in {roleName}"
-msgstr ""
+#~ msgid "Your goals for your first month in {roleName}"
+#~ msgstr ""
 
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "open proposal sent"
@@ -9968,8 +9983,8 @@ msgid "Closed"
 msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-msgid "Most people list three to five goals for a month. You can send fewer, and we will read what you give us."
-msgstr ""
+#~ msgid "Most people list three to five goals for a month. You can send fewer, and we will read what you give us."
+#~ msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "A vote to change this agreement is open"
@@ -10163,9 +10178,9 @@ msgstr ""
 
 #. placeholder {0}: priced(suggested)
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup lede"
-msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
-msgstr ""
+#~ msgctxt "price popup lede"
+#~ msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract."
+#~ msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -10343,9 +10358,9 @@ msgid "Not aligned with the membership letter"
 msgstr "No se alineó con la carta de membresía"
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the proposal sets the pay"
-msgid "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract."
-msgstr ""
+#~ msgctxt "role card rewards: the proposal sets the pay"
+#~ msgid "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract."
+#~ msgstr ""
 
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -10390,6 +10405,11 @@ msgstr ""
 #: client/src/components/roleCard/payBandWords.ts
 msgctxt "role card rewards: the pay band under the listed price, no period"
 msgid "Band: {min} to {max} in total comp"
+msgstr ""
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application value"
+msgid "These items become your first moon's contract: three to five things you'll deliver, each with how we'll know it's done."
 msgstr ""
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
@@ -10891,9 +10911,9 @@ msgstr "Ver todo el trabajo abierto para esta meta"
 
 #. placeholder {0}: ceiling.currency
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup"
-msgid "Your monthly price, in {0}"
-msgstr "Tu precio mensual, en {0}"
+#~ msgctxt "price popup"
+#~ msgid "Your monthly price, in {0}"
+#~ msgstr "Tu precio mensual, en {0}"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page"
@@ -10947,9 +10967,9 @@ msgid "Page look"
 msgstr ""
 
 #: client/src/components/governance/PriceAsk.tsx
-msgctxt "price popup lede"
-msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
-msgstr ""
+#~ msgctxt "price popup lede"
+#~ msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract."
+#~ msgstr ""
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "The settings behind this block"
@@ -11027,6 +11047,11 @@ msgstr ""
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: kind of change"
 msgid "Listed roles"
+msgstr ""
+
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price ask: the first moon"
+msgid "Your first moon starts lower and follows what you deliver."
 msgstr ""
 
 #: client/src/components/commons/CommonsPanel.tsx
@@ -11332,6 +11357,12 @@ msgstr ""
 msgctxt "roots filter count, filter off"
 msgid "Showing all {total} {noun}."
 msgstr "Mostrando los {total} {noun}."
+
+#. placeholder {0}: ceiling.currency
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup"
+msgid "Your price each moon, in {0}"
+msgstr ""
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -12475,9 +12506,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the footnote, the first month"
-msgid "Your first month often starts lower and follows what you deliver."
-msgstr "Tu primer mes suele empezar más bajo y sigue lo que entregas."
+#~ msgctxt "role card rewards: the footnote, the first month"
+#~ msgid "Your first month often starts lower and follows what you deliver."
+#~ msgstr "Tu primer mes suele empezar más bajo y sigue lo que entregas."
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgctxt "canvas suggestion form heading"
@@ -16672,8 +16703,8 @@ msgid "A question about the canvas"
 msgstr "Una pregunta sobre el lienzo"
 
 #: client/src/components/governance/GoalsList.tsx
-#~ msgid "These are your goals for your first moon. Once you are seated, we issue your tasks on your profile each moon. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the moon."
-#~ msgstr "Estas son tus metas para tu primera luna. Una vez que ocupes el rol, cada luna te asignamos tus tareas en tu perfil. Llevamos el registro de tus metas y de tus tareas para tu compensación. Juntas, tus metas son el valor de tu contrato para la luna."
+msgid "These are your goals for your first moon. Once you are seated, we issue your tasks on your profile each moon. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the moon."
+msgstr "Estas son tus metas para tu primera luna. Una vez que ocupes el rol, cada luna te asignamos tus tareas en tu perfil. Llevamos el registro de tus metas y de tus tareas para tu compensación. Juntas, tus metas son el valor de tu contrato para la luna."
 
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting"
@@ -16681,8 +16712,8 @@ msgid "Goals"
 msgstr "Metas"
 
 #: client/src/components/governance/GoalsList.tsx
-msgid "A day in this month (optional)"
-msgstr ""
+#~ msgid "A day in this month (optional)"
+#~ msgstr ""
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "canvas block card button"
@@ -18197,8 +18228,8 @@ msgid "Saved. {0} added, {1} changed, {2} withdrawn."
 msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-#~ msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
-#~ msgstr "Las metas nos guían, y trabajamos para alcanzarlas. Este es un proyecto en etapa temprana, y lo que necesita puede cambiar a mitad de la luna, así que nos mantenemos atentos y se nos paga por lo que de verdad logramos. Al final de cada luna miramos tu avance en tus metas y en las otras tareas que tomaste, incluidas las que están fuera de tus roles. Si eso está lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. La Tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que la Tesorería lo confirma."
+msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-moon, so we stay responsive and we're paid on what we truly accomplish. At each moon's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
+msgstr "Las metas nos guían, y trabajamos para alcanzarlas. Este es un proyecto en etapa temprana, y lo que necesita puede cambiar a mitad de la luna, así que nos mantenemos atentos y se nos paga por lo que de verdad logramos. Al final de cada luna miramos tu avance en tus metas y en las otras tareas que tomaste, incluidas las que están fuera de tus roles. Si eso está lejos de lo que acordamos, tu pago puede cambiar para ajustarse, hacia arriba o hacia abajo. La Tesorería propone cualquier cambio con una razón, puedes responder, y no se paga nada hasta que la Tesorería lo confirma."
 
 #: client/src/components/review/SeraOnReview.tsx
 msgid "Arrived {at}, with {count} proposals."
@@ -18691,6 +18722,11 @@ msgctxt "role pay"
 msgid "My own figure"
 msgstr ""
 
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "Your proposal sets your rewards: propose your own price, and we agree it together in your first moon's contract."
+msgstr ""
+
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "pick a change request to add to"
 msgid "Which change request"
@@ -19081,6 +19117,11 @@ msgstr ""
 #: client/src/components/admin/OrgChartTab.tsx
 msgctxt "admin org chart, a circle with no lead role"
 msgid "No lead"
+msgstr ""
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, the first moon"
+msgid "Your first moon often starts lower and follows what you deliver."
 msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
@@ -20446,8 +20487,8 @@ msgid "Recorded {when} by {who}. {reference}"
 msgstr "Registrado el {when} por {who}. {reference}"
 
 #: client/src/components/governance/GoalsList.tsx
-#~ msgid "Most people list three to five goals for a moon. You can send fewer, and we will read what you give us."
-#~ msgstr "La mayoría de las personas anota de tres a cinco metas por luna. Puedes enviar menos, y leeremos lo que nos des."
+msgid "Most people list three to five goals for a moon. You can send fewer, and we will read what you give us."
+msgstr "La mayoría de las personas anota de tres a cinco metas por luna. Puedes enviar menos, y leeremos lo que nos des."
 
 #: client/src/pages/Reset.tsx
 msgctxt "fresh start page: go to the home page now"
@@ -21151,8 +21192,8 @@ msgid "Your story"
 msgstr "Tu historia"
 
 #: client/src/components/governance/GoalsList.tsx
-msgid "These are your goals for your first month. Once you are seated, we issue your tasks on your profile each month. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the month."
-msgstr ""
+#~ msgid "These are your goals for your first month. Once you are seated, we issue your tasks on your profile each month. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the month."
+#~ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note outcome"
@@ -21253,8 +21294,8 @@ msgid "Practise it first (nothing is recorded)"
 msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-msgid "Most people list three to five goals for a month. More is allowed, and a shorter list is easier to read and to check."
-msgstr ""
+#~ msgid "Most people list three to five goals for a month. More is allowed, and a shorter list is easier to read and to check."
+#~ msgstr ""
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -21283,9 +21324,9 @@ msgid "Cancel"
 msgstr ""
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application value"
-msgid "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done."
-msgstr "Estos puntos se convierten en el contrato de tu primer mes: de tres a cinco cosas que vas a entregar, cada una con cómo sabremos que está hecha."
+#~ msgctxt "founding application value"
+#~ msgid "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done."
+#~ msgstr "Estos puntos se convierten en el contrato de tu primer mes: de tres a cinco cosas que vas a entregar, cada una con cómo sabremos que está hecha."
 
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgid "<0><1/> Print the canvas workbook</0> to talk it through on paper first."
@@ -21418,6 +21459,12 @@ msgstr ""
 msgctxt "founding application review"
 msgid "{ticked} of {ways} done"
 msgstr "{ticked} de {ways} hechos"
+
+#. placeholder {0}: priced(suggested)
+#: client/src/components/governance/PriceAsk.tsx
+msgctxt "price popup lede"
+msgid "We suggest {0} at {pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first moon's contract."
+msgstr ""
 
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
@@ -21784,8 +21831,8 @@ msgid "The village has not set its goals for this season yet. You can still appl
 msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
-msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
-msgstr ""
+#~ msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
+#~ msgstr ""
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
