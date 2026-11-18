@@ -11,7 +11,7 @@ This describes a FRESH village: what a village standing up a new instance holds 
 <!-- written by a person: generated -->
 This file is generated. `scripts/generate-governance-doc.mjs` reads the engine, the subject registry, the dials, the capability tables, the module definition, the clock and the route registrations, works out the facts, and writes the whole document. `scripts/check-governance-doc.mjs` regenerates it and fails the build when the committed text and the code have come apart.
 
-It describes the sources at fingerprint `a50bea85bf9137d1`, which regenerating reproduces.
+It describes the sources at fingerprint `17cddb8e5a261cf9`, which regenerating reproduces.
 
 <!-- written by a person: editing -->
 Editing this file by hand does not hold. Change the code, then run:
@@ -212,6 +212,7 @@ What each kind of decision asks. A subject declares MINIMUMS and the village's o
 | `agreement` | 80% | 50% | 0 | no | `custom` | yes |
 | `closing_policy` | 80% | 50% | 0 | no | `custom` | yes |
 | `admin_edit` | 0% | 0% | 0 | no | the village's own | no, it conducts a decision and executes nothing |
+| `funding_divergence` | 0% | 0% | 0 | no | the village's own | yes |
 | `mint_request` | 80% | 50% | 0 | no | `custom` | no, it conducts a decision and executes nothing |
 | `database_export` | 97% | 97% | 0 | no | `custom` | no, it conducts a decision and executes nothing |
 
@@ -225,6 +226,7 @@ What each kind of decision asks. A subject declares MINIMUMS and the village's o
 - `agreement`: An agreement binds the whole village exactly as written until its review date, so it is decided at the structural tier: the village's own setting for changes to how it is organised.
 - `closing_policy`: This one changes what every member is promised if the village closes, so it is decided at the structural tier: the village's own setting for changes to how it is organised.
 - `admin_edit`: A suggested change to one admin control asks whatever this village asks of any decision. A holder of the power could make it without a vote, so the vote is not priced above the village's own bar.
+- `funding_divergence`: This one decides which of a funding round's two counts funds the quests they disagree on, within money the pot already offered, so it asks whatever this village asks of any decision.
 - `mint_request`: This one mints new tokens into one member's hands, and tokens once issued cannot be taken back, so it asks the structural bar.
 - `database_export`: This one hands one steward a copy of every member's data, which cannot be called back once it leaves, so it asks the highest bar the village sets.
 
@@ -248,6 +250,7 @@ What closing a decision DOES, per subject type, and the one place that question 
 | --- | --- | --- |
 | `cycle_settlement` | Settles a moon that has ended and releases its cycle pool, at exactly the amounts the ballot showed. | its own entry in the close dispatcher |
 | `redemption` | Confirms that a member was paid off the platform for the tokens they asked to redeem, and destroys those tokens. Voting it down, or letting it lapse, gives them back. | its own entry in the close dispatcher |
+| `funding_divergence` | Funds the quests a funding round's two counts disagree on by the round's other count. Voting it down, or letting it lapse, funds them by the pot's deciding count. | its own entry in the close dispatcher |
 | `mechanics` | Moves the village's own dials, through the one amendment ledger that records every move. | its own entry in the close dispatcher |
 | `power_transfer` | Moves a power from the admin panel to a role the village names. | its own entry in the close dispatcher |
 | `power_grant` | Gives a role a power it does not carry yet. | its own entry in the close dispatcher |
@@ -263,7 +266,7 @@ What closing a decision DOES, per subject type, and the one place that question 
 | `governance_mode` | Changes how one vote is weighed, and which token carries the weight when it is a token. | its own entry in the close dispatcher |
 | `mint_rule` | Changes what the village mints and on what terms. It shares the dial executor and carries a higher quorum floor. | the same executor as `mechanics`, one executor and two subject types |
 
-16 subject types execute something. Whether a member's vote BINDS is derived from this same table, so the word on the decision page and the behaviour at the close cannot come apart.
+17 subject types execute something. Whether a member's vote BINDS is derived from this same table, so the word on the decision page and the behaviour at the close cannot come apart.
 
 ## Two kinds of decision, and when each one happens
 
@@ -606,7 +609,7 @@ What is broken today, by name. A document that only described the parts that wor
 - **A stored reason on a no vote is shown to nobody.** The widget invites a member to say why and the reader that serves votes drops it.
 - **The module lifecycle is edited by hand**, so a village turns its own governance on through the admin panel and never through a vote.
 - **Four displays about the hub bridge are false.** The sync flag is never set true so the card always says pending, the space check idles on every delivery, an outcome's source is hardcoded, and the card credits a hub with issuing a secret it does not issue.
-- **Two schema comments have drifted.** The engine's own migration lists five subject types in the column comment where the dispatcher now executes 16, and a later migration's header names the number of the one before it. Neither is edited, because a shipped migration file is never edited; both are stated here instead.
+- **Two schema comments have drifted.** The engine's own migration lists five subject types in the column comment where the dispatcher now executes 17, and a later migration's header names the number of the one before it. Neither is edited, because a shipped migration file is never edited; both are stated here instead.
 
 ## What is staged
 
@@ -874,7 +877,7 @@ The case this answered: a proposal passes on the 20th of the moon, the steward i
 > Everything can be! But the more critical it is, the higher percentage of quorum you need (hard to get quorum) such that changing the most critical things would require a max high of 97% quorum where only 3% of the whole network would be able to not be informed and have 97% approval (max heights - we don't recommend more than those though they can exceed them (if they do we warn them) because the closer you get to 100% the chances of you getting a stalemate increase where the Game breaks even though a massive majority want to continue they can't because someone died suddenly or stopped playing the Game, etc.
 
 <!-- written by a person: ruling-21 -->
-Every setting carries a criticality tier now, defaulting to routine, and the tier sets both the quorum and the unity a change to it needs: routine asks nothing beyond the village's own dials, structural asks 80 unity and 50 quorum, and constitutional asks 97 and 97, which is the founder's own number. The tiers are themselves eight settings, and the 12 subject floors that used to live only in code are settings too. All ten are raise-only: the shipped number is a floor and a village may go above it and never below, because a village that can lower the bar for changing the bar has no bar. Any dial typed above 97 shows the stalemate warning in words while it is being typed, and the Birthing is the one subject exempt from it because it stays at 100 and 100 by rule. Still open: the founder's 2026-09-02 ruling that a threshold changes at its own current bar, which is a later lane.
+Every setting carries a criticality tier now, defaulting to routine, and the tier sets both the quorum and the unity a change to it needs: routine asks nothing beyond the village's own dials, structural asks 80 unity and 50 quorum, and constitutional asks 97 and 97, which is the founder's own number. The tiers are themselves eight settings, and the 13 subject floors that used to live only in code are settings too. All ten are raise-only: the shipped number is a floor and a village may go above it and never below, because a village that can lower the bar for changing the bar has no bar. Any dial typed above 97 shows the stalemate warning in words while it is being typed, and the Birthing is the one subject exempt from it because it stays at 100 and 100 by rule. Still open: the founder's 2026-09-02 ruling that a threshold changes at its own current bar, which is a later lane.
 
 ### 22. Who voted is visible, how they voted is hidden, and names appear after half
 
@@ -1102,7 +1105,7 @@ The same facts, for anything that would sooner parse than read. Regenerated with
 
 ```json
 {
-  "commit": "a50bea85bf9137d1",
+  "commit": "17cddb8e5a261cf9",
   "module": {
     "id": "governance",
     "shipsAs": "off",
@@ -1297,6 +1300,19 @@ The same facts, for anything that would sooner parse than read. Regenerated with
       "why": "A suggested change to one admin control asks whatever this village asks of any decision. A holder of the power could make it without a vote, so the vote is not priced above the village's own bar."
     },
     {
+      "subjectType": "funding_divergence",
+      "minUnityPct": 0,
+      "minQuorumPct": 0,
+      "minElectorate": 0,
+      "everySeatWeighs": false,
+      "method": null,
+      "criticality": "routine",
+      "abstainPolicy": null,
+      "minYesHeads": null,
+      "executesAtClose": true,
+      "why": "This one decides which of a funding round's two counts funds the quests they disagree on, within money the pot already offered, so it asks whatever this village asks of any decision."
+    },
+    {
       "subjectType": "mint_request",
       "minUnityPct": 80,
       "minQuorumPct": 50,
@@ -1326,6 +1342,7 @@ The same facts, for anything that would sooner parse than read. Regenerated with
   "executingSubjectTypes": [
     "cycle_settlement",
     "redemption",
+    "funding_divergence",
     "mechanics",
     "power_transfer",
     "power_grant",
@@ -3213,7 +3230,7 @@ The tables and columns the rules above rest on. The generator checks every one a
 | `delegations.accepted_at` | a delegation carries a choice only once the delegate accepts it |
 | `role_holder_terms` | a term survives an unrelated appointment |
 
-Checked against the 272 migration files in `drizzle/`.
+Checked against the 273 migration files in `drizzle/`.
 
 ## What this file is made from
 
