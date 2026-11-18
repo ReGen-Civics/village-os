@@ -411,6 +411,11 @@ msgctxt "landing, the ways in heading when the paths are hidden"
 msgid "Ways in"
 msgstr "Ways in"
 
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "role card rewards: the pay band at the chosen commitment, each moon"
+msgid "Band at {pct}%: {min} to {max} a moon in total comp"
+msgstr "Band at {pct}%: {min} to {max} a moon in total comp"
+
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price ask: the first month"
 #~ msgid "Your first month starts lower and is tied to what you deliver."
@@ -631,6 +636,11 @@ msgstr "Their invitation, to scan with their phone"
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "The restorative steps, one per line"
 msgstr "The restorative steps, one per line"
+
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: a changed share"
+msgid "changed"
+msgstr "changed"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "Waiting for a second person"
@@ -974,6 +984,11 @@ msgstr "Quiet: on"
 #: client/src/components/governance/GoalsList.tsx
 msgid "That is the most a proposal holds: {cap}."
 msgstr "That is the most a proposal holds: {cap}."
+
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "Your split"
+msgstr "Your split"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -1986,6 +2001,11 @@ msgstr "At a vote now"
 #: client/src/pages/FundingRounds.tsx
 #~ msgid "Both counts agree."
 #~ msgstr "Both counts agree."
+
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split table"
+msgid "Share"
+msgstr "Share"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "a suggested edit that adds a change"
@@ -4502,6 +4522,11 @@ msgctxt "pricing desk"
 msgid "{0}: waiting for a second Treasurer or a steward to sign."
 msgstr "{0}: waiting for a second Treasurer or a steward to sign."
 
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "role card rewards: the pay band at the chosen commitment, no period"
+msgid "Band at {pct}%: {min} to {max} in total comp"
+msgstr "Band at {pct}%: {min} to {max} in total comp"
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application first day"
 msgid "Your first conversations"
@@ -5399,6 +5424,7 @@ msgctxt "circles map, today card"
 msgid "Fireflies gather at a circle's hearth when people meet there. A light shows only for members who turned theirs on, and never with a name."
 msgstr "Fireflies gather at a circle's hearth when people meet there. A light shows only for members who turned theirs on, and never with a name."
 
+#: client/src/components/roleCard/commitmentWords.ts
 #: client/src/components/roleCard/payBandWords.ts
 msgctxt "role card rewards: the pay band under the listed price, each month"
 msgid "Band: {min} to {max} a month in total comp"
@@ -5532,6 +5558,11 @@ msgstr "Decided by consent"
 msgctxt "calendar spiral: a turning"
 msgid "new moon"
 msgstr "new moon"
+
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "commitment slider: the band's two ends"
+msgid "{min} to {max}"
+msgstr "{min} to {max}"
 
 #: client/src/pages/Quests.tsx
 msgctxt "open work filter: quests that ask a quarter of a person or less"
@@ -6193,6 +6224,11 @@ msgstr "Apply for this role"
 msgid "Roles carrying on into the next moon"
 msgstr "Roles carrying on into the next moon"
 
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: it is editable"
+msgid "You can change this split for your proposal. Type a percent or an amount."
+msgstr "You can change this split for your proposal. Type a percent or an amount."
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Where the words and the settings part"
 msgstr "Where the words and the settings part"
@@ -6227,6 +6263,11 @@ msgctxt "agent proposal"
 msgid "Why this agent"
 msgstr "Why this agent"
 
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: it is editable, percents only"
+msgid "You can change this split for your proposal. Type a percent for each share."
+msgstr "You can change this split for your proposal. Type a percent for each share."
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
 msgstr "Ideas other villages keep, added only if you tap one:"
@@ -6250,6 +6291,11 @@ msgstr "Close the agreement's frames"
 msgctxt "reviewer's terms panel for a proposal"
 msgid "We'd agree {0}%"
 msgstr "We'd agree {0}%"
+
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split table"
+msgid "Proposed"
+msgstr "Proposed"
 
 #: client/src/components/gratitude/WallEntryCard.tsx
 msgctxt "thanks thread: a person with no recorded name"
@@ -6419,6 +6465,12 @@ msgstr "The check did not run ({status})."
 msgctxt "rites admin"
 msgid "The village's rites, their spoken lines, every word on the joining screens, the photos and the colours, in one document. Paste a village-rites/1 file or edit it here."
 msgstr "The village's rites, their spoken lines, every word on the joining screens, the photos and the colours, in one document. Paste a village-rites/1 file or edit it here."
+
+#. placeholder {0}: band.pct
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "split control: a total below the band"
+msgid "Your total is below the band at {0}% ({ends})."
+msgstr "Your total is below the band at {0}% ({ends})."
 
 #: client/src/components/Layout.tsx
 msgctxt "site header"
@@ -6662,6 +6714,11 @@ msgstr "Role"
 msgctxt "thanks wall: what a thanks becomes"
 msgid "Every thanks here also carries <0>{0}</0> to the person it names."
 msgstr "Every thanks here also carries <0>{0}</0> to the person it names."
+
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: how the shares rebalance"
+msgid "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total."
+msgstr "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total."
 
 #: client/src/pages/StructureReview.tsx
 msgid "It moves into {theirCircle}."
@@ -8459,6 +8516,11 @@ msgctxt "companion welcome"
 msgid "I'll speak aloud with your browser's own voice."
 msgstr "I'll speak aloud with your browser's own voice."
 
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: the total, before a commitment is chosen"
+msgid "Total: {totalWords} for the full role"
+msgstr "Total: {totalWords} for the full role"
+
 #. placeholder {0}: money(p.s.expected.totalMinor)
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -8592,6 +8654,11 @@ msgstr "{summary} Applied, with a warning: {note}"
 msgctxt "connector setup panel, the switch is on"
 msgid "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
 msgstr "On now. The agent's list of allowed paths is still yours to edit, and every change still needs an approval note from a person."
+
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "role card rewards: the pay band at the chosen commitment, each month"
+msgid "Band at {pct}%: {min} to {max} a month in total comp"
+msgstr "Band at {pct}%: {min} to {max} a month in total comp"
 
 #. placeholder {0}: d.listed
 #. placeholder {1}: d.unlisted
@@ -9012,6 +9079,13 @@ msgstr "Held now: {0}% of {1}%. With this application: {2}% of {3}%."
 msgctxt "circle hearth, what we decided"
 msgid "What we decided"
 msgstr "What we decided"
+
+#. placeholder {0}: s.pct
+#. placeholder {1}: s.label
+#: client/src/components/governance/TermsSplit.tsx
+msgctxt "founding application review: one share of the split"
+msgid "{0}% {1}"
+msgstr "{0}% {1}"
 
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "open proposal sent"
@@ -9737,6 +9811,11 @@ msgstr "Your path"
 msgid "Aligning is the village's way of signing. Your role starts once every agreement it needs is aligned with."
 msgstr "Aligning is the village's way of signing. Your role starts once every agreement it needs is aligned with."
 
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: put the default back"
+msgid "Use the village's split"
+msgstr "Use the village's split"
+
 #: client/src/components/admin/AgreementDocumentUpload.tsx
 msgid "Attached. Every holder is asked to align again with the agreement as it reads now."
 msgstr "Attached. Every holder is asked to align again with the agreement as it reads now."
@@ -9847,6 +9926,7 @@ msgctxt "level-up moment, under the door"
 msgid "the village saw what you carried."
 msgstr "the village saw what you carried."
 
+#: client/src/components/roleCard/commitmentWords.ts
 #: client/src/components/roleCard/payBandWords.ts
 msgctxt "role card rewards: the pay band under the listed price, no period"
 msgid "Band: {min} to {max} in total comp"
@@ -10935,6 +11015,12 @@ msgctxt "notebook row, who shared it"
 msgid ", from {0}"
 msgstr ", from {0}"
 
+#. placeholder {0}: s.label
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: a share's percent field"
+msgid "{0}, percent of the total"
+msgstr "{0}, percent of the total"
+
 #: client/src/components/admin/MenuPanel.tsx
 msgctxt "admin menu: the save button"
 msgid "Save the menu"
@@ -11767,6 +11853,11 @@ msgstr "The exchange you are proposing: amounts, structure, percentages, a blend
 msgid "Location read from the photo. It is removed from the photo before it goes up."
 msgstr "Location read from the photo. It is removed from the photo before it goes up."
 
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control heading"
+msgid "How your total is split"
+msgstr "How your total is split"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar day panel heading"
 msgid "What is on this day"
@@ -12300,6 +12391,13 @@ msgstr "Start it"
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "They have not aligned with the membership letter yet."
 msgstr "They have not aligned with the membership letter yet."
+
+#. placeholder {0}: money(split.offered.total)
+#. placeholder {1}: money(split.proposed.total)
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split's two totals"
+msgid "Offered at the suggested price, {0}; proposed at their price, {1}."
+msgstr "Offered at the suggested price, {0}; proposed at their price, {1}."
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -13137,6 +13235,11 @@ msgstr "this role"
 msgid "Minting to your own account is refused."
 msgstr "Minting to your own account is refused."
 
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split table"
+msgid "Offered"
+msgstr "Offered"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Change it any time with Quiet at the top."
@@ -13722,6 +13825,11 @@ msgstr "Add an interviewer"
 msgctxt "hidden map, the map view"
 msgid "{0}, {1}"
 msgstr "{0}, {1}"
+
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split heading"
+msgid "Cash, equity and credits"
+msgstr "Cash, equity and credits"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "team sheet group: the roles held now"
@@ -14681,6 +14789,12 @@ msgctxt "drafted letters"
 msgid "Send"
 msgstr "Send"
 
+#. placeholder {0}: s.label
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: a share's amount field"
+msgid "{0}, amount in {currency}"
+msgstr "{0}, amount in {currency}"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, unnamed guide"
 msgid "your village guide"
@@ -15480,6 +15594,16 @@ msgctxt "open proposal: an agent's proposal"
 msgid "It holds no live access token, so it reaches nothing through the village's connector today."
 msgstr "It holds no live access token, so it reaches nothing through the village's connector today."
 
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "commitment slider: what a screen reader hears"
+msgid "{pct}% commitment"
+msgstr "{pct}% commitment"
+
+#: client/src/components/governance/TermsSplit.tsx
+msgctxt "founding application review: a split they changed"
+msgid "{said} · changed from the village's split"
+msgstr "{said} · changed from the village's split"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal section"
 #~ msgid "About you"
@@ -15609,6 +15733,11 @@ msgstr "Next: {0}"
 msgctxt "circle hearth, a stone"
 msgid "{0}, held"
 msgstr "{0}, held"
+
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control legend"
+msgid "How your total is split"
+msgstr "How your total is split"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -16064,6 +16193,11 @@ msgstr "A proposal putting this back is already waiting above."
 msgctxt "task handed to a role"
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
+
+#: client/src/components/roleCard/SplitControl.tsx
+msgctxt "split control: the total the split adds up to"
+msgid "Total: {totalWords} at {pct}%"
+msgstr "Total: {totalWords} at {pct}%"
 
 #: client/src/pages/YourPath.tsx
 #~ msgctxt "your path, the whole path page"
@@ -17458,6 +17592,14 @@ msgstr "Apply for this role"
 msgid "Pick one. Nothing is decided for you."
 msgstr "Pick one. Nothing is decided for you."
 
+#. placeholder {0}: s.pct
+#. placeholder {1}: s.label
+#. placeholder {2}: moneyWords(s.amount, role.ceiling.currency, i18n.locale)
+#: client/src/components/governance/TermsSplit.tsx
+msgctxt "founding application review: one share of the split, with its amount"
+msgid "{0}% {1} ({2})"
+msgstr "{0}% {1} ({2})"
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "New protocol"
@@ -17669,6 +17811,11 @@ msgctxt "open proposal field"
 msgid "Your email"
 msgstr "Your email"
 
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "commitment slider: what a screen reader hears"
+msgid "{pct}% commitment, {amounts}"
+msgstr "{pct}% commitment, {amounts}"
+
 #: client/src/components/LoadFailed.tsx
 msgctxt "a page's data failed to load: read it again"
 msgid "Try again"
@@ -17828,6 +17975,11 @@ msgstr "Main Site"
 msgctxt "protocols page"
 msgid "Steps"
 msgstr "Steps"
+
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split badge"
+msgid "Split changed by applicant"
+msgstr "Split changed by applicant"
 
 #: client/src/components/approvals/ApprovalInbox.tsx
 msgctxt "approval inbox"
@@ -18245,6 +18397,7 @@ msgctxt "open proposal, founding application"
 msgid "These are optional. Someone who lives far away may not have been able to come yet."
 msgstr "These are optional. Someone who lives far away may not have been able to come yet."
 
+#: client/src/components/roleCard/commitmentWords.ts
 #: client/src/components/roleCard/payBandWords.ts
 msgctxt "role card rewards: the pay band under the listed price, each moon"
 msgid "Band: {min} to {max} a moon in total comp"
@@ -20211,6 +20364,12 @@ msgctxt "roles page archetypes"
 msgid "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five."
 msgstr "The five archetypes are the roots, and every role grows from one or more of them. Choose the one that fits you most, and you can add more on the next page. Many people grow from two or three, and you may choose all five."
 
+#. placeholder {0}: band.pct
+#: client/src/components/roleCard/commitmentWords.ts
+msgctxt "split control: a total above the band"
+msgid "Your total is above the band at {0}% ({ends}). You can still propose it."
+msgstr "Your total is above the band at {0}% ({ends}). You can still propose it."
+
 #: client/src/i18n/LanguagePicker.tsx
 msgctxt "language picker"
 msgid "No language matches"
@@ -21986,6 +22145,11 @@ msgstr "Before you hand it over"
 msgctxt "open proposals desk term"
 msgid "this moon (from its new moon to the next)"
 msgstr "this moon (from its new moon to the next)"
+
+#: client/src/components/roleCard/CommitmentSlider.tsx
+msgctxt "commitment slider label"
+msgid "Your commitment"
+msgstr "Your commitment"
 
 #. placeholder {0}: problems.length
 #: client/src/pages/ProposeARole.tsx
