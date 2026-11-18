@@ -10,6 +10,7 @@ import type { Pool } from "mysql2/promise";
 import { ceilingAt, type PayAsk } from "../../shared/commitmentRange";
 import { currentCommitment, type CounterOffer } from "../../shared/counterOffer";
 import type { PayCeiling } from "../../shared/roleCardSections";
+import type { ProposalSplit } from "../../shared/proposalSplit";
 import { sectionsForMany } from "./roleCardSections";
 import { roleFillsFor } from "./roleFill";
 
@@ -36,12 +37,14 @@ export interface CommitmentReview {
   ask: PayAsk | null;
   /** How many changes they suggested to the role card (shared/pieceSuggestions.ts). A count, never a judgement. */
   suggestionCount: number;
+  /** The split the village offered at their commitment beside the one they proposed (shared/proposalSplit.ts), when they sent one. */
+  split: ProposalSplit | null;
   roles: CommitmentReviewRole[];
 }
 
 export async function commitmentReviewFor(
   pool: Pool,
-  body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk; pieceSuggestions?: unknown[]; counterOffer?: CounterOffer },
+  body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk; paySplit?: ProposalSplit; pieceSuggestions?: unknown[]; counterOffer?: CounterOffer },
   liveRoles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>,
   /** The applicant's own account here, if their address has one. */
   applicantUserId: string | null = null,
@@ -60,6 +63,7 @@ export async function commitmentReviewFor(
     ...(atPct !== pct ? { offeredPct: atPct } : {}),
     ask: body.payAsk ?? null,
     suggestionCount: Array.isArray(body.pieceSuggestions) ? body.pieceSuggestions.length : 0,
+    split: body.paySplit ?? null,
     roles: roles.map((r) => {
       const fill = fills.get(r.id);
       const full = sections.get(r.id)?.payCeiling ?? null;

@@ -71,7 +71,7 @@ import { IKIGAI_KEY, ikigaiFromStored, whyFromIkigai } from "@shared/roleDiscove
 import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
 import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
-import TermsEight, { EMPTY_TERMS_STEP, type TermsStepValue } from "@/components/governance/TermsEight";
+import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
 import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
@@ -99,7 +99,7 @@ interface FormRole {
   accountabilities?: string[];
   timeCommitment?: string | null;
   /** The role's suggested wording for the eight settings and the commitment it asks (joining lane PR 3). */
-  terms?: { words?: TermsWords; commitmentPct?: number | null }; commitmentMin?: number | null; payCeiling?: import("@shared/roleCardSections").PayCeiling | null; // the commitment range (Rye, 14 Nov 2026)
+  terms?: { words?: TermsWords; commitmentPct?: number | null }; commitmentMin?: number | null; payCeiling?: import("@shared/roleCardSections").PayCeiling | null; payShape?: import("@shared/proposalSplit").ShapeShare[]; // the commitment range (Rye, 14 Nov 2026) and the split in force (17 Nov)
   conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>;
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
@@ -344,14 +344,14 @@ export default function ProposeARole() {
       setAim(d.aim);
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
-      setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk });
+      setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk, paySplit: splitOfDraft(d.terms.paySplit) });
       setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
       setReached(d.reached);
       setRestored(own ? "draft" : "carry");
     }
-    setDraftFor(roleId);
+    setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor]);
 
   // THE DRAFT, saved as they go. Only the fields toDraft names: references, consent, files and agreements cannot reach it.
@@ -360,7 +360,7 @@ export default function ProposeARole() {
     writeStoredJson(
       "local",
       draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: termsStep, rampUp, practical, pieceSuggestions }, new Date()),
+      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions }, new Date()),
     );
   }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
 
@@ -522,7 +522,7 @@ export default function ProposeARole() {
         locale: i18n.locale,
         ...(membership.kind === "aligned" ? { membership: { letterVersion: membership.letterVersion } } : {}),
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
-        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
+        ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
       // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
       const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
@@ -933,7 +933,7 @@ export default function ProposeARole() {
               {heading(3)}
               <section aria-label={labels[3]} tabIndex={-1} className="grid scroll-mt-24 gap-4 outline-none" data-terms-section="">
                 <TermsEight
-                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null, suggestions: pieceSuggestions.length }]}
+                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null, payShape: role.payShape, suggestions: pieceSuggestions.length }]}
                   value={termsStep}
                   onChange={setTermsStep}
                   problem={problemOn("terms")}
@@ -965,7 +965,7 @@ export default function ProposeARole() {
             {/* STEP 6: review & submit. Everything read back, the agreements, then send. */}
             <section {...panel(5)}>
               {heading(5)}
-              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions })} />
+              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null })} />
               <div data-agreements="" className="scroll-mt-24">
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />

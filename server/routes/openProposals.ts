@@ -81,7 +81,8 @@ import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
 import { sectionsForMany } from "../lib/roleCardSections";
-import { readsCeiling, type PayReader } from "../../shared/roleCardSections";
+import { cardPay, readsCeiling, villagePayFrom, type PayReader } from "../../shared/roleCardSections";
+import { offeredSplit, readProposedSplit, splitTotal } from "../../shared/proposalSplit";
 import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt, RANGE_WORDS } from "../../shared/commitmentRange";
 import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
@@ -400,6 +401,9 @@ export function register(app: Express, deps: Deps): void {
         ...(isFutureVenture(r) ? { futureVenture: true } : {}),
         ...((taken.get(r.id) ?? 0) >= r.seats ? { held: true } : {}),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
+        // The split in force (the card's own shares, else the village's), so the form offers it to adjust (the lead, 17 Nov 2026).
+        // Shares only, never an amount: every card shows them already.
+        payShape: cardPay(ceilings.get(r.id) ?? null, villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: "", note: "" }))?.shape ?? [],
         // The card's own choice of who reads that ceiling (absent: the village decides). Read by `offeredTo`, never sent.
         payVisibility: ceilings.get(r.id)?.payVisibility,
         // The conversations in the role's order, as its public card shows them (role journey L5), so the
@@ -597,6 +601,20 @@ export function register(app: Express, deps: Deps): void {
         if (askAboveCap(ask, ceiling.amount, at)) return res.status(400).json({ error: aboveCap(moneyWords(capAt(ceiling.amount, at), ceiling.currency), at), field: "payAsk" });
       }
     }
+    // The cash, equity and credits split they propose (the lead, 17 Nov 2026, shared/proposalSplit.ts), read against the
+    // role's split in force and the price it describes. What the village offered at their commitment is worked here,
+    // never taken from the form, and kept beside it so the difference is known. One role per application.
+    let paySplit: { paySplit: { commitmentPct: number | null; offered: ReturnType<typeof offeredSplit>; proposed: ReturnType<typeof offeredSplit> } } | Record<string, never> = {};
+    if (body.paySplit !== undefined && body.paySplit !== null) {
+      const role = parsed.value.body.roles.length === 1 ? roles.find((r) => r.id === parsed.value.body.roles[0].roleId) : undefined;
+      const shape = role?.payShape ?? [];
+      const ceiling = role && readsCeiling(role, priceReader) ? (role.payCeiling ?? null) : null;
+      const ask = parsed.value.body.payAsk;
+      const at = typeof pct === "number" ? pct : null;
+      const read = readProposedSplit(body.paySplit, shape, splitTotal(ceiling?.amount, at, ask?.kind === "amount" ? ask.monthly : null));
+      if (!read.ok) return res.status(400).json({ error: read.problem, field: "paySplit" });
+      if (read.value) paySplit = { paySplit: { commitmentPct: at, offered: offeredSplit(shape, splitTotal(ceiling?.amount, at, null)), proposed: read.value } };
+    }
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
     const checked = checkProposalFiles(files);
@@ -630,7 +648,7 @@ export function register(app: Express, deps: Deps): void {
     }
     // The language their emails come in: chosen once, here, by the rule in shared/applicantLanguage.ts.
     const locale = await languageForNewProposal({ getPool, members: deps.members }, { clientLocale: body.locale, email, acceptLanguage: req.headers["accept-language"] });
-    const proposal = { ...parsed.value.body, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
+    const proposal = { ...parsed.value.body, ...paySplit, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
     const emailKey = emailKeyOf(email);
     // Every refusal above has been given. Only now, with the proposal acceptable, does this connection spend one of its five an hour.
     if (await overLimit(`open-proposal:ip:${ipBucket(clientIp(req))}`, 5, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooMany });
