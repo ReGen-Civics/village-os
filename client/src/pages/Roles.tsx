@@ -36,6 +36,8 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { type FoundingRole } from "@/components/roleCard/FoundingTeam";
+import OrgPreview from "@/components/roleCard/OrgPreview";
+import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
 import { rolesLeadWillBuild } from "@shared/roleListing";
 import FullRoleCard from "@/components/roleCard/FullRoleCard";
@@ -604,6 +606,11 @@ export default function Roles() {
   const foundingFilled = (roles ?? [])
     .filter((r) => !featuredIds.has(r.id) && r.circleId && foundingCircles.has(r.circleId) && r.raw?.listed !== false && !r.isExample && (r.status === "filled" || r.status === "partial" || (r.holders?.length ?? 0) > 0))
     .map((r) => ({ id: r.id, name: r.name, holders: r.holders ?? [] }));
+  const teamFilled = founding?.team?.length ? founding.team : foundingFilled;
+  // The org chart beside the roster (Rye, 16 Nov 2026): the /circles drawing, with the held team roles a
+  // visitor's /api/org leaves out (they are unlisted) drawn too, so the picture agrees with the roster.
+  const chart = orgChartOf(circles, (roles ?? []).map((r) => r.raw), featured[0]?.seat?.circleId ?? null, teamFilled);
+  const orgPreview = chart ? <OrgPreview circles={circles} seats={chart.seats} counts={chart.counts} /> : null;
   const beyondCount = reach.beyond.filter((r) => r.id !== linked).length + featuredHidden.length;
   const directory = showBeyond ? rooted : rooted.filter((r) => r.id === linked || !reach.beyond.includes(r));
   const rootsOffered = roots.available && byRoots.tagged;
@@ -738,7 +745,7 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} />}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
                   <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>

@@ -584,7 +584,8 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     const sheet = await within(section).findByTestId("team-sheet");
     expect(within(section).getByRole("button", { name: "Team sheet" }).getAttribute("aria-pressed")).toBe("true");
     expect(within(sheet).getAllByText("Open role")).toHaveLength(2);
-    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").textContent).toContain("Human Operations Steward (Rye)"));
+    // The roster (Rye, 17 Nov 2026): one card per person, the first name first and the role as the position.
+    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").querySelector('[data-roster-person="p:Rye"]')?.textContent).toContain("Human Operations Steward"));
     // Positions, never players: no rating, score or rank anywhere in the team view.
     expect(section.textContent).not.toMatch(/rating|score|rank/i);
   });
@@ -592,9 +593,47 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     founding = { ...founding, team: [{ id: "facilitator", name: "Governance Facilitator", holders: ["Rye"] }] };
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
-    await waitFor(() => expect(within(section).getByTestId("filled-roles").textContent).toContain("Governance Facilitator (Rye)"));
+    await waitFor(() => expect(within(section).getByTestId("filled-roles").querySelector('[data-roster-person="p:Rye"]')?.textContent).toContain("Governance Facilitator"));
     // The directory never lists it: it is the team, not a role to apply for.
     expect(screen.queryByRole("heading", { level: 3, name: "Governance Facilitator" })).toBeNull();
+  });
+
+  it("draws the roles held now as a roster: one card per person, every role listed, alphabetical, in both views (Rye, 17 Nov 2026)", async () => {
+    founding = {
+      ...founding,
+      team: [
+        { id: "tech", name: "Technical Operations Steward", holders: ["Rye"] },
+        { id: "memory", name: "Living Memory Steward", holders: ["Rick"] },
+        { id: "ai", name: "AI Workforce Steward", holders: ["Rick"] },
+        { id: "hidden", name: "Strategy Advisor", holders: [] },
+      ],
+    };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const roster = await within(section).findByTestId("filled-roles");
+    await waitFor(() => expect(Array.from(roster.querySelectorAll("[data-roster-person]")).map((c) => c.getAttribute("data-roster-person"))).toEqual(["p:Rick", "p:Rye", "r:hidden"]));
+    const rick = roster.querySelector('[data-roster-person="p:Rick"]') as HTMLElement;
+    expect(Array.from(rick.querySelectorAll("[data-filled-role]")).map((li) => li.textContent)).toEqual(["Living Memory Steward", "AI Workforce Steward"]);
+    expect(rick.textContent).toContain("Positions");
+    expect(rick.textContent).toContain("Anchor Circle");
+    // The tally still counts roles, and nothing on a card is a number, a score or a rank.
+    expect(within(section).getByTestId("lineup-tally").textContent).toContain("4 filled");
+    expect(roster.textContent).not.toMatch(/\d|rating|score|rank/i);
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    const formation = within(section).getByTestId("formation-roster");
+    expect(formation.querySelectorAll("[data-roster-person]")).toHaveLength(3);
+    expect(formation.querySelectorAll("[data-filled-role]")).toHaveLength(4);
+  });
+  it("opens the org chart from the roster: one link into /circles, the held team roles counted with the open ones (Rye, 16 Nov 2026)", async () => {
+    founding = { ...founding, team: [{ id: "tech", name: "Technical Operations Steward", holders: ["Rye"] }, { id: "ai", name: "AI Workforce Steward", holders: ["Rick"] }] };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    // A phone (no wide screen in this test) gets the row: the three open roles from /api/org and the two held from the team.
+    const door = await within(section).findByRole("link", { name: /See the org chart/ });
+    expect(door.getAttribute("href")).toBe("/circles");
+    expect(door.textContent).toContain("Anchor Circle: 2 held, 3 open");
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    expect(within(section).getByRole("link", { name: /See the org chart/ }).getAttribute("href")).toBe("/circles");
   });
 
   it("shows how full each open role is: held and open, and covered past 100% (Rye, 14 Nov 2026)", async () => {
