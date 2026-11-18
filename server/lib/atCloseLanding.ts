@@ -61,6 +61,16 @@
  *   seat a term is reported and never thrown, so it can never be the reason a
  *   launch is parked here.
  *
+ *   `funding_divergence` (2026-11-18): SAFE TO RUN TWICE. Its closer,
+ *   `fundingDivergenceCloser` in server/lib/fundingRounds.ts, settles the round
+ *   in ONE transaction under the pot's row lock: it re-reads the round, stops if
+ *   `divergence_result` is already set, writes the earmarks and idea statuses,
+ *   and claims the result with an UPDATE guarded on it being NULL. A throw rolls
+ *   all of it back; a second run after a commit finds the result claimed and
+ *   writes nothing. The quests it then puts on the board are claimed per idea
+ *   (`claimIdeaQuest`), and any it missed are made by the round's next read.
+ *   No ledger posting: an earmark is a promise on recorded money.
+ *
  *   A token send at acceptance: NOT SAFE, so it stalls. No executor for one
  *   exists in this build. `token_send`, `quest_payout` and `founding_allocation`
  *   have no `SUBJECT_CLOSERS` entry, so a binding ballot on one is refused at
@@ -91,7 +101,7 @@ import { executesAtPassWithNoWindow } from "../../shared/governanceKinds";
 import { decisionLink, notifyRollRows, type RollNotice, type RollNoticeDeps } from "./ballotNotices";
 
 /** Subjects whose at-close executor has been read and is safe to run twice. */
-export const AT_CLOSE_RETRY_SAFE_SUBJECTS: ReadonlySet<string> = new Set(["village_launch"]);
+export const AT_CLOSE_RETRY_SAFE_SUBJECTS: ReadonlySet<string> = new Set(["village_launch", "funding_divergence"]);
 
 export type AtCloseFailureShape = "retrying" | "stalled";
 

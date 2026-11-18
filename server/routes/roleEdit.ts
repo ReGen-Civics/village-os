@@ -40,6 +40,7 @@ import { listOrgAssignments, listOrgRoles, type OrgRole } from "../lib/orgChart"
 import { firstNameOf } from "../lib/peopleLock";
 import { roleFillsFor } from "../lib/roleFill";
 import { namesOf } from "../repos/agentAccounts";
+import { adminUncapped } from "../lib/adminUncapped";
 import { publicFill } from "../../shared/commitmentRange";
 import { ROLE_WORD_FIELDS } from "../lib/roleProposals";
 import { editorState, labelOf, listingProblems, revertEdit, roleHistory, saveRoleEdit, suggestionFor, type EditorState } from "../lib/roleEdit";
@@ -110,7 +111,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       res.status(403).json({ error: "not_a_holder", message: "Editing a role is for a holder of the power to decide the structure." });
       return null;
     }
-    if (await g.overLimit(`role-edit-${bucket}:${who.userId}`, max, WINDOW_MS)) {
+    // A person who is a village admin is not throttled here; an agent always is (server/lib/adminUncapped.ts).
+    if (!(await adminUncapped(req, who.userId, g.isAdmin, g.getPool())) && (await g.overLimit(`role-edit-${bucket}:${who.userId}`, max, WINDOW_MS))) {
       res.status(429).json({ error: "too_many_asks", message: "That is a lot in a few minutes. Wait a little and try again." });
       return null;
     }

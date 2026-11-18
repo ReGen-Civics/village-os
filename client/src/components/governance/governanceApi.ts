@@ -307,6 +307,10 @@ export interface Standing {
    */
   deniedByWarning: boolean;
   weight: number;
+  /** Token mode: the whole balance `weight` is counted from (a cap by source can count less). Null otherwise. */
+  held?: number | null;
+  /** True while the member has left the village: their balance rests and counts on no new ballot. */
+  resting?: boolean;
   why: string;
   /** Holds proposal.decide: may rule objections and close a ballot early. */
   mayDecide: boolean;

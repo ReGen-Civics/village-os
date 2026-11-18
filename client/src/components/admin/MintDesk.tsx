@@ -51,7 +51,9 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
   onChanged?: () => void;
 }) {
   const { t } = useLingui();
-  const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "" });
+  // `contribution`: what stood behind the grant, cash put in or anything else.
+  // A village capping voting weight by source counts the two under separate caps.
+  const [mint, setMint] = useState({ slug: "", toUserId: "", amount: "", reason: "", contribution: "other" as "cash" | "other" });
   /** 0106: grants waiting for a second steward, and the ones already decided. */
   const [grants, setGrants] = useState<any[]>([]);
   const [cosignOver, setCosignOver] = useState<number>(0);
@@ -92,6 +94,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
           // would multiply twice, so the screen sends what was typed.
           amount: Number(mint.amount),
           reason: mint.reason,
+          contribution: mint.contribution,
         }),
       });
       const data = await res.json();
@@ -104,7 +107,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
       const remaining = data.remaining;
       if (data.pending) toast.success(data.message || t`Recorded. Awaiting a second steward's sign-off`);
       else toast.success(t`Minted: ${remaining} left under this cycle's cap`);
-      setMint({ slug: "", toUserId: "", amount: "", reason: "" });
+      setMint({ slug: "", toUserId: "", amount: "", reason: "", contribution: "other" });
       changed();
     } catch (e: any) { toast.error(e?.message || t({ message: "Mint failed", context: "toast after a hand mint was refused" })); }
   };
@@ -179,6 +182,11 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
             placeholder={t({ message: "Amount", context: "hand-mint form, amount box" })} type="number" min={smallestUnit(decimalsOfSlug(mint.slug))} step={smallestUnit(decimalsOfSlug(mint.slug))} className="text-sm border border-border rounded-lg px-3 py-2 w-28 bg-background text-foreground" />
           <input value={mint.reason} onChange={(e) => setMint({ ...mint, reason: e.target.value })}
             placeholder={t({ message: "Reason (required)", context: "hand-mint form, reason box" })} className="text-sm border border-border rounded-lg px-3 py-2 flex-1 min-w-48 bg-background text-foreground" />
+          <select value={mint.contribution} onChange={(e) => setMint({ ...mint, contribution: e.target.value === "cash" ? "cash" : "other" })}
+            aria-label={t({ message: "What was contributed", context: "admin mint form, what stood behind a grant" })} className="text-sm border border-border rounded-lg px-2 py-2 bg-background text-foreground">
+            <option value="other">{t({ message: "Contributed: work or other", context: "admin mint form, what stood behind a grant" })}</option>
+            <option value="cash">{t({ message: "Contributed: cash", context: "admin mint form, what stood behind a grant" })}</option>
+          </select>
           <button onClick={doMint} disabled={!mint.slug || !mint.toUserId || !mint.amount || !mint.reason.trim()}
             className="min-h-11 text-sm bg-teal-deep text-white border border-border rounded-lg px-4 py-2 font-medium disabled:opacity-40">
             <Trans context="hand-mint form, submit button">Mint</Trans>
@@ -212,6 +220,7 @@ export default function MintDesk({ password, tokens, members, mintCap, onChanged
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {g.reason}
+                    {g.contribution === "cash" ? t` · cash put in` : ""}
                     {" · asked for by "}{g.requestedByName ?? g.requestedBy}
                     {g.status === "pending"
                       ? " · waiting for a second steward"

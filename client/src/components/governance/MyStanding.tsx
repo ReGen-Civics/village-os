@@ -37,6 +37,7 @@
  * village's whole ledger would have to be the tallest thing on that page.
  */
 import { Scale } from "lucide-react";
+import { Trans } from "@lingui/react/macro";
 import InfoTip from "@/components/InfoTip";
 import { CrowdFigure } from "./QuorumField";
 import { weightText } from "./voteBars";
@@ -70,9 +71,11 @@ export default function MyStanding({ standing }: { standing: Standing }) {
            the server saying which. R56: it is stated once, flatly, with
            nothing in it about what she should have done. */
         <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-          {standing.deniedByWarning
-            ? "A warning on your account is holding voting back for as long as it stands."
-            : "You cannot vote in this village yet. Voting opens at the member stage."}
+          {standing.resting
+            ? standing.why
+            : standing.deniedByWarning
+              ? "A warning on your account is holding voting back for as long as it stands."
+              : "You cannot vote in this village yet. Voting opens at the member stage."}
         </p>
       ) : (
         <>
@@ -81,6 +84,13 @@ export default function MyStanding({ standing }: { standing: Standing }) {
             <span className="text-sm text-muted-foreground">{MODE_LABEL[standing.mode]}</span>
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{standing.why}</p>
+          {standing.held != null && standing.held > standing.weight && (
+            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+              <Trans>
+                You hold {weightText(standing.held)}. A cap counts {weightText(standing.weight)} of it on a ballot, and the rest stays yours.
+              </Trans>
+            </p>
+          )}
 
           {/* The same silhouette a decision's participation field is built
               from, so the vocabulary is learned once. It is here because this

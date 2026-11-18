@@ -213,8 +213,8 @@ export function issuanceCapSentence(d: IssuanceCapDecision): string {
   switch (d.answer) {
     case "set":
       return (
-        `This village set its own issuance cap: ${cap}. Every door that brings tokens into ` +
-        "existence spends that number, and a cap of 0 means zero."
+        `This village set its own issuance cap: ${cap}. The hand mint, co-signed mint approvals, ` +
+        "treasury stocking, circle treasury funding and circle cap bonuses are refused at that number, and a cap of 0 means zero."
       );
     case "declined": {
       const who = d.by ? ` by ${d.by}` : "";
@@ -224,14 +224,14 @@ export function issuanceCapSentence(d: IssuanceCapDecision): string {
         : "";
       return (
         `This village was asked for an issuance cap at launch and chose to name no number of ` +
-        `its own${who}${when}. The platform's cap still binds every door, at ${cap}, and it ` +
+        `its own${who}${when}. The platform's cap still binds the five guarded doors, at ${cap}, and it ` +
         `can be set at any time from the game variables.${later}`
       );
     }
     case "unset":
       return (
         "Nobody has answered what this village's issuance cap should be. The platform's cap " +
-        `binds every door meanwhile, at ${cap}, so tokens are capped. What is missing is a ` +
+        `binds the five guarded doors meanwhile, at ${cap}. What is missing is a ` +
         "decision, and the journey asks for one before the village votes to launch."
       );
     default:
@@ -256,7 +256,7 @@ export function issuanceCapDetail(d: IssuanceCapDecision): { state: "ok" | "miss
         state: "ok",
         detail:
           `Asked at launch and declined${d.by ? ` by ${d.by}` : ""}. The platform's cap of ` +
-          `${d.capTokens} still binds every door`,
+          `${d.capTokens} still binds the five guarded doors`,
       };
     case "unset":
       return {

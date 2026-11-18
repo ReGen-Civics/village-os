@@ -5345,7 +5345,8 @@ describe.skipIf(!DB_CONFIGURED)("the coordination loop, end to end", () => {
     expect((await api("POST", "/api/admin/tokens", { slug: "cap-tok", name: "Cap Token", kind: "credit", transferable: false }, founderToken)).status).toBe(200);
     const capBefore = (await api("GET", "/api/admin/variables", undefined, founderToken)).status;
     expect(capBefore).toBe(200);
-    expect((await api("PUT", "/api/admin/variables/ledger.admin_mint_cycle_cap", { value: "30" }, founderToken)).status).toBe(200);
+    // The issuance cap closes to the dial write once the Game starts (server/lib/launchDoors.ts), so it is set as before launch.
+    expect((await asIfBeforeLaunch(testDb.conn, () => api("PUT", "/api/admin/variables/ledger.admin_mint_cycle_cap", { value: "30" }, founderToken))).status).toBe(200);
 
     const stampede = await Promise.all(
       Array.from({ length: 10 }, () =>

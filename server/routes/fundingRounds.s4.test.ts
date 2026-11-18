@@ -3,20 +3,25 @@
  *
  * Against a real scratch schema and the real ledger. Three things are pinned:
  *
- *  1. WORK-ONLY VOICE. The power count weighs each member by the Voice they
- *     earned through work. One member holds a mountain of Voice from a
+ *  0. THE POT'S CHOICE. A new pot counts all Voice ("count all voice for
+ *     now", the lead, 2026-11-18); its holder may switch it to work-only
+ *     through the one gate, and a frozen round keeps what it froze with.
+ *  1. WORK-ONLY VOICE. On a work-only pot the power count weighs each member
+ *     by the Voice they earned through work. One member holds a mountain of Voice from a
  *     donation and one Voice from work; nine hold ten Voice each from work.
  *     Weighed by the whole balance the donor would decide; weighed by work,
  *     the two counts agree with the nine.
  *  2. THE SNAPSHOT. Voice is frozen when choosing opens. Work Voice the donor
- *     earns afterwards does not move the count, and a member who joins the
- *     roll afterwards cannot tick in that round.
+ *     earns afterwards does not move the count. A member who joins the roll
+ *     afterwards may tick, and their tick is a signal: shown apart, counted
+ *     in neither count nor the quorum (the lead, 2026-11-18).
  *  3. THE 48-HOUR VOTE. When the two counts disagree, the quests they agree on
  *     are funded at once and the disputed ones are held. A village vote opens
  *     on the ordinary ballot engine, 48 hours long; its closer funds the
  *     deciding count's quests when the vote does not carry and the other
- *     count's when it does, once. With voting off, the deciding count stands
- *     at once and the round says why.
+ *     count's when it does, once. While the vote runs the pot reserves the
+ *     larger side's cost, and settling releases it. With voting off, the
+ *     deciding count stands at once and the round says why.
  *
  * Every person here is invented.
  */
@@ -172,6 +177,7 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
     as("s4-0");
     const pot = await call("POST /api/funding-rounds/pots", { body: { name: "Village pot", unitCode: "CRC" } });
     potId = pot.body.pot.id;
+    expect(pot.body.pot.countedVoice).toBe("all");
     // The cap is lifted so the arithmetic stays readable, as in the loop suite.
     await q("UPDATE funding_pots SET weight_cap_pct = 100 WHERE id = ?", [potId]);
     await q("INSERT INTO funding_pot_receipts (id, pot_id, amount_minor, note, recorded_by) VALUES ('s4-rcpt', ?, 5000000, 'season dues', 's4-0')", [potId]);
@@ -180,6 +186,16 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
   afterAll(async () => {
     await pool?.end();
     await db?.drop();
+  });
+
+  it("lets only a holder of pot.steward switch a pot to work-only Voice", async () => {
+    as("s4-3");
+    expect((await call("PATCH /api/funding-rounds/pots/:id/counted-voice", { params: { id: potId }, body: { countedVoice: "work_only" } })).status).toBe(403);
+    as("s4-0");
+    expect((await call("PATCH /api/funding-rounds/pots/:id/counted-voice", { params: { id: potId }, body: { countedVoice: "half" } })).status).toBe(400);
+    const out = await call("PATCH /api/funding-rounds/pots/:id/counted-voice", { params: { id: potId }, body: { countedVoice: "work_only" } });
+    expect(out.status).toBe(200);
+    expect(out.body.pot.countedVoice).toBe("work_only");
   });
 
   it("weighs the power count by work-earned Voice, frozen when choosing opens", async () => {
@@ -200,17 +216,27 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
 
     // After the freeze the donor earns a great deal of work Voice. It must not count here.
     await minted("s4-0", 50_000_000, "quest_consent");
-    // A member who reaches the roll after the freeze cannot tick in this round.
+    // A member who reaches the roll after the freeze may tick, as a signal with no Voice.
     roll.add("s4-late");
-    const late = await tick("s4-late", roundId, [seeds]);
-    expect(late.status).toBe(403);
-    expect(late.body.error).toMatch(/voting roll was set when choosing opened/);
+    const late = await tick("s4-late", roundId, [seeds, shed]);
+    expect(late.status).toBe(200);
+    expect(late.body).toMatchObject({ myMarks: [seeds, shed].sort(), signalOnly: true });
+    expect(late.body.notice).toBe("You joined after choosing opened, so your choice shows as a signal and doesn't change the count this round.");
+    expect((await read(roundId, "s4-late")).body.voice).toMatchObject({ mine: null, notice: late.body.notice });
+    // A member on the roll is told nothing of the kind.
+    expect((await tick("s4-1", roundId, [seeds])).body).toMatchObject({ signalOnly: false, notice: null });
     roll.delete("s4-late");
 
     await putIn(roundId, "harvest");
     const view = await read(roundId);
     const o = view.body.outcome;
     expect(o).toMatchObject({ quorumMet: true, decider: "power", electorate: 10, markers: 10, countedVoice: "work_only", voiceFrozenLate: false, heldForVote: [] });
+    // The newer member's ticks are signals: kept apart, counted nowhere.
+    expect(o.signalers).toBe(1);
+    expect(o.signalsByIdea).toEqual({ [seeds]: 1, [shed]: 1 });
+    expect(o.marksByIdea[shed]).toBe(1);
+    expect(view.body.ideas.find((i: any) => i.id === shed).signaledBy).toEqual(["a member"]);
+    expect(view.body.ideas.find((i: any) => i.id === shed).markedBy).toHaveLength(1);
     // Nine members with ten work Voice each outweigh one with one: both counts fund the seed bank.
     expect(o.power.funded).toEqual([seeds]);
     expect(o.people.funded).toEqual([seeds]);
@@ -254,6 +280,9 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
     expect(status(shed)).toBe("on_ballot");
     expect(status(seeds)).toBe("on_ballot");
     expect(await q("SELECT idea_id FROM funding_earmarks WHERE round_id = ?", [roundId])).toEqual([{ idea_id: well }]);
+    // The pot holds the larger side's cost back while the vote runs.
+    expect(view.body.pot.reservedMinor).toBe(600000);
+    const freeDuringVote = view.body.pot.freeMinor;
 
     // The vote is on the ordinary engine, 48 hours long, asked by the round and not by a person.
     const vote = view.body.divergenceVote;
@@ -282,6 +311,9 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
     expect(after.body.ideas.find((i: any) => i.id === seeds).status).toBe("not_funded");
     expect(after.body.divergenceVote).toMatchObject({ result: "decider" });
     expect(after.body.divergenceVote.note).toMatch(/deciding count stands/);
+    // Settling releases the reservation into the shed's earmark: free money is unchanged.
+    expect(after.body.pot.reservedMinor).toBe(0);
+    expect(after.body.pot.freeMinor).toBe(freeDuringVote);
     const earmarks = await q("SELECT idea_id, amount_minor FROM funding_earmarks WHERE round_id = ? ORDER BY idea_id", [roundId]);
     expect(earmarks.map((e: any) => e.idea_id).sort()).toEqual([shed, well].sort());
     expect(quests.filter((x) => x.title === "Tool shed")).toHaveLength(1);
@@ -327,6 +359,64 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
       expect(await q("SELECT id FROM ballots WHERE subject_ref = ?", [roundId])).toHaveLength(0);
     } finally {
       governance = true;
+    }
+  });
+
+  it("keeps a frozen round's setting when the pot switches back to all Voice, and counts all Voice after", async () => {
+    // A round frozen on work-only while the pot is work-only.
+    const early = await newRound("Dark moon", [{ title: "Fence", ask: 10000 }]);
+    await putIn(early.roundId, "choose");
+    await read(early.roundId);
+    as("s4-0");
+    expect((await call("PATCH /api/funding-rounds/pots/:id/counted-voice", { params: { id: potId }, body: { countedVoice: "all" } })).body.pot.countedVoice).toBe("all");
+    expect((await read(early.roundId, "s4-0")).body.voice).toMatchObject({ countedVoice: "work_only" });
+    // A round that freezes now reads the donor's whole balance, donation included.
+    const later = await newRound("Bright moon", [{ title: "Gate", ask: 10000 }]);
+    await putIn(later.roundId, "choose");
+    const v = (await read(later.roundId, "s4-0")).body.voice;
+    expect(v.countedVoice).toBe("all");
+    expect(v.mine).toBeGreaterThan(10_000_000);
+  });
+
+  it("reserves the held quests' money so another round on the pot cannot spend it first", async () => {
+    // Its own pot, so the arithmetic is only this case's.
+    as("s4-0");
+    const pot = await call("POST /api/funding-rounds/pots", { body: { name: "Small pot", unitCode: "CRC", countedVoice: "work_only" } });
+    const small = pot.body.pot.id as string;
+    expect(pot.body.pot.countedVoice).toBe("work_only");
+    await q("UPDATE funding_pots SET weight_cap_pct = 100 WHERE id = ?", [small]);
+    await q("INSERT INTO funding_pot_receipts (id, pot_id, amount_minor, note, recorded_by) VALUES ('s4-rcpt-small', ?, 1000000, 'gift', 's4-0')", [small]);
+    const saved = potId;
+    potId = small;
+    try {
+      const { roundId, ids: [shed, seeds] } = await newRound("First on the pot", [{ title: "Tool shed", ask: 700000 }, { title: "Seed bank", ask: 600000 }]);
+      await putIn(roundId, "choose");
+      await tick("s4-0", roundId, [shed]);
+      for (const p of people.slice(1)) await tick(p.id, roundId, [seeds]);
+      await putIn(roundId, "harvest");
+      const view = await read(roundId);
+      expect(view.body.outcome.heldForVote.sort()).toEqual([shed, seeds].sort());
+      // The larger side, the shed at 700,000, is held back.
+      expect(view.body.pot).toMatchObject({ reservedMinor: 700000, freeMinor: 300000 });
+
+      // A second round on the same pot can offer only what is left.
+      const second = await newRound("Second on the pot", [{ title: "Bench", ask: 500000 }]);
+      await putIn(second.roundId, "choose");
+      for (const p of people) await tick(p.id, second.roundId, [second.ids[0]]);
+      await putIn(second.roundId, "harvest");
+      const o2 = (await read(second.roundId)).body.outcome;
+      expect(o2.availableMinor).toBe(300000);
+      expect(o2.power.funded).toEqual([]);
+
+      // The vote carries: the seed bank is funded from the reservation, which is released.
+      const ballot = (await ballotById(pool, view.body.divergenceVote.ballotId))!;
+      await closer().execute!(ballot, "governance");
+      const after = await read(roundId);
+      expect(after.body.ideas.find((i: any) => i.id === seeds).status).toBe("funded");
+      expect(after.body.divergenceVote.note).not.toMatch(/no longer fit/);
+      expect(after.body.pot).toMatchObject({ reservedMinor: 0, earmarkedMinor: 600000, freeMinor: 400000 });
+    } finally {
+      potId = saved;
     }
   });
 

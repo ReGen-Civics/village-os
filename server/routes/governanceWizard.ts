@@ -29,7 +29,8 @@
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import { capabilityDecision, hasCapability } from "../../shared/capabilities";
-import { weightCapLine, weightHistory, weightsFor } from "../lib/governanceWeights";
+import { standingWeightFor, weightCapLine, weightHistory } from "../lib/governanceWeights";
+import { leftTheVillage } from "../lib/formerMember";
 import { tokenDef } from "../lib/ledger";
 import {
   ADVISORY_TYPES,
@@ -78,20 +79,32 @@ export function register(app: Express, deps: Deps): void {
      * member is owed an answer to.
      */
     const voteGate = capabilityDecision("ballot.vote", ctx);
-    const eligible = voteGate.allowed;
-    const weights = await weightsFor(getPool(), [String(user.id)], snapshot);
-    const weight = weights.get(String(user.id)) ?? 0;
+    /*
+     * RESTING VOICE. A member who left keeps every balance (the exit policy)
+     * and is on no new roll (`withoutFormerMembers` in `buildElectorate`), so a
+     * ballot counts them for nothing while they are away. Their standing says
+     * so in those words, with the balance they keep, instead of showing a
+     * weight no ballot will give them. Admitted again, `leftTheVillage` is
+     * false at once and the whole balance counts on the next roll.
+     */
+    const resting = await leftTheVillage(getPool(), user);
+    const eligible = voteGate.allowed && !resting;
+    const standing = await standingWeightFor(getPool(), String(user.id), snapshot);
+    const weight = resting ? 0 : standing.weight;
     const tokenName = snapshot.token ? tokenDef(snapshot.token)?.name ?? snapshot.token : null;
-    const why =
+    const counting =
       snapshot.mode === "equal"
         ? "Every member who may vote weighs the same here. One person, one vote."
         : snapshot.mode === "token"
           ? [
               `Your weight is your balance of ${tokenName ?? "the village's chosen token"} at the moment a ballot opens, and it freezes there for that vote.`,
-              // Said only while the cap is on, because only then is it true.
+              // Said only while a cap is on, because only then is it true.
               weightCapLine(snapshot),
             ].filter(Boolean).join(" ")
           : "The stewards allocate weight one member at a time, and every change carries a reason. Yours is below.";
+    const why = resting
+      ? "You left the village, so your voice is resting. You keep everything you hold, it counts on no new ballot while you are away, and it counts again from the day you are admitted back."
+      : counting;
     res.json({
       mode: snapshot.mode,
       token: snapshot.token,
@@ -105,6 +118,11 @@ export function register(app: Express, deps: Deps): void {
        */
       deniedByWarning: voteGate.source === "denied by warning badge",
       weight,
+      // Token mode: the whole balance the weight is counted from, which a cap
+      // by source can count less of. Null in the other modes.
+      held: standing.held,
+      // True while the member has left the village: their balance rests.
+      resting,
       why,
       // Whether this member facilitates: rules objections, closes early. The
       // page hides those controls on this rather than offering a button the

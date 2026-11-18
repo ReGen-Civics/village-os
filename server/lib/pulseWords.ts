@@ -17,7 +17,7 @@
  *
  * Admin readers are not touched: they still see the key.
  */
-import { VARIABLES_BY_KEY } from "../../shared/gameVariables";
+import { VARIABLES_BY_KEY, membersOnlyOnPublic } from "../../shared/gameVariables";
 import { NARRATION_PREFIX } from "../repos/settingsNarration";
 
 /** What a village reads in front of a setting's label. */
@@ -30,7 +30,9 @@ const SENSITIVE_PREFIXES = ["agents.", "secrets.", "secret."] as const;
 export function publicSettingLabel(key: string): string | null {
   if (SENSITIVE_PREFIXES.some((p) => key.startsWith(p))) return null;
   const def = VARIABLES_BY_KEY[key];
-  if (!def || def.withheld || def.movedToSecret) return null;
+  // `membersOnly`: a dial a signed-out visitor may not read is no public news,
+  // and a line already stored for it is hidden at read time the same way.
+  if (!def || def.withheld || def.movedToSecret || def.membersOnly) return null;
   const label = String(def.label ?? "").trim();
   return label || null;
 }
@@ -66,6 +68,9 @@ function capitalised(text: string): string {
  */
 export function publicPulseText(row: { kind: string; text: string; entityType?: string | null; entityRef?: string | null }): string | null {
   if (isRankLine(row)) return null;
+  // A line stored for a dial since marked members-only, whatever words it was
+  // written in: the dial is not a stranger's to read (`membersOnly`).
+  if (row.kind === "settings" && row.entityType === "variable" && row.entityRef && membersOnlyOnPublic(row.entityRef)) return null;
   if (row.kind !== "settings" || !row.text.startsWith(NARRATION_PREFIX)) return capitalised(row.text);
   const rest = row.text.slice(NARRATION_PREFIX.length);
   const key = (row.entityType === "variable" && row.entityRef ? row.entityRef : rest.split(" is now ")[0]).trim();

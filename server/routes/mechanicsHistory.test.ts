@@ -39,6 +39,8 @@ const ROWS = [
   { id: "m2", config_key: "governance.vote_days", old_value: "7", new_value: "9", actor_user_id: "u-rick", source: "governance", proposal_ref: "gm:gmp-1 bal:bal-9", note: null, at: new Date("2026-11-02T10:00:00Z") },
   { id: "m1", config_key: "governance.vote_days", old_value: null, new_value: "7", actor_user_id: "u-ana", source: "admin", proposal_ref: null, note: null, at: new Date("2026-10-01T10:00:00Z") },
   { id: "m0", config_key: "governance.quorum_pct", old_value: null, new_value: "30", actor_user_id: "u-gone", source: "admin", proposal_ref: null, note: null, at: new Date("2026-09-01T10:00:00Z") },
+  // A dial marked members-only (`membersOnly`): never in a signed-out reader's history.
+  { id: "mc", config_key: "governance.weight_cap_cash_on", old_value: "false", new_value: "true", actor_user_id: "u-ana", source: "admin", proposal_ref: null, note: null, at: new Date("2026-08-01T10:00:00Z") },
 ];
 
 function harness(signedIn: boolean) {
@@ -145,5 +147,19 @@ describe("GET /api/game/mechanics/history", () => {
     expect(text).not.toContain("Ana");
     expect(out.body.find((r: any) => r.id === "m2").by).toBe("Treasurer");
     expect(out.body.find((r: any) => r.id === "m1").by).toBe("A member");
+  });
+
+  it("leaves a members-only dial out of a signed-out reader's history, whole rows and all", async () => {
+    const out = await harness(false).get();
+    expect(out.body.map((r: any) => r.id)).toEqual(["m2", "m1", "m0"]);
+    expect(JSON.stringify(out.body)).not.toContain("weight_cap");
+    // Asked for by name, it is still not there.
+    const byKey = await harness(false).get({ key: "governance.weight_cap_cash_on" });
+    expect(byKey.body).toEqual([]);
+  });
+
+  it("shows the same row to a signed-in member", async () => {
+    const out = await harness(true).get();
+    expect(out.body.map((r: any) => r.id)).toEqual(["m2", "m1", "m0", "mc"]);
   });
 });

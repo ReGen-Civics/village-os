@@ -20,6 +20,18 @@
  * The fifth, `village-secrets-key`, is read beside the key in
  * server/lib/secrets.ts (`villageSecretsLaunchCheck`).
  *
+ * TWO MORE ROWS READ THE ENVIRONMENT, AND SAY SO. Neither has a live call to
+ * prove it, and neither pretends to:
+ *
+ *   admin-password      ADMIN_PASSWORD unset, or set and at least
+ *                       ADMIN_PASSWORD_MIN_LENGTH long, the floor the
+ *                       bootstrap and export doors already refuse below
+ *                       (server/lib/passwordDoors.ts). Blocking.
+ *   break-glass-email   BREAK_GLASS_ADMIN_EMAIL present or not. Recommended.
+ *
+ * Neither detail ever carries the value or its length: "long enough" and "too
+ * short" are the only two answers about size anybody reads.
+ *
  * EVIDENCE IS TIED TO THE KEY IT PROVES. A success recorded before the key was
  * last typed under Integrations proves the old key, so it does not count. A key
  * set only on the host has no typing time to compare with; changing it means a
@@ -40,6 +52,7 @@ import { decodeToken, encodeToken } from "./memberTokens";
 import { secretStatus, secretValue, type SecretKey } from "./secrets";
 import { lastStripeDeliveries } from "../repos/stripeDeliveries";
 import { authTokenSecretTooShort, SHORT_AUTH_TOKEN_SECRET_SENTENCE } from "./secretFloors";
+import { ADMIN_PASSWORD_MIN_LENGTH, adminPasswordTooShort } from "./passwordDoors";
 
 export type ProofState = "ok" | "missing" | "partial";
 export interface Proof {
@@ -239,6 +252,70 @@ export function sessionSecretProof(secret: string | undefined, tooShort = false)
     : { state: "missing", detail: "A session signed with it did not verify. This is a platform bug, report it" };
 }
 
+// ── admin-password ───────────────────────────────────────────────────────────
+
+/** The value server/index.ts falls back to when ADMIN_PASSWORD is unset. It opens nothing. */
+const PLACEHOLDER_ADMIN_PASSWORD = "change-me";
+
+/**
+ * Whether ADMIN_PASSWORD is fit to guard the two doors it opens alone: the
+ * founder claim at `/claim` and the whole-village export. Both already refuse
+ * a password under ADMIN_PASSWORD_MIN_LENGTH, so before this row a short one
+ * was found only when somebody needed one of those doors.
+ *
+ * `tooShort` comes from `adminPasswordTooShort`, so the test runner's
+ * exemption is decided in one place, the same as `session-secret`. No answer
+ * here carries the value or its length.
+ */
+export function adminPasswordProof(password: string | undefined, tooShort = false): Proof {
+  // UNSET PASSES (coordinator, 2026-11-18). With no ADMIN_PASSWORD both doors
+  // it opens stay shut, which is the safe posture, and the guild seed tells a
+  // founder to delete it once nobody needs the break-glass path.
+  if (password === undefined) {
+    return { state: "ok", detail: "Not set, so the founder-password way back is off; a lockout then needs the host" };
+  }
+  if (!password.trim() || password === PLACEHOLDER_ADMIN_PASSWORD) {
+    return {
+      state: "missing",
+      detail:
+        "ADMIN_PASSWORD is set to a blank value or the placeholder, which anyone could guess. " +
+        `Set one of at least ${ADMIN_PASSWORD_MIN_LENGTH} characters on your host, or remove it, and redeploy`,
+    };
+  }
+  if (tooShort) {
+    return {
+      state: "missing",
+      detail:
+        `ADMIN_PASSWORD is shorter than ${ADMIN_PASSWORD_MIN_LENGTH} characters, so the founder claim and the village export refuse it. ` +
+        "Set a longer random one on your host, or remove it, and redeploy",
+    };
+  }
+  return { state: "ok", detail: `ADMIN_PASSWORD is set and at least ${ADMIN_PASSWORD_MIN_LENGTH} characters long` };
+}
+
+// ── break-glass-email ────────────────────────────────────────────────────────
+
+/**
+ * The `env-present` probe for BREAK_GLASS_ADMIN_EMAIL (shared/guilds.ts,
+ * `break-glass-email`). Present or not, and nothing else: the address is a
+ * person's, so it never leaves the server, and presence is all this can know.
+ * Only a lockout drill proves the way back works, and the detail says that.
+ */
+export function breakGlassEmailProof(email: string | undefined): Proof {
+  if (!String(email ?? "").trim()) {
+    return {
+      state: "missing",
+      detail:
+        "BREAK_GLASS_ADMIN_EMAIL is not set, so a village that loses every admin has no way back in. " +
+        "Set it to a founder's own address on your host",
+    };
+  }
+  return {
+    state: "ok",
+    detail: "An address is set. Only a real lockout drill proves the way back works",
+  };
+}
+
 // ── The resolvers server/lib/launch.ts reads ─────────────────────────────────
 
 export const LAUNCH_PROOFS: Record<string, (pool: Pool, env: NodeJS.ProcessEnv) => Proof | Promise<Proof>> = {
@@ -275,4 +352,6 @@ export const LAUNCH_PROOFS: Record<string, (pool: Pool, env: NodeJS.ProcessEnv) 
     });
   },
   "session-secret": (_pool, env) => sessionSecretProof(env.AUTH_TOKEN_SECRET, authTokenSecretTooShort(env)),
+  "admin-password": (_pool, env) => adminPasswordProof(env.ADMIN_PASSWORD, adminPasswordTooShort(env.ADMIN_PASSWORD, env)),
+  "break-glass-email": (_pool, env) => breakGlassEmailProof(env.BREAK_GLASS_ADMIN_EMAIL),
 };
