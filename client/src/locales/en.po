@@ -13989,6 +13989,12 @@ msgctxt "role editor"
 msgid "Close"
 msgstr "Close"
 
+#: client/src/components/roleCard/LeadBuilds.tsx
+#: client/src/components/roleCard/RosterCards.tsx
+msgctxt "a held role that is still recruiting"
+msgid "More players welcome"
+msgstr "More players welcome"
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Choose the file to bring in."
@@ -20147,6 +20153,12 @@ msgstr "Agreements the village adopted by its own vote, exactly as written, and 
 msgctxt "calendar day strip: what is on a day"
 msgid "a gathering"
 msgstr "a gathering"
+
+#: client/src/components/roleCard/LeadBuilds.tsx
+#: client/src/components/roleCard/RosterCards.tsx
+msgctxt "a held role that is still recruiting: apply to join it"
+msgid "Apply"
+msgstr "Apply"
 
 #: client/src/components/ErrorBoundary.tsx
 msgid "Tap reload to get the new version."
