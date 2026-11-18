@@ -75,6 +75,11 @@ msgctxt "change request note kind"
 msgid "Concern"
 msgstr ""
 
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's commitment"
+msgid "No commitment chosen for this role."
+msgstr ""
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Done by {role}"
@@ -182,6 +187,11 @@ msgstr ""
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
 msgid "Kind of work"
+msgstr ""
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: the contract's pay, one of several roles"
+msgid "Pay the contract for {role} will record"
 msgstr ""
 
 #. placeholder {0}: data.family
@@ -794,6 +804,11 @@ msgstr "Añadir otro aporte de valor"
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "What harm could this do to the village, or what would it stop us doing?"
+msgstr ""
+
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's price ask"
+msgid "No price ask for this role."
 msgstr ""
 
 #: client/src/components/admin/AdminHelperPanel.tsx
@@ -3151,6 +3166,13 @@ msgctxt "voice clip beside an answer"
 msgid "Record again"
 msgstr "Grabar de nuevo"
 
+#. placeholder {0}: priced(r.atCommitment, r.full.currency, r.full.per)
+#. placeholder {1}: money(r.full.amount, r.full.currency)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the ceiling at their commitment"
+msgid "At {rolePct}%, the role pays up to {0} (the full role: {1})."
+msgstr ""
+
 #. placeholder {0}: offer.roleCommitment
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "The role asks {0}%"
@@ -3727,6 +3749,12 @@ msgstr ""
 msgctxt "talk it out: adds the draft after the box's words"
 msgid "Add to mine"
 msgstr "Añadir a lo mío"
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "Remove {0}"
+msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "This disagreement stays in the round's record for everyone to see."
@@ -4363,6 +4391,12 @@ msgstr ""
 msgctxt "the commons: fold the list"
 msgid "Show fewer goals"
 msgstr "Mostrar menos metas"
+
+#. placeholder {0}: role.name
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms commitment, one of several roles"
+msgid "Your commitment: {0}"
+msgstr ""
 
 #. placeholder {0}: d.low
 #. placeholder {1}: d.high
@@ -7117,6 +7151,11 @@ msgctxt "approved writes"
 msgid "No approved writes yet."
 msgstr ""
 
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "Add another role"
+msgstr ""
+
 #. placeholder {0}: VOICE_NOTE_MAX_SECONDS / 60
 #. placeholder {1}: voiceLength(VOICE_NOTE_MAX_SECONDS)
 #: client/src/components/voice/VoiceStepMore.tsx
@@ -7984,9 +8023,9 @@ msgid "Weekday evenings"
 msgstr "Noches entre semana"
 
 #: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "founding application refusal"
-msgid "One application is for one role. Choose the role you are applying for, and apply for another one separately."
-msgstr "Cada solicitud es para un rol. Elige el rol al que postulas, y postula a otro por separado."
+#~ msgctxt "founding application refusal"
+#~ msgid "One application is for one role. Choose the role you are applying for, and apply for another one separately."
+#~ msgstr "Cada solicitud es para un rol. Elige el rol al que postulas, y postula a otro por separado."
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 msgid "What it should be"
@@ -8746,6 +8785,11 @@ msgstr ""
 #: client/src/components/admin/ProposedChangesLink.tsx
 msgctxt "proposed changes"
 msgid "None waiting"
+msgstr ""
+
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "More than one role"
 msgstr ""
 
 #: client/src/components/openProposal/AboutYou.tsx
@@ -9759,9 +9803,9 @@ msgstr ""
 #. placeholder {0}: priced(r.atCommitment, r.full.currency, r.full.per)
 #. placeholder {1}: money(r.full.amount, r.full.currency)
 #: client/src/components/openProposal/CommitmentReview.tsx
-msgctxt "open proposal: the ceiling at their commitment"
-msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
-msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
+#~ msgctxt "open proposal: the ceiling at their commitment"
+#~ msgid "At {atPct}%, the role pays up to {0} (the full role: {1})."
+#~ msgstr "Al {atPct}%, el rol paga hasta {0} (el rol completo: {1})."
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgid "They have not chosen"
@@ -10004,6 +10048,12 @@ msgstr ""
 #~ msgid "You drafted roles before you joined."
 #~ msgstr ""
 
+#. placeholder {0}: own.ask.why
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's price ask"
+msgid "Why this price: {0}"
+msgstr ""
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: conflict"
 msgid "Yes, accept"
@@ -10075,6 +10125,12 @@ msgstr "Adjuntar un archivo"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "This pot now counts all Voice."
+msgstr ""
+
+#. placeholder {0}: own.pct
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's commitment"
+msgid "They propose {0}% for this role."
 msgstr ""
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
@@ -13373,6 +13429,11 @@ msgctxt "signing key"
 msgid "Replace the key"
 msgstr ""
 
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "You can propose for up to 3 roles in one application, in any circle. Each role has its own commitment, price and agreement, and the prices add up."
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Selection criteria (3 to 5 lines)"
@@ -14838,6 +14899,12 @@ msgstr ""
 #~ msgctxt "price popup lede"
 #~ msgid "We suggest {0} at {pct}%. Your proposal sets your pay: propose more or less, and we agree it together in your first month's contract."
 #~ msgstr "Te sugerimos {0} al {pct}%. Tu propuesta fija tu pago: propón más o menos, y lo acordamos juntos en el contrato de tu primer mes."
+
+#. placeholder {0}: priced(own.ask.monthly, r.full?.currency ?? "USD", askPeriod(own.ask))
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's price ask"
+msgid "Their price: {0}."
+msgstr ""
 
 #: client/src/pages/Propose.tsx
 #: client/src/pages/ProposeARole.tsx
@@ -16472,6 +16539,11 @@ msgctxt "a role choice"
 msgid "No role"
 msgstr ""
 
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's price ask"
+msgid "Negotiate on the first call if chosen."
+msgstr ""
+
 #: client/src/components/priorities/MyWeekCard.tsx
 msgctxt "profile, change your top priority for this week"
 msgid "Change it"
@@ -17165,6 +17237,12 @@ msgstr "Términos que ofrecemos"
 msgid "Move to its own change request"
 msgstr ""
 
+#. placeholder {0}: all.length
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, the total across roles"
+msgid "Across your {0} roles: {pctTotal}% commitment in all."
+msgstr ""
+
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
 msgid "Asked at your code"
@@ -17470,6 +17548,11 @@ msgstr ""
 #~ msgctxt "commitment field: the history"
 #~ msgid "What you said before"
 #~ msgstr "Lo que dijiste antes"
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application review, several roles"
+msgid "Commitment: {eachRole}. {allPct}% in all"
+msgstr ""
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "hand-mint form, token picker"
@@ -17953,6 +18036,11 @@ msgstr ""
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading of the checklist"
 msgid "Before the vote"
+msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Choose your commitment for each role you added."
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
@@ -18879,6 +18967,13 @@ msgstr "Luna nueva, {date}"
 
 #: client/src/components/review/SeraOnReview.tsx
 msgid "Arrived {at}, with 1 proposal."
+msgstr ""
+
+#. placeholder {0}: data.roles.length
+#. placeholder {1}: data.roles.reduce((n, r) => n + (r.own?.pct ?? 0), 0)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: the total across roles"
+msgid "Across {0} roles: {1}% commitment in all. Each role is its own agreement, and the prices add up."
 msgstr ""
 
 #: client/src/components/admin/LetterDraftsPanel.tsx
@@ -21556,6 +21651,11 @@ msgstr ""
 #~ msgid "What you bring to this role"
 #~ msgstr "Lo que traes a este rol"
 
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "Choose a role"
+msgstr ""
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "lantern: after it arrived"
 msgid "It is a thread on the web now, and they see it on their profile."
@@ -21803,6 +21903,13 @@ msgctxt "admin open proposals"
 msgid "Their voice"
 msgstr "Su voz"
 
+#. placeholder {0}: all.length
+#. placeholder {1}: perPeriod(i18n, moneyWords(priceTotal, prices[0].currency, i18n.locale), prices[0].per)
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, the total across roles"
+msgid "Across your {0} roles: {pctTotal}% commitment in all, and {1} together."
+msgstr ""
+
 #: client/src/pages/Quests.tsx
 msgctxt "open work: change your percent"
 msgid "Change it"
@@ -21822,6 +21929,11 @@ msgstr "Historial ({0})"
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Everything is sent."
+msgstr ""
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "One application takes up to 3 roles. Remove one, and apply for it separately."
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -22744,6 +22856,12 @@ msgctxt "hidden map settings"
 msgid "Layer name"
 msgstr ""
 
+#. placeholder {0}: own.offeredPct
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's commitment"
+msgid "Your counter-offer: {0}%."
+msgstr ""
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "Edited before it went live"
@@ -23028,6 +23146,13 @@ msgstr ""
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "That price was not set."
+msgstr ""
+
+#. placeholder {0}: extraRoles[i]?.commitmentMin ?? 10
+#. placeholder {1}: extraRoles[i]?.name ?? ""
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application check"
+msgid "Choose {0}% or more for {1}."
 msgstr ""
 
 #: client/src/components/review/SeraInDraft.tsx

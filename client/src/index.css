@@ -2175,3 +2175,54 @@ html:has(#sera-changes [data-sera-strip-on]) {
     animation: jw-ripple 0.6s ease-out var(--jw-delay, 0ms);
   }
 }
+
+/*
+ * THE MOON WORD (client/src/components/MoonWord.tsx; the lead, 18 Nov 2026). Here and not in class strings, because
+ * CSS costs the first view of /roles and /propose-a-role no JS. The word wears a dotted underline; inline padding
+ * grows the box a thumb hits to about 44px without moving the line, and the side margins give the width back. The
+ * tip sits fixed along the foot of a phone's screen, so no card clips it and no edge pushes it off, and over the word
+ * from 640px up. Semantic tokens only, as the design rule asks.
+ */
+.moon {
+  position: relative;
+}
+.moon > [tabindex] {
+  margin: 0 -0.25rem;
+  padding: 0.875rem 0.25rem;
+  border-radius: 0.5rem;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.moon > [tabindex]:focus {
+  outline: none;
+}
+.moon > [tabindex]:focus-visible {
+  outline: 2px solid var(--ring);
+}
+.moon > [role="tooltip"] {
+  position: fixed;
+  inset: auto 1rem 1rem;
+  z-index: 50;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--card);
+  color: var(--card-foreground);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.375;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+}
+@media (min-width: 640px) {
+  .moon > [role="tooltip"] {
+    position: absolute;
+    inset: auto auto 100% 0;
+    width: 14rem;
+    margin-bottom: 0.5rem;
+  }
+}

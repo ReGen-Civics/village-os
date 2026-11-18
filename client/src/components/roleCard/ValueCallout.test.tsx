@@ -33,7 +33,7 @@ describe("the value callout on the Rewards piece", () => {
     expect(panel.textContent).toContain("Pay sits in a band from 80% to 100% of that price, in total comp. Proposals can go up to 120%, and the figure for that will show once the team agrees it.");
     // A percent only: no money amount anywhere in the explainer.
     expect(panel.textContent).not.toMatch(/\$\s?\d/);
-    expect(panel.textContent).toContain("Each month you recap what you delivered, and pay follows what you deliver.");
+    expect(panel.textContent).toContain("Each moon you recap what you delivered, and pay follows what you deliver.");
     expect(panel.textContent).toContain("in cash and in equity, a share of ownership in the village.");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByTestId("value-explainer")).toBeNull();

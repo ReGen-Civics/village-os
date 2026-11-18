@@ -1702,6 +1702,45 @@ export const MODULES: ModuleDef[] = [
     validateConfig: validateHiddenMapConfig,
   },
   {
+    id: "season-places",
+    guild: [],
+    setupNeeds: [
+      {
+        id: "dated-seasons",
+        kind: "decision",
+        ref: "season_places.cap",
+        title: "Date the village's seasons, then say how many places a season has and how many seasons a circle serves before it needs no proposal",
+        scope: "village",
+        phase: "before-enable",
+        need: "recommended",
+        fixAt: "/modules/season-places#setting-season_places.cap",
+        since: "1.3.0",
+        certainty: "verified",
+        source: "docs/modules/season-places.md Setup",
+      },
+    ],
+    tier: "included",
+    // A row names a circle (or a member, under `season_places.who = member`),
+    // the season and the words its crew wrote. Notices name the circle only.
+    dataClass: "member-pii",
+    group: "coordinate",
+    // Every dial has a working default: no cap, and every season needs a
+    // proposal. A village with no dated season is told so on the page.
+    setup: "none",
+    name: "Season places",
+    description:
+      "Every season starts fresh: members apply, and each circle's picker chooses that season's team from everyone who applied. Circles propose to take part, a season can hold a set number of places with a waitlist in order, and each gathering can take circles up to a cap its host sets.",
+    // Proposals are decided by the governance module's own road: the power
+    // that places people in roles, or a village vote.
+    requires: ["governance"],
+    recommends: ["events", "commerce"],
+    capabilities: [],
+    variableKeys: ["season_places.who", "season_places.free_after", "season_places.cap", "season_crew.picker_role", "season_crew.needs_place"],
+    apiPrefixes: ["/api/season-places"],
+    // No openStateCheck: a place holds no value anybody is owed. Off hides
+    // every surface; places and the waitlist stay in their tables.
+  },
+  {
     id: "session-card",
     guild: [],
     tier: "included",
@@ -1847,6 +1886,8 @@ export const MODULES: ModuleDef[] = [
       "governance.vote_days",
       "governance.consent_window_days",
       "governance.default_method",
+      // Read by the member door for roles (server/routes/seatApplications.ts), which this module mounts.
+      "roles.prerequisites",
     ],
     // `/api/season-plans`: each member's season plan and the village page of them (season plans RC1).
     apiPrefixes: ["/api/governance", "/api/admin/governance", "/api/season-plans"],

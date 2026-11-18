@@ -6,7 +6,7 @@ import { bandWords } from "./payBandWords";
 
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };
-const FIRST_MONTH = "Your first month often starts lower and follows what you deliver.";
+const FIRST_MONTH = "Your first moon often starts lower and follows what you deliver.";
 const TERMS = "Equity and credit terms are still being written and are subject to legal review.";
 
 describe("the role card's footnote (Rye, 15 Nov 2026)", () => {

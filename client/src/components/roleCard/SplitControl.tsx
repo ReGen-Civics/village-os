@@ -15,6 +15,7 @@ import { moneyWords } from "@shared/roleRewardWords";
 import { BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
 import { perPeriod } from "./rewardWords";
 import { totalAgainstBand, type BandAt } from "./commitmentWords";
+import { MoonText } from "@/components/MoonWord";
 
 /** Digits only, as a whole number; empty reads as 0 so clearing a field gives its share back to the others. */
 const wholeOf = (raw: string): number => {
@@ -111,14 +112,18 @@ export default function SplitControl({
       <p className={HINT}>{t({ message: "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total.", context: "split control: how the shares rebalance" })}</p>
       {totalWords && (
         <p className="font-medium text-foreground" aria-live="polite" data-split-total="">
-          {pct
-            ? t({ message: `Total: ${totalWords} at ${pct}%`, context: "split control: the total the split adds up to" })
-            : t({ message: `Total: ${totalWords} for the full role`, context: "split control: the total, before a commitment is chosen" })}
+          <MoonText
+            text={
+              pct
+                ? t({ message: `Total: ${totalWords} at ${pct}%`, context: "split control: the total the split adds up to" })
+                : t({ message: `Total: ${totalWords} for the full role`, context: "split control: the total, before a commitment is chosen" })
+            }
+          />
         </p>
       )}
       {against && (
         <p className="text-sm text-foreground" data-split-against-band="">
-          {against}
+          <MoonText text={against} />
         </p>
       )}
       {changed && (

@@ -41,6 +41,12 @@ describe("page titles", () => {
     expect(documentTitle("/oauth/authorize", "Village")).toBe("Connect an agent · Village");
   });
 
+  it("names the season places pages, the longer key first", () => {
+    expect(documentTitle("/season-places", "Village")).toBe("Join the season · Village");
+    expect(documentTitle("/season-places/circles", "Village")).toBe("The season's circles · Village");
+    expect(documentTitle("/role-path/r-1", "Village")).toBe("A role's path · Village");
+  });
+
   it("keeps the longer key winning where one key is a prefix of another", () => {
     expect(pageTitleFor("/propose-quest")).toBe(PAGE_TITLES["/propose-quest"]);
     expect(pageTitleFor("/propose")).toBe(PAGE_TITLES["/propose"]);

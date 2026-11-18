@@ -15,7 +15,7 @@
  * a kind the village left alone reads exactly as before.
  */
 
-import { kindOf } from "./notificationKinds";
+import { kindWordsOf } from "./notificationKindWords";
 
 export const NOTICE_SECTION = "app-notices";
 export const NOTICE_TITLE_MAX = 120;
@@ -74,7 +74,7 @@ export function noticeTitle(words: NoticeWords, kind: string, platform: string, 
 export function noticeBlurbsFor(words: NoticeWords, vars: Readonly<Record<string, string>>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [kind, w] of Object.entries(words)) {
-    if (w.blurb) out[kind] = fillNoticeWords(w.blurb, kindOf(kind).blurb, vars);
+    if (w.blurb) out[kind] = fillNoticeWords(w.blurb, kindWordsOf(kind).blurb, vars);
   }
   return out;
 }

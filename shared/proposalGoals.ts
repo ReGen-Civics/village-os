@@ -42,7 +42,7 @@ export const BLANK_GOAL: ProposalGoal = { title: "", doneWhen: "", moves: "", se
 
 export const GOAL_WORDS = {
   notAList: "Send your goals as a list.",
-  needOne: "Add at least one goal for your first month.",
+  needOne: "Add at least one goal for your first moon.",
   tooMany: `Up to ${GOAL_LIMITS.max} goals for a role.`,
   badGoal: "One of your goals could not be read.",
   needTitle: (n: number) => `Name goal ${n}.`,
@@ -51,7 +51,7 @@ export const GOAL_WORDS = {
   notTheRole: (n: number) => `Goal ${n} moves a goal this role does not have. Pick one from the role's own goals.`,
   notASeasonGoal: (n: number) => `Goal ${n} names a season goal this season does not have.`,
   badDate: (n: number) => `Write the date for goal ${n} as a day, like 2026-11-16.`,
-  dateOutside: (n: number) => `The date for goal ${n} falls outside this month.`,
+  dateOutside: (n: number) => `The date for goal ${n} falls outside this moon.`,
   notThisProposal: (n: number) => `Goal ${n} names a role that is not in this proposal.`,
 } as const;
 

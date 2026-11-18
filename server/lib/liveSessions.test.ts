@@ -10,6 +10,7 @@
 import { describe, expect, it } from "vitest";
 import { VARIABLES_BY_KEY, ringOf, validateVariable } from "../../shared/gameVariables";
 import { NOTIFICATION_KINDS } from "../../shared/notificationKinds";
+import { NOTIFICATION_KIND_WORDS } from "../../shared/notificationKindWords";
 import {
   HERE_EVERY_MS,
   PRESENT_WINDOW_MS,
@@ -481,14 +482,14 @@ describe("the dials and the notices this module registers", () => {
     for (const type of ["session_record_ready", "session_action_held", "session_action_due", "session_task_back", "session_task_unheld"]) {
       expect(NOTIFICATION_KINDS[type], type).toBeTruthy();
       expect(NOTIFICATION_KINDS[type].celebrate, type).toBe(false);
-      expect(NOTIFICATION_KINDS[type].blurb, type).not.toMatch(DASHES);
+      expect(NOTIFICATION_KIND_WORDS[type].blurb, type).not.toMatch(DASHES);
     }
     const prefs = resolveNotifyPrefs({});
     // Mail for the admins and the facilitator: the digest, whatever the task preference.
     for (const type of ["session_record_ready", "session_task_back", "session_task_unheld"]) expect(emailCadenceFor(type, prefs), type).toBe("daily");
     // A seat holder who was not in the room gets no link to the record, so the
     // notice's own description promises the action and its date, not the record.
-    expect(NOTIFICATION_KINDS.session_action_held.blurb).not.toMatch(/record/i);
+    expect(NOTIFICATION_KIND_WORDS.session_action_held.blurb).not.toMatch(/record/i);
   });
 
   it("rides the task email preference: immediate by default, and the task layer's own email is the immediate one", () => {
@@ -510,8 +511,8 @@ describe("the dials and the notices this module registers", () => {
     for (const type of ["session_item_taken", "session_item_settled", "session_coming_up"]) {
       expect(NOTIFICATION_KINDS[type], type).toBeTruthy();
       expect(NOTIFICATION_KINDS[type].celebrate, type).toBe(false);
-      expect(NOTIFICATION_KINDS[type].blurb, type).not.toMatch(DASHES);
-      expect(NOTIFICATION_KINDS[type].many, type).toContain("{n}");
+      expect(NOTIFICATION_KIND_WORDS[type].blurb, type).not.toMatch(DASHES);
+      expect(NOTIFICATION_KIND_WORDS[type].many, type).toContain("{n}");
       // No preference a member has set covers an agenda item, the task one included.
       for (const tasksEmail of ["immediate", "daily", "off"] as const) {
         expect(emailCadenceFor(type, resolveNotifyPrefs({ notify: { tasksEmail } })), `${type} ${tasksEmail}`).toBe("off");

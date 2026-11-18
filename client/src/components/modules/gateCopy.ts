@@ -51,6 +51,7 @@ export const GATE_LINES: Record<string, string> = {
   protocols: "The village's checklists, the runs walked today, and who ticked each step.",
   "gene-keys": "Your Gene Keys lines and how you work best, and the six lines your circle holds.",
   rites: "Your card with every rite waiting or stamped, the member who walks beside you, and the ring of marks.",
+  "season-places": "Who takes part this season, the applications waiting on a pick, and each gathering's circles.",
   "funding-rounds": "This season's funding round: the ideas members have shared, and the quests the village chose to fund.",
   governance:
     "Proposals on their way to a vote, the ballots running today, and the outcome of every one that has closed.",

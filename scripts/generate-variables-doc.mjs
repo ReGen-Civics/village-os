@@ -69,6 +69,8 @@ export const DOC_PATH = path.join(ROOT, "docs", "VARIABLES.md");
  */
 export const SOURCES = [
   "shared/gameVariables.ts",
+  // `roles.prerequisites` checks its grammar with the reader here (2026-11-15).
+  "shared/rolePrerequisites.ts",
   // Added when the issuance cap's dial took its scope sentence from here, so
   // the dial and the Mint by hand panel say the same thing (2026-11-01).
   "shared/mintCapWords.ts",

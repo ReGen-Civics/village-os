@@ -2036,6 +2036,10 @@ const KNOWN_DIALS = [
   // default (0334, shared/quorumFallback.ts). It builds no staged ruling here:
   // the stalemate re-run above is a different door, on an OPEN ballot.
   "governance.quorum_fallback",
+  // 2026-11-15, season places lane: what a role asks for before anyone applies
+  // (a paid product, a consented quest). It builds no staged ruling here; it
+  // is a member-door check, voted like any structural dial.
+  "roles.prerequisites",
 ];
 
 export function dialCoverageProblem(keys, known = KNOWN_DIALS) {
