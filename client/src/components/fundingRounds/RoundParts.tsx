@@ -421,9 +421,9 @@ function DivergenceLine({ vote }: { vote: Detail["divergenceVote"] | null }) {
     return (
       <p className="mt-2">
         {closes ? (
-          <Trans>These quests are held until the village decides, in a vote that closes {closes}.</Trans>
+          <Trans>These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then.</Trans>
         ) : (
-          <Trans>These quests are held until the village decides.</Trans>
+          <Trans>These quests are held until the village decides. The pot keeps their money for them until then.</Trans>
         )}{" "}
         {vote.ballotId && (
           <Link href={`/decisions/${vote.ballotId}`} className="font-semibold underline">
@@ -447,7 +447,6 @@ export function VoiceLine({ detail }: { detail: Detail }) {
   const v = detail.voice;
   if (!v) return null;
   const mine = v.mine == null ? null : (v.mine / 100).toFixed(2);
-  const roll = v.roll;
   return (
     <p className="mt-2 text-sm text-muted-foreground">
       {v.countedVoice === "work_only" ? (
@@ -456,7 +455,7 @@ export function VoiceLine({ detail }: { detail: Detail }) {
         <Trans>Voice here counts every member's whole Voice, read once when choosing opened.</Trans>
       )}{" "}
       {mine == null ? (
-        <Trans>You were not on the voting roll then, so this round counts {roll} members without you.</Trans>
+        <Trans>You joined after choosing opened, so your choice shows as a signal and doesn't change the count this round.</Trans>
       ) : (
         <Trans>Your counted Voice in this round is {mine}.</Trans>
       )}
@@ -584,6 +583,7 @@ export function IdeaCard({ idea, pot, stage, onChanged }: { idea: Idea; pot: Pot
   const cost = idea.roughCostMinor != null ? amount(idea.roughCostMinor, pot) : null;
   const ask = idea.askMinor != null ? amount(idea.askMinor, pot) : null;
   const names = (idea.markedBy ?? []).join(", ");
+  const signalNames = (idea.signaledBy ?? []).join(", ");
   const shaping = idea.mine && (stage === "seed" || stage === "grow") && idea.status !== "withdrawn";
   return (
     <li className="rounded-2xl border border-border bg-card p-4">
@@ -678,6 +678,11 @@ export function IdeaCard({ idea, pot, stage, onChanged }: { idea: Idea; pot: Pot
       {idea.markedBy && idea.markedBy.length > 0 && (
         <p className="mt-2 text-sm text-muted-foreground">
           <Trans context="funding rounds">Chosen by {names}.</Trans>
+        </p>
+      )}
+      {idea.signaledBy && idea.signaledBy.length > 0 && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          <Trans context="funding rounds">Signals from newer members, not counted: {signalNames}.</Trans>
         </p>
       )}
       {idea.questId && (

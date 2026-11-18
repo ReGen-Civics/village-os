@@ -304,6 +304,7 @@ const RENDERED_FIELDS = [
   "criticality",
   "placeDependent",
   "withheld",
+  "membersOnly",
   "movedToSecret",
 ];
 
@@ -472,6 +473,7 @@ function readVariable(def, index, types, rings, timings, ringOf, applyTimingOf, 
     criticalityExplicit: def.criticality !== undefined,
     placeDependent: def.placeDependent === true,
     withheld: def.withheld === true,
+    membersOnly: def.membersOnly === true,
     movedToSecret: def.movedToSecret ?? null,
   };
 }
@@ -664,6 +666,16 @@ function variableSection(v) {
       v.movedToSecret
         ? "Listed. Its value stays off the public rules page because it can carry a provider key."
         : "Listed, and open to proposals. Its value stays off the public rules page because it can carry a provider key; admins still see it.",
+    ]);
+  }
+  /*
+   * A MEMBERS-ONLY DIAL (`membersOnly`) is left out of everything a signed-out
+   * visitor reads. Members still read it in full and may propose a change.
+   */
+  if (v.membersOnly) {
+    rows.push([
+      "Shown to the public",
+      "Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change.",
     ]);
   }
   /*

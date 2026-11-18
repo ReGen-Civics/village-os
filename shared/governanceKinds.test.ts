@@ -215,7 +215,7 @@ describe("when a carried decision lands", () => {
     expect(executesAtPassWithNoWindow("village_launch")).toBe(true);
     // A reorganisation the village carried lands at the close the way a holder's
     // live publish does (Rye, 2026-09-14; recommended, not yet ruled).
-    expect(Array.from(NO_WINDOW_SUBJECTS)).toEqual(["village_launch", "org_draft"]);
+    expect(Array.from(NO_WINDOW_SUBJECTS)).toEqual(["village_launch", "org_draft", "funding_divergence"]);
     expect(executesAtPassWithNoWindow("org_draft")).toBe(true);
     const l = landingFor({ closesAt: CLOSE, kind: "game_change", timing: "next_moon", vetoHours: 72, nextBoundaryAfter: farMoon, noWindow: true });
     expect(l.executesAtClose).toBe(true);

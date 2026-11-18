@@ -15,6 +15,10 @@ export interface Pot {
   unit: string;
   balanceMinor: number;
   freeMinor: number;
+  /** Held back for quests a divergence vote is still deciding. Absent from a server before 0403. */
+  reservedMinor?: number;
+  /** Which Voice the power count reads in rounds that freeze from now on. */
+  countedVoice?: "work_only" | "all";
 }
 
 export interface Round {
@@ -46,6 +50,8 @@ export interface Idea {
   questId: string | null;
   /** First names of those who ticked it; sent only once choosing has closed. */
   markedBy?: string[];
+  /** First names of newer members whose ticks were signals, counted nowhere; sent with `markedBy`. */
+  signaledBy?: string[];
   backing?: {
     pledgedMinor: number;
     backers: number;
@@ -84,6 +90,8 @@ export interface VoiceSnapshot {
   roll: number;
   /** Voice's minor units (2 decimals), or null when the viewer was not on the roll. */
   mine: number | null;
+  /** Set for a viewer off the frozen roll. */
+  notice?: string | null;
   unclassified: string[];
 }
 
