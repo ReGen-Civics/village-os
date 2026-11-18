@@ -1689,6 +1689,12 @@ msgstr ""
 #~ msgid "Propose for these {pickCount} roles"
 #~ msgstr "Proponerme para estos {pickCount} roles"
 
+#. placeholder {0}: r.theirCommitment
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's commitment"
+msgid "They chose {0}%"
+msgstr ""
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
 msgid "Circle (empty for the whole village)"
@@ -3450,9 +3456,9 @@ msgid "Your suggestion is open. It is listed under Adopt, with your name and tod
 msgstr ""
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application compensation"
-msgid "Cash"
-msgstr "Efectivo"
+#~ msgctxt "founding application compensation"
+#~ msgid "Cash"
+#~ msgstr "Efectivo"
 
 #: client/src/components/sessions/GatheringSeed.tsx
 msgctxt "coming up, the seed drawing"
@@ -3718,6 +3724,12 @@ msgctxt "settlement text copied for Hypha"
 msgid "{0} settlement (closed {closed})"
 msgstr ""
 
+#. placeholder {0}: money(suggested)
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "Suggested at {at}%: {0}"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "You asked: {askedList}. Only you see this list."
 msgstr ""
@@ -3745,6 +3757,12 @@ msgstr ""
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgid "Your Ikigai answers are saved in this browser. Nothing has been sent."
 msgstr "Tus respuestas de Ikigai se guardan en este navegador. No se ha enviado nada."
+
+#. placeholder {0}: r.name
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review, one of several roles"
+msgid "Your price: {0}"
+msgstr ""
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: conflict"
@@ -4292,6 +4310,11 @@ msgstr ""
 #: client/src/components/review/SeraMember.tsx
 msgctxt "sera answers"
 msgid "Something in it changed since it was taken, so whoever reads the list sees to it first."
+msgstr ""
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, the first moon"
+msgid "Your first moon starts lower and follows what you deliver."
 msgstr ""
 
 #: client/src/pages/HiddenMap.tsx
@@ -5087,6 +5110,11 @@ msgstr "Luna llena, {date}"
 msgid "Each role's circle is asked to consent, and a holder of the power to place people in roles adopts it, never their own."
 msgstr "A cada círculo de los roles se le pide su consentimiento, y quien tiene el poder de colocar personas en roles la adopta, nunca la suya."
 
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review: the prices of several roles added"
+msgid "{total} together"
+msgstr ""
+
 #: client/src/components/review/SeraMember.tsx
 msgid "Nothing from {agent} waits for the chart"
 msgstr ""
@@ -5445,6 +5473,11 @@ msgstr ""
 
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Go to the vote"
+msgstr ""
+
+#: client/src/components/openProposal/ContractPrice.tsx
+msgctxt "open proposal: where the contract's pay comes from"
+msgid "From our counter-offer on the price, at {pct}% commitment."
 msgstr ""
 
 #: client/src/components/roleEdit/BringInCard.tsx
@@ -5880,6 +5913,13 @@ msgctxt "founding application refusal"
 msgid "You added the same reference twice."
 msgstr "Agregaste la misma referencia dos veces."
 
+#. placeholder {0}: r.name
+#. placeholder {1}: r.ceiling.per
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "The price we'd agree on for {0}, each {1}"
+msgstr ""
+
 #: client/src/components/review/SeraCompare.tsx
 msgctxt "sera compare"
 msgid "Read both in full"
@@ -6089,6 +6129,11 @@ msgstr ""
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, applies the proposed change"
 msgid "Apply"
+msgstr ""
+
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "They asked no price of their own."
 msgstr ""
 
 #: client/src/components/journey/EconomicsView.tsx
@@ -6560,6 +6605,7 @@ msgid "Close the agreement's frames"
 msgstr ""
 
 #. placeholder {0}: offer.ourCommitment
+#. placeholder {0}: r.ourCommitment
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
 msgid "We'd agree {0}%"
@@ -8707,6 +8753,12 @@ msgctxt "coming up, i'll be there, said once it is taken back"
 msgid "Thank you for saying. Your circle in the seed is open again."
 msgstr "Gracias por avisar. Tu círculo en la semilla vuelve a estar abierto."
 
+#. placeholder {0}: r.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role to add"
+msgid "{0} (coming soon)"
+msgstr ""
+
 #: client/src/components/roleCard/rewardWords.ts
 msgctxt "role card rewards: the listed price, each share as its own amount"
 msgid "Up to {list} a month for the full role*"
@@ -9102,6 +9154,12 @@ msgstr ""
 msgctxt "companion welcome"
 msgid "End of Moon, how it adds up"
 msgstr "Fin de Luna: cómo se suma"
+
+#. placeholder {0}: money(asked)
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "Their price: {0}"
+msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "the reason for a change request"
@@ -12288,6 +12346,12 @@ msgctxt "approved writes, the memory record"
 msgid "Held"
 msgstr ""
 
+#. placeholder {0}: priced(r.counteredPrice, r.full.currency, r.full.per)
+#: client/src/components/openProposal/CommitmentReview.tsx
+msgctxt "open proposal: one role's countered price"
+msgid "Our counter-offer on the price: {0}."
+msgstr ""
+
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
 msgid "The card says what the role already says. Nothing to fill."
@@ -12479,6 +12543,12 @@ msgctxt "admin quest safety"
 msgid "That did not save. Try again."
 msgstr ""
 
+#. placeholder {0}: r.name
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review, one of several roles"
+msgid "Your split: {0}"
+msgstr ""
+
 #: client/src/pages/HiddenMap.tsx
 msgid "The rest of the map is secret."
 msgstr ""
@@ -12613,9 +12683,9 @@ msgid "The terms"
 msgstr "Las condiciones"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application compensation"
-msgid "Credits"
-msgstr "Créditos"
+#~ msgctxt "founding application compensation"
+#~ msgid "Credits"
+#~ msgstr "Créditos"
 
 #: client/src/components/modules/SuggestDial.tsx
 msgid "Set by the village"
@@ -13259,9 +13329,9 @@ msgstr "Lo que sigue"
 #~ msgstr "Ahora tu primera luna en el rol: algunas metas que te gustaría alcanzar y tu propósito para la temporada."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application compensation"
-msgid "Equity"
-msgstr "Participación"
+#~ msgctxt "founding application compensation"
+#~ msgid "Equity"
+#~ msgstr "Participación"
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -13332,6 +13402,12 @@ msgctxt "voice field purpose: new forum post"
 msgid "A post for the village forum: what you want to say, ask or propose, in your own words."
 msgstr ""
 
+#. placeholder {0}: r.name
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's commitment"
+msgid "The commitment we'd agree on for {0}"
+msgstr ""
+
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
 msgid "Which agent"
@@ -13387,6 +13463,12 @@ msgstr ""
 #: client/src/components/journey/LaunchGuide.tsx
 msgctxt "what the launch guide read"
 msgid "Your brief: {0}."
+msgstr ""
+
+#. placeholder {0}: r.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a held role that is still recruiting, to add"
+msgid "{0}: More players welcome"
 msgstr ""
 
 #: client/src/components/approvals/ApprovalInbox.tsx
@@ -14843,6 +14925,11 @@ msgstr "Las metas de esta temporada"
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 #: client/src/components/canvas/RecordReadingForm.tsx
 msgid "Why, in one sentence"
+msgstr ""
+
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review, several roles"
+msgid "Across your roles"
 msgstr ""
 
 #: client/src/components/admin/VoiceTranscriptionPicker.tsx
@@ -18185,6 +18272,12 @@ msgctxt "protocols page"
 msgid "That protocol is not on this phone. Open the list with signal once, then practise."
 msgstr ""
 
+#. placeholder {0}: pcts.join("/")
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application compensation, the village's split in one line"
+msgid "Default split {0}. You can change it in The terms."
+msgstr ""
+
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
 msgid "Reading your saved numbers."
@@ -18991,6 +19084,11 @@ msgstr ""
 msgid "No quest gathered enough support to be funded."
 msgstr ""
 
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "They chose to negotiate on the first call."
+msgstr ""
+
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application step"
 msgid "Your first day"
@@ -19120,9 +19218,9 @@ msgid "No lead"
 msgstr ""
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the footnote, the first moon"
-msgid "Your first moon often starts lower and follows what you deliver."
-msgstr ""
+#~ msgctxt "role card rewards: the footnote, the first moon"
+#~ msgid "Your first moon often starts lower and follows what you deliver."
+#~ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "a setting with no value"
@@ -20834,6 +20932,12 @@ msgstr ""
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, no role owns this item"
 msgid "No owner role"
+msgstr ""
+
+#. placeholder {0}: money(r.ourPrice)
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "reviewer's terms panel, one role's price"
+msgid "We'd agree {0}"
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
