@@ -12,15 +12,16 @@
  * paid in tokens, the cash the village now owes for it, and then carry that
  * row through the member's claim and the treasurer's "paid".
  *
- * THE THREE MOMENTS CASH BECOMES OWED, each keyed so a retry writes nothing new:
+ * THE THREE MOMENTS CASH BECOMES OWED, each the same moment the work's tokens
+ * are paid, and each keyed so a retry writes nothing new:
  *
  *   a quest      at consent, on the consent's own connection, inside the
  *                commit that flips the claim (server/routes/questClaims.ts),
  *                keyed on the claim
- *   a role       when its End of Moon invoice is approved by a Treasurer
- *                (`oweApprovedRoleCash`), keyed on the cycle, the seat and the
- *                member. A settled cycle owes a role nothing by itself (pay
- *                defect 2, `cashSeatsWithoutTerms`)
+ *   a role       when a cycle settles (`runSettlement`, server/lib/economy.ts),
+ *                to every live seat on a role that states cash, keyed on the
+ *                cycle, the seat and the member, the same three things the
+ *                role's token key carries
  *   a proposal   when a Work With Us proposal is accepted and its payment goes
  *                through (`applyAcceptReward`, server/index.ts), at the amount
  *                the steward typed on accepting it, keyed on the submission
@@ -133,40 +134,27 @@ export async function oweQuestCash(
 }
 
 /**
- * A SEAT ON A CASH ROLE WITH NO APPLICATION BEHIND IT OWES NOTHING BY ITSELF
- * (pre-launch handover, pay defect 2; the 14 Nov 2026 ruling: nothing pays
- * without the Treasurer's confirmation, and no AI proposes amounts).
- *
- * A settled cycle used to owe every such seat the role's whole
- * `org_roles.cash_minor`, every cycle, with no proposed price, no commitment
- * and nobody confirming. A seat held through an adopted application was
- * already left to its End of Moon invoice (QA-1115 P0-2); every seat the old
- * step still paid was one that came through no application. So the step is
- * gone, and such a seat is surfaced instead: `cashSeatsWithoutTerms` lists
- * them, and the launch journey's `pay:unpriced-seats` row names their roles,
- * so the Treasurer sets terms through an application that is adopted, and its
- * invoice is confirmed like any other.
+ * A settled cycle owes each live seat on a cash-paying role its cash, once per
+ * cycle, seat and member. A seat held through an adopted application is left
+ * to its End of Moon invoice, which a Treasurer confirms (QA-1115 P0-2,
+ * `seatsOnCashRoles`). Runs before the token rules are read, because a
+ * village with no `role.cycle` rule at all can still pay its roles in cash.
+ * Returns how many new rows it wrote.
  */
-export async function cashSeatsWithoutTerms(pool: Pool): Promise<Array<{ seatId: string; userId: string; roleId: string; roleName: string }>> {
-  return (await seatsOnCashRoles(pool)).map((r) => ({
-    seatId: String(r.seat_id),
-    userId: String(r.user_id),
-    roleId: String(r.role_id),
-    roleName: String(r.role_name ?? r.role_id),
-  }));
-}
-
-/** The launch row for those seats: open while any is held, with the roles named. Read only. */
-export async function unpricedSeatsLaunchCheck(pool: Pool): Promise<{ state: "ok" | "partial"; detail: string }> {
-  const seats = await cashSeatsWithoutTerms(pool);
-  if (seats.length === 0) return { state: "ok", detail: "Everyone who holds a role that states cash holds it through an adopted application" };
-  const roles = Array.from(new Set(seats.map((s) => s.roleName))).sort();
-  const shown = roles.slice(0, 6).join(", ") + (roles.length > 6 ? `, and ${roles.length - 6} more` : "");
-  const who = seats.length === 1 ? "1 person holds a cash role" : `${seats.length} people hold cash roles`;
-  return {
-    state: "partial",
-    detail: `${who} with no application: ${shown}. Nothing is owed to them until the Treasurer sets terms through an adopted application`,
-  };
+export async function oweRoleCycleCash(pool: Pool, cycleKey: string): Promise<number> {
+  let written = 0;
+  for (const seat of await seatsOnCashRoles(pool)) {
+    const recorded = await owe(pool, {
+      occurrenceKey: cashKeys.role(cycleKey, String(seat.seat_id), String(seat.user_id)),
+      userId: String(seat.user_id),
+      workKind: "role",
+      workRef: String(seat.role_id),
+      workTitle: `${String(seat.role_name ?? seat.role_id)}, ${cycleKey}`,
+      cash: readWorkValue(seat.cash_minor, seat.cash_currency),
+    });
+    if (recorded) written++;
+  }
+  return written;
 }
 
 /** One line of an approved moon invoice, as `oweApprovedRoleCash` reads it. */

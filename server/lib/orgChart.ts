@@ -182,11 +182,9 @@ export interface OrgRole extends Partial<RoleParams> {
   valueCurrency?: string | null;
   valueTokens?: TokenAmount[] | null;
   /**
-   * The cash the role states for each seat every cycle (0285), in minor units
-   * of `cashCurrency`. Never owed by itself: a settled cycle owes nothing for
-   * it (pay defect 2), and a seat on it with no adopted application is listed
-   * for the Treasurer to set terms (`cashSeatsWithoutTerms`,
-   * server/lib/cashOwed.ts). Never paid by the platform. NULL states none.
+   * The cash the role pays each seat every cycle (0285), in minor units of
+   * `cashCurrency`. Owed when the cycle settles (`oweRoleCycleCash`,
+   * server/lib/cashOwed.ts) and never paid by the platform. NULL pays none.
    * Separate from the cash its terms on offer state, which the pay path may
    * never read (shared/seatSettings.boundary.test.ts).
    */

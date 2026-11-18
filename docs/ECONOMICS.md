@@ -631,14 +631,13 @@ reads terms (`shared/seatSettings.boundary.test.ts`): the cash it owes is the ro
 | Work | When | Occurrence key |
 | --- | --- | --- |
 | a quest | at consent, on the consent's connection, inside the commit that flips the claim | the claim |
-| a role | when a Treasurer approves its End of Moon invoice (`oweApprovedRoleCash`); never by the settlement (pay defect 2) | the cycle, the seat, the member |
+| a role | each settled cycle (`runSettlement`), before the token rules are read, once the Game has started | the cycle, the seat, the member |
 | a proposal | when the acceptance's token payment goes through (`applyAcceptReward`) | the submission |
 
-The settlement used to owe every seat on a cash role with no adopted application the role's whole
-cash each cycle, with no price, no commitment and nobody confirming. Since 18 Nov 2026 (pay defect
-2, the 14 Nov ruling that nothing pays without the Treasurer's confirmation) it owes none: such a
-seat is listed on the launch journey (`pay:unpriced-seats`) for the Treasurer to set terms through
-an application. A badge multiplier never touches cash: the ruling attaches a multiplier to a token.
+A village with no `role.cycle` rule can still pay its roles in cash, which is why the role step
+runs before `runSettlement` can return early. It waits for the Game to start the way the ledger
+does, so a seat held while a village is still setting up owes nothing. A badge multiplier never
+touches cash: the ruling attaches a multiplier to a token.
 
 **Owed, claimed, paid.** A row moves one way. The member reads what they are owed on their
 profile and claims it when the village pays out (`POST /api/me/cash-owed/:id/claim`, their own

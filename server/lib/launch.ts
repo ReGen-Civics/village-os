@@ -47,7 +47,6 @@ import { governingPurpose } from "./governingPurpose";
 import { CLOSING_CHECK_KEY, closingLaunchCheck } from "./closingPolicy";
 import { villageSecretsLaunchCheck } from "./secrets";
 import { LAUNCH_PROOFS } from "./launchProofs";
-import { unpricedSeatsLaunchCheck } from "./cashOwed";
 
 /**
  * The one `checkKey` this file resolves by name. It is a constant so the
@@ -59,9 +58,6 @@ const GPS_CHECK_KEY = "gps-written";
 
 /** The sealing key's row, resolved by name for the same reason. */
 const SECRETS_KEY_CHECK_KEY = "village-secrets-key";
-
-/** Seats on a cash role held with no application (pay defect 2), resolved by name for the same reason. */
-const UNPRICED_SEATS_CHECK_KEY = "pay:unpriced-seats";
 
 /**
  * Whether FRONTEND_URL names an address a link can sit on (readiness R108).
@@ -418,20 +414,6 @@ export async function launchStatus(pool: Pool, deps: LaunchDeps): Promise<Launch
     if (req.checkKey === SECRETS_KEY_CHECK_KEY) {
       const read = villageSecretsLaunchCheck(deps.env ?? process.env);
       items.push({ ...req, state: read.state, detail: read.detail });
-      continue;
-    }
-
-    /*
-     * SEATS ON A CASH ROLE WITH NO APPLICATION (pay defect 2), read off the
-     * seats themselves, here for the reason the branches above give: a pool,
-     * no cache, nothing in server/index.ts. Read only.
-     */
-    if (req.checkKey === UNPRICED_SEATS_CHECK_KEY) {
-      try {
-        items.push({ ...req, ...(await unpricedSeatsLaunchCheck(pool)) });
-      } catch (e: any) {
-        items.push({ ...req, state: "missing", detail: `Check failed: ${String(e?.message ?? e).slice(0, 120)}` });
-      }
       continue;
     }
 
