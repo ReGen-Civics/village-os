@@ -2132,9 +2132,9 @@ msgid "Link {0}: what it is"
 msgstr "Link {0}: what it is"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: two parts"
-msgid "{a} and {b}"
-msgstr "{a} and {b}"
+#~ msgctxt "founding application split line: two parts"
+#~ msgid "{a} and {b}"
+#~ msgstr "{a} and {b}"
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "admin mint form, what stood behind a grant"
@@ -2444,9 +2444,9 @@ msgid "Still to write before it can be listed:"
 msgstr "Still to write before it can be listed:"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, Earned Equity"
-msgid "{n}% is paid in Earned Equity"
-msgstr "{n}% is paid in Earned Equity"
+#~ msgctxt "founding application split line: the first part, Earned Equity"
+#~ msgid "{n}% is paid in Earned Equity"
+#~ msgstr "{n}% is paid in Earned Equity"
 
 #: client/src/pages/YourPath.tsx
 msgctxt "your path, the whole path page"
@@ -4516,6 +4516,10 @@ msgstr "Groups"
 #: client/src/components/admin/MintDesk.tsx
 msgid "Why are you turning this down? The record keeps it."
 msgstr "Why are you turning this down? The record keeps it."
+
+#: client/src/pages/RoleDraft.tsx
+msgid "Each moon you share what you'll bring the next moon."
+msgstr "Each moon you share what you'll bring the next moon."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Pick a role on the first stone, and its goals are asked here."
@@ -7929,8 +7933,8 @@ msgid "Title for {kind}"
 msgstr "Title for {kind}"
 
 #: client/src/pages/RoleDraft.tsx
-msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
-msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+#~ msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+#~ msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: failure"
@@ -9282,9 +9286,9 @@ msgid "yours"
 msgstr "yours"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, cash"
-msgid "{n}% is paid in cash"
-msgstr "{n}% is paid in cash"
+#~ msgctxt "founding application split line: the first part, cash"
+#~ msgid "{n}% is paid in cash"
+#~ msgstr "{n}% is paid in cash"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
@@ -12416,9 +12420,9 @@ msgid "The weights this file covers"
 msgstr "The weights this file covers"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line"
-msgid "Of this, {list} by default; we settle the split together."
-msgstr "Of this, {list} by default; we settle the split together."
+#~ msgctxt "founding application split line"
+#~ msgid "Of this, {list} by default; we settle the split together."
+#~ msgstr "Of this, {list} by default; we settle the split together."
 
 #: client/src/components/modules/SuggestDial.tsx
 msgid "The suggestion was refused."
@@ -15119,8 +15123,8 @@ msgid "Save all four as one file"
 msgstr "Save all four as one file"
 
 #: client/src/pages/RoleDraft.tsx
-msgid "Each month you share what you'll bring the next month."
-msgstr "Each month you share what you'll bring the next month."
+#~ msgid "Each month you share what you'll bring the next month."
+#~ msgstr "Each month you share what you'll bring the next month."
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft heading"
@@ -15311,9 +15315,9 @@ msgid "(blank)"
 msgstr "(blank)"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: three parts"
-msgid "{a}, {b} and {c}"
-msgstr "{a}, {b} and {c}"
+#~ msgctxt "founding application split line: three parts"
+#~ msgid "{a}, {b} and {c}"
+#~ msgstr "{a}, {b} and {c}"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "How your work serves: {goalText}"
@@ -15420,9 +15424,9 @@ msgid "Checklists"
 msgstr "Checklists"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: a later part, credits"
-msgid "{n}% in credits"
-msgstr "{n}% in credits"
+#~ msgctxt "founding application split line: a later part, credits"
+#~ msgid "{n}% in credits"
+#~ msgstr "{n}% in credits"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal conversations"
@@ -16974,8 +16978,8 @@ msgid "Vouch: this is real"
 msgstr "Vouch: this is real"
 
 #: client/src/pages/RoleDraft.tsx
-#~ msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
-#~ msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
+msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
+msgstr "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application intro"
@@ -20334,9 +20338,9 @@ msgid "Drafted letters"
 msgstr "Drafted letters"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, credits"
-msgid "{n}% is paid in credits"
-msgstr "{n}% is paid in credits"
+#~ msgctxt "founding application split line: the first part, credits"
+#~ msgid "{n}% is paid in credits"
+#~ msgstr "{n}% is paid in credits"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -22390,9 +22394,9 @@ msgstr "Save as Markdown"
 #~ msgstr "See the quests"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: a later part, Earned Equity"
-msgid "{n}% in Earned Equity"
-msgstr "{n}% in Earned Equity"
+#~ msgctxt "founding application split line: a later part, Earned Equity"
+#~ msgid "{n}% in Earned Equity"
+#~ msgstr "{n}% in Earned Equity"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."

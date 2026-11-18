@@ -2147,9 +2147,9 @@ msgstr "Enlace {0}: qué es"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: two parts"
-msgid "{a} and {b}"
-msgstr "{a} y {b}"
+#~ msgctxt "founding application split line: two parts"
+#~ msgid "{a} and {b}"
+#~ msgstr "{a} y {b}"
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "admin mint form, what stood behind a grant"
@@ -2461,9 +2461,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, Earned Equity"
-msgid "{n}% is paid in Earned Equity"
-msgstr "el {n}% se paga en Participación Ganada"
+#~ msgctxt "founding application split line: the first part, Earned Equity"
+#~ msgid "{n}% is paid in Earned Equity"
+#~ msgstr "el {n}% se paga en Participación Ganada"
 
 #: client/src/pages/YourPath.tsx
 msgctxt "your path, the whole path page"
@@ -4523,6 +4523,10 @@ msgstr ""
 
 #: client/src/components/admin/MintDesk.tsx
 msgid "Why are you turning this down? The record keeps it."
+msgstr ""
+
+#: client/src/pages/RoleDraft.tsx
+msgid "Each moon you share what you'll bring the next moon."
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -7948,8 +7952,8 @@ msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
 #: client/src/pages/RoleDraft.tsx
-msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
-msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada mes y esta temporada, y cómo sirve a nuestras metas."
+#~ msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals."
+#~ msgstr "Una ficha de rol muestra el trabajo que la aldea necesita. Tu propuesta es la otra mitad: lo que te gustaría aportar cada mes y esta temporada, y cómo sirve a nuestras metas."
 
 #: client/src/components/voice/TalkItOut.tsx
 msgctxt "talk it out: failure"
@@ -9308,9 +9312,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, cash"
-msgid "{n}% is paid in cash"
-msgstr "el {n}% se paga en efectivo"
+#~ msgctxt "founding application split line: the first part, cash"
+#~ msgid "{n}% is paid in cash"
+#~ msgstr "el {n}% se paga en efectivo"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 #~ msgctxt "open proposal confirmed step"
@@ -12460,9 +12464,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line"
-msgid "Of this, {list} by default; we settle the split together."
-msgstr "De esto, {list} por defecto; acordamos el reparto juntos."
+#~ msgctxt "founding application split line"
+#~ msgid "Of this, {list} by default; we settle the split together."
+#~ msgstr "De esto, {list} por defecto; acordamos el reparto juntos."
 
 #: client/src/components/modules/SuggestDial.tsx
 msgid "The suggestion was refused."
@@ -15172,8 +15176,8 @@ msgid "Save all four as one file"
 msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
-msgid "Each month you share what you'll bring the next month."
-msgstr ""
+#~ msgid "Each month you share what you'll bring the next month."
+#~ msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 msgctxt "role draft heading"
@@ -15361,9 +15365,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: three parts"
-msgid "{a}, {b} and {c}"
-msgstr "{a}, {b} y {c}"
+#~ msgctxt "founding application split line: three parts"
+#~ msgid "{a}, {b} and {c}"
+#~ msgstr "{a}, {b} y {c}"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "How your work serves: {goalText}"
@@ -15471,9 +15475,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: a later part, credits"
-msgid "{n}% in credits"
-msgstr "el {n}% en créditos"
+#~ msgctxt "founding application split line: a later part, credits"
+#~ msgid "{n}% in credits"
+#~ msgstr "el {n}% en créditos"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal conversations"
@@ -17022,6 +17026,10 @@ msgstr ""
 
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
+msgstr ""
+
+#: client/src/pages/RoleDraft.tsx
+msgid "A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals."
 msgstr ""
 
 # needs-native-review: new words, 12 Nov 2026
@@ -20388,9 +20396,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: the first part, credits"
-msgid "{n}% is paid in credits"
-msgstr "el {n}% se paga en créditos"
+#~ msgctxt "founding application split line: the first part, credits"
+#~ msgid "{n}% is paid in credits"
+#~ msgstr "el {n}% se paga en créditos"
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
@@ -22452,9 +22460,9 @@ msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application split line: a later part, Earned Equity"
-msgid "{n}% in Earned Equity"
-msgstr "el {n}% en Participación Ganada"
+#~ msgctxt "founding application split line: a later part, Earned Equity"
+#~ msgid "{n}% in Earned Equity"
+#~ msgstr "el {n}% en Participación Ganada"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
