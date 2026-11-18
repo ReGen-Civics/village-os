@@ -421,9 +421,9 @@ function DivergenceLine({ vote }: { vote: Detail["divergenceVote"] | null }) {
     return (
       <p className="mt-2">
         {closes ? (
-          <Trans>These quests are held until the village decides, in a vote that closes {closes}.</Trans>
+          <Trans>These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then.</Trans>
         ) : (
-          <Trans>These quests are held until the village decides.</Trans>
+          <Trans>These quests are held until the village decides. The pot keeps their money for them until then.</Trans>
         )}{" "}
         {vote.ballotId && (
           <Link href={`/decisions/${vote.ballotId}`} className="font-semibold underline">

@@ -7,6 +7,7 @@
  *   POST  /api/funding-rounds/rounds/:id/ideas      share an idea while the round takes them
  *   POST  /api/funding-rounds/pots                  open a pot (pot.steward)
  *   POST  /api/funding-rounds/pots/:id/rounds       open a round on a pot (pot.steward)
+ *   PATCH /api/funding-rounds/pots/:id/counted-voice which Voice the pot counts: all, or work-only (pot.steward)
  *   PATCH /api/funding-rounds/rounds/:id/dates      set or clear the grow, choose and harvest dates (pot.steward)
  *   PATCH /api/funding-rounds/ideas/:id             the author shapes their idea, in seed or grow (S3)
  *   POST  /api/funding-rounds/ideas/:id/withdraw    the author withdraws it, before choosing opens (S3)
@@ -34,7 +35,7 @@
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import {
-  createPot, freezeDueVoice, growIdea, ideaView, openRound, overview, pledgeToIdea, roundDetail, roundView, seedIdea, setMarks, setRoundDates, withdrawIdea, withdrawPledge, MODULE_ID,
+  createPot, freezeDueVoice, setCountedVoice, growIdea, ideaView, openRound, overview, pledgeToIdea, roundDetail, roundView, seedIdea, setMarks, setRoundDates, withdrawIdea, withdrawPledge, MODULE_ID,
   type DivergenceDeps, type HarvestDeps,
 } from "../lib/fundingRounds";
 import { effectiveLifecycle, requireModule } from "../lib/modules";
@@ -170,6 +171,15 @@ export function register(app: Express, deps: Deps): void {
     const out = await createPot(getPool(), String(me.id), req.body);
     if (!out.ok) return res.status(400).json({ error: out.problem });
     res.status(201).json({ pot: out.pot });
+  });
+
+  app.patch("/api/funding-rounds/pots/:id/counted-voice", async (req, res) => {
+    const me = await authedUser(req);
+    if (!me) return res.status(401).json({ error: "auth_required" });
+    if (!(await guardCapability(req, res, "pot.steward"))) return;
+    const out = await setCountedVoice(getPool(), String(me.id), String(req.params.id), req.body);
+    if (!out.ok) return res.status(out.status).json({ error: out.problem });
+    res.json({ pot: out.pot });
   });
 
   app.post("/api/funding-rounds/pots/:id/rounds", async (req, res) => {

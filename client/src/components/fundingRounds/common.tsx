@@ -15,6 +15,10 @@ export interface Pot {
   unit: string;
   balanceMinor: number;
   freeMinor: number;
+  /** Held back for quests a divergence vote is still deciding. Absent from a server before 0403. */
+  reservedMinor?: number;
+  /** Which Voice the power count reads in rounds that freeze from now on. */
+  countedVoice?: "work_only" | "all";
 }
 
 export interface Round {

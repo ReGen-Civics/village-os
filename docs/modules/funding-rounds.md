@@ -25,8 +25,10 @@ Built so far:
   members tick what they would fund, privately until choosing closes; harvest runs both counts once, funds,
   holds an earmark per funded quest and puts it on the quest board. The 25% per-member cap on Voice
   (`weight_cap_pct`, `capWeights`) applies to the power count.
-- **S4, this release:** the counted-Voice guardrails. Work-only Voice, the Voice snapshot frozen when choosing
-  opens, and the 48-hour vote on the quests the two counts disagree on. See "Counted Voice" below.
+- **S4:** the counted-Voice guardrails. Counted Voice (all, or work-only), the Voice snapshot frozen when
+  choosing opens, and the 48-hour vote on the quests the two counts disagree on. See "Counted Voice" below.
+- **S4 rulings, this release** (the lead, 2026-11-18): new pots count all Voice, with a door to switch a pot to
+  work-only; a carried divergence vote lands when it closes; held quests reserve their pot money.
 
 Not built yet (next):
 - **Earmark to paid.** An earmark stays `held`; moving it to `owed` and `paid` when the quest's completion is
@@ -62,17 +64,23 @@ A later date that is NULL holds the round in the stage before it.
 
 ## Counted Voice (S4)
 
-Every design choice here is written down because the original plan (section 13) is not in this repository;
-the choices were made from the code comments, this document and the existing patterns, and the lead may
-overturn any of them.
+The original plan (section 13) is not in this repository, so S4 was built from the code comments, this
+document and the existing patterns. The lead ruled on its six open questions on 2026-11-18; where a choice
+below comes from that ruling, it says so.
 
-**Work-only.** The power count weighs each member by the Voice they earned through work: their Voice balance
-times the share of Voice ever minted to them from a work source (`workEarnedVoice` in
-`server/lib/voiceProvenance.ts`; the work sources are an allow-list, `WORK_VOICE_SOURCES` in
-`shared/voiceFromMoney.ts`). Voice from donations, investment and backing weighs nothing in a pot ballot. A
-mint source that is neither work nor money counts against the member's share, so the count can only be
-understated, and the round records which sources it met. Every pot is created `work_only`; the column also
-allows `all` (the whole Voice balance), and no door sets it.
+**Which Voice counts.** Each pot says, in `counted_voice`:
+- `all` (the default for a new pot, migration 0403; the lead: "count all voice for now"): each member's whole
+  Voice balance.
+- `work_only`: the Voice a member earned through work, their balance times the share of Voice ever minted to
+  them from a work source (`workEarnedVoice` in `server/lib/voiceProvenance.ts`; the work sources are an
+  allow-list, `WORK_VOICE_SOURCES` in `shared/voiceFromMoney.ts`). Voice from donations, investment and backing
+  weighs nothing. A mint source that is neither work nor money counts against the member's share, so the count
+  can only be understated, and the round records which sources it met.
+
+A holder of `pot.steward` switches a pot between the two (`PATCH /api/funding-rounds/pots/:id/counted-voice`,
+through the one capability gate, and on the funding rounds page under "Which Voice a pot counts"), or chooses
+when opening the pot. The switch reaches only rounds that freeze afterwards: a round already choosing keeps
+the setting it froze with, recorded on its snapshot and in its outcome.
 
 **Who is on the roll.** The same roll every village vote opens with: present members holding `ballot.vote`
 (`votingRoll` in `server/index.ts`). The village's own ballot weight mode is not read: before S4 a round
@@ -84,27 +92,38 @@ change to the pot mid-round changes nothing for that round. Whichever comes firs
 `funding-voice-freeze` job (every 15 minutes; it reads balances and writes the snapshot, and asks nothing and
 decides nothing), a member opening the round in choose, or a member's tick. If nothing froze it while the
 round chose, harvest freezes it before counting and the outcome says `voiceFrozenLate`. Harvest reads only
-the frozen rows. A member who was not on the roll when it froze cannot tick in that round.
+the frozen rows. The freeze lands at most about 15 minutes after choosing opens; Voice is not rebuilt from
+ledger history as of the opening instant (the lead, 2026-11-18). A member who was not on the roll when it
+froze cannot tick in that round, and is told: "This round's list of who chooses was set when choosing opened
+on <date>. You can take part in the next round."
 
 **The 48-hour divergence vote.** When the two counts fund different quests:
 - the quests both counts fund go ahead at once, with their earmarks;
 - the quests they disagree on are held (status `on_ballot`), their firm pledges kept, and no earmark yet;
+- the pot RESERVES the larger of the two sides' costs (`funding_rounds.reserved_minor`, migration 0403; the
+  lead, 2026-11-18), so another round on the same pot cannot spend it first. The pot shows it as
+  `reservedMinor` and leaves it out of its free money. The reservation counts only while the vote is
+  undecided, so settling the vote releases it;
 - a village vote opens on the ordinary ballot engine, subject `funding_divergence`, subject ref the round id,
   asked by `sys:funding-rounds` and not by a person, for 48 hours (two whole days, which is how the engine
   opens a window). The question is "fund the disputed quests by the other count?";
 - it is weighed the way every village vote is (the village's own method, dials and weight mode, through
-  `roleBallotSetup`), priced at the routine tier like `admin_edit`, and a missed quorum is not asked again;
-- the clock closes it. Not carried, too few votes, withdrawn, stopped by a steward or written off: the pot's
-  deciding count funds its side, at once. Carried: the other count funds its side, when the landing is due.
-  It is a Game change (absent from `KIND_FOR_SUBJECT`), so a carried switch waits the steward's window;
+  `roleBallotSetup`; kept by the lead, 2026-11-18), priced at the routine tier like `admin_edit`, and a missed
+  quorum is not asked again;
+- the clock closes it. Not carried, too few votes or withdrawn: the pot's deciding count funds its side, at
+  once. Carried: the other count funds its side, also when the vote closes. The subject is in
+  `NO_WINDOW_SUBJECTS` (shared/governanceKinds.ts; the lead, 2026-11-18), so no steward window follows a
+  carried vote. Its executor is safe to run twice, so a close whose landing throws is retried
+  (`AT_CLOSE_RETRY_SAFE_SUBJECTS` in server/lib/atCloseLanding.ts);
 - the closer (`fundingDivergenceCloser`) settles the round once. It funds the chosen side in that count's own
-  order while the pot's free money lasts, because another round on the same pot may have spent some since
-  harvest; a quest that no longer fits is not funded, and the round's note says how many;
+  order from the pot's free money plus the round's reservation, so every quest on the larger side fits; a
+  quest that somehow does not is left unfunded and the round's note says how many;
 - when no vote can open (voting is off, the weights cannot be read, nobody may vote, a governance window is
   shut) the deciding count stands at once, and the round's note says why.
 
 The round only asks. The village's vote decides, and the closer carries out what it decided.
 
+## Setup
 
 
 Seat someone in the Treasury role (or another role carrying `pot.steward`). They open a pot (its unit is a
