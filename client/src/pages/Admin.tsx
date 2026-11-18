@@ -58,6 +58,7 @@ import { TourCard } from "@/components/admin/AdminFeel";
 const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
 const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
 const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
+const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
 import { adminNavRailClass, filterNavByModules, TAB_MODULE, type TabBadge } from "@/lib/adminNav";
@@ -8000,6 +8001,7 @@ export default function Admin() {
           {activeTab === "org-chart" && <OrgChartTab password={password} />}
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
           {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
+          {activeTab === "budgets" && <Suspense fallback={null}><BudgetsTab password={password} /></Suspense>}
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
           {activeTab === "brain" && <VillageBrainTab password={password} />}
           {activeTab === "failures" && <FailuresTab password={password} />}

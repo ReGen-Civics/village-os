@@ -132,12 +132,12 @@ const ALLOWED = {
    * The page comes after Rye approves the design boards (PR 1b), and is built
    * to them in PR 1c: the Admin tab, the standalone page and the members'
    * section. Delete all ten lines when that page lands.
+   *
+   * The first page (2026-11-18, client/src/components/budgets) uploads, adds,
+   * edits, withdraws and restores lines, so those five lines are gone. Rate
+   * locks, period notes, a source's switch and a circle's envelope have no
+   * screen yet, and keep theirs.
    */
-  "POST /api/admin/budgets/import": "The cash budget's upload, server slice (PR 1a). The page is PR 1c, after the boards are approved. Delete this line when it lands.",
-  "POST /api/admin/budgets/lines": "The cash budget, add one line, server slice (PR 1a). Delete this line when the PR 1c page lands.",
-  "PATCH /api/admin/budgets/lines/:id": "The cash budget, edit one line, server slice (PR 1a). Delete this line when the PR 1c page lands.",
-  "POST /api/admin/budgets/lines/:id/withdraw": "The cash budget, withdraw a line, server slice (PR 1a). Delete this line when the PR 1c page lands.",
-  "POST /api/admin/budgets/lines/:id/restore": "The cash budget, restore a line, server slice (PR 1a). Delete this line when the PR 1c page lands.",
   "POST /api/admin/budgets/lines/:id/lock-rate": "The cash budget, lock a rate on one line, server slice (PR 1a). Delete this line when the PR 1c page lands.",
   "POST /api/admin/budgets/lock-rates": "The cash budget, lock rates on many lines with a preview, server slice (PR 1a). Delete this line when the PR 1c page lands.",
   "PUT /api/admin/budgets/notes/:period": "The cash budget, a note on how to read a period, server slice (PR 1a). Delete this line when the PR 1c page lands.",
