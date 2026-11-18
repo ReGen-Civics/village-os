@@ -37,7 +37,7 @@ import {
 import { cashOwedRowsBetween } from "../repos/cashOwed";
 import { invoicesByIds } from "../repos/moonRecaps";
 import { rowToCashEntry } from "./cashOwed";
-import { MOON_REWARD_SOURCE, settleRewardKeys } from "./moonReward";
+import { MOON_REWARD_SOURCE, settleNoCashInvoices, settleRewardKeys } from "./moonReward";
 import { readGameStart } from "./gameStart";
 import { fromLedgerUnits, toLedgerUnits } from "./economy";
 import { departedById } from "./departed";
@@ -273,6 +273,9 @@ export async function approveRewards(pool: Pool, actorId: string, body: unknown,
   const start = await readGameStart(pool);
   if (!start.started) return { ok: true, value: { approved: approvedKeys.map((key) => ({ key, outcome: "issues_at_launch" as const })) } };
   const settled = await settleRewardKeys(pool, approvedKeys);
+  // An invoice whose pay was all tokens is Paid once every share it owes has posted (shared/moonRecap.ts, `noCashInvoicePaidFrom`).
+  const invoiceIds = Array.from(new Set(done.lines.map((l) => l.line.review?.invoiceId).filter((x): x is string => !!x)));
+  if (invoiceIds.length > 0) await settleNoCashInvoices(pool, invoiceIds, deps);
   const by = new Map<string, SettleOutcome>(settled.map((o) => [o.key, o]));
   return {
     ok: true,

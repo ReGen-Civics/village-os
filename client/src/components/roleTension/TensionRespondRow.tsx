@@ -10,6 +10,10 @@
  *                        session, where every member can read them. The row
  *                        says so before the holder confirms.
  *
+ * Once taken, the holder can give it a place in line: where it sits on their
+ * list and the week they expect to pick it up (priorities/PlaceInLine.tsx),
+ * which whoever raised it reads on their profile.
+ *
  * The row never names who raised it. The server decides every move again and
  * answers with a sentence when it refuses, which the row shows in place.
  */
@@ -18,6 +22,7 @@ import { toast } from "sonner";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, INPUT, LABEL } from "@/components/sessions/roomUi";
 import { TENSION_COPY, TENSION_LIMITS, tensionRespondUrl, type HeldTension, type TensionAction } from "@shared/roleTensions";
+import PlaceInLine from "@/components/priorities/PlaceInLine";
 
 const refusalOf = (body: unknown): string => {
   const said = body && typeof body === "object" && typeof (body as { error?: unknown }).error === "string" ? (body as { error: string }).error.trim() : "";
@@ -74,6 +79,7 @@ export default function TensionRespondRow({
           {tension.status === "taken" ? TENSION_COPY.takenBy : TENSION_COPY.overdue}
         </p>
       )}
+      {tension.status === "taken" && <PlaceInLine tensionId={tension.id} place={tension.place ?? null} />}
       {asking === null ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {tension.status === "open" && (

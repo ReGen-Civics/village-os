@@ -20,11 +20,13 @@ import type { ReactNode } from "react";
 import { parseSeatSettings } from "@shared/seatSettings";
 import { proposeTermsHref } from "@shared/seatTermsOffer";
 import { applySeatsHref } from "@shared/seatApplyLinks";
+import { heldButRecruiting } from "@shared/roleListing";
 import { useVillagePresets } from "@/lib/seatPresetsRead";
 import SeatTermsDrawer from "./SeatTermsDrawer";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import RoleCardParams from "./RoleCardParams";
 import { roleCardView } from "@shared/roleCardView";
+import { StateNote } from "@/components/ComingSoon";
 
 function SeatTermsSlot({ seat }: { seat: Record<string, any> }) {
   const presets = useVillagePresets();
@@ -83,8 +85,8 @@ export function applyHrefFor(seat: Record<string, any> | null | undefined): stri
   if (!seat || typeof seat !== "object" || !("termsOffer" in seat) || seat.isExample) return null;
   // Role journey PR-C: no Apply while the village holds a card back as Being written.
   if (!roleCardView(seat).applyAllowed) return null;
-  // A full seat has no place to apply for (red team U4).
-  if (seat.state === "filled") return null;
+  // A full seat has no place to apply for (red team U4), unless it is still recruiting (the lead, 17 Nov 2026).
+  if (seat.state === "filled" && !heldButRecruiting(seat)) return null;
   const id = String(seat.id ?? "").trim();
   // The member door: the role picked, the terms on offer read-only, and back to this card (Rye, 10 Nov 2026).
   return id ? applySeatsHref([id], { from: `/roles?seat=${id}` }) : null;
@@ -95,7 +97,17 @@ export function applyHrefFor(seat: Record<string, any> | null | undefined): stri
  * Being written the action is left off and the parameters block says so (role journey PR-C).
  */
 export function guardedAction(seat: Record<string, any> | null | undefined, action: ReactNode): ReactNode {
-  return seat && !roleCardView(seat).applyAllowed ? null : action;
+  if (seat && !roleCardView(seat).applyAllowed) return null;
+  // Coming soon and Future venture (16 Nov 2026): Apply works the same, with the state's note beside it, on every host.
+  if (seat && (roleCardView(seat).comingSoon || roleCardView(seat).futureVenture)) {
+    return (
+      <div className="space-y-2">
+        <StateNote role={seat} />
+        {action}
+      </div>
+    );
+  }
+  return action;
 }
 
 /**

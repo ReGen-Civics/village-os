@@ -124,6 +124,15 @@ describe("the app policy", () => {
     expect(directive(policy, "connect-src")).toEqual(["'self'", CLOUDFLARE_BEACON_CONNECT, "https://stats.example.org"]);
   });
 
+  it("lets styles and fonts come only from Google Fonts and the village's own site", () => {
+    expect(directive(policy, "style-src")).toEqual(["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"]);
+    expect(directive(policy, "font-src")).toEqual(["'self'", "data:", "https://fonts.gstatic.com"]);
+    const own = buildAppPolicy({ scriptHashes: [], fontOrigins: ["https://village.example", "https://x.example; script-src *"] });
+    expect(directive(own, "style-src")).toEqual(["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://village.example"]);
+    expect(directive(own, "font-src")).toEqual(["'self'", "data:", "https://fonts.gstatic.com", "https://village.example"]);
+    expect(directive(own, "script-src")).toEqual(["'self'", CLOUDFLARE_BEACON_SCRIPT]);
+  });
+
   it("asks for no reports unless an operator named where they go", () => {
     expect(policy).not.toMatch(/report-/);
     const reporting = buildAppPolicy({ scriptHashes: [], reportUri: "https://csp.example.org/r" });
@@ -186,9 +195,9 @@ describe("the middleware, on a real server", () => {
   let shellPath = "";
   const servers: http.Server[] = [];
 
-  async function boot(env: NodeJS.ProcessEnv, shell: string | null = shellPath): Promise<string> {
+  async function boot(env: NodeJS.ProcessEnv, shell: string | null = shellPath, getBrand?: () => unknown): Promise<string> {
     const app = express();
-    app.use(securityHeaders({ shellPath: shell ?? path.join(dir, "absent.html"), env }));
+    app.use(securityHeaders({ shellPath: shell ?? path.join(dir, "absent.html"), env, getBrand }));
     app.use("/assets", express.static(path.join(dir, "assets")));
     app.get("/api/thing", (_req, res) => res.json({ ok: true }));
     app.get("/api/public.json", (_req, res) => {
@@ -244,6 +253,22 @@ describe("the middleware, on a real server", () => {
       expect(r.headers.get("origin-agent-cluster"), p).toBe("?1");
       expect(r.headers.get("reporting-endpoints"), p).toBeNull();
     }
+  });
+
+  it("names the village's own site in style-src and font-src, and follows a change to it", async () => {
+    let siteUrl = "https://village.example/";
+    const base = await boot({ FRONTEND_URL: "https://app.village.example" }, shellPath, () => ({ project: { siteUrl } }));
+    // node:http, so the contribution scan's raw-outbound rule has nothing to flag in a test.
+    const fontSrc = () =>
+      new Promise<string[] | null>((resolve, reject) => {
+        http.get(base + "/", (r) => {
+          r.resume();
+          resolve(directive(String(r.headers["content-security-policy"] ?? ""), "font-src"));
+        }).on("error", reject);
+      });
+    expect(await fontSrc()).toEqual(["'self'", "data:", "https://fonts.gstatic.com", "https://village.example", "https://app.village.example"]);
+    siteUrl = "https://new-home.example";
+    expect(await fontSrc()).toEqual(["'self'", "data:", "https://fonts.gstatic.com", "https://new-home.example", "https://app.village.example"]);
   });
 
   it("keeps API answers out of shared caches by default, and lets a route that sets its own rule win", async () => {

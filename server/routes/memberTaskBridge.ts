@@ -7,12 +7,19 @@
  *   PUT  /api/member-tasks/me/feedback         turn it on or off ({ on }); off drops anything unsent
  *   GET  /api/member-tasks/redirect-targets    members a task can go to (names only) and the active roles
  *
+ * A task handed to a role is a handoff (shared/roleTaskHandoff.ts): it waits
+ * on the role's live holders under Waiting on you, and they accept, suggest a
+ * change, or decline. Its own doors are server/routes/roleTaskHandoffs.ts,
+ * registered from here.
+ *
  *   GET  /api/admin/member-tasks/bridge        steward: outbox counts, last errors, the notes switch, review and role queues
  *   PUT  /api/admin/member-tasks/bridge/notes  steward: hold or release notes ({ release: true | false })
  *   POST /api/admin/member-tasks/bridge/send   steward: send what is due now
  *   POST /api/admin/member-tasks/bridge/sync   steward: read linked members' changes now
  *   POST /api/admin/member-tasks/review/:feedbackId  steward: mark a logged item reviewed
- *   POST /api/admin/member-tasks/role-queue/:id      steward: take or dismiss a task handed to a role ({ status })
+ *   POST /api/admin/member-tasks/role-queue/:id      steward: take or dismiss a task handed to a role ({ status });
+ *                                                    the queue lists every handoff still waiting, and the
+ *                                                    sender hears either way
  *
  * Two jobs: the outbox drains every 15 minutes (and sweeps feedback older than
  * 12 months), and linked members' changes are read every 6 hours.
@@ -31,10 +38,13 @@ import { heldFromLibrary } from "../repos/memberTaskImport";
 import { drainOutbox, libraryOwnerOf, recordAction, syncLinked } from "../lib/memberTaskBridge";
 import { insertTask, listIsOn, ownTask, setMemberPinned, setStatus } from "../repos/memberTasks";
 import {
-  activeRoles, closeRoleItem, feedbackOn, lastOutboxErrors, markReviewed, notesRelease, outboxCounts, queueForRole,
+  activeRoles, closeRoleItem, feedbackOn, lastOutboxErrors, markReviewed, notesRelease, outboxCounts,
   redirectPeople, reviewQueue, roleQueue, setFeedbackOn, setNotesRelease,
 } from "../repos/memberTaskFeedback";
 import { taskOut } from "./memberTasks";
+import { register as registerRoleTaskHandoffs } from "./roleTaskHandoffs";
+import { afterStewardClose, sendToRole, type HandoffDeps } from "../lib/roleTaskHandoffs";
+import { parseHandoffWords, type HandoffWords } from "../../shared/roleTaskHandoff";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "overLimit" | "isAdmin" | "adminActor"> & { timeZone: () => string; notify?: AppDeps["notify"] };
 
@@ -47,6 +57,8 @@ const hardDeletePending = new Map<string, { code: string; at: number }>();
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone } = deps;
   const today = () => villageDayKey(new Date(), timeZone());
+  const handoffRules: HandoffDeps = { notify: async (input) => (deps.notify ? deps.notify(input) : undefined), today, timeZone };
+  registerRoleTaskHandoffs(app, deps);
 
   registerJob("member-task-bridge", 15 * 60 * 1000, () => drainOutbox(getPool()));
   // Due-soon and asked-for notes on the bell, hourly, inside the daytime window.
@@ -97,6 +109,15 @@ export function register(app: Express, deps: Deps): void {
     } else if (!(await activeRoles(pool)).some((r) => r.id === toRoleId)) {
       return res.status(400).json({ error: "No such role." });
     }
+    // To a role, the task's words travel with a note and a by-when for whoever accepts it (shared/roleTaskHandoff.ts).
+    // The task's own date goes along while it is still ahead; a day given here wins.
+    let handoff: HandoffWords | null = null;
+    if (toRoleId) {
+      const dueOn = "handoffDueOn" in body ? body.handoffDueOn : task.dueOn && task.dueOn >= today() ? task.dueOn : null;
+      const words = parseHandoffWords({ title: task.title, note: body.handoffNote, dueOn }, today());
+      if (!words.ok) return res.status(400).json({ error: words.error });
+      handoff = words.value;
+    }
     const result = await setStatus(pool, uid, task.id, version, "removed", "redirected");
     if (result === "conflict") return res.status(409).json({ error: "conflict", task: taskOut((await ownTask(pool, uid, task.id))!) });
     if (result === "missing") return res.status(404).json({ error: "not_found" });
@@ -112,7 +133,8 @@ export function register(app: Express, deps: Deps): void {
         source: sameLibraryTask ? "sera" : "redirect", ...(sameLibraryTask ? { externalId: task.externalId } : {}), createdOn: today(),
       }, uid);
     } else {
-      await queueForRole(pool, toRoleId!, task.title, uid, f.value.feedbackId);
+      // To a role: it waits on the role's live holders (else its circle's lead, else the stewards), who accept it.
+      await sendToRole(pool, handoffRules, { senderId: uid, roleId: toRoleId!, feedbackId: f.value.feedbackId, words: handoff! });
     }
     try {
       await recordAction(pool, { userId: uid, task, action: "redirect", feedback: f.value, redirectToUserId: toUserId, redirectToRoleId: toRoleId });
@@ -236,6 +258,9 @@ export function register(app: Express, deps: Deps): void {
   app.post("/api/admin/member-tasks/role-queue/:id", async (req, res) => {
     if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
     const status = (req.body as any)?.status === "taken" ? "taken" : "dismissed";
-    res.json({ closed: await closeRoleItem(getPool(), String(req.params.id), status, adminActor(req)?.id ?? null) });
+    const id = String(req.params.id);
+    const closed = await closeRoleItem(getPool(), id, status, adminActor(req)?.id ?? null);
+    if (closed) await afterStewardClose(getPool(), handoffRules, id, status, adminActor(req)?.id ?? null);
+    res.json({ closed });
   });
 }

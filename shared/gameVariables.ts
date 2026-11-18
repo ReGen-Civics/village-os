@@ -755,6 +755,43 @@ export const VARIABLES: VariableDef[] = [
     min: 0,
     max: 1000000000,
   },
+  // ── The valuation engine's no-sign band ──────────────────────────────────
+  //
+  // Inside the band one setter's word sets a role's pay or a quest's price;
+  // outside it, a reason and a second signer, or the village. The band used to
+  // be one symmetric dial on the valuation model (`engine.bandPct`, plus or
+  // minus 10). These two let a village set each side on its own, such as a
+  // band from 20% under the suggestion up to the suggestion itself. Blank
+  // follows the valuation model, which is plus or minus 10 unless a saved
+  // version says otherwise, so a village that sets nothing sees no change.
+  // The server lays them over the model it prices with (`currentModel`,
+  // server/lib/valuationStore.ts), so every surface reads one band.
+  {
+    key: "valuation.band_below_pct",
+    category: "Ledger",
+    label: "How far under the suggestion one person may set pay",
+    description:
+      "The valuation engine suggests a figure for a role's pay or a quest's price. A figure from this far under the suggestion up to the top of the band is set by one person's word. A figure lower than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 20 means the band starts at 80% of it, and 0 means nothing under the suggestion is inside. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.",
+    type: "integer",
+    default: "",
+    blank: "follows the valuation model",
+    unit: "%",
+    min: 0,
+    max: 100,
+  },
+  {
+    key: "valuation.band_above_pct",
+    category: "Ledger",
+    label: "How far over the suggestion one person may set pay",
+    description:
+      "The other side of the same band. A figure from the bottom of the band up to this far over the suggestion is set by one person's word. A figure higher than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 0 means the suggestion itself is the top of the band, and 10 means up to 110% of it. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.",
+    type: "integer",
+    default: "",
+    blank: "follows the valuation model",
+    unit: "%",
+    min: 0,
+    max: 100,
+  },
   // ── R73, 2026-08-29: one allowance, one per-recipient rule ────────────────
   //
   // Three dials used to live here and just above. The economy engine carried
@@ -2859,7 +2896,16 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Show pay ranges on role cards",
     description:
-      "Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way.",
+      "Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way. A role card can choose for itself in the role editor, under Who sees the listed price: everyone, or only the people who edit the card. That choice holds on the card, the founding team and the application form.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "org.pay_split_amounts",
+    category: "The village's people",
+    label: "Show each reward share as its own amount",
+    description:
+      "Off, a role card with a listed price shows it as one figure for the full role. On, the card names each share of that figure as its own amount, worked out from the role's shares, such as up to $4,000 in cash and $6,000 in equity a month. A role card can choose for itself in the role editor, under How the listed price reads. Who sees the figure at all is still decided by Show pay ranges on role cards and the card's own choice.",
     type: "boolean",
     default: "false",
   },
@@ -4275,6 +4321,18 @@ export const VARIABLES: VariableDef[] = [
     min: 0,
     max: 365,
     unit: "days",
+  },
+  {
+    key: "hiddenmap.paid_plantings_per_week",
+    category: "Hidden map",
+    label: "Vouched plantings paid per member each week",
+    description:
+      "When the village names a planting quest, how many of one member's vouched plantings open a claim in any seven days. A paid planting also needs a photo and two members vouching for it, whatever the vouches setting above says. More plantings wait and open in a later week. 0 pays none.",
+    type: "integer",
+    default: "5",
+    min: 0,
+    max: 100,
+    unit: "plantings",
   },
   {
     key: "hiddenmap.photo_max_mb",

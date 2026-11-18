@@ -15,6 +15,7 @@ vi.mock("sonner", () => ({ toast: { success: vi.fn(), message: vi.fn(), error: v
 let signedIn = true;
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => ({ user: signedIn ? { id: "u-ana" } : null }) }));
 
+import { HANDOFFS_WAITING_URL } from "@shared/roleTaskHandoff";
 import RaiseTension from "@/components/roleTension/RaiseTension";
 import WaitingOnYou from "@/components/profile/WaitingOnYou";
 
@@ -23,7 +24,10 @@ const fetchMock = vi.fn();
 beforeEach(() => {
   signedIn = true;
   fetchMock.mockReset();
-  vi.stubGlobal("fetch", (url: unknown, init?: unknown) => fetchMock(String(url), init));
+  // Tasks handed to the reader's roles come from their own door, closed here.
+  vi.stubGlobal("fetch", (url: unknown, init?: unknown) =>
+    String(url) === HANDOFFS_WAITING_URL ? Promise.resolve(reply(404, { error: "not_found" })) : fetchMock(String(url), init),
+  );
 });
 afterEach(() => vi.unstubAllGlobals());
 

@@ -85,7 +85,12 @@ export const TOKEN_PREFIX = "vat_";
  * a proposal into the approval inbox (server/routes/approvalInbox.ts) and
  * change nothing. A person approves it, through that thing's own route.
  */
-export const AGENT_SCOPES = ["calendar.read", "directory.read", "me.read", "rsvp.write", "intents.write", "map.draft", "moon.read", "tasks.write", "admin", "sera.undoable", "moon.write", "moon.review", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose"] as const;
+/*
+ * `sessions.write` opens one connector tool, `add_agenda_item`: an item in the
+ * agenda library, added as the holder, after their yes. It brings nothing into
+ * a session and changes no agenda already set; a person does that in the room.
+ */
+export const AGENT_SCOPES = ["calendar.read", "directory.read", "me.read", "rsvp.write", "intents.write", "map.draft", "moon.read", "tasks.write", "admin", "sera.undoable", "moon.write", "moon.review", "roles.read", "roles.propose", "letters.draft", "applicants.read", "onboarding.write", "settings.propose", "listing.propose", "pages.propose", "map.propose", "sessions.write"] as const;
 export type AgentScope = (typeof AGENT_SCOPES)[number];
 
 /** Read scopes are on by default in the panel; writes are opt-in. */

@@ -23,6 +23,7 @@
  * mode of every alerting system is the same one: a loop that fires ten
  * thousand identical alerts and teaches everyone to mute the channel.
  */
+import { randomBytes } from "crypto";
 import { secretValue } from "./secrets";
 import { guardedFetchJson } from "./toolcheck";
 
@@ -560,7 +561,15 @@ export function respondToTerminalError(
   res: { status(code: number): { json(body: unknown): unknown } },
 ): void {
   const answer = terminalAnswerFor(err);
-  if (answer.level === "warn") console.warn("[route conflict]", answer.detail);
-  else console.error("[route error]", answer.detail);
-  res.status(answer.status).json(answer.body);
+  if (answer.level === "warn") {
+    console.warn("[route conflict]", answer.detail);
+    res.status(answer.status).json(answer.body);
+    return;
+  }
+  // A fault with no sentence of its own carries a short reference, logged beside the detail, so a person who
+  // reads "Internal server error" on a page (the review page shows a route's answer as it came) can hand the
+  // team something to find it by (17 Nov 2026).
+  const ref = randomBytes(4).toString("hex");
+  console.error(`[route error] ref=${ref}`, answer.detail);
+  res.status(answer.status).json({ ...answer.body, ref });
 }

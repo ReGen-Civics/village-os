@@ -112,6 +112,9 @@ export default function Treasury() {
             <p className={EYEBROW}>{TREASURY_WORDS.eyebrow}</p>
             <h1 className={H1}>{TREASURY_WORDS.title}</h1>
             <p className={LEDE}>{TREASURY_WORDS.lede}</p>
+            <p className={HINT}>
+              <Link href="/budget" className={LINK}><Trans context="link to the cash budget page">The cash budget for this moon</Trans></Link>
+            </p>
           </header>
 
           {!user ? (

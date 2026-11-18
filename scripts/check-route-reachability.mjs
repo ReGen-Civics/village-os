@@ -73,6 +73,11 @@ const ALLOWLIST = {
   // purpose. Excluded from the route list by the deriver too; belt and braces.
   "/404": "the not-found page, reached by failing to reach something else",
 
+  // The rites module's joining doors (module `rites`, off by default). Each is reached from outside the app on purpose.
+  "/door/:code": "what a member's printed code opens; its doors are paper QR codes",
+  "/aboard/welcome": "where joining lands, once; reached from the joining form and the Google return",
+  "/welcome": "a village's public front door: the invitation letter, links the village posts outside the app, and its own bottom bar",
+
   // A members-only report of the role journey (counts and medians, no names). Its one door is the signed-in link on /roles; a second link would only add a header entry nobody needs.
   "/role-measures": "a members-only report reached from the roles page",
 

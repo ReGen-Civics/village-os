@@ -120,7 +120,7 @@ export function RoleAsks({
         </fieldset>
       )}
       <fieldset className="grid gap-2">
-        <legend className="text-sm font-semibold text-card-foreground">{t`Your goals for your first moon in ${roleName}`}</legend>
+        <legend className="text-sm font-semibold text-card-foreground">{t`Your goals for your first month in ${roleName}`}</legend>
         <GoalsList
           idPrefix={`card-${roleId}-goals`}
           goals={value.goals}

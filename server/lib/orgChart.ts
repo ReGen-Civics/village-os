@@ -21,7 +21,7 @@
  */
 import { MAX_ROOTS_ON_WORK } from "../../shared/archetypeRoots";
 import { isAgentAccount } from "../repos/agentAccounts";
-import { roleHeldBy } from "../repos/orgRoleColumns";
+import { circleIsLive, orgRoleIdTaken, roleHeldBy } from "../repos/orgRoleColumns";
 import { HELD_BY_REFUSAL, mayHold } from "../../shared/agentHolders";
 import { isMoonTerm } from "../../shared/moonRenewal";
 import { raiseRevokeForEnded } from "./roleAccess";
@@ -182,9 +182,11 @@ export interface OrgRole extends Partial<RoleParams> {
   valueCurrency?: string | null;
   valueTokens?: TokenAmount[] | null;
   /**
-   * The cash the role pays each seat every cycle (0285), in minor units of
-   * `cashCurrency`. Owed when the cycle settles (`oweRoleCycleCash`,
-   * server/lib/cashOwed.ts) and never paid by the platform. NULL pays none.
+   * The cash the role states for each seat every cycle (0285), in minor units
+   * of `cashCurrency`. Never owed by itself: a settled cycle owes nothing for
+   * it (pay defect 2), and a seat on it with no adopted application is listed
+   * for the Treasurer to set terms (`cashSeatsWithoutTerms`,
+   * server/lib/cashOwed.ts). Never paid by the platform. NULL states none.
    * Separate from the cash its terms on offer state, which the pay path may
    * never read (shared/seatSettings.boundary.test.ts).
    */
@@ -304,7 +306,9 @@ export const ROLE_COLS =
   // 0383: the commitment the role asks as a stored value, and whether it needs all of it.
   "commitment_pct, commitment_required, " +
   // The commitment range (Rye, 14 Nov 2026, shared/commitmentRange.ts): the least one person may propose, and what the role needs in all.
-  "commitment_min, commitment_target";
+  "commitment_min, commitment_target, " +
+  // Coming soon (Rye, 16 Nov 2026, shared/roleListing.ts): shown with a badge, closed to applications.
+  "coming_soon, future_venture";
 
 export const ASSIGN_COLS =
   // `is_example` rides along so the flag travels through every SELECT. It was
@@ -579,7 +583,8 @@ export function seatState(
   const list: Array<{ lapsed?: boolean }> =
     typeof holders === "number" ? Array.from({ length: holders }, () => ({}) as { lapsed?: boolean }) : holders;
   const live = list.length;
-  if (live <= 0) return "open";
+  // A coming-soon role or a future venture nobody holds is applied for early, but it is not Open: it reads as forming, never as an opening (shared/roleListing.ts).
+  if (live <= 0) return role.comingSoon === true || role.futureVenture === true ? "forming" : "open";
   const current = list.filter((h) => !h.lapsed).length;
   if (current === 0) return "expired";
   if (current < role.seats) return "partial";
@@ -970,10 +975,156 @@ function paramColumnsOf(body: any): Array<[string, string | number | null]> {
   return roleParamColumns(parsed.value);
 }
 
+/** The id a new role takes: its own id, else its name, as a slug; a stamp when neither gives one. */
+export function newRoleIdOf(body: any): string {
+  return dashSlug(String(body?.id ?? body?.name ?? "")).slice(0, 64) || `seat-${Date.now().toString(36)}`;
+}
+
+/** Why a new role cannot be made, as the status and one plain sentence a person reads. */
+export interface CreateRoleRefusal {
+  status: 400 | 409;
+  error: string;
+  field?: string;
+}
+
+/**
+ * The text columns a new role writes, by body key: the plain name a person reads,
+ * and the most the 0049/0083 column holds. `chars` is a varchar's character count;
+ * `bytes` is a TEXT column's byte count.
+ */
+const ROLE_TEXT_FIELDS: Record<string, { label: string; chars?: number; bytes?: number }> = {
+  name: { label: "name", chars: 160 },
+  aim: { label: "aim", bytes: 65535 },
+  domain: { label: "domain", bytes: 65535 },
+  whyItMatters: { label: "why it matters", bytes: 65535 },
+  authority: { label: "authority", bytes: 65535 },
+  firstYearOutcomes: { label: "first year outcomes", bytes: 65535 },
+  first90DayOutcomes: { label: "first 90 day outcomes", bytes: 65535 },
+  locationExpectations: { label: "location expectations", chars: 255 },
+  compensationReality: { label: "compensation reality", bytes: 65535 },
+  evidenceRequired: { label: "evidence required", bytes: 65535 },
+  howChosen: { label: "how the next holder is chosen", chars: 32 },
+  howChosenGloss: { label: "words on how the next holder is chosen", chars: 160 },
+  icon: { label: "icon", chars: 64 },
+  color: { label: "colour", chars: 32 },
+};
+
+/** The plain name of an org_roles column, for a refusal the database gave. */
+function roleColumnLabel(col: string): string | null {
+  if (col === "id") return "id";
+  if (col === "accountabilities") return "accountabilities";
+  for (const [js, c] of Object.entries(WRITABLE)) {
+    if (c === col) return ROLE_TEXT_FIELDS[js]?.label ?? (js === "order" ? "order" : js === "seats" ? "seats" : js);
+  }
+  return null;
+}
+
+const INT_MAX = 2147483647;
+const INT_MIN = -2147483648;
+
+export const duplicateRoleIdWords = (id: string) => `A role with the id '${id}' already exists. Choose another id.`;
+export const unknownCircleWords = (id: string) => `There is no live circle '${id}'. Create the circle first, or choose one that exists.`;
+
+/**
+ * Everything the org_roles INSERT in `createOrgRole` can refuse, checked first, so a
+ * person reads a sentence and never "Internal server error". The table has no foreign
+ * keys, so a circle that does not exist would land as an orphan role; it is refused here.
+ * Run by POST /api/admin/org/roles and by `checkProposal` when a setting proposal names
+ * that route, so a bad body is refused when it is filed as well as when it is accepted.
+ */
+export async function createRoleProblem(pool: Pool, body: unknown): Promise<CreateRoleRefusal | null> {
+  if (body !== undefined && body !== null && (typeof body !== "object" || Array.isArray(body))) {
+    return { status: 400, error: "A new role arrives as a set of fields, such as its name and aim." };
+  }
+  const b = (body ?? {}) as Record<string, unknown>;
+  if (b.id !== undefined && b.id !== null && typeof b.id !== "string") {
+    return { status: 400, error: "A role's id is text, such as kitchen-steward.", field: "id" };
+  }
+  if (b.name !== undefined && b.name !== null) {
+    if (typeof b.name !== "string") return { status: 400, error: "A role's name is text.", field: "name" };
+    if (!b.name.trim()) return { status: 400, error: "A role needs a name.", field: "name" };
+  }
+  for (const [key, spec] of Object.entries(ROLE_TEXT_FIELDS)) {
+    const v = b[key];
+    if (v === undefined || v === null || v === "") continue;
+    if (typeof v !== "string") return { status: 400, error: `A role's ${spec.label} is text.`, field: key };
+    if (spec.chars && Array.from(v).length > spec.chars) {
+      return { status: 400, error: `A role's ${spec.label} holds ${spec.chars} characters at most.`, field: key };
+    }
+    if (spec.bytes && Buffer.byteLength(v, "utf8") > spec.bytes) {
+      return { status: 400, error: `A role's ${spec.label} is too long to keep. Shorten it.`, field: key };
+    }
+  }
+  if (b.seats !== undefined && b.seats !== null) {
+    const n = typeof b.seats === "string" && b.seats.trim() === "" ? NaN : Number(b.seats);
+    if (typeof b.seats === "boolean" || !Number.isInteger(n) || n < 1 || n > INT_MAX) {
+      return { status: 400, error: "How many people a role holds is a whole number, 1 or more.", field: "seats" };
+    }
+  }
+  if (b.order !== undefined && b.order !== null) {
+    const n = typeof b.order === "string" && b.order.trim() === "" ? NaN : Number(b.order);
+    if (typeof b.order === "boolean" || !Number.isInteger(n) || n < INT_MIN || n > INT_MAX) {
+      return { status: 400, error: "A role's order is a whole number.", field: "order" };
+    }
+  }
+  if (b.criticality !== undefined && b.criticality !== "normal" && b.criticality !== "high") {
+    return { status: 400, error: "A role's criticality is normal or high.", field: "criticality" };
+  }
+  // Yes-or-no fields: `listed: "false"` used to be truthy and LIST the role it meant to hide.
+  for (const [key, label] of [["listed", "listed"], ["recruiting", "recruiting"], ["active", "active"], ["representsCircle", "represents its circle"], ["expiresEachSeason", "expires each season"]] as const) {
+    const v = b[key];
+    if (v === undefined || v === null || typeof v === "boolean" || v === 0 || v === 1) continue;
+    return { status: 400, error: `Whether a role is ${label} is true or false.`, field: key };
+  }
+  if (b.accountabilities !== undefined && b.accountabilities !== null && !Array.isArray(b.accountabilities)) {
+    return { status: 400, error: "A role's accountabilities arrive as a list.", field: "accountabilities" };
+  }
+  if (carriesRoleParams(b)) {
+    const parsed = parseRoleParams(b);
+    if (!parsed.ok) return { status: 400, error: parsed.problem };
+    const steps = parsed.value.conversations ?? [];
+    if (steps.length) {
+      const known = new Set((await listOrgRoles(pool)).map((r) => r.id));
+      const unknown = steps.filter((x) => !known.has(x.roleId));
+      if (unknown.length) return { status: 400, error: "These interviewing roles are not here: " + unknown.map((x) => x.roleId).slice(0, 5).join(", "), field: "conversations" };
+    }
+  }
+  if (b.circleId !== undefined && b.circleId !== null && b.circleId !== "") {
+    if (typeof b.circleId !== "string") return { status: 400, error: "A role's circle is named by the circle's id, as text.", field: "circleId" };
+    if (b.circleId.length > 64 || !(await circleIsLive(pool, b.circleId))) return { status: 400, error: unknownCircleWords(b.circleId), field: "circleId" };
+  }
+  const id = newRoleIdOf(b);
+  // Live or retired: a retired role keeps its row, its seatings and its journal, so its id is never reused.
+  if (await orgRoleIdTaken(pool, id)) return { status: 409, error: duplicateRoleIdWords(id), field: b.id ? "id" : "name" };
+  return null;
+}
+
+/** Codes that are about the database's moment, never the role's fields: those stay a 500. */
+const TRANSIENT_DB_CODES = new Set(["ER_LOCK_WAIT_TIMEOUT", "ER_LOCK_DEADLOCK", "ER_CON_COUNT_ERROR", "ER_QUERY_INTERRUPTED", "ER_SERVER_SHUTDOWN"]);
+
+/**
+ * A database refusal of the role INSERT that `createRoleProblem` did not foresee (a
+ * second write racing this one to the same id, a column a later migration narrowed), as
+ * a sentence. Never the SQL text: at most the plain name of the column it names. Null
+ * for anything that is not the database refusing the row, which stays a 500.
+ */
+export function roleInsertRefusal(e: unknown, id: string): CreateRoleRefusal | null {
+  const err = e as { code?: unknown; sqlState?: unknown; sqlMessage?: unknown } | null;
+  if (!err || typeof err !== "object" || typeof err.sqlState !== "string" || typeof err.code !== "string") return null;
+  if (TRANSIENT_DB_CODES.has(err.code)) return null;
+  if (err.code === "ER_DUP_ENTRY") return { status: 409, error: duplicateRoleIdWords(id), field: "id" };
+  const col = /column '([A-Za-z0-9_]+)'/.exec(String(err.sqlMessage ?? ""))?.[1];
+  const label = col ? roleColumnLabel(col) : null;
+  return {
+    status: 400,
+    error: label
+      ? `The role was not saved: the village cannot keep its ${label} as sent. Check its length and kind.`
+      : "The role was not saved: the village cannot keep one of its values as sent. Check the lengths and kinds of what was sent.",
+  };
+}
+
 export async function createOrgRole(pool: Pool, body: any): Promise<string> {
-  const id =
-    dashSlug(String(body?.id ?? body?.name ?? "")).slice(0, 64) ||
-    `seat-${Date.now().toString(36)}`;
+  const id = newRoleIdOf(body);
   // The four every seat gets whether or not the caller sent them, so a bare
   // `{name}` still produces a usable row.
   const cols = ["id", "name", "circle_id", "aim", "domain", "accountabilities", "seats", "sort_order"];

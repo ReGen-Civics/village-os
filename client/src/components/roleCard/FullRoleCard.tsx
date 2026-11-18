@@ -30,14 +30,17 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
+import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
+import { heldButRecruiting } from "@shared/roleListing";
 import { rewardWords } from "./rewardWords";
+import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -55,17 +58,25 @@ import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
 import { useVillageName } from "@/hooks/useVillageName";
 
+// The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
+const CardCommitment = lazy(() => import("./CardCommitment"));
+
 export type CardRegister = "founding" | "game";
 
-/** Where the Apply act goes: the application, with this one role already chosen (ruling 1). */
-export function applyHrefForRole(roleId: string): string {
-  return `/propose-a-role?role=${encodeURIComponent(roleId)}`;
+/** Where the Apply act goes: the application, with this one role already chosen (ruling 1), and the card's choice (applyChoice.ts). */
+export function applyHrefForRole(roleId: string, choice = ""): string {
+  return `/propose-a-role?role=${encodeURIComponent(roleId)}${choice ? `&${choice}` : ""}`;
 }
+
+// The value callout and its explainer (lead, 17 Nov 2026), loaded when a card draws its pay, so neither rides the first
+// view of a route that shows a card (guard-route-first-views, scripts/route-first-view.json).
+const ValueCallout = lazy(() => import("./ValueCallout"));
 
 /** Whether this reader may apply for the seat: a live, open, complete card. */
 export function mayApply(seat: Record<string, any>): boolean {
   if (!seat || seat.isExample) return false;
-  if (seat.state === "filled") return false;
+  // Held, with the door still open (the lead, 17 Nov 2026): more players welcome, so Apply stays.
+  if (seat.state === "filled" && !heldButRecruiting(seat)) return false;
   return roleCardView(seat).applyAllowed;
 }
 
@@ -202,20 +213,31 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const commitmentPct: number | null = Number.isInteger(seat?.card?.commitmentPct) ? (seat.card.commitmentPct as number) : null;
   const commitment = commitmentPct !== null ? null : asText(seat.timeCommitment);
   // The focus line (Rye, 15 Nov 2026): the qualities' token drawn for the commitment this card shows.
-  const focusPct = shownCommitment(commitmentChosen, seat?.card?.commitmentMin ?? null, commitmentPct);
+  // The card's own slider (CardCommitment.tsx), when the reader has one: the words below follow it.
+  const [sliderPct, setSliderPct] = useState<number | null>(null);
+  const focusPct = shownCommitment(sliderPct ?? commitmentChosen, seat?.card?.commitmentMin ?? null, commitmentPct);
   const sections = read ? { ...read, qualities: withFocusLine(i18n, read.qualities, village, focusPct) } : null;
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
   const apply = !noAct && mayApply(seat);
+  // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
+  const [choiceLink, setChoiceLink] = useState("");
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
   const act = apply ? (
-    <Fireflies block>
-      <Link href={applyHrefForRole(id)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
-        <Trans context="full role card: the one act">Apply for this role</Trans>
-        <ArrowRight className="size-4" aria-hidden="true" />
-      </Link>
-    </Fireflies>
+    <>
+      {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
+      <StateNote role={seat} className="mb-3" />
+      <Fireflies block>
+        <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
+          <Trans context="full role card: the one act">Apply for this role</Trans>
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </Link>
+      </Fireflies>
+    </>
+  ) : !noAct ? (
+    // Held by an agent alone: said, with no Apply and no name (Rye, 16 Nov 2026).
+    <HeldByAgentLine role={seat} />
   ) : null;
 
   // THE POINT OF PAY, drawn once: in the founding card it is the "How rewards work" piece, whose
@@ -223,18 +245,30 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // ceiling written, no ceiling line.
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
-  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? []) : null;
+  // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen) : null;
+  // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
+  const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
           <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{reward.headline}</p>
-          <p className="font-medium leading-relaxed text-card-foreground" data-testid="pay-cap-words">{reward.cap}</p>
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
           <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
         </>
       ) : (
-        pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>
+        <>
+          {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+          {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band">{band}</p>}
+          <Suspense fallback={null}>
+            <ValueCallout />
+          </Suspense>
+        </>
       )}
       {pay.shape.length > 0 && (
         <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
@@ -266,6 +300,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           </p>
         );
       })()}
+      {!noAct && (
+        <Suspense fallback={null}>
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} onPct={setSliderPct} />
+        </Suspense>
+      )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
       {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else

@@ -81,17 +81,20 @@ import { post } from "../lib/comms/postOffice";
 import { effectiveLifecycle } from "../lib/modules";
 import { listOrgRoles } from "../lib/orgChart";
 import { sectionsForMany } from "../lib/roleCardSections";
+import { cardPay, readsCeiling, villagePayFrom, type PayReader } from "../../shared/roleCardSections";
+import { offeredSplit, readProposedSplit, splitTotal } from "../../shared/proposalSplit";
 import { aboveCap, askAboveCap, askPeriod, askPeriodWrong, belowMinimum, capAt, RANGE_WORDS } from "../../shared/commitmentRange";
 import { moneyWords } from "../../shared/roleRewardWords";
 import { singlePublicAddress } from "../lib/publicAddress";
 import { registerJob } from "../lib/scheduler";
 import { clearAboutYouDecidedBefore } from "../repos/seatApplications";
-import { accountFor, arrivalFor, confirmAndAsk, describeFor, tellTheCircle } from "../lib/openProposalDecide";
+import { arrivalFor, confirmAndAsk, describeFor, tellTheCircle } from "../lib/openProposalDecide";
+import { addressAccount } from "../lib/applicantAccount";
 import { whenInviteDescribed, whenInvitedArrives } from "../lib/inviteDoor";
 import { alignAtApplication, carryToAccount, type SigningDoor } from "../lib/applicationMembership";
 import { currentLetter } from "../lib/membershipLetter";
 import { LETTER_WORDS, type LetterSource } from "../../shared/membershipLetter";
-import { inApplicationTransaction } from "../repos/seatApplications";
+import { inApplicationTransaction, liveSeatingsOf } from "../repos/seatApplications";
 import { OPEN_INVITE_PREFIX, openInviteId, openProposalHref, replyPromise } from "../../shared/openProposalDecide";
 import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from "../lib/openProposalKept";
 import { inviteById } from "../repos/memberInvites";
@@ -116,7 +119,7 @@ import { voiceViewerOf } from "../lib/voiceForViewer";
 import { villageCircles } from "../repos/roleProposals";
 import { activeClock } from "../lib/gratitude-cycles";
 import { isTermMode, moonTermFor, type OpenProposalTerm, type OpenProposalTermMode } from "../../shared/openProposalTerm";
-import { isListed } from "../../shared/roleListing";
+import { isComingSoon, isFutureVenture, isShown } from "../../shared/roleListing";
 import { opensAfterFounding } from "../../shared/foundingTeam";
 import { foundingIdsOf, replyDaysFor } from "../lib/foundingFirst";
 import { gateOf } from "../lib/roleCardProjection";
@@ -125,7 +128,12 @@ import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
 import { VOICE_CLIPS_CEILING, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
 import { registerVoiceDraft } from "./openProposalVoiceDraft";
+import { registerVoiceTranscribe, type VoiceTranscribeDeps } from "./openProposalVoiceTranscribe";
+import { startWaitingRun, writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
+import { providersNow, readTranscriptionChoice, transcriptionSettings, writeTranscriptionChoice } from "../lib/voiceTranscription";
+import { TRANSCRIPTION_CHOICES, transcriptionChoiceOf } from "../../shared/voiceTranscribe";
 import { limitState } from "../repos/rateHits";
+import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
 import { checkProposalFiles, checkVoiceClips, checkVoiceNotes, readVoiceNote, removeProposalFiles, removeVoiceNotes, sweepProposalFiles, writeProposalFiles, writeVoiceClips, writeVoiceNotes, type UploadedFile } from "../lib/proposalFiles";
 
 type Deps = Pick<
@@ -157,6 +165,8 @@ type Deps = Pick<
   stringVar?: (key: string) => string;
   /** The application's village words. Absent: read from the village settings (shared/foundingApplication.ts). */
   founding?: () => FoundingSetup;
+  /** "Write down my words": a suite hands in its own provider switch and call (openProposalVoiceTranscribe.ts). */
+  voiceTranscribe?: Pick<VoiceTranscribeDeps, "enabled" | "transcribe" | "providers">;
 };
 
 /** The admin's switch for the public link (sheet 19i: on unless switched off). */
@@ -358,9 +368,15 @@ export function register(app: Express, deps: Deps): void {
     const ceilings = await sectionsForMany(pool, roles.map((r) => r.id));
     // Hiring the founding team first (Rye, 14 Nov 2026): every other listed role opens after it.
     const foundingIds = foundingIdsOf(roles);
+    // Held (Rye, 16 Nov 2026): a role whose places are all taken is marked, so the form's chooser offers no Apply for it.
+    // A link straight to it still takes an application, adopted only for when a place opens (audit B3).
+    const taken = new Map<string, number>();
+    for (const s of await liveSeatingsOf(pool, roles.map((r) => r.id))) taken.set(s.orgRoleId, (taken.get(s.orgRoleId) ?? 0) + 1);
     return roles
-      .filter((r) => r.active && !r.isExample && isListed(r) && r.circleId && live.has(r.circleId))
-      .filter((r) => !needsCard || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
+      // A coming-soon role takes applications early, through this same form (Rye, 16 Nov 2026), even while
+      // unlisted and before its card is complete: its card is short until its lead is in place.
+      .filter((r) => r.active && !r.isExample && isShown(r) && r.circleId && live.has(r.circleId))
+      .filter((r) => !needsCard || isComingSoon(r) || isFutureVenture(r) || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
       .map((r) => ({
         id: r.id,
         name: r.name,
@@ -379,7 +395,18 @@ export function register(app: Express, deps: Deps): void {
         commitmentMin: r.commitmentMin ?? null,
         // Applied for now, answered once the founding team is in place (shared/foundingTeam.ts).
         opensLater: opensAfterFounding(foundingIds, [r.id]),
+        // Coming soon (Rye, 16 Nov 2026): the form and its confirmation say interviews may take a while to start.
+        ...(isComingSoon(r) ? { comingSoon: true } : {}),
+        // A future venture: the form asks for a pitch, by its five prompts.
+        ...(isFutureVenture(r) ? { futureVenture: true } : {}),
+        // A full role still recruiting is not marked: more players welcome, so the chooser offers it (the lead, 17 Nov 2026).
+        ...((taken.get(r.id) ?? 0) >= r.seats && r.recruiting !== true ? { held: true } : {}),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
+        // The split in force (the card's own shares, else the village's), so the form offers it to adjust (the lead, 17 Nov 2026).
+        // Shares only, never an amount: every card shows them already.
+        payShape: cardPay(ceilings.get(r.id) ?? null, villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: "", note: "" }))?.shape ?? [],
+        // The card's own choice of who reads that ceiling (absent: the village decides). Read by `offeredTo`, never sent.
+        payVisibility: ceilings.get(r.id)?.payVisibility,
         // The conversations in the role's order, as its public card shows them (role journey L5), so the
         // form and the board can say what happens next (role audit, 10 Nov 2026). The booking link is
         // not here: it is offered once the address is confirmed (L6).
@@ -410,25 +437,31 @@ export function register(app: Express, deps: Deps): void {
   // ── The public side ───────────────────────────────────────────────────────
 
   /**
-   * The offered roles as one reader may see them. While the village keeps pay hidden (`org.show_pay_ranges`
-   * off), the ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the
-   * setting says read the full terms either way. The form then offers no price ask, only negotiate.
+   * The offered roles as one reader may see them, each through the one ceiling gate (`readsCeiling`,
+   * shared/roleCardSections.ts). A card that follows the village: while `org.show_pay_ranges` is off the
+   * ceiling key is ABSENT for everyone but an admin or a holder of `terms.read`, the people the setting
+   * says read the full terms either way. A card set to show: everyone. A card set to hide: nobody on this
+   * form, which is an applicant's surface; its editors read the figure on the card and in the editor.
+   * Without a ceiling the form offers no price ask, only negotiate.
    */
-  async function seesPay(req: any): Promise<boolean> {
-    return boolVar("org.show_pay_ranges") || (!!deps.mayReadPay && (await deps.mayReadPay(req)));
+  async function payReaderOf(req: any): Promise<PayReader> {
+    const readsTerms = !!deps.mayReadPay && (await deps.mayReadPay(req));
+    return { villageShows: boolVar("org.show_pay_ranges"), readsTerms, edits: false };
   }
   async function offeredTo(req: any) {
-    const roles = await offered();
-    if (await seesPay(req)) return roles;
+    const [roles, reader] = await Promise.all([offered(), payReaderOf(req)]);
     return roles.map((r) => {
       const out: Partial<typeof r> = { ...r };
-      delete out.payCeiling;
+      if (!readsCeiling(r, reader)) delete out.payCeiling;
+      delete out.payVisibility;
       return out;
     });
   }
 
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, villageName: projectName });
+  // "Write down my words" (the lead, 17 Nov 2026): one take to the village's transcription service, behind the same door and caps of its own.
+  registerVoiceTranscribe(app, { door, limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, providers: () => providersNow(getPool()), ...(deps.voiceTranscribe ?? {}) });
 
   app.get("/api/open-proposals/form", async (req, res) => {
     const d = await door(req.query.link);
@@ -553,13 +586,14 @@ export function register(app: Express, deps: Deps): void {
     // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
     const pct = parsed.value.body.card?.commitmentPct;
     // A poster who may not read the ceiling meets the role as one with no listed price, so no refusal names the figure.
-    const pricesShown = await seesPay(req);
+    const priceReader = await payReaderOf(req);
     for (const picked of parsed.value.body.roles) {
-      const min = roles.find((r) => r.id === picked.roleId)?.commitmentMin;
+      const offeredRole = roles.find((r) => r.id === picked.roleId);
+      const min = offeredRole?.commitmentMin;
       if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
       const ask = parsed.value.body.payAsk;
-      const ceiling = pricesShown ? (roles.find((r) => r.id === picked.roleId)?.payCeiling ?? null) : null;
+      const ceiling = offeredRole && readsCeiling(offeredRole, priceReader) ? (offeredRole.payCeiling ?? null) : null;
       // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
       if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
       if (ceiling && ask?.kind === "amount") {
@@ -567,6 +601,20 @@ export function register(app: Express, deps: Deps): void {
         const at = typeof pct === "number" && pct > 0 ? pct : 100;
         if (askAboveCap(ask, ceiling.amount, at)) return res.status(400).json({ error: aboveCap(moneyWords(capAt(ceiling.amount, at), ceiling.currency), at), field: "payAsk" });
       }
+    }
+    // The cash, equity and credits split they propose (the lead, 17 Nov 2026, shared/proposalSplit.ts), read against the
+    // role's split in force and the price it describes. What the village offered at their commitment is worked here,
+    // never taken from the form, and kept beside it so the difference is known. One role per application.
+    let paySplit: { paySplit: { commitmentPct: number | null; offered: ReturnType<typeof offeredSplit>; proposed: ReturnType<typeof offeredSplit> } } | Record<string, never> = {};
+    if (body.paySplit !== undefined && body.paySplit !== null) {
+      const role = parsed.value.body.roles.length === 1 ? roles.find((r) => r.id === parsed.value.body.roles[0].roleId) : undefined;
+      const shape = role?.payShape ?? [];
+      const ceiling = role && readsCeiling(role, priceReader) ? (role.payCeiling ?? null) : null;
+      const ask = parsed.value.body.payAsk;
+      const at = typeof pct === "number" ? pct : null;
+      const read = readProposedSplit(body.paySplit, shape, splitTotal(ceiling?.amount, at, ask?.kind === "amount" ? ask.monthly : null));
+      if (!read.ok) return res.status(400).json({ error: read.problem, field: "paySplit" });
+      if (read.value) paySplit = { paySplit: { commitmentPct: at, offered: offeredSplit(shape, splitTotal(ceiling?.amount, at, null)), proposed: read.value } };
     }
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
@@ -601,7 +649,7 @@ export function register(app: Express, deps: Deps): void {
     }
     // The language their emails come in: chosen once, here, by the rule in shared/applicantLanguage.ts.
     const locale = await languageForNewProposal({ getPool, members: deps.members }, { clientLocale: body.locale, email, acceptLanguage: req.headers["accept-language"] });
-    const proposal = { ...parsed.value.body, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
+    const proposal = { ...parsed.value.body, ...paySplit, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
     const emailKey = emailKeyOf(email);
     // Every refusal above has been given. Only now, with the proposal acceptable, does this connection spend one of its five an hour.
     if (await overLimit(`open-proposal:ip:${ipBucket(clientIp(req))}`, 5, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooMany });
@@ -689,7 +737,7 @@ export function register(app: Express, deps: Deps): void {
       if (letter.version !== asked.letterVersion) return;
       await inApplicationTransaction(getPool(), (conn) => alignAtApplication(conn, { letter, email: p.email as string, proposalId: p.id, now: at }));
       // An account already here with this address: carried now, with the signing request a steward accepts.
-      const account = await accountFor(deps.members, p.email);
+      const account = await addressAccount(deps.members, p.email, getPool());
       if (account && deps.signings) {
         const m: any = await deps.members.byId(account);
         await carryToAccount(getPool(), deps.signings, { userId: account, name: String(m?.name ?? ""), email: p.email, now: at });
@@ -792,10 +840,76 @@ export function register(app: Express, deps: Deps): void {
           ? {
               notes: p.body.voice.notes.map((n) => ({ id: n.id, seconds: n.seconds, href: adminVoiceHref(p.id, n.id) })),
               clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: adminVoiceHref(p.id, c.id) })),
+              // AI transcripts an admin or a decider asked for (the lead, 17 Nov 2026), by recording id, shown marked as such.
+              written: p.body.voice.written ?? {},
             }
           : null,
       })),
+      // Whether a recording can be written down now, so the panel draws its buttons (shared/voiceTranscribe.ts).
+      transcribeOn: hearer.admin ? (await (deps.storedTranscribe?.providers ?? (() => providersNow(pool)))()).length > 0 : false,
     });
+  });
+
+  /*
+   * WRITE DOWN A KEPT RECORDING, and every one still waiting (the lead, 17 Nov
+   * 2026: "Transcribe them! They've personally consented with me."). The same
+   * people as the Listen door above: intake.moderate, an admin or a founder,
+   * a person, a confirmed application. routes/openProposalVoiceWritten.ts
+   * holds the caps, the run and its log line.
+   */
+  const storedDeps = (): StoredTranscribeDeps => ({ getPool, proposalFileDir: deps.proposalFileDir, providers: () => providersNow(getPool()), ...(deps.storedTranscribe ?? {}) });
+  /** After the capability gate: the admin, a person, who may hear it (as the Listen door asks), or null with the 404 sent. */
+  const adminHearer = async (req: any, res: any): Promise<string | null> => {
+    const me = await authedUser(req);
+    if (!(await voiceViewerOf(req, getPool(), me)).admin) {
+      res.status(404).json({ error: "not_found" });
+      return null;
+    }
+    return String(me?.id ?? "admin");
+  };
+  app.post("/api/admin/open-proposals/voice/transcribe-waiting", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    const who = await adminHearer(req, res);
+    if (!who) return;
+    const waiting = await store.listOpenProposals(getPool(), ["confirmed"]);
+    const out = startWaitingRun(storedDeps(), waiting, who);
+    res.status(out.status).json(out.body);
+  });
+  app.post("/api/admin/open-proposals/:id/voice/:noteId/transcribe", async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    if (!(await guardCapability(req, res, "intake.moderate"))) return;
+    const who = await adminHearer(req, res);
+    if (!who) return;
+    const id = String(req.params.id ?? "");
+    const noteId = String(req.params.noteId ?? "");
+    const p = /^op-[0-9a-f]{20}$/.test(id) ? await store.readOpenProposal(getPool(), id) : null;
+    const voice = p && p.status === "confirmed" ? p.body.voice : undefined;
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(voice?.notes ?? []), ...(voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
+    if (!p || !note) return res.status(404).json({ error: "not_found" });
+    const out = await writeDownStored(storedDeps(), p, note, who, "admin");
+    res.status(out.status).json(out.body);
+  });
+
+  /*
+   * WHICH SERVICE WRITES RECORDINGS DOWN (the lead, 17 Nov 2026), Admin,
+   * Integrations. Whoever may write the village's provider keys may choose
+   * between them. The keys themselves stay in the secrets plane.
+   */
+  app.get("/api/admin/voice-transcription", async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    if (!(await guardCapability(req, res, "operator.secrets"))) return;
+    res.json(await transcriptionSettings(getPool()));
+  });
+  app.put("/api/admin/voice-transcription", async (req, res) => {
+    res.setHeader("Cache-Control", "no-store");
+    if (!(await guardCapability(req, res, "operator.secrets"))) return;
+    const raw = req.body?.choice;
+    if (!(TRANSCRIPTION_CHOICES as readonly string[]).includes(String(raw))) return res.status(400).json({ error: "Choose one of the services listed." });
+    const before = await readTranscriptionChoice(getPool());
+    await writeTranscriptionChoice(getPool(), transcriptionChoiceOf(raw));
+    console.info(`[voice-transcription] choice ${before} -> ${String(raw)}`);
+    res.json(await transcriptionSettings(getPool()));
   });
 
   /*
@@ -817,11 +931,15 @@ export function register(app: Express, deps: Deps): void {
     const note = VOICE_NOTE_ID.test(noteId) ? [...(voice?.notes ?? []), ...(voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
     const bytes = note && deps.proposalFileDir ? await readVoiceNote(deps.proposalFileDir, id, note) : null;
     if (!note || !bytes) return res.status(404).json({ error: "not_found" });
-    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    // `?as=mp4`: an MP4/AAC copy, for Safari and every iPhone browser (server/lib/voicePlayback.ts). 415 where none can be made.
+    const mp4 = wantsMp4(req.query.as);
+    const served = mp4 ? await playableCopy(deps.proposalFileDir!, id, note, bytes) : bytes;
+    if (!served) return res.status(415).json({ error: "no_playable_copy" });
+    res.setHeader("Content-Type", mp4 ? "audio/mp4" : VOICE_NOTE_TYPES[note.kind]);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", "inline");
-    res.send(bytes);
+    res.send(served);
   });
 
   app.put("/api/admin/open-proposals/settings", async (req, res) => {

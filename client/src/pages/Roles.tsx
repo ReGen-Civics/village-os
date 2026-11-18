@@ -4,12 +4,13 @@ import { anchorCircleId } from "@shared/circlePicker";
 import SeasonGoals from "@/components/roleDraft/SeasonGoals";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, H1, H2, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 import NotListedChip from "@/components/NotListedChip";
+import { ComingSoonChip, HeldByAgentLine } from "@/components/ComingSoon";
 import Layout from "@/components/Layout";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, ChevronDown, Link2 } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
-import { useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
@@ -35,11 +36,17 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { type FoundingRole } from "@/components/roleCard/FoundingTeam";
-import FullRoleCard from "@/components/roleCard/FullRoleCard";
+import { orgChartOf } from "@/components/roleCard/orgChart";
+import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
+import { heldButRecruiting, rolesLeadWillBuild } from "@shared/roleListing";
+import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
 import { useRootsFilter } from "@/components/roots/useRootsFilter";
+
+// The org chart door beside the roster (Rye, 16 Nov 2026) loads after the first view: it sits below the open roles.
+const OrgPreview = lazy(() => import("@/components/roleCard/OrgPreview"));
 
 interface RoleEntry {
   id: string;
@@ -250,6 +257,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
       // The linked row is drawn in place. Its entrance offset is still on it
       // when the scroll is measured, so it would settle 20px higher, under
       // the sticky nav (measured in Chromium: header top 92, nav bottom 96).
+      data-role-row={role.id}
       initial={arrive ? false : { opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -270,10 +278,16 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
-                  {stateWords[role.status]}
-                </span>
+                {/* A coming-soon role says so in place of its state, until someone holds it (Rye, 16 Nov 2026). */}
+                {(role.raw?.comingSoon === true || role.raw?.futureVenture === true) && role.status !== "filled" && role.status !== "partial" ? (
+                  <ComingSoonChip role={role.raw} />
+                ) : (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
+                    {stateWords[role.status]}
+                  </span>
+                )}
                 <NotListedChip role={role.raw} />
+                <HeldByAgentLine role={role.raw} className="basis-full" />
                 {/* 0374: the card says an agent may hold it (a card that has not said shows nothing). */}
                 {(role.raw?.card?.heldBy === "agent" || role.raw?.card?.heldBy === "either") && (
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-foreground border border-border" data-testid="agent-may-hold">
@@ -546,12 +560,40 @@ export default function Roles() {
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
-  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  // Future ventures (the Operations Steward, 16 Nov 2026): their own section while the founding team leads, with no lead.
+  const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)) : [];
+  const ventureIds = new Set(ventures.map((r) => r.id));
+  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  // Held and still recruiting (the lead, 17 Nov 2026): it stays where held roles sit and keeps its Apply.
+  const welcomesMore = (r: RoleEntry) => heldButRecruiting(r.raw) && mayApply(r.raw);
+  const welcomingIds = new Set((roles ?? []).filter(welcomesMore).map((r) => r.id));
+  // Roles this lead will build (Rye, 16 Nov 2026): each lead's coming-soon roles, by the circles it leads.
+  const builds: Record<string, BuiltRole[]> = Object.fromEntries(
+    featured.map((f) => {
+      const id = String(f.seat.id);
+      const soon = rolesLeadWillBuild(id, (roles ?? []).map((r) => ({ ...r.raw, id: r.id, circleId: r.circleId ?? null })), circles);
+      // The roles already held in the circles this steward leads sit beside them, as Held, with no Apply (the content list, 16 Nov 2026).
+      const led = new Set(circles.filter((c: any) => c.leadRoleId === id).map((c: any) => String(c.id)));
+      const held = (roles ?? []).filter((r) => r.id !== id && !!r.circleId && led.has(r.circleId) && !r.isExample && r.raw?.futureVenture !== true && r.raw?.listed !== false && r.status === "filled");
+      return [
+        id,
+        [
+          ...soon.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), aim: r.aim ?? null })),
+          ...held.map((r) => ({ id: r.id, name: r.name, aim: r.raw?.aim ?? null, held: true, heldByAgent: r.raw?.heldByAgent === true, recruiting: welcomingIds.has(r.id) })),
+        ],
+      ];
+    }),
+  );
+  // A built role opens in its own row, in "opening next" or the directory, and is scrolled to.
+  const openBuilt = (id: string) => {
+    setExpandedRole(id);
+    requestAnimationFrame(() => document.querySelector(`[data-role-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: "start", behavior: prefersReducedMotion() ? "instant" : "smooth" }));
+  };
   const openingNextIds = new Set(openingNext.map((r) => r.id));
   const unlistedCount = (roles ?? []).filter((r) => r.raw?.listed === false).length;
   // Each role appears once: a featured role lives in the founding section. A linked seat is a
   // question about that seat, so it shows wherever it is.
-  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id) && !openingNextIds.has(r.id)));
+  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id) && !openingNextIds.has(r.id) && !ventureIds.has(r.id)));
   // The roots filter hides only roles tagged with none of the reader's roots; a linked seat always shows.
   const byRoots = roots.apply(listedDirectory, (r) => (Array.isArray(r.raw?.archetypes) ? r.raw.archetypes : []));
   const rootKept = new Set(byRoots.shown.map((r) => r.id));
@@ -569,6 +611,16 @@ export default function Roles() {
   const foundingFilled = (roles ?? [])
     .filter((r) => !featuredIds.has(r.id) && r.circleId && foundingCircles.has(r.circleId) && r.raw?.listed !== false && !r.isExample && (r.status === "filled" || r.status === "partial" || (r.holders?.length ?? 0) > 0))
     .map((r) => ({ id: r.id, name: r.name, holders: r.holders ?? [] }));
+  // A held role still recruiting keeps its place on the roster, with an Apply beside it (the lead, 17 Nov 2026).
+  const teamFilled = (founding?.team?.length ? founding.team : foundingFilled).map((f) => (welcomingIds.has(f.id) ? { ...f, recruiting: true } : f));
+  // The org chart beside the roster (Rye, 16 Nov 2026): the /circles drawing, with the held team roles a
+  // visitor's /api/org leaves out (they are unlisted) drawn too, so the picture agrees with the roster.
+  const chart = orgChartOf(circles, (roles ?? []).map((r) => r.raw), featured[0]?.seat?.circleId ?? null, teamFilled);
+  const orgPreview = chart ? (
+    <Suspense fallback={null}>
+      <OrgPreview circles={circles} seats={chart.seats} counts={chart.counts} />
+    </Suspense>
+  ) : null;
   const beyondCount = reach.beyond.filter((r) => r.id !== linked).length + featuredHidden.length;
   const directory = showBeyond ? rooted : rooted.filter((r) => r.id === linked || !reach.beyond.includes(r));
   const rootsOffered = roots.available && byRoots.tagged;
@@ -703,7 +755,7 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={founding?.team?.length ? founding.team : foundingFilled} fill={founding?.fill ?? {}} laterCount={openingNext.length} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} />}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
                   <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>
@@ -725,6 +777,19 @@ export default function Roles() {
                   </p>
                   <div className="space-y-3">
                     {openingNext.map((role, i) => (
+                      <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} arrive={linked === role.id} />
+                    ))}
+                  </div>
+                </section>
+              )}
+              {ventures.length > 0 && (
+                <section id="future-ventures" aria-labelledby="future-ventures-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-future-ventures={ventures.length}>
+                  <h2 id="future-ventures-heading" className={`${H2} mb-2`}>{t({ message: "Future ventures", context: "roles page, ventures to build and run, applied for with a pitch" })}</h2>
+                  <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {t({ message: "Pieces of the village we're inviting people to build and run. Apply to hold one, and pitch your vision.", context: "roles page, future ventures" })}
+                  </p>
+                  <div className="space-y-3">
+                    {ventures.map((role, i) => (
                       <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} arrive={linked === role.id} />
                     ))}
                   </div>

@@ -43,7 +43,7 @@ import { recordAgentAction } from "../repos/agentAccounts";
 import { readConfigDocument } from "../repos/appConfigDocs";
 import { AGENT_ADMIN_PATHS_DOC, effectiveAgentAdminPaths, LEAD_APPROVED_WRITES_VARIABLE } from "../../shared/agentAdmin";
 import { boolVar } from "../lib/variables";
-import { readLeadSeatFacts, recordLeadApproval, type PowerGroupFacts } from "../lib/agentLeadApproval";
+import { readLeadSeatFacts, recordLeadApproval, settleLeadApproval, type PowerGroupFacts } from "../lib/agentLeadApproval";
 import { PLATFORM_VERSION } from "../lib/identity";
 import { AI_APPROVAL_DOC, parseAiApproval } from "../../shared/agentProposals";
 import { runSeraTool, undoSeraAction } from "../lib/seraAgent";
@@ -201,8 +201,9 @@ export function register(app: Express, deps: Deps): void {
         leadApproved: {
           on: async () => !!notifyAdmins && !!powerGroups && boolVar(LEAD_APPROVED_WRITES_VARIABLE),
           seat: (target) => readLeadSeatFacts(getPool(), powerGroups ?? (() => []), target),
-          recorded: (a) =>
-            recordLeadApproval({ pool: getPool(), agentUserId: userId, tokenPrefix: row.prefix, notifyAdmins: notifyAdmins ?? (async () => {}) }, a),
+          recorded: (a) => recordLeadApproval({ pool: getPool(), agentUserId: userId, tokenPrefix: row.prefix }, a),
+          settled: (a, outcome) =>
+            settleLeadApproval({ pool: getPool(), agentUserId: userId, tokenPrefix: row.prefix, notifyAdmins: notifyAdmins ?? (async () => {}) }, a, outcome),
         },
         recordAction: async (a) => {
           await recordAgentAction(getPool(), { ...a, tokenId: row.id, actorUserId: userId });

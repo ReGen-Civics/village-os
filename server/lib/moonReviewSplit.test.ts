@@ -29,7 +29,7 @@ import { APPROVAL_REFUSALS, MOON_ROUTES, seenAmountsOf } from "../../shared/moon
 import * as store from "../repos/moonRecaps";
 import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
-import { oweRoleCycleCash } from "./cashOwed";
+import { cashSeatsWithoutTerms, unpricedSeatsLaunchCheck } from "./cashOwed";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
 const TZ = "America/Costa_Rica";
@@ -209,7 +209,7 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
     expect(owed).toEqual([40000, 60000]);
   });
 
-  it("settlement owes nothing at the start of a moon to two holders seated through applications, and the End of Moon invoice still approves (QA-1115 P0-2)", async () => {
+  it("settlement owes nothing at the start of a moon to holders seated through applications or by hand, and the End of Moon invoice still approves (QA-1115 P0-2, pay defect 2)", async () => {
     // A $13,000 cash role, held by two people through adopted applications, and by one seated by hand.
     await q("UPDATE `org_roles` SET `cash_minor` = 1300000, `cash_currency` = 'USD' WHERE `id` = 'r-water'"); // module-review-ok: fixture SQL
     try {
@@ -221,9 +221,12 @@ describe.skipIf(!configured)("pay scaled by the split, against a real schema", (
       await q( // module-review-ok: fixture SQL
         "INSERT INTO `org_role_assignments` (`id`, `org_role_id`, `holder_kind`, `user_id`, `holder_key`, `started_at`, `application_id`) VALUES ('a-ash', 'r-water', 'member', 'm-ash', 'm-ash', '2026-09-01 12:00:00', 'app-ash'), ('a-hand', 'r-water', 'member', 'm-hand', 'm-hand', '2026-09-01 12:00:00', NULL)",
       );
-      // Settlement owes the hand-seated holder only (CONTROL: the door still works for seats with no application).
-      expect(await oweRoleCycleCash(pool, CYCLE)).toBe(1);
-      expect((await q("SELECT `user_id` FROM `cash_owed`")).map((r: any) => r.user_id)).toEqual(["m-hand"]); // module-review-ok: fixture SQL
+      // The hand-seated holder has no application, so no price and no commitment (pay defect 2): the seat is
+      // listed for the Treasurer to set terms and owed nothing (the settlement side is server/workPay.test.ts).
+      expect((await cashSeatsWithoutTerms(pool)).map((s) => [s.seatId, s.userId, s.roleName])).toEqual([["a-hand", "m-hand", "Water keeper"]]);
+      const launchRow = await unpricedSeatsLaunchCheck(pool);
+      expect(launchRow.state).toBe("partial");
+      expect(launchRow.detail).toContain("1 person holds a cash role with no application: Water keeper");
 
       // The member's End of Moon invoice is not blocked by a settlement row, and pays its terms once approved.
       const sent = await sendAll();

@@ -84,12 +84,21 @@ export interface RewardRule {
 
 /**
  * The valuation engine's own dials (`shared/valuationEngine.ts`, spec 3.8), in
- * whole percents. `bandPct`: inside the expected total plus or minus this, one
- * setter's word stands. `singleLowPct` / `singleHighPct`: the range when a work
- * gives one estimate. `narrowPct` / `mediumPct`: how wide a range reads.
+ * whole percents. The NO-SIGN BAND is where one setter's word stands: from
+ * `bandBelowPct` under the expected total up to `bandAbovePct` over it, both
+ * edges inside. `bandPct` is the older symmetric dial, kept so a model saved
+ * before the band was split still reads the same: a side with no dial of its
+ * own falls back to it (`noSignBand`). `singleLowPct` / `singleHighPct`: the
+ * range when a work gives one estimate. `narrowPct` / `mediumPct`: how wide a
+ * range reads.
  */
 export interface EngineDials {
+  /** The symmetric band, plus or minus. Read only for a side that has no dial of its own. */
   bandPct: number;
+  /** How far under the expected total the band reaches. Absent: `bandPct`. */
+  bandBelowPct?: number;
+  /** How far over the expected total the band reaches. Absent: `bandPct`. */
+  bandAbovePct?: number;
   singleLowPct: number;
   singleHighPct: number;
   narrowPct: number;
@@ -98,6 +107,49 @@ export interface EngineDials {
 
 /** The engine's dials as the spec ships them (spec 3.8). A village's own `model.engine` overrides any of them. */
 export const ENGINE_DEFAULTS: EngineDials = { bandPct: 10, singleLowPct: 15, singleHighPct: 25, narrowPct: 20, mediumPct: 50 };
+
+/** The no-sign band as two whole percents of the expected total: how far under it, and how far over it. */
+export interface NoSignBand {
+  belowPct: number;
+  abovePct: number;
+}
+
+/**
+ * The band a set of dials means. Each side reads its own dial, then the older
+ * symmetric `bandPct`, then the platform default (10), so a village that set
+ * nothing still sees plus or minus 10%.
+ */
+export function noSignBand(dials: Partial<EngineDials> = {}): NoSignBand {
+  const both = dials.bandPct ?? ENGINE_DEFAULTS.bandPct;
+  return { belowPct: dials.bandBelowPct ?? both, abovePct: dials.bandAbovePct ?? both };
+}
+
+/** The band around one expected total, in minor units. 20 below and 0 above on 1000 is 800 to 1000. */
+export function bandAround(totalMinor: number, band: NoSignBand): { lowMinor: number; highMinor: number } {
+  return { lowMinor: Math.max(0, Math.round((totalMinor * (100 - band.belowPct)) / 100)), highMinor: Math.round((totalMinor * (100 + band.abovePct)) / 100) };
+}
+
+/**
+ * The model with a village's own band dials laid over its engine dials. A null
+ * side leaves the model's own reading in place (its split dial, else its older
+ * `bandPct`), so blank dials change nothing. The model passed in is not changed.
+ */
+export function withBandDials(model: ValuationModel, dials: { belowPct: number | null; abovePct: number | null }): ValuationModel {
+  if (dials.belowPct === null && dials.abovePct === null) return model;
+  return {
+    ...model,
+    engine: {
+      ...(model.engine ?? {}),
+      ...(dials.belowPct !== null ? { bandBelowPct: dials.belowPct } : {}),
+      ...(dials.abovePct !== null ? { bandAbovePct: dials.abovePct } : {}),
+    },
+  };
+}
+
+/** Whether a figure sits inside a band. Both edges are inside. */
+export function insideBand(figureMinor: number, band: { lowMinor: number; highMinor: number }): boolean {
+  return figureMinor >= band.lowMinor && figureMinor <= band.highMinor;
+}
 
 /**
  * One version of a village's model. Each save is a new version and none is
@@ -748,6 +800,9 @@ export function validateModel(model: ValuationModel): string[] {
   }
   const e = { ...ENGINE_DEFAULTS, ...(model.engine ?? {}) };
   if (!(e.bandPct >= 0 && e.bandPct <= 50)) out.push("The no-sign band must be between 0% and 50% of the suggestion.");
+  const band = noSignBand(e);
+  if (!(Number.isInteger(band.belowPct) && band.belowPct >= 0 && band.belowPct <= 100)) out.push("How far the no-sign band reaches under the suggestion must be a whole number from 0% to 100%.");
+  if (!(Number.isInteger(band.abovePct) && band.abovePct >= 0 && band.abovePct <= 100)) out.push("How far the no-sign band reaches over the suggestion must be a whole number from 0% to 100%.");
   if (!(e.singleLowPct >= 0 && e.singleLowPct <= 100 && e.singleHighPct >= 0 && e.singleHighPct <= 100)) out.push("The range around a single estimate must be between 0% and 100%.");
   if (!(e.narrowPct >= 0 && e.narrowPct < e.mediumPct)) out.push("A narrow range must be under a medium one.");
   return out;
@@ -853,14 +908,20 @@ export function diffModels(from: ValuationModel, to: ValuationModel, opts: { ado
   push("exchange", "Exchange rate", ex(from.exchange), ex(to.exchange), "version");
   const onOff = (x: boolean | undefined) => (x ? "on" : "off");
   push("receiptShowsHours", "Receipts show hours", onOff(from.receiptShowsHours), onOff(to.receiptShowsHours), "version");
-  const ENGINE_LABELS: Record<keyof EngineDials, string> = {
-    bandPct: "No-sign band",
+  // The band is compared as the two sides it means, so a model that moves from
+  // the older symmetric dial to the split one shows a change only where the
+  // band itself moved.
+  const bandFrom = noSignBand(from.engine);
+  const bandTo = noSignBand(to.engine);
+  if (bandFrom.belowPct !== bandTo.belowPct) out.push({ key: "engine:bandBelowPct", label: "No-sign band under the suggestion", from: `${bandFrom.belowPct}%`, to: `${bandTo.belowPct}%`, door: "version" });
+  if (bandFrom.abovePct !== bandTo.abovePct) out.push({ key: "engine:bandAbovePct", label: "No-sign band over the suggestion", from: `${bandFrom.abovePct}%`, to: `${bandTo.abovePct}%`, door: "version" });
+  const ENGINE_LABELS: Record<Exclude<keyof EngineDials, "bandPct" | "bandBelowPct" | "bandAbovePct">, string> = {
     singleLowPct: "Range below a single estimate",
     singleHighPct: "Range above a single estimate",
     narrowPct: "A narrow range is under",
     mediumPct: "A medium range is under",
   };
-  for (const k of Object.keys(ENGINE_LABELS) as (keyof EngineDials)[]) {
+  for (const k of Object.keys(ENGINE_LABELS) as (keyof typeof ENGINE_LABELS)[]) {
     const a = from.engine?.[k] ?? ENGINE_DEFAULTS[k];
     const b = to.engine?.[k] ?? ENGINE_DEFAULTS[k];
     if (a !== b) out.push({ key: `engine:${k}`, label: ENGINE_LABELS[k], from: `${a}%`, to: `${b}%`, door: "version" });

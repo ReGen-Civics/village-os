@@ -49,6 +49,7 @@
 import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
 import * as room from "../repos/liveSessions";
 import * as store from "../repos/sessionLibrary";
+import * as rhythms from "../repos/sessionRhythm";
 import { listOrgAssignments, type LapseContext } from "./orgChart";
 import { standingIn } from "./circleStanding";
 import { ensureMemberNo, mapSession, memberNo, namesFor, type MemberLookup, type Outcome, type Refusal } from "./liveSessions";
@@ -115,6 +116,8 @@ export interface LibraryRec extends LibrarySubject {
   editedByNo: number | null;
   createdAt: string;
   settledAt: string | null;
+  /** The meeting it waits for (0401): a rhythm's key, or null for the circle's next meeting, whichever rhythm. */
+  rhythmKey: string | null;
 }
 
 export function mapLibrary(r: RowDataPacket | Record<string, unknown>): LibraryRec {
@@ -132,7 +135,13 @@ export function mapLibrary(r: RowDataPacket | Record<string, unknown>): LibraryR
     editedByNo: r.edited_by_no == null ? null : Number(r.edited_by_no),
     createdAt: toIso(r.created_at) ?? new Date(0).toISOString(),
     settledAt: toIso(r.settled_at),
+    rhythmKey: r.rhythm_key == null || r.rhythm_key === "" ? null : String(r.rhythm_key),
   };
+}
+
+/** Every circle's rhythms by `<circle>|<key>`, with their names: what an item's meeting is checked and named against. */
+async function rhythmNames(q: Pool | PoolConnection): Promise<Map<string, string>> {
+  return new Map((await rhythms.rhythmRows(q)).map((r) => [`${String(r.circle_id)}|${String(r.rhythm_key)}`, String(r.name ?? "")] as const));
 }
 
 // ── Standing ────────────────────────────────────────────────────────────────
@@ -182,6 +191,7 @@ async function cardsFor(pool: Pool, recs: readonly LibraryRec[], viewer: Library
   const joined = new Set<number>(
     viewer.no != null && viewer.no > 0 && !viewer.admin ? (await room.joinedRows(pool, viewer.no, closedIds)).map((r) => Number(r.session_id)) : [],
   );
+  const meetings = recs.some((r) => r.rhythmKey) ? await rhythmNames(pool) : new Map<string, string>();
   // How each waiting item last left a session: only a `back` there means it came back on its own.
   const backAt = new Map<number, string | null>();
   for (const t of await store.settledTakeRows(pool, recs.filter((r) => r.status === "waiting").map((r) => r.id))) {
@@ -202,6 +212,11 @@ async function cardsFor(pool: Pool, recs: readonly LibraryRec[], viewer: Library
       note: r.note,
       circleId: r.circleId,
       circleName: deps.circleName(r.circleId),
+      // A meeting the circle no longer keeps reads as any meeting, the way it waits.
+      ...(() => {
+        const name = r.rhythmKey && r.circleId ? meetings.get(`${r.circleId}|${r.rhythmKey}`) : undefined;
+        return name === undefined ? { rhythmKey: null, rhythmName: null } : { rhythmKey: r.rhythmKey, rhythmName: name || null };
+      })(),
       broughtBy: (r.broughtByNo === 0 && source ? addedByCircle(source.kind, source.label) : null) ?? names.get(r.broughtByNo)?.name ?? SESSION_SOMEONE,
       mine,
       broughtAt: r.createdAt,
@@ -270,6 +285,7 @@ export async function bringItem(
 ): Promise<Outcome<{ item: LibraryCard }>> {
   const input = cleanBrought(raw, circleIds);
   if (!input.ok) return refuse(input.status, input.error);
+  if (input.value.rhythmKey && !(await rhythmNames(pool)).has(`${input.value.circleId}|${input.value.rhythmKey}`)) return refuse(400, LIBRARY_REFUSALS.meetingUnknown);
   const no = await ensureMemberNo(pool, who.userId, now);
   if ((await store.waitingCountBy(pool, no)) >= LIBRARY_LIMITS.waitingPerMember) return refuse(409, LIBRARY_REFUSALS.tooManyWaiting);
   const id = await store.insertItemRow(pool, { ...input.value, broughtByNo: no, now });
@@ -408,8 +424,12 @@ export async function changeItem(
     };
     const circleId = p.circleId === undefined ? rec.circleId : p.circleId;
     const noteMoves = words.note !== rec.note;
-    const wordsMove = words.title !== rec.title || words.aim !== rec.aim || noteMoves;
     const circleMoves = circleId !== rec.circleId;
+    // A meeting belongs to its circle: a new circle without a meeting named is the circle's next meeting.
+    const rhythmKey = p.rhythmKey !== undefined ? p.rhythmKey : circleMoves ? null : rec.rhythmKey;
+    if (rhythmKey && (!circleId || !(await rhythmNames(conn)).has(`${circleId}|${rhythmKey}`))) return refuse(400, LIBRARY_REFUSALS.meetingUnknown);
+    // Which of its circle's meetings it waits for is part of its words: the room's hosts may move it between them.
+    const wordsMove = words.title !== rec.title || words.aim !== rec.aim || noteMoves || (!circleMoves && rhythmKey !== rec.rhythmKey);
     const rights = broughtRights(rec, viewer);
     if (wordsMove && !rights.words) return refuse(403, LIBRARY_REFUSALS.wordsNotYours);
     if (circleMoves && !rights.circle) return refuse(403, LIBRARY_REFUSALS.circleNotYours);
@@ -423,6 +443,7 @@ export async function changeItem(
       // The note becomes an entry in the room, and the entry is whoever wrote these words.
       noteByNo: noteMoves ? (own || words.note == null ? null : editor) : rec.noteByNo,
       circleId,
+      rhythmKey,
       // Who last changed it, when that was somebody else; the bringer's own change keeps the mark that is there.
       editedByNo: own ? rec.editedByNo : editor,
       now,

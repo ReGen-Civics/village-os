@@ -267,6 +267,16 @@ describe("the open proposal page", () => {
     expect(asked).toContain(`POST /api/governance/open-proposals/${ID}/adopt`);
   });
 
+  it("with the email gone, the adopter reads that it went and is handed no link to copy (audit, 15 Nov 2026)", async () => {
+    adopted = () => json({ success: true, status: "adopted", account: false, invitation: { link: null, emailed: true }, message: DECIDE_WORDS.adoptedEmailed(14) });
+    answer = () => json({ proposal: served({ you: POWER }) });
+    render(<OpenProposal />);
+    fireEvent.click(await screen.findByRole("button", { name: DECIDE_WORDS.adopt }));
+    expect(await screen.findByText(DECIDE_WORDS.adoptedEmailed(14))).toBeTruthy();
+    expect(screen.queryByText(LINK)).toBeNull();
+    expect(screen.queryByRole("button", { name: DECIDE_WORDS.copy })).toBeNull();
+  });
+
   it("audit M10: Adopt is disabled while a conversation is not written up, and names whose, with the chart for a role nobody holds", async () => {
     const conversations = [
       { roleId: "r-a", role: "Channel Role", unheld: false, words: DECIDE_WORDS.conversationMissing("Channel Role") },

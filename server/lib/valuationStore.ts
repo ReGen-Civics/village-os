@@ -10,11 +10,12 @@
  */
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolConnection, RowDataPacket } from "mysql2/promise";
-import { validateModel, type ValuationModel, type WorkInputs } from "../../shared/valuation";
+import { validateModel, withBandDials, type ValuationModel, type WorkInputs } from "../../shared/valuation";
 import { modelForVillage, type PayeeSuggestion } from "../../shared/valuationEngine";
 import type { InputChange, SettingRecord } from "../../shared/valuationSetting";
 import { EARNED_EQUITY } from "./economy";
 import { tokenDef } from "./ledger";
+import { optionalNumberVar } from "./variables";
 import { insertModelRow, insertSettingRow, latestModelRow, setRowsInCategory, setterRowsSince, settingRowById, settingRowsForWork, signSettingRow } from "../repos/valuation";
 
 type Db = Pool | PoolConnection;
@@ -29,8 +30,25 @@ const parse = <T>(v: unknown, fallback: T): T => {
   }
 };
 
-/** The model the village prices with now: its newest saved version, or the platform rules in its own currency. */
+/**
+ * The model the village prices with now: its newest saved version, or the
+ * platform rules in its own currency, with the village's no-sign band dials
+ * (`valuation.band_below_pct`, `valuation.band_above_pct`) laid over it. Every
+ * suggestion, every in-band verdict and the page that reads the model come
+ * through here, so they all read one band. Blank dials leave the model's own.
+ *
+ * What this returns is for pricing. A future write path saves the stored body,
+ * never this, so a dial is never frozen into a model version.
+ */
 export async function currentModel(db: Db, currency: string): Promise<ValuationModel> {
+  return withBandDials(await storedModel(db, currency), {
+    belowPct: optionalNumberVar("valuation.band_below_pct"),
+    abovePct: optionalNumberVar("valuation.band_above_pct"),
+  });
+}
+
+/** The newest saved version as stored, or the platform rules in the village's currency. */
+async function storedModel(db: Db, currency: string): Promise<ValuationModel> {
   const row = await latestModelRow(db);
   if (!row) return modelForVillage(currency);
   const body = parse<ValuationModel | null>(row.body_json, null);

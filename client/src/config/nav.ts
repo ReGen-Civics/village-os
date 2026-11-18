@@ -153,6 +153,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/feed", label: "Feed", module: "feed" },
       { href: "/forum", label: "Forum", module: "forum" },
       { href: "/messages", label: "Messages", module: "messaging" },
+      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
+      { href: "/rites", label: "Rites", module: "rites" },
       { href: "/introductions", label: "Introductions", module: "introductions" },
       { href: "/events", label: "Events", module: "events" },
       // The circle calls a member takes part in. It sat in the account menu,
@@ -205,7 +207,7 @@ export const NAV: readonly NavEntry[] = [
       // Season plans (RC1): everyone's plan for the season, by name. Members
       // read it (terms.read), so it is listed for the signed-in roles only.
       { href: "/season-plans", label: "Season Plans", module: "governance", roles: ["member", "admin", "founder"] },
-      // Season places (0395): apply for the season, and who takes part. Members read it, so signed-in roles only.
+      // Season places (0404): apply for the season, and who takes part. Members read it, so signed-in roles only.
       { href: "/season-places", label: "Join the Season", module: "season-places", roles: ["member", "admin", "founder"] },
       // The aligned register (seat settings PR6): every set of terms members
       // have aligned with. Members read it (terms.read), so signed-in roles only.
@@ -349,6 +351,8 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // door (config/mobileNav.ts).
   { href: TASK_BOARD_PATH, label: TASK_COPY.menu.label, module: "sessions", count: "tasks" },
   { href: "/badges", label: "Badges", module: "badges" },
+  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page.
+  { href: "/budget", label: "Cash Budget" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"] },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15).
   { href: "/treasury", label: "Treasury", door: "treasury" },

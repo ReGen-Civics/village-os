@@ -11,7 +11,8 @@
  *     Earned Equity, with Voice for everything paid (II.7, II.8).
  *   - A RANGE, as two totals and plain words, with the reason it is as wide as
  *     it is. It is information only.
- *   - A NO-SIGN BAND, the expected total plus or minus a dial (10%). It is
+ *   - A NO-SIGN BAND, from one dial under the expected total to another over
+ *     it (10% each way unless the village sets its own, `noSignBand`). It is
  *     separate from the range on purpose: wide estimates never widen it, so a
  *     proposer cannot make any figure "inside" by guessing wide (QA G3).
  *   - A RECEIPT a member can follow, folded and unfolded, with NO per-hour
@@ -32,6 +33,8 @@
 import {
   ENGINE_DEFAULTS,
   PLATFORM_DEFAULT_MODEL,
+  bandAround,
+  noSignBand,
   priceWork,
   rewardFromBase,
   type EngineDials,
@@ -201,7 +204,7 @@ export function suggestValuation(model: ValuationModel, work: WorkInputs, ctx: E
     const highTotalMinor = totalAt(highBase);
     const widthPct = p.totalMinor > 0 ? ((highTotalMinor - lowTotalMinor) / p.totalMinor) * 100 : 0;
     const width: RangeWidth = widthPct < dials.narrowPct ? "narrow" : widthPct < dials.mediumPct ? "medium" : "wide";
-    const band = { lowMinor: Math.round((p.totalMinor * (100 - dials.bandPct)) / 100), highMinor: Math.round((p.totalMinor * (100 + dials.bandPct)) / 100) };
+    const band = bandAround(p.totalMinor, noSignBand(dials));
 
     const receipt = receiptOf(model, inputs, p, { lowTotalMinor, highTotalMinor, width, why, held });
     const paidAs: PaidAs[] = [];

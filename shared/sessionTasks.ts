@@ -1166,7 +1166,7 @@ export const TASK_COPY = {
   pref: {
     label: "Task emails",
     options: {
-      immediate: "When a call closes, and a gentle note near the date",
+      immediate: "As they happen: tasks handed to your role and the answers to ones you sent, a call's list when it closes, and a gentle note near the date",
       daily: "Only in my daily digest",
       off: "Off",
     },

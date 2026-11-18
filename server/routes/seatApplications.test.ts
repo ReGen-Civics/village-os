@@ -379,6 +379,22 @@ describe.skipIf(!configured)("applying, adopting and seating, on a real schema",
     expect((await apply({ seatIds: four.slice(0, 3) })).status).toBe(201);
   });
 
+  it("takes an application to a full role that is still recruiting, and refuses the same role once its door closes (the lead, 17 Nov 2026)", async () => {
+    const full = await seat("Held and recruiting");
+    await seatHolder(pool, full, { userId: "u-ivo", seasonId: "s-now", termEndsAt: new Date("2029-06-01T00:00:00Z") });
+    await pool.query("UPDATE org_roles SET recruiting = 1 WHERE id = ?", [full]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    const open = await apply({ seatIds: [full] });
+    expect(open.status).toBe(201);
+
+    // CONTROL: the same full role with its door closed refuses, by name.
+    const closed = await seat("Held and closed");
+    await seatHolder(pool, closed, { userId: "u-ivo", seasonId: "s-now", termEndsAt: new Date("2029-06-01T00:00:00Z") });
+    await pool.query("UPDATE org_roles SET recruiting = 0 WHERE id = ?", [closed]); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+    const refused = await apply({ seatIds: [closed] });
+    expect(refused.status).toBe(409);
+    expect(refused.body.code).toBe("seat_full");
+  });
+
   // ── Who adopts ───────────────────────────────────────────────────────────
 
   it("opens a ballot when the village holds org.seat, and when nobody holds it", async () => {

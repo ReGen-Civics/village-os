@@ -7,6 +7,8 @@
  * a role. Nothing is sent until the press is saved.
  */
 import { useEffect, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
+import { HANDOFF_LIMITS } from "@shared/roleTaskHandoff";
 import { NOTE_MAX, REDIRECT_CHOICES, REMOVE_CHOICES, SCREEN_REASON_WORDS, type ScreenReason } from "@shared/memberTaskFeedback";
 import { BTN_PRIMARY, BTN_QUIET, HINT, LABEL_CAPS } from "@/components/sessions/roomUi";
 import { readTargets } from "./yourListApi";
@@ -18,6 +20,10 @@ export interface ReasonPick {
   toRoleId?: string;
   /** On a duplicate or merge, the task that stays. */
   mergedIntoTaskId?: string;
+  /** To a role: a word for whoever accepts it there. It stays in the village. */
+  handoffNote?: string | null;
+  /** To a role: by when, YYYY-MM-DD. */
+  handoffDueOn?: string | null;
 }
 
 const FIELD = "mt-1 block min-h-11 w-full rounded-xl border border-border bg-background px-3 text-foreground";
@@ -30,7 +36,10 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
   onCancel: () => void;
   onPick: (p: ReasonPick) => void;
 }) {
+  const { t } = useLingui();
   const choices = mode === "remove" ? REMOVE_CHOICES : REDIRECT_CHOICES;
+  const [handoffNote, setHandoffNote] = useState("");
+  const [handoffDueOn, setHandoffDueOn] = useState("");
   const [reason, setReason] = useState<ScreenReason | "">("");
   const [note, setNote] = useState("");
   const [to, setTo] = useState("");
@@ -48,7 +57,7 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
     onPick({
       reason: reason as ScreenReason,
       note: note.trim() || null,
-      ...(mode === "redirect" ? (kind === "p" ? { toUserId: id } : { toRoleId: id }) : {}),
+      ...(mode === "redirect" ? (kind === "p" ? { toUserId: id } : { toRoleId: id, handoffNote: handoffNote.trim() || null, ...(handoffDueOn ? { handoffDueOn } : {}) }) : {}),
       ...(mode === "remove" && dup && keeps ? { mergedIntoTaskId: keeps } : {}),
     });
   };
@@ -91,6 +100,19 @@ export default function ReasonSheet({ mode, busy, onCancel, onPick, others = [] 
               </optgroup>
             )}
           </select>
+        </label>
+      )}
+      {mode === "redirect" && to.startsWith("r:") && (
+        <label className="mt-2 block">
+          <span className={LABEL_CAPS}>{t({ message: `A note for the role (optional)`, context: "task handed to a role" })}</span>
+          <textarea className={`${FIELD} min-h-20 py-2`} maxLength={HANDOFF_LIMITS.note} value={handoffNote} onChange={(e) => setHandoffNote(e.target.value)} />
+        </label>
+      )}
+      {mode === "redirect" && to.startsWith("r:") && (
+        <label className="mt-2 block">
+          <span className={LABEL_CAPS}>{t({ message: `By when (optional)`, context: "task handed to a role" })}</span>
+          <input type="date" className={FIELD} value={handoffDueOn} onChange={(e) => setHandoffDueOn(e.target.value)} />
+          <span className={`${HINT} mt-1 block`}>{t({ message: `It waits for the role's holder to accept it. You'll see where it stands under Sent.`, context: "task handed to a role" })}</span>
         </label>
       )}
       <label className="mt-2 block">

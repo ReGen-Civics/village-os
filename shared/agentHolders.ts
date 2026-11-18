@@ -87,7 +87,7 @@ export const AGENT_SCOPE_WORDS: Readonly<Record<string, string>> = {
   "intents.write": "Posts what it seeks or offers, after a yes",
   "map.draft": "Reads the masterplan and drafts the map for a person to publish",
   "moon.read": "Reads its own moon, roles, the season and task board",
-  "tasks.write": "Marks its own board tasks, after a yes",
+  "tasks.write": "Marks its own board tasks and hands tasks to roles, each after a yes",
   admin: "Calls the admin paths the village has opened to agents",
   "sera.undoable": "Links people, suggests tasks and moon items, drafts agenda items and switches boards, each one undoable for 30 days",
   "moon.write": "Drafts its own moon recap, after a yes",
@@ -101,6 +101,7 @@ export const AGENT_SCOPE_WORDS: Readonly<Record<string, string>> = {
   "listing.propose": "Proposes a listing change that waits for a person",
   "pages.propose": "Proposes a page change that waits for a person",
   "map.propose": "Proposes a map change that waits for a person",
+  "sessions.write": "Adds items to the agenda library, after a yes",
 };
 
 export function scopeWords(scope: string): string {

@@ -57,7 +57,6 @@ import {
 import type { VillageMoon } from "../../shared/villageMoon";
 import { GRATITUDE_NEVER_PAYS, GRATITUDE_ONLY_SENT, ceilingBinds, readValueTokens, type TokenAmount } from "../../shared/workValue";
 import { issuanceRefusal, readGameStart } from "./gameStart";
-import { oweRoleCycleCash } from "./cashOwed";
 import { currentCycle, currentCycleNumber, cycleIdFor, parseCycleId } from "./gratitude-cycles";
 // The import runs both ways, the same shape `./exit` above already has: both
 // modules only reach each other from inside functions, so nothing is read at
@@ -2787,8 +2786,6 @@ export interface SettlementResult {
    * did not (no enabled rules). It is not a substitute for reading the dial.
    */
   decay: VoiceDecaySummary;
-  /** New rows of cash owed to role holders this run (0285). Zero on a rerun. */
-  cashOwed?: number;
   /** Members newly paid a dues dividend this run (`payDuesDividend`). Zero on a rerun. */
   duesMembersPaid?: number;
 }
@@ -3173,14 +3170,13 @@ export async function runSettlement(
   };
 
   /*
-   * THE CASH ROLES PAY (0285), owed before anything below can return early.
-   * A village with no `role.cycle` rule, or none enabled, can still pay its
-   * roles in cash, so this asks only whether the Game has started: a seat
-   * held while a village is still setting up owes nothing, the same wait the
-   * ledger holds every token to. Keyed on the cycle, the seat and the member,
-   * so the hourly reruns write nothing new.
+   * A ROLE'S CASH IS NOT OWED HERE (pay defect 2, the 14 Nov 2026 ruling:
+   * nothing pays without the Treasurer's confirmation). This step used to owe
+   * every seat with no adopted application the role's whole cash each cycle.
+   * A seat's cash is owed when a Treasurer approves its End of Moon invoice;
+   * a seat with no application is listed for the Treasurer to set terms
+   * (`cashSeatsWithoutTerms`, server/lib/cashOwed.ts).
    */
-  if (!(await issuanceRefusal(pool))) out.cashOwed = await oweRoleCycleCash(pool, cycleKey);
 
   const ready = await economyReady(pool);
   if (!ready.ready) return out;

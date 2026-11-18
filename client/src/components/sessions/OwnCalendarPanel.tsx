@@ -13,11 +13,18 @@
  * box is a password box: the address is a key to the whole calendar. Every
  * write reads `res.ok` before it says anything, then the page reads the list
  * again, and the focus returns to the button that opened the form.
+ *
+ * A TITLE FILTER (0401). A calendar can hold other things than the circle's
+ * meetings. The attach form takes an optional word, and each attached
+ * calendar can change it after ("Which events count"): only events whose
+ * title holds the word become the circle's meetings. The address is never
+ * asked for again to change it, and never shown.
  */
 import type { PickerCircle } from "@shared/circlePicker";
 import CirclePicker from "@/components/circles/CirclePicker";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { OWN_CALENDAR_COPY, ownCalendarUrl, type OwnCalendarView } from "@shared/sessionCalendar";
+import { useLingui } from "@lingui/react/macro";
+import { CALENDAR_LIMITS, OWN_CALENDAR_COPY, ownCalendarUrl, type OwnCalendarView } from "@shared/sessionCalendar";
 import { RHYTHM_COPY } from "@shared/sessionRhythm";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_DANGER, BTN_DANGER_QUIET, BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, INPUT, LABEL, LABEL_CAPS, PANEL, UNDER_BOX } from "./roomUi";
@@ -69,6 +76,10 @@ export default function OwnCalendarPanel({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [asking, setAsking] = useState<string | null>(null);
+  const [titleFilter, setTitleFilter] = useState("");
+  /** The calendar whose title filter is being changed, and the word as typed. */
+  const [filtering, setFiltering] = useState<{ circleId: string; word: string } | null>(null);
+  const { t } = useLingui();
   const openButton = useRef<HTMLButtonElement>(null);
   const backToButton = useRef(false);
 
@@ -87,7 +98,27 @@ export default function OwnCalendarPanel({
     backToButton.current = true;
     setOpen(false);
     setUrl("");
+    setTitleFilter("");
     setError(null);
+  };
+
+  const saveFilter = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!filtering || busy) return;
+    setBusy(true);
+    setError(null);
+    const out = await send(ownCalendarUrl(filtering.circleId), "PATCH", { titleFilter: filtering.word.trim() });
+    if (!out.ok) {
+      setBusy(false);
+      setError(out.error);
+      return;
+    }
+    await onChanged();
+    setBusy(false);
+    const word = filtering.word.trim();
+    const name = nameOf(filtering.circleId);
+    setFiltering(null);
+    onSaid(word ? t`Saved. Only events titled with "${word}" count as ${name} meetings.` : t`Saved. Every timed event on the calendar counts as a ${name} meeting.`);
   };
 
   const attach = async (e: FormEvent) => {
@@ -95,7 +126,7 @@ export default function OwnCalendarPanel({
     if (!circleId || busy) return;
     setBusy(true);
     setError(null);
-    const out = await send(ownCalendarUrl(circleId), "PUT", { url });
+    const out = await send(ownCalendarUrl(circleId), "PUT", { url, ...(titleFilter.trim() ? { titleFilter: titleFilter.trim() } : {}) });
     if (!out.ok) {
       setBusy(false);
       setError(out.error);
@@ -135,7 +166,25 @@ export default function OwnCalendarPanel({
                   <span className="min-w-0 break-words text-sm text-foreground">
                     {OWN_CALENDAR_COPY.attachedLine(c.name, view.host, view.last4)}
                     <span className={`block ${view.status === "failed" ? "font-medium text-destructive" : "text-muted-foreground"}`}>{readLine(view)}</span>
+                    <span className="block text-muted-foreground">
+                      {view.titleFilter ? t`Only events titled with "${view.titleFilter}" count.` : t`Every timed event counts.`}
+                    </span>
                   </span>
+                  {asking !== c.id && filtering?.circleId !== c.id && (
+                    <button
+                      type="button"
+                      className={BTN_QUIET}
+                      disabled={busy || open}
+                      onClick={() => {
+                        setAsking(null);
+                        setError(null);
+                        setFiltering({ circleId: c.id, word: view.titleFilter ?? "" });
+                      }}
+                      aria-label={`${t({ message: "Which events count", context: "a circle's own calendar, change its title filter" })}: ${OWN_CALENDAR_COPY.attachedLine(c.name, view.host, view.last4)}`}
+                    >
+                      {t({ message: "Which events count", context: "a circle's own calendar, change its title filter" })}
+                    </button>
+                  )}
                   {asking !== c.id && (
                     <button
                       type="button"
@@ -148,6 +197,39 @@ export default function OwnCalendarPanel({
                     </button>
                   )}
                 </div>
+                {filtering?.circleId === c.id && (
+                  <form className="mt-2 space-y-2 rounded-xl border border-border bg-muted px-3 py-3" onSubmit={(e) => void saveFilter(e)} noValidate>
+                    <label htmlFor={`own-calendar-filter-${c.id}`} className={LABEL}>
+                      {t`Only events whose title holds`}
+                    </label>
+                    <input
+                      id={`own-calendar-filter-${c.id}`}
+                      type="text"
+                      autoFocus
+                      className={INPUT}
+                      value={filtering.word}
+                      maxLength={CALENDAR_LIMITS.titleFilter}
+                      aria-describedby={`own-calendar-filter-${c.id}-hint`}
+                      onChange={(e) => setFiltering({ circleId: c.id, word: e.target.value })}
+                    />
+                    <p id={`own-calendar-filter-${c.id}-hint`} className={HINT}>
+                      {t`Leave it empty and every timed event counts. Case and accents do not matter.`}
+                    </p>
+                    {error && (
+                      <p role="alert" className="text-sm font-medium text-destructive">
+                        {error}
+                      </p>
+                    )}
+                    <div className={UNDER_BOX}>
+                      <button type="submit" className={BTN_PRIMARY} disabled={busy}>
+                        {busy ? RHYTHM_COPY.saving : t`Save which events count`}
+                      </button>
+                      <button type="button" className={BTN_QUIET} disabled={busy} onClick={() => setFiltering(null)}>
+                        {OWN_CALENDAR_COPY.cancel}
+                      </button>
+                    </div>
+                  </form>
+                )}
                 {asking === c.id && (
                   <div role="group" aria-label={OWN_CALENDAR_COPY.detach} className="mt-2 rounded-xl border border-border bg-muted px-3 py-3">
                     <p className="text-sm text-foreground">{OWN_CALENDAR_COPY.detachConfirm(c.name)}</p>
@@ -194,6 +276,23 @@ export default function OwnCalendarPanel({
             />
             <p className={`${HINT} mt-1`}>{OWN_CALENDAR_COPY.findIt}</p>
           </div>
+          <div>
+            <label htmlFor="own-calendar-filter" className={LABEL}>
+              {t`Only events whose title holds`}
+            </label>
+            <input
+              id="own-calendar-filter"
+              type="text"
+              className={`mt-1 ${INPUT}`}
+              value={titleFilter}
+              maxLength={CALENDAR_LIMITS.titleFilter}
+              aria-describedby="own-calendar-filter-hint"
+              onChange={(e) => setTitleFilter(e.target.value)}
+            />
+            <p id="own-calendar-filter-hint" className={`${HINT} mt-1`}>
+              {t`Optional. For a calendar that holds other things too: only events whose title holds this word become the circle's meetings.`}
+            </p>
+          </div>
           {error && (
             <p role="alert" className="text-sm font-medium text-destructive">
               {error}
@@ -226,7 +325,7 @@ export default function OwnCalendarPanel({
           ) : (
             <p className={HINT}>{OWN_CALENDAR_COPY.unavailable}</p>
           )}
-          {error && (
+          {error && !filtering && (
             <p role="alert" className="mt-2 text-sm font-medium text-destructive">
               {error}
             </p>

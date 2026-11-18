@@ -21,10 +21,16 @@
  * it once a session takes it up is read with the note and the circle, before
  * anything is sent.
  *
+ * WHICH MEETING (0401). When the chosen circle keeps two or more meeting
+ * rhythms, one more select asks which meeting the item is for. It starts on
+ * "Its next meeting", which is what every item meant before; a circle with one
+ * rhythm never shows it.
+ *
  * Enter in the title saves; Escape puts the form away. Words come from
  * shared/sessionLibrary.ts.
  */
 import { useState, type FormEvent } from "react";
+import { useLingui } from "@lingui/react/macro";
 import type { PickerCircle } from "@shared/circlePicker";
 import { AIM_DEFS, cleanLine, type ItemAim } from "@shared/sessions";
 import { LIBRARY_AIMS, LIBRARY_COPY, LIBRARY_LIMITS } from "@shared/sessionLibrary";
@@ -40,7 +46,12 @@ export interface BroughtValues {
   aim: ItemAim | null;
   note: string | null;
   circleId: string | null;
+  /** One of the circle's rhythms, or null for its next meeting, whichever rhythm. */
+  rhythmKey?: string | null;
 }
+
+/** A circle's meetings, as the "Which meeting?" select offers them. */
+export type CircleMeetings = Readonly<Record<string, readonly { key: string; label: string }[]>>;
 
 export interface BroughtFormProps {
   idBase: string;
@@ -53,13 +64,16 @@ export interface BroughtFormProps {
   initialCircleName?: string | null;
   /** The circle is shown and cannot be changed by this person. */
   circleLocked?: boolean;
+  /** Each circle's meetings, by circle id: the select shows for a circle with two or more. */
+  meetings?: CircleMeetings;
   busy: boolean;
   error: string | null;
   onSubmit(values: BroughtValues): void;
   onCancel(): void;
 }
 
-export default function BroughtForm({ idBase, circles, myCircleIds, initial, initialCircleName, circleLocked, busy, error, onSubmit, onCancel }: BroughtFormProps) {
+export default function BroughtForm({ idBase, circles, myCircleIds, initial, initialCircleName, circleLocked, meetings, busy, error, onSubmit, onCancel }: BroughtFormProps) {
+  const { t } = useLingui();
   const adding = !initial;
   const only = myCircleIds.filter((id) => circles.some((c) => c.id === id));
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -67,17 +81,22 @@ export default function BroughtForm({ idBase, circles, myCircleIds, initial, ini
   const [note, setNote] = useState(initial?.note ?? "");
   const [circle, setCircle] = useState<string>(initial ? (initial.circleId ?? NO_CIRCLE) : only.length === 1 ? only[0] : "");
   const [asked, setAsked] = useState(false);
+  const [meeting, setMeeting] = useState<string>(initial?.rhythmKey ?? "");
 
   const clean = cleanLine(title, LIBRARY_LIMITS.title);
   // The item's own circle, when it is no longer a live one: shown, never offered again.
   const dormant = initial?.circleId && !circles.some((c) => c.id === initial.circleId) ? initial.circleId : null;
   const seen = `${idBase}-seen`;
   const circleMissing = circle === "";
+  // Only a circle that keeps two or more meetings asks which; a key it no longer keeps reads as its next meeting.
+  const choices = circle && circle !== NO_CIRCLE ? (meetings?.[circle] ?? []) : [];
+  const asksMeeting = choices.length > 1;
+  const chosenMeeting = asksMeeting && choices.some((m) => m.key === meeting) ? meeting : null;
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
     setAsked(true);
     if (!clean || circleMissing || busy) return;
-    onSubmit({ title: clean, aim: aim || null, note: note.trim() ? note : null, circleId: circle === NO_CIRCLE ? null : circle });
+    onSubmit({ title: clean, aim: aim || null, note: note.trim() ? note : null, circleId: circle === NO_CIRCLE ? null : circle, rhythmKey: chosenMeeting });
   };
 
   return (
@@ -166,6 +185,21 @@ export default function BroughtForm({ idBase, circles, myCircleIds, initial, ini
           {LIBRARY_COPY.seenHint}
         </p>
       </div>
+      {asksMeeting && (
+        <div>
+          <label htmlFor={`${idBase}-meeting`} className={LABEL}>
+            {t`Which meeting is it for?`}
+          </label>
+          <select id={`${idBase}-meeting`} className={`mt-1 ${INPUT}`} value={chosenMeeting ?? ""} onChange={(e) => setMeeting(e.target.value)}>
+            <option value="">{t`Its next meeting, whichever comes first`}</option>
+            {choices.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       {(error || (asked && circleMissing)) && (
         <p role="alert" className="text-sm font-medium text-destructive">
           {error ?? LIBRARY_COPY.circleNeeded}

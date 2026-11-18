@@ -11,7 +11,8 @@ import { validateConfig } from "@shared/hiddenMap";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
-let stored: any = { title: "Hidden map" };
+// A stored name unlike the default, so the test can see the load land before it types.
+let stored: any = { title: "Stored map" };
 const puts: any[] = [];
 vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
   if (init?.method === "PUT") {
@@ -31,6 +32,8 @@ describe("the hidden map's words on its card", () => {
   it("saves the name, a layer's words and kinds, and the planting quest, whole, through the config route", async () => {
     render(<HiddenMapConfigPanel password="x" />);
     const name = await screen.findByLabelText("The map's name");
+    // The form shows what was stored from its first frame: a word typed now must not be lost to the load.
+    expect(name).toHaveProperty("value", "Stored map");
     fireEvent.change(name, { target: { value: "Our map" } });
     const [plantingName] = screen.getAllByLabelText("Layer name");
     fireEvent.change(plantingName!, { target: { value: "Treasures" } });

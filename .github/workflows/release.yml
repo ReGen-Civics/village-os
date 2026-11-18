@@ -5,7 +5,9 @@
 #
 #   image   ghcr.io/regen-civics/village-os
 #   :<semver>   one immutable tag per release, e.g. :1.4.0. Cut by pushing an
-#               annotated git tag v1.4.0.
+#               annotated git tag v1.4.0, or by dispatching this workflow on
+#               that tag (tag-release.yml does, when the tag was pushed with
+#               GITHUB_TOKEN, which starts no workflow by pushing).
 #   :stable     moves to the newest non-prerelease semver. What a village
 #               that has not opted into anything else should pull.
 #   :edge       moves to the newest commit on main that ci passed. For us,
@@ -52,13 +54,21 @@ on:
     # the workflow's own guards held. The cost was eight runners started for
     # work that could never publish, and that repeats on every batch.
     branches: [main]
+  # A tag release started by dispatch instead of by the push. tag-release.yml
+  # uses it: a tag pushed with GITHUB_TOKEN starts no workflow, a dispatch
+  # does. The plan job accepts it ONLY on a semver tag ref and then treats it
+  # exactly like that tag's push: same version check, same green-ci check,
+  # same rollback job, same everything. Dispatched on any other ref, the plan
+  # job fails and nothing is built.
+  workflow_dispatch:
 
 permissions:
   contents: read
   packages: write
 
 # Never cancel a publish in flight. A half-pushed manifest is worse than a
-# redundant one, and these runs are rare.
+# redundant one, and these runs are rare. A tag push and a dispatch on the same
+# tag both have github.ref refs/tags/vX.Y.Z, so they share one group.
 concurrency:
   group: release-${{ github.event.workflow_run.head_sha || github.ref }}
   cancel-in-progress: false
@@ -75,6 +85,10 @@ jobs:
       actions: read
     outputs:
       publish: ${{ steps.decide.outputs.publish }}
+      # true for a version tag, pushed or dispatched. Every job below that
+      # used to ask `github.event_name == 'push'` asks this instead, so the two
+      # ways in pass the same gates.
+      tag_release: ${{ steps.decide.outputs.tag_release }}
       sha: ${{ steps.decide.outputs.sha }}
       version: ${{ steps.decide.outputs.version }}
       tags: ${{ steps.decide.outputs.tags }}
@@ -84,6 +98,7 @@ jobs:
         env:
           IMAGE: ghcr.io/regen-civics/village-os
           EVENT: ${{ github.event_name }}
+          GIT_REF: ${{ github.ref }}
           GIT_TAG: ${{ github.ref_name }}
           TAG_SHA: ${{ github.sha }}
           RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
@@ -93,12 +108,23 @@ jobs:
         run: |
           set -euo pipefail
           publish=false
+          tag_release=false
           sha=""
           version=""
           tags=""
 
-          if [ "$EVENT" = "push" ]; then
-            # A tag push. The ref name is v1.4.0; the image tag is 1.4.0,
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            # Allowed only on a tag the push trigger itself would have taken.
+            # Then it IS a tag release, and the branch below handles it.
+            if ! [[ "$GIT_REF" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+              echo "::error::release.yml was dispatched on ${GIT_REF}. Dispatch it only on a version tag (refs/tags/vX.Y.Z), which is what tag-release.yml does. Nothing is built."
+              exit 1
+            fi
+            echo "Dispatched on ${GIT_REF}: handled exactly as a push of that tag."
+          fi
+
+          if [ "$EVENT" = "push" ] || [ "$EVENT" = "workflow_dispatch" ]; then
+            # A tag push, or a dispatch on a tag. The ref name is v1.4.0; the image tag is 1.4.0,
             # because the contract says :<semver> and semver has no v.
             version="${GIT_TAG#v}"
             sha="$TAG_SHA"
@@ -115,6 +141,7 @@ jobs:
                 ;;
             esac
             publish=true
+            tag_release=true
 
           elif [ "$EVENT" = "workflow_run" ]; then
             # ci finished. Publish :edge only for a green PUSH to main. A
@@ -136,6 +163,7 @@ jobs:
 
           {
             echo "publish=${publish}"
+            echo "tag_release=${tag_release}"
             echo "sha=${sha}"
             echo "version=${version}"
             echo "tags<<EOF"
@@ -147,7 +175,7 @@ jobs:
           echo "${tags}"
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        if: github.event_name == 'push' && steps.decide.outputs.publish == 'true'
+        if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
         with:
           ref: ${{ steps.decide.outputs.sha }}
 
@@ -155,7 +183,7 @@ jobs:
         # 1.1.0 stayed the answer of /api/platform/info for 236 commits after
         # the tag, because nothing compared the three. A tag whose code still
         # reports another version is refused here, before anything is built.
-        if: github.event_name == 'push' && steps.decide.outputs.publish == 'true'
+        if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
         env:
           WANT: ${{ steps.decide.outputs.version }}
         run: |
@@ -178,13 +206,13 @@ jobs:
           fi
 
       - name: Require a green ci run on this commit
-        # Tags only. The workflow_run path was already triggered BY a green
+        # Tags only, pushed or dispatched. The workflow_run path was already triggered BY a green
         # ci, so asking again would be asking the same question twice.
         #
         # Fails closed. If ci has never run on this commit there is nothing to
         # reuse, and publishing anyway would mean an image whose only claim to
         # being tested is that somebody typed `git tag`.
-        if: github.event_name == 'push' && steps.decide.outputs.publish == 'true'
+        if: steps.decide.outputs.tag_release == 'true' && steps.decide.outputs.publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ steps.decide.outputs.sha }}
@@ -231,9 +259,10 @@ jobs:
   # -------------------------------------------------------------------------
   rollback:
     needs: plan
-    # Tag pushes only. :edge is not a release boundary and is explicitly not
-    # for villages, so there is no rollback promise attached to it.
-    if: needs.plan.outputs.publish == 'true' && github.event_name == 'push'
+    # Tag releases only, pushed or dispatched. :edge is not a release boundary
+    # and is explicitly not for villages, so there is no rollback promise
+    # attached to it.
+    if: needs.plan.outputs.publish == 'true' && needs.plan.outputs.tag_release == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -594,7 +623,7 @@ jobs:
   # ---------------------------------------------------------------------------
   github-release:
     needs: [plan, image]
-    if: ${{ !cancelled() && github.event_name == 'push' && needs.image.result == 'success' }}
+    if: ${{ !cancelled() && needs.plan.outputs.tag_release == 'true' && needs.image.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -722,7 +751,7 @@ jobs:
   # ---------------------------------------------------------------------------
   selfhost:
     needs: [plan, image]
-    if: ${{ !cancelled() && github.event_name == 'push' && needs.image.result == 'success' }}
+    if: ${{ !cancelled() && needs.plan.outputs.tag_release == 'true' && needs.image.result == 'success' }}
     uses: ./.github/workflows/selfhost-smoke.yml
     with:
       image: ghcr.io/regen-civics/village-os:${{ needs.plan.outputs.version }}

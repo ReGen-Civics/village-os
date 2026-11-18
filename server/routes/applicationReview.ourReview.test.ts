@@ -222,7 +222,7 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
   const interviews = (id: string) => q("SELECT id, position, interviewer_role_id, minutes, is_final, state FROM application_interviews WHERE application_ref = ? ORDER BY position", [id]);
   const stepKinds = async (id: string) => (await q("SELECT kind, subject FROM application_steps WHERE application_ref = ? ORDER BY id", [id])).map((s: any) => (s.subject ? `${s.kind}:${s.subject}` : s.kind));
   const asks = (id: string) => q("SELECT user_id FROM role_proposal_asks WHERE proposal_id = ? ORDER BY user_id", [id]);
-  const entriesFor = (criteria: Array<{ id: string }>, level = "solid") => ({ entries: criteria.map((c) => ({ criterionId: c.id, level, evidence: `Heard it for ${c.id}.` })) });
+  const entriesFor = (criteria: Array<{ id: string }>, level = "solid") => ({ entries: criteria.map((c) => ({ criterionId: c.id, level, evidence: `Heard it for ${c.id}.` })), gut: { answer: "yes", note: "" } });
   const cardOf = async (id: string, as: string) => call("GET", `/api/governance/applications/${id}/scorecards`, undefined, as);
   const score = async (id: string, ivId: number, as: string, level = "solid") => {
     const card = await cardOf(id, as);
@@ -286,9 +286,11 @@ describe.skipIf(!configured)("our review before the conversations, on a real sch
     const letter = state.sent.find((m) => m.idempotencyKey === `open-proposal:${id}:invited`)!;
     expect(letter.subject).toBe("An invitation to talk with Test Village");
     const lines = letter.text.split("\n");
-    expect(lines).toContain("1. Channel Role, 60 minutes");
-    expect(lines).toContain("2. Data Role, 30 minutes");
-    expect(lines).toContain("3. Build Role, 30 minutes");
+    // Each conversation is named "Role (First)" with the person holding it (shared/roleHolderLabel.ts).
+    expect(lines).toContain("1. Channel Role (Iva), 60 minutes");
+    expect(lines).toContain("2. Data Role (Ivo), 30 minutes");
+    expect(lines).toContain("3. Build Role (Ida), 30 minutes");
+    expect(letter.text, "never the holder's last name").not.toContain("Alder");
     expect(letter.text).toContain("About 120 minutes in all.");
     expect(letter.text).toContain("We loved your budget.");
     // The second answer is refused: one answer per application.

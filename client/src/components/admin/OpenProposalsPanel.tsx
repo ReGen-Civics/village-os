@@ -15,7 +15,8 @@ import { toast } from "sonner";
 import { ArrowRight, Copy, Link2 } from "lucide-react";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { OPEN_WORDS } from "@shared/openProposals";
-import { PlayVoice, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
+import { PlayVoice, StoredWordsSlot, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
+import { STORED_TRANSCRIBE_WORDS } from "@shared/voiceTranscribe";
 
 interface DeskLink {
   id: string;
@@ -46,6 +47,13 @@ interface Desk {
   publicPath: string;
   links: DeskLink[];
   proposals: DeskProposal[];
+  /** Whether a kept recording can be written down now (shared/voiceTranscribe.ts). */
+  transcribeOn?: boolean;
+}
+
+/** Recordings and clips on the desk with no AI transcript yet. */
+export function waitingCount(proposals: readonly DeskProposal[]): number {
+  return proposals.reduce((n, p) => n + [...(p.voice?.notes ?? []), ...(p.voice?.clips ?? [])].filter((r) => !p.voice?.written?.[r.id]).length, 0);
 }
 
 const BUTTON = "inline-flex min-h-10 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-deep/40";
@@ -71,6 +79,12 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
 
   /** A recording through the admin door, with this desk's own sign-in (server/routes/openProposals.ts). */
   const hear = useCallback((href: string) => fetch(href, { headers: authHeaders(password) }), [password]);
+  /** "Write down the words" through the admin door, with the same sign-in. */
+  const writeDown = useCallback(
+    (id: string, noteId: string) => fetch(`${API_BASE}/admin/open-proposals/${encodeURIComponent(id)}/voice/${encodeURIComponent(noteId)}/transcribe`, { method: "POST", headers: authHeaders(password) }),
+    [password],
+  );
+  const [running, setRunning] = useState(false);
   const call = useCallback(
     async (url: string, method = "GET", body?: unknown) => {
       const res = await fetch(url, {
@@ -109,14 +123,41 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
     }
   };
 
+  /*
+   * "Transcribe all waiting" (the lead, 17 Nov 2026): one run on the server,
+   * one recording after another. The desk reloads every few seconds while it
+   * runs, so each transcript shows as it lands.
+   */
+  const transcribeAll = async () => {
+    setRunning(true);
+    try {
+      const res = await fetch(`${API_BASE}/admin/open-proposals/voice/transcribe-waiting`, { method: "POST", headers: authHeaders(password) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok && res.status !== 409) throw new Error(typeof d?.error === "string" ? d.error : STORED_TRANSCRIBE_WORDS.unavailable);
+      if (res.status === 409) toast(typeof d?.error === "string" ? d.error : STORED_TRANSCRIBE_WORDS.running);
+      else toast.success(t({ message: `Writing down ${Number(d?.started) || 0} recordings. Each appears here as it finishes.`, context: "admin open proposals" }));
+      for (let i = 0; i < 60; i += 1) {
+        await new Promise((r) => setTimeout(r, 6000));
+        load();
+        if (i * 6 >= (Number(d?.started) || 1) * 120) break;
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? STORED_TRANSCRIBE_WORDS.unavailable);
+    } finally {
+      setRunning(false);
+    }
+  };
+
   if (!desk) return null;
+  const waiting = waitingCount(desk.proposals);
   const publicUrl = `${window.location.origin}${desk.publicPath}`;
 
   return (
-    <details className="mb-6 rounded-xl border border-gray-200 bg-white p-4" data-open-proposals-desk="">
+    // Open whenever an application waits, so none is folded out of sight (Rye, 16 Nov 2026: Graham's was missed here).
+    <details open={desk.proposals.length > 0} className="mb-6 rounded-xl border border-gray-200 bg-white p-4" data-open-proposals-desk="">
       <summary className="flex min-h-10 cursor-pointer items-center gap-2 font-semibold text-gray-900">
         <Link2 className="h-4 w-4" aria-hidden="true" />
-        Role proposals from people with no account
+        Role applications from people with no account
         {desk.proposals.length > 0 && <span className="rounded-full bg-teal-deep px-2 py-0.5 text-xs text-white">{desk.proposals.length}</span>}
       </summary>
 
@@ -217,9 +258,19 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
         </section>
 
         <section className="grid gap-3">
-          <h3 className="text-sm font-semibold text-gray-900">Confirmed proposals</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Confirmed role applications</h3>
+          {desk.transcribeOn && waiting > 0 && (
+            <div className="flex flex-wrap items-center gap-2" data-transcribe-waiting="">
+              <button type="button" className={BUTTON} disabled={running} onClick={() => void transcribeAll()} data-transcribe-waiting-button="">
+                {t({ message: "Transcribe all waiting", context: "admin open proposals" })}
+              </button>
+              <span className="text-sm text-muted-foreground">
+                {t({ message: `${waiting} recordings have no words yet. Each is written down by an AI service and kept with its application, marked as an AI transcript.`, context: "admin open proposals" })}
+              </span>
+            </div>
+          )}
           {desk.proposals.length === 0 ? (
-            <p className="text-sm text-gray-500">None yet. A proposal shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
+            <p className="text-sm text-gray-500">None yet. A role application shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
           ) : (
             desk.proposals.map((p) => (
               <article key={p.id} className="grid gap-2 rounded-lg border border-gray-200 p-3 text-sm" data-open-proposal-row={p.id}>
@@ -242,8 +293,10 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                 </ul>
                 <p className="whitespace-pre-line break-words text-gray-800">{p.why}</p>
                 {clipOf(p, "why") && <PlayVoice href={clipOf(p, "why")!.href} seconds={clipOf(p, "why")!.seconds} label={clipOf(p, "why")!.label} fetcher={hear} />}
+                {clipOf(p, "why") && <StoredWordsSlot href={clipOf(p, "why")!.href} written={p.voice?.written?.[clipOf(p, "why")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "why")!.id)} />}
                 {p.aim && <p className="break-words text-gray-600">Aim: {p.aim}</p>}
                 {clipOf(p, "aim") && <PlayVoice href={clipOf(p, "aim")!.href} seconds={clipOf(p, "aim")!.seconds} label={clipOf(p, "aim")!.label} fetcher={hear} />}
+                {clipOf(p, "aim") && <StoredWordsSlot href={clipOf(p, "aim")!.href} written={p.voice?.written?.[clipOf(p, "aim")!.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, clipOf(p, "aim")!.id)} />}
                 {p.voice && (p.voice.notes.length > 0 || otherClips(p).length > 0) && (
                   <div className="grid gap-2 rounded-lg border border-border p-3" data-admin-voice="">
                     <p className="font-semibold text-foreground">{t({ message: "Their voice", context: "admin open proposals" })}</p>
@@ -256,6 +309,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                       <div key={n.id} className="grid gap-1">
                         <span className="text-sm text-foreground">{t({ message: `Recording ${i + 1}`, context: "admin open proposals" })}</span>
                         <PlayVoice href={n.href} seconds={n.seconds} label={t({ message: `Recording ${i + 1}`, context: "admin open proposals" })} fetcher={hear} />
+                        <StoredWordsSlot href={n.href} written={p.voice?.written?.[n.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, n.id)} />
                       </div>
                     ))}
                     {otherClips(p).map((c) => (
@@ -263,6 +317,7 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                         <span className="text-sm text-foreground">{c.label}</span>
                         <PlayVoice href={c.href} seconds={c.seconds} label={c.label} fetcher={hear} />
                         {c.words && <span className="whitespace-pre-line break-words text-sm text-muted-foreground">{c.words}</span>}
+                        <StoredWordsSlot href={c.href} written={p.voice?.written?.[c.id]} on={!!desk.transcribeOn} poster={() => writeDown(p.id, c.id)} />
                       </div>
                     ))}
                   </div>

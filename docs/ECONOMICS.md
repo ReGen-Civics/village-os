@@ -569,6 +569,13 @@ recognition faucet; `gratitude.proposal_accept_award` is retired, and Gratitude 
 sent from one member to another (`GRATITUDE_ONLY_SENT`). The admin hand-mint and circle
 treasuries refuse it too.
 
+**Who an accepted proposal pays (audit, 15 Nov 2026).** A proposal sent while signed in pays
+the account that sent it. One sent from the public form names only a typed address, and anybody
+can sign up at a stranger's address first, so `applyAcceptReward` pays the account at that
+address only when it owns the address: it proved it, or it is an accepted member (admitted, an
+admin or founder, or seated live; `ownsItsAddress` in `server/lib/applicantAccount.ts`). A bare
+account at the address is treated as no account: nothing is paid and nothing is owed.
+
 **A badge multiplies the token it names (0278, Rye, 2026-10-23: "the multiplier is attached to a
 token, so voice, credits, etc").** `badges.multipliers` maps a token to a factor from 1 to 3.
 `rewardMultipliersFor` (`server/lib/seasonPatterns.ts`) compounds every awake badge a member
@@ -624,13 +631,14 @@ reads terms (`shared/seatSettings.boundary.test.ts`): the cash it owes is the ro
 | Work | When | Occurrence key |
 | --- | --- | --- |
 | a quest | at consent, on the consent's connection, inside the commit that flips the claim | the claim |
-| a role | each settled cycle (`runSettlement`), before the token rules are read, once the Game has started | the cycle, the seat, the member |
+| a role | when a Treasurer approves its End of Moon invoice (`oweApprovedRoleCash`); never by the settlement (pay defect 2) | the cycle, the seat, the member |
 | a proposal | when the acceptance's token payment goes through (`applyAcceptReward`) | the submission |
 
-A village with no `role.cycle` rule can still pay its roles in cash, which is why the role step
-runs before `runSettlement` can return early. It waits for the Game to start the way the ledger
-does, so a seat held while a village is still setting up owes nothing. A badge multiplier never
-touches cash: the ruling attaches a multiplier to a token.
+The settlement used to owe every seat on a cash role with no adopted application the role's whole
+cash each cycle, with no price, no commitment and nobody confirming. Since 18 Nov 2026 (pay defect
+2, the 14 Nov ruling that nothing pays without the Treasurer's confirmation) it owes none: such a
+seat is listed on the launch journey (`pay:unpriced-seats`) for the Treasurer to set terms through
+an application. A badge multiplier never touches cash: the ruling attaches a multiplier to a token.
 
 **Owed, claimed, paid.** A row moves one way. The member reads what they are owed on their
 profile and claims it when the village pays out (`POST /api/me/cash-owed/:id/claim`, their own
@@ -4151,6 +4159,15 @@ never work), each source net of its own clawbacks. To net a clawback against
 the posting it undoes, `originalKeyOf` in `server/lib/ledger.ts` is now
 exported; what it does is unchanged. Decay takes the same share of every
 holder, which is why a share of the balance is the right count.
+
+**Funding rounds now reads it (S4, migration 0402).** A pot's power count weighs
+each member by `workEarnedVoice`, frozen once when the round's choosing opens
+into `funding_round_voice`, and harvest reads only those frozen rows. Nothing
+here moves Voice or any other token: the snapshot is a read, and a pot's
+earmarks are promises on money the Treasurer recorded, outside the ledger. When
+the work-only count and the one-member-one-vote count fund different quests, a
+48-hour village vote (`funding_divergence`) decides which count funds them.
+`docs/modules/funding-rounds.md` holds the rules.
 
 ---
 

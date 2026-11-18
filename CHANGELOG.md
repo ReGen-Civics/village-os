@@ -40,6 +40,240 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.23 (2026-11-18)
+
+### What changed for your village
+
+- **"Holding it now" on /roles is a roster, with the org chart beside it.** Each person who holds a role has one card: a gold crest with their initial (never a face), their first name, their circle as the team, and every role they hold. People are listed alphabetically and no card carries a number, score or rank. A role the village names nobody for keeps its own "Filled" card, and an agent gets one marked card per role. Beside the roster, a small picture of the org chart (the one from /circles) links into /circles; on a phone it is one row, for example "See the org chart / Anchor Circle: 9 held, 3 open". The Team sheet and Formation views, the tally, the filters and every other section of the page are unchanged.
+- **Applicant screens say month, and promise no home.** On the role card and in the application's goals step, applicants now read "month" where they used to read "moon": "Each month you recap what you delivered, and pay follows what you deliver", "Your goals for your first month in" the role, and "Add at least one goal for your first month." The equity line now reads "a share of ownership in the village", with no promise of a home. A role whose price is set per moon still shows "a moon" on its price and band lines, because a moon and a month are paid differently; that wording waits for a decision.
+- **A held role that is still recruiting keeps its Apply.** When every place in a role is taken but the role is still recruiting, it stays with the held roles and shows "More players welcome" and an Apply link, on its roster card, under a lead's card and on the open card in the directory. The village now accepts an application to such a role. Nobody is seated past the role's count: adopting the application still waits for a free place. A full role that is not recruiting still refuses applications, as before.
+- **An End of Moon invoice paid with no cash reaches Paid.** An approved invoice whose every line is paid in Earned Equity and Credits, with no cash share, used to stay at Approved forever, because only a cash transfer ever marked an invoice Paid. It now turns Paid once every token share it owes has posted, or at approval when it owes none, and the member gets the usual notice. Nothing new moves tokens; the shares still post the way they always have. An invoice with any cash share still waits for its cash transfer.
+- **The role card's slider and the application, fixed after the 1.3.22 check.**
+  - The ramp-up box ticks only from the box and its words. Before, a tap anywhere on its tile could tick it, which on a phone happened by accident under the new split fields. Moving to another role starts the box unticked.
+  - The slider's band line shows at every commitment, 100% included, for example "Band at 100%: $9,623 to $12,029 a month in total comp".
+  - "At N%, the suggested price is ..." follows the slider. At 100% the sentence is left out, because the listed price already says it. Inside an application, it uses the commitment the person chose, else the role's minimum, in place of a fixed 50%.
+  - The line telling a person to send one application for each role is gone, since an application carries one role. It now says: "Each role is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
+- **The Treasurer's Cash Budget has its page.** Admin, Money and agreements, now has a Cash Budget tab, and every member can open /budget, reached from the account menu and the Treasury page. Everyone sees this moon's cash budget: planned, already promised and left, each line, and why any line is not counted. The holder of the pay role (role.pay) also gets the editor: upload a CSV file or cells pasted from a spreadsheet, preview what will be added, changed and withdrawn, then save; add or edit one line; withdraw and restore a line. A refused row shows the server's own sentence, by row and cell. There is no screen yet for rate locks, period notes, source switches, circle envelopes or a moon other than the current one.
+- **Funding rounds, step four. The module still ships off.** A village that has not turned funding rounds on sees no change. In a round, the power count now weighs each member only by Voice earned through work; Voice from donations, investment and backing counts for nothing there. When choosing opens, the roll and each member's counted Voice are written down once, and the harvest counts only those frozen figures. A member who joins after that cannot tick in that round. If the power count and the people's count fund different quests, the quests both counts fund go ahead at once, the disputed ones are held, and a 48-hour village vote on the ordinary ballot decides them: carried, the other count funds its side; anything else, the pot's deciding count does. The round page shows a member their own frozen Voice, "Held for the village's vote" and the vote's state.
+
+### What you must do
+
+Nothing. Every change above applies by itself. Funding rounds stay off unless your village turns them on, and the module is still held for review.
+
+### Does it touch your data
+
+One migration, `0402_a_round_freezes_its_voice.sql`. It adds a new table, `funding_round_voice`, and six new nullable columns on `funding_rounds` (when the Voice froze, the mint sources it could not classify, and the divergence vote's ballot, result, note and settled time). It changes no existing row and removes nothing. On a village that has never run a funding round, both stay empty.
+
+Going back to 1.3.22 is safe. 1.3.22 never queries `funding_round_voice`, it reads a round through a list of the fields it knows, so the new columns are ignored, and it creates a round by naming only the columns it knows, so the new ones stay empty. An invoice marked Paid, and an application sent to a full role that is recruiting, use states 1.3.22 already knows. Two cases to know about, only for a village that turned funding rounds on: a round that harvests on 1.3.22 counts the old way, from live ballot weight, and ignores its frozen Voice; and a divergence vote still open when you go back closes on 1.3.22 with nothing carried out, so its held quests stay held. Let any open divergence vote settle before going back.
+
+### Merged pull requests
+
+- #1444 Roles: holding it now as a roster, with the org chart beside it
+- #1445 Role card and apply flow: month in place of moon, no home promised
+- #1446 Roles: a held role that is still recruiting keeps its Apply
+- #1447 Pay: a 0%-cash End of Moon invoice reaches Paid once its token shares issue
+- #1448 Slider and apply flow fixes from the 1.3.22 check
+- #1449 Give the cash budget its page: Admin tab and /budget
+- #1451 Funding rounds S4: work-only Voice, a snapshot frozen when choose opens, and the 48-hour divergence vote
+
+---
+
+## 1.3.22 (2026-11-18)
+
+### What changed for your village
+
+- **A role card that can be shared has a commitment slider, and the pay band follows it.** On a role that one person can take at less than full time, the card's Rewards piece now has a "Your commitment" slider in the same steps the application accepts. Below 100%, while the village shows pay ranges, the band under the listed price is worked at that commitment, for example "Band at 60%: $5,773 to $7,217 a month in total comp". A role that takes a whole person shows no slider, only the split below.
+- **A person can change the cash, equity and credits split and send it with their application.** Under the slider, the card shows how the total is split into the village's own shares (the role's split, else the village's). Each share has a percent field and, when the reader may see the price, an amount field: typing a percent updates its amount, typing an amount updates its percent, and the other shares move in proportion so the split still adds up to 100% and to the total. "Use the village's split" puts it back. The card says plainly when a total sits above or below the band. The Apply link carries the commitment and a changed split into the application's price step, which has the same control, and Review & submit shows "Your split". The server checks the split against the role's shares and price and saves it with the application, together with the split the village offered at that commitment, worked by the server and never taken from the form. No 120% cap amount is shown anywhere in this; the server still refuses a price over the cap.
+- **The people deciding see the offered split beside the proposed one.** An application that carries a split shows a "Cash, equity and credits" table with each share as offered and as proposed, percent and amount. A split the applicant changed carries a "Split changed by applicant" badge and its changed shares are marked; an untouched split shows no badge. Nothing ranks or judges the change, and the contract still sets the pay.
+- **The village connector says plainly what it never sends.** Its instructions to an agent, the sign-in page a member sees when connecting one, and its documentation now say it never sends money or recaps, approves, issues or pays anything. Before, they said it never sends anything, which stopped being true once a handed-on task started emailing the role's holders. Nothing the connector can do changed.
+
+### What you must do
+
+Nothing. The slider and the split appear on role cards by themselves, using each role's split in force and the village's pay range setting. A village that hides pay ranges still hides the band.
+
+### Does it touch your data
+
+No migration. An application sent on 1.3.22 with a split keeps it as one more key, `paySplit`, inside the application's existing stored body, beside the other answers. Anonymising an application removes it, as it removes the price the person asked for.
+
+Going back to 1.3.21 is safe. 1.3.21 reads each application's body through a list of the keys it knows and leaves the rest alone, so an application carrying a split opens, is decided and is invited as before, and its split stays stored without being shown. 1.3.21 changes stored applications only one named key at a time, so it never writes the split away. One difference while on 1.3.21: anonymising an application does not remove its split (shares and amounts, with no name or address), and a later 1.3.22 does not go back over an application already anonymised.
+
+### Merged pull requests
+
+- #1441 Role card commitment slider and an editable cash, equity and credits split that carries into the application
+- #1442 Connector says plainly what it never sends
+
+---
+
+## 1.3.21 (2026-11-17)
+
+### What changed for your village
+
+- **The review page lists waiting changes oldest first, and flags changes that write the same thing.** Waiting batches and the changes in them now read from the oldest proposal to the newest, and the page says so. The history of decided changes stays newest first. When two waiting changes write the same thing (the same page words, setting, role card field, variable, season goals and so on), each card names the other one and a summary at the top counts them. A change is marked stale when something accepted after it was proposed wrote the same thing, and its card says accepting it would put back older words. Accepting a change that a later one also writes asks once on its card, and Accept all says so in its one question. Nothing is blocked or rejected: the reviewer decides.
+- **Making a role from the review page explains every refusal.** Accepting a proposal that makes a new role could show "Internal server error", and a retry then failed again on the role the first try had already made. Now every problem is checked before the role is saved (an unknown or dormant circle, an id already in use or retired, a name or field that is too long, seats, order, criticality, yes-or-no fields, accountabilities and the card's parameters) and each one answers with a plain sentence. The same checks run when the proposal is filed and again before it is accepted. A retry whose earlier try already made the same role is recorded as done, with a note, so nothing is made twice. If the role is saved but something after it is not (a value, or a season pattern), the accept succeeds and the review page shows a warning saying what was left out. A failure with no sentence now shows a short reference the steward can quote, and the detail is in the server log.
+- **The voice step writes down recordings with no key needed, and plays on every browser.** The image now carries its own speech-to-text (whisper.cpp with a small multilingual model), so a village transcribes recordings on its own server, with nothing sent anywhere. For speed, an admin can paste a free Groq key under Admin, Integrations; an OpenAI key also works, and the picker there shows which service is in use or turns transcription Off. Applicant takes and the short clips beside answers are written down automatically, behind a clear "Write down my words automatically" switch the applicant can turn off; words they typed are never written over. Admins and the people deciding get "Write down the words" beside each kept recording and a "Transcribe all waiting" button; those words are saved labelled as an AI transcript the applicant has not checked, and deleted with the recording. Recordings stop clearly at 5:00, Safari plays an MP4 copy, and the player shows a new take's full length before play. Takes and clips have separate limits.
+- **A role card shows its pay band, and explains how pay is set.** When a village shows pay ranges, the Rewards piece reads the band under the listed price, for example "Band: $9,623 to $12,029 a month in total comp". A "Value in equals value out." callout opens a short explainer of how the price is set, the contractor agreement and what the village is aiming for. The proposal cap (120% of the listed price) is still enforced but no longer shown to applicants as an amount, on the card, the price step or Review & submit.
+- **A circle can keep several named meetings.** A circle that meets more than once a week, for example "Monday all-staff" and "Thursday steward sync", can now set a rhythm for each, with its own name, day, time and length. Its existing rhythm stays as its first one. An agenda item can wait for one named meeting, or for the circle's next meeting whichever it is, as every existing item already does. A circle's own calendar can be read through a title word, so only events whose title carries that word count; blank keeps every timed event, as today.
+- **Agenda items can be proposed for review.** A new proposal kind, `session_agenda`, carries agenda items for a circle. Accepted with a meeting named, they go on that meeting's agenda; with none named, they land on the circle's open agenda, which works for a circle with no rhythm at all. The connector can read the circles' meetings to fill one in.
+- **A member's own AI agent can add agenda items.** A new connector scope, `sessions.write`, opens one tool, `add_agenda_item`: an item in the agenda library for a circle, or for none in particular, added as the member after their yes to the exact item. It brings nothing into a session and changes no agenda already set; a person does that in the room. Nothing changes until a member ticks the scope when they connect their agent.
+- **A member's own AI agent can hand a task to a role.** The connector tool `hand_task_to_role`, under the existing `tasks.write` scope, sends a new task to a role exactly as the profile's form does, after the member's yes to the exact task and role. The role's holders still accept, suggest a change or decline it; nothing is accepted on its own.
+- **A task handed to a role arrives by email.** Being handed a task, and a suggested change or a decline on one you sent, now follow the member's Task emails preference (immediate by default). An accept and a done go in the daily digest. Before, all five showed in the bell only. A member who set Task emails to Off hears nothing new.
+- For maintainers: a release can now be tagged by running the `tag-release.yml` workflow with the version. It checks five things before it tags: the version is a plain X.Y.Z, the commit is on main, `package.json`, `PLATFORM_VERSION`, a changelog section and the compose file's default image all name it, no such tag exists yet, and CI passed on a push run at that exact commit. Then it pushes the tag and the usual release build runs. Villages see no difference.
+
+### What you must do
+
+Nothing, but know that voice transcription is now ON by default: recordings are written down on your own server with no key, and nothing leaves it. To stop it, choose Off under Admin, Integrations. The image is about 70 MB larger for the speech model. Each circle's existing rhythm, agenda items and attached calendars keep working as they did. The `sessions.write` scope is offered only when a member connects their agent.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.20 undo it |
+|---|---|---|
+| `0401_a_circle_keeps_several_rhythms` | Adds a new table for a circle's further rhythms, and three columns that start blank: a name on each existing rhythm, the meeting an agenda item waits for, and the title word on a circle's calendar. Changes no existing value. | No. The new table and columns stay, and 1.3.20 ignores them, so going back is safe. Each circle keeps its first rhythm as before; rhythms added on 1.3.21 wait unread, and agenda items tied to one meeting show for the circle's next meeting. |
+
+### Merged pull requests
+
+- #1431 Review page: oldest first, and flag changes that write the same thing
+- #1432 A new role from the review page: a sentence for every refusal, and no failure for a role that stands
+- #1433 Voice step: written down on every browser, played on every browser, cut off clearly at 5:00
+- #1434 Several named rhythms per circle, agenda items for one meeting or the open agenda, a calendar title filter, and the session_agenda proposal kind
+- #1435 Connector agenda tool (sessions.write) and handoff emails
+- #1436 Tag a release by dispatching tag-release.yml
+- #1437 Connector tool hand_task_to_role (tasks.write)
+- #1438 Role card pay band, the Value callout, and no cap amount shown to applicants
+- #1440 Voice step: transcription with no key (on-server Whisper), Groq free tier, automatic with an opt-out, transcribe kept recordings
+
+---
+
+## 1.3.20 (2026-11-17)
+
+### What changed for your village
+
+- **An accepted change can be put back, by the same review.** On the review page, an accepted change now keeps what was live just before it, and its card offers "Propose putting it back". That files a new proposal carrying the earlier value, marked "Puts back an earlier change". It changes nothing by itself: someone accepts it like any other proposal. Some changes cannot be put back this way, and the card says why in one line: a change that made something new or took something away, season goals, a field the change added, a change accepted before this release (nothing was kept then), and a change that already has a put-back waiting.
+- **Each side of the no-sign band is its own village setting.** The band is the range around the valuation engine's suggested pay or price where one person's word is enough. It was the same distance under and over the suggestion. Two settings in Admin now set each side: "How far under the suggestion one person may set pay" (`valuation.band_below_pct`) and its partner for above (`valuation.band_above_pct`), each a whole percent from 0 to 100. Setting 20 under and 0 over, for example, gives a band from 80% to 100% of the suggestion. Both are blank by default, and blank follows the valuation model, so the band stays where it was. The role pay screen and the pricing desk now say the band in words.
+- Two form tests now wait for the coming-soon note, which loads after the form. Villages see no difference.
+- **The voice step on a role proposal keeps every recording.** When the browser ends a recording on its own (a call, another app, the screen locking), the take is kept and the card says why, where before it could freeze on "Stop recording" with nothing to play. A take that reaches the five-minute limit says so. A browser with no speech engine, such as Firefox, says so when recording starts, and the recording still counts on its own. Safari records in its own format, words are no longer dropped when the live transcript pauses, a recording that cannot play offers "Save a copy", and leaving the page while recording asks first. Recordings are about half the size they were, so five minutes is about 2.5 MB.
+
+### What you must do
+
+Nothing. Both band settings start blank, so nothing moves until a village sets one. Accepted changes from before this release show "nothing kept" and offer no put-back.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.19 undo it |
+|---|---|---|
+| `0400_a_proposal_keeps_what_was_live` | Adds two empty columns to proposed changes (what was live before an accept, and which change a proposal puts back) and an index on the second. Changes no existing value. From now on each accept fills in the first column. | No. The columns and the index stay and 1.3.19 ignores them, so going back is safe. Values kept while on 1.3.20 stay in place. |
+
+### Merged pull requests
+
+- #1421 Review page: propose putting an accepted change back
+- #1427 Batch 191: ProposeARole tests wait for the lazy note (#1426)
+- #1428 Let a village set each side of the valuation engine's no-sign band
+- #1430 Voice step: keep every take, say why it stopped, and work without a speech engine
+
+---
+
+## 1.3.19 (2026-11-16)
+
+### What changed for your village
+
+- **Roles can show as Coming soon, Future venture, Held or Unlisted, besides Open.**
+  - **Coming soon** roles are listed under the steward who leads their circle, as "Roles this steward will build", with a Coming soon tag. People can apply now through the same form. The card, the form and the confirmation all say: "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start."
+  - **Future ventures** have their own section, with no lead. The card, the form and the confirmation show the five parts of a pitch.
+  - **Held** roles show as held, with no Apply button.
+  - **Unlisted** roles stay hidden, as before.
+- **In Admin:** each role card has a "Who sees this role" choice and a circle picker. Moving a role keeps its id and history. Each circle has a "Lead role" picker, which decides whose list its coming-soon roles appear under. A circle with nothing left to show disappears for visitors.
+
+### What you must do
+
+Nothing. Every role keeps the state it had. Nothing becomes Coming soon or a Future venture until someone sets it.
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.18 undo it |
+|---|---|---|
+| `0399_a_role_can_be_coming_soon` | Adds two role columns, coming soon and future venture, both off by default. Changes no existing value. | No. The columns stay and 1.3.18 ignores them, so going back is safe. |
+
+### Merged pull requests
+
+- #1424 Batch 190: roles coming soon and future venture (#1419)
+
+---
+
+## 1.3.18 (2026-11-17)
+
+### What changed for your village
+
+- **Interviews book with the person who holds them.** Each member can save their own booking link on their profile. An applicant's next conversation now offers the link of whoever holds that interviewing seat, named as "Role (First, First)", then the role's own link, then "We'll write to you with times". No email address is ever shown. Every scorecard now asks for a gut answer (yes, no or not sure, with one optional line). It is required, the applicant never sees it, and nothing counts it.
+- **Role applications cannot be missed.** Admin's Today counts and lists every waiting role application, from people with an account and from people without one, with a link straight to each. The Inbox shows the same list.
+- **Each role card chooses who sees its listed price.** It can follow the village switch (the default, so nothing changes until someone picks), show the price to everyone, or hide it from all but admins and the card's editors. A new village setting, off by default, can show each share's amount ("up to this much in cash and this much in equity a month").
+- **Hand a task to a role.** From their profile a member can send a task to one of the village's roles, with a note and an optional date. The role's holders accept it, suggest a change, or decline with a reason. The sender hears each answer and sees where every task they sent stands.
+- **Priorities everyone can see.** Each person shares one top priority a week, set on their profile or in the Monday meeting, and Friday's meeting marks it done, partly or carried over. The season's group priorities sit on one ordered board that the circle orders by vote. Whoever raised a tension with a role can see its place in that role's line and roughly when it will be picked up.
+- **The review page for proposed changes is easier to read.** Each batch and each change shows as a card, with the change as before and after, plain flags (a public page, money words, a calendar event and the like), filters, and a history of what was decided and by whom. Accepting works as it did.
+- **Season goals keep their links when reworded.** Rewording or moving a goal in a proposal keeps it the same goal, so the quests, moon items and tasks linked to it stay linked. An admin can also move links left behind by an earlier rewording onto the goal that replaced it.
+- **Rites and invitations** (a new module, off by default): rites the village names, spoken ones sworn in a ceremony with witnesses present or on a call, a mark each member draws, a buddy beside each newcomer, an inviter's own line on an invitation, and a member's lasting door code for a printed QR.
+- **Fonts load only from places the village trusts:** its own uploads, Google Fonts and the village's own site.
+- **Smaller fixes.** A member's cash owed shows its cents, the same figure the Treasurer sees. A quest valued at zero shows what it pays and no longer reads "Worth $0.00". The public game rules page no longer says money can buy tokens in a village where the exchange is off. On the hidden map, a paid planting needs its own photo and two members vouching, with at most 5 a week (a dial). Only the person who started a protocol run, or someone who ticked a step on it, can end it.
+
+### What you must do
+
+Nothing. If you want applicants to see a different price on a role card, or each share's amount, set it in the role editor under "The listed price on the card".
+
+### Does it touch your data
+
+Yes, one expand-only migration:
+
+| Migration | What it does | Does going back to 1.3.17 undo it |
+|---|---|---|
+| `0393_rites_and_invitations` | Adds 9 new tables for rites and invitations. Changes no existing table or value. | No. The tables stay and the previous release ignores them, so going back is safe. |
+
+### Merged pull requests
+
+- #1390 Rites and invitations (module, off)
+- #1394 Game Mechanics says nothing about buying tokens where the exchange is off
+- #1400 A quest valued at zero shows what it pays
+- #1406 Batch 186: Protocols and Hidden map audit follow-ups
+- #1409 Batch 187: members see cents (#1407)
+- #1410 Season goals proposals keep goal ids when a goal is reworded or moved
+- #1411 Book each conversation with its interviewer, and add a gut check to the scorecard
+- #1412 Give each role card its own say over who sees its listed price
+- #1414 Hand a task to a role: holders accept, suggest a change, or decline
+- #1415 A season's goal links move off a goal id a rewording replaced
+- #1416 Priorities everyone can see: weekly top priority, a priority board, an ask's place in line
+- #1417 Review page as cards: batches, before and after, flags, filters, history
+- #1418 Batch 188: role applications on Admin Today and Inbox (#1413)
+- #1420 Batch 189: font hosts allowlist and the Spanish online-voice line (#1408)
+
+---
+
+## 1.3.17 (2026-11-16)
+
+### What changed for your village
+
+- **Only the person who proved an email address can take an applicant's role.** An account that signed up with someone's address but never confirmed it now counts as no account: adoption sends the real invitation, and that invitation takes over the unproven account. A link handed to the person adopting no longer proves the address; only a link that went by email does. When email is set up, the adopter no longer sees the link at all.
+- **The hidden map is complete** (still off by default, members only): its page, where a photo's location is read for the pin and then stripped from the image; return visits that can open a claim on a quest the village names; and capture with no signal, kept on the phone and sent when signal returns.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. Going back to 1.3.16 is safe.
+
+### Merged pull requests
+
+- #1378 Hidden map, slice 2: the page
+- #1380 Hidden map, slice 3: return visits
+- #1382 Hidden map, slice 4: capture with no signal
+- #1403 Batch 185: applicant identity (#1354)
+
+---
+
 ## 1.3.16 (2026-11-16)
 
 ### What changed for your village

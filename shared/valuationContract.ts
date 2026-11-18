@@ -19,7 +19,7 @@
  *
  * Pure: no clock, no pool.
  */
-import { ENGINE_DEFAULTS, priceWork, rewardFromTotal, voiceFor, type ValuationModel, type WorkInputs } from "./valuation";
+import { ENGINE_DEFAULTS, bandAround, noSignBand, priceWork, rewardFromTotal, voiceFor, type ValuationModel, type WorkInputs } from "./valuation";
 import { suggestValuation, wholeMoney, type EngineContext, type PayeeSuggestion, type Suggestion, type Warning } from "./valuationEngine";
 
 export interface ContractInputs {
@@ -69,7 +69,7 @@ export function suggestContract(model: ValuationModel, c: ContractInputs, ctx: E
     paidCount: ref.paidCount,
     expected: { totalMinor: r.totalMinor, cashMinor: r.cashMinor, credits, earnedEquity: r.equityUnits - held, earnedEquityHeld: held, voice },
     range: { lowTotalMinor: r.totalMinor, highTotalMinor: r.totalMinor, width: "narrow", why: ["a contract price"] },
-    band: { lowMinor: Math.round((r.totalMinor * (100 - dials.bandPct)) / 100), highMinor: Math.round((r.totalMinor * (100 + dials.bandPct)) / 100) },
+    band: bandAround(r.totalMinor, noSignBand(dials)),
     receipt: {
       folded: [
         { key: "reward", label: "Reward", result: money(r.totalMinor) },

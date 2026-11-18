@@ -17,8 +17,9 @@
  * A SPLIT is dated by the VILLAGE's calendar day instead (QA F10): pay reads
  * it against the moon's last day, which is a village day
  * (server/lib/splitForPay.ts), so a split said from another zone must not land
- * a day early or late against the moon it scales. Either day is accepted as a
- * floor, so nobody is refused for living ahead of the village.
+ * a day early or late against the moon it scales. Its floor is the village's
+ * own day (audit, 15 Nov 2026): the earlier of the two days let a member a day
+ * behind the village date a split from a day the village had already lived.
  *
  * Store and display only. Nothing that pays reads it (shared/commitment.ts).
  */
@@ -89,7 +90,9 @@ export function register(app: Express, deps: Deps): void {
       const village = villageToday(deps.villageZone?.(), at);
       const b = body as Record<string, unknown>;
       if (b.fromDate === undefined || b.fromDate === null || b.fromDate === "") body = { ...b, fromDate: village };
-      floor = village < today ? village : today;
+      // The village's own day, never the earlier of the two: a member whose clock reads yesterday could otherwise
+      // date a split from the village's yesterday, a day the village had already lived (audit, 15 Nov 2026).
+      floor = village;
     }
     const input = readCommitmentInput(body, floor);
     if (!input.ok) return res.status(400).json({ error: input.problem });

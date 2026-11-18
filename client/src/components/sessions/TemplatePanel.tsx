@@ -22,6 +22,12 @@
  *   - A `wins` section: the wins the room shares, each naming the season
  *     priority it serves.
  *
+ *   - Each person's top priority (priorities/RoomPriorities.tsx,
+ *     shared/priorities.ts): `top_priorities` sets this week's line for each
+ *     person here, `top_priorities_review` marks it done, partly or carried
+ *     over, and a `priority_vote` section shows the season's priority board,
+ *     which a host can put on the agenda and keep the voted order of.
+ *
  *   - The End of moon sections (MoonSections.tsx), drawn only while the
  *     moon-review module is on: `moon_recaps` (Our moons) draws the talking
  *     stick's controls itself, the holder's choice of Show my moon or Speak
@@ -71,6 +77,7 @@ import { useMoonReviewOn } from "./useMoonReviewOn";
 import { MoonGoalsBody, MoonInvoicesBody, MoonRecapBody, MoonShareChoice, useMoonRoom } from "./MoonSections";
 import { ServesChip, ServesPicker } from "./ServesPicker";
 import { BTN_FORWARD, BTN_QUIET, BTN_SECONDARY, CHIP, EYEBROW, HINT, INPUT, LABEL_CAPS, PANEL, SOFT } from "./roomUi";
+import { BoardVoteSection, TopsReviewSection, TopsSection } from "@/components/priorities/RoomPriorities";
 
 const day = (iso: string) => {
   const d = new Date(iso);
@@ -240,6 +247,9 @@ export default function TemplatePanel({ sessionId, agenda }: { sessionId: number
   const moonRecapsSection = sectionOf(flow, "moon_recaps");
   const moonGoalsSection = sectionOf(flow, "moon_goals");
   const moonInvoicesSection = sectionOf(flow, "moon_invoices");
+  const topsSection = sectionOf(flow, "top_priorities");
+  const topsReviewSection = sectionOf(flow, "top_priorities_review");
+  const voteSection = sectionOf(flow, "priority_vote");
   const holderNo = view.stick?.holder ?? null;
   const moonShown = holderNo != null && (view.stick?.shows ?? []).includes(holderNo);
   // Null while the module is off or its room door is not there: each moon section then shows one calm line.
@@ -501,6 +511,12 @@ export default function TemplatePanel({ sessionId, agenda }: { sessionId: number
           )}
         </div>
       )}
+
+      {topsReviewSection && <TopsReviewSection view={view} section={topsReviewSection} busy={busy} canHost={canHost} write={write} />}
+
+      {topsSection && <TopsSection view={view} section={topsSection} busy={busy} canHost={canHost} write={write} />}
+
+      {voteSection && <BoardVoteSection view={view} section={voteSection} busy={busy} canHost={canHost} write={write} />}
 
       {carriedSection && (
         <div className="space-y-2">

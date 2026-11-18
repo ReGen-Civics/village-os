@@ -123,7 +123,7 @@ describe("navGroups", () => {
       "stays-admin", "exchange-admin", "crowdpool-admin", "calls-admin", "intents-admin",
       "health-admin",
     ]],
-    ["Money and agreements", ["tokens", "ledger", "cash-payouts", "pricing-desk", "cycles", "products", "resources-admin", "exits-admin", "settings"]],
+    ["Money and agreements", ["tokens", "ledger", "cash-payouts", "pricing-desk", "budgets", "cycles", "products", "resources-admin", "exits-admin", "settings"]],
     ["Day to day", ["submissions", "feedback", "quest-claims", "forum-moderation", "message-reports", "drafts", "brain", "failures"]],
     // Village Comms (the comms build spec 6): after the week's queues.
     ["Comms", ["comms-overview", "comms-journeys", "comms-words", "comms-people", "comms-letters", "comms-sent", "comms-settings"]],
@@ -180,6 +180,8 @@ describe("navGroups", () => {
       "cash-payouts",
       // Pricing desk, 2026-11-09: the Treasurer prices each quest beside the engine (quest re-price Q3).
       "pricing-desk",
+      // Cash budget, 2026-11-18: the Treasurer uploads the cash budget (0360).
+      "budgets",
       // Confidentiality Agreement, 2026-11-09: the words and the PDF members align with (role journey L7).
       "confidentiality",
       // Home, the start page. The side rail stays one tap away.

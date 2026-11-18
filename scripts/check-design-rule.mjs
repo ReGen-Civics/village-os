@@ -94,6 +94,8 @@ const PAGES = [
   "client/src/pages/Decision.tsx",
   // The Treasury (2026-11-15): the hand mint and the pay queues for a holder who is not an admin.
   "client/src/pages/Treasury.tsx",
+  // The review page as cards (2026-11-16): where every change an agent proposes is decided.
+  "client/src/pages/ProposedChanges.tsx",
 ];
 
 /** Every file the joining journey draws with, pages included. */
@@ -173,6 +175,11 @@ const JOURNEY = [
   "client/src/components/review/OwedCancels.tsx",
   "client/src/components/review/AgentProposalsCard.tsx",
   "client/src/components/review/QuestProposalCard.tsx",
+  // The review page's batch and change cards, in the role card's hand (2026-11-16).
+  "client/src/components/proposals/BatchCard.tsx",
+  "client/src/components/proposals/ChangeCard.tsx",
+  "client/src/components/proposals/Diff.tsx",
+  "client/src/components/proposals/ProposalEditor.tsx",
 ];
 
 const listFlag = (name) => flag(name)?.split(",").filter(Boolean);

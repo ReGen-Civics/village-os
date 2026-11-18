@@ -306,7 +306,7 @@ export function register(app: Express, deps: Deps): void {
     const now = new Date();
     await repo.insertTick(
       pool,
-      { id: tickId, runId, stepId: step.id, done: b.done !== false, by: String(me.id), at: new Date(clampToNow(String(b.at ?? ""), now.getTime())) },
+      { id: tickId, runId, stepId: step.id, done: b.done !== false, by: String(me.id), at: new Date(clampToNow(String(b.at ?? ""), now.getTime(), Date.parse(run.startedAt))) },
       now,
     );
     res.status(201).json({ run: await oneView(runId) });
@@ -322,13 +322,18 @@ export function register(app: Express, deps: Deps): void {
     if (!run) return refuse(res, "That run has not reached the server. It was refused or never started.", "no_run");
     if (run.status === status) return res.json({ run: await oneView(runId), repeat: true });
     if (run.status !== "open") return refuse(res, "This run has already ended.", "run_ended");
+    const view = await oneView(runId);
+    // Only the member who started the run, or one who ticked a step on it, ends it (security audit,
+    // 16 Nov 2026): anybody else could finish a stranger's ticked list and take its claim.
+    if (run.startedBy !== String(me.id) && !(view?.ticks ?? []).some((t) => t.by === String(me.id))) {
+      return res.status(403).json({ error: "Only the member who started this run, or one who ticked a step on it, can end it.", code: "not_your_run" });
+    }
     if (status === "complete") {
-      const view = await oneView(runId);
       const open = openRequiredSteps(view?.steps ?? [], view?.ticks ?? []);
       if (open.length) return refuse(res, completionRefusal(open), "steps_open");
     }
     const now = new Date();
-    const at = new Date(clampToNow(String(bodyOf(req).at ?? ""), now.getTime()));
+    const at = new Date(clampToNow(String(bodyOf(req).at ?? ""), now.getTime(), Date.parse(run.startedAt)));
     const ended = await repo.endRun(pool, runId, status, String(me.id), at);
     // Only the call that completed the run claims, so a repeat (the offline
     // queue sending twice) or a race between two phones opens one claim.
@@ -336,9 +341,12 @@ export function register(app: Express, deps: Deps): void {
       try {
         const version = await repo.getVersion(pool, run.protocolId, run.version);
         if (version?.questId) {
+          // The claim is the starter's, whoever sent the ending, and it is dated by the server's
+          // clock: a device's time may only date the run itself (security audit, 16 Nov 2026).
+          const starterName = (await repo.memberNames(pool, [run.startedBy])).get(run.startedBy) ?? "";
           const opened = await openSubmittedClaim(
             { ...quests, getPool },
-            { questId: version.questId, user: { id: String(me.id), name: me.name ?? "" }, at, note: runClaimNote(version.title, at) },
+            { questId: version.questId, user: { id: run.startedBy, name: starterName }, at: now, note: runClaimNote(version.title, at) },
           );
           if (opened.ok) await repo.setRunQuestClaim(pool, runId, opened.claimId);
         }

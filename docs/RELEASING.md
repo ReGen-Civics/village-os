@@ -189,6 +189,38 @@ GitHub's schedules, which drop and delay runs.
 
 ---
 
+## Tagging without a person: dispatch tag-release.yml with the version
+
+When the release pull request has merged and ci has passed on main, the tag
+can be cut by dispatching a workflow. Nobody needs a terminal that can push
+tags.
+
+```sh
+gh workflow run tag-release.yml --ref main -f version=1.3.21
+# or a commit other than main's tip:
+gh workflow run tag-release.yml --ref main -f version=1.3.21 -f sha=<commit>
+```
+
+Dispatch it from `main`. Before it writes anything,
+`scripts/tag-release-check.mjs` checks five things and names every one that
+fails: the version is a plain X.Y.Z, the commit is on main, `package.json`,
+`PLATFORM_VERSION`, a `## X.Y.Z` section in `CHANGELOG.md` and the default
+image in `docker-compose.yml` all say that version at that commit, the tag
+does not exist yet, and ci concluded success on a push run at exactly that
+commit. `server/tagRelease.test.ts` holds each guard.
+
+Then it pushes the annotated tag and makes `release.yml` run. With the secret
+`RELEASE_BOT_TOKEN` set, the tag is pushed with it and `release.yml` starts on
+the tag push. Without it, the tag goes out with the built-in token, which
+starts no workflow, so a second job dispatches `release.yml` on the tag. A
+dispatch on a version tag passes the same gates as the tag push: the version
+check, the green-ci check, the rollback job, the boot test. `release.yml`
+refuses a dispatch on any other ref and builds nothing.
+
+A prerelease is still tagged by hand, step 5 below.
+
+---
+
 ## The procedure
 
 1. **Get the commit green.** CI has to have passed on the exact commit you are

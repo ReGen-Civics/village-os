@@ -78,7 +78,7 @@ import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 import type { AccomplishedView, LineAdjust } from "./accomplishedReview";
-import { billedOfLine, type LineReward } from "./rewardShare";
+import { billedOfLine, cashOfLine, type LineReward } from "./rewardShare";
 import { civilDateKey } from "./lunar";
 import { circleDay, guideSheetLink, halfwayDay, walkthroughDay, type RhythmDoc } from "./moonRhythm";
 
@@ -256,6 +256,31 @@ export function paySentWords(paidOn: string): string {
 export function invoicePaidFrom(rows: readonly { state: string; paidAt: string | null }[]): { paid: boolean; paidOn: string | null } {
   if (rows.length === 0 || rows.some((r) => r.state !== "paid")) return { paid: false, paidOn: null };
   const last = rows.map((r) => r.paidAt ?? "").sort().pop() || null;
+  return { paid: true, paidOn: last ? last.slice(0, 10) : null };
+}
+
+/**
+ * AN APPROVED INVOICE WITH NO CASH TO SEND: every pay line's cash share is 0%
+ * (all Earned Equity and Credits), or no line carries money at all. It wrote
+ * no cash owed row, so `invoicePaidFrom` and the transfers door never reach
+ * it. It is Paid once each token share it owes has posted through the ledger,
+ * and at once when it owes none, because the Treasurer's approval was the
+ * only act it waited on.
+ *
+ * Never Paid while a line names a cash owed row (the transfers door owns that
+ * invoice), while a line still carries a cash share, while a line is held, or
+ * while a token share is awaiting its review, owed, or refused.
+ */
+export function noCashInvoicePaidFrom(
+  lines: readonly InvoiceLine[],
+  shares: readonly { state: string; settledAt: string | null }[],
+): { paid: boolean; paidOn: string | null } {
+  const no = { paid: false, paidOn: null };
+  if (lines.some((l) => l.cashOwedId)) return no;
+  if (lines.some((l) => l.held && l.currency !== null && (l.amountMinor ?? 0) > 0)) return no;
+  if (lines.some((l) => isPayableLine(l) && (cashOfLine(l) ?? 0) > 0)) return no;
+  if (shares.some((s) => s.state !== "posted")) return no;
+  const last = shares.map((s) => s.settledAt ?? "").sort().pop() || null;
   return { paid: true, paidOn: last ? last.slice(0, 10) : null };
 }
 

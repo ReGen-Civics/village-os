@@ -173,6 +173,7 @@ import { forgetMemberJournal } from "./journal";
 import { forgetMemberHiddenMap, hiddenMapDir } from "./hiddenMap";
 import { villageId as currentVillageId } from "./economy";
 import { forgetMemberGeneKeys } from "./geneKeys";
+import { forgetMemberRites } from "../repos/rites";
 import { forgetMemberPlaces } from "../repos/seasonPlaces";
 import { forgetCircleAnswersBy } from "../repos/circlePlaces";
 import { forgetMemberCrew } from "../repos/seasonCrew";
@@ -284,6 +285,12 @@ export type ErasureDeps = {
    * needs no sign-in, so revoking a face means unlinking a file.
    */
   uploadsDir: string;
+  /**
+   * The private folder a form's attachment is kept in since the audit of 15 Nov 2026
+   * (server/lib/submissionAttachments.ts). An erased member's attachment is taken off it as well as off the
+   * uploads volume, where the door wrote it before.
+   */
+  submissionFileDir?: string;
   /**
    * The private folder of the public applications' files and recordings
    * (server/lib/proposalFiles.ts). Absent, an erased member's application
@@ -420,6 +427,12 @@ function unlink(uploadsDir: string, fileName: string): void {
     if (err?.code === "ENOENT") return;
     throw new Error(`could not take "${name}" off the volume: ${err?.message ?? err}`);
   }
+}
+
+/** A form's attachment, off the private folder and off the uploads volume (server/lib/submissionAttachments.ts). */
+function unlinkAttachment(deps: { uploadsDir: string; submissionFileDir?: string }, fileName: string): void {
+  if (deps.submissionFileDir) unlink(deps.submissionFileDir, fileName);
+  unlink(deps.uploadsDir, fileName);
 }
 
 /**
@@ -635,7 +648,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       // "submission-words-after-tombstone", which every record runs.
       name: "submissions",
       run: async () => {
-        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlink(deps.uploadsDir, file));
+        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlinkAttachment(deps, file));
       },
     },
     {
@@ -1317,7 +1330,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
        */
       name: "submission-words-after-tombstone",
       run: async () => {
-        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlink(deps.uploadsDir, file));
+        await forgetSubmissionWords(pool, submissionsRepo, { userId: target.id, emailKey: realEmailKey(target), knownAs: knownAs(target) }, (file) => unlinkAttachment(deps, file));
       },
     },
     {
@@ -1665,6 +1678,21 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
+       * Rites (drizzle/0393_rites_and_invitations.sql): the member's stamps,
+       * drawn mark, ceremonies, buddy pairings either side, their own line,
+       * door codes and invitation lines go. A stamp they witnessed for
+       * somebody else stays, with no name on it.
+       *
+       * AFTER THE TOMBSTONE, like the steps above: the doors write for anybody
+       * signed in, and the tombstone is where their sessions die.
+       */
+      name: "rites-after-tombstone",
+      run: async () => {
+        await forgetMemberRites(pool, target.id);
+      },
+    },
+    {
+      /*
        * Funding rounds (0338): the member's interaction rows on anonymous ideas
        * are deleted and the rest de-attributed; their ticks go; ideas still in
        * seed are deleted, and ideas already on a round's record stay, shown as
@@ -1882,7 +1910,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
-       * Season places (0395, 0396): the words a member wrote with a circle's
+       * Season places (0404, 0405): the words a member wrote with a circle's
        * season proposal come off, their own rows as a member subject go, and
        * their name comes off every gathering answer they gave for a circle.
        * The circle keeps its place: a crew's place is not one person's.
@@ -2435,6 +2463,8 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "role-holdings-after-tombstone",
   "sessions-after-tombstone",
   "gene-keys-after-tombstone",
+  // Rites: stamps, the mark, ceremonies, buddies, door codes and letter lines are all found by the member's id.
+  "rites-after-tombstone",
   "funding-rounds-after-tombstone",
   "member-tasks-after-tombstone",
   "quest-crews-after-tombstone",
@@ -2449,7 +2479,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "notebook-after-tombstone",
   "ombuds-asks-after-tombstone",
   "product-subscriptions-after-tombstone",
-  // Season places, gathering circle answers and season crew (0395 to 0397): every
+  // Season places, gathering circle answers and season crew (0404 to 0406): every
   // row is found by the member's id, and a second run clears or deletes nothing new.
   "season-places-after-tombstone",
 ]);

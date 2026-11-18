@@ -236,7 +236,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const r = await call("GET", "/api/open-proposals/form");
       expect(r.body).toMatchObject({ open: true, village: "Test Village", season: { id: "s-next", name: "Season of Roots", startsOn: "2099-01-01" } });
       expect(r.body.roles.map((x: any) => x.id).sort()).toEqual([gate, well].sort());
-      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, opensLater: false });
+      expect(r.body.roles.find((x: any) => x.id === gate)).toEqual({ id: gate, name: "Gate Keeper", circle: "Land Circle", aim: "Open the gate at dawn.", accountabilities: [], whyItMatters: null, timeCommitment: null, terms: { words: {}, commitmentPct: null }, conversations: [], alwaysChecked: false, commitmentMin: null, opensLater: false, payShape: [] });
       // Pay hidden (org.show_pay_ranges ships off): the ceiling key is absent, never null.
       expect("payCeiling" in r.body.roles.find((x: any) => x.id === gate)).toBe(false);
       expect(JSON.stringify(r.body)).not.toContain(example);
@@ -854,6 +854,46 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       await send({ card, email: "noprice-negotiate@example.test", payAsk: { kind: "negotiate" } });
     });
 
+    it("the split (the lead, 17 Nov 2026): the form offers the card's shape; the proposal keeps the commitment, the village's offer and what they proposed", async () => {
+      await setPayShown("true");
+      const shape = [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }];
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payShape: shape, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const form = await call("GET", "/api/open-proposals/form");
+        expect(form.body.roles.find((x: any) => x.id === gate).payShape).toEqual(shape);
+        const card = {
+          roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+          serves: [{ goalId: "g-roots", how: "" }],
+          commitmentPct: 50,
+          agreed: { loveLetter: true, nda: true },
+          terms: { answers: {} },
+        };
+        // At 50% the suggested price is $6,500: amounts that do not add up to it, or labels off the shape, are refused.
+        const off = await call("POST", "/api/open-proposals", proposal({ email: "split-off@example.test", card, paySplit: { shares: [{ label: "Cash", pct: 50, amount: 3000 }, { label: "Equity", pct: 50, amount: 3000 }, { label: "Credits", pct: 0, amount: 0 }] } }));
+        expect(off).toMatchObject({ status: 400, body: { field: "paySplit" } });
+        const wrong = await call("POST", "/api/open-proposals", proposal({ email: "split-wrong@example.test", card, paySplit: { shares: [{ label: "Gold", pct: 100 }] } }));
+        expect(wrong).toMatchObject({ status: 400, body: { field: "paySplit" } });
+        // CONTROL: a hand-changed split is kept beside the village's offer, worked here at the same commitment.
+        const proposed = [{ label: "Cash", pct: 50, amount: 3250 }, { label: "Equity", pct: 40, amount: 2600 }, { label: "Credits", pct: 10, amount: 650 }];
+        const { id } = await send({ card, email: "split@example.test", paySplit: { shares: proposed } });
+        const kept = (await readOpenProposal(pool, id))?.body;
+        expect(kept?.card?.commitmentPct).toBe(50);
+        expect(kept?.paySplit).toEqual({
+          commitmentPct: 50,
+          offered: { total: 6500, shares: [{ label: "Cash", pct: 60, amount: 3900 }, { label: "Equity", pct: 40, amount: 2600 }, { label: "Credits", pct: 0, amount: 0 }] },
+          proposed: { total: 6500, shares: proposed },
+        });
+        // Their own price: the split is read against it, and the offer stays at the suggested price.
+        const own = await send({ card, email: "split-own@example.test", payAsk: { kind: "amount", monthly: 7000, per: "month" }, paySplit: { shares: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }] } });
+        const ownKept = (await readOpenProposal(pool, own.id))?.body.paySplit;
+        expect(ownKept?.proposed).toEqual({ total: 7000, shares: [{ label: "Cash", pct: 60, amount: 4200 }, { label: "Equity", pct: 40, amount: 2800 }, { label: "Credits", pct: 0, amount: 0 }] });
+        expect(ownKept?.offered.total).toBe(6500);
+      } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
+      }
+    });
+
     it("pay hidden (org.show_pay_ranges off): the form carries no ceiling key for a visitor, and an amount ask names no figure; on, and for an admin, it is there", async () => {
       await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
       try {
@@ -880,6 +920,45 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         // CONTROL: on, everyone reads it.
         await setPayShown("true");
         expect(roleIn((await call("GET", "/api/open-proposals/form")).body).payCeiling).toEqual({ amount: 13000, currency: "USD", per: "month" });
+      } finally {
+        state.viewer = null;
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+        await setPayShown(null);
+      }
+    });
+
+    it("a card's own choice beats the village switch on the form both ways (founding team, 16 Nov 2026)", async () => {
+      const CEILING = { amount: 13000, currency: "USD" as const, per: "month" as const };
+      const roleIn = (body: any) => body.roles.find((x: any) => x.id === gate);
+      const card = {
+        roles: [{ roleId: gate, moves: [], firstMoon: [{ quest: "Oil the hinges", doneWhen: "the gate opens" }] }],
+        serves: [{ goalId: "g-roots", how: "" }],
+        commitmentPct: 50,
+        agreed: { loveLetter: true, nda: true },
+        terms: { answers: {} },
+      };
+      try {
+        // SHOW, with the village switch off: a visitor reads the figure, the choice itself is never sent, and an amount ask is read against the cap.
+        await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: CEILING, payVisibility: "show" }, "test");
+        const shown = roleIn((await call("GET", "/api/open-proposals/form")).body);
+        expect(shown.payCeiling).toEqual(CEILING);
+        expect("payVisibility" in shown).toBe(false);
+        const over = await call("POST", "/api/open-proposals", proposal({ email: "show-over@example.test", card, payAsk: { kind: "amount", monthly: 7801, per: "month" } }));
+        expect(over.status).toBe(400);
+        expect(over.body.field).toBe("payAsk");
+        expect(over.body.error).not.toBe("This role lists no price yet, so choose to negotiate on the first call.");
+        // HIDE, with the village switch on: nobody reads it on the form, an admin included, and an amount ask meets no listed price.
+        await setPayShown("true");
+        await saveSections(pool, gate, { ...EMPTY_SECTIONS, payCeiling: CEILING, payVisibility: "hide" }, "test");
+        for (const viewer of [null, ADMIN]) {
+          state.viewer = viewer;
+          const body = (await call("GET", "/api/open-proposals/form")).body;
+          expect("payCeiling" in roleIn(body)).toBe(false);
+          expect(JSON.stringify(body)).not.toContain("13000");
+        }
+        state.viewer = null;
+        const probe = await call("POST", "/api/open-proposals", proposal({ email: "hide-probe@example.test", card, payAsk: { kind: "amount", monthly: 5000, per: "month" } }));
+        expect(probe).toMatchObject({ status: 400, body: { field: "payAsk", error: "This role lists no price yet, so choose to negotiate on the first call." } });
       } finally {
         state.viewer = null;
         await saveSections(pool, gate, EMPTY_SECTIONS, "test");

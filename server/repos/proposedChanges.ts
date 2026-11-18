@@ -11,6 +11,7 @@
 import { randomBytes } from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import type { ProposalKind, ProposalStatus } from "../../shared/proposedChanges";
+import type { KeptBefore } from "../../shared/proposalPutBack";
 
 export interface StoredBatch {
   id: string;
@@ -45,6 +46,10 @@ export interface StoredChange {
   approvedBy: string | null;
   approvalNote: string | null;
   error: string | null;
+  /** What was live just before the accept (0400), or null when nothing was kept. */
+  before: KeptBefore;
+  /** On a proposal that puts an earlier change back, that change's id (0400). */
+  reverts: string | null;
 }
 
 const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : v === null || v === undefined ? null : String(v));
@@ -72,7 +77,8 @@ function toChange(r: RowDataPacket): StoredChange {
     draft: json(r.draft_json, null),
     draftBy: r.draft_by === null ? null : String(r.draft_by),
     draftAt: iso(r.draft_at),
-    status: String(r.status) as ProposalStatus,
+    // A row a stopped server left `applying` reads as `unknown` (listOpen only returns those once ten minutes old).
+    status: (String(r.status) === "applying" ? "unknown" : String(r.status)) as ProposalStatus,
     proposedBy: String(r.proposed_by),
     proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent",
     createdAt: iso(r.created_at) ?? "",
@@ -83,7 +89,19 @@ function toChange(r: RowDataPacket): StoredChange {
     approvedBy: r.approved_by === null ? null : String(r.approved_by),
     approvalNote: r.approval_note === null ? null : String(r.approval_note),
     error: r.error_text === null ? null : String(r.error_text),
+    // SQL NULL is "never kept"; the JSON text null is "read, and nothing could be read then". A row the parser cannot read is never kept.
+    before: keptBefore(r.before_json),
+    reverts: r.reverts_id === null || r.reverts_id === undefined ? null : String(r.reverts_id),
   };
+}
+
+function keptBefore(v: unknown): KeptBefore {
+  if (v === null || v === undefined) return null;
+  try {
+    return { value: JSON.parse(String(v)) };
+  } catch {
+    return null;
+  }
 }
 
 const newId = (prefix: string) => `${prefix}_${randomBytes(9).toString("hex")}`;
@@ -107,12 +125,12 @@ export async function nextPosition(pool: Pool, batchId: string): Promise<number>
 
 export async function addChange(
   pool: Pool,
-  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person" },
+  c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person"; reverts?: string | null },
 ): Promise<string> {
   const id = newId("pc");
   await pool.query(
-    "INSERT INTO `proposed_changes` (`id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-    [id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind],
+    "INSERT INTO `proposed_changes` (`id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`, `reverts_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    [id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind, c.reverts ?? null],
   );
   return id;
 }
@@ -125,7 +143,8 @@ export async function changeById(pool: Pool, id: string): Promise<StoredChange |
 /** What waits (proposed or failed), oldest batch first, in each batch's own order. */
 export async function listOpen(pool: Pool): Promise<{ batches: StoredBatch[]; changes: StoredChange[] }> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT * FROM `proposed_changes` WHERE `status` IN ('proposed','failed') ORDER BY `created_at`, `batch_id`, `position` LIMIT 500",
+    // An `unknown` change, and one left `applying` by a server that stopped, wait too: a person checks its page first.
+    "SELECT * FROM `proposed_changes` WHERE `status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE) ORDER BY `created_at`, `batch_id`, `position` LIMIT 500",
   );
   const changes = rows.map(toChange);
   const ids = Array.from(new Set(changes.map((c) => c.batchId)));
@@ -139,7 +158,7 @@ export async function listOpen(pool: Pool): Promise<{ batches: StoredBatch[]; ch
 
 /** How many wait, for the count on Admin. */
 export async function openCount(pool: Pool): Promise<number> {
-  const [rows] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) AS n FROM `proposed_changes` WHERE `status` IN ('proposed','failed')");
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT COUNT(*) AS n FROM `proposed_changes` WHERE `status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE)");
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -152,6 +171,18 @@ export async function listDecided(pool: Pool, limit: number, onlyAccepted = fals
   return rows.map(toChange);
 }
 
+/**
+ * Accepted changes decided after `since`, oldest accept first: what may have moved under a change proposed then
+ * (shared/proposalConflicts.ts, `staleAgainst`). Capped, as the page's history is.
+ */
+export async function acceptedSince(pool: Pool, since: Date, limit = 500): Promise<StoredChange[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT * FROM `proposed_changes` WHERE `status` = 'accepted' AND `decided_at` > ? ORDER BY `decided_at` LIMIT ?",
+    [since, Math.max(1, Math.min(1000, limit))],
+  );
+  return rows.map(toChange);
+}
+
 export async function saveDraft(pool: Pool, id: string, draft: Record<string, unknown> | null, by: string): Promise<boolean> {
   const [r] = await pool.query<any>(
     "UPDATE `proposed_changes` SET `draft_json` = ?, `draft_by` = ?, `draft_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND `status` IN ('proposed','failed')",
@@ -160,9 +191,67 @@ export async function saveDraft(pool: Pool, id: string, draft: Record<string, un
   return Number(r?.affectedRows ?? 0) > 0;
 }
 
+/**
+ * Take one change for applying, atomically (audit, 15 Nov 2026): two accepts racing for the same row used to both
+ * read it as proposed and both apply it. Only the caller whose UPDATE changed the row goes on.
+ *
+ * A change whose apply threw (`unknown`), or one left `applying` by a server that stopped, may have reached its page
+ * before the answer was lost: a loopback that timed out AFTER its route committed. Applying it again could make the
+ * thing twice, so it is taken only when the person says they checked the page (`checked`).
+ */
+export async function claimForApplying(pool: Pool, id: string, by: string, checked = false): Promise<boolean> {
+  const [r] = await pool.query<any>(
+    "UPDATE `proposed_changes` SET `status` = 'applying', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND (`status` IN ('proposed','failed')" +
+      (checked ? " OR `status` = 'unknown' OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE)" : "") +
+      ")",
+    [by, id],
+  );
+  return Number(r?.affectedRows ?? 0) === 1;
+}
+
+/** Whether this change waits on a person checking its page first: its apply threw, or a server stopped mid-apply. */
+export function needsACheck(c: Pick<StoredChange, "status">): boolean {
+  return c.status === "unknown";
+}
+
+/** The apply threw: whether the change reached its page is not known. Never retried by a plain accept. */
+export async function markUnknown(pool: Pool, id: string, by: string, error: string): Promise<void> {
+  await pool.query(
+    "UPDATE `proposed_changes` SET `status` = 'unknown', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` = 'applying'",
+    [by, error.slice(0, 1000), id],
+  );
+}
+
+/** The largest value kept as "what was live before". A larger one is not kept, and the page says nothing was kept. */
+export const BEFORE_MAX_BYTES = 1_000_000;
+
+/**
+ * Keep what was live just before this change is applied (0400), on the row that is being applied. Never throws:
+ * a value too large to keep, or a write that fails, leaves the column as it was and the accept goes on.
+ */
+export async function saveBefore(pool: Pool, id: string, before: unknown): Promise<boolean> {
+  try {
+    const text = JSON.stringify(before === undefined ? null : before);
+    if (text.length > BEFORE_MAX_BYTES) return false;
+    const [r] = await pool.query<any>("UPDATE `proposed_changes` SET `before_json` = ? WHERE `id` = ? AND `status` = 'applying'", [text, id]);
+    return Number(r?.affectedRows ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
+
+/** A proposal that puts this change back and still waits, if there is one. */
+export async function waitingPutBack(pool: Pool, revertsId: string): Promise<string | null> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT `id` FROM `proposed_changes` WHERE `reverts_id` = ? AND (`status` IN ('proposed','failed','unknown','applying')) LIMIT 1",
+    [revertsId],
+  );
+  return rows[0] ? String(rows[0].id) : null;
+}
+
 export async function markAccepted(pool: Pool, id: string, a: { by: string; accepted: Record<string, unknown>; lessons: unknown[]; approvedBy: string; approvalNote: string }): Promise<boolean> {
   const [r] = await pool.query<any>(
-    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'accepted', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `accepted_json` = ?, `lessons_json` = ?, `approved_by` = ?, `approval_note` = ?, `error_text` = NULL WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [a.by, JSON.stringify(a.accepted), JSON.stringify(a.lessons), a.approvedBy.slice(0, 120), a.approvalNote.slice(0, 400), id],
   );
   return Number(r?.affectedRows ?? 0) > 0;
@@ -170,14 +259,14 @@ export async function markAccepted(pool: Pool, id: string, a: { by: string; acce
 
 export async function markFailed(pool: Pool, id: string, by: string, error: string): Promise<void> {
   await pool.query(
-    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'failed', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3), `error_text` = ? WHERE `id` = ? AND `status` IN ('proposed','failed','applying')",
     [by, error.slice(0, 1000), id],
   );
 }
 
 export async function markDiscarded(pool: Pool, id: string, by: string): Promise<boolean> {
   const [r] = await pool.query<any>(
-    "UPDATE `proposed_changes` SET `status` = 'discarded', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND `status` IN ('proposed','failed')",
+    "UPDATE `proposed_changes` SET `status` = 'discarded', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND (`status` IN ('proposed','failed','unknown') OR (`status` = 'applying' AND `decided_at` < CURRENT_TIMESTAMP(3) - INTERVAL 10 MINUTE))",
     [by, id],
   );
   return Number(r?.affectedRows ?? 0) > 0;

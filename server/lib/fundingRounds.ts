@@ -15,11 +15,16 @@
  * A round whose grow date is unset stays in seed, which is how a village runs
  * seed only for a season.
  *
- * NOT HERE YET (S4, plan §13): the work-only Voice read, the Voice snapshot
- * frozen when choose OPENS, and the 48-hour vote that can switch a round to
- * the people's count. Until then counted Voice is the village's own ballot
- * weight (`governanceWeights.weightsFor`), read at harvest, and the
- * disagreement is shown but no vote holds the differing quests back.
+ * THE COUNTED-VOICE GUARDRAILS (S4, plan §13). The power count weighs each
+ * member by counted Voice, which is WORK-ONLY by default (`readCountedVoice`,
+ * `workEarnedVoice`): Voice from donations, investment and backing weighs
+ * nothing in a pot ballot. Each member's counted Voice is FROZEN when choosing
+ * opens (`freezeVoiceIfDue`: the freeze job, a member's read or tick, or
+ * harvest itself as a late fallback), and harvest reads only the frozen rows.
+ * Where the two counts fund different quests, those quests are HELD
+ * (`on_ballot`) and a 48-hour village vote decides them (`askVillageIfHeld`,
+ * subject `funding_divergence`); the closer settles them by one count
+ * (`settleDivergence`). The round asks; the village decides.
  *
  * ANONYMITY. The author is always stored, for erasure and abuse handling, and
  * never leaves the server when the idea is anonymous: every view below is
@@ -37,7 +42,19 @@ import {
   ANONYMOUS_BYLINE, ANONYMOUS_MIN_MEMBERS, acceptsIdeas, datesProblem, parseIdea, stageAt,
   type Byline, type IdeaStatus, type PotClock, type RoundStage,
   isGrown, parseGrow,
+  COUNT_WORDS, DIVERGENCE_VOTE_DAYS, DIVERGENCE_VOTE_HOURS, fundInOrder, otherCount, sideOf, type CountName,
 } from "../../shared/fundingRounds";
+import { FUNDING_DIVERGENCE, dialsForSubject, thresholdSettingsFrom } from "../../shared/ballotSubjects";
+import type { SubjectCloser } from "./applyDue";
+import type { RollNotice } from "./ballotNotices";
+import type { BallotSetup } from "./ballotSetup";
+import { openBallot, ballotById } from "./ballots";
+import { recordEvent } from "./events";
+import { memberAccount } from "./ledger";
+import { VILLAGE_VOICE } from "./economy";
+import { numberVar, stringVar } from "./variables";
+import { workEarnedVoice } from "./voiceProvenance";
+import { balancesOf } from "../repos/voiceLedger";
 import { countBothWays, divergenceOf, type ShareResult } from "../../shared/equalShares";
 import type { QuestRecord } from "../repos/quests";
 import { onRealItemPublished } from "./examples";
@@ -51,6 +68,7 @@ import {
   allMarksOf, claimIdeaQuest, claimOutcome, earmarkTotals, insertEarmark, lockPot, marksOf, marksOfMember, releaseIdeaQuest, replaceMarks, setEarmarkQuest, setIdeaStatus, updateIdeaGrow,
   firmPledges, firmTotals, insertPledge, lowerEarmark, pledgeById, pledgesByBacker, pledgesOfRound, releasePledges, withdrawPledgeRow,
   type PledgeRow, type PledgeStage,
+  allVoiceOf, claimDivergenceResult, claimVoiceSnapshot, roundsAwaitingVoice, setDivergenceBallot, voiceOfMember, voiceOfRound,
 } from "../repos/fundingRounds";
 
 export const MODULE_ID = "funding-rounds";
@@ -480,6 +498,31 @@ export interface RoundDetail {
   myMarks: string[];
   /** Both counts and the disagreement, from harvest on; null before, or while the count waits. */
   outcome: RoundOutcome | null;
+  /** S4: the frozen Voice, once choosing has opened. The viewer sees only their own. */
+  voice: VoiceView | null;
+  /** S4: the 48-hour vote on the quests the two counts disagree on, when there is one. */
+  divergenceVote: DivergenceVoteView | null;
+}
+
+export interface VoiceView {
+  frozenAt: string;
+  countedVoice: "work_only" | "all";
+  /** Members on the frozen roll. */
+  roll: number;
+  /** The viewer's own counted Voice, in Voice's minor units, or null when they were not on the roll. */
+  mine: number | null;
+  /** Voice sources the count could not classify, so it is understated. */
+  unclassified: string[];
+}
+
+export interface DivergenceVoteView {
+  heldIdeaIds: string[];
+  ballotId: string | null;
+  closesAt: string | null;
+  /** Null while the village decides. */
+  result: "decider" | "other" | null;
+  note: string | null;
+  settledAt: string | null;
 }
 
 export async function roundDetail(
@@ -496,6 +539,13 @@ export async function roundDetail(
   const pot = await potById(pool, r.potId);
   if (!pot) return null;
   const stage = stageAt(datesOf(r), now);
+  if (stage === "choose" && harvest) {
+    try {
+      r = await freezeVoiceIfDue(pool, harvest, r, pot, now);
+    } catch (err) {
+      console.error(`[funding-rounds] round ${r.id} could not freeze its Voice yet:`, err);
+    }
+  }
   if (stage === "harvest" && harvest) {
     await harvestIfDue(pool, harvest, r, pot);
     r = (await roundById(pool, roundId)) as RoundRow;
@@ -524,10 +574,37 @@ export async function roundDetail(
     ballot: showBallot ? views.filter((v) => onBallot(v)) : [],
     myMarks: await marksOfMember(pool, roundId, viewerId),
     outcome: (r.outcome as RoundOutcome | null) ?? null,
+    voice: r.voiceFrozenAt
+      ? {
+          frozenAt: r.voiceFrozenAt.toISOString(),
+          countedVoice: r.countedVoice ?? pot.countedVoice,
+          roll: (await voiceOfRound(pool, roundId)).length,
+          mine: await voiceOfMember(pool, roundId, viewerId),
+          unclassified: r.voiceUnclassified,
+        }
+      : null,
+    divergenceVote: await divergenceVoteView(pool, r),
   };
 }
 
-/** On the ballot: shaped in grow, with an ask, and not withdrawn or held. */
+async function divergenceVoteView(pool: Pool, r: RoundRow): Promise<DivergenceVoteView | null> {
+  const held = (r.outcome as RoundOutcome | null)?.heldForVote ?? [];
+  if (held.length === 0) return null;
+  const ballot = r.divergenceBallotId ? await ballotById(pool, r.divergenceBallotId) : null;
+  return {
+    heldIdeaIds: held,
+    ballotId: r.divergenceBallotId,
+    closesAt: ballot ? new Date(ballot.closesAt).toISOString() : null,
+    result: r.divergenceResult,
+    note: r.divergenceNote,
+    settledAt: isoOf(r.divergenceSettledAt),
+  };
+}
+
+/**
+ * On the round's ballot: shaped in grow, with an ask, and not withdrawn or
+ * held. `on_ballot` is a quest held back at harvest for the divergence vote.
+ */
 function onBallot(i: { status: IdeaStatus; deliverable: string | null; askMinor: number | null }): boolean {
   return (i.status === "grown" || i.status === "on_ballot" || i.status === "funded" || i.status === "not_funded") && isGrown(i);
 }
@@ -631,6 +708,7 @@ export async function pledgeToIdea(pool: Pool, actorId: string, ideaId: string, 
     await insertPledge(pool, { id, ideaId, backerUserId: actorId, amountMinor: amount, unitCode: pot.unitCode, stageAtPledge: stage, status: "pledged" });
   } else {
     if (round.outcome == null) return { ok: false, status: 409, problem: "The count is being made. Try again in a moment." };
+    if (idea.status === "on_ballot") return { ok: false, status: 409, problem: "The village is voting on this quest. Back it once the vote has closed." };
     if (idea.status !== "funded") return { ok: false, status: 409, problem: "Only a quest the round funded can be backed now." };
     const conn = await pool.getConnection();
     try {
@@ -684,10 +762,26 @@ export async function withdrawPledge(pool: Pool, actorId: string, pledgeId: stri
 // ── choose ──────────────────────────────────────────────────────────────────
 
 /** Replace the member's ticks, while the round is in choose. Every tick must be on the ballot. */
-export async function setMarks(pool: Pool, actorId: string, roundId: string, body: unknown, now: Date): Promise<{ ok: true; myMarks: string[] } | Refusal> {
-  const round = await roundById(pool, roundId);
+export async function setMarks(
+  pool: Pool,
+  actorId: string,
+  roundId: string,
+  body: unknown,
+  now: Date,
+  harvest?: Pick<HarvestDeps, "roll" | "countedVoice">,
+): Promise<{ ok: true; myMarks: string[] } | Refusal> {
+  let round = await roundById(pool, roundId);
   if (!round) return { ok: false, status: 404, problem: "No such round." };
   if (stageAt(datesOf(round), now) !== "choose") return { ok: false, status: 409, problem: "Ticks are given while the round is choosing." };
+  // S4: the roll and its Voice freeze when choosing opens, so a member who
+  // was not on the voting roll then cannot tick in this round.
+  if (harvest) {
+    const pot = await potById(pool, round.potId);
+    if (pot) round = await freezeVoiceIfDue(pool, harvest, round, pot, now);
+  }
+  if (round.voiceFrozenAt && (await voiceOfMember(pool, roundId, actorId)) === null) {
+    return { ok: false, status: 403, problem: "This round's voting roll was set when choosing opened, and you were not on it then, so you cannot tick in this round." };
+  }
   const raw = (body && typeof body === "object" ? (body as Record<string, unknown>).ideaIds : null) ?? [];
   if (!Array.isArray(raw) || raw.some((v) => typeof v !== "string")) return { ok: false, status: 400, problem: "Send the ideas you would fund as a list." };
   const wanted = Array.from(new Set(raw as string[]));
@@ -746,19 +840,121 @@ export interface RoundOutcome {
   /** Ticks per quest, kept so the record survives a ticker's erasure. */
   marksByIdea: Record<string, number>;
   countedAt: string;
+  /** S4: which Voice weighed the power count. Absent on a round counted before S4. */
+  countedVoice?: "work_only" | "all";
+  /** S4: when the Voice the count read was frozen. */
+  voiceFrozenAt?: string | null;
+  /** S4: true when nothing froze the Voice while the round was choosing, so it was frozen at harvest. */
+  voiceFrozenLate?: boolean;
+  /** S4: Voice mint sources that are neither work nor money; a work-only count is understated by them. */
+  unclassifiedSources?: string[];
+  /** S4: the quests the two counts disagree on, held back for the village's 48-hour vote. */
+  heldForVote?: string[];
 }
+
+/** What a 48-hour divergence vote needs that only server/index.ts has. */
+export interface DivergenceDeps {
+  governanceOn: () => boolean;
+  ballotSetup: () => Promise<BallotSetup>;
+  notifyRoll: (b: { id: string }, input: RollNotice) => Promise<number>;
+}
+
+/** Reads each member's counted Voice in Voice's minor units. Injected in tests; the ledger read otherwise. */
+export type CountedVoiceRead = (
+  pool: Pool,
+  userIds: readonly string[],
+  kind: "work_only" | "all",
+) => Promise<{ byUser: Map<string, number>; unclassified: string[] }>;
 
 export interface HarvestDeps {
   /**
-   * Who may choose, each with their counted Voice: the same roll every village
-   * vote uses (present members holding ballot.vote, weighted by the village's
-   * weight mode). One function, so S4's work-only read replaces it in one place.
+   * Who may choose: the village's voting roll (present members holding
+   * ballot.vote), with no weights. `votingRoll` in server/index.ts, the roll
+   * every village vote opens with. Their counted Voice is read separately.
    */
-  electorate: () => Promise<Array<{ userId: string; weight: number }>>;
+  roll: () => Promise<string[]>;
+  /** Defaults to `readCountedVoice`. */
+  countedVoice?: CountedVoiceRead;
   questsRepo: { add: (q: QuestRecord) => Promise<unknown>; all: () => Promise<unknown[]> };
+  /** Absent, or with governance off, the deciding count settles disagreements at once. */
+  divergence?: DivergenceDeps;
 }
 
 const countView = (r: ShareResult): CountView => ({ funded: r.funded, steps: r.steps, spentMinor: r.spent, leftoverMinor: r.leftover });
+
+// ── the Voice snapshot (S4) ─────────────────────────────────────────────────
+
+/**
+ * Each member's counted Voice, off the ledger. `work_only` (the default every
+ * pot is created with) is `workEarnedVoice`: the balance times the share of it
+ * minted from work, so Voice from donations, investment and backing weighs
+ * nothing. `all` is the whole Voice balance; no door sets it yet.
+ */
+export const readCountedVoice: CountedVoiceRead = async (pool, userIds, kind) => {
+  if (kind === "work_only") return workEarnedVoice(pool, userIds);
+  const ids = Array.from(new Set(userIds.map(String)));
+  const balances = await balancesOf(pool, VILLAGE_VOICE, ids.map((id) => memberAccount(id)));
+  return { byUser: new Map(ids.map((id) => [id, Math.max(0, balances.get(memberAccount(id)) ?? 0)])), unclassified: [] };
+};
+
+/**
+ * Freeze the round's counted Voice if choosing has opened and nobody has. The
+ * first of three callers wins: the freeze job, a member's read or tick while
+ * choosing, or harvest itself when nothing earlier ran (then the outcome says
+ * it was late). The pot's decider, cap and counted-Voice setting freeze with
+ * it, so changing the pot mid-round changes nothing for this round.
+ */
+export async function freezeVoiceIfDue(pool: Pool, deps: Pick<HarvestDeps, "roll" | "countedVoice">, round: RoundRow, pot: PotRow, now: Date): Promise<RoundRow> {
+  if (round.voiceFrozenAt || round.outcome != null) return round;
+  const stage = stageAt(datesOf(round), now);
+  if (stage !== "choose" && stage !== "harvest") return round;
+  const roll = Array.from(new Set((await deps.roll()).map(String)));
+  const read = await (deps.countedVoice ?? readCountedVoice)(pool, roll, pot.countedVoice);
+  const conn = await pool.getConnection();
+  let claimed = false;
+  try {
+    await conn.beginTransaction();
+    claimed = await claimVoiceSnapshot(conn, round.id, {
+      at: now,
+      decider: pot.decider,
+      capPct: pot.weightCapPct,
+      countedVoice: pot.countedVoice,
+      unclassified: read.unclassified,
+      rows: roll.map((userId) => ({ userId, voice: read.byUser.get(userId) ?? 0 })),
+    });
+    if (claimed) await conn.commit();
+    else await conn.rollback();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+  if (claimed) {
+    await recordInteraction(pool, {
+      actorUserId: round.createdBy,
+      kind: "round.voice_frozen",
+      subjectType: "funding_round",
+      subjectRef: round.id,
+      roundId: round.id,
+      visibility: "members",
+      dedupeKey: `round.voice_frozen:${round.id}`,
+    });
+  }
+  return (await roundById(pool, round.id)) as RoundRow;
+}
+
+/** The freeze job's tick: every round whose choosing has opened without a snapshot. Asks nothing and decides nothing. */
+export async function freezeDueVoice(pool: Pool, deps: Pick<HarvestDeps, "roll" | "countedVoice">, now: Date): Promise<number> {
+  let n = 0;
+  for (const r of await roundsAwaitingVoice(pool, now)) {
+    const pot = await potById(pool, r.potId);
+    if (!pot) continue;
+    const after = await freezeVoiceIfDue(pool, deps, r, pot, now);
+    if (after.voiceFrozenAt) n++;
+  }
+  return n;
+}
 
 /**
  * Run the count if the round is in harvest and nobody has. Never twice: the
@@ -769,6 +965,7 @@ const countView = (r: ShareResult): CountView => ({ funded: r.funded, steps: r.s
 export async function harvestIfDue(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: PotRow): Promise<void> {
   try {
     if (round.outcome == null) await runHarvest(pool, deps, round, pot);
+    await askVillageIfHeld(pool, deps, round.id);
     await ensureQuests(pool, deps, round.id, pot);
   } catch (err) {
     console.error(`[funding-rounds] round ${round.id} has not counted yet:`, err);
@@ -776,10 +973,16 @@ export async function harvestIfDue(pool: Pool, deps: HarvestDeps, round: RoundRo
 }
 
 async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: PotRow): Promise<void> {
-  const roll = await deps.electorate();
-  const voice = new Map(roll.map((e) => [e.userId, e.weight]));
-  const electorate = Array.from(voice.keys());
+  // Harvest reads the FROZEN Voice. A round nothing froze while it chose is
+  // frozen now, and the outcome says so.
+  const frozen = await freezeVoiceIfDue(pool, deps, round, pot, new Date());
+  const snapshot = await voiceOfRound(pool, round.id);
+  const voice = new Map(snapshot.map((e) => [e.userId, e.voice]));
+  const electorate = snapshot.map((e) => e.userId);
+  const decider = frozen.decider ?? pot.decider;
+  const capPct = frozen.weightCapPct ?? pot.weightCapPct;
   const conn = await pool.getConnection();
+  let held: string[] = [];
   try {
     await conn.beginTransaction();
     await lockPot(conn, pot.id);
@@ -802,23 +1005,27 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
     const firm = await firmTotals(conn, round.id);
     const potPart = new Map(ideas.map((i) => [i.id, Math.max(0, (i.askMinor as number) - (firm.get(i.id) ?? 0))]));
     // A quest its backers cover whole goes ahead without the count (the plan's
-    // suggested answer to Q-B6; a stop vote arrives with S4). One place to change.
+    // suggested answer to Q-B6; the stop vote it mentions is still to come).
     const backerFunded = ideas.filter((i) => potPart.get(i.id) === 0).map((i) => i.id);
     const options = ideas.filter((i) => (potPart.get(i.id) as number) > 0).map((i) => ({ id: i.id, cost: potPart.get(i.id) as number }));
     const seed = `${round.id}:${(round.harvestAt as Date).toISOString()}`;
     const both = countBothWays({
       pot: quorumMet ? availableMinor : 0,
-      voice: new Map(electorate.map((id) => [id, voice.get(id) ?? 0])),
+      voice,
       options,
       marks: marks.map((m) => ({ voter: m.userId, option: m.ideaId })),
       seed,
-      capPct: pot.weightCapPct,
+      capPct,
     });
     const marksByIdea: Record<string, number> = {};
     for (const m of marks) marksByIdea[m.ideaId] = (marksByIdea[m.ideaId] ?? 0) + 1;
+    const divergence = divergenceOf(both, options).map((d) => ({ ideaId: d.option, fundedBy: d.fundedBy, costMinor: d.cost }));
+    // S4: the quests the counts disagree on are held back for the village.
+    held = divergence.map((d) => d.ideaId);
+    const frozenAt = frozen.voiceFrozenAt;
     const outcome: RoundOutcome = {
       seed,
-      decider: pot.decider,
+      decider,
       quorumMet,
       quorumPct: round.quorumPct,
       markers,
@@ -826,16 +1033,24 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
       availableMinor,
       power: countView(both.power),
       people: countView(both.people),
-      divergence: divergenceOf(both, options).map((d) => ({ ideaId: d.option, fundedBy: d.fundedBy, costMinor: d.cost })),
+      divergence,
       backerFunded,
       marksByIdea,
       countedAt: new Date().toISOString(),
+      countedVoice: frozen.countedVoice ?? pot.countedVoice,
+      voiceFrozenAt: frozenAt ? frozenAt.toISOString() : null,
+      // Late: no snapshot existed when the count began, so it was taken just now.
+      voiceFrozenLate: round.voiceFrozenAt == null,
+      unclassifiedSources: frozen.voiceUnclassified,
+      heldForVote: held,
     };
-    if (!(await claimOutcome(conn, round.id, pot.decider, pot.weightCapPct, outcome))) {
+    if (!(await claimOutcome(conn, round.id, outcome))) {
       await conn.rollback();
       return;
     }
-    const funded = new Set([...outcome[pot.decider].funded, ...backerFunded]);
+    const heldSet = new Set(held);
+    // Funded now: what both counts fund, and what backers covered whole.
+    const funded = new Set([...outcome[decider].funded.filter((id) => !heldSet.has(id)), ...backerFunded]);
     const promised = ideas.filter((i) => funded.has(i.id)).reduce((s, i) => s + (potPart.get(i.id) as number), 0);
     // held + owed + paid never exceeds what the pot received.
     if (promised > money.free) throw new Error(`round ${round.id} would promise ${promised} from a pot with ${money.free} free`);
@@ -844,14 +1059,18 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
         const part = potPart.get(i.id) as number;
         if (part > 0) await insertEarmark(conn, { id: newId("earmark"), potId: pot.id, roundId: round.id, ideaId: i.id, amountMinor: part, changedBy: null });
         await setIdeaStatus(conn, i.id, "funded");
+      } else if (heldSet.has(i.id)) {
+        // On the village's ballot: the divergence vote decides it.
+        await setIdeaStatus(conn, i.id, "on_ballot");
       } else {
         await setIdeaStatus(conn, i.id, "not_funded");
       }
     }
     // Pledges on an idea that will not happen go back to the backer: those not
     // funded, and those that never reached the ballot. Nothing was collected.
+    // A held quest's pledges stay firm until the vote settles it.
     const all = await ideasOfRound(conn, round.id);
-    await releasePledges(conn, all.filter((i) => !funded.has(i.id)).map((i) => i.id));
+    await releasePledges(conn, all.filter((i) => !funded.has(i.id) && !heldSet.has(i.id)).map((i) => i.id));
     await conn.commit();
   } catch (err) {
     await conn.rollback();
@@ -870,13 +1089,254 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
   });
 }
 
+// ── the divergence vote (S4) ────────────────────────────────────────────────
+
+/** Who opened the divergence vote: the round itself, never a person (the same reasoning as `MOON_PROPOSER`). */
+export const FUNDING_PROPOSER = "sys:funding-rounds";
+
+/** The vote's document: the two sides, what each costs, and what each answer does. */
+export function divergenceDoc(input: {
+  roundTitle: string;
+  roundId: string;
+  decider: CountName;
+  deciderSide: Array<{ title: string; cost: string }>;
+  otherSide: Array<{ title: string; cost: string }>;
+}): { title: string; doc: string } {
+  const other = otherCount(input.decider);
+  const title = `${input.roundTitle}: fund the disputed quests by ${COUNT_WORDS[other]}?`;
+  const list = (side: Array<{ title: string; cost: string }>) => (side.length ? side.map((q) => `- ${q.title} (${q.cost})`) : ["- nothing"]);
+  const doc = [
+    `# ${title}`,
+    "",
+    `This round counted its ticks two ways, by ${COUNT_WORDS.power} and by ${COUNT_WORDS.people}, and the two counts fund different quests. The quests they agree on are already funded. These are held back until this vote closes.`,
+    "",
+    `## The pot decides by ${COUNT_WORDS[input.decider]}, which funds`,
+    "",
+    ...list(input.deciderSide),
+    "",
+    `## ${COUNT_WORDS[other][0].toUpperCase()}${COUNT_WORDS[other].slice(1)} funds instead`,
+    "",
+    ...list(input.otherSide),
+    "",
+    "## If this carries",
+    "",
+    `The quests ${COUNT_WORDS[other]} chose are funded and the others are not. A carried vote waits its window like any change to the Game, and a seated steward may stop it.`,
+    "",
+    "## If it does not carry",
+    "",
+    `The quests ${COUNT_WORDS[input.decider]} chose are funded and the others are not. Too few votes, a withdrawn vote and a stopped one end the same way.`,
+    "",
+    `The round: /funding-rounds/${input.roundId}`,
+    "",
+  ].join("\n");
+  return { title, doc };
+}
+
+/**
+ * Put the held quests to the village, once. Runs after every harvest read, so
+ * a vote that failed to open is asked again; a second opener finds the first
+ * ballot by its open key and records it. When no vote can open (voting is off,
+ * the weights cannot be read, nobody may vote, a governance window is shut)
+ * the deciding count settles them at once and the round says why.
+ */
+export async function askVillageIfHeld(pool: Pool, deps: HarvestDeps, roundId: string): Promise<void> {
+  const r = await roundById(pool, roundId);
+  if (!r || r.outcome == null || r.divergenceResult != null || r.divergenceBallotId != null) return;
+  const o = r.outcome as RoundOutcome;
+  const held = o.heldForVote ?? [];
+  if (held.length === 0) return;
+  const d = deps.divergence;
+  const standing = (why: string) => settleDivergence(pool, roundId, "decider", `${why} So the deciding count stands.`, deps.questsRepo);
+  if (!d || !d.governanceOn()) {
+    await standing("Voting is off in this village, so no vote could open.");
+    return;
+  }
+  const setup = await d.ballotSetup();
+  if (setup.tokenProblem) {
+    await standing(`No vote could open: ${setup.tokenProblem}.`);
+    return;
+  }
+  const pot = await potById(pool, r.potId);
+  if (!pot) return;
+  const ideas = new Map((await ideasOfRound(pool, roundId)).map((i) => [i.id, i]));
+  const words = (side: Array<{ id: string; cost: number }>) =>
+    side.map((q) => ({ title: ideas.get(q.id)?.title ?? q.id, cost: amountText(q.cost, pot.unitKind, pot.unitCode) }));
+  const { title, doc } = divergenceDoc({
+    roundTitle: r.title,
+    roundId,
+    decider: o.decider,
+    deciderSide: words(sideOf(o[o.decider], held)),
+    otherSide: words(sideOf(o[otherCount(o.decider)], held)),
+  });
+  const dials = dialsForSubject(
+    FUNDING_DIVERGENCE,
+    setup.method,
+    setup.dials,
+    thresholdSettingsFrom((key) => Number(numberVar(key)), (key) => stringVar(key)),
+  );
+  const opened = await openBallot(pool, {
+    subjectType: FUNDING_DIVERGENCE,
+    subjectRef: roundId,
+    title,
+    docMarkdown: doc,
+    method: setup.method,
+    weightMode: setup.snapshot.mode,
+    weightToken: setup.snapshot.token ?? null,
+    unityPct: dials.unityPct,
+    quorumPct: dials.quorumPct,
+    durationDays: DIVERGENCE_VOTE_DAYS,
+    openedBy: FUNDING_PROPOSER,
+    electorate: setup.electorate,
+    timing: "at_acceptance",
+    // A missed quorum is not asked again: the 48 hours is the promise, and
+    // the deciding count standing is the answer to too few votes.
+    quorumFallback: false,
+  });
+  if (!opened.ok) {
+    if (opened.alreadyOpen) {
+      await setDivergenceBallot(pool, roundId, opened.alreadyOpen.id);
+      return;
+    }
+    await standing(`No vote could open: ${opened.error}.`);
+    return;
+  }
+  await setDivergenceBallot(pool, roundId, opened.ballot.id);
+  await d.notifyRoll(opened.ballot, {
+    type: "ballot_opened",
+    title: `${r.title}: the two counts disagree, and the village decides`,
+    body: `${held.length === 1 ? "One quest is" : `${held.length} quests are`} held back until the vote closes in ${DIVERGENCE_VOTE_HOURS} hours.`,
+    keySuffix: "open",
+    roll: setup.electorate.map((e) => e.userId),
+  });
+  await recordEvent(pool, {
+    kind: "governance",
+    text: `The quests ${r.title}'s two counts disagree on went to the village as a ${DIVERGENCE_VOTE_HOURS}-hour vote`,
+    actorKind: "system",
+    originModuleId: MODULE_ID,
+    entityType: "ballot",
+    entityRef: opened.ballot.id,
+  });
+}
+
+/**
+ * Settle the held quests by one count, once. `decider` keeps the pot's own
+ * count; `other` switches to the round's other count. Under the pot's lock,
+ * the chosen side is funded in its count's order while the pot's free money
+ * lasts (another round on the same pot may have spent some since harvest); a
+ * quest that no longer fits is not funded and the note names how many. Every
+ * other held quest is not funded and its pledges go back to its backers.
+ */
+export async function settleDivergence(
+  pool: Pool,
+  roundId: string,
+  result: "decider" | "other",
+  note: string,
+  questsRepo?: HarvestDeps["questsRepo"],
+): Promise<{ settled: boolean; funded: string[]; short: string[] }> {
+  const none = { settled: false, funded: [] as string[], short: [] as string[] };
+  const first = await roundById(pool, roundId);
+  if (!first || first.outcome == null) return none;
+  const conn = await pool.getConnection();
+  let out = none;
+  let pot: PotRow | null = null;
+  try {
+    await conn.beginTransaction();
+    await lockPot(conn, first.potId);
+    const r = (await roundById(conn, roundId)) as RoundRow;
+    if (r.divergenceResult != null) {
+      await conn.rollback();
+      return none;
+    }
+    pot = await potById(conn, r.potId);
+    const o = r.outcome as RoundOutcome;
+    const held = o.heldForVote ?? [];
+    const side = result === "decider" ? o.decider : otherCount(o.decider);
+    const ideas = new Map((await ideasOfRound(conn, roundId)).map((i) => [i.id, i]));
+    const waiting = sideOf(o[side], held).filter((q) => ideas.get(q.id)?.status === "on_ballot");
+    const money = await potMoney(conn, r.potId);
+    const plan = fundInOrder(waiting, money.free);
+    const shortNote = plan.short.length ? ` ${plan.short.length === 1 ? "One quest" : `${plan.short.length} quests`} no longer fit the pot's free money and ${plan.short.length === 1 ? "was" : "were"} not funded.` : "";
+    if (!(await claimDivergenceResult(conn, roundId, result, `${note}${shortNote}`, new Date()))) {
+      await conn.rollback();
+      return none;
+    }
+    const fundedSet = new Set(plan.funded);
+    for (const q of waiting) {
+      if (!fundedSet.has(q.id)) continue;
+      if (q.cost > 0) await insertEarmark(conn, { id: newId("earmark"), potId: r.potId, roundId, ideaId: q.id, amountMinor: q.cost, changedBy: null });
+      await setIdeaStatus(conn, q.id, "funded");
+    }
+    const losers = held.filter((id) => !fundedSet.has(id) && ideas.get(id)?.status === "on_ballot");
+    for (const id of losers) await setIdeaStatus(conn, id, "not_funded");
+    await releasePledges(conn, losers);
+    await conn.commit();
+    out = { settled: true, funded: plan.funded, short: plan.short };
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+  await recordInteraction(pool, {
+    actorUserId: first.createdBy,
+    kind: "round.divergence_settled",
+    subjectType: "funding_round",
+    subjectRef: roundId,
+    roundId,
+    visibility: "members",
+    dedupeKey: `round.divergence_settled:${roundId}`,
+  });
+  await recordEvent(pool, {
+    kind: "governance",
+    text: `${first.title}: the quests its two counts disagreed on were settled by ${result === "decider" ? "the deciding count" : "the other count"}`,
+    actorKind: "system",
+    originModuleId: MODULE_ID,
+    entityType: "funding_round",
+    entityRef: roundId,
+  });
+  if (questsRepo && pot && out.funded.length > 0) await ensureQuests(pool, { questsRepo }, roundId, pot);
+  return out;
+}
+
+/**
+ * WHAT CLOSING THE DIVERGENCE VOTE DOES, written into `SUBJECT_CLOSERS` by
+ * server/index.ts. Carried, `execute` switches the held quests to the other
+ * count once the landing is due. Every other ending (not carried, too few
+ * votes, withdrawn, stopped by a steward, written off) keeps the deciding
+ * count, at once. Idempotent: the round's result is claimed once.
+ */
+export function fundingDivergenceCloser(deps: () => { pool: Pool; questsRepo: HarvestDeps["questsRepo"] }): SubjectCloser {
+  const keep = async (roundId: string, why: string) => settleDivergence(deps().pool, roundId, "decider", why, deps().questsRepo);
+  return {
+    settle: async (b, outcome) => {
+      if (outcome === "passed") return { applied: [], held: null, proposerTold: null };
+      const r = await keep(b.subjectRef, outcome === "no_quorum" ? "Too few voted, so the deciding count stands." : "The vote did not carry, so the deciding count stands.");
+      return { applied: r.settled ? [`${FUNDING_DIVERGENCE}:${b.subjectRef}:decider`] : [], held: null, proposerTold: null };
+    },
+    execute: async (b) => {
+      const r = await settleDivergence(deps().pool, b.subjectRef, "other", "The village voted to fund these quests by the other count.", deps().questsRepo);
+      return {
+        applied: r.settled ? [`${FUNDING_DIVERGENCE}:${b.subjectRef}:other`] : [],
+        held: r.settled ? null : "this round's held quests had already been settled",
+        proposerTold: null,
+      };
+    },
+    onWithdraw: async (b) => {
+      await keep(b.subjectRef, "The vote was withdrawn, so the deciding count stands.");
+    },
+    onUnlanded: async (b, reason) => {
+      await keep(b.subjectRef, reason === "vetoed" ? "A steward stopped the switch, so the deciding count stands." : "The switch was written off, so the deciding count stands.");
+    },
+  };
+}
+
 /**
  * Each funded idea becomes a quest on the board, through the same repo the
  * admin form and accepted proposals use. Priced as asked: a currency pot's
  * quest pays that cash at consent, through the existing cash rails. Runs on
  * every harvest read, so a quest that failed to save is made next time.
  */
-async function ensureQuests(pool: Pool, deps: HarvestDeps, roundId: string, pot: PotRow): Promise<void> {
+async function ensureQuests(pool: Pool, deps: Pick<HarvestDeps, "questsRepo">, roundId: string, pot: PotRow): Promise<void> {
   const funded = (await ideasOfRound(pool, roundId)).filter((i) => i.status === "funded" && !i.questId);
   if (funded.length === 0) return;
   let order = (await deps.questsRepo.all()).length;
@@ -917,7 +1377,7 @@ export { interactionCountsFor };
 
 // ── member export and erasure ───────────────────────────────────────────────
 
-/** A member's own Funding rounds data: their ideas (anonymous ones included, they are theirs), their ticks and their interaction rows. */
+/** A member's own Funding rounds data: their ideas (anonymous ones included, they are theirs), their ticks, their frozen Voice per round and their interaction rows. */
 export async function exportMemberFundingRounds(pool: Pool, userId: string): Promise<unknown> {
   const ideas = await ideasByAuthor(pool, userId);
   return {
@@ -926,6 +1386,7 @@ export async function exportMemberFundingRounds(pool: Pool, userId: string): Pro
       shownAs: i.shownAs, status: i.status, createdAt: i.createdAt,
     })),
     marks: await allMarksOf(pool, userId),
+    voice: await allVoiceOf(pool, userId),
     pledges: (await pledgesByBacker(pool, userId)).map(pledgeView),
     interactions: await interactionsOf(pool, userId),
   };

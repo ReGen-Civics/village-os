@@ -88,6 +88,15 @@ export async function openTensionsForRoleIds(q: Queryable, roleIds: readonly str
   return rows.map(mapRow);
 }
 
+/** Open and taken tensions one member raised, oldest first: their asks still waiting. */
+export async function openTensionsRaisedBy(q: Queryable, userId: string): Promise<TensionRow[]> {
+  const [rows] = await q.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM \`role_tensions\` WHERE \`raised_by\` = ? AND \`status\` IN ('open', 'taken') ORDER BY \`created_at\`, \`id\``,
+    [userId],
+  );
+  return rows.map(mapRow);
+}
+
 /** Tensions nobody has picked up, raised at or before `before`: the reminder job's candidates. */
 export async function untakenOlderThan(q: Queryable, before: Date): Promise<TensionRow[]> {
   const [rows] = await q.query<RowDataPacket[]>(

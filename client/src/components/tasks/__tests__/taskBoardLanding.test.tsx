@@ -31,6 +31,7 @@ import TaskBoard, { LANDED_RING_MS } from "@/components/profile/TaskBoard";
 import { HOLD_IN_VIEW_MS } from "@/components/tasks/holdInView";
 import { tasksChanged } from "@/components/tasks/useTaskCount";
 import { WAITING_URL } from "@shared/waitingOnYou";
+import { HANDOFFS_WAITING_URL } from "@shared/roleTaskHandoff";
 
 const fetchMock = vi.fn();
 let scrolls: Array<{ id: string; opts: ScrollIntoViewOptions | undefined }> = [];
@@ -42,7 +43,7 @@ beforeEach(() => {
   // That read answers 404 here, as in taskBoard.test.tsx, so fetchMock still
   // sees the task board's reads alone.
   vi.stubGlobal("fetch", (url: unknown, init?: unknown) =>
-    String(url) === WAITING_URL ? Promise.resolve(new Response(JSON.stringify({ error: "not_found" }), { status: 404 })) : fetchMock(url, init),
+    String(url) === WAITING_URL || String(url) === HANDOFFS_WAITING_URL ? Promise.resolve(new Response(JSON.stringify({ error: "not_found" }), { status: 404 })) : fetchMock(url, init),
   );
   scrolls = [];
   reduce = false;

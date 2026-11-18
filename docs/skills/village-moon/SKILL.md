@@ -1,11 +1,11 @@
 ---
 name: village-moon
-description: Read the member's own moon, roles, season and task board through the village connector, and press their own board tasks Done, Let go or Undo after their yes to the exact write. You never send, approve, issue or pay anything.
+description: Read the member's own moon, roles, season and task board through the village connector, and press their own board tasks Done, Let go or Undo after their yes to the exact write. You never send money or recaps, approve, issue or pay anything.
 version: 1.0.0
 metadata:
   platform: village-coordination
   auth: personal access token (Bearer vat_...) minted by the member in their profile under Your agent
-  scopes: moon.read, tasks.write, moon.write, moon.review (admin and sera.undoable only on the accounts allowed them)
+  scopes: moon.read, tasks.write, moon.write, moon.review, sessions.write (admin and sera.undoable only on the accounts allowed them)
   mcp: /api/agent/v1/mcp
   openapi: /api/agent/v1/openapi.json
 ---
@@ -37,6 +37,8 @@ The village connector is a remote MCP server at `VILLAGE_ORIGIN/api/agent/v1/mcp
 | `get_my_seats` | `moon.read` | The member's own role card: the roles they hold, each role's purpose and accountabilities. |
 | `get_season` | `moon.read` | The village's running season and its goals. |
 | `mark_my_task` | `tasks.write` | Press Done, remove (Let go, with a reason) or Undo on one of the member's own board tasks. |
+| `hand_task_to_role` | `tasks.write` | Send a new task to one of the village's roles, as the member does from their profile. The role's holders accept it, suggest a change or decline it, and the member hears each answer. Called with no `roleId`, it lists the roles a task can go to. |
+| `add_agenda_item` | `sessions.write` | Add an item to the agenda library for one circle (its id from `get_roles`) or none, as the member adding it on the sessions page. It waits there until a person brings it into a session. Answers "the sessions module is off" while it is. |
 | `import_moon_pack` | `moon.write` | Import a moon pack (the guide's strict JSON, never with amounts) into the member's Draft recap. The first call answers the preview: what would be added, merged and skipped. |
 | `update_moon_item` | `moon.write` | Change one item on the member's Draft recap. |
 | `set_moon_goals` | `moon.write` | Set the member's goals for next moon. |

@@ -620,7 +620,12 @@ describe("what a change needs (plan 3.1)", () => {
   });
 
   it("lets a version tune the engine's own dials", () => {
-    expect(diffModels(V1, { ...V1, engine: { bandPct: 15 } })).toEqual([{ key: "engine:bandPct", label: "No-sign band", from: "10%", to: "15%", door: "version" }]);
+    // The older symmetric dial moves both sides of the band, so it reads as the two sides it means.
+    expect(diffModels(V1, { ...V1, engine: { bandPct: 15 } })).toEqual([
+      { key: "engine:bandBelowPct", label: "No-sign band under the suggestion", from: "10%", to: "15%", door: "version" },
+      { key: "engine:bandAbovePct", label: "No-sign band over the suggestion", from: "10%", to: "15%", door: "version" },
+    ]);
+    expect(diffModels(V1, { ...V1, engine: { singleLowPct: 20 } })).toEqual([{ key: "engine:singleLowPct", label: "Range below a single estimate", from: "15%", to: "20%", door: "version" }]);
   });
 
   it("previews who gains and who loses, and the change in total reward", () => {

@@ -95,7 +95,8 @@ describe.skipIf(!configured)("funding rounds: backing pledges", () => {
       mayAct: async () => ({ ok: whoami === "m-0" }),
       members: { all: async () => people, count: async () => people.length },
       questsRepo: { add: async (quest: any) => { quests.push(quest); }, all: async () => quests },
-      electorate: async () => people.map((p) => ({ userId: p.id, weight: 1 })),
+      roll: async () => people.map((p) => p.id),
+      countedVoice: async (_pool: unknown, ids: readonly string[]) => ({ byUser: new Map(ids.map((id) => [id, 1])), unclassified: [] }),
     } as any);
     handlers = c.handlers;
 

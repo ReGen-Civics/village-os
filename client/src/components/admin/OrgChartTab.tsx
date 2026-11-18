@@ -187,7 +187,7 @@ export function OrgChartTab({ password }: { password: string }) {
   const circleDirty = (c: any): boolean => {
     const cd = circleDraft[c.id];
     if (!cd) return false;
-    return ["name", "status", "layer", "parentCircleId"].some((k) => (cd[k] ?? "") !== (c[k] ?? "")) || !!cd.isAnchor !== !!c.isAnchor;
+    return ["name", "status", "layer", "parentCircleId", "leadRoleId"].some((k) => (cd[k] ?? "") !== (c[k] ?? "")) || !!cd.isAnchor !== !!c.isAnchor;
   };
   /*
    * accountabilities is an ARRAY, so it is compared by value. A `d[k] !== r[k]`
@@ -225,7 +225,7 @@ export function OrgChartTab({ password }: { password: string }) {
         return {
           key: `c:${c.id}`,
           label: t({ message: `Circle ${name}`, context: "save bar, which item failed" }),
-          run: () => send(`/admin/circles/${c.id}`, { name: cd.name, status: cd.status, isAnchor: !!cd.isAnchor, layer: cd.layer || null, parentCircleId: cd.parentCircleId || null }),
+          run: () => send(`/admin/circles/${c.id}`, { name: cd.name, status: cd.status, isAnchor: !!cd.isAnchor, layer: cd.layer || null, parentCircleId: cd.parentCircleId || null, leadRoleId: cd.leadRoleId || null }),
         };
       }),
       ...dirtyRoles.map((r) => {
@@ -499,6 +499,14 @@ export function OrgChartTab({ password }: { password: string }) {
                     onChange={(e) => setCircle({ parentCircleId: e.target.value || null })}>
                     <option value="">The village, at the top</option>
                     {parentChoicesFor(circles, c.id).map((p: any) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </label>
+                {/* The circle's lead (Rye, 16 Nov 2026): its coming-soon roles show on that lead's card as "Roles this lead will build". */}
+                <label className="text-xs text-gray-500">{t({ message: "Lead role", context: "admin org chart, the role that leads a circle" })}
+                  <select value={cd.leadRoleId ?? ""} className={`${inputCls} w-full mt-1 min-h-[44px]`} disabled={!!c.isExample}
+                    onChange={(e) => setCircle({ leadRoleId: e.target.value || null })} data-testid={`circle-lead-${c.id}`}>
+                    <option value="">{t({ message: "No lead", context: "admin org chart, a circle with no lead role" })}</option>
+                    {roles.filter((r: any) => !r.isExample).map((r: any) => <option key={r.id} value={r.id}>{r.name}</option>)}
                   </select>
                 </label>
               </div>

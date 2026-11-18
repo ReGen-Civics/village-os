@@ -314,6 +314,23 @@ export const DATABASE_EXPORT = "database_export";
  */
 export const ADMIN_EDIT = "admin_edit";
 
+/**
+ * THE QUESTS A FUNDING ROUND'S TWO COUNTS DISAGREE ON (Funding rounds S4,
+ * server/lib/fundingRounds.ts). At harvest a round counts its ticks twice, by
+ * counted Voice and by one member one vote. Where the two fund different
+ * quests, those quests are held back and the village decides them in a
+ * 48-hour vote: carried, the round's other count funds them; not carried, the
+ * pot's deciding count stands. `subject_ref` is the round id, so a round has
+ * one such vote at a time.
+ *
+ * Priced like ADMIN_EDIT: both answers are counts the village's own ticks
+ * produced, within money the pot already offered, so the vote asks the
+ * village's own bar and no more. Absent from `KIND_FOR_SUBJECT`, so a carried
+ * switch is a Game change that waits its window and a seated steward may stop
+ * it; moving it is one line there.
+ */
+export const FUNDING_DIVERGENCE = "funding_divergence";
+
 export const SUBJECT_THRESHOLDS: Readonly<Record<string, SubjectThresholds>> = {
   [VILLAGE_LAUNCH]: {
     minUnityPct: 100,
@@ -560,6 +577,13 @@ export const SUBJECT_THRESHOLDS: Readonly<Record<string, SubjectThresholds>> = {
     minElectorate: 0,
     criticality: "routine",
     why: "A suggested change to one admin control asks whatever this village asks of any decision. A holder of the power could make it without a vote, so the vote is not priced above the village's own bar.",
+  },
+  [FUNDING_DIVERGENCE]: {
+    minUnityPct: 0,
+    minQuorumPct: 0,
+    minElectorate: 0,
+    criticality: "routine",
+    why: "This one decides which of a funding round's two counts funds the quests they disagree on, within money the pot already offered, so it asks whatever this village asks of any decision.",
   },
   [MINT_REQUEST]: {
     ...tierFloors("structural"),

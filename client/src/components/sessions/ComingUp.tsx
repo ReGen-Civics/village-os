@@ -36,18 +36,28 @@
  * the button. Fireflies gather on one of them only: the viewer's own circle
  * that meets soonest and has not heard from them (`leadRow`).
  *
+ * SEVERAL RHYTHMS (0401). A circle that keeps two or more rhythms lists them
+ * under its row, each with its name, how it meets, its own next meeting and
+ * what waits for it, and its own Change and Skip; "Stop this rhythm" in a
+ * rhythm's form stops that one only. "Add another meeting" opens the same form
+ * for a new one. A circle with one rhythm reads exactly as it did before.
+ *
  * "Follow the calendar" sits at the foot of the section (FollowCalendar.tsx):
  * any member puts the circles they choose on their own calendar. It shows
  * whenever the village has a circle, a rhythm or not, so "every circle, new
  * ones too" can be chosen before the first rhythm is set.
  */
 import { useEffect, useRef, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { SESSION_LIST_COPY } from "@shared/sessions";
 import { circleWords } from "@shared/sessionTasks";
 import {
+  MAIN_RHYTHM,
   RHYTHM_COPY,
+  RHYTHM_LIMITS,
   comingAnchor,
+  rhythmsUrl,
   phraseOf,
   type Meeting,
   rhythmSkipUrl,
@@ -92,6 +102,10 @@ const typing = () => {
   return !!el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName);
 };
 
+/** What a write sends for one rhythm: its key, unless it is the first, so an older server reads the same body it always did. */
+const withKey = <T extends object>(body: T, key: string | null | undefined): T & { rhythmKey?: string } =>
+  key && key !== MAIN_RHYTHM ? { ...body, rhythmKey: key } : body;
+
 function Row({
   row,
   zone,
@@ -113,19 +127,28 @@ function Row({
   onSaid: (text: string) => void;
   onGone: () => void;
 }) {
-  const [editing, setEditing] = useState(false);
+  const { t } = useLingui();
+  /** Which form is open: a rhythm's key, ADDING for another meeting, or null. */
+  const [editing, setEditing] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const changeButton = useRef<HTMLButtonElement>(null);
   const skipButton = useRef<HTMLButtonElement>(null);
-  const refocus = useRef<"change" | "skip" | null>(null);
+  const addButton = useRef<HTMLButtonElement>(null);
+  const refocus = useRef<"change" | "skip" | "add" | null>(null);
   const anchor = comingAnchor(row.circleId);
   const describedBy = `${anchor}-circle ${anchor}-when`;
+  const lines = row.rhythms ?? [];
+  // Two or more rhythms are listed one by one; one rhythm keeps the row as it always was.
+  const several = lines.length > 1;
+  const only = lines.length === 1 ? lines[0] : null;
+  const canAdd = row.canKeep && lines.length > 0 && lines.length < RHYTHM_LIMITS.perCircle;
 
   // Back from the form or a skip, the focus returns to the control that was used, or to Change when a skip left none.
   useEffect(() => {
     if (editing || busy || !refocus.current) return;
-    (refocus.current === "skip" && skipButton.current ? skipButton : changeButton).current?.focus();
+    const target = refocus.current === "add" ? addButton : refocus.current === "skip" && skipButton.current ? skipButton : changeButton;
+    target.current?.focus();
     refocus.current = null;
   }, [editing, busy]);
 
@@ -138,22 +161,56 @@ function Row({
     await onChanged();
     setBusy(false);
     if (!out.ok) return;
-    setEditing(false);
+    setEditing(null);
     onSaid(after(out.row));
     if (!out.row) onGone();
   };
 
-  const save = (circleId: string, input: RhythmInput) => {
+  /** Save or stop one rhythm, by its key (null: the circle's first, as an older page sent it). */
+  const save = (key: string | null) => (circleId: string, input: RhythmInput) => {
     refocus.current = "change";
-    void write(rhythmUrl(circleId), "PUT", input, (next) => (input.kind === "none" || !next ? RHYTHM_COPY.stopped(row.circleName) : RHYTHM_COPY.saved(row.circleName)));
+    const stopped = input.kind === "none";
+    void write(rhythmUrl(circleId), "PUT", withKey(input, key), (next) =>
+      !next ? RHYTHM_COPY.stopped(row.circleName) : stopped ? t`Stopped. That meeting has left Coming up.` : RHYTHM_COPY.saved(row.circleName),
+    );
   };
 
-  const skip = (meeting: Meeting) => {
+  const add = (circleId: string, input: RhythmInput) => {
+    refocus.current = "add";
+    void write(rhythmsUrl(circleId), "POST", input, () => t`Added. The ${circleWords(row.circleName)} has another meeting.`);
+  };
+
+  const skip = (meeting: Meeting, key: string | null) => {
     refocus.current = "skip";
-    void write(rhythmSkipUrl(row.circleId), "POST", { key: meeting.key }, (next) =>
+    void write(rhythmSkipUrl(row.circleId), "POST", withKey({ key: meeting.key }, key), (next) =>
       next ? RHYTHM_COPY.skipped(row.circleName, phraseOf(next.words)) : RHYTHM_COPY.skippedLast(row.circleName),
     );
   };
+
+  const cancel = () => {
+    refocus.current = editing === ADDING ? "add" : "change";
+    setEditing(null);
+    setError(null);
+  };
+
+  const form = (key: string, initial: RhythmInput | null, extra: { saveLabel?: string; stopConfirm?: string } = {}) => (
+    <div className="mt-3">
+      <RhythmForm
+        idBase={`rhythm-${row.circleId}-${key}`}
+        circles={[{ id: row.circleId, name: row.circleName }]}
+        fixedCircleId={row.circleId}
+        initial={initial}
+        labelledBy={`${anchor}-circle`}
+        defaultMinutes={defaultMinutes}
+        zone={zone}
+        busy={busy}
+        error={error}
+        onSubmit={key === ADDING ? add : save(key === ROW ? (only?.key ?? null) : key)}
+        onCancel={cancel}
+        {...extra}
+      />
+    </div>
+  );
 
   return (
     <li
@@ -164,26 +221,8 @@ function Row({
       <p id={`${anchor}-circle`} className={EYEBROW}>
         {circleWords(row.circleName)}
       </p>
-      {editing ? (
-        <div className="mt-3">
-          <RhythmForm
-            idBase={`rhythm-${row.circleId}`}
-            circles={[{ id: row.circleId, name: row.circleName }]}
-            fixedCircleId={row.circleId}
-            initial={row.rhythm}
-            labelledBy={`${anchor}-circle`}
-            defaultMinutes={defaultMinutes}
-            zone={zone}
-            busy={busy}
-            error={error}
-            onSubmit={save}
-            onCancel={() => {
-              refocus.current = "change";
-              setEditing(false);
-              setError(null);
-            }}
-          />
-        </div>
+      {editing === ROW ? (
+        form(ROW, row.rhythm)
       ) : (
         <>
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -191,9 +230,11 @@ function Row({
               <p id={`${anchor}-when`} className="mt-1 font-display text-xl leading-tight text-foreground">
                 {row.words}
               </p>
-              {row.nextTitle && <p className="mt-0.5 line-clamp-2 break-words text-sm text-foreground [overflow-wrap:anywhere]">{row.nextTitle}</p>}
+              {(row.nextTitle ?? row.nextName) && (
+                <p className="mt-0.5 line-clamp-2 break-words text-sm text-foreground [overflow-wrap:anywhere]">{row.nextTitle ?? row.nextName}</p>
+              )}
               <p className="mt-1 text-sm text-muted-foreground">
-                {row.rhythmWords} · {RHYTHM_COPY.waiting(row.waiting)}
+                {several ? RHYTHM_COPY.waiting(row.waiting) : `${row.rhythmWords} · ${RHYTHM_COPY.waiting(row.waiting)}`}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -209,19 +250,82 @@ function Row({
             </div>
           </div>
           {row.gathering && <GatheringSeed row={{ ...row, gathering: row.gathering }} lead={lead} onChanged={onChanged} onSaid={onSaid} />}
+          {several && (
+            <ul aria-label={t({ message: `The ${circleWords(row.circleName)}'s meetings`, context: "sessions coming up, the list of one circle's meeting rhythms" })} className="mt-3 space-y-2">
+              {lines.map((line) => {
+                const lineId = `${anchor}-${line.key}`;
+                return (
+                  <li key={line.key} id={lineId} className="rounded-lg border border-border bg-muted px-3 py-2">
+                    {editing === line.key ? (
+                      form(line.key, line.input, { stopConfirm: t`Stop "${line.name || line.words}"? The circle's other meetings stay as they are.` })
+                    ) : (
+                      <>
+                        <p id={`${lineId}-name`} className="text-sm font-semibold text-foreground">
+                          {line.name || line.words}
+                        </p>
+                        <p id={`${lineId}-when`} className="text-sm text-muted-foreground">
+                          {line.name ? `${line.words} · ` : ""}
+                          {line.next ? t({ message: `Next: ${line.next.words}`, context: "sessions coming up, one rhythm's next meeting" }) : t({ message: "Nothing coming up", context: "sessions coming up, a rhythm with no meeting ahead" })} · {RHYTHM_COPY.waiting(line.waiting)}
+                        </p>
+                        {row.canKeep && (
+                          <div className="mt-1 flex flex-wrap items-center gap-1">
+                            <button
+                              type="button"
+                              className={BTN_QUIET}
+                              disabled={busy || editing != null}
+                              aria-describedby={`${anchor}-circle ${lineId}-name ${lineId}-when`}
+                              onClick={() => setEditing(line.key)}
+                            >
+                              {RHYTHM_COPY.change}
+                            </button>
+                            {line.next && (
+                              <button
+                                type="button"
+                                className={BTN_QUIET}
+                                disabled={busy || editing != null}
+                                aria-describedby={`${anchor}-circle ${lineId}-name ${lineId}-when`}
+                                onClick={() => skip(line.next!, line.key)}
+                              >
+                                {RHYTHM_COPY.skip}
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
           {row.canKeep && (
             <div className="mt-2 flex flex-wrap items-center gap-1">
-              <button ref={changeButton} type="button" className={BTN_QUIET} disabled={busy} aria-describedby={describedBy} onClick={() => setEditing(true)}>
-                {row.rhythm.kind === "none" ? RHYTHM_COPY.setRhythm : RHYTHM_COPY.change}
-              </button>
-              {row.rhythmNext && (
-                <button ref={skipButton} type="button" className={BTN_QUIET} disabled={busy} aria-describedby={describedBy} onClick={() => skip(row.rhythmNext!)}>
+              {!several && (
+                <button ref={changeButton} type="button" className={BTN_QUIET} disabled={busy} aria-describedby={describedBy} onClick={() => setEditing(ROW)}>
+                  {row.rhythm.kind === "none" ? RHYTHM_COPY.setRhythm : RHYTHM_COPY.change}
+                </button>
+              )}
+              {!several && row.rhythmNext && (
+                <button
+                  ref={skipButton}
+                  type="button"
+                  className={BTN_QUIET}
+                  disabled={busy}
+                  aria-describedby={describedBy}
+                  onClick={() => skip(row.rhythmNext!, row.nextRhythmKey ?? only?.key ?? null)}
+                >
                   {row.nextFrom === "rhythm" ? RHYTHM_COPY.skip : RHYTHM_COPY.skipRhythm(phraseOf(row.rhythmNext.words))}
+                </button>
+              )}
+              {canAdd && editing !== ADDING && (
+                <button ref={addButton} type="button" className={BTN_QUIET} disabled={busy || editing != null} aria-describedby={`${anchor}-circle`} onClick={() => setEditing(ADDING)}>
+                  {t({ message: "Add another meeting", context: "sessions coming up, add a rhythm to a circle" })}
                 </button>
               )}
             </div>
           )}
-          {error && (
+          {editing === ADDING && form(ADDING, null, { saveLabel: t({ message: "Add the meeting", context: "sessions coming up, save a new rhythm" }) })}
+          {error && editing == null && (
             <p role="alert" className="mt-2 text-sm font-medium text-destructive">
               {error}
             </p>
@@ -231,6 +335,10 @@ function Row({
     </li>
   );
 }
+
+/** The forms a row opens: the row's own rhythm (one rhythm, as it always was), or another meeting. Never a rhythm's key. */
+const ROW = "@row";
+const ADDING = "@add";
 
 export default function ComingUp({
   comingUp,

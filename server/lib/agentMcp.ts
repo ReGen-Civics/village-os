@@ -52,6 +52,10 @@
  */
 import { adminRequestDecision, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts } from "../../shared/agentAdmin";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
+import { LIBRARY_API, LIBRARY_LIMITS } from "../../shared/sessionLibrary";
+import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
+import { HANDOFF_LIMITS, HANDOFF_REFUSALS, HANDOFFS_URL } from "../../shared/roleTaskHandoff";
+import { isDayKey } from "../../shared/memberTasks";
 import { echoHash, type AgentScope } from "./agentTokens";
 import { INBOX_TOOLS, TIER_B_TOOLS } from "./agentMcpTierB";
 import { PROPOSAL_TOOLS } from "./agentMcpProposals";
@@ -128,13 +132,30 @@ export interface ToolContext {
     on: () => Promise<boolean>;
     seat: (target: { roleId: string } | { seatingId: string }) => Promise<LeadSeatFacts | null>;
     /**
-     * The record every approved write leaves: one admin-only audit event and one record queued for the village's
-     * organisational memory, both keyed on `writeKey`. Called after the route answered; it never throws back here.
+     * The record every approved write leaves, keyed on `writeKey`: one admin-only audit event saying who the AGENT
+     * says approved it, stored BEFORE the write is dispatched, and it throws when it cannot be stored, so nothing is
+     * written without it (audit, 15 Nov 2026).
      */
-    recorded: (a: { kind: LeadApprovedKind; roleId: string | null; path: string; method: string; subject: LeadApprovalSubject; approvedBy: string; approvalNote: string; summary?: string; writeKey: string }) => Promise<void>;
+    recorded: (a: LeadApprovalRecordInput) => Promise<void>;
+    /** After the route answered: the notice and the memory record for a write, or an event saying it was refused. Never throws. */
+    settled: (a: LeadApprovalRecordInput, outcome: "written" | "refused") => Promise<void>;
   };
   /** Writes one `agent_actions` row. Only the admin and Sera tools record through it. */
   recordAction?: (a: { scope: string; tool: string; method: string | null; path: string | null; echoHash: string; state: "done" | "refused" | "asked" }) => Promise<void>;
+}
+
+/** One lead-approved write as its record names it (server/lib/agentLeadApproval.ts). */
+export interface LeadApprovalRecordInput {
+  kind: LeadApprovedKind;
+  roleId: string | null;
+  path: string;
+  method: string;
+  subject: LeadApprovalSubject;
+  /** Who the agent SAYS approved it, and its words for that approval: the agent's claim, never verified. */
+  approvedBy: string;
+  approvalNote: string;
+  summary?: string;
+  writeKey: string;
 }
 
 /** What a tool answers: a result to show, or a refusal in words. */
@@ -405,6 +426,137 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     },
   },
   {
+    name: "hand_task_to_role",
+    scope: "tasks.write",
+    kind: "write",
+    title: "Hand a task to a role",
+    description:
+      "Hands a new task to one of the village's roles, exactly as the holder does from their profile: it waits on the role's holders (or, while nobody holds it, the circle's lead, then the stewards), who accept it, suggest a change or decline it, and the holder hears each answer. Nothing is accepted on its own. Call it first without confirmToken: it writes nothing and answers with the task, the role's name and a confirmToken. Show that to the member, and after their yes call it again with the same arguments and the confirmToken. Call it with no roleId (a title is not needed then) to see the roles a task can go to.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        roleId: { type: "string", description: "The role's id. Call this tool without one to list the roles, or read them with get_roles." },
+        title: { type: "string", description: `What the task is, in one line (up to ${HANDOFF_LIMITS.title} characters).` },
+        note: { type: "string", description: `Anything the role should know (up to ${HANDOFF_LIMITS.note} characters). Optional, with no email or phone number in it.` },
+        dueOn: { type: "string", description: "By when, as YYYY-MM-DD, from the village's today on. Optional." },
+        confirmToken: { type: "string", description: "From the first call. Leave it out to see what would be sent." },
+      },
+      required: ["title"],
+      additionalProperties: false,
+    },
+    routes: ["GET /api/member-tasks/redirect-targets", `POST ${HANDOFFS_URL}`],
+    async run(args, ctx) {
+      // A member whose own task list is off gets 403 list_off from both routes (memberTaskBridge `member`, roleTaskHandoffs `sender`).
+      const listOff = (a: RouteAnswer) => a.status === 403 && (a.body as { error?: unknown } | null)?.error === "list_off";
+      if (args.roleId !== undefined && args.roleId !== null && typeof args.roleId !== "string") return { ok: false, error: "roleId is a role's id." };
+      const roleId = typeof args.roleId === "string" ? args.roleId.trim() : "";
+
+      // The roles a task can go to, read live: the same list the profile's form offers. People are never read out.
+      const targets = await ctx.dispatch("GET", "/api/member-tasks/redirect-targets");
+      if (listOff(targets)) return { ok: false, error: `Tasks cannot be handed on from here. ${HANDOFF_REFUSALS.listOff}` };
+      if (targets.status !== 200) return refusal("The roles could not be read", targets);
+      const roles = (Array.isArray((targets.body as { roles?: unknown })?.roles) ? (targets.body as { roles: unknown[] }).roles : [])
+        .filter((r): r is Record<string, unknown> => !!r && typeof r === "object")
+        .map((r) => ({ id: String(r.id ?? ""), name: String(r.name ?? "") }))
+        .filter((r) => r.id);
+      if (!roleId) return { ok: false, error: "Name the role: roleId, one of the roles listed here.", detail: { roles } };
+      const role = roles.find((r) => r.id === roleId);
+      if (!role) return { ok: false, error: "That role is not one a task can go to now. Pick one listed here.", detail: { roles } };
+
+      // The handoff route's own cleaning (parseHandoffWords), so the echo the member says yes to is what is sent.
+      const title = cleanLine(args.title, HANDOFF_LIMITS.title + 1);
+      if (!title) return { ok: false, error: "Say what the task is: a title." };
+      if (title.length > HANDOFF_LIMITS.title) return { ok: false, error: `Keep the title to ${HANDOFF_LIMITS.title} characters.` };
+      const note = cleanText(args.note, HANDOFF_LIMITS.note + 1);
+      if (note && note.length > HANDOFF_LIMITS.note) return { ok: false, error: `Keep the note to ${HANDOFF_LIMITS.note} characters.` };
+      // The shape and a real date here; "from the village's today on" stays with the route, which knows the village's day.
+      if (args.dueOn !== undefined && args.dueOn !== null && args.dueOn !== "" && !isDayKey(args.dueOn)) {
+        return { ok: false, error: "dueOn is a real day as YYYY-MM-DD." };
+      }
+      const dueOn = typeof args.dueOn === "string" && args.dueOn ? args.dueOn : null;
+
+      const body = { roleId: role.id, title, note, dueOn };
+      const echo = { method: "POST", path: HANDOFFS_URL, role: role.name, body };
+      if (args.confirmToken === undefined) {
+        const { token, expiresAt } = ctx.mintConfirm("hand_task_to_role", echo);
+        return {
+          ok: true,
+          result: {
+            confirmRequired: true,
+            echo,
+            confirmToken: token,
+            expiresAt,
+            message: "Nothing was sent. Show this to the member, and after their yes call hand_task_to_role again with the same arguments and this confirmToken.",
+          },
+        };
+      }
+      const check = ctx.verifyConfirm("hand_task_to_role", args.confirmToken, echo);
+      if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
+      // The route checks the role is live, the day is from today on, and its hourly limit, as it does for the form.
+      const a = await ctx.dispatch("POST", HANDOFFS_URL, body);
+      if (listOff(a)) return { ok: false, error: `The task was not handed on. ${HANDOFF_REFUSALS.listOff}` };
+      if (a.status >= 300) return refusal("The task was not handed on", a);
+      return { ok: true, result: { written: true, echo, id: (a.body as { id?: unknown } | null)?.id ?? null } };
+    },
+  },
+  {
+    name: "add_agenda_item",
+    scope: "sessions.write",
+    kind: "write",
+    title: "Add an agenda item",
+    description:
+      "Adds an item to the agenda library, for one circle or for none in particular, exactly as the holder adding it on the sessions page does: it waits there until somebody brings it into a session. Call it first without confirmToken: it writes nothing and answers with what it would add and a confirmToken. Show that to the member, and after their yes call it again with the same arguments and the confirmToken.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: `What the item is, in one line (up to ${LIBRARY_LIMITS.title} characters).` },
+        circleId: { type: "string", description: "The circle whose sessions it is for, from get_roles. Leave it out for no circle in particular." },
+        aim: { type: "string", enum: [...ITEM_AIMS], description: "What the room does with it: report, explore or decide. Optional." },
+        note: { type: "string", description: "Anything the room should read first. Optional, with no email or phone number in it." },
+        confirmToken: { type: "string", description: "From the first call. Leave it out to see what would be added." },
+      },
+      required: ["title"],
+      additionalProperties: false,
+    },
+    routes: [`POST ${LIBRARY_API}`],
+    async run(args, ctx) {
+      // The library route's own cleaning (cleanBrought), so the echo the member says yes to is what is stored.
+      const title = cleanLine(args.title, LIBRARY_LIMITS.title + 1);
+      if (!title) return { ok: false, error: "Give the item a title." };
+      if (title.length > LIBRARY_LIMITS.title) return { ok: false, error: `Keep the title to ${LIBRARY_LIMITS.title} characters.` };
+      const note = cleanText(args.note, LIBRARY_LIMITS.note + 1);
+      if (note && note.length > LIBRARY_LIMITS.note) return { ok: false, error: `Keep the note to ${LIBRARY_LIMITS.note} characters.` };
+      if (args.aim !== undefined && args.aim !== null && typeof args.aim !== "string") return { ok: false, error: `aim is one of ${ITEM_AIMS.join(", ")}.` };
+      const aim = typeof args.aim === "string" && args.aim ? args.aim : null;
+      if (aim && !(ITEM_AIMS as readonly string[]).includes(aim)) return { ok: false, error: `aim is one of ${ITEM_AIMS.join(", ")}.` };
+      if (args.circleId !== undefined && args.circleId !== null && typeof args.circleId !== "string") return { ok: false, error: "circleId is a circle's id, from get_roles." };
+      const circleId = typeof args.circleId === "string" && args.circleId.trim() ? args.circleId.trim() : null;
+      if (circleId && circleId.length > 64) return { ok: false, error: "That is not a circle's id: take it from get_roles." };
+      const body = { title, aim, note, circleId };
+      const echo = { method: "POST", path: LIBRARY_API, body };
+      if (args.confirmToken === undefined) {
+        const { token, expiresAt } = ctx.mintConfirm("add_agenda_item", echo);
+        return {
+          ok: true,
+          result: {
+            confirmRequired: true,
+            echo,
+            confirmToken: token,
+            expiresAt,
+            message: "Nothing was added. Show this to the member, and after their yes call add_agenda_item again with the same arguments and this confirmToken.",
+          },
+        };
+      }
+      const check = ctx.verifyConfirm("add_agenda_item", args.confirmToken, echo);
+      if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
+      // The library's own route checks the circle and every limit again, as it does for a tap on the page.
+      const a = await ctx.dispatch("POST", LIBRARY_API, body);
+      if (a.status === 404) return { ok: false, error: "The agenda library is not open here: the sessions module is off in this village." };
+      if (a.status >= 300) return refusal("The agenda library did not take that", a);
+      return { ok: true, result: { written: true, echo, answer: a.body } };
+    },
+  },
+  {
     name: "import_moon_pack",
     scope: "moon.write",
     kind: "write",
@@ -518,7 +670,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     kind: "write",
     title: "Call an admin path",
     description:
-      "Calls one admin path the village has opened to agents, as the holder, with the holder's own admin checks. GET answers at once. A write answers first with what it would do and a confirmToken; call again with the same arguments and the token to make it. Some writes a person makes in the app, and the answer says so. Every write also carries summary, the first argument: one plain sentence a non-technical person can read in the permission box, naming the people and roles by name, with no ids and no jargon, such as: Remove the duplicate record of Ana on the Gardener role. She keeps the role. A client that connected before summary existed, whose tool list has no summary argument, puts the same sentence in body.summary; it is taken out before the route sees the body, and summary wins when both are there. The sentence is shown to the person with the platform's own line on what the call does, and kept in the audit. A role card, org draft, wording or seating write carries approvedBy and approvalNote in its body: who approved it and their approval in this chat, quoted; it is kept in the village's audit and its organisational memory. Erasure, powers, money, secrets and the agent accounts are never reachable here.",
+      "Calls one admin path the village has opened to agents, as the holder, with the holder's own admin checks. GET answers at once. A write answers first with what it would do and a confirmToken; call again with the same arguments and the token to make it. Some writes a person makes in the app, and the answer says so. Every write also carries summary, the first argument: one plain sentence a non-technical person can read in the permission box, naming the people and roles by name, with no ids and no jargon, such as: Remove the duplicate record of Ana on the Gardener role. She keeps the role. A client that connected before summary existed, whose tool list has no summary argument, puts the same sentence in body.summary; it is taken out before the route sees the body, and summary wins when both are there. The sentence is shown to the person with the platform's own line on what the call does, and kept in the audit. A role card, org draft, wording or seating write carries approvedBy and approvalNote in its body: who approved it and their approval in this chat, quoted; it is kept in the village's audit and its organisational memory. Erasure, powers, money, secrets and the agent accounts are never reachable here. Always open to read: GET /api/sessions (each circle's coming meeting, its rhythms by key under comingUp.rows[].rhythms, and the waiting agenda items under library.items) and GET /api/sessions/circles/{circleId}/summary. To put items on a meeting's agenda, use propose_changes with kind session_agenda.",
     inputSchema: {
       type: "object",
       properties: {
@@ -622,30 +774,37 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         await record("refused");
         return { ok: false, error: check.sentence, detail: { reason: check.reason } };
       }
-      // The approval is the connector's record, never the route's input: it is taken out before the route sees the body.
-      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead ? withoutApproval(body) : body ?? {});
-      await record(a.status < 300 ? "done" : "refused");
-      if (a.status >= 300) return refusal("The admin path refused", a);
+      // RECORDED BEFORE IT IS WRITTEN (audit, 15 Nov 2026): keyed on the spent confirm token, so one write is one key
+      // and a retried record is a no-op. A record that cannot be stored stops the write: nothing is dispatched.
+      let approvalRecord: LeadApprovalRecordInput | null = null;
       if (lead && ctx.leadApproved) {
         const approval = readLeadApproval(body);
         if (approval.ok) {
-          // Keyed on the spent confirm token: one write, one key, so a retried record is a no-op. The write has
-          // happened; a record that fails is logged and never turns the answer into a refusal.
-          await ctx.leadApproved
-            .recorded({
-              kind: lead,
-              roleId: seatRoleId,
-              path,
-              method,
-              subject: leadApprovalSubject(lead, path, body, seatRoleId),
-              approvedBy: approval.approvedBy,
-              approvalNote: approval.approvalNote,
-              summary,
-              writeKey: echoHash({ token: String(args.confirmToken) }).slice(0, 24),
-            })
-            .catch((err) => console.error("[agent-mcp] the approval record failed (the write stands)", err));
+          approvalRecord = {
+            kind: lead,
+            roleId: seatRoleId,
+            path,
+            method,
+            subject: leadApprovalSubject(lead, path, body, seatRoleId),
+            approvedBy: approval.approvedBy,
+            approvalNote: approval.approvalNote,
+            summary,
+            writeKey: echoHash({ token: String(args.confirmToken) }).slice(0, 24),
+          };
+          try {
+            await ctx.leadApproved.recorded(approvalRecord);
+          } catch (err) {
+            console.error("[agent-mcp] the approval record failed, so the write was not made", err);
+            await record("refused");
+            return { ok: false, error: "The record of this change could not be kept, so nothing was written. Try again in a moment.", detail: { code: "record_failed" } };
+          }
         }
       }
+      // The approval is the connector's record, never the route's input: it is taken out before the route sees the body.
+      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead ? withoutApproval(body) : body ?? {});
+      await record(a.status < 300 ? "done" : "refused");
+      if (approvalRecord && ctx.leadApproved) await ctx.leadApproved.settled(approvalRecord, a.status < 300 ? "written" : "refused").catch(() => undefined);
+      if (a.status >= 300) return refusal("The admin path refused", a);
       return { ok: true, result: { written: true, echo, answer: a.body } };
     },
   },
@@ -730,7 +889,7 @@ const rpcError = (id: string | number | null, code: number, message: string, dat
 });
 
 const INSTRUCTIONS =
-  "This connector reads the member's own moon, roles and task board, and presses their own board for them. Every write asks first: call it without confirmToken, show the member what it would do, and call again with the token after their yes. It never sends, approves, issues or pays anything, and it never shows an amount or a pay route.";
+  "This connector reads the member's own moon, roles and task board, and presses their own board for them. Every write asks first: call it without confirmToken, show the member what it would do, and call again with the token after their yes. It never sends money or recaps, approves, issues or pays anything, and it never shows an amount or a pay route.";
 
 /** Answer one JSON-RPC message. Never throws: a tool's failure is a result with isError. */
 export async function handleMcpMessage(message: unknown, call: McpCall): Promise<McpReply> {

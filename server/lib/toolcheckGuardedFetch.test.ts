@@ -38,7 +38,10 @@ vi.mock("https", async (importOriginal) => {
     const dial: Dial = { opts, body: "", pinned: null };
     opts.lookup?.(opts.hostname, { all: true }, (_e: unknown, a: unknown) => { dial.pinned = a; });
     state.dials.push(dial);
-    req.write = (c: string) => { dial.body += c; };
+    req.write = (c: string | Uint8Array) => {
+      (dial as any).raw = [...((dial as any).raw ?? []), c];
+      dial.body += c;
+    };
     req.destroy = () => undefined;
     req.end = () => {
       const next = state.answers.shift() ?? { status: 200, body: "{}" };
@@ -129,6 +132,17 @@ describe("guardedFetch dials like fetch, pinned", () => {
     expect(d.opts.method).toBe("POST");
     expect(d.body).toBe('{"a":1}');
     expect(d.opts.headers.authorization).toBe("Bearer t0ken");
+  });
+
+  it("sends a byte body exactly as given, with its byte length (a voice take's multipart upload)", async () => {
+    const bytes = new Uint8Array([0x1a, 0x45, 0xdf, 0xa3, 0x00, 0xff, 0xfe, 0x80, 0x0d, 0x0a]);
+    state.answers.push({ status: 200, body: '{"text":"ok"}' });
+    await guardedFetch("https://service.example/v1/audio/transcriptions", { method: "POST", headers: { "Content-Type": "multipart/form-data; boundary=x" }, body: bytes });
+    const d = state.dials[0] as any;
+    expect(d.opts.headers["content-length"]).toBe(String(bytes.length));
+    expect(Buffer.concat(d.raw.map((c: any) => Buffer.from(c))).equals(Buffer.from(bytes))).toBe(true);
+    // Anything else is still refused before a dial.
+    await expect(guardedFetch("https://service.example/x", { method: "POST", body: new Blob(["x"]) as any })).rejects.toThrow(/string or byte bodies only/);
   });
 
   it("passes the caller's signal to the dial, so the 60 s deadline still cuts it", async () => {

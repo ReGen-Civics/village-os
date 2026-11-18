@@ -389,6 +389,7 @@ export function Results({ detail }: { detail: Detail }) {
           <p className="mt-2">
             <Trans>This disagreement stays in the round's record for everyone to see.</Trans>
           </p>
+          <DivergenceLine vote={detail.divergenceVote ?? null} />
         </div>
       )}
       {other.funded.length > 0 && differ === 0 && (
@@ -409,6 +410,57 @@ export function Results({ detail }: { detail: Detail }) {
         </ul>
       )}
     </section>
+  );
+}
+
+/** Where the village's vote on the disputed quests stands (S4). */
+function DivergenceLine({ vote }: { vote: Detail["divergenceVote"] | null }) {
+  if (!vote) return null;
+  if (vote.result === null) {
+    const closes = vote.closesAt ? new Date(vote.closesAt).toLocaleString() : null;
+    return (
+      <p className="mt-2">
+        {closes ? (
+          <Trans>These quests are held until the village decides, in a vote that closes {closes}.</Trans>
+        ) : (
+          <Trans>These quests are held until the village decides.</Trans>
+        )}{" "}
+        {vote.ballotId && (
+          <Link href={`/decisions/${vote.ballotId}`} className="font-semibold underline">
+            <Trans context="funding rounds">Vote on it</Trans>
+          </Link>
+        )}
+      </p>
+    );
+  }
+  const note = vote.note ?? "";
+  return (
+    <p className="mt-2">
+      {vote.result === "decider" ? <Trans>The deciding count stands for these quests.</Trans> : <Trans>The village switched these quests to the other count.</Trans>}{" "}
+      {note}
+    </p>
+  );
+}
+
+/** The counted Voice this round froze when choosing opened, and the viewer's own share of it (S4). */
+export function VoiceLine({ detail }: { detail: Detail }) {
+  const v = detail.voice;
+  if (!v) return null;
+  const mine = v.mine == null ? null : (v.mine / 100).toFixed(2);
+  const roll = v.roll;
+  return (
+    <p className="mt-2 text-sm text-muted-foreground">
+      {v.countedVoice === "work_only" ? (
+        <Trans>Voice here counts only what members earned through work, read once when choosing opened.</Trans>
+      ) : (
+        <Trans>Voice here counts every member's whole Voice, read once when choosing opened.</Trans>
+      )}{" "}
+      {mine == null ? (
+        <Trans>You were not on the voting roll then, so this round counts {roll} members without you.</Trans>
+      ) : (
+        <Trans>Your counted Voice in this round is {mine}.</Trans>
+      )}
+    </p>
   );
 }
 
@@ -557,6 +609,11 @@ export function IdeaCard({ idea, pot, stage, onChanged }: { idea: Idea; pot: Pot
       {idea.status === "not_funded" && (
         <p className="mt-1 text-sm text-muted-foreground">
           <Trans context="funding rounds">Not funded this round</Trans>
+        </p>
+      )}
+      {idea.status === "on_ballot" && (
+        <p className="mt-1 text-sm font-semibold text-foreground">
+          <Trans context="funding rounds">Held for the village's vote</Trans>
         </p>
       )}
       {idea.status === "withdrawn" && (

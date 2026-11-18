@@ -2,8 +2,10 @@
  * THE REVIEW'S OTHER LINES (applicant journey QA, 15 Nov 2026): the price and the notes on the role card both
  * go with the application, so Review & submit says them too, each with a way back to its step.
  *
- * The price line also says the cap at their commitment (Rye, 15 Nov 2026): proposals go up to 120% of the
- * suggested price, the full role's cap before a commitment is chosen.
+ * The cap at their commitment (Rye, 15 Nov 2026: proposals go up to 120% of the suggested price) is drawn only
+ * for a reviewer or an admin who asks for it (`showCap`). The applicant's own Review & submit never shows a cap
+ * amount (lead, 17 Nov 2026), so it is off unless a caller turns it on.
+ * The split line (shared/proposalSplit.ts) says each share, and says when they changed it.
  *
  * Kept beside ApplySteps.tsx because pages/ProposeARole.tsx holds the file-lines ceiling.
  */
@@ -26,7 +28,7 @@ const short = (s: string) => (s.trim().length > 90 ? `${s.trim().slice(0, 90)}�
 
 export function reviewExtras(
   i18n: I18n = appI18n,
-  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }> },
+  p: { termsStep: number; valueStep: number; ceiling: PayCeiling | null | undefined; pct: number | null; ask: PayAsk | null | undefined; notes: ReadonlyArray<{ text: string }>; showCap?: boolean; split?: { line?: string } | null },
 ): ReviewExtra[] {
   const out: ReviewExtra[] = [];
   if (p.ceiling) {
@@ -44,10 +46,13 @@ export function reviewExtras(
         : diff !== null
           ? i18n._(msg({ message: `${priced(ask.monthly, askPeriod(ask))} (${signedPct(diff)} on the suggestion)`, context: "founding application review: the price" }))
           : priced(ask.monthly, askPeriod(ask));
-    const cap = capAt(c.amount, p.pct && p.pct > 0 ? p.pct : 100);
+    // The cap amount, for reviewers and admins only: never on an applicant's surface (lead, 17 Nov 2026).
+    const cap = p.showCap === true ? capAt(c.amount, p.pct && p.pct > 0 ? p.pct : 100) : 0;
     const capped = cap > 0 ? `${line} · ${i18n._(msg({ message: `Proposals up to ${priced(cap)}`, context: "founding application review: the cap on a proposal" }))}` : line;
     out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your price", context: "founding application review" })), line: ask?.why ? `${capped} · ${short(ask.why)}` : capped });
   }
+  // The split's line is worked where the split is (governance/TermsSplit.tsx), so its words load with it.
+  if (p.split?.line) out.push({ step: p.termsStep, label: i18n._(msg({ message: "Your split", context: "founding application review" })), line: p.split.line });
   const n = p.notes.length;
   if (n > 0) {
     out.push({

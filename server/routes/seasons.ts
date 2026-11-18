@@ -39,6 +39,7 @@ import { villageClock } from "../lib/stewardship";
 import { seasonSaved } from "../lib/seasonTurn";
 import { refreshLinkedGoalWords } from "../lib/sessionTemplates";
 import { planTargetAt, planWindowPayload } from "../../shared/seasonPlans";
+import { registerGoalLinkRemap } from "./seasonGoalLinks";
 
 type SeasonConfig = { seasons: any[]; cadence: string; timezone: string };
 
@@ -147,4 +148,7 @@ export function register(app: Express, deps: Deps): void {
     await seasonSaved();
     res.json({ success: true, ...after, seatsMoved });
   });
+
+  // A season's links move from a goal id it no longer holds to one it does (server/routes/seasonGoalLinks.ts).
+  registerGoalLinkRemap(app, { isAdmin, adminActor, getPool, seasonState });
 }

@@ -1,5 +1,5 @@
 /**
- * SEASON CREW, THE SQL (drizzle/0397). The rules are shared/seasonCrew.ts.
+ * SEASON CREW, THE SQL (drizzle/0406). The rules are shared/seasonCrew.ts.
  *
  * A pick runs inside `withSeasonLock` (server/repos/seasonPlaces.ts), the
  * season's one lock row, so two circles cannot pick the same person and a
@@ -130,7 +130,7 @@ export async function setBerths(db: Q, seasonId: string, circleId: string, berth
   );
 }
 
-/** Circles taking part in a season (0395), for a village that asks a circle to hold a place before it picks. */
+/** Circles taking part in a season (0404), for a village that asks a circle to hold a place before it picks. */
 export async function circlesTakingPart(db: Q, seasonId: string): Promise<string[]> {
   const [rows] = await db.query<RowDataPacket[]>(
     "SELECT subject_id FROM season_places WHERE season_id = ? AND subject_kind = 'circle' AND status = 'taking_part'",

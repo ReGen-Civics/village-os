@@ -7,7 +7,9 @@
  * records back into the range shown, and works the cycle's cash share. Rye's
  * answers of 2026-11-06 (spec §6):
  *
- *   - C1: inside the no-sign band (the suggestion ±10%) the setter's word stands.
+ *   - C1: inside the no-sign band the setter's word stands. The band runs from
+ *     `bandBelowPct` under the suggestion to `bandAbovePct` over it, edges
+ *     inside (10% each way unless the village sets its own, `noSignBand`).
  *   - C3: outside it, a written reason and a second, DIFFERENT signer (a holder
  *     of role.pay or steward.veto); with none, the village vote after 7 days.
  *   - C10: the setter may change the inputs, but every change is logged and the
@@ -28,7 +30,7 @@
  * Pure: no clock, no pool. Who holds which power is the server's to work out
  * through the one gate; this file is handed the member ids.
  */
-import { ENGINE_DEFAULTS, paidTokens, rewardFromTotal, voiceFor, type EngineDials, type ValuationModel } from "./valuation";
+import { ENGINE_DEFAULTS, bandAround, insideBand, noSignBand, paidTokens, rewardFromTotal, voiceFor, type EngineDials, type ValuationModel } from "./valuation";
 import type { TokenAmount } from "./workValue";
 import type { PayeeSuggestion, RangeWidth } from "./valuationEngine";
 
@@ -103,7 +105,7 @@ export interface SettingDecision {
 /** What a set figure needs, judged against the FIRST suggestion. */
 export function combineSetting(first: PayeeSuggestion, set: { totalMinor: number }, ctx: SettingContext, opts: SettingOptions = {}): SettingDecision {
   const expected = first.expected.totalMinor;
-  const inside = set.totalMinor >= first.band.lowMinor && set.totalMinor <= first.band.highMinor;
+  const inside = insideBand(set.totalMinor, first.band);
   const conflicted = ctx.payeeIds.includes(ctx.setterId);
   const signers = ctx.secondSigners.filter((id) => id !== ctx.setterId && !ctx.payeeIds.includes(id) && !ctx.setterSetPayOf.includes(id));
   const needs: SignNeed = inside && !conflicted ? "none" : signers.length ? "second" : "vote";
@@ -240,8 +242,11 @@ export function calibrate(records: readonly SettingRecord[], dials: Partial<type
     const n = ratios.length;
     const shrink = (q: number): number => round4((n * q + d.priorK) / (n + d.priorK));
     const medianRatio = round4(quantile(ratios, 0.5));
-    const above = rs.filter((r) => r.setMinor > (r.bandHighMinor ?? Math.round(r.suggestedMinor * 1.1))).length;
-    const below = rs.filter((r) => r.setMinor < (r.bandLowMinor ?? Math.round(r.suggestedMinor * 0.9))).length;
+    // A record keeps the band it was judged against; one written before records
+    // kept it is read against the platform's band.
+    const bandOf = (r: SettingRecord) => (r.bandLowMinor != null && r.bandHighMinor != null ? { lowMinor: r.bandLowMinor, highMinor: r.bandHighMinor } : bandAround(r.suggestedMinor, noSignBand()));
+    const above = rs.filter((r) => r.setMinor > bandOf(r).highMinor).length;
+    const below = rs.filter((r) => r.setMinor < bandOf(r).lowMinor).length;
     const enough = pairs >= d.minPairs;
     const offPct = Math.round(Math.abs(medianRatio - 1) * 100);
     const direction = medianRatio >= 1 ? "higher" : "lower";

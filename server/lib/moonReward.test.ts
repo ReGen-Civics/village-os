@@ -362,6 +362,71 @@ describe.skipIf(!configured)("End of Moon pays the total reward in its parts, ag
     expect(row.tokenTotals).toEqual([{ token: EARNED_EQUITY, waiting: 2600, approved: 0, issued: 0 }]);
   });
 
+  /** The invoice's status, paid day and paid amount, read off its own row. */
+  const invoiceRow = async () => (await q("SELECT `id`, `status`, `paid_on`, `paid_amount_minor` FROM `moon_invoices` WHERE `user_id` = 'm-wren'"))[0]; // module-review-ok: fixture SQL
+
+  it("0% cash (all Earned Equity and Credits): Approved writes no cash row, and the invoice reads Paid once every share has issued (pay defect 1)", async () => {
+    await cardShape([{ label: "Equity", pct: 60 }, { label: "Credits", pct: 40 }]);
+    const before = await issued();
+    const sent = await sendAll();
+    expect(sent.totalMinor).toBe(0);
+    expect(sent.lines[0].reward).toMatchObject({ cashMinor: 0, equityUnits: 3900, creditsUnits: 2600 });
+    expect((await approve()).body.approved).toHaveLength(1);
+    // Nothing for the transfers door: no cash row, and the shares wait on their review.
+    expect(await cashOwed()).toEqual([]);
+    expect((await invoiceRow()).status).toBe("approved");
+    // One share approved: still not Paid, because the other has not issued.
+    const keys = await rewardKeys();
+    expect(keys).toHaveLength(2);
+    const credits = keys.find((k) => k.endsWith(`:${CREDITS}`)) as string;
+    const equity = keys.find((k) => k.endsWith(`:${EARNED_EQUITY}`)) as string;
+    expect([credits, equity].every(Boolean)).toBe(true);
+    as("m-treas");
+    expect((await call(`POST ${PAY_BOARD_ROUTES.approve}`, { body: { keys: [equity] } })).body.approved.map((a: any) => a.outcome)).toEqual(["issued"]);
+    expect((await invoiceRow()).status).toBe("approved");
+    // The second share issues, through the ledger, and the invoice is Paid with nothing paid in cash.
+    expect((await call(`POST ${PAY_BOARD_ROUTES.approve}`, { body: { keys: [credits] } })).body.approved.map((a: any) => a.outcome)).toEqual(["issued"]);
+    const after = await issued();
+    expect(fromLedgerUnits(EARNED_EQUITY, after.equity - before.equity)).toBe(3900);
+    expect(fromLedgerUnits(CREDITS, after.credits - before.credits)).toBe(2600);
+    expect(after.rows - before.rows).toBe(2);
+    const row = await invoiceRow();
+    expect(row.status).toBe("paid");
+    expect(row.paid_on).toBeTruthy();
+    expect(Number(row.paid_amount_minor)).toBe(0);
+    expect(await cashOwed()).toEqual([]);
+    const paidEvents = await q("SELECT `amount_minor` FROM `moon_review_events` WHERE `kind` = 'paid' AND `invoice_id` = ?", [row.id]); // module-review-ok: fixture SQL
+    expect(paidEvents.map((e: any) => Number(e.amount_minor))).toEqual([0]);
+    expect(notices.some((n) => n.userId === "m-wren" && n.title.startsWith("Your pay is sent on"))).toBe(true);
+  });
+
+  it("0% cash approved before the launch vote: Approved until the launch sweep issues its shares, then Paid once (pay defect 1)", async () => {
+    await q("DELETE FROM `app_config` WHERE `config_key` = 'game-start'"); // module-review-ok: fixture SQL
+    await cardShape([{ label: "Equity", pct: 100 }]);
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    expect((await approveTokens()).body.approved.map((a: any) => a.outcome)).toEqual(["issues_at_launch"]);
+    expect((await invoiceRow()).status).toBe("approved");
+    // CONTROL: before the Game starts the sweep issues nothing, and the invoice stays Approved.
+    expect((await settleOwedLineRewards(pool)).map((o) => o.outcome)).toEqual(["still_owed"]);
+    expect((await invoiceRow()).status).toBe("approved");
+    await recordGameStart(pool, { ballotId: "b-launch", startedBy: "m-ops", note: "Launched for the test." });
+    expect((await settleOwedLineRewards(pool)).map((o) => o.outcome)).toEqual(["posted"]);
+    expect((await invoiceRow()).status).toBe("paid");
+    // Twice is safe: nothing is left owed, and the invoice is Paid once.
+    expect(await settleOwedLineRewards(pool)).toEqual([]);
+    expect(await q("SELECT `id` FROM `moon_review_events` WHERE `kind` = 'paid'")).toHaveLength(1); // module-review-ok: fixture SQL
+  });
+
+  it("a cash share keeps its invoice on the transfers door: tokens issuing alone never mark it Paid", async () => {
+    await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
+    await sendAll();
+    expect((await approve()).body.approved).toHaveLength(1);
+    expect((await approveTokens()).body.approved.map((a: any) => a.outcome)).toEqual(["issued"]);
+    expect((await invoiceRow()).status).toBe("approved");
+    expect(await cashOwed()).toEqual([390_000]);
+  });
+
   it("a Treasurer changes the equity up with a reason; the member reads it and answers; somebody else approves it, and it issues as changed", async () => {
     await cardShape([{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }]);
     const before = await issued();

@@ -77,6 +77,26 @@ export interface Outcome {
   backerFunded?: string[];
 }
 
+/** S4: the counted Voice frozen when choosing opened. Only the viewer's own figure is sent. */
+export interface VoiceSnapshot {
+  frozenAt: string;
+  countedVoice: "work_only" | "all";
+  roll: number;
+  /** Voice's minor units (2 decimals), or null when the viewer was not on the roll. */
+  mine: number | null;
+  unclassified: string[];
+}
+
+/** S4: the 48-hour vote on the quests the two counts disagree on. */
+export interface DivergenceVote {
+  heldIdeaIds: string[];
+  ballotId: string | null;
+  closesAt: string | null;
+  result: "decider" | "other" | null;
+  note: string | null;
+  settledAt: string | null;
+}
+
 export interface Detail {
   round: Round;
   pot: Pot;
@@ -84,6 +104,9 @@ export interface Detail {
   ballot: Idea[];
   myMarks: string[];
   outcome: Outcome | null;
+  /** Absent from a server before S4. */
+  voice?: VoiceSnapshot | null;
+  divergenceVote?: DivergenceVote | null;
 }
 
 /**

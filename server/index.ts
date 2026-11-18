@@ -108,6 +108,7 @@ import { register as registerGoogleAuthRoutes } from "./routes/authGoogle";
 import { register as registerSignUpRoutes } from "./routes/register";
 import { register as registerInviteRoutes } from "./routes/invites";
 import { register as registerJoinAnswerRoutes } from "./routes/joinAnswers";
+import { register as registerRitesRoutes, ritesAdmission, stampRitesOfModule } from "./routes/rites";
 import { makeInviteDoor } from "./lib/inviteDoor";
 import { register as registerRecoveryRoutes } from "./routes/authRecovery";
 import { register as registerVerifyEmailRoutes } from "./routes/verifyEmail";
@@ -265,6 +266,7 @@ import { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing, register a
 import { register as registerProtocolsRoutes } from "./routes/protocols";
 import { lensesOf as companionLensesOf } from "./repos/companions";
 import { exportMemberFundingRounds, fundingRoundsOpenState, register as registerFundingRoundsRoutes } from "./routes/fundingRounds";
+import { fundingDivergenceCloser } from "./lib/fundingRounds";
 import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry";
 import { register as registerHiddenMapRoutes, sweepHiddenMap } from "./routes/hiddenMap";
 import { exportMemberHiddenMap, hiddenMapDir } from "./lib/hiddenMap";
@@ -342,7 +344,7 @@ import {
 import { brandColour, installBackground, installThemeColour, sanitizeFontName } from "./lib/themeCss";
 import { fontRoleOf, fontWeightOf, withUploadedFace } from "./lib/brandFonts";
 import { applyTimingOf, publicValueFields, ringOf, VARIABLES_BY_KEY } from "../shared/gameVariables";
-import { CONSTITUTION } from "../shared/constitution";
+import { servedConstitution } from "../shared/constitution";
 import { circleViews, loopedCirclesRefusal } from "../shared/circleView";
 import { DEFAULT_MAP_SKIN, sanitiseMapSkin } from "../shared/mapSkin";
 import {
@@ -365,6 +367,8 @@ import {
   removeFiles,
   stampOf,
 } from "./lib/uploadsSweep";
+import { isAcceptedMember } from "./lib/applicantAccount";
+import { SUBMISSION_ATTACHMENT_DIRNAME, attachmentHeaders, attachmentName, attachmentPath, removeAttachment, sweepUnsentAttachments } from "./lib/submissionAttachments";
 import { uploadVariant } from "./lib/uploadVariants";
 import { isResizableUpload, parseUploadVariant, uploadSrcSet } from "../shared/uploadVariants";
 import { planUploadsArchive, streamUploadsArchive } from "./lib/uploadsArchive";
@@ -515,6 +519,7 @@ import {
   thresholdsForSubject,
   LAUNCH_SUBJECT_REF,
   MINT_RULE,
+  FUNDING_DIVERGENCE,
   GOVERNANCE_MODE,
   VILLAGE_LAUNCH,
 } from "../shared/ballotSubjects";
@@ -817,6 +822,7 @@ import {
   villageSecretsRefusal,
   type SecretKey,
 } from "./lib/secrets";
+import { VOICE_TRANSCRIPTION_CARDS } from "./lib/voiceTranscription";
 import { createMailer, DEFAULT_EMAIL_CONFIG, escapeHtml, singlePublicAddress, validEmailSender } from "./lib/comms/mailer";
 import { commsMode } from "./lib/comms/settings";
 import { createPermissionFor, suppressionsPortFor } from "./lib/comms/permissions";
@@ -1089,6 +1095,7 @@ const ORG_CORRECTIONS_SEED_FILE = path.join(SEEDS_DIR, "org-chart-corrections-20
 /** Ledger of one-shot data fixes already applied to this deployment's volume. */
 // migrations.json retired in S12 — the runOnce ledger is app_config 'data-migrations'.
 const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
+const SUBMISSION_FILES_DIR = path.join(DATA_DIR, SUBMISSION_ATTACHMENT_DIRNAME); // a form's attachment, never on the public volume (server/lib/submissionAttachments.ts)
 /**
  * The bootstrap password — used ONCE, to create a deployment's first founder,
  * and inert afterwards.
@@ -3001,7 +3008,7 @@ function withRoleHolderLock<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 /** The module-local singletons and the volume path the erasure sweep cannot import. */
-const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), notify };
+const erasureDeps = { members, submissionsRepo, roleHoldersRepo, withRoleHolderLock, loadRoleHolders, uploadsDir: UPLOADS_DIR, submissionFileDir: SUBMISSION_FILES_DIR, proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), notify };
 
 /** Role ids a member holds. */
 function roleIdsFor(userId: string): string[] {
@@ -4619,9 +4626,9 @@ async function runRetentionSweep(): Promise<string> {
         const name = path.basename(String((row as any)?.data?.attachment ?? "").trim());
         if (!name || keptFiles.has(name) || !isProposalAttachment(name)) continue;
         try {
-          fs.unlinkSync(path.join(UPLOADS_DIR, name));
+          removeAttachment(SUBMISSION_FILES_DIR, UPLOADS_DIR, name);
         } catch {
-          /* already gone, or never written — the row still goes */
+          /* unreadable now: the row still goes */
         }
       }
       // By id, so a sweep that ages out the whole queue cannot take a
@@ -4630,6 +4637,9 @@ async function runRetentionSweep(): Promise<string> {
       parts.push(`${before.length - keep.length} submission(s)`);
     }
   }
+  // An attachment nobody ever sent with a form goes after two days (server/lib/submissionAttachments.ts).
+  const unsent = sweepUnsentAttachments(SUBMISSION_FILES_DIR, new Set(submissionsRepo.all().map((s: any) => attachmentName(s?.data?.attachment)).filter((n): n is string => !!n)));
+  if (unsent) parts.push(`${unsent} unsent attachment(s)`);
   const bodies = await sweepContactBodies(getPool(), numberVar("map.contact_retention_days"));
   if (bodies) parts.push(`${bodies} contact body(ies)`);
   const idleContacts = await sweepIdleContacts(getPool(), numberVar("comms.retention_months")); if (idleContacts) parts.push(`${idleContacts} unused email contact(s)`); // Village Comms 5.17: nobody written to, nothing on record
@@ -6464,7 +6474,7 @@ async function startServer() {
    */
   app.disable("x-powered-by");
   app.use(
-    securityHeaders({
+    securityHeaders({ getBrand,
       shellPath: path.join(
         process.env.NODE_ENV === "production" ? path.resolve(__dirname, "public") : path.resolve(__dirname, "..", "dist", "public"),
         "index.html",
@@ -8198,11 +8208,12 @@ async function startServer() {
   const inviteDoor = makeInviteDoor({ getPool, members }); // one invitation for both sign-up doors
   registerSignUpRoutes(app, {
     overLimit, clientIp, members, hashPassword, publicUser, joined, invites: inviteDoor, sendVerification: (m) => sendVerifyLetter(letters, m),
-    makeHandle: (name) => uniqueHandle(slugifyHandle(name)),
-    encodeToken: (userId, email) => encodeToken(AUTH_TOKEN_SECRET, userId, email),
+    makeHandle: (name) => uniqueHandle(slugifyHandle(name)), endReachAround: (id, change) => withAgentReachEnded(getPool(), id, change, { notify }).then((r) => r.changed), acceptedMember: (m) => isAcceptedMember(m, getPool()), // an invitation taking over a bare unproved account, never a member's
+    encodeToken: (userId, email, v) => encodeToken(AUTH_TOKEN_SECRET, userId, email, v),
   });
   registerInviteRoutes(app, { authedUser, getPool, members, guardCapability, mayAct, overLimit, clientIp, invites: inviteDoor });
   registerJoinAnswerRoutes(app, { authedUser, getPool, members, guardCapability, submissionsRepo, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, notify }); // Accept emails the invitation, Decline a kind no (sheet A5)
+  registerRitesRoutes(app, { authedUser, isAdmin, getPool, members, mayAct, overLimit, clientIp, notify, firstName, projectName: notifyDeps.projectName, deploymentOrigin, stageOf, submissionsRepo, commsPostOffice, escapeHtml, loadRoles, roleIdsFor, lapseContext, invites: inviteDoor }); // rites, the buddy, the letter and the door code (module `rites`, off by default)
   registerGoogleAuthRoutes(app, {
     authSecret: AUTH_TOKEN_SECRET,
     availability: googleSignInAvailability,
@@ -16751,7 +16762,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     { key: "assistant_api_key", title: "Anthropic, the AI guide", unlocks: "The AI guide: proposal intake, the launch journey, and call synthesis. Blank means every form still works, with no guide on them.", getAt: "console.anthropic.com", placeholder: "sk-ant-…" },
     { key: "riverside_webhook_secret", title: "Riverside recording deliveries", unlocks: "Call automation's inbound deliveries. It fails closed: with no secret set, every payload is discarded with an inert 200 and nobody is told why.", getAt: "Riverside → webhook settings → send this same value as the x-riverside-secret header", placeholder: "a long random string you choose" },
     { key: "governance_hub_secret", title: "Governance hub deliveries", unlocks: "How a Hypha vote's executed outcome comes home. Fails closed the same way. Until it is set, outcomes are reported by the proposer and applied by an admin.", getAt: "Issued when your fork is registered with the hub", placeholder: "the value the hub issued you" },
-    { key: "basescan_api_key", title: "Basescan token lookup", unlocks: "Game Mechanics, Hypha Bridge lists the token contracts your founder account holds on Base. Without it that lookup answers 409 and addresses can still be pasted by hand.", getAt: "etherscan.io → API keys (one free key serves Base)", placeholder: "your Etherscan API key" }, HYPHA_VOICE_CARD, ...GOOGLE_CARDS, ERROR_WEBHOOK_CARD, BASE_RPC_CARD, ...ROOT_SLOT_CARDS,
+    { key: "basescan_api_key", title: "Basescan token lookup", unlocks: "Game Mechanics, Hypha Bridge lists the token contracts your founder account holds on Base. Without it that lookup answers 409 and addresses can still be pasted by hand.", getAt: "etherscan.io → API keys (one free key serves Base)", placeholder: "your Etherscan API key" }, HYPHA_VOICE_CARD, ...GOOGLE_CARDS, ERROR_WEBHOOK_CARD, BASE_RPC_CARD, ...ROOT_SLOT_CARDS, ...VOICE_TRANSCRIPTION_CARDS,
   ];
 
   interface IntegrationCard {
@@ -17078,7 +17089,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         // The filter above read the browser's claim; this reads the bytes (R107).
         if (clean.kind !== "image" && clean.kind !== "pdf") return res.status(400).json({ error: "Only images or PDF are allowed" });
         const filename = stampedName("proposal", clean.ext || ".bin");
-        writeToVolume(UPLOADS_DIR, filename, clean.bytes);
+        writeToVolume(SUBMISSION_FILES_DIR, filename, clean.bytes); // off the public volume (audit, 15 Nov 2026)
         res.json({ filename, originalName: req.file.originalname });
       } catch (e) {
         if (e instanceof CarriesLocationData) return res.status(400).json({ error: e.message });
@@ -17092,8 +17103,16 @@ Send an empty drafts array when you are still listening. A role payload is {name
     });
   });
 
+  // The only door onto a form's attachment: an admin, private, nosniff, a PDF as a download (server/lib/submissionAttachments.ts).
+  app.get("/api/admin/submission-attachments/:filename", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const found = attachmentPath(SUBMISSION_FILES_DIR, UPLOADS_DIR, req.params.filename);
+    if (!found) return res.status(404).json({ error: "Not found" });
+    res.set(attachmentHeaders(path.basename(found))).send(fs.readFileSync(found));
+  });
+
   registerBrandUploadRoutes(app, { isAdmin, uploadsDir: UPLOADS_DIR });
-  registerBrandSoundRoutes(app, { isAdmin, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
+  registerBrandSoundRoutes(app, { guardCapability, brandRepo, uploadsDir: UPLOADS_DIR, getBrand });
 
   // ── Village font package: upload + licence acknowledgment ────────────────
   // The foundation catalogue (shared/fontCatalog.ts) is all-OFL and always
@@ -17506,6 +17525,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   };
   app.get("/api/uploads/:filename", async (req, res) => {
     const safe = path.basename(req.params.filename);
+    // A form's attachment is never served here, a file written to this volume before the change included (audit, 15 Nov 2026).
+    if (attachmentName(safe)) return res.status(404).json({ error: "Not found" });
     /*
      * 0093: a photograph that is hidden or taken down stops being served
      * here, not only in the galleries.
@@ -17831,9 +17852,12 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
   registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg", quests: { stageOf, roleIdsFor, claimsRepo, questsRepo, questConsentRecipients, notify } });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
-  registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
+  // notifyRoll is declared further down, so it is reached through an arrow at request time.
+  registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, roll: votingRoll, divergence: { governanceOn: () => effectiveLifecycle("governance") !== "off", ballotSetup: () => roleBallotSetup(), notifyRoll: (b, input) => notifyRoll(b, input) } });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
-  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), visitClaims: { stageOf, roleIdsFor, claimsRepo, questsRepo } });
+  // The rites module tells the map when a member was admitted (only pins from then count) and stamps the rites the
+  // village gives the map when one really opens: no rite id in either module (agreed with vos-hidden-map, verified by pirates-qa).
+  registerHiddenMapRoutes(app, { notify, authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir: hiddenMapDir(UPLOADS_DIR), visitClaims: { stageOf, roleIdsFor, claimsRepo, questsRepo }, admission: ritesAdmission, opened: (u) => stampRitesOfModule("hidden-map", u).then(() => undefined) });
   registerMemberTaskRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, timeZone: () => getSeasonConfig().timezone });
   registerMemberTaskBridgeRoutes(app, { authedUser, getPool, overLimit, isAdmin, adminActor, notify, timeZone: () => getSeasonConfig().timezone });
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
@@ -19934,7 +19958,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
         .filter((key) => !MODULES.some((m) => m.variableKeys.includes(key) && shown(m))),
     );
     res.json({
-      constitution: CONSTITUTION,
+      constitution: servedConstitution((id) => LIFECYCLE_RANK[effectiveLifecycle(id)] >= LIFECYCLE_RANK.members),
       variables: allVariables()
         .filter((v) => !hiddenKeys.has(v.key))
         .map((v) => ({
@@ -20790,18 +20814,22 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * taken out before the gate is asked, whatever a badge grants (Rye,
    * 2026-10-30; `withoutFormerMembers`, server/lib/formerMember.ts).
    */
-  async function buildElectorate(): Promise<Array<{ userId: string; weight: number }>> {
+  /** Who may vote now, without weights: present members holding ballot.vote. Funding rounds weighs this roll by its own counted Voice. */
+  async function votingRoll(): Promise<string[]> {
     const candidates = await withoutFormerMembers(getPool(), (await members.all()).filter((u: any) => isPresentMember(u, AUTH_TOKEN_SECRET)));
-    const eligible: any[] = [];
+    const eligible: string[] = [];
     for (const u of candidates) {
-      const ctx = await capabilityCtx(u);
-      if (hasCapability("ballot.vote", ctx)) eligible.push(u);
+      if (hasCapability("ballot.vote", await capabilityCtx(u))) eligible.push(String(u.id));
     }
+    return eligible;
+  }
+
+  async function buildElectorate(): Promise<Array<{ userId: string; weight: number }>> {
+    const eligible = await votingRoll();
     // The whole roll, so the cap on one member's weight (when it is on) is
     // measured against everybody who may vote, and frozen with them.
-    const snapshot = weightModeNow();
-    const weights = await rollWeightsFor(getPool(), eligible.map((u: any) => String(u.id)), snapshot);
-    return eligible.map((u: any) => ({ userId: String(u.id), weight: weights.get(String(u.id)) ?? 0 }));
+    const weights = await rollWeightsFor(getPool(), eligible, weightModeNow());
+    return eligible.map((id) => ({ userId: id, weight: weights.get(id) ?? 0 }));
   }
 
   // The URL, and why a stale one is never an error state, live on `decisionLink`
@@ -20882,6 +20910,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
      */
     [CYCLE_SETTLEMENT]: settlementCloser(() => moonDeps()),
     [REDEMPTION_SUBJECT]: redemptionCloser({ getPool, notify }),
+    // Funding rounds S4: the quests a round's two counts disagree on (server/lib/fundingRounds.ts).
+    [FUNDING_DIVERGENCE]: fundingDivergenceCloser(() => ({ pool: getPool(), questsRepo })),
     /*
      * Mechanics (GOV_DESIGN 2.6). Every step is a guarded update or an
      * idempotent apply, so a crash partway heals on the admin apply path

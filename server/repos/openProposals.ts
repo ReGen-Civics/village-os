@@ -19,6 +19,7 @@
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { openBodyOf, OPEN_PROPOSAL_STATUSES, type OpenProposalBody, type OpenProposalStatus } from "../../shared/openProposals";
 import { OPEN_INVITE_PREFIX, type OpenDecision } from "../../shared/openProposalDecide";
+import type { WrittenWords } from "../../shared/voiceNotes";
 
 type Db = Pool | PoolConnection;
 
@@ -269,6 +270,19 @@ export async function listOpenProposals(db: Db, statuses: readonly OpenProposalS
   return rows.map(rowOf);
 }
 
+/**
+ * Every proposal for one agent account (0374) in these statuses, oldest first, with NO cap (audit, 15 Nov 2026):
+ * who keeps an agent is read from these, and a keeper past a capped list read as nobody, so any member could claim it.
+ */
+export async function proposalsForAgent(db: Db, agentUserId: string, statuses: readonly OpenProposalStatus[]): Promise<StoredOpenProposal[]> {
+  if (statuses.length === 0 || !agentUserId) return [];
+  const [rows] = await db.query<RowDataPacket[]>(
+    `SELECT ${COLUMNS} FROM open_role_proposals WHERE status IN (${statuses.map(() => "?").join(",")}) AND JSON_UNQUOTE(JSON_EXTRACT(body_json, '$.agent.agentUserId')) = ? ORDER BY created_at, id`,
+    [...statuses, agentUserId],
+  );
+  return rows.map(rowOf);
+}
+
 /** Every adopted proposal from one address (its folded key), oldest decision first. */
 export async function adoptedForAddress(db: Db, emailKey: string): Promise<StoredOpenProposal[]> {
   const [rows] = await db.query<RowDataPacket[]>(
@@ -323,6 +337,7 @@ export const ANONYMISE_REMOVES = [
   "$.voice",
   "$.selfKnowledge",
   "$.payAsk",
+  "$.paySplit",
 ] as const;
 
 /** What anonymising leaves: the application's substance, with nothing that names or reaches the person. */
@@ -553,6 +568,38 @@ export async function clearVoiceOf(db: Db, ids: readonly string[]): Promise<numb
   if (!ids.length) return 0;
   const [result] = await db.query<ResultSetHeader>("UPDATE open_role_proposals SET body_json = JSON_REMOVE(body_json, '$.voice') WHERE id IN (?) AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL", [ids]);
   return Number(result.affectedRows ?? 0);
+}
+
+/**
+ * Keep an AI transcript of one kept recording or clip with its proposal (the
+ * lead, 17 Nov 2026; shared/voiceNotes.ts `written`). Under the row lock, and
+ * only while the proposal still holds that recording, so a tidy that took the
+ * voice meanwhile wins. True when written.
+ */
+export async function setVoiceWritten(pool: Pool, id: string, noteId: string, words: WrittenWords): Promise<boolean> {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    const p = await readOpenProposal(conn, id, true);
+    const voice = p?.body.voice;
+    if (!voice || ![...voice.notes, ...(voice.clips ?? [])].some((n) => n.id === noteId)) {
+      await conn.rollback();
+      return false;
+    }
+    const written = { ...(voice.written ?? {}), [noteId]: words };
+    const [result] = await conn.query<ResultSetHeader>(
+      // JSON_EXTRACT(?, '$') makes the map a JSON value on MySQL and MariaDB alike (MariaDB has no CAST AS JSON).
+      "UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.voice.written', JSON_EXTRACT(?, '$')) WHERE id = ? AND JSON_EXTRACT(body_json, '$.voice') IS NOT NULL",
+      [JSON.stringify(written), id],
+    );
+    await conn.commit();
+    return Number(result.affectedRows ?? 0) === 1;
+  } catch (e) {
+    await conn.rollback().catch(() => undefined);
+    throw e;
+  } finally {
+    conn.release();
+  }
 }
 
 /** Which of these proposals still keep their links and files: rows that exist and are not anonymised (Rye, 10 Nov 2026). */

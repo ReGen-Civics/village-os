@@ -6,7 +6,7 @@ Provenance: platform
 > `shared/circlePlaces.ts`; the orchestration is `server/lib/seasonPlaces.ts`; every statement is in
 > `server/repos/seasonPlaces.ts` and `server/repos/circlePlaces.ts`; the routes are
 > `server/routes/seasonPlaces.ts` and `server/routes/seasonPlaceGatherings.ts`; the schema is
-> `drizzle/0395_season_places.sql`, `drizzle/0396_event_circle_places.sql` and `drizzle/0397_season_crew.sql`; season crew is `shared/seasonCrew.ts`, `server/lib/seasonCrew.ts`, `server/repos/seasonCrew.ts`, `server/routes/seasonCrew.ts`. Role prerequisites live beside it in
+> `drizzle/0404_season_places.sql`, `drizzle/0405_event_circle_places.sql` and `drizzle/0406_season_crew.sql`; season crew is `shared/seasonCrew.ts`, `server/lib/seasonCrew.ts`, `server/repos/seasonCrew.ts`, `server/routes/seasonCrew.ts`. Role prerequisites live beside it in
 > the governance module: `shared/rolePrerequisites.ts`, `server/lib/rolePrerequisites.ts`,
 > `server/routes/rolePrerequisites.ts`.
 
