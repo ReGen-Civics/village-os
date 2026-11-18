@@ -2006,6 +2006,13 @@ const KNOWN_DIALS = [
   // and asks for it to be visible, and the cap ships off, so that stands as is.
   "governance.weight_cap_on",
   "governance.weight_cap_pct",
+  // The caps on what one member counts from cash and from other contributions
+  // (shared/voiceSourceCaps.ts), off by default, counted at ballot open and
+  // never clipped at the mint. They build no staged ruling, for the same reason.
+  "governance.weight_cap_cash_on",
+  "governance.weight_cap_cash",
+  "governance.weight_cap_other_on",
+  "governance.weight_cap_other",
   "governance.unity_pct",
   "governance.quorum_pct",
   "governance.vote_days",

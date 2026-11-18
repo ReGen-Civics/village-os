@@ -29,6 +29,24 @@ describe("the words a new settings line gets", () => {
     }
     expect(publicSettingLabel("tokens.base_rpc_url")).toBeNull();
   });
+
+  it("keeps every members-only dial off the public pulse, new lines and stored ones", () => {
+    const membersOnly = Object.values(VARIABLES_BY_KEY).filter((d) => d.membersOnly).map((d) => d.key);
+    expect(membersOnly.sort()).toEqual([
+      "governance.weight_cap_cash",
+      "governance.weight_cap_cash_on",
+      "governance.weight_cap_other",
+      "governance.weight_cap_other_on",
+    ]);
+    for (const key of membersOnly) {
+      expect(publicSettingLabel(key), key).toBeNull();
+      expect(settingsPulseLine(key).audience, key).toBe("admin");
+      expect(publicPulseText({ kind: "settings", text: `A game rule changed: ${key}`, entityType: "variable", entityRef: key }), key).toBeNull();
+      // A line written in public words before the dial was marked is hidden too.
+      const label = VARIABLES_BY_KEY[key].label;
+      expect(publicPulseText({ kind: "settings", text: `${PUBLIC_RULE_PREFIX}${label}`, entityType: "variable", entityRef: key }), key).toBeNull();
+    }
+  });
 });
 
 describe("the read-time rewrite of stored lines", () => {

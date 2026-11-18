@@ -98,7 +98,7 @@ import { closeAndOpenQuorumRerun } from "../repos/ballotReruns";
 // 0219: the judgement line the proposer writes, and which subjects carry one.
 import { normaliseAlignment } from "../../shared/governingPurpose";
 import { purposeAlignmentRefusal } from "./governingPurpose";
-import type { WeightMode } from "./governanceWeights";
+import type { WeightBasis as ElectorateBasis, WeightMode } from "./governanceWeights";
 // Wave 4: a ruled objection raises the canvas's conflict moment (plan 4.2).
 import { raiseCanvasRevisit } from "./canvasRevisit";
 // The objections table's one enumerable home. Every statement against
@@ -322,8 +322,12 @@ export interface OpenBallotInput {
   /** Days until closes_at (vote days, or the consent window). */
   durationDays: number;
   openedBy: string;
-  /** The frozen who-and-how-much. Weights already resolved by the caller. */
-  electorate: Array<{ userId: string; weight: number }>;
+  /**
+   * The frozen who-and-how-much. Weights already resolved by the caller. A
+   * `basis` (from `rollEntriesFor`, server/lib/governanceWeights.ts) is what a
+   * weight under caps by source was counted from, frozen beside it (0407).
+   */
+  electorate: Array<{ userId: string; weight: number; basis?: ElectorateBasis | null }>;
   /**
    * Runs INSIDE the open transaction, after the ballot and electorate rows
    * are written: the subject's own status flip, so "a ballot exists" and
@@ -512,10 +516,17 @@ export async function openBallot(pool: Pool, input: OpenBallotInput): Promise<Op
       ],
     );
     for (const e of electorate) {
-      await conn.query("INSERT INTO ballot_electorate (ballot_id, user_id, weight) VALUES (?,?,?)", [ // module-review-ok: the ballot tables' one enumerable home (the intents.ts pattern; no cache sits above them)
+      // The basis is NULL on every row of a ballot opened with no caps by
+      // source, which is every ballot before 0407, so those rows read as before.
+      const b = e.basis ?? null;
+      await conn.query("INSERT INTO ballot_electorate (ballot_id, user_id, weight, held_weight, held_cash, cap_cash, cap_other) VALUES (?,?,?,?,?,?,?)", [ // module-review-ok: the ballot tables' one enumerable home (the intents.ts pattern; no cache sits above them)
         id,
         e.userId,
         Math.max(0, e.weight),
+        b ? b.held : null,
+        b ? b.heldCash : null,
+        b ? b.capCash : null,
+        b ? b.capOther : null,
       ]);
     }
     if (input.onOpen) await input.onOpen(conn, id);

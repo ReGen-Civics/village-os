@@ -537,14 +537,30 @@ describe.skipIf(!DB_CONFIGURED)("the per-cycle cap counts issuance, net, from ev
       toUserId: oraId, amount: 5, reason: "one steward alone",
     }, founderToken)).status).toBe(200);
 
+    // Door 2, marked as cash put in (0407): the same door, source admin_mint_cash.
+    // A tag that is neither cash nor other is refused before anything moves.
+    expect((await call("POST", `/api/admin/tokens/${slug}/mint`, {
+      toUserId: oraId, amount: 5, reason: "cash given", contribution: "money",
+    }, founderToken)).status).toBe(400);
+    expect((await call("POST", `/api/admin/tokens/${slug}/mint`, {
+      toUserId: oraId, amount: 5, reason: "cash given", contribution: "cash",
+    }, founderToken)).status).toBe(200);
+
     // Door 3: the same grant over the threshold, signed by a second steward.
+    // Asked as cash, so the approval must post the tag the row stored.
     await setVar("ledger.admin_mint_cosign_over", "5");
     const raised = await call("POST", `/api/admin/tokens/${slug}/mint`, {
-      toUserId: oraId, amount: 20, reason: "over what one steward may grant",
+      toUserId: oraId, amount: 20, reason: "over what one steward may grant", contribution: "cash",
     }, founderToken);
     expect(raised.status, `raise: ${raised.text.slice(0, 300)}`).toBe(202);
+    expect(raised.json.contribution).toBe("cash");
     const approved = await call("POST", `/api/admin/mint-requests/${raised.json.requestId}/approve`, {}, boToken);
     expect(approved.status, `approve: ${approved.text.slice(0, 300)}`).toBe(200);
+    const [cosigned] = await testDb!.conn.query<any[]>( // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
+      "SELECT source FROM token_ledger WHERE idempotency_key = ?",
+      [`admin_mint:req:${raised.json.requestId}`],
+    );
+    expect(cosigned.map((r: any) => String(r.source))).toEqual(["admin_mint_cash"]);
     await setVar("ledger.admin_mint_cosign_over", "0");
 
     // Door 4 (0200): a circle treasury funded from the same faucet. Resources

@@ -84,8 +84,9 @@ export async function closeAndOpenQuorumRerun(pool: Pool, input: QuorumRerunInpu
       [input.rerunId, input.openKey, input.rerunQuorumPct, input.opensAt, input.closesAt, input.firstId],
     );
     await conn.query(
-      "INSERT INTO ballot_electorate (ballot_id, user_id, weight) " +
-        "SELECT ?, user_id, weight FROM ballot_electorate WHERE ballot_id = ?",
+      // The rerun carries the frozen roll whole, the basis of each weight (0407) with it.
+      "INSERT INTO ballot_electorate (ballot_id, user_id, weight, held_weight, held_cash, cap_cash, cap_other) " +
+        "SELECT ?, user_id, weight, held_weight, held_cash, cap_cash, cap_other FROM ballot_electorate WHERE ballot_id = ?",
       [input.rerunId, input.firstId],
     );
     await conn.query(

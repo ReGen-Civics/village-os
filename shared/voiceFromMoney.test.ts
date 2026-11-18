@@ -94,7 +94,8 @@ describe("what never earns", () => {
 describe("which Voice is work", () => {
   it("names the work sources and the money sources, and never both", () => {
     expect(WORK_VOICE_SOURCES).toEqual(["quest_consent", "role_cycle", "proposal_accepted", "admin_mint"]);
-    expect(MONEY_VOICE_SOURCES).toEqual([DONATION_VOICE_SOURCE, INVESTMENT_VOICE_SOURCE, "dues_dividend"]);
+    // `admin_mint_cash`: a hand-mint marked as cash given (shared/voiceSourceCaps.ts).
+    expect(MONEY_VOICE_SOURCES).toEqual([DONATION_VOICE_SOURCE, INVESTMENT_VOICE_SOURCE, "dues_dividend", "admin_mint_cash"]);
     expect(WORK_VOICE_SOURCES.filter((s) => MONEY_VOICE_SOURCES.includes(s))).toEqual([]);
   });
 

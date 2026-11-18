@@ -110,6 +110,7 @@ export interface VariableDef {
   criticality?: Criticality;
   placeDependent?: true;
   withheld?: true;
+  membersOnly?: true;
   movedToSecret?: string;
 ${extraField}}
 
