@@ -400,7 +400,9 @@ describe("the six steps", () => {
       "Step 6: Review & submit",
     ]);
     // Nothing of the game register on this page.
-    expect(document.body.textContent).not.toMatch(/\bquest|stone|moss|\bmoon\b/i);
+    expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
+    // Moon is the village's rhythm and is said here (the lead, 18 Nov 2026), and every moon wears its tip (MoonWord.tsx).
+    expect((document.body.textContent ?? "").match(/\bmoons?\b/gi)?.length ?? 0).toBe(document.querySelectorAll(".moon > [tabindex]").length);
   });
 
   it("Get to know us: each way is a link in a new tab, the warm push, and the Steward path for the completely new (Rye, 15 Nov 2026)", async () => {

@@ -108,7 +108,7 @@ export default function PriceAsk({
       ) : (
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
       )}
-      <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
+      <p className={HINT}><MoonText text={t({ message: "Your first moon starts lower and follows what you deliver.", context: "price ask: the first moon" })} /></p>
       {/* Across roles (QA-1115 Spanish applicant P1-2): each application is priced once, at its own commitment. */}
       <p className={HINT} data-price-across-roles="">
         {/* No "send one for each" (production check, 18 Nov 2026): the lead ruled one person may hold several roles in one
@@ -149,8 +149,8 @@ export default function PriceAsk({
                       <MoonText
                         text={
                           suggested
-                            ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first month's contract.`, context: "price popup lede" })
-                            : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })
+                            ? t({ message: `We suggest ${priced(suggested)} at ${pct}%. Your proposal sets your rewards: propose more or less, and we agree it together in your first moon's contract.`, context: "price popup lede" })
+                            : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first moon's contract.", context: "price popup lede" })
                         }
                       />
                     </DialogDescription>
@@ -176,7 +176,7 @@ export default function PriceAsk({
                           min={1}
                           max={cap > 0 ? cap : undefined}
                           step={100}
-                          aria-label={t({ message: `Your monthly price, in ${ceiling.currency}`, context: "price popup" })}
+                          aria-label={t({ message: `Your price each moon, in ${ceiling.currency}`, context: "price popup" })}
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
                           className={`${FIELD} min-h-11 sm:max-w-xs`}

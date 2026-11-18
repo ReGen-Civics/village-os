@@ -260,7 +260,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
             <ValueCallout />
           </Suspense>
           {reward.range && <p className="leading-relaxed text-card-foreground" data-testid="pay-range-words">{reward.range}</p>}
-          <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words">{reward.proposal}</p>
+          <p className="leading-relaxed text-card-foreground" data-testid="pay-proposal-words"><MoonText text={reward.proposal} /></p>
         </>
       ) : (
         <>
@@ -307,7 +307,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
+      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote"><MoonText text={reward.footnote} /></p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else
           the village's) is the footnote's fine print, so it is not drawn again here. */}
       {pay.note && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}

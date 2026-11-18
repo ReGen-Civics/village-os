@@ -46,7 +46,7 @@ export function valueExplainerWords(i18n: I18n = appI18n, band: { lowPct: number
         heading: i18n._(msg({ message: "Your agreement", context: "role card rewards explainer: heading" })),
         text: i18n._(
           msg({
-            message: "You work as a contractor. Your proposal says what you'll deliver each month and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver.",
+            message: "You work as a contractor. Your proposal says what you'll deliver each moon and how much of yourself it takes, and that becomes your agreement. Each moon you recap what you delivered, and pay follows what you deliver.",
             context: "role card rewards explainer: your agreement",
           }),
         ),

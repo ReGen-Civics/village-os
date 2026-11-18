@@ -207,7 +207,7 @@ export function ValueItems({
     <div className="grid gap-6" data-role-card={roleId}>
       {/* What the items become (Rye, 14 Nov 2026): your proposal sets your pay, through this first moon's contract. */}
       <p className="font-semibold text-foreground" data-value-contract="">
-        {t({ message: "These items become your first month's contract: three to five things you'll deliver, each with how we'll know it's done.", context: "founding application value" })}
+        <MoonText text={t({ message: "These items become your first moon's contract: three to five things you'll deliver, each with how we'll know it's done.", context: "founding application value" })} />
       </p>
       {/* Paid on what we truly accomplish (Rye, 14 Nov 2026), said where the contract is written, before anyone signs up to it (steelman QA, 15 Nov 2026). */}
       <p className="text-sm leading-relaxed text-muted-foreground" data-value-pay-follows="">
