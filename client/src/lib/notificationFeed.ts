@@ -30,7 +30,7 @@
  * be a small lie told four times. It opens instead, and the rows inside it are
  * the links.
  */
-import { NOTIFICATION_GROUPS, kindOf, manyLine, wordsInAppOnly, type NotificationGroupId } from "@shared/notificationKinds";
+import { NOTIFICATION_GROUPS, PLAIN_WORDS, kindOf, wordsInAppOnly, type NotificationGroupId } from "@shared/notificationKinds";
 
 export interface FeedItem {
   id: string;
@@ -90,7 +90,21 @@ const newestFirst = (a: FeedItem, b: FeedItem) =>
 export type BlurbFor = (type: string, platform: string) => string;
 const platformBlurb: BlurbFor = (_type, platform) => platform;
 
-export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb): FeedRow[] {
+/**
+ * A kind's blurb and batched line (shared/notificationKindWords.ts). The bell
+ * loads them when it first opens (client/src/lib/noticeKindWords.ts), so they
+ * stay off every page's first view. Until they arrive, `null`: a batched row
+ * reads the plain line with its count, and a row with no body of its own shows
+ * the village's words for its kind if it wrote some, else no second line.
+ */
+export type KindWordsOf = (type: string) => { blurb: string; many: string };
+
+const manyOf = (words: KindWordsOf | null, type: string, n: number): string =>
+  (words ? words(type).many : PLAIN_WORDS.many).replace("{n}", String(n));
+const blurbOf = (words: KindWordsOf | null, blurbFor: BlurbFor, type: string): string | null =>
+  blurbFor(type, words ? words(type).blurb : "") || null;
+
+export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb, words: KindWordsOf | null = null): FeedRow[] {
   const buckets = new Map<string, FeedItem[]>();
   for (const it of items) {
     // Read state is IN the key on purpose: see the header.
@@ -111,8 +125,8 @@ export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb)
         key,
         items: list,
         type: list[0].type,
-        title: manyLine(list[0].type, list.length),
-        detail: blurbFor(list[0].type, kindOf(list[0].type).blurb),
+        title: manyOf(words, list[0].type, list.length),
+        detail: blurbOf(words, blurbFor, list[0].type),
         whole: false,
         link: null,
         unread: list.filter((i) => !i.isRead).length,
@@ -129,7 +143,7 @@ export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb)
         title: it.title,
         // The kind's blurb fills in only where the row carries no body, which
         // is where a reader most needs to be told why the line matters.
-        detail: it.body ? String(it.body) : blurbFor(it.type, kindOf(it.type).blurb),
+        detail: it.body ? String(it.body) : blurbOf(words, blurbFor, it.type),
         whole: wordsInAppOnly(it.type),
         link: it.link ?? null,
         unread: it.isRead ? 0 : 1,
@@ -145,7 +159,7 @@ export function batchRows(items: FeedItem[], blurbFor: BlurbFor = platformBlurb)
  * The whole panel: grouped, batched, and ordered so anything unread is at the
  * top without the sections themselves shuffling around under a reader's hand.
  */
-export function buildFeed(items: FeedItem[], blurbFor: BlurbFor = platformBlurb): FeedGroup[] {
+export function buildFeed(items: FeedItem[], blurbFor: BlurbFor = platformBlurb, words: KindWordsOf | null = null): FeedGroup[] {
   const byGroup = new Map<NotificationGroupId, FeedItem[]>();
   for (const it of items) {
     const g = kindOf(it.type).group;
@@ -158,7 +172,7 @@ export function buildFeed(items: FeedItem[], blurbFor: BlurbFor = platformBlurb)
   for (const def of NOTIFICATION_GROUPS) {
     const list = byGroup.get(def.id);
     if (!list?.length) continue;
-    const rows = batchRows(list, blurbFor);
+    const rows = batchRows(list, blurbFor, words);
     groups.push({
       id: def.id,
       title: def.title,

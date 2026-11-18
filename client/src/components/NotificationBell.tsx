@@ -55,6 +55,7 @@ import { Bell, ChevronDown, Settings2 } from "lucide-react";
 import { Link } from "wouter";
 import { Trans } from "@lingui/react/macro";
 import { buildFeed, unreadIdsOf, type FeedRow } from "@/lib/notificationFeed";
+import { loadNoticeKindWords, useNoticeKindWords } from "@/lib/noticeKindWords";
 import { useGameConfig } from "@/lib/gameApi";
 import BellTaskActions, { BELL_TASK_TYPES } from "@/components/tasks/BellTaskActions";
 import { forgetAllBellAnswers } from "@/components/tasks/bellAnswers";
@@ -146,9 +147,12 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
   // Served already filled by /api/game/config (`noticeBlurbs`), so the bell
   // carries no notice-words code of its own.
   const blurbs = (useGameConfig() as { noticeBlurbs?: Record<string, string> } | null)?.noticeBlurbs;
+  // The platform's words for each kind load the first time the panel opens
+  // (client/src/lib/noticeKindWords.ts), so they stay off every page's first view.
+  const words = useNoticeKindWords(open);
   const groups = useMemo(
-    () => buildFeed(state.items, (type, platform) => (blurbs && typeof blurbs[type] === "string" && blurbs[type]) || platform),
-    [state.items, blurbs],
+    () => buildFeed(state.items, (type, platform) => (blurbs && typeof blurbs[type] === "string" && blurbs[type]) || platform, words),
+    [state.items, blurbs, words],
   );
   const unread = state.unread;
   // The badge counts UNSEEN, not unread. Opening the panel quiets it without
@@ -209,6 +213,10 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
     void markNotificationsSeen();
   }, [open]);
 
+  const prefetchWords = useCallback(() => {
+    void loadNoticeKindWords().catch(() => {});
+  }, []);
+
   const readRow = useCallback((row: FeedRow) => {
     const ids = unreadIdsOf(row);
     if (ids.length) void markNotificationsRead(ids);
@@ -234,6 +242,9 @@ export default function NotificationBell({ memberId = null }: NotificationBellPr
         ref={buttonRef}
         type="button"
         onClick={toggle}
+        // A pointer or focus on the bell starts the words loading, so they are usually here by the time it opens.
+        onPointerEnter={prefetchWords}
+        onFocus={prefetchWords}
         aria-label={label}
         aria-expanded={open}
         aria-controls={`${uid}-panel`}

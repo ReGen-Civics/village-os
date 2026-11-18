@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { NOTIFICATION_GROUPS, NOTIFICATION_KINDS } from "@shared/notificationKinds";
+import { kindWordsOf } from "@shared/notificationKindWords";
 import { NOTICE_BLURB_MAX, NOTICE_SECTION, NOTICE_TITLE_MAX, type NoticeWords } from "@shared/noticeWords";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 
@@ -30,7 +31,7 @@ export default function NoticeWordsPanel({ password }: { password: string }) {
   }, [load]);
 
   const kinds = useMemo(
-    () => Object.entries(NOTIFICATION_KINDS).filter(([k, v]) => !filter || `${k} ${v.blurb}`.toLowerCase().includes(filter.toLowerCase())),
+    () => Object.entries(NOTIFICATION_KINDS).filter(([k]) => !filter || `${k} ${kindWordsOf(k).blurb}`.toLowerCase().includes(filter.toLowerCase())),
     [filter],
   );
   if (!draft) return null;
@@ -78,7 +79,7 @@ export default function NoticeWordsPanel({ password }: { password: string }) {
             <p className="text-xs text-muted-foreground m-0 mb-1">
               {groupTitle(def.group)} · <span className="font-mono">{kind}</span>
             </p>
-            <p className="text-xs text-muted-foreground m-0 mb-2">{def.blurb}</p>
+            <p className="text-xs text-muted-foreground m-0 mb-2">{kindWordsOf(kind).blurb}</p>
             <input
               value={draft[kind]?.title ?? ""}
               onChange={(e) => set(kind, "title", e.target.value.slice(0, NOTICE_TITLE_MAX))}

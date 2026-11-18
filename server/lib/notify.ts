@@ -27,7 +27,8 @@ import crypto from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
 import { numberVar } from "./variables";
 import { emailAccent, NEUTRAL_ACCENT } from "./emailAccent";
-import { manyLine, wordsInAppOnly } from "../../shared/notificationKinds";
+import { wordsInAppOnly } from "../../shared/notificationKinds";
+import { manyLine } from "../../shared/notificationKindWords";
 import { noticeTitle, type NoticeWords } from "../../shared/noticeWords";
 
 /**
@@ -624,7 +625,7 @@ async function maybeEmailImmediate(deps: NotifyDeps, n: NotifyInput & { id: stri
  * happened while you were away" and push anything else the member was owed
  * past the cut of ten. So when a digest holds more than one of them they fold
  * into the kind's `many` line, where the first one stood: the same words the
- * bell shows for a burst of one kind (`manyLine`, shared/notificationKinds.ts;
+ * bell shows for a burst of one kind (`manyLine`, shared/notificationKindWords.ts;
  * the bell folds at four, client/src/lib/notificationFeed.ts). Every row
  * stays its own row, keyed per block for the canvas moon, and every row is
  * still stamped as emailed. Every other kind is one line per row, as before.
