@@ -5,15 +5,20 @@
  * opens that role's own card on the page, where it can be applied for now.
  */
 import { ArrowRight } from "lucide-react";
+import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { ComingSoonChip, ComingSoonNote, HeldByAgentLine } from "@/components/ComingSoon";
+import { BTN_SECONDARY } from "@/components/journey/look";
+import { applyHrefForRole } from "./FullRoleCard";
 
 export interface BuiltRole {
   id: string;
   name: string;
   aim: string | null;
-  /** Someone holds it: shown as Held, with no Apply and no name. */
+  /** Someone holds it: shown as Held, with no name, and with no Apply unless it is still recruiting. */
   held?: boolean;
+  /** Held and still recruiting (the lead, 17 Nov 2026): stays Held, says more players are welcome, keeps its Apply. */
+  recruiting?: boolean;
   /** Held by an agent alone: said so, never by name. */
   heldByAgent?: boolean;
 }
@@ -46,7 +51,18 @@ export default function LeadBuilds({ leadName, roles, onOpen }: { leadName: stri
                 </span>
                 {r.aim && <span className="break-words text-sm text-muted-foreground">{r.aim}</span>}
                 <HeldByAgentLine role={{ heldByAgent: r.heldByAgent }} />
+                {r.recruiting && (
+                  <span className="text-sm font-medium text-open" data-more-welcome={r.id}>
+                    {t({ message: "More players welcome", context: "a held role that is still recruiting" })}
+                  </span>
+                )}
               </span>
+              {r.recruiting && (
+                <Link href={applyHrefForRole(r.id)} className={`shrink-0 ${BTN_SECONDARY}`} data-apply-role={r.id}>
+                  {t({ message: "Apply", context: "a held role that is still recruiting: apply to join it" })}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              )}
             </li>
           ) : (
           <li key={r.id}>

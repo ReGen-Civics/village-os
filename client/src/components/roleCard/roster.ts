@@ -21,6 +21,8 @@ import { SHEET_WORDS } from "@shared/roleSheetWords";
 export interface RosterRole {
   id: string;
   name: string;
+  /** Held and still recruiting: more players welcome, with an Apply (the lead, 17 Nov 2026). */
+  recruiting?: true;
 }
 
 export interface RosterEntry {
@@ -32,11 +34,11 @@ export interface RosterEntry {
   roles: RosterRole[];
 }
 
-export function rosterOf(filled: readonly { id: string; name: string; holders: readonly string[] }[]): RosterEntry[] {
+export function rosterOf(filled: readonly { id: string; name: string; holders: readonly string[]; recruiting?: boolean }[]): RosterEntry[] {
   const people = new Map<string, RosterEntry>();
   const rest: RosterEntry[] = [];
   for (const f of filled) {
-    const role = { id: f.id, name: f.name };
+    const role: RosterRole = f.recruiting === true ? { id: f.id, name: f.name, recruiting: true } : { id: f.id, name: f.name };
     const names: string[] = [];
     let agent = false;
     for (const h of f.holders ?? []) {

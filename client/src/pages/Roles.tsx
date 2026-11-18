@@ -38,8 +38,8 @@ import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@s
 import FoundingTeam, { type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
-import { rolesLeadWillBuild } from "@shared/roleListing";
-import FullRoleCard from "@/components/roleCard/FullRoleCard";
+import { heldButRecruiting, rolesLeadWillBuild } from "@shared/roleListing";
+import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
@@ -564,6 +564,9 @@ export default function Roles() {
   const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)) : [];
   const ventureIds = new Set(ventures.map((r) => r.id));
   const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  // Held and still recruiting (the lead, 17 Nov 2026): it stays where held roles sit and keeps its Apply.
+  const welcomesMore = (r: RoleEntry) => heldButRecruiting(r.raw) && mayApply(r.raw);
+  const welcomingIds = new Set((roles ?? []).filter(welcomesMore).map((r) => r.id));
   // Roles this lead will build (Rye, 16 Nov 2026): each lead's coming-soon roles, by the circles it leads.
   const builds: Record<string, BuiltRole[]> = Object.fromEntries(
     featured.map((f) => {
@@ -576,7 +579,7 @@ export default function Roles() {
         id,
         [
           ...soon.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), aim: r.aim ?? null })),
-          ...held.map((r) => ({ id: r.id, name: r.name, aim: r.raw?.aim ?? null, held: true, heldByAgent: r.raw?.heldByAgent === true })),
+          ...held.map((r) => ({ id: r.id, name: r.name, aim: r.raw?.aim ?? null, held: true, heldByAgent: r.raw?.heldByAgent === true, recruiting: welcomingIds.has(r.id) })),
         ],
       ];
     }),
@@ -608,7 +611,8 @@ export default function Roles() {
   const foundingFilled = (roles ?? [])
     .filter((r) => !featuredIds.has(r.id) && r.circleId && foundingCircles.has(r.circleId) && r.raw?.listed !== false && !r.isExample && (r.status === "filled" || r.status === "partial" || (r.holders?.length ?? 0) > 0))
     .map((r) => ({ id: r.id, name: r.name, holders: r.holders ?? [] }));
-  const teamFilled = founding?.team?.length ? founding.team : foundingFilled;
+  // A held role still recruiting keeps its place on the roster, with an Apply beside it (the lead, 17 Nov 2026).
+  const teamFilled = (founding?.team?.length ? founding.team : foundingFilled).map((f) => (welcomingIds.has(f.id) ? { ...f, recruiting: true } : f));
   // The org chart beside the roster (Rye, 16 Nov 2026): the /circles drawing, with the held team roles a
   // visitor's /api/org leaves out (they are unlisted) drawn too, so the picture agrees with the roster.
   const chart = orgChartOf(circles, (roles ?? []).map((r) => r.raw), featured[0]?.seat?.circleId ?? null, teamFilled);

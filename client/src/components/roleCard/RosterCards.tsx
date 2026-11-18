@@ -3,8 +3,10 @@
  * held now, one card per person, for both of FoundingLineup's views. Loaded after the page's first view,
  * because it sits below the open roles. Grouping and order live in ./roster.ts.
  */
-import { Bot, UserRound } from "lucide-react";
+import { ArrowRight, Bot, UserRound } from "lucide-react";
+import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
+import { applyHrefForRole } from "./FullRoleCard";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { FilledRole, LineupView } from "./FoundingLineup";
 import { rosterOf, type RosterEntry } from "./roster";
@@ -48,7 +50,19 @@ function RosterCard({ entry, team, variant }: { entry: RosterEntry; team: string
         <li key={r.id} className="flex items-start gap-2 text-sm leading-snug text-card-foreground" data-filled-role={r.id}>
           {/* A centred line wraps under itself, so the formation's positions go without the dot. */}
           {variant === "sheet" && <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-notice" aria-hidden="true" />}
-          {r.name}
+          <span className={`grid gap-1 ${variant === "formation" ? "justify-items-center" : ""}`}>
+            <span>{r.name}</span>
+            {/* Held and still recruiting (the lead, 17 Nov 2026): the role stays on the roster and keeps its Apply. */}
+            {r.recruiting && (
+              <span className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${variant === "formation" ? "justify-center" : ""}`} data-more-welcome={r.id}>
+                <span className="text-xs font-medium text-open">{t({ message: "More players welcome", context: "a held role that is still recruiting" })}</span>
+                <Link href={applyHrefForRole(r.id)} className="inline-flex min-h-11 items-center gap-1 text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-apply-role={r.id}>
+                  {t({ message: "Apply", context: "a held role that is still recruiting: apply to join it" })}
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </span>
+            )}
+          </span>
         </li>
       ))}
     </ul>

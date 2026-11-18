@@ -589,6 +589,26 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     // Positions, never players: no rating, score or rank anywhere in the team view.
     expect(section.textContent).not.toMatch(/rating|score|rank/i);
   });
+  it("a filled role still recruiting stays on the roster as held and offers Apply; with its door closed it offers none (the lead, 17 Nov 2026)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }], recruiting: true }));
+    org.roles.push(seat("books", "Bookkeeper", { state: "filled", holderCount: 1, holders: [{ name: "Ana Ruiz" }], recruiting: false }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const roster = await within(section).findByTestId("filled-roles");
+    await waitFor(() => expect(roster.querySelector('[data-roster-person="p:Rye"]')).toBeTruthy());
+    const rye = roster.querySelector('[data-roster-person="p:Rye"]') as HTMLElement;
+    expect(rye.textContent).toContain("More players welcome");
+    expect(within(rye).getByRole("link", { name: /Apply/ }).getAttribute("href")).toBe("/propose-a-role?role=ops");
+    // CONTROL: the held role with its door closed shows no Apply and no line.
+    const ana = roster.querySelector('[data-roster-person="p:Ana"]') as HTMLElement;
+    expect(ana.textContent).toContain("Bookkeeper");
+    expect(within(ana).queryByRole("link", { name: /Apply/ })).toBeNull();
+    expect(ana.textContent).not.toContain("More players welcome");
+    // It stays held: neither role moves to "opening next".
+    const next = await screen.findByRole("region", { name: "More roles, opening next" });
+    expect(within(next).queryByRole("heading", { level: 3, name: "Human Operations Steward" })).toBeNull();
+  });
+
   it("shows anyone the current team the server sends, unlisted roles included, as Role (FirstName) (Rye, 14 Nov 2026)", async () => {
     founding = { ...founding, team: [{ id: "facilitator", name: "Governance Facilitator", holders: ["Rye"] }] };
     renderRoles();

@@ -34,6 +34,14 @@ describe("a coming-soon seat on the card", () => {
     expect(mayApply(seat({ comingSoon: true, state: "filled" }))).toBe(false);
   });
 
+  it("a held seat still recruiting keeps its Apply; the same seat with its door closed has none (the lead, 17 Nov 2026)", () => {
+    expect(applyHrefFor(seat({ state: "filled", recruiting: true }))).toMatch(/r-weaver/);
+    expect(mayApply(seat({ state: "filled", recruiting: true }))).toBe(true);
+    // CONTROL: door closed, no Apply.
+    expect(applyHrefFor(seat({ state: "filled", recruiting: false }))).toBeNull();
+    expect(mayApply(seat({ state: "filled", recruiting: false }))).toBe(false);
+  });
+
   it("draws the badge only on a flagged seat, and the note only when asked", () => {
     const { rerender } = render(<ComingSoonChip role={{ comingSoon: true }} />);
     expect(screen.getByTestId("coming-soon-chip").textContent).toBe("Coming soon");
@@ -82,6 +90,27 @@ describe("roles this steward will build", () => {
     expect(held.textContent).toMatch(/Held/);
     expect(held.querySelector("button")).toBeNull();
     expect(screen.getAllByRole("button")).toHaveLength(1);
+  });
+
+  it("a held role still recruiting stays Held, says more players are welcome and offers Apply (the lead, 17 Nov 2026)", () => {
+    render(
+      <LeadBuilds
+        leadName="Community Building Steward"
+        roles={[
+          { id: "gatherings", name: "Gatherings Steward", aim: null, held: true, recruiting: true },
+          { id: "kitchen", name: "Kitchen Steward", aim: null, held: true },
+        ]}
+        onOpen={() => {}}
+      />,
+    );
+    const open = document.querySelector('[data-lead-builds-held="gatherings"]') as HTMLElement;
+    expect(open.textContent).toMatch(/Held/);
+    expect(open.textContent).toMatch(/More players welcome/);
+    expect(open.querySelector('a[data-apply-role="gatherings"]')?.getAttribute("href")).toBe("/propose-a-role?role=gatherings");
+    // CONTROL: held with the door closed, no Apply and no line.
+    const closed = document.querySelector('[data-lead-builds-held="kitchen"]') as HTMLElement;
+    expect(closed.querySelector("a")).toBeNull();
+    expect(closed.textContent).not.toMatch(/More players welcome/);
   });
 
   it("CONTROL: a lead with nothing to build draws nothing", () => {
