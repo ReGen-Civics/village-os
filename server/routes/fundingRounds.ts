@@ -16,7 +16,15 @@
  *
  * Harvest has no door of its own: the first read of a round past its harvest
  * date runs the count, once (`harvestIfDue`), so no job and no person has to
- * remember to close it, and nobody can close it early.
+ * remember to close it, and nobody can close it early. When the two counts
+ * disagree, that read also opens the 48-hour divergence vote (S4).
+ *
+ * ONE JOB, `funding-voice-freeze` (S4): every 15 minutes it freezes the
+ * counted Voice of any round whose choosing has opened, so the snapshot is
+ * taken close to the moment choosing opens even when nobody opens the page.
+ * It reads balances and writes the snapshot; it asks nothing and decides
+ * nothing. A member's read or tick in choose freezes it too, whichever is
+ * first.
  *
  * Every door needs a signed-in member. Steward doors ask the ONE gate with
  * `guardCapability`, so a village that holds pot.steward decides by its vote
@@ -26,22 +34,30 @@
 import type { Express } from "express";
 import type { AppDeps } from "../lib/appDeps";
 import {
-  createPot, growIdea, ideaView, openRound, overview, pledgeToIdea, roundDetail, roundView, seedIdea, setMarks, setRoundDates, withdrawIdea, withdrawPledge, MODULE_ID,
-  type HarvestDeps,
+  createPot, freezeDueVoice, growIdea, ideaView, openRound, overview, pledgeToIdea, roundDetail, roundView, seedIdea, setMarks, setRoundDates, withdrawIdea, withdrawPledge, MODULE_ID,
+  type DivergenceDeps, type HarvestDeps,
 } from "../lib/fundingRounds";
-import { requireModule } from "../lib/modules";
+import { effectiveLifecycle, requireModule } from "../lib/modules";
+import { registerJob } from "../lib/scheduler";
 
 export { exportMemberFundingRounds, forgetMemberFundingRounds, fundingRoundsOpenState } from "../lib/fundingRounds";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "guardCapability" | "mayAct" | "overLimit" | "members" | "questsRepo"> & {
   /**
-   * The village's voting roll with counted Voice: `buildElectorate` in
-   * server/index.ts, the one every village vote opens with. Until S4 this is
-   * the village's own ballot weight, so a round never weighs a member
-   * differently from a vote; S4 swaps in the work-only read.
+   * The village's voting roll, without weights: `votingRoll` in
+   * server/index.ts, the roll every village vote opens with. Each member's
+   * counted Voice is read off the ledger when choosing opens (S4).
    */
-  electorate: HarvestDeps["electorate"];
+  roll: HarvestDeps["roll"];
+  /** Tests inject the Voice; absent, the ledger is read (`readCountedVoice`). */
+  countedVoice?: HarvestDeps["countedVoice"];
+  /** For the 48-hour divergence vote. Absent, the pot's deciding count settles a disagreement at once. */
+  divergence?: DivergenceDeps;
 };
+
+/** The freeze job: its name in `scheduled_jobs`, and how often it looks. */
+export const VOICE_FREEZE_JOB = "funding-voice-freeze";
+const VOICE_FREEZE_EVERY_MS = 15 * 60 * 1000;
 
 const HOUR_MS = 60 * 60 * 1000;
 /** Ideas one member may post in an hour, across rounds. The round's own allowance is the real limit. */
@@ -51,7 +67,12 @@ const CHANGES_PER_HOUR = 120;
 
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo } = deps;
-  const harvest: HarvestDeps = { electorate: deps.electorate, questsRepo };
+  const harvest: HarvestDeps = { roll: deps.roll, countedVoice: deps.countedVoice, questsRepo, divergence: deps.divergence };
+
+  registerJob(VOICE_FREEZE_JOB, VOICE_FREEZE_EVERY_MS, async () => {
+    if (effectiveLifecycle(MODULE_ID) === "off") return "the module is off";
+    return `${await freezeDueVoice(getPool(), harvest, new Date())} round(s) froze their Voice`;
+  });
 
   /** Names by id for bylines, read once per request. */
   const namesNow = async (): Promise<(id: string) => string | null> => {
@@ -104,7 +125,7 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`funding-change:${uid}`, CHANGES_PER_HOUR, HOUR_MS)) {
       return res.status(429).json({ error: "That is a lot of changes for one hour. Try again a little later." });
     }
-    const out = await setMarks(getPool(), uid, String(req.params.id), req.body, new Date());
+    const out = await setMarks(getPool(), uid, String(req.params.id), req.body, new Date(), harvest);
     if (!out.ok) return res.status(out.status).json({ error: out.problem });
     res.json({ myMarks: out.myMarks });
   });

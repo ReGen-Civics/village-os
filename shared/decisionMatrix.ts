@@ -79,6 +79,7 @@
 import {
   ADMIN_EDIT,
   DATABASE_EXPORT,
+  FUNDING_DIVERGENCE,
   GOVERNANCE_MODE,
   highestTier,
   MINT_REQUEST,
@@ -287,6 +288,7 @@ export const SUBJECT_DECISIONS: Readonly<Record<string, string>> = {
   [MINT_REQUEST]: "Minting new tokens to one member",
   [ADMIN_EDIT]: "A suggested change to one admin control",
   [DATABASE_EXPORT]: "Handing one steward a copy of every member's data",
+  [FUNDING_DIVERGENCE]: "Which count funds the quests a funding round's two counts disagree on",
   [GOVERNANCE_MODE]: "Changing how votes are weighed",
   [CYCLE_SETTLEMENT]: "Settling a moon and releasing its pool",
   [GPS_CHANGE]: "Changing the governing purpose statement",

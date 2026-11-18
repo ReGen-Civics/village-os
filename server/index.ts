@@ -264,6 +264,7 @@ import { exportMemberGeneKeys, geneKeysForAssistant, geneKeysMissing, register a
 import { register as registerProtocolsRoutes } from "./routes/protocols";
 import { lensesOf as companionLensesOf } from "./repos/companions";
 import { exportMemberFundingRounds, fundingRoundsOpenState, register as registerFundingRoundsRoutes } from "./routes/fundingRounds";
+import { fundingDivergenceCloser } from "./lib/fundingRounds";
 import { register as registerPlaceRegistryRoutes } from "./routes/placeRegistry";
 import { register as registerHiddenMapRoutes, sweepHiddenMap } from "./routes/hiddenMap";
 import { exportMemberHiddenMap, hiddenMapDir } from "./lib/hiddenMap";
@@ -516,6 +517,7 @@ import {
   thresholdsForSubject,
   LAUNCH_SUBJECT_REF,
   MINT_RULE,
+  FUNDING_DIVERGENCE,
   GOVERNANCE_MODE,
   VILLAGE_LAUNCH,
 } from "../shared/ballotSubjects";
@@ -17848,7 +17850,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerGeneKeysRoutes(app, { authedUser, getPool, overLimit, notify });
   registerProtocolsRoutes(app, { authedUser, isAdmin, getPool, lapseContext, overLimit, projectName: () => mergedConfig().project.name, brandColour: () => brandColour(getBrand().theme), appIcon: () => mergedConfig().images?.favicon || "/assets/images/platform-favicon.svg", quests: { stageOf, roleIdsFor, claimsRepo, questsRepo, questConsentRecipients, notify } });
   registerOnboardingRoutes(app, { authedUser, getPool, overLimit, isAdmin, guardCapability, village: () => ({ timeZone: getSeasonConfig().timezone }) });
-  registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, electorate: buildElectorate });
+  // notifyRoll is declared further down, so it is reached through an arrow at request time.
+  registerFundingRoundsRoutes(app, { authedUser, getPool, guardCapability, mayAct, overLimit, members, questsRepo, roll: votingRoll, divergence: { governanceOn: () => effectiveLifecycle("governance") !== "off", ballotSetup: () => roleBallotSetup(), notifyRoll: (b, input) => notifyRoll(b, input) } });
   registerPlaceRegistryRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, lapseContext, circlesRepo });
   // The rites module tells the map when a member was admitted (only pins from then count) and stamps the rites the
   // village gives the map when one really opens: no rite id in either module (agreed with vos-hidden-map, verified by pirates-qa).
@@ -20809,18 +20812,22 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * taken out before the gate is asked, whatever a badge grants (Rye,
    * 2026-10-30; `withoutFormerMembers`, server/lib/formerMember.ts).
    */
-  async function buildElectorate(): Promise<Array<{ userId: string; weight: number }>> {
+  /** Who may vote now, without weights: present members holding ballot.vote. Funding rounds weighs this roll by its own counted Voice. */
+  async function votingRoll(): Promise<string[]> {
     const candidates = await withoutFormerMembers(getPool(), (await members.all()).filter((u: any) => isPresentMember(u, AUTH_TOKEN_SECRET)));
-    const eligible: any[] = [];
+    const eligible: string[] = [];
     for (const u of candidates) {
-      const ctx = await capabilityCtx(u);
-      if (hasCapability("ballot.vote", ctx)) eligible.push(u);
+      if (hasCapability("ballot.vote", await capabilityCtx(u))) eligible.push(String(u.id));
     }
+    return eligible;
+  }
+
+  async function buildElectorate(): Promise<Array<{ userId: string; weight: number }>> {
+    const eligible = await votingRoll();
     // The whole roll, so the cap on one member's weight (when it is on) is
     // measured against everybody who may vote, and frozen with them.
-    const snapshot = weightModeNow();
-    const weights = await rollWeightsFor(getPool(), eligible.map((u: any) => String(u.id)), snapshot);
-    return eligible.map((u: any) => ({ userId: String(u.id), weight: weights.get(String(u.id)) ?? 0 }));
+    const weights = await rollWeightsFor(getPool(), eligible, weightModeNow());
+    return eligible.map((id) => ({ userId: id, weight: weights.get(id) ?? 0 }));
   }
 
   // The URL, and why a stale one is never an error state, live on `decisionLink`
@@ -20901,6 +20908,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
      */
     [CYCLE_SETTLEMENT]: settlementCloser(() => moonDeps()),
     [REDEMPTION_SUBJECT]: redemptionCloser({ getPool, notify }),
+    // Funding rounds S4: the quests a round's two counts disagree on (server/lib/fundingRounds.ts).
+    [FUNDING_DIVERGENCE]: fundingDivergenceCloser(() => ({ pool: getPool(), questsRepo })),
     /*
      * Mechanics (GOV_DESIGN 2.6). Every step is a guarded update or an
      * idempotent apply, so a crash partway heals on the admin apply path

@@ -4159,6 +4159,15 @@ the posting it undoes, `originalKeyOf` in `server/lib/ledger.ts` is now
 exported; what it does is unchanged. Decay takes the same share of every
 holder, which is why a share of the balance is the right count.
 
+**Funding rounds now reads it (S4, migration 0402).** A pot's power count weighs
+each member by `workEarnedVoice`, frozen once when the round's choosing opens
+into `funding_round_voice`, and harvest reads only those frozen rows. Nothing
+here moves Voice or any other token: the snapshot is a read, and a pot's
+earmarks are promises on money the Treasurer recorded, outside the ledger. When
+the work-only count and the one-member-one-vote count fund different quests, a
+48-hour village vote (`funding_divergence`) decides which count funds them.
+`docs/modules/funding-rounds.md` holds the rules.
+
 ---
 
 ## 17. Crowdpooling, and where the boundary falls

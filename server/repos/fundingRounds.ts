@@ -44,8 +44,22 @@ export interface RoundRow {
   ideasPerMember: number;
   anonymousAllowed: boolean;
   closedAt: Date | null;
-  /** Frozen at harvest; null before. */
+  /** Frozen when choosing opens (S4; before S4, at harvest); null before. */
   decider: "power" | "people" | null;
+  /** The pot's per-member cap, frozen with the decider; null before. */
+  weightCapPct: number | null;
+  /** Which Voice counts, frozen with the decider; null before. */
+  countedVoice: "work_only" | "all" | null;
+  /** When the Voice snapshot was taken (S4); null until it is. */
+  voiceFrozenAt: Date | null;
+  /** Voice mint sources the snapshot met that are neither work nor money, so the count is understated. */
+  voiceUnclassified: string[];
+  /** The 48-hour divergence vote's ballot, once opened. */
+  divergenceBallotId: string | null;
+  /** Which count settled the quests the two counts disagreed on; null while undecided. */
+  divergenceResult: "decider" | "other" | null;
+  divergenceNote: string | null;
+  divergenceSettledAt: Date | null;
   /** Both counts and the disagreement, written once at harvest (see `claimOutcome`). */
   outcome: unknown | null;
   createdBy: string;
@@ -77,6 +91,11 @@ export interface IdeaRow {
 const str = (v: unknown): string | null => (v == null ? null : String(v));
 const num = (v: unknown): number | null => (v == null ? null : Number(v));
 const date = (v: unknown): Date | null => (v == null ? null : v instanceof Date ? v : new Date(String(v)));
+const jsonList = (v: unknown): string[] => {
+  if (v == null) return [];
+  const parsed = typeof v === "string" ? JSON.parse(v) : v;
+  return Array.isArray(parsed) ? parsed.map(String) : [];
+};
 const iso = (v: unknown): string | null => (v == null ? null : v instanceof Date ? v.toISOString() : String(v));
 
 function toPot(r: RowDataPacket): PotRow {
@@ -115,6 +134,14 @@ function toRound(r: RowDataPacket): RoundRow {
     anonymousAllowed: Number(r.anonymous_allowed) === 1,
     closedAt: date(r.closed_at),
     decider: r.decider === "power" || r.decider === "people" ? r.decider : null,
+    weightCapPct: num(r.weight_cap_pct),
+    countedVoice: r.counted_voice === "work_only" || r.counted_voice === "all" ? r.counted_voice : null,
+    voiceFrozenAt: date(r.voice_frozen_at),
+    voiceUnclassified: jsonList(r.voice_unclassified),
+    divergenceBallotId: str(r.divergence_ballot_id),
+    divergenceResult: r.divergence_result === "decider" || r.divergence_result === "other" ? r.divergence_result : null,
+    divergenceNote: str(r.divergence_note),
+    divergenceSettledAt: date(r.divergence_settled_at),
     outcome: r.outcome == null ? null : typeof r.outcome === "string" ? JSON.parse(r.outcome) : r.outcome,
     createdBy: String(r.created_by),
     createdAt: iso(r.created_at),
@@ -329,10 +356,76 @@ export async function lockPot(conn: PoolConnection, potId: string): Promise<void
  * Write the round's outcome if nobody has yet. Returns false when another
  * request already did, so the caller writes no earmark: the count runs once.
  */
-export async function claimOutcome(conn: PoolConnection, roundId: string, decider: "power" | "people", capPct: number, outcome: unknown): Promise<boolean> {
+export async function claimOutcome(conn: PoolConnection, roundId: string, outcome: unknown): Promise<boolean> {
+  // The decider, the cap and the counted Voice were frozen with the snapshot
+  // (`claimVoiceSnapshot`), which always runs before the count; this writes
+  // only the outcome.
+  const [res] = await conn.query<any>("UPDATE `funding_rounds` SET `outcome` = ? WHERE `id` = ? AND `outcome` IS NULL", [JSON.stringify(outcome), roundId]);
+  return Number(res?.affectedRows ?? 0) === 1;
+}
+
+// ── the Voice snapshot (S4, 0402) ───────────────────────────────────────────
+
+/**
+ * Freeze the round's counted Voice, once. The guarded UPDATE takes the round's
+ * row lock, so a second caller waits, then finds `voice_frozen_at` set and
+ * writes nothing. The rows and the claim commit together or not at all.
+ */
+export async function claimVoiceSnapshot(
+  conn: PoolConnection,
+  roundId: string,
+  s: { at: Date; decider: "power" | "people"; capPct: number; countedVoice: "work_only" | "all"; unclassified: readonly string[]; rows: ReadonlyArray<{ userId: string; voice: number }> },
+): Promise<boolean> {
   const [res] = await conn.query<any>(
-    "UPDATE `funding_rounds` SET `outcome` = ?, `decider` = ?, `weight_cap_pct` = ?, `counted_voice` = 'all' WHERE `id` = ? AND `outcome` IS NULL",
-    [JSON.stringify(outcome), decider, capPct, roundId],
+    "UPDATE `funding_rounds` SET `voice_frozen_at` = ?, `voice_unclassified` = ?, `decider` = ?, `weight_cap_pct` = ?, `counted_voice` = ? WHERE `id` = ? AND `voice_frozen_at` IS NULL",
+    [s.at, JSON.stringify(s.unclassified), s.decider, s.capPct, s.countedVoice, roundId],
+  );
+  if (Number(res?.affectedRows ?? 0) !== 1) return false;
+  for (const r of s.rows) {
+    await conn.query("INSERT INTO `funding_round_voice` (`round_id`, `user_id`, `voice`) VALUES (?, ?, ?)", [roundId, r.userId, Math.max(0, Math.floor(r.voice))]);
+  }
+  return true;
+}
+
+/** The frozen roll and each member's counted Voice. */
+export async function voiceOfRound(db: Queryable, roundId: string): Promise<Array<{ userId: string; voice: number }>> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT `user_id`, `voice` FROM `funding_round_voice` WHERE `round_id` = ? ORDER BY `user_id`", [roundId]);
+  return rows.map((r) => ({ userId: String(r.user_id), voice: Number(r.voice) }));
+}
+
+/** One member's frozen Voice in one round, or null when they were not on the roll. */
+export async function voiceOfMember(db: Queryable, roundId: string, userId: string): Promise<number | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT `voice` FROM `funding_round_voice` WHERE `round_id` = ? AND `user_id` = ?", [roundId, userId]);
+  return rows[0] ? Number(rows[0].voice) : null;
+}
+
+/** Every snapshot row a member is on, for their export. */
+export async function allVoiceOf(db: Queryable, userId: string): Promise<Array<{ roundId: string; voice: number }>> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT `round_id`, `voice` FROM `funding_round_voice` WHERE `user_id` = ? ORDER BY `round_id`", [userId]);
+  return rows.map((r) => ({ roundId: String(r.round_id), voice: Number(r.voice) }));
+}
+
+/** Rounds whose choosing has opened and whose Voice is not frozen yet, for the freeze job. */
+export async function roundsAwaitingVoice(db: Queryable, now: Date): Promise<RoundRow[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT * FROM `funding_rounds` WHERE `voice_frozen_at` IS NULL AND `outcome` IS NULL AND `closed_at` IS NULL AND `grow_at` IS NOT NULL AND `choose_at` IS NOT NULL AND `choose_at` <= ? ORDER BY `choose_at`",
+    [now],
+  );
+  return rows.map(toRound);
+}
+
+// ── the divergence vote (S4, 0402) ──────────────────────────────────────────
+
+/** Record the divergence ballot, once. */
+export async function setDivergenceBallot(db: Queryable, roundId: string, ballotId: string): Promise<void> {
+  await db.query("UPDATE `funding_rounds` SET `divergence_ballot_id` = ? WHERE `id` = ? AND `divergence_ballot_id` IS NULL", [ballotId, roundId]);
+}
+
+/** Settle which count decides the held quests, once. False when it was already settled. */
+export async function claimDivergenceResult(conn: PoolConnection, roundId: string, result: "decider" | "other", note: string, at: Date): Promise<boolean> {
+  const [res] = await conn.query<any>(
+    "UPDATE `funding_rounds` SET `divergence_result` = ?, `divergence_note` = ?, `divergence_settled_at` = ? WHERE `id` = ? AND `divergence_result` IS NULL",
+    [result, note.slice(0, 255), at, roundId],
   );
   return Number(res?.affectedRows ?? 0) === 1;
 }
@@ -546,7 +639,7 @@ export const ERASED_AUTHOR = "erased";
 /**
  * Forget a member across Funding rounds:
  * - their interaction rows: private ones deleted, the rest de-attributed;
- * - their ticks deleted (a closed round's counts live in its outcome);
+ * - their ticks and their frozen Voice deleted (a counted round's numbers live in its outcome);
  * - their ideas still in seed, withdrawn or held deleted; an idea already on
  *   the record (grown, on a ballot, funded, not funded, stopped) kept,
  *   de-attributed, and shown as "a member".
@@ -555,6 +648,8 @@ export async function forgetMember(db: Queryable, userId: string): Promise<void>
   await db.query("DELETE FROM `interaction_events` WHERE `actor_user_id` = ? AND `visibility` = 'private'", [userId]);
   await db.query("UPDATE `interaction_events` SET `actor_user_id` = NULL WHERE `actor_user_id` = ?", [userId]);
   await db.query("DELETE FROM `funding_round_marks` WHERE `user_id` = ?", [userId]);
+  // Their frozen Voice goes with them, as their ticks do; a counted round keeps its numbers in its outcome.
+  await db.query("DELETE FROM `funding_round_voice` WHERE `user_id` = ?", [userId]);
   // A pledge that never turned firm goes; a firm promise of money stays, de-attributed (debts outlive erasure).
   await db.query("DELETE FROM `funding_pledges` WHERE `backer_user_id` = ? AND `status` IN ('pledged', 'withdrawn', 'released_to_backer')", [userId]);
   await db.query("UPDATE `funding_pledges` SET `backer_user_id` = ? WHERE `backer_user_id` = ?", [ERASED_AUTHOR, userId]);

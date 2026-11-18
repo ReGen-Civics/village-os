@@ -191,3 +191,57 @@ export interface Byline {
 }
 
 export const ANONYMOUS_BYLINE: Byline = { kind: "anonymous", text: "a member" };
+
+// ── The divergence vote (S4) ────────────────────────────────────────────────
+
+/**
+ * How long the village votes on the quests a round's two counts disagree on:
+ * 48 hours. The ballot engine opens whole days, so this is two of them.
+ */
+export const DIVERGENCE_VOTE_HOURS = 48;
+export const DIVERGENCE_VOTE_DAYS = DIVERGENCE_VOTE_HOURS / 24;
+
+export type CountName = "power" | "people";
+export const otherCount = (c: CountName): CountName => (c === "power" ? "people" : "power");
+
+/** The counts as harvest keeps them: each funded quest in the order it was funded, with its cost. */
+export interface CountOrder {
+  steps: ReadonlyArray<{ option: string; cost: number }>;
+}
+
+/**
+ * The held quests one count funds, in that count's own order, each with what
+ * it asks of the pot. Order matters only when the pot has less free money at
+ * the vote than it had at harvest: the count's earliest picks come first.
+ */
+export function sideOf(count: CountOrder, held: readonly string[]): Array<{ id: string; cost: number }> {
+  const h = new Set(held);
+  return count.steps.filter((s) => h.has(s.option)).map((s) => ({ id: s.option, cost: s.cost }));
+}
+
+/**
+ * Fund a side in order while the money lasts. A quest that no longer fits is
+ * left out and named, and the ones after it are still tried, so a smaller one
+ * further down can use what remains. Pure: the caller holds the pot's lock.
+ */
+export function fundInOrder(side: ReadonlyArray<{ id: string; cost: number }>, freeMinor: number): { funded: string[]; short: string[]; spent: number } {
+  let left = Math.max(0, freeMinor);
+  const funded: string[] = [];
+  const short: string[] = [];
+  for (const q of side) {
+    const cost = Math.max(0, q.cost);
+    if (cost <= left) {
+      funded.push(q.id);
+      left -= cost;
+    } else {
+      short.push(q.id);
+    }
+  }
+  return { funded, short, spent: Math.max(0, freeMinor) - left };
+}
+
+/** Names for the two counts, as a member reads them. */
+export const COUNT_WORDS: Readonly<Record<CountName, string>> = {
+  power: "counted Voice",
+  people: "one member, one vote",
+};
