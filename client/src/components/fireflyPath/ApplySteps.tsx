@@ -33,7 +33,7 @@ import { DraftMark } from "@/components/proposalDrafts/AskSera";
 import MicInput from "@/components/form/MicInput";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import type { DraftableGoal } from "@shared/seraDrafts";
-import { PLACEHOLDER_PARTS, shareWords, type FoundingSetup } from "@shared/foundingApplication";
+import type { FoundingSetup } from "@shared/foundingApplication";
 import type { KnowUsLinks } from "@shared/knowUsLinks";
 import { KnowUsWays } from "./KnowUsWays";
 import { MoonText } from "@/components/MoonWord";
@@ -306,16 +306,6 @@ export function ValueItems({
  * line that the mix is settled in onboarding, the plain word on risk (T68) and
  * the footer (build list 7.5). Never a range, a minimum or a budget figure.
  */
-/** The village's split as shares of the whole, or the placeholder parts with N% where it has written none. */
-function useShares(setup: FoundingSetup): Array<{ label: string; pct: number | null }> {
-  const { t } = useLingui();
-  const placeholder: Record<(typeof PLACEHOLDER_PARTS)[number], string> = {
-    Cash: t({ message: "Cash", context: "founding application compensation" }),
-    Equity: t({ message: "Equity", context: "founding application compensation" }),
-    Credits: t({ message: "Credits", context: "founding application compensation" }),
-  };
-  return setup.shares.length ? setup.shares : PLACEHOLDER_PARTS.map((p) => ({ label: placeholder[p], pct: null }));
-}
 
 /** Which part of the reward a share's label names, or null for none or more than one. */
 function partOf(label: string): "cash" | "equity" | "credits" | null {
@@ -363,7 +353,6 @@ function useSplitLine(setup: FoundingSetup): string {
 
 export function CompensationShape({ setup }: { setup: FoundingSetup }) {
   const { t } = useLingui();
-  const shares = useShares(setup);
   const splitLine = useSplitLine(setup);
   return (
     <section aria-labelledby="comp-shape-h" className="grid gap-5" data-comp-shape="">
@@ -373,16 +362,7 @@ export function CompensationShape({ setup }: { setup: FoundingSetup }) {
         </h3>
         <p className={`mt-1 ${HINT}`}>{t({ message: "How your pay is split between cash, equity and credits. Your price is set above, by your proposal.", context: "founding application compensation" })}</p>
       </div>
-      <dl className="grid grid-cols-3 gap-3">
-        {shares.map((s) => (
-          <div key={s.label} className={`${TILE} grid min-w-0 content-start gap-1`} data-share={s.label}>
-            <dt className={`${EYEBROW} break-words`}>{s.label}</dt>
-            <dd className="font-display text-3xl leading-none text-foreground sm:text-4xl" data-share-pct="">
-              {shareWords(s.pct)}
-            </dd>
-          </div>
-        ))}
-      </dl>
+      {/* No fixed tiles beside the split they edit above (production check of 1.3.24): the village's split in one sentence. */}
       <p className="text-sm text-foreground" data-comp-onboarding="">
         {splitLine}
       </p>
@@ -530,24 +510,34 @@ export function AboutPanes({ names, now }: { names: readonly string[]; now: numb
 }
 
 /** The rewards' shape beside every step on a desk (D-06): the split, the line that it is settled in onboarding, the word on risk. */
-export function RewardsBeside({ setup }: { setup: FoundingSetup }) {
+/**
+ * THE REWARDS BESIDE EVERY STEP. Never fixed tiles beside the split they can edit (production check of 1.3.24): the
+ * applicant's own split for each role once The terms has worked it, else the village's default in one line.
+ */
+export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
   const { t } = useLingui();
-  const shares = useShares(setup);
   const splitLine = useSplitLine(setup);
+  const pcts = setup.shares.map((s) => s.pct);
+  const fallback = pcts.length && pcts.every((n) => typeof n === "number")
+    ? t({ message: `Default split ${pcts.join("/")}. You can change it in The terms.`, context: "founding application compensation, the village's split in one line" })
+    : splitLine;
   return (
     <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
       <p id="rewards-beside-h" className={EYEBROW}>
         {t({ message: "How rewards work", context: "founding application compensation" })}
       </p>
-      <dl className="grid grid-cols-3 gap-2">
-        {shares.map((s) => (
-          <div key={s.label} className="grid min-w-0 gap-1 rounded-xl border border-border bg-muted px-3 py-2">
-            <dt className="break-words text-xs text-muted-foreground">{s.label}</dt>
-            <dd className="font-display text-xl leading-none text-foreground">{shareWords(s.pct)}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="text-xs text-muted-foreground" data-split-line="">{splitLine}</p>
+      {splits.length ? (
+        <ul className="grid gap-2 text-sm text-foreground" data-own-splits="">
+          {splits.map((x) => (
+            <li key={x.name} className="break-words">
+              {splits.length > 1 ? <span className="font-semibold">{x.name}: </span> : null}
+              {x.line}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-foreground" data-split-line="">{fallback}</p>
+      )}
       {setup.atRisk && <p className="text-xs leading-relaxed text-muted-foreground">{setup.atRisk}</p>}
     </section>
   );

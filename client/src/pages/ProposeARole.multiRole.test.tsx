@@ -5,7 +5,7 @@
  * total across roles is shown (components/fireflyPath/MoreRoles.tsx).
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { OPEN_WORDS } from "@shared/openProposals";
 
 import { SETUP, fillValue, pressNext, sendNow, stoneNow } from "@/test/proposeStones";
@@ -22,8 +22,14 @@ const FORM = {
   goals: [{ id: "g-team", text: "Build the team that can build the village" }],
   roles: [
     { id: "r-gate", name: "Gate Keeper", circle: "Anchor Circle", aim: "Open the gate at dawn.", payCeiling: { amount: 6000, currency: "USD", per: "month" } },
-    { id: "r-host", name: "Welcome Host", circle: "Land Circle", aim: "Meet every newcomer.", commitmentMin: 30, payCeiling: { amount: 4000, currency: "USD", per: "month" } },
+    { id: "r-host", name: "Welcome Host", circle: "Land Circle", aim: "Meet every newcomer.", commitmentMin: 30, payCeiling: { amount: 4000, currency: "USD", per: "month" }, payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] },
     { id: "r-well", name: "Well Keeper", circle: "Land Circle", aim: "Keep the well clean." },
+    // The picker (production check of 1.3.24): a held role still recruiting and a coming-soon role are offered and marked;
+    // a fully held role and a future venture are not.
+    { id: "r-oven", name: "Oven Keeper", circle: "Land Circle", aim: "Bake.", stillRecruiting: true },
+    { id: "r-bees", name: "Bee Keeper", circle: "Land Circle", aim: "Tend the hives.", comingSoon: true },
+    { id: "r-full", name: "Full Keeper", circle: "Land Circle", aim: "Full.", held: true },
+    { id: "r-cafe", name: "Cafe Venture", circle: "Land Circle", aim: "A cafe.", futureVenture: true },
   ],
   founding: SETUP,
 };
@@ -90,7 +96,8 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     await fillToTerms("/propose-a-role?role=r-gate");
     const add = (await screen.findByLabelText("Add another role")) as HTMLSelectElement;
     // Any circle, never the role already chosen.
-    expect(Array.from(add.options).map((o) => o.value)).toEqual(["", "r-host", "r-well"]);
+    expect(Array.from(add.options).map((o) => o.value)).toEqual(["", "r-host", "r-well", "r-oven", "r-bees"]);
+    expect(Array.from(add.options).map((o) => o.textContent).slice(3)).toEqual(["Oven Keeper: More players welcome", "Bee Keeper (coming soon)"]);
     fireEvent.change(add, { target: { value: "r-host" } });
     fireEvent.change(await screen.findByLabelText("Your commitment: Gate Keeper"), { target: { value: "50" } });
     const host = screen.getByLabelText("Your commitment: Welcome Host") as HTMLSelectElement;
@@ -98,11 +105,27 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(Array.from(host.options).map((o) => o.value)).toEqual(["", "30", "40", "50", "60", "70", "80", "90", "100"]);
     fireEvent.change(host, { target: { value: "40" } });
     // The prices add up: 50% of 6000 and 40% of 4000.
-    await waitFor(() => expect(document.querySelector("[data-roles-total]")?.textContent).toMatch(/2 roles: 90% commitment in all, and \$4,600 a month together/));
+    await waitFor(() => expect(document.querySelector("[data-roles-total]")?.textContent).toMatch(/2 roles: 90% commitment in all, and \$4,600 a (month|moon) together/));
+    // The added role's own price: their amount, through the same popup the first role has.
+    fireEvent.click(document.querySelector('[data-more-role="1"] [data-adjust-price]') as HTMLElement);
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "1500" } });
+    fireEvent.click(within(dialog).getByText("Use this price"));
+    await waitFor(() => expect(document.querySelector('[data-more-role="1"] [data-split-control], [data-more-role="1"] [data-split]')).toBeTruthy());
+    // REVIEW & SUBMIT (production check of 1.3.24): each role's price and split, and the prices added together.
+    const review = () => Array.from(document.querySelectorAll("[data-review-row]")).map((r) => r.textContent ?? "");
+    await waitFor(() => expect(review().some((l) => l.includes("Your split: Welcome Host"))).toBe(true));
+    expect(review().some((l) => l.includes("Your price: Gate Keeper") && /\$3,000/.test(l))).toBe(true);
+    expect(review().some((l) => l.includes("Your price: Welcome Host") && /\$1,500/.test(l))).toBe(true);
+    expect(review().some((l) => l.includes("Across your roles") && /\$4,500 a (month|moon) together/.test(l))).toBe(true);
     await agreeAndSend();
     await screen.findByRole("heading", { name: "Check your email" });
     expect(posted).toHaveLength(1);
-    expect(posted[0].roles).toEqual([{ roleId: "r-gate", note: "" }, { roleId: "r-host", note: "", commitmentPct: 40 }]);
+    // The payload carries the added role's own commitment, price ask and split.
+    expect(posted[0].roles[0]).toEqual({ roleId: "r-gate", note: "" });
+    expect(posted[0].roles[1]).toMatchObject({ roleId: "r-host", note: "", commitmentPct: 40, payAsk: { kind: "amount", monthly: 1500 } });
+    expect(posted[0].roles[1].paySplit.shares.map((x: { label: string; pct: number }) => [x.label, x.pct])).toEqual([["Cash", 60], ["Equity", 40]]);
     expect(posted[0].card.commitmentPct).toBe(50);
   });
 

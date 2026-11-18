@@ -39,7 +39,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
-import { rewardWords } from "./rewardWords";
+import { rewardWords, splitNotRestated } from "./rewardWords";
 import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
@@ -286,8 +286,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {pay.split && (() => {
         // The tiles already show the split, so its "Default split: ..." words are for screen readers only (the tiles
         // are aria-hidden); the card's own words after them stay in view (copy sweep, 15 Nov 2026: said once).
-        const own = sections?.paySplitNote ?? "";
-        const lead = pay.shape.length > 0 && own && pay.split.endsWith(` ${own}`) ? pay.split.slice(0, -(own.length + 1)) : null;
+        // The card's own words, without a sentence that restates the split just said (production check of 1.3.24).
+        const raw = sections?.paySplitNote ?? "";
+        const own = splitNotRestated(raw);
+        const said = raw && pay.split.endsWith(` ${raw}`) ? pay.split.slice(0, -(raw.length + 1)) : pay.split;
+        const lead = pay.shape.length > 0 && own ? said : null;
         return (
           <p className="leading-relaxed text-card-foreground" data-testid="pay-split">
             {lead !== null ? (
@@ -296,9 +299,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
                 {own}
               </>
             ) : pay.shape.length > 0 && !own ? (
-              <span className="sr-only">{pay.split}</span>
+              <span className="sr-only">{said}</span>
             ) : (
-              pay.split
+              own ? `${said} ${own}` : said
             )}
           </p>
         );
