@@ -40,6 +40,58 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.25 (2026-11-18)
+
+### What changed for your village
+
+- **Applicant pay and rhythm say moon, with a tip on the word.** Where an applicant sets or reads pay for a role priced per moon, every "moon" now carries a small tip: "We work in moon cycles, from new moon to new moon." It opens on hover, focus or tap and closes on Escape. It shows on the listed price and band, the commitment slider, the split total, the price ask and its popup, the Review & submit lines, the contract price and the value explainer. A role priced per month shows no tip. The explainer ("Each moon you recap what you delivered") and the goals list (first moon, each moon, mid-moon, "A day in this moon (optional)") say moon again, and so do the goal refusals. The "Adjust the price" dialog now loads the first time someone opens it, so the page loads lighter.
+- **The words for notice kinds load when the bell opens.** Each notice kind's description and its batched line now load the first time a member opens the bell, or hovers or focuses it, so every page's first view is lighter. Until they load, a batched row reads a plain line with its count ("6 more notices."). How notices are sent, grouped, emailed and counted does not change.
+- **Season places, a new module that ships off.** A village that does not turn it on sees no change.
+  - Season crew: every season starts fresh. A member applies for the running or next season, naming a circle or none. Each circle's picker, the holder of the role named in `season_crew.picker_role` (or the circle's crew when it is blank or nobody holds it), picks from everyone who applied, up to the number of places the circle sets for that season. Two circles cannot pick the same person. With `season_crew.needs_place` on, a circle needs a season place before it picks.
+  - Circles taking part: a circle proposes to take part in a season. A seat holder outside the circle adopts it, declines it or puts it to the village; with no such holder, a village ballot opens at once. `season_places.who` sets whether circles or single members take part, and `season_places.free_after` lets a circle that has served that many seasons skip the proposal.
+  - A cap with a waitlist: `season_places.cap` sets the places in a season (blank is no cap, 0 is none). Over the cap a circle waits in order, takes the first place that frees, and its crew is told. Raising the cap fills the new places within the hour; lowering it removes nobody.
+  - Circles at a gathering: a holder of `event.manage` can let a one-off gathering take circles, with its own cap and waitlist, and can require a season place. A circle's picker signs it up. People still answer the gathering as people.
+  - What a role asks first: `roles.prerequisites` lets a role ask for paid products or finished quests before anyone applies, up to 12 items. The door names each missing item, and a reversed payment does not count.
+  - Three new member pages: joining the season, the season's circles and gatherings, and a role's path (what it asks first, who holds it, its fee in the village's currency). Every number is a game variable the village can propose and vote on.
+- **Proposals for several roles, the follow-up to 1.3.24.**
+  - The draft saved on the device keeps the roles added to a proposal, each with its commitment, price and split.
+  - The goals belong to the proposal and count for every role. Deciders no longer see "No goal" for an added role, and each role's agreement carries the proposal's goals.
+  - Deciders can counter each role's price, and the commitment of every role after the first. "Terms we offer" shows one row per role. The applicant answers these with the other changed terms, and adopting warns while a countered value is not yet agreed. An agreed countered price becomes the contract's price, held to the same 120% cap as a price ask.
+  - Putting a proposal to the village opens one ballot for all its roles. The ballot names every role, and when it closes every role's application is settled together. A candidate who withdraws one role takes the vote with it, and the other roles go back to waiting for a decision.
+  - Review & submit shows each role's price and split, and the prices added together. The apply page's side panel shows the applicant's own split for each role in place of the fixed share tiles.
+  - The "Choose a role" picker offers open roles, held roles still recruiting (marked "More players welcome") and roles coming soon (marked "(coming soon)"). It never offers a fully held role.
+  - The role card's footnote says each thing once: "*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review."
+
+### What you must do
+
+Nothing. Everything applies by itself, and season places stay off until your village turns them on. If you mean to go back to 1.3.24 later, read the cases below first.
+
+### Does it touch your data
+
+Three migrations, all for season places.
+
+- `0408_season_places.sql` adds two new tables, `season_places` and `season_place_locks`.
+- `0409_event_circle_places.sql` adds two new tables, `event_circle_settings` and `event_circle_places`.
+- `0410_season_crew.sql` adds two new tables, `season_crew_applications` and `season_crew_berths`.
+
+They add six tables and change no existing table or row. Proposals for several roles need no migration: a role's counter-offer is kept in the counter-offer as `roles`, and the applications one proposal makes are linked in their answers as `together`.
+
+Going back to 1.3.24 is safe. 1.3.24 never reads the six new tables, lists the season places module as unknown and ignores it, and never reads the two new keys. Four cases to know about:
+
+- A counter-offer on a role's price or later commitment is not seen on 1.3.24. If a decider edits the counter-offer or the applicant answers it on 1.3.24, the role counters are dropped, and adopting on 1.3.24 ignores them. Settle countered proposals before going back.
+- On 1.3.24 the applications of one proposal go to separate votes again. A ballot already open for the group still closes, and 1.3.24 settles only the application it was opened on, leaving the others with no vote of their own. Let those votes close before going back.
+- A season places ballot that closes on 1.3.24 is marked done without placing the circle. Let open season places ballots close first.
+- On 1.3.24 the season places pages, their waitlists and the role prerequisites stop working; the data stays, and comes back on 1.3.25.
+
+### Merged pull requests
+
+- #1459 Applicant pay and goals say moon, with a tooltip on the word
+- #1458 Load notice kinds' words when the bell opens, off every page's first view
+- #1371 Season places: season crew picked by each circle, a cap with a waitlist, circle caps per gathering, role prerequisites (0408-0410)
+- #1461 Open proposals, multi-role follow-up: draft keeps added roles, goals for every role, counter-offers per role, one vote for all roles
+
+---
+
 ## 1.3.24 (2026-11-18)
 
 ### What changed for your village
