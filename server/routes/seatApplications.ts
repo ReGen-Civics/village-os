@@ -667,7 +667,8 @@ export function register(app: Express, deps: Deps): void {
       // An application for a later day is counted when that day comes.
       if (later) continue;
       const current = here.filter((l) => !isLapsed({ ...l, endedAt: null }, seat, lapseNow).lapsed).length;
-      if (current >= seat.seats) {
+      // A full role still recruiting takes the application (the lead, 17 Nov 2026); adoption waits for a free place.
+      if (current >= seat.seats && seat.recruiting !== true) {
         return answer(409, { error: `${seat.name} is full: every place in it is held.`, seatId: id, code: "seat_full" });
       }
     }

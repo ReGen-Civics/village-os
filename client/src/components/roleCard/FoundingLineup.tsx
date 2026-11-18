@@ -43,6 +43,8 @@ export interface FilledRole {
   name: string;
   /** Holders' names as the village shows them to this reader; empty when it shows none. */
   holders: string[];
+  /** Still recruiting (the lead, 17 Nov 2026): the roster keeps it as held and offers Apply beside it. */
+  recruiting?: boolean;
 }
 
 const archetypesOf = (seat: Record<string, any>): string[] => (Array.isArray(seat?.archetypes) ? seat.archetypes.map(String) : []);
