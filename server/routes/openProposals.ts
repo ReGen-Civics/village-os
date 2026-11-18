@@ -399,7 +399,8 @@ export function register(app: Express, deps: Deps): void {
         ...(isComingSoon(r) ? { comingSoon: true } : {}),
         // A future venture: the form asks for a pitch, by its five prompts.
         ...(isFutureVenture(r) ? { futureVenture: true } : {}),
-        ...((taken.get(r.id) ?? 0) >= r.seats ? { held: true } : {}),
+        // A full role still recruiting is not marked: more players welcome, so the chooser offers it (the lead, 17 Nov 2026).
+        ...((taken.get(r.id) ?? 0) >= r.seats && r.recruiting !== true ? { held: true } : {}),
         payCeiling: ceilings.get(r.id)?.payCeiling ?? null,
         // The split in force (the card's own shares, else the village's), so the form offers it to adjust (the lead, 17 Nov 2026).
         // Shares only, never an amount: every card shows them already.

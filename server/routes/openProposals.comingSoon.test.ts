@@ -145,7 +145,11 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
     await q("INSERT INTO org_role_assignments (id, org_role_id, holder_kind, display_name, holder_key) VALUES ('ops-held-1', ?, 'documented', 'Kyra', 'documented:kyra'), ('ops-held-2', ?, 'documented', 'Via', 'documented:via')", [gate, gate]);
     try {
       expect((await form()).roles.find((r: any) => r.id === gate)).toMatchObject({ held: true });
+      // Held and still recruiting (the lead, 17 Nov 2026): not marked, so the chooser offers it.
+      await q("UPDATE org_roles SET recruiting = 1 WHERE id = ?", [gate]);
+      expect("held" in (await form()).roles.find((r: any) => r.id === gate)).toBe(false);
     } finally {
+      await q("UPDATE org_roles SET recruiting = 0 WHERE id = ?", [gate]);
       await q("DELETE FROM org_role_assignments WHERE id IN ('ops-held-1', 'ops-held-2')");
     }
     // CONTROL: a plain listed role carries no flag.

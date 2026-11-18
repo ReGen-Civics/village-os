@@ -38,6 +38,7 @@ import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
+import { heldButRecruiting } from "@shared/roleListing";
 import { rewardWords } from "./rewardWords";
 import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
@@ -74,7 +75,8 @@ const ValueCallout = lazy(() => import("./ValueCallout"));
 /** Whether this reader may apply for the seat: a live, open, complete card. */
 export function mayApply(seat: Record<string, any>): boolean {
   if (!seat || seat.isExample) return false;
-  if (seat.state === "filled") return false;
+  // Held, with the door still open (the lead, 17 Nov 2026): more players welcome, so Apply stays.
+  if (seat.state === "filled" && !heldButRecruiting(seat)) return false;
   return roleCardView(seat).applyAllowed;
 }
 

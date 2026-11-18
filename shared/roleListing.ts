@@ -163,6 +163,15 @@ export function invitesApplications(r: { seats: number; held: number; state: str
   return (openPlaces > 0 && r.state !== "forming") || OPEN_STATES.has(r.state) || r.recruiting === true;
 }
 
+/**
+ * A HELD ROLE WITH ITS DOOR OPEN (the lead, 17 Nov 2026): every place taken, and the role still
+ * recruiting. It stays where held roles sit and keeps its Apply, because the village wants more
+ * people in it. A role that is not filled already offers Apply by its state.
+ */
+export function heldButRecruiting(r: { state?: unknown; recruiting?: unknown } | null | undefined): boolean {
+  return !!r && r.state === "filled" && r.recruiting === true;
+}
+
 export interface ListingBefore {
   id: string;
   /** What the role read as before: true listed (or never set), false unlisted. */
