@@ -660,7 +660,7 @@ export function vetoWatchMarksDue(
  * preference, which defaults to DAILY. So the last warning before a Game
  * change landed arrived hours after it had landed. Three types, each pinned to
  * "immediate" in `emailCadenceFor`, is what makes the notice arrive while the
- * door is still open. `shared/notificationKinds.ts` holds what each one says.
+ * door is still open. `shared/notificationKindWords.ts` holds what each one says.
  */
 export const VETO_WATCH_NOTICE_TYPES: Readonly<Record<VetoWatchMark, string>> = {
   carried: "veto_window_opened",

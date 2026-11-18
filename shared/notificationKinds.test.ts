@@ -7,10 +7,11 @@ import {
   celebrates,
   celebrationFor,
   kindOf,
-  manyLine,
+  PLAIN_WORDS,
   UNKNOWN_KIND,
   wordsInAppOnly,
 } from "./notificationKinds";
+import { NOTIFICATION_KIND_WORDS, kindWordsOf, manyLine } from "./notificationKindWords";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 
@@ -173,15 +174,21 @@ describe("the notification catalogue", () => {
     }
   });
 
+  it("gives every kind its words, and words to no kind it does not declare", () => {
+    // The words live apart so the bell's first view carries the flags alone;
+    // the two maps are one catalogue and must never drift.
+    expect(Object.keys(NOTIFICATION_KIND_WORDS).sort()).toEqual(Object.keys(NOTIFICATION_KINDS).sort());
+  });
+
   it("gives every batched line somewhere to put the count", () => {
-    for (const [type, k] of Object.entries(NOTIFICATION_KINDS)) {
+    for (const [type, k] of Object.entries(NOTIFICATION_KIND_WORDS)) {
       expect(k.many, `${type} has no {n}`).toContain("{n}");
       expect(k.blurb.length, `${type} blurb is too short to say anything`).toBeGreaterThan(20);
     }
   });
 
   it("uses no dash characters the voice rules refuse", () => {
-    for (const [type, k] of Object.entries(NOTIFICATION_KINDS)) {
+    for (const [type, k] of Object.entries(NOTIFICATION_KIND_WORDS)) {
       expect(`${k.blurb} ${k.many}`, type).not.toMatch(/[–—]/);
     }
   });
@@ -199,6 +206,7 @@ describe("reading a kind", () => {
     expect(kindOf("not_a_real_type")).toBe(UNKNOWN_KIND);
     expect(celebrates("not_a_real_type")).toBe(false);
     expect(kindOf("not_a_real_type").group).toBe("village");
+    expect(kindWordsOf("not_a_real_type")).toBe(PLAIN_WORDS);
   });
 
   it("puts the count into the batched line", () => {

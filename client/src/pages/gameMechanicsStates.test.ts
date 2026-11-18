@@ -209,7 +209,7 @@ describe("the mechanics page speaks every state the server can send", () => {
     // Two surfaces describing one event two ways is the defect this lane
     // exists to avoid, so the page's phrases are checked against the
     // notification kinds a member meets first.
-    const kinds = fs.readFileSync(path.join(ROOT, "shared/notificationKinds.ts"), "utf8");
+    const kinds = fs.readFileSync(path.join(ROOT, "shared/notificationKindWords.ts"), "utf8");
     const noQuorumBlurb = kinds.match(/ballot_no_quorum:\s*\{[^}]*blurb:\s*"([^"]+)"/)?.[1] ?? "";
     const withdrawnBlurb = kinds.match(/ballot_withdrawn:\s*\{[^}]*blurb:\s*"([^"]+)"/)?.[1] ?? "";
     expect(noQuorumBlurb).toMatch(/too few/i);

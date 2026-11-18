@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { BATCH_AT, batchRows, buildFeed, unreadIdsOf, type FeedItem } from "./notificationFeed";
+import { kindWordsOf } from "@shared/notificationKindWords";
+import { BATCH_AT, batchRows as batchRowsWithout, buildFeed as buildFeedWithout, unreadIdsOf, type FeedItem } from "./notificationFeed";
+
+// The bell hands the feed its words once they have loaded; these tests read the feed as it is then.
+const batchRows = (items: FeedItem[]) => batchRowsWithout(items, undefined, kindWordsOf);
+const buildFeed = (items: FeedItem[]) => buildFeedWithout(items, undefined, kindWordsOf);
 
 const item = (over: Partial<FeedItem> & { id: string; type: string }): FeedItem => ({
   title: `title for ${over.id}`,
@@ -84,6 +89,34 @@ describe("batchRows", () => {
       item({ id: "new", type: "badge", at: "2026-08-20T00:00:00.000Z" }),
     ]);
     expect(rows.map((r) => r.key)).toEqual(["new", "old"]);
+  });
+});
+
+describe("before the words have loaded", () => {
+  it("batches with the plain line and its count, and leaves a bodiless row without a second line", () => {
+    const [batched] = batchRowsWithout(many("gratitude", 6));
+    expect(batched.batched).toBe(true);
+    expect(batched.title).toBe("6 more notices.");
+    expect(batched.detail).toBeNull();
+    const [single] = batchRowsWithout([item({ id: "b", type: "gratitude" })]);
+    expect(single.title).toBe("title for b");
+    expect(single.detail).toBeNull();
+  });
+
+  it("still shows a row's own body, and the village's own words for its kind", () => {
+    const own = (type: string, platform: string) => (type === "gratitude" ? "The village says thanks." : platform);
+    const [withBody, withOwn] = batchRowsWithout([
+      item({ id: "a", type: "gratitude", body: "thank you for the pump", at: "2026-08-20T11:00:00.000Z" }),
+      item({ id: "b", type: "gratitude", at: "2026-08-20T10:00:00.000Z" }),
+    ], own);
+    expect(withBody.detail).toBe("thank you for the pump");
+    expect(withOwn.detail).toBe("The village says thanks.");
+  });
+
+  it("groups and orders exactly as it will once they arrive", () => {
+    const items = [...many("gratitude", 5), item({ id: "solo", type: "message" }), item({ id: "x", type: "some_future_module_event" })];
+    const shape = (gs: ReturnType<typeof buildFeed>) => gs.map((g) => [g.id, g.unread, g.rows.map((r) => r.key)]);
+    expect(shape(buildFeedWithout(items))).toEqual(shape(buildFeed(items)));
   });
 });
 

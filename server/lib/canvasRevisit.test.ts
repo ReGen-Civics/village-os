@@ -35,7 +35,7 @@ import { emailCadenceFor, insertNotification, resolveNotifyPrefs, runNotificatio
 import { presenceTest } from "./memberPresence";
 import { renderWeeklyBrief } from "./assistantTemplates";
 import { MOMENT_BLOCKS, revisitBody, revisitTitle } from "../../shared/canvasRevisit";
-import { manyLine } from "../../shared/notificationKinds";
+import { manyLine } from "../../shared/notificationKindWords";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[canvasRevisit] TEST_DATABASE_URL not set - DB-backed tests SKIPPED.");
