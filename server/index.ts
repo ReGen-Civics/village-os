@@ -20833,7 +20833,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   async function buildElectorate(): Promise<RollEntry[]> {
     const eligible = await votingRoll();
     // The whole roll, so the share cap (when it is on) is measured against
-    // everybody who may vote; caps by source ride each row's basis (0404).
+    // everybody who may vote; caps by source ride each row's basis (0407).
     return rollEntriesFor(getPool(), eligible, weightModeNow());
   }
 

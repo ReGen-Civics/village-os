@@ -325,7 +325,7 @@ export interface OpenBallotInput {
   /**
    * The frozen who-and-how-much. Weights already resolved by the caller. A
    * `basis` (from `rollEntriesFor`, server/lib/governanceWeights.ts) is what a
-   * weight under caps by source was counted from, frozen beside it (0404).
+   * weight under caps by source was counted from, frozen beside it (0407).
    */
   electorate: Array<{ userId: string; weight: number; basis?: ElectorateBasis | null }>;
   /**
@@ -517,7 +517,7 @@ export async function openBallot(pool: Pool, input: OpenBallotInput): Promise<Op
     );
     for (const e of electorate) {
       // The basis is NULL on every row of a ballot opened with no caps by
-      // source, which is every ballot before 0404, so those rows read as before.
+      // source, which is every ballot before 0407, so those rows read as before.
       const b = e.basis ?? null;
       await conn.query("INSERT INTO ballot_electorate (ballot_id, user_id, weight, held_weight, held_cash, cap_cash, cap_other) VALUES (?,?,?,?,?,?,?)", [ // module-review-ok: the ballot tables' one enumerable home (the intents.ts pattern; no cache sits above them)
         id,

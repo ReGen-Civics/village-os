@@ -118,7 +118,7 @@ export const MINT_CAP_KEY = "ledger.admin_mint_cycle_cap";
  */
 export const HAND_MINT_SOURCES: readonly string[] = [
   "admin_mint",
-  // The same hand-mint, marked by its steward as cash put in (0404,
+  // The same hand-mint, marked by its steward as cash put in (0407,
   // shared/voiceSourceCaps.ts). Same doors, same guard, same act.
   "admin_mint_cash",
   "exchange_stock",

@@ -828,7 +828,7 @@ member holds on Base, read from the `onchain_balances` cache and never dialled.
 Gratitude appears there as giving left and thanks received, with no price and no
 claim. A token shows a money figure only when the exchange posted one.
 
-### Caps on what a ballot counts, by source, and resting Voice (0404)
+### Caps on what a ballot counts, by source, and resting Voice (0407)
 
 A village weighing votes by a token can cap how much of one member's balance a
 ballot counts from cash put in and from every other contribution, each with its
