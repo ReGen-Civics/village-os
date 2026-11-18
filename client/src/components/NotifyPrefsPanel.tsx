@@ -17,6 +17,7 @@ import { CASH_GIVE_UP_FIELD } from "@shared/cashOwed";
 import LeavingNotices, { useLeavingNotices } from "@/components/LeavingNotices";
 import EmailFromVillage from "@/components/EmailFromVillage";
 import MapLightSetting from "@/components/map/MapLightSetting";
+import VillageSoundToggle from "@/components/VillageSoundToggle";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { TASK_COPY, TASK_EMAIL_PREFS, isTaskEmailPref } from "@shared/sessionTasks";
 
@@ -123,8 +124,9 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
   const [giveUpCash, setGiveUpCash] = useState(false);
   // What deleting cancels (round 3, finding 5): their recurring payments, named before they confirm.
   const leavingNotices = useLeavingNotices(confirming);
-  /** Task emails belong to Live Sessions, so the choice is offered only where the village runs it. */
+  /** Task emails cover Live Sessions tasks and tasks handed to a role, so the choice is offered wherever the task board shows. */
   const sessionsOn = useModuleOn("sessions");
+  const governanceOn = useModuleOn("governance");
   const deletePanel = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (identity.confirmed || identity.returnError) setConfirming(true);
@@ -287,7 +289,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
               emails. Its words live with the rest of the task board's. Its
               longest choice is a sentence, so on a phone the choice sits under
               its label at full width. */}
-          {sessionsOn && (
+          {(sessionsOn || governanceOn) && (
             <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
               <label htmlFor="notify-tasks-email" className="text-sm text-muted-foreground">
                 {TASK_COPY.pref.label}
@@ -331,6 +333,9 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
           </span>
         </span>
       </label>
+
+      {/* The village's own sounds (gap G8), offered only when it loaded some. */}
+      <VillageSoundToggle />
 
       {/* The gratitude nudge (server/lib/gratitudeNudge.ts). Off means no bell
           row and no email: it is the one notice that only invites. */}

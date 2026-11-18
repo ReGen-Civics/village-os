@@ -290,11 +290,16 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
-    // The cap at 50% of a $13,000 band: 120% of the $6,500 suggestion.
-    expect(dialog.querySelector("[data-price-popup-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
-    // Past the cap: the popup says why and will not save it.
+    // The cap (120% of the $6,500 suggestion at 50%, $7,800) is enforced and never shown (lead, 17 Nov 2026).
+    expect(dialog.querySelector("[data-price-popup-cap]")).toBeNull();
+    expect(dialog.textContent).not.toContain("Proposals up to");
+    expect(dialog.textContent).not.toContain("$7,800");
+    // Past the cap: the popup refuses it in plain words, with no figure, and will not save it.
+    fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "7801" } });
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call.");
+    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
-    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's above $7,800 a month, the most a proposal can ask at 50%: 120% of the suggested price. Choose $7,800 a month or less.");
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).not.toContain("$");
     expect(dialog.querySelector("[data-price-above-band]")).toBeNull();
     expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
     // At the cap: taken.
@@ -305,7 +310,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
     fireEvent.click(within(dialog).getByText("Use this price"));
     expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $7,800 a month (+20% on the suggestion).");
-    expect(document.querySelector("[data-price-cap]")?.textContent).toBe("Proposals up to $7,800 a month, 120% of the suggested price.");
+    expect(document.querySelector("[data-price-cap]")).toBeNull();
+    expect((document.querySelector("[data-price-ask]") as HTMLElement).textContent).not.toContain("Proposals up to");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     // Stored with the period the price was written in (QA F7): the role's ceiling period.
@@ -317,6 +323,53 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.payAsk).toBeUndefined();
+  });
+  it("THE SPLIT (the lead, 17 Nov 2026): the card's commitment and split arrive by the Apply link, both edit by hand, and the proposal sends them", async () => {
+    const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }] }, FORM.roles[1]] };
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate&commitment=60&split=50.50.0");
+    serve(SPLIT);
+    render(<ProposeARole />);
+    await screen.findByRole("heading", { level: 1, name: /^Apply: / });
+    expect((screen.getByLabelText("Your commitment") as HTMLSelectElement).value).toBe("60");
+    // At 60% of $13,000 the suggested price is $7,800; the card's 50/50/0 split is shown at it (the control loads lazily).
+    await waitFor(() => expect((screen.getByLabelText("Cash, percent of the total") as HTMLInputElement).value).toBe("50"));
+    expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3900");
+    expect(screen.getByText("You can change this split for your proposal. Type a percent or an amount.")).toBeTruthy();
+    // By amount: credits $780 is 10%, the others give way in proportion.
+    fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "780" } });
+    expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
+    // The ramp-up is the applicant's own choice: nothing the link, the split or a default does ticks it (1.3.22 check).
+    expect((screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement).checked).toBe(false);
+    fillAbout();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
+    fillValue();
+    fireEvent.click(await screen.findByLabelText(LETTER.intent));
+    fireEvent.click(screen.getByLabelText(/confidentiality agreement before I see/));
+    // Review & submit says the split, and that they changed it.
+    walk();
+    expect(document.querySelector("[data-review]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780) · changed from the village's split");
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 60%");
+    expect(document.querySelector("[data-review]")?.textContent).not.toContain("ramp-up");
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.card.commitmentPct).toBe(60);
+    expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 45, amount: 3510 }, { label: "Equity", pct: 45, amount: 3510 }, { label: "Credits", pct: 10, amount: 780 }] });
+    expect(posted[0].body.rampUp).toBeUndefined();
+  });
+  it("an untouched split is sent as the role's own, and a role with no split sends none (control)", async () => {
+    const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] }, FORM.roles[1]] };
+    await applyFor("r-gate", SPLIT);
+    await completeAll();
+    await screen.findByLabelText("Cash, percent of the total");
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 60, amount: 3900 }, { label: "Equity", pct: 40, amount: 2600 }] });
+    cleanup();
+    await applyFor("r-gate", SHARED);
+    await completeAll();
+    sendNow();
+    expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
+    expect(posted[0].body.paySplit).toBeUndefined();
   });
   it("a role with no minimum keeps the usual choices and asks nothing about pay (control)", async () => {
     await applyFor();
@@ -573,7 +626,10 @@ describe("the six steps", () => {
     const review = document.querySelector("[data-review]") as HTMLElement;
     const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
     expect(price.textContent).toContain("Your price");
-    expect(price.textContent).toContain("The suggested price, $6,500 a month · Proposals up to $7,800 a month");
+    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    // No cap amount on the applicant's own review (lead, 17 Nov 2026): 120% of $6,500 is $7,800.
+    expect(review.textContent).not.toContain("Proposals up to");
+    expect(review.textContent).not.toContain("$7,800");
     const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
     expect(notes.textContent).toContain("Your notes on the role (1)");
     expect(notes.textContent).toContain("A legal review each quarter.");
@@ -649,6 +705,26 @@ describe("the terms", () => {
     sendNow();
     await screen.findByRole("heading", { name: "Check your email" });
     expect(posted[0].body.card.terms).toEqual({ answers: { term: { choice: "accept", note: "" }, clocks: { choice: "accept", note: "" } } });
+  });
+});
+
+describe("the ramp-up is the applicant's own choice (production check, 1.3.22)", () => {
+  it("starts unticked, a tap on the tile's hint does not tick it, its words and box do, and Review & submit follows", async () => {
+    await applyFor();
+    const box = screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement;
+    expect(box.checked).toBe(false);
+    // A tap on the tile around the box (as a phone does to close its keyboard) changes nothing.
+    fireEvent.click(screen.getByText("Partial rewards while you build to your full commitment. We agree the steps together."));
+    fireEvent.click(document.querySelector("[data-ramp-up]") as HTMLElement);
+    expect(box.checked).toBe(false);
+    fireEvent.change(screen.getByLabelText("Your commitment"), { target: { value: "50" } });
+    walk();
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 50%");
+    expect(document.querySelector("[data-review]")?.textContent).not.toContain("ramp-up");
+    // CONTROL: the words tick it, and the review says so.
+    fireEvent.click(screen.getByText("I would like a ramp-up"));
+    expect(box.checked).toBe(true);
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 50%, with a ramp-up");
   });
 });
 
@@ -894,6 +970,35 @@ describe("the sent threshold", () => {
     await screen.findByRole("heading", { name: "Check your email" });
     expect(document.querySelector("[data-after-founding]")?.textContent).toMatch(/founding team first/);
     expect(document.querySelector("[data-dated-steps]")?.textContent ?? "").not.toMatch(/write to you by /);
+  });
+
+  it("COMING SOON (Rye, 16 Nov 2026): the same steps, with the interviews note on the form and again on the confirmation", async () => {
+    const note = "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.";
+    const soon = { ...FORM, roles: [{ ...FORM.roles[0], comingSoon: true, opensLater: true }, FORM.roles[1]] };
+    await applyFor("r-gate", soon, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
+    // The note's module loads lazily (the form's first-view budget), so it lands after the form.
+    await waitFor(() => expect(document.querySelector("[data-coming-soon-note]")?.textContent).toBe(note));
+    // Its own note says the later start, so the founding-team note steps aside.
+    expect(document.querySelector("[data-opens-later]")).toBeNull();
+    await completeAll();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
+    sendNow();
+    await screen.findByRole("heading", { name: "Check your email" });
+    await waitFor(() => expect(document.querySelector('[data-threshold="sent"] [data-coming-soon-note]')?.textContent).toBe(note));
+    expect(document.querySelector("[data-after-founding]")).toBeNull();
+  });
+
+  it("FUTURE VENTURE: the form and its confirmation say what holding one means and the pitch's five parts", async () => {
+    const venture = { ...FORM, roles: [{ ...FORM.roles[0], futureVenture: true, opensLater: true }, FORM.roles[1]] };
+    await applyFor("r-gate", venture, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
+    await waitFor(() => expect(document.querySelectorAll("[data-venture-note] li")).toHaveLength(5));
+    expect(document.querySelector("[data-coming-soon-note]")).toBeNull();
+    expect(document.querySelector("[data-opens-later]")).toBeNull();
+    await completeAll();
+    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
+    sendNow();
+    await screen.findByRole("heading", { name: "Check your email" });
+    await waitFor(() => expect(document.querySelectorAll('[data-threshold="sent"] [data-venture-note] li')).toHaveLength(5));
   });
 
   it("names the role's conversations in order after sending", async () => {

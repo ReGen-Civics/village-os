@@ -18,6 +18,7 @@ import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY, HINT, LABEL_CAPS, PANEL } from "
 import { daysBetween } from "@shared/memberTasks";
 import type { FeedbackContext } from "@shared/memberTaskFeedback";
 import ReasonSheet, { type ReasonPick } from "./ReasonSheet";
+import RoleHandoffs from "./RoleHandoffs";
 import { holdUndo } from "@/components/admin/adminUndo";
 import {
   addTask, changeTier, markDone, newFeedbackId, pinTask, readFeedbackSwitch, readList, redirectTask, removeTask, saveFeedbackSwitch, undoTask,
@@ -119,8 +120,12 @@ export default function YourListCard() {
   const [sharing, setSharing] = useState<boolean | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [bulk, setBulk] = useState<"remove" | "redirect" | null>(null);
+  const [listTick, setListTick] = useState(0);
 
-  const load = useCallback(async () => setList(await readList()), []);
+  const load = useCallback(async () => {
+    setList(await readList());
+    setListTick((n) => n + 1);
+  }, []);
   useEffect(() => { void load(); }, [load]);
   useEffect(() => { void readFeedbackSwitch().then(setSharing); }, []);
 
@@ -153,7 +158,7 @@ export default function YourListCard() {
     const press = { feedbackId: newFeedbackId(), reason: p.reason, note: p.note, context: contextOf(t), ...(p.mergedIntoTaskId ? { mergedIntoTaskId: p.mergedIntoTaskId } : {}) };
     return mode === "remove"
       ? act(() => removeTask(t, press), (gone) => setUndo(gone))
-      : act(() => redirectTask(t, press, { toUserId: p.toUserId, toRoleId: p.toRoleId }), (gone) => setUndo(gone));
+      : act(() => redirectTask(t, press, { toUserId: p.toUserId, toRoleId: p.toRoleId, handoffNote: p.handoffNote, ...(p.handoffDueOn ? { handoffDueOn: p.handoffDueOn } : {}) }), (gone) => setUndo(gone));
   };
   const flipSharing = async () => {
     if (sharing === null) return;
@@ -174,7 +179,7 @@ export default function YourListCard() {
         : mode === "remove" && press
           ? await removeTask(t, press)
           : press
-            ? await redirectTask(t, press, { toUserId: p?.toUserId, toRoleId: p?.toRoleId })
+            ? await redirectTask(t, press, { toUserId: p?.toUserId, toRoleId: p?.toRoleId, handoffNote: p?.handoffNote, ...(p?.handoffDueOn ? { handoffDueOn: p.handoffDueOn } : {}) })
             : { ok: false as const, error: "Pick a reason." };
       if (!result.ok) {
         setProblem(result.error);
@@ -218,6 +223,8 @@ export default function YourListCard() {
         </label>
         <button type="submit" className={BTN_PRIMARY} disabled={busy || !title.trim()}>Add</button>
       </form>
+
+      <RoleHandoffs refresh={listTick} />
 
       {problem && <p role="alert" className="mt-2 text-sm text-foreground">{problem}</p>}
       {undo && (

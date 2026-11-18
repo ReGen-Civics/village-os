@@ -28,10 +28,12 @@ import type mysql from "mysql2/promise";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "../db/testDb";
 import { buildGeotaggedJpeg } from "../lib/exifFixture";
 import { exportMemberHiddenMap, forgetMemberHiddenMap, storePhoto } from "../lib/hiddenMap";
-import { loadModuleSettings, setModuleLifecycle } from "../lib/modules";
+import { loadModuleSettings, setModuleConfig, setModuleLifecycle } from "../lib/modules";
 import { loadVariables, setVariable } from "../lib/variables";
 import { villageId } from "../lib/economy";
 import * as repo from "../repos/hiddenMap";
+import { claimsRepo as claimsRepoFactory, questsRepo as questsRepoFactory } from "../repos/quests";
+import { openVisitClaim, plantingClaimNote, visitClaimNote } from "../lib/hiddenMapQuest";
 import { register } from "./hiddenMap";
 
 type Handler = (req: any, res: any) => Promise<unknown> | unknown;
@@ -93,7 +95,12 @@ function deps(
   who: () => string | null,
   seats: { keep: Set<string>; export: Set<string> },
   photoDir: string,
-  extra: { admission?: (id: string) => Promise<Date | null | undefined>; notify?: (n: any) => Promise<any>; opened?: (id: string) => Promise<void> } = {},
+  extra: {
+    admission?: (id: string) => Promise<Date | null | undefined>;
+    notify?: (n: any) => Promise<any>;
+    opened?: (id: string) => Promise<void>;
+    visitClaims?: any;
+  } = {},
 ) {
   return {
     ...extra,
@@ -118,7 +125,11 @@ function deps(
     },
     getPool: () => pool,
     overLimit: async () => false,
-    members: { all: async () => [{ id: "m-plant", name: "Rowan Example" }, { id: "m-keep", name: "Ash Example" }], count: async () => 2 },
+    members: {
+      all: async () => [{ id: "m-plant", name: "Rowan Example" }, { id: "m-keep", name: "Ash Example" }],
+      count: async () => 2,
+      byId: async (id: string) => ({ id, name: `${id} Example` }),
+    },
     firstName: (n: string) => String(n).split(" ")[0],
     photoDir,
   } as any;
@@ -273,6 +284,8 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-plant");
     let me = await call(handlers, "GET /api/hidden-map/me");
     expect(me.body).toMatchObject({ open: false, vouchedCount: 6, needed: 7 });
+    expect(typeof me.body.allPins).toBe("number");
+    expect(JSON.stringify(me.body)).not.toMatch(/40\.1/);
     as("m-keep");
     await call(handlers, "POST /api/hidden-map/pins/:id/vouch", { params: { id: ids[6] }, body: { seen: "in-person" } });
     as("m-plant");
@@ -439,6 +452,103 @@ describe.skipIf(!configured)("the hidden map against a real schema", () => {
     as("m-new");
     const own = await call(handlers, "GET /api/hidden-map/pins");
     expect(own.body.pins.find((p: any) => p.id === id)?.hidden).toBe(true);
+  });
+
+  it("a visit to somebody else's pin opens a submitted claim on the village's quest, naming a day and never a place", async () => {
+    const quests = questsRepoFactory(pool as any);
+    const claims = claimsRepoFactory(pool as any);
+    await quests.add({ id: "q-return-visit", title: "Return visit", status: "Open", gratitude: "10" } as any);
+    const deps = { getPool: () => pool as any, stageOf: async () => "member", roleIdsFor: () => [], claimsRepo: claims, questsRepo: quests };
+    const at = new Date("2026-11-15T12:00:00Z");
+    const id = await openVisitClaim(deps, { questId: "q-return-visit", user: { id: "m-visitor", name: "Sky Example" }, at });
+    expect(id).toBeTruthy();
+    const claim = await claims.byId(id!);
+    expect(claim?.status).toBe("submitted");
+    expect(claim?.note).toBe(visitClaimNote(at));
+    expect(claim?.note).not.toMatch(/\d+\.\d{3,}/);
+    // An open claim on the same quest blocks a second until it is decided.
+    expect(await openVisitClaim(deps, { questId: "q-return-visit", user: { id: "m-visitor", name: "Sky Example" }, at })).toBeNull();
+    // A quest that does not exist opens nothing.
+    expect(await openVisitClaim(deps, { questId: "q-nope", user: { id: "m-visitor" }, at })).toBeNull();
+  });
+
+  it("a planting's claim carries its own words, a day and never a place", () => {
+    const at = new Date("2026-11-15T12:00:00Z");
+    expect(plantingClaimNote(at)).toBe("A planting, vouched on 2026-11-15.");
+    expect(plantingClaimNote(at)).not.toMatch(/\d+\.\d{3,}/);
+  });
+
+  it("pays every vouched planting: each owed claim opens once the one before it is decided (P1-r-1)", async () => {
+    const quests = questsRepoFactory(pool as any);
+    const claims = claimsRepoFactory(pool as any);
+    await quests.add({ id: "q-plant", title: "Plant one", status: "Open", gratitude: "100" } as any);
+    expect(await setModuleConfig("hidden-map", { plantingQuestId: "q-plant" }, null)).toEqual({ ok: true });
+    const c = collect();
+    register(c.app, deps(pool, () => whoami, seats, photoDir, {
+      visitClaims: { stageOf: async () => "member", roleIdsFor: () => [], claimsRepo: claims, questsRepo: quests },
+    }));
+    const h = c.handlers;
+    const plain = await sharp({ create: { width: 64, height: 48, channels: 3, background: { r: 40, g: 120, b: 60 } } }).jpeg().toBuffer();
+    const three: string[] = [];
+    for (let i = 0; i < 3; i++) {
+      as("m-owed");
+      const id = (await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id;
+      const stored = await storePhoto(plain, photoDir);
+      await repo.insertPhoto(pool as any, villageId(), { id: `hmf-owed-${i}`, pinId: id, visitId: null, uploader: "m-owed", ...stored }, new Date());
+      three.push(id);
+    }
+    // A fourth planting with no photo of its own is vouched like the rest and never paid.
+    as("m-owed");
+    const bare = (await call(h, "POST /api/hidden-map/pins", { body: pinBody() })).body.pin.id;
+
+    const open = async () => (await claims.forUser("m-owed")).filter((x: any) => x.questId === "q-plant");
+    // One vouch opens no paid claim, whatever hiddenmap.vouches_per_pin says (security audit, 16 Nov 2026).
+    as("m-keep");
+    for (const id of [...three, bare]) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
+    as("m-owed");
+    await call(h, "GET /api/hidden-map/me");
+    expect(await open()).toHaveLength(0);
+    // A second member's vouch does. At most two paid plantings a week here.
+    await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "2");
+    as("m-plant");
+    for (const id of [...three, bare]) await call(h, "POST /api/hidden-map/pins/:id/vouch", { params: { id }, body: { seen: "in-person" } });
+    // One open claim at a time, the quest board's rule: the first planting's.
+    let mine = await open();
+    expect(mine).toHaveLength(1);
+    expect(mine[0]!.status).toBe("submitted");
+    // Pins logged in the same second may come in either order; what holds is one pin per claim.
+    const claimed = async () => (await Promise.all(three.map((id) => repo.plantingClaimOf(pool as any, villageId(), id)))).filter(Boolean);
+    expect(await claimed()).toEqual([mine[0]!.id]);
+
+    // Each decision frees the next, on the planter's next look at the map, until all three are owed nothing.
+    for (let i = 1; i <= 2; i++) {
+      // CONSENTED, as a steward would: a decided-and-paid claim must not block the next planting's
+      // (the quest board's own rule blocks on any claim that was not declined).
+      const decided = mine.find((x: any) => x.status === "submitted")!;
+      const moved = await claims.consentOnce(decided.id, ["submitted"], (c: any) => { c.status = "consented"; c.resolvedAt = new Date().toISOString(); }, null);
+      expect((moved as any).ok ?? true).not.toBe(false);
+      as("m-owed");
+      await call(h, "GET /api/hidden-map/me");
+      mine = await open();
+      // The week's cap of two holds the third planting back until the dial allows it.
+      expect(mine).toHaveLength(2);
+      if (i === 2) {
+        await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "5");
+        await call(h, "GET /api/hidden-map/me");
+        mine = await open();
+        expect(mine).toHaveLength(3);
+      }
+    }
+    expect(new Set(await claimed()).size).toBe(3);
+    // Nothing more is owed (the bare pin never is), so another look opens nothing.
+    await call(h, "GET /api/hidden-map/me");
+    expect(await open()).toHaveLength(3);
+    expect(await repo.plantingClaimOf(pool as any, villageId(), bare)).toBeNull();
+    await setVariable(pool as any, "hiddenmap.paid_plantings_per_week", "5");
+    // The board's own rule is untouched for every other caller: a consented claim still blocks a plain open.
+    const retry = await claims.openClaim({ ...mine[0]!, id: "claim-plain-retry", status: "claimed" } as any);
+    expect(retry.ok).toBe(false);
+    expect(await setModuleConfig("hidden-map", {}, null)).toEqual({ ok: true });
   });
 
   it("exports a member's own pins to them, and erasure deletes their photos and leaves the pins unattributed", async () => {

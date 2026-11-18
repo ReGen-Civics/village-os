@@ -22,6 +22,7 @@ import { CONVERSATION_MODES, interviewMinutesTotal, TRACKS, TRACK_WORDS, WHERE_W
 import { PAY_KINDS, type PaySettings } from "@shared/seatSettings";
 import type { HeldBy } from "@shared/agentHolders";
 import type { WordValue } from "@shared/roleProposals";
+import { columnsOfVisibility, visibilityOf, type RoleVisibility } from "@shared/roleListing";
 import { FOCUS, INPUT, LEDE, PANEL, PRIMARY, QUIET, SECONDARY } from "@/components/roleProposal/parts";
 import { openEditor, saveEditor, type EditorOpen, type EditorState, type SaveBody } from "./roleEditApi";
 import BringInCard from "./BringInCard";
@@ -40,6 +41,12 @@ const WORD_SPECS = ROLE_CARD_FIELDS.filter((f) => !String(f.key).startsWith("par
 interface Form {
   words: Record<string, string>;
   listed: boolean;
+  /** Shown under its lead with a Coming soon badge and applied for early, even while unlisted (Rye, 16 Nov 2026). */
+  comingSoon: boolean;
+  /** Shown in Future ventures, with no lead, and applied for with a pitch. */
+  futureVenture: boolean;
+  /** The circle the role sits in; changing it moves the role, history and all. */
+  circleId: string;
   alwaysChecked: boolean;
   /** Who may hold it (0374): "" is a card that has not said, which reads as either. */
   heldBy: "" | HeldBy;
@@ -73,6 +80,9 @@ function formOf(s: EditorState): Form {
   return {
     words: Object.fromEntries(Object.entries(s.words).map(([k, v]) => [k, text(v)])),
     listed: p.listed ?? true,
+    comingSoon: p.comingSoon ?? false,
+    futureVenture: p.futureVenture ?? false,
+    circleId: s.circleId ?? "",
     alwaysChecked: p.alwaysChecked ?? false,
     heldBy: p.heldBy ?? "",
     commitmentPct: typeof p.commitmentPct === "number" ? String(p.commitmentPct) : "",
@@ -103,6 +113,8 @@ function bodyOf(f: Form, s: EditorState): SaveBody {
   const has = (k: string) => (s.parameterKeys as string[]).includes(k);
   const parameters: Record<string, unknown> = { recruiting: f.recruiting };
   if (has("listed")) parameters.listed = f.listed;
+  if (has("comingSoon")) parameters.comingSoon = f.comingSoon;
+  if (has("futureVenture")) parameters.futureVenture = f.futureVenture;
   if (has("alwaysChecked")) parameters.alwaysChecked = f.alwaysChecked;
   if (has("heldBy")) parameters.heldBy = f.heldBy || null;
   if (has("commitmentPct")) parameters.commitmentPct = f.commitmentPct.trim() ? Number(f.commitmentPct) : null;
@@ -122,7 +134,14 @@ function bodyOf(f: Form, s: EditorState): SaveBody {
   if (has("conversations")) parameters.conversations = f.interviewers;
   if (has("conversationMode")) parameters.conversationMode = f.conversationMode || null;
   // The sections go only to a server that sent them, so an older server never meets a key it refuses.
-  return { words: f.words, parameters, pay: f.pay, archetypes: f.tags, ...(s.sections ? { sections: sectionsOf(f.sections) } : {}) };
+  return {
+    words: f.words,
+    parameters,
+    pay: f.pay,
+    archetypes: f.tags,
+    ...(s.sections ? { sections: sectionsOf(f.sections) } : {}),
+    ...(f.circleId && f.circleId !== (s.circleId ?? "") ? { circleId: f.circleId } : {}),
+  };
 }
 
 /** A field's gold frame: it differs from the role as it stands, and the words as they stand are a tap away. */
@@ -275,15 +294,36 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
 
         <section className={`${PANEL} space-y-3`} aria-labelledby="re-door">
           <h3 id="re-door" className="font-display text-lg"><Trans context="role editor">Listing and the door</Trans></h3>
+          {/* Who sees this role (Rye, 16 Nov 2026): one choice over the two columns. Held is the seatings' to say. */}
           {has("listed") && (
-            <Frame label={t({ message: "Listed", context: "role editor" })} changed={form.listed !== start.listed}>
-              <label className="flex min-h-[44px] items-center gap-2">
-                <input type="checkbox" className="size-5 accent-dash-gold" checked={form.listed} onChange={(e) => set("listed", e.target.checked)} />
-                <span><Trans context="role editor">Visitors and members can find this role</Trans></span>
-              </label>
-              {open.lacksToList.length > 0 && !form.listed && (
+            <Frame label={t({ message: "Who sees this role", context: "role editor" })} changed={visibilityOf(form) !== visibilityOf(start)}>
+              <select
+                className={INPUT}
+                value={visibilityOf(form)}
+                onChange={(e) => setForm((f) => (f ? { ...f, ...columnsOfVisibility(e.target.value as RoleVisibility) } : f))}
+                aria-label={t({ message: "Who sees this role", context: "role editor" })}
+                data-testid="role-editor-visibility"
+              >
+                <option value="open">{t({ message: "Open: listed and taking applications now", context: "role editor: role visibility" })}</option>
+                {has("comingSoon") && <option value="comingSoon">{t({ message: "Coming soon: shown under its circle's steward, applications welcome early", context: "role editor: role visibility" })}</option>}
+                {has("futureVenture") && <option value="futureVenture">{t({ message: "Future venture: shown in Future ventures, applied for with a pitch", context: "role editor: role visibility" })}</option>}
+                <option value="unlisted">{t({ message: "Unlisted: hidden from the public, kept here", context: "role editor: role visibility" })}</option>
+              </select>
+              <p className="text-sm text-muted-foreground"><Trans context="role editor">A role someone holds shows as held, with no Apply, whatever this says.</Trans></p>
+              {open.lacksToList.length > 0 && visibilityOf(form) === "open" && !start.listed && (
                 <p className="text-sm text-muted-foreground"><Trans context="role editor">Still to write before it can be listed:</Trans> {open.lacksToList.join(", ")}.</p>
               )}
+            </Frame>
+          )}
+          {(open.circles?.length ?? 0) > 0 && (
+            <Frame label={t({ message: "Circle", context: "role editor" })} changed={form.circleId !== start.circleId}>
+              <select className={INPUT} value={form.circleId} onChange={(e) => set("circleId", e.target.value)} aria-label={t({ message: "Circle", context: "role editor" })} data-testid="role-editor-circle">
+                {!form.circleId && <option value="">{t({ message: "Choose a circle", context: "role editor" })}</option>}
+                {open.circles!.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <p className="text-sm text-muted-foreground"><Trans context="role editor">Moving a role keeps its history, its holders and its applications. A coming-soon role shows under its new circle's steward.</Trans></p>
             </Frame>
           )}
           {has("alwaysChecked") && (

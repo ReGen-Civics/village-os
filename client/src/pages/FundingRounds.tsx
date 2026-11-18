@@ -28,7 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import { gameFetch } from "@/lib/gameApi";
 import { FIELD, LABEL, readJson, sentenceOf, useStageText, type Detail, type Pot, type Round } from "@/components/fundingRounds/common";
-import { Ballot, IdeaCard, IdeaForm, Results, StageRail } from "@/components/fundingRounds/RoundParts";
+import { Ballot, IdeaCard, IdeaForm, Results, StageRail, VoiceLine } from "@/components/fundingRounds/RoundParts";
 
 function RoundPage({ id }: { id: string }) {
   const { t } = useLingui();
@@ -86,6 +86,7 @@ function RoundPage({ id }: { id: string }) {
             </Trans>
           </p>
           <StageRail stage={round.stage} />
+          <VoiceLine detail={data} />
         </div>
       </section>
       <div className="container grid max-w-3xl gap-6 pb-16">

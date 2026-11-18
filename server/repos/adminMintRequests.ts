@@ -26,7 +26,7 @@ export interface MintRequestRow {
   decidedBy: string | null;
   decidedAt: string | null;
   decisionNote: string | null;
-  /** What stood behind the grant (0394): cash put in, or any other contribution. */
+  /** What stood behind the grant (0404): cash put in, or any other contribution. */
   contribution: ContributionKind;
 }
 

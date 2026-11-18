@@ -63,6 +63,9 @@ import { linksForSubject } from "../lib/needs";
 import {
   claimSeating,
   createOrgRole,
+  createRoleProblem,
+  newRoleIdOf,
+  roleInsertRefusal,
   describeOrgChange,
   expiringSeatings,
   listOrgAssignments,
@@ -139,6 +142,11 @@ type Deps = Pick<
  * than one refused, so they are refused by name.
  */
 export const HANDOVER_WORD_KEYS = ["bringMe", "notMine", "runbook", "bring_me", "not_mine"] as const;
+/** Said when a new role stands and its value did not save: the role is made, and the value is set again on its card. */
+export const NEW_ROLE_VALUE_NOT_SAVED = "The role was created, but saving what it is worth failed: set it again on the role's card.";
+/** Said when a new role stands and did not join the season's pattern. */
+export const NEW_ROLE_PATTERN_NOT_SAVED = "The role was created, but adding it to this season's pattern failed: add it on the Season page.";
+
 export const HANDOVER_WORDS_REFUSAL =
   "Bring me, Not mine to hold and the runbook change by consent: propose them through an org chart draft.";
 
@@ -938,18 +946,47 @@ export function register(app: Express, deps: Deps): void {
     if (!(await paramsAreFine(req.body, res))) return;
     const valued = await checkedRoleValue(req.body ?? {}, res);
     if (!valued) return;
-    const id = await createOrgRole(getPool(), req.body ?? {});
-    if (valued.valueMinor !== undefined || valued.valueTokens !== undefined || valued.cashMinor !== undefined) await updateOrgRole(getPool(), id, {}, valued);
+    // Every refusal the INSERT could give, as a sentence first (`createRoleProblem`), and any the
+    // database still gives, as a sentence after (`roleInsertRefusal`). Never "Internal server error".
+    const problem = await createRoleProblem(getPool(), req.body ?? {});
+    if (problem) return res.status(problem.status).json({ error: problem.error, ...(problem.field ? { fields: [problem.field] } : {}) });
+    let id: string;
+    try {
+      id = await createOrgRole(getPool(), req.body ?? {});
+    } catch (e) {
+      const refused = roleInsertRefusal(e, newRoleIdOf(req.body ?? {}));
+      if (!refused) throw e;
+      console.error("[org] a new role was refused by the database", (e as { code?: string })?.code);
+      return res.status(refused.status).json({ error: refused.error, ...(refused.field ? { fields: [refused.field] } : {}) });
+    }
+    // THE ROLE IS MADE FROM HERE ON. Whatever follows is about the role, never whether it exists, so nothing below
+    // answers a failure: a 500 now would tell the review page a role that stands was never made, and a second
+    // accept would then try to make it again (17 Nov 2026). What did not land is said in `notice`.
+    let notice: string | undefined;
+    if (valued.valueMinor !== undefined || valued.valueTokens !== undefined || valued.cashMinor !== undefined) {
+      try {
+        await updateOrgRole(getPool(), id, {}, valued);
+      } catch (e) {
+        console.error("[org] a new role's value was not saved", (e as { code?: string })?.code ?? e);
+        notice = NEW_ROLE_VALUE_NOT_SAVED;
+      }
+    }
     // Anything made while a season runs joins that season's pattern, so a
     // village never sits down to author one. Nothing happens when the season
     // names no pattern, which is every village that has not opted in.
-    await captureIntoCurrentPattern(getPool(), currentPatternId(), "org_role", id);
+    try {
+      await captureIntoCurrentPattern(getPool(), currentPatternId(), "org_role", id);
+    } catch (e) {
+      console.error("[org] a new role did not join the season's pattern", (e as { code?: string })?.code ?? e);
+      notice = notice ? `${notice} ${NEW_ROLE_PATTERN_NOT_SAVED}` : NEW_ROLE_PATTERN_NOT_SAVED;
+    }
     await recordEvent(getPool(), {
       kind: "org", text: `role created: ${String(req.body?.name ?? id)}`,
-      actorUserId: (await authedUser(req))?.id ?? null,
+      actorUserId: (await authedUser(req).catch(() => null))?.id ?? null,
       entityType: "org_role", entityRef: id,
       audience: "public", // names nobody, so a member reads it in the seat's journal (R103)
     });
+    if (notice) return res.json({ success: true, id, notice });
     res.json({ success: true, id });
   });
 

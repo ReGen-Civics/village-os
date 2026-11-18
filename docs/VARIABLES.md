@@ -22,28 +22,28 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 258 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 262 open and 56 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 291 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-314 dials in 40 categories. 165 carry a minimum and a maximum. By type: 128 integer, 19 decimal, 19 percentage, 42 boolean, 36 choice, 62 text, 8 longtext.
+318 dials in 40 categories. 168 carry a minimum and a maximum. By type: 131 integer, 19 decimal, 19 percentage, 43 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
 | Membership | 3 | 3 | 0 |
 | Village | 5 | 4 | 1 |
 | Gratitude | 11 | 11 | 0 |
-| Ledger | 17 | 9 | 8 |
+| Ledger | 19 | 11 | 8 |
 | The Mint | 7 | 6 | 1 |
 | Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
@@ -57,7 +57,7 @@ Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 20 | 19 | 1 |
+| The village's people | 21 | 20 | 1 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 19 | 19 | 0 |
 | Events | 3 | 3 | 0 |
@@ -76,7 +76,7 @@ Each dial also says WHEN a change lands. 287 of them as soon as it is saved, and
 | Exit | 10 | 10 | 0 |
 | Needs | 5 | 5 | 0 |
 | Journal | 2 | 2 | 0 |
-| Hidden map | 10 | 10 | 0 |
+| Hidden map | 11 | 11 | 0 |
 | Connector | 1 | 1 | 0 |
 | Live Sessions | 2 | 2 | 0 |
 | Language | 1 | 1 | 0 |
@@ -123,6 +123,8 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Most one member may redeem per cycle, in money | `redemption.max_per_member_per_cycle` | Ledger | decimal | blank, which is no ceiling | the whole village |
 | How redemption works here | `redemption.process_text` | Ledger | longtext | blank | the founder or an admin |
 | Most the village will redeem per cycle, in money | `redemption.max_village_per_cycle` | Ledger | decimal | blank, which is no ceiling | the whole village |
+| How far under the suggestion one person may set pay | `valuation.band_below_pct` | Ledger | integer | blank, which is follows the valuation model | the whole village |
+| How far over the suggestion one person may set pay | `valuation.band_above_pct` | Ledger | integer | blank, which is follows the valuation model | the whole village |
 | Voice needed before a member can claim | `economy.voice_claim_threshold` | The Mint | integer | `100` | the whole village |
 | Earned equity needed before a member can claim | `economy.equity_claim_threshold` | The Mint | integer | `1` | the whole village |
 | How many days Claims Week stays open | `economy.claims_week_days` | The Mint | integer | `7` | the whole village |
@@ -297,6 +299,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Feature the founding team on the Roles page | `org.founding_team` | The village's people | boolean | `false` | the whole village |
 | The founding team's roles | `org.founding_team_roles` | The village's people | text | blank | the whole village |
 | Show pay ranges on role cards | `org.show_pay_ranges` | The village's people | boolean | `false` | the whole village |
+| Show each reward share as its own amount | `org.pay_split_amounts` | The village's people | boolean | `false` | the whole village |
 | How your guide speaks | `guide.voice` | Companions | longtext | blank | the whole village |
 | Questions one companion may ask a day | `companions.max_questions_per_day` | Companions | integer | `3` | the whole village |
 | Roles that have a companion | `companions.role_ids` | Companions | text | `all` | the whole village |
@@ -396,6 +399,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Days the record of who looked is kept | `hiddenmap.access_log_days` | Hidden map | integer | `90` | the whole village |
 | Hours a second member has to approve a copy of the map | `hiddenmap.export_hours` | Hidden map | integer | `24` | the whole village |
 | Days between paid return visits to the same pin | `hiddenmap.visit_pay_days` | Hidden map | integer | `30` | the whole village |
+| Vouched plantings paid per member each week | `hiddenmap.paid_plantings_per_week` | Hidden map | integer | `5` | the whole village |
 | Largest photo a member may add to a pin | `hiddenmap.photo_max_mb` | Hidden map | integer | `12` | the whole village |
 | Our agent may make the changes we approve in the chat | `agents.lead_approved_writes` | Connector | boolean | `true` | the whole village |
 | The place line read at drop in | `sessions.place_line` | Live Sessions | text | blank | the whole village |
@@ -710,7 +714,7 @@ How many separate taps of appreciation one member can leave for another in a cyc
 
 ## Ledger
 
-17 dials. 9 for the whole village, 8 for the founder or an admin.
+19 dials. 11 for the whole village, 8 for the founder or an admin.
 
 ### Issuance cap per lunar cycle
 
@@ -959,6 +963,38 @@ Counted across every member's requests in a lunar cycle, the ones still waiting 
 | Default | blank, which is no ceiling |
 | Range | 0 to 1000000000 |
 | Left blank | no ceiling, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How far under the suggestion one person may set pay
+
+The valuation engine suggests a figure for a role's pay or a quest's price. A figure from this far under the suggestion up to the top of the band is set by one person's word. A figure lower than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 20 means the band starts at 80% of it, and 0 means nothing under the suggestion is inside. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.
+
+| Fact | Value |
+| --- | --- |
+| Key | `valuation.band_below_pct` |
+| Type | integer, a whole number |
+| Default | blank, which is follows the valuation model |
+| Range | 0 to 100 |
+| Counted in | % |
+| Left blank | follows the valuation model, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How far over the suggestion one person may set pay
+
+The other side of the same band. A figure from the bottom of the band up to this far over the suggestion is set by one person's word. A figure higher than that needs a written reason and a second signer, or the village decides. A whole percent of the suggestion: 0 means the suggestion itself is the top of the band, and 10 means up to 110% of it. Leave it blank to follow the valuation model, which is 10% unless the village saved its own.
+
+| Fact | Value |
+| --- | --- |
+| Key | `valuation.band_above_pct` |
+| Type | integer, a whole number |
+| Default | blank, which is follows the valuation model |
+| Range | 0 to 100 |
+| Counted in | % |
+| Left blank | follows the valuation model, and 0 is the number zero |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
@@ -3555,7 +3591,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-20 dials. 19 for the whole village, 1 for the founder or an admin.
+21 dials. 20 for the whole village, 1 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3828,11 +3864,25 @@ The roles the founding team section features, in the order they show: paste each
 
 ### Show pay ranges on role cards
 
-Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way.
+Off, no role card shows a pay range or an amount to visitors or members, whatever a role's terms hold: a card shows how pay works (its shares) instead. On, an open listed role whose terms name a pay range shows that range on its card to everyone. People who hold the power to read terms still read the full terms either way. A role card can choose for itself in the role editor, under Who sees the listed price: everyone, or only the people who edit the card. That choice holds on the card, the founding team and the application form.
 
 | Fact | Value |
 | --- | --- |
 | Key | `org.show_pay_ranges` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Show each reward share as its own amount
+
+Off, a role card with a listed price shows it as one figure for the full role. On, the card names each share of that figure as its own amount, worked out from the role's shares, such as up to $4,000 in cash and $6,000 in equity a month. A role card can choose for itself in the role editor, under How the listed price reads. Who sees the figure at all is still decided by Show pay ranges on role cards and the card's own choice.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.pay_split_amounts` |
 | Type | boolean, on or off |
 | Default | `false` |
 | Range | on or off |
@@ -5265,7 +5315,7 @@ When on, every member has a task board on their profile unless a steward turns t
 
 ## Hidden map
 
-10 dials. 10 for the whole village.
+11 dials. 11 for the whole village.
 
 ### Vouched pins that open the whole map
 
@@ -5407,6 +5457,21 @@ When the village names a quest for return visits, a member's visit to the same p
 | Default | `30` |
 | Range | 0 to 365 |
 | Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Vouched plantings paid per member each week
+
+When the village names a planting quest, how many of one member's vouched plantings open a claim in any seven days. A paid planting also needs a photo and two members vouching for it, whatever the vouches setting above says. More plantings wait and open in a later week. 0 pays none.
+
+| Fact | Value |
+| --- | --- |
+| Key | `hiddenmap.paid_plantings_per_week` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 0 to 100 |
+| Counted in | plantings |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

@@ -38,11 +38,12 @@ import crypto from "node:crypto";
 import { hasCapability, type Capability } from "../../shared/capabilities";
 import {
   MAX_NOTES, MAX_PHOTOS_PER_PIN, MAX_PHOTOS_PER_UPLOAD, MODULE_ID, PRECISIONS, exportGeoJson, isClientId, isPrecision,
-  isStage, isVouchWay, mayVisit, mayVouch, VOUCH_WAYS, parsePinInput, visiblePin, type PinView, type Precision, type Stage,
+  isStage, isVouchWay, mayVisit, mayVouch, parsePinInput, visiblePin, visitMayPay, type PinView, type Precision, type Stage,
 } from "../../shared/hiddenMap";
 import type { AppDeps } from "../lib/appDeps";
 import { villageId } from "../lib/economy";
 import { configOf, photoPath, readMap, readPin, readQueue, storePhoto, whoAmI, type Admission, type Dials } from "../lib/hiddenMap";
+import { openVisitClaim, plantingClaimNote, type VisitClaimDeps } from "../lib/hiddenMapQuest";
 import { moduleConfig, requireModule } from "../lib/modules";
 import { LocationDataSurvived } from "../lib/placePhotos";
 import { boolVar, numberVar, stringVar } from "../lib/variables";
@@ -51,6 +52,8 @@ import * as repo from "../repos/hiddenMap";
 type Deps = Pick<AppDeps, "authedUser" | "capabilityCtx" | "guardCapability" | "getPool" | "overLimit" | "members" | "firstName"> & {
   /** Where this module's photos live. Never the public uploads directory. */
   photoDir: string;
+  /** What a return visit needs to open a claim on the village's quest. Absent: visits pay nothing. */
+  visitClaims?: Omit<VisitClaimDeps, "getPool">;
   /** When a member was admitted, where a module records it (a rite, an oath). Absent: nobody waits. */
   admission?: Admission;
   /** The bell: the member hears once when their map opens. Absent: nobody is told. */
@@ -92,7 +95,7 @@ function uploadedFiles(req: any): Array<{ buffer: Buffer }> {
 const newId = (prefix: string) => `${prefix}-${crypto.randomBytes(8).toString("hex")}`;
 
 export function register(app: Express, deps: Deps): void {
-  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, admission, notify, opened } = deps;
+  const { authedUser, capabilityCtx, guardCapability, getPool, overLimit, members, firstName, photoDir, visitClaims, admission, notify, opened } = deps;
   const vid = () => villageId();
   const config = () => configOf(moduleConfig(MODULE_ID));
 
@@ -100,6 +103,37 @@ export function register(app: Express, deps: Deps): void {
   const seated = async (user: any, cap: Capability): Promise<boolean> => {
     const ctx = await capabilityCtx(user);
     return hasCapability(cap, { ...ctx, isAdmin: false });
+  };
+
+  /**
+   * Open the claims a member's vouched plantings are owed on the village's
+   * planting quest, oldest first, stopping at the first the quest board refuses
+   * (they already hold an open claim on it, or its gate says no). Each one
+   * waiting opens on the next try after the one before it is decided, so every
+   * vouched planting is paid once and none is dropped (QA pass 1, P1-r-1).
+   */
+  const openOwedPlantingClaims = async (ownerId: string) => {
+    const questId = config().plantingQuestId;
+    if (!visitClaims || !questId) return;
+    try {
+      // A weekly cap on paid plantings; the rest wait for a later week (security audit, 16 Nov 2026).
+      const perWeek = Math.max(0, Math.floor(numberVar("hiddenmap.paid_plantings_per_week")));
+      const room = perWeek - (await repo.plantingClaimsThisWeek(getPool(), vid(), ownerId));
+      const owed = await repo.owedPlantings(getPool(), vid(), ownerId, dials().vouchesPerPin, Math.min(20, room));
+      if (!owed.length) return;
+      const ownerUser: any = (await members.byId(ownerId)) ?? { id: ownerId, name: "" };
+      for (const pinId of owed) {
+        const now = new Date();
+        const claimId = await openVisitClaim(
+          { ...visitClaims, getPool },
+          { questId, user: { id: ownerId, name: ownerUser.name ?? "" }, at: now, note: plantingClaimNote(now) },
+        );
+        if (!claimId) break;
+        await repo.setPlantingClaim(getPool(), vid(), pinId, claimId);
+      }
+    } catch (e) {
+      console.error("[hidden-map] a vouched planting could not open its quest claim", e);
+    }
   };
 
   /**
@@ -140,6 +174,8 @@ export function register(app: Express, deps: Deps): void {
     const keeper = await seated(user, "hiddenmap.keep");
     const who = await whoAmI(getPool(), vid(), String(user.id), keeper, dials(), new Date(), admission);
     if (who.justOpened) await announceOpening(String(user.id));
+    // A planter's owed claims open as each earlier one is decided.
+    await openOwedPlantingClaims(String(user.id));
     return { user, who };
   };
 
@@ -187,6 +223,13 @@ export function register(app: Express, deps: Deps): void {
       ownPins: m.who.ownPins,
       keeper: m.who.viewer.keeper,
       mayApproveExports: m.who.opening.open && (await seated(m.user, "hiddenmap.export")),
+      title: c.title,
+      kindPrompts: c.kindPrompts,
+      plantingPays: Boolean(c.plantingQuestId),
+      vouchWays: c.vouchWays,
+      vouchRule: c.vouchRule,
+      // The one thing a closed map learns about everybody else's pins: how many there are.
+      allPins: await repo.countAllPins(getPool(), vid()),
       vouchesPerPin: dials().vouchesPerPin,
       // The member's own admission, so their meter counts what the server counts (QA P3-w-1).
       admitted: m.who.viewer.admitted !== false,
@@ -319,7 +362,26 @@ export function register(app: Express, deps: Deps): void {
         const latest = await repo.latestStageSeen(getPool(), vid(), id);
         if (latest) await repo.setStage(getPool(), vid(), id, latest, now);
       }
-      res.status(201).json({ visitId, photoIds });
+      // A visit by an open member to somebody else's pin opens a claim on the
+      // village's return-visit quest, once per window. The visit stands either way.
+      let claimed = false;
+      const questId = config().returnVisitQuestId;
+      if (visitClaims && questId) {
+        const lastPaidAt = await repo.lastPaidVisitAt(getPool(), vid(), uid, id);
+        const windowDays = Math.max(0, Math.floor(numberVar("hiddenmap.visit_pay_days")));
+        if (visitMayPay({ viewer: m.who.viewer, pin, questId, lastPaidAt, now, windowDays })) {
+          try {
+            const claimId = await openVisitClaim({ ...visitClaims, getPool }, { questId, user: m.user, at: now });
+            if (claimId) {
+              await repo.setVisitClaim(getPool(), vid(), visitId, claimId);
+              claimed = true;
+            }
+          } catch (e) {
+            console.error("[hidden-map] a visit could not open its quest claim", e);
+          }
+        }
+      }
+      res.status(201).json({ visitId, photoIds, claimed });
     });
   });
 
@@ -334,16 +396,22 @@ export function register(app: Express, deps: Deps): void {
     if (!may.ok) return res.status(may.status).json({ error: may.error });
     // How the voucher saw it, said with every vouch and kept beside it with no name.
     const seen = req.body?.seen;
-    if (!isVouchWay(seen)) {
-      return res.status(400).json({ error: `Say how you saw it: ${VOUCH_WAYS.join(", ")}.` });
+    const ways = config().vouchWays;
+    if (!isVouchWay(seen) || !ways.includes(seen)) {
+      return res.status(400).json({ error: `Say how you saw it: ${ways.join(", ")}.` });
     }
     if (await overLimit(`hidden-map-vouch:${uid}`, VOUCHES_PER_HOUR, HOUR_MS)) {
       return res.status(429).json({ error: "That is a lot of vouches for one hour." });
     }
-    await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", new Date(), seen);
+    const now = new Date();
+    await repo.upsertVouch(getPool(), vid(), id, uid, m.who.viewer.open ? "open" : "keeper", now, seen);
     await repo.logAccess(getPool(), vid(), uid, "vouch", { pinId: id });
     if (found.record.ownerUserId && found.record.layer === "planting") await settleOpeningOf(found.record.ownerUserId);
     const after = await repo.getPin(getPool(), vid(), uid, id);
+    // A planting that has just reached its vouches is owed a claim for its owner
+    // on the village's planting quest, once per pin. Paid by the ordinary
+    // consent route and the village's quest.completed rule, like any quest.
+    if (after?.ownerUserId && after.layer === "planting") await openOwedPlantingClaims(after.ownerUserId);
     res.json({ vouches: after?.vouches ?? found.record.vouches, vouchedByMe: true });
   });
 

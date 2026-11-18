@@ -1916,6 +1916,9 @@ const SUBJECT_WORDS = {
   // A village agreement, written in the proposal wizard (defect 9, Wave 4):
   // server/routes/governanceAgreements.ts opens it, server/lib/agreementCloser.ts lands it.
   agreement: "Makes a written agreement the village's own, exactly as worded, with the review date it names. Nothing else changes on its own.",
+  // Funding rounds S4: opened by a round itself when its two counts disagree
+  // (server/lib/fundingRounds.ts). Carried, the other count funds the held quests.
+  funding_divergence: "Funds the quests a funding round's two counts disagree on by the round's other count. Voting it down, or letting it lapse, funds them by the pot's deciding count.",
 };
 
 /**

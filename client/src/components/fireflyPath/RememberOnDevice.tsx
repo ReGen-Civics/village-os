@@ -3,6 +3,7 @@
  * they tick it (fireflyPath/applyRemember.ts). Unticking, or the button,
  * forgets what this device keeps. Nothing goes to the server until they send.
  */
+import { flushSync } from "react-dom";
 import { useLingui } from "@lingui/react/macro";
 import { HINT, LINK, TILE } from "@/components/journey/look";
 import { forgetApplyAnswers } from "./applyRemember";
@@ -10,8 +11,11 @@ import { forgetApplyAnswers } from "./applyRemember";
 export function RememberOnDevice({ on, onChange, onForgotten }: { on: boolean; onChange: (on: boolean) => void; onForgotten: () => void }) {
   const { t } = useLingui();
   const forget = () => {
+    // Untick first, synchronously: that runs any save still pending from the tick (a passive effect a slow machine
+    // has not run yet), and with the box off no save runs after. Then clear. Clearing first let a pending save write
+    // the draft straight back (RememberOnDevice.test.tsx).
+    flushSync(() => onChange(false));
     forgetApplyAnswers();
-    onChange(false);
     onForgotten();
   };
   return (

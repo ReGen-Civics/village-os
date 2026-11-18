@@ -35,7 +35,7 @@ import { OPEN_AIM_MAX, OPEN_NAME_MAX, OPEN_NOTE_MAX, OPEN_PROPOSAL_MAX_ROLES, OP
 import { openProposalHref } from "../../shared/openProposalDecide";
 import type { OpenProposalTerm } from "../../shared/openProposalTerm";
 import type { AppDeps } from "../lib/appDeps";
-import { mayKeep, recordedKeepers, rolesAlreadyAsked } from "../lib/agentRoleProposals";
+import { AGENT_CLAIM_BUSY, mayKeep, recordedKeepers, rolesAlreadyAsked, whileAgentClaimHeld } from "../lib/agentRoleProposals";
 import { confirmAndAsk, tellTheCircle } from "../lib/openProposalDecide";
 import { listOrgRoles } from "../lib/orgChart";
 import { agentsWithReach, isAgentAccount } from "../repos/agentAccounts";
@@ -123,41 +123,48 @@ export function registerAgentProposals(app: Express, deps: Deps, h: AgentProposa
     // The agent is an agent account here, read now; its name is the account's.
     const [agent] = await agentsWithReach(pool, v.agentUserId);
     if (!agent) return res.status(400).json({ error: W.notAnAgent, field: "agent" });
-    // Keeping is read from the record, never only said (audit B8c): another member's agent is refused.
-    if (!mayKeep(await recordedKeepers(pool, agent), keeperId)) return res.status(403).json({ error: W.keptByAnother, field: "agent" });
-    // One proposal per agent and role at a time, and none for a role it already holds (audit B8b).
-    const again = await rolesAlreadyAsked(pool, agent, v.roles.map((r) => r.roleId));
-    if (again.length) {
-      const offered = await h.offered();
-      const names = again.map((id) => offered.find((r) => r.id === id)?.name ?? id);
-      return res.status(409).json({ error: W.alreadyAsked(names.join(", ")), field: "roles", roles: again });
-    }
-    const at = h.now();
-    const id = `op-${crypto.randomBytes(10).toString("hex")}`;
-    const confirmHash = crypto.createHash("sha256").update(crypto.randomBytes(24)).digest("hex");
-    await store.insertOpenProposal(pool, {
-      id,
-      name: agent.name.slice(0, OPEN_NAME_MAX),
-      email: null,
-      emailKey: null,
-      targetSeasonId: t.season.id,
-      body: {
-        roles: v.roles,
-        why: v.why,
-        aim: v.aim,
-        ...(t.term ? { term: t.term } : {}),
-        agent: { agentUserId: agent.id, name: agent.name, what: v.what, switchOff: v.switchOff, keeperUserId: keeperId },
-      },
-      confirmHash,
-      linkId: null,
-      now: at,
+    // Keeping is read from the record, never only said (audit B8c): another member's agent is refused. The read and
+    // the proposal it lets in hold one lock per agent, so two members claiming an unkept agent at once never both pass.
+    const claimed = await whileAgentClaimHeld(pool, agent.id, async () => {
+      if (!mayKeep(await recordedKeepers(pool, agent), keeperId)) return { refused: { status: 403, body: { error: W.keptByAnother, field: "agent" } } };
+      // One proposal per agent and role at a time, and none for a role it already holds (audit B8b).
+      const again = await rolesAlreadyAsked(pool, agent, v.roles.map((r) => r.roleId));
+      if (again.length) {
+        const offered = await h.offered();
+        const names = again.map((id) => offered.find((r) => r.id === id)?.name ?? id);
+        return { refused: { status: 409, body: { error: W.alreadyAsked(names.join(", ")), field: "roles", roles: again } } };
+      }
+      const at = h.now();
+      const id = `op-${crypto.randomBytes(10).toString("hex")}`;
+      const confirmHash = crypto.createHash("sha256").update(crypto.randomBytes(24)).digest("hex");
+      await store.insertOpenProposal(pool, {
+        id,
+        name: agent.name.slice(0, OPEN_NAME_MAX),
+        email: null,
+        emailKey: null,
+        targetSeasonId: t.season.id,
+        body: {
+          roles: v.roles,
+          why: v.why,
+          aim: v.aim,
+          ...(t.term ? { term: t.term } : {}),
+          agent: { agentUserId: agent.id, name: agent.name, what: v.what, switchOff: v.switchOff, keeperUserId: keeperId },
+        },
+        confirmHash,
+        linkId: null,
+        now: at,
+      });
+      // Confirmed at once, and the circle asked in the same transaction, as a person's confirm link does.
+      const confirmed = await confirmAndAsk(h.decide, confirmHash, new Date(at.getTime() - 60_000), at);
+      if (!confirmed) {
+        await store.deleteOpenProposal(pool, id);
+        return { refused: { status: 409, body: { error: W.needAgent } } };
+      }
+      return { id, confirmed };
     });
-    // Confirmed at once, and the circle asked in the same transaction, as a person's confirm link does.
-    const confirmed = await confirmAndAsk(h.decide, confirmHash, new Date(at.getTime() - 60_000), at);
-    if (!confirmed) {
-      await store.deleteOpenProposal(pool, id);
-      return res.status(409).json({ error: W.needAgent });
-    }
+    if (claimed === AGENT_CLAIM_BUSY) return res.status(503).json({ error: W.tooMany });
+    if (claimed.refused) return res.status(claimed.refused.status).json(claimed.refused.body);
+    const { id, confirmed } = claimed;
     await tellTheCircle(h.decide, confirmed);
     res.json({ sent: true, id, href: openProposalHref(id), message: W.sent });
   });

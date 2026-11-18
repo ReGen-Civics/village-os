@@ -87,7 +87,7 @@ export function StepMark({ labels, now, reached, onGo }: { labels: readonly stri
   );
 }
 
-type ChoiceRole = { id: string; name: string; circle: string; aim: string | null; opensLater?: boolean };
+type ChoiceRole = { id: string; name: string; circle: string; aim: string | null; opensLater?: boolean; held?: boolean };
 
 /**
  * With no role named: the open roles, each one door. One application is for one role.
@@ -96,8 +96,10 @@ type ChoiceRole = { id: string; name: string; circle: string; aim: string | null
  * founding team, the list is two, the founding roles first and then the roles opening
  * next, with the line that says a reply to those waits.
  */
-export function RoleChoice({ roles, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
+export function RoleChoice({ roles: all, onPick }: { roles: ReadonlyArray<ChoiceRole>; onPick: (id: string) => void }) {
   const { t } = useLingui();
+  // A held role offers no Apply here (Rye, 16 Nov 2026).
+  const roles = all.filter((r) => r.held !== true);
   if (roles.length === 0) {
     return <p className={HINT}>{t({ message: "No role is open right now. Check back soon.", context: "founding application choose" })}</p>;
   }

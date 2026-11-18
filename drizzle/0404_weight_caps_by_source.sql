@@ -1,4 +1,4 @@
--- 0394: caps on voting weight by source, and the hand-mint's cash or other tag
+-- 0404: caps on voting weight by source, and the hand-mint's cash or other tag
 --
 -- A village weighing votes by a token can cap how much of one member's balance
 -- a ballot counts from cash put in and from every other contribution, each by

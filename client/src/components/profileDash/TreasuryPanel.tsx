@@ -28,7 +28,8 @@ import { cashPayWords, linesWords, useDisplayRates } from "@/lib/workPay";
 import type { PathParticulars } from "@shared/pathLadders";
 import { PLATFORM_DEFAULT_MODEL } from "@shared/valuation";
 import type { DashData, WalletRowLite } from "./useDashData";
-import { cashSummary, earnedIn, moonRows, pickTokens, whole, wholeMoney, type MoonRow } from "./dashModel";
+import { formatMoney } from "@shared/money";
+import { cashSummary, earnedIn, moonRows, pickTokens, whole, type MoonRow } from "./dashModel";
 import { KICKER, LINK } from "./dashUi";
 import { useAppWords } from "@/hooks/useAppWords";
 
@@ -211,7 +212,7 @@ export default function TreasuryPanel({
             coin="cash"
             glyph="$"
             name="Cash owed to you"
-            value={cash.outstandingMinor > 0 && cash.currency ? wholeMoney(cash.outstandingMinor, cash.currency) : cash.outstandingMinor > 0 ? `${cash.owed + cash.claimed} lines` : "None"}
+            value={cash.outstandingMinor > 0 && cash.currency ? formatMoney(cash.outstandingMinor, cash.currency) : cash.outstandingMinor > 0 ? `${cash.owed + cash.claimed} lines` : "None"}
             delta={cash.owed + cash.claimed + cash.paid === 0 ? "Nothing owed to you yet" : `${cash.owed + cash.claimed} ${cash.owed + cash.claimed === 1 ? "line" : "lines"} waiting`}
             what="Real money the village pays you by bank transfer. The Treasurer marks it paid here when it is sent."
             actions={
@@ -348,7 +349,7 @@ export default function TreasuryPanel({
                   {data.cash ? (
                     <span className="text-xs text-muted-foreground">
                       {m.cashMinor > 0 && data.cash[0]
-                        ? `${wholeMoney(m.cashMinor, data.cash[0].currency)} cash${m.cashPaid ? ", paid" : " owed"}`
+                        ? `${formatMoney(m.cashMinor, data.cash[0].currency)} cash${m.cashPaid ? ", paid" : " owed"}`
                         : "No cash"}
                     </span>
                   ) : null}

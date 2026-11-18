@@ -9,13 +9,20 @@
  * opens starting from its next meeting, so saving a new time or length keeps
  * the circle's week. A date may be today or up to the days "Coming up" looks
  * ahead. "Stop this rhythm" asks once before it clears the rhythm for the
- * whole circle. The first field takes the focus when the form opens. Every
+ * whole circle. The first field takes the focus when the form opens.
+ *
+ * A NAME (0401). A circle can keep several rhythms ("Monday all-staff",
+ * "Thursday steward sync"), so the last field names this one. It is
+ * optional, and sent only when it holds something or held something before,
+ * so a circle with one unnamed rhythm saves exactly what it saved before.
+ * "Stop this rhythm" stops this rhythm only; the circle's others stay. Every
  * field reads the room's own sizes (44px), and the words come from
  * shared/sessionRhythm.ts.
  */
 import type { PickerCircle } from "@shared/circlePicker";
 import CirclePicker from "@/components/circles/CirclePicker";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { SESSION_LIMITS } from "@shared/sessions";
 import { RHYTHM_COPY, RHYTHM_LIMITS, WEEKDAYS, addDays, villageKey, type RhythmInput } from "@shared/sessionRhythm";
 import { BTN_DANGER, BTN_DANGER_QUIET, BTN_PRIMARY, BTN_QUIET, HINT, INPUT, LABEL, UNDER_BOX } from "./roomUi";
@@ -40,6 +47,10 @@ export interface RhythmFormProps {
   initial?: RhythmInput | null;
   /** The element that names the circle when it is fixed. */
   labelledBy?: string;
+  /** The label of the save button, when it is not "Save the rhythm". */
+  saveLabel?: string;
+  /** Changing one of several rhythms: "Stop this rhythm" stops this one and asks in these words. */
+  stopConfirm?: string;
   defaultMinutes: number | null;
   zone: string;
   busy: boolean;
@@ -48,7 +59,10 @@ export interface RhythmFormProps {
   onCancel(): void;
 }
 
-export default function RhythmForm({ idBase, circles, fixedCircleId, initial, labelledBy, defaultMinutes, zone, busy, error, onSubmit, onCancel }: RhythmFormProps) {
+export default function RhythmForm({ idBase, circles, fixedCircleId, initial, labelledBy, saveLabel, stopConfirm, defaultMinutes, zone, busy, error, onSubmit, onCancel }: RhythmFormProps) {
+  const { t } = useLingui();
+  const initialName = initial && initial.kind !== "none" ? (initial.name ?? "") : "";
+  const [name, setName] = useState(initialName);
   const [circleId, setCircleId] = useState(fixedCircleId ?? (circles.length === 1 ? circles[0].id : ""));
   const [howOften, setHowOften] = useState<HowOften>(howOftenOf(initial ?? null));
   const [weekday, setWeekday] = useState(initial && initial.kind === "weekly" ? initial.weekday : 4);
@@ -79,10 +93,12 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
     e.preventDefault();
     if (!circleId || busy) return;
     const durationMin = Number(minutes) || undefined;
+    // A name goes when there is one, or when there was one to clear.
+    const named = name.trim() || initialName ? { name: name.trim() } : {};
     let input: RhythmInput;
-    if (weekly) input = { kind: "weekly", weekday, everyWeeks: Number(howOften.slice(5)), time, ...(startsOn ? { startsOn } : {}), durationMin };
-    else if (howOften === "once") input = { kind: "once", on, time, durationMin };
-    else input = { kind: "moon", on: howOften as "new_moon" | "full_moon", time, durationMin };
+    if (weekly) input = { kind: "weekly", weekday, everyWeeks: Number(howOften.slice(5)), time, ...(startsOn ? { startsOn } : {}), durationMin, ...named };
+    else if (howOften === "once") input = { kind: "once", on, time, durationMin, ...named };
+    else input = { kind: "moon", on: howOften as "new_moon" | "full_moon", time, durationMin, ...named };
     onSubmit(circleId, input);
   };
 
@@ -161,6 +177,24 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
           />
         </div>
       </div>
+      <div>
+        <label htmlFor={`${idBase}-name`} className={LABEL}>
+          {t`What does the circle call this meeting?`}
+        </label>
+        <input
+          id={`${idBase}-name`}
+          type="text"
+          className={`mt-1 ${INPUT}`}
+          value={name}
+          maxLength={RHYTHM_LIMITS.name}
+          placeholder={t`For example, Thursday sync`}
+          aria-describedby={`${idBase}-name-hint`}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <p id={`${idBase}-name-hint`} className={`${HINT} mt-1`}>
+          {t`Optional. A name tells one of the circle's meetings from another.`}
+        </p>
+      </div>
       <p className={HINT}>{RHYTHM_COPY.zoneHint(zone)}</p>
       {error && (
         <p role="alert" className="text-sm font-medium text-destructive">
@@ -169,7 +203,7 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
       )}
       {askStop && fixedCircleId ? (
         <div role="group" aria-label={RHYTHM_COPY.clear} className="rounded-xl border border-border bg-muted px-3 py-3">
-          <p className="text-sm text-foreground">{RHYTHM_COPY.clearConfirm(circleName)}</p>
+          <p className="text-sm text-foreground">{stopConfirm ?? RHYTHM_COPY.clearConfirm(circleName)}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" className={BTN_DANGER} disabled={busy} onClick={() => onSubmit(fixedCircleId, { kind: "none" })}>
               {busy ? RHYTHM_COPY.saving : RHYTHM_COPY.clearYes}
@@ -191,7 +225,7 @@ export default function RhythmForm({ idBase, circles, fixedCircleId, initial, la
       ) : (
         <div className={UNDER_BOX}>
           <button type="submit" className={BTN_PRIMARY} disabled={busy || !circleId}>
-            {busy ? RHYTHM_COPY.saving : RHYTHM_COPY.save}
+            {busy ? RHYTHM_COPY.saving : (saveLabel ?? RHYTHM_COPY.save)}
           </button>
           <button type="button" className={BTN_QUIET} onClick={onCancel}>
             {RHYTHM_COPY.cancel}

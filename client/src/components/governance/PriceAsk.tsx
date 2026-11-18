@@ -10,13 +10,14 @@
  * card, the popup says so and asks how those change the price. The contract decides the amount.
  *
  * THE CAP (Rye, 15 Nov 2026): a proposal goes up to ROLE_PAY_CAP_PCT of the suggested price at their
- * commitment (`capAt`), the full role's cap before they choose one. The popup says so, says why when a
- * price goes above it, and will not save one; the server refuses it too (server/routes/openProposals.ts).
+ * commitment (`capAt`), the full role's cap before they choose one. The cap is a backend rule and is no
+ * longer shown to applicants (lead, 17 Nov 2026): the popup names no cap figure, refuses a price above it
+ * in plain words and will not save one; the server refuses it too (server/routes/openProposals.ts).
  */
 import { useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
-import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, ROLE_PAY_CAP_PCT, type PayAsk } from "@shared/commitmentRange";
+import { askPeriod, capAt, ceilingAt, priceDifferencePct, signedPct, PRICE_WHY_MAX, type PayAsk } from "@shared/commitmentRange";
 import type { PayCeiling } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
@@ -58,10 +59,8 @@ export default function PriceAsk({
   const priced = (n: number, p: PayCeiling["per"] = ceiling.per) => perPeriod(i18n, money(n), p);
   const per = ceiling.per;
   const capPct = pct && pct > 0 ? pct : 100;
+  // Enforced here and on the server, and never shown as a figure (lead, 17 Nov 2026).
   const cap = capAt(ceiling.amount, capPct);
-  const capLine = suggested
-    ? t({ message: `Proposals up to ${priced(cap)}, ${ROLE_PAY_CAP_PCT}% of the suggested price.`, context: "price ask: the cap on a proposal" })
-    : t({ message: `Proposals for the full role go up to ${priced(cap)}.`, context: "price ask: the cap before a commitment is chosen" });
 
   // The popup's own draft, taken from the saved choice each time it opens.
   const [choice, setChoice] = useState<Choice>("suggested");
@@ -104,15 +103,12 @@ export default function PriceAsk({
       ) : (
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
       )}
-      {cap > 0 && (
-        <p className={HINT} data-price-cap="">
-          {capLine}
-        </p>
-      )}
       <p className={HINT}>{t({ message: "Your first month starts lower and follows what you deliver.", context: "price ask: the first month" })}</p>
       {/* Across roles (QA-1115 Spanish applicant P1-2): each application is priced once, at its own commitment. */}
       <p className={HINT} data-price-across-roles="">
-        {t({ message: "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role.", context: "price ask: more than one role" })}
+        {/* No "send one for each" (production check, 18 Nov 2026): the lead ruled one person may hold several roles in one
+            collective proposal, which this form cannot carry yet, so it says only what holds either way. */}
+        {t({ message: "Each role is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role.", context: "price ask: more than one role" })}
       </p>
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
@@ -146,11 +142,6 @@ export default function PriceAsk({
                 : t({ message: "Your proposal sets your rewards: propose your own price, and we agree it together in your first month's contract.", context: "price popup lede" })}
             </DialogDescription>
           </DialogHeader>
-          {cap > 0 && (
-            <p className={HINT} data-price-popup-cap="">
-              {capLine}
-            </p>
-          )}
           <fieldset className="grid gap-2" data-price-popup="">
             <legend className="sr-only">{t({ message: "Your price", context: "price popup" })}</legend>
             {suggested && (
@@ -185,7 +176,7 @@ export default function PriceAsk({
                 )}
                 {overCap ? (
                   <p id={`${idPrefix}-price-over-cap`} className="text-sm font-medium text-foreground" role="alert" data-price-over-cap="">
-                    {t({ message: `That's above ${priced(cap)}, the most a proposal can ask at ${capPct}%: ${ROLE_PAY_CAP_PCT}% of the suggested price. Choose ${priced(cap)} or less.`, context: "price popup: above the cap" })}
+                    {t({ message: "That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call.", context: "price popup: above the cap, with no figure" })}
                   </p>
                 ) : typed > ceiling.amount && (
                   <p className="text-sm text-foreground" data-price-above-band="">

@@ -26,6 +26,7 @@
  * Pure: no database, no Express. The server half is server/lib/proposedChanges.ts.
  */
 import { ALWAYS_A_PERSON } from "./agentAdmin";
+import { AGENDA_PROPOSAL_ROUTE } from "./sessionAgendaProposal";
 
 export const PROPOSAL_KINDS = [
   "role_card",
@@ -39,18 +40,20 @@ export const PROPOSAL_KINDS = [
   "role_listing",
   "season_goals",
   "onboarding_path",
+  "session_agenda",
   "setting",
 ] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
 
-export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed"] as const;
+// `unknown`: the apply threw, so whether it reached its page is not known; a person checks before it is tried again.
+export const PROPOSAL_STATUSES = ["proposed", "accepted", "discarded", "failed", "unknown"] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
 export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
 
 /** What each kind names, in plain words, for the connector's description and a refusal. */
 export const KIND_WORDS: Record<ProposalKind, string> = {
-  role_card: "A role card: words, listing details, pay on offer, characters and the founding sections. target {roleId}; body any of {words, parameters, pay, archetypes, sections}.",
+  role_card: "A role card: words, listing details, pay on offer, characters and the founding sections. target {roleId}; body any of {words, parameters, pay, archetypes, sections, circleId}. parameters.comingSoon true shows the role as coming soon (applied for early); parameters.listed false with comingSoon false unlists it.",
   page_content: "A page's words. target {section}, such as page-home; body the fields to change, merged onto the page as it stands.",
   faq_add: "A new FAQ. target {pathway}; body {question, answer}.",
   faq_edit: "An FAQ reworded. target {pathway, id}; body {question, answer}.",
@@ -59,8 +62,10 @@ export const KIND_WORDS: Record<ProposalKind, string> = {
   module_lifecycle: "A module turned off, preview, members or public. target {id}; body {lifecycle}.",
   module_config: "A module's own settings. target {id}; body the settings to change, merged onto the module's settings.",
   role_listing: "Which roles are listed: list only these. target {}; body {ids}.",
-  season_goals: "A season's goals. target {seasonId}; body {goals: [{text, done?}]}.",
+  season_goals: "A season's goals, the whole list in its new order. target {seasonId}; body {goals: [{id?, text, done?}]}. A goal that replaces a goal held now, reworded or moved, carries that goal's id, so the quests and moon items linked to it stay linked; a goal with no id keeps one only when its words match a held goal exactly.",
   onboarding_path: "The village's onboarding path document. target {}; body {doc}.",
+  session_agenda:
+    "Open agenda items for a circle on /sessions. target {circleId}: the items wait as the circle's open agenda items, whether or not it keeps a meeting rhythm, and the next session anyone opens for the circle takes them up. Add rhythmKey only to tie them to one of its meeting rhythms (GET /api/sessions, comingUp.rows[].rhythms[].key). body {items: [{title, detail?, kind: consent | decision | discussion, ownerRole?}]}, at most 20. Each accepted item is added by the person accepting, through the member's own door.",
   setting: "Any other admin setting, through its own route. target {method, path, readPath?}; body the route's own body.",
 };
 
@@ -89,6 +94,8 @@ export function routePatternFor(kind: Exclude<ProposalKind, "setting">): { metho
       return { method: "PUT", path: "/api/admin/seasons" };
     case "onboarding_path":
       return { method: "PUT", path: "/api/admin/onboarding-path" };
+    case "session_agenda":
+      return { method: AGENDA_PROPOSAL_ROUTE.method, path: AGENDA_PROPOSAL_ROUTE.path };
   }
 }
 
@@ -131,6 +138,12 @@ export interface NeverRule {
 
 const rule = (key: string) => ALWAYS_A_PERSON.find((r) => r.key === key)!;
 
+/**
+ * The member's own door for an agenda item (`session_agenda`). Its path names the Live Sessions module, which the
+ * secrets rule's "sessions" (sign-in sessions) would otherwise read as a sign-in: this one route, POST only, is not.
+ */
+const isAgendaDoor = (m: string, p: string) => m === AGENDA_PROPOSAL_ROUTE.method && p === AGENDA_PROPOSAL_ROUTE.path;
+
 /** A page section or an FAQ pathway names words, never a power: blank that one segment before the powers rule reads it. */
 const WORDS_SEGMENT = /^(\/api\/admin\/(?:content|faqs)\/)[^/]+((?:\/[^/]+)?)$/i;
 const withoutWords = (p: string) => p.replace(WORDS_SEGMENT, "$1_$2");
@@ -143,7 +156,7 @@ export const NEVER_PROPOSED: readonly NeverRule[] = [
   {
     key: "secrets",
     words: "Secrets, integration keys, passwords and sign-in are always a person's act, and are never proposed.",
-    test: (m, p) => rule("secrets").test(m, p) || rule("accounts").test(m, p) || /password|oauth|webhook|sessions?(\/|$)|tokens?(\/|$)/i.test(p),
+    test: (m, p) => rule("secrets").test(m, p) || rule("accounts").test(m, p) || /password|oauth|webhook|tokens?(\/|$)/i.test(p) || (!isAgendaDoor(m, p) && /sessions?(\/|$)/i.test(p)),
   },
   {
     key: "erasure",
@@ -383,6 +396,40 @@ export function fieldDiffs(proposed: unknown, accepted: unknown): FieldDiff[] {
   return out;
 }
 
+/**
+ * Which held goal's id each proposed goal keeps, index for index, or null for none.
+ *
+ * A rewording must not orphan what links to a goal (quests and moon items serve
+ * it by id), so a proposed goal that names a held goal's id keeps it. Without an
+ * id, or with one that is not held, it keeps the id of a held goal whose words
+ * match exactly. A proposal never invents an id: only ids held now come back. No
+ * id comes back twice: named ids are honoured first, in list order, so a later
+ * duplicate falls back to the word match, and a word match never takes an id a
+ * goal named.
+ */
+export function keptGoalIds(
+  held: ReadonlyArray<{ id?: unknown; text?: unknown }>,
+  proposed: ReadonlyArray<{ id?: unknown; text?: unknown }>,
+): Array<string | null> {
+  const heldIds = new Set(held.map((h) => h.id).filter((id): id is string => typeof id === "string" && id !== ""));
+  const taken = new Set<string>();
+  const out: Array<string | null> = proposed.map((g) => {
+    const id = typeof g.id === "string" ? g.id : "";
+    if (!heldIds.has(id) || taken.has(id)) return null;
+    taken.add(id);
+    return id;
+  });
+  proposed.forEach((g, i) => {
+    if (out[i]) return;
+    const text = String(g.text ?? "").trim();
+    const same = held.find((h) => typeof h.id === "string" && h.id !== "" && !taken.has(h.id) && String(h.text ?? "").trim() === text);
+    if (!same) return;
+    taken.add(same.id as string);
+    out[i] = same.id as string;
+  });
+  return out;
+}
+
 /** The value at a dotted path, or undefined. */
 export function valueAt(value: unknown, path: string): unknown {
   if (!path) return value;
@@ -452,4 +499,7 @@ export const REVIEW_WORDS = {
   noRoute: "There is no such admin route to change.",
   notReader: "The review page is for admins and for holders of the powers its changes need.",
   unreached: "This change did not reach its page, so nothing changed. Try it again.",
+  /** The apply threw or timed out: it may have landed before the answer was lost (audit, 15 Nov 2026). */
+  unknown: "We could not tell whether this change reached its page. Open that page and look. If the change is there, put this one aside. If it is not, tick that you checked and accept it again.",
+  checkFirst: "Check its page first: this change may already be there. Tick that you checked, then accept it again.",
 } as const;

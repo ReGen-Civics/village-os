@@ -53,6 +53,9 @@
  * account it makes finishes the adoption at the welcome step
  * (server/lib/inviteDoor.ts).
  */
+import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
+import { writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
+import { providersNow } from "../lib/voiceTranscription";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
 import { commitmentReviewFor } from "../lib/commitmentReview";
@@ -89,6 +92,7 @@ import type { SeatCalendar } from "../../shared/seatTerms";
 import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
+import { anyAddressAccount } from "../lib/applicantAccount";
 import { agreedOf, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
@@ -130,6 +134,8 @@ export type DecideRouteDeps = Pick<
   now?: () => Date;
   /** Where a proposal's attached files live (server/lib/proposalFiles.ts). Absent: no file is served. */
   proposalFileDir?: string;
+  /** "Write down the words" on a kept recording: a suite hands in its own provider, limiter and log (openProposalVoiceWritten.ts). */
+  storedTranscribe?: Partial<Pick<StoredTranscribeDeps, "transcribe" | "limitState" | "log" | "providers" | "now">>;
 };
 
 const BASE = "/api/governance/open-proposals";
@@ -228,7 +234,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
   async function deciding(p: store.StoredOpenProposal, actorId: string) {
     const rule = await decideRule(work);
     // An agent's keeper is its own (0374): they proposed it, so they never decide it.
-    const own = await ownAccountOf(members, p);
+    const own = await ownAccountOf(members, p, getPool());
     // Nobody adopts their own, matched by account AND by the person behind the
     // address: the actor's own address with a +tag, another case or Gmail's dots
     // is still the applicant (coordinator, 9 Nov 2026). A proposal from an
@@ -362,6 +368,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
           transcript: p.body.voice.transcript,
           // Clips beside answers (Rye, 14 Nov 2026), each with the answer it belongs to and the words heard while it ran.
           clips: (p.body.voice.clips ?? []).map((c) => ({ id: c.id, field: c.field, label: clipFieldLabel(c.field), seconds: c.seconds, words: c.words, href: voiceNoteHref(p.id, c.id) })),
+          // AI transcripts of these recordings (the lead, 17 Nov 2026), marked as such on the page, and whether one can be asked for now.
+          written: p.body.voice.written ?? {},
+          transcribeOn: (await (deps.storedTranscribe?.providers ?? (() => providersNow(pool)))()).length > 0,
         }
       : null;
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
@@ -516,11 +525,37 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if ((await voiceViewerOf(req, getPool(), viewer)).agent) return res.status(404).json(MISSING);
     const bytes = await readVoiceNote(deps.proposalFileDir, p.id, note);
     if (!bytes) return res.status(404).json(MISSING);
-    res.setHeader("Content-Type", VOICE_NOTE_TYPES[note.kind]);
+    // `?as=mp4`: an MP4/AAC copy, for Safari and every iPhone browser (server/lib/voicePlayback.ts). 415 where none can be made.
+    const mp4 = wantsMp4(req.query.as);
+    const served = mp4 ? await playableCopy(deps.proposalFileDir, p.id, note, bytes) : bytes;
+    if (!served) return res.status(415).json({ error: "no_playable_copy" });
+    res.setHeader("Content-Type", mp4 ? "audio/mp4" : VOICE_NOTE_TYPES[note.kind]);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
     res.setHeader("Content-Disposition", "inline");
-    res.send(bytes);
+    res.send(served);
+  });
+
+  /*
+   * WRITE DOWN ONE KEPT RECORDING, for the people who decide it (the lead, 17
+   * Nov 2026: "Transcribe them! They've personally consented with me."). The
+   * same people as the Listen door above, by the same checks; the words are
+   * kept with the application as an AI transcript (openProposalVoiceWritten.ts).
+   */
+  app.post(`${BASE}/:id/voice/:noteId/transcribe`, async (req, res) => {
+    res.setHeader("Cache-Control", "private, no-store");
+    const viewer = await reader(req, res);
+    if (!viewer) return;
+    const viewerId = String(viewer.id);
+    const p = await found(req, res);
+    if (!p) return;
+    const noteId = String(req.params.noteId ?? "");
+    const note = VOICE_NOTE_ID.test(noteId) ? [...(p.body.voice?.notes ?? []), ...(p.body.voice?.clips ?? [])].find((n) => n.id === noteId) : undefined;
+    const asks = (await asksFor(getPool(), [p.id])).get(p.id) ?? [];
+    if (!note || !decidesIt(await deciding(p, viewerId), asks, viewerId)) return res.status(404).json(MISSING);
+    if ((await voiceViewerOf(req, getPool(), viewer)).agent) return res.status(404).json(MISSING);
+    const out = await writeDownStored({ getPool, proposalFileDir: deps.proposalFileDir, providers: () => providersNow(getPool()), ...(deps.storedTranscribe ?? {}) }, p, note, `user:${viewerId}`, "decider");
+    res.status(out.status).json(out.body);
   });
 
   // ── The terms we offer: a counter-offer, one revision per save ─────────────
@@ -720,6 +755,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       });
     }
 
+    // No account that proved the address (server/lib/applicantAccount.ts). One only typed at it is still asked one thing:
+    // somebody who left the village is welcomed back by its own act, here as on the account path above.
+    const typedAt = await anyAddressAccount(members, p.email);
+    if (typedAt && (await isFormerMemberAccount(work, typedAt))) return res.status(409).json({ error: "former_member", message: DECIDE_WORDS.formerMember });
     // No account: the invitation and the decision, one transaction under the holder's row lock.
     const token = mintInviteToken();
     const input = { id: openInviteId(p.id), tokenHash: hashInviteToken(token), inviterUserId: actorId, days: INVITE_DAYS };
@@ -751,12 +790,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         : null,
     );
     await store.noteInvitationSent(pool, p.id, at, why === null);
+    // The link goes to the address and to nobody else (audit, 15 Nov 2026): a link the adopter could open would let
+    // them make the applicant's account as if they read the applicant's mail. Handed back only when the email did not
+    // go, for the adopter to pass on, and such a link proves no address (`describeFor`, server/lib/openProposalDecide.ts).
     res.json({
       success: true,
       status: "adopted",
       decided,
       account: false,
-      invitation: { link, emailed: why === null },
+      invitation: { link: why === null ? null : link, emailed: why === null },
       application: null,
       message: why === null ? DECIDE_WORDS.adoptedEmailed(INVITE_DAYS) : DECIDE_WORDS.adoptedNotEmailed(why),
     });
@@ -879,7 +921,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
             firstName,
             village: projectName(),
             roleNames: namesOf(await rolesOf(pool, p)),
-            conversations: out.conversations.map((c) => ({ role: c.role, minutes: c.minutes, bookingUrl: c.bookingUrl })),
+            conversations: out.conversations.map((c) => ({ role: c.role, label: c.label, minutes: c.minutes, bookingUrl: c.bookingUrl, bookingLinks: c.bookingLinks })),
             statusLink: statusLinkFor({ siteUrl: site }, p.id),
             lang: languageOf(p),
             note,
@@ -954,7 +996,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     await store.noteInvitationSent(pool, p.id, now(), why === null);
     res.json({
       success: true,
-      link,
+      // Only when the email did not go: the same rule as the adoption above.
+      link: why === null ? null : link,
       emailed: why === null,
       message: `${DECIDE_WORDS.reissued(INVITE_DAYS)} ${why === null ? DECIDE_WORDS.reissuedEmailed : DECIDE_WORDS.reissuedNotEmailed(why)}`,
     });

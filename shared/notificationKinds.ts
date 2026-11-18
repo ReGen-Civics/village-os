@@ -704,6 +704,42 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // A task handed to a role (server/lib/roleTaskHandoffs.ts): it waits on the
+  // role's holders, and the sender hears each answer and when it is done. By
+  // email on the member's tasks preference (emailCadenceFor): the hand-on and
+  // the answers that wait on somebody at its pace, an accept and a done in the
+  // digest. Nothing celebrates: each is one person's answer to another.
+  role_task_handed: {
+    group: "work",
+    blurb: "A task was handed to a role you hold. Accept it, suggest a change, or decline it under Waiting on you.",
+    many: "{n} tasks were handed to roles you hold.",
+    celebrate: false,
+    waits: true,
+  },
+  role_task_accepted: {
+    group: "work",
+    blurb: "A role accepted a task you handed it. It sits on their list now.",
+    many: "{n} tasks you handed on were accepted.",
+    celebrate: false,
+  },
+  role_task_edited: {
+    group: "work",
+    blurb: "A role suggested a change to a task you handed it. See it under Sent on your list.",
+    many: "{n} tasks you handed on have a suggested change.",
+    celebrate: false,
+  },
+  role_task_declined: {
+    group: "work",
+    blurb: "A role declined a task you handed it. The reason is under Sent on your list.",
+    many: "{n} tasks you handed on were declined.",
+    celebrate: false,
+  },
+  role_task_done: {
+    group: "work",
+    blurb: "A task you handed to a role is done.",
+    many: "{n} tasks you handed on are done.",
+    celebrate: false,
+  },
   // The agenda library (server/lib/sessionLibrary.ts): an item a member
   // brought for a circle went onto a session's agenda, and how it left that
   // session. Neither celebrates: each is an answer to somebody who raised
@@ -775,6 +811,33 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   },
 
   // ── People ────────────────────────────────────────────────────────────────
+  // Rites (module `rites`, server/routes/rites.ts): the steps of passage a village names.
+  rite_witness_asked: {
+    group: "people",
+    blurb: "A newcomer is ready for a rite, and you're asked to witness it from your phone.",
+    many: "{n} rites are waiting for a witness.",
+    celebrate: false,
+    waits: true,
+  },
+  rite_stamped: {
+    group: "people",
+    blurb: "A rite was stamped on a member's card.",
+    many: "{n} rites were stamped.",
+    celebrate: false,
+  },
+  rite_buddy_paired: {
+    group: "people",
+    blurb: "You were paired with a newcomer, to walk beside them through their first moon and their rites.",
+    many: "{n} newcomers were paired with you.",
+    celebrate: false,
+  },
+  rite_door_request: {
+    group: "people",
+    blurb: "Somebody asked to join through your printed code, and waits for your answer.",
+    many: "{n} people asked to join through your code.",
+    celebrate: false,
+    waits: true,
+  },
   arrival: {
     group: "people",
     /*

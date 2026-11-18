@@ -28,6 +28,7 @@ import type { Pool, RowDataPacket } from "mysql2/promise";
 import { numberVar } from "./variables";
 import { emailAccent, NEUTRAL_ACCENT } from "./emailAccent";
 import { manyLine, wordsInAppOnly } from "../../shared/notificationKinds";
+import { noticeTitle, type NoticeWords } from "../../shared/noticeWords";
 
 /**
  * Fallback only — the live ceiling is the notify.daily_email_cap game
@@ -335,6 +336,19 @@ export function emailCadenceFor(type: string, p: NotifyPrefs): "immediate" | "da
     case "session_task_back":
     case "session_task_unheld":
       return "daily";
+    // A task handed to a role (server/lib/roleTaskHandoffs.ts). It waits on the
+    // role's holders, so it rides `tasksEmail` like any task: immediate by
+    // default, because a holder who never opens the app never hears it in the
+    // bell, and the sender waits on their answer. A suggested change or a
+    // decline waits on the SENDER, so it rides the same preference. An accept
+    // and a done ask nothing of anyone: the digest's one line each.
+    case "role_task_handed":
+    case "role_task_edited":
+    case "role_task_declined":
+      return p.tasksEmail;
+    case "role_task_accepted":
+    case "role_task_done":
+      return p.tasksEmail === "off" ? "off" : "daily";
     // The agenda library: an item a member brought went onto an agenda, and
     // how it left that session. In the bell only, ON PURPOSE and said here so
     // it is not mistaken for a kind nobody registered: no email preference a
@@ -465,6 +479,12 @@ export interface NotifyDeps {
    * who signs in with Google and has no password still does.
    */
   isPresent(member: any): boolean;
+  /**
+   * The village's own words for each notice kind and the `{words}` they may
+   * use (gap G6, shared/noticeWords.ts). Absent, or a kind it left alone: the
+   * producer's title as written.
+   */
+  noticeWords?(): { words: NoticeWords; vars: Readonly<Record<string, string>> };
 }
 
 export interface NotifyResult {
@@ -490,6 +510,14 @@ export async function insertNotification(deps: NotifyDeps, input: NotifyInput): 
    * decide.
    */
   const id = `ntf-${Date.now()}-${crypto.randomBytes(6).toString("hex")}`;
+  // The village's own title for this kind, with the producer's as {default}.
+  // Read once here, so the bell, the email and the digest all carry it.
+  try {
+    const own = deps.noticeWords?.();
+    if (own && own.words[input.type]?.title) input = { ...input, title: noticeTitle(own.words, input.type, input.title, own.vars) };
+  } catch {
+    /* the producer's title stands */
+  }
   try {
     await deps.pool.query(
       "INSERT INTO notifications (id, user_id, type, title, body, link, actor_user_id, dedupe_key) VALUES (?,?,?,?,?,?,?,?)",

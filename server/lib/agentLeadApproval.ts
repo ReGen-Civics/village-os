@@ -11,17 +11,17 @@
  *
  *   `readLeadSeatFacts`  what a seat carries: every capability on its linked power groups, and whether one of
  *                        them opens the admin panel. Read fresh at both calls of the two-call write.
- *   `recordLeadApproval` for EVERY lead-approved write: one admin-audience event naming who approved it and
- *                        quoting the approval, one record queued for the organisational memory, and for a seating
- *                        one notice to every admin and founder, all keyed on the spent confirm token so a retry is
- *                        a no-op.
+ *   `recordLeadApproval` for EVERY lead-approved write, BEFORE it is dispatched: one admin-audience event saying
+ *                        who the agent says approved it, quoting the agent's words, keyed on the spent confirm token.
+ *   `settleLeadApproval` after the route answered: for a seating one notice to every admin and founder, and one
+ *                        record queued for the organisational memory; or, when the route refused, an event saying so.
  *   `recentApprovedWrites` the events read back with the memory outbox's status, for Admin, Players, Agents.
  */
 import type { Pool } from "mysql2/promise";
 import { leadApprovalSubject, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts } from "../../shared/agentAdmin";
 import { APPROVAL_RECORD_KIND, approvalRecordKey, approvalRecordPayload, readApprovalRecordPayload, type ApprovalRecordPayload } from "../../shared/agentApprovalRecord";
 import { enqueue, type OutboxKind } from "../repos/memberTaskFeedback";
-import { APPROVAL_EVENT_ENTITY, approvalEventExists, approvalOutboxRows, recentApprovalEvents } from "../repos/agentApprovals";
+import { APPROVAL_EVENT_ENTITY, APPROVAL_REFUSED_ENTITY, approvalEventExists, approvalOutboxRows, recentApprovalEvents } from "../repos/agentApprovals";
 import { listSeatGroupLinks, liveSeatingHeader, seatHeader } from "../repos/seatPowerGroups";
 import { recordEvent } from "./events";
 
@@ -97,16 +97,54 @@ export const queueToMemory = (pool: Pool): QueueRecord => (key, payload) =>
   enqueue(pool, null, key, APPROVAL_RECORD_KIND as OutboxKind, payload as unknown as Record<string, unknown>);
 
 /**
- * The record one approved write leaves, once per write however often it is called:
+ * THE APPROVAL IS THE AGENT'S CLAIM, AND IS RECORDED AS ONE (audit, 15 Nov 2026). `approvedBy` and `approvalNote`
+ * are typed by the agent, and the confirm token is minted and spent by the same agent, so nothing here shows that a
+ * person approved anything. Every line this file writes says "the agent says X approved", never "approved by X".
+ * The lasting fix is a person confirming the change in the app; until then the record must not read as verified.
+ */
+export const AGENT_SAYS = {
+  audit: (what: string, by: string, note: string) => `${what}. The agent says ${by} approved it: "${note}". No person confirmed this in the app`,
+  notice: (act: string, role: string, by: string) => `Our agent ${act} in ${role}. It says ${by} approved`,
+  refused: (what: string) => `${what}: the admin path refused it, so nothing was written`,
+} as const;
+
+/**
+ * STEP ONE, BEFORE THE WRITE IS DISPATCHED (audit, 15 Nov 2026): one admin-audience audit event (entity
+ * `agent_approval`, ref = the write's key), naming the agent as the actor and quoting what it says was approved.
+ * Skipped when that key's event is already stored, so a retry is a no-op. It THROWS when the event cannot be
+ * stored, and the caller then dispatches nothing: an approved write never runs without its record.
  *
- *   1. one admin-audience audit event (entity `agent_approval`, ref = the write's key), naming the agent as the
- *      actor, who approved it and their approval quoted. Skipped when that key's event is already stored.
- *   2. for a seating or unseating, one notice to every admin and founder, on a stable key.
- *   3. one record queued for the village's organisational memory (shared/agentApprovalRecord.ts), INSERT IGNORE on
- *      the same key. Queue-and-forget: a failure is logged and never undoes or refuses the write, and the outbox's
- *      own job retries a queued record until the memory confirms it holds it.
+ * The key is the spent confirm token's, and the token is spendable once (`createConfirmSpendBook`), so two calls
+ * never race for one key in a process. health_events carries no unique key to lean on, and a migration is not this
+ * change's to make, so the read-then-insert stays.
  */
 export async function recordLeadApproval(
+  deps: { pool: Pool; agentUserId: string; tokenPrefix: string },
+  a: LeadApprovalRecord,
+): Promise<void> {
+  const subject = a.subject ?? leadApprovalSubject(a.kind, a.path, {}, a.roleId);
+  const where = subject.target ? ` (${subject.target})` : "";
+  if (await approvalEventExists(deps.pool, a.writeKey)) return;
+  // The approval can name people, so the line is admin-audience, and it names the agent as the actor.
+  await recordEvent(deps.pool, {
+    kind: "audit",
+    text: `connector (${deps.tokenPrefix}...): ${AGENT_SAYS.audit(`${subject.what}${where}`, a.approvedBy, a.approvalNote.slice(0, 1000))}${a.summary ? `. Summary given: "${a.summary.slice(0, 400)}"` : ""}`,
+    actorUserId: deps.agentUserId,
+    actorKind: "agent",
+    entityType: APPROVAL_EVENT_ENTITY,
+    entityRef: a.writeKey,
+    audience: "admin",
+  });
+}
+
+/**
+ * STEP TWO, AFTER THE ROUTE ANSWERED. Written: for a seating or unseating one notice to every admin and founder on a
+ * stable key, and one record queued for the village's organisational memory (shared/agentApprovalRecord.ts), INSERT
+ * IGNORE on the same key. Queue-and-forget: a failure is logged, and the outbox's own job retries a queued record
+ * until the memory confirms it holds it. Refused: one more admin event says so, and the recent list leaves it out.
+ * Never throws: the record that has to exist was stored before the write.
+ */
+export async function settleLeadApproval(
   deps: {
     pool: Pool;
     agentUserId: string;
@@ -116,29 +154,29 @@ export async function recordLeadApproval(
     now?: () => Date;
   },
   a: LeadApprovalRecord,
+  outcome: "written" | "refused",
 ): Promise<void> {
   const subject = a.subject ?? leadApprovalSubject(a.kind, a.path, {}, a.roleId);
-  const where = subject.target ? ` (${subject.target})` : "";
-  if (!(await approvalEventExists(deps.pool, a.writeKey))) {
-    // The approval can name people, so the line is admin-audience, and it names the agent as the actor.
-    await recordEvent(deps.pool, {
-      kind: "audit",
-      text: `connector (${deps.tokenPrefix}...): ${subject.what}${where}, with approval from ${a.approvedBy}: "${a.approvalNote.slice(0, 1000)}"${a.summary ? `. Summary given: "${a.summary.slice(0, 400)}"` : ""}`,
-      actorUserId: deps.agentUserId,
-      actorKind: "agent",
-      entityType: APPROVAL_EVENT_ENTITY,
-      entityRef: a.writeKey,
-      audience: "admin",
-    });
-  }
-  if (a.kind === "seat" || a.kind === "unseat") {
-    const act = a.kind === "seat" ? "seated a person" : "ended a seating";
-    await deps.notifyAdmins(
-      "governance",
-      `Our agent ${act} in ${a.roleId ?? "a role"}, approved by ${a.approvedBy.slice(0, 80)}`,
-      `agent-lead-${a.kind}:${a.writeKey}`,
-      "/admin",
-    );
+  try {
+    if (outcome === "refused") {
+      await recordEvent(deps.pool, {
+        kind: "audit",
+        text: `connector (${deps.tokenPrefix}...): ${AGENT_SAYS.refused(subject.what)}`,
+        actorUserId: deps.agentUserId,
+        actorKind: "agent",
+        entityType: APPROVAL_REFUSED_ENTITY,
+        entityRef: a.writeKey,
+        audience: "admin",
+      });
+      return;
+    }
+    if (a.kind === "seat" || a.kind === "unseat") {
+      const act = a.kind === "seat" ? "seated a person" : "ended a seating";
+      await deps.notifyAdmins("governance", AGENT_SAYS.notice(act, a.roleId ?? "a role", a.approvedBy.slice(0, 80)), `agent-lead-${a.kind}:${a.writeKey}`, "/admin");
+    }
+  } catch (err) {
+    console.error("[agent-approval] what follows an approved write did not finish (its audit event stands)", err);
+    if (outcome === "refused") return;
   }
   const payload = approvalRecordPayload({
     writeKey: a.writeKey,
@@ -164,6 +202,7 @@ export interface ApprovedWriteItem {
   at: string;
   what: string;
   target: string | null;
+  /** Who the AGENT says approved it, in its own words. Never verified: no person confirmed it in the app. */
   approvedBy: string | null;
   approvalNote: string | null;
   /** The event's own line, for a write whose memory record is gone or was never queued. */

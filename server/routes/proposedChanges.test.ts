@@ -8,6 +8,8 @@
  *   - drafts save on the server; the connector and an agent account cannot accept
  *   - a proposed new gathering with no status lands on the calendar, filed before that rule or after it
  *   - a change that throws on its way to its route is recorded as failed with its reason, and the rest still run
+ *   - an accept keeps what was live just before it, and "propose putting it back" files a new proposal carrying it,
+ *     applying nothing; kinds that are never put back keep nothing and say why
  */
 import http from "node:http";
 import express from "express";
@@ -37,7 +39,11 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   const refuse = new Set<string>();
   // Which routes hang up without answering, as a loopback that times out or is cut would.
   const drop = new Set<string>();
+  const commitThenDrop = new Set<string>();
+  // Reads (GET) that hang up, as a loopback read that fails would; the writes still answer.
+  const dropGet = new Set<string>();
   const hits: Array<{ method: string; path: string; auth: string; body: any }> = [];
+  const slowTarget = { on: false };
 
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
 
@@ -51,9 +57,17 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     // A stand-in for the target routes: it records who called, and refuses where the person lacks the power.
     const fake = express();
     fake.use(express.json());
-    fake.use((req, res) => {
+    fake.use(async (req, res) => {
       hits.push({ method: req.method, path: req.path, auth: String(req.headers.authorization ?? ""), body: req.body });
       if (drop.has(req.path)) return void req.socket.destroy();
+      if (req.method === "GET" && dropGet.has(req.path)) return void req.socket.destroy();
+      // The route does its work, then the answer is lost: a loopback that times out after its target committed.
+      if (commitThenDrop.has(req.path)) {
+        if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
+        return void req.socket.destroy();
+      }
+      // A slow target, so accepts racing for one change are all in flight at once (the race case below).
+      if (slowTarget.on) await new Promise((r) => setTimeout(r, 300));
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
       if (req.method === "PUT" && req.path.startsWith("/api/admin/content/")) content[req.path.split("/").pop()!] = req.body;
       if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
@@ -99,6 +113,8 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
   beforeEach(async () => {
     refuse.clear();
     drop.clear();
+    commitThenDrop.clear();
+    dropGet.clear();
     hits.length = 0;
     await q("DELETE FROM proposed_changes");
     await q("DELETE FROM proposed_change_batches");
@@ -194,6 +210,48 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     ]);
   });
 
+  it("the page reads where each change lands, the village's clock, who proposed a batch, and a history worth reading", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Cards", items: [PAGE, FAQ, DIAL] }, AGENT.id);
+    const [pageId, faqId, dialId] = filed.body.ids;
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.timezone).toBe("UTC");
+    expect(read.body.batches[0]).toEqual(expect.objectContaining({ title: "Cards", by: "Helper Agent", byKind: "agent" }));
+    const where = Object.fromEntries(read.body.changes.map((c: any) => [c.id, c.where]));
+    expect(where[pageId]).toEqual({ label: "Home page", href: "/" });
+    expect(where[faqId]).toEqual({ label: "Steward page", href: "/steward" });
+    expect(where[dialId]).toEqual({ label: "Admin, Variables", href: "/admin?tab=variables" });
+
+    // Accepted with an edit, and refused once by its route and then put aside.
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId, body: { hero: { headline: "A home on the land" } } }] });
+    refuse.add("/api/admin/variables/org.applicant_reply_days");
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id: dialId }] });
+    await call("POST", "/api/admin/proposals/discard", { ids: [dialId] });
+    const after = await call("GET", "/api/admin/proposals");
+    const page = after.body.decided.find((d: any) => d.id === pageId);
+    expect(page).toEqual(
+      expect.objectContaining({
+        batchTitle: "Cards", kind: "page_content", status: "accepted", by: "Fern", proposedBy: "Helper Agent", proposedByKind: "agent", edited: 1,
+        body: PAGE.body, accepted: { hero: { headline: "A home on the land" } }, where: { label: "Home page", href: "/" },
+        route: { method: "PUT", path: "/api/admin/content/page-home" },
+      }),
+    );
+    const dial = after.body.decided.find((d: any) => d.id === dialId);
+    expect(dial).toEqual(expect.objectContaining({ status: "discarded", error: "This needs the power to turn the village's dials.", accepted: null }));
+  });
+
+  it("two accepts of the same change at once apply it once (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    slowTarget.on = true;
+    const both = await Promise.all([1, 2, 3].map(() => call("POST", "/api/admin/proposals/accept", { items: [{ id }] }))).finally(() => (slowTarget.on = false));
+    expect(both.map((r) => r.body.results[0].ok).filter(Boolean)).toHaveLength(1);
+    expect(hits.filter((h) => h.path === "/api/admin/faqs/steward")).toHaveLength(1);
+    expect(faqs.steward.length - before).toBe(1);
+    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [id]);
+    expect(row.status).toBe("accepted");
+  });
+
   it("the dry run names the field and writes nothing", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "Dial", items: [DIAL] }, AGENT.id);
     const id = filed.body.ids[0];
@@ -250,16 +308,166 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(hits[0].body).toMatchObject({ title: "Potluck on the land", status: "scheduled" });
   });
 
-  it("a change that never reaches its route is recorded as failed with its reason, and the changes after it still run", async () => {
+  it("a change whose apply throws is recorded as unknown with its reason, and the changes after it still run", async () => {
     const filed = await call("POST", "/api/admin/proposals", { batch: "Phase A content", items: [PAGE, FAQ] }, AGENT.id);
     const [pageId, faqId] = filed.body.ids;
     drop.add("/api/admin/content/page-home");
     const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: pageId }, { id: faqId }] });
     expect(acc.status).toBe(200);
     expect(acc.body.results.map((x: any) => [x.id, x.ok])).toEqual([[pageId, false], [faqId, true]]);
-    expect(acc.body.results[0].error).toContain("did not reach its page");
+    expect(acc.body.results[0].error).toContain("could not tell whether this change reached its page");
     const rows = await q("SELECT id, status, error_text FROM proposed_changes ORDER BY position");
-    expect(rows.map((r) => r.status)).toEqual(["failed", "accepted"]);
-    expect(rows[0].error_text).toContain("did not reach its page");
+    expect(rows.map((r) => r.status)).toEqual(["unknown", "accepted"]);
+    expect(rows[0].error_text).toContain("could not tell whether this change reached its page");
+    // It still waits on the review page, where a person can see it.
+    expect((await call("GET", "/api/admin/proposals")).body.changes.map((c: any) => [c.id, c.status])).toEqual([[pageId, "unknown"]]);
+  });
+
+  it("a thrown apply that DID land on its route is never applied twice by one more click (audit, 15 Nov 2026)", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "One FAQ", items: [FAQ] }, AGENT.id);
+    const id = filed.body.ids[0];
+    const before = faqs.steward.length;
+    // The route commits, then the connection drops before the answer: the loopback reads it as a throw.
+    commitThenDrop.add("/api/admin/faqs/steward");
+    const first = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    commitThenDrop.clear();
+    expect(first.body.results[0].ok).toBe(false);
+    expect(faqs.steward.length - before, "the first try landed").toBe(1);
+    // One more click, as the page sends it: refused, and the route is not called again.
+    const hitsBefore = hits.length;
+    const again = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(again.body.results[0]).toMatchObject({ ok: false, code: "check_target" });
+    expect(hits.length).toBe(hitsBefore);
+    expect(faqs.steward.length - before).toBe(1);
+    // CONTROL: a person who checked and says so may try it again; putting it aside works too.
+    const checked = await call("POST", "/api/admin/proposals/accept", { items: [{ id, checked: true }] });
+    expect(checked.body.results[0].ok).toBe(true);
+  });
+
+  it("an unknown change can be put aside", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    const id = filed.body.ids[0];
+    drop.add("/api/admin/content/page-home");
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    const out = await call("POST", "/api/admin/proposals/discard", { ids: [id] });
+    expect(out.body.results[0].ok).toBe(true);
+  });
+
+  // ── Conflicts: a waiting change drafted before a later accept (the lead, 17 Nov 2026) ─────────────────────
+
+  it("two proposals on one role card: accepting the newer marks the older stale, on the page and again at its accept", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-conflict'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-conflict', 'Keeper of the Books', 'Keep the books.', 1, 1)");
+    const aim = (words: string, summary: string) => ({ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { aim: words } }, summary });
+    const older = (await call("POST", "/api/admin/proposals", { batch: "First pass", items: [aim("Hold the money.", "Older aim")] }, AGENT.id)).body.ids[0];
+    await new Promise((r) => setTimeout(r, 20));
+    const newer = (await call("POST", "/api/admin/proposals", { batch: "Second pass", items: [aim("Tend the money.", "Newer aim")] }, AGENT.id)).body.ids[0];
+    // Another field on the same card, proposed first: it never collides.
+    const apart = (await call("POST", "/api/admin/proposals", { batch: "Words", items: [{ kind: "role_card", target: { roleId: "rc-conflict" }, body: { words: { domain: "The ledger." } }, summary: "Domain" }] }, AGENT.id)).body.ids[0];
+
+    const before = await call("GET", "/api/admin/proposals");
+    expect(before.body.changes.map((c: any) => [c.id, c.stale])).toEqual([[older, []], [newer, []], [apart, []]]);
+
+    // The newer is accepted first. Nothing moved under it, so it carries no flag.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: newer }] })).body.results).toEqual([{ id: newer, ok: true }]);
+
+    // The older was drafted against the aim the newer has just replaced: the page says so, naming it.
+    const after = await call("GET", "/api/admin/proposals");
+    const byId = Object.fromEntries(after.body.changes.map((c: any) => [c.id, c]));
+    expect(byId[older].stale).toEqual([{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }]);
+    expect(byId[apart].stale, "another field on the same card is not stale").toEqual([]);
+
+    // Accepting it anyway is the person's call: it lands, and the answer carries the flag read at accept time.
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: older }] });
+    expect(acc.body.results).toEqual([{ id: older, ok: true, stale: [{ id: newer, summary: "Newer aim", acceptedAt: expect.any(String) }] }]);
+    const [row] = await q("SELECT status FROM proposed_changes WHERE id = ?", [older]);
+    expect(row.status, "a stale change is never rejected").toBe("accepted");
+  });
+
+  // ── Putting it back ────────────────────────────────────────────────────────
+
+  it("an accept keeps what was live before, and putting it back files a proposal carrying exactly that, applying nothing", async () => {
+    const wasLive = JSON.parse(JSON.stringify(content["page-home"]));
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [PAGE] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(JSON.parse(row.before_json)).toEqual(wasLive);
+
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: true });
+
+    hits.length = 0;
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(200);
+    expect(back.body).toMatchObject({ success: true, applied: false, reverts: id });
+    expect(hits, "proposing it back moved nothing live").toHaveLength(0);
+    const [made] = await q("SELECT kind, target_json, body_json, status, reverts_id, proposed_by, proposed_by_kind FROM proposed_changes WHERE id = ?", [back.body.id]);
+    expect(made).toMatchObject({ kind: "page_content", status: "proposed", reverts_id: id, proposed_by: ADMIN.id, proposed_by_kind: "person" });
+    expect(JSON.parse(made.target_json)).toEqual(PAGE.target);
+    // The fields the change sent, each with the value it held before.
+    expect(JSON.parse(made.body_json)).toEqual({ hero: { headline: wasLive.hero.headline } });
+
+    // It waits on the page marked as putting the original back, and the original offers no second one.
+    const after = await call("GET", "/api/admin/proposals");
+    expect(after.body.changes.map((c: any) => [c.id, c.reverts])).toEqual([[back.body.id, id]]);
+    expect(after.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: false, reason: "already_waiting" });
+    expect((await call("POST", `/api/admin/proposals/${id}/put-back`)).body.reason).toBe("already_waiting");
+
+    // A person accepts it like any other, and the page reads as it did.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: back.body.id }] })).body.results[0].ok).toBe(true);
+    expect(content["page-home"]).toEqual(wasLive);
+  });
+
+  it("a variable put back carries the old live value exactly", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Dial", items: [DIAL] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    const before = JSON.parse(row.before_json);
+    expect(before).toEqual({ value: expect.anything() });
+    expect(before.value).not.toBe("10");
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(200);
+    const [made] = await q("SELECT body_json FROM proposed_changes WHERE id = ?", [back.body.id]);
+    expect(JSON.parse(made.body_json)).toEqual(before);
+  });
+
+  it("a read that fails keeps null and the accept still lands; there is then nothing to put back", async () => {
+    const BRAND = { kind: "setting", target: { method: "PUT", path: "/api/admin/brand" }, body: { tagline: "Living together" }, summary: "A new tagline." };
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Brand", items: [BRAND] }, AGENT.id);
+    const id = filed.body.ids[0];
+    dropGet.add("/api/admin/brand");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.body.results).toEqual([{ id, ok: true }]);
+    expect(hits.map((h) => `${h.method} ${h.path}`)).toEqual(["GET /api/admin/brand", "PUT /api/admin/brand"]);
+    const [row] = await q("SELECT status, before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(row).toEqual({ status: "accepted", before_json: "null" });
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === id).putBack).toEqual({ can: false, reason: "unread" });
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back.status).toBe(409);
+    expect(await q("SELECT id FROM proposed_changes")).toHaveLength(1);
+  });
+
+  it("a new calendar event keeps nothing and is never put back; a change accepted before this release says so", async () => {
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Calendar", items: [GATHERING] }, AGENT.id);
+    const id = filed.body.ids[0];
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results[0].ok).toBe(true);
+    expect(hits.map((h) => h.method), "the calendar was never read").toEqual(["POST"]);
+    const [row] = await q("SELECT before_json FROM proposed_changes WHERE id = ?", [id]);
+    expect(row.before_json).toBeNull();
+    const back = await call("POST", `/api/admin/proposals/${id}/put-back`);
+    expect(back).toMatchObject({ status: 409, body: { reason: "made_new" } });
+
+    // The shape every change accepted before 0400 has: accepted, nothing kept.
+    await q(
+      "INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind, status, decided_by, decided_at, accepted_json) VALUES ('pc_was', ?, 1, 'variable', ?, 'Dial', 'PUT', '/api/admin/variables/org.applicant_reply_days', 'Older change', ?, ?, 'agent', 'accepted', ?, CURRENT_TIMESTAMP(3), ?)",
+      [filed.body.batchId, JSON.stringify(DIAL.target), JSON.stringify(DIAL.body), AGENT.id, ADMIN.id, JSON.stringify(DIAL.body)],
+    );
+    const read = await call("GET", "/api/admin/proposals");
+    expect(read.body.decided.find((d: any) => d.id === "pc_was").putBack).toEqual({ can: false, reason: "not_kept" });
+    expect((await call("POST", "/api/admin/proposals/pc_was/put-back")).body.reason).toBe("not_kept");
+    expect((await call("POST", "/api/admin/proposals/pc_nope/put-back")).status).toBe(404);
   });
 });

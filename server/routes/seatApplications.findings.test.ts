@@ -568,4 +568,11 @@ describe.skipIf(!configured)("the member door, over a scratch schema", () => {
     const opened = h.notices.find((x) => x.type === "ballot_opened");
     expect(opened?.body).toMatch(/^Voting is open until \d{1,2} [A-Z][a-z]+ \d{4}\.$/);
   });
+
+  it("COMING SOON (Rye, 16 Nov 2026): a coming-soon role is applied for through the member door like any other", async () => {
+    const s = await seat("Regenerative Builder");
+    await pool.query("UPDATE org_roles SET coming_soon = 1, listed = 0 WHERE id = ?", [s]); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
+    const a = await apply({ seatIds: [s] });
+    expect(a.status, JSON.stringify(a.body)).toBe(201);
+  });
 });

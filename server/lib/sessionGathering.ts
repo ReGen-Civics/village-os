@@ -29,7 +29,7 @@ import { effectiveLifecycle } from "./modules";
 import { boolVar } from "./variables";
 import { LIFECYCLE_RANK, type ModuleLifecycle } from "../../shared/modules";
 import { MIRROR_SOURCE } from "../../shared/sessionCalendar";
-import type { ComingUpRow, SessionGathering } from "../../shared/sessionRhythm";
+import { MAIN_RHYTHM, rhythmSourceId, type ComingUpRow, type SessionGathering } from "../../shared/sessionRhythm";
 
 /** How many names travel with a gathering: the seed has seven circles, and a line of names longer than that is a list. */
 export const GATHERING_NAMES_MAX = 7;
@@ -73,9 +73,10 @@ export async function attachGatherings(
     .filter(r => r.nextFrom === "rhythm")
     .map(r => ({
       row: r,
+      // The mirrored gathering of the rhythm the next meeting comes from (0401: one per rhythm).
       eventId: calendarIdFor({
         sourceModule: MIRROR_SOURCE,
-        sourceId: r.circleId,
+        sourceId: rhythmSourceId(r.circleId, r.nextRhythmKey ?? MAIN_RHYTHM),
       }),
     }));
   if (!wanted.length) return rows;

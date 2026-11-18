@@ -41,6 +41,9 @@ export interface MiniSeat {
   circleId?: string | null;
   seats?: number;
   holderCount?: number;
+  /** A coming-soon role (shared/roleListing.ts) is drawn, and never counted as open. */
+  comingSoon?: boolean;
+  futureVenture?: boolean;
 }
 
 /* The ground the map draws on, so this reads as a window and not a card.
@@ -48,12 +51,26 @@ export interface MiniSeat {
    --circle-ground and this window follows its map. */
 const { ground: GROUND, ring: RING, ink: INK, inkDim: INK_DIM, scrim: SCRIM } = MAP_CHROME;
 
+/**
+ * The same window can open onto another page of the circles (the /roles org chart tile, Rye,
+ * 17 Nov 2026, opens /circles). Each word on the picture can be the host's own; left out, it
+ * says what it always said on /circles.
+ */
+export interface MiniMapDoor {
+  href?: string;
+  title?: string;
+  detail?: string;
+  ariaLabel?: string;
+}
+
 export default function CirclesMiniMap({
   circles,
   seats,
+  door = {},
 }: {
   circles: MiniCircle[];
   seats: MiniSeat[];
+  door?: MiniMapDoor;
 }) {
   const { layout, byId, openSeats } = useMemo(() => {
     const seatsByCircle = new Map<string, MiniSeat[]>();
@@ -83,7 +100,7 @@ export default function CirclesMiniMap({
       layout: layoutNestedMap(inputs),
       byId: new Map(circles.map((c) => [c.id, c])),
       openSeats: seats.reduce(
-        (n, s) => n + Math.max(0, Number(s.seats ?? 1) - Number(s.holderCount ?? 0)),
+        (n, s) => n + (s.comingSoon === true || s.futureVenture === true ? 0 : Math.max(0, Number(s.seats ?? 1) - Number(s.holderCount ?? 0))),
         0,
       ),
     };
@@ -100,9 +117,9 @@ export default function CirclesMiniMap({
 
   return (
     <Link
-      href="/map/circles"
+      href={door.href ?? "/map/circles"}
       className="group block rounded-2xl overflow-hidden border border-border no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2"
-      aria-label={`Open the living map of the circles. ${circles.length} circles, ${openSeats} opening${openSeats === 1 ? "" : "s"}.`}
+      aria-label={door.ariaLabel ?? `Open the living map of the circles. ${circles.length} circles, ${openSeats} opening${openSeats === 1 ? "" : "s"}.`}
     >
       <div className="relative" style={{ background: GROUND }}>
         <svg
@@ -159,11 +176,15 @@ export default function CirclesMiniMap({
         >
           <div>
             <div className="font-semibold text-[15px]" style={{ color: INK }}>
-              Walk the circles on the living map
+              {door.title ?? "Walk the circles on the living map"}
             </div>
             <div className="text-[13px]" style={{ color: INK_DIM }}>
-              {circles.length} circle{circles.length === 1 ? "" : "s"}
-              {openSeats > 0 ? `, ${openSeats} role${openSeats === 1 ? "" : "s"} open` : ""}. Step inside any one of them.
+              {door.detail ?? (
+                <>
+                  {circles.length} circle{circles.length === 1 ? "" : "s"}
+                  {openSeats > 0 ? `, ${openSeats} role${openSeats === 1 ? "" : "s"} open` : ""}. Step inside any one of them.
+                </>
+              )}
             </div>
           </div>
           <ArrowRight

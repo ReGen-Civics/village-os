@@ -254,6 +254,10 @@ describe("Join the founding team", () => {
     expect(card.textContent).not.toContain("6,750");
     expect(card.textContent).not.toContain("6750");
     expect(card.textContent).not.toContain(RANGE_NOTE);
+    expect(within(pay).queryByTestId("pay-band")).toBeNull();
+    // The callout shows wherever the piece shows pay, ranges hidden or not.
+    // Loaded lazily, off the route's first view (guard-route-first-views).
+    expect((await within(pay).findByTestId("value-callout")).textContent).toContain("Value in equals value out.");
     const apply = within(card).getAllByRole("link", { name: /Apply for this role/ });
     expect(apply).toHaveLength(1);
     expect(apply[0].getAttribute("href")).toBe("/propose-a-role?role=finance");
@@ -267,6 +271,23 @@ describe("Join the founding team", () => {
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
     await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
+    // The band, one line under the listed price, with the price and the cap kept as they are.
+    const pay = within(section).getByTestId("pay-shape");
+    await within(pay).findByTestId("value-callout");
+    const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
+    // No cap line (lead, 17 Nov 2026): the listed price is the high end the card shows.
+    expect(lines).not.toContain("pay-cap-words");
+    expect(pay.textContent).not.toContain("Proposals up to");
+    expect(within(pay).getByTestId("pay-band").textContent).toBe("Band: $6,750 to $9,000 a month in total comp");
+    // The callout sits under the price and the band, with its explainer closed until asked (lead, 17 Nov 2026).
+    expect(lines.slice(0, 3)).toEqual(["pay-ceiling", "pay-band", "value-callout"]);
+    fireEvent.click(within(pay).getByTestId("value-explainer-open"));
+    const explainer = within(pay).getByTestId("value-explainer");
+    expect(explainer.textContent).toContain("Your agreement");
+    expect(explainer.textContent).toContain("Proposals can go up to 120%");
+    // No 120% money amount on the card: 120% of $9,000 is $10,800.
+    expect(section.textContent).not.toContain("$10,800");
+    expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
   });
 
   it("opening a role moves focus to its card, where the eye goes (a11y sweep P1-3)", async () => {
@@ -513,15 +534,19 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
-    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
-    // The 120% cap (Rye, 15 Nov 2026): for the full role, and at the example share.
-    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month for the full role, 120% of the listed price. At 50%, up to $5,400 a month.");
+    // The example follows the card's slider (production check, 18 Nov 2026): none at 100%, the price at 50% once slid there.
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("suggested price is");
+    fireEvent.change(await within(piece).findByLabelText("Your commitment"), { target: { value: "50" } });
+    await waitFor(() => expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less."));
+    // No cap line (lead, 17 Nov 2026): the 120% cap is a backend rule, never drawn on the card.
+    expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
+    expect(piece.textContent).not.toContain("Proposals up to");
+    expect(piece.textContent).not.toContain("120%");
+    expect(piece.textContent).not.toContain("$5,400");
+    expect(piece.textContent).not.toContain("$10,800");
     // The footnote (Rye, 15 Nov 2026): the first month with no figure, and the equity and credits clause because the
     // village's split pays 55% in equity and 5% in credits; then the village's own note.
     expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. Your first month often starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. ${VILLAGE_PAY.note}`);
-    // The cap sits beside the listed price, before the range.
-    const order = Array.from(piece.querySelectorAll("[data-testid]")).map((e) => e.getAttribute("data-testid"));
-    expect(order.indexOf("pay-cap-words")).toBe(order.indexOf("pay-ceiling") + 1);
     // One footnote (copy sweep): the village's own note is not drawn beside it.
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
     expect(piece.textContent).not.toContain("full band");
@@ -535,7 +560,8 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
     expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
     expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("At ");
-    expect(within(piece).getByTestId("pay-cap-words").textContent).toBe("Proposals up to $10,800 a month, 120% of the listed price.");
+    expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
+    expect(piece.textContent).not.toContain("Proposals up to");
   });
   it("shows only the split when no ceiling is written", async () => {
     roleCard = (id: string) => ({ roleId: id, sections: { ...SECTIONS, payCeiling: null }, lastEdited: null, showPayRanges: false, villagePay: VILLAGE_PAY, mayEdit: false });
@@ -561,17 +587,76 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     const sheet = await within(section).findByTestId("team-sheet");
     expect(within(section).getByRole("button", { name: "Team sheet" }).getAttribute("aria-pressed")).toBe("true");
     expect(within(sheet).getAllByText("Open role")).toHaveLength(2);
-    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").textContent).toContain("Human Operations Steward (Rye)"));
+    // The roster (Rye, 17 Nov 2026): one card per person, the first name first and the role as the position.
+    await waitFor(() => expect(within(sheet).getByTestId("filled-roles").querySelector('[data-roster-person="p:Rye"]')?.textContent).toContain("Human Operations Steward"));
     // Positions, never players: no rating, score or rank anywhere in the team view.
     expect(section.textContent).not.toMatch(/rating|score|rank/i);
   });
+  it("a filled role still recruiting stays on the roster as held and offers Apply; with its door closed it offers none (the lead, 17 Nov 2026)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }], recruiting: true }));
+    org.roles.push(seat("books", "Bookkeeper", { state: "filled", holderCount: 1, holders: [{ name: "Ana Ruiz" }], recruiting: false }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const roster = await within(section).findByTestId("filled-roles");
+    await waitFor(() => expect(roster.querySelector('[data-roster-person="p:Rye"]')).toBeTruthy());
+    const rye = roster.querySelector('[data-roster-person="p:Rye"]') as HTMLElement;
+    expect(rye.textContent).toContain("More players welcome");
+    expect(within(rye).getByRole("link", { name: /Apply/ }).getAttribute("href")).toBe("/propose-a-role?role=ops");
+    // CONTROL: the held role with its door closed shows no Apply and no line.
+    const ana = roster.querySelector('[data-roster-person="p:Ana"]') as HTMLElement;
+    expect(ana.textContent).toContain("Bookkeeper");
+    expect(within(ana).queryByRole("link", { name: /Apply/ })).toBeNull();
+    expect(ana.textContent).not.toContain("More players welcome");
+    // It stays held: neither role moves to "opening next".
+    const next = await screen.findByRole("region", { name: "More roles, opening next" });
+    expect(within(next).queryByRole("heading", { level: 3, name: "Human Operations Steward" })).toBeNull();
+  });
+
   it("shows anyone the current team the server sends, unlisted roles included, as Role (FirstName) (Rye, 14 Nov 2026)", async () => {
     founding = { ...founding, team: [{ id: "facilitator", name: "Governance Facilitator", holders: ["Rye"] }] };
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
-    await waitFor(() => expect(within(section).getByTestId("filled-roles").textContent).toContain("Governance Facilitator (Rye)"));
+    await waitFor(() => expect(within(section).getByTestId("filled-roles").querySelector('[data-roster-person="p:Rye"]')?.textContent).toContain("Governance Facilitator"));
     // The directory never lists it: it is the team, not a role to apply for.
     expect(screen.queryByRole("heading", { level: 3, name: "Governance Facilitator" })).toBeNull();
+  });
+
+  it("draws the roles held now as a roster: one card per person, every role listed, alphabetical, in both views (Rye, 17 Nov 2026)", async () => {
+    founding = {
+      ...founding,
+      team: [
+        { id: "tech", name: "Technical Operations Steward", holders: ["Rye"] },
+        { id: "memory", name: "Living Memory Steward", holders: ["Rick"] },
+        { id: "ai", name: "AI Workforce Steward", holders: ["Rick"] },
+        { id: "hidden", name: "Strategy Advisor", holders: [] },
+      ],
+    };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const roster = await within(section).findByTestId("filled-roles");
+    await waitFor(() => expect(Array.from(roster.querySelectorAll("[data-roster-person]")).map((c) => c.getAttribute("data-roster-person"))).toEqual(["p:Rick", "p:Rye", "r:hidden"]));
+    const rick = roster.querySelector('[data-roster-person="p:Rick"]') as HTMLElement;
+    expect(Array.from(rick.querySelectorAll("[data-filled-role]")).map((li) => li.textContent)).toEqual(["Living Memory Steward", "AI Workforce Steward"]);
+    expect(rick.textContent).toContain("Positions");
+    expect(rick.textContent).toContain("Anchor Circle");
+    // The tally still counts roles, and nothing on a card is a number, a score or a rank.
+    expect(within(section).getByTestId("lineup-tally").textContent).toContain("4 filled");
+    expect(roster.textContent).not.toMatch(/\d|rating|score|rank/i);
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    const formation = within(section).getByTestId("formation-roster");
+    expect(formation.querySelectorAll("[data-roster-person]")).toHaveLength(3);
+    expect(formation.querySelectorAll("[data-filled-role]")).toHaveLength(4);
+  });
+  it("opens the org chart from the roster: one link into /circles, the held team roles counted with the open ones (Rye, 16 Nov 2026)", async () => {
+    founding = { ...founding, team: [{ id: "tech", name: "Technical Operations Steward", holders: ["Rye"] }, { id: "ai", name: "AI Workforce Steward", holders: ["Rick"] }] };
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    // A phone (no wide screen in this test) gets the row: the three open roles from /api/org and the two held from the team.
+    const door = await within(section).findByRole("link", { name: /See the org chart/ });
+    expect(door.getAttribute("href")).toBe("/circles");
+    expect(door.textContent).toContain("Anchor Circle: 2 held, 3 open");
+    fireEvent.click(within(section).getByRole("button", { name: "Formation" }));
+    expect(within(section).getByRole("link", { name: /See the org chart/ }).getAttribute("href")).toBe("/circles");
   });
 
   it("shows how full each open role is: held and open, and covered past 100% (Rye, 14 Nov 2026)", async () => {

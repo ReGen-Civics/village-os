@@ -153,6 +153,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/feed", label: "Feed", module: "feed" },
       { href: "/forum", label: "Forum", module: "forum" },
       { href: "/messages", label: "Messages", module: "messaging" },
+      // Rites: begin a rite, witness one, pair a newcomer, invite with a letter (module `rites`).
+      { href: "/rites", label: "Rites", module: "rites" },
       { href: "/introductions", label: "Introductions", module: "introductions" },
       { href: "/events", label: "Events", module: "events" },
       // The circle calls a member takes part in. It sat in the account menu,
@@ -177,6 +179,8 @@ export const NAV: readonly NavEntry[] = [
       { href: "/roles", label: "Roles", unlessModule: "map" },
       { href: "/places", label: "Places", module: "map" },
       { href: "/photographs", label: "Photographs", module: "map" },
+      // Members only; the module can never stand at public.
+      { href: "/hidden-map", label: "Hidden map", module: "hidden-map" },
       { href: "/stay", label: "Stay", module: "stays" },
       { href: "/housing", brochure: true, label: "Housing" },
       { href: "/library", label: "Library", module: "library" },
@@ -345,6 +349,8 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // door (config/mobileNav.ts).
   { href: TASK_BOARD_PATH, label: TASK_COPY.menu.label, module: "sessions", count: "tasks" },
   { href: "/badges", label: "Badges", module: "badges" },
+  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page.
+  { href: "/budget", label: "Cash Budget" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"] },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15).
   { href: "/treasury", label: "Treasury", door: "treasury" },

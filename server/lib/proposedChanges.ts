@@ -27,6 +27,7 @@
 import type { Pool } from "mysql2/promise";
 import {
   fieldLabel,
+  keptGoalIds,
   mergeOnto,
   neverProposed,
   proposalNever,
@@ -48,13 +49,21 @@ import { readSections } from "../../shared/roleCardSections";
 import { isListed } from "../../shared/roleListing";
 import { allVariables } from "./variables";
 import { moduleConfig, storedLifecycle } from "./modules";
-import { characterTagsFrom, listOrgRoles, type OrgRole } from "./orgChart";
+import { characterTagsFrom, createRoleProblem, listOrgRoles, newRoleIdOf, type OrgRole } from "./orgChart";
 import { ROLE_WORD_FIELDS } from "./roleProposals";
 import { editorState, labelOf } from "./roleEdit";
 import { listArchetypeRows } from "../repos/archetypes";
+import { villageCircles } from "../repos/roleProposals";
 import { villageId } from "./economy";
 import { readConfigDocument } from "../repos/appConfigDocs";
 import { VILLAGE_DOC_KEY } from "./onboarding";
+import { neverPutBack } from "../../shared/proposalPutBack";
+import { agendaItemBody, readProposedAgenda } from "../../shared/sessionAgendaProposal";
+import { circleWords } from "../../shared/sessionTasks";
+import { circleRhythmRows } from "../repos/sessionRhythm";
+
+/** The route that makes a new role, checked at filing by `createRoleProblem`. */
+const NEW_ROLE_ROUTE = "/api/admin/org/roles";
 
 export const FAQ_PATHWAYS_FOR_PROPOSALS = ["investor", "steward", "resident", "prosperity"] as const;
 
@@ -78,7 +87,7 @@ export type Checked = { ok: true; label: string; method: string; path: string } 
 const obj = (v: unknown): Record<string, unknown> | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
 const bad = (error: string, field?: string, code?: string): Checked => ({ ok: false, error, ...(field ? { field } : {}), ...(code ? { code } : {}) });
 const pick = (from: Record<string, unknown> | null | undefined, keys: string[]) => Object.fromEntries(keys.map((k) => [k, from?.[k] ?? null]));
-const ROLE_CARD_KEYS = ["words", "parameters", "pay", "archetypes", "sections"];
+const ROLE_CARD_KEYS = ["words", "parameters", "pay", "archetypes", "sections", "circleId"];
 
 async function roleOf(pool: Pool, id: string): Promise<{ role: OrgRole | null; roles: OrgRole[] }> {
   const roles = await listOrgRoles(pool);
@@ -100,7 +109,7 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       if (!role) return bad("There is no role by that id.", "target.roleId");
       if (role.isExample) return bad("A standing example is never changed.", "target.roleId");
       const extra = Object.keys(b).filter((k) => !ROLE_CARD_KEYS.includes(k));
-      if (extra.length) return bad(`A role card change carries words, parameters, pay, archetypes or sections. Not: ${extra.slice(0, 6).join(", ")}.`, extra[0]);
+      if (extra.length) return bad(`A role card change carries words, parameters, pay, archetypes, sections or circleId. Not: ${extra.slice(0, 6).join(", ")}.`, extra[0]);
       if (!Object.keys(b).length) return bad("Say what to change on the card.");
       if (b.words !== undefined) {
         const read = parseRoleWords(b.words, "words", ROLE_WORD_FIELDS, role as unknown as Record<string, unknown>);
@@ -115,6 +124,11 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
           const r = readParameter(k as ParameterKey, v, (rid) => roleIds.has(rid));
           if (!r.ok) return bad(r.problem, `parameters.${k}`);
         }
+      }
+      // The circle the role moves to (Rye, 16 Nov 2026): a circle this village has.
+      if (b.circleId !== undefined) {
+        const to = typeof b.circleId === "string" ? b.circleId.trim() : "";
+        if (!to || !(await villageCircles(deps.pool)).some((c) => c.id === to)) return bad("There is no circle by that id.", "circleId");
       }
       if (b.pay !== undefined) {
         const r = readPayGroup(b.pay);
@@ -196,6 +210,7 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         const text = typeof g?.text === "string" ? g.text.trim() : "";
         if (!text) return bad(`Goal ${i + 1} needs its words.`, `goals.${i}.text`);
         if (text.length > 200) return bad(`Goal ${i + 1} is longer than 200 characters.`, `goals.${i}.text`);
+        if (g && g.id !== undefined && typeof g.id !== "string") return bad(`Goal ${i + 1}'s id is the id of a goal held now, as text.`, `goals.${i}.id`);
       }
       return ok(`${season.name ?? "Season"} goals`);
     }
@@ -206,6 +221,14 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       if (!r.ok) return bad(r.error, "doc");
       return ok("Onboarding path");
     }
+    case "session_agenda": {
+      const read = readProposedAgenda(t, b);
+      if (!read.ok) return bad(read.error, read.field);
+      const where = await agendaMeeting(deps.pool, read.value.circleId, read.value.rhythmKey);
+      if (!where.ok) return bad(where.error, where.field);
+      const n = read.value.items.length;
+      return ok(`${n === 1 ? "1 agenda item" : `${n} agenda items`} for ${where.label}`);
+    }
     case "setting": {
       if (!deps.routeExists(route.method, route.path)) return bad(REVIEW_WORDS.noRoute, "target.path");
       if (typeof t.readPath === "string") {
@@ -213,9 +236,52 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         if (readNever) return bad(readNever.words, "target.readPath", `never_${readNever.key}`);
         if (!deps.routeExists("GET", t.readPath)) return bad(REVIEW_WORDS.noRoute, "target.readPath");
       }
+      // A new role: the same checks the route runs before its INSERT (`createRoleProblem`), so an unknown circle or
+      // a taken id is refused when it is filed, and again in the dry run before it is accepted.
+      if (route.method === "POST" && route.path.replace(/\/+$/, "") === NEW_ROLE_ROUTE) {
+        const problem = await createRoleProblem(deps.pool, b);
+        if (problem) return bad(problem.error, problem.field);
+      }
       return ok(route.path);
     }
   }
+}
+
+/**
+ * Where a proposed agenda lands, in words: "the Anchor circle's Thursday steward sync" for one of its meetings, or
+ * "the Anchor circle's open agenda" for its open items, which wait for whichever meeting the circle holds next and
+ * need no rhythm. A circle that is not a live one, or a rhythm it does not keep, is refused with its field.
+ */
+async function agendaMeeting(pool: Pool, circleId: string, rhythmKey: string | null): Promise<{ ok: true; label: string } | { ok: false; error: string; field: string }> {
+  const circle = (await villageCircles(pool)).find((c) => c.id === circleId && c.live);
+  if (!circle) return { ok: false, error: "That circle is not one of the village's live circles.", field: "target.circleId" };
+  const whose = `the ${circleWords(circle.name)}'s`;
+  // No meeting named: the circle's open agenda items, which need no rhythm at all (the lead, 17 Nov 2026).
+  if (!rhythmKey) return { ok: true, label: `${whose} open agenda` };
+  const rhythm = (await circleRhythmRows(pool, circleId)).find((r) => String(r.rhythm_key) === rhythmKey);
+  if (!rhythm) return { ok: false, error: "That circle keeps no meeting rhythm with that key. Read its rhythms with GET /api/sessions.", field: "target.rhythmKey" };
+  return { ok: true, label: `${whose} ${String(rhythm.name ?? "") || "meeting"}` };
+}
+
+/** Said on a retried accept whose role an earlier try already made. */
+export const NEW_ROLE_ALREADY_MADE = "This role was already made by an earlier try of this change. Nothing was made twice.";
+
+/**
+ * Whether the new role this change makes already stands, under its id, with its name and circle: an earlier try of
+ * this same change that landed while its answer was lost. Read only on a RETRIED accept (a change that failed or
+ * whose outcome was unknown), so a second try is recorded as the success it is and never meets its own role as a
+ * taken id (17 Nov 2026).
+ */
+export async function newRoleAlreadyMade(pool: Pool, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<boolean> {
+  if (kind !== "setting") return false;
+  const route = routeOf(kind, target);
+  if (route.method !== "POST" || route.path.replace(/\/+$/, "") !== NEW_ROLE_ROUTE) return false;
+  if (typeof body.id !== "string" && typeof body.name !== "string") return false;
+  const id = newRoleIdOf(body);
+  const role = (await listOrgRoles(pool)).find((r) => r.id === id);
+  if (!role) return false;
+  const circle = typeof body.circleId === "string" && body.circleId ? body.circleId : null;
+  return role.name === String(body.name ?? "New role") && (role.circleId ?? null) === circle;
 }
 
 /** Plain labels for fields a kind knows by name. Every other field reads from its key (`fieldLabel`). */
@@ -226,6 +292,7 @@ export function labelsFor(kind: ProposalKind, target: Record<string, unknown>, b
     for (const k of Object.keys(obj(body.parameters) ?? {})) out[`parameters.${k}`] = labelOf(k);
     if ("pay" in body) out.pay = "Pay on offer";
     if ("archetypes" in body) out.archetypes = "Characters it suits";
+    if ("circleId" in body) out.circleId = "Circle";
   }
   if (kind === "page_content") {
     const spec = pageSpecForSection(String(target.section ?? ""));
@@ -237,6 +304,66 @@ export function labelsFor(kind: ProposalKind, target: Record<string, unknown>, b
   }
   if (kind === "variable") out.value = VARIABLES_BY_KEY[String(target.key ?? "")]?.label ?? fieldLabel("value");
   return out;
+}
+
+/** Where a change lands: the page a visitor or member reads it on, and its address, for "See it live". */
+export interface Where {
+  label: string;
+  href: string | null;
+}
+
+const SETTING_PAGES: ReadonlyArray<[RegExp, (m: RegExpMatchArray) => Where]> = [
+  [/^\/api\/admin\/investor-summary$/, () => ({ label: "Investor page", href: "/investor" })],
+  [/^\/api\/admin\/events(?:\/[^/]+)?$/, () => ({ label: "Calendar", href: "/events" })],
+  [/^\/api\/admin\/brand(?:\/.*)?$/, () => ({ label: "Home page", href: "/" })],
+  [/^\/api\/admin\/visit-config$/, () => ({ label: "Visit page", href: "/visit" })],
+  [/^\/api\/admin\/work-with-us-config$/, () => ({ label: "Work with us page", href: "/work-with-us" })],
+  [/^\/api\/admin\/seasons$/, () => ({ label: "Season", href: "/admin?tab=season" })],
+  [/^\/api\/admin\/land$/, () => ({ label: "Map", href: "/map" })],
+  [/^\/api\/org\/role-edit\/([^/]+)$/, (m) => ({ label: "Roles page", href: `/roles?seat=${m[1]}` })],
+  [/^\/api\/org\/circles\/([^/]+)$/, (m) => ({ label: "Circles page", href: `/circles/${m[1]}` })],
+];
+
+/** Where this change lands, read off its kind and target; Admin when nothing nearer is known. */
+export function whereOf(kind: ProposalKind, target: Record<string, unknown>): Where {
+  const t = (k: string) => String(target[k] ?? "");
+  switch (kind) {
+    case "page_content": {
+      const spec = pageSpecForSection(t("section"));
+      return spec ? { label: `${spec.label} page`, href: spec.path } : { label: t("section"), href: null };
+    }
+    case "faq_add":
+    case "faq_edit":
+    case "faq_remove": {
+      const p = t("pathway");
+      return { label: `${p.charAt(0).toUpperCase()}${p.slice(1)} page`, href: `/${encodeURIComponent(p)}` };
+    }
+    case "role_card":
+      return { label: "Roles page", href: `/roles?seat=${encodeURIComponent(t("roleId"))}` };
+    case "role_listing":
+      return { label: "Roles page", href: "/roles" };
+    case "variable":
+      return { label: "Admin, Variables", href: "/admin?tab=variables" };
+    case "module_lifecycle":
+    case "module_config": {
+      const def = MODULES_BY_ID[t("id")];
+      return { label: def ? def.name : t("id"), href: def ? `/modules/${encodeURIComponent(def.id)}` : "/admin?tab=modules" };
+    }
+    case "season_goals":
+      return { label: "Season", href: "/admin?tab=season" };
+    case "onboarding_path":
+      return { label: "Onboarding path", href: "/profile" };
+    case "session_agenda":
+      return { label: "Sessions, agenda items", href: "/sessions" };
+    case "setting": {
+      const path = t("path");
+      for (const [re, at] of SETTING_PAGES) {
+        const m = path.match(re);
+        if (m) return at(m);
+      }
+      return { label: "Admin", href: "/admin" };
+    }
+  }
 }
 
 /** What is live now, in the proposal's shape. Null when there is nothing yet (a new FAQ) or it cannot be read. */
@@ -252,6 +379,7 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
         if (obj(body.parameters)) out.parameters = pick(s.parameters as Record<string, unknown>, Object.keys(obj(body.parameters)!));
         if ("pay" in body) out.pay = s.pay;
         if ("archetypes" in body) out.archetypes = s.archetypes;
+        if ("circleId" in body) out.circleId = role.circleId ?? null;
         if (obj(body.sections)) out.sections = pick(s.sections as unknown as Record<string, unknown>, Object.keys(obj(body.sections)!));
         return out;
       }
@@ -278,10 +406,23 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
         return { ids: (await listOrgRoles(deps.pool)).filter((r) => !r.isExample && isListed(r)).map((r) => r.id) };
       case "season_goals": {
         const season = deps.seasons().find((s) => s.id === String(target.seasonId ?? ""));
-        return season ? { goals: (season.goals ?? []).map((g) => ({ text: g.text, done: !!g.done })) } : null;
+        if (!season) return null;
+        // Row for row beside the proposal: each proposed goal reads against the held goal it keeps (by id, else by words), so a reworded or moved goal shows what it replaces and a new one shows nothing yet.
+        const held = season.goals ?? [];
+        const proposed = Array.isArray(body.goals) ? (body.goals as Array<Record<string, unknown>>).map((g) => obj(g) ?? {}) : [];
+        if (!proposed.length) return { goals: held.map((g) => ({ text: g.text, done: !!g.done })) };
+        return {
+          goals: keptGoalIds(held, proposed).map((id) => {
+            const h = id ? held.find((x) => x.id === id) : undefined;
+            return h ? { text: h.text, done: !!h.done } : null;
+          }),
+        };
       }
       case "onboarding_path":
         return { doc: (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? null };
+      case "session_agenda":
+        // New items: nothing is live in their place.
+        return null;
       case "setting": {
         const readPath = String(target.readPath ?? target.path ?? "");
         const a = await run("GET", readPath);
@@ -293,10 +434,32 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
   }
 }
 
+/**
+ * What to keep as "live before", read just before a change is applied, so it can be proposed back (0400). The same
+ * read the page shows (`liveOf`). A kind that is never put back reads nothing (`keep: false`); a read that fails or
+ * throws keeps null, and never stops the accept.
+ */
+export async function readBefore(deps: KindDeps, run: Run, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<{ keep: false } | { keep: true; value: unknown }> {
+  if (neverPutBack(kind, target)) return { keep: false };
+  try {
+    const value = await liveOf(deps, run, kind, target, body);
+    return { keep: true, value: value === undefined ? null : value };
+  } catch {
+    return { keep: true, value: null };
+  }
+}
+
 const routeError = (a: { status: number; body: unknown }): string => {
   const b = obj(a.body);
   const words = b?.message ?? b?.error ?? b?.reason;
-  if (typeof words === "string" && words.trim()) return words.trim().slice(0, 600);
+  // The route's own sentence, always. A fault with none answers "Internal server error" and a reference the
+  // server logged it under (`respondToTerminalError`), so the card carries something the team can find it by.
+  const ref = typeof b?.ref === "string" && /^[0-9a-f]{4,16}$/.test(b.ref) ? b.ref : null;
+  if (typeof words === "string" && words.trim()) {
+    const said = words.trim().slice(0, 600);
+    return ref ? `${said} (reference ${ref}). Give the team this reference and they can find what went wrong.` : said;
+  }
+  if (ref) return `The route answered ${a.status} (reference ${ref}). Give the team this reference and they can find what went wrong.`;
   if (a.status === 401 || a.status === 403) return "The route said no: this needs a power you do not hold here.";
   return `The route answered ${a.status}.`;
 };
@@ -305,14 +468,18 @@ const fieldOf = (a: { body: unknown }): string | undefined => {
   return Array.isArray(f) && typeof f[0] === "string" ? f[0] : undefined;
 };
 
-export type Applied = { ok: true } | { ok: false; error: string; field?: string; status?: number };
+export type Applied = { ok: true; note?: string } | { ok: false; error: string; field?: string; status?: number };
 
 /** Run one accepted change through its target's own route, as the person (`run`). */
 export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind, target: Record<string, unknown>, body: Record<string, unknown>): Promise<Applied> {
   const route = routeOf(kind, target);
   const through = async (method: Parameters<Run>[0], path: string, payload?: unknown): Promise<Applied> => {
     const a = await run(method, path, payload);
-    if (a.status >= 200 && a.status < 300) return { ok: true };
+    if (a.status >= 200 && a.status < 300) {
+      // A route that landed and says what did not (a new role whose value did not save) is a success with a note.
+      const notice = obj(a.body)?.notice;
+      return typeof notice === "string" && notice.trim() ? { ok: true, note: notice.trim().slice(0, 600) } : { ok: true };
+    }
     return { ok: false, error: routeError(a), field: fieldOf(a), status: a.status };
   };
   switch (kind) {
@@ -359,18 +526,29 @@ export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind
       const at = seasons.findIndex((s) => s.id === String(target.seasonId ?? ""));
       if (at < 0) return { ok: false, error: "This season's goals live on the season list. Save the season's dates in Admin, Season first." };
       const held = Array.isArray(seasons[at].goals) ? (seasons[at].goals as Array<Record<string, unknown>>) : [];
-      // A goal kept word for word keeps its id, so whatever links to it stays linked.
-      const goals = (body.goals as Array<Record<string, unknown>>).map((g) => {
-        const text = String(g.text ?? "").trim();
-        const same = held.find((h) => String(h.text ?? "").trim() === text);
-        return { ...(same?.id ? { id: same.id } : {}), text, done: !!g.done };
-      });
+      // A goal that names a held goal's id, or else matches one word for word, keeps that id, so whatever links to it stays linked (`keptGoalIds`).
+      const proposed = body.goals as Array<Record<string, unknown>>;
+      const ids = keptGoalIds(held, proposed);
+      const goals = proposed.map((g, i) => ({ ...(ids[i] ? { id: ids[i] } : {}), text: String(g.text ?? "").trim(), done: !!g.done }));
       doc.seasons = seasons.map((s, i) => (i === at ? { ...s, goals } : s));
       return through("PUT", "/api/admin/seasons", doc);
     }
     case "onboarding_path": {
       const live = (await readConfigDocument(deps.pool, VILLAGE_DOC_KEY)) ?? {};
       return through("PUT", route.path, { doc: mergeOnto(live, obj(body.doc) ?? {}) });
+    }
+    case "session_agenda": {
+      // Read again as the person accepted it (their edits included); each item through the member's own door, as them.
+      const read = readProposedAgenda(target, body);
+      if (!read.ok) return { ok: false, error: read.error, field: read.field };
+      for (let i = 0; i < read.value.items.length; i++) {
+        const done = await through("POST", route.path, agendaItemBody(read.value, read.value.items[i]));
+        if (!done.ok) {
+          const landed = i === 0 ? "None of the items was added." : i === 1 ? "Item 1 was added; the rest were not." : `Items 1 to ${i} were added; the rest were not.`;
+          return { ...done, error: `Item ${i + 1}: ${done.error} ${landed}`, field: done.field ?? `items.${i}` };
+        }
+      }
+      return { ok: true };
     }
     case "setting": {
       // A new gathering with no status goes on the calendar, for a proposal filed before the filing rule (`settingBodyToApply`).

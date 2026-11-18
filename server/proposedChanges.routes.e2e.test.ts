@@ -233,4 +233,233 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     }
     expect(seen).toBe("https://example.test/tour");
   });
+
+  it("COMING SOON (Rye, 16 Nov 2026): a role_card proposal marks a role coming soon and moves it to a circle, landing only on a person's accept; an unknown circle is refused at filing", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-land", name: "Regenerative Land & Building" })).status).toBe(200);
+    const refused = await tool(adminVat, "propose_changes", {
+      batch: "A move nowhere",
+      items: [{ kind: "role_card", target: { roleId }, body: { circleId: "pc-nowhere" }, summary: "Move it nowhere." }],
+    });
+    expect(JSON.stringify(refused.json.result.structuredContent)).toMatch(/no circle by that id/);
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Coming soon roles",
+      items: [{ kind: "role_card", target: { roleId }, body: { parameters: { comingSoon: true }, circleId: "pc-land" }, summary: "Show the Lead Finance Steward as coming soon under Land & Building." }],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    // Nothing live moves until a person accepts.
+    expect((await call("GET", `/api/org/role-edit/${roleId}`)).json.state.parameters.comingSoon).toBe(false);
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.json.results, acc.text).toEqual([{ id, ok: true }]);
+    const state = (await call("GET", `/api/org/role-edit/${roleId}`)).json.state;
+    expect(state.parameters.comingSoon).toBe(true);
+    expect(state.circleId).toBe("pc-land");
+  });
+
+  it("THE MEETING'S AGENDA (17 Nov 2026): an agent reads a circle's meetings, proposes items for one of them, and they wait for that meeting only once a person accepts", async () => {
+    expect((await call("PUT", "/api/admin/modules/sessions/lifecycle", { lifecycle: "members" })).status).toBe(200);
+    expect((await call("POST", "/api/admin/circles", { id: "pc-anchor", name: "Anchor" })).status).toBe(200);
+    // Two rhythms, set by the founder (an admin keeps any circle's rhythm): Thursdays first, then a named Monday one.
+    const thu = await call("PUT", "/api/sessions/circles/pc-anchor/rhythm", { kind: "weekly", weekday: 4, everyWeeks: 1, time: "13:00", durationMin: 120, name: "Thursday steward sync" });
+    expect(thu.status, thu.text).toBe(200);
+    const mon = await call("POST", "/api/sessions/circles/pc-anchor/rhythms", { kind: "weekly", weekday: 1, everyWeeks: 1, time: "12:00", durationMin: 90, name: "Monday all-staff" });
+    expect(mon.status, mon.text).toBe(200);
+
+    // The agent reads the meetings through admin_request, though the village's own list does not name the path.
+    const read = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions" });
+    expect(read.json.result.isError, read.text).toBe(false);
+    const rows = read.json.result.structuredContent?.comingUp?.rows;
+    expect(Array.isArray(rows), read.text.slice(0, 600)).toBe(true);
+    const row = (rows as any[]).find((r) => r.circleId === "pc-anchor");
+    const thursday = (row.rhythms as any[]).find((l) => l.name === "Thursday steward sync");
+    expect(thursday.key).toBe("main");
+    const summary = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions/circles/pc-anchor/summary" });
+    expect(summary.json.result.isError, summary.text).toBe(false);
+    // An agent write to the same door stays refused: items reach a meeting through a proposal only.
+    const write = await tool(adminVat, "admin_request", { method: "POST", path: "/api/sessions/library", body: { title: "Payroll", circleId: "pc-anchor" }, summary: "Add payroll to the Thursday agenda." });
+    expect(write.json.result.isError).toBe(true);
+    expect((await call("GET", "/api/sessions")).json.library.items).toEqual([]);
+
+    // Filing checks the shape and the meeting.
+    const bad = await tool(adminVat, "propose_changes", {
+      batch: "Thursday, wrong",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-anchor", rhythmKey: "rnothere" }, body: { items: [{ title: "Payroll", kind: "decision" }] }, summary: "Payroll for Thursday." }],
+    });
+    expect(JSON.stringify(bad.json.result.structuredContent)).toMatch(/no meeting rhythm with that key/);
+    const badKind = await tool(adminVat, "propose_changes", {
+      batch: "Thursday, wrong kind",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-anchor" }, body: { items: [{ title: "Payroll", kind: "vote" }] }, summary: "Payroll for Thursday." }],
+    });
+    expect(JSON.stringify(badKind.json.result.structuredContent)).toMatch(/kind is one of consent, decision, discussion/);
+
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Thursday steward sync",
+      items: [
+        {
+          kind: "session_agenda",
+          target: { circleId: "pc-anchor", rhythmKey: thursday.key },
+          body: {
+            items: [
+              { title: "Adopt the water agreement", kind: "consent", detail: "Draft is in the shared folder.", ownerRole: "Water Steward" },
+              { title: "Guest house opening", kind: "discussion" },
+            ],
+          },
+          summary: "Put two items on Thursday's steward sync.",
+        },
+      ],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    // Nothing waits until a person accepts; the review page names the meeting.
+    expect((await call("GET", "/api/sessions")).json.library.items).toEqual([]);
+    const page = await call("GET", "/api/admin/proposals");
+    const change = page.json.changes.find((c: any) => c.id === id);
+    expect(change.targetLabel).toBe("2 agenda items for the Anchor circle's Thursday steward sync");
+    expect(change.where).toEqual({ label: "Sessions, agenda items", href: "/sessions" });
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id }] });
+    expect(acc.json.results, acc.text).toEqual([{ id, ok: true }]);
+    const items = (await call("GET", "/api/sessions")).json.library.items as any[];
+    expect(items.map((i) => [i.title, i.aim, i.circleId, i.rhythmKey, i.rhythmName, i.mine])).toEqual([
+      ["Adopt the water agreement", "decide", "pc-anchor", "main", "Thursday steward sync", true],
+      ["Guest house opening", "explore", "pc-anchor", "main", "Thursday steward sync", true],
+    ]);
+    expect(items[0].note).toBe("For consent.\n\nOwner role: Water Steward.\n\nDraft is in the shared folder.");
+    // They wait for Thursday, never Monday.
+    const lines = ((await call("GET", "/api/sessions")).json.comingUp.rows as any[]).find((x) => x.circleId === "pc-anchor").rhythms as any[];
+    expect(Object.fromEntries(lines.map((l) => [l.name, l.waiting]))).toEqual({ "Thursday steward sync": 2, "Monday all-staff": 0 });
+  });
+
+  it("OPEN AGENDA ITEMS (the lead, 17 Nov 2026): items proposed for a circle with no rhythm at all wait as its open agenda, and the connector reads them", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-quiet", name: "Quiet" })).status).toBe(200);
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Quiet circle agenda",
+      items: [{ kind: "session_agenda", target: { circleId: "pc-quiet" }, body: { items: [{ title: "Name a facilitator", kind: "decision" }] }, summary: "Add one open item for the Quiet circle." }],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids;
+    const change = (await call("GET", "/api/admin/proposals")).json.changes.find((c: any) => c.id === id);
+    expect(change.targetLabel).toBe("1 agenda item for the Quiet circle's open agenda");
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).json.results).toEqual([{ id, ok: true }]);
+    const list = (await call("GET", "/api/sessions")).json;
+    // The circle keeps no rhythm, so it has no row under Coming up; its open item waits all the same.
+    expect((list.comingUp.rows as any[]).some((x) => x.circleId === "pc-quiet")).toBe(false);
+    expect((list.library.items as any[]).filter((i) => i.circleId === "pc-quiet").map((i) => [i.title, i.status, i.rhythmKey])).toEqual([["Name a facilitator", "waiting", null]]);
+    // The connector reads it, through the list and through the circle's own summary.
+    const read = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions" });
+    expect((read.json.result.structuredContent.library.items as any[]).some((i) => i.circleId === "pc-quiet" && i.title === "Name a facilitator")).toBe(true);
+    const summary = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions/circles/pc-quiet/summary" });
+    expect(summary.json.result.structuredContent).toMatchObject({ circleId: "pc-quiet", rhythm: null, next: null, waiting: 1 });
+  });
+});
+
+/*
+ * A NEW ROLE THROUGH THE REVIEW PAGE (17 Nov 2026). Accepting a setting proposal that made a role showed
+ * "Internal server error" on the card. The body below is the one production carried, field for field.
+ */
+describe.skipIf(!DB_CONFIGURED)("a new role proposed as a setting", () => {
+  const ROLE_BODY = {
+    id: "pc-investor-relations-steward",
+    name: "Investor Relations Steward",
+    circleId: "pc-rcb",
+    aim: "Keep the village's investors informed and in good faith.",
+    domain: "Investor updates and the questions investors bring.",
+    accountabilities: ["Send the quarterly update", "Answer investor questions", "Keep the investor list", "Prepare the annual meeting", "Hand questions on to the right circle"],
+    seats: 1,
+    recruiting: false,
+    listed: false,
+  };
+  const propose = (body: Record<string, unknown>, summary: string) =>
+    tool(adminVat, "propose_changes", { batch: summary, items: [{ kind: "setting", target: { method: "POST", path: "/api/admin/org/roles" }, body, summary }] });
+  const logTail = () => logs.join("").split("\n").slice(-40).join("\n");
+  let changeId = "";
+
+  it("the route refuses an unknown circle with a sentence, never a 500", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { ...ROLE_BODY, id: "pc-nowhere-role", circleId: "pc-nowhere" });
+    expect(r.status, r.text).toBe(400);
+    expect(r.json.error).toBe("There is no live circle 'pc-nowhere'. Create the circle first, or choose one that exists.");
+  });
+
+  it("the route refuses an id already taken, live or retired, with a sentence", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: roleId, name: "Another Finance Steward" });
+    expect(r.status, r.text).toBe(409);
+    expect(r.json.error).toBe(`A role with the id '${roleId}' already exists. Choose another id.`);
+    await pool.query("UPDATE org_roles SET active = 0 WHERE id = ?", [roleId]); // module-review-ok: retiring the scratch schema's role to prove a retired id is still taken
+    const retired = await call("POST", "/api/admin/org/roles", { id: roleId, name: "Another Finance Steward" });
+    await pool.query("UPDATE org_roles SET active = 1 WHERE id = ?", [roleId]); // module-review-ok: putting it back for the tests after
+    expect(retired.status, retired.text).toBe(409);
+  });
+
+  it("the route refuses values its columns cannot take, each with a sentence", async () => {
+    const tries: Array<[Record<string, unknown>, string]> = [
+      [{ name: "x".repeat(161) }, "A role's name holds 160 characters at most."],
+      [{ name: "Seats Test", seats: "two" }, "How many people a role holds is a whole number, 1 or more."],
+      [{ name: "Order Test", order: 1.5 }, "A role's order is a whole number."],
+      [{ name: "Criticality Test", criticality: "urgent" }, "A role's criticality is normal or high."],
+      [{ name: "Aim Test", aim: { text: "an object" } }, "A role's aim is text."],
+      [{ name: "Colour Test", color: "a colour name far longer than thirty two" }, "A role's colour holds 32 characters at most."],
+    ];
+    for (const [body, words] of tries) {
+      const r = await call("POST", "/api/admin/org/roles", body);
+      expect(r.status, `${JSON.stringify(body)} ${r.text}`).toBe(400);
+      expect(r.json.error).toBe(words);
+    }
+  });
+
+  it("proposing a role in an unknown circle, or under a taken id, is refused when it is filed", async () => {
+    const nowhere = await propose({ ...ROLE_BODY, circleId: "pc-nowhere" }, "A role in no circle.");
+    expect(JSON.stringify(nowhere.json.result.structuredContent)).toContain("There is no live circle 'pc-nowhere'.");
+    const taken = await propose({ ...ROLE_BODY, id: roleId, circleId: undefined }, "A role under a taken id.");
+    expect(JSON.stringify(taken.json.result.structuredContent)).toContain(`A role with the id '${roleId}' already exists.`);
+  });
+
+  it("production's body, accepted from the review page, lands as one success and keeps the role unlisted", async () => {
+    expect((await call("POST", "/api/admin/circles", { id: "pc-rcb", name: "Regenerative Community Building" })).status).toBe(200);
+    const r = await propose(ROLE_BODY, "Add the Investor Relations Steward.");
+    expect(r.json.result.isError, r.text).toBe(false);
+    [changeId] = r.json.result.structuredContent.ids as string[];
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: changeId }] });
+    expect(acc.json.results, `${acc.text}\n${logTail()}`).toEqual([{ id: changeId, ok: true }]);
+    const [rows] = await pool.query<any[]>("SELECT listed, circle_id, recruiting FROM org_roles WHERE id = ?", [ROLE_BODY.id]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(rows).toEqual([{ listed: 0, circle_id: "pc-rcb", recruiting: 0 }]);
+    // Signed out, an unlisted role is not on the public chart.
+    const pub = await call("GET", "/api/org", undefined, "");
+    expect(JSON.stringify(pub.json)).not.toContain(ROLE_BODY.id);
+  });
+
+  it("a retried accept whose earlier try already made the role lands as a success, and makes nothing twice", async () => {
+    const r = await propose({ ...ROLE_BODY, id: "pc-retry-steward", name: "Retry Steward" }, "Add the Retry Steward.");
+    expect(r.json.result.isError, r.text).toBe(false);
+    const [id] = r.json.result.structuredContent.ids as string[];
+    // The earlier try: the role was made, and the answer was lost on its way back, so the change waits on a check.
+    expect((await call("POST", "/api/admin/org/roles", { ...ROLE_BODY, id: "pc-retry-steward", name: "Retry Steward" })).status).toBe(200);
+    await pool.query("UPDATE proposed_changes SET status = 'unknown' WHERE id = ?", [id]); // module-review-ok: standing in for a loopback whose answer was lost
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id, checked: true }] });
+    expect(acc.json.results, `${acc.text}\n${logTail()}`).toEqual([{ id, ok: true, note: "This role was already made by an earlier try of this change. Nothing was made twice." }]);
+    const [rows] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM org_roles WHERE id = ?", ["pc-retry-steward"]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(Number(rows[0].n)).toBe(1);
+  });
+
+  it("a yes-or-no field sent as words is refused, so listed: \"false\" never lists a role", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: "pc-words-listed", name: "Words Listed", listed: "false" });
+    expect(r.status, r.text).toBe(400);
+    expect(r.json.error).toBe("Whether a role is listed is true or false.");
+  });
+
+  it("a role made with no listed value stays listed, the default", async () => {
+    const r = await call("POST", "/api/admin/org/roles", { id: "pc-listed-default", name: "Listed By Default" });
+    expect(r.status, r.text).toBe(200);
+    const [rows] = await pool.query<any[]>("SELECT listed FROM org_roles WHERE id = ?", ["pc-listed-default"]); // module-review-ok: reading back the scratch schema this suite provisioned
+    expect(rows[0].listed === null || rows[0].listed === 1).toBe(true);
+  });
+
+  it("a role that stands when what follows the INSERT fails answers success with a notice, never a 500", async () => {
+    await pool.query("ALTER TABLE org_roles RENAME COLUMN value_minor TO value_minor_away"); // module-review-ok: breaking the value write on the scratch schema, put back below
+    try {
+      const r = await call("POST", "/api/admin/org/roles", { id: "pc-valued-role", name: "Valued Role", valueMinor: 500000 });
+      expect(r.status, `${r.text}\n${logTail()}`).toBe(200);
+      expect(r.json).toEqual({ success: true, id: "pc-valued-role", notice: "The role was created, but saving what it is worth failed: set it again on the role's card." });
+    } finally {
+      await pool.query("ALTER TABLE org_roles RENAME COLUMN value_minor_away TO value_minor"); // module-review-ok: putting the scratch schema back
+    }
+  });
 });

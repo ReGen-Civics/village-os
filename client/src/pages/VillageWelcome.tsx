@@ -12,7 +12,9 @@
  *
  * A blank field hides its line rather than printing a placeholder.
  */
+import { lazy, Suspense, useEffect, useState } from "react";
 import Layout from "@/components/Layout";
+import { useModules } from "@/modules/ModuleProvider";
 import SeasonBanner from "@/components/SeasonBanner";
 import { Image } from "@/components/Image";
 import { Link } from "wouter";
@@ -45,7 +47,42 @@ const doors = (tokenName: string) => [
   },
 ];
 
+/**
+ * THE VILLAGE'S OWN WELCOME AS ITS SIGNED-OUT HOME, when it says so: a village
+ * running the rites module with `welcome.asHome` set shows a visitor its rites
+ * welcome here (QA P4-3). Asked only while that module is served, so every
+ * other village renders exactly as before, with no extra request.
+ */
+const RitesWelcome = lazy(() => import("./rites/Welcome"));
+
 export default function VillageWelcome() {
+  const { user } = useAuth();
+  const { modules, loaded } = useModules();
+  const ritesOn = modules.some((m) => m.id === "rites");
+  const [asHome, setAsHome] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!loaded) return;
+    if (user || !ritesOn) return setAsHome(false);
+    let alive = true;
+    fetch("/api/rites/public")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => alive && setAsHome(d?.asHome === true))
+      .catch(() => alive && setAsHome(false));
+    return () => {
+      alive = false;
+    };
+  }, [loaded, user, ritesOn]);
+  if (!user && asHome === null) return null;
+  if (asHome)
+    return (
+      <Suspense fallback={null}>
+        <RitesWelcome />
+      </Suspense>
+    );
+  return <NeutralWelcome />;
+}
+
+function NeutralWelcome() {
   const name = useVillageName();
   const location = useVillageLocation();
   const brand = useBrandImages();

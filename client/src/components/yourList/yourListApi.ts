@@ -82,7 +82,8 @@ export function newFeedbackId(): string {
 }
 
 export const removeTask = (t: ListTask, press: Press) => write(`${LIST_URL}/${encodeURIComponent(t.id)}/remove`, "POST", { version: t.version, ...press });
-export const redirectTask = (t: ListTask, press: Press, to: { toUserId?: string; toRoleId?: string }) =>
+/** `handoffNote` travels with a task handed to a role, for whoever accepts it there. */
+export const redirectTask = (t: ListTask, press: Press, to: { toUserId?: string; toRoleId?: string; handoffNote?: string | null; handoffDueOn?: string | null }) =>
   write(`${LIST_URL}/${encodeURIComponent(t.id)}/redirect`, "POST", { version: t.version, ...press, ...to });
 export const pinTask = (t: ListTask, on: boolean) => write(`${LIST_URL}/${encodeURIComponent(t.id)}/pin`, "POST", { on });
 export const changeTier = (t: ListTask, tier: Tier, context: FeedbackContext) =>

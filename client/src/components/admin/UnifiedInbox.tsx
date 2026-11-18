@@ -1,5 +1,6 @@
 /**
- * One list of requests, feedback, and Sera tasks.
+ * One list of requests, feedback, and Sera tasks, with the role applications
+ * still waiting shown above it, open, whatever view is chosen (Rye, 16 Nov 2026).
  *
  * Each row opens the tab that already knows how to handle it. The kind of
  * list you were looking at stays in the address and on this device.
@@ -8,6 +9,8 @@ import { useEffect, useState } from "react";
 import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { storedText, writeStored } from "@/lib/safeStorage";
 import { requestRow } from "./waitingWork";
+import RoleApplicationsList from "./RoleApplicationsList";
+import { fetchWaitingRoleApplications, type RoleApplicationRow } from "./roleApplicationsWaiting";
 
 export type InboxKind = "all" | "requests" | "feedback" | "sera";
 
@@ -54,6 +57,13 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
   const [items, setItems] = useState<InboxItem[]>([]);
   const [kind, setKind] = useState<InboxKind>(() => inboxViewFrom(window.location.search));
   const [problem, setProblem] = useState<string | null>(null);
+  const [roleApps, setRoleApps] = useState<RoleApplicationRow[]>([]);
+
+  useEffect(() => {
+    let gone = false;
+    fetchWaitingRoleApplications(password).then((rows) => { if (!gone) setRoleApps(rows); }).catch(() => undefined);
+    return () => { gone = true; };
+  }, [password]);
 
   useEffect(() => {
     let gone = false;
@@ -84,6 +94,7 @@ export default function UnifiedInbox({ password, onOpen }: { password: string; o
 
   return (
     <section aria-label="Inbox" className="mt-4">
+      <div className="mb-4"><RoleApplicationsList rows={roleApps} /></div>
       <div className="flex flex-wrap gap-2">
         {(["all", "requests", "feedback", "sera"] as InboxKind[]).map((value) => (
           <button key={value} type="button" aria-pressed={kind === value} onClick={() => choose(value)} className="inline-flex min-h-[44px] items-center rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900">

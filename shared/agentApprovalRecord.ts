@@ -31,6 +31,7 @@ export interface ApprovalRecordPayload {
   method: string;
   /** Field names only. */
   changed: string[];
+  /** Who the agent SAYS approved it, and the agent's words for the approval: its claim, never verified. */
   approvedBy: string;
   approvalNote: string;
   /** The plain sentence written for the person who approved it; empty on a record made before it existed. */
@@ -88,13 +89,13 @@ export function readApprovalRecordPayload(raw: unknown): ApprovalRecordPayload |
  */
 export function approvalRecordDocument(p: ApprovalRecordPayload): { args: Record<string, unknown>; minimal: Record<string, unknown> } {
   const where = p.target ? ` (${p.target})` : "";
-  const title = `Agent change approved: ${p.what}${where}`.slice(0, 200);
+  const title = `Agent change, approval as the agent states it: ${p.what}${where}`.slice(0, 200);
   const keyPoints = [
     `What: ${p.what}${where}`,
     p.changed.length ? `Fields: ${p.changed.join(", ")}` : null,
-    `Approved by: ${p.approvedBy}`,
+    `The agent says ${p.approvedBy} approved it. No person confirmed this in the app.`,
     p.summary ? `Summary: ${p.summary}` : null,
-    `Approval: ${p.approvalNote}`,
+    `Approval, in the agent's words: ${p.approvalNote}`,
     `When: ${p.at}`,
     `Made by: the village connector, acting as the person who connected it`,
     `Record: ${p.writeKey}`,
@@ -103,10 +104,11 @@ export function approvalRecordDocument(p: ApprovalRecordPayload): { args: Record
     .join("\n");
   const args = {
     title,
-    summary: `${p.what}${where}, made through the village connector with approval from ${p.approvedBy}.`,
+    summary: `${p.what}${where}, made through the village connector, which says ${p.approvedBy} approved it.`,
     key_points: keyPoints,
     category: "Governance",
-    asserted_by: p.approvedBy,
+    // The agent asserts this record; the person it names did not confirm it here (audit, 15 Nov 2026).
+    asserted_by: "the village connector",
     source_date: p.at.slice(0, 10),
   };
   return { args, minimal: { title, key_points: keyPoints } };

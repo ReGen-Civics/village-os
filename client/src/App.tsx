@@ -183,6 +183,16 @@ const Admin = lazyPage(() => import("./pages/Admin"));
 const Profile = lazyPage(() => import("./pages/Profile"));
 const Characters = lazyPage(() => import("./pages/Characters"));
 const GeneKeys = lazyPage(() => import("./pages/GeneKeys"));
+// Rites and invitations (module `rites`): the joining flow's screens, drawn in the village's own look.
+const RitesWelcome = lazyPage(() => import("./pages/rites/Welcome"));
+const RitesComeAboard = lazyPage(() => import("./pages/rites/ComeAboard"));
+const RitesArrived = lazyPage(() => import("./pages/rites/Arrived"));
+const RitesCeremony = lazyPage(() => import("./pages/rites/Ceremony"));
+const RitesCard = lazyPage(() => import("./pages/rites/Card"));
+const RitesFleet = lazyPage(() => import("./pages/rites/Fleet"));
+const RitesHub = lazyPage(() => import("./pages/rites/RitesHub"));
+const RitesDoor = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Door })));
+const RitesPacket = lazyPage(() => import("./pages/rites/Door").then((m) => ({ default: m.Packet })));
 const Mint = lazyPage(() => import("./pages/Mint"));
 const ProposedChanges = lazyPage(() => import("./pages/ProposedChanges"));
 const PublicProfile = lazyPage(() => import("./pages/PublicProfile"));
@@ -247,6 +257,8 @@ const Badges = lazyPage(() => import("./pages/Badges"));
 const Powers = lazyPage(() => import("./pages/Powers"));
 // The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
 const PricingDeskPage = lazyPage(() => import("./pages/PricingDesk"));
+// The cash budget every member reads, and the holder of role.pay changes (budgets spec R23).
+const BudgetPage = lazyPage(() => import("./pages/Budget"));
 const Review = lazyPage(() => import("./pages/Review"));
 const Approvals = lazyPage(() => import("./pages/Approvals"));
 const CashPayouts = lazyPage(() => import("./pages/CashPayouts"));
@@ -261,6 +273,7 @@ const Crowdpool = lazyPage(() => import("./pages/Crowdpool"));
 const CrowdpoolCampaign = lazyPage(() => import("./pages/CrowdpoolCampaign"));
 const Journal = lazyPage(() => import("./pages/Journal"));
 const Protocols = lazyPage(() => import("./pages/Protocols"));
+const HiddenMap = lazyPage(() => import("./pages/HiddenMap"));
 const FundingRounds = lazyPage(() => import("./pages/FundingRounds"));
 const Sessions = lazyPage(() => import("./pages/Sessions"));
 const SessionRoom = lazyPage(() => import("./pages/SessionRoom"));
@@ -355,6 +368,7 @@ function Router() {
       <Route path="/badges" component={Badges} />
       <Route path="/powers" component={Powers} />
       <Route path="/pricing" component={PricingDeskPage} />
+      <Route path="/budget" component={BudgetPage} />
       <Route path="/review/structure/:batchId" component={StructureReview} />
       <Route path="/approvals" component={Approvals} />
       <Route path="/review" component={Review} />
@@ -397,6 +411,15 @@ function Router() {
           are here, not a separate account setting. */}
       <Route path="/profile/characters" component={Characters} />
       <Route path="/profile/gene-keys" component={GeneKeys} />
+      <Route path="/welcome" component={RitesWelcome} />
+      <Route path="/aboard" component={RitesComeAboard} />
+      <Route path="/aboard/welcome" component={RitesArrived} />
+      <Route path="/rites" component={RitesHub} />
+      <Route path="/rites/ceremony/:id" component={RitesCeremony} />
+      <Route path="/rites/packet" component={RitesPacket} />
+      <Route path="/card" component={RitesCard} />
+      <Route path="/fleet" component={RitesFleet} />
+      <Route path="/door/:code" component={RitesDoor} />
       {/* AFTER /profile/characters, and that order is the whole point: wouter
           takes the first match, so a :handle route above it would turn the
           class select into a lookup for a member called "characters". */}
@@ -458,6 +481,8 @@ function Router() {
       <Route path="/protocols/practice/:protocolId" component={Protocols} />
       <Route path="/protocols/run/:id" component={Protocols} />
       <Route path="/protocols" component={Protocols} />
+      {/* The members-only map of logged places, behind ModuleGate("hidden-map") and sign-in. */}
+      <Route path="/hidden-map" component={HiddenMap} />
       {/* The village chooses which quests to fund, within a pot. Behind
           ModuleGate("funding-rounds") and sign-in. */}
       <Route path="/funding-rounds" component={FundingRounds} />

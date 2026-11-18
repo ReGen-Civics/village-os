@@ -16,7 +16,9 @@
  * ── ONE CALENDAR ─────────────────────────────────────────────────────────
  *
  * A circle's rhythm is written into the village calendar with `calendarUpsert`
- * (source `sessions`, the circle's id, layer `circle`, kind `call`), so the
+ * (source `sessions`, layer `circle`, kind `call`; the source id is the
+ * circle's id for its first rhythm and `<circle>~<key>` for each further one,
+ * `rhythmSourceId`, so a circle with several rhythms has one gathering each), so the
  * Events calendar and its own feeds carry circle meetings with no second copy
  * of the arithmetic: the calendar expands the same `Recurrence` the rhythm
  * keeps, weekly weeks counted from the first meeting's week, skipped dates by
@@ -42,7 +44,7 @@ import * as rhythms from "../repos/sessionRhythm";
 import * as room from "../repos/liveSessions";
 import { ensureMemberNo, memberNo, type Outcome, type Refusal } from "./liveSessions";
 import { whileSessionHolds } from "./sessionHold";
-import { mapRhythm } from "./sessionRhythm";
+import { mapRhythm, rhythmsByCircle } from "./sessionRhythm";
 import { exportOwnCalendarsFor, importedRowsFor, ownCalendars, retireGoneCircleCalendars } from "./circleOwnCalendar";
 import { calendarIdFor, calendarRemoveMissing, calendarUpsert, type CalendarRow, type CalendarUpsertInput } from "./calendar";
 import { buildIcs } from "./icsFeed";
@@ -55,7 +57,7 @@ import { isAdmitted } from "./admission";
 import { GAME_CONFIG } from "../../shared/gameConfig";
 import { LIFECYCLE_RANK, type ModuleLifecycle } from "../../shared/modules";
 import { civilParts, type YearAnchor } from "../../shared/lunar";
-import { addDays, comingLink, meetingAt, nextMeetings, rhythmWords, type StoredRhythm } from "../../shared/sessionRhythm";
+import { addDays, comingLink, keyOf, meetingAt, namedRhythmWords, nextMeetings, rhythmSourceId, rhythmWords, type StoredRhythm } from "../../shared/sessionRhythm";
 import {
   CALENDAR_COPY,
   EVERY_CIRCLE,
@@ -63,7 +65,7 @@ import {
   cleanFollow,
   feedUrl,
   looksLikeFeedKey,
-  meetingTitle,
+  rhythmMeetingTitle,
   type FollowPayload,
 } from "../../shared/sessionCalendar";
 
@@ -136,10 +138,10 @@ function mirrorBase(r: StoredRhythm, zone: string): string {
 export function mirrorInput(r: StoredRhythm, circleName: string, zone: string): Omit<CalendarUpsertInput, "sourceModule"> {
   const startsAt = meetingAt(mirrorBase(r, zone), r.time, zone);
   return {
-    sourceId: r.circleId,
+    sourceId: rhythmSourceId(r.circleId, keyOf(r)),
     kind: "call",
     layer: "circle",
-    title: meetingTitle(circleName),
+    title: rhythmMeetingTitle(circleName, r.name),
     description: CALENDAR_COPY.feedDescription,
     startsAt,
     endsAt: new Date(startsAt.getTime() + r.durationMin * 60_000),
@@ -218,8 +220,9 @@ async function mirrorOnce(pool: Pool, deps: CalendarDeps): Promise<{ written: nu
     const r = mapRhythm(row);
     const circle = live.get(r.circleId);
     if (!circle) continue;
-    await calendarUpsert(pool, { ...mirrorInput(r, circle.name, zone), sourceModule: MIRROR_SOURCE });
-    keep.push(r.circleId);
+    const input = mirrorInput(r, circle.name, zone);
+    await calendarUpsert(pool, { ...input, sourceModule: MIRROR_SOURCE });
+    keep.push(input.sourceId);
   }
   return { written: keep.length, retired: await calendarRemoveMissing(pool, MIRROR_SOURCE, keep) };
 }
@@ -237,10 +240,12 @@ async function followsOf(pool: Pool, no: number | null): Promise<{ all: boolean;
 export async function followFor(pool: Pool, who: { userId: string }, deps: CalendarDeps): Promise<FollowPayload> {
   const no = await memberNo(pool, who.userId);
   const { all, ids } = await followsOf(pool, no);
-  const words = new Map((await rhythms.rhythmRows(pool)).map((row) => {
-    const r = mapRhythm(row);
-    return [r.circleId, rhythmWords(r)] as const;
-  }));
+  const words = new Map(
+    Array.from(rhythmsByCircle(await rhythms.rhythmRows(pool))).map(([circleId, rs]) => [
+      circleId,
+      rs.length === 1 && !rs[0].name ? rhythmWords(rs[0]) : rs.map((r) => namedRhythmWords(r)).join("; "),
+    ] as const),
+  );
   const [key] = no == null ? [] : await store.keyRow(pool, no);
   return {
     circles: deps.circles().map((c) => ({ id: c.id, name: c.name, anchor: c.anchor === true, followed: all || ids.has(c.id), rhythm: words.get(c.id) ?? null })),

@@ -25,6 +25,7 @@ import { suggestValuation, wholeMoney } from "@shared/valuationEngine";
 import { REASON_CODES } from "@shared/valuationSetting";
 import ValuationReceipt from "./ValuationReceipt";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
+import NoSignBandNote from "./NoSignBandNote";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 type ModelRead = { model: ValuationModel; eeMeaningWritten: boolean; tokenNames: Record<string, string>; payDoor?: PayDoor };
@@ -180,6 +181,7 @@ export default function RolePayWithEngine({ role, call, onSaved }: { role: { id:
             </label>
             {choice === "own" && <input className={field} inputMode="decimal" aria-label={t({ message: "Your figure", context: "role pay" })} value={own} onChange={(e) => setOwn(e.target.value)} />}
           </fieldset>
+          <NoSignBandNote model={model} />
           {figure !== null && (
             <p className="text-sm text-muted-foreground">
               {outside

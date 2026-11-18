@@ -18,12 +18,27 @@
  *   - and in every case 90 days after the decision, including for somebody who
  *     joined: their written application stays, their voice goes.
  *
- * THE KEPT RECORDING REACHES NO ASSISTANT, agent tool or prompt. It is served
- * by two doors, to the deciders and to the village's admins (admin or founder),
- * and never to an agent caller (server/lib/voiceForViewer.ts). The LIVE sound is heard by
- * the browser's speech service while they talk (Google's in Chrome, Apple's
- * in Safari; see MicButton), which is how the words are written down; the
- * card says so.
+ * AN AI SERVICE MAY WRITE A RECORDING DOWN (the lead, 17 Nov 2026: "It's
+ * okay for them to reach an AI assistant, let's make it all work!"). Two ways
+ * turn what they say into words, and the card says both:
+ *
+ *   - the browser's own speech service hears the LIVE sound while they talk
+ *     (Google's in Chrome, Apple's in Safari; see MicButton);
+ *   - where the browser has none (Firefox, some phones), or it caught too
+ *     little, the applicant may press "Write down my words" and that one take
+ *     goes to the village's transcription service, an AI service the village's
+ *     admins switch on under Integrations (server/lib/voiceTranscription.ts,
+ *     shared/voiceTranscribe.ts). The words come back to their page to read and
+ *     fix before Send; the service's copy is not kept by us, and nothing is
+ *     sent there while the service is off.
+ *
+ *   The words, as the applicant corrected them, may also be summarised by the
+ *   village's AI guide into draft answers ("Draft my answers", shared/voiceDrafts.ts).
+ *
+ * THE KEPT RECORDING IS HEARD BY PEOPLE. Once sent with the application it is
+ * served by two doors, to the deciders and to the village's admins (admin or
+ * founder), and never to an agent caller or an assistant's tools
+ * (server/lib/voiceForViewer.ts).
  *
  * A RECORDING IS WHAT ITS BYTES SAY: WebM, Ogg or MP4 audio, read from the
  * first bytes, never from the name or the browser's word for it.
@@ -120,6 +135,21 @@ export interface VoiceClip extends VoiceNote {
   words: string;
 }
 
+/**
+ * A kept recording written down by an AI service after it was sent, at an
+ * admin's or a decider's press (the lead, 17 Nov 2026: "Transcribe them!
+ * They've personally consented with me."; shared/voiceTranscribe.ts). Always
+ * shown as an AI transcript, never as the applicant's own words, and it goes
+ * with the recording: `clearVoiceOf` takes the whole voice part.
+ */
+export interface WrittenWords {
+  text: string;
+  /** When it was written down, ISO. */
+  at: string;
+  /** Which service wrote it down (shared/voiceTranscribe.ts TranscriptionProviderId). */
+  by: string;
+}
+
 /** What the proposal keeps: the tick, the recordings and the words the browser heard, as the applicant corrected them. */
 export interface StoredVoice {
   consent: true;
@@ -127,6 +157,27 @@ export interface StoredVoice {
   transcript: string;
   /** Clips beside answers, when they recorded any. */
   clips?: VoiceClip[];
+  /** AI transcripts of kept recordings and clips, by recording id. */
+  written?: Record<string, WrittenWords>;
+}
+
+/** The most words one AI transcript of a kept recording holds. */
+export const VOICE_WRITTEN_MAX = 6000;
+const WRITTEN_BY = /^[a-z]{2,12}$/;
+
+/** The AI transcripts kept with a voice part, only for recordings it still holds. Never throws. */
+export function writtenWordsOf(raw: unknown, ids: ReadonlySet<string>): Record<string, WrittenWords> {
+  const o = raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const out: Record<string, WrittenWords> = {};
+  for (const [id, w] of Object.entries(o)) {
+    if (!VOICE_NOTE_ID.test(id) || !ids.has(id) || !w || typeof w !== "object") continue;
+    const one = w as Record<string, unknown>;
+    const text = typeof one.text === "string" ? one.text.slice(0, VOICE_WRITTEN_MAX) : "";
+    const at = typeof one.at === "string" && !Number.isNaN(Date.parse(one.at)) ? one.at : "";
+    const by = typeof one.by === "string" && WRITTEN_BY.test(one.by) ? one.by : "";
+    if (text.trim() && at && by) out[id] = { text, at, by };
+  }
+  return out;
 }
 
 /** One clip as the form describes it beside its bytes. */
@@ -197,6 +248,14 @@ export const VOICE_WORDS = {
   micBlocked: "The microphone is blocked for this site. Allow it in your browser settings, or type your answers.",
   noMic: "No microphone was found on this device. Typing works just as well.",
   nearEnd: "About 30 seconds left in this recording.",
+  // When a recording ends or plays other than as planned (an applicant, 17 Nov 2026): what happened, and what to do.
+  noEngine: "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it.",
+  reachedLimit: `That recording reached the ${VOICE_NOTE_MAX_SECONDS / 60}-minute limit and stopped by itself. It is kept below. Record another to keep going.`,
+  cutShort: "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing.",
+  emptyTake: "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again.",
+  cantPlay: "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device.",
+  saveCopy: "Save a copy",
+  heardNothing: "Your browser didn't write any words down this time. Type a few lines about what you said, or leave this empty: your recording is enough.",
   // Refusals, each with what to do.
   tooMany: `Send up to ${VOICE_NOTES_MAX} recordings.`,
   tooBig: "One recording is too large. Record a shorter one.",
@@ -288,5 +347,6 @@ export function storedVoiceOf(raw: unknown): StoredVoice | null {
     .filter((c): c is VoiceClip => !!c)
     .slice(0, VOICE_CLIPS_CEILING);
   if (!notes.length && !transcript.trim() && !clips.length) return null;
-  return { consent: true, notes, transcript, ...(clips.length ? { clips } : {}) };
+  const written = writtenWordsOf(o.written, new Set([...notes.map((n) => n.id), ...clips.map((c) => c.id)]));
+  return { consent: true, notes, transcript, ...(clips.length ? { clips } : {}), ...(Object.keys(written).length ? { written } : {}) };
 }

@@ -98,7 +98,16 @@ const arrivals: Array<{ prefix: string; run: InvitedArrival }> = [];
  * name and address the person sent, so they finish rather than start again.
  * Read only behind a good token, the one-use link that went to that address.
  */
-export type InviteFor = { roles: string[]; name: string | null; email: string | null };
+export type InviteFor = {
+  roles: string[];
+  name: string | null;
+  email: string | null;
+  /**
+   * The link went to `email` by mail and was handed to nobody else, so an account made through it at that same
+   * address starts proved (server/routes/register.ts). Absent or false: it proves nothing about any address.
+   */
+  mailed?: boolean;
+};
 export type InviteDescriber = (inviteId: string) => Promise<InviteFor | null>;
 const describers: Array<{ prefix: string; describe: InviteDescriber }> = [];
 

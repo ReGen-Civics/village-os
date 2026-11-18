@@ -14,13 +14,14 @@
  * role's card opens below, piece by piece. A phone opens on the team alone,
  * one thing at a time; a desktop opens on the first role's card.
  */
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { RoleFill } from "@shared/commitmentRange";
 import FoundingLineup, { type FilledRole, type LineupView } from "./FoundingLineup";
 import FullRoleCard from "./FullRoleCard";
+import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
 import { useWide } from "./useWide";
 
 /** The Seed of Life as quiet line work: structure, never ornament that moves. */
@@ -65,6 +66,9 @@ export default function FoundingTeam({
   filled = [],
   fill = {},
   laterCount = 0,
+  builds = {},
+  onOpenBuilt,
+  orgPreview = null,
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -76,6 +80,12 @@ export default function FoundingTeam({
   fill?: Record<string, RoleFill>;
   /** The listed roles that open after this team (Rye, 14 Nov 2026), shown under it at #opening-next. */
   laterCount?: number;
+  /** The coming-soon roles each lead will build, by the lead's role id (Rye, 16 Nov 2026). */
+  builds?: Record<string, BuiltRole[]>;
+  /** Opens a built role's own card on the page. */
+  onOpenBuilt?: (id: string) => void;
+  /** The org chart beside the roles held now (Rye, 16 Nov 2026): one link into /circles. */
+  orgPreview?: ReactNode;
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -126,6 +136,7 @@ export default function FoundingTeam({
         <FoundingLineup
           roles={roles}
           filled={filled}
+          orgPreview={orgPreview}
           fill={fill}
           view={view}
           onView={setView}
@@ -149,7 +160,10 @@ export default function FoundingTeam({
         />
         <div id={`${headingId}-card`} tabIndex={-1} className="scroll-mt-24 focus:outline-none" data-founding-card-slot="">
           {current ? (
-            <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
+            <>
+              <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
+              {onOpenBuilt && <LeadBuilds leadName={String(current.seat.name ?? "")} roles={builds[String(current.seat.id)] ?? []} onOpen={onOpenBuilt} />}
+            </>
           ) : wide ? (
             <p className="rounded-2xl border border-dashed border-notice/40 p-8 text-muted-foreground">{t({ message: "Choose a role to read it in full.", context: "founding team, no role open" })}</p>
           ) : null}

@@ -52,7 +52,9 @@ launch, `members` takes a `module.switch` holder or a vote.
    who voids and reissues their own invoice and sends it again with its new number.
 7. Finance pays outside the platform.
 8. Finance records the transfer on the existing `POST /api/cash-owed/transfers`. When every row an invoice wrote is
-   paid, the invoice reads Paid and the member reads "Your pay is sent on" the date.
+   paid, the invoice reads Paid and the member reads "Your pay is sent on" the date. An invoice with no cash share
+   (every pay line all Earned Equity and Credits) writes no row, so it reads Paid once each token share it owes has
+   posted through the ledger, and at approval when it owes none (`noCashInvoicePaidFrom`, `settleNoCashInvoices`).
 
 ## The rules the contract holds
 
@@ -142,7 +144,9 @@ a recap still sends.
 - Someone holds `cash.pay` (the Treasury role, and the founding stewards at launch).
 - The `payers` and `moon-review-settings` documents are filled on the Cash payouts desk (see
   `docs/FORK_RUNBOOK.md`). Entity, country, tax and rate names live there and nowhere in code.
-- Roles paid through this flow carry no `org_roles.cash_minor`, so the hourly settlement never owes them.
+- The hourly settlement never owes a role cash (pay defect 2, 18 Nov 2026). A person holding a role that states
+  `org_roles.cash_minor` with no adopted application is owed nothing and is listed on the launch journey
+  (`pay:unpriced-seats`, `cashSeatsWithoutTerms` in `server/lib/cashOwed.ts`) for the Treasurer to set terms.
 
 ## Erasure and export
 

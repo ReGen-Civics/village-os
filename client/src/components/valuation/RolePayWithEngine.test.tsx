@@ -16,7 +16,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RolePayWithEngine from "./RolePayWithEngine";
-import { modelForVillage } from "@shared/valuationEngine";
+import { modelForVillage, suggestValuation } from "@shared/valuationEngine";
 
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
@@ -26,11 +26,11 @@ const MODEL = {
   bands: [{ key: "general", label: "General help", hourValueMinor: 155455, source: { sentence: "Decree 45303-MTSS", date: "2026-10-31" } }],
 };
 
-const setup = (put: (body: any) => any = () => ({ state: "set" })) => {
+const setup = (put: (body: any) => any = () => ({ state: "set" }), model: typeof MODEL = MODEL) => {
   const calls: Array<{ path: string; body: any; method?: string }> = [];
   const call = vi.fn(async (path: string, body?: any, method?: string) => {
     calls.push({ path, body, method });
-    if (path === "/valuation/model") return { model: MODEL, eeMeaningWritten: true, tokenNames: { credits: "Village Credits", "earned-equity": "Earned Equity", "village-voice": "Village Voice" } };
+    if (path === "/valuation/model") return { model, eeMeaningWritten: true, tokenNames: { credits: "Village Credits", "earned-equity": "Earned Equity", "village-voice": "Village Voice" } };
     return put(body);
   });
   render(<RolePayWithEngine role={{ id: "garden-steward", name: "Garden Steward" }} call={call} onSaved={() => {}} />);
@@ -82,6 +82,26 @@ describe("setting a role's pay with the valuation engine", () => {
     expect(receipt).toMatch(/Base price/);
     expect(receipt).not.toMatch(/\bhours?\b/i);
     expect(receipt).not.toContain("1,554");
+  });
+
+  it("judges a figure against the village's own band, 20% under the suggestion up to the suggestion itself", async () => {
+    const banded = { ...MODEL, engine: { bandBelowPct: 20, bandAbovePct: 0 } };
+    const expected = (suggestValuation(banded, { kind: "role", lines: [{ band: "general", payee: "lead", estimatedHours: 20 }], responsibility: "none" }, { eeMeaningWritten: true }) as any).payees[0].expected.totalMinor as number;
+    const whole = (minor: number) => String(Math.floor(minor / 100));
+    setup(undefined, banded);
+    const user = userEvent.setup();
+    await screen.findByText("Kind of work");
+    await user.type(screen.getByLabelText(/Estimated effort for the moon/), "20");
+    await user.click(screen.getByRole("button", { name: "Show the suggestion" }));
+    expect(screen.getByText(/The band runs from 20% under the suggestion up to the suggestion itself/)).toBeTruthy();
+    await user.click(screen.getByLabelText("My own figure"));
+    // 85% of the suggestion: inside this band, outside the platform's 10% one.
+    await user.type(screen.getByLabelText("Your figure"), whole(Math.ceil(expected * 0.85)));
+    expect(screen.getByText(/inside the suggestion's band, so your word sets it/)).toBeTruthy();
+    // A little over the suggestion: outside, because the band stops at the suggestion.
+    await user.clear(screen.getByLabelText("Your figure"));
+    await user.type(screen.getByLabelText("Your figure"), whole(expected * 1.05));
+    expect(screen.getByText(/A second Treasurer or a steward then signs it/)).toBeTruthy();
   });
 
   it("says the village has not set its rates, and where, when there are none", async () => {

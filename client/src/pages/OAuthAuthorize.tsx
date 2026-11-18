@@ -16,17 +16,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { PageLanguageBar } from "@/i18n/PageLanguageBar";
 
-type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable";
+type OfferedScope = "moon.read" | "moon.write" | "tasks.write" | "moon.review" | "admin" | "sera.undoable" | "sessions.write";
 interface Offer { scope: OfferedScope; write: boolean; ticked: boolean }
 interface Request { clientName: string; redirectHost: string; scopes: Offer[] }
 
 const SCOPE_WORDS: Record<OfferedScope, string> = {
   "moon.read": "Read your moon, your roles, the season and your task board",
   "moon.write": "Draft your own moon: import a moon pack, change an item, set next moon's goals, each after your yes",
-  "tasks.write": "Mark your own board tasks Done, Let go or Undo, each one after your yes",
+  "tasks.write": "Mark your own board tasks Done, Let go or Undo, and hand a task to a role, each one after your yes",
   "moon.review": "If you review recaps: read the review queue and the role signals, never with amounts",
   admin: "As you, an admin: call the admin paths this village opened to agents, each write after a confirm. Erasure, powers, money and secrets stay with people",
   "sera.undoable": "Sera's tools for this agent account: links, suggestions and drafts, each one undoable for 30 days",
+  "sessions.write": "Add items to the agenda library for a circle's sessions, each one after your yes",
 };
 
 export default function OAuthAuthorize() {
@@ -114,7 +115,7 @@ export default function OAuthAuthorize() {
             ))}
           </fieldset>
           <p className="text-sm text-muted-foreground">
-            It never sends, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
+            It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
           </p>
           <div className="flex flex-wrap gap-3">
             <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className="min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">Allow</button>

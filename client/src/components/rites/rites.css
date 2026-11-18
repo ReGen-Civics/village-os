@@ -1,0 +1,354 @@
+/*
+ * THE RITES SCREENS' WORLD: the approved onboarding components, scoped to
+ * `.rites` and carrying NO colour of their own.
+ *
+ * Every colour is a Village OS slot or a game token that falls back to one.
+ * The scope also carries `sheet-night`, so a village that sets nothing gets
+ * the platform's night world; a village's `look` (its rites document) sets
+ * the slots and tokens inline on the scope, which wins for everything inside.
+ * A theme-frozen surface, like the sheet: one palette, its own contrast pass.
+ */
+.rites {
+  --font-label: var(--font-display);
+  --surface-deep: var(--background);
+  --paper: var(--tone-cream, var(--card));
+  --paper-2: var(--paper);
+  --paper-foreground: var(--card-foreground, var(--foreground));
+  --paper-muted: var(--muted-foreground);
+  --success: var(--chart-3, var(--primary));
+  --ceremony: var(--secondary, var(--primary));
+  --seal: var(--primary);
+  --stamp-alt: var(--success);
+  --glow: var(--muted);
+  --place-phone: var(--chart-2, var(--primary));
+  --place-site: var(--primary);
+  --place-gathering: var(--ceremony);
+  min-height: 100vh;
+  background: var(--surface-deep);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.rites *,
+.rites *::before,
+.rites *::after { box-sizing: border-box; }
+.rites img { display: block; max-width: 100%; }
+.rites h1, .rites h2, .rites h3 { font-family: var(--font-display); font-weight: 400; margin: 0; line-height: 1.12; letter-spacing: .005em; }
+.rites h1 { font-size: 34px; }
+.rites h2 { font-size: 26px; }
+.rites h3 { font-size: 20px; }
+.rites p { margin: 0; }
+.rites a { color: inherit; }
+.rites button { font: inherit; color: inherit; }
+
+.rites .app { max-width: 430px; margin: 0 auto; min-height: 100vh; position: relative; overflow: hidden;
+  background: radial-gradient(120% 60% at 50% 0%, var(--glow) 0%, var(--background) 60%) var(--background); padding-bottom: 28px; }
+.rites .app.has-nav { padding-bottom: 96px; }
+.rites .pad { padding: 0 20px; }
+.rites .sc { font-family: var(--font-label); letter-spacing: .08em; font-size: 14px; color: var(--tone-brand-soft); }
+.rites .muted { color: var(--muted-foreground); }
+.rites .small { font-size: 13.5px; }
+.rites .tiny { font-size: 12px; }
+.rites .center { text-align: center; }
+
+/* top bar */
+.rites .topbar { display: flex; align-items: center; gap: 10px; padding: 14px 20px 10px; position: relative; z-index: 2; }
+.rites .topbar .name { font-family: var(--font-display); font-size: 19px; }
+.rites .topbar .sp { flex: 1; }
+.rites .sigil { width: 30px; height: 30px; color: var(--primary); flex: 0 0 auto; }
+.rites .sigil img, .rites .sigil svg { width: 100%; height: 100%; object-fit: contain; }
+
+/* place chips */
+.rites .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  padding: 4px 10px; border-radius: 99px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--foreground); white-space: nowrap; }
+.rites .chip i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.rites .chip.phone i { background: var(--place-phone); }
+.rites .chip.site i { background: var(--place-site); }
+.rites .chip.gathering i { background: var(--place-gathering); }
+.rites .chip.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 40%, transparent); }
+.rites .chip.off { color: var(--tone-brand-soft); border-color: color-mix(in srgb, var(--primary) 45%, transparent); }
+
+/* buttons */
+.rites .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 52px; border-radius: 14px; border: 0;
+  font: 600 16.5px/1 var(--font-body); cursor: pointer; text-decoration: none; padding: 0 18px; }
+.rites .btn:disabled { opacity: .55; cursor: default; }
+.rites .btn.gold { background: linear-gradient(180deg, var(--tone-brand-soft), var(--primary)); color: var(--primary-foreground);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 25%, transparent), inset 0 1px 0 rgba(255,255,255,.5); }
+.rites .btn.gold:hover:not(:disabled) { background: var(--primary); }
+.rites .btn.ghost { background: transparent; color: var(--foreground); border: 1.5px solid color-mix(in srgb, var(--foreground) 35%, transparent); }
+.rites .btn.ember { background: linear-gradient(180deg, color-mix(in srgb, var(--ceremony) 75%, white), var(--ceremony)); color: var(--primary-foreground); }
+.rites .btn.small { min-height: 40px; font-size: 14px; border-radius: 11px; width: auto; padding: 0 14px; }
+.rites .btn.light { background: #fff; color: #1f1f1f; }
+.rites :focus-visible { outline: 2px solid var(--ring, var(--primary)); outline-offset: 2px; }
+
+/* panels */
+.rites .panel { background: color-mix(in srgb, var(--card) 55%, transparent); border: 1px solid var(--border); border-radius: 18px; padding: 16px; }
+.rites .parch { background: linear-gradient(180deg, var(--paper), var(--paper-2)); color: var(--paper-foreground); border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px color-mix(in srgb, var(--paper-muted) 18%, transparent), inset 0 0 60px color-mix(in srgb, var(--paper-muted) 18%, transparent); }
+.rites .parch .muted { color: var(--paper-muted); }
+.rites .hand { font-family: var(--font-accent); font-size: 25px; line-height: 1.2; color: var(--paper-foreground); }
+
+/* hero photo */
+.rites .hero { position: relative; }
+.rites .hero img { width: 100%; height: 340px; object-fit: cover; }
+.rites .hero::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--background) 0%, transparent) 35%, color-mix(in srgb, var(--background) 75%, transparent) 75%, var(--background) 100%); }
+.rites .hero .over { position: absolute; left: 20px; right: 20px; bottom: 18px; z-index: 2; }
+
+/* pulse feed */
+.rites .pulse { list-style: none; margin: 0; padding: 0; }
+.rites .pulse li { display: flex; gap: 12px; align-items: flex-start; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14.5px; }
+.rites .pulse li:first-child { border-top: 0; }
+.rites .pulse .dot { flex: 0 0 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; background: var(--muted); color: var(--tone-brand-soft); }
+.rites .pulse .when { margin-left: auto; color: var(--muted-foreground); font-size: 12px; white-space: nowrap; padding-left: 8px; }
+.rites .live { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--success); font-weight: 600; }
+.rites .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 18%, transparent); }
+
+/* numbers row */
+.rites .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rites .nums div { text-align: center; padding: 10px 4px; border-radius: 12px; background: rgba(0,0,0,.06); }
+.rites .nums b { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 400; line-height: 1; }
+.rites .nums span { font-size: 11.5px; letter-spacing: .02em; }
+
+/* steps */
+.rites .steps { list-style: none; margin: 0; padding: 0; }
+.rites .steps li { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); }
+.rites .steps li:first-child { border-top: 0; }
+.rites .steps .n { flex: 0 0 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--primary); color: var(--tone-brand-soft); display: grid; place-items: center; font-family: var(--font-display); font-size: 18px; }
+.rites .steps .t { flex: 1; }
+.rites .steps .t b { display: block; font-weight: 600; font-size: 15px; }
+.rites .steps .t span { font-size: 13px; color: var(--muted-foreground); }
+
+/* avatar */
+.rites .av { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font: 600 16px var(--font-body); color: var(--primary-foreground); flex: 0 0 auto; overflow: hidden;
+  background: linear-gradient(135deg, var(--tone-brand-soft), var(--primary)); box-shadow: 0 0 0 2px var(--background), 0 0 0 3.5px color-mix(in srgb, var(--primary) 60%, transparent); }
+.rites .av img { width: 100%; height: 100%; object-fit: cover; }
+.rites .av.g { background: linear-gradient(135deg, color-mix(in srgb, var(--success) 55%, white), var(--success)); }
+.rites .av.b { background: linear-gradient(135deg, color-mix(in srgb, var(--place-phone) 55%, white), var(--place-phone)); }
+.rites .av.lg { width: 56px; height: 56px; font-size: 21px; }
+
+/* stamps */
+.rites .stamps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 14px; padding: 0 6px; }
+.rites .stamp { aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed color-mix(in srgb, var(--paper-muted) 35%, transparent); display: grid; place-items: center; text-align: center;
+  font: 600 9px/1.1 var(--font-body); color: var(--paper-muted); padding: 4px; text-transform: uppercase; letter-spacing: .02em; }
+.rites .stamp.next { border: 2px dashed var(--primary); color: var(--paper-foreground); background: color-mix(in srgb, var(--primary) 10%, transparent); }
+.rites .stamp.on { border: 2px solid var(--seal); color: var(--seal); background: color-mix(in srgb, var(--seal) 7%, transparent); transform: rotate(-8deg); }
+.rites .stamp.on.g { border-color: var(--stamp-alt); color: var(--stamp-alt); background: color-mix(in srgb, var(--stamp-alt) 8%, transparent); transform: rotate(6deg); }
+.rites .stamp.new { box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 35%, transparent); animation: rites-stamp 350ms cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes rites-stamp { from { transform: scale(1.3) rotate(-8deg); opacity: 0; } to { transform: rotate(-8deg); opacity: 1; } }
+
+/* the card */
+.rites .pcard { padding: 18px; border-radius: 20px; }
+.rites .pcard .row { display: flex; align-items: center; gap: 14px; }
+.rites .pcard .mark { width: 64px; height: 64px; border-radius: 14px; border: 1.5px dashed color-mix(in srgb, var(--paper-muted) 45%, transparent); display: grid; place-items: center; color: var(--paper-muted); font-size: 10px; text-align: center; padding: 4px; line-height: 1.15; flex: 0 0 auto; }
+.rites .pcard .mark.made { border-style: solid; border-color: color-mix(in srgb, var(--seal) 40%, transparent); color: var(--seal); }
+.rites .pcard .mark svg { width: 52px; height: 52px; }
+.rites .pcard .stage { font-family: var(--font-label); letter-spacing: .1em; font-size: 13px; color: var(--seal); }
+.rites .pcard .nm { font-family: var(--font-display); font-size: 30px; line-height: 1; }
+.rites .pcard .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+.rites .pcard .meta div { background: color-mix(in srgb, var(--paper-muted) 8%, transparent); border-radius: 12px; padding: 9px 12px; }
+.rites .pcard .meta b { display: block; font-family: var(--font-display); font-size: 26px; font-weight: 400; line-height: 1; }
+.rites .pcard .meta span { font-size: 11.5px; color: var(--paper-muted); letter-spacing: .04em; text-transform: uppercase; font-weight: 600; }
+
+/* bottom nav */
+.rites .nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 430px; display: grid;
+  background: color-mix(in srgb, var(--surface-deep) 94%, transparent); backdrop-filter: blur(10px); border-top: 1px solid var(--border); padding: 8px 6px 18px; z-index: 20; }
+.rites .nav a { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; color: var(--muted-foreground); text-decoration: none; }
+.rites .nav a svg { width: 24px; height: 24px; }
+.rites .nav a.on { color: var(--tone-brand-soft); }
+
+/* banner, notes, form */
+.rites .banner { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--card); border: 1px solid color-mix(in srgb, var(--success) 25%, transparent); }
+.rites .note { font-size: 13.5px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--foreground) 6%, transparent); border: 1px solid var(--border); }
+.rites .note.err { border-color: color-mix(in srgb, var(--ceremony) 55%, transparent); }
+.rites label.f { display: block; font-size: 13.5px; font-weight: 600; margin: 16px 0 6px; color: var(--foreground); }
+.rites .in { width: 100%; min-height: 50px; border-radius: 12px; border: 1.5px solid color-mix(in srgb, var(--foreground) 22%, transparent); background: rgba(0,0,0,.25); color: var(--foreground);
+  font: 16px var(--font-body); padding: 13px 14px; color-scheme: dark; }
+.rites .in:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent); }
+.rites textarea.in { min-height: 96px; resize: vertical; line-height: 1.4; }
+.rites .or { display: flex; align-items: center; gap: 10px; color: var(--muted-foreground); font-size: 12.5px; margin: 16px 0; }
+.rites .or::before, .rites .or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.rites .opt { display: flex; gap: 12px; align-items: center; padding: 13px 14px; border-radius: 14px; border: 1.5px solid color-mix(in srgb, var(--foreground) 18%, transparent); margin-top: 8px; width: 100%; text-align: left; background: transparent; cursor: pointer; }
+.rites .opt .r { width: 22px; height: 22px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--foreground) 40%, transparent); flex: 0 0 auto; }
+.rites .opt.sel { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, transparent); }
+.rites .opt.sel .r { border: 6px solid var(--primary); }
+.rites .opt b { display: block; font-size: 15px; }
+.rites .opt span.l { display: block; font-size: 12.5px; line-height: 1.35; color: var(--muted-foreground); }
+.rites .road4 { display: flex; align-items: center; gap: 6px; margin: 4px 20px 18px; }
+.rites .road4 .d { flex: 1; height: 5px; border-radius: 5px; background: color-mix(in srgb, var(--foreground) 15%, transparent); }
+.rites .road4 .d.on { background: var(--primary); }
+.rites .lbls { display: flex; justify-content: space-between; margin: -10px 20px 18px; font-size: 11px; color: var(--muted-foreground); }
+.rites .lbls b { color: var(--tone-brand-soft); font-weight: 600; }
+
+/* 01 letter */
+.rites .letter { margin: 6px 16px 0; overflow: hidden; }
+.rites .letter img { height: 210px; width: 100%; object-fit: cover; border-radius: 16px 16px 0 0; }
+.rites .letter .body { padding: 18px 22px 22px; }
+.rites .rule { height: 1px; background: color-mix(in srgb, var(--paper-muted) 25%, transparent); margin: 16px 0; }
+.rites .seal { width: 112px; height: 112px; margin: 24px auto 0; position: relative; z-index: 3; border-radius: 50%; display: grid; place-items: center; border: 0; cursor: pointer;
+  color: color-mix(in srgb, var(--seal) 30%, white);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--seal) 75%, white 10%), var(--seal) 55%, color-mix(in srgb, var(--seal) 60%, black));
+  box-shadow: 0 10px 24px rgba(0,0,0,.5), inset 0 -6px 14px rgba(0,0,0,.35), inset 0 4px 8px rgba(255,255,255,.18);
+  clip-path: polygon(50% 0,61% 4%,72% 2%,79% 10%,90% 12%,93% 23%,100% 32%,97% 44%,100% 55%,94% 65%,95% 77%,85% 83%,80% 94%,68% 94%,58% 100%,47% 96%,36% 100%,27% 93%,15% 92%,11% 81%,2% 74%,4% 62%,0 50%,5% 39%,2% 27%,11% 19%,13% 8%,25% 7%,34% 0,43% 4%); }
+.rites .seal .s { width: 62px; height: 62px; }
+.rites .seal.broken { animation: rites-seal 600ms ease-out forwards; }
+@keyframes rites-seal { to { transform: scale(.6) rotate(18deg); opacity: 0; } }
+
+/* 02 welcome */
+.rites .welcome .hero img { height: 460px; object-position: 82% 50%; }
+.rites .welcome .hero h1 { font-size: 40px; text-shadow: 0 2px 18px rgba(0,0,0,.6); }
+.rites .lede { font-size: 17px; margin-top: 10px; color: color-mix(in srgb, var(--foreground) 92%, var(--primary)); text-shadow: 0 1px 10px rgba(0,0,0,.7); }
+.rites .welcome-from { display: flex; gap: 10px; align-items: center; margin: 0 20px 16px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--foreground) 6%, transparent); border: 1px solid var(--border); }
+.rites .road { display: grid; gap: 10px; }
+.rites .roadcard, .rites .door { display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 16px; background: rgba(255,255,255,.035); border: 1px solid var(--border); text-align: left; width: 100%; color: inherit; text-decoration: none; }
+.rites .door { background: color-mix(in srgb, var(--primary) 6%, transparent); border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent); cursor: pointer; }
+.rites .roadcard .ic, .rites .door .ic, .rites .icbox { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); }
+.rites .roadcard .ic svg, .rites .door .ic svg, .rites .icbox svg { width: 26px; height: 26px; }
+.rites .doors { display: grid; gap: 10px; }
+.rites .door b { font-size: 16px; }
+.rites .fogmap { position: relative; height: 170px; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); margin-top: 10px;
+  background: radial-gradient(60% 80% at 30% 40%, var(--glow), var(--surface-deep) 70%); }
+.rites .fogmap > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.rites .fogmap .lk { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--surface-deep) 20%, transparent), color-mix(in srgb, var(--surface-deep) 85%, transparent)); }
+.rites .fogmap .lk .l { width: 46px; height: 46px; margin: 0 auto 6px; color: var(--primary); }
+.rites .fogmap .lk .l svg { width: 100%; height: 100%; }
+.rites .art { padding: 18px; }
+.rites .art ol { margin: 10px 0 0; padding-left: 22px; font-size: 15px; list-style: decimal; }
+.rites .art li { margin: 6px 0; }
+.rites section.s { margin-top: 26px; }
+.rites .sh { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+@media (min-width: 900px) {
+  .rites .welcome.app { max-width: none; padding: 0 0 40px; }
+  .rites .welcome .wrap { max-width: 1240px; margin: 0 auto; padding: 0 40px; }
+  .rites .welcome .topbar { max-width: 1240px; margin: 0 auto; padding: 18px 40px; }
+  .rites .welcome .wgrid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 28px; align-items: start; }
+  .rites .welcome .hero { border-radius: 24px; overflow: hidden; }
+  .rites .welcome .hero img { height: 560px; object-position: 50% 50%; }
+  .rites .welcome .hero h1 { font-size: 58px; }
+  .rites .welcome .lede { font-size: 20px; max-width: 560px; }
+  .rites .welcome .hero .over { left: 36px; bottom: 32px; right: 36px; }
+  .rites .welcome .hero .over .btn { max-width: 320px; }
+  .rites .welcome .welcome-from { margin: 0 0 16px; }
+  .rites .welcome .side section.s:first-child { margin-top: 0; }
+  .rites .welcome .pad { padding: 0; }
+  .rites .welcome .longrow { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 20px; align-items: stretch; }
+  .rites .welcome .longrow .road { grid-column: 1 / 3; }
+  .rites .welcome .doors { grid-template-columns: 1fr 1fr; }
+}
+
+/* 04 arrived */
+.rites .rays { position: absolute; left: 50%; top: -140px; width: 760px; height: 760px; transform: translateX(-50%); pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--primary) 10%, transparent) 0 6deg, transparent 6deg 18deg);
+  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 75%); mask: radial-gradient(closest-side, #000 20%, transparent 75%); }
+.rites .bubble { background: var(--card); border: 1px solid color-mix(in srgb, var(--success) 22%, transparent); border-radius: 4px 18px 18px 18px; padding: 13px 15px; font-size: 15.5px; margin-top: 10px; }
+
+/* 06 ceremony */
+.rites .ceremony.app { background: var(--surface-deep); }
+.rites .ceremony .bg { position: absolute; inset: 0; background-size: cover; background-position: center 60%; filter: brightness(.42) saturate(1.1); }
+.rites .ceremony .bg::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-deep) 55%, transparent), color-mix(in srgb, var(--surface-deep) 20%, transparent) 40%, color-mix(in srgb, var(--surface-deep) 90%, transparent) 85%); }
+.rites .ceremony .wrap { position: relative; z-index: 2; }
+.rites .lines { margin: 22px 22px 0; }
+.rites .ln { font-family: var(--font-display); font-size: 20px; line-height: 1.3; color: color-mix(in srgb, var(--foreground) 45%, transparent); margin: 10px 0; transition: all 500ms; }
+.rites .ln.done::before { content: "\2713  "; color: var(--success); font-family: var(--font-body); font-size: 15px; }
+.rites .ln.now { font-size: 33px; line-height: 1.18; color: color-mix(in srgb, var(--foreground) 85%, white); margin: 22px 0; text-shadow: 0 0 30px color-mix(in srgb, var(--ceremony) 55%, transparent); }
+.rites .ln.next { filter: blur(4px); opacity: .5; }
+.rites .dots { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+.rites .dots i { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--foreground) 25%, transparent); }
+.rites .dots i.on { background: var(--ceremony); }
+.rites .wit { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; background: rgba(0,0,0,.35); border: 1px solid color-mix(in srgb, var(--ceremony) 30%, transparent); margin-top: 8px; }
+.rites .wit .ok { margin-left: auto; font-size: 12px; color: var(--success); font-weight: 600; }
+.rites .wit .wait { margin-left: auto; font-size: 12px; color: var(--muted-foreground); font-weight: 600; }
+.rites .sc.ember { color: color-mix(in srgb, var(--ceremony) 60%, white); }
+.rites .drawpad { width: 100%; aspect-ratio: 1; max-width: 300px; margin: 14px auto 0; display: block; border-radius: 18px; touch-action: none; color: var(--seal); }
+
+/* 07 ring */
+.rites .ringwrap { margin: 16px 16px 0; padding: 20px 10px 18px; }
+.rites .markring { position: relative; width: 300px; height: 300px; margin: 0 auto; }
+.rites .markring::before { content: ""; position: absolute; inset: 22px; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--paper-muted) 30%, transparent); }
+.rites .markring .c { position: absolute; left: 50%; top: 50%; width: 128px; transform: translate(-50%, -50%); text-align: center; }
+.rites .markring .c .s { width: 58px; height: 58px; margin: 0 auto 4px; color: var(--seal); }
+.rites .markring .m { position: absolute; width: 42px; height: 42px; margin: -21px 0 0 -21px; color: var(--paper-foreground); opacity: .8; }
+.rites .markring .m.new { color: var(--seal); opacity: 1; width: 54px; height: 54px; margin: -27px 0 0 -27px; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--primary) 90%, transparent)); }
+.rites .markring .m svg { width: 100%; height: 100%; }
+
+/* 13 card */
+.rites .rec, .rites .crew { margin: 0; padding: 2px 16px; list-style: none; }
+.rites .rec li, .rites .crew li { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--border); font-size: 14.5px; }
+.rites .rec li:first-child, .rites .crew li:first-child { border-top: 0; }
+.rites .rec .n { margin-left: auto; font-family: var(--font-display); font-size: 20px; color: var(--tone-brand-soft); white-space: nowrap; }
+.rites .rec .w { font-size: 12px; color: var(--muted-foreground); }
+.rites .crew .v { margin-left: auto; text-align: right; }
+.rites .crew .v b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 20px; line-height: 1; }
+.rites .crew .v span { font-size: 11px; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+.rites .crew li.rest { opacity: .62; }
+.rites .crew li.rest .v b { color: var(--muted-foreground); }
+.rites .rest-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; border: 1px dashed var(--muted-foreground); color: var(--muted-foreground); margin-left: 6px; }
+
+/* 11 fleet */
+.rites .col > * + * { margin-top: 16px; }
+.rites .cols { display: grid; gap: 16px; }
+.rites .bar { height: 7px; border-radius: 7px; background: color-mix(in srgb, var(--foreground) 12%, transparent); overflow: hidden; margin-top: 6px; }
+.rites .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); }
+.rites .goal { margin-top: 12px; }
+.rites .goal p { display: flex; justify-content: space-between; font-size: 14px; gap: 10px; }
+.rites .ship { border-radius: 18px; overflow: hidden; border: 1px solid var(--border); background: color-mix(in srgb, var(--card) 45%, transparent); }
+.rites .ship img { height: 150px; width: 100%; object-fit: cover; }
+.rites .ship .b { padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+.rites .rig { border: 1.5px dashed color-mix(in srgb, var(--primary) 45%, transparent); border-radius: 18px; padding: 16px; text-align: center; }
+.rites .lf { border-radius: 18px; padding: 16px; background: rgba(255,255,255,.035); border: 1px solid var(--border); }
+.rites .lf .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.rites .cap { display: flex; gap: 4px; margin-top: 10px; flex-wrap: wrap; }
+.rites .cap i { width: 14px; height: 9px; border-radius: 3px; background: color-mix(in srgb, var(--foreground) 14%, transparent); }
+.rites .cap i.on { background: var(--ceremony); }
+.rites .vote { margin: 0; padding: 0; list-style: none; }
+.rites .vote li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 14.5px; }
+.rites .vote li:first-child { border-top: 0; }
+.rites .fleetcount { display: flex; align-items: baseline; gap: 8px; }
+@media (min-width: 900px) {
+  .rites .fleet.app { max-width: none; }
+  .rites .fleet .topbar, .rites .fleet .wrap { max-width: 1280px; margin: 0 auto; padding-left: 40px; padding-right: 40px; }
+  .rites .fleet .pad { padding: 0; }
+  .rites .fleet .cols { grid-template-columns: 1.05fr 1fr 1fr; gap: 22px; align-items: start; }
+  .rites .fleet .ship img { height: 200px; }
+}
+
+/* 00 packet */
+.rites .packapp.app { background: color-mix(in srgb, var(--seal) 14%, #000); }
+.rites .packtable { background: radial-gradient(100% 70% at 50% 20%, color-mix(in srgb, var(--seal) 38%, #000), color-mix(in srgb, var(--seal) 14%, #000) 70%); padding: 22px 0 30px; }
+.rites .packet { width: 300px; margin: 0 auto; border-radius: 6px; position: relative; box-shadow: 0 16px 40px rgba(0,0,0,.6); }
+.rites .packet.front { background: linear-gradient(170deg, var(--muted), var(--card)); color: var(--foreground); padding: 26px 22px 22px; text-align: center; transform: rotate(-2.5deg); }
+.rites .packet.front .sig { width: 96px; height: 96px; margin: 14px auto 10px; color: var(--primary); }
+.rites .packet.front h1 { font-size: 44px; color: var(--tone-brand-soft); }
+.rites .packet.front .v { margin-top: 16px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--foreground) 25%, transparent); font-size: 13px; color: var(--muted-foreground); }
+.rites .packet.back { margin-top: 26px; transform: rotate(1.5deg); padding: 22px; }
+.rites .qr { width: 132px; height: 132px; background: #fff; padding: 0; border-radius: 6px; flex: 0 0 auto; }
+.rites .qr svg { width: 100%; height: 100%; display: block; }
+@media print {
+  .rites .noprint { display: none !important; }
+  .rites .packet { box-shadow: none; transform: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rites *, .rites *::before, .rites *::after { animation: none !important; transition: none !important; }
+}
+
+/* the language selector's row, at the foot of every screen */
+.rites .langbar { max-width: 430px; margin: 0 auto; padding: 8px 20px 110px; background: var(--background); }
+.rites .ceremony .topbar .sigil { color: var(--ceremony); }
+
+/* The printed packet prints alone. The calendar's print sheet hides everything on the page; the packet comes back (QA P2-2). */
+@media print {
+  .rites .packtable,
+  .rites .packtable * { visibility: visible; }
+  .rites .packtable { position: absolute; left: 0; top: 0; width: 100%; background: none; }
+}
+
+/* Contrast (QA P6-r-6): spoken lines read at 4.5:1 or better on the ceremony ground, and a kicker over a photo
+   keeps a dark halo so it reads whatever the photo is. h1s that wear a smaller style keep it. */
+.rites .ln { color: color-mix(in srgb, var(--foreground) 74%, transparent); }
+.rites .hero .sc { text-shadow: 0 1px 2px rgba(0,0,0,.9), 0 0 14px rgba(0,0,0,.85); }
+.rites h1.hand { font-family: var(--font-accent); font-weight: 400; line-height: 1.2; }

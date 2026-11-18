@@ -26,6 +26,8 @@ import {
   lineWords,
   linesWords,
   payHeadline,
+  shownValue,
+  valuedAtZero,
   useDisplayRates,
   valueWords,
   voiceNames,
@@ -43,7 +45,8 @@ export default function WorkPayBlock({
   const rates = useDisplayRates();
   if (!pay) return null;
   const headline = payHeadline(pay);
-  const value = pay.value ? valueWords(pay.value, rates) : null;
+  const shown = shownValue(pay);
+  const value = shown ? valueWords(shown, rates) : null;
   const cash = agreementCashWords(pay);
   const cashNote = !pay.cashPay && pay.cash?.note ? pay.cash.note : null;
   // 0285: the cash the work itself pays, which the village owes and records.
@@ -53,6 +56,8 @@ export default function WorkPayBlock({
   const voices = voiceNames(pay);
 
   if (variant === "card") {
+    // Valued at zero and paying nothing else: there is nothing to put on a chip.
+    if (valuedAtZero(pay) && pay.lines.length === 0 && !ownCash && badges.length === 0) return null;
     if (headline === "inquire") {
       return (
         <span data-work-pay="inquire" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted text-muted-foreground font-medium">
@@ -106,7 +111,7 @@ export default function WorkPayBlock({
             <p className="font-semibold text-foreground">
               {t({ message: `${cash} in cash, per the role agreement.`, context: "work pay cash line" })}
             </p>
-          ) : (
+          ) : valuedAtZero(pay) ? null : (
             <p className="text-muted-foreground">No value set yet. Inquire for the full payment details.</p>
           )}
           {pay.lines.length > 0 || ownCash ? (

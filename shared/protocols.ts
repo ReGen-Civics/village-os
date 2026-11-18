@@ -446,10 +446,13 @@ export function completionRefusal(open: readonly ProtocolStep[]): string {
 /**
  * A device's clock can be wrong. A tick stamped in the future is recorded at
  * the server's now; one in the past keeps its own time, which is when the
- * member says it happened.
+ * member says it happened, but never earlier than `floorMs` (the run's start).
  */
-export function clampToNow(at: string, nowMs: number): string {
+export function clampToNow(at: string, nowMs: number, floorMs?: number): string {
   const t = Date.parse(at);
   if (!Number.isFinite(t) || t > nowMs + CLOCK_SKEW_MS) return new Date(nowMs).toISOString();
+  // Never before the run it belongs to (security audit, 16 Nov 2026): a tick or an ending
+  // dated earlier than its run's start is a device clock that is wrong, or a claim backdated.
+  if (floorMs !== undefined && Number.isFinite(floorMs) && t < floorMs) return new Date(Math.min(floorMs, nowMs)).toISOString();
   return new Date(t).toISOString();
 }

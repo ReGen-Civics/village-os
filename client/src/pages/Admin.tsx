@@ -56,7 +56,9 @@ import { limitNav, simpleNav } from "@/components/admin/adminFeelState";
 import { TourCard } from "@/components/admin/AdminFeel";
 
 const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
+const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
 const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
+const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
 import { adminNavRailClass, filterNavByModules, TAB_MODULE, type TabBadge } from "@/lib/adminNav";
@@ -66,10 +68,14 @@ import type { UploadsSweepReport } from "@shared/uploadsSweep";
 import { CIRCLE_STATUSES } from "@shared/draftKinds";
 import CashPayoutsTab from "@/components/admin/CashPayoutsTab";
 import TypographyPanel from "@/components/TypographyPanel";
+import SoundsPanel from "@/components/SoundsPanel";
 import MenuPanel from "@/components/admin/MenuPanel";
+import VocabularyPanel from "@/components/admin/VocabularyPanel";
+import NoticeWordsPanel from "@/components/admin/NoticeWordsPanel";
 import LookPanel from "@/components/LookPanel";
 import IdentityPackPanel from "@/components/IdentityPackPanel";
 import { API_BASE, authHeaders, refusal } from "@/components/admin/adminApi";
+import { saveBlob } from "@/lib/notebookCopy";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
 import AdminQueueState from "@/components/admin/AdminQueueState";
 import { loadSubmissionRows } from "@/components/admin/adminQueueModel";
@@ -834,9 +840,21 @@ export function SubmissionsTab({ password }: { password: string }) {
                           </td>
                           <td className="py-1.5 text-gray-800 whitespace-pre-wrap">
                             {k === "attachment" && v ? (
-                              <a href={`${API_BASE}/uploads/${v}`} target="_blank" rel="noopener noreferrer" className="text-teal-deep underline">
+                              // Fetched with the admin's token and saved: the file is on no public address (audit, 15 Nov 2026).
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const r = await fetch(`${API_BASE}/admin/submission-attachments/${encodeURIComponent(String(v))}`, { headers: authHeaders(password) }).catch(() => null);
+                                  if (!r || !r.ok) {
+                                    toast.error("That file could not be opened. It may have been removed.");
+                                    return;
+                                  }
+                                  saveBlob(String(s.data.attachmentName || v), await r.blob());
+                                }}
+                                className="text-teal-deep underline"
+                              >
                                 {s.data.attachmentName || String(v)}
-                              </a>
+                              </button>
                             ) : Array.isArray(v) ? (
                               v.join(", ")
                             ) : (
@@ -930,6 +948,10 @@ export function IntegrationsTab({ password }: { password: string }) {
       <SecretsKeyBanner status={data?.villageSecretsKey} />
       {keySaved && <div className="mb-6"><ConnectorSetupPanel moment="key" isAdmin password={password} person="admin" /></div>}
       <SigningKeyCard password={password} />
+      {/* Which service writes voice recordings down (the lead, 17 Nov 2026); its keys are cards below. */}
+      <Suspense fallback={null}>
+        <VoiceTranscriptionPicker password={password} />
+      </Suspense>
       {loading && !data ? <div className="text-center py-12 text-gray-400">Loading…</div> : (
         <div className="w-full space-y-5">
           {/* The one value that flows the OTHER way: what to paste into Stripe. */}
@@ -7171,6 +7193,8 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
               It is deliberately NOT one of the measured Identity fields in setupProgress.ts, because it ships with a
               working default and counting it would leave Identity unfinished forever for a village happy with it. */}
           {IDENTITY_WIZARD_FIELDS.map(([key, label]) => brandField("project", key, label, defaults.project[key] ?? ""))}
+          {/* The village's own nouns (gap G4), saved on their own. */}
+          <VocabularyPanel password={password} />
           {/* Picked by name, so a founder never has to know the code (VillageCurrencyField.tsx). */}
           <VillageCurrencyField
             value={String(brand.project?.fiatCurrency ?? "")}
@@ -7245,8 +7269,10 @@ export function SetupWizard({ password, onOpenTab }: { password: string; onOpenT
             Self-contained component — see client/src/components/TypographyPanel.tsx. */}
         <LookPanel password={password} />
         <TypographyPanel password={password} />
+        <SoundsPanel password={password} />
         <IdentityPackPanel password={password} />
         <MenuPanel password={password} />
+        <NoticeWordsPanel password={password} />
       </SetupSection>
 
       <SetupSection {...step} id="numbers" n={4} title="Numbers" subtitle="The editable figures on your site.">
@@ -7975,6 +8001,7 @@ export default function Admin() {
           {activeTab === "org-chart" && <OrgChartTab password={password} />}
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
           {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
+          {activeTab === "budgets" && <Suspense fallback={null}><BudgetsTab password={password} /></Suspense>}
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
           {activeTab === "brain" && <VillageBrainTab password={password} />}
           {activeTab === "failures" && <FailuresTab password={password} />}

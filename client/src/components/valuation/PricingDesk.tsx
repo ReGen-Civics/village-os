@@ -23,6 +23,7 @@ import { suggestValuation, wholeMoney, type PayeeSuggestion } from "@shared/valu
 import { REASON_CODES } from "@shared/valuationSetting";
 import { effortGuess } from "@/lib/questEffortGuess";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
+import NoSignBandNote from "./NoSignBandNote";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 
@@ -262,6 +263,8 @@ export default function PricingDesk({ call }: { call: Call }) {
           {t({ message: `Use the suggestion on all ${counts.ready} inside the band`, context: "pricing desk" })}
         </button>
       </div>
+
+      <NoSignBandNote model={read.model} className="text-sm text-muted-foreground mb-3" />
 
       <div className="rounded-xl border border-border bg-card">
         <div className="hidden md:grid grid-cols-[1.6fr_1fr_1.2fr_1.5fr_1fr_1.3fr] gap-3 px-4 pt-2 pb-1.5 text-xs font-bold uppercase tracking-wide text-muted-foreground">

@@ -127,6 +127,23 @@ describe("a member's commitment on the routes", () => {
     }
   });
 
+  it("a split is never dated before the village's own day, even when the member's clock is a day behind it (audit, 15 Nov 2026)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const split = [{ roleId: "r-host", share: 60 }, { roleId: "r-well", share: 40 }];
+      // The member's day is 14 November; the village is already on the 15th.
+      vi.setSystemTime(new Date("2026-11-14T12:00:00Z"));
+      const ahead = mountCommitment({ id: "m-wren" }, "Pacific/Kiritimati");
+      const back = await ahead.call("POST /api/me/commitment", { body: { pct: 50, split, fromDate: "2026-11-14" } });
+      expect(back.status, JSON.stringify(back.body)).toBe(400);
+      expect(ahead.rows).toEqual([]);
+      // CONTROL: the village's own day is accepted.
+      expect((await ahead.call("POST /api/me/commitment", { body: { pct: 50, split, fromDate: "2026-11-15" } })).status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("refuses a split that does not add up to the whole, or names a role twice, and stores nothing", async () => {
     const { call, rows } = mountCommitment();
     for (const split of [

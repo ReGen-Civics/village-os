@@ -70,6 +70,16 @@ export const MAX_PHOTOS_PER_UPLOAD = 4;
 // ── The village's config (module_settings.config) ──────────────────────────
 
 export interface HiddenMapConfig {
+  /** What the village calls the map. */
+  title: string;
+  /** The question above each layer's kinds ("What kind of place?"). A village asks in its own words. */
+  kindPrompts: Record<Layer, string>;
+  /** The quest a planting opens a claim on once it is vouched. Null means plantings pay nothing by themselves. */
+  plantingQuestId: string | null;
+  /** The ways of seeing a planting that this village accepts for a vouch. */
+  vouchWays: VouchWay[];
+  /** The rule a voucher reads, in the village's words. */
+  vouchRule: string;
   /** What a member reads for each layer. A village names its own. */
   labels: Record<Layer, string>;
   /** The kinds a pin may take, per layer. */
@@ -81,6 +91,11 @@ export interface HiddenMapConfig {
 }
 
 export const DEFAULT_CONFIG: HiddenMapConfig = {
+  title: "Hidden map",
+  kindPrompts: { planting: "What kind of place?", partner: "What kind of place?", stop: "What kind of stop?" },
+  plantingQuestId: null,
+  vouchWays: ["in-person", "call", "photos"],
+  vouchRule: "Vouch only for a place you know is real: you were there, or the photos leave no doubt.",
   labels: { planting: "Plantings", partner: "Partner places", stop: "Places to stop" },
   kinds: {
     planting: ["Land project", "Garden", "Public place", "Roadside", "Wild land", "Our own garden"],
@@ -95,8 +110,11 @@ export const DEFAULT_CONFIG: HiddenMapConfig = {
 export function readConfig(raw: unknown): HiddenMapConfig {
   const c = (raw && typeof raw === "object" ? raw : {}) as Partial<HiddenMapConfig>;
   const labels = { ...DEFAULT_CONFIG.labels };
+  const kindPrompts = { ...DEFAULT_CONFIG.kindPrompts };
   const kinds = { ...DEFAULT_CONFIG.kinds };
   for (const l of LAYERS) {
+    const prompt = (c.kindPrompts as any)?.[l];
+    if (typeof prompt === "string" && prompt.trim()) kindPrompts[l] = prompt.trim().slice(0, 80);
     const label = (c.labels as any)?.[l];
     if (typeof label === "string" && label.trim()) labels[l] = label.trim();
     const list = (c.kinds as any)?.[l];
@@ -104,39 +122,30 @@ export function readConfig(raw: unknown): HiddenMapConfig {
   }
   const openLayers = Array.isArray(c.openLayers) ? c.openLayers.filter(isLayer) : [];
   const q = c.returnVisitQuestId;
-  return { labels, kinds, openLayers, returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null };
+  const title = typeof c.title === "string" && c.title.trim() ? c.title.trim().slice(0, 40) : DEFAULT_CONFIG.title;
+  const pq = c.plantingQuestId;
+  const ways = Array.isArray(c.vouchWays) ? c.vouchWays.filter(isVouchWay) : [];
+  const rule = typeof c.vouchRule === "string" && c.vouchRule.trim() ? c.vouchRule.trim().slice(0, 300) : DEFAULT_CONFIG.vouchRule;
+  return {
+    title,
+    kindPrompts,
+    plantingQuestId: typeof pq === "string" && pq.trim() ? pq.trim() : null,
+    vouchWays: ways.length ? ways : [...DEFAULT_CONFIG.vouchWays],
+    vouchRule: rule,
+    labels,
+    kinds,
+    openLayers,
+    returnVisitQuestId: typeof q === "string" && q.trim() ? q.trim() : null,
+  };
 }
 
-/** Structural check before a config write. A human sentence, or null when it is fine. */
-export function validateConfig(raw: unknown): string | null {
-  if (raw === null || raw === undefined) return null;
-  if (typeof raw !== "object" || Array.isArray(raw)) return "The hidden map's settings must be an object.";
-  const c = raw as Record<string, unknown>;
-  if (c.labels !== undefined) {
-    if (!c.labels || typeof c.labels !== "object") return "Layer names must be an object keyed by layer.";
-    for (const [k, v] of Object.entries(c.labels as object)) {
-      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
-      if (typeof v !== "string" || !v.trim() || v.length > 40) return `The name for ${k} must be 1 to 40 characters.`;
-    }
-  }
-  if (c.kinds !== undefined) {
-    if (!c.kinds || typeof c.kinds !== "object") return "Kinds must be an object keyed by layer.";
-    for (const [k, v] of Object.entries(c.kinds as object)) {
-      if (!isLayer(k)) return `There is no layer called "${k}". The layers are ${LAYERS.join(", ")}.`;
-      if (!Array.isArray(v) || v.length === 0 || v.length > 24) return `Each layer needs 1 to 24 kinds; ${k} has ${Array.isArray(v) ? v.length : "none"}.`;
-      for (const kind of v) {
-        if (typeof kind !== "string" || !kind.trim() || kind.length > MAX_KIND) return `Each kind is 1 to ${MAX_KIND} characters.`;
-      }
-    }
-  }
-  if (c.openLayers !== undefined) {
-    if (!Array.isArray(c.openLayers) || !c.openLayers.every(isLayer)) return `Open layers must be a list drawn from ${LAYERS.join(", ")}.`;
-  }
-  if (c.returnVisitQuestId !== undefined && c.returnVisitQuestId !== null) {
-    if (typeof c.returnVisitQuestId !== "string" || c.returnVisitQuestId.length > 64) return "The return visit quest is a quest id.";
-  }
-  return null;
-}
+/**
+ * Structural check before a config write. A human sentence, or null when it is fine.
+ * It lives in shared/modules.ts, beside the registry entry, because the intake
+ * scripts transpile that file on its own and it may import no other value.
+ * shared/hiddenMap.test.ts pins its copy of the rules to the ones here.
+ */
+export { validateHiddenMapConfig as validateConfig } from "./modules";
 
 // ── Coordinates ─────────────────────────────────────────────────────────────
 

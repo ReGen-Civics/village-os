@@ -86,6 +86,10 @@ export const TARGETS = [
   // A member's own chart, shown only to the members they choose; no public
   // surface to probe.
   ["gene-keys", "members"],
+  // HELD on the session-card terms: member-pii (stamps, marks, who walks
+  // beside whom) and not yet through the Module Library Contract clause 13
+  // review.
+  ["rites", "held", "security review pending (Module Library Contract clause 13)"],
   // Who ticked which step names people, so members only; no public surface to probe.
   ["protocols", "members"],
   // HELD. A member-pii module that reached main before the human security
