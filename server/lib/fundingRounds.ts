@@ -51,7 +51,6 @@ import type { RollNotice } from "./ballotNotices";
 import type { BallotSetup } from "./ballotSetup";
 import { openBallot, ballotById } from "./ballots";
 import { recordEvent } from "./events";
-import { deadlineInVillage } from "./villageReaders";
 import { memberAccount } from "./ledger";
 import { VILLAGE_VOICE } from "./economy";
 import { numberVar, stringVar } from "./variables";
@@ -347,6 +346,8 @@ export interface IdeaView {
   createdAt: string | null;
   /** First names of the members who ticked it. Only once choosing has closed (plan R6); absent before. */
   markedBy?: string[];
+  /** First names of newer members whose ticks were signals; same timing as `markedBy`. */
+  signaledBy?: string[];
   /** Pledges are shown openly with names (R19). Set by roundDetail. */
   backing?: Backing;
 }
@@ -559,6 +560,8 @@ export interface VoiceView {
   roll: number;
   /** The viewer's own counted Voice, in Voice's minor units, or null when they were not on the roll. */
   mine: number | null;
+  /** Set for a viewer off the frozen roll: their ticks are signals. */
+  notice: string | null;
   /** Voice sources the count could not classify, so it is understated. */
   unclassified: string[];
 }
@@ -607,12 +610,19 @@ export async function roundDetail(
   });
   if (stage === "harvest" || stage === "closed") {
     // Ticks are named once choosing has closed (plan R6). First names only.
+    // A member off the frozen roll ticked as a signal, and is named apart.
+    const onRoll = r.voiceFrozenAt ? new Set((await voiceOfRound(pool, roundId)).map((e) => e.userId)) : null;
     const byIdea = new Map<string, string[]>();
+    const signalBy = new Map<string, string[]>();
     for (const m of await marksOf(pool, roundId)) {
       const name = firstNameOf(nameOf(m.userId) ?? "") || "a member";
-      byIdea.set(m.ideaId, [...(byIdea.get(m.ideaId) ?? []), name]);
+      const into = onRoll && !onRoll.has(m.userId) ? signalBy : byIdea;
+      into.set(m.ideaId, [...(into.get(m.ideaId) ?? []), name]);
     }
-    for (const v of views) v.markedBy = byIdea.get(v.id) ?? [];
+    for (const v of views) {
+      v.markedBy = byIdea.get(v.id) ?? [];
+      v.signaledBy = signalBy.get(v.id) ?? [];
+    }
   }
   const showBallot = stage === "choose" || stage === "harvest" || stage === "closed";
   return {
@@ -628,6 +638,7 @@ export async function roundDetail(
           countedVoice: r.countedVoice ?? pot.countedVoice,
           roll: (await voiceOfRound(pool, roundId)).length,
           mine: await voiceOfMember(pool, roundId, viewerId),
+          notice: (await voiceOfMember(pool, roundId, viewerId)) === null ? SIGNAL_ONLY_NOTICE : null,
           unclassified: r.voiceUnclassified,
         }
       : null,
@@ -809,6 +820,9 @@ export async function withdrawPledge(pool: Pool, actorId: string, pledgeId: stri
 
 // ── choose ──────────────────────────────────────────────────────────────────
 
+/** Said to a member whose ticks are signals: they joined after choosing opened. */
+export const SIGNAL_ONLY_NOTICE = "You joined after choosing opened, so your choice shows as a signal and doesn't change the count this round.";
+
 /** Replace the member's ticks, while the round is in choose. Every tick must be on the ballot. */
 export async function setMarks(
   pool: Pool,
@@ -817,7 +831,7 @@ export async function setMarks(
   body: unknown,
   now: Date,
   harvest?: Pick<HarvestDeps, "roll" | "countedVoice">,
-): Promise<{ ok: true; myMarks: string[] } | Refusal> {
+): Promise<{ ok: true; myMarks: string[]; signalOnly: boolean; notice: string | null } | Refusal> {
   let round = await roundById(pool, roundId);
   if (!round) return { ok: false, status: 404, problem: "No such round." };
   if (stageAt(datesOf(round), now) !== "choose") return { ok: false, status: 409, problem: "Ticks are given while the round is choosing." };
@@ -827,10 +841,11 @@ export async function setMarks(
     const pot = await potById(pool, round.potId);
     if (pot) round = await freezeVoiceIfDue(pool, harvest, round, pot, now);
   }
-  if (round.voiceFrozenAt && (await voiceOfMember(pool, roundId, actorId)) === null) {
-    const opened = deadlineInVillage(round.chooseAt ?? round.voiceFrozenAt);
-    return { ok: false, status: 403, problem: `This round's list of who chooses was set when choosing opened on ${opened}. You can take part in the next round.` };
-  }
+  // A member who reached the roll after it froze may still tick, with no
+  // Voice (the lead, 2026-11-18: "just so they can signal without
+  // influence"). Their ticks count in neither count nor the quorum; harvest
+  // keeps them apart as signals from newer members.
+  const signalOnly = round.voiceFrozenAt != null && (await voiceOfMember(pool, roundId, actorId)) === null;
   const raw = (body && typeof body === "object" ? (body as Record<string, unknown>).ideaIds : null) ?? [];
   if (!Array.isArray(raw) || raw.some((v) => typeof v !== "string")) return { ok: false, status: 400, problem: "Send the ideas you would fund as a list." };
   const wanted = Array.from(new Set(raw as string[]));
@@ -857,7 +872,7 @@ export async function setMarks(
     visibility: "private",
     dedupeKey: `round.marked:${roundId}:${actorId}`,
   });
-  return { ok: true, myMarks: await marksOfMember(pool, roundId, actorId) };
+  return { ok: true, myMarks: await marksOfMember(pool, roundId, actorId), signalOnly, notice: signalOnly ? SIGNAL_ONLY_NOTICE : null };
 }
 
 // ── harvest ─────────────────────────────────────────────────────────────────
@@ -888,6 +903,13 @@ export interface RoundOutcome {
   backerFunded: string[];
   /** Ticks per quest, kept so the record survives a ticker's erasure. */
   marksByIdea: Record<string, number>;
+  /**
+   * Ticks per quest from members who reached the roll after it froze: shown
+   * as signals, counted in neither count nor the quorum. Absent before 0403.
+   */
+  signalsByIdea?: Record<string, number>;
+  /** How many such members ticked anything. */
+  signalers?: number;
   countedAt: string;
   /** S4: which Voice weighed the power count. Absent on a round counted before S4. */
   countedVoice?: "work_only" | "all";
@@ -1044,7 +1066,12 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
     const ideas = (await ideasOfRound(conn, round.id)).filter(onBallot);
     const ballotIds = new Set(ideas.map((i) => i.id));
     const members = new Set(electorate);
-    const marks = (await marksOf(conn, round.id)).filter((m) => ballotIds.has(m.ideaId) && members.has(m.userId));
+    const allMarks = (await marksOf(conn, round.id)).filter((m) => ballotIds.has(m.ideaId));
+    const marks = allMarks.filter((m) => members.has(m.userId));
+    // Ticks from members off the frozen roll: signals, kept apart and counted nowhere.
+    const signals = allMarks.filter((m) => !members.has(m.userId));
+    const signalsByIdea: Record<string, number> = {};
+    for (const m of signals) signalsByIdea[m.ideaId] = (signalsByIdea[m.ideaId] ?? 0) + 1;
     const markers = new Set(marks.map((m) => m.userId)).size;
     const quorumMet = electorate.length > 0 && markers * 100 >= round.quorumPct * electorate.length;
     const money = await potMoney(conn, pot.id);
@@ -1086,6 +1113,8 @@ async function runHarvest(pool: Pool, deps: HarvestDeps, round: RoundRow, pot: P
       divergence,
       backerFunded,
       marksByIdea,
+      signalsByIdea,
+      signalers: new Set(signals.map((m) => m.userId)).size,
       countedAt: new Date().toISOString(),
       countedVoice: frozen.countedVoice ?? pot.countedVoice,
       voiceFrozenAt: frozenAt ? frozenAt.toISOString() : null,

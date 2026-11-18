@@ -12,8 +12,9 @@
  *     Weighed by the whole balance the donor would decide; weighed by work,
  *     the two counts agree with the nine.
  *  2. THE SNAPSHOT. Voice is frozen when choosing opens. Work Voice the donor
- *     earns afterwards does not move the count, and a member who joins the
- *     roll afterwards cannot tick in that round.
+ *     earns afterwards does not move the count. A member who joins the roll
+ *     afterwards may tick, and their tick is a signal: shown apart, counted
+ *     in neither count nor the quorum (the lead, 2026-11-18).
  *  3. THE 48-HOUR VOTE. When the two counts disagree, the quests they agree on
  *     are funded at once and the disputed ones are held. A village vote opens
  *     on the ordinary ballot engine, 48 hours long; its closer funds the
@@ -215,17 +216,27 @@ describe.skipIf(!configured)("funding rounds S4: work-only Voice, the frozen sna
 
     // After the freeze the donor earns a great deal of work Voice. It must not count here.
     await minted("s4-0", 50_000_000, "quest_consent");
-    // A member who reaches the roll after the freeze cannot tick in this round.
+    // A member who reaches the roll after the freeze may tick, as a signal with no Voice.
     roll.add("s4-late");
-    const late = await tick("s4-late", roundId, [seeds]);
-    expect(late.status).toBe(403);
-    expect(late.body.error).toMatch(/^This round's list of who chooses was set when choosing opened on \d{1,2} [A-Z][a-z]+ \d{4}\. You can take part in the next round\.$/);
+    const late = await tick("s4-late", roundId, [seeds, shed]);
+    expect(late.status).toBe(200);
+    expect(late.body).toMatchObject({ myMarks: [seeds, shed].sort(), signalOnly: true });
+    expect(late.body.notice).toBe("You joined after choosing opened, so your choice shows as a signal and doesn't change the count this round.");
+    expect((await read(roundId, "s4-late")).body.voice).toMatchObject({ mine: null, notice: late.body.notice });
+    // A member on the roll is told nothing of the kind.
+    expect((await tick("s4-1", roundId, [seeds])).body).toMatchObject({ signalOnly: false, notice: null });
     roll.delete("s4-late");
 
     await putIn(roundId, "harvest");
     const view = await read(roundId);
     const o = view.body.outcome;
     expect(o).toMatchObject({ quorumMet: true, decider: "power", electorate: 10, markers: 10, countedVoice: "work_only", voiceFrozenLate: false, heldForVote: [] });
+    // The newer member's ticks are signals: kept apart, counted nowhere.
+    expect(o.signalers).toBe(1);
+    expect(o.signalsByIdea).toEqual({ [seeds]: 1, [shed]: 1 });
+    expect(o.marksByIdea[shed]).toBe(1);
+    expect(view.body.ideas.find((i: any) => i.id === shed).signaledBy).toEqual(["a member"]);
+    expect(view.body.ideas.find((i: any) => i.id === shed).markedBy).toHaveLength(1);
     // Nine members with ten work Voice each outweigh one with one: both counts fund the seed bank.
     expect(o.power.funded).toEqual([seeds]);
     expect(o.people.funded).toEqual([seeds]);

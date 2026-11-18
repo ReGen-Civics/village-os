@@ -28,7 +28,8 @@ Built so far:
 - **S4:** the counted-Voice guardrails. Counted Voice (all, or work-only), the Voice snapshot frozen when
   choosing opens, and the 48-hour vote on the quests the two counts disagree on. See "Counted Voice" below.
 - **S4 rulings, this release** (the lead, 2026-11-18): new pots count all Voice, with a door to switch a pot to
-  work-only; a carried divergence vote lands when it closes; held quests reserve their pot money.
+  work-only; a carried divergence vote lands when it closes; held quests reserve their pot money; a member
+  who joins after choosing opened ticks as a signal that counts nowhere.
 
 Not built yet (next):
 - **Earmark to paid.** An earmark stays `held`; moving it to `owed` and `paid` when the quest's completion is
@@ -93,9 +94,15 @@ change to the pot mid-round changes nothing for that round. Whichever comes firs
 decides nothing), a member opening the round in choose, or a member's tick. If nothing froze it while the
 round chose, harvest freezes it before counting and the outcome says `voiceFrozenLate`. Harvest reads only
 the frozen rows. The freeze lands at most about 15 minutes after choosing opens; Voice is not rebuilt from
-ledger history as of the opening instant (the lead, 2026-11-18). A member who was not on the roll when it
-froze cannot tick in that round, and is told: "This round's list of who chooses was set when choosing opened
-on <date>. You can take part in the next round."
+ledger history as of the opening instant (the lead, 2026-11-18).
+
+**Newer members signal.** A member who was not on the roll when it froze may still tick, with no Voice (the
+lead, 2026-11-18: "just so they can signal without influence"). Their ticks count in neither count: not in
+the Voice count, and not in the people's count either, since that count is one vote per member of the
+frozen roll. They do not count toward the quorum. Harvest keeps them apart in the outcome as
+`signalsByIdea` and `signalers`, and once choosing closes each quest names them separately, as "Signals from
+newer members, not counted". The member is told in the round: "You joined after choosing opened, so your
+choice shows as a signal and doesn't change the count this round."
 
 **The 48-hour divergence vote.** When the two counts fund different quests:
 - the quests both counts fund go ahead at once, with their earmarks;

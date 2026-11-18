@@ -128,7 +128,7 @@ export function register(app: Express, deps: Deps): void {
     }
     const out = await setMarks(getPool(), uid, String(req.params.id), req.body, new Date(), harvest);
     if (!out.ok) return res.status(out.status).json({ error: out.problem });
-    res.json({ myMarks: out.myMarks });
+    res.json({ myMarks: out.myMarks, signalOnly: out.signalOnly, notice: out.notice });
   });
 
   app.post("/api/funding-rounds/ideas/:id/pledges", async (req, res) => {
