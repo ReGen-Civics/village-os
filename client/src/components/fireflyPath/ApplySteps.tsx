@@ -613,14 +613,16 @@ export function EnterHint() {
 export function ReviewLines({ review, labels, onChange, extras = [] }: { review: ReadonlyArray<[number, string]>; labels: readonly string[]; onChange: (i: number) => void; extras?: ReadonlyArray<{ step: number; label: string; line: string }> }) {
   const { t } = useLingui();
   // Each step's line, then the price and the notes on the role after the step they are made on (applicant journey QA).
-  const rows = review.flatMap(([i, line]) => [{ key: `s${i}`, step: i, label: labels[i], line }, ...extras.filter((x) => x.step === i).map((x, k) => ({ key: `x${i}-${k}`, ...x, ours: true }))]);
+  const rows = review.flatMap(([i, line]) => [{ key: `s${i}`, step: i, label: labels[i], line }, ...extras.filter((x) => x.step === i).map((x, k) => ({ key: `x${i}-${k}`, ...x }))]);
   return (
     <ul className="grid gap-2" data-review="">
-      {rows.map(({ key, step, label, line, ...row }) => (
+      {rows.map(({ key, step, label, line }) => (
         <li key={key} className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3" data-review-row={key}>
           <span className="grid min-w-0">
             <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
-            <span className="break-words text-sm text-foreground">{"ours" in row ? <MoonText text={line} /> : line}</span>
+            <span className="break-words text-sm text-foreground">
+              <MoonText text={line} />
+            </span>
           </span>
           {/* A name of its own for each, "Change About you" (a11y sweep P2-9): five buttons all called "Change" read as one. */}
           <button type="button" onClick={() => onChange(step)} aria-label={t({ message: `Change ${label}`, context: "open proposal review, the button's full name" })} className="min-h-11 shrink-0 px-2 text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">

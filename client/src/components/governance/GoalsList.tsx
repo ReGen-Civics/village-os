@@ -240,9 +240,13 @@ export default function GoalsList({
       </div>
       {nudge && (
         <p className="text-sm text-muted-foreground" data-goals-nudge="">
-          {nudge === "few"
-            ? <MoonText text={t`Most people list three to five goals for a moon. You can send fewer, and we will read what you give us.`} />
-            : <MoonText text={t`Most people list three to five goals for a moon. More is allowed, and a shorter list is easier to read and to check.`} />}
+          <MoonText
+            text={
+              nudge === "few"
+                ? t`Most people list three to five goals for a moon. You can send fewer, and we will read what you give us.`
+                : t`Most people list three to five goals for a moon. More is allowed, and a shorter list is easier to read and to check.`
+            }
+          />
         </p>
       )}
       {problem && (
