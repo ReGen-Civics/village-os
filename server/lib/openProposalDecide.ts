@@ -42,6 +42,7 @@
  *
  * No `recordEvent` and no `addActivity`: the rows are the record.
  */
+import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
 import { roleTermsOf, termsPerRole, type RoleTerms } from "../../shared/openProposals";
 import type { PayAsk } from "../../shared/commitmentRange";
@@ -346,7 +347,8 @@ export function settingsOfAgreed(agreed: Agreed, term: { endsOn: string } | null
 
 /**
  * THE PRICE ADOPTION WRITES (shared/contractPrice.ts): the accepted ask held to the cap, else the suggested
- * price, at the agreed commitment, from the role's own band. One role per application; an older proposal
+ * price, at the agreed commitment, from the role's own band, shared by the applicant's proposed split when they
+ * sent one (shared/proposalSplit.ts `adoptedShape`). One role per application; an older proposal
  * naming several is priced by the first role that lists a band. Null with no band: the contract records no pay.
  */
 export async function contractPriceFor(db: Pool, proposal: store.StoredOpenProposal, agreed: Agreed, part?: AgreementPart): Promise<ContractPrice | null> {
@@ -360,10 +362,12 @@ export async function contractPriceForRoles(db: Pool, ids: readonly string[], co
   const ceiling = ids.map((id) => sections.get(id)?.payCeiling ?? null).find((c) => !!c) ?? null;
   const price = contractPriceOf(ceiling, commitmentPct, ask);
   if (!price) return null;
-  // The split the card showed them, the card's "Default split": its own shares, else the village's (P1-6).
+  // The applicant's proposed split when they sent one that fits the role's shape in force, else the split the card
+  // showed them, its own shares, else the village's (the lead, 18 Nov 2026, replacing P1-6's "follows the card").
   const role = ids.find((id) => sections.get(id)?.payCeiling) ?? ids[0];
   const shown = cardPay(sections.get(role) ?? null, villagePayFrom({ shape: stringVar("org.pay_shape"), atRisk: "", note: "" }))?.shape ?? [];
-  return shown.length ? { ...price, shape: shown.map((s) => ({ label: s.label, pct: s.pct })) } : price;
+  const shape = adoptedShape(shown, proposal.body.paySplit?.proposed);
+  return shape.length ? { ...price, shape } : price;
 }
 
 /** The card's goals for the first moon as the application's list holds them. */

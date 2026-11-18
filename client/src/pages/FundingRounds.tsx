@@ -23,7 +23,7 @@ import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
 import BreathingLoader from "@/components/natural/BreathingLoader";
 import ModuleGate, { SignInToSee } from "@/components/modules/ModuleGate";
-import { BTN_QUIET, BTN_SECONDARY } from "@/components/journal/ui";
+import { BTN_PRIMARY, BTN_QUIET, BTN_SECONDARY } from "@/components/journal/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { useModules } from "@/modules/ModuleProvider";
 import { gameFetch } from "@/lib/gameApi";
@@ -125,11 +125,12 @@ function StewardPanel({ pots, onChanged }: { pots: Pot[]; onChanged: () => void 
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const send = async (path: string, body: unknown, ok: string) => {
+  const [voicePotId, setVoicePotId] = useState("");
+  const send = async (path: string, body: unknown, ok: string, method: "POST" | "PATCH" = "POST") => {
     setBusy(true);
     setMessage(null);
     try {
-      const res = await gameFetch(path, { method: "POST", body: JSON.stringify(body) });
+      const res = await gameFetch(path, { method, body: JSON.stringify(body) });
       const out = await readJson(res);
       setMessage(res.ok ? ok : (sentenceOf(out) ?? t`That did not save. Try again.`));
       if (res.ok) onChanged();
@@ -216,12 +217,83 @@ function StewardPanel({ pots, onChanged }: { pots: Pot[]; onChanged: () => void 
           </button>
         </form>
       )}
+      {pots.length > 0 && (
+        <CountedVoiceForm
+          pots={pots}
+          potId={voicePotId || pots[0].id}
+          onPot={setVoicePotId}
+          busy={busy}
+          onChoose={(id, countedVoice) =>
+            send(
+              `/api/funding-rounds/pots/${id}/counted-voice`,
+              { countedVoice },
+              countedVoice === "all" ? t`This pot now counts all Voice.` : t`This pot now counts only Voice earned through work.`,
+              "PATCH",
+            )
+          }
+        />
+      )}
       {message && (
         <p role="status" className="mt-3 text-sm text-foreground">
           {message}
         </p>
       )}
     </section>
+  );
+}
+
+/**
+ * Which Voice a pot counts (the lead, 2026-11-18: "count all voice for now").
+ * A round already choosing keeps what it froze with; the page says so.
+ */
+function CountedVoiceForm({
+  pots,
+  potId,
+  onPot,
+  busy,
+  onChoose,
+}: {
+  pots: Pot[];
+  potId: string;
+  onPot: (id: string) => void;
+  busy: boolean;
+  onChoose: (potId: string, countedVoice: "all" | "work_only") => Promise<boolean>;
+}) {
+  const pot = pots.find((p) => p.id === potId) ?? pots[0];
+  const current = pot.countedVoice ?? "all";
+  return (
+    <div className="mt-6 grid gap-3">
+      <h3 className="text-base font-semibold text-foreground">
+        <Trans context="funding rounds">Which Voice a pot counts</Trans>
+      </h3>
+      <p className="text-sm text-muted-foreground">
+        <Trans>A round reads Voice once, when choosing opens, and keeps that choice to its end.</Trans>
+      </p>
+      <label className={LABEL}>
+        <Trans context="funding rounds">Pot</Trans>
+        <select className={FIELD} value={pot.id} onChange={(e) => onPot(e.target.value)}>
+          {pots.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={current === "all" ? BTN_PRIMARY : BTN_SECONDARY} aria-pressed={current === "all"} disabled={busy} onClick={() => void onChoose(pot.id, "all")}>
+          <Trans context="funding rounds">All Voice</Trans>
+        </button>
+        <button
+          type="button"
+          className={current === "work_only" ? BTN_PRIMARY : BTN_SECONDARY}
+          aria-pressed={current === "work_only"}
+          disabled={busy}
+          onClick={() => void onChoose(pot.id, "work_only")}
+        >
+          <Trans context="funding rounds">Only Voice earned through work</Trans>
+        </button>
+      </div>
+    </div>
   );
 }
 

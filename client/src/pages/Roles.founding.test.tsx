@@ -390,20 +390,23 @@ describe("the two pay lines on the card", () => {
     expect(within(section).queryByTestId("pay-split")).toBeNull();
     expect(within(section).getByTestId("pay-at-risk")).toBeTruthy();
   });
-  it("lead, 12 Nov: the 60/40/0 split draws a 0% tile, the asterisk follows the note, and a long label wraps whole", async () => {
+  it("lead, 12 Nov: the 60/40/0 split shows its 0% share, the asterisk follows the note, and a long label wraps whole (read in the editable split since 18 Nov)", async () => {
     const long = "village credits for the shared commons"; // 38 of the 40 a label may hold
     const village = { shape: [{ label: "cash", pct: 60 }, { label: "equity", pct: 40 }, { label: long, pct: 0 }], atRisk: VILLAGE_PAY.atRisk, note: "*The total shown is the full band available for this role." };
     roleCard = (id: string) => ({ roleId: id, sections: SECTIONS, lastEdited: null, showPayRanges: false, villagePay: village, mayEdit: false });
     const section = await open();
     await waitFor(() => expect(within(section).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
-    const tiles = within(section).getByTestId("pay-tiles");
-    expect(Array.from(tiles.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash60%", "equity40%", `${long}0%`]);
+    // The editable split is the one place the shares read (the lead, 18 Nov 2026): no tiles beside it.
+    expect(within(section).queryByTestId("pay-tiles")).toBeNull();
+    const rowsNow = () => Array.from(section.querySelectorAll<HTMLElement>("[data-split-share]"));
+    await waitFor(() => expect(rowsNow().map((r) => [r.getAttribute("data-split-share"), (r.querySelector("[data-split-pct]") as HTMLInputElement).value])).toEqual([["cash", "60"], ["equity", "40"], [long, "0"]]));
+    const rows = rowsNow();
     expect(within(section).getByTestId("pay-split").textContent).toBe(`Default split: 60% cash, 40% equity, 0% ${long}. To be decided in the onboarding process.`);
     // Never cut with an ellipsis: the label wraps, so no truncate and no line clamp on it.
-    for (const label of within(tiles).getAllByTestId("pay-tile-label")) {
-      expect(label.className).not.toMatch(/truncate|line-clamp|text-ellipsis/);
-      expect(label.className).toContain("break-words");
-    }
+    const label = rows[2].querySelector("span") as HTMLElement;
+    expect(label.textContent).toBe(long);
+    expect(label.className).not.toMatch(/truncate|line-clamp|text-ellipsis/);
+    expect(label.className).toContain("break-words");
   });
 });
 
@@ -518,13 +521,15 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
     expect(visible().length).toBeGreaterThan(5);
   });
-  it("holds the ceiling, the shares as tiles and the split line in the rewards piece", async () => {
+  it("holds the ceiling, the shares in the editable split and the split line in the rewards piece", async () => {
     const card = await open();
     fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
-    expect(Array.from(within(piece).getByTestId("pay-tiles").querySelectorAll("li")).map((li) => li.textContent)).toEqual(["cash40%", "equity55%", "village credits5%"]);
+    // The editable split reads the shares; no tiles beside it (the lead, 18 Nov 2026).
+    expect(within(piece).queryByTestId("pay-tiles")).toBeNull();
+    await waitFor(() => expect(Array.from(piece.querySelectorAll<HTMLInputElement>("[data-split-pct]")).map((i) => `${i.getAttribute("data-split-pct")}${i.value}%`)).toEqual(["cash40%", "equity55%", "village credits5%"]));
     expect(within(piece).getByTestId("pay-split").textContent).toContain("To be decided in the onboarding process.");
   });
   it("a role that can be shared says the range, that the proposal sets the pay, the pay at 50%, and the footnote (Rye, 14 Nov 2026)", async () => {

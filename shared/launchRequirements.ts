@@ -256,6 +256,48 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     fixAt: "/admin?tab=players",
     fixLabel: "Open Admin accounts",
   },
+  {
+    id: "admin-password",
+    group: "identity",
+    title: "Keep the founder password long, or unset",
+    /*
+     * BLOCKING. ADMIN_PASSWORD alone opens two doors: the founder claim at
+     * /claim and the export of every member's data. Both refuse a password
+     * under ADMIN_PASSWORD_MIN_LENGTH (server/lib/passwordDoors.ts), so a
+     * short one used to be found only on the day somebody needed one of them.
+     * Resolved by `adminPasswordProof` (server/lib/launchProofs.ts), which
+     * reads the environment and never shows the value or its length.
+     */
+    why:
+      "ADMIN_PASSWORD on its own claims the founder account and exports every member's data. " +
+      "Once set, it must be at least 20 characters long, or both doors refuse it. Left unset, both doors stay shut and " +
+      "a lockout then needs the host. This row never shows the password or its length.",
+    severity: "blocking",
+    checkKey: "admin-password",
+    // An environment variable, so the host's own settings are the door.
+    fixAt: `${FORK_RUNBOOK_URL}#environment-variables`,
+    fixLabel: "How to set it on your host",
+    runbookAnchor: "env",
+  },
+  {
+    id: "break-glass-email",
+    group: "identity",
+    title: "Keep a way back in",
+    /*
+     * RECOMMENDED. A village runs without it, and loses its last way back the
+     * day every admin is locked out. The row reads presence only
+     * (`breakGlassEmailProof`), so green says an address is set and the
+     * detail says a lockout drill is the only proof the way back works.
+     */
+    why:
+      "BREAK_GLASS_ADMIN_EMAIL names the one address that can still claim the village with the founder password " +
+      "if every admin is locked out. Set it to a founder's own address. This row reads only whether it is set.",
+    severity: "recommended",
+    checkKey: "break-glass-email",
+    fixAt: `${FORK_RUNBOOK_URL}#environment-variables`,
+    fixLabel: "How to set it on your host",
+    runbookAnchor: "env",
+  },
 
   // ── Brand: the overlay that makes a fork its own village ─────────────────
   {
@@ -584,7 +626,21 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
      * village-wide cap binds as it does today. What a founder declines is
      * naming a number of their own, at this moment.
      */
-    why: "Every door that brings tokens into existence spends one number, per token, per lunar cycle: hand-mints, co-signed grants, treasury stocking, circle treasuries, stay-credit comps, purchases and what a work-exchange quest releases. Decide it now, while nothing has been issued and the number costs nothing to change. You can also decline and keep the platform's, which is a decision this journey records with your name on it.",
+    /*
+     * WHICH DOORS IT REFUSES, SAID EXACTLY (the five call sites that pass
+     * `mintCapGuard`, listed in shared/issuanceCap.ts). This sentence used to
+     * say "every door" spends the number. Five doors are refused at it; the
+     * other mint-faucet doors are counted and never refused; work pay and the
+     * gratitude pool are not counted at all.
+     */
+    why:
+      "This number limits how much of one token five doors can issue in one lunar cycle: an admin's hand mint, " +
+      "a co-signed mint approval, treasury stocking, funding a circle treasury and a circle's cap bonus. " +
+      "Once it is reached, those five are refused. Stay-credit comps, adjustments and purchases, and the credits " +
+      "a work-exchange quest releases, count toward it and are never refused, so they can use up the room the five " +
+      "doors have. Pay for work and the gratitude pool are not counted at all. Decide it now, while nothing has been " +
+      "issued and the number costs nothing to change. After the Game starts, only a village vote changes it. " +
+      "You can also decline and keep the platform's, which is a decision this journey records with your name on it.",
     severity: "blocking",
     checkKey: "decide:issuance-cap",
     declinable: true,
@@ -699,6 +755,30 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     checkKey: "governance:on-for-members",
     fixAt: "/admin?tab=modules&module=governance",
     fixLabel: "Open Modules",
+  },
+  {
+    id: "unpriced-cash-seats",
+    group: "governance",
+    title: "Set terms for roles held without an application",
+    /*
+     * PAY DEFECT 2 (pre-launch handover; the 14 Nov 2026 ruling: nothing pays
+     * without the Treasurer's confirmation, and no AI proposes amounts). A
+     * person seated on a role that states cash, with no application behind
+     * the seat, has no proposed price and no commitment. Settlement used to
+     * owe them the role's whole cash every cycle; it now owes them nothing,
+     * and this row lists the roles so the Treasurer can set terms. Read only:
+     * the row changes nothing, and it closes once each seat is held through
+     * an adopted application. Resolved in server/lib/launch.ts
+     * (`unpricedSeatsLaunchCheck`, server/lib/cashOwed.ts).
+     */
+    why:
+      "Someone holds a role that states cash, and no application sets their terms. Nothing is owed to them for it " +
+      "until the Treasurer agrees terms with them through an application the village adopts, and then their End of Moon " +
+      "invoice is confirmed like anyone else's.",
+    severity: "recommended",
+    checkKey: "pay:unpriced-seats",
+    fixAt: "/admin?tab=cash-payouts",
+    fixLabel: "Open Cash To Pay Out",
   },
 
   // ── Reach: the real-world acts only a human can do ───────────────────────

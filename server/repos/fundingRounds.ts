@@ -60,6 +60,8 @@ export interface RoundRow {
   divergenceResult: "decider" | "other" | null;
   divergenceNote: string | null;
   divergenceSettledAt: Date | null;
+  /** Pot money held back for the divergence vote's quests (0403); counts only while the vote is undecided. */
+  reservedMinor: number | null;
   /** Both counts and the disagreement, written once at harvest (see `claimOutcome`). */
   outcome: unknown | null;
   createdBy: string;
@@ -142,6 +144,7 @@ function toRound(r: RowDataPacket): RoundRow {
     divergenceResult: r.divergence_result === "decider" || r.divergence_result === "other" ? r.divergence_result : null,
     divergenceNote: str(r.divergence_note),
     divergenceSettledAt: date(r.divergence_settled_at),
+    reservedMinor: num(r.reserved_minor),
     outcome: r.outcome == null ? null : typeof r.outcome === "string" ? JSON.parse(r.outcome) : r.outcome,
     createdBy: String(r.created_by),
     createdAt: iso(r.created_at),
@@ -184,14 +187,21 @@ export interface NewPot {
   circleId: string | null;
   structureKey: string | null;
   clock: PotClock;
+  /** Named on the INSERT and written here: 'all' unless the pot's holder chose work-only (0403). */
+  countedVoice: "work_only" | "all";
   createdBy: string;
 }
 
 export async function insertPot(db: Queryable, p: NewPot): Promise<void> {
   await db.query(
-    "INSERT INTO `funding_pots` (`id`, `name`, `purpose`, `kind`, `unit_kind`, `unit_code`, `holder_role_id`, `circle_id`, `structure_key`, `clock`, `decider`, `weight_cap_pct`, `counted_voice`, `status`, `created_by`) VALUES (?, ?, ?, 'season', ?, ?, ?, ?, ?, ?, 'power', 25, 'work_only', 'open', ?)",
-    [p.id, p.name, p.purpose, p.unitKind, p.unitCode, p.holderRoleId, p.circleId, p.structureKey, p.clock, p.createdBy],
+    "INSERT INTO `funding_pots` (`id`, `name`, `purpose`, `kind`, `unit_kind`, `unit_code`, `holder_role_id`, `circle_id`, `structure_key`, `clock`, `decider`, `weight_cap_pct`, `counted_voice`, `status`, `created_by`) VALUES (?, ?, ?, 'season', ?, ?, ?, ?, ?, ?, 'power', 25, ?, 'open', ?)",
+    [p.id, p.name, p.purpose, p.unitKind, p.unitCode, p.holderRoleId, p.circleId, p.structureKey, p.clock, p.countedVoice, p.createdBy],
   );
+}
+
+/** Switch which Voice a pot counts. A round already frozen keeps the setting it froze with. */
+export async function setPotCountedVoice(db: Queryable, potId: string, countedVoice: "work_only" | "all"): Promise<void> {
+  await db.query("UPDATE `funding_pots` SET `counted_voice` = ? WHERE `id` = ?", [countedVoice, potId]);
 }
 
 export async function potById(db: Queryable, id: string): Promise<PotRow | null> {
@@ -419,6 +429,23 @@ export async function roundsAwaitingVoice(db: Queryable, now: Date): Promise<Rou
 /** Record the divergence ballot, once. */
 export async function setDivergenceBallot(db: Queryable, roundId: string, ballotId: string): Promise<void> {
   await db.query("UPDATE `funding_rounds` SET `divergence_ballot_id` = ? WHERE `id` = ? AND `divergence_ballot_id` IS NULL", [ballotId, roundId]);
+}
+
+/** Hold pot money back for the divergence vote's quests. Written in the harvest transaction, under the pot's lock. */
+export async function reserveForVote(conn: PoolConnection, roundId: string, amountMinor: number): Promise<void> {
+  await conn.query("UPDATE `funding_rounds` SET `reserved_minor` = ? WHERE `id` = ?", [Math.max(0, Math.floor(amountMinor)), roundId]);
+}
+
+/**
+ * What a pot's undecided divergence votes hold back. A round's reservation
+ * stops counting the moment its result is claimed, so settling releases it.
+ */
+export async function reservedOf(db: Queryable, potId: string): Promise<number> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT COALESCE(SUM(`reserved_minor`), 0) AS total FROM `funding_rounds` WHERE `pot_id` = ? AND `divergence_result` IS NULL AND `reserved_minor` IS NOT NULL",
+    [potId],
+  );
+  return Number(rows[0]?.total ?? 0);
 }
 
 /** Settle which count decides the held quests, once. False when it was already settled. */

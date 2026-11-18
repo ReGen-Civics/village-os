@@ -234,6 +234,14 @@ export const NO_WINDOW_SUBJECTS: ReadonlySet<string> = new Set([
    * Game-change window, and nothing else has to change.
    */
   "org_draft",
+  /*
+   * THE QUESTS A FUNDING ROUND'S TWO COUNTS DISAGREE ON (`funding_divergence`,
+   * server/lib/fundingRounds.ts). The lead ruled on 2026-11-18 that a carried
+   * switch lands when the vote closes, with no steward window after it: the
+   * held quests already waited the 48-hour vote, and both answers are counts
+   * the village's own ticks produced, within money the pot already reserved.
+   */
+  "funding_divergence",
 ]);
 
 /**
@@ -243,6 +251,8 @@ export const NO_WINDOW_SUBJECTS: ReadonlySet<string> = new Set([
 const NO_WINDOW_BECAUSE: Readonly<Record<string, string>> = {
   org_draft:
     "This one takes effect the moment it carries, the same as when a holder of the power publishes a change to the structure.",
+  funding_divergence:
+    "This one takes effect the moment it carries: the quests it decides already waited for this vote, and their money is held for them.",
 };
 
 /** Does this subject skip the window entirely and execute the moment it carries? */
