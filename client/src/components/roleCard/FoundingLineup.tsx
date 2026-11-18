@@ -20,8 +20,8 @@
  * implies hiring or building a circle: "we're aiming to stay lean with the roles and lean more into
  * quests and other ways to co-create".
  */
-import type { ReactNode } from "react";
-import { ArrowRight, Bot, LayoutList, Sprout, Target, UserRound } from "lucide-react";
+import { lazy, Suspense, type ReactNode } from "react";
+import { ArrowRight, LayoutList, Sprout, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import { fillLine } from "./cardWordsT";
@@ -31,9 +31,11 @@ import { domainsHeld } from "@shared/rolePieces";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import type { FoundingRole } from "./FoundingTeam";
-import { rosterOf, type RosterEntry } from "./roster";
 
 export type LineupView = "sheet" | "formation";
+
+// The roster sits below the open roles, so its cards load after the page's first view (route-first-view.json).
+const RosterList = lazy(() => import("./RosterCards"));
 
 /** A role of the founding circle that someone holds. */
 export interface FilledRole {
@@ -79,76 +81,6 @@ function OpenPill() {
   );
 }
 
-/** The Seed of Life as quiet line work behind a roster card's crest. */
-function CrestSeed({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 120 120" aria-hidden="true" className={`pointer-events-none absolute text-notice ${className}`}>
-      {seedOfLifeCentres(60, 60, 20).map((c, i) => (
-        <circle key={i} cx={fx(c.x)} cy={fx(c.y)} r={20} fill="none" stroke="currentColor" strokeWidth={0.5} />
-      ))}
-    </svg>
-  );
-}
-
-/** The crest: a gold ring around the holder's initial, or a plain mark when there is no name. Never a face. */
-function Crest({ entry, size }: { entry: RosterEntry; size: string }) {
-  const initial = entry.name ? Array.from(entry.name)[0]?.toLocaleUpperCase() : null;
-  const Icon = entry.agent ? Bot : UserRound;
-  return (
-    <span className={`relative grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-notice/40 via-notice to-notice/40 p-[3px] shadow-[0_0_24px] shadow-notice/30 ${size}`} aria-hidden="true">
-      <span className="grid size-full place-items-center rounded-full bg-background font-display text-notice">
-        {initial ? <span className="text-[1.75em] leading-none">{initial}</span> : <Icon className="size-1/2" />}
-      </span>
-    </span>
-  );
-}
-
-/**
- * ONE PERSON ON THE ROSTER (Rye, 17 Nov 2026, approved mockup): a crest, the first name the village shows
- * this reader, the circle as the team and every role they hold as their positions. No numbers, no stats.
- */
-function RosterCard({ entry, team, variant }: { entry: RosterEntry; team: string | null; variant: LineupView }) {
-  const { t } = useLingui();
-  const title = entry.name ?? (entry.agent ? t({ message: "An agent", context: "roster card: a role an agent holds" }) : t({ message: "Filled", context: "team sheet: someone holds this role" }));
-  const positionsWord =
-    entry.roles.length === 1 ? t({ message: "Position", context: "roster card: the one role a person holds" }) : t({ message: "Positions", context: "roster card: the roles a person holds" });
-  const positions = (
-    <ul className={`mt-1 grid gap-1 ${variant === "formation" ? "justify-items-center" : ""}`}>
-      {entry.roles.map((r) => (
-        <li key={r.id} className="flex items-start gap-2 text-sm leading-snug text-card-foreground" data-filled-role={r.id}>
-          {/* A centred line wraps under itself, so the formation's positions go without the dot. */}
-          {variant === "sheet" && <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-notice" aria-hidden="true" />}
-          {r.name}
-        </li>
-      ))}
-    </ul>
-  );
-  if (variant === "formation") {
-    return (
-      <li className="flex w-full max-w-48 flex-col items-center gap-1 text-center" data-roster-person={entry.key}>
-        <Crest entry={entry} size="size-16 text-base sm:size-20 sm:text-lg" />
-        <p className="mt-2 font-display text-lg leading-snug text-card-foreground">{title}</p>
-        {positions}
-      </li>
-    );
-  }
-  return (
-    <li className="grid grid-cols-[5.5rem_minmax(0,1fr)] overflow-hidden rounded-2xl border border-notice/40 bg-card shadow-sm sm:grid-cols-1 sm:grid-rows-[auto_1fr] sm:content-start" data-roster-person={entry.key}>
-      <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-b from-muted to-card sm:h-36 sm:pt-5">
-        <CrestSeed className="size-40 opacity-20 sm:size-56" />
-        {team && <span className="absolute left-3 top-2.5 hidden text-[0.65rem] font-bold uppercase tracking-widest text-notice sm:inline">{team}</span>}
-        <Crest entry={entry} size="size-14 text-base sm:size-20 sm:text-lg" />
-      </div>
-      <div className="min-w-0 p-3 sm:p-4 sm:pt-3">
-        {team && <p className="text-[0.65rem] font-bold uppercase tracking-widest text-notice sm:hidden">{team}</p>}
-        <p className="font-display text-xl leading-snug text-card-foreground sm:text-2xl">{title}</p>
-        <p className="mt-2 text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground">{positionsWord}</p>
-        {positions}
-      </div>
-    </li>
-  );
-}
-
 export interface FoundingLineupProps {
   roles: FoundingRole[];
   filled: FilledRole[];
@@ -188,8 +120,6 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
 export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null }: FoundingLineupProps) {
   const { t } = useLingui();
   const circle = roles[0]?.circleName ?? null;
-  // One card per person, every role they hold listed (Rye, 17 Nov 2026); alphabetical, so the order says nothing.
-  const roster = rosterOf(filled);
 
   const toggle = (
     <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={t({ message: "How to show the team", context: "founding team view switch" })}>
@@ -282,11 +212,9 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               <div className={`grid gap-4 ${orgPreview ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start" : ""}`}>
                 {/* First in the page order, so a phone meets the door to the org chart above the cards. */}
                 {orgPreview && <div className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1" data-org-preview="">{orgPreview}</div>}
-                <ul className={`grid gap-3 sm:grid-cols-2 ${orgPreview ? "lg:col-start-1 lg:row-start-1 xl:grid-cols-3" : "lg:grid-cols-3"}`} data-testid="filled-roles">
-                  {roster.map((e) => (
-                    <RosterCard key={e.key} entry={e} team={circle} variant="sheet" />
-                  ))}
-                </ul>
+                <Suspense fallback={null}>
+                  <RosterList filled={filled} team={circle} variant="sheet" className={`grid gap-3 sm:grid-cols-2 ${orgPreview ? "lg:col-start-1 lg:row-start-1 xl:grid-cols-3" : "lg:grid-cols-3"}`} />
+                </Suspense>
               </div>
             </>
           )}
@@ -333,11 +261,9 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               <p className="relative mb-5 mt-10 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
                 {t({ message: "Holding it now", context: "formation: the roles held now" })}
               </p>
-              <ul className="relative grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5" data-testid="formation-roster">
-                {roster.map((e) => (
-                  <RosterCard key={e.key} entry={e} team={circle} variant="formation" />
-                ))}
-              </ul>
+              <Suspense fallback={null}>
+                <RosterList filled={filled} team={circle} variant="formation" className="relative grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5" />
+              </Suspense>
               {orgPreview && <div className="relative mx-auto mt-8 w-full max-w-sm lg:max-w-xs" data-org-preview="">{orgPreview}</div>}
             </>
           )}

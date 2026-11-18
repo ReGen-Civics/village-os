@@ -10,7 +10,7 @@ import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, ChevronDown, Link2 } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
-import { useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
@@ -36,7 +36,6 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { type FoundingRole } from "@/components/roleCard/FoundingTeam";
-import OrgPreview from "@/components/roleCard/OrgPreview";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
 import { rolesLeadWillBuild } from "@shared/roleListing";
@@ -45,6 +44,9 @@ import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
 import { useRootsFilter } from "@/components/roots/useRootsFilter";
+
+// The org chart door beside the roster (Rye, 16 Nov 2026) loads after the first view: it sits below the open roles.
+const OrgPreview = lazy(() => import("@/components/roleCard/OrgPreview"));
 
 interface RoleEntry {
   id: string;
@@ -610,7 +612,11 @@ export default function Roles() {
   // The org chart beside the roster (Rye, 16 Nov 2026): the /circles drawing, with the held team roles a
   // visitor's /api/org leaves out (they are unlisted) drawn too, so the picture agrees with the roster.
   const chart = orgChartOf(circles, (roles ?? []).map((r) => r.raw), featured[0]?.seat?.circleId ?? null, teamFilled);
-  const orgPreview = chart ? <OrgPreview circles={circles} seats={chart.seats} counts={chart.counts} /> : null;
+  const orgPreview = chart ? (
+    <Suspense fallback={null}>
+      <OrgPreview circles={circles} seats={chart.seats} counts={chart.counts} />
+    </Suspense>
+  ) : null;
   const beyondCount = reach.beyond.filter((r) => r.id !== linked).length + featuredHidden.length;
   const directory = showBeyond ? rooted : rooted.filter((r) => r.id === linked || !reach.beyond.includes(r));
   const rootsOffered = roots.available && byRoots.tagged;

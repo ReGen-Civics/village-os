@@ -3,17 +3,15 @@
  *
  * A wide screen gets the live picture in picture (OrgChartTile, loaded after the page). A phone gets
  * one tappable row with the same counts, because a 200px drawing beside a column of cards helps nobody
- * on a 390px screen. Both are one link into /circles; there is no second destination.
+ * on a 390px screen. Both are one link into /circles; there is no second destination. The page loads this
+ * whole door after its first view (Roles.tsx), so the drawing and its words never ride it.
  */
-import { lazy, Suspense } from "react";
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { MiniCircle, MiniSeat } from "@/components/CirclesMiniMap";
-import type { OrgChartCounts } from "./OrgChartTile";
+import OrgChartTile, { type OrgChartCounts } from "./OrgChartTile";
 import { useWide } from "./useWide";
-
-const OrgChartTile = lazy(() => import("./OrgChartTile"));
 
 export type { OrgChartCounts };
 
@@ -45,9 +43,5 @@ export default function OrgPreview({ circles, seats, counts }: { circles: MiniCi
   const wide = useWide();
   if (circles.length === 0) return null;
   if (!wide) return <OrgChartRow counts={counts} />;
-  return (
-    <Suspense fallback={<OrgChartRow counts={counts} />}>
-      <OrgChartTile circles={circles} seats={seats} counts={counts} />
-    </Suspense>
-  );
+  return <OrgChartTile circles={circles} seats={seats} counts={counts} />;
 }

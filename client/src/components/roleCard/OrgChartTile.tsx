@@ -3,7 +3,7 @@
  * shows the org that people can click into here"; approved 17 Nov).
  *
  * The live circles drawing from the top of /circles (CirclesMiniMap, reused, never copied), set beside
- * the roster on a wide screen. The whole picture is one link into /circles. It is loaded on its own,
+ * the roster on a wide screen. The whole picture is one link into /circles. It is loaded with OrgPreview,
  * after the page, so the drawing's layout code never rides the /roles first view.
  */
 import { useLingui } from "@lingui/react/macro";
