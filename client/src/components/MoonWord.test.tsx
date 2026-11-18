@@ -42,7 +42,7 @@ describe("the moon word", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
-  it("opens on a tap, closes when the tap lands elsewhere, and a tap inside a label does not reach its field", () => {
+  it("opens on a click, closes when focus leaves, and a click inside a label does not reach its field", () => {
     const { container } = inI18n(
       <>
         <label htmlFor="d">
@@ -64,10 +64,58 @@ describe("the moon word", () => {
   it("opens on hover with a mouse and closes when the pointer leaves", () => {
     const { container } = inI18n(<MoonWord />);
     const w = word(container);
-    fireEvent.mouseEnter(w);
+    fireEvent.pointerOver(w, { pointerType: "mouse" });
     expect(screen.getByRole("tooltip")).toBeTruthy();
-    fireEvent.mouseLeave(w);
+    fireEvent.pointerOut(w, { pointerType: "mouse" });
     expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+
+  it("on a phone a tap toggles it from the pointer itself, the made-up click after it does not undo it, and a tap outside closes it (production check of 1.3.25)", () => {
+    const { container } = inI18n(
+      <>
+        <MoonWord />
+        <button type="button">elsewhere</button>
+      </>,
+    );
+    const w = word(container);
+    const tap = (el: HTMLElement) => {
+      fireEvent.pointerDown(el, { pointerType: "touch" });
+      fireEvent.pointerUp(el, { pointerType: "touch" });
+    };
+    // A host that cancels the mouse events after a tap leaves only the pointer: that alone opens it.
+    tap(w);
+    expect(screen.getByRole("tooltip").textContent).toBe(TIP);
+    // The click the browser makes up after the tap keeps it open.
+    fireEvent.click(w);
+    expect(screen.getByRole("tooltip")).toBeTruthy();
+    // A second tap closes it, and a third opens it again.
+    tap(w);
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    tap(w);
+    expect(screen.getByRole("tooltip")).toBeTruthy();
+    // A tap outside closes it.
+    fireEvent.pointerDown(screen.getByRole("button", { name: "elsewhere" }), { pointerType: "touch" });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+    // Escape closes a tapped tip too.
+    tap(w);
+    expect(screen.getByRole("tooltip")).toBeTruthy();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+
+  it("draws the tip out of a transformed card, into the night sheet, where a fixed sheet is the screen's own", () => {
+    const { container } = inI18n(
+      <div className="sheet-night">
+        <div style={{ transform: "translateY(8px)", overflow: "hidden" }} data-card="">
+          <MoonWord />
+        </div>
+      </div>,
+    );
+    fireEvent.click(word(container));
+    const tip = screen.getByRole("tooltip");
+    expect(tip.className).toBe("moon-tip");
+    expect(tip.closest("[data-card]")).toBeNull();
+    expect(tip.parentElement?.className).toBe("sheet-night");
   });
 
   it("Escape closes only the tip, not a panel around it that listens for Escape", () => {

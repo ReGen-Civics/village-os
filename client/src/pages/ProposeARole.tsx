@@ -299,6 +299,8 @@ export default function ProposeARole() {
   /** A role as The terms read it: its words, commitment range, price and split, and its circle. */
   const asTerms = (r: FormRole) => ({ id: r.id, name: r.name, circle: r.circle, held: r.held, stillRecruiting: r.stillRecruiting, comingSoon: r.comingSoon, futureVenture: r.futureVenture, words: r.terms?.words, commitmentPct: r.terms?.commitmentPct ?? null, commitmentMin: r.commitmentMin ?? null, ceiling: r.payCeiling ?? null, payShape: r.payShape, suggestions: r.id === roleId ? pieceSuggestions.length : 0 });
   const extraRoles = extras.map((x) => (form.kind === "open" ? form.roles.find((r) => r.id === x.roleId) : undefined));
+  /** Each role's own split as the rail and the phone's terms step say it (production check of 1.3.25). */
+  const ownSplits = [{ name: role?.name ?? "", line: termsStep.paySplitView?.line ?? "" }, ...extras.map((x, i) => ({ name: extraRoles[i]?.name ?? "", line: x.terms.paySplitView?.line ?? "" }))].filter((x) => x.line);
   /** An added role's commitment: none chosen yet, or below what the role takes from one person. */
   const extraRoleCheck = (x: ExtraRole, r: FormRole | undefined) => (x.terms.commitmentPct === null ? "none" : x.terms.commitmentPct < (r?.commitmentMin ?? 0) ? "below" : null);
 
@@ -890,7 +892,7 @@ export default function ProposeARole() {
               </div>
               {/* On a desk the rewards stand in the rail beside every step (D-06). */}
               <div className="lg:hidden">
-                <CompensationShape setup={setup} />
+                <CompensationShape setup={setup} splits={ownSplits} />
               </div>
             </section>
 
@@ -931,7 +933,7 @@ export default function ProposeARole() {
           {/* A desk has the width: the role stays beside the step. */}
           <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
             <RoleBeside role={role} pct={pct} />
-            <RewardsBeside setup={setup} splits={[{ name: role.name, line: termsStep.paySplitView?.line ?? "" }, ...extras.map((x, i) => ({ name: extraRoles[i]?.name ?? "", line: x.terms.paySplitView?.line ?? "" }))].filter((x) => x.line)} />
+            <RewardsBeside setup={setup} splits={ownSplits} />
           </aside>
         </div>
       )}

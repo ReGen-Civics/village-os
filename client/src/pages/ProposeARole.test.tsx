@@ -339,6 +339,9 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     // By amount: credits $780 is 10%, the others give way in proportion.
     fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "780" } });
     expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
+    // The phone's stand-in for the rail says their own split, as the rail does (production check of 1.3.25).
+    await waitFor(() => expect(document.querySelector("[data-comp-shape] [data-own-splits]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780)"));
+    expect(document.querySelector("[data-comp-shape] [data-own-splits]")?.textContent).toBe(document.querySelector("[data-rewards-beside] [data-own-splits]")?.textContent);
     // The ramp-up is the applicant's own choice: nothing the link, the split or a default does ticks it (1.3.22 check).
     expect((screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement).checked).toBe(false);
     fillAbout();
@@ -662,17 +665,18 @@ describe("the six steps", () => {
 });
 
 describe("the terms", () => {
-  it("shows the village's pay shape as the role cards do: shares only, the onboarding line, the plain word on risk beside the footer, and the ramp-up option", async () => {
+  it("on a phone, says what the rail says: the village's split in one line until they have their own, the one-line footnote, and the ramp-up option (production check of 1.3.25)", async () => {
     await applyFor();
     const shape = document.querySelector("[data-comp-shape]") as HTMLElement;
     // No fixed tiles beside the split they edit above (production check of 1.3.24).
     expect(shape.querySelectorAll("[data-share-pct]")).toHaveLength(0);
-    // The split in force as a sentence (adopted 15 Nov 2026).
-    expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 40% is paid in cash, 55% in Earned Equity and 5% in credits by default; we settle the split together.");
+    // The rail's line, word for word.
+    expect(shape.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");
+    expect(shape.querySelector("[data-split-line]")?.textContent).toBe(document.querySelector("[data-rewards-beside] [data-split-line]")?.textContent);
+    // The one-line footnote, and none of the village's longer note or the old sentence.
     expect(shape.querySelector("[data-at-risk]")?.textContent).toBe(SETUP.atRisk);
-    expect(shape.querySelector("[data-comp-footer]")?.textContent).toBe(SETUP.footer);
-    // The risk sits right beside the footer.
-    expect(shape.querySelector("[data-at-risk]")?.nextElementSibling).toBe(shape.querySelector("[data-comp-footer]"));
+    expect(shape.textContent).not.toContain(SETUP.footer);
+    expect(shape.textContent).not.toContain("we settle the split together");
     // Never a range, a minimum or a budget figure on this step.
     expect((document.querySelector('[data-stone="terms"]') as HTMLElement).textContent).not.toMatch(/\$|USD|per month|a month|minimum|budget/i);
     expect(screen.getByLabelText(/I would like a ramp-up/)).toBeTruthy();
@@ -682,23 +686,10 @@ describe("the terms", () => {
     await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [], atRisk: "", footer: "" } });
     const shape = document.querySelector("[data-comp-shape]") as HTMLElement;
     expect(shape.querySelectorAll("[data-share-pct]")).toHaveLength(0);
-    // The rail says the onboarding line, never a placeholder split.
+    // The rail and the phone both say the onboarding line, never a placeholder split.
     expect(document.querySelector("[data-rewards-beside] [data-split-line]")?.textContent).toBe("To be decided in the onboarding process.");
+    expect(shape.querySelector("[data-split-line]")?.textContent).toBe("To be decided in the onboarding process.");
     expect(shape.querySelector("[data-at-risk]")).toBeNull();
-    expect(shape.querySelector("[data-comp-footer]")).toBeNull();
-    // No split: the old line.
-    expect(shape.querySelector("[data-comp-onboarding]")?.textContent).toBe("To be decided in the onboarding process.");
-  });
-
-  it("the split line leaves out a part at 0%, and keeps the old line for a split it cannot read", async () => {
-    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 0 }, { label: "Equity", pct: 90 }, { label: "Credits", pct: 10 }] } });
-    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 90% is paid in Earned Equity and 10% in credits by default; we settle the split together.");
-    cleanup();
-    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 100 }] } });
-    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("Of this, 100% is paid in cash by default; we settle the split together.");
-    cleanup();
-    await applyFor("r-gate", { ...FORM, founding: { ...SETUP, shares: [{ label: "Cash", pct: 50 }, { label: "Bonus", pct: 50 }] } });
-    expect(document.querySelector("[data-comp-onboarding]")?.textContent).toBe("To be decided in the onboarding process.");
   });
 
   it("each setting the role has written is answered, and the answers travel with the card", async () => {
