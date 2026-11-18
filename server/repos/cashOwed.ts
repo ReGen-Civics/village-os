@@ -168,9 +168,9 @@ export async function payCashRowsTogether(
  * owed cash, for the reason that query gives.
  */
 export async function seatsOnCashRoles(pool: Pool): Promise<RowDataPacket[]> {
-  // A seat held through an adopted application is paid through its End of Moon invoice, from its own terms,
-  // and confirmed by a Treasurer. Settlement never owes it at the start of a moon (QA-1115 P0-2): doing so
-  // paid every holder the role's whole cash with nobody confirming, and its row then blocked the invoice.
+  // The live seats on a role that states cash with NO adopted application behind them. A seat held through an
+  // adopted application is paid through its End of Moon invoice (QA-1115 P0-2). These are read for the
+  // Treasurer to set terms (`cashSeatsWithoutTerms`) and are owed nothing by themselves (pay defect 2).
   const [rows] = await pool.query<RowDataPacket[]>(
     "SELECT a.`id` AS `seat_id`, a.`user_id`, r.`id` AS `role_id`, r.`name` AS `role_name`, r.`cash_minor`, r.`cash_currency` " +
       "FROM `org_role_assignments` a JOIN `org_roles` r ON r.`id` = a.`org_role_id` " +

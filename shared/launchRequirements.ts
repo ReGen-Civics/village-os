@@ -756,6 +756,30 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
     fixAt: "/admin?tab=modules&module=governance",
     fixLabel: "Open Modules",
   },
+  {
+    id: "unpriced-cash-seats",
+    group: "governance",
+    title: "Set terms for roles held without an application",
+    /*
+     * PAY DEFECT 2 (pre-launch handover; the 14 Nov 2026 ruling: nothing pays
+     * without the Treasurer's confirmation, and no AI proposes amounts). A
+     * person seated on a role that states cash, with no application behind
+     * the seat, has no proposed price and no commitment. Settlement used to
+     * owe them the role's whole cash every cycle; it now owes them nothing,
+     * and this row lists the roles so the Treasurer can set terms. Read only:
+     * the row changes nothing, and it closes once each seat is held through
+     * an adopted application. Resolved in server/lib/launch.ts
+     * (`unpricedSeatsLaunchCheck`, server/lib/cashOwed.ts).
+     */
+    why:
+      "Someone holds a role that states cash, and no application sets their terms. Nothing is owed to them for it " +
+      "until the Treasurer agrees terms with them through an application the village adopts, and then their End of Moon " +
+      "invoice is confirmed like anyone else's.",
+    severity: "recommended",
+    checkKey: "pay:unpriced-seats",
+    fixAt: "/admin?tab=cash-payouts",
+    fixLabel: "Open Cash To Pay Out",
+  },
 
   // ── Reach: the real-world acts only a human can do ───────────────────────
   {
