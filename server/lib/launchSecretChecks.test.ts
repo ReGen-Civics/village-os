@@ -65,18 +65,25 @@ describe("admin-password: a blocking row on the journey", () => {
     expect((await resolve("admin-password", prod({ ADMIN_PASSWORD: "x".repeat(ADMIN_PASSWORD_MIN_LENGTH) }))).state).toBe("ok");
   });
 
-  it("fails when missing, blank, or the placeholder the server falls back to", async () => {
-    for (const env of [prod({}), prod({ ADMIN_PASSWORD: "" }), prod({ ADMIN_PASSWORD: "   " }), prod({ ADMIN_PASSWORD: "change-me" })]) {
+  it("passes when unset, saying the founder-password way back is off", async () => {
+    const r = await resolve("admin-password", prod({}));
+    expect(r.state).toBe("ok");
+    expect(r.detail).toBe("Not set, so the founder-password way back is off; a lockout then needs the host");
+  });
+
+  it("fails when set and weak: blank, or the placeholder the server falls back to", async () => {
+    for (const env of [prod({ ADMIN_PASSWORD: "" }), prod({ ADMIN_PASSWORD: "   " }), prod({ ADMIN_PASSWORD: "change-me" })]) {
       const r = await resolve("admin-password", env);
       expect(r.state).toBe("missing");
-      expect(r.detail).toContain("not set");
+      expect(r.detail).toContain("blank value or the placeholder");
+      expect(r.detail).not.toContain("change-me");
     }
   });
 
   it("follows the test runner's exemption from the floor, the way the doors do", () => {
     expect(adminPasswordProof(SHORT, false).state).toBe("ok");
     expect(adminPasswordProof(SHORT, true).state).toBe("missing");
-    expect(adminPasswordProof(undefined, false).state).toBe("missing");
+    expect(adminPasswordProof(undefined, true).state, "unset passes whatever the floor").toBe("ok");
   });
 });
 

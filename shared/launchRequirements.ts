@@ -259,7 +259,7 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
   {
     id: "admin-password",
     group: "identity",
-    title: "Set a long founder password",
+    title: "Keep the founder password long, or unset",
     /*
      * BLOCKING. ADMIN_PASSWORD alone opens two doors: the founder claim at
      * /claim and the export of every member's data. Both refuse a password
@@ -270,8 +270,8 @@ const PLATFORM_REQUIREMENTS: LaunchRequirement[] = [
      */
     why:
       "ADMIN_PASSWORD on its own claims the founder account and exports every member's data. " +
-      "It must be set and at least 20 characters long, or both doors refuse it. " +
-      "This row reads only whether it is long enough, and never shows the password or its length.",
+      "Once set, it must be at least 20 characters long, or both doors refuse it. Left unset, both doors stay shut and " +
+      "a lockout then needs the host. This row never shows the password or its length.",
     severity: "blocking",
     checkKey: "admin-password",
     // An environment variable, so the host's own settings are the door.

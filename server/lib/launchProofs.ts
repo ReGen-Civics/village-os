@@ -23,7 +23,7 @@
  * TWO MORE ROWS READ THE ENVIRONMENT, AND SAY SO. Neither has a live call to
  * prove it, and neither pretends to:
  *
- *   admin-password      ADMIN_PASSWORD set and at least
+ *   admin-password      ADMIN_PASSWORD unset, or set and at least
  *                       ADMIN_PASSWORD_MIN_LENGTH long, the floor the
  *                       bootstrap and export doors already refuse below
  *                       (server/lib/passwordDoors.ts). Blocking.
@@ -268,13 +268,18 @@ const PLACEHOLDER_ADMIN_PASSWORD = "change-me";
  * here carries the value or its length.
  */
 export function adminPasswordProof(password: string | undefined, tooShort = false): Proof {
-  const s = String(password ?? "");
-  if (!s.trim() || s === PLACEHOLDER_ADMIN_PASSWORD) {
+  // UNSET PASSES (coordinator, 2026-11-18). With no ADMIN_PASSWORD both doors
+  // it opens stay shut, which is the safe posture, and the guild seed tells a
+  // founder to delete it once nobody needs the break-glass path.
+  if (password === undefined) {
+    return { state: "ok", detail: "Not set, so the founder-password way back is off; a lockout then needs the host" };
+  }
+  if (!password.trim() || password === PLACEHOLDER_ADMIN_PASSWORD) {
     return {
       state: "missing",
       detail:
-        "ADMIN_PASSWORD is not set, so nobody can claim the founder account or use the break-glass way back in. " +
-        `Set one of at least ${ADMIN_PASSWORD_MIN_LENGTH} characters on your host and redeploy`,
+        "ADMIN_PASSWORD is set to a blank value or the placeholder, which anyone could guess. " +
+        `Set one of at least ${ADMIN_PASSWORD_MIN_LENGTH} characters on your host, or remove it, and redeploy`,
     };
   }
   if (tooShort) {
@@ -282,7 +287,7 @@ export function adminPasswordProof(password: string | undefined, tooShort = fals
       state: "missing",
       detail:
         `ADMIN_PASSWORD is shorter than ${ADMIN_PASSWORD_MIN_LENGTH} characters, so the founder claim and the village export refuse it. ` +
-        "Set a longer random one on your host and redeploy",
+        "Set a longer random one on your host, or remove it, and redeploy",
     };
   }
   return { state: "ok", detail: `ADMIN_PASSWORD is set and at least ${ADMIN_PASSWORD_MIN_LENGTH} characters long` };

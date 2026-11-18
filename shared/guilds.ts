@@ -424,7 +424,7 @@ export const SEEDS: readonly GuildSeed[] = [
       via: "launch-check",
       checkKey: "admin-password",
       strength: "present",
-      proves: "The password is set and at least 20 characters long, the floor the founder claim and the village export refuse below. It never shows the password or its length.",
+      proves: "The password is unset, or set and at least 20 characters long, the floor the founder claim and the village export refuse below. It never shows the password or its length.",
     },
     nursery: { how: "Claim a staging village first with its own password." },
     compost: ["Delete ADMIN_PASSWORD from Railway once nobody needs the break-glass path."],
