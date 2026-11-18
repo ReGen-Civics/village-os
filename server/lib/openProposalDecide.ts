@@ -79,7 +79,7 @@ import { inTransaction } from "../repos/liveSessions";
 import { inviteById, revokeInvite } from "../repos/memberInvites";
 import * as store from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
-import { inApplicationTransaction, seatsForUpdate, seatsWithCircles } from "../repos/seatApplications";
+import { inApplicationTransaction, seatsForUpdate, seatsWithCircles, setTogether } from "../repos/seatApplications";
 import { carryUpdatesToAccount } from "./applicantUpdates";
 import { announceReview, beginReview, reviewFirstOn, type ReviewDeps, type ReviewStart } from "./applicationReview";
 import { agentRoleNamesInCircles, stampStep } from "../repos/applicationReview";
@@ -561,6 +561,8 @@ export async function placeOnRoles(
   try {
     await inApplicationTransaction(pool, async (conn) => {
       for (const made of prepared) await writeApplicationOn(conn, made.app, "awaiting-holder", { candidateAligns: false });
+      // One proposal's roles are decided together: by one holder's adoption, or by ONE village vote (the lead, 18 Nov 2026).
+      await setTogether(conn, prepared.map((made) => made.app.row.id));
     });
   } catch (e: any) {
     if (e?.code === "SA_PENDING") return { ok: false, code: "pending", applicationId: String(e.applicationId) };

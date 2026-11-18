@@ -83,6 +83,8 @@ const LEFT = { id: "u-left", name: "Lee Gone", email: "left@example.test" };
 const KEPT = { id: "u-kept", name: "Kit Wren", email: "kit-kept@example.test" };
 /** An account that proposes for two roles at once, each with its own commitment (the lead, 17 Nov 2026). */
 const TWO = { id: "u-two", name: "Tam Birch", email: "tam-two@example.test" };
+/** An account whose second role's commitment the deciders counter (the lead, 18 Nov 2026). */
+const CTR = { id: "u-ctr", name: "Cy Thorn", email: "cy-ctr@example.test" };
 
 /** The image ships ffmpeg (Dockerfile); a machine without one skips the copy case, said out loud. */
 const HAS_FFMPEG = spawnSync("ffmpeg", ["-hide_banner", "-version"], { stdio: "ignore" }).status === 0;
@@ -119,7 +121,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     pool = testPool(db, { connectionLimit: 6 });
     fileDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-decide-files-"));
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT, TWO]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT, TWO, CTR]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await users.update(HIGH.id, (u: any) => {
       u.stageGranted = "co-creator";
     });
@@ -1258,6 +1260,41 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       // CONTROL: each agreement carries its own role's commitment, never the other's.
       expect(byRole.get(gate)?.clocks).toEqual({ commitmentPct: 40 });
       expect(byRole.get(well)?.clocks).toBeUndefined();
+    });
+
+    it("counters one role's commitment on its own: the applicant is asked, adopting warns until they answer, and that role signs the countered figure (the lead, 18 Nov 2026)", async () => {
+      const before = state.sent.length;
+      const sent = await call("POST", "/api/open-proposals", {
+        name: CTR.name,
+        email: CTR.email,
+        roles: [{ roleId: well, note: "" }, { roleId: gate, note: "", commitmentPct: 40 }],
+        why: "Two roles, one person.",
+        aim: "Water and a way in.",
+      }, null);
+      expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      const shown = await page(id, FOUNDER.id);
+      const rev = shown.body.proposal.offer.revision;
+      expect(shown.body.proposal.offer.roles.map((r: any) => [r.roleId, r.first, r.theirCommitment])).toEqual([[well, true, null], [gate, false, 40]]);
+      // The first role's commitment is countered with the rest of the terms, never here.
+      expect((await call("POST", `/api/governance/open-proposals/${id}/terms`, { expectedRevision: rev, roles: [{ roleId: well, commitmentPct: 50 }] }, FOUNDER.id)).status).toBe(400);
+      const saved = await call("POST", `/api/governance/open-proposals/${id}/terms`, { expectedRevision: rev, roles: [{ roleId: gate, commitmentPct: 60 }] }, FOUNDER.id);
+      expect(saved.status, JSON.stringify(saved.body)).toBe(200);
+      expect(saved.body.offer.roles[1]).toMatchObject({ roleId: gate, ourCommitment: 60, commitmentChanged: true, commitmentState: "waiting" });
+      expect(saved.body.offer.revision).toBe(rev + 1);
+      // A stale save is refused: the version covers the roles' revisions too.
+      expect((await call("POST", `/api/governance/open-proposals/${id}/terms`, { expectedRevision: rev, roles: [{ roleId: gate, commitmentPct: 70 }] }, FOUNDER.id)).status).toBe(409);
+      const warned = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(warned.status).toBe(409);
+      expect(warned.body.settings).toContain("Commitment for Gate Keeper");
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { confirmOpenTalks: true }, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      const apps = await q("SELECT seat_ids, settings_json FROM seat_applications WHERE candidate_user_id = ?", [CTR.id]);
+      const gateApp = apps.find((a: any) => (idsOf(a.seat_ids) as string[]).includes(gate));
+      const settings = typeof gateApp.settings_json === "string" ? JSON.parse(gateApp.settings_json) : gateApp.settings_json;
+      expect(settings.clocks).toEqual({ commitmentPct: 60 });
     });
 
     it("never lowers a stage granted above Member", async () => {

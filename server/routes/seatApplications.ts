@@ -126,6 +126,7 @@ import {
   applicationsOfCandidates,
   inApplicationTransaction,
   latestBallotsFor,
+  leadOf,
   listApplications,
   liveSeatingsOf,
   openApplicationsOf,
@@ -1137,17 +1138,26 @@ export function register(app: Express, deps: Deps): void {
       const refusal = putToVillageRefusal(rule, String(user.id));
       if (refusal) return res.status(refusal.status).json({ error: refusal.error, message: refusal.message });
     }
+    /*
+     * ONE VOTE FOR A PROPOSAL'S ROLES (the lead, 18 Nov 2026): the applications one proposal made (`together`) go to
+     * the village in one ballot, opened on the group's lead and naming every role. Each must still be waiting.
+     */
+    const group = a.together ? (await Promise.all(a.together.map((id) => readApplication(getPool(), id)))).filter((x): x is NonNullable<typeof x> => !!x) : [a];
+    const lead = group.find((x) => x.id === leadOf(a)) ?? a;
+    const subject = { ...lead, seatIds: group.flatMap((x) => x.seatIds) };
     let moved = false;
-    const opened = await openVote(a, String(user.id), async (conn) => {
-      moved = await setStatus(conn, a.id, ["awaiting-holder"], "voting");
-      // Thrown, so the ballot this transaction opened rolls back with it.
-      if (!moved) throw Object.assign(new Error("the application moved before its vote opened"), { code: "SA_MOVED" });
+    const opened = await openVote(subject, String(user.id), async (conn) => {
+      for (const one of group) {
+        moved = await setStatus(conn, one.id, ["awaiting-holder"], "voting");
+        // Thrown, so the ballot this transaction opened rolls back with it.
+        if (!moved) throw Object.assign(new Error("the application moved before its vote opened"), { code: "SA_MOVED" });
+      }
     }).catch((e) => {
       if (e?.code === "SA_MOVED") return { ok: false as const, status: 409, error: "Somebody else decided this application a moment ago." };
       throw e;
     });
     if (!opened.ok) return res.status(opened.status).json({ error: opened.error });
-    res.json({ success: true, status: "voting", ballot: { id: opened.ballotId, closesAt: opened.closesAt } });
+    res.json({ success: true, status: "voting", ballot: { id: opened.ballotId, closesAt: opened.closesAt }, ...(group.length > 1 ? { applications: group.map((x) => ({ id: x.id, href: applicationHref(x.id) })) } : {}) });
   });
 
   // ── Withdraw ──────────────────────────────────────────────────────────────
@@ -1178,7 +1188,8 @@ export function register(app: Express, deps: Deps): void {
        * to a seat they no longer ask for. The ballot's own withdraw rule
        * (`withdrawBallot`) is asked, never bypassed.
        */
-      const ballot = await openBallotFor(pool, ROLE_APPLICATION, a.id);
+      // A vote that decides this application with others (`together`) is opened on the group's lead.
+      const ballot = await openBallotFor(pool, ROLE_APPLICATION, leadOf(a));
       if (ballot) {
         const out = await withdrawBallot(pool, {
           ballotId: ballot.id,
@@ -1193,6 +1204,8 @@ export function register(app: Express, deps: Deps): void {
     }
     const moved = await setStatus(pool, a.id, [a.status], "withdrawn", { decided: true });
     if (!moved) return res.status(409).json({ error: "This application moved a moment ago. Read it again." });
+    // The vote went with it, so the rest of its group wait for a decision again, each still its own application.
+    if (a.status === "voting") for (const other of (a.together ?? []).filter((id) => id !== a.id)) await setStatus(pool, other, ["voting"], "awaiting-holder");
     // An adopted application's terms were aligned by both parties; withdrawn, they read as ended.
     if (a.textId) await settleText(settleDeps, a.textId);
     res.json({ success: true, status: "withdrawn" });

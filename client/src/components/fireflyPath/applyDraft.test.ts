@@ -37,6 +37,23 @@ describe("the saved draft", () => {
     for (const never of ["Ines", "ines@example.org", "consent", "portfolio.pdf", "references", "agreed", "nda"]) expect(written).not.toContain(never);
   });
 
+  it("keeps the roles added to the application, each with its own commitment, ask and split, and drops what is not one (the lead, 18 Nov 2026)", () => {
+    const extras = [
+      { roleId: "r-host", terms: { answers: {}, commitmentPct: 40, payAsk: { kind: "amount" as const, monthly: 3000 }, paySplit: [{ label: "Cash", pct: 70 }, { label: "Equity", pct: 30 }] } },
+      { roleId: "r-well", terms: { answers: {}, commitmentPct: 20, payAsk: null } },
+    ];
+    const back = fromDraft(JSON.parse(JSON.stringify(toDraft({ ...STATE, extras }, NOW))), NOW, 5);
+    expect(back?.extras).toEqual([
+      { roleId: "r-host", terms: { answers: {}, commitmentPct: 40, payAsk: { kind: "amount", monthly: 3000 }, paySplit: [{ label: "Cash", pct: 70 }, { label: "Equity", pct: 30 }] } },
+      { roleId: "r-well", terms: { answers: {}, commitmentPct: 20, payAsk: null } },
+    ]);
+    // A stored list read tolerantly: no id, the same role twice, and more than two are dropped; a split not adding to 100 goes.
+    const raw = { ...JSON.parse(JSON.stringify(toDraft(STATE, NOW))), extras: [{ terms: {} }, { roleId: "a", terms: { commitmentPct: 30, paySplit: [{ label: "Cash", pct: 50 }] } }, { roleId: "a" }, { roleId: "b" }, { roleId: "c" }] };
+    expect(fromDraft(raw, NOW, 5)?.extras?.map((x) => [x.roleId, x.terms.commitmentPct, x.terms.paySplit ?? null])).toEqual([["a", 30, null], ["b", null, null]]);
+    // CONTROL: a draft saved before roles could be added reads with none.
+    expect(fromDraft(JSON.parse(JSON.stringify(toDraft(STATE, NOW))), NOW, 5)).not.toHaveProperty("extras");
+  });
+
   it("is one per role and per personal link", () => {
     expect(draftKey("r1", "")).not.toBe(draftKey("r2", ""));
     expect(draftKey("r1", "")).not.toBe(draftKey("r1", "tok"));

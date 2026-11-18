@@ -119,4 +119,18 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(screen.queryByLabelText("Your commitment: Well Keeper")).toBeNull();
     expect(screen.getByLabelText("Your commitment")).toBeTruthy();
   });
+
+  it("ticked to remember, a reload comes back with the role added and its commitment (the lead, 18 Nov 2026)", async () => {
+    await fillToTerms("/propose-a-role?role=r-gate");
+    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    fireEvent.change(await screen.findByLabelText("Add another role"), { target: { value: "r-host" } });
+    fireEvent.change(await screen.findByLabelText("Your commitment: Welcome Host"), { target: { value: "40" } });
+    await waitFor(() => expect(JSON.stringify(Object.values({ ...window.localStorage }))).toContain("r-host"));
+    cleanup();
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate");
+    serve();
+    render(<ProposeARole />);
+    const host = (await screen.findByLabelText("Your commitment: Welcome Host")) as HTMLSelectElement;
+    expect(host.value).toBe("40");
+  });
 });

@@ -61,6 +61,8 @@ export async function runSeasonTurn(deps: SeasonTurnDeps): Promise<string> {
   for (const app of voting) {
     const latest = ballots.get(app.id);
     if (!latest || latest.status === "open") continue;
+    // Decided with others in one vote (the lead, 18 Nov 2026): the closer acts for the whole group from its lead.
+    if (latest.ledBy) continue;
     // 0334: a first ballot the quorum fallback asked again decided nothing.
     // Its re-run is the latest the moment it opens; this guards the instant.
     if (latest.status === "no_quorum_rerun") continue;
