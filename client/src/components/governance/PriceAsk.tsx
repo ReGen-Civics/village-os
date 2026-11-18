@@ -49,6 +49,8 @@ export default function PriceAsk({
 }) {
   const { t, i18n } = useLingui();
   const [open, setOpen] = useState(false);
+  // The dialog loads on the first open and stays mounted after it, so Radix closes it as it always has.
+  const [loaded, setLoaded] = useState(false);
   // Focus goes back to the button that opened the popup (a11y sweep P1-4): the dialog is opened by state, not a trigger.
   const adjustRef = useRef<HTMLButtonElement>(null);
   const close = () => {
@@ -72,6 +74,7 @@ export default function PriceAsk({
     setChoice(!value ? "suggested" : value.kind === "negotiate" ? "negotiate" : "amount");
     setAmount(value?.kind === "amount" ? String(value.monthly) : suggested ? String(suggested) : "");
     setWhy(value?.why ?? "");
+    setLoaded(true);
     setOpen(true);
   };
   const typed = Math.floor(Number(amount) || 0);
@@ -128,7 +131,7 @@ export default function PriceAsk({
         {t({ message: "Adjust the price", context: "price ask: open the popup" })}
       </button>
 
-      {open && (
+      {loaded && (
         <Suspense fallback={null}>
           <PriceAskDialog
             render={({ Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle }) => (

@@ -330,7 +330,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     serve(SPLIT);
     render(<ProposeARole />);
     await screen.findByRole("heading", { level: 1, name: /^Apply: / });
-    expect((screen.getByLabelText("Your commitment") as HTMLSelectElement).value).toBe("60");
+    // The link's commitment lands once the role's terms settle, which can be a tick after the heading.
+    await waitFor(() => expect((screen.getByLabelText("Your commitment") as HTMLSelectElement).value).toBe("60"));
     // At 60% of $13,000 the suggested price is $7,800; the card's 50/50/0 split is shown at it (the control loads lazily).
     await waitFor(() => expect((screen.getByLabelText("Cash, percent of the total") as HTMLInputElement).value).toBe("50"));
     expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3900");
