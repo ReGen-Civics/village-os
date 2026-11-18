@@ -93,7 +93,7 @@ describe("focus follows the step (red team U10)", () => {
 
 describe("no error before any input (red team U11)", () => {
   const PICK = "Pick the role you are proposing for.";
-  const NO_GOALS = /^Add at least one goal for your first moon/;
+  const NO_GOALS = /^Add at least one goal for your first month/;
   const SHORT_WHY = /^"Why you" needs at least 30 characters/;
 
   it("arriving at a step shows no error; leaving a field shows its own; Next then Back shows the step's", async () => {
