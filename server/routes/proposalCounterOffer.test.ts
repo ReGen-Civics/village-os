@@ -479,6 +479,34 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       }
     });
 
+    // The lead, 18 Nov 2026: the applicant's proposed split goes into the contract; without one, the card's.
+    const SHAPE = [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }];
+    const adoptWithSplit = async (paySplit: unknown) => {
+      await q("DELETE FROM seat_applications WHERE candidate_user_id = ?", [HAS.id]);
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, payShape: SHAPE, payCeiling: { amount: 13000, currency: "USD", per: "month" } }, "test");
+      try {
+        const { id } = await proposalWithCard({ term: A, ending: A });
+        if (paySplit) await q("UPDATE open_role_proposals SET body_json = JSON_SET(body_json, '$.paySplit', CAST(? AS JSON)) WHERE id = ?", [JSON.stringify(paySplit), id]);
+        const adopted = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+        expect(adopted.status, JSON.stringify(adopted.body)).toBe(200);
+        return (await appOf(HAS.id)).settings.pay;
+      } finally {
+        await saveSections(pool, gate, EMPTY_SECTIONS, "test");
+      }
+    };
+    it("writes the applicant's proposed split into the contract when they changed it (the lead, 18 Nov 2026)", async () => {
+      const proposed = [{ label: "Cash", pct: 50, amount: 3900 }, { label: "Equity", pct: 40, amount: 3120 }, { label: "Credits", pct: 10, amount: 780 }];
+      const offered = SHAPE.map((s) => ({ ...s, amount: Math.round((7800 * s.pct) / 100) }));
+      const pay = await adoptWithSplit({ commitmentPct: 60, offered: { total: 7800, shares: offered }, proposed: { total: 7800, shares: proposed } });
+      expect(pay.shape).toEqual([{ label: "Cash", pct: 50 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 10 }]);
+      expect(pay.amountMinor).toBe(780_000);
+    });
+    it("writes the village's split when the application sent none, or one that no longer fits the shape (control)", async () => {
+      expect((await adoptWithSplit(null)).shape).toEqual(SHAPE);
+      const stale = [{ label: "Cash", pct: 100, amount: 7800 }];
+      expect((await adoptWithSplit({ commitmentPct: 60, offered: { total: 7800, shares: [] }, proposed: { total: 7800, shares: stale } })).shape).toEqual(SHAPE);
+    });
+
     it("records a setting still being talked about at an adopt-anyway as still open, never as accepted", async () => {
       await q("DELETE FROM seat_applications WHERE candidate_user_id = ?", [HAS.id]);
       const { id } = await proposalWithCard({ term: A, ending: A });

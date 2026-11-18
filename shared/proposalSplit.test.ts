@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changedShares, formSplit, offeredSplit, proposalSplitOf, readProposedSplit, retotal, setAmount, setPercent, shapePercents, shareOut, splitChanged, splitTotal, withAmounts } from "./proposalSplit";
+import { adoptedShape, changedShares, formSplit, offeredSplit, proposalSplitOf, readProposedSplit, retotal, setAmount, setPercent, shapePercents, shareOut, splitChanged, splitTotal, withAmounts } from "./proposalSplit";
 
 const SHAPE = [
   { label: "Cash", pct: 60 },
@@ -140,5 +140,17 @@ describe("the split a form draws", () => {
     expect(formSplit([], 10000, 50, null, null)).toBeNull();
     const other = withAmounts([{ label: "Gold", pct: 100 }], 5000);
     expect(formSplit(SHAPE, 10000, 50, null, other)!.shown.shares.map((s) => s.label)).toEqual(["Cash", "Equity", "Credits"]);
+  });
+});
+
+describe("the split adoption writes (the lead, 18 Nov 2026)", () => {
+  it("is the applicant's proposed split when it fits the shape, else the shape the card showed", () => {
+    const proposed = setPercent(offeredSplit(SHAPE, 7800), 0, 50);
+    expect(adoptedShape(SHAPE, proposed)).toEqual([{ label: "Cash", pct: 50 }, { label: "Equity", pct: 50 }, { label: "Credits", pct: 0 }]);
+    expect(adoptedShape(SHAPE, offeredSplit(SHAPE, 7800))).toEqual(SHAPE);
+    expect(adoptedShape(SHAPE, null)).toEqual(SHAPE);
+    expect(adoptedShape(SHAPE, withAmounts([{ label: "Cash", pct: 100 }], 7800))).toEqual(SHAPE);
+    expect(adoptedShape(SHAPE, { total: 100, shares: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 30 }, { label: "Credits", pct: 0 }] })).toEqual(SHAPE);
+    expect(adoptedShape(SHAPE, { total: 100, shares: [{ label: "Equity", pct: 60 }, { label: "Cash", pct: 40 }, { label: "Credits", pct: 0 }] })).toEqual(SHAPE);
   });
 });
