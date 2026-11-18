@@ -20908,6 +20908,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
      */
     [CYCLE_SETTLEMENT]: settlementCloser(() => moonDeps()),
     [REDEMPTION_SUBJECT]: redemptionCloser({ getPool, notify }),
+    // Funding rounds S4: the quests a round's two counts disagree on (server/lib/fundingRounds.ts).
+    [FUNDING_DIVERGENCE]: fundingDivergenceCloser(() => ({ pool: getPool(), questsRepo })),
     /*
      * Mechanics (GOV_DESIGN 2.6). Every step is a guarded update or an
      * idempotent apply, so a crash partway heals on the admin apply path
@@ -22047,7 +22049,6 @@ Send an empty drafts array when you are still listening. A role payload is {name
   setSubjectCloserCheck((subjectType: string) => ballotBinds(subjectType));
   registerOrgDraftDecideRoutes(app, { authedUser, isAdmin, guardCapability, capabilityCtx, getPool, overLimit, notify, seasonState, circlesRepo, liveHoldersOf, ballotSetup: roleBallotSetup, notifyRoll, governanceOn: () => effectiveLifecycle("governance") !== "off", closers: SUBJECT_CLOSERS });
   registerMintRequestVoteRoutes(app, { authedUser, capabilityCtx, getPool, overLimit, notify, members, ballotSetup: roleBallotSetup, notifyRoll, governanceOn: () => effectiveLifecycle("governance") !== "off", closers: SUBJECT_CLOSERS });
-  SUBJECT_CLOSERS[FUNDING_DIVERGENCE] = fundingDivergenceCloser(() => ({ pool: getPool(), questsRepo }));
   registerExportVoteRoutes(app, { authedUser, capabilityCtx, getPool, overLimit, notify, members, ballotSetup: roleBallotSetup, notifyRoll, governanceOn: () => effectiveLifecycle("governance") !== "off", closers: SUBJECT_CLOSERS });
   registerAdminSuggestionRoutes(app, { authedUser, capabilityCtx, guardCapability, getPool, overLimit, notify, members, firstName, liveHoldersOf, ballotSetup: roleBallotSetup, notifyRoll, governanceOn: () => effectiveLifecycle("governance") !== "off", closers: SUBJECT_CLOSERS });
   registerSuggestionRouteDial(app, { authedUser, capabilityCtx, liveHoldersOf, getPool });
