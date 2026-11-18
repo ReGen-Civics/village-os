@@ -1,5 +1,5 @@
 /**
- * SEASON PLACES, THE SQL (drizzle/0404). The rules are shared/seasonPlaces.ts
+ * SEASON PLACES, THE SQL (drizzle/0408). The rules are shared/seasonPlaces.ts
  * and the orchestration is server/lib/seasonPlaces.ts.
  *
  * ── THE CAP IS HELD BY A LOCK ROW ───────────────────────────────────────────

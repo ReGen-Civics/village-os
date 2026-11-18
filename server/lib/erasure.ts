@@ -1910,7 +1910,7 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
     },
     {
       /*
-       * Season places (0404, 0405): the words a member wrote with a circle's
+       * Season places (0408, 0409): the words a member wrote with a circle's
        * season proposal come off, their own rows as a member subject go, and
        * their name comes off every gathering answer they gave for a circle.
        * The circle keeps its place: a crew's place is not one person's.
@@ -2479,7 +2479,7 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
   "notebook-after-tombstone",
   "ombuds-asks-after-tombstone",
   "product-subscriptions-after-tombstone",
-  // Season places, gathering circle answers and season crew (0404 to 0406): every
+  // Season places, gathering circle answers and season crew (0408 to 0410): every
   // row is found by the member's id, and a second run clears or deletes nothing new.
   "season-places-after-tombstone",
 ]);

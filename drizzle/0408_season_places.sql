@@ -1,4 +1,4 @@
--- 0404: season places (module season-places, ships off).
+-- 0408: season places (module season-places, ships off).
 -- A circle, or a member, proposes to take part in a season until it has held
 -- a place for `season_places.free_after` seasons; a season holds at most
 -- `season_places.cap` places, and over it a subject waits in order.
