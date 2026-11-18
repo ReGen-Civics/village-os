@@ -40,6 +40,44 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.23 (2026-11-18)
+
+### What changed for your village
+
+- **"Holding it now" on /roles is a roster, with the org chart beside it.** Each person who holds a role has one card: a gold crest with their initial (never a face), their first name, their circle as the team, and every role they hold. People are listed alphabetically and no card carries a number, score or rank. A role the village names nobody for keeps its own "Filled" card, and an agent gets one marked card per role. Beside the roster, a small picture of the org chart (the one from /circles) links into /circles; on a phone it is one row, for example "See the org chart / Anchor Circle: 9 held, 3 open". The Team sheet and Formation views, the tally, the filters and every other section of the page are unchanged.
+- **Applicant screens say month, and promise no home.** On the role card and in the application's goals step, applicants now read "month" where they used to read "moon": "Each month you recap what you delivered, and pay follows what you deliver", "Your goals for your first month in" the role, and "Add at least one goal for your first month." The equity line now reads "a share of ownership in the village", with no promise of a home. A role whose price is set per moon still shows "a moon" on its price and band lines, because a moon and a month are paid differently; that wording waits for a decision.
+- **A held role that is still recruiting keeps its Apply.** When every place in a role is taken but the role is still recruiting, it stays with the held roles and shows "More players welcome" and an Apply link, on its roster card, under a lead's card and on the open card in the directory. The village now accepts an application to such a role. Nobody is seated past the role's count: adopting the application still waits for a free place. A full role that is not recruiting still refuses applications, as before.
+- **An End of Moon invoice paid with no cash reaches Paid.** An approved invoice whose every line is paid in Earned Equity and Credits, with no cash share, used to stay at Approved forever, because only a cash transfer ever marked an invoice Paid. It now turns Paid once every token share it owes has posted, or at approval when it owes none, and the member gets the usual notice. Nothing new moves tokens; the shares still post the way they always have. An invoice with any cash share still waits for its cash transfer.
+- **The role card's slider and the application, fixed after the 1.3.22 check.**
+  - The ramp-up box ticks only from the box and its words. Before, a tap anywhere on its tile could tick it, which on a phone happened by accident under the new split fields. Moving to another role starts the box unticked.
+  - The slider's band line shows at every commitment, 100% included, for example "Band at 100%: $9,623 to $12,029 a month in total comp".
+  - "At N%, the suggested price is ..." follows the slider. At 100% the sentence is left out, because the listed price already says it. Inside an application, it uses the commitment the person chose, else the role's minimum, in place of a fixed 50%.
+  - The line telling a person to send one application for each role is gone, since an application carries one role. It now says: "Each role is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
+- **The Treasurer's Cash Budget has its page.** Admin, Money and agreements, now has a Cash Budget tab, and every member can open /budget, reached from the account menu and the Treasury page. Everyone sees this moon's cash budget: planned, already promised and left, each line, and why any line is not counted. The holder of the pay role (role.pay) also gets the editor: upload a CSV file or cells pasted from a spreadsheet, preview what will be added, changed and withdrawn, then save; add or edit one line; withdraw and restore a line. A refused row shows the server's own sentence, by row and cell. There is no screen yet for rate locks, period notes, source switches, circle envelopes or a moon other than the current one.
+- **Funding rounds, step four. The module still ships off.** A village that has not turned funding rounds on sees no change. In a round, the power count now weighs each member only by Voice earned through work; Voice from donations, investment and backing counts for nothing there. When choosing opens, the roll and each member's counted Voice are written down once, and the harvest counts only those frozen figures. A member who joins after that cannot tick in that round. If the power count and the people's count fund different quests, the quests both counts fund go ahead at once, the disputed ones are held, and a 48-hour village vote on the ordinary ballot decides them: carried, the other count funds its side; anything else, the pot's deciding count does. The round page shows a member their own frozen Voice, "Held for the village's vote" and the vote's state.
+
+### What you must do
+
+Nothing. Every change above applies by itself. Funding rounds stay off unless your village turns them on, and the module is still held for review.
+
+### Does it touch your data
+
+One migration, `0402_a_round_freezes_its_voice.sql`. It adds a new table, `funding_round_voice`, and six new nullable columns on `funding_rounds` (when the Voice froze, the mint sources it could not classify, and the divergence vote's ballot, result, note and settled time). It changes no existing row and removes nothing. On a village that has never run a funding round, both stay empty.
+
+Going back to 1.3.22 is safe. 1.3.22 never queries `funding_round_voice`, it reads a round through a list of the fields it knows, so the new columns are ignored, and it creates a round by naming only the columns it knows, so the new ones stay empty. An invoice marked Paid, and an application sent to a full role that is recruiting, use states 1.3.22 already knows. Two cases to know about, only for a village that turned funding rounds on: a round that harvests on 1.3.22 counts the old way, from live ballot weight, and ignores its frozen Voice; and a divergence vote still open when you go back closes on 1.3.22 with nothing carried out, so its held quests stay held. Let any open divergence vote settle before going back.
+
+### Merged pull requests
+
+- #1444 Roles: holding it now as a roster, with the org chart beside it
+- #1445 Role card and apply flow: month in place of moon, no home promised
+- #1446 Roles: a held role that is still recruiting keeps its Apply
+- #1447 Pay: a 0%-cash End of Moon invoice reaches Paid once its token shares issue
+- #1448 Slider and apply flow fixes from the 1.3.22 check
+- #1449 Give the cash budget its page: Admin tab and /budget
+- #1451 Funding rounds S4: work-only Voice, a snapshot frozen when choose opens, and the 48-hour divergence vote
+
+---
+
 ## 1.3.22 (2026-11-18)
 
 ### What changed for your village
