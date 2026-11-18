@@ -6,7 +6,7 @@ import { NOUN_SLOTS, NOUN_SLOT_IDS, nounVars, vocabularyIsDefault, vocabularyOf,
 import { pageVarsFrom } from "./pageContent/vars";
 import { fillVars } from "./pageContent/resolve";
 import { noticeBlurb, noticeBlurbsFor, noticeTitle, noticeWordsOf, noticeWordsProblem } from "./noticeWords";
-import { NOTIFICATION_KINDS } from "./notificationKinds";
+import { NOTIFICATION_KIND_WORDS } from "./notificationKindWords";
 
 describe("the village's nouns (G4)", () => {
   it("are the platform's words for a village that set none", () => {
@@ -51,7 +51,7 @@ describe("the village's notice words (G6)", () => {
   it("put the village's words around the platform's title, with its nouns", () => {
     const words = noticeWordsOf({ ballot_opened: { title: "Council called ({ballot}): {default}", blurb: "{village} asks your voice." } });
     expect(noticeTitle(words, "ballot_opened", "A vote opened: the roof", vars)).toBe("Council called (ordinance): A vote opened: the roof");
-    expect(noticeBlurb(words, "ballot_opened", NOTIFICATION_KINDS.ballot_opened.blurb, vars)).toBe("Harbour asks your voice.");
+    expect(noticeBlurb(words, "ballot_opened", NOTIFICATION_KIND_WORDS.ballot_opened.blurb, vars)).toBe("Harbour asks your voice.");
     expect(noticeBlurb(words, "gratitude_received", "platform", vars)).toBe("platform");
     // What the config serves the bell: only kinds with a description, already filled.
     expect(noticeBlurbsFor(words, vars)).toEqual({ ballot_opened: "Harbour asks your voice." });

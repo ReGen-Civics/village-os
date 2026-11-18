@@ -7,7 +7,9 @@
  * celebration, because all three of those are decisions about the KIND and
  * not about the row.
  *
- * So each type declares four things:
+ * So each type declares four things (the two that are words, `blurb` and
+ * `many`, live in shared/notificationKindWords.ts, keyed by the same ids; see
+ * WHY THE WORDS LIVE APART below):
  *
  *  - `group`     which part of village life it belongs to, so twenty rows read
  *                as five sections instead of one scroll;
@@ -37,6 +39,13 @@
  * line. The natural kit's contract says the same in its own words
  * (docs/modules/natural-interface.md): celebration on every action becomes
  * wallpaper, and then the rare event has nothing left to say with.
+ *
+ * WHY THE WORDS LIVE APART. The bell, its light and the toasts ride every
+ * page's first view, and they need a kind's group and flags only. The blurbs
+ * and batched lines are most of this catalogue's weight and are read only
+ * when a member opens the bell, so they load then (client/src/lib/noticeKindWords.ts).
+ * The server and the admin panel import them directly. Every id here has its
+ * words there and nothing more (shared/notificationKinds.test.ts).
  *
  * An unknown type degrades to the village group with a generic line, so a
  * type added by a future module renders correctly before anyone edits this.
@@ -74,10 +83,6 @@ export type NotificationGroupId = (typeof NOTIFICATION_GROUPS)[number]["id"];
 
 export interface NotificationKind {
   group: NotificationGroupId;
-  /** Why a notice of this kind matters. One line, the object named. */
-  blurb: string;
-  /** The batched line. `{n}` is replaced with the count. */
-  many: string;
   /** Rare enough to earn a celebration. Four kinds are; the rest are quiet. */
   celebrate: boolean;
   /**
@@ -101,8 +106,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // ── Decisions ─────────────────────────────────────────────────────────────
   ballot_opened: {
     group: "decisions",
-    blurb: "The village opened a vote and you are on the roll for it. Your answer counts toward the outcome.",
-    many: "{n} votes opened, and you are on the roll for each one.",
     celebrate: false,
     waits: true,
   },
@@ -113,8 +116,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   time_poll_open: {
     group: "decisions",
-    blurb: "Pick the times you can make. The time with the most picks becomes the gathering's time.",
-    many: "{n} gatherings are choosing a time.",
     celebrate: false,
     waits: true,
   },
@@ -126,28 +127,20 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   change_request_review: {
     group: "decisions",
-    blurb: "A change request touches what your role looks after. Ask, raise a concern or an objection, suggest an edit, or say you can live with it.",
-    many: "{n} change requests are asking for your review.",
     celebrate: false,
     waits: true,
   },
   change_request: {
     group: "decisions",
-    blurb: "Something new on a change request you are part of. Open it to read and answer.",
-    many: "{n} updates on change requests you are part of.",
     celebrate: false,
   },
   ballot_closing: {
     group: "decisions",
-    blurb: "The window is closing and your vote is still owed. Quorum is measured against everyone on the roll.",
-    many: "{n} votes close soon and are still waiting on your answer.",
     celebrate: false,
     waits: true,
   },
   ballot_carried: {
     group: "decisions",
-    blurb: "The village said yes. What was voted on now applies, and the closer wrote down why.",
-    many: "{n} votes carried.",
     celebrate: true,
   },
   // A carried vote whose decision did not take effect at the close
@@ -156,14 +149,10 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // roll hears `ballot_carried` from the landing job once it is.
   ballot_not_yet_in_effect: {
     group: "decisions",
-    blurb: "The village said yes and the decision has not taken effect yet. The decision page says what happens next.",
-    many: "{n} carried votes have not taken effect yet.",
     celebrate: false,
   },
   ballot_failed: {
     group: "decisions",
-    blurb: "The village said no. The closer wrote down the reasoning, and it stands on the record.",
-    many: "{n} votes closed without passing.",
     celebrate: false,
   },
   // Its own kind, and this is not a nicety. Too few answering is a different
@@ -172,8 +161,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // that had settled nothing.
   ballot_no_quorum: {
     group: "decisions",
-    blurb: "Too few of the roll answered for this to settle anything. The question stands, and it can be asked again.",
-    many: "{n} votes closed with too few answering to settle them.",
     celebrate: false,
   },
   // The quorum fallback (0334): too few answered, so the same question is open
@@ -181,15 +168,11 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // member is being asked to vote, which `ballot_no_quorum` does not ask.
   ballot_rerun_opened: {
     group: "decisions",
-    blurb: "Too few answered a vote you are on the roll for, so it is open again for as long as before, and half as many voices are enough this time.",
-    many: "{n} votes are open again with too few having answered.",
     celebrate: false,
     waits: true,
   },
   ballot_withdrawn: {
     group: "decisions",
-    blurb: "A vote you were on the roll for was called off before it closed. Nothing was decided, and the reason is on the record.",
-    many: "{n} votes were called off.",
     celebrate: false,
   },
   // An advisory vote reaches a real verdict and executes nothing, so it takes
@@ -197,8 +180,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // that earn a celebration.
   ballot_advisory_closed: {
     group: "decisions",
-    blurb: "An advisory vote closed. It records what the village would decide, and nothing changed on its own.",
-    many: "{n} advisory votes closed.",
     celebrate: false,
   },
   // The steward's one act. It does not celebrate: a village that carried
@@ -208,8 +189,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // only stop it inside the window before it does.
   ballot_vetoed: {
     group: "decisions",
-    blurb: "A steward stopped a decision the village carried, inside its window, and said why.",
-    many: "{n} decisions were stopped, each with a reason.",
     celebrate: false,
   },
   /*
@@ -229,44 +208,32 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   veto_window_opened: {
     group: "decisions",
-    blurb: "The village carried a decision and your window to stop it is open. The page names the instant it lands.",
-    many: "{n} carried decisions are inside their window.",
     celebrate: false,
     waits: true,
   },
   veto_window_halfway: {
     group: "decisions",
-    blurb: "Half of your window to stop a carried decision has gone. It lands at its instant unless somebody stops it.",
-    many: "{n} windows are half gone.",
     celebrate: false,
     waits: true,
   },
   veto_window_closing: {
     group: "decisions",
-    blurb: "Two hours left to stop a carried decision. After that it lands and the door is closed.",
-    many: "{n} windows close within two hours.",
     celebrate: false,
     waits: true,
   },
   ballot_expired: {
     group: "decisions",
-    blurb: "A voting window ran out with nobody closing it. Closing is a human act, so the ballot waits for one.",
-    many: "{n} votes are past their window and waiting for someone to close them.",
     celebrate: false,
     waits: true,
   },
   governance: {
     group: "decisions",
-    blurb: "A proposal you raised, or one the village is carrying, moved a step.",
-    many: "{n} proposals moved.",
     celebrate: false,
   },
   // In the bell only (no case in emailCadenceFor): one reminder, two days on,
   // to a seat holder an application still waits on (shared/waitingOnYou.ts).
   seat_application_reminder: {
     group: "decisions",
-    blurb: "An application for a role still waits on a role holder, and you hold that power.",
-    many: "{n} applications still wait on a role holder.",
     celebrate: false,
     waits: true,
   },
@@ -274,8 +241,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // (shared/memberAsks.ts). Quiet: an ask is a small thing between two people.
   ask: {
     group: "work",
-    blurb: "Someone asked you to do something, or answered something you asked.",
-    many: "{n} asks moved.",
     celebrate: false,
     waits: true,
   },
@@ -288,40 +253,28 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // and no part of it is a celebration.
   weight_changed: {
     group: "decisions",
-    blurb: "How much your vote weighs was changed, and whoever changed it said why.",
-    many: "{n} changes to how much your vote weighs.",
     celebrate: false,
   },
   role_appointed: {
     group: "decisions",
-    blurb: "A role is yours to hold. The role page says what it is accountable for.",
-    many: "{n} roles came to you.",
     celebrate: false,
   },
   season: {
     group: "decisions",
-    blurb: "No season is running, so the calendar every term is measured against has stopped. Every mandate in the village hangs on it, the steward role included, so it says so until somebody starts the next one.",
-    many: "The calendar has been stopped for {n} sweeps.",
     celebrate: false,
   },
   season_ending: {
     group: "decisions",
-    blurb: "The season turns soon. Before it does, the village records what this season did and seats people for the next one, so the reminders start two weeks out.",
-    many: "{n} reminders that the season is turning.",
     celebrate: false,
   },
   // Season plans (2026-10-09). Quiet, both: planning is an ask, never a moment.
   season_plan_open: {
     group: "decisions",
-    blurb: "Planning is open for the season. Choose the roles you keep, hand back or apply for, and what you will do.",
-    many: "{n} notices that planning is open.",
     celebrate: false,
     waits: true,
   },
   season_plan_reminder: {
     group: "decisions",
-    blurb: "Your season plan is not filed yet. Filing takes a few minutes, and the village sees it by name.",
-    many: "{n} reminders to file your season.",
     celebrate: false,
     waits: true,
   },
@@ -329,8 +282,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // the feedback is read on the draft, which only its owner opens.
   role_proposal_feedback: {
     group: "people",
-    blurb: "A member who has the link to your role proposal left feedback on it. Open the draft to read it.",
-    many: "{n} pieces of feedback on your role proposal.",
     celebrate: false,
   },
   // The circle's 2 business days to consent or object (role proposals PR B),
@@ -338,23 +289,17 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // neither has a case in emailCadenceFor.
   role_proposal_consent_ask: {
     group: "decisions",
-    blurb: "A member proposes roles in a circle you hold a role in. Consent or object within 2 business days.",
-    many: "{n} role proposals ask your circle to consent.",
     celebrate: false,
     waits: true,
   },
   role_proposal_objection: {
     group: "decisions",
-    blurb: "A member of the circle objected to your role proposal, so it goes to the circle's next meeting.",
-    many: "{n} objections to your role proposals.",
     celebrate: false,
   },
   // A role proposal from somebody with no account yet (open proposals part
   // B), once its address confirmed it. Bell only, like the member pair above.
   open_role_proposal_consent_ask: {
     group: "decisions",
-    blurb: "Somebody from outside the village proposes to hold roles in a circle you hold a role in. Consent or object within 2 business days.",
-    many: "{n} role proposals from outside the village ask your circle to consent.",
     celebrate: false,
     waits: true,
   },
@@ -363,8 +308,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // has no address to email.
   open_role_proposal_decided: {
     group: "decisions",
-    blurb: "The village answered a proposal for an agent you keep: seated on its roles, or declined.",
-    many: "{n} answers on proposals for agents you keep.",
     celebrate: false,
   },
   // An update about a role proposal, for the person who made it, once they
@@ -372,14 +315,10 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // already went to their address as an email, so a digest would be a third.
   applicant_update: {
     group: "decisions",
-    blurb: "An update about a role you proposed to hold: a reply, a conversation, the circle weighing it, or the answer.",
-    many: "{n} updates about your role proposals.",
     celebrate: false,
   },
   open_role_proposal_waiting: {
     group: "decisions",
-    blurb: "Somebody from outside the village proposes to hold roles. You hold the power to place people in roles, so it is yours to adopt or decline.",
-    many: "{n} role proposals from outside the village wait on you.",
     celebrate: false,
     waits: true,
   },
@@ -387,28 +326,20 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // these carries a score, a name or an address; they say a role is waiting.
   application_interview_turn: {
     group: "decisions",
-    blurb: "An applicant is waiting to talk with a role you hold. Book the conversation, then write your scorecard alone.",
-    many: "{n} applicants wait to talk with you.",
     celebrate: false,
     waits: true,
   },
   application_arrived: {
     group: "decisions",
-    blurb: "An application arrived for a role in a circle you hold a role in. You are asked to consent after the conversations.",
-    many: "{n} applications arrived in your circles.",
     celebrate: false,
   },
   application_first_reply_due: {
     group: "decisions",
-    blurb: "An applicant is owed a first reply within 3 business days.",
-    many: "{n} applicants are owed a first reply.",
     celebrate: false,
     waits: true,
   },
   application_stale: {
     group: "decisions",
-    blurb: "An application has not moved for ten days. A person decides what happens next.",
-    many: "{n} applications have not moved for ten days.",
     celebrate: false,
     waits: true,
   },
@@ -416,8 +347,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // status page's door). Nothing is reissued by itself: a holder makes it.
   application_new_invitation_asked: {
     group: "decisions",
-    blurb: "An applicant's invitation to join the team expired, and they asked for a new one. You can make it on their proposal's page.",
-    many: "{n} applicants asked for a new invitation.",
     celebrate: false,
     waits: true,
   },
@@ -425,57 +354,41 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // profile banner says the same thing for as long as it is true.
   role_proposal_window_open: {
     group: "decisions",
-    blurb: "Planning for next season is open. Propose the roles you will hold.",
-    many: "{n} notices that you can propose your roles.",
     celebrate: false,
   },
   role_proposal_review_due: {
     group: "decisions",
-    blurb: "One of your roles is due its review. Propose how you will hold it next season.",
-    many: "{n} roles due their review.",
     celebrate: false,
     waits: true,
   },
   role_proposal_window_closing: {
     group: "decisions",
-    blurb: "Your role proposal is still a draft, and the window closes in 2 business days.",
-    many: "{n} reminders that the window closes soon.",
     celebrate: false,
     waits: true,
   },
   role_access: {
     group: "decisions",
-    blurb: "Access to give or take back for a role: a shared drive, a portal, a list. Open the task and mark it done once you have done it in the tool itself.",
-    many: "{n} access tasks are waiting for you.",
     celebrate: false,
     waits: true,
   },
   term_expiring: {
     group: "decisions",
-    blurb: "The agreement to keep holding your role is running out. In a role that carries permissions those end with the term (0171), so it is the moment to renew or hand it on.",
-    many: "{n} of your terms are running out.",
     celebrate: false,
     waits: true,
   },
   submission: {
     group: "decisions",
-    blurb: "Somebody raised a hand for a role or a power, and the village owes them an answer.",
-    many: "{n} people raised a hand for a role or a power.",
     celebrate: false,
     waits: true,
   },
   submission_status: {
     group: "decisions",
-    blurb: "An answer came back on something you applied for, offered, or raised a hand for.",
-    many: "{n} answers came back on things you put forward.",
     celebrate: false,
   },
 
   // ── Economy ───────────────────────────────────────────────────────────────
   cycle_settled: {
     group: "economy",
-    blurb: "A lunation closed, and its pool was split by the recognition people sent you inside it.",
-    many: "{n} cycles settled with a share for you.",
     celebrate: true,
   },
   /**
@@ -485,8 +398,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   wallet: {
     group: "economy",
-    blurb: "Somebody sent you credits, and they are in your balance now.",
-    many: "{n} people sent you credits.",
     celebrate: false,
   },
   /**
@@ -503,14 +414,10 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   redemption_confirmed: {
     group: "economy",
-    blurb: "A steward confirmed your redemption, and those tokens are gone from your balance.",
-    many: "{n} of your redemptions were confirmed.",
     celebrate: false,
   },
   redemption_refused: {
     group: "economy",
-    blurb: "A redemption was not confirmed, and the tokens it held are back in your wallet.",
-    many: "{n} of your redemptions were not confirmed.",
     celebrate: false,
   },
   /**
@@ -525,8 +432,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   moon_review: {
     group: "work",
-    blurb: "Your moon recap moved: returned, approved, or paid.",
-    many: "{n} updates on moon recaps.",
     celebrate: false,
   },
   /**
@@ -537,104 +442,72 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   sera_agent_digest: {
     group: "work",
-    blurb: "What Sera's agent changed since the last summary, each one undoable for 30 days.",
-    many: "{n} summaries of what Sera's agent did.",
     celebrate: false,
   },
   cash_paid: {
     group: "economy",
-    blurb: "The village marked cash it owed you as paid.",
-    many: "{n} cash payments were marked paid.",
     celebrate: false,
   },
   exchange: {
     group: "economy",
-    blurb: "An exchange order settled, and what you bought is in your wallet.",
-    many: "{n} exchange orders settled.",
     celebrate: false,
   },
   payment: {
     group: "economy",
-    blurb: "A receipt for something bought, renewed, or reversed.",
-    many: "{n} receipts landed.",
     celebrate: false,
   },
   payments_alert: {
     group: "economy",
-    blurb: "Something about money needs a person: a hold lifted, a signature refused, a charge disputed.",
-    many: "{n} money matters need a look.",
     celebrate: false,
   },
   // The failed-actions report, at most once a day. Never celebrated: a list of
   // what is broken is a chore to get through, not a moment.
   failed_action: {
     group: "village",
-    blurb: "Something in the village keeps failing, and the report says what to do about it.",
-    many: "{n} reports of things failing in the village.",
     celebrate: false,
   },
   stays: {
     group: "economy",
-    blurb: "Your stay: nights posting, credits arriving, or a balance running low.",
-    many: "{n} things moved on your stay.",
     celebrate: false,
   },
   library: {
     group: "economy",
-    blurb: "A borrowed thing: due back, settled, or credits released for what you gave.",
-    many: "{n} library items moved.",
     celebrate: false,
   },
 
   // ── Work ──────────────────────────────────────────────────────────────────
   quest_claimed: {
     group: "work",
-    blurb: "You took on a quest. The quest shows who to talk to, your first task, your crew link and the date.",
-    many: "You took on {n} quests.",
     celebrate: false,
   },
   quest_submitted: {
     group: "work",
-    blurb: "Somebody finished work and it is waiting to be read. Value moves when a steward says so.",
-    many: "{n} pieces of finished work are waiting to be read.",
     celebrate: false,
     waits: true,
   },
   quest_consented: {
     group: "work",
-    blurb: "A steward read your work and released what it was worth.",
-    many: "{n} of your quests were consented.",
     celebrate: true,
   },
   quest_declined: {
     group: "work",
-    blurb: "A claim was released, and the quest is open again for whoever wants it next.",
-    many: "{n} claims were released.",
     celebrate: false,
   },
   quest_idea_on_board: {
     group: "work",
-    blurb: "A steward put the quest you proposed on the board, where anyone can take it on.",
-    many: "{n} of your quest ideas went on the board.",
     celebrate: false,
   },
   quest_idea_declined: {
     group: "work",
-    blurb: "A steward read the quest you proposed and left it off the board. You are welcome to propose another.",
-    many: "{n} of your quest ideas were left off the board.",
     celebrate: false,
   },
   quest_help: {
     group: "work",
-    blurb: "Somebody flagged that they are stuck or wobbling on work they took on.",
-    many: "{n} people asked for a hand on work they took on.",
     celebrate: false,
     waits: true,
   },
   call_task_suggested: {
     group: "work",
-    blurb: "A call turned into a suggested task with your name on it. Accept or decline on the thread; nothing happens on its own.",
-    many: "{n} tasks were suggested to you from calls.",
     celebrate: false,
     waits: true,
   },
@@ -642,8 +515,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // it left with is held by you, or by a seat you sit in.
   session_action_held: {
     group: "work",
-    blurb: "A live session closed with an action held by you or by a role you sit in. The notice says what it is and by when.",
-    many: "{n} actions from live sessions are held by you or your roles.",
     celebrate: false,
     waits: true,
   },
@@ -655,35 +526,25 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // a task somebody asked you for. In-app only; nothing celebrates.
   my_task_due: {
     group: "work",
-    blurb: "A task on your own list is due soon. Open your list to see it.",
-    many: "{n} tasks on your list are due soon.",
     celebrate: false,
     waits: true,
   },
   my_task_asked: {
     group: "work",
-    blurb: "Someone asked you for a task on your own list. Open your list to see who.",
-    many: "{n} tasks on your list are waiting on you.",
     celebrate: false,
     waits: true,
   },
   session_action_due: {
     group: "work",
-    blurb: "A task you hold from a live session is near its date, or its date just passed. Answer it on your task board.",
-    many: "{n} tasks you hold are near their dates.",
     celebrate: false,
     waits: true,
   },
   session_task_back: {
     group: "work",
-    blurb: "A task from a session you facilitated was handed back. It comes up at the circle's next action check.",
-    many: "{n} tasks came back to their circles.",
     celebrate: false,
   },
   session_task_unheld: {
     group: "work",
-    blurb: "A task from a live session sits with a role nobody holds now. Give it to someone at the next call.",
-    many: "{n} tasks sit with roles nobody holds.",
     celebrate: false,
   },
   // A tension raised with a role you hold (server/lib/roleTensions.ts), and
@@ -692,15 +553,11 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // holders and whoever raised it, and neither notice carries them anyway.
   role_tension_raised: {
     group: "work",
-    blurb: "A member raised a tension with a role you hold. Only the role's holders and whoever raised it can read it.",
-    many: "{n} tensions were raised with roles you hold.",
     celebrate: false,
     waits: true,
   },
   role_tension_reminder: {
     group: "work",
-    blurb: "A tension raised with a role you hold has waited 2 business days. Take it, answer it, or bring it to the circle.",
-    many: "{n} tensions with your roles have waited 2 business days.",
     celebrate: false,
     waits: true,
   },
@@ -711,33 +568,23 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // digest. Nothing celebrates: each is one person's answer to another.
   role_task_handed: {
     group: "work",
-    blurb: "A task was handed to a role you hold. Accept it, suggest a change, or decline it under Waiting on you.",
-    many: "{n} tasks were handed to roles you hold.",
     celebrate: false,
     waits: true,
   },
   role_task_accepted: {
     group: "work",
-    blurb: "A role accepted a task you handed it. It sits on their list now.",
-    many: "{n} tasks you handed on were accepted.",
     celebrate: false,
   },
   role_task_edited: {
     group: "work",
-    blurb: "A role suggested a change to a task you handed it. See it under Sent on your list.",
-    many: "{n} tasks you handed on have a suggested change.",
     celebrate: false,
   },
   role_task_declined: {
     group: "work",
-    blurb: "A role declined a task you handed it. The reason is under Sent on your list.",
-    many: "{n} tasks you handed on were declined.",
     celebrate: false,
   },
   role_task_done: {
     group: "work",
-    blurb: "A task you handed to a role is done.",
-    many: "{n} tasks you handed on are done.",
     celebrate: false,
   },
   // The agenda library (server/lib/sessionLibrary.ts): an item a member
@@ -746,16 +593,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // something, and it reads as one.
   session_item_taken: {
     group: "work",
-    blurb: "An agenda item you added is on a session's agenda now.",
-    many: "{n} agenda items you added are on an agenda.",
     celebrate: false,
   },
   // A circle's rhythm (server/lib/sessionRhythm.ts): the day before a circle
   // meets, its members hear when, with what is on the agenda.
   session_coming_up: {
     group: "work",
-    blurb: "A circle you are part of meets soon. The notice says when, and what is on the agenda.",
-    many: "{n} of your circles meet soon.",
     celebrate: false,
   },
   // The advice process (shared/sessionAdvice.ts): somebody asks a circle you
@@ -763,50 +606,36 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // people asked hear what was decided.
   session_advice_asked: {
     group: "work",
-    blurb: "Somebody asks a circle you are part of for advice before they decide. The notice says what they mean to decide.",
-    many: "{n} requests for your advice.",
     celebrate: false,
     waits: true,
   },
   session_advice_given: {
     group: "work",
-    blurb: "Somebody you asked for advice gave it.",
-    many: "{n} people gave advice on what you mean to decide.",
     celebrate: false,
   },
   session_advice_decided: {
     group: "work",
-    blurb: "Somebody who asked for your advice decided. The notice says what they decided.",
-    many: "{n} decisions made after asking for your advice.",
     celebrate: false,
   },
   // A facilitator filled in for a member (0288, shared/sessionOnBehalf.ts):
   // the person hears what went in under their name, and can undo it.
   session_filled_in: {
     group: "work",
-    blurb: "The Facilitator filled something in for you during a session. You can change it or undo it there.",
-    many: "{n} things the Facilitator filled in for you.",
     celebrate: false,
   },
   // A night on a proposal (0281): whoever asked for one hears where to answer
   // once the call has closed, and the facilitator hears when no night lasts.
   session_night_open: {
     group: "work",
-    blurb: "You asked for a night on a proposal and the call has closed. The notice says where to answer, and by when.",
-    many: "{n} proposals wait for your answer after a night.",
     celebrate: false,
     waits: true,
   },
   session_night_settled: {
     group: "work",
-    blurb: "A proposal from a session you facilitated waited for a night, and the night is over. The notice says how the round went.",
-    many: "{n} rounds you facilitated are settled after a night.",
     celebrate: false,
   },
   session_item_settled: {
     group: "work",
-    blurb: "A session that took up an agenda item you added has closed. The item says whether it was taken up or waits for next time.",
-    many: "{n} sessions closed with agenda items you added.",
     celebrate: false,
   },
 
@@ -814,27 +643,19 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // Rites (module `rites`, server/routes/rites.ts): the steps of passage a village names.
   rite_witness_asked: {
     group: "people",
-    blurb: "A newcomer is ready for a rite, and you're asked to witness it from your phone.",
-    many: "{n} rites are waiting for a witness.",
     celebrate: false,
     waits: true,
   },
   rite_stamped: {
     group: "people",
-    blurb: "A rite was stamped on a member's card.",
-    many: "{n} rites were stamped.",
     celebrate: false,
   },
   rite_buddy_paired: {
     group: "people",
-    blurb: "You were paired with a newcomer, to walk beside them through their first moon and their rites.",
-    many: "{n} newcomers were paired with you.",
     celebrate: false,
   },
   rite_door_request: {
     group: "people",
-    blurb: "Somebody asked to join through your printed code, and waits for your answer.",
-    many: "{n} people asked to join through your code.",
     celebrate: false,
     waits: true,
   },
@@ -854,14 +675,10 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
      * the founders when no seat is named or the seat sits vacant, so it is
      * never sent to everybody at once.
      */
-    blurb: "Somebody joined the village. Greeting a new arrival is the first thing anybody here does for them.",
-    many: "{n} people joined the village.",
     celebrate: false,
   },
   gratitude: {
     group: "people",
-    blurb: "Somebody said thank you, and put their name to it.",
-    many: "{n} people sent you appreciation.",
     celebrate: false,
   },
   /*
@@ -872,46 +689,32 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   comms_path_handoff: {
     group: "people",
-    blurb: "Somebody has been on a path for three weeks. A note from a person is the next step.",
-    many: "{n} people on a path are ready to hear from a person.",
     celebrate: false,
     waits: true,
   },
   message: {
     group: "people",
-    blurb: "Somebody wrote to you.",
-    many: "{n} conversations have something new in them.",
     celebrate: false,
   },
   mention: {
     group: "people",
-    blurb: "Somebody used your name in a thread and meant you to see it.",
-    many: "{n} threads name you.",
     celebrate: false,
   },
   forum_reply: {
     group: "people",
-    blurb: "Somebody answered you in a thread you are part of.",
-    many: "{n} replies landed in threads you are part of.",
     celebrate: false,
   },
   thread_activity: {
     group: "people",
-    blurb: "A thread you follow moved. Nothing in it needs you.",
-    many: "{n} threads you follow moved.",
     celebrate: false,
   },
   introduction: {
     group: "people",
-    blurb: "The village thinks two of you may be worth knowing. Yes or not now, both are whole answers.",
-    many: "{n} introductions are waiting on you.",
     celebrate: false,
     waits: true,
   },
   contact_request: {
     group: "people",
-    blurb: "Somebody wants to reach you about a role you hold. They see a relay, never your address.",
-    many: "{n} people want to reach you.",
     celebrate: false,
     waits: true,
   },
@@ -919,22 +722,16 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // ── The village ───────────────────────────────────────────────────────────
   stage_advanced: {
     group: "village",
-    blurb: "A door opened for you, and the notice names what you can now do.",
-    many: "{n} doors opened.",
     celebrate: true,
   },
   // The hidden map (0392): a member's map has opened. Said once, by its dedupe
   // key, with no place in it.
   hidden_map_opened: {
     group: "village",
-    blurb: "Enough of your places are vouched for, and the whole map is open to you.",
-    many: "{n} maps opened.",
     celebrate: false,
   },
   badge: {
     group: "village",
-    blurb: "A mark on your profile, earned or placed, with what it means beside it.",
-    many: "{n} marks on your profile changed.",
     celebrate: false,
   },
   // 0098. A badge's DEFINITION changed under the people holding it, so what
@@ -945,8 +742,6 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // confetti.
   badge_definition_changed: {
     group: "village",
-    blurb: "A badge you hold carries something different now, and the line says what changed.",
-    many: "{n} badges you hold were changed.",
     celebrate: false,
   },
   // 0098. Somebody with an admin account acted on a power this village has
@@ -956,39 +751,27 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   // witness exists to prevent.
   capability_override: {
     group: "decisions",
-    blurb: "An admin acted on a power you hold. It is on the village's own record, with their name on it.",
-    many: "{n} powers you hold were acted on from the admin panel.",
     celebrate: false,
   },
   waitlist_promoted: {
     group: "village",
-    blurb: "A seat opened at a gathering you queued for, and the line reached you.",
-    many: "{n} gatherings found you a seat.",
     celebrate: false,
   },
   weekly_brief: {
     group: "village",
-    blurb: "What the week ahead holds, gathered once.",
-    many: "{n} weekly briefs are waiting.",
     celebrate: false,
   },
   feedback: {
     group: "village",
-    blurb: "A bug or an idea you sent in was triaged, and this is where it landed.",
-    many: "{n} things you sent in were triaged.",
     celebrate: false,
   },
   // Live Sessions: to every admin, when a session closes and its record is kept.
   session_record_ready: {
     group: "village",
-    blurb: "A live session closed and its record is kept: the agenda, what was decided, who holds each action, and the backlog.",
-    many: "{n} live session records are ready to read.",
     celebrate: false,
   },
   moderation: {
     group: "village",
-    blurb: "Something was flagged for a steward to read, or a report you filed was closed.",
-    many: "{n} reports moved.",
     celebrate: false,
   },
   /*
@@ -998,15 +781,11 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   comms_host_recap: {
     group: "village",
-    blurb: "A gathering you hosted has ended. The people who came will hear from you once you write the recap.",
-    many: "{n} gatherings you hosted are waiting for a recap.",
     celebrate: false,
     waits: true,
   },
   restorative_intake: {
     group: "village",
-    blurb: "Somebody reached out privately about a rupture. Same day matters for these.",
-    many: "{n} private intakes are waiting.",
     celebrate: false,
     waits: true,
     wordsInAppOnly: true,
@@ -1020,33 +799,23 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
    */
   canvas_revisit: {
     group: "village",
-    blurb: "A key moment came round, and the canvas asks whether one of the village's answers still holds.",
-    many: "{n} canvas answers are worth another look.",
     celebrate: false,
     waits: true,
   },
   exit_opened: {
     group: "village",
-    blurb: "A departure process opened. The published exit policy describes every step of it.",
-    many: "{n} departure processes opened.",
     celebrate: false,
   },
   health: {
     group: "village",
-    blurb: "A number the village watches moved further than the stewards asked to be told about.",
-    many: "{n} health readings moved.",
     celebrate: false,
   },
   tools: {
     group: "village",
-    blurb: "Links the village depends on stopped answering.",
-    many: "{n} link sweeps found something broken.",
     celebrate: false,
   },
   agent_inbox: {
     group: "village",
-    blurb: "Your agent inbox stopped answering, so deliveries to it were switched off.",
-    many: "{n} notices about your agent inbox.",
     celebrate: false,
   },
 };
@@ -1054,10 +823,17 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
 /** The fallback, so a type this file has never heard of still renders. */
 export const UNKNOWN_KIND: NotificationKind = {
   group: "village",
-  blurb: "Something the village keeps for you moved.",
-  many: "{n} more notices.",
   celebrate: false,
 };
+
+/**
+ * The words for a kind with none of its own: an unheard-of type, and every
+ * kind while the bell has not loaded its words yet (shared/notificationKindWords.ts).
+ */
+export const PLAIN_WORDS = {
+  blurb: "Something the village keeps for you moved.",
+  many: "{n} more notices.",
+} as const;
 
 export function kindOf(type: string): NotificationKind {
   return NOTIFICATION_KINDS[type] ?? UNKNOWN_KIND;
@@ -1079,11 +855,6 @@ export function wordsInAppOnly(type: string): boolean {
  */
 export function waitsOnYou(type: string): boolean {
   return kindOf(type).waits === true;
-}
-
-/** The batched line for `n` rows of one kind. `{n}` carries the count. */
-export function manyLine(type: string, n: number): string {
-  return kindOf(type).many.replace("{n}", String(n));
 }
 
 /**
