@@ -20,7 +20,7 @@ describe("the application's shared words, said again as messages", () => {
 
   it("each known refusal reads, in English, exactly as the server sends it", () => {
     const sent = [
-      OPEN_WORDS.closed, OPEN_WORDS.needName, OPEN_WORDS.needEmail, OPEN_WORDS.badEmail, OPEN_WORDS.needRole, OPEN_WORDS.tooManyRoles,
+      OPEN_WORDS.closed, OPEN_WORDS.needName, OPEN_WORDS.needEmail, OPEN_WORDS.badEmail, OPEN_WORDS.needRole, OPEN_WORDS.tooManyRoles, OPEN_WORDS.needRoleCommitment,
       OPEN_WORDS.unknownRole, OPEN_WORDS.sameRoleTwice, OPEN_WORDS.needWhy, OPEN_WORDS.needAim, OPEN_WORDS.notSent, OPEN_WORDS.confirmGone,
       OPEN_WORDS.tooMany, OPEN_WORDS.tooManyTries, OPEN_WORDS.tooManyForAddress, OPEN_WORDS.tooBusy, OPEN_WORDS.tooManyOpens,
       ABOUT_WORDS.referenceNeedsAll, ABOUT_WORDS.referenceContact, ABOUT_WORDS.tooManyReferences, ABOUT_WORDS.sameReferenceTwice,

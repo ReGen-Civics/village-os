@@ -43,6 +43,8 @@
  * No `recordEvent` and no `addActivity`: the rows are the record.
  */
 import { cardSummary } from "../../shared/openProposalCard";
+import { roleTermsOf, termsPerRole, type RoleTerms } from "../../shared/openProposals";
+import type { PayAsk } from "../../shared/commitmentRange";
 import { isCommitment, notesAsText, overallChoice } from "../../shared/termsWords";
 import { baseOf } from "./counterOffer";
 import { contractPriceOf, payGroupOf, type ContractPrice } from "../../shared/contractPrice";
@@ -254,7 +256,8 @@ export async function tellTheCircle(deps: Pick<DecideDeps, "getPool" | "notify" 
 // ── The place an adoption makes ─────────────────────────────────────────────
 
 export type Placed =
-  | { ok: true; applicationId: string; outcome: string }
+  /** `applicationIds`: one per role when the proposal named several roles, each with its own terms (the lead, 17 Nov 2026). The first is `applicationId`. */
+  | { ok: true; applicationId: string; outcome: string; applicationIds?: string[] }
   | { ok: false; code: "pending"; applicationId: string }
   | { ok: false; code: "cannot"; error: string };
 
@@ -271,8 +274,11 @@ export type Placed =
  * their own role card (shared/openProposalCard.ts) in plain words, within the
  * application's 2000 characters.
  */
-function deliverablesOf(body: store.StoredOpenProposal["body"], seats: Array<{ id: string; name?: string }>, agreed?: Agreed | null): string {
-  const aim = String(body.aim ?? "").trim();
+function deliverablesOf(whole: store.StoredOpenProposal["body"], seats: Array<{ id: string; name?: string }>, agreed?: Agreed | null, only?: readonly string[]): string {
+  const aim = String(whole.aim ?? "").trim();
+  if (!whole.card) return aim;
+  // One agreement of several (the lead, 17 Nov 2026): the card's lines for its own roles, and the goals named once for all.
+  const body = only ? { ...whole, card: { ...whole.card, roles: whole.card.roles.filter((r) => only.includes(r.roleId)), serves: whole.card.serves.filter((x) => !x.roleId || only.includes(x.roleId)) } } : whole;
   if (!body.card) return aim;
   const name = (id: string) => seats.find((s) => s.id === id)?.name ?? id;
   const goal = (id: string) => body.card?.serves.find((s) => s.goalId === id)?.goal || id;
@@ -295,9 +301,30 @@ type Agreed = ReturnType<typeof agreedTerms>;
  * counter-offer revision, and the applicant's last answer to each. Read from the
  * proposal's own body and the roles' offers.
  */
-export async function agreedOf(db: Db, proposal: store.StoredOpenProposal): Promise<Agreed> {
-  const base = await baseOf(db, proposal.body.roles.map((r) => r.roleId));
-  return agreedTerms({ base: base.words, answers: proposal.body.card?.terms?.answers ?? {}, theirs: proposal.body.card?.commitmentPct ?? null, co: proposal.body.counterOffer ?? null });
+export async function agreedOf(db: Db, proposal: store.StoredOpenProposal, part?: AgreementPart): Promise<Agreed> {
+  const base = await baseOf(db, part?.roleIds ?? proposal.body.roles.map((r) => r.roleId));
+  const agreed = agreedTerms({ base: base.words, answers: proposal.body.card?.terms?.answers ?? {}, theirs: part ? part.terms.commitmentPct : (proposal.body.card?.commitmentPct ?? null), co: proposal.body.counterOffer ?? null });
+  // A counter-offer's commitment is the first role's (the decider's page offers one commitment): every other role signs its own.
+  return part && !part.first ? { ...agreed, commitmentPct: part.terms.commitmentPct } : agreed;
+}
+
+/**
+ * ONE AGREEMENT PER ROLE (the lead, 17 Nov 2026): a proposal naming several roles with a commitment for each becomes
+ * one application per role, each with its own commitment, price and split. Any other proposal is one application
+ * for all its roles, as it always was (an older one naming several roles with one commitment among them).
+ */
+export interface AgreementPart {
+  roleIds: string[];
+  terms: RoleTerms;
+  /** The proposal's first role: the counter-offer's commitment and the shared goals ride with it. */
+  first: boolean;
+}
+
+export function agreementParts(body: store.StoredOpenProposal["body"]): AgreementPart[] {
+  const terms = roleTermsOf(body);
+  if (termsPerRole(body)) return terms.map((t, i) => ({ roleIds: [t.roleId], terms: t, first: i === 0 }));
+  const first = terms[0] ?? { roleId: "", commitmentPct: null, payAsk: null, paySplit: null };
+  return [{ roleIds: body.roles.map((r) => r.roleId), terms: first, first: true }];
 }
 
 /**
@@ -322,11 +349,16 @@ export function settingsOfAgreed(agreed: Agreed, term: { endsOn: string } | null
  * price, at the agreed commitment, from the role's own band. One role per application; an older proposal
  * naming several is priced by the first role that lists a band. Null with no band: the contract records no pay.
  */
-export async function contractPriceFor(db: Pool, proposal: store.StoredOpenProposal, agreed: Agreed): Promise<ContractPrice | null> {
-  const ids = proposal.body.roles.map((r) => r.roleId);
-  const sections = await sectionsForMany(db, ids);
+export async function contractPriceFor(db: Pool, proposal: store.StoredOpenProposal, agreed: Agreed, part?: AgreementPart): Promise<ContractPrice | null> {
+  const ids = part?.roleIds ?? proposal.body.roles.map((r) => r.roleId);
+  return contractPriceForRoles(db, ids, agreed.commitmentPct ?? null, part ? part.terms.payAsk : (proposal.body.payAsk ?? null));
+}
+
+/** The price for one agreement: the first of its roles that lists a band, at the agreed commitment, with the ask given for it. */
+export async function contractPriceForRoles(db: Pool, ids: readonly string[], commitmentPct: number | null, ask: PayAsk | null): Promise<ContractPrice | null> {
+  const sections = await sectionsForMany(db, [...ids]);
   const ceiling = ids.map((id) => sections.get(id)?.payCeiling ?? null).find((c) => !!c) ?? null;
-  const price = contractPriceOf(ceiling, agreed.commitmentPct ?? null, proposal.body.payAsk ?? null);
+  const price = contractPriceOf(ceiling, commitmentPct, ask);
   if (!price) return null;
   // The split the card showed them, the card's "Default split": its own shares, else the village's (P1-6).
   const role = ids.find((id) => sections.get(id)?.payCeiling) ?? ids[0];
@@ -335,10 +367,10 @@ export async function contractPriceFor(db: Pool, proposal: store.StoredOpenPropo
 }
 
 /** The card's goals for the first moon as the application's list holds them. */
-function goalsOfCard(body: store.StoredOpenProposal["body"]): ProposalGoal[] {
+function goalsOfCard(body: store.StoredOpenProposal["body"], only?: readonly string[]): ProposalGoal[] {
   const card = body.card;
   if (!card) return [];
-  return card.roles.flatMap((r) =>
+  return card.roles.filter((r) => !only || only.includes(r.roleId)).flatMap((r) =>
     r.firstMoon.map((q) => ({
       title: q.quest,
       doneWhen: q.doneWhen,
@@ -351,9 +383,10 @@ function goalsOfCard(body: store.StoredOpenProposal["body"]): ProposalGoal[] {
 }
 
 /** The village's season goals the card picked, in their words, with how the work serves each. A goal whose words were not kept is left out. */
-function servesOfCard(body: store.StoredOpenProposal["body"]): Array<{ goal: string; howItHelps: string | null }> {
+function servesOfCard(body: store.StoredOpenProposal["body"], only?: readonly string[]): Array<{ goal: string; howItHelps: string | null }> {
   const out: Array<{ goal: string; howItHelps: string | null }> = [];
   for (const s of body.card?.serves ?? []) {
+    if (only && s.roleId && !only.includes(s.roleId)) continue;
     const goal = String(s.goal ?? "").trim();
     if (!goal || out.some((g) => g.goal === goal)) continue;
     out.push({ goal, howItHelps: String(s.how ?? "").trim() || null });
@@ -439,79 +472,96 @@ export async function placeOnRoles(
   }
   const seatIds = p.proposal.body.roles.map((r) => r.roleId);
   const seats = await seatsForUpdate(pool, seatIds);
-  // What was agreed is what is signed (audit B2): the offer, the latest revision, their answers and the commitment.
-  const agreed = await agreedOf(pool, p.proposal);
-  const price = await contractPriceFor(pool, p.proposal, agreed);
-  const goals = goalsOfCard(p.proposal.body);
-  const cardTerms = p.proposal.body.card?.terms ?? null;
-  const aim = String(p.proposal.body.aim ?? "").trim();
-  const serves = servesOfCard(p.proposal.body);
-  const answers = {
-    // The aim and the season goals she picked, so the adopted card reads them (verify item 7).
-    ...(aim ? { aim } : {}),
-    ...(serves.length ? { serves } : {}),
-    ...(goals.length ? { goals } : {}),
-    ...(cardTerms || agreed.commitmentPct != null
-      ? {
-          terms: {
-            choice: overallChoice(agreed.answers),
-            note: notesAsText(agreed.answers),
-            // The per-setting answers ride with a commitment only: the parser asks for both together.
-            ...(isCommitment(agreed.commitmentPct) ? { answers: agreed.answers, commitmentPct: agreed.commitmentPct } : {}),
-          },
-        }
-      : {}),
-  };
-  const parsed = parseApplicationInput({
-    seatIds,
-    note: p.proposal.body.why || null,
-    deliverables: deliverablesOf(p.proposal.body, seats, agreed) || null,
-    // The goals as a list, so the proposal's page draws them as one (joining lane PR 1), and the terms as agreed.
-    ...(Object.keys(answers).length ? { answers } : {}),
-    settings: settingsOfAgreed(agreed, term, price),
-  });
-  if (!parsed.ok) return { ok: false, code: "cannot", error: parsed.error };
   for (const id of seatIds) {
     const seat = seats.find((s) => s.id === id);
     if (!seat || !seat.active || seat.isExample) {
       return { ok: false, code: "cannot", error: `${seat?.name ?? "A role it names"} is no longer a role the village fills, so nothing was changed.` };
     }
   }
-  const made = await prepareApplication({
-    candidateUserId: p.account,
-    proposedBy: p.account,
-    input: parsed.input,
-    startsAt,
-    startsNoEarlierThan: startsAt,
-    seatNames: seatIds.map((id) => seats.find((s) => s.id === id)?.name ?? id),
-    calendar,
-    now,
-    supersedes: null,
-  });
-  if (!made.ok) return { ok: false, code: "cannot", error: String(made.body.error ?? "The roles could not be set up.") };
+  // ONE AGREEMENT PER ROLE (the lead, 17 Nov 2026): each role of a proposal with a commitment for each is its own
+  // application, with its own commitment, price and split. Every one is prepared before any is written, and all are
+  // written in one transaction, so a role that cannot be placed leaves none placed.
+  const parts = agreementParts(p.proposal.body);
+  const prepared: Array<Extract<Awaited<ReturnType<typeof prepareApplication>>, { ok: true }>> = [];
+  for (const part of parts) {
+    // What was agreed is what is signed (audit B2): the offer, the latest revision, their answers and the commitment.
+    const agreed = await agreedOf(pool, p.proposal, parts.length > 1 ? part : undefined);
+    const price = await contractPriceFor(pool, p.proposal, agreed, parts.length > 1 ? part : undefined);
+    const only = parts.length > 1 ? part.roleIds : undefined;
+    // The goals named once for all roles ride with the first role's agreement.
+    const goals = goalsOfCard(p.proposal.body, only && !part.first ? only : undefined);
+    const cardTerms = p.proposal.body.card?.terms ?? null;
+    const aim = String(p.proposal.body.aim ?? "").trim();
+    const serves = servesOfCard(p.proposal.body, only && !part.first ? only : undefined);
+    const answers = {
+      // The aim and the season goals she picked, so the adopted card reads them (verify item 7).
+      ...(aim ? { aim } : {}),
+      ...(serves.length ? { serves } : {}),
+      ...(goals.length ? { goals } : {}),
+      ...(cardTerms || agreed.commitmentPct != null
+        ? {
+            terms: {
+              choice: overallChoice(agreed.answers),
+              note: notesAsText(agreed.answers),
+              // The per-setting answers ride with a commitment only: the parser asks for both together.
+              ...(isCommitment(agreed.commitmentPct) ? { answers: agreed.answers, commitmentPct: agreed.commitmentPct } : {}),
+            },
+          }
+        : {}),
+    };
+    const parsed = parseApplicationInput({
+      seatIds: part.roleIds,
+      note: p.proposal.body.why || null,
+      deliverables: deliverablesOf(p.proposal.body, seats, agreed, only) || null,
+      // The goals as a list, so the proposal's page draws them as one (joining lane PR 1), and the terms as agreed.
+      ...(Object.keys(answers).length ? { answers } : {}),
+      settings: settingsOfAgreed(agreed, term, price),
+    });
+    if (!parsed.ok) return { ok: false, code: "cannot", error: parsed.error };
+    const made = await prepareApplication({
+      candidateUserId: p.account,
+      proposedBy: p.account,
+      input: parsed.input,
+      startsAt,
+      startsNoEarlierThan: startsAt,
+      seatNames: part.roleIds.map((id) => seats.find((s) => s.id === id)?.name ?? id),
+      calendar,
+      now,
+      supersedes: null,
+    });
+    if (!made.ok) return { ok: false, code: "cannot", error: String(made.body.error ?? "The roles could not be set up.") };
+    prepared.push(made);
+  }
   try {
-    await inApplicationTransaction(pool, (conn) => writeApplicationOn(conn, made.app, "awaiting-holder", { candidateAligns: false }));
+    await inApplicationTransaction(pool, async (conn) => {
+      for (const made of prepared) await writeApplicationOn(conn, made.app, "awaiting-holder", { candidateAligns: false });
+    });
   } catch (e: any) {
     if (e?.code === "SA_PENDING") return { ok: false, code: "pending", applicationId: String(e.applicationId) };
     throw e;
   }
-  const id = made.app.row.id;
-  if (p.adopt === false) return { ok: true, applicationId: id, outcome: "awaiting-holder" };
-  const { outcome, app, textId } = await adoptApplication(
-    pool,
-    id,
-    ["awaiting-holder"],
-    { via: "holder", ref: p.adopterId, authority: p.authority.slice(0, 64) },
-    { now, lapse: { ...deps.lapse(), now }, calendar },
-  );
-  if (app) await tellOutcome(deps, app, outcome, "open", p.adopterId);
-  if (textId) await settleText(settleDepsOf(deps, deps.now), textId);
+  const ids = prepared.map((made) => made.app.row.id);
+  const many = ids.length > 1 ? { applicationIds: ids } : {};
+  if (p.adopt === false) return { ok: true, applicationId: ids[0], outcome: "awaiting-holder", ...many };
+  let first = "";
+  for (const id of ids) {
+    const { outcome, app, textId } = await adoptApplication(
+      pool,
+      id,
+      ["awaiting-holder"],
+      { via: "holder", ref: p.adopterId, authority: p.authority.slice(0, 64) },
+      { now, lapse: { ...deps.lapse(), now }, calendar },
+    );
+    if (app) await tellOutcome(deps, app, outcome, "open", p.adopterId);
+    if (textId) await settleText(settleDepsOf(deps, deps.now), textId);
+    if (!first) first = outcome.kind;
+  }
   // NO STAGE GRANT HERE (Rye's ruling: Voice is only for people who signed the
   // membership agreement). A stage grant at Member is an admission
   // (server/lib/admission.ts), and it opened ballots to somebody who had signed
   // nothing. The seat is placed; Member comes when their signed Love Letter is
   // accepted, which the adoption letter asks for.
-  return { ok: true, applicationId: id, outcome: outcome.kind };
+  return { ok: true, applicationId: ids[0], outcome: first, ...many };
 }
 
 /**

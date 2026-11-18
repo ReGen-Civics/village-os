@@ -18,12 +18,14 @@ export interface ContractPriceData {
   pct: number;
 }
 
-export default function ContractPrice({ data }: { data: ContractPriceData | null | undefined }) {
+/** `role`: on a proposal naming several roles, the role this agreement is for (the lead, 17 Nov 2026): each is priced on its own. */
+export default function ContractPrice({ data, role }: { data: ContractPriceData | null | undefined; role?: string }) {
   const { t, i18n } = useLingui();
   if (data === undefined) return null;
   if (data === null) {
     return (
       <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground" data-contract-price="none">
+        {role ? `${role}: ` : ""}
         {t({ message: "This role lists no price, so adopting records no pay in the contract. A Treasurer writes it.", context: "open proposal: the contract's pay" })}
       </p>
     );
@@ -40,9 +42,11 @@ export default function ContractPrice({ data }: { data: ContractPriceData | null
         ? t({ message: `They chose to negotiate on the first call. This is the suggested price at ${pct}% commitment until a price is agreed.`, context: "open proposal: where the contract's pay comes from" })
         : t({ message: `The suggested price: the listed price at ${pct}% commitment.`, context: "open proposal: where the contract's pay comes from" });
   return (
-    <section aria-labelledby="op-contract-price" className="grid gap-1 rounded-xl border border-border bg-card p-4" data-contract-price={data.source}>
-      <h2 id="op-contract-price" className="text-lg font-bold text-foreground">
-        {t({ message: "Pay the contract will record", context: "open proposal: the contract's pay" })}
+    <section aria-labelledby={role ? undefined : "op-contract-price"} aria-label={role} className="grid gap-1 rounded-xl border border-border bg-card p-4" data-contract-price={data.source}>
+      <h2 id={role ? undefined : "op-contract-price"} className="text-lg font-bold text-foreground">
+        {role
+          ? t({ message: `Pay the contract for ${role} will record`, context: "open proposal: the contract's pay, one of several roles" })
+          : t({ message: "Pay the contract will record", context: "open proposal: the contract's pay" })}
       </h2>
       <p className="font-display text-2xl text-foreground" data-contract-price-figure="">{figure}</p>
       <p className="text-sm text-muted-foreground">{from}</p>

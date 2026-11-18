@@ -57,18 +57,19 @@ import { civilDayWords } from "@shared/seasonPlans";
 import { termOf, type OpenProposalTerm } from "@shared/openProposalTerm";
 import { useLingui } from "@lingui/react/macro";
 import { i18n } from "@/i18n/i18n";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { doorBackOf } from "@shared/seatApplyLinks";
-import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
+import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
+import { Beside, Shell, goToProblem, roleFromLink, showRoleInAddress, targetFor, type FormProblem } from "@/components/fireflyPath/applyPage";
+import type { ExtraRole } from "@/components/fireflyPath/MoreRoles";
 import { LazyStateNote } from "@/components/ComingSoonLazy";
-import Layout from "@/components/Layout";
 import { useOptionalAuth } from "@/contexts/AuthContext";
 import { readStoredJson, removeStored, writeStoredJson } from "@/lib/safeStorage";
 import { useFocusedFieldInView, useKeyboardInset } from "@/lib/keyboardInset";
 import { IKIGAI_KEY, ikigaiFromStored, whyFromIkigai } from "@shared/roleDiscover";
-import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
+import { OPEN_AIM_MAX, OPEN_ANONYMISE_DAYS, OPEN_APPLY_ROLES, OPEN_CONFIRM_HOURS, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
 import { addressProblem } from "@shared/comms/address";
 import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication";
 import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
@@ -85,6 +86,9 @@ import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
+export { firstUnanswered } from "@/components/fireflyPath/applyPage";
+// Roles added to one application (the lead, 17 Nov 2026): loaded with The terms, off the first view.
+const MoreRoles = lazy(() => import("@/components/fireflyPath/MoreRoles"));
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -100,7 +104,7 @@ interface FormRole {
   timeCommitment?: string | null;
   /** The role's suggested wording for the eight settings and the commitment it asks (joining lane PR 3). */
   terms?: { words?: TermsWords; commitmentPct?: number | null }; commitmentMin?: number | null; payCeiling?: import("@shared/roleCardSections").PayCeiling | null; payShape?: import("@shared/proposalSplit").ShapeShare[]; // the commitment range (Rye, 14 Nov 2026) and the split in force (17 Nov)
-  conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>;
+  conversations?: Array<{ role: string; minutes: number; finalApproval?: boolean }>; held?: boolean;
   bookingUrl?: string | null;
   /** A check happens for this role whatever the references say (0370). */
   alwaysChecked?: boolean;
@@ -114,118 +118,14 @@ type FormState =
   | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup; clips: VoiceClipLimits }
   | { kind: "failed" };
 
-/** One thing to fix before sending: the field's name, the words, and where to look for it on the page. */
-interface FormProblem {
-  field: string | null;
-  message: string;
-  target: string | null;
-}
-
-/** Where on the form each field name the server or the checks use can be found. */
-function targetFor(field: string | null): string | null {
-  switch (field) {
-    case "why": return "#propose-why";
-    case "aim": return "#propose-aim";
-    case "name": return "#propose-name";
-    case "email": return "#propose-email";
-    case "selfKnowledge": return "#propose-self";
-    case "card": return "[data-goals-list]";
-    case "serves": return "[data-value-serves]";
-    case "terms": return "[data-terms-section]";
-    case "agreed": return "[data-agreements] input[type=checkbox][required]";
-    // The tick itself, where the box is (final verification: the cursor went to the top of the stone).
-    case "checkConsent":
-    case "references": return "#propose-about-consent";
-    case "about":
-    case "links":
-    case "files": return "[data-about-you-section]";
-    case "membership": return "[data-agreements]";
-    case "voice": return "[data-voice-invite]";
-    case "timeZone": return "#card-tz";
-    case "earliestStart": return "#card-start";
-    default: return null;
-  }
-}
-
-/** Scroll to what needs fixing and put the cursor there, so a press on Send never looks like nothing happened. */
-function goToProblem(target: string | null) {
-  if (typeof document === "undefined") return;
-  const el = target ? document.querySelector<HTMLElement>(target) : null;
-  const form = document.querySelector<HTMLElement>("[data-open-proposal]");
-  const spot = el ?? form?.querySelector<HTMLElement>("#propose-problems") ?? null;
-  if (!spot) return;
-  spot.scrollIntoView?.({ block: "center", behavior: prefersStill() ? "auto" : "smooth" });
-  const focusable = spot.matches("input,textarea,select,button,[tabindex]") ? spot : (firstUnanswered(spot) ?? spot.querySelector<HTMLElement>("input,textarea,select,button"));
-  const at = focusable ?? spot;
-  // A field found inside a section is centred itself, so the cursor is never off screen.
-  if (at !== spot) at.scrollIntoView?.({ block: "center", behavior: "auto" });
-  at.focus({ preventScroll: true });
-}
-
-/**
- * The first field in a section still waiting for an answer, in reading order:
- * a choice group with nothing picked, an empty list, an empty one-line field,
- * or an empty note box marked required. Null when every field holds
- * something, and the first control is used.
- */
-export function firstUnanswered(spot: HTMLElement): HTMLElement | null {
-  for (const el of Array.from(spot.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>("input,textarea,select"))) {
-    if (el.disabled || (el instanceof HTMLInputElement && el.type === "hidden")) continue;
-    if (el instanceof HTMLInputElement && el.type === "radio") {
-      if (!spot.querySelector(`input[type=radio][name="${CSS.escape(el.name)}"]:checked`)) return el;
-      continue;
-    }
-    if (el instanceof HTMLInputElement && el.type === "checkbox") continue;
-    // A note box is optional unless it says otherwise; a one-line field or a list is an answer.
-    if (el instanceof HTMLTextAreaElement && !el.required) continue;
-    if (el.value.trim() === "") return el;
-  }
-  return null;
-}
-
-/** The words for a problem shown beside its field. */
-function Beside({ id, message }: { id: string; message: string | null }) {
-  if (!message) return null;
-  return (
-    <p id={id} className="mt-2 border-l-4 border-notice pl-3 text-sm font-medium text-foreground" data-field-problem="">
-      {message}
-    </p>
-  );
-}
-
-/** The form's page: the sheet's night ground, wide enough on a desk for the role beside the step. */
-function Shell({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
-  return (
-    <Layout>
-      <div className={`${WORLD} py-10 sm:py-16`}>
-        <div className={`container ${wide ? "max-w-7xl" : "max-w-2xl"}`}>{children}</div>
-      </div>
-    </Layout>
-  );
-}
-
-/** The role named by the link: the first one the village still offers, and whether any it named is gone. */
-function roleFromLink(wanted: readonly string[], roles: readonly FormRole[]): { id: string | null; gone: boolean } {
-  const offered = wanted.filter((id) => roles.some((r) => r.id === id));
-  return { id: offered[0] ?? null, gone: wanted.length > 0 && offered.length < wanted.length && offered.length === 0 };
-}
-
-/** The address bar follows the role chosen, so a reload or a shared link opens the same application. */
-function showRoleInAddress(roleId: string | null) {
-  if (typeof window === "undefined") return;
-  const q = new URLSearchParams(window.location.search);
-  q.delete("role");
-  if (roleId) q.set("role", roleId);
-  const s = q.toString();
-  window.history.replaceState?.(window.history.state, "", `${window.location.pathname}${s ? `?${s}` : ""}`);
-}
-
 export default function ProposeARole() {
   const params = useParams<{ token?: string }>();
   const link = params.token ? decodeURIComponent(params.token) : "";
   const [form, setForm] = useState<FormState>({ kind: "loading" });
   const [formTries, setFormTries] = useState(0); // bumped by "Try again" after a failed load
   const [roleId, setRoleId] = useState<string | null>(null);
+  /** The roles added after the first, each with its own commitment, price and split (the lead, 17 Nov 2026). */
+  const [extras, setExtras] = useState<ExtraRole[]>([]);
   const [gone, setGone] = useState(false);
   const [knowUs, setKnowUs] = useState<string[]>([]);
   const [why, setWhy] = useState("");
@@ -295,8 +195,9 @@ export default function ProposeARole() {
             : { kind: "closed", message: String(d?.message ?? OPEN_WORDS.closed) },
         );
         if (d?.open) {
-          const picked = roleFromLink(wanted, roles);
+          const picked = roleFromLink(wanted, roles, OPEN_APPLY_ROLES);
           setRoleId(picked.id);
+          setExtras(picked.more.map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
           setGone(picked.gone);
         }
       })
@@ -378,6 +279,11 @@ export default function ProposeARole() {
   }, [aimAt]);
 
   const role = useMemo(() => (form.kind === "open" && roleId ? (form.roles.find((r) => r.id === roleId) ?? null) : null), [form, roleId]);
+  /** A role as The terms read it: its words, commitment range, price and split, and its circle. */
+  const asTerms = (r: FormRole) => ({ id: r.id, name: r.name, circle: r.circle, held: r.held, words: r.terms?.words, commitmentPct: r.terms?.commitmentPct ?? null, commitmentMin: r.commitmentMin ?? null, ceiling: r.payCeiling ?? null, payShape: r.payShape, suggestions: r.id === roleId ? pieceSuggestions.length : 0 });
+  const extraRoles = extras.map((x) => (form.kind === "open" ? form.roles.find((r) => r.id === x.roleId) : undefined));
+  /** An added role's commitment: none chosen yet, or below what the role takes from one person. */
+  const extraRoleCheck = (x: ExtraRole, r: FormRole | undefined) => (x.terms.commitmentPct === null ? "none" : x.terms.commitmentPct < (r?.commitmentMin ?? 0) ? "below" : null);
 
   const labels = [
     t({ message: "Get to know us", context: "founding application step" }),
@@ -415,7 +321,7 @@ export default function ProposeARole() {
     if (!name.trim()) add("name", OPEN_WORDS.needName);
     if (!email.trim()) add("email", OPEN_WORDS.needEmail); else if (/[,;]/.test(email) || addressProblem(email)) add("email", OPEN_WORDS.badEmail);
     if (!why.trim()) add("why", OPEN_WORDS.needWhy);
-    const aboutProblem = aboutYouProblem(about, role?.alwaysChecked === true);
+    const aboutProblem = aboutYouProblem(about, role?.alwaysChecked === true || extraRoles.some((r) => r?.alwaysChecked === true));
     if (aboutProblem) add("checkConsent", aboutProblem);
     if (!aim.trim()) add("aim", OPEN_WORDS.needAim);
     if (!roleId) add("roles", OPEN_WORDS.needRole);
@@ -431,9 +337,14 @@ export default function ProposeARole() {
     });
     // Every written setting answered and the commitment chosen, in the shared rules' words.
     if (role) {
-      const judgedTerms = judgeTermsStep({ answers: termsStep.answers, commitmentPct: termsStep.commitmentPct }, writtenKeys([{ words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null }]));
+      const judgedTerms = judgeTermsStep({ answers: termsStep.answers, commitmentPct: termsStep.commitmentPct }, writtenKeys([role, ...extraRoles].map((r) => ({ words: r?.terms?.words, commitmentPct: r?.terms?.commitmentPct ?? null }))));
       if (!judgedTerms.ok) add("terms", judgedTerms.error);
     }
+    // Each role added: its own commitment, within what that role takes from one person.
+    extras.forEach((x, i) => {
+      const p = extraRoleCheck(x, extraRoles[i]);
+      if (p) add(`roles.${i + 1}`, p === "none" ? OPEN_WORDS.needRoleCommitment : t({ message: `Choose ${extraRoles[i]?.commitmentMin ?? 10}% or more for ${extraRoles[i]?.name ?? ""}.`, context: "founding application check" }));
+    });
     if (!agreed.nda) add("agreed", t({ message: "Tick that you will align with the village's confidentiality agreement once you are approved.", context: "founding application check" }));
     return orderByStone(found);
   };
@@ -502,7 +413,7 @@ export default function ProposeARole() {
         aim,
         hp,
         link: link || undefined,
-        roles: [{ roleId, note: "" }],
+        roles: [{ roleId, note: "" }, ...extras.map((x) => ({ roleId: x.roleId, note: "", commitmentPct: x.terms.commitmentPct ?? undefined, ...splitBody(x.terms), ...(x.terms.payAsk && (x.terms.payAsk.kind === "negotiate" || x.terms.payAsk.monthly > 0) ? { payAsk: x.terms.payAsk } : {}) }))],
         card: {
           roles: [{ roleId, moves: [], firstMoon: goalsToFirstMoon(filledItems) }],
           timeZone: practical.timeZone.trim(),
@@ -633,7 +544,7 @@ export default function ProposeARole() {
   if (sent) {
     // Another role: back to the open roles; the next one starts from what they wrote here (fireflyPath/applyCarry.ts).
     const another = form.roles.length > 1 ? () => { setSent(null); setRoleId(null); setStone(0); setReached(0); setRestored(false); showRoleInAddress(null); window.scrollTo?.({ top: 0 }); } : undefined;
-    return <SentThreshold sent={sent} roles={role ? [role] : []} onFixAddress={() => { setSent(null); goTo(stoneOfField("email"), { target: "#propose-email" }); }} onAnother={another} />;
+    return <SentThreshold sent={sent} roles={role ? [role, ...extraRoles.filter((r): r is FormRole => !!r)] : []} onFixAddress={() => { setSent(null); goTo(stoneOfField("email"), { target: "#propose-email" }); }} onAnother={another} />;
   }
 
   // Only when a door sent the visitor here with `from`; a shared link stands on its own.
@@ -651,6 +562,7 @@ export default function ProposeARole() {
   const setup = form.setup;
   const choose = (id: string | null) => {
     setRoleId(id);
+    setExtras([]);
     setGone(false);
     setProblems([]);
     setStone(0);
@@ -727,6 +639,9 @@ export default function ProposeARole() {
   const notYet = t({ message: "Not written yet", context: "founding application review" });
   // The review reads the earliest start in plain words ("1 December 2026"), as the rest of the page says a day.
   const startDay = practical.earliestStart ? civilDayWords(practical.earliestStart, i18n.locale) : "";
+  // Several roles: each one's commitment, and the commitments added (the lead, 17 Nov 2026).
+  const eachRole = [`${commitment}% ${role.name}`, ...extras.map((x, i) => `${x.terms.commitmentPct}% ${extraRoles[i]?.name ?? ""}`)].join(", ");
+  const allPct = (commitment ?? 0) + extras.reduce((n, x) => n + (x.terms.commitmentPct ?? 0), 0);
   /** Review & submit: each step in a line, with a way back to it. */
   const review: Array<[number, string]> = [
     [0, ways === 0 ? t({ message: "Nothing to tick", context: "founding application review" }) : t({ message: `${ticked} of ${ways} done`, context: "founding application review" })],
@@ -734,7 +649,9 @@ export default function ProposeARole() {
     [2, valueCount === 1 ? t({ message: `1 value item. Aim: ${short(aim) || notYet}`, context: "founding application review" }) : t({ message: `${valueCount} value items. Aim: ${short(aim) || notYet}`, context: "founding application review" })],
     [
       3,
-      commitment == null
+      extras.length > 0 && commitment != null && extras.every((x) => x.terms.commitmentPct != null)
+        ? t({ message: `Commitment: ${eachRole}. ${allPct}% in all`, context: "founding application review, several roles" })
+        : commitment == null
         ? t({ message: "Commitment not chosen yet", context: "founding application review" })
         : rampUp
           ? t({ message: `Commitment: ${commitment}%, with a ramp-up`, context: "founding application review" })
@@ -933,12 +850,17 @@ export default function ProposeARole() {
               {heading(3)}
               <section aria-label={labels[3]} tabIndex={-1} className="grid scroll-mt-24 gap-4 outline-none" data-terms-section="">
                 <TermsEight
-                  roles={[{ id: role.id, name: role.name, words: role.terms?.words, commitmentPct: role.terms?.commitmentPct ?? null, commitmentMin: role.commitmentMin ?? null, ceiling: role.payCeiling ?? null, payShape: role.payShape, suggestions: pieceSuggestions.length }]}
+                  roles={[role, ...extraRoles.filter((r): r is FormRole => !!r)].map(asTerms)}
+                  priced={role.id}
                   value={termsStep}
                   onChange={setTermsStep}
                   problem={problemOn("terms")}
                   idPrefix="propose-terms"
                 />
+                {/* More roles in this one application, each on its own terms, and the total across them (the lead, 17 Nov 2026). */}
+                <Suspense fallback={null}>
+                  <MoreRoles offered={form.roles.map(asTerms)} first={asTerms(role)} firstTerms={termsStep} extras={extras} onChange={setExtras} max={OPEN_APPLY_ROLES} problemOf={(i) => problemOn(`roles.${i}`)} />
+                </Suspense>
               </section>
               <div className={`${TILE} flex min-h-11 items-start gap-3`} data-ramp-up="">{/* Only the box and its words tick it, never a tap on the tile (1.3.22 check). */}
                 <input id="propose-ramp" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={rampUp} onChange={(e) => setRampUp(e.target.checked)} aria-describedby="propose-ramp-hint" />

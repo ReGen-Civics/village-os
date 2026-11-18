@@ -11,6 +11,7 @@ import { ceilingAt, type PayAsk } from "../../shared/commitmentRange";
 import { currentCommitment, type CounterOffer } from "../../shared/counterOffer";
 import type { PayCeiling } from "../../shared/roleCardSections";
 import type { ProposalSplit } from "../../shared/proposalSplit";
+import { roleTermsOf, termsPerRole, type OpenProposalRole } from "../../shared/openProposals";
 import { sectionsForMany } from "./roleCardSections";
 import { roleFillsFor } from "./roleFill";
 
@@ -24,6 +25,12 @@ export interface CommitmentReviewRole {
   targetPct: number;
   /** What the others hold now plus this application's commitment: an applicant who holds the role already counts once (QA F7). */
   withThisPct: number;
+  /**
+   * EACH ROLE ON ITS OWN TERMS (the lead, 17 Nov 2026): on a proposal naming several roles with a commitment for each,
+   * this role's own commitment, counter-offered commitment, price ask and split. Absent on a one-role proposal, and on
+   * an older one naming several roles with one commitment: the top-level figures are then the whole story.
+   */
+  own?: { pct: number | null; offeredPct?: number | null; ask: PayAsk | null; split: ProposalSplit | null };
 }
 
 export interface CommitmentReview {
@@ -44,7 +51,7 @@ export interface CommitmentReview {
 
 export async function commitmentReviewFor(
   pool: Pool,
-  body: { roles: Array<{ roleId: string }>; card?: { commitmentPct?: number }; payAsk?: PayAsk; paySplit?: ProposalSplit; pieceSuggestions?: unknown[]; counterOffer?: CounterOffer },
+  body: { roles: OpenProposalRole[]; card?: { commitmentPct?: number }; payAsk?: PayAsk; paySplit?: ProposalSplit; pieceSuggestions?: unknown[]; counterOffer?: CounterOffer },
   liveRoles: ReadonlyArray<{ id: string; commitmentTarget?: number | null }>,
   /** The applicant's own account here, if their address has one. */
   applicantUserId: string | null = null,
@@ -52,6 +59,8 @@ export async function commitmentReviewFor(
   const pct = typeof body.card?.commitmentPct === "number" ? body.card.commitmentPct : null;
   const atPct = commitmentInForce(body);
   const ids = body.roles.map((r) => r.roleId);
+  const perRole = termsPerRole(body);
+  const terms = roleTermsOf(body);
   const roles = ids.map((id) => liveRoles.find((r) => r.id === id) ?? { id, commitmentTarget: null });
   const [fills, others, sections] = await Promise.all([
     roleFillsFor(pool, roles),
@@ -64,18 +73,24 @@ export async function commitmentReviewFor(
     ask: body.payAsk ?? null,
     suggestionCount: Array.isArray(body.pieceSuggestions) ? body.pieceSuggestions.length : 0,
     split: body.paySplit ?? null,
-    roles: roles.map((r) => {
+    roles: roles.map((r, i) => {
       const fill = fills.get(r.id);
       const full = sections.get(r.id)?.payCeiling ?? null;
       const held = fill?.heldPct ?? 0;
       const heldByOthers = (others ?? fills).get(r.id)?.heldPct ?? 0;
+      // With a commitment for each role, each role is worked at its own. The counter-offer's commitment is the first role's.
+      const t = terms[i];
+      const ownPct = perRole && i > 0 ? (t?.commitmentPct ?? null) : atPct;
       return {
         roleId: r.id,
         full,
-        atCommitment: full && atPct ? ceilingAt(full.amount, atPct) : null,
+        atCommitment: full && ownPct ? ceilingAt(full.amount, ownPct) : null,
         heldPct: held,
         targetPct: fill?.targetPct ?? 100,
-        withThisPct: heldByOthers + (atPct ?? 0),
+        withThisPct: heldByOthers + (ownPct ?? 0),
+        ...(perRole
+          ? { own: { pct: t?.commitmentPct ?? null, ...(i === 0 && atPct !== pct ? { offeredPct: atPct } : {}), ask: t?.payAsk ?? null, split: t?.paySplit ?? null } }
+          : {}),
       };
     }),
   };
