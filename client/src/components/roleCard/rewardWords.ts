@@ -26,8 +26,15 @@ export interface RewardWords {
   footnote: string;
 }
 
-/** The example share the proposal line names: 50%, or the role's minimum when that is higher. */
-export const exampleShare = (min: number | null | undefined): number => Math.max(rangeMin(min), 50);
+/**
+ * The share the proposal line prices (production check, 18 Nov 2026): the commitment on the card's slider or the one
+ * the applicant chose, held to the role's range; with neither, the role's minimum. At 100% the line is not said: the
+ * listed price above already is that figure.
+ */
+export const exampleShare = (min: number | null | undefined, chosen: number | null = null): number => {
+  const lo = rangeMin(min);
+  return typeof chosen === "number" && Number.isFinite(chosen) ? Math.min(100, Math.max(lo, chosen)) : lo;
+};
 
 /** "$6,500 a month", "$78,000 a year", in the reader's language. */
 export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPeriod): string {
@@ -77,10 +84,10 @@ export function splitHeadline(i18n: I18n, c: PayCeiling, shares: readonly ShareA
   return i18n._(msg({ message: `Up to ${list} a month for the full role*`, context: "role card rewards: the listed price, each share as its own amount" }));
 }
 
-export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = [], split: readonly ShareAmount[] = []): RewardWords {
+export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = [], split: readonly ShareAmount[] = [], chosen: number | null = null): RewardWords {
   const lo = rangeMin(min);
   const shared = lo < 100;
-  const at = exampleShare(min);
+  const at = exampleShare(min, chosen);
   const full = perPeriod(i18n, moneyWords(c.amount, c.currency, i18n.locale), c.per);
   const atPrice = perPeriod(i18n, moneyWords(ceilingAt(c.amount, at), c.currency, i18n.locale), c.per);
   return {
@@ -93,7 +100,7 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
       : null,
     proposal: [
       i18n._(msg({ message: "Your proposal sets your rewards. Tell us what you'd deliver each month and how much of yourself that takes; that becomes your contract.", context: "role card rewards: the proposal sets the pay" })),
-      shared ? i18n._(msg({ message: `At ${at}%, the suggested price is ${atPrice}.`, context: "role card rewards: the price at an example share" })) : null,
+      shared && at < 100 ? i18n._(msg({ message: `At ${at}%, the suggested price is ${atPrice}.`, context: "role card rewards: the price at an example share" })) : null,
       i18n._(msg({ message: "You can propose more or less.", context: "role card rewards: the proposal sets the pay" })),
     ]
       .filter(Boolean)

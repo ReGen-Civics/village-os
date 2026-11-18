@@ -43,11 +43,11 @@ export function bandAt(pay: PublicPay | null | undefined, shown: boolean, pct: n
 }
 
 /** "Band: $9,623 to $12,029 a month in total comp" at 100%, "Band at 60%: $5,773 to $7,217 a month in total comp" below. */
-export function bandAtWords(i18n: I18n = appI18n, b: BandAt): string {
+export function bandAtWords(i18n: I18n = appI18n, b: BandAt, sayPct = false): string {
   const min = moneyWords(b.lo, b.currency, i18n.locale || "en");
   const max = moneyWords(b.hi, b.currency, i18n.locale || "en");
   const pct = b.pct;
-  if (pct >= 100) {
+  if (pct >= 100 && !sayPct) {
     if (b.per === "month") return i18n._(msg({ message: `Band: ${min} to ${max} a month in total comp`, context: "role card rewards: the pay band under the listed price, each month" }));
     if (b.per === "moon") return i18n._(msg({ message: `Band: ${min} to ${max} a moon in total comp`, context: "role card rewards: the pay band under the listed price, each moon" }));
     return i18n._(msg({ message: `Band: ${min} to ${max} in total comp`, context: "role card rewards: the pay band under the listed price, no period" }));

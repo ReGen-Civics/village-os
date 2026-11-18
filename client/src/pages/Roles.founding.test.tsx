@@ -534,7 +534,10 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
-    expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less.");
+    // The example follows the card's slider (production check, 18 Nov 2026): none at 100%, the price at 50% once slid there.
+    expect(within(piece).getByTestId("pay-proposal-words").textContent).not.toContain("suggested price is");
+    fireEvent.change(await within(piece).findByLabelText("Your commitment"), { target: { value: "50" } });
+    await waitFor(() => expect(within(piece).getByTestId("pay-proposal-words").textContent).toContain("At 50%, the suggested price is $4,500 a month. You can propose more or less."));
     // No cap line (lead, 17 Nov 2026): the 120% cap is a backend rule, never drawn on the card.
     expect(within(piece).queryByTestId("pay-cap-words")).toBeNull();
     expect(piece.textContent).not.toContain("Proposals up to");

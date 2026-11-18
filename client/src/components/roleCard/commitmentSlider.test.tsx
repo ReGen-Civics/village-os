@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { setupI18n } from "@lingui/core";
 import { offeredSplit, setPercent, type Split } from "@shared/proposalSplit";
 import { bandAt, bandAtWords, offersSlider, sliderSteps, totalAgainstBand } from "./commitmentWords";
@@ -14,6 +14,7 @@ import { choiceQuery, commitmentFromQuery, splitFromQuery } from "./applyChoice"
 import CommitmentPicker from "./CommitmentPicker";
 import { useCommitmentChoice } from "./useCommitmentChoice";
 import SplitControl from "./SplitControl";
+import { exampleShare, rewardWords } from "./rewardWords";
 import FullRoleCard, { applyHrefForRole } from "./FullRoleCard";
 import SplitReview from "@/components/openProposal/SplitReview";
 
@@ -107,8 +108,8 @@ function Card({ showsRange }: { showsRange: boolean }) {
 describe("the picker on the card", () => {
   it("slides the band and the split's amounts together, with a spoken value", () => {
     render(<Card showsRange />);
-    // At 100% the card's own band line says it; the picker adds none.
-    expect(screen.queryByText(/^Band/)).toBeNull();
+    // At 100% too the slider has its own current figure (production check, 18 Nov 2026).
+    expect(screen.getByText("Band at 100%: $9,623 to $12,029 a month in total comp")).toBeTruthy();
     const slider = screen.getByLabelText("Your commitment") as HTMLInputElement;
     expect(slider.getAttribute("aria-valuetext")).toBe("100% commitment, $9,623 to $12,029");
     fireEvent.change(slider, { target: { value: "30" } });
@@ -139,6 +140,20 @@ describe("the deciders' view of the split", () => {
   });
 });
 
+describe("the example price follows the slider (production check, 18 Nov 2026)", () => {
+  const BAND9 = { amount: 9000, currency: "USD", per: "month" as const };
+  it("prices the slider's commitment, held to the role's range, and says nothing at 100%", () => {
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 60).proposal).toContain("At 60%, the suggested price is $5,400 a month.");
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 10).proposal).toContain("At 30%, the suggested price is $2,700 a month.");
+    expect(rewardWords(i18n, BAND9, 30, "", [], [], 100).proposal).not.toContain("suggested price is");
+  });
+  it("with no slider and no choice, uses the role's minimum as the example", () => {
+    expect(exampleShare(30)).toBe(30);
+    expect(rewardWords(i18n, BAND9, 30).proposal).toContain("At 30%, the suggested price is $2,700 a month.");
+    expect(rewardWords(i18n, BAND9, null).proposal).not.toContain("suggested price is");
+  });
+});
+
 describe("the slider on the full role card", () => {
   const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanion: "", paid: true, payShape: SHAPE, payNote: "", payCeiling: CEILING, paySplitNote: "" };
   const seat = (card: Record<string, unknown>) => ({ id: "finance", name: "Lead Finance Steward", aim: "Keep the books true.", state: "open", archetypes: [], card });
@@ -164,6 +179,14 @@ describe("the slider on the full role card", () => {
     await screen.findAllByTestId("pay-shape");
     expect(screen.queryByLabelText("Your commitment")).toBeNull();
     expect(screen.queryByLabelText("Cash, percent of the total")).toBeNull();
+  });
+  it("the proposal line follows the slider", async () => {
+    render(<FullRoleCard seat={seat({ commitmentMin: 30 })} sections={SECTIONS} register="founding" allPieces />);
+    const slider = (await screen.findByLabelText("Your commitment")) as HTMLInputElement;
+    // At 100% the listed price is the figure, so no example line; slid to 50%, the line names 50%.
+    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).not.toContain("suggested price is"));
+    fireEvent.change(slider, { target: { value: "50" } });
+    await waitFor(() => expect(screen.getAllByTestId("pay-proposal-words")[0].textContent).toContain("At 50%, the suggested price is $6,014 a month."));
   });
   it("the Apply link carries what the reader chose", () => {
     expect(applyHrefForRole("finance", "commitment=50&split=50.50.0")).toBe("/propose-a-role?role=finance&commitment=50&split=50.50.0");

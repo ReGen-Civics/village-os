@@ -338,6 +338,8 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     // By amount: credits $780 is 10%, the others give way in proportion.
     fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "780" } });
     expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
+    // The ramp-up is the applicant's own choice: nothing the link, the split or a default does ticks it (1.3.22 check).
+    expect((screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement).checked).toBe(false);
     fillAbout();
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
     fillValue();
@@ -346,10 +348,13 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     // Review & submit says the split, and that they changed it.
     walk();
     expect(document.querySelector("[data-review]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780) · changed from the village's split");
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 60%");
+    expect(document.querySelector("[data-review]")?.textContent).not.toContain("ramp-up");
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.card.commitmentPct).toBe(60);
     expect(posted[0].body.paySplit).toEqual({ shares: [{ label: "Cash", pct: 45, amount: 3510 }, { label: "Equity", pct: 45, amount: 3510 }, { label: "Credits", pct: 10, amount: 780 }] });
+    expect(posted[0].body.rampUp).toBeUndefined();
   });
   it("an untouched split is sent as the role's own, and a role with no split sends none (control)", async () => {
     const SPLIT = { ...FORM, roles: [{ ...SHARED.roles[0], payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }] }, FORM.roles[1]] };
@@ -700,6 +705,26 @@ describe("the terms", () => {
     sendNow();
     await screen.findByRole("heading", { name: "Check your email" });
     expect(posted[0].body.card.terms).toEqual({ answers: { term: { choice: "accept", note: "" }, clocks: { choice: "accept", note: "" } } });
+  });
+});
+
+describe("the ramp-up is the applicant's own choice (production check, 1.3.22)", () => {
+  it("starts unticked, a tap on the tile's hint does not tick it, its words and box do, and Review & submit follows", async () => {
+    await applyFor();
+    const box = screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement;
+    expect(box.checked).toBe(false);
+    // A tap on the tile around the box (as a phone does to close its keyboard) changes nothing.
+    fireEvent.click(screen.getByText("Partial rewards while you build to your full commitment. We agree the steps together."));
+    fireEvent.click(document.querySelector("[data-ramp-up]") as HTMLElement);
+    expect(box.checked).toBe(false);
+    fireEvent.change(screen.getByLabelText("Your commitment"), { target: { value: "50" } });
+    walk();
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 50%");
+    expect(document.querySelector("[data-review]")?.textContent).not.toContain("ramp-up");
+    // CONTROL: the words tick it, and the review says so.
+    fireEvent.click(screen.getByText("I would like a ramp-up"));
+    expect(box.checked).toBe(true);
+    expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 50%, with a ramp-up");
   });
 });
 
