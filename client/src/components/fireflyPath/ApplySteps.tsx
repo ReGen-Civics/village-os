@@ -301,59 +301,13 @@ export function ValueItems({
 }
 
 /**
- * Step 4's compensation shape, drawn as the role cards draw it (lane A3): the
- * village's split as shares of the whole, "N%" where it has written none, the
- * line that the mix is settled in onboarding, the plain word on risk (T68) and
- * the footer (build list 7.5). Never a range, a minimum or a budget figure.
+ * Step 4's compensation shape on a phone, where the rail beside the steps does not show: what the rail says (the
+ * applicant's own split for each role, else the village's in one line) and the plain word on risk (T68) as the one-line
+ * footnote. Never a range, a minimum or a budget figure.
  */
 
-/** Which part of the reward a share's label names, or null for none or more than one. */
-function partOf(label: string): "cash" | "equity" | "credits" | null {
-  const hits = ([["cash", /\bcash\b/i], ["equity", /equity/i], ["credits", /credit/i]] as const).filter(([, re]) => re.test(label));
-  return hits.length === 1 ? hits[0][0] : null;
-}
-
-/**
- * The line under the shares (the coordinator's suggestion, adopted 15 Nov 2026): the split in force as a
- * sentence, "Of this, 40% is paid in cash, 55% in Earned Equity and 5% in credits by default; we settle the
- * split together." A part at 0% is left out. With no split, or one whose labels do not each read as cash,
- * equity or credits, the old line: "To be decided in the onboarding process."
- */
-function useSplitLine(setup: FoundingSetup): string {
+export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
   const { t } = useLingui();
-  const fallback = t({ message: "To be decided in the onboarding process.", context: "founding application compensation" });
-  const pct: Partial<Record<"cash" | "equity" | "credits", number>> = {};
-  for (const s of setup.shares) {
-    const part = partOf(s.label);
-    if (!part || part in pct || typeof s.pct !== "number") return fallback;
-    pct[part] = s.pct;
-  }
-  const order = (["cash", "equity", "credits"] as const).filter((p) => (pct[p] ?? 0) > 0);
-  if (order.length === 0) return fallback;
-  const lead = (p: (typeof order)[number], n: number) =>
-    p === "cash"
-      ? t({ message: `${n}% is paid in cash`, context: "founding application split line: the first part, cash" })
-      : p === "equity"
-        ? t({ message: `${n}% is paid in Earned Equity`, context: "founding application split line: the first part, Earned Equity" })
-        : t({ message: `${n}% is paid in credits`, context: "founding application split line: the first part, credits" });
-  const rest = (p: (typeof order)[number], n: number) =>
-    p === "equity"
-      ? t({ message: `${n}% in Earned Equity`, context: "founding application split line: a later part, Earned Equity" })
-      : t({ message: `${n}% in credits`, context: "founding application split line: a later part, credits" });
-  const parts = order.map((p, i) => (i === 0 ? lead(p, pct[p]!) : rest(p, pct[p]!)));
-  const [a, b, c] = parts;
-  const list =
-    parts.length === 1
-      ? a
-      : parts.length === 2
-        ? t({ message: `${a} and ${b}`, context: "founding application split line: two parts" })
-        : t({ message: `${a}, ${b} and ${c}`, context: "founding application split line: three parts" });
-  return t({ message: `Of this, ${list} by default; we settle the split together.`, context: "founding application split line" });
-}
-
-export function CompensationShape({ setup }: { setup: FoundingSetup }) {
-  const { t } = useLingui();
-  const splitLine = useSplitLine(setup);
   return (
     <section aria-labelledby="comp-shape-h" className="grid gap-5" data-comp-shape="">
       <div className={`${GOLD_RULE} pt-5`}>
@@ -362,22 +316,14 @@ export function CompensationShape({ setup }: { setup: FoundingSetup }) {
         </h3>
         <p className={`mt-1 ${HINT}`}>{t({ message: "How your pay is split between cash, equity and credits. Your price is set above, by your proposal.", context: "founding application compensation" })}</p>
       </div>
-      {/* No fixed tiles beside the split they edit above (production check of 1.3.24): the village's split in one sentence. */}
-      <p className="text-sm text-foreground" data-comp-onboarding="">
-        {splitLine}
-      </p>
-      <div className="grid gap-2">
-        {setup.atRisk && (
-          <p className="text-sm leading-relaxed text-foreground" data-at-risk="">
-            {setup.atRisk}
-          </p>
-        )}
-        {setup.footer && (
-          <p className="text-xs text-muted-foreground" data-comp-footer="">
-            {setup.footer}
-          </p>
-        )}
-      </div>
+      {/* The phone's stand-in for the rail (production check of 1.3.25): what the rail says, the applicant's own split for
+          each role and the one-line footnote, so the two never disagree. The village's longer note stays off this step. */}
+      <OwnSplits setup={setup} splits={splits} />
+      {setup.atRisk && (
+        <p className="text-xs leading-relaxed text-muted-foreground" data-at-risk="">
+          {setup.atRisk}
+        </p>
+      )}
     </section>
   );
 }
@@ -514,30 +460,40 @@ export function AboutPanes({ names, now }: { names: readonly string[]; now: numb
  * THE REWARDS BESIDE EVERY STEP. Never fixed tiles beside the split they can edit (production check of 1.3.24): the
  * applicant's own split for each role once The terms has worked it, else the village's default in one line.
  */
+/**
+ * The applicant's own split for each role, the role named when there are several; with none worked yet, the village's
+ * split in one line. Shared by the rail (RewardsBeside) and the phone's terms step (CompensationShape).
+ */
+function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyArray<{ name: string; line: string }> }) {
+  const { t } = useLingui();
+  const pcts = setup.shares.map((s) => s.pct);
+  // The village's split in one line; with none written, the onboarding line. The longer "Of this, 40% is paid in
+  // cash..." sentence went with the rail's fix: it said the village's split where the applicant's own belongs.
+  const fallback = pcts.length
+    ? t({ message: `Default split ${pcts.join("/")}. You can change it in The terms.`, context: "founding application compensation, the village's split in one line" })
+    : t({ message: "To be decided in the onboarding process.", context: "founding application compensation" });
+  return splits.length ? (
+    <ul className="grid gap-2 text-sm text-foreground" data-own-splits="">
+      {splits.map((x) => (
+        <li key={x.name} className="break-words">
+          {splits.length > 1 ? <span className="font-semibold">{x.name}: </span> : null}
+          {x.line}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p className="text-sm text-foreground" data-split-line="">{fallback}</p>
+  );
+}
+
 export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
   const { t } = useLingui();
-  const splitLine = useSplitLine(setup);
-  const pcts = setup.shares.map((s) => s.pct);
-  const fallback = pcts.length && pcts.every((n) => typeof n === "number")
-    ? t({ message: `Default split ${pcts.join("/")}. You can change it in The terms.`, context: "founding application compensation, the village's split in one line" })
-    : splitLine;
   return (
     <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
       <p id="rewards-beside-h" className={EYEBROW}>
         {t({ message: "How rewards work", context: "founding application compensation" })}
       </p>
-      {splits.length ? (
-        <ul className="grid gap-2 text-sm text-foreground" data-own-splits="">
-          {splits.map((x) => (
-            <li key={x.name} className="break-words">
-              {splits.length > 1 ? <span className="font-semibold">{x.name}: </span> : null}
-              {x.line}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-sm text-foreground" data-split-line="">{fallback}</p>
-      )}
+      <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && <p className="text-xs leading-relaxed text-muted-foreground">{setup.atRisk}</p>}
     </section>
   );

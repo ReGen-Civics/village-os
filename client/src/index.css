@@ -2180,8 +2180,9 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * THE MOON WORD (client/src/components/MoonWord.tsx; the lead, 18 Nov 2026). Here and not in class strings, because
  * CSS costs the first view of /roles and /propose-a-role no JS. The word wears a dotted underline; inline padding
  * grows the box a thumb hits to about 44px without moving the line, and the side margins give the width back. The
- * tip sits fixed along the foot of a phone's screen, so no card clips it and no edge pushes it off, and over the word
- * from 640px up. Semantic tokens only, as the design rule asks.
+ * tip (`.moon-tip`, portalled out of the card so no transformed or clipping ancestor holds it) sits fixed along the
+ * foot of a phone's screen, and over the word from 640px up, where MoonWord.tsx sets its left and top. It never takes
+ * a pointer, so a tap on it is a tap outside. Semantic tokens only, as the design rule asks.
  */
 .moon {
   position: relative;
@@ -2201,15 +2202,16 @@ html:has(#sera-changes [data-sera-strip-on]) {
 .moon > [tabindex]:focus-visible {
   outline: 2px solid var(--ring);
 }
-.moon > [role="tooltip"] {
+.moon-tip {
   position: fixed;
   inset: auto 1rem 1rem;
-  z-index: 50;
+  z-index: 60;
   padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   background: var(--card);
   color: var(--card-foreground);
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 0.25);
   font-family: var(--font-body);
   font-size: 0.875rem;
   font-weight: 400;
@@ -2217,12 +2219,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
   letter-spacing: normal;
   text-transform: none;
   text-align: left;
+  pointer-events: none;
 }
 @media (min-width: 640px) {
-  .moon > [role="tooltip"] {
-    position: absolute;
-    inset: auto auto 100% 0;
+  /* MoonWord.tsx places it over the word with left and top. */
+  .moon-tip {
+    right: auto;
+    bottom: auto;
     width: 14rem;
-    margin-bottom: 0.5rem;
   }
 }

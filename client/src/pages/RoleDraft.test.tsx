@@ -355,16 +355,17 @@ describe("the season's goals, the first step", () => {
     expect(screen.getByText("Done")).toBeTruthy();
     const steps = screen.getAllByRole("listitem").map((li) => li.textContent ?? "").filter((x) => /goals$|Apply$/.test(x));
     expect(steps[0]).toMatch(/This season's goals/);
-    expect(screen.getByText(/what you would like to contribute each month and this season/)).toBeTruthy();
+    // The moon wears its tip (MoonWord.tsx), so the sentence runs across elements: read it whole.
+    expect(document.body.textContent).toContain("what you would like to contribute each moon and this season");
   });
 });
 
 describe("a village whose proposals are for this moon", () => {
-  it("names no cycle end date and never names the moon to an applicant (QA P1-06)", async () => {
+  it("names no cycle end date, and says each moon with its tip (QA P1-06; the lead, 18 Nov 2026)", async () => {
     serve({ form: { ...OPEN_FORM, term: { kind: "moon", startsOn: "2026-11-09", endsOn: "2026-12-08" } } });
     render(<RoleDraft />);
-    const line = await screen.findByText("Each month you share what you'll bring the next month.");
-    expect(line.textContent).not.toMatch(/moon/i);
+    const line = await screen.findByText((_, el) => el?.tagName === "LI" && el.textContent === "Each moon you share what you'll bring the next moon.");
+    expect(line.querySelectorAll(".moon > [tabindex]")).toHaveLength(2);
     expect(document.body.textContent).not.toContain("8 December 2026");
   });
 });

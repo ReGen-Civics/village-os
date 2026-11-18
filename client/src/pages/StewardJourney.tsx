@@ -4,6 +4,7 @@ import { useVillageLinks } from "@/lib/gameApi";
 import { altOr, useBrandImages, useGameConfig } from "@/lib/gameApi";
 import FaqSection from "@/components/FaqSection";
 import { Emphasized, Highlighted } from "@/components/PageText";
+import { MoonText } from "@/components/MoonWord";
 import { JourneyLink, leavesSite } from "@/components/journey/JourneyLink";
 import { Fireflies, SeedOfLife } from "@/components/journey/nature";
 import FirstSteps from "@/components/tracks/FirstSteps";
@@ -201,7 +202,9 @@ export default function StewardJourney() {
                               {step.stage}
                             </span>
                           </div>
-                          <p className="mt-1 max-w-[62ch] break-words text-base leading-relaxed text-muted-foreground">{step.description}</p>
+                          <p className="mt-1 max-w-[62ch] break-words text-base leading-relaxed text-muted-foreground">
+                            <MoonText text={step.description} />
+                          </p>
                           {stepPoints(step).length > 0 && (
                             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
                               {stepPoints(step).map((point, i) => (
@@ -291,7 +294,9 @@ export default function StewardJourney() {
                           <h3 className="font-semibold text-foreground break-words">{extra.title}</h3>
                           {extra.when && <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">{extra.when}</span>}
                         </div>
-                        <p className="mt-1 break-words text-sm text-muted-foreground">{extra.description}</p>
+                        <p className="mt-1 break-words text-sm text-muted-foreground">
+                          <MoonText text={extra.description} />
+                        </p>
                       </div>
                       {action && (
                         <JourneyLink action={action.action} className={`inline-flex min-h-11 shrink-0 items-center gap-2 text-sm ${LINK}`}>

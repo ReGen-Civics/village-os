@@ -56,6 +56,7 @@ import { readStoredJson, writeStoredJson } from "@/lib/safeStorage";
 import { OPEN_PROPOSAL_MAX_ROLES } from "@shared/openProposals";
 import { roleCardView } from "@shared/roleCardView";
 import { BEING_WRITTEN } from "@shared/roleParams";
+import { MoonText } from "@/components/MoonWord";
 import {
   ROLE_DRAFT_KEY,
   addPick,
@@ -378,7 +379,7 @@ export default function RoleDraft() {
             </h2>
             {seasonDates && <p className="mt-1 text-sm font-semibold text-muted-foreground">{seasonDates}</p>}
             <p className="mt-2 max-w-[70ch] text-sm text-muted-foreground">
-              {t`A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each month and this season, and how it serves our goals.`}
+              <MoonText text={t`A role card shows the work the village needs done. Your proposal is the other half: what you would like to contribute each moon and this season, and how it serves our goals.`} />
             </p>
             {goals.length > 0 ? (
               <ul className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -707,9 +708,7 @@ export default function RoleDraft() {
                   <li>{t`Once you are approved into a role, you align with the village's confidentiality agreement (NDA), before you see any confidential records.`}</li>
                   <li>
                     {/* No cycle end date here (QA P1-06, as QA2-05 on the application): a date in words goes stale. */}
-                    {form?.term
-                      ? t`Each month you share what you'll bring the next month.`
-                      : t`Your role starts on the first day of next season.`}
+                    {form?.term ? <MoonText text={t`Each moon you share what you'll bring the next moon.`} /> : t`Your role starts on the first day of next season.`}
                   </li>
                 </ol>
               )}
