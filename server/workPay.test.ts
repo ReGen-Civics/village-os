@@ -38,6 +38,7 @@ import {
 } from "./lib/economy";
 import { balanceOf, loadTokenRegistry, memberAccount } from "./lib/ledger";
 import { loadVariables } from "./lib/variables";
+import { cashSeatsWithoutTerms, unpricedSeatsLaunchCheck } from "./lib/cashOwed";
 import { payableTokens, payLineProblem, questPay, rolePay } from "./lib/workPay";
 import { provisionTestDb, testDbConfigured, testPool, type TestDb } from "./db/testDb";
 import { claimsRepo as makeClaimsRepo, questsRepo as makeQuestsRepo } from "./repos/quests";
@@ -259,11 +260,15 @@ describe.skipIf(!configured)("what a quest and a role pay", () => {
     });
 
     /*
-     * THE CASH A ROLE PAYS (0285): owed to each seat once per cycle, and owed
-     * even when the village has no `role.cycle` rule at all, because the step
-     * runs before the rules are read. The platform pays none of it.
+     * A ROLE'S CASH IS NEVER OWED BY THE SETTLEMENT (pay defect 2; the 14 Nov
+     * 2026 ruling: nothing pays without the Treasurer's confirmation). A seat
+     * on a role that states cash, held with no application, has no price and
+     * no commitment. The settlement used to owe it the role's whole cash every
+     * cycle; it owes nothing now, and the seat is listed for the Treasurer to
+     * set terms. Before the fix this case failed on the first assertion: one
+     * row of 2,000,000 CRC, owed to the hand-seated holder.
      */
-    it("owes a role's cash to each seat once per cycle, with no token rule at all", async () => {
+    it("owes nothing for a seat on a cash role held with no application, and lists it for the Treasurer", async () => {
       await pool.query("DELETE FROM `cash_owed`"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       await setRules("role.cycle", []);
       const holder = await makeMember("wp-seat-cash");
@@ -274,19 +279,20 @@ describe.skipIf(!configured)("what a quest and a role pay", () => {
       await seat("wp-a-cash", "wp-role-cash", holder);
       await seat("wp-a-none", "wp-role-none", await makeMember("wp-seat-nocash"));
 
-      const first = await runSettlement(pool);
-      const again = await runSettlement(pool);
-      expect(first.cashOwed, "the first run owes the one cash seat").toBe(1);
-      expect(again.cashOwed, "and a rerun in the same cycle writes nothing").toBe(0);
+      await runSettlement(pool);
+      await runSettlement(pool);
 
       const [rows] = await pool.query<any[]>("SELECT * FROM `cash_owed`"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
-      expect(rows.length, "a role that states no cash owes none").toBe(1);
-      expect(rows[0]).toMatchObject({ user_id: holder, work_kind: "role", work_ref: "wp-role-cash", currency: "CRC", state: "owed" });
-      expect(Number(rows[0].amount_minor)).toBe(2000000);
-      expect(String(rows[0].work_title)).toBe(`Treasurer, ${first.cycleKey}`);
-      // No token moved for it: cash never touches the ledger.
+      expect(rows, "a seat with no application is owed nothing until the Treasurer sets terms").toEqual([]);
+      // No token moved for it either.
       const [legs] = await pool.query<any[]>("SELECT COUNT(*) AS n FROM `token_ledger` WHERE `source` = 'role_cycle'"); // module-review-ok: fixture SQL against the S5 scratch schema, never a production table
       expect(Number(legs[0].n)).toBe(0);
+      // Surfaced instead, read only: the cash role's seat, and never the role that states no cash.
+      expect((await cashSeatsWithoutTerms(pool)).map((s) => [s.seatId, s.userId, s.roleName])).toEqual([["wp-a-cash", holder, "Treasurer"]]);
+      expect(await unpricedSeatsLaunchCheck(pool)).toEqual({
+        state: "partial",
+        detail: "1 person holds a cash role with no application: Treasurer. Nothing is owed to them until the Treasurer sets terms through an adopted application",
+      });
     });
 
     it("pays a role with its own list that list, and a role without one nothing flat", async () => {
