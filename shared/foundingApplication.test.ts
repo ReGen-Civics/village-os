@@ -92,14 +92,15 @@ describe("the application's own fields", () => {
     if (p.ok) for (const k of ["knowUs", "rampUp", "selfKnowledge"]) expect(p.value.body).not.toHaveProperty(k);
   });
 
-  it("a stored body reads them back, and the form never sends more than one role", () => {
+  it("a stored body reads them back, and the form sends up to three roles (the lead, 17 Nov 2026)", () => {
     expect(openBodyOf({ roles: [{ roleId: "r1" }], why: "w", aim: "a", knowUs: ["x", 1], rampUp: true, selfKnowledge: "y" })).toMatchObject({ knowUs: ["x"], rampUp: true, selfKnowledge: "y" });
-    expect(OPEN_APPLY_ROLES).toBe(1);
+    expect(OPEN_APPLY_ROLES).toBe(3);
   });
 
-  it("the server refuses an application naming more than one role, and takes one", () => {
+  it("a role added after the first needs its own commitment, and one role still goes through alone", () => {
     const two = { ...ctx, roleIds: new Set(["r1", "r2"]) };
-    expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2" }] }, two)).toMatchObject({ ok: false, field: "roles" });
+    expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2" }] }, two)).toMatchObject({ ok: false, field: "roles.1" });
+    expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 50 }] }, two)).toMatchObject({ ok: true });
     expect(parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, two)).toMatchObject({ ok: true });
   });
 });

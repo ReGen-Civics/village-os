@@ -582,40 +582,52 @@ export function register(app: Express, deps: Deps): void {
       knowUs: founding().knowUs,
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
+    // EACH ROLE ON ITS OWN TERMS (the lead, 17 Nov 2026): one proposal may name several roles, each with its own
+    // commitment, price ask and split, so the minimum, the cap and the split are each read against that role.
     // A commitment below what the role takes from one person is refused, in words (Rye, 14 Nov 2026, ruling 2).
     // A post with no commitment at all (no card, as only an edited request sends) is below it too (hostile-edges QA, 15 Nov 2026).
-    const pct = parsed.value.body.card?.commitmentPct;
     // A poster who may not read the ceiling meets the role as one with no listed price, so no refusal names the figure.
     const priceReader = await payReaderOf(req);
-    for (const picked of parsed.value.body.roles) {
-      const offeredRole = roles.find((r) => r.id === picked.roleId);
+    const picked = parsed.value.body.roles;
+    const several = picked.length > 1;
+    const sentRoles: any[] = Array.isArray(body.roles) ? body.roles : [];
+    type Kept = { commitmentPct: number | null; offered: ReturnType<typeof offeredSplit>; proposed: ReturnType<typeof offeredSplit> };
+    const splits: Array<Kept | null> = [];
+    for (let i = 0; i < picked.length; i++) {
+      const one = picked[i];
+      // The first role's terms are where a one-role proposal sends them; each role after it carries its own.
+      const pct = i === 0 ? parsed.value.body.card?.commitmentPct : one.commitmentPct;
+      const ask = i === 0 ? parsed.value.body.payAsk : one.payAsk;
+      const field = i === 0 ? null : `roles.${i}`;
+      const offeredRole = roles.find((r) => r.id === one.roleId);
       const min = offeredRole?.commitmentMin;
-      if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: "terms" });
+      if (typeof min === "number" && (typeof pct !== "number" || pct < min)) return res.status(400).json({ error: belowMinimum(min), field: field ?? "terms" });
       // A price ask goes up to 120% of the listed price at their commitment, and no higher (Rye, 15 Nov 2026).
-      const ask = parsed.value.body.payAsk;
       const ceiling = offeredRole && readsCeiling(offeredRole, priceReader) ? (offeredRole.payCeiling ?? null) : null;
       // A role with no listed price has no cap to read a figure against: an amount is refused, never kept unchecked.
-      if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: "payAsk" });
+      if (!ceiling && ask?.kind === "amount") return res.status(400).json({ error: RANGE_WORDS.askNoPrice, field: field ?? "payAsk" });
       if (ceiling && ask?.kind === "amount") {
-        if (askPeriod(ask) !== ceiling.per) return res.status(400).json({ error: askPeriodWrong(ceiling.per), field: "payAsk" });
+        if (askPeriod(ask) !== ceiling.per) return res.status(400).json({ error: askPeriodWrong(ceiling.per), field: field ?? "payAsk" });
         const at = typeof pct === "number" && pct > 0 ? pct : 100;
-        if (askAboveCap(ask, ceiling.amount, at)) return res.status(400).json({ error: aboveCap(moneyWords(capAt(ceiling.amount, at), ceiling.currency), at), field: "payAsk" });
+        if (askAboveCap(ask, ceiling.amount, at)) return res.status(400).json({ error: aboveCap(moneyWords(capAt(ceiling.amount, at), ceiling.currency), at), field: field ?? "payAsk" });
       }
+      // The cash, equity and credits split they propose (the lead, 17 Nov 2026, shared/proposalSplit.ts), read against
+      // this role's split in force and the price it describes. What the village offered at their commitment is worked
+      // here, never taken from the form, and kept beside it so the difference is known.
+      const sentSplit = i === 0 ? body.paySplit : sentRoles[i]?.paySplit;
+      let kept: Kept | null = null;
+      if (sentSplit !== undefined && sentSplit !== null) {
+        const shape = offeredRole?.payShape ?? [];
+        const at = typeof pct === "number" ? pct : null;
+        const read = readProposedSplit(sentSplit, shape, splitTotal(ceiling?.amount, at, ask?.kind === "amount" ? ask.monthly : null));
+        if (!read.ok) return res.status(400).json({ error: read.problem, field: field ?? "paySplit" });
+        if (read.value) kept = { commitmentPct: at, offered: offeredSplit(shape, splitTotal(ceiling?.amount, at, null)), proposed: read.value };
+      }
+      splits.push(kept);
     }
-    // The cash, equity and credits split they propose (the lead, 17 Nov 2026, shared/proposalSplit.ts), read against the
-    // role's split in force and the price it describes. What the village offered at their commitment is worked here,
-    // never taken from the form, and kept beside it so the difference is known. One role per application.
-    let paySplit: { paySplit: { commitmentPct: number | null; offered: ReturnType<typeof offeredSplit>; proposed: ReturnType<typeof offeredSplit> } } | Record<string, never> = {};
-    if (body.paySplit !== undefined && body.paySplit !== null) {
-      const role = parsed.value.body.roles.length === 1 ? roles.find((r) => r.id === parsed.value.body.roles[0].roleId) : undefined;
-      const shape = role?.payShape ?? [];
-      const ceiling = role && readsCeiling(role, priceReader) ? (role.payCeiling ?? null) : null;
-      const ask = parsed.value.body.payAsk;
-      const at = typeof pct === "number" ? pct : null;
-      const read = readProposedSplit(body.paySplit, shape, splitTotal(ceiling?.amount, at, ask?.kind === "amount" ? ask.monthly : null));
-      if (!read.ok) return res.status(400).json({ error: read.problem, field: "paySplit" });
-      if (read.value) paySplit = { paySplit: { commitmentPct: at, offered: offeredSplit(shape, splitTotal(ceiling?.amount, at, null)), proposed: read.value } };
-    }
+    // The first role's split where a one-role proposal keeps it; with several roles, each role keeps its own as well.
+    const paySplit = splits[0] ? { paySplit: splits[0] } : {};
+    const rolesKept = several ? picked.map((r, i) => (splits[i] ? { ...r, paySplit: splits[i] as Kept } : r)) : picked;
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
     const checked = checkProposalFiles(files);
@@ -649,7 +661,7 @@ export function register(app: Express, deps: Deps): void {
     }
     // The language their emails come in: chosen once, here, by the rule in shared/applicantLanguage.ts.
     const locale = await languageForNewProposal({ getPool, members: deps.members }, { clientLocale: body.locale, email, acceptLanguage: req.headers["accept-language"] });
-    const proposal = { ...parsed.value.body, ...paySplit, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
+    const proposal = { ...parsed.value.body, roles: rolesKept, ...paySplit, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
     const emailKey = emailKeyOf(email);
     // Every refusal above has been given. Only now, with the proposal acceptable, does this connection spend one of its five an hour.
     if (await overLimit(`open-proposal:ip:${ipBucket(clientIp(req))}`, 5, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooMany });

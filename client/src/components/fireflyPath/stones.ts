@@ -49,7 +49,8 @@ export function stoneOfField(field: string | null | undefined): number {
     case "earliestStart":
       return 4;
     default:
-      return LAST_STONE;
+      // A role added to the application (the lead, 17 Nov 2026): its commitment, price and split are on The terms.
+      return field?.startsWith("roles.") ? 3 : LAST_STONE;
   }
 }
 

@@ -30,7 +30,7 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { OPEN_GLOBAL_HOURLY, OPEN_WORDS } from "../../shared/openProposals";
+import { OPEN_GLOBAL_HOURLY, OPEN_WORDS, roleTermsOf } from "../../shared/openProposals";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -649,18 +649,31 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect(plain.text.startsWith("Hi Rowan,")).toBe(true);
     });
 
+    it("takes several roles in one proposal, each keeping its own commitment and price ask (the lead, 17 Nov 2026)", async () => {
+      await q("UPDATE open_role_proposals SET status = 'withdrawn', decided_at = NOW(3) WHERE email = ? AND status IN ('confirmed', 'unconfirmed')", ["two@example.test"]);
+      const { id, mail } = await send({ email: "two@example.test", roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40, payAsk: { kind: "negotiate", why: "Let us talk." } }] });
+      expect(mail.text).toContain("Gate Keeper");
+      expect(mail.text).toContain("Well Keeper");
+      const row = await readOpenProposal(pool, id);
+      expect(row?.body.roles).toEqual([
+        { roleId: gate, note: "" },
+        { roleId: well, note: "", commitmentPct: 40, payAsk: { kind: "negotiate", why: "Let us talk." } },
+      ]);
+      expect(roleTermsOf(row!.body).map((r) => r.commitmentPct)).toEqual([null, 40]);
+    });
+
     it.each([
       ["no name", { name: "  " }, "name", OPEN_WORDS.needName],
       ["no address", { email: "" }, "email", OPEN_WORDS.needEmail],
       ["two addresses", { email: "a@example.test, b@example.test" }, "email", OPEN_WORDS.badEmail],
       ["an address with no dot after the @", { email: "rowan@example" }, "email", OPEN_WORDS.badEmail],
       ["no role", { roles: [] }, "roles", OPEN_WORDS.needRole],
-      // One role per application (the lead, 11 Nov 2026): two listed roles, each open, are still refused.
-      ["two roles", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-well" }] }, "roles", OPEN_WORDS.tooManyRoles],
+      // Several roles in one proposal (the lead, 17 Nov 2026): a role added after the first needs its own commitment.
+      ["a second role with no commitment", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-well" }] }, "roles.1", OPEN_WORDS.needRoleCommitment],
       ["four roles", { roles: [1, 2, 3, 4].map(() => ({ roleId: "x" })) }, "roles", OPEN_WORDS.tooManyRoles],
       ["an example role", { roles: [{ roleId: "op-role-example" }] }, "roles", OPEN_WORDS.unknownRole],
       ["a role in a dormant circle", { roles: [{ roleId: "op-role-dormant" }] }, "roles", OPEN_WORDS.unknownRole],
-      ["the same role twice", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-gate" }] }, "roles", OPEN_WORDS.tooManyRoles],
+      ["the same role twice", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-gate", commitmentPct: 50 }] }, "roles", OPEN_WORDS.sameRoleTwice],
       ["no why", { why: "" }, "why", OPEN_WORDS.needWhy],
       ["a why too long", { why: "x".repeat(1201) }, "why", OPEN_WORDS.tooLong("Why you", 1200)],
     ])("refuses %s, naming the field", async (_label, over, field, error) => {

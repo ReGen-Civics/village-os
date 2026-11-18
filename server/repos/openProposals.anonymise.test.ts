@@ -17,7 +17,10 @@ import { ANONYMISE_KEEPS, ANONYMISE_REMOVES, anonymiseDecidedBefore, anonymiseOp
 
 /** One of every field, by name. The values only need to be there. */
 const FULL: { [K in keyof Required<OpenProposalBody>]: unknown } = {
-  roles: [{ roleId: "r-1", note: "I keep wells." }],
+  roles: [
+    { roleId: "r-1", note: "I keep wells.", commitmentPct: 60, payAsk: { kind: "amount", monthly: 4321 } },
+    { roleId: "r-2", note: "", commitmentPct: 40, payAsk: { kind: "amount", monthly: 7777 }, paySplit: { commitmentPct: 40, offered: { total: 7777, shares: [{ label: "Cash", pct: 60, amount: 4666 }] }, proposed: { total: 7777, shares: [{ label: "Cash", pct: 100, amount: 7777 }] } } },
+  ],
   why: "Why me.",
   aim: "The aim.",
   term: { startsOn: "2099-01-01", endsOn: "2099-03-20" },
@@ -41,11 +44,11 @@ const FULL: { [K in keyof Required<OpenProposalBody>]: unknown } = {
   paySplit: { commitmentPct: 60, offered: { total: 7217, shares: [{ label: "Cash", pct: 60, amount: 4330 }] }, proposed: { total: 7217, shares: [{ label: "Cash", pct: 100, amount: 7217 }] } },
 };
 
-const PERSONAL_WORDS = ["Europe/Lisbon", "09:00", "2099-01-02", "example.test", "cv.pdf", "Ref Person", "Up the road", "A private note", "Generator 2/4", "Ring the bell", "What I said aloud", "900"];
+const PERSONAL_WORDS = ["Europe/Lisbon", "09:00", "2099-01-02", "example.test", "cv.pdf", "Ref Person", "Up the road", "A private note", "Generator 2/4", "Ring the bell", "What I said aloud", "900", "4321", "7777", "4666"];
 
 describe("anonymising an open proposal", () => {
   it("names every field of the body as removed or kept, and none as both", () => {
-    const removedTop = new Set(ANONYMISE_REMOVES.filter((p) => !p.startsWith("$.card.")).map((p) => p.slice(2)));
+    const removedTop = new Set(ANONYMISE_REMOVES.filter((p) => !p.startsWith("$.card.") && !p.startsWith("$.roles[")).map((p) => p.slice(2)));
     const kept = new Set<string>(ANONYMISE_KEEPS);
     for (const key of Object.keys(FULL)) {
       expect(removedTop.has(key) !== kept.has(key), `${key}: name it in exactly one of ANONYMISE_REMOVES or ANONYMISE_KEEPS (server/repos/openProposals.ts)`).toBe(true);
@@ -98,6 +101,8 @@ describe.skipIf(!configured)("every anonymising path, on a real schema", () => {
       for (const w of PERSONAL_WORDS) expect(text, `${id} still holds ${w}`).not.toContain(w);
       // CONTROL: the application's own substance stays.
       expect(body.why, id).toBe("Why me.");
+      // Each role's commitment stays with the roles; its price ask and split go (the lead, 17 Nov 2026).
+      expect(body.roles.map((r: { commitmentPct?: number }) => r.commitmentPct), id).toEqual([60, 40]);
     }
   });
 });
