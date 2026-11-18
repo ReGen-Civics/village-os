@@ -38,6 +38,8 @@ made at the time.
 
 To word with Rye and the Legal session for the next release, left out of 1.3.0 on purpose: the invoice and pay half of the approvals module; what work states it pays, Earned Equity, cash owed, draft invoices and the cash-payouts page; and the flat role mint going blank (#776) with the seeded dues note being blanked. Everything else up to 1.3.0 is in its entry below.
 
+- **The village connector says plainly what it never sends.** Its instructions to an agent, the sign-in page a member sees when connecting one, and its documentation now say it never sends money or recaps, approves, issues or pays anything. Before, they said it never sends anything, which stopped being true once a handed-on task started emailing the role's holders. Nothing the connector can do changed.
+
 ---
 
 ## 1.3.21 (2026-11-17)

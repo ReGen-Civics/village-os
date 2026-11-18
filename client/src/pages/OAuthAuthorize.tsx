@@ -115,7 +115,7 @@ export default function OAuthAuthorize() {
             ))}
           </fieldset>
           <p className="text-sm text-muted-foreground">
-            It never sends, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
+            It never sends money or recaps, approves or pays anything, and it never sees an amount or a pay route. You can end it any time under Your agent on your profile.
           </p>
           <div className="flex flex-wrap gap-3">
             <button type="button" disabled={busy || picked.length === 0} onClick={() => void decide("allow")} className="min-h-11 rounded-lg bg-teal-deep px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">Allow</button>
