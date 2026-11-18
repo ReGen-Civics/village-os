@@ -40,6 +40,62 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.24 (2026-11-18)
+
+### What changed for your village
+
+- **A role held with no application owes nothing until the Treasurer agrees terms.** Settlement used to owe every person seated on a role that states cash, with no adopted application behind the seat, the role's whole cash amount every cycle: no proposed price, no commitment, and nobody confirming it. That step is gone. Such a person is now owed nothing for the role until the Treasurer agrees terms with them through an application the village adopts; after that, their End of Moon invoice is confirmed like anyone else's. A new recommended launch row, "Set terms for roles held without an application", names those roles and links to Cash To Pay Out. It only reads; it changes nothing. People who hold a role through an adopted application are unchanged.
+- **A village admin acting as themselves is no longer throttled on role edits and draft decisions.** The per-person limits on the role editor, on publishing a draft by power and on the arrangement door no longer apply to a person who is a village admin. That includes the role cards applied one by one when an admin accepts a batch of proposed changes, which used to count against the admin's limit of 30 role saves. An agent keeps every limit, even one holding an admin's grant: a request through the connector, one made with an agent token, or an account marked as an agent. Every other limit is unchanged.
+- **When a decider accepts, the applicant's proposed split goes into the contract.** If the applicant changed the split and it still fits the role's shape (the same shares in the same order, whole percents adding to 100), the contract records their split. Otherwise it records the split the card showed, as before. The contract's amount does not change; End of Moon shares it by these percents. On the role card, the fixed split tiles (for example 60/40/0) are gone wherever the editable split shows, so there is one place to read and change the split. Inside an application and for deciders, where the split cannot be edited, the tiles stay.
+- **Launch security rows, and the issuance cap after launch.**
+  - A new blocking launch row, "Keep the founder password long, or unset". It passes when `ADMIN_PASSWORD` is unset, because both ways in it opens then stay shut, or when it is at least 20 characters. It fails when the password is blank, still the placeholder, or shorter than 20. The row never shows the password or its length.
+  - A new recommended launch row, "Keep a way back in", checks that `BREAK_GLASS_ADMIN_EMAIL` is set. It never shows the address.
+  - Once the Game starts, the cap on hand-minting each cycle (`ledger.admin_mint_cycle_cap`) changes only by the village's vote, or by a founder-steward who broke the glass. Before launch the founder sets it as before.
+  - The issuance cap's wording is now exact: it names the five doors the cap refuses, says the other doors that mint are counted and never refused, and says work pay and the gratitude pool are not counted.
+- **Funding rounds, the rulings on step four. The module still ships off.** A village that has not turned funding rounds on sees no change.
+  - A new pot counts every member's whole Voice by default. Counting only Voice earned through work is still there, and a holder of `pot.steward` switches a pot between the two. Existing pots keep what they count.
+  - While a round's divergence vote runs, the larger of the two sides' costs is held back from the pot's free money, so another round on the same pot cannot spend it first. Settling the vote releases it.
+  - A carried divergence vote now takes effect when the round closes.
+  - A member who joins after the round's Voice froze can still tick. Their tick is a signal with zero Voice, counted in neither count nor the quorum, and the page tells them so.
+- **Caps on voting weight by source, off by default.** A village that weighs votes by a token can now cap how much of one member's balance a ballot counts from cash put in, and separately from every other contribution. Each cap has its own switch and whole-token number (`governance.weight_cap_cash_on` and `governance.weight_cap_cash`, the same pair for other), set by the founder before the Game starts and only by a proposal after. The cap is counted when a ballot opens and never at the mint, so the ledger keeps every contribution in full, and raising a cap counts the full balance again from the next ballot. Each ballot's roll records the figures each weight was counted from, so anyone can check it. A hand-mint now asks whether it was cash or another contribution, and the grants list shows it; a grant waiting for a co-sign keeps its tag. A former member's standing now says their Voice is resting and that a ballot counts none of it until they are admitted back, in place of a weight no ballot would give them.
+- **One proposal for up to three roles, across circles.** A person can now propose for up to three roles in one proposal, in any circles. Each role has its own commitment, price and split, and the page shows the total across them; the prices add up. Deciders review each role's terms, the minimum and the hidden cap are judged per role, and when the proposal is adopted the village writes one agreement for each role, in one step.
+
+### What you must do
+
+- **If your village pays anyone automatically for a role they hold without an application, that payment stops on this release.** Before you upgrade, look at who settlement pays for a role that states cash with no adopted application, and settle any cycle you mean to pay the old way. After the upgrade, open the launch row "Set terms for roles held without an application" (or Admin, Cash To Pay Out) to see those roles, and have the Treasurer agree terms with each person through an application the village adopts. Until then they are owed nothing for the role. Tell them first, so the change does not reach them as a missing payment.
+- **Check the founder password.** If `ADMIN_PASSWORD` is set and shorter than 20 characters, or still the placeholder, the new launch row fails. Make it at least 20 characters, or delete it if nobody needs the founder-password way back in. Set `BREAK_GLASS_ADMIN_EMAIL` if you have not.
+- **After launch, the hand-mint cap moves by vote.** If you meant to change `ledger.admin_mint_cycle_cap` yourself after the Game started, it now goes to the village as a proposal.
+
+Everything else applies by itself. The caps by source stay off until your village turns them on, and funding rounds stay off unless your village turns them on.
+
+### Does it touch your data
+
+Two migrations.
+
+- `0403_a_pot_counts_all_voice.sql` changes the default of `funding_pots.counted_voice` to `all` and adds one nullable column, `funding_rounds.reserved_minor`. It changes no existing row: a pot keeps the count it holds.
+- `0407_weight_caps_by_source.sql` adds four nullable columns to `ballot_electorate` (`held_weight`, `held_cash`, `cap_cash`, `cap_other`) and one column to `admin_mint_requests`, `contribution_kind`, NOT NULL with the default `other`. The four are empty on every ballot opened before this release and on any ballot opened with no cap by source. Every waiting hand-mint request reads `other`, which is what every hand-mint meant before the tag existed.
+
+Neither removes or narrows anything. No migration came with the other changes.
+
+Going back to 1.3.23 is safe. 1.3.23 names its columns when it writes a pot, a ballot roll or a hand-mint request, so the new columns take their default or stay empty, and it reads a pot set to count all Voice as it always could. A proposal with more than one role stays readable on 1.3.23, because the first role's terms sit where a one-role proposal keeps them. Four cases to know about:
+
+- A proposal with more than one role that is adopted on 1.3.23 becomes one application for all its roles, priced from the first role with a band at the first role's commitment, with the card's split. Decide those proposals before going back, or wait to adopt them until you are on 1.3.24 again. 1.3.23 also refuses a new or edited proposal with more than one role.
+- On 1.3.23 a hand-seated holder of a cash role is owed the role's cash again at the next settlement.
+- With funding rounds on, 1.3.23 ignores the money held back for a running divergence vote, so another round on the same pot could spend it. Let any open divergence vote settle first.
+- With a cap by source on, 1.3.23 counts whole balances on ballots it opens, and a cash-tagged hand-mint request approved on 1.3.23 posts as an ordinary hand-mint.
+
+### Merged pull requests
+
+- #1450 A role held with no application owes nothing until the Treasurer sets terms
+- #1453 Uncap a village admin's own role edits and draft decisions; agents stay throttled
+- #1454 Adoption writes the applicant's proposed split; the editable split replaces the card's split tiles
+- #1455 Launch security checks: admin password floor, break-glass presence, issuance cap after launch
+- #1456 Funding rounds S4 rulings: all Voice by default, divergence lands at close, held quests reserve money, newer members signal
+- #1368 Cap voting weight by source (cash, other), counted at ballot open; resting Voice shown
+- #1457 Open proposals: several roles in one proposal, each with its own commitment, price, split and agreement
+
+---
+
 ## 1.3.23 (2026-11-18)
 
 ### What changed for your village
