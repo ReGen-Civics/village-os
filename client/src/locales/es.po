@@ -2125,6 +2125,11 @@ msgctxt "founding application split line: two parts"
 msgid "{a} and {b}"
 msgstr "{a} y {b}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: cash"
+msgstr ""
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Access to give or take back"
 msgstr ""
@@ -2378,6 +2383,11 @@ msgstr ""
 msgctxt "progression: a kind of power"
 msgid "Work and value"
 msgstr "Trabajo y valor"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: work or other"
+msgstr ""
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -8313,6 +8323,10 @@ msgctxt "coming up, i'll be there, how many said so"
 msgid "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
 msgstr "{0, plural, one {# de nosotros dijo que estará ahí.} other {# de nosotros dijimos que estaremos ahí.}}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid " · cash put in"
+msgstr ""
+
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
 msgid "Got it"
@@ -9393,6 +9407,12 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
+msgstr ""
+
+#. placeholder {0}: weightText(standing.held)
+#. placeholder {1}: weightText(standing.weight)
+#: client/src/components/governance/MyStanding.tsx
+msgid "You hold {0}. A cap counts {1} of it on a ballot, and the rest stays yours."
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -14983,6 +15003,11 @@ msgstr ""
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgctxt "hidden map, one place's details"
 msgid "Return visits"
+msgstr ""
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "What was contributed"
 msgstr ""
 
 #: client/src/components/review/useSeraActs.ts

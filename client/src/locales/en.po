@@ -2110,6 +2110,11 @@ msgctxt "founding application split line: two parts"
 msgid "{a} and {b}"
 msgstr "{a} and {b}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: cash"
+msgstr "Contributed: cash"
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Access to give or take back"
 msgstr "Access to give or take back"
@@ -2362,6 +2367,11 @@ msgstr "The upload was not saved. Preview it again, then save."
 msgctxt "progression: a kind of power"
 msgid "Work and value"
 msgstr "Work and value"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: work or other"
+msgstr "Contributed: work or other"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -8293,6 +8303,10 @@ msgctxt "coming up, i'll be there, how many said so"
 msgid "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
 msgstr "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid " · cash put in"
+msgstr " · cash put in"
+
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
 msgid "Got it"
@@ -9366,6 +9380,12 @@ msgstr "Edit words"
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "See: what the village shows about {name}"
 msgstr "See: what the village shows about {name}"
+
+#. placeholder {0}: weightText(standing.held)
+#. placeholder {1}: weightText(standing.weight)
+#: client/src/components/governance/MyStanding.tsx
+msgid "You hold {0}. A cap counts {1} of it on a ballot, and the rest stays yours."
+msgstr "You hold {0}. A cap counts {1} of it on a ballot, and the rest stays yours."
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -14936,6 +14956,11 @@ msgstr "Practice run"
 msgctxt "hidden map, one place's details"
 msgid "Return visits"
 msgstr "Return visits"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "What was contributed"
+msgstr "What was contributed"
 
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
