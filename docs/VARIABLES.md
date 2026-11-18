@@ -22,32 +22,33 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 262 open and 60 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 268 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 295 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 301 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-322 dials in 40 categories. 170 carry a minimum and a maximum. By type: 133 integer, 19 decimal, 19 percentage, 45 boolean, 36 choice, 62 text, 8 longtext.
+328 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 63 text, 9 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
 | Membership | 3 | 3 | 0 |
+| Season places | 5 | 5 | 0 |
+| Governance | 56 | 46 | 10 |
 | Village | 5 | 4 | 1 |
 | Gratitude | 11 | 11 | 0 |
 | Ledger | 19 | 11 | 8 |
 | The Mint | 7 | 6 | 1 |
 | Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
-| Governance | 55 | 45 | 10 |
 | Tokens | 4 | 1 | 3 |
 | Hypha | 8 | 0 | 8 |
 | Tools | 2 | 2 | 0 |
@@ -90,6 +91,67 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Vouches that admit a member | `membership.vouches_required` | Membership | integer | `3` | the whole village |
 | Joining is by invitation | `membership.invite_only` | Membership | boolean | `true` | the whole village |
 | The role that greets a new arrival | `arrival.greeter_role` | Membership | text | blank | the whole village |
+| What takes part each season | `season_places.who` | Season places | choice | `circle` | the whole village |
+| Seasons before no proposal is needed | `season_places.free_after` | Season places | integer | blank, which is every season needs a proposal | the whole village |
+| Places in a season | `season_places.cap` | Season places | integer | blank, which is no cap | the whole village |
+| The role that picks a circle's team | `season_crew.picker_role` | Season places | text | blank | the whole village |
+| A circle needs a season place to pick a team | `season_crew.needs_place` | Season places | boolean | `false` | the whole village |
+| What a role asks for before anyone applies | `roles.prerequisites` | Governance | longtext | blank | the whole village |
+| How sensing is weighted | `governance.voice_weighting` | Governance | choice | `equal` | the whole village |
+| The proposer bar: earned recognition to propose | `governance.hypha_threshold` | Governance | integer | `0` | the whole village |
+| How long a topic stays open for sensing | `governance.sensing_days` | Governance | integer | `7` | the whole village |
+| Mechanics proposals per member per cycle | `governance.proposals_per_member_per_cycle` | Governance | integer | `5` | the whole village |
+| Supporters before a proposal can go to the vote | `governance.proposal_support_threshold` | Governance | integer | `0` | the whole village |
+| Governance hub URL | `governance.hub_url` | Governance | text | blank | the founder or an admin |
+| Apply verified proposals automatically | `governance.auto_apply_enabled` | Governance | boolean | `true` | the founder or an admin |
+| Which decisions a steward can stop | `governance.steward_subjects` | Governance | text | `all` | the whole village |
+| Which sizes of decision a steward can stop | `governance.steward_veto_tiers` | Governance | text | `constitutional` | the whole village |
+| Payouts above this wait three days before they are sent | `governance.payout_delay_over` | Governance | integer | `1000` | the whole village |
+| A veto needs a majority of the stewards | `governance.steward_council` | Governance | boolean | `false` | the whole village |
+| How long a steward has to stop a change | `governance.veto_hours` | Governance | integer | `72` | the whole village |
+| How long a change waits when every steward already said yes | `governance.consent_notice_hours` | Governance | integer | `24` | the whole village |
+| Cycles a passed decision waits before it is written off | `governance.landing_expiry_cycles` | Governance | integer | `3` | the whole village |
+| Cooldown after a governed rule change | `governance.change_cooldown_days` | Governance | integer | `0` | the whole village |
+| Changes one proposal may carry | `governance.change_set_cap` | Governance | integer | `22` | the whole village |
+| Change requests one member may gather at once | `governance.change_requests_gathering_per_member` | Governance | integer | `5` | the whole village |
+| Days a change request is reviewed before its vote | `governance.change_request_review_days` | Governance | integer | `3` | the whole village |
+| When a change to the Game Mechanics can go to the vote | `governance.window_changeset` | Governance | text | `always_open` | the whole village |
+| When a change to what the village mints can go to the vote | `governance.window_mint_rule` | Governance | text | `always_open` | the whole village |
+| When a change to how votes are counted can go to the vote | `governance.window_governance_mode` | Governance | text | `always_open` | the whole village |
+| When declaring a role can go to the vote | `governance.window_role_declare` | Governance | text | `always_open` | the whole village |
+| When seating a role can go to the vote | `governance.window_role_seat` | Governance | text | `always_open` | the whole village |
+| When taking a role back can go to the vote | `governance.window_role_unseat` | Governance | text | `always_open` | the whole village |
+| When moving a power to a role can go to the vote | `governance.window_power_transfer` | Governance | text | `always_open` | the whole village |
+| When granting a power can go to the vote | `governance.window_power_grant` | Governance | text | `always_open` | the whole village |
+| When handing a power back can go to the vote | `governance.window_power_return` | Governance | text | `always_open` | the whole village |
+| When changing the governing purpose can go to the vote | `governance.window_gps_change` | Governance | text | `always_open` | the whole village |
+| How long a proposal coming back may open outside its window | `governance.window_grace_days` | Governance | integer | `7` | the whole village |
+| How voting weight is assigned | `governance.weight_mode` | Governance | choice | `equal` | the founder or an admin |
+| The weight token | `governance.weight_token` | Governance | text | `gratitude` | the founder or an admin |
+| Cap one member's voting weight | `governance.weight_cap_on` | Governance | boolean | `false` | the founder or an admin |
+| The most voting weight one member can carry | `governance.weight_cap_pct` | Governance | percentage | `20` | the founder or an admin |
+| Cap the weight one member counts from cash | `governance.weight_cap_cash_on` | Governance | boolean | `false` | the founder or an admin |
+| The most weight one member counts from cash | `governance.weight_cap_cash` | Governance | integer | `0` | the founder or an admin |
+| Cap the weight one member counts from other contributions | `governance.weight_cap_other_on` | Governance | boolean | `false` | the founder or an admin |
+| The most weight one member counts from other contributions | `governance.weight_cap_other` | Governance | integer | `0` | the founder or an admin |
+| Unity needed to pass | `governance.unity_pct` | Governance | percentage | `80` | the whole village |
+| Quorum needed to count | `governance.quorum_pct` | Governance | percentage | `20` | the whole village |
+| Ask again when too few vote | `governance.quorum_fallback` | Governance | choice | `off` | the whole village |
+| How long a ballot stays open | `governance.vote_days` | Governance | integer | `7` | the whole village |
+| How long a consent window stays open | `governance.consent_window_days` | Governance | integer | `7` | the whole village |
+| How village-wide ballots decide | `governance.default_method` | Governance | choice | `custom` | the whole village |
+| Routine changes: quorum floor | `governance.tier_routine_quorum_pct` | Governance | percentage | `0` | the whole village |
+| Routine changes: unity floor | `governance.tier_routine_unity_pct` | Governance | percentage | `0` | the whole village |
+| Structural changes: quorum floor | `governance.tier_structural_quorum_pct` | Governance | percentage | `50` | the whole village |
+| Structural changes: unity floor | `governance.tier_structural_unity_pct` | Governance | percentage | `80` | the whole village |
+| Constitutional changes: quorum floor | `governance.tier_constitutional_quorum_pct` | Governance | percentage | `97` | the whole village |
+| Constitutional changes: unity floor | `governance.tier_constitutional_unity_pct` | Governance | percentage | `97` | the whole village |
+| The tier a veto override is passed at | `governance.highest_tier` | Governance | choice | `constitutional` | the whole village |
+| Members it takes to launch | `governance.launch_min_electorate` | Governance | integer | `3` | the whole village |
+| Minting rule changes: quorum floor | `governance.subject_mint_rule_quorum_pct` | Governance | percentage | `50` | the whole village |
+| Minting rule changes: unity floor | `governance.subject_mint_rule_unity_pct` | Governance | percentage | `0` | the whole village |
+| Roles speaking for other beings count toward quorum | `governance.nonhuman_in_quorum` | Governance | boolean | `false` | the whole village |
+| Cycles of silence before a role leaves the count | `governance.absent_cycles` | Governance | integer | `3` | the whole village |
 | The village's own circle, for budget lines about the whole village | `budgets.village_circle_id` | Village | text | blank | the whole village |
 | Village Pulse length | `village.pulse_max_entries` | Village | integer | `30` | the whole village |
 | Where the land's satellite picture comes from | `village.satellite_provider` | Village | choice | blank | the whole village |
@@ -170,61 +232,6 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Require submitted work before consent | `quest.require_submission_before_consent` | Quests | boolean | `true` | the whole village |
 | Let quests ask a minimum age | `quest.minimum_ages` | Quests | boolean | `false` | the whole village |
 | Founder may self-consent below this many members | `quest.self_consent_until_members` | Quests | integer | `6` | the whole village |
-| How sensing is weighted | `governance.voice_weighting` | Governance | choice | `equal` | the whole village |
-| The proposer bar: earned recognition to propose | `governance.hypha_threshold` | Governance | integer | `0` | the whole village |
-| How long a topic stays open for sensing | `governance.sensing_days` | Governance | integer | `7` | the whole village |
-| Mechanics proposals per member per cycle | `governance.proposals_per_member_per_cycle` | Governance | integer | `5` | the whole village |
-| Supporters before a proposal can go to the vote | `governance.proposal_support_threshold` | Governance | integer | `0` | the whole village |
-| Governance hub URL | `governance.hub_url` | Governance | text | blank | the founder or an admin |
-| Apply verified proposals automatically | `governance.auto_apply_enabled` | Governance | boolean | `true` | the founder or an admin |
-| Which decisions a steward can stop | `governance.steward_subjects` | Governance | text | `all` | the whole village |
-| Which sizes of decision a steward can stop | `governance.steward_veto_tiers` | Governance | text | `constitutional` | the whole village |
-| Payouts above this wait three days before they are sent | `governance.payout_delay_over` | Governance | integer | `1000` | the whole village |
-| A veto needs a majority of the stewards | `governance.steward_council` | Governance | boolean | `false` | the whole village |
-| How long a steward has to stop a change | `governance.veto_hours` | Governance | integer | `72` | the whole village |
-| How long a change waits when every steward already said yes | `governance.consent_notice_hours` | Governance | integer | `24` | the whole village |
-| Cycles a passed decision waits before it is written off | `governance.landing_expiry_cycles` | Governance | integer | `3` | the whole village |
-| Cooldown after a governed rule change | `governance.change_cooldown_days` | Governance | integer | `0` | the whole village |
-| Changes one proposal may carry | `governance.change_set_cap` | Governance | integer | `22` | the whole village |
-| Change requests one member may gather at once | `governance.change_requests_gathering_per_member` | Governance | integer | `5` | the whole village |
-| Days a change request is reviewed before its vote | `governance.change_request_review_days` | Governance | integer | `3` | the whole village |
-| When a change to the Game Mechanics can go to the vote | `governance.window_changeset` | Governance | text | `always_open` | the whole village |
-| When a change to what the village mints can go to the vote | `governance.window_mint_rule` | Governance | text | `always_open` | the whole village |
-| When a change to how votes are counted can go to the vote | `governance.window_governance_mode` | Governance | text | `always_open` | the whole village |
-| When declaring a role can go to the vote | `governance.window_role_declare` | Governance | text | `always_open` | the whole village |
-| When seating a role can go to the vote | `governance.window_role_seat` | Governance | text | `always_open` | the whole village |
-| When taking a role back can go to the vote | `governance.window_role_unseat` | Governance | text | `always_open` | the whole village |
-| When moving a power to a role can go to the vote | `governance.window_power_transfer` | Governance | text | `always_open` | the whole village |
-| When granting a power can go to the vote | `governance.window_power_grant` | Governance | text | `always_open` | the whole village |
-| When handing a power back can go to the vote | `governance.window_power_return` | Governance | text | `always_open` | the whole village |
-| When changing the governing purpose can go to the vote | `governance.window_gps_change` | Governance | text | `always_open` | the whole village |
-| How long a proposal coming back may open outside its window | `governance.window_grace_days` | Governance | integer | `7` | the whole village |
-| How voting weight is assigned | `governance.weight_mode` | Governance | choice | `equal` | the founder or an admin |
-| The weight token | `governance.weight_token` | Governance | text | `gratitude` | the founder or an admin |
-| Cap one member's voting weight | `governance.weight_cap_on` | Governance | boolean | `false` | the founder or an admin |
-| The most voting weight one member can carry | `governance.weight_cap_pct` | Governance | percentage | `20` | the founder or an admin |
-| Cap the weight one member counts from cash | `governance.weight_cap_cash_on` | Governance | boolean | `false` | the founder or an admin |
-| The most weight one member counts from cash | `governance.weight_cap_cash` | Governance | integer | `0` | the founder or an admin |
-| Cap the weight one member counts from other contributions | `governance.weight_cap_other_on` | Governance | boolean | `false` | the founder or an admin |
-| The most weight one member counts from other contributions | `governance.weight_cap_other` | Governance | integer | `0` | the founder or an admin |
-| Unity needed to pass | `governance.unity_pct` | Governance | percentage | `80` | the whole village |
-| Quorum needed to count | `governance.quorum_pct` | Governance | percentage | `20` | the whole village |
-| Ask again when too few vote | `governance.quorum_fallback` | Governance | choice | `off` | the whole village |
-| How long a ballot stays open | `governance.vote_days` | Governance | integer | `7` | the whole village |
-| How long a consent window stays open | `governance.consent_window_days` | Governance | integer | `7` | the whole village |
-| How village-wide ballots decide | `governance.default_method` | Governance | choice | `custom` | the whole village |
-| Routine changes: quorum floor | `governance.tier_routine_quorum_pct` | Governance | percentage | `0` | the whole village |
-| Routine changes: unity floor | `governance.tier_routine_unity_pct` | Governance | percentage | `0` | the whole village |
-| Structural changes: quorum floor | `governance.tier_structural_quorum_pct` | Governance | percentage | `50` | the whole village |
-| Structural changes: unity floor | `governance.tier_structural_unity_pct` | Governance | percentage | `80` | the whole village |
-| Constitutional changes: quorum floor | `governance.tier_constitutional_quorum_pct` | Governance | percentage | `97` | the whole village |
-| Constitutional changes: unity floor | `governance.tier_constitutional_unity_pct` | Governance | percentage | `97` | the whole village |
-| The tier a veto override is passed at | `governance.highest_tier` | Governance | choice | `constitutional` | the whole village |
-| Members it takes to launch | `governance.launch_min_electorate` | Governance | integer | `3` | the whole village |
-| Minting rule changes: quorum floor | `governance.subject_mint_rule_quorum_pct` | Governance | percentage | `50` | the whole village |
-| Minting rule changes: unity floor | `governance.subject_mint_rule_unity_pct` | Governance | percentage | `0` | the whole village |
-| Roles speaking for other beings count toward quorum | `governance.nonhuman_in_quorum` | Governance | boolean | `false` | the whole village |
-| Cycles of silence before a role leaves the count | `governance.absent_cycles` | Governance | integer | `3` | the whole village |
 | Equity token contract address on Base | `tokens.equity_address` | Tokens | text | blank | the founder or an admin |
 | Governance token contract address on Base | `tokens.voice_address` | Tokens | text | blank | the founder or an admin |
 | Show the economics section | `tokens.show_economics_section` | Tokens | boolean | `false` | the whole village |
@@ -456,6 +463,940 @@ The role whose holders are told the moment somebody joins. Greeting belongs to a
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
+
+## Season places
+
+5 dials. 5 for the whole village.
+
+### What takes part each season
+
+Who proposes to take part in a season: each circle, which a live holder of any role in it proposes for, or each member for themselves. Places, the waitlist and seasons served are all counted in this unit.
+
+| Fact | Value |
+| --- | --- |
+| Key | `season_places.who` |
+| Type | choice, one of a fixed list |
+| Default | `circle` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+What it may be set to:
+
+- `circle` Each circle. A circle proposes together, and holds one place.
+- `member` Each member. Every member proposes for themselves.
+
+### Seasons before no proposal is needed
+
+After holding a place in this many seasons, a circle takes part in the next one without a proposal. The season it is in now counts. Leave it blank and every season needs a proposal. 0 means nobody ever needs one.
+
+| Fact | Value |
+| --- | --- |
+| Key | `season_places.free_after` |
+| Type | integer, a whole number |
+| Default | blank, which is every season needs a proposal |
+| Range | 0 to 40 |
+| Counted in | seasons |
+| Left blank | every season needs a proposal, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Places in a season
+
+How many circles can take part in one season. Over it, a circle that was adopted, or that has served its seasons, waits in order and takes the first place that frees, and its people are told. Lowering it removes nobody: places already held stand. Leave it blank for no cap. 0 means no places.
+
+| Fact | Value |
+| --- | --- |
+| Key | `season_places.cap` |
+| Type | integer, a whole number |
+| Default | blank, which is no cap |
+| Range | 0 to 100000 |
+| Counted in | places |
+| Left blank | no cap, and 0 is the number zero |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The role that picks a circle's team
+
+Every season starts fresh: each member applies, and each circle's team for the season is picked from everyone who applied. Name the role whose holder in each circle picks it, as your circles call it. Leave it blank, or leave a circle without a live holder of that role, and every role holder in the circle can pick.
+
+| Fact | Value |
+| --- | --- |
+| Key | `season_crew.picker_role` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### A circle needs a season place to pick a team
+
+When on, a circle picks a team for a season only while it holds a place in that season, so the places in a season cap how many circles take part.
+
+| Fact | Value |
+| --- | --- |
+| Key | `season_crew.needs_place` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+## Governance
+
+56 dials. 46 for the whole village, 10 for the founder or an admin.
+
+### What a role asks for before anyone applies
+
+Roles that ask for something completed before a member may apply: a product they paid for, a quest consented to them, or both. One entry per role, joined by semicolons: role-id = product:product-id, quest:quest-id. A reversed payment does not count. Leave it blank and no role asks for anything.
+
+| Fact | Value |
+| --- | --- |
+| Key | `roles.prerequisites` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### How sensing is weighted
+
+Sensing gathers support before a ballot opens. Choose whether it gives everyone an equal voice, or mirrors Voice holdings so you can see how a weighted vote would land. Where the binding vote itself happens, here or on your DAO, is decided by the governance module and its own weight setting.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.voice_weighting` |
+| Type | choice, one of a fixed list |
+| Default | `equal` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+What it may be set to:
+
+- `equal` One person, one voice. Everyone's sensing counts the same, regardless of what they hold. Simplest and most equal.
+- `hypha-mirror` Mirror Hypha Voice holdings. Sensing is weighted by each member's Voice token balance, so the informal step previews how a formal Hypha decision would land.
+
+### The proposer bar: earned recognition to propose
+
+Earned recognition a member needs before they can OPEN mechanics proposals and sponsor others' drafts (below it, they can still draft; a qualified member's sponsorship opens a draft). The base posture is 0: any member may propose. Raise it to ask for earned standing first. Admins and founders always qualify.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.hypha_threshold` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 10000000 |
+| Counted in | Gratitude |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How long a topic stays open for sensing
+
+Days a proposal collects perspectives before it can move to a decision. Long enough that quiet people get heard, short enough that momentum survives.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.sensing_days` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 1 to 90 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Mechanics proposals per member per cycle
+
+How many game-rule change proposals one member may open per cycle. A ceiling on flooding, not on participation: supporting and sponsoring other proposals is never limited.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.proposals_per_member_per_cycle` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 1 to 100 |
+| Counted in | per cycle |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Supporters before a proposal can go to the vote
+
+How many members must support a mechanics proposal in-game before it can be taken to the binding vote. The sensing step: proposals gather perspectives here first, and only what the village actually wants reaches a ballot. Where that ballot happens is set by how village-wide ballots decide, on this village's own dials or in your Hypha space. 0 turns the gate off, and any open proposal can go straight to the vote.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.proposal_support_threshold` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 10000 |
+| Counted in | supporters |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Governance hub URL
+
+Base URL of the hub that listens to the chain for this village. When a proposal's Hypha URL is pasted in, the platform registers the on-chain proposal id with this hub (signed with the shared governance secret) so the verified outcome can find its way home. Empty means this village has no hub: nothing is registered and nothing is sent anywhere. Fill it in only if you run a hub or have been given one to point at.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.hub_url` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Apply verified proposals automatically
+
+When on, a proposal verified as passed on-chain applies itself: instantly for instant dials, at the next cycle close when the set touches any cycle-timed dial (the whole set waits together; a set applies atomically or not at all). Turning this OFF is the founder's emergency brake: verified proposals hold, stewards are notified, and applying becomes a human act until it is turned back on. Founder-held on purpose.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.auto_apply_enabled` |
+| Type | boolean, on or off |
+| Default | `true` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Which decisions a steward can stop
+
+A steward can stop a decision the village has already carried, inside the window before it lands, and has to say why. This names which kinds of decision are inside that reach. Leave it as all while the village is young; name a shorter list, or none, as it learns to trust its own agreements. A village with no steward and self-executing agreements is a healthy village, not a broken one. Advisory votes are never in reach, because they change nothing. Neither is the ballot that seats or unseats a steward, so the role can never stop its own removal.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.steward_subjects` |
+| Type | text, free text, one line |
+| Default | `all` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Which sizes of decision a steward can stop
+
+Every decision carries a size: routine, structural, or constitutional. This names the sizes a steward may stop inside the window before a decision lands, and a veto needs the decision to be in reach on both this list and the one above. The default is constitutional on its own, so the role can pause the changes that reshape the village and leaves the smaller ones alone. Write them separated by commas, or write all. Leave it empty and no steward can stop anything, which is a healthy village and not a broken one. Changing this is priced at the top tier and no steward can stop the change, because a role that could veto an edit to its own limits would have none.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.steward_veto_tiers` |
+| Type | text, free text, one line |
+| Default | `constitutional` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Payouts above this wait three days before they are sent
+
+A payout the village votes through is sent the moment it passes. Above this amount it waits the steward window first, so somebody can catch a send that would empty a purse or reward the wrong work. The amount is counted in whole tokens of whatever token is being sent, so a village holding several tokens with very different sizes should set this against the one it actually pays people in. Zero makes every payout wait.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.payout_delay_over` |
+| Type | integer, a whole number |
+| Default | `1000` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### A veto needs a majority of the stewards
+
+Off by default, and off means any one seated steward can stop a decision on their own. Turn it on and a village with several stewards runs them as a council: stopping a decision then takes a majority of the seated roles, so one role alone cannot hold the village up. Changing this is priced at the top tier, and no steward can stop the change, because a role that could veto an edit to its own limits would have none.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.steward_council` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### How long a steward has to stop a change
+
+A change to the Game that the village has passed does not take effect straight away. It is stamped with a landing instant and a steward may stop it until then, with a reason that goes on the record. This is the least notice a steward gets, counted from the moment the vote closes. 72 hours is the floor and cannot be lowered; a village may give its stewards longer. A decision that sends tokens is not held by this: a steward stops one of those by voting no while the ballot is still open.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.veto_hours` |
+| Type | integer, a whole number |
+| Default | `72` |
+| Range | 72 to 720 |
+| Counted in | hours |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### How long a change waits when every steward already said yes
+
+When every seated steward votes yes on a decision, nobody is left to stop it, so it does not need the whole steward window. It still waits this many hours after the vote closes, because the countdown is the village's notice that a change is coming. It only ever shortens the wait: a number above the steward window counts as the steward window. A village with no seated stewards never gets this, because nobody said yes. Zero lets a change land as soon as the vote closes whenever every steward agrees.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.consent_notice_hours` |
+| Type | integer, a whole number |
+| Default | `24` |
+| Range | 0 to 720 |
+| Counted in | hours |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Cycles a passed decision waits before it is written off
+
+A decision the village passed is stamped with the instant it takes effect. If it is still sitting there this many cycles after that instant, it is closed and the village is told. The door back is to withdraw and rewrite it, which keeps everybody who backed it. Set it higher for a village that turns the automatic landing off for long stretches.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.landing_expiry_cycles` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 12 |
+| Counted in | cycles |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Cooldown after a governed rule change
+
+After a dial is changed by a passed proposal, this many days must pass before a new proposal may move that same dial again. Prevents rule-thrash and vote fatigue. 0 turns the cooldown off.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.change_cooldown_days` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 365 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Changes one proposal may carry
+
+The most changes a single proposal may gather and put to one vote. Connected changes travel together and pass or fail as one, at the bar of the hardest change among them. A smaller number keeps every proposal short enough to read in one sitting. 1 to 50.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.change_set_cap` |
+| Type | integer, a whole number |
+| Default | `22` |
+| Range | 1 to 50 |
+| Counted in | changes |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Change requests one member may gather at once
+
+How many change requests one member may be gathering at the same time, before they open them for review. Reviewing, commenting on and supporting other members' change requests is never limited.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.change_requests_gathering_per_member` |
+| Type | integer, a whole number |
+| Default | `5` |
+| Range | 1 to 50 |
+| Counted in | change requests |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Days a change request is reviewed before its vote
+
+How long the village has to ask questions, raise concerns and objections, and suggest edits before a change request may go to the vote. The clock starts again whenever a change or the why is edited. 0 lets a change request go to the vote as soon as its objections are answered.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.change_request_review_days` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 0 to 30 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When a change to the Game Mechanics can go to the vote
+
+always_open lets anyone take a change set to the vote on any day. last_days_of_cycle:7 opens it in the last seven days before the moon turns, so the village reads its changes together. last_days_of_season:14 opens it in the last two weeks of the season that is running. custom:1-7 names your own days of the cycle, counted from the moon. A window decides when a vote may OPEN: a vote already running is never closed by a window shutting, and a proposal coming back after a veto or an objection opens outside its window for the grace named below.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_changeset` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When a change to what the village mints can go to the vote
+
+The window a minting change opens in, in the same words as the change set window above. This one is separate because a village that wants its minting read together can hold minting to a window while everything else stays open. A change set carrying a minting element is held to the stricter of the two.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_mint_rule` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When a change to how votes are counted can go to the vote
+
+The window a vote-mode switch opens in, in the same words as the change set window above. A change set carrying a mode switch is held to this window as well as its own, so the biggest change in a bundle cannot ride into an open week under a small one.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_governance_mode` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When declaring a role can go to the vote
+
+The window a proposal that declares a new role opens in, in the same words as the change set window above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_role_declare` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When seating a role can go to the vote
+
+The window a proposal that asks somebody to sit in a role opens in, in the same words as the change set window above. Hold this one open while a village is young: a role nobody can be asked to fill is a role that stays empty until the calendar allows it.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_role_seat` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When taking a role back can go to the vote
+
+The window a proposal that takes a role back opens in, in the same words as the change set window above. A village that windows this one is choosing to wait before it can remove somebody, so leave it always open unless you have a reason you can say out loud.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_role_unseat` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When moving a power to a role can go to the vote
+
+The window a proposal that moves a power from the admin panel to a role opens in, in the same words as the change set window above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_power_transfer` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When granting a power can go to the vote
+
+The window a proposal that grants a power to a role opens in, in the same words as the change set window above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_power_grant` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When handing a power back can go to the vote
+
+The window a proposal that hands a power back to the admin panel opens in, in the same words as the change set window above.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_power_return` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### When changing the governing purpose can go to the vote
+
+The window a proposal that changes this village's governing purpose statement opens in, in the same words as the change set window above. This is the sentence every other change is judged against, so a village that wants it read together is the village most likely to window it.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_gps_change` |
+| Type | text, free text, one line |
+| Default | `always_open` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### How long a proposal coming back may open outside its window
+
+A resubmission after objections, a veto override and a renewal of a trial are all proposals coming back, and the village has already been asked once. Each of them may open outside its kind's window for this many days after the decision it comes back from closed. Set this to 0 and a single steward's veto becomes unanswerable until the next window opens.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.window_grace_days` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 0 to 90 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### How voting weight is assigned
+
+What one member's vote weighs on an on-site ballot. Equal gives every eligible member the same single vote. Token weighs votes by each member's balance of the weight token at the moment a ballot opens. Custom weighs votes by the allocation table you keep under Voting weights, where a member with no allocation weighs zero. Whatever you choose, each ballot freezes the weights when it opens, and every allocation change is on a permanent record any member can read.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_mode` |
+| Type | choice, one of a fixed list |
+| Default | `equal` |
+| Range | one of the choices below |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+What it may be set to:
+
+- `equal` One person, one vote. Every eligible member weighs the same.
+- `token` Token balance. Weight is each member's balance of the weight token when the ballot opens.
+- `custom` Custom allocation. Weight comes from the allocation table. No allocation means no weight.
+
+### The weight token
+
+Which token weighs votes when the weight mode is token. Only tokens this platform itself governs can be chosen: a token governed on Hypha is a display-only mirror here, and a ballot may never make this platform a second source of truth for it. The default is the recognition token, which nobody can buy, so weight in the default posture is earned appreciation.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_token` |
+| Type | text, free text, one line |
+| Default | `gratitude` |
+| Range | no bounds are set |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Cap one member's voting weight
+
+Turns on a ceiling on how much of the vote any one member carries. It only matters when the weight mode is token, where a member weighs their balance, so one large holder could meet quorum alone or carry a vote. With this on, when a ballot opens no member carries more than the share below of that ballot's vote, and the rest of the vote is shared among everyone else in proportion to what they hold. What it costs: a large holder's balance past the cap stops counting, and on a small roll balances stop counting at all: with fewer than 5 members holding weight at the default 20 (100 divided by the cap), everyone weighs the same. It is off unless you turn it on.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_on` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### The most voting weight one member can carry
+
+While the cap above is on, the largest share of a ballot's vote that one member can carry. It only matters in token mode, and only with the cap switched on. At 20, a member holding 90 beside four members holding 2.5 each carries a fifth of the vote, the same as each of them, and members under the cap keep their balance in full. With fewer than 5 members holding weight at 20, everyone weighs the same, because five shares of 20 is the least that makes a whole vote. Lower spreads power wider and needs more holders before balances count at all. To have no cap, turn the switch off. This number never does that.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_pct` |
+| Type | percentage, a percentage |
+| Default | `20` |
+| Range | 1 to 100 |
+| Counted in | % |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Cap the weight one member counts from cash
+
+Turns on a ceiling on how much of one member's weight token balance a ballot counts from cash they put in: Voice from donations, investment, dues, and hand-mints a steward marked as cash. It only matters when the weight mode is token. Nothing is taken from anybody: the balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from cash'. It is off unless you turn it on.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_cash_on` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### The most weight one member counts from cash
+
+While the cash cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from cash. A member's balance is split into its cash part and its other part by the share of everything minted to them that came from each, so waning takes from both alike. At 1000, a member holding 3000 that came from cash counts 1000 of it on every ballot, and any part from work or other contributions counts under its own cap. At 0, with the switch on, nothing from cash counts at all, because a cap of zero means zero. To have no cash cap, turn the switch off.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_cash` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 1000000000 |
+| Counted in | tokens |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### Cap the weight one member counts from other contributions
+
+Turns on a ceiling on how much of one member's weight token balance a ballot counts from everything that is not cash: quests, roles, accepted proposals, and hand-mints marked as something other than cash. A source nobody has classified counts here. It only matters when the weight mode is token. The balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from other contributions'. It is off unless you turn it on.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_other_on` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### The most weight one member counts from other contributions
+
+While the cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from contributions other than cash. With both caps on, the most any one member counts is the two numbers added together. At 0, with the switch on, nothing from other contributions counts, because a cap of zero means zero. To have no cap on other contributions, turn the switch off.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_other` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 1000000000 |
+| Counted in | tokens |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### Unity needed to pass
+
+Of the votes cast for or against, the share that must be in favor for a ballot run on the village's own dials to pass. Abstentions help a ballot reach quorum and take no side here. 100 asks for consensus in effect; the Hypha surface this inherits from runs at 80.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.unity_pct` |
+| Type | percentage, a percentage |
+| Default | `80` |
+| Range | 50 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Quorum needed to count
+
+The share of the electorate's total voting weight that must show up, counting abstentions, before a ballot's outcome counts at all. Below this the ballot closes as no quorum, whatever the votes said. Each ballot freezes this number when it opens.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.quorum_pct` |
+| Type | percentage, a percentage |
+| Default | `20` |
+| Range | 1 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### Ask again when too few vote
+
+Off by default, and off means a ballot that misses quorum ends there. Turn it on and a ballot that misses quorum opens once more on the same question, for as many days as the first, needing half the quorum. If that one misses too, a simple majority of the votes cast decides it: more yes than no carries it and a tie does not. Only ballots opened after it is switched on are asked again. A steward or an admin may switch it on at any time as a failsafe, and every switch is recorded and announced on the village feed. Switching it off is the village's to decide.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.quorum_fallback` |
+| Type | choice, one of a fixed list |
+| Default | `off` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+What it may be set to:
+
+- `off` Off. A ballot that misses quorum ends as it closes.
+- `on` On. A ballot that misses quorum is asked again once, at half the quorum.
+
+### How long a ballot stays open
+
+Days between a ballot opening and its votes locking. Votes can be changed freely until then. The clock closes the ballot when the window ends and the village's own engine reads the result, so nobody chooses the moment. A change to the Game then waits again, for the window a steward can stop it in.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.vote_days` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 1 to 30 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+### How long a consent window stays open
+
+Days an objection window runs on a consent ballot. A consent decision passes when the window has ended, participation met quorum, and no objection still stands open. Objections are ruled by a facilitator, and every ruling is attributed and explained on the record.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.consent_window_days` |
+| Type | integer, a whole number |
+| Default | `7` |
+| Range | 1 to 30 |
+| Counted in | days |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### How village-wide ballots decide
+
+The method a village-wide ballot uses when nothing more specific applies. Your own dials use the unity and quorum settings above. Majority means more than half of the votes cast carries it. Consensus means everyone who takes a side agrees. Consent means a decision passes when nobody sustains a reasoned objection. Hypha keeps the shipped loop: proposals go to your Hypha space for the binding vote.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.default_method` |
+| Type | choice, one of a fixed list |
+| Default | `custom` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a structural vote, at a higher bar |
+
+What it may be set to:
+
+- `custom` This village's own dials. Uses the unity and quorum settings above.
+- `majority` Majority. More than half of the votes cast carries it.
+- `consensus` Consensus. Everyone who takes a side agrees.
+- `consent` Consent. Passes when no reasoned objection stands.
+- `hypha` Decide on Hypha. The shipped loop: the binding vote happens in your Hypha space.
+
+### Routine changes: quorum floor
+
+The least share of the village's voting weight that must turn up before an ordinary change to the Game can be decided. Ordinary means a number the village tunes while it plays. 0 leaves it entirely to your own quorum setting above, which is the shipped posture. Raise it to ask for more attention on every change, however small.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_routine_quorum_pct` |
+| Type | percentage, a percentage |
+| Default | `0` |
+| Range | 0 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Routine changes: unity floor
+
+The least share of the votes cast for or against that must be in favour before an ordinary change to the Game carries. 0 leaves it entirely to your own unity setting above, which is the shipped posture.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_routine_unity_pct` |
+| Type | percentage, a percentage |
+| Default | `0` |
+| Range | 0 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Structural changes: quorum floor
+
+The least share of the village's voting weight that must turn up before a structural change can be decided. Structural means it changes how the village decides or who belongs to it: the unity and quorum settings themselves, how ballots decide, who may be admitted, what the village mints, and turning a part of the Game on or off. The shipped 50 is this platform's starting number and your village may raise it. It cannot go below the platform floor.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_structural_quorum_pct` |
+| Type | percentage, a percentage |
+| Default | `50` |
+| Range | 50 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Structural changes: unity floor
+
+The least share of the votes cast for or against that must be in favour before a structural change carries. The shipped 80 is the number this platform inherited from Hypha, and it is a starting point your village may raise. It cannot go below the platform floor.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_structural_unity_pct` |
+| Type | percentage, a percentage |
+| Default | `80` |
+| Range | 80 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Constitutional changes: quorum floor
+
+The least share of the village's voting weight that must turn up before a constitutional change can be decided. Constitutional means it changes the rules for changing the rules: how voting weight is assigned, which token carries weight, and these bars themselves. The shipped number is 97, which leaves room for 3 in 100 to be unreachable on the day. Going higher is allowed and the Game will warn you why it is risky.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_constitutional_quorum_pct` |
+| Type | percentage, a percentage |
+| Default | `97` |
+| Range | 97 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Constitutional changes: unity floor
+
+The least share of the votes cast for or against that must be in favour before a constitutional change carries. The shipped number is 97. Going higher is allowed and the Game will warn you why it is risky.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.tier_constitutional_unity_pct` |
+| Type | percentage, a percentage |
+| Default | `97` |
+| Range | 97 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### The tier a veto override is passed at
+
+A steward can veto a change the village passed. The village can bring the same proposal back and pass it again at this tier, and then it lands whatever any steward says. This names which tier that is: the highest one your village works at. Moving this setting costs whatever the tier it currently names costs, so lowering it is as hard as the bar you are lowering.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.highest_tier` |
+| Type | choice, one of a fixed list |
+| Default | `constitutional` |
+| Range | one of the choices below |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+What it may be set to:
+
+- `routine` Routine. Your own unity and quorum settings decide an override.
+- `structural` Structural. An override asks the structural bar: how the village decides.
+- `constitutional` Constitutional. An override asks the highest bar this platform ships.
+
+### Members it takes to launch
+
+How many members must hold a voice before the village can vote to start its Game. Every one of them has to say yes. The default is three: a founder and two more. Moving it costs the highest tier your village works at.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.launch_min_electorate` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 50 |
+| Counted in | members |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Minting rule changes: quorum floor
+
+The least share of the village's voting weight that must turn up before a change to what the village mints can be decided. This one sits on top of the structural tier, so raising it asks for more attention on minting alone without moving every other structural change with it. Cannot be set below the platform floor.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.subject_mint_rule_quorum_pct` |
+| Type | percentage, a percentage |
+| Default | `50` |
+| Range | 50 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Minting rule changes: unity floor
+
+The least share of the votes cast for or against that must be in favour before a change to what the village mints carries. 0 leaves it to the structural tier and your own unity setting.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.subject_mint_rule_unity_pct` |
+| Type | percentage, a percentage |
+| Default | `0` |
+| Range | 0 to 100 |
+| Counted in | % |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Roles speaking for other beings count toward quorum
+
+Your village can seat a voice for a being that is not a person: a mountain, a river, the trees, the wolves. A member or a bot holds that role and casts its vote. This says whether the weight on such a role is part of the count that decides whether enough of the village turned up. Off, which is how it ships, leaves that weight out of the count on both sides of the sum, and a vote cast from the role still counts toward agreement. On counts it like any member's, and weight that provably cannot answer drops out of the count instead.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.nonhuman_in_quorum` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Cycles of silence before a role leaves the count
+
+When roles speaking for other beings do count toward quorum, this is how many cycles of casting nothing it takes before such a role's weight drops out of the count. A role nobody holds drops out straight away. The weight is always shown beside the people count, so the village can see how much of its Voice is silent. Nothing here changes a threshold: it changes what the threshold is measured against.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.absent_cycles` |
+| Type | integer, a whole number |
+| Default | `3` |
+| Range | 1 to 24 |
+| Counted in | cycles |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
 
 ## Village
 
@@ -1930,843 +2871,6 @@ Consent normally needs a second person to witness the work: nobody may consent t
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |
-
-## Governance
-
-55 dials. 45 for the whole village, 10 for the founder or an admin.
-
-### How sensing is weighted
-
-Sensing gathers support before a ballot opens. Choose whether it gives everyone an equal voice, or mirrors Voice holdings so you can see how a weighted vote would land. Where the binding vote itself happens, here or on your DAO, is decided by the governance module and its own weight setting.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.voice_weighting` |
-| Type | choice, one of a fixed list |
-| Default | `equal` |
-| Range | one of the choices below |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-What it may be set to:
-
-- `equal` One person, one voice. Everyone's sensing counts the same, regardless of what they hold. Simplest and most equal.
-- `hypha-mirror` Mirror Hypha Voice holdings. Sensing is weighted by each member's Voice token balance, so the informal step previews how a formal Hypha decision would land.
-
-### The proposer bar: earned recognition to propose
-
-Earned recognition a member needs before they can OPEN mechanics proposals and sponsor others' drafts (below it, they can still draft; a qualified member's sponsorship opens a draft). The base posture is 0: any member may propose. Raise it to ask for earned standing first. Admins and founders always qualify.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.hypha_threshold` |
-| Type | integer, a whole number |
-| Default | `0` |
-| Range | 0 to 10000000 |
-| Counted in | Gratitude |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### How long a topic stays open for sensing
-
-Days a proposal collects perspectives before it can move to a decision. Long enough that quiet people get heard, short enough that momentum survives.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.sensing_days` |
-| Type | integer, a whole number |
-| Default | `7` |
-| Range | 1 to 90 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### Mechanics proposals per member per cycle
-
-How many game-rule change proposals one member may open per cycle. A ceiling on flooding, not on participation: supporting and sponsoring other proposals is never limited.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.proposals_per_member_per_cycle` |
-| Type | integer, a whole number |
-| Default | `5` |
-| Range | 1 to 100 |
-| Counted in | per cycle |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Supporters before a proposal can go to the vote
-
-How many members must support a mechanics proposal in-game before it can be taken to the binding vote. The sensing step: proposals gather perspectives here first, and only what the village actually wants reaches a ballot. Where that ballot happens is set by how village-wide ballots decide, on this village's own dials or in your Hypha space. 0 turns the gate off, and any open proposal can go straight to the vote.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.proposal_support_threshold` |
-| Type | integer, a whole number |
-| Default | `0` |
-| Range | 0 to 10000 |
-| Counted in | supporters |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Governance hub URL
-
-Base URL of the hub that listens to the chain for this village. When a proposal's Hypha URL is pasted in, the platform registers the on-chain proposal id with this hub (signed with the shared governance secret) so the verified outcome can find its way home. Empty means this village has no hub: nothing is registered and nothing is sent anywhere. Fill it in only if you run a hub or have been given one to point at.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.hub_url` |
-| Type | text, free text, one line |
-| Default | blank |
-| Range | no bounds are set |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### Apply verified proposals automatically
-
-When on, a proposal verified as passed on-chain applies itself: instantly for instant dials, at the next cycle close when the set touches any cycle-timed dial (the whole set waits together; a set applies atomically or not at all). Turning this OFF is the founder's emergency brake: verified proposals hold, stewards are notified, and applying becomes a human act until it is turned back on. Founder-held on purpose.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.auto_apply_enabled` |
-| Type | boolean, on or off |
-| Default | `true` |
-| Range | on or off |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Which decisions a steward can stop
-
-A steward can stop a decision the village has already carried, inside the window before it lands, and has to say why. This names which kinds of decision are inside that reach. Leave it as all while the village is young; name a shorter list, or none, as it learns to trust its own agreements. A village with no steward and self-executing agreements is a healthy village, not a broken one. Advisory votes are never in reach, because they change nothing. Neither is the ballot that seats or unseats a steward, so the role can never stop its own removal.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.steward_subjects` |
-| Type | text, free text, one line |
-| Default | `all` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Which sizes of decision a steward can stop
-
-Every decision carries a size: routine, structural, or constitutional. This names the sizes a steward may stop inside the window before a decision lands, and a veto needs the decision to be in reach on both this list and the one above. The default is constitutional on its own, so the role can pause the changes that reshape the village and leaves the smaller ones alone. Write them separated by commas, or write all. Leave it empty and no steward can stop anything, which is a healthy village and not a broken one. Changing this is priced at the top tier and no steward can stop the change, because a role that could veto an edit to its own limits would have none.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.steward_veto_tiers` |
-| Type | text, free text, one line |
-| Default | `constitutional` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Payouts above this wait three days before they are sent
-
-A payout the village votes through is sent the moment it passes. Above this amount it waits the steward window first, so somebody can catch a send that would empty a purse or reward the wrong work. The amount is counted in whole tokens of whatever token is being sent, so a village holding several tokens with very different sizes should set this against the one it actually pays people in. Zero makes every payout wait.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.payout_delay_over` |
-| Type | integer, a whole number |
-| Default | `1000` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### A veto needs a majority of the stewards
-
-Off by default, and off means any one seated steward can stop a decision on their own. Turn it on and a village with several stewards runs them as a council: stopping a decision then takes a majority of the seated roles, so one role alone cannot hold the village up. Changing this is priced at the top tier, and no steward can stop the change, because a role that could veto an edit to its own limits would have none.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.steward_council` |
-| Type | boolean, on or off |
-| Default | `false` |
-| Range | on or off |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### How long a steward has to stop a change
-
-A change to the Game that the village has passed does not take effect straight away. It is stamped with a landing instant and a steward may stop it until then, with a reason that goes on the record. This is the least notice a steward gets, counted from the moment the vote closes. 72 hours is the floor and cannot be lowered; a village may give its stewards longer. A decision that sends tokens is not held by this: a steward stops one of those by voting no while the ballot is still open.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.veto_hours` |
-| Type | integer, a whole number |
-| Default | `72` |
-| Range | 72 to 720 |
-| Counted in | hours |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### How long a change waits when every steward already said yes
-
-When every seated steward votes yes on a decision, nobody is left to stop it, so it does not need the whole steward window. It still waits this many hours after the vote closes, because the countdown is the village's notice that a change is coming. It only ever shortens the wait: a number above the steward window counts as the steward window. A village with no seated stewards never gets this, because nobody said yes. Zero lets a change land as soon as the vote closes whenever every steward agrees.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.consent_notice_hours` |
-| Type | integer, a whole number |
-| Default | `24` |
-| Range | 0 to 720 |
-| Counted in | hours |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Cycles a passed decision waits before it is written off
-
-A decision the village passed is stamped with the instant it takes effect. If it is still sitting there this many cycles after that instant, it is closed and the village is told. The door back is to withdraw and rewrite it, which keeps everybody who backed it. Set it higher for a village that turns the automatic landing off for long stretches.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.landing_expiry_cycles` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 1 to 12 |
-| Counted in | cycles |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Cooldown after a governed rule change
-
-After a dial is changed by a passed proposal, this many days must pass before a new proposal may move that same dial again. Prevents rule-thrash and vote fatigue. 0 turns the cooldown off.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.change_cooldown_days` |
-| Type | integer, a whole number |
-| Default | `0` |
-| Range | 0 to 365 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Changes one proposal may carry
-
-The most changes a single proposal may gather and put to one vote. Connected changes travel together and pass or fail as one, at the bar of the hardest change among them. A smaller number keeps every proposal short enough to read in one sitting. 1 to 50.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.change_set_cap` |
-| Type | integer, a whole number |
-| Default | `22` |
-| Range | 1 to 50 |
-| Counted in | changes |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Change requests one member may gather at once
-
-How many change requests one member may be gathering at the same time, before they open them for review. Reviewing, commenting on and supporting other members' change requests is never limited.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.change_requests_gathering_per_member` |
-| Type | integer, a whole number |
-| Default | `5` |
-| Range | 1 to 50 |
-| Counted in | change requests |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Days a change request is reviewed before its vote
-
-How long the village has to ask questions, raise concerns and objections, and suggest edits before a change request may go to the vote. The clock starts again whenever a change or the why is edited. 0 lets a change request go to the vote as soon as its objections are answered.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.change_request_review_days` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 0 to 30 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When a change to the Game Mechanics can go to the vote
-
-always_open lets anyone take a change set to the vote on any day. last_days_of_cycle:7 opens it in the last seven days before the moon turns, so the village reads its changes together. last_days_of_season:14 opens it in the last two weeks of the season that is running. custom:1-7 names your own days of the cycle, counted from the moon. A window decides when a vote may OPEN: a vote already running is never closed by a window shutting, and a proposal coming back after a veto or an objection opens outside its window for the grace named below.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_changeset` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When a change to what the village mints can go to the vote
-
-The window a minting change opens in, in the same words as the change set window above. This one is separate because a village that wants its minting read together can hold minting to a window while everything else stays open. A change set carrying a minting element is held to the stricter of the two.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_mint_rule` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When a change to how votes are counted can go to the vote
-
-The window a vote-mode switch opens in, in the same words as the change set window above. A change set carrying a mode switch is held to this window as well as its own, so the biggest change in a bundle cannot ride into an open week under a small one.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_governance_mode` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When declaring a role can go to the vote
-
-The window a proposal that declares a new role opens in, in the same words as the change set window above.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_role_declare` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When seating a role can go to the vote
-
-The window a proposal that asks somebody to sit in a role opens in, in the same words as the change set window above. Hold this one open while a village is young: a role nobody can be asked to fill is a role that stays empty until the calendar allows it.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_role_seat` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When taking a role back can go to the vote
-
-The window a proposal that takes a role back opens in, in the same words as the change set window above. A village that windows this one is choosing to wait before it can remove somebody, so leave it always open unless you have a reason you can say out loud.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_role_unseat` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When moving a power to a role can go to the vote
-
-The window a proposal that moves a power from the admin panel to a role opens in, in the same words as the change set window above.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_power_transfer` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When granting a power can go to the vote
-
-The window a proposal that grants a power to a role opens in, in the same words as the change set window above.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_power_grant` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When handing a power back can go to the vote
-
-The window a proposal that hands a power back to the admin panel opens in, in the same words as the change set window above.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_power_return` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### When changing the governing purpose can go to the vote
-
-The window a proposal that changes this village's governing purpose statement opens in, in the same words as the change set window above. This is the sentence every other change is judged against, so a village that wants it read together is the village most likely to window it.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_gps_change` |
-| Type | text, free text, one line |
-| Default | `always_open` |
-| Range | no bounds are set |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### How long a proposal coming back may open outside its window
-
-A resubmission after objections, a veto override and a renewal of a trial are all proposals coming back, and the village has already been asked once. Each of them may open outside its kind's window for this many days after the decision it comes back from closed. Set this to 0 and a single steward's veto becomes unanswerable until the next window opens.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.window_grace_days` |
-| Type | integer, a whole number |
-| Default | `7` |
-| Range | 0 to 90 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### How voting weight is assigned
-
-What one member's vote weighs on an on-site ballot. Equal gives every eligible member the same single vote. Token weighs votes by each member's balance of the weight token at the moment a ballot opens. Custom weighs votes by the allocation table you keep under Voting weights, where a member with no allocation weighs zero. Whatever you choose, each ballot freezes the weights when it opens, and every allocation change is on a permanent record any member can read.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_mode` |
-| Type | choice, one of a fixed list |
-| Default | `equal` |
-| Range | one of the choices below |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-What it may be set to:
-
-- `equal` One person, one vote. Every eligible member weighs the same.
-- `token` Token balance. Weight is each member's balance of the weight token when the ballot opens.
-- `custom` Custom allocation. Weight comes from the allocation table. No allocation means no weight.
-
-### The weight token
-
-Which token weighs votes when the weight mode is token. Only tokens this platform itself governs can be chosen: a token governed on Hypha is a display-only mirror here, and a ballot may never make this platform a second source of truth for it. The default is the recognition token, which nobody can buy, so weight in the default posture is earned appreciation.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_token` |
-| Type | text, free text, one line |
-| Default | `gratitude` |
-| Range | no bounds are set |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Cap one member's voting weight
-
-Turns on a ceiling on how much of the vote any one member carries. It only matters when the weight mode is token, where a member weighs their balance, so one large holder could meet quorum alone or carry a vote. With this on, when a ballot opens no member carries more than the share below of that ballot's vote, and the rest of the vote is shared among everyone else in proportion to what they hold. What it costs: a large holder's balance past the cap stops counting, and on a small roll balances stop counting at all: with fewer than 5 members holding weight at the default 20 (100 divided by the cap), everyone weighs the same. It is off unless you turn it on.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_on` |
-| Type | boolean, on or off |
-| Default | `false` |
-| Range | on or off |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### The most voting weight one member can carry
-
-While the cap above is on, the largest share of a ballot's vote that one member can carry. It only matters in token mode, and only with the cap switched on. At 20, a member holding 90 beside four members holding 2.5 each carries a fifth of the vote, the same as each of them, and members under the cap keep their balance in full. With fewer than 5 members holding weight at 20, everyone weighs the same, because five shares of 20 is the least that makes a whole vote. Lower spreads power wider and needs more holders before balances count at all. To have no cap, turn the switch off. This number never does that.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_pct` |
-| Type | percentage, a percentage |
-| Default | `20` |
-| Range | 1 to 100 |
-| Counted in | % |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Cap the weight one member counts from cash
-
-Turns on a ceiling on how much of one member's weight token balance a ballot counts from cash they put in: Voice from donations, investment, dues, and hand-mints a steward marked as cash. It only matters when the weight mode is token. Nothing is taken from anybody: the balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from cash'. It is off unless you turn it on.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_cash_on` |
-| Type | boolean, on or off |
-| Default | `false` |
-| Range | on or off |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
-
-### The most weight one member counts from cash
-
-While the cash cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from cash. A member's balance is split into its cash part and its other part by the share of everything minted to them that came from each, so waning takes from both alike. At 1000, a member holding 3000 that came from cash counts 1000 of it on every ballot, and any part from work or other contributions counts under its own cap. At 0, with the switch on, nothing from cash counts at all, because a cap of zero means zero. To have no cash cap, turn the switch off.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_cash` |
-| Type | integer, a whole number |
-| Default | `0` |
-| Range | 0 to 1000000000 |
-| Counted in | tokens |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
-
-### Cap the weight one member counts from other contributions
-
-Turns on a ceiling on how much of one member's weight token balance a ballot counts from everything that is not cash: quests, roles, accepted proposals, and hand-mints marked as something other than cash. A source nobody has classified counts here. It only matters when the weight mode is token. The balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from other contributions'. It is off unless you turn it on.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_other_on` |
-| Type | boolean, on or off |
-| Default | `false` |
-| Range | on or off |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
-
-### The most weight one member counts from other contributions
-
-While the cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from contributions other than cash. With both caps on, the most any one member counts is the two numbers added together. At 0, with the switch on, nothing from other contributions counts, because a cap of zero means zero. To have no cap on other contributions, turn the switch off.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.weight_cap_other` |
-| Type | integer, a whole number |
-| Default | `0` |
-| Range | 0 to 1000000000 |
-| Counted in | tokens |
-| Who may change it | the founder or an admin |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
-
-### Unity needed to pass
-
-Of the votes cast for or against, the share that must be in favor for a ballot run on the village's own dials to pass. Abstentions help a ballot reach quorum and take no side here. 100 asks for consensus in effect; the Hypha surface this inherits from runs at 80.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.unity_pct` |
-| Type | percentage, a percentage |
-| Default | `80` |
-| Range | 50 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Quorum needed to count
-
-The share of the electorate's total voting weight that must show up, counting abstentions, before a ballot's outcome counts at all. Below this the ballot closes as no quorum, whatever the votes said. Each ballot freezes this number when it opens.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.quorum_pct` |
-| Type | percentage, a percentage |
-| Default | `20` |
-| Range | 1 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### Ask again when too few vote
-
-Off by default, and off means a ballot that misses quorum ends there. Turn it on and a ballot that misses quorum opens once more on the same question, for as many days as the first, needing half the quorum. If that one misses too, a simple majority of the votes cast decides it: more yes than no carries it and a tie does not. Only ballots opened after it is switched on are asked again. A steward or an admin may switch it on at any time as a failsafe, and every switch is recorded and announced on the village feed. Switching it off is the village's to decide.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.quorum_fallback` |
-| Type | choice, one of a fixed list |
-| Default | `off` |
-| Range | one of the choices below |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-What it may be set to:
-
-- `off` Off. A ballot that misses quorum ends as it closes.
-- `on` On. A ballot that misses quorum is asked again once, at half the quorum.
-
-### How long a ballot stays open
-
-Days between a ballot opening and its votes locking. Votes can be changed freely until then. The clock closes the ballot when the window ends and the village's own engine reads the result, so nobody chooses the moment. A change to the Game then waits again, for the window a steward can stop it in.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.vote_days` |
-| Type | integer, a whole number |
-| Default | `7` |
-| Range | 1 to 30 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-### How long a consent window stays open
-
-Days an objection window runs on a consent ballot. A consent decision passes when the window has ended, participation met quorum, and no objection still stands open. Objections are ruled by a facilitator, and every ruling is attributed and explained on the record.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.consent_window_days` |
-| Type | integer, a whole number |
-| Default | `7` |
-| Range | 1 to 30 |
-| Counted in | days |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a routine vote |
-
-### How village-wide ballots decide
-
-The method a village-wide ballot uses when nothing more specific applies. Your own dials use the unity and quorum settings above. Majority means more than half of the votes cast carries it. Consensus means everyone who takes a side agrees. Consent means a decision passes when nobody sustains a reasoned objection. Hypha keeps the shipped loop: proposals go to your Hypha space for the binding vote.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.default_method` |
-| Type | choice, one of a fixed list |
-| Default | `custom` |
-| Range | one of the choices below |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a structural vote, at a higher bar |
-
-What it may be set to:
-
-- `custom` This village's own dials. Uses the unity and quorum settings above.
-- `majority` Majority. More than half of the votes cast carries it.
-- `consensus` Consensus. Everyone who takes a side agrees.
-- `consent` Consent. Passes when no reasoned objection stands.
-- `hypha` Decide on Hypha. The shipped loop: the binding vote happens in your Hypha space.
-
-### Routine changes: quorum floor
-
-The least share of the village's voting weight that must turn up before an ordinary change to the Game can be decided. Ordinary means a number the village tunes while it plays. 0 leaves it entirely to your own quorum setting above, which is the shipped posture. Raise it to ask for more attention on every change, however small.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_routine_quorum_pct` |
-| Type | percentage, a percentage |
-| Default | `0` |
-| Range | 0 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Routine changes: unity floor
-
-The least share of the votes cast for or against that must be in favour before an ordinary change to the Game carries. 0 leaves it entirely to your own unity setting above, which is the shipped posture.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_routine_unity_pct` |
-| Type | percentage, a percentage |
-| Default | `0` |
-| Range | 0 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Structural changes: quorum floor
-
-The least share of the village's voting weight that must turn up before a structural change can be decided. Structural means it changes how the village decides or who belongs to it: the unity and quorum settings themselves, how ballots decide, who may be admitted, what the village mints, and turning a part of the Game on or off. The shipped 50 is this platform's starting number and your village may raise it. It cannot go below the platform floor.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_structural_quorum_pct` |
-| Type | percentage, a percentage |
-| Default | `50` |
-| Range | 50 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Structural changes: unity floor
-
-The least share of the votes cast for or against that must be in favour before a structural change carries. The shipped 80 is the number this platform inherited from Hypha, and it is a starting point your village may raise. It cannot go below the platform floor.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_structural_unity_pct` |
-| Type | percentage, a percentage |
-| Default | `80` |
-| Range | 80 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Constitutional changes: quorum floor
-
-The least share of the village's voting weight that must turn up before a constitutional change can be decided. Constitutional means it changes the rules for changing the rules: how voting weight is assigned, which token carries weight, and these bars themselves. The shipped number is 97, which leaves room for 3 in 100 to be unreachable on the day. Going higher is allowed and the Game will warn you why it is risky.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_constitutional_quorum_pct` |
-| Type | percentage, a percentage |
-| Default | `97` |
-| Range | 97 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Constitutional changes: unity floor
-
-The least share of the votes cast for or against that must be in favour before a constitutional change carries. The shipped number is 97. Going higher is allowed and the Game will warn you why it is risky.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.tier_constitutional_unity_pct` |
-| Type | percentage, a percentage |
-| Default | `97` |
-| Range | 97 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### The tier a veto override is passed at
-
-A steward can veto a change the village passed. The village can bring the same proposal back and pass it again at this tier, and then it lands whatever any steward says. This names which tier that is: the highest one your village works at. Moving this setting costs whatever the tier it currently names costs, so lowering it is as hard as the bar you are lowering.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.highest_tier` |
-| Type | choice, one of a fixed list |
-| Default | `constitutional` |
-| Range | one of the choices below |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-What it may be set to:
-
-- `routine` Routine. Your own unity and quorum settings decide an override.
-- `structural` Structural. An override asks the structural bar: how the village decides.
-- `constitutional` Constitutional. An override asks the highest bar this platform ships.
-
-### Members it takes to launch
-
-How many members must hold a voice before the village can vote to start its Game. Every one of them has to say yes. The default is three: a founder and two more. Moving it costs the highest tier your village works at.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.launch_min_electorate` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 1 to 50 |
-| Counted in | members |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Minting rule changes: quorum floor
-
-The least share of the village's voting weight that must turn up before a change to what the village mints can be decided. This one sits on top of the structural tier, so raising it asks for more attention on minting alone without moving every other structural change with it. Cannot be set below the platform floor.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.subject_mint_rule_quorum_pct` |
-| Type | percentage, a percentage |
-| Default | `50` |
-| Range | 50 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Minting rule changes: unity floor
-
-The least share of the votes cast for or against that must be in favour before a change to what the village mints carries. 0 leaves it to the structural tier and your own unity setting.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.subject_mint_rule_unity_pct` |
-| Type | percentage, a percentage |
-| Default | `0` |
-| Range | 0 to 100 |
-| Counted in | % |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Roles speaking for other beings count toward quorum
-
-Your village can seat a voice for a being that is not a person: a mountain, a river, the trees, the wolves. A member or a bot holds that role and casts its vote. This says whether the weight on such a role is part of the count that decides whether enough of the village turned up. Off, which is how it ships, leaves that weight out of the count on both sides of the sum, and a vote cast from the role still counts toward agreement. On counts it like any member's, and weight that provably cannot answer drops out of the count instead.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.nonhuman_in_quorum` |
-| Type | boolean, on or off |
-| Default | `false` |
-| Range | on or off |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
-
-### Cycles of silence before a role leaves the count
-
-When roles speaking for other beings do count toward quorum, this is how many cycles of casting nothing it takes before such a role's weight drops out of the count. A role nobody holds drops out straight away. The weight is always shown beside the people count, so the village can see how much of its Voice is silent. Nothing here changes a threshold: it changes what the threshold is measured against.
-
-| Fact | Value |
-| --- | --- |
-| Key | `governance.absent_cycles` |
-| Type | integer, a whole number |
-| Default | `3` |
-| Range | 1 to 24 |
-| Counted in | cycles |
-| Who may change it | the whole village |
-| A change takes effect | as soon as it is saved |
-| What it costs to change | a constitutional vote, at the highest bar the village has set |
 
 ## Tokens
 
@@ -5651,6 +5755,7 @@ The generator reads these and fails loudly if any of them moves:
 - `shared/mintCapWords.ts`
 - `shared/moonSettlement.ts`
 - `shared/needs.ts`
+- `shared/rolePrerequisites.ts`
 - `shared/villageMoon.ts`
 - `shared/villageSeasons.ts`
 
