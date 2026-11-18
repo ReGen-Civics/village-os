@@ -1,11 +1,8 @@
 /**
  * THE APPLICATION PAGE'S PLUMBING (client/src/pages/ProposeARole.tsx), moved out so the page stays under the line
- * ceiling: where each field lives on the form, how the cursor is put on a problem, the page's shell, and the roles the
+ * ceiling: where each field lives on the form, how the cursor is put on a problem, and the roles the
  * address bar names.
  */
-import type { ReactNode } from "react";
-import Layout from "@/components/Layout";
-import { WORLD } from "@/components/journey/look";
 import { prefersStill } from "./Thresholds";
 
 /** One thing to fix before sending: the field's name, the words, and where to look for it on the page. */
@@ -87,17 +84,6 @@ export function Beside({ id, message }: { id: string; message: string | null }) 
     <p id={id} className="mt-2 border-l-4 border-notice pl-3 text-sm font-medium text-foreground" data-field-problem="">
       {message}
     </p>
-  );
-}
-
-/** The form's page: the sheet's night ground, wide enough on a desk for the role beside the step. */
-export function Shell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
-  return (
-    <Layout>
-      <div className={`${WORLD} py-10 sm:py-16`}>
-        <div className={`container ${wide ? "max-w-7xl" : "max-w-2xl"}`}>{children}</div>
-      </div>
-    </Layout>
   );
 }
 

@@ -43,7 +43,7 @@ import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
 import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
-import ShapeTheRole, { type PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
+import type { PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
 import type { ProposalLink } from "@shared/proposalAttachments";
@@ -61,8 +61,9 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { doorBackOf } from "@shared/seatApplyLinks";
-import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
-import { Beside, Shell, goToProblem, roleFromLink, showRoleInAddress, targetFor, type FormProblem } from "@/components/fireflyPath/applyPage";
+import { EYEBROW, FIELD as LOOK_FIELD, HINT, LABEL, TILE, WORLD } from "@/components/journey/look";
+import Layout from "@/components/Layout";
+import { Beside, goToProblem, roleFromLink, showRoleInAddress, targetFor, type FormProblem } from "@/components/fireflyPath/applyPage";
 import type { ExtraRole } from "@/components/fireflyPath/MoreRoles";
 import { LazyStateNote } from "@/components/ComingSoonLazy";
 import { useOptionalAuth } from "@/contexts/AuthContext";
@@ -89,6 +90,8 @@ export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The co
 export { firstUnanswered } from "@/components/fireflyPath/applyPage";
 // Roles added to one application (the lead, 17 Nov 2026): loaded with The terms, off the first view.
 const MoreRoles = lazy(() => import("@/components/fireflyPath/MoreRoles"));
+// Shaping the role card, on Your value: loaded with the step, off the first view (scripts/route-first-view.json).
+const ShapeTheRole = lazy(() => import("@/components/roleCard/ShapeTheRole"));
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -117,6 +120,17 @@ type FormState =
   | { kind: "closed"; message: string }
   | { kind: "open"; village: string; season: { id: string; name: string | null; startsOn: string } | null; term: OpenProposalTerm | null; goals: Array<{ id: string; text: string }>; roles: FormRole[]; setup: FoundingSetup; clips: VoiceClipLimits }
   | { kind: "failed" };
+
+/** The form's page: the sheet's night ground, wide enough on a desk for the role beside the step. */
+function Shell({ children, wide = false }: { children: React.ReactNode; wide?: boolean }) {
+  return (
+    <Layout>
+      <div className={`${WORLD} py-10 sm:py-16`}>
+        <div className={`container ${wide ? "max-w-7xl" : "max-w-2xl"}`}>{children}</div>
+      </div>
+    </Layout>
+  );
+}
 
 export default function ProposeARole() {
   const params = useParams<{ token?: string }>();
@@ -842,7 +856,7 @@ export default function ProposeARole() {
                 }
               />
               <Beside id="propose-problem-card" message={problemOn("card") ?? problemOn("serves")} />
-              <ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} pct={commitment} />
+              <Suspense fallback={null}><ShapeTheRole roleId={role.id} value={pieceSuggestions} onChange={setPieceSuggestions} pct={commitment} /></Suspense>
             </section>
 
             {/* STEP 4: the terms. Commitment and the eight settings, the ramp-up, and the shape of compensation. */}
