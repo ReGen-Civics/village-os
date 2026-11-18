@@ -86,7 +86,8 @@ describe("module images", () => {
   // `places` (0354) joins on the same terms: hue 120 and Landmark, no file.
   // `rites` joins on the same terms: hue 30 and Award, no file.
   // `protocols` (0389) joins on the same terms: hue 200 and ListChecks, no file.
-  const DRAWN_FALLBACK = new Set(["saberra", "canvas", "conflict-evolution", "funding-rounds", "places", "rites", "protocols", "hidden-map"]);
+  // `season-places` (0408) joins on the same terms: hue 200 and CalendarDays, no file.
+  const DRAWN_FALLBACK = new Set(["saberra", "canvas", "conflict-evolution", "funding-rounds", "places", "rites", "protocols", "hidden-map", "season-places"]);
 
   it("keeps the fallback list pointed at real modules", () => {
     const stale = [...DRAWN_FALLBACK].filter((id) => !ids.includes(id));

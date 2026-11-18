@@ -753,6 +753,54 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     group: "decisions",
     celebrate: false,
   },
+  // Season places (shared/seasonPlaces.ts). Each names the circle and the season, never a person.
+  season_place_waiting: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
+  season_crew_applied: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
+  season_crew_picked: {
+    group: "village",
+    celebrate: false,
+  },
+  season_crew_released: {
+    group: "village",
+    celebrate: false,
+  },
+  season_place_placed: {
+    group: "village",
+    celebrate: false,
+  },
+  season_place_waitlisted: {
+    group: "village",
+    celebrate: false,
+  },
+  season_place_opened: {
+    group: "village",
+    celebrate: false,
+  },
+  season_place_declined: {
+    group: "village",
+    celebrate: false,
+  },
+  // Circle places at a gathering (shared/circlePlaces.ts).
+  circle_place_going: {
+    group: "village",
+    celebrate: false,
+  },
+  circle_place_waiting: {
+    group: "village",
+    celebrate: false,
+  },
+  circle_place_opened: {
+    group: "village",
+    celebrate: false,
+  },
   waitlist_promoted: {
     group: "village",
     celebrate: false,

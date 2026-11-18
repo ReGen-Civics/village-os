@@ -446,6 +446,52 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "An admin acted on a power you hold. It is on the village's own record, with their name on it.",
     many: "{n} powers you hold were acted on from the admin panel.",
   },
+  // Season places (shared/seasonPlaces.ts). Each names the circle and the season, never a person.
+  season_place_waiting: {
+    blurb: "A circle proposes to take part in a season, and you hold the power that says yes or puts it to the village.",
+    many: "{n} season proposals wait on you.",
+  },
+  season_crew_applied: {
+    blurb: "Somebody applied to take part this season with a circle you pick for.",
+    many: "{n} people applied to take part with a circle you pick for.",
+  },
+  season_crew_picked: {
+    blurb: "A circle picked you for its team this season.",
+    many: "{n} circles picked you this season.",
+  },
+  season_crew_released: {
+    blurb: "A circle released your place this season. Your application stands for any circle to pick.",
+    many: "{n} circles released your place.",
+  },
+  season_place_placed: {
+    blurb: "A circle you are in has a place in a season.",
+    many: "{n} season places were confirmed.",
+  },
+  season_place_waitlisted: {
+    blurb: "The season is full, so a circle you are in waits in line, and you will hear the moment a place opens.",
+    many: "{n} circles you are in are on a season's waitlist.",
+  },
+  season_place_opened: {
+    blurb: "A place opened in a season, and the line reached a circle you are in.",
+    many: "{n} season places opened for circles you are in.",
+  },
+  season_place_declined: {
+    blurb: "A circle you are in does not take part in a season it proposed for.",
+    many: "{n} season proposals were not adopted.",
+  },
+  // Circle places at a gathering (shared/circlePlaces.ts).
+  circle_place_going: {
+    blurb: "A circle you are in is going to a gathering.",
+    many: "{n} gatherings have a circle you are in going.",
+  },
+  circle_place_waiting: {
+    blurb: "A gathering is full for circles, so a circle you are in waits in line, and you will hear the moment a place opens.",
+    many: "{n} gatherings have a circle you are in on the waitlist.",
+  },
+  circle_place_opened: {
+    blurb: "A place opened at a gathering, and the line reached a circle you are in.",
+    many: "{n} gatherings found a place for a circle you are in.",
+  },
   waitlist_promoted: {
     blurb: "A seat opened at a gathering you queued for, and the line reached you.",
     many: "{n} gatherings found you a seat.",

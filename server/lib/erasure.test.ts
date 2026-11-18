@@ -555,6 +555,7 @@ describe.skipIf(!configured)("an erasure that stops part way", () => {
       "ombuds-asks-after-tombstone",
       "companions-after-tombstone",
       "sera-answers-after-tombstone",
+      "season-places-after-tombstone",
       "audit",
       "product-subscriptions-after-tombstone",
       "external-stores",

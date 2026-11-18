@@ -322,6 +322,7 @@ export const MODULE_DOCS: Readonly<Record<string, string>> = {
   places: "places.md",
   // Shipped with its module (2026-11-15). A contract; it holds no pin, place or photo.
   "hidden-map": "hidden-map.md",
+  "season-places": "season-places.md",
   // Shipped with its module (2026-10-09). The contract for the room, its six
   // stages and its privacy line; it holds no session's words.
   sessions: "live-sessions.md",

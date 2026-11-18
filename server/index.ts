@@ -222,6 +222,8 @@ import { register as registerMapSceneRoutes } from "./routes/mapScene";
 import { register as registerMapChipsRoutes } from "./routes/mapChips";
 import { register as registerSeatPresetsRoutes } from "./routes/seatPresets";
 import { register as registerSeatApplicationRoutes, ballotNamesItsCloser, closeNoteFor, heldTermsFor } from "./routes/seatApplications";
+import { register as registerSeasonPlaceRoutes } from "./routes/seasonPlaces";
+import { register as registerRolePrerequisiteRoutes } from "./routes/rolePrerequisites";
 import { register as registerAlignmentRoutes, alignmentsForExport } from "./routes/alignments";
 import { register as registerMembershipLetterRoutes, legacySigningOf, letterSourceFrom } from "./routes/membershipLetter";
 import { holdsConfidentiality, register as registerConfidentialityRoutes } from "./routes/confidentiality";
@@ -24241,6 +24243,8 @@ Send an empty drafts array when you are still listening. A role payload is {name
   seatVote.fill(registerSeatVote(app, { authedUser, capabilityCtx, members, firstName, stageOf, getPool, rolesRepo, loadRoleHolders, refuseUnlessMemberMayOpen, roleBallotSetup, roleConsequences, seatCalendar, landingDeps, addActivity, notifyRoll, serveBallot }));
   registerBadgeGrantRoutes(app, { authedUser, capabilityCtx, getPool, notify, notifyAdmins, members, firstName, badgesOn: () => effectiveLifecycle("badges") !== "off", refuseUnlessMemberMayOpen, roleBallotSetup, notifyRoll, serveBallot, closers: SUBJECT_CLOSERS }); // a badge by the village's vote (gap 6)
   registerSeatApplicationRoutes(app, { authedUser, capabilityCtx, guardCapability, getPool, notify, notifyAdmins, overLimit, members, firstName, postEmail: (email) => postToOffice(commsPostOffice, email), projectName: notifyDeps.projectName, liveHoldersOf, rolesCarrying, loadRoleHolders, roleBallotSetup, seatCalendar, lapse: lapseContext, landingDeps, closers: SUBJECT_CLOSERS });
+  registerRolePrerequisiteRoutes(app, { authedUser, getPool, firstName, lapse: lapseContext });
+  registerSeasonPlaceRoutes(app, { authedUser, capabilityCtx, guardCapability, getPool, notify, overLimit, firstName, liveHoldersOf, roleBallotSetup, seasonState, lapse: lapseContext, closers: SUBJECT_CLOSERS });
   registerApplicationCardRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, firstName, seasonState, lapse: lapseContext, mapLifecycle: () => effectiveLifecycle("map"), boolVar, villageName: () => mergedConfig().project.name || null });
   registerRoleProposalRoutes(app, { authedUser, isAdmin, capabilityCtx, guardCapability, getPool, firstName, overLimit, notify, members, isPresent: notifyDeps.isPresent, seasonState, lapse: lapseContext, mapLifecycle: () => effectiveLifecycle("map"), boolVar, villageName: () => mergedConfig().project.name || null });
   registerOpenProposalRoutes(app, { proposalFileDir: path.join(DATA_DIR, "private-proposal-files"), getPool, overLimit, clientIp, guardCapability, authedUser, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName, escapeHtml, seasonState, notify, notifyAdmins, members, stageOf, recordStageEvent, liveHoldersOf, rolesCarrying, loadRoleHolders, seatCalendar, lapse: lapseContext, boolVar, stringVar, letterSource: () => letterSourceFrom(mergedConfig(), contentRepo.get()), signings: submissionsRepo, mayReadPay: async (req) => { const u = await authedUser(req); return !!u && ((await isAdmin(req)) || hasCapability("terms.read", await capabilityCtx(u))); } }); // a role proposal from somebody with no account (0305), and its decision

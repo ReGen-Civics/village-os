@@ -113,6 +113,7 @@ import { AGREEMENT } from "./agreements";
 import { CLOSING_POLICY } from "./closingPolicies";
 import { CYCLE_SETTLEMENT, type SettlementMode } from "./moonSettlement";
 import { ADOPTING_POWER, ROLE_APPLICATION } from "./seatApplications";
+import { SEASON_PLACE } from "./seasonPlaces";
 
 // ── The shape ──────────────────────────────────────────────────────────────
 
@@ -306,6 +307,7 @@ export const MOVING_DECISIONS: Readonly<Record<string, string>> = {
   role_seat: "Seating somebody in a role",
   role_unseat: "Taking somebody out of a role",
   [ROLE_APPLICATION]: "Seating a member who applied for roles, on their terms",
+  [SEASON_PLACE]: "Giving a circle that proposed a place in a season",
 };
 
 /** The three power votes. Every ceremony among them refuses an opener whose only path is an admin account. */
@@ -414,6 +416,17 @@ export function applicationDoor(): string {
   const label = CAPABILITY_LABELS[ADOPTING_POWER as Capability];
   const power = `the power to ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
   return `While a role holds ${power}, a live holder of it who is not the applicant can adopt an application with no vote. The village votes when it holds that power itself, when nobody holds it live, or when the applicant is its only live holder.`;
+}
+
+/**
+ * Who can adopt a circle's season proposal with no vote, as
+ * server/routes/seasonPlaces.ts decides it (`placeAdoptionPath`): a live holder
+ * of the same power as an application, who is not in the proposing circle.
+ */
+export function seasonPlaceDoor(): string {
+  const label = CAPABILITY_LABELS[ADOPTING_POWER as Capability];
+  const power = `the power to ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
+  return `While a role holds ${power}, a live holder of it who is not in the proposing circle can adopt a season proposal with no vote. The village votes when it holds that power itself, or when nobody outside the circle holds it live.`;
 }
 
 /**
@@ -599,6 +612,7 @@ function doorsBeside(subject: string, inp: DecisionMatrixInputs): string[] {
     return [seatDoor(subject, inp.powers.some((p) => p.capability === DECIDE && p.villageHolds))];
   }
   if (subject === ROLE_APPLICATION) return [applicationDoor()];
+  if (subject === SEASON_PLACE) return [seasonPlaceDoor()];
   return [];
 }
 

@@ -162,6 +162,7 @@ import { runSeasonTurn, SEASON_TURN_EVERY_MS, SEASON_TURN_JOB, whenSeasonsSaved 
 import { civilDayWords } from "../../shared/seasonPlans";
 import { isLapsed } from "../lib/orgChart";
 import { freezeSeatTerm } from "../repos/ballotSeatTerms";
+import { prerequisiteRefusal } from "../lib/rolePrerequisites";
 
 /** Exported for the job that turns the season (season plans): it seats an adopted application on its day. */
 export { seatFromApplication } from "../lib/seatApplicationCloser";
@@ -674,6 +675,9 @@ export function register(app: Express, deps: Deps): void {
     }
     const pendingApp = (await openApplicationsOf(pool, userId)).find((a) => a.seatIds.some((s) => input.seatIds.includes(s)));
     if (pendingApp) return answer(409, { error: PENDING_MESSAGE, applicationId: pendingApp.id });
+    // A role that asks for something first: a paid product or a consented quest (`roles.prerequisites`, server/lib/rolePrerequisites.ts).
+    const asked = await prerequisiteRefusal(pool, userId, input.seatIds, (id) => seats.find((s) => s.id === id)?.name ?? pending.get(id) ?? id);
+    if (asked) return answer(409, asked);
 
     // The road, decided now. A proposal that changes roles always waits on a holder (role proposals PR A).
     const rule = await adoptionRule(user);
