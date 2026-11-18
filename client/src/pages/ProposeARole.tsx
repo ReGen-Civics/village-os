@@ -351,7 +351,7 @@ export default function ProposeARole() {
       setReached(d.reached);
       setRestored(own ? "draft" : "carry");
     }
-    setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the card's slider and split (17 Nov 2026)
+    if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // nothing kept starts unticked (1.3.22); the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor]);
 
   // THE DRAFT, saved as they go. Only the fields toDraft names: references, consent, files and agreements cannot reach it.
@@ -940,13 +940,13 @@ export default function ProposeARole() {
                   idPrefix="propose-terms"
                 />
               </section>
-              <label htmlFor="propose-ramp" className={`${TILE} flex min-h-11 cursor-pointer items-start gap-3`} data-ramp-up="">
-                <input id="propose-ramp" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={rampUp} onChange={(e) => setRampUp(e.target.checked)} />
+              <div className={`${TILE} flex min-h-11 items-start gap-3`} data-ramp-up="">{/* Only the box and its words tick it, never a tap on the tile (1.3.22 check). */}
+                <input id="propose-ramp" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={rampUp} onChange={(e) => setRampUp(e.target.checked)} aria-describedby="propose-ramp-hint" />
                 <span className="grid gap-1">
-                  <span className="font-semibold text-foreground">{t({ message: "I would like a ramp-up", context: "founding application terms" })}</span>
-                  <span className={HINT}>{t({ message: "Partial rewards while you build to your full commitment. We agree the steps together.", context: "founding application terms" })}</span>
+                  <label htmlFor="propose-ramp" className="cursor-pointer font-semibold text-foreground">{t({ message: "I would like a ramp-up", context: "founding application terms" })}</label>
+                  <span id="propose-ramp-hint" className={HINT}>{t({ message: "Partial rewards while you build to your full commitment. We agree the steps together.", context: "founding application terms" })}</span>
                 </span>
-              </label>
+              </div>
               {/* On a desk the rewards stand in the rail beside every step (D-06). */}
               <div className="lg:hidden">
                 <CompensationShape setup={setup} />

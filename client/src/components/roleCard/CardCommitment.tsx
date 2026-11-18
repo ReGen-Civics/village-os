@@ -19,6 +19,7 @@ export default function CardCommitment({
   publicPay,
   showsRange,
   onChoice,
+  onPct,
 }: {
   idPrefix: string;
   min: number | null | undefined;
@@ -28,9 +29,13 @@ export default function CardCommitment({
   showsRange: boolean;
   /** The query the Apply link adds: the commitment when the role can be shared, the split when it was changed. */
   onChoice: (query: string) => void;
+  /** The commitment on the slider, or null for a role offered whole, so the card's words can follow it (18 Nov 2026). */
+  onPct: (pct: number | null) => void;
 }) {
   const { choice, setPct, setSplit, sliding } = useCommitmentChoice(min, ceiling, shape);
   const query = choiceQuery(sliding ? choice.pct : null, choice.split, choice.offered);
+  const pct = sliding ? choice.pct : null;
   useEffect(() => onChoice(query), [query, onChoice]);
+  useEffect(() => onPct(pct), [pct, onPct]);
   return <CommitmentPicker idPrefix={idPrefix} min={min} ceiling={ceiling} publicPay={publicPay} showsRange={showsRange} choice={choice} onPct={setPct} onSplit={setSplit} />;
 }

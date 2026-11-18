@@ -213,7 +213,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const commitmentPct: number | null = Number.isInteger(seat?.card?.commitmentPct) ? (seat.card.commitmentPct as number) : null;
   const commitment = commitmentPct !== null ? null : asText(seat.timeCommitment);
   // The focus line (Rye, 15 Nov 2026): the qualities' token drawn for the commitment this card shows.
-  const focusPct = shownCommitment(commitmentChosen, seat?.card?.commitmentMin ?? null, commitmentPct);
+  // The card's own slider (CardCommitment.tsx), when the reader has one: the words below follow it.
+  const [sliderPct, setSliderPct] = useState<number | null>(null);
+  const focusPct = shownCommitment(sliderPct ?? commitmentChosen, seat?.card?.commitmentMin ?? null, commitmentPct);
   const sections = read ? { ...read, qualities: withFocusLine(i18n, read.qualities, village, focusPct) } : null;
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
   const apply = !noAct && mayApply(seat);
@@ -244,7 +246,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
   // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
-  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? []) : null;
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen) : null;
   // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
   const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
   const payBlock = pay ? (
@@ -300,7 +302,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       })()}
       {!noAct && (
         <Suspense fallback={null}>
-          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} />
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} onPct={setSliderPct} />
         </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}

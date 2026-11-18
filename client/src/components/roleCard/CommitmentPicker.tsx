@@ -50,10 +50,10 @@ export default function CommitmentPicker({
   return (
     <div className="grid gap-3" data-commitment-picker="">
       {sliding && <CommitmentSlider idPrefix={idPrefix} min={min} value={choice.pct} onChange={onPct} amounts={spoken} />}
-      {/* At 100% the card's own band line already says it (bandWords, under the listed price). */}
-      {sliding && band && choice.pct < 100 && (
+      {/* The band at the slider's commitment, 100% included, so the slider always has one current figure (18 Nov 2026). */}
+      {sliding && band && (
         <p className="leading-relaxed text-card-foreground" aria-live="polite" data-pay-band-at="">
-          {bandAtWords(i18n, band)}
+          {bandAtWords(i18n, band, true)}
         </p>
       )}
       {choice.split.shares.length > 0 && (
