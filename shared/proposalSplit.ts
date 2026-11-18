@@ -212,3 +212,17 @@ export function formSplit(shape: readonly ShapeShare[], fullBand: number | null 
   const base = fits ? (stored as Split) : offeredSplit(shape, total);
   return { offered, shown: base.total === total ? base : retotal(base, total) };
 }
+
+/**
+ * THE SPLIT ADOPTION WRITES INTO THE CONTRACT (the lead, 18 Nov 2026, replacing the 15 Nov "the split follows what
+ * the card showed"): the applicant's proposed split when they sent one that still fits the role's shape in force
+ * (its labels in its order, whole percents adding to 100), else the shape the card showed them. Percents only: the
+ * contract's amount is its price, and End of Moon shares that amount by these percents (shared/rewardShare.ts).
+ */
+export function adoptedShape(shown: readonly ShapeShare[], proposed: Split | null | undefined): ShapeShare[] {
+  const own = shown.map((s) => ({ label: s.label, pct: s.pct }));
+  const p = proposed?.shares ?? [];
+  if (!p.length || p.length !== shown.length) return own;
+  const fits = p.every((s, i) => s.label === shown[i].label && Number.isInteger(s.pct) && s.pct >= 0 && s.pct <= 100) && p.reduce((a, s) => a + s.pct, 0) === 100;
+  return fits ? p.map((s) => ({ label: s.label, pct: s.pct })) : own;
+}

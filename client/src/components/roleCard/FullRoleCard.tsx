@@ -271,7 +271,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           </Suspense>
         </>
       )}
-      {pay.shape.length > 0 && (
+      {/* The village's shares as tiles only where the card offers no editable split (the lead, 18 Nov 2026): inside an
+          application and for the people deciding. Elsewhere the split control below is the one place to read it. */}
+      {pay.shape.length > 0 && noAct && (
         <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
           {pay.shape.map((sh) => (
             <li key={sh.label} className="min-w-0 rounded-xl border border-border bg-muted px-3 py-2">

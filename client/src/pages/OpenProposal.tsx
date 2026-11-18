@@ -84,6 +84,8 @@ export interface ServedOpenProposal {
   commitment?: CommitmentReviewData | null;
   /** The pay adopting would write (QA-1115 P0-1); absent for a reader who does not decide. */
   contractPrice?: ContractPriceData | null;
+  /** Each role's own contract price, when the proposal names several roles with a commitment for each. */
+  contractPrices?: Array<{ roleId: string; price: ContractPriceData | null }>;
   why: string;
   aim: string;
   confirmedOn: string | null;
@@ -387,7 +389,10 @@ export default function OpenProposal() {
             {/* Beside each piece of the role card, what they would change, find missing or deliver (Rye, 14 Nov 2026). */}
             {!p.agent && <PieceSuggestionsReview suggestions={p.pieceSuggestions} roles={p.roles} />}
             {!p.agent && <CommitmentReview data={p.commitment} roles={p.roles} />}
-            {!p.agent && <ContractPrice data={p.contractPrice} />}
+            {/* One agreement per role when it names several (the lead, 17 Nov 2026): each priced on its own. */}
+            {!p.agent && (p.contractPrices?.length
+              ? p.contractPrices.map((c) => <ContractPrice key={c.roleId} data={c.price} role={p.roles.find((r) => r.id === c.roleId)?.name ?? c.roleId} />)
+              : <ContractPrice data={p.contractPrice} />)}
 
             {/* An agent is offered no pay, allowance or commitment (verify B153, B8): a person's terms never show for one. */}
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} />}

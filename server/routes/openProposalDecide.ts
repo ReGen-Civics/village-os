@@ -93,7 +93,7 @@ import type { AppDeps } from "../lib/appDeps";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { hashInviteToken, INVITE_DAYS, invitePath, mintInviteToken } from "../lib/invites";
 import { anyAddressAccount } from "../lib/applicantAccount";
-import { agreedOf, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
+import { agreedOf, agreementParts, contractPriceFor, conversationsLeft, decideRule, isFormerMemberAccount, ownAccountOf, placeOnRoles, roomFor, type DecideDeps } from "../lib/openProposalDecide";
 import type { LapseContext } from "../lib/orgChart";
 import { answerAsk, askRolesFor, consentView, decisionFor, type AskStanding } from "../lib/roleProposals";
 import { whileSessionHolds } from "../lib/sessionHold";
@@ -376,11 +376,15 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // The commitment, what the role pays at it, the optional ask and the coverage arithmetic (Rye, 14 Nov 2026). Deciders only; never ranked.
     const commitment = decidesIt(may, asks, viewerId) && !p.body.agent ? await commitmentReviewFor(pool, p.body, await listOrgRoles(pool), may.own ?? null) : null;
     // The pay adopting would write into the contract, and where it comes from (QA-1115 P0-1). Deciders only.
-    const priced = commitment ? await (async () => {
-      const agreed = await agreedOf(pool, p);
-      const price = await contractPriceFor(pool, p, agreed);
+    // One agreement per role when the proposal names several roles with a commitment for each (the lead, 17 Nov 2026).
+    const parts = agreementParts(p.body);
+    const pricedParts = commitment ? await Promise.all(parts.map(async (part) => {
+      const agreed = await agreedOf(pool, p, part);
+      const price = await contractPriceFor(pool, p, agreed, part);
       return price ? { amountMinor: price.amountMinor, currency: price.currency, per: price.per, source: price.source, capped: price.capped, pct: typeof agreed.commitmentPct === "number" && agreed.commitmentPct > 0 ? agreed.commitmentPct : 100 } : null;
-    })() : undefined;
+    })) : undefined;
+    const priced = pricedParts ? pricedParts[0] : undefined;
+    const pricedEach = pricedParts && parts.length > 1 ? parts.map((part, i) => ({ roleId: part.roleIds[0], price: pricedParts[i] })) : undefined;
     // The terms we offer, with the history: for the deciders only (joining lane PR 4). The applicant reads the current offer at their status page, never the log.
     // An agent is never offered a person's pay, allowance or commitment (audit B8a), so its page carries no terms.
     const subject = !p.body.agent && decidesIt(may, asks, viewerId) ? await loadSubject(pool, p.id) : null;
@@ -450,6 +454,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         voice,
         commitment,
         ...(priced !== undefined ? { contractPrice: priced } : {}),
+        ...(pricedEach ? { contractPrices: pricedEach } : {}),
         offer,
         beforeAdopt,
         review,
@@ -751,6 +756,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         account: true,
         invitation: null,
         application: { id: placed.applicationId, href: applicationHref(placed.applicationId) },
+        // One agreement per role when it named several (the lead, 17 Nov 2026).
+        ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}),
         message: `${waitsForSeat ? DECIDE_WORDS.adoptedAccountWaits : p.body.term?.kind === "moon" ? DECIDE_WORDS.adoptedAccountMoon : DECIDE_WORDS.adoptedAccount} ${why === null ? DECIDE_WORDS.accountTold : DECIDE_WORDS.accountNotTold(why)}`,
       });
     }

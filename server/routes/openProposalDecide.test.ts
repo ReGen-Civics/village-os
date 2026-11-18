@@ -81,6 +81,8 @@ const HIGH = { id: "u-high", name: "Hal Pine", email: "hal@example.test" };
 const LEFT = { id: "u-left", name: "Lee Gone", email: "left@example.test" };
 /** An account whose address sends an application while our email is down: kept, the address not confirmed. */
 const KEPT = { id: "u-kept", name: "Kit Wren", email: "kit-kept@example.test" };
+/** An account that proposes for two roles at once, each with its own commitment (the lead, 17 Nov 2026). */
+const TWO = { id: "u-two", name: "Tam Birch", email: "tam-two@example.test" };
 
 /** The image ships ffmpeg (Dockerfile); a machine without one skips the copy case, said out loud. */
 const HAS_FFMPEG = spawnSync("ffmpeg", ["-hide_banner", "-version"], { stdio: "ignore" }).status === 0;
@@ -117,7 +119,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     pool = testPool(db, { connectionLimit: 6 });
     fileDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-decide-files-"));
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    for (const p of [FOUNDER, ANA, BEN, MO, HAS, HIGH, KEPT, TWO]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     await users.update(HIGH.id, (u: any) => {
       u.stageGranted = "co-creator";
     });
@@ -1226,6 +1228,36 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       expect(mail?.text).not.toContain("invite");
       // The letter says what comes before seating and voting.
       expect(mail?.text).toContain(`${ORIGIN}/love-letter`);
+    });
+
+    it("adopts one agreement per role when they proposed for several roles, each at its own commitment (the lead, 17 Nov 2026)", async () => {
+      const before = state.sent.length;
+      const sent = await call("POST", "/api/open-proposals", {
+        name: TWO.name,
+        email: TWO.email,
+        roles: [{ roleId: well, note: "" }, { roleId: gate, note: "", commitmentPct: 40, payAsk: { kind: "negotiate" } }],
+        why: "I keep the well and I can open the gate too.",
+        aim: "Water and a way in.",
+      }, null);
+      expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      // The deciders read each role on its own terms.
+      const shown = await page(id, FOUNDER.id);
+      const review = shown.body.proposal.commitment;
+      expect(review.roles.map((r: any) => [r.roleId, r.own?.pct ?? null])).toEqual([[well, null], [gate, 40]]);
+      expect(review.roles[1].own.ask).toEqual({ kind: "negotiate" });
+      const r = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body.applications).toHaveLength(2);
+      const apps = await q("SELECT id, status, seat_ids, settings_json FROM seat_applications WHERE candidate_user_id = ? ORDER BY created_at, id", [TWO.id]);
+      expect(apps.map((a: any) => a.status)).toEqual(["adopted", "adopted"]);
+      const byRole = new Map(apps.map((a: any) => [(idsOf(a.seat_ids) as string[]).join(","), typeof a.settings_json === "string" ? JSON.parse(a.settings_json) : a.settings_json]));
+      expect(Array.from(byRole.keys()).sort()).toEqual([gate, well].sort());
+      // CONTROL: each agreement carries its own role's commitment, never the other's.
+      expect(byRole.get(gate)?.clocks).toEqual({ commitmentPct: 40 });
+      expect(byRole.get(well)?.clocks).toBeUndefined();
     });
 
     it("never lowers a stage granted above Member", async () => {

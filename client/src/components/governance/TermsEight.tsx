@@ -80,18 +80,19 @@ export default function TermsEight({
   onChange,
   problem,
   idPrefix = "terms",
+  priced,
 }: {
   roles: ReadonlyArray<TermsRole>;
   value: TermsStepValue;
   onChange: (next: TermsStepValue) => void;
   problem?: string | null;
   idPrefix?: string;
+  /** With several roles, the one this value's commitment, price and split are for (the lead, 17 Nov 2026); every other role brings its own. */
+  priced?: string;
 }) {
   const { t } = useLingui();
-  // One role with a pay ceiling: the form shows the most at the chosen commitment, and the optional ask.
-  const ceiling = roles.length === 1 ? (roles[0].ceiling ?? null) : null;
-  // The split they may adjust (the lead, 17 Nov 2026): one role, with a split on its card.
-  const splitRole = roles.length === 1 && (roles[0].payShape?.length ?? 0) > 0 ? roles[0] : null;
+  // The role the commitment, price and split are for: the one role, or the one named.
+  const one = roles.find((r) => r.id === priced) ?? (roles.length === 1 ? roles[0] : null);
   const labels: Record<TermKey, string> = {
     term: t({ message: "Term", context: "terms setting" }),
     clocks: t({ message: "Time", context: "terms setting" }),
@@ -179,36 +180,7 @@ export default function TermsEight({
             )}
             {k === "clocks" && (
               <div className={`${TILE} sm:col-span-2 sm:col-start-2`} data-commitment="">
-                <label htmlFor={`${idPrefix}-commitment`} className="text-sm font-semibold text-foreground">
-                  {t({ message: "Your commitment", context: "terms commitment" })}
-                </label>
-                <p className={`${HINT} mt-1`}>{t`How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload.`}</p>
-                <select
-                  id={`${idPrefix}-commitment`}
-                  value={value.commitmentPct === null ? "" : String(value.commitmentPct)}
-                  onChange={(e) => onChange({ ...value, commitmentPct: e.target.value === "" ? null : Number(e.target.value) })}
-                  className={`${FIELD} mt-2 min-h-11 sm:max-w-xs`}
-                  required
-                >
-                  <option value="">{t({ message: "Choose your commitment", context: "terms commitment" })}</option>
-                  {choicesFor(roles).map((n) => (
-                    <option key={n} value={n}>
-                      {n}%
-                    </option>
-                  ))}
-                </select>
-                <p className={`${HINT} mt-2`} data-commitment-hint="">
-                  {t`This is about energy and attention, never hours. You can change it later.`}
-                </p>
-                {/* The suggested price from their commitment, and the popup to propose their own (Rye, 14 Nov 2026). */}
-                {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={roles[0]?.suggestions ?? 0} />}
-                {splitRole && (
-                  <div className="mt-4">
-                    <Suspense fallback={null}>
-                      <TermsSplit idPrefix={idPrefix} role={splitRole} value={value} onChange={onChange} />
-                    </Suspense>
-                  </div>
-                )}
+                <CommitmentFor idPrefix={idPrefix} role={one} roles={roles} value={value} onChange={onChange} named={several && !!one} />
               </div>
             )}
           </div>
@@ -225,9 +197,53 @@ export default function TermsEight({
 }
 
 /** The commitments one role offers: from its minimum, when it states one (Rye, 14 Nov 2026); the usual choices otherwise. */
-function choicesFor(roles: ReadonlyArray<TermsRole>): readonly number[] {
-  const min = roles.length === 1 ? roles[0].commitmentMin : null;
+function choicesFor(role: TermsRole | null): readonly number[] {
+  const min = role?.commitmentMin ?? null;
   return typeof min === "number" ? commitmentChoices(min) : CANDIDATE_COMMITMENTS;
+}
+
+/**
+ * ONE ROLE'S COMMITMENT, PRICE AND SPLIT: the commitment chosen, the suggested price from it with the popup to propose
+ * their own (Rye, 14 Nov 2026), and the split to adjust (17 Nov). Drawn in the Time row, and for each role added to
+ * the application (components/fireflyPath/MoreRoles.tsx), so every role is offered on its own terms.
+ */
+export function CommitmentFor({ idPrefix, role, roles, value, onChange, named = false }: { idPrefix: string; role: TermsRole | null; roles?: ReadonlyArray<TermsRole>; value: TermsStepValue; onChange: (next: TermsStepValue) => void; named?: boolean }) {
+  const { t } = useLingui();
+  const ceiling = role?.ceiling ?? null;
+  const splitRole = role && (role.payShape?.length ?? 0) > 0 ? role : null;
+  return (
+    <>
+      <label htmlFor={`${idPrefix}-commitment`} className="text-sm font-semibold text-foreground">
+        {named && role ? t({ message: `Your commitment: ${role.name}`, context: "terms commitment, one of several roles" }) : t({ message: "Your commitment", context: "terms commitment" })}
+      </label>
+      <p className={`${HINT} mt-1`}>{t`How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload.`}</p>
+      <select
+        id={`${idPrefix}-commitment`}
+        value={value.commitmentPct === null ? "" : String(value.commitmentPct)}
+        onChange={(e) => onChange({ ...value, commitmentPct: e.target.value === "" ? null : Number(e.target.value) })}
+        className={`${FIELD} mt-2 min-h-11 sm:max-w-xs`}
+        required
+      >
+        <option value="">{t({ message: "Choose your commitment", context: "terms commitment" })}</option>
+        {choicesFor(role ?? (roles?.length === 1 ? roles[0] : null)).map((n) => (
+          <option key={n} value={n}>
+            {n}%
+          </option>
+        ))}
+      </select>
+      <p className={`${HINT} mt-2`} data-commitment-hint="">
+        {t`This is about energy and attention, never hours. You can change it later.`}
+      </p>
+      {ceiling && <PriceAsk idPrefix={idPrefix} ceiling={ceiling} pct={value.commitmentPct} value={value.payAsk ?? null} onChange={(payAsk) => onChange({ ...value, payAsk })} suggestionCount={role?.suggestions ?? 0} />}
+      {splitRole && (
+        <div className="mt-4">
+          <Suspense fallback={null}>
+            <TermsSplit idPrefix={idPrefix} role={splitRole} value={value} onChange={onChange} />
+          </Suspense>
+        </div>
+      )}
+    </>
+  );
 }
 
 // Kept so a test can hold the lines the lead named word for word.

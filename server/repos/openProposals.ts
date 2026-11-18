@@ -338,6 +338,14 @@ export const ANONYMISE_REMOVES = [
   "$.selfKnowledge",
   "$.payAsk",
   "$.paySplit",
+  // Each role's own price ask and split on a proposal naming several roles (the lead, 17 Nov 2026). A path that is
+  // not there is passed over by JSON_REMOVE, so a one-role proposal loses nothing more.
+  "$.roles[0].payAsk",
+  "$.roles[0].paySplit",
+  "$.roles[1].payAsk",
+  "$.roles[1].paySplit",
+  "$.roles[2].payAsk",
+  "$.roles[2].paySplit",
 ] as const;
 
 /** What anonymising leaves: the application's substance, with nothing that names or reaches the person. */

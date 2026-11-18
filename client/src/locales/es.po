@@ -481,6 +481,10 @@ msgctxt "sera answers"
 msgid "Kept ours. It stays out of the list until it changes again."
 msgstr ""
 
+#: client/src/components/fundingRounds/RoundParts.tsx
+msgid "These quests are held until the village decides, in a vote that closes {closes}. The pot keeps their money for them until then."
+msgstr ""
+
 #: client/src/pages/rites/Welcome.tsx
 msgctxt "rites"
 msgid "This page isn't open yet."
@@ -660,8 +664,8 @@ msgid "changed"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
-msgid "You were not on the voting roll then, so this round counts {roll} members without you."
-msgstr ""
+#~ msgid "You were not on the voting roll then, so this round counts {roll} members without you."
+#~ msgstr ""
 
 #: client/src/components/roleCard/RosterCards.tsx
 msgctxt "roster card: the one role a person holds"
@@ -2121,6 +2125,11 @@ msgctxt "founding application split line: two parts"
 msgid "{a} and {b}"
 msgstr "{a} y {b}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: cash"
+msgstr ""
+
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Access to give or take back"
 msgstr ""
@@ -2374,6 +2383,11 @@ msgstr ""
 msgctxt "progression: a kind of power"
 msgid "Work and value"
 msgstr "Trabajo y valor"
+
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "Contributed: work or other"
+msgstr ""
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -5343,6 +5357,11 @@ msgctxt "your path, the next act"
 msgid "Join now"
 msgstr "Unirme ahora"
 
+#: client/src/pages/FundingRounds.tsx
+msgctxt "funding rounds"
+msgid "Only Voice earned through work"
+msgstr ""
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Respond to this change request"
 msgstr ""
@@ -6873,6 +6892,11 @@ msgstr "Lo que {companionName} hará con esto"
 msgid "Only events titled with \"{0}\" count."
 msgstr ""
 
+#: client/src/pages/FundingRounds.tsx
+msgctxt "funding rounds"
+msgid "All Voice"
+msgstr ""
+
 #: client/src/components/valuation/QuestEnginePrice.tsx
 msgctxt "quest editor"
 msgid "Reading the village's pay settings…"
@@ -7125,6 +7149,10 @@ msgstr ""
 msgctxt "open proposal: commitment"
 msgid "Your counter-offer"
 msgstr "Tu contraoferta"
+
+#: client/src/components/fundingRounds/RoundParts.tsx
+msgid "You joined after choosing opened, so your choice shows as a signal and doesn't change the count this round."
+msgstr ""
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Nobody else can sign this figure, so it goes to the village. Put the change in an org draft and put it to a vote."
@@ -8295,6 +8323,10 @@ msgctxt "coming up, i'll be there, how many said so"
 msgid "{0, plural, one {# of us said we will be there.} other {# of us said we will be there.}}"
 msgstr "{0, plural, one {# de nosotros dijo que estará ahí.} other {# de nosotros dijimos que estaremos ahí.}}"
 
+#: client/src/components/admin/MintDesk.tsx
+msgid " · cash put in"
+msgstr ""
+
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
 msgid "Got it"
@@ -9377,6 +9409,12 @@ msgstr ""
 msgid "See: what the village shows about {name}"
 msgstr ""
 
+#. placeholder {0}: weightText(standing.held)
+#. placeholder {1}: weightText(standing.weight)
+#: client/src/components/governance/MyStanding.tsx
+msgid "You hold {0}. A cap counts {1} of it on a ballot, and the rest stays yours."
+msgstr ""
+
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Save as a new version"
@@ -9390,6 +9428,10 @@ msgstr ""
 #: client/src/components/roleDraft/HumanDesignStep.tsx
 msgid "Work it out here"
 msgstr "Calcularlo aquí"
+
+#: client/src/pages/FundingRounds.tsx
+msgid "This pot now counts only Voice earned through work."
+msgstr ""
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "settlement report cycle line"
@@ -10030,6 +10072,10 @@ msgstr ""
 msgctxt "open proposal attachments"
 msgid "Attach a file"
 msgstr "Adjuntar un archivo"
+
+#: client/src/pages/FundingRounds.tsx
+msgid "This pot now counts all Voice."
+msgstr ""
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -11944,6 +11990,10 @@ msgstr ""
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
 msgid "Category"
+msgstr ""
+
+#: client/src/components/fundingRounds/RoundParts.tsx
+msgid "These quests are held until the village decides. The pot keeps their money for them until then."
 msgstr ""
 
 #: client/src/components/valuation/QuestEnginePrice.tsx
@@ -14955,6 +15005,11 @@ msgctxt "hidden map, one place's details"
 msgid "Return visits"
 msgstr ""
 
+#: client/src/components/admin/MintDesk.tsx
+msgctxt "admin mint form, what stood behind a grant"
+msgid "What was contributed"
+msgstr ""
+
 #: client/src/components/review/useSeraActs.ts
 msgctxt "sera answers"
 msgid "Set aside. The people who decide these still see it."
@@ -15036,6 +15091,11 @@ msgstr ""
 #: client/src/pages/rites/Ceremony.tsx
 msgctxt "rites"
 msgid "Witnessed"
+msgstr ""
+
+#: client/src/components/fundingRounds/RoundParts.tsx
+msgctxt "funding rounds"
+msgid "Signals from newer members, not counted: {signalNames}."
 msgstr ""
 
 #: client/src/components/review/SeraBulk.tsx
@@ -16322,8 +16382,8 @@ msgid "Circle"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
-msgid "These quests are held until the village decides."
-msgstr ""
+#~ msgid "These quests are held until the village decides."
+#~ msgstr ""
 
 #: client/src/pages/rites/Door.tsx
 msgctxt "rites"
@@ -17932,6 +17992,10 @@ msgctxt "the role a private intake reaches, when it has no name"
 msgid "intake role"
 msgstr ""
 
+#: client/src/pages/FundingRounds.tsx
+msgid "A round reads Voice once, when choosing opens, and keeps that choice to its end."
+msgstr ""
+
 #: client/src/components/proposals/Diff.tsx
 msgctxt "proposed changes: a list row"
 msgid "Reworded"
@@ -18184,8 +18248,8 @@ msgid "{0}% {1} ({2})"
 msgstr ""
 
 #: client/src/components/fundingRounds/RoundParts.tsx
-msgid "These quests are held until the village decides, in a vote that closes {closes}."
-msgstr ""
+#~ msgid "These quests are held until the village decides, in a vote that closes {closes}."
+#~ msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -20625,6 +20689,11 @@ msgstr ""
 msgctxt "calendar legend"
 msgid "a gathering"
 msgstr "un encuentro"
+
+#: client/src/pages/FundingRounds.tsx
+msgctxt "funding rounds"
+msgid "Which Voice a pot counts"
+msgstr ""
 
 #: client/src/components/priorities/PriorityBoard.tsx
 msgctxt "priority board, no role owns this item"

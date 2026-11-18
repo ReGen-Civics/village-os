@@ -325,9 +325,9 @@ export const ADMIN_EDIT = "admin_edit";
  *
  * Priced like ADMIN_EDIT: both answers are counts the village's own ticks
  * produced, within money the pot already offered, so the vote asks the
- * village's own bar and no more. Absent from `KIND_FOR_SUBJECT`, so a carried
- * switch is a Game change that waits its window and a seated steward may stop
- * it; moving it is one line there.
+ * village's own bar and no more. In `NO_WINDOW_SUBJECTS`
+ * (shared/governanceKinds.ts; the lead, 2026-11-18), so a carried switch lands
+ * when the vote closes, with no steward window after it.
  */
 export const FUNDING_DIVERGENCE = "funding_divergence";
 

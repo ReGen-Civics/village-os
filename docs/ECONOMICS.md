@@ -631,13 +631,14 @@ reads terms (`shared/seatSettings.boundary.test.ts`): the cash it owes is the ro
 | Work | When | Occurrence key |
 | --- | --- | --- |
 | a quest | at consent, on the consent's connection, inside the commit that flips the claim | the claim |
-| a role | each settled cycle (`runSettlement`), before the token rules are read, once the Game has started | the cycle, the seat, the member |
+| a role | when a Treasurer approves its End of Moon invoice (`oweApprovedRoleCash`); never by the settlement (pay defect 2) | the cycle, the seat, the member |
 | a proposal | when the acceptance's token payment goes through (`applyAcceptReward`) | the submission |
 
-A village with no `role.cycle` rule can still pay its roles in cash, which is why the role step
-runs before `runSettlement` can return early. It waits for the Game to start the way the ledger
-does, so a seat held while a village is still setting up owes nothing. A badge multiplier never
-touches cash: the ruling attaches a multiplier to a token.
+The settlement used to owe every seat on a cash role with no adopted application the role's whole
+cash each cycle, with no price, no commitment and nobody confirming. Since 18 Nov 2026 (pay defect
+2, the 14 Nov ruling that nothing pays without the Treasurer's confirmation) it owes none: such a
+seat is listed on the launch journey (`pay:unpriced-seats`) for the Treasurer to set terms through
+an application. A badge multiplier never touches cash: the ruling attaches a multiplier to a token.
 
 **Owed, claimed, paid.** A row moves one way. The member reads what they are owed on their
 profile and claims it when the village pays out (`POST /api/me/cash-owed/:id/claim`, their own
@@ -826,6 +827,45 @@ balance, the claim chip's sentence, when claims open, and what the mirror says t
 member holds on Base, read from the `onchain_balances` cache and never dialled.
 Gratitude appears there as giving left and thanks received, with no price and no
 claim. A token shows a money figure only when the exchange posted one.
+
+### Caps on what a ballot counts, by source, and resting Voice (0407)
+
+A village weighing votes by a token can cap how much of one member's balance a
+ballot counts from cash put in and from every other contribution, each with its
+own switch and whole-token number (`governance.weight_cap_cash_on`,
+`governance.weight_cap_cash`, `governance.weight_cap_other_on`,
+`governance.weight_cap_other`), all off by default and founder-ring, so once the
+Game starts only the highest-tier vote moves them. **The cap is applied when a
+ballot opens and never at the mint.** No posting is clipped or refused: the
+ledger keeps every contribution in full, so raising a cap by vote restores the
+count at the next ballot with nothing to put back. A balance splits into its cash
+part and its other part by the share of everything minted to the member from
+each source, net of each source's own reversals, read from the token's faucet
+and from `sys:mint` (shared/voiceSourceCaps.ts, server/lib/heldBySource.ts).
+Cash sources are `MONEY_VOICE_SOURCES`; every other source counts as other.
+Each frozen `ballot_electorate` row keeps the basis it was counted from
+(`held_weight`, `held_cash`, `cap_cash`, `cap_other`), so anyone can recompute
+the weight. The share cap (`governance.weight_cap_on`) still runs after, over
+the counted weights.
+
+A steward's hand-mint says what stood behind it: `contribution: "cash"` posts
+source `admin_mint_cash`, anything else keeps `admin_mint`. A grant waiting for a
+second steward stores the tag (`admin_mint_requests.contribution_kind`) and the
+approval posts it. `admin_mint_cash` is a hand mint everywhere `admin_mint` is
+(`HAND_MINT_SOURCES`, the cycle cap) and money in a work-only count.
+
+A member who leaves keeps their balance and is on no new roll, so their Voice
+rests: it counts for nothing while they are away and whole again the moment they
+are admitted back. Their own standing says so (`resting` on
+`GET /api/governance/standing`).
+
+The caps weigh every ballot built from the village roll (`buildElectorate`),
+the funding rounds' 48-hour `funding_divergence` vote included. A pot's own
+power count is not a ballot roll: it reads the pot's counted Voice
+(`counted_voice`, work-only through `workEarnedVoice` or the whole balance)
+under the pot's own share cap, and these caps by source do not apply to it.
+Under a work-only count a cash-tagged hand-mint is money, as above, so the cash
+cap has nothing there to cap.
 
 ### Voice that wanes (R3, R15)
 
@@ -4159,14 +4199,17 @@ the posting it undoes, `originalKeyOf` in `server/lib/ledger.ts` is now
 exported; what it does is unchanged. Decay takes the same share of every
 holder, which is why a share of the balance is the right count.
 
-**Funding rounds now reads it (S4, migration 0402).** A pot's power count weighs
-each member by `workEarnedVoice`, frozen once when the round's choosing opens
-into `funding_round_voice`, and harvest reads only those frozen rows. Nothing
+**Funding rounds can read it (S4, migrations 0402 and 0403).** A pot's power
+count weighs each member by their whole Voice balance (the default since 0403,
+the lead's "count all voice for now") or, when the pot's holder chooses
+work-only, by `workEarnedVoice`. Either is frozen once when the round's choosing
+opens into `funding_round_voice`, and harvest reads only those frozen rows. Nothing
 here moves Voice or any other token: the snapshot is a read, and a pot's
 earmarks are promises on money the Treasurer recorded, outside the ledger. When
-the work-only count and the one-member-one-vote count fund different quests, a
-48-hour village vote (`funding_divergence`) decides which count funds them.
-`docs/modules/funding-rounds.md` holds the rules.
+the Voice count and the one-member-one-vote count fund different quests, a
+48-hour village vote (`funding_divergence`) decides which count funds them,
+and the pot reserves the larger side's cost until it does, outside the ledger
+like every earmark. `docs/modules/funding-rounds.md` holds the rules.
 
 ---
 

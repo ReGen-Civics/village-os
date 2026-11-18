@@ -11,7 +11,7 @@ This describes a FRESH village: what a village standing up a new instance holds 
 <!-- written by a person: generated -->
 This file is generated. `scripts/generate-governance-doc.mjs` reads the engine, the subject registry, the dials, the capability tables, the module definition, the clock and the route registrations, works out the facts, and writes the whole document. `scripts/check-governance-doc.mjs` regenerates it and fails the build when the committed text and the code have come apart.
 
-It describes the sources at fingerprint `17cddb8e5a261cf9`, which regenerating reproduces.
+It describes the sources at fingerprint `36679c54429733a7`, which regenerating reproduces.
 
 <!-- written by a person: editing -->
 Editing this file by hand does not hold. Change the code, then run:
@@ -171,6 +171,10 @@ The dials a village holds, with the ring that says who may move each one and the
 | `governance.weight_token` | The weight token | `founder` | `gratitude` | text | when it is written |
 | `governance.weight_cap_on` | Cap one member's voting weight | `founder` | `false` | boolean | when it is written |
 | `governance.weight_cap_pct` | The most voting weight one member can carry | `founder` | `20` | 1 to 100 % | when it is written |
+| `governance.weight_cap_cash_on` | Cap the weight one member counts from cash | `founder` | `false` | boolean | when it is written |
+| `governance.weight_cap_cash` | The most weight one member counts from cash | `founder` | `0` | 0 to 1000000000 tokens | when it is written |
+| `governance.weight_cap_other_on` | Cap the weight one member counts from other contributions | `founder` | `false` | boolean | when it is written |
+| `governance.weight_cap_other` | The most weight one member counts from other contributions | `founder` | `0` | 0 to 1000000000 tokens | when it is written |
 | `governance.unity_pct` | Unity needed to pass | `open` | `80` | 50 to 100 % | when it is written |
 | `governance.quorum_pct` | Quorum needed to count | `open` | `20` | 1 to 100 % | when it is written |
 | `governance.quorum_fallback` | Ask again when too few vote | `open` | `off` | `off`, `on` | when it is written |
@@ -193,7 +197,7 @@ The dials a village holds, with the ring that says who may move each one and the
 <!-- written by a person: dialsStorage -->
 Only CHANGED values are stored. An absent row means the platform default in the table above, so a fresh village starts with every one of these and no rows at all.
 
-12 settings across the whole registry wait for a cycle close instead of applying when they are written: `cycle.mode`, `economy.voice_claim_threshold`, `economy.equity_claim_threshold`, `economy.claims_week_days`, `economy.claims_week_starts`, `gratitude.base_budget`, `gratitude.pool_per_cycle`, `gratitude.pool_token`, `gratitude.full_sends_per_cycle`, `feed.heart_amount`, `feed.max_hearts_per_recipient_per_cycle`, `ledger.admin_mint_cycle_cap`. The per-stage sending multipliers carry the same timing through their own override, one for each rung of the ladder. None of the 48 settings above is one of them, so every governance dial takes effect the moment it is written.
+12 settings across the whole registry wait for a cycle close instead of applying when they are written: `cycle.mode`, `economy.voice_claim_threshold`, `economy.equity_claim_threshold`, `economy.claims_week_days`, `economy.claims_week_starts`, `gratitude.base_budget`, `gratitude.pool_per_cycle`, `gratitude.pool_token`, `gratitude.full_sends_per_cycle`, `feed.heart_amount`, `feed.max_hearts_per_recipient_per_cycle`, `ledger.admin_mint_cycle_cap`. The per-stage sending multipliers carry the same timing through their own override, one for each rung of the ladder. None of the 52 settings above is one of them, so every governance dial takes effect the moment it is written.
 
 ## What each kind of decision asks
 
@@ -340,7 +344,7 @@ The veto lives on the BALLOT, and a proposal's display of it derives from that p
 <!-- written by a person: notVetoable -->
 **What no steward may stop.** Three things. EVERY seating and unseating, of any role and not only one that carries the veto (Rye, 2026-09-04). Any edit to the settings that say what a steward may stop. And any decision whose SIZE the village has not put in the seat's reach, which by default is everything below constitutional. All three keep their timing and their window like any Game change and lose only the door, so the village still reads them coming. A seat that could veto its own removal is a seat nobody can remove. A change set mixing one of those elements with any other kind is refused when it is validated, naming both elements, so the carve-out cannot carry anything else through beside it.
 
-Read from the code: `village_launch`, `org_draft` execute the moment they carry, with no window at all. That list used to hold the two seat acts as well, and the gap between the ruling and the code was recorded here: 2026-09-03 asked that a seating keep its timing and its window and simply admit no veto, while the code took the window away too, which arrived at the same place by a shorter road. Rye closed the gap on 2026-09-04 in favour of the ruling, so a seating now waits its window, the village reads it coming, and no steward may stop it. The Birthing is on that list for a reason of its own: before it carries nobody holds a seat, so a window on it would be hours nobody could use, and it already asks every seat to vote and every seat to say yes.
+Read from the code: `village_launch`, `org_draft`, `funding_divergence` execute the moment they carry, with no window at all. That list used to hold the two seat acts as well, and the gap between the ruling and the code was recorded here: 2026-09-03 asked that a seating keep its timing and its window and simply admit no veto, while the code took the window away too, which arrived at the same place by a shorter road. Rye closed the gap on 2026-09-04 in favour of the ruling, so a seating now waits its window, the village reads it coming, and no steward may stop it. The Birthing is on that list for a reason of its own: before it carries nobody holds a seat, so a window on it would be hours nobody could use, and it already asks every seat to vote and every seat to say yes.
 
 <!-- written by a person: override -->
 **The override.** A proposal that was stopped may be brought back. Passed again at the village's highest set tier, with the relation stated (`renews`, `overrides` or `replaces`) and the ballot actually PRICED at that tier, it lands whatever any steward says. The record links it to the decision that was stopped and the reason stays visible beside it. A renewal may not point at a decision that was stopped.
@@ -1105,7 +1109,7 @@ The same facts, for anything that would sooner parse than read. Regenerated with
 
 ```json
 {
-  "commit": "17cddb8e5a261cf9",
+  "commit": "36679c54429733a7",
   "module": {
     "id": "governance",
     "shipsAs": "off",
@@ -1693,6 +1697,50 @@ The same facts, for anything that would sooner parse than read. Regenerated with
       "default": "20",
       "min": 1,
       "max": 100,
+      "choices": null,
+      "applyTiming": "instant"
+    },
+    {
+      "key": "governance.weight_cap_cash_on",
+      "label": "Cap the weight one member counts from cash",
+      "ring": "founder",
+      "type": "boolean",
+      "default": "false",
+      "min": null,
+      "max": null,
+      "choices": null,
+      "applyTiming": "instant"
+    },
+    {
+      "key": "governance.weight_cap_cash",
+      "label": "The most weight one member counts from cash",
+      "ring": "founder",
+      "type": "integer",
+      "default": "0",
+      "min": 0,
+      "max": 1000000000,
+      "choices": null,
+      "applyTiming": "instant"
+    },
+    {
+      "key": "governance.weight_cap_other_on",
+      "label": "Cap the weight one member counts from other contributions",
+      "ring": "founder",
+      "type": "boolean",
+      "default": "false",
+      "min": null,
+      "max": null,
+      "choices": null,
+      "applyTiming": "instant"
+    },
+    {
+      "key": "governance.weight_cap_other",
+      "label": "The most weight one member counts from other contributions",
+      "ring": "founder",
+      "type": "integer",
+      "default": "0",
+      "min": 0,
+      "max": 1000000000,
       "choices": null,
       "applyTiming": "instant"
     },
@@ -2689,7 +2737,8 @@ The same facts, for anything that would sooner parse than read. Regenerated with
     "absentMeans": "game_change",
     "executesAtPassWithNoWindow": [
       "village_launch",
-      "org_draft"
+      "org_draft",
+      "funding_divergence"
     ],
     "vetoHoursFloor": 72
   },
@@ -3230,7 +3279,7 @@ The tables and columns the rules above rest on. The generator checks every one a
 | `delegations.accepted_at` | a delegation carries a choice only once the delegate accepts it |
 | `role_holder_terms` | a term survives an unrelated appointment |
 
-Checked against the 273 migration files in `drizzle/`.
+Checked against the 275 migration files in `drizzle/`.
 
 ## What this file is made from
 

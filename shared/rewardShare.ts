@@ -9,7 +9,8 @@
  *
  * Whose split, in order (the coordinator's call, 15 Nov 2026: "the split
  * follows what the card showed the person"):
- *   1. the contract's, `pay.shape`, written at adoption from what the card showed;
+ *   1. the contract's, `pay.shape`, written at adoption: the applicant's proposed split when they sent one,
+ *      else what the card showed (the lead, 18 Nov 2026; shared/proposalSplit.ts `adoptedShape`);
  *   2. the role card's own shape ("Cash 60, Equity 40"), `payShape`;
  *   3. the village's default, the `org.pay_shape` setting (the card's "Default split");
  *   4. none of them: the whole line is cash, and the Treasurer's queue says

@@ -44,13 +44,13 @@ export function openProposalHref(roleId?: string | null): string {
 /** The most roles a stored proposal is read with (an older one may name up to three). */
 export const OPEN_PROPOSAL_MAX_ROLES = 3;
 /**
- * ONE ROLE PER APPLICATION (the lead, 11 Nov 2026): a person applies from a
- * role's card, for that role. The form never sends more than this, and
- * `parseOpenProposal` refuses a send that names more. A stored proposal from
- * before the ruling may still name up to OPEN_PROPOSAL_MAX_ROLES, and is read
- * whole (`openBodyOf`).
+ * SEVERAL ROLES IN ONE PROPOSAL (the lead, 17 Nov 2026, confirmed 18 Nov, replacing the 11 Nov "one role per
+ * application"): one person may propose for several roles, across circles, in one collective proposal, with a
+ * commitment for each. Each role keeps its own price, split and agreement, and the prices add up ("two roles at 50%
+ * are rewarded like one whole role"). The form starts from the role card's Apply link and the applicant may add
+ * more, up to this many; `parseOpenProposal` refuses a send that names more.
  */
-export const OPEN_APPLY_ROLES = 1;
+export const OPEN_APPLY_ROLES = OPEN_PROPOSAL_MAX_ROLES;
 /** "Get to know us": how many ways the village may list, and how long each may be. */
 export const KNOW_US_MAX = 8;
 export const KNOW_US_TEXT_MAX = 160;
@@ -129,8 +129,22 @@ export const OPEN_ANONYMISE_DAYS = 90;
 export const OPEN_PROPOSAL_STATUSES = ["unconfirmed", "confirmed", "adopted", "declined", "withdrawn"] as const;
 export type OpenProposalStatus = (typeof OPEN_PROPOSAL_STATUSES)[number];
 
+/**
+ * One role in a proposal. On a proposal naming several roles, each carries its own commitment, price ask and split
+ * (the lead, 17 Nov 2026); the first role's are also kept where a one-role proposal keeps them (`card.commitmentPct`,
+ * `payAsk`, `paySplit`), so a release that reads one role per proposal still reads the first one whole. A one-role
+ * proposal carries none of the three here. Read them with `roleTermsOf`, never by hand.
+ */
+export interface OpenProposalRole {
+  roleId: string;
+  note: string;
+  commitmentPct?: number;
+  payAsk?: PayAsk;
+  paySplit?: ProposalSplit;
+}
+
 export interface OpenProposalBody {
-  roles: Array<{ roleId: string; note: string }>;
+  roles: OpenProposalRole[];
   why: string;
   aim: string;
   /** Set by the server when the village's proposals are for the moon (shared/openProposalTerm.ts). Absent: next season. */
@@ -223,7 +237,13 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
   const roles = Array.isArray(o.roles) ? o.roles : [];
   return {
     roles: roles
-      .map((r: any) => ({ roleId: String(r?.roleId ?? "").trim(), note: text(r?.note, OPEN_NOTE_MAX).slice(0, OPEN_NOTE_MAX) }))
+      .map((r: any): OpenProposalRole => ({
+        roleId: String(r?.roleId ?? "").trim(),
+        note: text(r?.note, OPEN_NOTE_MAX).slice(0, OPEN_NOTE_MAX),
+        ...(isProposedCommitment(r?.commitmentPct) ? { commitmentPct: r.commitmentPct as number } : {}),
+        ...(payAskOf(r?.payAsk) ? { payAsk: payAskOf(r?.payAsk) as PayAsk } : {}),
+        ...(proposalSplitOf(r?.paySplit) ? { paySplit: proposalSplitOf(r?.paySplit) as ProposalSplit } : {}),
+      }))
       .filter((r) => r.roleId)
       .slice(0, OPEN_PROPOSAL_MAX_ROLES),
     why: text(o.why, OPEN_WHY_MAX).slice(0, OPEN_WHY_MAX),
@@ -248,6 +268,45 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
     ...(payAskOf(o.payAsk) ? { payAsk: payAskOf(o.payAsk) as PayAsk } : {}),
     ...(proposalSplitOf(o.paySplit) ? { paySplit: proposalSplitOf(o.paySplit) as ProposalSplit } : {}),
   };
+}
+
+/** A commitment one person may propose: a whole step of ten from 10 to 100 (the terms' steps). */
+export function isProposedCommitment(v: unknown): v is number {
+  return typeof v === "number" && Number.isInteger(v) && v >= 10 && v <= 100 && v % 10 === 0;
+}
+
+/** One role's own terms in a proposal: the commitment proposed, the price asked and the split proposed. */
+export interface RoleTerms {
+  roleId: string;
+  commitmentPct: number | null;
+  payAsk: PayAsk | null;
+  paySplit: ProposalSplit | null;
+}
+
+/** Whether a proposal carries terms for each of several roles (the lead, 17 Nov 2026): each role is then its own agreement. */
+export function termsPerRole(body: { roles: OpenProposalRole[] }): boolean {
+  return body.roles.length > 1 && body.roles.slice(1).some((r) => typeof r.commitmentPct === "number");
+}
+
+/**
+ * EACH ROLE'S OWN TERMS, whatever shape the body was stored in. A role's own keys first; the first role falls back to
+ * where a one-role proposal keeps them. On an older proposal naming several roles with one commitment (before 17 Nov
+ * 2026) every role reads that one commitment and the one ask, as it always did.
+ */
+export function roleTermsOf(body: { roles: OpenProposalRole[]; card?: { commitmentPct?: number }; payAsk?: PayAsk; paySplit?: ProposalSplit }): RoleTerms[] {
+  const perRole = termsPerRole(body);
+  const shared = { commitmentPct: typeof body.card?.commitmentPct === "number" ? body.card.commitmentPct : null, payAsk: body.payAsk ?? null, paySplit: body.paySplit ?? null };
+  return body.roles.map((r, i) => {
+    if (!perRole || i === 0) {
+      return {
+        roleId: r.roleId,
+        commitmentPct: typeof r.commitmentPct === "number" ? r.commitmentPct : shared.commitmentPct,
+        payAsk: r.payAsk ?? shared.payAsk,
+        paySplit: r.paySplit ?? (i === 0 ? shared.paySplit : null),
+      };
+    }
+    return { roleId: r.roleId, commitmentPct: r.commitmentPct ?? null, payAsk: r.payAsk ?? null, paySplit: r.paySplit ?? null };
+  });
 }
 
 /** The "Get to know us" ticks as stored: plain lines, deduplicated, capped. */
@@ -293,12 +352,22 @@ export function parseOpenProposal(
   if (picked.length === 0) return { ok: false, field: "roles", error: OPEN_WORDS.needRole };
   if (picked.length > OPEN_APPLY_ROLES) return { ok: false, field: "roles", error: OPEN_WORDS.tooManyRoles };
   const roles: OpenProposalBody["roles"] = [];
-  for (const r of picked as any[]) {
+  for (let i = 0; i < picked.length; i++) {
+    const r = picked[i] as any;
     const roleId = String(r?.roleId ?? "").trim();
     if (!ctx.roleIds.has(roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.unknownRole };
     if (roles.some((x) => x.roleId === roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.sameRoleTwice };
     const note = text(r?.note, OPEN_NOTE_MAX);
     if (note.length > OPEN_NOTE_MAX) return { ok: false, field: "roles", error: OPEN_WORDS.tooLong("What you bring to a role", OPEN_NOTE_MAX) };
+    // Each role after the first carries its own commitment and price ask (the lead, 17 Nov 2026). The first role's
+    // are where a one-role proposal sends them (`card.commitmentPct`, `payAsk`), copied onto it below.
+    if (i > 0) {
+      if (!isProposedCommitment(r?.commitmentPct)) return { ok: false, field: `roles.${i}`, error: OPEN_WORDS.needRoleCommitment };
+      const own = readPayAsk(r?.payAsk);
+      if (!own.ok) return { ok: false, field: `roles.${i}`, error: own.problem };
+      roles.push({ roleId, note, commitmentPct: r.commitmentPct, ...(own.value ? { payAsk: own.value } : {}) });
+      continue;
+    }
     roles.push({ roleId, note });
   }
   const why = text(o.why, OPEN_WHY_MAX);
@@ -320,6 +389,11 @@ export function parseOpenProposal(
   if (!suggested.ok) return { ok: false, field: "pieceSuggestions", error: suggested.error };
   const asked = readPayAsk(o.payAsk);
   if (!asked.ok) return { ok: false, field: "payAsk", error: asked.problem };
+  // Several roles: the first carries its own terms too, from where a one-role proposal sends them.
+  const firstTerms = (card: OpenProposalCard | undefined): OpenProposalBody["roles"] =>
+    roles.length > 1
+      ? [{ ...roles[0], ...(isProposedCommitment(card?.commitmentPct) ? { commitmentPct: card?.commitmentPct } : {}), ...(asked.value ? { payAsk: asked.value } : {}) }, ...roles.slice(1)]
+      : roles;
   const own = {
     ...(asked.value ? { payAsk: asked.value } : {}),
     ...(suggested.value.length ? { pieceSuggestions: suggested.value } : {}),
@@ -353,9 +427,9 @@ export function parseOpenProposal(
       writtenTerms: ctx.writtenTerms?.(roles.map((r) => r.roleId)),
     });
     if (!card.ok) return { ok: false, field: card.field, error: card.error };
-    return { ok: true, value: { name, email, body: { roles, why, aim, card: card.card, ...links, ...aboutYou, ...own } } };
+    return { ok: true, value: { name, email, body: { roles: firstTerms(card.card), why, aim, card: card.card, ...links, ...aboutYou, ...own } } };
   }
-  return { ok: true, value: { name, email, body: { roles, why, aim, ...links, ...aboutYou, ...own } } };
+  return { ok: true, value: { name, email, body: { roles: firstTerms(undefined), why, aim, ...links, ...aboutYou, ...own } } };
 }
 
 /** "A", "A and B", "A, B and C". */
@@ -493,7 +567,9 @@ export const OPEN_WORDS = {
   /** An address was typed, and it is not one (applicant journey QA, 15 Nov 2026). */
   badEmail: "That doesn't look like an email address. Check it, like name@example.com, and try again.",
   needRole: "Choose the role you are applying for.",
-  tooManyRoles: "One application is for one role. Choose the role you are applying for, and apply for another one separately.",
+  tooManyRoles: `One application takes up to ${OPEN_PROPOSAL_MAX_ROLES} roles. Remove one, and apply for it separately.`,
+  /** A role added after the first, sent without its own commitment. */
+  needRoleCommitment: "Choose your commitment for each role you added.",
   unknownRole: "One of those roles isn't open any more. Reload the page and pick again.",
   sameRoleTwice: "You picked the same role twice.",
   needWhy: "Say why you, and why now.",

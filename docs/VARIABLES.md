@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 262 open and 56 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 262 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 291 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 295 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-318 dials in 40 categories. 168 carry a minimum and a maximum. By type: 131 integer, 19 decimal, 19 percentage, 43 boolean, 36 choice, 62 text, 8 longtext.
+322 dials in 40 categories. 170 carry a minimum and a maximum. By type: 133 integer, 19 decimal, 19 percentage, 45 boolean, 36 choice, 62 text, 8 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -47,7 +47,7 @@ Each dial also says WHEN a change lands. 291 of them as soon as it is saved, and
 | The Mint | 7 | 6 | 1 |
 | Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
-| Governance | 51 | 45 | 6 |
+| Governance | 55 | 45 | 10 |
 | Tokens | 4 | 1 | 3 |
 | Hypha | 8 | 0 | 8 |
 | Tools | 2 | 2 | 0 |
@@ -203,6 +203,10 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The weight token | `governance.weight_token` | Governance | text | `gratitude` | the founder or an admin |
 | Cap one member's voting weight | `governance.weight_cap_on` | Governance | boolean | `false` | the founder or an admin |
 | The most voting weight one member can carry | `governance.weight_cap_pct` | Governance | percentage | `20` | the founder or an admin |
+| Cap the weight one member counts from cash | `governance.weight_cap_cash_on` | Governance | boolean | `false` | the founder or an admin |
+| The most weight one member counts from cash | `governance.weight_cap_cash` | Governance | integer | `0` | the founder or an admin |
+| Cap the weight one member counts from other contributions | `governance.weight_cap_other_on` | Governance | boolean | `false` | the founder or an admin |
+| The most weight one member counts from other contributions | `governance.weight_cap_other` | Governance | integer | `0` | the founder or an admin |
 | Unity needed to pass | `governance.unity_pct` | Governance | percentage | `80` | the whole village |
 | Quorum needed to count | `governance.quorum_pct` | Governance | percentage | `20` | the whole village |
 | Ask again when too few vote | `governance.quorum_fallback` | Governance | choice | `off` | the whole village |
@@ -1929,7 +1933,7 @@ Consent normally needs a second person to witness the work: nobody may consent t
 
 ## Governance
 
-51 dials. 45 for the whole village, 6 for the founder or an admin.
+55 dials. 45 for the whole village, 10 for the founder or an admin.
 
 ### How sensing is weighted
 
@@ -2416,6 +2420,68 @@ While the cap above is on, the largest share of a ballot's vote that one member 
 | Who may change it | the founder or an admin |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a constitutional vote, at the highest bar the village has set |
+
+### Cap the weight one member counts from cash
+
+Turns on a ceiling on how much of one member's weight token balance a ballot counts from cash they put in: Voice from donations, investment, dues, and hand-mints a steward marked as cash. It only matters when the weight mode is token. Nothing is taken from anybody: the balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from cash'. It is off unless you turn it on.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_cash_on` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### The most weight one member counts from cash
+
+While the cash cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from cash. A member's balance is split into its cash part and its other part by the share of everything minted to them that came from each, so waning takes from both alike. At 1000, a member holding 3000 that came from cash counts 1000 of it on every ballot, and any part from work or other contributions counts under its own cap. At 0, with the switch on, nothing from cash counts at all, because a cap of zero means zero. To have no cash cap, turn the switch off.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_cash` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 1000000000 |
+| Counted in | tokens |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### Cap the weight one member counts from other contributions
+
+Turns on a ceiling on how much of one member's weight token balance a ballot counts from everything that is not cash: quests, roles, accepted proposals, and hand-mints marked as something other than cash. A source nobody has classified counts here. It only matters when the weight mode is token. The balance stays exactly as minted, and only the ballot's count stops at the number below. Raising or lowering it applies from the next ballot that opens. Works with: 'The most weight one member counts from other contributions'. It is off unless you turn it on.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_other_on` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
+
+### The most weight one member counts from other contributions
+
+While the cap above is on, the most of one member's balance, in whole tokens, that a ballot counts from contributions other than cash. With both caps on, the most any one member counts is the two numbers added together. At 0, with the switch on, nothing from other contributions counts, because a cap of zero means zero. To have no cap on other contributions, turn the switch off.
+
+| Fact | Value |
+| --- | --- |
+| Key | `governance.weight_cap_other` |
+| Type | integer, a whole number |
+| Default | `0` |
+| Range | 0 to 1000000000 |
+| Counted in | tokens |
+| Who may change it | the founder or an admin |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a constitutional vote, at the highest bar the village has set |
+| Shown to the public | Members only. A signed-out visitor does not see it on the rules page, in the change history or in the village's news; every member sees it in full and may propose a change. |
 
 ### Unity needed to pass
 
