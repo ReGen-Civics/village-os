@@ -22,6 +22,7 @@
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
 import { storedVoiceOf, type StoredVoice } from "./voiceNotes";
 import { payAskOf, readPayAsk, type PayAsk } from "./commitmentRange";
+import { proposalSplitOf, type ProposalSplit } from "./proposalSplitStored";
 import { applicantSteps, cleanNote, isApplicantLanguage, wordsIn, type ApplicantLanguage } from "./applicantWords";
 import { termOf, type OpenProposalTerm } from "./openProposalTerm";
 import { cardOf, parseCard, type OpenProposalCard } from "./openProposalCard";
@@ -188,6 +189,11 @@ export interface OpenProposalBody {
   voice?: StoredVoice;
   /** Their optional pay ask (Rye, 14 Nov 2026, shared/commitmentRange.ts): a monthly amount, or negotiate. For the deciders; the contract sets the pay. */
   payAsk?: PayAsk;
+  /**
+   * The cash, equity and credits split (the lead, 17 Nov 2026, shared/proposalSplit.ts): what the village offered at
+   * their commitment, worked by the server, beside what they proposed. For the deciders; the contract sets the pay.
+   */
+  paySplit?: ProposalSplit;
 }
 
 export interface OpenProposalInput {
@@ -240,6 +246,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
     ...(pieceSuggestionsOf(o.pieceSuggestions).length ? { pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions) } : {}),
     ...(storedVoiceOf(o.voice) ? { voice: storedVoiceOf(o.voice) as StoredVoice } : {}),
     ...(payAskOf(o.payAsk) ? { payAsk: payAskOf(o.payAsk) as PayAsk } : {}),
+    ...(proposalSplitOf(o.paySplit) ? { paySplit: proposalSplitOf(o.paySplit) as ProposalSplit } : {}),
   };
 }
 

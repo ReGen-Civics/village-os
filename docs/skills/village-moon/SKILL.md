@@ -1,6 +1,6 @@
 ---
 name: village-moon
-description: Read the member's own moon, roles, season and task board through the village connector, and press their own board tasks Done, Let go or Undo after their yes to the exact write. You never send, approve, issue or pay anything.
+description: Read the member's own moon, roles, season and task board through the village connector, and press their own board tasks Done, Let go or Undo after their yes to the exact write. You never send money or recaps, approve, issue or pay anything.
 version: 1.0.0
 metadata:
   platform: village-coordination

@@ -38,6 +38,7 @@ const FULL: { [K in keyof Required<OpenProposalBody>]: unknown } = {
   pieceSuggestions: [{ roleId: "r-1", piece: "purpose", kind: "change", text: "Ring the bell twice" }],
   voice: { consent: true, notes: [], transcript: "What I said aloud." },
   payAsk: { amount: 900, period: "month" },
+  paySplit: { commitmentPct: 60, offered: { total: 7217, shares: [{ label: "Cash", pct: 60, amount: 4330 }] }, proposed: { total: 7217, shares: [{ label: "Cash", pct: 100, amount: 7217 }] } },
 };
 
 const PERSONAL_WORDS = ["Europe/Lisbon", "09:00", "2099-01-02", "example.test", "cv.pdf", "Ref Person", "Up the road", "A private note", "Generator 2/4", "Ring the bell", "What I said aloud", "900"];

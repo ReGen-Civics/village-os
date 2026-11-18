@@ -57,11 +57,14 @@ import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
 import { useVillageName } from "@/hooks/useVillageName";
 
+// The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
+const CardCommitment = lazy(() => import("./CardCommitment"));
+
 export type CardRegister = "founding" | "game";
 
-/** Where the Apply act goes: the application, with this one role already chosen (ruling 1). */
-export function applyHrefForRole(roleId: string): string {
-  return `/propose-a-role?role=${encodeURIComponent(roleId)}`;
+/** Where the Apply act goes: the application, with this one role already chosen (ruling 1), and the card's choice (applyChoice.ts). */
+export function applyHrefForRole(roleId: string, choice = ""): string {
+  return `/propose-a-role?role=${encodeURIComponent(roleId)}${choice ? `&${choice}` : ""}`;
 }
 
 // The value callout and its explainer (lead, 17 Nov 2026), loaded when a card draws its pay, so neither rides the first
@@ -212,6 +215,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const sections = read ? { ...read, qualities: withFocusLine(i18n, read.qualities, village, focusPct) } : null;
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
   const apply = !noAct && mayApply(seat);
+  // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
+  const [choiceLink, setChoiceLink] = useState("");
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
@@ -220,7 +225,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
       <StateNote role={seat} className="mb-3" />
       <Fireflies block>
-        <Link href={applyHrefForRole(id)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
+        <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
           <Trans context="full role card: the one act">Apply for this role</Trans>
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
@@ -291,6 +296,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           </p>
         );
       })()}
+      {!noAct && (
+        <Suspense fallback={null}>
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} />
+        </Suspense>
+      )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
       {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote">{reward.footnote}</p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else

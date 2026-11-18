@@ -40,6 +40,32 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.22 (2026-11-18)
+
+### What changed for your village
+
+- **A role card that can be shared has a commitment slider, and the pay band follows it.** On a role that one person can take at less than full time, the card's Rewards piece now has a "Your commitment" slider in the same steps the application accepts. Below 100%, while the village shows pay ranges, the band under the listed price is worked at that commitment, for example "Band at 60%: $5,773 to $7,217 a month in total comp". A role that takes a whole person shows no slider, only the split below.
+- **A person can change the cash, equity and credits split and send it with their application.** Under the slider, the card shows how the total is split into the village's own shares (the role's split, else the village's). Each share has a percent field and, when the reader may see the price, an amount field: typing a percent updates its amount, typing an amount updates its percent, and the other shares move in proportion so the split still adds up to 100% and to the total. "Use the village's split" puts it back. The card says plainly when a total sits above or below the band. The Apply link carries the commitment and a changed split into the application's price step, which has the same control, and Review & submit shows "Your split". The server checks the split against the role's shares and price and saves it with the application, together with the split the village offered at that commitment, worked by the server and never taken from the form. No 120% cap amount is shown anywhere in this; the server still refuses a price over the cap.
+- **The people deciding see the offered split beside the proposed one.** An application that carries a split shows a "Cash, equity and credits" table with each share as offered and as proposed, percent and amount. A split the applicant changed carries a "Split changed by applicant" badge and its changed shares are marked; an untouched split shows no badge. Nothing ranks or judges the change, and the contract still sets the pay.
+- **The village connector says plainly what it never sends.** Its instructions to an agent, the sign-in page a member sees when connecting one, and its documentation now say it never sends money or recaps, approves, issues or pays anything. Before, they said it never sends anything, which stopped being true once a handed-on task started emailing the role's holders. Nothing the connector can do changed.
+
+### What you must do
+
+Nothing. The slider and the split appear on role cards by themselves, using each role's split in force and the village's pay range setting. A village that hides pay ranges still hides the band.
+
+### Does it touch your data
+
+No migration. An application sent on 1.3.22 with a split keeps it as one more key, `paySplit`, inside the application's existing stored body, beside the other answers. Anonymising an application removes it, as it removes the price the person asked for.
+
+Going back to 1.3.21 is safe. 1.3.21 reads each application's body through a list of the keys it knows and leaves the rest alone, so an application carrying a split opens, is decided and is invited as before, and its split stays stored without being shown. 1.3.21 changes stored applications only one named key at a time, so it never writes the split away. One difference while on 1.3.21: anonymising an application does not remove its split (shares and amounts, with no name or address), and a later 1.3.22 does not go back over an application already anonymised.
+
+### Merged pull requests
+
+- #1441 Role card commitment slider and an editable cash, equity and credits split that carries into the application
+- #1442 Connector says plainly what it never sends
+
+---
+
 ## 1.3.21 (2026-11-17)
 
 ### What changed for your village
