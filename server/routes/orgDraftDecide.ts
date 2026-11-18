@@ -212,11 +212,14 @@ export function register(app: Express, deps: Deps): void {
     });
   });
 
+  /** The per-person limiter on deciding a draft. A person who is a village admin skips it; an agent never does (server/lib/adminUncapped.ts). */
+  const askedTooOften = async (req: any, bucket: string, userId: string): Promise<boolean> =>
+    !(await adminUncapped(req, userId, isAdmin, getPool())) && (await overLimit(`${bucket}:${userId}`, ASKS_PER_WINDOW, ASK_WINDOW_MS));
+
   app.post("/api/org/drafts/:id/publish-by-power", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to publish a draft." });
-    // A person who is a village admin is not throttled here; an agent always is (server/lib/adminUncapped.ts).
-    if (!(await adminUncapped(req, String(user.id), isAdmin, getPool())) && (await overLimit(`draft-decide:${String(user.id)}`, ASKS_PER_WINDOW, ASK_WINDOW_MS))) {
+    if (await askedTooOften(req, `draft-decide`, String(user.id))) {
       return res.status(429).json({ error: "too_many_asks", message: "That is a lot in a few minutes. Wait a little and try again." });
     }
     if (!(await holderMayPublish(req, res, { authedUser, guardCapability, capabilityCtx, liveHoldersOf }))) return;
@@ -241,8 +244,7 @@ export function register(app: Express, deps: Deps): void {
   app.post("/api/org/arrangements", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in to arrange the circles." });
-    // A person who is a village admin is not throttled here; an agent always is (server/lib/adminUncapped.ts).
-    if (!(await adminUncapped(req, String(user.id), isAdmin, getPool())) && (await overLimit(`arrange:${String(user.id)}`, ASKS_PER_WINDOW, ASK_WINDOW_MS))) {
+    if (await askedTooOften(req, `arrange`, String(user.id))) {
       return res.status(429).json({ error: "too_many_asks", message: "That is a lot in a few minutes. Wait a little and try again." });
     }
     if (!(await holderMayPublish(req, res, { authedUser, guardCapability, capabilityCtx, liveHoldersOf }))) return;
