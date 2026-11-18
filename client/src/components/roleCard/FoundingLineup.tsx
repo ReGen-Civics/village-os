@@ -20,19 +20,22 @@
  * implies hiring or building a circle: "we're aiming to stay lean with the roles and lean more into
  * quests and other ways to co-create".
  */
-import { ArrowRight, LayoutList, Sprout, Target, UserRound } from "lucide-react";
+import { lazy, Suspense, type ReactNode } from "react";
+import { ArrowRight, LayoutList, Sprout, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
 import { fillLine } from "./cardWordsT";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { domainsHeld } from "@shared/rolePieces";
-import { roleWithHolders } from "@shared/roleHolderLabel";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import type { FoundingRole } from "./FoundingTeam";
 
 export type LineupView = "sheet" | "formation";
+
+// The roster sits below the open roles, so its cards load after the page's first view (route-first-view.json).
+const RosterList = lazy(() => import("./RosterCards"));
 
 /** A role of the founding circle that someone holds. */
 export interface FilledRole {
@@ -89,6 +92,8 @@ export interface FoundingLineupProps {
   shown: string | null;
   onOpen: (roleId: string) => void;
   cardId: string;
+  /** The org chart beside the roster (Rye, 16 Nov 2026): a picture in picture of /circles, one link into it. */
+  orgPreview?: ReactNode;
 }
 
 /**
@@ -112,9 +117,8 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
   );
 }
 
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null }: FoundingLineupProps) {
   const { t } = useLingui();
-  const filledLabel = (f: FilledRole) => (f.holders.length ? roleWithHolders(f.name, f.holders) : f.name);
   const circle = roles[0]?.circleName ?? null;
 
   const toggle = (
@@ -205,19 +209,13 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
           {filled.length > 0 && (
             <>
               <p className="mt-3 text-xs font-bold uppercase tracking-widest text-notice">{t({ message: "Holding it now", context: "team sheet group: the roles held now" })}</p>
-              <ul className="grid gap-2 sm:grid-cols-2" data-testid="filled-roles">
-                {filled.map((f) => (
-                  <li key={f.id} className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground" aria-hidden="true">
-                      <UserRound className="size-5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold leading-snug text-card-foreground">{filledLabel(f)}</span>
-                      <span className="text-xs text-muted-foreground">{t({ message: "Filled", context: "team sheet: someone holds this role" })}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className={`grid gap-4 ${orgPreview ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start" : ""}`}>
+                {/* First in the page order, so a phone meets the door to the org chart above the cards. */}
+                {orgPreview && <div className="lg:sticky lg:top-24 lg:col-start-2 lg:row-start-1" data-org-preview="">{orgPreview}</div>}
+                <Suspense fallback={null}>
+                  <RosterList filled={filled} team={circle} variant="sheet" className={`grid gap-3 sm:grid-cols-2 ${orgPreview ? "lg:col-start-1 lg:row-start-1 xl:grid-cols-3" : "lg:grid-cols-3"}`} />
+                </Suspense>
+              </div>
             </>
           )}
         </div>
@@ -263,17 +261,10 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               <p className="relative mb-5 mt-10 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
                 {t({ message: "Holding it now", context: "formation: the roles held now" })}
               </p>
-              <ul className="relative grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5">
-                {filled.map((f) => (
-                  <li key={f.id} className="flex w-full max-w-40 flex-col items-center gap-2 text-center" data-filled-role={f.id}>
-                    <span className="relative grid size-16 place-items-center rounded-full border-2 border-muted-foreground/60 bg-card text-muted-foreground sm:size-20">
-                      <UserRound className="size-7" aria-hidden="true" />
-                      <span className="absolute -bottom-2 rounded-full border border-border bg-background px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest">{t({ message: "Filled", context: "formation: someone holds this role" })}</span>
-                    </span>
-                    <span className="mt-2 text-sm font-semibold leading-snug text-card-foreground">{filledLabel(f)}</span>
-                  </li>
-                ))}
-              </ul>
+              <Suspense fallback={null}>
+                <RosterList filled={filled} team={circle} variant="formation" className="relative grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-x-5" />
+              </Suspense>
+              {orgPreview && <div className="relative mx-auto mt-8 w-full max-w-sm lg:max-w-xs" data-org-preview="">{orgPreview}</div>}
             </>
           )}
         </div>
