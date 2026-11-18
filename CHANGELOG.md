@@ -40,6 +40,31 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.26 (2026-11-18)
+
+### What changed for your village
+
+- **The moon tip opens on a phone tap.** On a phone, tapping a dotted "moon" did nothing, and a click drew a tip nobody could see. A tap now opens the tip and a second tap closes it. A tap or click elsewhere, a scroll or Escape also closes it. The tip now sits outside the card, so a dialog or a card cannot hide or clip it. On a phone it shows as a sheet along the foot of the screen; from 640px wide it sits over the word, or under it near the top of the page.
+- **The phone's "How compensation is shaped" block says what the side panel says.** It shows the applicant's own split for each role, or the village's split in one line when there is none, and the one-line footnote about pay at risk. The village's longer pay note (`org.pay_shape_note`) and the old "Of this, ... we settle the split together" sentence no longer show on this step.
+- **Choosing a role says moon.** The /roles/select page says "each moon and this season" and "Each moon you share what you'll bring the next moon", with the tip on "moon".
+- **Journey steps wear the tip.** On the steward journey, a step or extra description that says moon now carries the tip on the word. Those descriptions are the village's own words, so the tip follows whatever the village wrote.
+
+### What you must do
+
+Nothing. Everything applies by itself.
+
+### Does it touch your data
+
+No. There are no migrations in this release and no stored data changes. `org.pay_shape_note` stays where it is; this step just no longer shows it.
+
+Going back to 1.3.25 is safe. The database is the same, and 1.3.25 runs on it unchanged. You would only lose the changes above.
+
+### Merged pull requests
+
+- #1463 Moon word opens on a phone tap; phone terms say the rail's split; moon on the explainer pages
+
+---
+
 ## 1.3.25 (2026-11-18)
 
 ### What changed for your village
