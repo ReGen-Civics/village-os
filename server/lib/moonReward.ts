@@ -34,12 +34,14 @@
  * accepted proposal's pay is (server/lib/departed.ts).
  */
 import type { Pool, PoolConnection } from "mysql2/promise";
-import type { InvoiceLine } from "../../shared/moonRecap";
+import { NOTICE_WORDS, noCashInvoicePaidFrom, type InvoiceLine } from "../../shared/moonRecap";
 import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
 import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, keys, toLedgerUnits, villageId, type OwedPosting } from "./economy";
 import { memberAccount } from "./ledger";
-import { owedClaimIdsOfSource, recordOwed, settleOwedForClaim, settleOwedPosting, type SettleOutcome } from "../repos/questOwedPostings";
+import { owedClaimIdsOfSource, owedPostingsFor, recordOwed, settleOwedForClaim, settleOwedPosting, type SettleOutcome } from "../repos/questOwedPostings";
+import { approvedInvoices, insertReviewEvent, invoicesByIds, markInvoicePaid } from "../repos/moonRecaps";
+import type { Notice } from "./moonReview";
 import { roleCycleLegsForApplication } from "../repos/tokenLedger";
 import { recordRewardReviews, type RewardReviewInsert } from "../repos/moonRewardReviews";
 import { sectionsForMany } from "./roleCardSections";
@@ -209,5 +211,54 @@ export async function settleOwedLineRewards(pool: Pool): Promise<SettleOutcome[]
   const out: SettleOutcome[] = [];
   for (const claimId of await owedClaimIdsOfSource(pool, MOON_REWARD_SOURCE)) out.push(...(await settleOwedForClaim(pool, claimId)));
   for (const o of out) if (o.outcome === "still_owed" || o.outcome === "refused") console.error(`[moon] ${o.key}: ${o.outcome}, ${o.message}`);
+  // An invoice with no cash share is Paid once its token shares have posted (`settleNoCashInvoices`).
+  if (out.some((o) => o.outcome === "posted" || o.outcome === "duplicate")) await settleNoCashInvoices(pool, null, {});
   return out;
+}
+
+/**
+ * AN APPROVED INVOICE WITH NO CASH TO SEND BECOMES PAID (pre-launch handover,
+ * pay defect 1). An invoice whose every pay line is 0% cash wrote no cash owed
+ * row, so the transfers door (`settlePaidInvoices`, server/lib/moonReview.ts)
+ * never reached it and it read Approved forever. The rule is
+ * `noCashInvoicePaidFrom` (shared/moonRecap.ts): Paid once every token share
+ * the invoice owes has posted, and at once when it owes none.
+ *
+ * Nothing here moves a token. The shares post through the owed postings
+ * (`settleOwedPosting`, the ledger's own door); this only reads their state
+ * and flips the invoice, under `status = 'approved'`, so a second call is a
+ * no-op. Called after the Finance approval, after a Treasurer approves token
+ * lines, and after the launch sweep and its hourly retry. `ids` null reads
+ * every approved invoice. Answers the invoices it marked Paid.
+ */
+export async function settleNoCashInvoices(
+  pool: Pool,
+  ids: readonly string[] | null,
+  deps: { notify?: (n: Notice) => Promise<unknown> },
+  now: () => Date = () => new Date(),
+): Promise<string[]> {
+  const invoices = ids === null ? await approvedInvoices(pool) : (await invoicesByIds(pool, ids)).filter((i) => i.status === "approved");
+  const paid: string[] = [];
+  for (const inv of invoices) {
+    let lines: InvoiceLine[];
+    try {
+      const v = JSON.parse(inv.linesJson);
+      lines = Array.isArray(v) ? (v as InvoiceLine[]) : [];
+    } catch {
+      continue;
+    }
+    if (lines.length === 0 || lines.some((l) => l.cashOwedId)) continue;
+    const shares = (await owedPostingsFor(pool, lineRewardClaimId(inv.id))).map((p) => ({
+      state: p.state,
+      settledAt: p.settledAt == null ? null : new Date(p.settledAt * 1000).toISOString(),
+    }));
+    const read = noCashInvoicePaidFrom(lines, shares);
+    if (!read.paid) continue;
+    const paidOn = read.paidOn ?? now().toISOString().slice(0, 10);
+    if ((await markInvoicePaid(pool, inv.id, { paidOn, paidAmountMinor: 0, paidCurrency: inv.currency, feesMinor: null, fundsSource: null })) !== 1) continue;
+    await insertReviewEvent(pool, { recapId: inv.recapId, invoiceId: inv.id, userId: inv.userId, kind: "paid", actorUserId: null, actorRole: null, amountMinor: 0, currency: inv.currency, hash: null, note: null });
+    await deps.notify?.({ userId: inv.userId, type: "moon_review", title: NOTICE_WORDS.paid(paidOn), link: "/profile#my-moon", dedupeKey: `moon:paid:${inv.id}:${inv.userId}` }).catch(() => undefined);
+    paid.push(inv.id);
+  }
+  return paid;
 }

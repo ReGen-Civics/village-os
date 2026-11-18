@@ -52,7 +52,9 @@ launch, `members` takes a `module.switch` holder or a vote.
    who voids and reissues their own invoice and sends it again with its new number.
 7. Finance pays outside the platform.
 8. Finance records the transfer on the existing `POST /api/cash-owed/transfers`. When every row an invoice wrote is
-   paid, the invoice reads Paid and the member reads "Your pay is sent on" the date.
+   paid, the invoice reads Paid and the member reads "Your pay is sent on" the date. An invoice with no cash share
+   (every pay line all Earned Equity and Credits) writes no row, so it reads Paid once each token share it owes has
+   posted through the ledger, and at approval when it owes none (`noCashInvoicePaidFrom`, `settleNoCashInvoices`).
 
 ## The rules the contract holds
 
