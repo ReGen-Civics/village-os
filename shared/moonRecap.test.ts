@@ -412,6 +412,27 @@ describe("statuses, one set of words", () => {
     expect(invoicePaidFrom([{ state: "paid", paidAt: "2026-11-20T10:00:00Z" }, { state: "claimed", paidAt: null }]).paid).toBe(false);
     expect(invoicePaidFrom([{ state: "paid", paidAt: "2026-11-20T10:00:00Z" }, { state: "paid", paidAt: "2026-11-21T10:00:00Z" }])).toEqual({ paid: true, paidOn: "2026-11-21" });
   });
+  it("an invoice with no cash share is Paid once every token share has posted, and only then (pay defect 1)", () => {
+    const reward = (cashMinor: number) => ({ from: "card" as const, totalMinor: 650_000, cashMinor, equityUnits: (650_000 - cashMinor) / 100, creditsUnits: 0, tokens: { equity: "eq", credits: "cr" }, equityHeld: false, restToCreditsPct: 0 });
+    const line = (over: Partial<InvoiceLine> = {}): InvoiceLine => ({
+      key: "app-1", kind: "pay", applicationId: "app-1", firstSeatId: "s-1", roleIds: ["r-1"], roleNames: ["Water keeper"], daysInMoon: 29, daysHeld: 29,
+      approvedItemIds: [], cashOwedId: null, held: false, basis: "per_moon", listedAs: null, currency: "USD", termsMinor: 650_000, per: "moon", range: null,
+      proposedMinor: null, finalMinor: null, amountMinor: 650_000, basisLine: "", reward: reward(0), ...over,
+    }) as InvoiceLine;
+    const posted = (at: string) => ({ state: "posted", settledAt: at });
+    const pd = contract.noCashInvoicePaidFrom;
+    // All shares posted: Paid on the last one's day.
+    expect(pd([line()], [posted("2026-11-20T10:00:00Z"), posted("2026-11-21T09:00:00Z")])).toEqual({ paid: true, paidOn: "2026-11-21" });
+    // Nothing owed at all: Paid now, on the caller's day.
+    expect(pd([line({ amountMinor: null, currency: null, reward: null })], [])).toEqual({ paid: true, paidOn: null });
+    // A share awaiting review, owed, or refused keeps it Approved.
+    for (const state of ["awaiting", "owed", "refused"]) expect(pd([line()], [posted("2026-11-20T10:00:00Z"), { state, settledAt: null }]).paid).toBe(false);
+    // A cash share, a cash owed row, or a held line belongs elsewhere.
+    expect(pd([line({ reward: reward(390_000) })], []).paid).toBe(false);
+    expect(pd([line({ reward: null })], []).paid).toBe(false);
+    expect(pd([line({ cashOwedId: "cash-1" })], []).paid).toBe(false);
+    expect(pd([line({ held: true })], []).paid).toBe(false);
+  });
 });
 
 describe("the score (decision 20, check 20)", () => {

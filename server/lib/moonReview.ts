@@ -55,7 +55,7 @@ import { cashOwedRowsByIds } from "../repos/cashOwed";
 import { memberUserIdRows, personRow, memberNoRows } from "../repos/liveSessions";
 import { useRow } from "../repos/sessionTemplates";
 import { oweApprovedRoleCash } from "./cashOwed";
-import { recordLineRewards, settleLineRewards, shareLines } from "./moonReward";
+import { recordLineRewards, settleLineRewards, settleNoCashInvoices, shareLines } from "./moonReward";
 import {
   ACCOMPLISHED_WORDS, ADJUST_AMOUNT_MAX, ADJUST_REFUSALS, adjustableLine, adjustsFrom, adjustUnconfirmed, confirmAdjustLines, parseAdjustInput, parseAdjustReply,
 } from "../../shared/accomplishedReview";
@@ -595,6 +595,8 @@ async function approveOne(
   // Then posted, each in its own transaction; before the launch vote they stay owed and are paid later.
   await settleLineRewards(pool, invoice.id);
   await tell(deps, { userId: recap.userId, title: NOTICE_WORDS.approved, kind: "invoice_approved", recapId: recap.id, round: recap.round, actorUserId: actorId });
+  // An invoice with no cash share has nothing for the transfers door: it is Paid once its token shares post, at once when it owes none.
+  await settleNoCashInvoices(pool, [invoice.id], deps);
   if (decision.selfApproved) await tellReviewers(deps, recap, actorId);
   return null;
 }
