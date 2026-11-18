@@ -295,8 +295,16 @@ export function CardSideBySide({
     return <p className="text-sm text-muted-foreground">{t`This proposal was sent before applicants wrote their own role card, so there is nothing to set beside the open card.`}</p>;
   }
   const gaps: string[] = [];
+  // The goals for the first moon are the proposal's and count for every role it names (the lead, 18 Nov 2026):
+  // a role with none of its own reads the goals written once, and is never marked as having none. A card written
+  // with goals under each role (before the ruling) keeps each role's own.
+  const shared = card.roles.flatMap((x) => x.firstMoon);
+  const roleOf = (id: string) => {
+    const own = card.roles.find((x) => x.roleId === id);
+    return { moves: own?.moves ?? [], firstMoon: own?.firstMoon.length ? own.firstMoon : shared };
+  };
   for (const r of roles) {
-    const mine = card.roles.find((x) => x.roleId === r.id);
+    const mine = roleOf(r.id);
     const asks = r.accountabilities ?? [];
     const roleName = r.name ?? r.id;
     // A founding application sends its value items and no picked goals (`moves` empty): that is not a gap.
@@ -319,7 +327,7 @@ export function CardSideBySide({
   return (
     <div className="grid gap-4">
       {roles.map((r) => {
-        const mine = card.roles.find((x) => x.roleId === r.id) ?? { moves: [], firstMoon: [] };
+        const mine = roleOf(r.id);
         const asks = r.accountabilities ?? [];
         const roleName = r.name ?? r.id;
         const asked = r.commitmentPct ?? null;

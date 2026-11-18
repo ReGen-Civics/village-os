@@ -110,8 +110,8 @@ import { PROPOSAL_FILE_ID, PROPOSAL_FILE_TYPES, proposalFileHref } from "../../s
 import { readProposalFile, readVoiceNote } from "../lib/proposalFiles";
 import { VOICE_NOTE_ID, VOICE_NOTE_TYPES, clipFieldLabel, voiceNoteHref } from "../../shared/voiceNotes";
 import { seatsWithCircles } from "../repos/seatApplications";
-import { baseOf, deciderOffer, loadSubject, saveOffer } from "../lib/counterOffer";
-import { OFFER_WORDS, openTalks, OFFER_LABELS } from "../../shared/counterOffer";
+import { baseOf, deciderOffer, loadSubject, openTalkLabels, saveOffer } from "../lib/counterOffer";
+import { OFFER_WORDS } from "../../shared/counterOffer";
 import { AGENT_PROPOSAL_WORDS, scopeWords } from "../../shared/agentHolders";
 import { seatAdoptedAgent } from "../lib/agentRoleProposals";
 import { agentsWithReach, isAgentAccount } from "../repos/agentAccounts";
@@ -585,7 +585,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (p.body.agent) return res.status(409).json({ error: "no_terms_for_an_agent", message: DECIDE_WORDS.noTermsForAnAgent });
     const body = req.body && typeof req.body === "object" ? req.body : {};
     const out = await saveOffer(getPool(), p.id, {
-      edit: { words: body.words && typeof body.words === "object" && !Array.isArray(body.words) ? body.words : undefined, commitmentPct: body.commitmentPct },
+      edit: { words: body.words && typeof body.words === "object" && !Array.isArray(body.words) ? body.words : undefined, commitmentPct: body.commitmentPct, roles: body.roles },
       expectedRevision: body.expectedRevision,
       by: { id: actorId, name: String(viewer.name ?? "").trim() || "A holder" },
       now: now(),
@@ -654,9 +654,10 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // An agent has no terms (audit B8a), so nothing about terms holds its adoption back.
     if (!p.body.agent) {
       const subject = await loadSubject(pool, p.id);
-      const talks = subject ? openTalks({ answers: subject.answers, co: subject.co }) : [];
+      // The proposal's settings, and each role's countered commitment and price (the lead, 18 Nov 2026).
+      const talks = subject ? openTalkLabels(subject) : [];
       if (talks.length && req.body?.confirmOpenTalks !== true) {
-        return res.status(409).json({ error: "terms_open", message: OFFER_WORDS.stillTalking(talks.map((k) => OFFER_LABELS[k])), settings: talks.map((k) => OFFER_LABELS[k]) });
+        return res.status(409).json({ error: "terms_open", message: OFFER_WORDS.stillTalking(talks), settings: talks });
       }
     }
     // The moon this was proposed for has ended before the decision: the holder may adopt for the moon running now (Rye, role journey 4a).

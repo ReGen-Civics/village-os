@@ -12,6 +12,7 @@ import { currentCommitment, type CounterOffer } from "../../shared/counterOffer"
 import type { PayCeiling } from "../../shared/roleCardSections";
 import type { ProposalSplit } from "../../shared/proposalSplit";
 import { roleTermsOf, termsPerRole, type OpenProposalRole } from "../../shared/openProposals";
+import { currentRoleValue, rolePriceCountered } from "../../shared/roleCounterOffer";
 import { sectionsForMany } from "./roleCardSections";
 import { roleFillsFor } from "./roleFill";
 
@@ -31,6 +32,8 @@ export interface CommitmentReviewRole {
    * an older one naming several roles with one commitment: the top-level figures are then the whole story.
    */
   own?: { pct: number | null; offeredPct?: number | null; ask: PayAsk | null; split: ProposalSplit | null };
+  /** The price countered for this role, in the full ceiling's currency and period, when one was (the lead, 18 Nov 2026). */
+  counteredPrice?: number;
 }
 
 export interface CommitmentReview {
@@ -80,7 +83,11 @@ export async function commitmentReviewFor(
       const heldByOthers = (others ?? fills).get(r.id)?.heldPct ?? 0;
       // With a commitment for each role, each role is worked at its own. The counter-offer's commitment is the first role's.
       const t = terms[i];
-      const ownPct = perRole && i > 0 ? (t?.commitmentPct ?? null) : atPct;
+      const rc = body.counterOffer?.roles ?? null;
+      // Each role after the first is countered on its own (the lead, 18 Nov 2026).
+      const roleAt = perRole && i > 0 ? currentRoleValue(rc, r.id, "commitment", t?.commitmentPct ?? null) : null;
+      const ownPct = perRole && i > 0 ? roleAt : atPct;
+      const countered = rolePriceCountered(rc, r.id);
       return {
         roleId: r.id,
         full,
@@ -89,8 +96,9 @@ export async function commitmentReviewFor(
         targetPct: fill?.targetPct ?? 100,
         withThisPct: heldByOthers + (ownPct ?? 0),
         ...(perRole
-          ? { own: { pct: t?.commitmentPct ?? null, ...(i === 0 && atPct !== pct ? { offeredPct: atPct } : {}), ask: t?.payAsk ?? null, split: t?.paySplit ?? null } }
+          ? { own: { pct: t?.commitmentPct ?? null, ...(i === 0 && atPct !== pct ? { offeredPct: atPct } : {}), ...(i > 0 && roleAt !== (t?.commitmentPct ?? null) ? { offeredPct: roleAt } : {}), ask: t?.payAsk ?? null, split: t?.paySplit ?? null } }
           : {}),
+        ...(countered !== null ? { counteredPrice: countered } : {}),
       };
     }),
   };

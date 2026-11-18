@@ -260,6 +260,9 @@ export default function ProposeARole() {
       if (d.items.length) setItems(d.items);
       setMarks(d.marks);
       setTermsStep({ answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk, paySplit: splitOfDraft(d.terms.paySplit) });
+      // The roles added before the reload, each on its own terms, then any more the link names (the lead, 17 Nov 2026).
+      const kept = (own?.extras ?? []).filter((x) => x.roleId !== roleId && form.roles.some((r) => r.id === x.roleId)).map((x) => ({ roleId: x.roleId, terms: { answers: {}, commitmentPct: x.terms.commitmentPct, payAsk: x.terms.payAsk, paySplit: splitOfDraft(x.terms.paySplit) } }));
+      if (kept.length) setExtras((now) => [...kept, ...now.filter((x) => !kept.some((k) => k.roleId === x.roleId))].slice(0, OPEN_APPLY_ROLES - 1));
       setRampUp(d.rampUp); setPieceSuggestions(d.pieceSuggestions);
       setPractical((p) => ({ timeZone: d.practical.timeZone || p.timeZone, windows: d.practical.windows, earliestStart: d.practical.earliestStart }));
       setStone(d.step);
@@ -275,9 +278,9 @@ export default function ProposeARole() {
     writeStoredJson(
       "local",
       draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions }, new Date()),
+      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date()),
     );
-  }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions]);
+  }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions, extras]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
   useEffect(() => {

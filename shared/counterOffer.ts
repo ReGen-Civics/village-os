@@ -18,6 +18,7 @@
  * Commitment is a planning signal and nothing here, or anywhere that reads it,
  * computes pay (`shared/termsWords.boundary.test.ts`).
  */
+import { roleCounterOf, type RoleCounter } from "./roleCounterOffer";
 import { isCommitment, TERM_KEYS, TERM_LABELS, TERM_NOTE_MAX, type TermAnswers, type TermKey, type TermsWords } from "./termsWords";
 
 export type OfferKey = TermKey | "commitment";
@@ -53,6 +54,8 @@ export interface OfferReply {
 export interface CounterOffer {
   revisions: OfferRevision[];
   replies: Partial<Record<OfferKey, OfferReply>>;
+  /** Each role's countered commitment and price (the lead, 18 Nov 2026, shared/roleCounterOffer.ts). Absent: none countered. */
+  roles?: RoleCounter;
 }
 
 const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -63,6 +66,7 @@ const strOrNull = (v: unknown, max: number): string | null => (typeof v === "str
 /** A stored counter-offer, tolerant, never throws; null when there is none. */
 export function counterOfferOf(raw: unknown): CounterOffer | null {
   if (!isObj(raw) || !Array.isArray(raw.revisions)) return null;
+  const roles = roleCounterOf(raw.roles);
   const revisions: OfferRevision[] = [];
   for (const r of raw.revisions.slice(0, OFFER_REVISIONS_MAX)) {
     if (!isObj(r) || !Array.isArray(r.changes)) continue;
@@ -73,7 +77,8 @@ export function counterOfferOf(raw: unknown): CounterOffer | null {
     if (!changes.length) continue;
     revisions.push({ n: revisions.length + 1, at: str(r.at, 40), byId: str(r.byId, 64), by: str(r.by, 120), changes });
   }
-  if (!revisions.length) return null;
+  // Only a role's commitment or price countered: the proposal's own revisions are empty, and the roles' are kept.
+  if (!revisions.length) return roles ? { revisions: [], replies: {}, roles } : null;
   const replies: CounterOffer["replies"] = {};
   if (isObj(raw.replies)) {
     for (const k of OFFER_KEYS) {
@@ -83,7 +88,12 @@ export function counterOfferOf(raw: unknown): CounterOffer | null {
       }
     }
   }
-  return { revisions, replies };
+  return { revisions, replies, ...(roles ? { roles } : {}) };
+}
+
+/** The version a save is checked against: every revision, the proposal's and each role's, so two editors never cross. */
+export function offerVersion(co: CounterOffer | null): number {
+  return (co?.revisions.length ?? 0) + (co?.roles?.revisions.length ?? 0);
 }
 
 /** The revision number each setting was last changed in. */
@@ -164,7 +174,7 @@ export function editOffer(p: {
   }
   if (!changes.length) return { ok: false, error: OFFER_WORDS.nothingChanged };
   const revision: OfferRevision = { n: co.revisions.length + 1, at: p.now.toISOString(), byId: p.by.id, by: p.by.name.slice(0, 120), changes };
-  return { ok: true, co: { revisions: [...co.revisions, revision], replies: co.replies }, revision };
+  return { ok: true, co: { revisions: [...co.revisions, revision], replies: co.replies, ...(co.roles ? { roles: co.roles } : {}) }, revision };
 }
 
 export type OfferState = "accept" | "talk" | "waiting";
@@ -246,7 +256,7 @@ export function replyToOffer(co: CounterOffer | null, raw: unknown, now: Date): 
     any = true;
   }
   if (!any) return { ok: false, error: OFFER_WORDS.nothingToAnswer };
-  return { ok: true, co: { revisions: co.revisions, replies } };
+  return { ok: true, co: { revisions: co.revisions, replies, ...(co.roles ? { roles: co.roles } : {}) } };
 }
 
 /** The role's suggestion for the whole proposal: for each setting, the first picked role that wrote one. */

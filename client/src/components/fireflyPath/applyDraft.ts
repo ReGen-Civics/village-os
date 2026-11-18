@@ -50,7 +50,21 @@ export interface ApplyDraft {
   practical: { timeZone: string; windows: string[]; earliestStart: string };
   /** What they would make of the role card, piece by piece (shared/pieceSuggestions.ts). Their own words, so it waits here with the rest. */
   pieceSuggestions: PieceSuggestion[];
+  /**
+   * The roles added after the first, each with its own commitment, price ask and split percents (the lead, 17 Nov
+   * 2026). Kept under the first role's key, so a reload comes back with every role. Absent on a draft saved before.
+   */
+  extras?: DraftExtra[];
 }
+
+/** One role added to the application, as the draft keeps it. */
+export interface DraftExtra {
+  roleId: string;
+  terms: ApplyDraft["terms"];
+}
+
+/** The most roles one application adds after the first (shared/openProposals.ts OPEN_APPLY_ROLES, less the first). */
+const EXTRAS_MAX = 2;
 
 const str = (v: unknown, max = 4000): string => (typeof v === "string" ? v.slice(0, max) : "");
 const strs = (v: unknown, n: number, max = 300): string[] => (Array.isArray(v) ? v.filter((x) => typeof x === "string").map((x) => x.slice(0, max)).slice(0, n) : []);
@@ -75,11 +89,41 @@ export function toDraft(d: Omit<ApplyDraft, "savedAt">, now: Date): ApplyDraft {
     aim: d.aim,
     items: d.items.map((g) => ({ ...g })),
     marks: { ...(d.marks.aim ? { aim: d.marks.aim } : {}), ...(d.marks.story ? { story: d.marks.story } : {}) },
-    terms: { answers: d.terms.answers, commitmentPct: d.terms.commitmentPct, payAsk: d.terms.payAsk ?? null, ...(d.terms.paySplit?.length ? { paySplit: d.terms.paySplit.map((x) => ({ label: x.label, pct: x.pct })) } : {}) },
+    terms: termsToDraft(d.terms),
     rampUp: d.rampUp,
     practical: { timeZone: d.practical.timeZone, windows: [...d.practical.windows], earliestStart: d.practical.earliestStart },
     pieceSuggestions: d.pieceSuggestions.map((x) => ({ ...x })),
+    ...(d.extras?.length ? { extras: d.extras.slice(0, EXTRAS_MAX).map((x) => ({ roleId: x.roleId, terms: termsToDraft(x.terms) })) } : {}),
   };
+}
+
+/** One role's terms as written: the answers, the commitment, the ask and the split's percents, copied field by field. */
+function termsToDraft(t: ApplyDraft["terms"]): ApplyDraft["terms"] {
+  return { answers: t.answers, commitmentPct: t.commitmentPct, payAsk: t.payAsk ?? null, ...(t.paySplit?.length ? { paySplit: t.paySplit.map((x) => ({ label: x.label, pct: x.pct })) } : {}) };
+}
+
+/** One role's terms read back, whatever was stored. */
+function termsFromDraft(raw: any): ApplyDraft["terms"] {
+  const pct = raw?.commitmentPct;
+  return {
+    answers: raw?.answers && typeof raw.answers === "object" && !Array.isArray(raw.answers) ? raw.answers : {},
+    commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null,
+    payAsk: payAskOf(raw?.payAsk),
+    ...(splitPercentsOf(raw?.paySplit) ? { paySplit: splitPercentsOf(raw?.paySplit) } : {}),
+  };
+}
+
+/** The added roles read back: each with a role id, at most EXTRAS_MAX, none twice. */
+function extrasOf(raw: unknown): DraftExtra[] {
+  if (!Array.isArray(raw)) return [];
+  const out: DraftExtra[] = [];
+  for (const x of raw) {
+    const roleId = x && typeof x === "object" ? str((x as any).roleId, 128).trim() : "";
+    if (!roleId || out.some((o) => o.roleId === roleId)) continue;
+    out.push({ roleId, terms: termsFromDraft((x as any).terms) });
+    if (out.length >= EXTRAS_MAX) break;
+  }
+  return out;
 }
 
 /** A stored draft read back, or null when there is none, it is unreadable, or it is older than DRAFT_DAYS. Never throws. */
@@ -95,7 +139,7 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
         .slice(0, 8)
         .map((g: any) => ({ title: str(g.title, 160), doneWhen: str(g.doneWhen, 200), moves: "", serves: str(g.serves, 64), date: "", roleId: str(g.roleId, 128), ...(g.seraDraft === true ? { seraDraft: true } : {}) }))
     : [];
-  const pct = o.terms?.commitmentPct;
+  const extras = extrasOf(o.extras);
   return {
     savedAt: new Date(at).toISOString(),
     step: step(o.step),
@@ -110,10 +154,11 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     aim: str(o.aim, 300),
     items,
     marks: { ...(str(o.marks?.aim, 300) ? { aim: str(o.marks.aim, 300) } : {}), ...(str(o.marks?.story, 300) ? { story: str(o.marks.story, 300) } : {}) },
-    terms: { answers: o.terms?.answers && typeof o.terms.answers === "object" && !Array.isArray(o.terms.answers) ? o.terms.answers : {}, commitmentPct: typeof pct === "number" && Number.isInteger(pct) && pct >= 0 && pct <= 100 ? pct : null, payAsk: payAskOf(o.terms?.payAsk), ...(splitPercentsOf(o.terms?.paySplit) ? { paySplit: splitPercentsOf(o.terms?.paySplit) } : {}) },
+    terms: termsFromDraft(o.terms),
     rampUp: o.rampUp === true,
     practical: { timeZone: str(o.practical?.timeZone, 64), windows: strs(o.practical?.windows, 6, 40), earliestStart: str(o.practical?.earliestStart, 10) },
     pieceSuggestions: pieceSuggestionsOf(o.pieceSuggestions),
+    ...(extras.length ? { extras } : {}),
   };
 }
 

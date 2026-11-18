@@ -38,7 +38,9 @@ export default function ContractPrice({ data, role }: { data: ContractPriceData 
   const from =
     data.source === "ask"
       ? t({ message: `From their price ask, at ${pct}% commitment.`, context: "open proposal: where the contract's pay comes from" })
-      : data.source === "negotiate"
+      : data.source === "countered"
+        ? t({ message: `From our counter-offer on the price, at ${pct}% commitment.`, context: "open proposal: where the contract's pay comes from" })
+        : data.source === "negotiate"
         ? t({ message: `They chose to negotiate on the first call. This is the suggested price at ${pct}% commitment until a price is agreed.`, context: "open proposal: where the contract's pay comes from" })
         : t({ message: `The suggested price: the listed price at ${pct}% commitment.`, context: "open proposal: where the contract's pay comes from" });
   return (
