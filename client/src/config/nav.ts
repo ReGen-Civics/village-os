@@ -349,6 +349,8 @@ export const ACCOUNT_MENU: readonly NavLink[] = [
   // door (config/mobileNav.ts).
   { href: TASK_BOARD_PATH, label: TASK_COPY.menu.label, module: "sessions", count: "tasks" },
   { href: "/badges", label: "Badges", module: "badges" },
+  // The cash budget every member reads (budgets spec R23); its holder changes it on the same page.
+  { href: "/budget", label: "Cash Budget" },
   { href: "/admin", label: "Village Settings", roles: ["admin", "founder"] },
   // The hand mint and the pay queues for whoever holds those powers, admin or not (Rye, 2026-11-15).
   { href: "/treasury", label: "Treasury", door: "treasury" },
