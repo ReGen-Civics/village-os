@@ -30,7 +30,7 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { lazy, Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -219,10 +219,6 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const apply = !noAct && mayApply(seat);
   // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
   const [choiceLink, setChoiceLink] = useState("");
-  const onChoice = useCallback((query: string, pct: number | null) => {
-    setChoiceLink(query);
-    setSliderPct(pct);
-  }, []);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
@@ -304,7 +300,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       })()}
       {!noAct && (
         <Suspense fallback={null}>
-          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={onChoice} />
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} onPct={setSliderPct} />
         </Suspense>
       )}
       {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
