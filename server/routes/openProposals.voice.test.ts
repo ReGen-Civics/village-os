@@ -21,7 +21,7 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { spawnSync } from "node:child_process";
-import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
+import { VOICE_NOTE_MAX_BYTES, VOICE_NOTE_MAX_SECONDS, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
@@ -225,7 +225,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     expect(wordsOnly).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
     const html = await postVoice(proposal(ticked([10])), [{ name: "voice-1.webm", bytes: HTML, type: "audio/webm" }]);
     expect(html).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType, field: "voice" } });
-    const tooLong = await postVoice(proposal(ticked([900])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    const tooLong = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS + 6])), [{ name: "voice-1.webm", bytes: WEBM }]);
     expect(tooLong).toEqual({ status: 400, body: { error: VOICE_WORDS.tooLong, field: "voice" } });
     const four = await postVoice(proposal(ticked([1, 2, 3, 4])), [1, 2, 3, 4].map((i) => ({ name: `voice-${i}.webm`, bytes: WEBM })));
     expect(four).toEqual({ status: 400, body: { error: VOICE_WORDS.tooMany, field: "voice" } });
@@ -298,6 +298,15 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       expect(play.headers.get("content-type")).toBe({ webm: "audio/webm", m4a: "audio/mp4", ogg: "audio/ogg" }[c.kind]);
       expect(Buffer.from(await play.arrayBuffer()).equals(c.bytes), c.name).toBe(true);
     }
+  });
+
+  it("keeps a full take, fifteen minutes at the largest size one take may be, byte for byte (the ops request of 19 Nov 2026)", async () => {
+    const full = crypto.randomBytes(VOICE_NOTE_MAX_BYTES);
+    WEBM.copy(full, 0, 0, WEBM.length);
+    const r = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS], "Fifteen minutes about the land.")), [{ name: "voice-1.webm", bytes: full, type: "audio/webm" }]);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    const voice = (await readOpenProposal(pool, lastId()))?.body.voice;
+    expect(voice?.notes.map((n) => [n.seconds, n.size])).toEqual([[VOICE_NOTE_MAX_SECONDS, VOICE_NOTE_MAX_BYTES]]);
   });
 
   it("refuses a recording over the note's own size with the voice named, keeping nothing", async () => {

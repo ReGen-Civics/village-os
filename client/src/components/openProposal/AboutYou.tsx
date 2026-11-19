@@ -13,6 +13,7 @@
  * The references are third-party data. The form says who sees them, and the
  * server keeps them for the deciders only, away from every AI.
  */
+import { LimitSigns } from "@/components/form/LimitSigns";
 import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import MicInput from "@/components/form/MicInput";
@@ -111,20 +112,20 @@ export function AboutYouFacts({
           <label htmlFor={`${idPrefix}-based`} className={LABEL}>
             {t({ message: "Where you are based (optional)", context: "about you" })}
           </label>
-          <MicInput id={`${idPrefix}-based`} clip="based" maxLength={ABOUT_BASED_MAX} value={value.based} onChange={(based) => onChange({ ...value, based })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-based`} clip="based" limit={ABOUT_BASED_MAX} value={value.based} onChange={(based) => onChange({ ...value, based })} className={fieldClass} />
         </div>
         <div>
           <label htmlFor={`${idPrefix}-languages`} className={LABEL}>
             {t({ message: "Languages you work in (optional)", context: "about you" })}
           </label>
-          <MicInput id={`${idPrefix}-languages`} clip="languages" maxLength={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(languages) => onChange({ ...value, languages })} className={fieldClass} />
+          <MicInput id={`${idPrefix}-languages`} clip="languages" limit={ABOUT_LANGUAGES_MAX} value={value.languages} onChange={(languages) => onChange({ ...value, languages })} className={fieldClass} />
         </div>
       </div>
       <div>
         <label htmlFor={`${idPrefix}-story`} className={LABEL}>
           {t({ message: "Your story with us, in a line (optional)", context: "about you" })}
         </label>
-        <MicInput id={`${idPrefix}-story`} clip="story" maxLength={ABOUT_STORY_MAX} value={value.story} onChange={(story) => onChange({ ...value, story })} className={fieldClass} />
+        <MicInput id={`${idPrefix}-story`} clip="story" limit={ABOUT_STORY_MAX} value={value.story} onChange={(story) => onChange({ ...value, story })} className={fieldClass} />
         {storyAssist && <div className="mt-2 grid gap-2">{storyAssist}</div>}
       </div>
     </div>
@@ -157,34 +158,43 @@ export function ReferencesBlock({
       <p className="text-sm text-muted-foreground">{t({ message: "Up to three people who know your work. Each needs a name, how you know them, and an email or phone number.", context: "about you" })}</p>
       {rows.map((r, i) => (
         <div key={i} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1.2fr)]" data-reference-row={i}>
+          <div className="min-w-0">
           <input
             aria-label={t({ message: `Reference ${i + 1}: name`, context: "about you" })}
             placeholder={t({ message: "Name", context: "about you reference" })}
-            maxLength={REFERENCE_NAME_MAX}
             autoComplete="off"
             value={r.name}
             onChange={(e) => setRow(i, { ...r, name: e.target.value })}
             className={fieldClass}
+            aria-invalid={r.name.length > REFERENCE_NAME_MAX || undefined}
+            aria-describedby={`${idPrefix}-ref-${i}-name-count`}
           />
+          <LimitSigns value={r.name} max={REFERENCE_NAME_MAX} id={`${idPrefix}-ref-${i}-name-count`} voice={false} />
+          </div>
           <MicInput
             aria-label={t({ message: `Reference ${i + 1}: how you know them`, context: "about you" })}
             placeholder={t({ message: "How you know them", context: "about you reference" })}
-            maxLength={REFERENCE_HOW_MAX}
+            id={`${idPrefix}-ref-${i}-how`}
+            limit={REFERENCE_HOW_MAX}
             autoComplete="off"
             value={r.how}
             onChange={(how) => setRow(i, { ...r, how })}
             clip={`reference-${i + 1}`}
             className={fieldClass}
           />
+          <div className="min-w-0">
           <input
             aria-label={t({ message: `Reference ${i + 1}: email or phone`, context: "about you" })}
             placeholder={t({ message: "Email or phone", context: "about you reference" })}
-            maxLength={REFERENCE_CONTACT_MAX}
             autoComplete="off"
             value={r.contact}
             onChange={(e) => setRow(i, { ...r, contact: e.target.value })}
             className={fieldClass}
+            aria-invalid={r.contact.length > REFERENCE_CONTACT_MAX || undefined}
+            aria-describedby={`${idPrefix}-ref-${i}-contact-count`}
           />
+          <LimitSigns value={r.contact} max={REFERENCE_CONTACT_MAX} id={`${idPrefix}-ref-${i}-contact-count`} voice={false} />
+          </div>
         </div>
       ))}
       <div className="grid gap-2 rounded-lg border border-border bg-muted p-4 text-sm text-foreground" data-check-words="">

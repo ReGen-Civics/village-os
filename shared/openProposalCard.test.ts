@@ -7,6 +7,8 @@
  */
 import { describe, expect, it } from "vitest";
 import { CARD_LIMITS, cardOf, cardSummary, parseCard } from "./openProposalCard";
+import { GOAL_LIMITS } from "./proposalGoals";
+import { TERM_NOTE_MAX } from "./termsWords";
 
 const CTX = {
   roleIds: new Set(["lfs", "events"]),
@@ -55,9 +57,9 @@ describe("parseCard", () => {
   });
 
   it("caps every list and every line", () => {
-    const many = Array.from({ length: 9 }, (_, i) => ({ quest: `q${i}`, doneWhen: "d" }));
+    const many = Array.from({ length: GOAL_LIMITS.max + 1 }, (_, i) => ({ quest: `q${i}`, doneWhen: "d" }));
     expect(parseCard({ ...GOOD, roles: [{ roleId: "events", moves: [], firstMoon: many }] }, CTX).ok).toBe(false);
-    expect(parseCard({ ...GOOD, terms: { answers: { term: { choice: "talk", note: "x".repeat(400) } } } }, CTX).ok).toBe(false);
+    expect(parseCard({ ...GOOD, terms: { answers: { term: { choice: "talk", note: "x".repeat(TERM_NOTE_MAX + 1) } } } }, CTX).ok).toBe(false);
   });
 });
 

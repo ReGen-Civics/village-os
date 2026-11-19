@@ -30,7 +30,8 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { OPEN_GLOBAL_HOURLY, OPEN_WHY_MAX, OPEN_WORDS, roleTermsOf } from "../../shared/openProposals";
+import { OPEN_GLOBAL_HOURLY, OPEN_WHY_MAX, OPEN_WORDS, SELF_KNOWLEDGE_MAX, roleTermsOf } from "../../shared/openProposals";
+import { GOAL_LIMITS } from "../../shared/proposalGoals";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -364,9 +365,9 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect((await call("GET", "/api/open-proposals/form")).body.roles.every((r: any) => r.opensLater === false)).toBe(true);
     });
 
-    it("room for honest answers (the lead, 19 Nov 2026): a why of 4000 characters across the four prompts is kept whole", async () => {
-      expect(OPEN_WHY_MAX).toBe(4000);
-      const part = (label: string) => `${label} ${"y".repeat(1000 - label.length - 3)}`;
+    it("room for honest answers (ops, 19 Nov 2026): a why of 8000 characters across the four prompts is kept whole", async () => {
+      expect(OPEN_WHY_MAX).toBe(8000);
+      const part = (label: string) => `${label} ${"y".repeat(2000 - label.length - 3)}`;
       const why = ["What I have built before:", "Why this role:", "Why now:", "What I would bring in my first month:"].map(part).join("\n\n");
       expect(why.length).toBeGreaterThan(1200);
       expect(why.length).toBeLessThanOrEqual(OPEN_WHY_MAX);
@@ -375,7 +376,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
     });
 
     it("refuses Human Design or Gene Keys longer than its limit, naming the field", async () => {
-      const r = await call("POST", "/api/open-proposals", proposal({ selfKnowledge: "x".repeat(301) }));
+      const r = await call("POST", "/api/open-proposals", proposal({ selfKnowledge: "x".repeat(SELF_KNOWLEDGE_MAX + 1) }));
       expect(r.status).toBe(400);
       expect(r.body.field).toBe("selfKnowledge");
       expect(state.sent).toHaveLength(0);
@@ -763,7 +764,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       const g = { quest: "Oil the hinges", doneWhen: "the gate opens" };
       expect(await post([], "none@example.test")).toMatchObject({ status: 400, body: { field: "card" } });
       expect((await post([{ quest: "No test", doneWhen: "" }], "nodone@example.test")).status).toBe(400);
-      expect((await post(Array.from({ length: 9 }, () => g), "nine@example.test")).status).toBe(400);
+      expect((await post(Array.from({ length: GOAL_LIMITS.max + 1 }, () => g), "nine@example.test")).status).toBe(400);
       expect((await post([{ ...g, moves: "A goal the role never had" }], "moves@example.test")).status).toBe(400);
       expect((await post([{ ...g, serves: "g-unknown" }], "serves@example.test")).status).toBe(400);
       expect((await post([{ ...g, date: "2031-01-01" }], "far@example.test")).status).toBe(400);

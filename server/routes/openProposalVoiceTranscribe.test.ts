@@ -13,8 +13,9 @@
 import http from "node:http";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
-import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
+import { VOICE_NOTE_MAX_BYTES, VOICE_NOTE_MAX_SECONDS, VOICE_WORDS } from "../../shared/voiceNotes";
+import { PROVIDER_UPLOAD_MAX_BYTES, RECORDING_BYTES_PER_SECOND } from "../../shared/applyLimits";
+import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_MAX_SECONDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
 import { HTTP_PROVIDERS, languageHint, transcribeTake, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 import { registerVoiceTranscribe } from "./openProposalVoiceTranscribe";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
@@ -104,6 +105,24 @@ describe("the door, over real HTTP", () => {
     expect(state.calls[1].kind).toBe("m4a");
   });
 
+  it("a full take at the largest size and length one take may be (the ops request of 19 Nov 2026) goes whole to the provider and its words come back", async () => {
+    // 15 minutes at the largest phone rate, as shared/applyLimits.ts sizes it, under the providers' 25 MB.
+    expect(VOICE_NOTE_MAX_SECONDS).toBe(15 * 60);
+    expect(VOICE_NOTE_MAX_BYTES).toBeGreaterThanOrEqual(VOICE_NOTE_MAX_SECONDS * RECORDING_BYTES_PER_SECOND);
+    expect(VOICE_NOTE_MAX_BYTES).toBeLessThan(PROVIDER_UPLOAD_MAX_BYTES);
+    const full = Buffer.alloc(VOICE_NOTE_MAX_BYTES, 7);
+    TINY_WEBM_OPUS.copy(full, 0, 0, Math.min(TINY_WEBM_OPUS.length, 64));
+    const words = "word ".repeat(3000).trim();
+    state.answer = { ok: true, text: words, by: "groq" };
+    const r = await send(full, { seconds: String(VOICE_NOTE_MAX_SECONDS), lang: "en" });
+    expect(r).toEqual({ status: 200, body: { text: words } });
+    expect(state.calls).toHaveLength(1);
+    expect(state.calls[0].bytes.length).toBe(VOICE_NOTE_MAX_BYTES);
+    // One byte more is refused, before the provider is asked.
+    expect((await send(Buffer.concat([full, Buffer.alloc(1)]), { seconds: String(VOICE_NOTE_MAX_SECONDS) })).status).toBe(413);
+    expect(state.calls).toHaveLength(1);
+  });
+
   it("off with no key: the GET says so, the POST refuses, and nothing is sent", async () => {
     state.on = false;
     expect(await on()).toBe(false);
@@ -161,8 +180,8 @@ describe("the door, over real HTTP", () => {
     expect(state.calls).toEqual([]);
   });
 
-  it("refuses a take over five minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
-    expect(await send(TINY_WEBM_OPUS, { seconds: "306" })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
+  it("refuses a take over fifteen minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
+    expect(await send(TINY_WEBM_OPUS, { seconds: String(VOICE_TRANSCRIBE_MAX_SECONDS + 1) })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(TINY_WEBM_OPUS, { seconds: "nope" })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(HTML)).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType } });
     const big = Buffer.concat([TINY_WEBM_OPUS, Buffer.alloc(VOICE_NOTE_MAX_BYTES, 1)]);

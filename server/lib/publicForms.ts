@@ -49,6 +49,7 @@
  * `landPublicSubmission`, and the member export reads a member's ideas through
  * `ideasProposedBy`, re-exported here so that file imports one module for both.
  */
+import { APPLY_TEXT } from "../../shared/applyLimits";
 import type { Pool, PoolConnection } from "mysql2/promise";
 import type { LetterSource } from "../../shared/membershipLetter";
 import { PROPOSE_QUEST_MODULE, QUEST_IDEA_FORM } from "../../shared/questIdeas";
@@ -88,7 +89,7 @@ export const OPEN_VISITOR_IDEAS = 10;
  * rationale's 8000.
  */
 const TITLE_WIDTH = 200;
-const PROSE_WIDTH = 8000;
+const PROSE_WIDTH = APPLY_TEXT.questProse;
 const ANSWER_WIDTH = 1900;
 
 /** What the form sends. Every field is caller-controlled JSON, and nothing upstream checks a type. */

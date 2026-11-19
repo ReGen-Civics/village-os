@@ -27,11 +27,12 @@ describe("parseGoals", () => {
     expect(parseGoals([goal({ doneWhen: "x".repeat(GOAL_LIMITS.doneWhen + 1) })], CTX).ok).toBe(false);
   });
 
-  it("holds the cap of eight for each role, and never refuses three, five or six", () => {
+  it("holds the cap for each role (24 since the ops request of 19 Nov 2026, was eight), and never refuses three, five or six", () => {
     const n = (k: number, roleId = "r1") => Array.from({ length: k }, (_, i) => goal({ title: `g${i}`, roleId }));
-    expect(parseGoals(n(8), CTX).ok).toBe(true);
-    expect(parseGoals(n(9), CTX).ok).toBe(false);
-    expect(parseGoals([...n(8, "r1"), ...n(8, "r2")], CTX).ok).toBe(true);
+    expect(GOAL_LIMITS.max).toBe(24);
+    expect(parseGoals(n(GOAL_LIMITS.max), CTX).ok).toBe(true);
+    expect(parseGoals(n(GOAL_LIMITS.max + 1), CTX).ok).toBe(false);
+    expect(parseGoals([...n(GOAL_LIMITS.max, "r1"), ...n(GOAL_LIMITS.max, "r2")], CTX).ok).toBe(true);
     for (const k of [1, 2, 6, 7]) expect(parseGoals(n(k), CTX).ok).toBe(true);
   });
 
@@ -98,7 +99,7 @@ describe("the application input carries the goals", () => {
     expect(parseApplicationInput(body([goal({ doneWhen: "" })]))).toMatchObject({ ok: false, field: "goals" });
     expect(parseApplicationInput(body([]))).toMatchObject({ ok: false, field: "goals" });
     expect(parseApplicationInput(body("beds"))).toMatchObject({ ok: false, field: "goals" });
-    expect(parseApplicationInput(body(Array.from({ length: 9 }, () => goal())))).toMatchObject({ ok: false, field: "goals" });
+    expect(parseApplicationInput(body(Array.from({ length: GOAL_LIMITS.max + 1 }, () => goal())))).toMatchObject({ ok: false, field: "goals" });
   });
   it("is unchanged for a body with no goals", () => {
     expect(parseApplicationInput({ seatIds: ["r1"], seatSettings: { v: 1 }, deliverables: "Old words" })).toMatchObject({ ok: true, input: { deliverables: "Old words", answers: null } });

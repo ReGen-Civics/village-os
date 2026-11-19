@@ -16,7 +16,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { VOICE_WORDS } from "@shared/voiceNotes";
+import { VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS } from "@shared/voiceNotes";
+import { OPEN_WHY_MAX } from "@shared/openProposals";
 import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH } from "@shared/voiceTranscribe";
 import { EMPTY_VOICE, VoiceInvite, type VoiceState, type VoiceTake } from "./VoiceInvite";
 import { countdownLeft, forgetTranscriptionOn, placeWords, withWrittenWords } from "./VoiceStepMore";
@@ -90,35 +91,49 @@ function Card({ start = EMPTY_VOICE, seen }: { start?: VoiceState; seen?: (v: Vo
 
 describe("the countdown and the hard stop", () => {
   it("counts the last minute down, whole seconds, never below zero", () => {
+    const T = VOICE_NOTE_MAX_SECONDS;
+    expect(T).toBe(900);
     expect(countdownLeft(0)).toBeNull();
-    expect(countdownLeft(239.9)).toBeNull();
-    expect(countdownLeft(240)).toBe(60);
-    expect(countdownLeft(240.2)).toBe(60);
-    expect(countdownLeft(299.1)).toBe(1);
-    expect(countdownLeft(300)).toBe(0);
-    expect(countdownLeft(312)).toBe(0);
+    expect(countdownLeft(T - 60.1)).toBeNull();
+    expect(countdownLeft(T - 60)).toBe(60);
+    expect(countdownLeft(T - 59.8)).toBe(60);
+    expect(countdownLeft(T - 0.9)).toBe(1);
+    expect(countdownLeft(T)).toBe(0);
+    expect(countdownLeft(T + 12)).toBe(0);
   });
 
-  it("says the limit before recording, shows the countdown in the last minute, and stops at 5:00 with the limit message", async () => {
+  it("says the limit before recording, shows the time left, warns at 30 seconds with a buzz, and stops at 15:00 keeping the take", async () => {
+    const buzzes: unknown[] = [];
+    Object.defineProperty(navigator, "vibrate", { configurable: true, value: (p: unknown) => (buzzes.push(p), true) });
     const { container } = render(<Card />);
     await settle();
-    expect(container.querySelector("[data-voice-limit-note]")?.textContent).toContain("Up to 5 minutes per take. It stops by itself at 5:00.");
+    expect(container.querySelector("[data-voice-limit-note]")?.textContent).toContain("Up to 15 minutes per take. It stops by itself at 15:00.");
     vi.useFakeTimers({ toFake: ["setInterval", "setTimeout", "clearInterval", "clearTimeout", "Date"] });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.record }));
     });
     // The note goes while recording; no countdown before the last minute.
     expect(container.querySelector("[data-voice-limit-note]")).toBeNull();
-    await act(async () => void vi.advanceTimersByTime(239_000));
+    // The time left shows from the start.
+    await act(async () => void vi.advanceTimersByTime(1_000));
+    expect(container.querySelector("[data-voice-left]")?.textContent).toBe("14:59 left");
+    await act(async () => void vi.advanceTimersByTime(838_000));
     expect(container.querySelector("[data-voice-countdown]")).toBeNull();
     // The lazy half loaded with the note above, so the countdown draws at once.
     await act(async () => void vi.advanceTimersByTime(1_000));
     expect(container.querySelector("[data-voice-countdown]")?.textContent).toContain("1:00 left");
-    await act(async () => void vi.advanceTimersByTime(59_000));
+    // Thirty seconds left: the gentle warning, seen and felt, once.
+    expect(container.querySelector("[data-voice-warned]")).toBeNull();
+    expect(buzzes).toHaveLength(0);
+    await act(async () => void vi.advanceTimersByTime(30_000));
+    expect(container.querySelector("[data-voice-warned]")?.textContent).toContain(VOICE_WORDS.nearEnd);
+    expect(buzzes).toHaveLength(1);
+    await act(async () => void vi.advanceTimersByTime(29_000));
+    expect(buzzes).toHaveLength(1);
     expect(container.querySelector("[data-voice-countdown]")?.textContent).toContain("0:01 left");
     expect(screen.getByRole("button", { name: VOICE_WORDS.stop })).toBeTruthy();
     await act(async () => void vi.advanceTimersByTime(1_000));
-    // 5:00: stopped by itself, the take kept, and said so.
+    // 15:00: stopped by itself, the take kept, and said so.
     expect(screen.queryByRole("button", { name: VOICE_WORDS.stop })).toBeNull();
     expect(container.querySelector("[data-voice-countdown]")).toBeNull();
     expect(container.querySelector('[data-voice-problem="limit"]')?.textContent).toBe(VOICE_WORDS.reachedLimit);
@@ -146,10 +161,20 @@ describe("write down my words, by itself, with a switch to turn it off", () => {
   });
 
   it("a clip's words replace what was caught in the answer, are added where nothing was, and leave an edited answer alone", () => {
-    expect(placeWords("I keep the", "I keep the", "I keep the gate.", 500)).toEqual({ text: "I keep the gate.", placed: true });
-    expect(placeWords("Typed first.", "", "Then said.", 500).placed).toBe(true);
-    expect(placeWords("Typed first.", "", "Then said.", 500).text).toContain("Then said.");
-    expect(placeWords("I rewrote it all.", "I keep the", "I keep the gate.", 500)).toEqual({ text: "I rewrote it all.", placed: false });
+    expect(placeWords("I keep the", "I keep the", "I keep the gate.")).toEqual({ text: "I keep the gate.", placed: true });
+    expect(placeWords("Typed first.", "", "Then said.").placed).toBe(true);
+    expect(placeWords("Typed first.", "", "Then said.").text).toContain("Then said.");
+    expect(placeWords("I rewrote it all.", "I keep the", "I keep the gate.")).toEqual({ text: "I rewrote it all.", placed: false });
+  });
+
+  it("an overflowing transcript is kept whole (the ops request of 19 Nov 2026): words past any box's limit are never cut", () => {
+    const long = "word ".repeat(4000).trim();
+    expect(long.length).toBeGreaterThan(OPEN_WHY_MAX);
+    expect(placeWords("I keep the", "I keep the", long)).toEqual({ text: long, placed: true });
+    expect(placeWords("Typed.", "", long).text).toBe(`Typed. ${long}`);
+    const heard = "h".repeat(VOICE_TRANSCRIPT_MAX);
+    const v: VoiceState = { ...EMPTY_VOICE, takes: [take("caught")], transcript: `${heard} caught` };
+    expect(withWrittenWords(v, 0, long).transcript).toBe(`${heard} ${long}`);
   });
 
   it("while the service is off, no switch, no AI line and no button are drawn, and nothing is sent", async () => {

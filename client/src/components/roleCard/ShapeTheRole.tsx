@@ -61,8 +61,9 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
   };
   const add = () => {
     const text = draft.trim();
-    if (!open || !text || full) return;
-    onChange([...value, { roleId, piece, kind: open, text: text.slice(0, SUGGESTION_LIMITS.text) }]);
+    // Whole: a suggestion over its limit is held here, its box saying how much to trim (never cut).
+    if (!open || !text || full || text.length > SUGGESTION_LIMITS.text) return;
+    onChange([...value, { roleId, piece, kind: open, text }]);
     setDraft("");
     setOpen(null);
   };
@@ -93,12 +94,12 @@ function PieceBar({ roleId, piece, value, onChange }: { roleId: string; piece: P
           <label htmlFor={`${id}-text`} className="text-sm font-semibold text-card-foreground">
             {prompt[open]}
           </label>
-          <GrowingField id={`${id}-text`} clip="suggestion" minRows={3} maxLength={SUGGESTION_LIMITS.text} value={draft} onChange={setDraft} className="rounded-lg border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-ring" />
+          <GrowingField id={`${id}-text`} clip="suggestion" minRows={3} limit={SUGGESTION_LIMITS.text} value={draft} onChange={setDraft} className="rounded-lg border border-border bg-background px-3 py-2 text-foreground focus-visible:outline-2 focus-visible:outline-ring" />
           <div className="flex flex-wrap justify-end gap-2">
             <button type="button" onClick={() => setOpen(null)} className="min-h-11 rounded-lg px-3 text-sm text-muted-foreground hover:text-card-foreground">
               {t({ message: "Cancel", context: "shape the role" })}
             </button>
-            <button type="button" onClick={add} disabled={!draft.trim()} className="min-h-11 rounded-lg border border-notice bg-notice px-4 text-sm font-semibold text-background disabled:opacity-40">
+            <button type="button" onClick={add} disabled={!draft.trim() || draft.trim().length > SUGGESTION_LIMITS.text} className="min-h-11 rounded-lg border border-notice bg-notice px-4 text-sm font-semibold text-background disabled:opacity-40">
               {t({ message: "Add to my application", context: "shape the role" })}
             </button>
           </div>

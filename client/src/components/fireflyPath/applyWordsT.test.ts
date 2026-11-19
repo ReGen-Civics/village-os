@@ -25,7 +25,7 @@ describe("the application's shared words, said again as messages", () => {
       OPEN_WORDS.tooMany, OPEN_WORDS.tooManyTries, OPEN_WORDS.tooManyForAddress, OPEN_WORDS.tooBusy, OPEN_WORDS.tooManyOpens,
       ABOUT_WORDS.referenceNeedsAll, ABOUT_WORDS.referenceContact, ABOUT_WORDS.tooManyReferences, ABOUT_WORDS.sameReferenceTwice,
       ABOUT_WORDS.needConsent, ABOUT_WORDS.consentChanged,
-      VOICE_WORDS.tooMany, VOICE_WORDS.tooBig, VOICE_WORDS.tooLong, VOICE_WORDS.wrongType, VOICE_WORDS.needConsent,
+      VOICE_WORDS.tooMany, VOICE_WORDS.tooBig, VOICE_WORDS.tooLong, VOICE_WORDS.wrongType, VOICE_WORDS.needConsent, VOICE_WORDS.transcriptTooLong, VOICE_WORDS.clipWordsTooLong,
       VOICE_WORDS.micBlocked, VOICE_WORDS.noMic, VOICE_WORDS.noTranscribe,
       ATTACHMENT_WORDS.uploadTooBig, ATTACHMENT_WORDS.uploadBusy,
     ];

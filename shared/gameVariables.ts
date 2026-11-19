@@ -27,6 +27,7 @@ import { MINT_RULE, SUBJECT_THRESHOLDS, VILLAGE_LAUNCH } from "./ballotSubjects"
 import { isAnchorDateAcceptable } from "./villageMoon";
 import { villageSeasonsProblem } from "./villageSeasons";
 import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
+import { villageWordsProblem } from "./applyLimits";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
 import { GATHERING_LIMIT_DEFAULT, GATHERING_LIMIT_KEY, REVIEW_DAYS_DEFAULT, REVIEW_DAYS_KEY } from "./changeRequestLimits";
@@ -3063,7 +3064,7 @@ export const VARIABLES: VariableDef[] = [
     category: "The founding team",
     label: "Ways to get to know us before applying",
     description:
-      "The first step of the application lists these, one per line, and the applicant ticks the ones they have done. The step never stops anyone applying. Up to eight lines.",
+      "The first step of the application lists these, one per line, and the applicant ticks the ones they have done. The step never stops anyone applying. Up to 24 lines.",
     type: "longtext",
     default: "Join a community call\nVisit the land\nShare a meal with us",
   },
@@ -4756,6 +4757,9 @@ export function validateVariable(def: VariableDef, raw: string): string | null {
     // prerequisites (shared/rolePrerequisites.ts). A typo would quietly open a
     // role that should ask for something, so it is refused at the door.
     if (def.key === PREREQUISITES_KEY) return prerequisitesProblem(stored);
+    // The village's words an applicant reads on the application: held here, never cut on the form (shared/applyLimits.ts).
+    const forApplicants = villageWordsProblem(def.key, stored);
+    if (forApplicants) return forApplicants;
     return null;
   }
   if (def.type === "text") {

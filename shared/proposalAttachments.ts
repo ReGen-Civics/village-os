@@ -28,13 +28,14 @@
  *
  * Pure, so the page and the server import it alike.
  */
+import { APPLY_COUNTS, APPLY_TEXT, FILES_MAX, FILE_MAX_BYTES } from "./applyLimits";
 
-export const PROPOSAL_LINKS_MAX = 5;
-export const PROPOSAL_LINK_LABEL_MAX = 80;
-export const PROPOSAL_LINK_URL_MAX = 500;
-export const PROPOSAL_FILES_MAX = 3;
-export const PROPOSAL_FILE_MAX_BYTES = 10 * 1024 * 1024;
-export const PROPOSAL_FILE_NAME_MAX = 120;
+export const PROPOSAL_LINKS_MAX = APPLY_COUNTS.links;
+export const PROPOSAL_LINK_LABEL_MAX = APPLY_TEXT.linkLabel;
+export const PROPOSAL_LINK_URL_MAX = APPLY_TEXT.linkUrl;
+export const PROPOSAL_FILES_MAX = FILES_MAX;
+export const PROPOSAL_FILE_MAX_BYTES = FILE_MAX_BYTES;
+export const PROPOSAL_FILE_NAME_MAX = APPLY_TEXT.fileName;
 
 export const PROPOSAL_FILE_KINDS = ["pdf", "docx", "png", "jpg"] as const;
 export type ProposalFileKind = (typeof PROPOSAL_FILE_KINDS)[number];

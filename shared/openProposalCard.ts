@@ -26,21 +26,22 @@
  * application's own words (`cardSummary`, server/lib/openProposalDecide.ts).
  */
 
+import { APPLY_COUNTS, APPLY_TEXT, summaryWithin } from "./applyLimits";
 import { GOAL_LIMITS, goalsOf, parseGoals } from "./proposalGoals";
 import { judgeTermsStep, notesAsText, overallChoice, commitmentWords, type TermAnswers, type TermKey } from "./termsWords";
 
 export const CARD_LIMITS = {
-  movesPerRole: 3,
-  moveText: 200,
-  target: 120,
+  movesPerRole: APPLY_COUNTS.cardMoves,
+  moveText: APPLY_TEXT.cardMoveText,
+  target: APPLY_TEXT.cardTarget,
   questsPerRole: GOAL_LIMITS.max,
   quest: GOAL_LIMITS.title,
   doneWhen: GOAL_LIMITS.doneWhen,
-  serves: 3,
-  how: 200,
+  serves: APPLY_COUNTS.cardServes,
+  how: APPLY_TEXT.cardHow,
   hours: 80,
   timeZone: 64,
-  termsNote: 600,
+  termsNote: APPLY_TEXT.cardTermsNote,
 } as const;
 
 /**
@@ -290,7 +291,7 @@ export function cardOf(raw: unknown): OpenProposalCard | undefined {
   };
 }
 
-/** The card as the role application's own words, within its 2000 characters. */
+/** The card as the role application's own words, within the member application's limit (shared/applyLimits.ts summaryWithin). */
 export function cardSummary(card: OpenProposalCard, roleName: (id: string) => string, goalText: (id: string) => string): string {
   const lines: string[] = [];
   for (const r of card.roles) {
@@ -312,5 +313,5 @@ export function cardSummary(card: OpenProposalCard, roleName: (id: string) => st
   if (card.terms?.choice === "talk") lines.push(`Wants to talk about the terms: ${card.terms.note}`);
   else if (card.terms?.choice === "accept") lines.push("Accepts the terms on offer.");
   const text = lines.join("\n");
-  return text.length > 2000 ? `${text.slice(0, 1997)}...` : text;
+  return summaryWithin(text);
 }

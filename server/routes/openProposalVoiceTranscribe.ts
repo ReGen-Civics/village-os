@@ -20,7 +20,7 @@
  * front of a paid call: per connection an hour and a day, per signed-in person
  * an hour and a day instead, and a ceiling a day for the whole village.
  *
- * ONE TAKE, AT MOST FIVE MINUTES. The bytes are read by their own first bytes
+ * ONE TAKE, AT MOST FIFTEEN MINUTES (shared/applyLimits.ts). The bytes are read by their own first bytes
  * (WebM, Ogg or MP4 audio, as Send reads them), held to VOICE_NOTE_MAX_BYTES,
  * and the page's own length for the take to VOICE_TRANSCRIBE_MAX_SECONDS.
  * Only a few are read at once.
@@ -43,6 +43,8 @@ import {
   VOICE_TRANSCRIBE_PER_DAY,
   VOICE_TRANSCRIBE_PER_HOUR,
 } from "../../shared/voiceTranscribe";
+import { uploadWindowMs } from "../../shared/applyLimits";
+import { liftRequestTimeout } from "../lib/uploadWindow";
 import { transcribeTake, type ReadyProvider, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -104,6 +106,8 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
       };
       res.on("close", release);
       res.on("finish", release);
+      // One take may take longer than Node's five minutes to arrive on a slow line: this request alone gets its own window.
+      liftRequestTimeout(req, uploadWindowMs(length));
       upload(req, res, (err: any) => {
         if (err) return void res.status(err?.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: err?.code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.wrongType });
         next();

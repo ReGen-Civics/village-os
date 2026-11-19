@@ -58,12 +58,12 @@ describe("a one-line answer you can speak into", () => {
     expect((screen.getByLabelText("Aim") as HTMLInputElement).value).toBe("I bring seed to every household");
   });
 
-  it("never goes past the field's own limit", () => {
+  it("never cuts what was said, whatever the field's limit (the ops request of 19 Nov 2026)", () => {
     render(<Line max={12} />);
     fireEvent.click(screen.getByRole("button", { name: "Speak instead of typing: Aim" }));
     say("seed to every household");
-    expect((screen.getByLabelText("Aim") as HTMLInputElement).value).toBe("I bring seed");
-    expect(spokenInto("", "hello there", 5)).toBe("hello");
+    expect((screen.getByLabelText("Aim") as HTMLInputElement).value).toBe("I bring seed to every household");
+    expect(spokenInto("", "hello there", 5)).toBe("hello there");
     expect(spokenInto("a", "b")).toBe("a b");
   });
 

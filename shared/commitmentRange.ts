@@ -28,6 +28,7 @@
  *
  * Pure: no Node builtins, no clock.
  */
+import { APPLY_TEXT } from "./applyLimits";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
 
 export { ROLE_PAY_CAP_PCT };
@@ -45,7 +46,7 @@ export const COMMITMENT_TARGET_MAX = 1000;
 export const COMMITMENT_STEP = 10;
 
 /** The longest "why this price" line. */
-export const PRICE_WHY_MAX = 600;
+export const PRICE_WHY_MAX = APPLY_TEXT.priceWhy;
 
 export type RangeRead<T> = { ok: true; value: T } | { ok: false; problem: string };
 

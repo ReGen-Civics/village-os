@@ -32,6 +32,7 @@
  * now. The role that makes the final call is a setting too
  * (`org.final_call_role`). Neither names a person in code.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
 // ── The settings ────────────────────────────────────────────────────────────
 
@@ -57,12 +58,12 @@ export function shortlistOf(steps: ReadonlyArray<{ kind: string; detail?: unknow
 
 // ── The references ──────────────────────────────────────────────────────────
 
-export const ONBOARDING_REFERENCES_MAX = 5;
+export const ONBOARDING_REFERENCES_MAX = APPLY_COUNTS.statusReferences;
 export const ONBOARDING_REFERENCES_MIN = 1;
-export const REF_NAME_MAX = 80;
-export const REF_CONTACT_MAX = 120;
-export const REF_HOW_MAX = 300;
-export const REF_ALLY_MAX = 400;
+export const REF_NAME_MAX = APPLY_TEXT.statusRefName;
+export const REF_CONTACT_MAX = APPLY_TEXT.statusRefContact;
+export const REF_HOW_MAX = APPLY_TEXT.statusRefHow;
+export const REF_ALLY_MAX = APPLY_TEXT.statusRefAlly;
 export const FOLLOWUP_NOTE_MAX = 2000;
 
 /** One reference as the applicant gives it. */

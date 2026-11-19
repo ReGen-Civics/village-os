@@ -23,9 +23,10 @@
  * Pure, so the page and the server import it alike.
  */
 import { AI_DRAFT_SERVICE } from "./aiDraftService";
+import { APPLY_TEXT } from "./applyLimits";
 
-/** The most of what was heard that goes to the AI. */
-export const VOICE_DRAFT_INPUT_MAX = 8000;
+/** The most of what was heard that goes to the AI (shared/applyLimits.ts). */
+export const VOICE_DRAFT_INPUT_MAX = APPLY_TEXT.draftInput;
 /** Too little to draft from: a sentence or two at least. */
 export const VOICE_DRAFT_INPUT_MIN = 60;
 export const VOICE_DRAFT_ITEMS = 3;

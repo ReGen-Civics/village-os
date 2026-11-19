@@ -55,6 +55,8 @@
 import crypto from "node:crypto";
 import type { Express, Request, Response } from "express";
 import multer from "multer";
+import { PROPOSAL_JSON_MAX_BYTES, OPEN_UPLOAD_BYTES_IN_FLIGHT, OPEN_UPLOADS_AT_ONCE as UPLOADS_AT_ONCE, uploadTotalMax, uploadWindowMs } from "../../shared/applyLimits";
+import { liftRequestTimeout } from "../lib/uploadWindow";
 import { watchApplyFailures } from "../lib/applyFailureLog";
 import type { Pool } from "mysql2/promise";
 
@@ -129,7 +131,7 @@ import { gateOf } from "../lib/roleCardProjection";
 import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { writtenKeys } from "../../shared/termsWords";
 import { ATTACHMENT_WORDS, PROPOSAL_FILES_MAX, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
-import { VOICE_CLIPS_CEILING, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
+import { VOICE_CLIPS_CEILING, VOICE_CLIPS_DEFAULT, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_NOTE_TYPES, VOICE_WORDS, clipFieldLabel, clipLimitsOf, parseSentVoice, voiceNoteHref } from "../../shared/voiceNotes";
 import { registerVoiceDraft } from "./openProposalVoiceDraft";
 import { registerVoiceTranscribe, type VoiceTranscribeDeps } from "./openProposalVoiceTranscribe";
 import { startWaitingRun, writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
@@ -191,15 +193,19 @@ const OPEN_TRIES_HOURLY = 60;
 /** Posts that carry files, per connection per hour, refused or accepted. */
 const OPEN_UPLOAD_TRIES_HOURLY = 30;
 /**
- * THE WHOLE POST, AND HOW MANY AT ONCE (security sweep, 14 Nov 2026). Each part
- * is capped by multer, but nothing capped their sum, and every byte is held in
- * memory until the post is judged. A post with no length, or over 45 MB, is
- * refused before a byte is read (three 10 MB files, three notes and the clips
- * fit); and this server reads no more than four such posts at a time, so the
- * most an upload can ever hold here is about 180 MB.
+ * THE WHOLE POST, AND HOW MUCH AT ONCE (security sweep, 14 Nov 2026; sizes raised by the ops request of 19 Nov
+ * 2026). Each part is capped by multer, and their sum is capped too, because every byte is held in memory until
+ * the post is judged. The sum is worked from the parts themselves (shared/applyLimits.ts `uploadTotalMax`): every
+ * file, take and clip at its own cap for the village's own clip count, plus the envelope, so a post that keeps
+ * every per-part cap always fits it. A post with no length, or a longer one, is refused before a byte is read.
+ *
+ * What the server holds at once is capped in bytes (OPEN_UPLOAD_BYTES_IN_FLIGHT, each post counted by its
+ * Content-Length as it starts) as well as in posts (OPEN_UPLOADS_AT_ONCE), so larger caps never mean more memory
+ * than the server was sized for.
  */
-export const OPEN_UPLOAD_MAX_BYTES = 45 * 1024 * 1024;
-export const OPEN_UPLOADS_AT_ONCE = 4;
+export { OPEN_UPLOADS_AT_ONCE } from "../../shared/applyLimits";
+/** The whole post at the platform's default clip count: what a village that never changed it accepts. */
+export const OPEN_UPLOAD_MAX_BYTES = uploadTotalMax(VOICE_CLIPS_DEFAULT);
 
 export function register(app: Express, deps: Deps): void {
   const { getPool, overLimit, clientIp, guardCapability, authedUser, deploymentOrigin, projectName, escapeHtml } = deps;
@@ -501,7 +507,7 @@ export function register(app: Express, deps: Deps): void {
     multer({
       storage: multer.memoryStorage(),
       defParamCharset: "utf8",
-      limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + clipCap, fields: 1, fieldSize: 512 * 1024 },
+      limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + clipCap, fields: 1, fieldSize: PROPOSAL_JSON_MAX_BYTES },
     }).fields([
       { name: "files", maxCount: PROPOSAL_FILES_MAX },
       { name: "voice", maxCount: VOICE_NOTES_MAX },
@@ -509,6 +515,7 @@ export function register(app: Express, deps: Deps): void {
       { name: "clips", maxCount: clipCap },
     ]);
   let uploadsReading = 0;
+  let bytesReading = 0;
 
   app.post("/api/open-proposals", async (req, res) => {
     if (!req.is("multipart/form-data")) return intake(req, res, req.body ?? {}, []);
@@ -516,22 +523,28 @@ export function register(app: Express, deps: Deps): void {
     // Generous on purpose: this counts every post that carries files, refused or not. The strict five an hour is counted in `intake`, on accepted proposals only.
     if (await overLimit(`open-proposal:upload:ip:${ipBucket(clientIp(req))}`, OPEN_UPLOAD_TRIES_HOURLY, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooManyTries });
     // Node reads exactly Content-Length bytes of a body that names one, so the header is the total. No length (chunked) is refused.
+    const clipsMax = clipLimits().max;
     const length = Number(req.headers["content-length"] ?? NaN);
-    if (!Number.isFinite(length) || length > OPEN_UPLOAD_MAX_BYTES) {
+    if (!Number.isFinite(length) || length > uploadTotalMax(clipsMax)) {
       res.setHeader("Connection", "close");
       return res.status(Number.isFinite(length) ? 413 : 411).json({ error: ATTACHMENT_WORDS.uploadTooBig, field: "files" });
     }
-    if (uploadsReading >= OPEN_UPLOADS_AT_ONCE) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
+    if (uploadsReading >= UPLOADS_AT_ONCE || bytesReading + length > OPEN_UPLOAD_BYTES_IN_FLIGHT) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
     uploadsReading += 1;
+    bytesReading += length;
     let released = false;
     const release = () => {
-      if (!released) uploadsReading -= 1;
+      if (!released) {
+        uploadsReading -= 1;
+        bytesReading -= length;
+      }
       released = true;
     };
     // Held until the answer is sent (or the connection drops), so the buffers are counted while they are in memory.
     res.on("finish", release);
     res.on("close", release);
-    const clipsMax = clipLimits().max;
+    // Its own time to arrive on a slow line, past Node's five minutes, for this post only (server/lib/uploadWindow.ts).
+    liftRequestTimeout(req, uploadWindowMs(length));
     uploadFor(clipsMax)(req, res, (err: any) => {
       if (err) {
         const code = String(err?.code ?? "");
@@ -638,15 +651,16 @@ export function register(app: Express, deps: Deps): void {
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
     const checked = checkProposalFiles(files);
-    if (!checked.ok) return res.status(400).json({ error: checked.error, field: "files" });
+    // A part over its own size is 413, as multer answers one over the post's own cap (the parts' caps differ, so multer's is the largest).
+    if (!checked.ok) return res.status(checked.error === ATTACHMENT_WORDS.fileTooBig ? 413 : 400).json({ error: checked.error, field: "files" });
     // The voice note, only with the applicant's tick, every recording checked by its own bytes (Rye, 14 Nov 2026).
     const voice = parseSentVoice(body.voice, voiceNotes.length, clips.length, clipLimits());
     if (!voice.ok) return res.status(400).json({ error: voice.error, field: "voice" });
     if ((voiceNotes.length || clips.length) && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "voice" });
     const heardOk = checkVoiceNotes(voiceNotes);
-    if (!heardOk.ok) return res.status(400).json({ error: heardOk.error, field: "voice" });
+    if (!heardOk.ok) return res.status(heardOk.error === VOICE_WORDS.tooBig ? 413 : 400).json({ error: heardOk.error, field: "voice" });
     const clipsOk = checkVoiceClips(clips);
-    if (!clipsOk.ok) return res.status(400).json({ error: clipsOk.error, field: "voice" });
+    if (!clipsOk.ok) return res.status(clipsOk.error === VOICE_WORDS.tooBig ? 413 : 400).json({ error: clipsOk.error, field: "voice" });
     const { name, email } = parsed.value;
     // The term is the village's, set here and never taken from the form.
     // The goals' words are kept with the card as they read when it was sent, never taken from the form.

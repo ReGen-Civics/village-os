@@ -19,6 +19,7 @@
  */
 
 /** The village's public link. */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
 import { storedVoiceOf, type StoredVoice } from "./voiceNotes";
 import { payAskOf, readPayAsk, type PayAsk } from "./commitmentRange";
@@ -52,20 +53,20 @@ export const OPEN_PROPOSAL_MAX_ROLES = 3;
  */
 export const OPEN_APPLY_ROLES = OPEN_PROPOSAL_MAX_ROLES;
 /** "Get to know us": how many ways the village may list, and how long each may be. */
-export const KNOW_US_MAX = 8;
-export const KNOW_US_TEXT_MAX = 160;
+export const KNOW_US_MAX = APPLY_COUNTS.knowUs;
+export const KNOW_US_TEXT_MAX = APPLY_TEXT.knowUsText;
 /** Human Design or Gene Keys, in the applicant's own words: optional, and never served to the people who decide. */
-export const SELF_KNOWLEDGE_MAX = 300;
+export const SELF_KNOWLEDGE_MAX = APPLY_TEXT.selfKnowledge;
 export const OPEN_NAME_MAX = 120;
-export const OPEN_NOTE_MAX = 600;
+export const OPEN_NOTE_MAX = APPLY_TEXT.roleNote;
 /**
  * "Why you, and why now" asks four things in one box (what they have built, why this role, why now, and their
  * first month), so it holds about a thousand characters for each (the lead, 19 Nov 2026: 1200 did not fit
  * honest answers). The one name the form, the drafting helpers and the server all read. A member's application
  * keeps it as its note, so shared/seatApplications.ts WORDS_MAX is held at least this long.
  */
-export const OPEN_WHY_MAX = 4000;
-export const OPEN_AIM_MAX = 300;
+export const OPEN_WHY_MAX = APPLY_TEXT.why;
+export const OPEN_AIM_MAX = APPLY_TEXT.aim;
 /** How long a confirmation link works, and how long an unconfirmed proposal is kept. */
 export const OPEN_CONFIRM_HOURS = 48;
 

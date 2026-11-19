@@ -46,11 +46,13 @@
  * Pure, so the page and the server import it alike.
  */
 
-export const VOICE_NOTES_MAX = 3;
-export const VOICE_NOTE_MAX_SECONDS = 300;
-/** Ten minutes of the richest phone recording fits; three of them stay under the upload's own caps. */
-export const VOICE_NOTE_MAX_BYTES = 10 * 1024 * 1024;
-export const VOICE_TRANSCRIPT_MAX = 12000;
+import { APPLY_TEXT, CLIP_MAX_BYTES, CLIP_SECONDS_CEILING, CLIP_SECONDS_DEFAULT, CLIPS_CEILING, CLIPS_DEFAULT, TAKE_MAX_BYTES, TAKE_MAX_SECONDS, TAKES_MAX } from "./applyLimits";
+
+export const VOICE_NOTES_MAX = TAKES_MAX;
+export const VOICE_NOTE_MAX_SECONDS = TAKE_MAX_SECONDS;
+/** Fifteen minutes of the largest phone recording, under the transcription providers' 25 MB (shared/applyLimits.ts has the arithmetic). */
+export const VOICE_NOTE_MAX_BYTES = TAKE_MAX_BYTES;
+export const VOICE_TRANSCRIPT_MAX = APPLY_TEXT.heard;
 
 export const VOICE_NOTE_KINDS = ["webm", "ogg", "m4a"] as const;
 export type VoiceNoteKind = (typeof VOICE_NOTE_KINDS)[number];
@@ -79,17 +81,17 @@ export interface VoiceNote {
  * and how long are village settings (org.voice_clips_max, org.voice_clip_seconds);
  * the numbers below are the platform's ceilings and defaults.
  */
-export const VOICE_CLIPS_CEILING = 24;
-export const VOICE_CLIP_SECONDS_CEILING = 180;
-export const VOICE_CLIPS_DEFAULT = 12;
-export const VOICE_CLIP_SECONDS_DEFAULT = 60;
-export const VOICE_CLIP_MAX_BYTES = 4 * 1024 * 1024;
+export const VOICE_CLIPS_CEILING = CLIPS_CEILING;
+export const VOICE_CLIP_SECONDS_CEILING = CLIP_SECONDS_CEILING;
+export const VOICE_CLIPS_DEFAULT = CLIPS_DEFAULT;
+export const VOICE_CLIP_SECONDS_DEFAULT = CLIP_SECONDS_DEFAULT;
+export const VOICE_CLIP_MAX_BYTES = CLIP_MAX_BYTES;
 /**
  * The words kept with one clip. A clip writes into the answer it sits beside, and the longest answer is "Why you,
  * and why now" (shared/openProposals.ts OPEN_WHY_MAX), so a clip keeps at least that many; voiceNotes.test.ts
  * holds the two together.
  */
-export const VOICE_CLIP_WORDS_MAX = 4000;
+export const VOICE_CLIP_WORDS_MAX = APPLY_TEXT.clipWords;
 
 /** The village's limits on clips, as the form is told them. */
 export interface VoiceClipLimits {
@@ -113,7 +115,7 @@ export function clipLimitsOf(raw: unknown): VoiceClipLimits {
  * Which answer a clip belongs to. A closed set, so a clip's key never becomes a
  * path or free words on anybody's page: the answers a decider reads.
  */
-const CLIP_FIELD = /^(why|aim|story|based|languages|suggestion|value-(?:[1-9]|1[0-2])-(?:title|done)|term-[a-z]{2,20}|reference-[1-3])$/;
+const CLIP_FIELD = /^(why|aim|story|based|languages|suggestion|value-(?:[1-9]|1[0-9]|2[0-4])-(?:title|done)|term-[a-z]{2,20}|reference-[1-3])$/;
 export const isClipField = (v: unknown): v is string => typeof v === "string" && CLIP_FIELD.test(v);
 
 /** The answer a clip belongs to, as the deciders read it. */
@@ -167,7 +169,7 @@ export interface StoredVoice {
 }
 
 /** The most words one AI transcript of a kept recording holds. */
-export const VOICE_WRITTEN_MAX = 6000;
+export const VOICE_WRITTEN_MAX = APPLY_TEXT.written;
 const WRITTEN_BY = /^[a-z]{2,12}$/;
 
 /** The AI transcripts kept with a voice part, only for recordings it still holds. Never throws. */
@@ -268,6 +270,7 @@ export const VOICE_WORDS = {
   wrongType: "We couldn't read one of your recordings. Record it again.",
   needConsent: "Tick that we may keep your voice note, or remove the recordings.",
   transcriptTooLong: `Keep what we heard under ${VOICE_TRANSCRIPT_MAX} characters.`,
+  clipWordsTooLong: `Keep the words with each clip under ${VOICE_CLIP_WORDS_MAX} characters.`,
   // The deciders' page.
   heardHeading: "Their voice",
   heardNote: "Only the people who decide this application and the village's admins hear it. It is deleted with the application, and at the latest 90 days after the decision.",
@@ -312,7 +315,9 @@ export function parseSentVoice(
     const s = Number(one.seconds);
     if (!isClipField(one.field) || clips.some((x) => x.field === one.field)) return { ok: false, error: VOICE_WORDS.wrongType };
     if (!Number.isFinite(s) || s <= 0 || s > limits.seconds + 5) return { ok: false, error: VOICE_WORDS.clipTooLong(limits.seconds) };
-    const words = String(typeof one.words === "string" ? one.words : "").trim().slice(0, VOICE_CLIP_WORDS_MAX);
+    // Refused whole when too long, never kept cut (the ops request of 19 Nov 2026: never cut silently).
+    const words = String(typeof one.words === "string" ? one.words : "").trim();
+    if (words.length > VOICE_CLIP_WORDS_MAX) return { ok: false, error: VOICE_WORDS.clipWordsTooLong };
     clips.push({ field: one.field, seconds: Math.min(limits.seconds, Math.max(1, Math.round(s))), words });
   }
   if (recordings === 0 && clipCount === 0 && !transcript) return { ok: true, value: null };

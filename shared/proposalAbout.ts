@@ -27,14 +27,15 @@
  *
  * Pure, so the page and the server import it alike.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
-export const REFERENCES_MAX = 3;
-export const REFERENCE_NAME_MAX = 80;
-export const REFERENCE_HOW_MAX = 160;
-export const REFERENCE_CONTACT_MAX = 120;
-export const ABOUT_BASED_MAX = 120;
-export const ABOUT_LANGUAGES_MAX = 160;
-export const ABOUT_STORY_MAX = 400;
+export const REFERENCES_MAX = APPLY_COUNTS.references;
+export const REFERENCE_NAME_MAX = APPLY_TEXT.referenceName;
+export const REFERENCE_HOW_MAX = APPLY_TEXT.referenceHow;
+export const REFERENCE_CONTACT_MAX = APPLY_TEXT.referenceContact;
+export const ABOUT_BASED_MAX = APPLY_TEXT.based;
+export const ABOUT_LANGUAGES_MAX = APPLY_TEXT.languages;
+export const ABOUT_STORY_MAX = APPLY_TEXT.story;
 
 export interface ProposalReference {
   name: string;

@@ -14,6 +14,9 @@
  * Pure: the page reads and writes through lib/safeStorage, and a test reads
  * every rule here without drawing a page.
  */
+import { GOAL_LIMITS } from "@shared/proposalGoals";
+import { KNOW_US_MAX, KNOW_US_TEXT_MAX } from "@shared/openProposals";
+import { PROPOSAL_LINKS_MAX } from "@shared/proposalAttachments";
 import type { ProposalLink } from "@shared/proposalAttachments";
 import type { ProposalGoal } from "@shared/proposalGoals";
 import type { TermAnswers } from "@shared/termsWords";
@@ -143,7 +146,8 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
   const items: ProposalGoal[] = Array.isArray(o.items)
     ? o.items
         .filter((g: unknown) => g && typeof g === "object")
-        .slice(0, 8)
+        // As many as the form holds now (shared/applyLimits.ts), so a draft kept under any count comes back whole.
+        .slice(0, GOAL_LIMITS.max)
         .map((g: any) => ({ title: own(g.title), doneWhen: own(g.doneWhen), moves: "", serves: str(g.serves, 64), date: "", roleId: str(g.roleId, 128), ...(g.seraDraft === true ? { seraDraft: true } : {}) }))
     : [];
   const extras = extrasOf(o.extras);
@@ -151,13 +155,13 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     savedAt: new Date(at).toISOString(),
     step: step(o.step),
     reached: Math.max(step(o.step), step(o.reached)),
-    knowUs: strs(o.knowUs, 8, 160),
+    knowUs: strs(o.knowUs, KNOW_US_MAX, KNOW_US_TEXT_MAX),
     why: own(o.why),
     name: own(o.name),
     email: own(o.email),
     about: { based: own(o.about?.based), languages: own(o.about?.languages), story: own(o.about?.story) },
     selfKnowledge: own(o.selfKnowledge),
-    links: Array.isArray(o.links) ? o.links.filter((l: any) => l && typeof l === "object").slice(0, 5).map((l: any) => ({ label: own(l.label), url: own(l.url) })) : [],
+    links: Array.isArray(o.links) ? o.links.filter((l: any) => l && typeof l === "object").slice(0, PROPOSAL_LINKS_MAX).map((l: any) => ({ label: own(l.label), url: own(l.url) })) : [],
     aim: own(o.aim),
     items,
     marks: { ...(own(o.marks?.aim) ? { aim: own(o.marks.aim) } : {}), ...(own(o.marks?.story) ? { story: own(o.marks.story) } : {}) },

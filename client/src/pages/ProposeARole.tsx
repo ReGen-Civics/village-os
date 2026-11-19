@@ -42,6 +42,9 @@
 import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
+import { LimitsAtTop } from "@/components/form/LimitSigns";
+import { attachedBytes, attachmentRoom, postBytes } from "@/components/openProposal/uploadSize";
+import { limitProblems } from "@/components/fireflyPath/limitProblems";
 import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import type { PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
@@ -379,6 +382,11 @@ export default function ProposeARole() {
       if (p) add(`roles.${i + 1}`, p === "none" ? OPEN_WORDS.needRoleCommitment : t({ message: `Choose ${extraRoles[i]?.commitmentMin ?? 10}% or more for ${extraRoles[i]?.name ?? ""}.`, context: "founding application check" }));
     });
     if (!agreed.nda) add("agreed", t({ message: "Tick that you will align with the village's confidentiality agreement once you are approved.", context: "founding application check" }));
+    // NOTHING OVER ITS LIMIT GOES, AND NOTHING IS CUT (the ops request of 19 Nov 2026): every answer stays whole in its
+    // box; the send names each one that runs over, with how much to trim, and anything too big to upload.
+    for (const p of limitProblems({ why, about, selfKnowledge, links, aim, items, valuePrefix: prefix, pieceSuggestions, terms: [termsStep, ...extras.map((x) => x.terms)], voice, files, clipsMax: form.kind === "open" ? form.clips.max : 0 }, i18n)) {
+      add(p.field, p.message, p.target === undefined ? targetFor(p.field) : p.target);
+    }
     return orderByStone(found);
   };
 
@@ -474,7 +482,9 @@ export default function ProposeARole() {
       };
       // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
       const request = applicationRequest(proposal, files, voice);
-      timer = setTimeout(() => stop.abort(), sendTimeoutMs(request.body instanceof FormData));
+      // Its own window for its size on a slow line, the one the server gives it too (shared/applyLimits.ts uploadWindowMs).
+      const multipart = request.body instanceof FormData;
+      timer = setTimeout(() => stop.abort(), sendTimeoutMs(multipart, multipart ? postBytes(files, voice, new Blob([JSON.stringify(proposal)]).size) : 0));
       const res = await fetch("/api/open-proposals", { ...request, signal: stop.signal });
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
@@ -658,7 +668,7 @@ export default function ProposeARole() {
   ];
   const startWith = (phrase: string) => {
     const next = why.trim() ? `${why.trimEnd()}\n\n${phrase} ` : `${phrase} `;
-    setWhy(next.slice(0, OPEN_WHY_MAX));
+    setWhy(next);
     window.setTimeout(() => {
       const box = document.getElementById("propose-why") as HTMLTextAreaElement | null;
       box?.focus();
@@ -745,6 +755,7 @@ export default function ProposeARole() {
           </p>
         )}
         <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} />
+        <LimitsAtTop className="mt-3" />
         {restored && <RestoredNote kind={restored} />}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
       </header>
@@ -831,7 +842,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <GrowingField id="propose-why" clip="why" counter required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" required minRows={7} limit={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -851,7 +862,7 @@ export default function ProposeARole() {
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
                     {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
                   </label>
-                  <MicInput id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
+                  <MicInput id="propose-self" limit={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>
                   <Beside id="propose-problem-selfKnowledge" message={problemOn("selfKnowledge")} />
                 </div>
@@ -860,6 +871,7 @@ export default function ProposeARole() {
                   onLinks={setLinks}
                   files={files}
                   onFiles={setFiles}
+                  together={{ voiceBytes: attachedBytes([], voice), room: attachmentRoom(form.clips.max) }}
                   invalid={error && (error.field === "links" || error.field === "files") ? { field: error.field, message: error.message } : null}
                 />
               </div>
@@ -875,10 +887,10 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <MicInput id="propose-aim" clip="aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
+                <MicInput id="propose-aim" clip="aim" required limit={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
-                  {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim.slice(0, OPEN_AIM_MAX)); setMarks((m) => ({ ...m, aim: r.aim!.slice(0, OPEN_AIM_MAX) })); } }} />}
+                  {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim); setMarks((m) => ({ ...m, aim: r.aim })); } }} />}
                   {isTextDraft(aim, marks.aim) && <DraftMark founding onKeep={() => setMarks((m) => ({ ...m, aim: undefined }))} />}
                 </div>
               </div>

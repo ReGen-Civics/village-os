@@ -33,6 +33,7 @@
  * Pure, so the page and the server import it alike.
  */
 import { VOICE_NOTE_MAX_SECONDS } from "./voiceNotes";
+import { APPLY_TEXT } from "./applyLimits";
 
 export const VOICE_TRANSCRIBE_PATH = "/api/open-proposals/voice-transcribe";
 
@@ -58,7 +59,7 @@ export const VOICE_TRANSCRIBE_AT_ONCE = 3;
 /** The longest take that may be sent, with the page's own rounding allowed for. */
 export const VOICE_TRANSCRIBE_MAX_SECONDS = VOICE_NOTE_MAX_SECONDS + 5;
 /** The most words that come back for one take. */
-export const VOICE_TRANSCRIBE_TEXT_MAX = 6000;
+export const VOICE_TRANSCRIBE_TEXT_MAX = APPLY_TEXT.transcribed;
 
 export const TRANSCRIBE_WORDS = {
   consentLine: "Your recording is transcribed by an AI service so the team can read it. You can turn this off.",

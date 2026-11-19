@@ -39,6 +39,7 @@
  *
  * Money in an application is a RECORD. Nothing here pays, posts or settles.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 import { aboutOf, backgroundCheckOf, referencesOf, type BackgroundCheck, type ProposalAbout, type ProposalReference } from "./proposalAbout";
 import { goalsAsText, goalsOf, legacyGoals, parseGoals, type ProposalGoal } from "./proposalGoals";
 import { looksLikePaymentDetails, PAYMENT_DETAIL_MESSAGE, parseSeatSettings, type SeatSettings } from "./seatSettings";
@@ -62,7 +63,7 @@ export const MAX_SEATS = 3;
  * application's note when it is adopted (server/lib/openProposalDecide.ts), so this is never shorter than
  * shared/openProposals.ts OPEN_WHY_MAX; seatApplications.test.ts holds the two together.
  */
-export const WORDS_MAX = 4000;
+export const WORDS_MAX = APPLY_TEXT.memberWords;
 
 export const APPLICATION_STATUSES = ["awaiting-holder", "voting", "adopted", "not-adopted", "withdrawn", "held-full"] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];
@@ -158,7 +159,7 @@ export interface ApplicationAnswers {
   counterOffer?: CounterOffer;
 }
 
-const ANSWER_LIMITS = { aim: 300, goal: 300, timeZone: 64, window: 40, windows: 6, termsNote: 600 } as const;
+const ANSWER_LIMITS = { aim: APPLY_TEXT.memberAim, goal: APPLY_TEXT.memberGoal, timeZone: 64, window: 40, windows: APPLY_COUNTS.memberWindows, termsNote: APPLY_TEXT.memberTermsNote, goals: APPLY_COUNTS.memberGoals } as const;
 
 /** The per-setting answers and the commitment, when well formed; whatever is not is left out, never thrown on. */
 function termsExtras(t: Record<string, unknown> | null | undefined): { answers?: TermAnswers; commitmentPct?: number } {
@@ -181,7 +182,7 @@ function servesOf(v: unknown): Array<{ goal: string; howItHelps: string | null }
     if (!goal || out.some((g) => g.goal === goal)) continue;
     const how = typeof o.howItHelps === "string" && o.howItHelps.trim() ? o.howItHelps.trim().slice(0, ANSWER_LIMITS.goal) : null;
     out.push({ goal, howItHelps: how });
-    if (out.length >= 9) break;
+    if (out.length >= ANSWER_LIMITS.goals) break;
   }
   return out;
 }
