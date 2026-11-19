@@ -17,6 +17,7 @@ import { API_BASE, authHeaders } from "@/components/admin/adminApi";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { PlayVoice, StoredWordsSlot, type ServedClip, type ServedVoice } from "@/components/voice/VoiceHeard";
 import { STORED_TRANSCRIBE_WORDS } from "@shared/voiceTranscribe";
+import { ONBOARDING_WORDS, TRACK, TRACK_WORDS, type TrackStage } from "@shared/applicantOnboarding";
 
 interface DeskLink {
   id: string;
@@ -27,6 +28,8 @@ interface DeskLink {
 
 interface DeskProposal {
   id: string;
+  /** Where it stands and who acts next, by role (shared/applicantOnboarding.ts). The list arrives ordered by stage, then by the day it arrived. */
+  stage?: { key: TrackStage; label: string; who: string; next: string } | null;
   name: string | null;
   email: string | null;
   via: string | null;
@@ -272,9 +275,39 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
           {desk.proposals.length === 0 ? (
             <p className="text-sm text-gray-500">None yet. A role application shows here once its sender confirms their email, or at once, marked, when our confirmation email to them fails.</p>
           ) : (
-            desk.proposals.map((p) => (
-              <article key={p.id} className="grid gap-2 rounded-lg border border-gray-200 p-3 text-sm" data-open-proposal-row={p.id}>
-                <p className="break-words font-semibold text-gray-900">
+            <>
+            {/* Every application by stage, so nothing stalls unseen. Ordered by stage, then by the day it arrived: nothing is ranked. */}
+            <nav aria-label={ONBOARDING_WORDS.listHeading} className="grid gap-1 rounded-lg border border-border p-3 text-sm" data-stage-overview="">
+              <p className="font-semibold text-foreground">{ONBOARDING_WORDS.listHeading}</p>
+              <p className="text-muted-foreground">{ONBOARDING_WORDS.listIntro}</p>
+              <ul className="mt-1 flex flex-wrap gap-2">
+                {TRACK.map((k) => {
+                  const n = desk.proposals.filter((p) => (p.stage?.key ?? "received") === k).length;
+                  return n ? (
+                    <li key={k}>
+                      <a href={`#desk-stage-${k}`} className="inline-flex min-h-10 items-center rounded-lg border border-border px-3 text-foreground hover:bg-muted" data-stage-count={k}>
+                        {TRACK_WORDS[k]}: {n}
+                      </a>
+                    </li>
+                  ) : null;
+                })}
+              </ul>
+            </nav>
+            {desk.proposals.map((p, i) => (
+              <div key={p.id} className="grid gap-2">
+              {(i === 0 || (desk.proposals[i - 1].stage?.key ?? "received") !== (p.stage?.key ?? "received")) && (
+                <h3 id={`desk-stage-${p.stage?.key ?? "received"}`} className="mt-2 scroll-mt-24 font-semibold text-foreground" data-stage-heading={p.stage?.key ?? "received"}>
+                  {TRACK_WORDS[p.stage?.key ?? "received"]}
+                </h3>
+              )}
+              <article className="grid gap-2 rounded-lg border border-border p-3 text-sm" data-open-proposal-row={p.id} data-open-proposal-stage={p.stage?.key ?? ""}>
+                {p.stage && (
+                  <p className="break-words text-foreground" data-open-proposal-next="">
+                    <span className="font-semibold">{ONBOARDING_WORDS.whoActs}:</span> {p.stage.who}. {p.stage.next}
+                  </p>
+                )}
+                {p.confirmedAt && <p className="text-muted-foreground">{ONBOARDING_WORDS.arrivedOn(p.confirmedAt.slice(0, 10))}</p>}
+                <p className="break-words font-semibold text-foreground">
                   {p.name ?? "Name taken off"} <span className="font-normal text-gray-600">{p.email}</span>
                   {p.via && <span className="font-normal text-gray-500"> (through the link for {p.via})</span>}
                 </p>
@@ -322,12 +355,14 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                     ))}
                   </div>
                 )}
-                <a href={`/open-proposals/${encodeURIComponent(p.id)}`} className="inline-flex min-h-10 items-center gap-1.5 font-medium text-teal-deep underline underline-offset-2">
-                  Open its page, where the circle answers and it is decided
+                <a href={`/open-proposals/${encodeURIComponent(p.id)}#walkthrough`} className="inline-flex min-h-10 items-center gap-1.5 font-medium text-teal-deep underline underline-offset-2">
+                  Open its page, where it is walked through and decided
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </a>
               </article>
-            ))
+              </div>
+            ))}
+            </>
           )}
         </section>
       </div>

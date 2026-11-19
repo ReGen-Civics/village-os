@@ -343,6 +343,17 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // Onboarding (shared/applicantOnboarding.ts). Bell only: no name, contact or note rides on them.
+  application_references_in: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
+  application_reference_owner: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
   // The applicant's invitation expired and they asked for a new one (their
   // status page's door). Nothing is reissued by itself: a holder makes it.
   application_new_invitation_asked: {

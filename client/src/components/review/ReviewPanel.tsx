@@ -116,7 +116,7 @@ export default function ReviewPanel({ applicationRef, onChanged, moonEnded, mayA
   const criterionText = (id: string) => card.criteria.find((c) => c.id === id)?.text ?? id;
 
   return (
-    <section aria-labelledby="rv-heading" className="rounded-xl border border-border bg-card p-5" data-review-panel="">
+    <section id="scorecards" aria-labelledby="rv-heading" className="scroll-mt-24 rounded-xl border border-border bg-card p-5" data-review-panel="">
       <h2 id="rv-heading" className="text-lg font-bold text-foreground">
         {PANEL_WORDS.heading}
       </h2>

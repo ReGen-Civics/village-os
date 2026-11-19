@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.29 (2026-11-19)
+
+### What changed for your village
+
+- **A guided path from a role application to a decision.** Each open application's page now opens with a walkthrough: the stages (received, our review, shortlist, references, follow-ups and intuition conversations, final conversation, decision), who acts next by role, and one main action for each stage. A new admin desk lists every open application by stage, then by the date it arrived, with a count for each stage. Nothing ranks applicants, and nothing in this path calls an AI.
+- **Shortlist.** After our review, a person who can place people in roles answers whether the application is shortlisted. A "no" only records the answer; a decline still goes through the usual decline and its letter.
+- **References from people aligned with the work.** A shortlisted applicant gets one letter, in their language, asking for up to five references: people connected with this work who might also be allies or partners. They add them on their own status page.
+- **Follow-ups by the right person.** Each reference starts with the village's follow-up role, and the team can give it to another role or a member. Only that owner writes the notes and marks it followed up. This runs alongside the intuition conversations; neither waits for the other.
+- **Everything in one place for the final call.** The village's final-call role reads the scorecards, the references and the follow-up notes together, adds the final conversation, and then adopts or declines in the usual way.
+- **References stay private.** Contact details reach only the reviewers, the final-call role and that reference's owner, and are removed with the rest of the application when it is anonymised or cleared.
+
+### What you must do
+
+Set two roles in Admin, Game Mechanics, "The village's people": the role that follows up references (`org.reference_followup_role`) and the role that makes the final call (`org.final_call_role`). Until the first is set, each reference waits for the team to pick who follows up. Until the second is set, the people who can place people in roles make the final call. One migration (0412) adds the references table; it applies by itself at boot.
+
+---
+
 ## 1.3.28 (2026-11-19)
 
 ### What changed for your village

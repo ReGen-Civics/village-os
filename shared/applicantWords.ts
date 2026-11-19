@@ -71,6 +71,9 @@ export interface ApplicantMessages {
     invited(roles: string): string;
     notInvitedTitle(village: string): string;
     notInvited(roles: string): string;
+    /** A shortlisted applicant is asked for references (shared/applicantOnboarding.ts). The form is on their status page. */
+    referencesTitle: string;
+    references(roles: string): string;
   };
 
   /** THE INVITATION (our review said yes): the conversations in order, from the role's own list. */
@@ -217,6 +220,27 @@ export interface ApplicantMessages {
       none: string;
       some(n: number): string;
     };
+    /** The references a shortlisted applicant is asked for: the step on the path and the form on this page (shared/applicantOnboarding.ts). */
+    referenceForm: {
+      step: string;
+      heading: string;
+      line: string;
+      privacy: string;
+      name: string;
+      contact: string;
+      contactHint: string;
+      how: string;
+      ally: string;
+      allyHint: string;
+      add: string;
+      remove(n: number): string;
+      row(n: number): string;
+      send: string;
+      sent: string;
+      given(n: number): string;
+      failed: string;
+      errors: Record<"none" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+    };
     private: string;
     wait: { heading: string; line: string; quests: string; map: string; events: string };
   };
@@ -289,6 +313,8 @@ const en: ApplicantMessages = {
     invited: (roles) => `We read your application to hold ${roles} with care, and we would love to invite you for the next step to meet the team. The details are in your email.`,
     notInvitedTitle: (v) => `Thank you for applying to ${v}`,
     notInvited: (roles) => `Thank you for applying to hold ${roles}. We have found someone more closely matched to this role. We encourage you to explore quests, and we'd love to stay in touch.`,
+    referencesTitle: "You are on our shortlist: may we hear from your references?",
+    references: (roles) => `Thank you for your application to hold ${roles}. You are on our shortlist, and the next step is your references: people connected with this work, ideally people who could also become allies or partners of the village. Open your status page to add them, with how to reach each one, how they know you and why they might be an ally.`,
   },
 
   invite: {
@@ -440,6 +466,33 @@ const en: ApplicantMessages = {
       none: "You gave no references, so we run a background check. You agreed to it when you proposed. We cover its cost, and we contact no one before our first conversation with you.",
       some: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. We contact references only after our first conversation, and only with your OK.`,
     },
+    referenceForm: {
+      step: "References",
+      heading: "Your references",
+      line: "You are on our shortlist. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
+      privacy: "Only the people who review your application, and the person who follows up with each reference, read these details. No AI reads them. They are deleted with your application.",
+      name: "Their name",
+      contact: "How to reach them",
+      contactHint: "An email address or a phone number.",
+      how: "How they know you",
+      ally: "Why they might be an ally or partner (optional)",
+      allyHint: "What they might bring to the village, or how they might work with us.",
+      add: "Add another reference",
+      remove: (n) => `Remove reference ${n}`,
+      row: (n) => `Reference ${n}`,
+      send: "Send my references",
+      sent: "Thank you. We have your references.",
+      given: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. Thank you. If something changes, write to us.`,
+      failed: "That did not send. Try again.",
+      errors: {
+        none: "Add at least one reference.",
+        too_many: "Add up to five references.",
+        needs_all: "Give each reference a name, how to reach them and how they know you. Or clear the row.",
+        contact: "Give an email address or a phone number we can reach that reference on.",
+        twice: "You added the same reference twice.",
+        too_long: "One of the answers is too long. Keep it shorter.",
+      },
+    },
     private: "This page shows steps only. What the people who talk with you write down stays with them.",
     wait: {
       heading: "While you wait",
@@ -497,6 +550,8 @@ const es: ApplicantMessages = {
     invited: (roles) => `Leímos con cuidado tu postulación para ocupar ${roles}, y nos encantaría invitarte al siguiente paso para conocer al equipo. Los detalles están en tu correo.`, // check: "postulación" for application; needs-native-review: new words, 12 Nov 2026
     notInvitedTitle: (v) => `Gracias por postularte a ${v}`,
     notInvited: (roles) => `Gracias por postularte para ocupar ${roles}. Encontramos a alguien que encaja más de cerca con este rol. Te animamos a explorar misiones, y nos encantaría seguir en contacto.`, // needs-native-review: new words, 16 Nov 2026
+    referencesTitle: "Estás en nuestra lista corta: ¿podemos escuchar a tus referencias?", // needs-native-review: new words, 19 Nov 2026
+    references: (roles) => `Gracias por tu postulación para ocupar ${roles}. Estás en nuestra lista corta, y el siguiente paso son tus referencias: personas vinculadas con este trabajo, idealmente personas que también podrían ser aliadas o socias de la aldea. Abre la página de tu estado para agregarlas, con cómo contactar a cada una, cómo te conocen y por qué podrían ser aliadas.`, // needs-native-review: new words, 19 Nov 2026
   },
 
   // needs-native-review: the invitation and the not-invited letter
@@ -652,6 +707,34 @@ const es: ApplicantMessages = {
     references: {
       none: "No diste referencias, así que haremos una verificación de antecedentes. Aceptaste cuando enviaste tu propuesta. Nosotros cubrimos su costo y no contactamos a nadie antes de nuestra primera conversación contigo.",
       some: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Contactamos a las referencias solo después de nuestra primera conversación, y solo con tu visto bueno.`,
+    },
+    // needs-native-review: the reference form, new words, 19 Nov 2026
+    referenceForm: {
+      step: "Referencias",
+      heading: "Tus referencias",
+      line: "Estás en nuestra lista corta. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
+      privacy: "Solo las personas que revisan tu postulación, y quien da seguimiento a cada referencia, leen estos datos. Ninguna IA los lee. Se borran con tu postulación.",
+      name: "Su nombre",
+      contact: "Cómo contactarla",
+      contactHint: "Un correo electrónico o un número de teléfono.",
+      how: "Cómo te conoce",
+      ally: "Por qué podría ser aliada o socia (opcional)",
+      allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
+      add: "Agregar otra referencia",
+      remove: (n) => `Quitar la referencia ${n}`,
+      row: (n) => `Referencia ${n}`,
+      send: "Enviar mis referencias",
+      sent: "Gracias. Ya tenemos tus referencias.",
+      given: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbenos.`,
+      failed: "No se envió. Inténtalo de nuevo.",
+      errors: {
+        none: "Agrega al menos una referencia.",
+        too_many: "Agrega hasta cinco referencias.",
+        needs_all: "Da a cada referencia un nombre, cómo contactarla y cómo te conoce. O vacía la fila.",
+        contact: "Da un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
+        twice: "Agregaste la misma referencia dos veces.",
+        too_long: "Una de las respuestas es demasiado larga. Hazla más corta.",
+      },
     },
     private: "Esta página muestra solo los pasos. Lo que anotan las personas que conversan contigo se queda con ellas.",
     wait: {
@@ -811,6 +894,7 @@ export function statusView(lang: ApplicantLanguage | null | undefined, s: Status
     if (label === STEP_WORDS.review) return w.review;
     if (label === STEP_WORDS.invited) return w.invitation;
     if (label === STEP_WORDS.first_cycle) return w.firstCycle;
+    if (label === STEP_WORDS.refs_asked) return w.referenceForm.step;
     const m = CONVERSATION_LABEL.exec(label);
     if (m) return w.conversationWith(m[1], Number(m[2]));
     return label;

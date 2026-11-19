@@ -618,7 +618,7 @@ export const replyPromise = (days: number, lang?: ApplicantLanguage): string => 
 
 // ── Updates about a proposal, to the person who made it ─────────────────────
 
-export type ApplicantUpdateKind = "confirmed" | "first_reply" | "conversation" | "consent" | "terms" | "adopted" | "declined" | "invited" | "not_invited";
+export type ApplicantUpdateKind = "confirmed" | "first_reply" | "conversation" | "consent" | "terms" | "adopted" | "declined" | "invited" | "not_invited" | "references";
 
 /** Kinds that go as an email as well as to the profile. The rest already have a letter of their own, so they only reach the profile. */
 export const UPDATE_EMAILS: Record<ApplicantUpdateKind, boolean> = {
@@ -632,6 +632,8 @@ export const UPDATE_EMAILS: Record<ApplicantUpdateKind, boolean> = {
   // Our review's two answers each have a letter of their own (invitedLetter, notInvitedLetter).
   invited: false,
   not_invited: false,
+  // A shortlisted applicant is asked for references (shared/applicantOnboarding.ts): the form is on their status page, so the letter carries its link.
+  references: true,
 };
 
 /** One update's title (the email's subject and the profile's headline) and its text. A decider's note rides under the text. */
@@ -663,6 +665,8 @@ export function applicantUpdate(
       return { title: u.invitedTitle, text: withNote(u.invited(roles)) };
     case "not_invited":
       return { title: u.notInvitedTitle(i.village), text: withNote(u.notInvited(roles)) };
+    case "references":
+      return { title: u.referencesTitle, text: body([u.references(roles)]) };
   }
 }
 

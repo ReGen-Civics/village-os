@@ -63,7 +63,12 @@ export function kindOfRef(ref: unknown): ApplicationKind | null {
  * page and are never stamped. Every kind fits the column's 16 characters, so
  * no migration.
  */
-export const STEP_KINDS = ["confirmed", "first_reply", "review", "invited", "not_invited", "interview", "scores_in", "consent", "decided", "first_cycle", "cleared"] as const;
+/**
+ * THE ONBOARDING STEPS (shared/applicantOnboarding.ts): `shortlist` (one answer,
+ * yes or no, in the detail), `refs_asked` (references were asked for) and
+ * `refs_given` (the applicant gave them). Each fits the column's 16 characters.
+ */
+export const STEP_KINDS = ["confirmed", "first_reply", "review", "invited", "not_invited", "interview", "scores_in", "consent", "decided", "first_cycle", "cleared", "shortlist", "refs_asked", "refs_given"] as const;
 export type StepKind = (typeof STEP_KINDS)[number];
 
 export const STEP_WORDS: Record<StepKind, string> = {
@@ -78,6 +83,9 @@ export const STEP_WORDS: Record<StepKind, string> = {
   decided: "Decision",
   first_cycle: "First cycle",
   cleared: "Cleared",
+  shortlist: "Shortlist",
+  refs_asked: "References",
+  refs_given: "References given",
 };
 
 /** The setting that puts our review before the conversations. Read at confirm and kept on the application. */
@@ -342,6 +350,12 @@ export interface ReaderFacts {
   recused: boolean;
   /** The reader holds the power to fill roles (`org.seat`). */
   holdsSeatPower: boolean;
+  /**
+   * The reader holds the role the village names for the final call
+   * (`org.final_call_role`, shared/applicantOnboarding.ts): the scorecards are
+   * gathered for them. Read on the same terms as the power to fill roles.
+   */
+  holdsFinalCall?: boolean;
 }
 
 /**
@@ -354,7 +368,7 @@ export function mayReadScorecards(f: ReaderFacts): boolean {
   if (f.isApplicant || f.recused) return false;
   if (f.hasSubmitted) return true;
   if (f.isInterviewer) return false;
-  return f.holdsSeatPower;
+  return f.holdsSeatPower || f.holdsFinalCall === true;
 }
 
 // ── The clocks ──────────────────────────────────────────────────────────────
@@ -398,6 +412,8 @@ export interface StatusInput {
   consentOpen: boolean;
   consentClosesAt: Date | null;
   timeZone: string;
+  /** References were asked of a shortlisted applicant (shared/applicantOnboarding.ts): a step of its own on the path, before the decision. */
+  references?: { given: boolean } | null;
 }
 
 export interface Status {
@@ -418,6 +434,7 @@ export function statusFor(i: StatusInput): Status {
   for (const iv of i.interviews) path.push({ label: `Conversation with ${iv.roleName} (${iv.minutes} minutes)`, state: iv.state === "scored" || iv.state === "skipped" ? "done" : iv.state === "open" ? "now" : "later" });
   const interviewing = i.interviews.some((v) => v.state === "open");
   const done = i.interviews.every((v) => v.state === "scored" || v.state === "skipped");
+  if (i.references) path.push({ label: STEP_WORDS.refs_asked, state: i.references.given ? "done" : i.decided ? "later" : "now" });
   path.push({ label: STEP_WORDS.consent, state: i.decided ? "done" : done && i.firstReplyAt ? "now" : "later" });
   path.push({ label: STEP_WORDS.decided, state: i.decided ? "done" : "later" });
 
@@ -459,6 +476,7 @@ export function reviewedStatusFor(i: StatusInput): Status {
   if (i.notInvited) return { step: "decided", stepWords: STEP_WORDS.decided, actsNext: "Nobody. The village has answered.", by: null, path };
   path.push({ label: STEP_WORDS.invited, state: invited ? "done" : "later" });
   for (const iv of i.interviews) path.push({ label: `Conversation with ${iv.roleName} (${iv.minutes} minutes)`, state: ivDone(iv) ? "done" : iv.state === "open" ? "now" : "later" });
+  if (i.references) path.push({ label: STEP_WORDS.refs_asked, state: i.references.given ? "done" : i.decided ? "later" : "now" });
   path.push({ label: STEP_WORDS.decided, state: i.decided ? "done" : invited && talksDone ? "now" : "later" });
   path.push({ label: STEP_WORDS.first_cycle, state: i.decided === "adopted" ? "now" : "later" });
 
@@ -520,7 +538,7 @@ export const REVIEW_WORDS = {
 } as const;
 
 /** Sera, the guide and every companion are refused these reads. Tested, not trusted. */
-export const SELECTION_IS_HUMAN = ["application_scores", "application_interviews", "application_recusals", "application_steps"] as const;
+export const SELECTION_IS_HUMAN = ["application_scores", "application_interviews", "application_recusals", "application_steps", "application_references"] as const;
 
 // ── The moon running now ────────────────────────────────────────────────────
 

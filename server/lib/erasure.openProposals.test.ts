@@ -5,7 +5,8 @@
  * invitation reached their account, closes one still waiting as withdrawn,
  * anonymises each with the one list every anonymising path uses, and removes
  * its private folder of files and recordings at once. A living person's
- * application, at another address, keeps everything.
+ * application, at another address, keeps everything. The references a
+ * shortlisted applicant gave (0412) go in the same step.
  *
  * Runs against a scratch schema with every real migration applied. No
  * TEST_DATABASE_URL and the suite skips (harness rule).
@@ -103,7 +104,16 @@ describe.skipIf(!configured)("an erased member's public applications", () => {
     // CONTROL: somebody else's, at another address.
     await application("op-ee000000000000000003", "ash@example.test", "confirmed");
 
+    // The references each gave once shortlisted (0412): personal data of people who never signed up.
+    for (const id of ["op-ee000000000000000001", "op-ee000000000000000002", "op-ee000000000000000003"]) {
+      await q("INSERT INTO application_references (application_ref, position, name, contact, how_known, why_ally, owner_role_id, added_at) VALUES (?, 1, 'Shortlist Ref', 'shortlist.ref@example.test', 'Neighbour', '', '', NOW())", [id]);
+    }
+
     await anonymizeMember(pool, leaver, "u-steward", deps());
+
+    // Gone at once from both of theirs; somebody else's keeps its reference.
+    expect(await q("SELECT application_ref FROM application_references WHERE application_ref IN ('op-ee000000000000000001', 'op-ee000000000000000002')")).toEqual([]);
+    expect(await q("SELECT application_ref FROM application_references WHERE application_ref = 'op-ee000000000000000003'")).toHaveLength(1);
 
     const waiting = await read("op-ee000000000000000001");
     expect(waiting).toMatchObject({ status: "withdrawn", name: null, email: null, email_key: null });
