@@ -9,7 +9,8 @@
  *   - Every other limit an applicant or a member meets is three times what it was.
  *   - A box that takes voice (it has the mic, or a clip beside it) holds at least VOICE_BOX_FLOOR, about seven
  *     minutes of talking, where tripling would give less.
- *   - One take records for 15 minutes (three times five), which every transcription provider still takes (below).
+ *   - One take records for 7 minutes (ops decision, 19 Nov 2026, in place of the 15 first planned): one value,
+ *     TAKE_MAX_SECONDS, read by the recorder, the server, the transcription door and every line of copy.
  *
  * WHAT DID NOT MOVE, AND WHY:
  *   - Rate and abuse caps (tries an hour per connection, per address, the village's hourly ceiling, transcriptions
@@ -33,13 +34,14 @@ const voiceBox = (old: number): number => Math.max(old * 3, VOICE_BOX_FLOOR);
 
 /* ── Recording ─────────────────────────────────────────────────────────── */
 
-/** One take: 15 minutes (was 5). */
-export const TAKE_MAX_SECONDS = 15 * 60;
+/** One take: 7 minutes (was 5). The one value the recorder, the server, transcription and the copy read. */
+export const TAKE_MAX_SECONDS = 7 * 60;
 /** Takes one application carries (unchanged: a count of uploads, see above). */
 export const TAKES_MAX = 3;
 /** A clip beside one answer: the village's default length and the platform's ceiling (were 60 and 180). */
 export const CLIP_SECONDS_DEFAULT = 180;
-export const CLIP_SECONDS_CEILING = 540;
+/** Tripling the old 180 would give 540, past one take: a clip is held to the take's 7 minutes. */
+export const CLIP_SECONDS_CEILING = TAKE_MAX_SECONDS;
 /** Clips one application may carry: the village's default and the platform's ceiling (unchanged: counts of uploads). */
 export const CLIPS_DEFAULT = 12;
 export const CLIPS_CEILING = 24;
@@ -50,17 +52,17 @@ export const CLIPS_CEILING = 24;
  * an MP4 on an iPhone, Opus in WebM on Android Chrome. VBR peaks and the container add up to a quarter more, so a
  * recording is sized at 160 kbit/s, 20,000 bytes a second:
  *
- *   a 15-minute take:   900 s x 20,000 B/s = 18,000,000 bytes (17.2 MiB)
- *   a 9-minute clip:    540 s x 20,000 B/s = 10,800,000 bytes (10.3 MiB)
+ *   a 7-minute take:    420 s x 20,000 B/s = 8,400,000 bytes (8.0 MiB)
+ *   a 7-minute clip:    the same, at the clip ceiling
  *
- * Tripling the old caps gives 30 MiB a take and 12 MiB a clip. A take also goes, whole, to the transcription
- * service, and Groq and OpenAI each take at most 25 MB (25,000,000 bytes) in one request, so a take is held to
- * 24,000,000 bytes: room for 15 minutes at up to 213 kbit/s, with a megabyte for the provider's own envelope.
+ * A take is held to 12,000,000 bytes: room for 7 minutes at up to 228 kbit/s, about 40% over the sized rate, and
+ * well under the 25 MB (25,000,000 bytes) that Groq and OpenAI each take in one request. A clip keeps 12 MiB, three
+ * times its old 4 MiB, which also covers a 7-minute clip.
  */
 export const RECORDING_BYTES_PER_SECOND = 20_000;
 /** The most one request to a transcription provider carries (Groq's and OpenAI's documented 25 MB). */
 export const PROVIDER_UPLOAD_MAX_BYTES = 25_000_000;
-export const TAKE_MAX_BYTES = 24_000_000;
+export const TAKE_MAX_BYTES = 12_000_000;
 export const CLIP_MAX_BYTES = 12 * 1024 * 1024;
 
 /* ── Files ─────────────────────────────────────────────────────────────── */
@@ -90,8 +92,8 @@ export const UPLOAD_ENVELOPE_BYTES = PROPOSAL_JSON_MAX_BYTES + 1024 * 1024;
 /**
  * The most one application post may carry, for a village that takes `clipsMax` clips: every file, take and clip at
  * its own cap, and the envelope. The server refuses a longer Content-Length before reading a byte; the form adds
- * the same sum up before it sends. With the default twelve clips that is 90 MiB + 68.7 MiB + 144 MiB + 9 MiB,
- * about 312 MiB; at the ceiling of 24 clips, about 456 MiB.
+ * the same sum up before it sends. With the default twelve clips that is 90 MiB + 34.3 MiB + 144 MiB + 9 MiB,
+ * about 277 MiB; at the ceiling of 24 clips, about 421 MiB.
  */
 export function uploadTotalMax(clipsMax: number): number {
   const clips = Math.max(0, Math.min(CLIPS_CEILING, Math.floor(Number.isFinite(clipsMax) ? clipsMax : 0)));
@@ -118,8 +120,8 @@ export const UPLOAD_IDLE_MS = 120_000;
 
 /**
  * How long an upload of `bytes` is given to arrive: its time on a slow uplink, half as long again, and never less
- * than Node's own five minutes. A 15-minute take at 64 kbit/s (7.2 MB) gets the five minutes; a full application
- * of about 312 MiB gets about 65 minutes. Only the upload routes use it (server/lib/uploadWindow.ts).
+ * than Node's own five minutes. A 7-minute take, even at its 12 MB cap, gets the five minutes; a full application
+ * of about 277 MiB gets about 58 minutes. Only the upload routes use it (server/lib/uploadWindow.ts).
  */
 export function uploadWindowMs(bytes: number): number {
   const b = Math.max(0, Number.isFinite(bytes) ? bytes : 0);
@@ -133,12 +135,12 @@ export const JSON_SEND_TIMEOUT_MS = 270_000;
 /* ── Transcription ─────────────────────────────────────────────────────── */
 
 /**
- * Waiting on a provider (Groq or OpenAI) for one take, and on this server's own Whisper: three times 90 s and
- * 240 s. The server's Whisper wrote a five-minute take in about a minute of two cores (17 Nov 2026), so a
- * 15-minute take needs about three; twelve minutes leaves room on a busy box.
+ * Waiting on a provider (Groq or OpenAI) for one take, and on this server's own Whisper (were 90 s and 240 s, for
+ * five minutes). The server's Whisper wrote a five-minute take in about a minute of two cores (17 Nov 2026), so a
+ * 7-minute take needs about a minute and a half; seven minutes leaves room on a busy box, and three for a provider.
  */
-export const TRANSCRIBE_PROVIDER_TIMEOUT_MS = 270_000;
-export const TRANSCRIBE_LOCAL_TIMEOUT_MS = 720_000;
+export const TRANSCRIBE_PROVIDER_TIMEOUT_MS = 180_000;
+export const TRANSCRIBE_LOCAL_TIMEOUT_MS = 420_000;
 
 /* ── Words ─────────────────────────────────────────────────────────────── */
 
@@ -198,15 +200,15 @@ export const APPLY_TEXT = {
   statusRefHow: 900,
   statusRefAlly: 1200,
   /**
-   * "What we heard, in your words", across every take: three 15-minute takes of talking (3 x 15 x 1,050 =
-   * 47,250), rounded up (was 12,000).
+   * "What we heard, in your words", across every take: three 7-minute takes of talking (3 x 7 x 1,050 =
+   * 22,050), rounded up (was 12,000).
    */
-  heard: 48000,
-  /** The words a transcription service sends back for one take: a 15-minute take is about 15,750 (was 6000). */
-  transcribed: 18000,
+  heard: 24000,
+  /** The words a transcription service sends back for one take: a 7-minute take is about 7,350, and never under the why's 8,000 (was 6000). */
+  transcribed: 9000,
   /** An AI transcript kept with a sent recording (was 6000). */
   written: 18000,
-  /** The words kept with one clip: at least the longest answer it writes into, and a 9-minute clip's 9,450 (was 4000). */
+  /** The words kept with one clip: at least the longest answer it writes into, and a 7-minute clip's 7,350 (was 4000). */
   clipWords: 12000,
   /** What of the heard words goes to the AI guide for "Draft my answers" (was 8000). */
   draftInput: 24000,

@@ -36,7 +36,7 @@ export default function LimitsExplained({ max, voice = true }: { max?: number; v
       </li>
       <li>
         <span className="font-semibold text-foreground">{t({ message: "Recording:", context: "how the limits work" })}</span>{" "}
-        {t({ message: `One recording runs up to ${take} minutes. A timer shows the time left, and at the end it stops by itself and keeps everything you said.`, context: "how the limits work" })}
+        {t({ message: `You can record up to ${take} minutes each time. A timer shows the time left. At ${take} minutes the recording stops by itself and keeps everything you said, and you can record again to add more.`, context: "how the limits work" })}
       </li>
       <li>
         <span className="font-semibold text-foreground">{t({ message: "Uploads:", context: "how the limits work" })}</span>{" "}

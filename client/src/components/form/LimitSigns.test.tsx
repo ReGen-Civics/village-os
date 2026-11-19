@@ -53,8 +53,8 @@ describe("the signs under a box", () => {
     await waitFor(() => expect(container.querySelector("[data-limits-explained]")).not.toBeNull());
     const words = container.querySelector("[data-limits-explained]")?.textContent ?? "";
     expect(words).toContain("This answer holds 8,000 characters, about 7½ minutes of talking.");
-    expect(words).toContain("One recording runs up to 15 minutes.");
-    expect(words).toContain("A file such as a CV can be up to 30 MB, and one recording up to 22 MB.");
+    expect(words).toContain("You can record up to 7 minutes each time.");
+    expect(words).toContain("A file such as a CV can be up to 30 MB, and one recording up to 11 MB.");
     expect(words).toContain("stay on this page while it sends");
   });
 

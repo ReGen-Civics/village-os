@@ -106,8 +106,8 @@ describe("the door, over real HTTP", () => {
   });
 
   it("a full take at the largest size and length one take may be (the ops request of 19 Nov 2026) goes whole to the provider and its words come back", async () => {
-    // 15 minutes at the largest phone rate, as shared/applyLimits.ts sizes it, under the providers' 25 MB.
-    expect(VOICE_NOTE_MAX_SECONDS).toBe(15 * 60);
+    // 7 minutes at the largest phone rate, as shared/applyLimits.ts sizes it, under the providers' 25 MB.
+    expect(VOICE_NOTE_MAX_SECONDS).toBe(7 * 60);
     expect(VOICE_NOTE_MAX_BYTES).toBeGreaterThanOrEqual(VOICE_NOTE_MAX_SECONDS * RECORDING_BYTES_PER_SECOND);
     expect(VOICE_NOTE_MAX_BYTES).toBeLessThan(PROVIDER_UPLOAD_MAX_BYTES);
     const full = Buffer.alloc(VOICE_NOTE_MAX_BYTES, 7);
@@ -180,7 +180,7 @@ describe("the door, over real HTTP", () => {
     expect(state.calls).toEqual([]);
   });
 
-  it("refuses a take over fifteen minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
+  it("refuses a take over seven minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
     expect(await send(TINY_WEBM_OPUS, { seconds: String(VOICE_TRANSCRIBE_MAX_SECONDS + 1) })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(TINY_WEBM_OPUS, { seconds: "nope" })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(HTML)).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType } });
