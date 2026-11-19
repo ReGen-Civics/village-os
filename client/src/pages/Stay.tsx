@@ -20,6 +20,7 @@ import { formatHumanAmount, formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameFor, useTokenNameMap } from "@/hooks/useTokenNameFor";
 import { formatMoney } from "@shared/money";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -79,7 +80,7 @@ export default function Stay() {
         setNotice("Request sent. The stewards will be in touch.");
         load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const checkout = (accommodationId: string) => {
@@ -95,7 +96,7 @@ export default function Stay() {
         if (!ok) throw new Error(d?.error || "Could not start checkout");
         window.location.href = d.url;
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const audience = data?.audience ?? "guest";

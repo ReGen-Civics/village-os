@@ -8,6 +8,7 @@ import { TOKEN_KEY } from "@/lib/gameApi";
 import { writeStored } from "@/lib/safeStorage";
 import { PROFILE_TODAY } from "@/lib/internalPath";
 import { PASSWORD_SET_STORAGE_BLOCKED, sessionWriteRefused } from "@/lib/signInStorage";
+import { failureWords } from "@/lib/failureWords";
 
 /**
  * Claim an account by setting its password (S1). Reached from the founder
@@ -58,7 +59,7 @@ export default function SetPassword() {
       // decision 1, client/src/lib/internalPath.ts); the panel is in the menu.
       setTimeout(() => { window.location.href = PROFILE_TODAY; }, 1200);
     } catch (err: any) {
-      setError(err?.message || "That didn't save. Try again.");
+      setError(failureWords(err, "That didn't save. Try again."));
     }
     setBusy(false);
   };

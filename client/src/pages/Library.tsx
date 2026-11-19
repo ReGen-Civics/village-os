@@ -17,6 +17,7 @@ import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameFor } from "@/hooks/useTokenNameFor";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -69,7 +70,7 @@ export default function Library() {
         if (d.released != null) setNotice(`Cancelled. ${d.released} ${libraryName} released back to you.`);
         load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const visibleItems = (data?.items ?? []).filter((i: any) => i.status !== "written_off");

@@ -15,6 +15,7 @@ import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
 import { gameFetch } from "@/lib/gameApi";
 import { CARD, H1, H2, HINT, LEDE, TILE, WORLD } from "@/components/journey/look";
 import type { MeasureRow, Share } from "@shared/roleMeasures";
+import { failureWords } from "@/lib/failureWords";
 
 type Served = MeasureRow & { circleName: string | null };
 
@@ -39,7 +40,7 @@ export default function RoleMeasures() {
         return r.json();
       })
       .then((j) => live && setRows(j.rows ?? []))
-      .catch((e) => live && setProblem(e.message));
+      .catch((e) => live && setProblem(failureWords(e)));
     return () => {
       live = false;
     };

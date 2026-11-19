@@ -795,6 +795,7 @@ export default function ProposeARole() {
                   roles={[{ id: role.id, name: role.name }, ...extras.map((x, i) => ({ id: x.roleId, name: extraRoles[i]?.name ?? x.roleId }))]}
                   goals={form.goals}
                   draft={draftForBackup}
+                  kept={remember && !!roleId && readStoredJson("local", draftKey(roleId, link)).status === "value"}
                   onRetry={() => void send()}
                   sending={sending}
                 />

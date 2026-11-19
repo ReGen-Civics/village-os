@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { Award, CircleHelp, Hammer, Medal, Plus, ShieldAlert, Sparkles, X } from "lucide-react";
 import { ExamplesBanner } from "@/components/ExamplesBanner";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -124,7 +125,7 @@ export default function Badges() {
         if (!r.ok) throw new Error(d.message ?? d.error ?? "That didn't go through. Try again.");
         load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const myAwardByBadge = new Map<string, any>((data?.mine?.awards ?? []).map((a: any) => [a.badgeId, a]));
@@ -296,7 +297,7 @@ export default function Badges() {
                               const d = await r.json();
                               if (!r.ok) throw new Error(d.message ?? d.error ?? "That didn't go through. Try again.");
                               load();
-                            }).catch((e) => setError(e.message));
+                            }).catch((e) => setError(failureWords(e)));
                           }}
                           className={`text-xs font-medium ${mine.featured ? "text-amber-600" : "text-muted-foreground hover:text-teal-deep"}`}
                         >
