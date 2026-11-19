@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { fetchConfigCached } from "./lib/gameApi";
 import { listenForThemeChanges } from "./lib/liveTheme";
+import { installCrashReporting } from "./lib/crashReport";
 import { installStaleChunkRecovery } from "./lib/staleChunk";
 import "./index.css";
 
@@ -106,6 +107,7 @@ void import("./lib/sound").then((m) => m.loadVillageSounds()).catch(() => undefi
 
 // A page that outlived a deploy reloads itself once for the new build (lib/staleChunk.ts).
 installStaleChunkRecovery();
+installCrashReporting();
 
 createRoot(document.getElementById("root")!).render(<App />);
 
