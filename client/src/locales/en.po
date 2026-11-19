@@ -1712,6 +1712,19 @@ msgctxt "journal guide tasks: added"
 msgid "On your list"
 msgstr "On your list"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup email body"
+msgid "Hello,\n"
+"\n"
+"I tried to send my role application on your site and it did not go through. Before sending this email, I will attach the application file I downloaded from the page, and any files I meant to upload (a CV, for example).\n"
+"\n"
+"Thank you."
+msgstr "Hello,\n"
+"\n"
+"I tried to send my role application on your site and it did not go through. Before sending this email, I will attach the application file I downloaded from the page, and any files I meant to upload (a CV, for example).\n"
+"\n"
+"Thank you."
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Take {owner} for 1 change?"
@@ -1824,6 +1837,11 @@ msgstr "Not sent: the village has no sender address yet. Add it in Comms Setting
 #: client/src/pages/ChangeRequests.tsx
 msgid "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
 msgstr "Gather connected changes to the village's settings, say why once, let the village review them, and send them to one vote."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Ramp-up"
+msgstr "Ramp-up"
 
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
@@ -2220,6 +2238,11 @@ msgstr "Keep {n}"
 #~ msgid "Your energy"
 #~ msgstr "Your energy"
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Download my application"
+msgstr "Download my application"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, the Anthropic provider's name"
 msgid "Claude"
@@ -2272,6 +2295,11 @@ msgctxt "open work: clear the season goal filter"
 msgid "Show every goal"
 msgstr "Show every goal"
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Download them so nothing is lost."
+msgstr "Download them so nothing is lost."
+
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgid "Each block of the governance canvas asks how one part of this village is governed. A reading gives the block a level, from Absent to Thriving, and one sentence saying why. Every reading is kept, so the village can see where each block has moved."
 msgstr "Each block of the governance canvas asks how one part of this village is governed. A reading gives the block a level, from Absent to Thriving, and one sentence saying why. Every reading is kept, so the village can see where each block has moved."
@@ -2290,6 +2318,11 @@ msgstr "Send privately"
 msgctxt "task handed to a role"
 msgid "A note (optional)"
 msgstr "A note (optional)"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Roles"
+msgstr "Roles"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "We could not load the open roles just now. Refresh the page to try again, or see them on the Roles page."
@@ -2618,6 +2651,11 @@ msgstr "Your Ikigai answers are saved in this browser, and the open form copies 
 msgctxt "open work: why the lead quest was chosen"
 msgid "A gentle place to begin."
 msgstr "A gentle place to begin."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Value items"
+msgstr "Value items"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "The {careShown} role, and the {coverShown} role when they cannot."
@@ -3655,6 +3693,11 @@ msgctxt "admin menu: the phone tabs"
 msgid "Phone tabs"
 msgstr "Phone tabs"
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Try again"
+msgstr "Try again"
+
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
 msgid "Link to a Google Doc shared with anyone who has the link"
@@ -3905,6 +3948,11 @@ msgstr "A code that asks to join through you"
 msgctxt "roles page, roles after the founding team"
 msgid "More roles, opening next"
 msgstr "More roles, opening next"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Accepted"
+msgstr "Accepted"
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook section heading"
@@ -4255,6 +4303,11 @@ msgstr "Create {0}"
 msgctxt "admin header, keyboard shortcut for the helper"
 msgid "Ctrl /"
 msgstr "Ctrl /"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Everything above, as data"
+msgstr "Everything above, as data"
 
 #: client/src/components/LookPanel.tsx
 msgctxt "admin look: the label font field"
@@ -5273,6 +5326,11 @@ msgstr "Title"
 #~ msgid "Then the circle reads it, and we write to you by email."
 #~ msgstr "Then the circle reads it, and we write to you by email."
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Why you, and why now"
+msgstr "Why you, and why now"
+
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgid "Sera records that name no invoice here"
 msgstr "Sera records that name no invoice here"
@@ -5314,6 +5372,11 @@ msgstr "You work as a contractor. Your proposal says what you'll deliver each mo
 msgctxt "companion welcome"
 msgid "Type {0}, {n}"
 msgstr "Type {0}, {n}"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Time zone"
+msgstr "Time zone"
 
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
@@ -5435,6 +5498,11 @@ msgstr "Only Voice earned through work"
 #: client/src/pages/ChangeRequests.tsx
 msgid "Respond to this change request"
 msgstr "Respond to this change request"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Yes"
+msgstr "Yes"
 
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "{openSeats, plural, one {# open} other {# open}}"
@@ -7503,6 +7571,11 @@ msgctxt "pay board"
 msgid "Nobody was paid this month."
 msgstr "Nobody was paid this month."
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "You can also try again."
+msgstr "You can also try again."
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, opens an admin page"
 msgid "Open {label}"
@@ -8720,6 +8793,11 @@ msgctxt "admin: the notice words editor heading"
 msgid "Notices"
 msgstr "Notices"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Commitment"
+msgstr "Commitment"
+
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
 msgid "Published"
@@ -9249,6 +9327,16 @@ msgctxt "voice note, read aloud"
 msgid "Recording {0} of {VOICE_NOTES_MAX} started."
 msgstr "Recording {0} of {VOICE_NOTES_MAX} started."
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "No"
+msgstr "No"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your story"
+msgstr "Your story"
+
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "who last wrote a matrix row, when the name is missing"
 msgid "a founder"
@@ -9402,6 +9490,11 @@ msgctxt "circles map, today card"
 msgid "Your light is on."
 msgstr "Your light is on."
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Email it to us"
+msgstr "Email it to us"
+
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgctxt "drafted letters"
 msgid "Letter"
@@ -9429,6 +9522,11 @@ msgstr "Undone. {n} wait in the list again."
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Book your first conversation"
 msgstr "Book your first conversation"
+
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Something went wrong sending your application. Your answers are safe on this device."
+msgstr "Something went wrong sending your application. Your answers are safe on this device."
 
 #: client/src/pages/Introductions.tsx
 msgctxt "voice field purpose: introductions request"
@@ -10829,6 +10927,11 @@ msgctxt "roles page, a connected service's fallback name"
 msgid "the connected service"
 msgstr "the connected service"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "This file was made on your device because your application did not reach us. Email it to us, and attach any files you meant to upload."
+msgstr "This file was made on your device because your application did not reach us. Email it to us, and attach any files you meant to upload."
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Circle"
@@ -10986,6 +11089,11 @@ msgstr "Reading the village's rows"
 msgctxt "admin look: light or dark page heading"
 msgid "Page look"
 msgstr "Page look"
+
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Download them and email the file to {contactEmail} so nothing is lost."
+msgstr "Download them and email the file to {contactEmail} so nothing is lost."
 
 #: client/src/components/governance/PriceAsk.tsx
 #~ msgctxt "price popup lede"
@@ -11321,6 +11429,11 @@ msgstr "Loading..."
 msgctxt "first fourteen days strip, the chosen day"
 msgid "Day {0}"
 msgstr "Day {0}"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Role application backup"
+msgstr "Role application backup"
 
 #: client/src/components/governance/ObjectionPanel.tsx
 msgctxt "voice field purpose: raise an objection"
@@ -12051,10 +12164,20 @@ msgstr "Edit"
 msgid "<0>Return visits.</0> Find a place others logged and photograph how it is growing."
 msgstr "<0>Return visits.</0> Find a place others logged and photograph how it is growing."
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your email"
+msgstr "Your email"
+
 #: client/src/components/roleDraft/SeasonGoals.tsx
 msgctxt "roles page season"
 msgid "This season"
 msgstr "This season"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "The terms"
+msgstr "The terms"
 
 #: client/src/components/companionWelcome/CompanionWelcomeMount.tsx
 msgctxt "companion welcome"
@@ -12093,6 +12216,11 @@ msgstr "The governing purpose statement"
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "That could not be discarded"
 msgstr "That could not be discarded"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Languages"
+msgstr "Languages"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
@@ -12222,6 +12350,11 @@ msgstr "The proposed changes could not be read. Reload to try again."
 msgctxt "treasury sync"
 msgid "Invoice {ref}"
 msgstr "Invoice {ref}"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Not answered"
+msgstr "Not answered"
 
 #: client/src/components/TreasurySync.tsx
 msgid "Your saved numbers did not load."
@@ -13514,6 +13647,11 @@ msgctxt "time zone field"
 msgid "Clear"
 msgstr "Clear"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Where you are based"
+msgstr "Where you are based"
+
 #: client/src/components/ErrorBoundary.tsx
 msgid "We just updated the site"
 msgstr "We just updated the site"
@@ -14104,6 +14242,11 @@ msgstr "You are on the roll and have not voted yet."
 msgctxt "role editor: who can hold a role"
 msgid "A person or an agent"
 msgstr "A person or an agent"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your notes on the role card"
+msgstr "Your notes on the role card"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application review"
@@ -14990,6 +15133,11 @@ msgstr "For a bug: what you did, what you expected and what happened. For an ide
 msgctxt "save bar"
 msgid "Discard"
 msgstr "Discard"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Village"
+msgstr "Village"
 
 #: client/src/components/roleEdit/NewRoleFromCard.tsx
 msgctxt "new role from a card"
@@ -16488,6 +16636,11 @@ msgctxt "hidden map, logging a place"
 msgid "What went in"
 msgstr "What went in"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your aim in this role"
+msgstr "Your aim in this role"
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "The goal"
@@ -17285,6 +17438,11 @@ msgctxt "priority board, an item's status"
 msgid "Not started"
 msgstr "Not started"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your Human Design or Gene Keys"
+msgstr "Your Human Design or Gene Keys"
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
 msgid "Changes"
@@ -17333,6 +17491,11 @@ msgctxt "roles page, roles after the founding team"
 msgid "Hear first about new opportunities:"
 msgstr "Hear first about new opportunities:"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your first day"
+msgstr "Your first day"
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Not now"
@@ -17372,6 +17535,16 @@ msgstr "Here is our new wording beside what you answered. Settings we did not ch
 #: client/src/pages/RoleDraft.tsx
 msgid "Pick the characters you play, scout every open role by what it asks, open any card in full, and select up to three. Your selection stays in this browser until you apply, and nothing is sent before then."
 msgstr "Pick the characters you play, scout every open role by what it asks, open any card in full, and select up to three. Your selection stays in this browser until you apply, and nothing is sent before then."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Price ask"
+msgstr "Price ask"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Split"
+msgstr "Split"
 
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms setting answer"
@@ -19389,6 +19562,11 @@ msgctxt "live room, the gathering flower"
 msgid "{here, plural, one {# of us is here.} other {# of us are here.}}"
 msgstr "{here, plural, one {# of us is here.} other {# of us are here.}}"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Ways you have got to know us"
+msgstr "Ways you have got to know us"
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "an outside contact's name"
 msgid "Their name"
@@ -19521,6 +19699,11 @@ msgstr "Propose a new role"
 msgctxt "admin identity: a noun field"
 msgid "Your word for {0}"
 msgstr "Your word for {0}"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Serves"
+msgstr "Serves"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Share with the village"
@@ -19798,6 +19981,11 @@ msgstr "{n, plural, one {# role open now} other {# roles open now}}"
 msgctxt "admin look: exact colour field label"
 msgid "{0}, exact value"
 msgstr "{0}, exact value"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Done when"
+msgstr "Done when"
 
 #: client/src/pages/FundingRounds.tsx
 msgid "The rounds could not be read just now. Try again in a moment."
@@ -20101,6 +20289,11 @@ msgstr "I saw it on a live call"
 msgctxt "about you"
 msgid "Reference {0}: how you know them"
 msgstr "Reference {0}: how you know them"
+
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Your email app opens with a message ready. Attach the file you downloaded, and any files you meant to upload, such as your CV."
+msgstr "Your email app opens with a message ready. Attach the file you downloaded, and any files you meant to upload, such as your CV."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application beside"
@@ -20646,6 +20839,11 @@ msgstr "Everything else on the role card's terms"
 msgctxt "companion welcome"
 msgid "A name for your companion"
 msgstr "A name for your companion"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Times that suit you"
+msgstr "Times that suit you"
 
 #: client/src/components/governance/VillageConflictSteps.tsx
 msgid "These steps are still a draft. The community has not yet adopted its exit policy."
@@ -21239,6 +21437,11 @@ msgstr "No goal yet"
 msgctxt "founding application about pane"
 msgid "Your story"
 msgstr "Your story"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Page"
+msgstr "Page"
 
 #: client/src/components/governance/GoalsList.tsx
 #~ msgid "These are your goals for your first month. Once you are seated, we issue your tasks on your profile each month. We track both your goals and your tasks for your compensation. Together, your goals are the value of your contract for the month."
@@ -22273,6 +22476,11 @@ msgctxt "under a steward's card: a role someone already holds"
 msgid "Held"
 msgstr "Held"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Made"
+msgstr "Made"
+
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
 msgid "Credits"
@@ -22401,6 +22609,11 @@ msgstr "Save as Markdown"
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
 #~ msgstr "You align with the Love Letter, the village's membership agreement, when you propose. Aligning is the village's way of signing."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "References, the background-check consent, files and voice recordings are never kept on your device, so they are missing here. Attach your files to the email, and we will ask for references again."
+msgstr "References, the background-check consent, files and voice recordings are never kept on your device, so they are missing here. Attach your files to the email, and we will ask for references again."
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -22590,6 +22803,11 @@ msgctxt "roles page archetypes, before the village's own examples"
 msgid "You might pick this if you are drawn to:"
 msgstr "You might pick this if you are drawn to:"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your name"
+msgstr "Your name"
+
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We changed some of the terms"
 msgstr "We changed some of the terms"
@@ -22715,6 +22933,11 @@ msgstr "In bud"
 #~ msgid "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
 #~ msgstr "Your role runs from adoption to the next new moon, {moonEnds}. Each new moon you lay out what you will contribute the next moon."
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "To talk through"
+msgstr "To talk through"
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgctxt "funding rounds"
 msgid "Round stages"
@@ -22724,6 +22947,11 @@ msgstr "Round stages"
 msgctxt "founding application refusal"
 msgid "That doesn't look like an email address. Check it, like name@example.com, and try again."
 msgstr "That doesn't look like an email address. Check it, like name@example.com, and try again."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Earliest start"
+msgstr "Earliest start"
 
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, label before the first task"
@@ -22802,6 +23030,11 @@ msgstr "Flexible: less can work"
 msgctxt "founding application check"
 msgid "Choose the season goal value {n} serves."
 msgstr "Choose the season goal value {n} serves."
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Links to your work"
+msgstr "Links to your work"
 
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"
@@ -23184,6 +23417,11 @@ msgstr "Edit"
 msgctxt "role card rewards: the listed price, each share as its own amount"
 msgid "Up to {list} a moon for the full role*"
 msgstr "Up to {list} a moon for the full role*"
+
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup email subject"
+msgid "Role application backup - {roles}"
+msgstr "Role application backup - {roles}"
 
 #. placeholder {0}: role?.name ?? "This role"
 #: client/src/components/governance/GoalsList.tsx
