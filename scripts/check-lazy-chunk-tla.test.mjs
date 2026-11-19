@@ -112,6 +112,22 @@ const inner = run({
 });
 expect("awaits inside functions are not top-level", inner.status === 0, inner.out);
 
+// 10. THE SHAPES THE AUDIT FOUND (19 Nov 2026), named as built: smalls (one dynamic importer, many static
+// importers, module-level lets and Maps), EditRoleButton (`let $`) and geneKeysSky (`let O`).
+const audit = run({
+  "index-E.js": `${MAP(["assets/smalls-a.js", "assets/PageA-a.js", "assets/PageB-b.js", "assets/PageC-c.js", "assets/EditRoleButton-e.js", "assets/geneKeysSky-g.js"])}import{p as b}from"./helper-h.js";b(()=>import("./smalls-a.js"),__vite__mapDeps([0]));b(()=>import("./PageA-a.js"),__vite__mapDeps([1]));b(()=>import("./PageB-b.js"),__vite__mapDeps([2]));b(()=>import("./PageC-c.js"),__vite__mapDeps([3]));b(()=>import("./EditRoleButton-e.js"),__vite__mapDeps([4]));b(()=>import("./geneKeysSky-g.js"),__vite__mapDeps([5]));`,
+  "helper-h.js": HELPER,
+  "smalls-a.js": `const e=await globalThis.__villageCopyLoad("smallsPart01");let U=0;const m=new Map,s=new Set;export{U,m,s};`,
+  "PageA-a.js": `import{U}from"./smalls-a.js";import"./EditRoleButton-e.js";export{U};`,
+  "PageB-b.js": `import{m}from"./smalls-a.js";import"./geneKeysSky-g.js";export{m};`,
+  "PageC-c.js": `import{s}from"./smalls-a.js";export{s};`,
+  "EditRoleButton-e.js": `const e=await globalThis.__villageCopyLoad("editPart0001");let $=null;export const x=()=>$;`,
+  "geneKeysSky-g.js": `const e=await globalThis.__villageCopyLoad("skyPart00001");let O=0;export const y=()=>O;`,
+});
+for (const name of ["smalls-a.js", "EditRoleButton-e.js", "geneKeysSky-g.js"]) {
+  expect(`the audit's ${name.split("-")[0]} shape is flagged`, audit.status === 1 && new RegExp(`\\[tla-race\\] ${name.replace(".", "\\.")}`).test(audit.out), audit.out);
+}
+
 // 9. The floor: a tree with no import sites means the walker read nothing.
 const empty = run({ "index-E.js": `export const a=1;` });
 expect("a tree with no dynamic import fails as unreadable", empty.status === 2, empty.out);
