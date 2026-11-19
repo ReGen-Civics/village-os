@@ -10,6 +10,8 @@
  * The component and the /wallet route keep their old names on purpose, because
  * Stripe return URLs and order notifications in server/index.ts point at them.
  */
+import { ContributionWord, useShareNames } from "@/components/ContributionWord";
+import { CONTRIBUTION_MIRROR_SLUG, CONTRIBUTION_TOKEN_SLUG } from "@shared/contributionToken";
 import Layout from "@/components/Layout";
 import ModuleGate from "@/components/modules/ModuleGate";
 import SwapCard from "@/components/SwapCard";
@@ -49,6 +51,7 @@ const headers = (): Record<string, string> => {
 const usd = (minor: number) => formatMoney(Number(minor || 0), "USD");
 
 export default function Wallet() {
+  const shareNames = useShareNames();
   const tokenName = useTokenName("Recognition");
   const tokensWord = useTokensWord();
   // Every registry name by slug (R084), for a token an order names that the
@@ -211,7 +214,9 @@ export default function Wallet() {
    * wrong on the server first: that is why the ruling tells the economics
    * session to do the caller sweep and the display pass BEFORE the column.
    */
-  const tokenOf = (slug: string): string => tokenNames[slug] ?? registryNames[slug] ?? slug;
+  // The contribution token and its Hypha mirror read by the village's own word (the lead, 19 Nov 2026).
+  const contributionSlug = (slug: string) => slug === CONTRIBUTION_TOKEN_SLUG || slug === CONTRIBUTION_MIRROR_SLUG;
+  const tokenOf = (slug: string): string => (contributionSlug(slug) ? shareNames.equity : (tokenNames[slug] ?? registryNames[slug] ?? slug));
 
   return (
     <Layout>
@@ -264,8 +269,8 @@ export default function Wallet() {
                         {formatTokenAmount(Number(bal), decimalsOf(tokenDecimals, slug))}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {tokenNames[slug] ?? slug}
-                        <InfoTip tip={tokenTip()} label={`What ${tokenNames[slug] ?? slug} is`} />
+                        {contributionSlug(slug) ? <ContributionWord short /> : (tokenNames[slug] ?? slug)}
+                        <InfoTip tip={tokenTip()} label={`What ${tokenOf(slug)} is`} />
                       </p>
                     </div>
                   ))}
@@ -413,12 +418,12 @@ export default function Wallet() {
             <div className="bg-card border border-border rounded-xl p-5">
               <p className="font-semibold text-foreground text-sm mb-1">
                 Hypha holdings
-                <InfoTip tip="Hypha is the outside network where governance and equity tokens live. This page is a door to it; nothing here moves those holdings." label="What Hypha holdings are" />
+                <InfoTip tip={`Hypha is the outside network where governance tokens and ${shareNames.equity} live. This page is a door to it; nothing here moves those holdings.`} label="What Hypha holdings are" />
               </p>
               <p className="text-xs text-muted-foreground mb-3">
-                {/* Frozen wording: the Hypha card waits on the founder's open
-                    Hypha ruling (Copy Book, R45 thread), so R47 leaves it whole. */}
-                Governance and equity tokens live on your Hypha DHO. This platform
+                {/* The lead's ruling, 19 Nov 2026: the Hypha token is the village's contribution token itself, so it is
+                    named as one token; the rest of the wording stands. */}
+                Governance tokens and <ContributionWord /> live on your Hypha DHO. This platform
                 shows the door, never moves what's behind it.
               </p>
               <a href={hypha.links?.treasury} target="_blank" rel="noreferrer"

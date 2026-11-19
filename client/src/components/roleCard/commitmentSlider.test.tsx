@@ -84,14 +84,14 @@ describe("the split control, edited both ways", () => {
     expect(screen.getByText("You can change this split for your proposal. Type a percent or an amount.")).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Cash, percent of the total"), { target: { value: "50" } });
     expect((screen.getByLabelText("Cash, amount in USD") as HTMLInputElement).value).toBe("3000");
-    expect((screen.getByLabelText("Equity, percent of the total") as HTMLInputElement).value).toBe("50");
-    expect((screen.getByLabelText("Equity, amount in USD") as HTMLInputElement).value).toBe("3000");
+    expect((screen.getByLabelText("Contribution tokens, percent of the total") as HTMLInputElement).value).toBe("50");
+    expect((screen.getByLabelText("Contribution tokens, amount in USD") as HTMLInputElement).value).toBe("3000");
   });
   it("an amount updates its percent, and the amounts still add up to the total", () => {
     render(<Harness start={offeredSplit(SHAPE, 6000)} />);
     fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "600" } });
     expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
-    const amounts = ["Cash", "Equity", "Credits"].map((l) => Number((screen.getByLabelText(`${l}, amount in USD`) as HTMLInputElement).value));
+    const amounts = ["Cash", "Contribution tokens", "Credits"].map((l) => Number((screen.getByLabelText(`${l}, amount in USD`) as HTMLInputElement).value));
     expect(amounts.reduce((a, b) => a + b, 0)).toBe(6000);
     expect(screen.getByText("Total: $6,000 a month at 50%")).toBeTruthy();
     // Changed: the way back to the village's split appears, and puts it back.

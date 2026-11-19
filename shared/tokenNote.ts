@@ -12,5 +12,7 @@
  */
 export function equityTokenNote(tokenName: string): string {
   const name = tokenName.trim() || "This token";
+  // A plural name ("Amora Tokens", the lead, 19 Nov 2026) reads as one: "track", "They have", "they".
+  if (/tokens$/i.test(name)) return `${name} track contributions that were not paid. They have no financial value yet. What they will represent is still being decided together.`;
   return `${name} tracks contributions that were not paid. It has no financial value yet. What it will represent is still being decided together.`;
 }

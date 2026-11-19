@@ -34,7 +34,7 @@ describe("the value callout on the Rewards piece", () => {
     // A percent only: no money amount anywhere in the explainer.
     expect(panel.textContent).not.toMatch(/\$\s?\d/);
     expect(panel.textContent).toContain("Each moon you recap what you delivered, and pay follows what you deliver.");
-    expect(panel.textContent).toContain("in cash and in equity, a share of ownership in the village.");
+    expect(panel.textContent).toContain("in cash and in Contribution tokens, which track what you contribute.");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(screen.queryByTestId("value-explainer")).toBeNull();
     expect(document.activeElement).toBe(control);

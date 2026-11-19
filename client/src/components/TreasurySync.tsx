@@ -22,6 +22,8 @@
  * light fill under theme text: it is an amber edge and a pill with its own
  * fixed colours (the 2026-11-06 UX pass measured 1.1:1 otherwise).
  */
+import { ContributionWord } from "@/components/ContributionWord";
+import { CONTRIBUTION_MIRROR_SLUG, CONTRIBUTION_TOKEN_SLUG } from "@shared/contributionToken";
 import { useEffect, useRef, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -312,7 +314,8 @@ export default function TreasurySync({ tracks }: { tracks: TrackRow[] }) {
               <section aria-label={t({ message: "Tokens, by source", context: "treasury sync" })} className="space-y-2">
                 {view.tokens.map((t) => (
                   <div key={t.slug} className={`rounded-lg border p-3 ${t.disagree ? "border-l-4 border-amber-400" : "border-border"}`}>
-                    <p className="font-medium text-card-foreground">{t.name}</p>
+                    {/* The contribution token and its Hypha mirror are one token, read by the village's own word (the lead, 19 Nov 2026). */}
+                    <p className="font-medium text-card-foreground">{t.slug === CONTRIBUTION_TOKEN_SLUG || t.slug === CONTRIBUTION_MIRROR_SLUG ? <ContributionWord /> : t.name}</p>
                     <Pair label={SOURCE_SHORT_WORDS.village} value={groupDecimal(t.village)} />
                     <Pair
                       label={SOURCE_SHORT_WORDS.chain}

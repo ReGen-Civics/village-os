@@ -949,7 +949,7 @@ function bonusWords(b: BonusSettings): Pick<SettingsRow, "headline" | "lines"> {
   if (b.capWords) lines.push(b.capWords);
   if (b.ratedBy) lines.push(`Rated by ${b.ratedBy}`);
   if (b.cadence) lines.push(b.cadence);
-  return { headline: "An equity bonus, written in words", lines };
+  return { headline: "A contribution token bonus, written in words", lines };
 }
 
 function questWords(q: QuestSettings): Pick<SettingsRow, "headline" | "lines" | "pips"> {

@@ -16,6 +16,7 @@ import { BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
 import { perPeriod } from "./rewardWords";
 import { totalAgainstBand, type BandAt } from "./commitmentWords";
 import { MoonText } from "@/components/MoonWord";
+import { ShareLabel, useShareLabel } from "@/components/ContributionWord";
 
 /** Digits only, as a whole number; empty reads as 0 so clearing a field gives its share back to the others. */
 const wholeOf = (raw: string): number => {
@@ -47,6 +48,7 @@ export default function SplitControl({
   band?: BandAt | null;
 }) {
   const { t, i18n } = useLingui();
+  const label = useShareLabel();
   if (!split.shares.length) return null;
   const hasAmounts = split.total !== null && !!currency;
   const money = (n: number) => moneyWords(n, currency ?? "USD", i18n.locale);
@@ -71,10 +73,10 @@ export default function SplitControl({
           const amountId = `${idPrefix}-split-${i}-amount`;
           return (
             <li key={s.label} className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-center gap-2 sm:grid-cols-[minmax(0,1fr)_5.5rem_9rem]" data-split-share={s.label}>
-              <span className="min-w-0 break-words font-medium capitalize text-foreground">{s.label}</span>
+              <span className="min-w-0 break-words font-medium capitalize text-foreground"><ShareLabel label={s.label} /></span>
               <span className="relative">
                 <label htmlFor={pctId} className="sr-only">
-                  {t({ message: `${s.label}, percent of the total`, context: "split control: a share's percent field" })}
+                  {t({ message: `${label(s.label)}, percent of the total`, context: "split control: a share's percent field" })}
                 </label>
                 <input
                   id={pctId}
@@ -92,7 +94,7 @@ export default function SplitControl({
               {hasAmounts && (
                 <span className="col-span-2 sm:col-span-1">
                   <label htmlFor={amountId} className="sr-only">
-                    {t({ message: `${s.label}, amount in ${currency}`, context: "split control: a share's amount field" })}
+                    {t({ message: `${label(s.label)}, amount in ${currency}`, context: "split control: a share's amount field" })}
                   </label>
                   <input
                     id={amountId}

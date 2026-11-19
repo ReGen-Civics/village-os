@@ -37,6 +37,7 @@ import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { tokenModule } from "@/components/admin/tokenCatalog";
 import { formatMoney } from "@shared/money";
 import { equityTokenNote } from "@shared/tokenNote";
+import { ContributionWord, useShareNames } from "@/components/ContributionWord";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -101,6 +102,7 @@ export default function WalletCard() {
   const exchangeModule = useModule("exchange");
   const catalog = useModules();
   const { user } = useAuth();
+  const shareNames = useShareNames();
   const [rows, setRows] = useState<WalletRow[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
   const [busy, setBusy] = useState("");
@@ -225,10 +227,11 @@ export default function WalletCard() {
         <ul className="space-y-4">
           {visible.map((row) => (
             <li key={row.token} className="rounded-xl border border-border p-4">
-              <h4 className="font-semibold text-card-foreground">{row.name}</h4>
+              {/* The contribution token reads by the village's own word with its at-risk tip, never the registry's (the lead, 19 Nov 2026). */}
+              <h4 className="font-semibold text-card-foreground">{row.kind === "equity" ? <ContributionWord /> : row.name}</h4>
               {/* The village's own words win; an equity-kind token with none gets the plain note (the lead, 2026-11-11). */}
               {(row.description || row.kind === "equity") && (
-                <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">{row.description || equityTokenNote(row.name)}</p>
+                <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">{row.description || equityTokenNote(shareNames.equity)}</p>
               )}
 
               <dl className="mt-3 space-y-2 text-sm">

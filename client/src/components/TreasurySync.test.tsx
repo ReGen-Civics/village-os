@@ -9,7 +9,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 
-vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-session" }));
+vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-session", useGameConfig: () => null }));
 
 import CashOwedPanel from "./CashOwedPanel";
 import TreasurySync, { type TrackRow } from "./TreasurySync";

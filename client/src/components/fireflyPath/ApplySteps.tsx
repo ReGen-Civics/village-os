@@ -37,6 +37,7 @@ import type { FoundingSetup } from "@shared/foundingApplication";
 import type { KnowUsLinks } from "@shared/knowUsLinks";
 import { KnowUsWays } from "./KnowUsWays";
 import { MoonText } from "@/components/MoonWord";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 
 /** A gold rule, the register's one ornament. */
 export const GOLD_RULE = "border-t border-notice/40";
@@ -308,20 +309,24 @@ export function ValueItems({
 
 export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
   const { t } = useLingui();
+  // The village's own token names, the contribution token's first mention wearing its at-risk tip (the lead, 19 Nov 2026).
+  const names = useShareNames();
   return (
     <section aria-labelledby="comp-shape-h" className="grid gap-5" data-comp-shape="">
       <div className={`${GOLD_RULE} pt-5`}>
         <h3 id="comp-shape-h" className="font-display text-2xl text-card-foreground">
           {t({ message: "How compensation is shaped", context: "founding application compensation" })}
         </h3>
-        <p className={`mt-1 ${HINT}`}>{t({ message: "How your pay is split between cash, equity and credits. Your price is set above, by your proposal.", context: "founding application compensation" })}</p>
+        <p className={`mt-1 ${HINT}`}>
+          <TokenText text={t({ message: `How your pay is split between cash, ${names.equity} and ${names.credits}. Your price is set above, by your proposal.`, context: "founding application compensation, with the village's token names" })} />
+        </p>
       </div>
       {/* The phone's stand-in for the rail (production check of 1.3.25): what the rail says, the applicant's own split for
           each role and the one-line footnote, so the two never disagree. The village's longer note stays off this step. */}
       <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && (
         <p className="text-xs leading-relaxed text-muted-foreground" data-at-risk="">
-          {setup.atRisk}
+          <TokenText text={setup.atRisk} />
         </p>
       )}
     </section>
@@ -477,7 +482,7 @@ function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyAr
       {splits.map((x) => (
         <li key={x.name} className="break-words">
           {splits.length > 1 ? <span className="font-semibold">{x.name}: </span> : null}
-          {x.line}
+          <TokenText text={x.line} />
         </li>
       ))}
     </ul>
@@ -494,7 +499,11 @@ export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; sp
         {t({ message: "How rewards work", context: "founding application compensation" })}
       </p>
       <OwnSplits setup={setup} splits={splits} />
-      {setup.atRisk && <p className="text-xs leading-relaxed text-muted-foreground">{setup.atRisk}</p>}
+      {setup.atRisk && (
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          <TokenText text={setup.atRisk} />
+        </p>
+      )}
     </section>
   );
 }

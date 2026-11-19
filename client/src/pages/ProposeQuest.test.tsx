@@ -61,12 +61,14 @@ describe("what the form offers as compensation", () => {
   // Rye, 2026-11-01: "Gratitude ONLY for the recognition token and NOT for the
   // credit or earned equity tokens". Gratitude never pays work, so the example
   // answer names the village's pay tokens by their registry names.
-  it("names Credits and Earned Equity and never offers Gratitude", () => {
+  it("names Credits and the contribution token, never equity, and never offers Gratitude", () => {
     render(<ProposeQuest />);
     const asked = screen.getByLabelText(/What compensation, if any, do you want\?/) as HTMLTextAreaElement;
     expect(asked.placeholder).not.toMatch(/gratitude/i);
     expect(asked.placeholder).toContain("Village Credits");
-    expect(asked.placeholder).toContain("Earned Equity");
+    // The village has no word of its own and its registry says equity, so members read the platform default (the lead, 19 Nov 2026).
+    expect(asked.placeholder).toContain("Contribution tokens");
+    expect(asked.placeholder).not.toMatch(/equity/i);
   });
 });
 

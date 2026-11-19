@@ -370,6 +370,11 @@ msgstr "No signal yet. Everything you ticked is safe on this phone."
 msgid "Change yours on your profile"
 msgstr "Change yours on your profile"
 
+#: client/src/components/ContributionWord.tsx
+msgctxt "tooltip on the credits token's name"
+msgid "{credits} are usage tokens: you spend them on things in the village."
+msgstr "{credits} are usage tokens: you spend them on things in the village."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nothing is being weighed right now."
 msgstr "Nothing is being weighed right now."
@@ -1076,9 +1081,9 @@ msgid "Saved {name}. The week map above reads it now."
 msgstr "Saved {name}. The week map above reads it now."
 
 #: client/src/components/myMoon/MyTokenPay.tsx
-msgctxt "my token pay"
-msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
-msgstr "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
+#~ msgctxt "my token pay"
+#~ msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
+#~ msgstr "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nobody has written yet."
@@ -2667,9 +2672,9 @@ msgid "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstN
 msgstr "Tap tap? Hello in there… I mean, out there! I'm your companion, {firstName}. I'll hatch once you've told me who to be. First: what's my name?"
 
 #: client/src/components/roleCard/valueExplainerWords.ts
-msgctxt "role card rewards explainer: what we're aiming for"
-msgid "What you put in comes back to you fairly, in cash and in equity, a share of ownership in the village. We track value out as carefully as value in, and we shape this together each season."
-msgstr "What you put in comes back to you fairly, in cash and in equity, a share of ownership in the village. We track value out as carefully as value in, and we shape this together each season."
+#~ msgctxt "role card rewards explainer: what we're aiming for"
+#~ msgid "What you put in comes back to you fairly, in cash and in equity, a share of ownership in the village. We track value out as carefully as value in, and we shape this together each season."
+#~ msgstr "What you put in comes back to you fairly, in cash and in equity, a share of ownership in the village. We track value out as carefully as value in, and we shape this together each season."
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, close a path's editor"
@@ -3346,6 +3351,13 @@ msgctxt "founding application refusal"
 msgid "Add your name."
 msgstr "Add your name."
 
+#. placeholder {0}: names.equity
+#. placeholder {1}: names.credits
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay, with the village's token names"
+msgid "The {0} and {1} on your pay. Each line issues to your account once the Treasurer approves it."
+msgstr "The {0} and {1} on your pay. Each line issues to your account once the Treasurer approves it."
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 #~ msgctxt "shape the role"
 #~ msgid "The role card could not be read just now. Your application still goes without it."
@@ -3500,6 +3512,11 @@ msgstr "Ask the village for one copy of its database"
 #: client/src/lib/unsavedChanges.ts
 msgid "You have changes that are not saved yet. Leave and lose them?"
 msgstr "You have changes that are not saved yet. Leave and lose them?"
+
+#: client/src/components/roleCard/rewardWords.ts
+msgctxt "role card rewards: the footnote, the contribution token and credits"
+msgid "Terms for {tokens} and {credits} are still being written and are subject to legal review."
+msgstr "Terms for {tokens} and {credits} are still being written and are subject to legal review."
 
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Who adopts on this block"
@@ -5603,6 +5620,11 @@ msgstr "Meeting agenda"
 msgid "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 msgstr "Only the people who decide your proposal can see your links and files. No AI reads them. We delete them when we delete your proposal, or when we remove your name and email."
 
+#: client/src/components/ContributionWord.tsx
+msgctxt "tooltip on the contribution token's name"
+msgid "{tokens} track what you contribute. What they become is still being defined with legal advice, and they are at risk: they have value only if {village} succeeds."
+msgstr "{tokens} track what you contribute. What they become is still being defined with legal advice, and they are at risk: they have value only if {village} succeeds."
+
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
 msgid "Copied"
@@ -6522,6 +6544,13 @@ msgctxt "commitment split: button"
 msgid "Split evenly"
 msgstr "Split evenly"
 
+#. placeholder {0}: names.equity
+#. placeholder {1}: names.credits
+#: client/src/components/openProposal/SplitReview.tsx
+msgctxt "open proposal: the split heading, with the village's token names"
+msgid "Cash, {0} and {1}"
+msgstr "Cash, {0} and {1}"
+
 #: client/src/components/canvas/CanvasBaseline.tsx
 msgctxt "heading of the canvas baseline view"
 msgid "The canvas baseline"
@@ -6795,9 +6824,9 @@ msgid "Step one"
 msgstr "Step one"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
-msgctxt "my token pay"
-msgid "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
-msgstr "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
+#~ msgctxt "my token pay"
+#~ msgid "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
+#~ msgstr "The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches."
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: an agent's proposal"
@@ -6995,6 +7024,13 @@ msgstr "Rough cost:"
 msgctxt "protocols page"
 msgid "Send now"
 msgstr "Send now"
+
+#. placeholder {0}: names.equity
+#. placeholder {1}: names.credits
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay, with the village's token names"
+msgid "The {0} and {1} on your pay. Approved lines issue to your account when the village launches."
+msgstr "The {0} and {1} on your pay. Approved lines issue to your account when the village launches."
 
 #: client/src/components/admin/AgentsPanel.tsx
 msgid "Put these on the list"
@@ -7468,9 +7504,9 @@ msgid "No token pay this month."
 msgstr "No token pay this month."
 
 #: client/src/components/myMoon/MyTokenPay.tsx
-msgctxt "my token pay"
-msgid "{units} {name}, changed from {shared}"
-msgstr "{units} {name}, changed from {shared}"
+#~ msgctxt "my token pay"
+#~ msgid "{units} {name}, changed from {shared}"
+#~ msgstr "{units} {name}, changed from {shared}"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application lede"
@@ -8689,6 +8725,11 @@ msgctxt "talk it out: offline"
 msgid "That did not reach the village. Check your connection and try again."
 msgstr "That did not reach the village. Check your connection and try again."
 
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: what we're aiming for"
+msgid "What you put in comes back to you fairly, in cash and in {tokens}, which track what you contribute. We track value out as carefully as value in, and we shape this together each season."
+msgstr "What you put in comes back to you fairly, in cash and in {tokens}, which track what you contribute. We track value out as carefully as value in, and we shape this together each season."
+
 #: client/src/components/map/MapLightSetting.tsx
 msgctxt "map light setting, offline"
 msgid "That did not reach the server. Your light is unchanged."
@@ -9654,7 +9695,7 @@ msgid "What we decided"
 msgstr "What we decided"
 
 #. placeholder {0}: s.pct
-#. placeholder {1}: s.label
+#. placeholder {1}: label(s.label)
 #: client/src/components/governance/TermsSplit.tsx
 msgctxt "founding application review: one share of the split"
 msgid "{0}% {1}"
@@ -10789,9 +10830,9 @@ msgid "Required steps done"
 msgstr "Required steps done"
 
 #: client/src/components/roleCard/rewardWords.ts
-msgctxt "role card rewards: the footnote, equity and credits"
-msgid "Equity and credit terms are still being written and are subject to legal review."
-msgstr "Equity and credit terms are still being written and are subject to legal review."
+#~ msgctxt "role card rewards: the footnote, equity and credits"
+#~ msgid "Equity and credit terms are still being written and are subject to legal review."
+#~ msgstr "Equity and credit terms are still being written and are subject to legal review."
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -11684,7 +11725,7 @@ msgctxt "notebook row, who shared it"
 msgid ", from {0}"
 msgstr ", from {0}"
 
-#. placeholder {0}: s.label
+#. placeholder {0}: label(s.label)
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: a share's percent field"
 msgid "{0}, percent of the total"
@@ -12821,6 +12862,13 @@ msgstr "Setting aside"
 msgctxt "role editor: who can hold a role"
 msgid "A person"
 msgstr "A person"
+
+#. placeholder {0}: names.equity
+#. placeholder {1}: names.credits
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application compensation, with the village's token names"
+msgid "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
+msgstr "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgctxt "role draft carry"
@@ -14620,9 +14668,9 @@ msgid "{0}, {1}"
 msgstr "{0}, {1}"
 
 #: client/src/components/openProposal/SplitReview.tsx
-msgctxt "open proposal: the split heading"
-msgid "Cash, equity and credits"
-msgstr "Cash, equity and credits"
+#~ msgctxt "open proposal: the split heading"
+#~ msgid "Cash, equity and credits"
+#~ msgstr "Cash, equity and credits"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "team sheet group: the roles held now"
@@ -15648,7 +15696,7 @@ msgctxt "drafted letters"
 msgid "Send"
 msgstr "Send"
 
-#. placeholder {0}: s.label
+#. placeholder {0}: label(s.label)
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: a share's amount field"
 msgid "{0}, amount in {currency}"
@@ -18408,9 +18456,9 @@ msgid "Reading your saved numbers."
 msgstr "Reading your saved numbers."
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
-msgctxt "founding application compensation"
-msgid "How your pay is split between cash, equity and credits. Your price is set above, by your proposal."
-msgstr "How your pay is split between cash, equity and credits. Your price is set above, by your proposal."
+#~ msgctxt "founding application compensation"
+#~ msgid "How your pay is split between cash, equity and credits. Your price is set above, by your proposal."
+#~ msgstr "How your pay is split between cash, equity and credits. Your price is set above, by your proposal."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "We'll only write to you about this proposal."
@@ -18574,7 +18622,7 @@ msgid "Pick one. Nothing is decided for you."
 msgstr "Pick one. Nothing is decided for you."
 
 #. placeholder {0}: s.pct
-#. placeholder {1}: s.label
+#. placeholder {1}: label(s.label)
 #. placeholder {2}: moneyWords(s.amount, role.ceiling.currency, i18n.locale)
 #: client/src/components/governance/TermsSplit.tsx
 msgctxt "founding application review: one share of the split, with its amount"
@@ -19465,6 +19513,11 @@ msgstr "Opening the pin"
 msgctxt "hidden map page"
 msgid "Withdrawn."
 msgstr "Withdrawn."
+
+#: client/src/components/myMoon/MyTokenPay.tsx
+msgctxt "my token pay, a changed line"
+msgid "{units} {name}, changed from {shared}"
+msgstr "{units} {name}, changed from {shared}"
 
 #: client/src/components/fireflyPath/Thresholds.tsx
 msgctxt "while you wait"
@@ -20512,9 +20565,9 @@ msgid "Why this role:"
 msgstr "Why this role:"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
-msgctxt "my token pay"
-msgid "Earned Equity"
-msgstr "Earned Equity"
+#~ msgctxt "my token pay"
+#~ msgid "Earned Equity"
+#~ msgstr "Earned Equity"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "Where the Anchor decided this (the thread, the meeting or the date)"
@@ -22482,9 +22535,9 @@ msgid "Made"
 msgstr "Made"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
-msgctxt "my token pay"
-msgid "Credits"
-msgstr "Credits"
+#~ msgctxt "my token pay"
+#~ msgid "Credits"
+#~ msgstr "Credits"
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -23025,6 +23078,11 @@ msgstr "Every open quest, the engine's suggestion beside it, and one tap to use 
 msgctxt "role editor: commitment"
 msgid "Flexible: less can work"
 msgstr "Flexible: less can work"
+
+#: client/src/components/ContributionWord.tsx
+msgctxt "contribution token tip: a village with no name yet"
+msgid "the village"
+msgstr "the village"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application check"

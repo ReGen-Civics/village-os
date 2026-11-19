@@ -519,7 +519,7 @@ function andList(parts: readonly string[]): string {
 
 /** "Up to $4,000 in cash and $6,000 in equity a month": the English line for a card that splits its ceiling. */
 export function splitCeilingLine(c: PayCeiling, shares: readonly ShareAmount[], locale = "en-US"): string {
-  return `Up to ${andList(shares.map((s) => `${moneyIn(s.amount, c.currency, locale)} in ${s.label.toLowerCase()}`))} a ${c.per}`;
+  return `Up to ${andList(shares.map((s) => `${moneyIn(s.amount, c.currency, locale)} in ${/^(cash|credits?|equity)$/i.test(s.label) ? s.label.toLowerCase() : s.label}`))} a ${c.per}`;
 }
 
 /**

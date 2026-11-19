@@ -7,7 +7,7 @@ import { bandWords } from "./payBandWords";
 const i18n = setupI18n({ locale: "en", messages: { en: {} } });
 const BAND = { amount: 9000, currency: "USD", per: "month" as const };
 const FIRST_MONTH = "Your first moon starts lower and follows what you deliver.";
-const TERMS = "Equity and credit terms are still being written and are subject to legal review.";
+const TERMS = "Terms for Contribution tokens and Credits are still being written and are subject to legal review.";
 
 describe("the role card's footnote (Rye, 15 Nov 2026)", () => {
   it("says the first month with no figure, and the equity and credits clause when the split pays a token share", () => {
@@ -88,7 +88,7 @@ describe("one footnote (production check of 1.3.24)", () => {
   it("a note that repeats the first moon, the legal review or the split says only what is new", () => {
     expect(notSaidTwice("*Your first month starts lower. Equity and credit terms are subject to legal review. Default split: 60% Cash, 40% Equity, 0% Credits. 60% cash, 40% equity. Ask us anything.")).toBe("Ask us anything.");
     expect(rewardWords(i18n, BAND, 30, "*Your first month starts lower. Equity terms are subject to legal review.", [{ label: "Equity", pct: 40 }]).footnote).toBe(
-      "*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review.",
+      "*At 100% commitment. Your first moon starts lower and follows what you deliver. Terms for Contribution tokens and Credits are still being written and are subject to legal review.",
     );
     expect(splitNotRestated("60% cash, 40% equity. Settled together.")).toBe("Settled together.");
     // CONTROL: a note saying something new stays whole.
