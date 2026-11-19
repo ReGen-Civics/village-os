@@ -38,7 +38,7 @@ export function applyDocumentLocale(locale: string, doc: Document | undefined = 
 
 /**
  * ENGLISH THE BUILD MOVED OUT OF THE CHUNKS (copySplit.ts), kept for the life
- * of the page. A lazy chunk awaits its part before it runs; a boot chunk
+ * of the page. A lazy chunk's part is fetched before the chunk runs; a boot chunk
  * pushes its English inline. Either way it lands here, and it is merged
  * UNDER whatever language is active, now and on every switch: Lingui 6 has no
  * fallback chain, so a message the active catalog lacks would otherwise
@@ -75,9 +75,11 @@ const fetchPart: PartFetcher = async (part) => {
 };
 
 const parts = new Map<string, Promise<readonly string[]>>();
+/** Parts that have ARRIVED, by name: what a lazy chunk reads synchronously when it runs. */
+const arrived = new Map<string, readonly string[]>();
 
 /**
- * Load one part of the moved English, once, however many chunks await it, and
+ * Load one part of the moved English, once, however many imports ask for it, and
  * resolve to its plain texts, which the chunk reads its long literals from.
  * One retry, then the promise rejects, so the chunk's import fails the way a
  * missing chunk does and the error boundary takes it: an id is never shown,
@@ -90,7 +92,9 @@ export function loadCopy(part: string, fetcher: PartFetcher = fetchPart): Promis
       .catch(() => fetcher(part))
       .then((body) => {
         registerEnglish(body.messages ?? {});
-        return body.texts ?? [];
+        const texts = body.texts ?? [];
+        arrived.set(part, texts);
+        return texts;
       });
     pending.catch(() => parts.delete(part));
     parts.set(part, pending);
@@ -113,7 +117,31 @@ export function drainInlineCopy(): void {
   for (const messages of queued) registerEnglish(messages);
 }
 
-(globalThis as { __villageCopyLoad?: (part: string) => Promise<readonly string[]> }).__villageCopyLoad = (part) => loadCopy(part);
+/**
+ * Every part one lazy import needs, all at once. Vite's preload helper calls
+ * this BEFORE it imports the chunk (copySplit.ts, wrapPreloadHelper), so the
+ * chunk itself never waits while it evaluates.
+ */
+export function copyReady(names: readonly string[], fetcher: PartFetcher = fetchPart): Promise<unknown> {
+  return Promise.all(names.map((p) => loadCopy(p, fetcher)));
+}
+
+/**
+ * A lazy chunk's first statement: its part's plain texts, synchronously. The
+ * helper fetched the part before the import, so it is here. If it is not, the
+ * build broke its own rule, and a named error fails the import like a missing
+ * chunk: the boundary reports it, and no empty string is drawn where a
+ * sentence belonged.
+ */
+export function copyGet(part: string): readonly string[] {
+  const texts = arrived.get(part);
+  if (!texts) throw new Error(`copy part ${part} was not loaded before its chunk ran`);
+  return texts;
+}
+
+const g = globalThis as { __villageCopyReady?: typeof copyReady; __villageCopyGet?: typeof copyGet };
+g.__villageCopyReady = (names) => copyReady(names);
+g.__villageCopyGet = copyGet;
 drainInlineCopy();
 
 /** Switch the whole app to `locale`, with `catalog` already fetched (empty for English). */

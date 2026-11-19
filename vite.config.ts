@@ -16,7 +16,7 @@ import {
 import { pointAtUnhintedFonts } from "./client/src/lib/unhintedFonts";
 import { mayJoinSharedGroup } from "./client/src/lib/privilegedChunks";
 import { allLazyInBoot, bootIntrudersMessage, judgeRoute, kb, lazyModulesInBoot, pageChunk, routeVerdictMessage, shortId, type BootChunkFacts, type RouteChunkFacts } from "./client/src/lib/bootSet";
-import { CopyCollector, splitLongCopy } from "./client/src/i18n/copySplit";
+import { CopyCollector, copyPartRead, partsBesideFiles, splitLongCopy } from "./client/src/i18n/copySplit";
 import { splitArtifact, type SplitResult } from "./server/lib/groundsSplit";
 
 /**
@@ -686,6 +686,11 @@ function staticallyLoadedWith(fileName: string): Set<string> {
   loadedWithChunk.set(fileName, seen);
   return seen;
 }
+/** The part of moved English a built chunk reads before its code, or null (copySplit.ts). */
+function copyPartOfFile(fileName: string): string | null {
+  const out = preloadBundle?.[fileName];
+  return out?.type === "chunk" ? copyPartRead(out.code) : null;
+}
 function capturePreloadBundle(): Plugin {
   return {
     name: "capture-preload-bundle",
@@ -818,7 +823,16 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     // Drop preload hints for files the importer already loaded: see capturePreloadBundle above.
-    modulePreload: { resolveDependencies: (_file, deps, { hostId }) => deps.filter((dep) => !staticallyLoadedWith(hostId).has(dep)) },
+    // For a lazy import, name each chunk's part of moved English beside its
+    // file, so the preload helper fetches it BEFORE the import and no lazy
+    // chunk needs a top-level await (copySplit.ts, partsBesideFiles).
+    modulePreload: {
+      resolveDependencies: (file, deps, { hostId, hostType }) => {
+        const loaded = staticallyLoadedWith(hostId);
+        const wanted = deps.filter((dep) => !loaded.has(dep));
+        return hostType === "js" ? partsBesideFiles(loaded.has(file) ? null : file, wanted, copyPartOfFile) : wanted;
+      },
+    },
     emptyOutDir: true,
     /*
      * Terser rather than esbuild's minifier, 2026-11-02 budget pass: about

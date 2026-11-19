@@ -273,6 +273,7 @@ import { register as registerHiddenMapRoutes, sweepHiddenMap } from "./routes/hi
 import { exportMemberHiddenMap, hiddenMapDir } from "./lib/hiddenMap";
 import { register as registerGuideChoiceRoutes } from "./routes/guideChoice";
 import { register as registerI18nRoutes } from "./routes/i18n";
+import { register as registerClientCrashRoutes } from "./routes/clientCrash";
 import { setShellLang, shellLocale } from "./lib/i18nShell";
 import { noSharedCache, pageTranslation, readerLocale } from "./lib/contentTranslationRead";
 import { register as registerSessionCardRoutes } from "./routes/sessionCard";
@@ -17871,6 +17872,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerSessionCardRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, guideName: () => guidePromptName(getWorkWithUs().assistantName) });
   registerGuideChoiceRoutes(app, { authedUser, members, overLimit, villageGuideName: () => String(getWorkWithUs().assistantName ?? "") });
   registerI18nRoutes(app, { catalogDir: path.resolve(__dirname, ...(process.env.NODE_ENV === "production" ? [] : ["..", "dist"]), "i18n"), pseudoAllowed: () => process.env.NODE_ENV !== "production", authedUser, members, overLimit });
+  registerClientCrashRoutes(app, { getPool, overLimit, clientIp, isAdmin, buildMarker: BUILD_MARKER });
   registerCompanionRoutes(app, { authedUser, guardCapability, overLimit, members, getPool, village: () => ({ name: mergedConfig().project.name, guideName: guidePromptName(getWorkWithUs().assistantName), timeZone: getSeasonConfig().timezone }) });
   registerMemberAskRoutes(app, { authedUser, getPool, members, notify, overLimit, firstName });
   registerLiveSessionsRoutes(app, { authedUser, isAdmin, getPool, overLimit, members, notify, notifyAdmins, circlesRepo, lapseContext, seasonState, notifyDeps, commsPostOffice, deploymentOrigin, projectName: notifyDeps.projectName });

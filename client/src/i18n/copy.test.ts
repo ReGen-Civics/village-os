@@ -1,10 +1,11 @@
 import { compileMessage } from "@lingui/message-utils/compileMessage";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { activateLocale, drainInlineCopy, i18n, loadCopy } from "./i18n";
+import { activateLocale, copyGet, copyReady, drainInlineCopy, i18n, loadCopy } from "./i18n";
 
 /**
- * The runtime side of moving long English out of the lazy chunks: a chunk
- * awaits its part, the part's English is registered, and English stays the
+ * The runtime side of moving long English out of the lazy chunks: the preload
+ * helper fetches a chunk's part before the import, the chunk reads it
+ * synchronously, the part's English is registered, and English stays the
  * fallback under every language, because Lingui 6 has no fallback chain and a
  * message missing from the active catalog would otherwise render as its id.
  */
@@ -16,6 +17,26 @@ const part = (messages: Record<string, string>) => {
 };
 
 afterEach(() => activateLocale("en", {}));
+
+describe("copyReady and copyGet", () => {
+  it("fetches every part an import needs, then each chunk reads its texts synchronously", async () => {
+    const fetchPart = vi.fn(async (name: string) => ({ messages: {}, texts: [`texts of ${name}`] }));
+    await copyReady(["partJJJJJJJJ", "partKKKKKKKK"], fetchPart);
+    expect(fetchPart).toHaveBeenCalledTimes(2);
+    expect(copyGet("partJJJJJJJJ")).toEqual(["texts of partJJJJJJJJ"]);
+    expect(copyGet("partKKKKKKKK")).toEqual(["texts of partKKKKKKKK"]);
+  });
+
+  it("throws a named error for a part nobody fetched, so the import fails loudly", () => {
+    expect(() => copyGet("partNEVERSEEN")).toThrow("copy part partNEVERSEEN was not loaded before its chunk ran");
+  });
+
+  it("is what the built chunks and the preload helper call, on globalThis", () => {
+    const g = globalThis as unknown as { __villageCopyGet: unknown; __villageCopyReady: unknown };
+    expect(g.__villageCopyGet).toBe(copyGet);
+    expect(typeof g.__villageCopyReady).toBe("function");
+  });
+});
 
 describe("loadCopy", () => {
   it("registers a part's English, so the id renders as its words", async () => {

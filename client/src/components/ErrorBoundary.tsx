@@ -1,3 +1,4 @@
+import { reportCrash } from "@/lib/crashReport";
 import { isChunkLoadError, isOnline, reloadOnceForStaleChunk } from "@/lib/staleChunk";
 import { cn } from "@/lib/utils";
 import { Trans } from "@lingui/react/macro";
@@ -103,8 +104,17 @@ class ErrorBoundary extends Component<Props, State> {
     // Offline, a missing chunk is the connection, not the build: no reload, the offline card.
     if (isChunkLoadError(error)) {
       if (!isOnline()) this.setState({ reloading: false, offline: true });
-      else this.setState({ reloading: reloadOnceForStaleChunk() });
+      else {
+        const reloading = reloadOnceForStaleChunk();
+        this.setState({ reloading });
+        // A reload that brings the page back is a deploy, not a crash. One
+        // that was not allowed leaves the member on the card: say so.
+        if (!reloading) reportCrash(error, "boundary");
+      }
+      return;
     }
+    // Every other crash screen tells the server, once (lib/crashReport.ts).
+    reportCrash(error, "boundary");
   }
 
   render() {

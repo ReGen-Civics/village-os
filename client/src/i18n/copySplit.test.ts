@@ -4,7 +4,7 @@ import path from "node:path";
 import { compileMessage } from "@lingui/message-utils/compileMessage";
 import { describe, expect, it } from "vitest";
 import { precompileMessages } from "./precompileEnglish";
-import { bootChunks, CopyCollector, LONG_MESSAGE_CHARS, renderChunkCopy, writeCopyParts } from "./copySplit";
+import { bootChunks, CopyCollector, copyPartRead, LONG_MESSAGE_CHARS, partsBesideFiles, renderChunkCopy, wrapPreloadHelper, writeCopyParts } from "./copySplit";
 
 /**
  * Long English leaves the lazy chunks for a per-chunk part in dist/i18n
@@ -73,13 +73,15 @@ describe("bootChunks", () => {
 });
 
 describe("renderChunkCopy", () => {
-  it("gives a lazy chunk one awaited load of its own part, before any of its code runs", () => {
+  it("gives a lazy chunk one synchronous read of its own part, before any of its code runs, and no top-level await", () => {
     const c = collector();
     const out = renderChunkCopy("export const x=1;", graph()["assets/Page.js"], graph(), c);
     expect(out).not.toBeNull();
     const part = [...c.parts.keys()][0];
     expect(part).toMatch(/^[A-Za-z0-9_-]{12}$/);
-    expect(out!.startsWith(`await globalThis.__villageCopyLoad("${part}");`)).toBe(true);
+    expect(out!.startsWith(`globalThis.__villageCopyGet("${part}");`)).toBe(true);
+    expect(out).not.toContain("await");
+    expect(copyPartRead(out!)).toBe(part);
     expect(c.parts.get(part)).toEqual({
       messages: {
         Pag3_1: ["The page's own long paragraph of prose, moved."],
@@ -119,14 +121,16 @@ describe("renderChunkCopy", () => {
 describe("long string literals in a lazy chunk", () => {
   const PROSE = "Plant the key before the module can start working for the village.";
   const PROSE2 = "A founder reads this line on the consent screen before choosing.";
-  const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor as new (...args: string[]) => (...a: unknown[]) => Promise<unknown>;
-
-  /** Run a rendered chunk body the way the browser would, with the part served from the collector. */
+  /**
+   * Run a rendered chunk body the way the browser would, with the part already
+   * fetched (the preload helper did that before the import). A plain Function,
+   * not an async one: a top-level await in the chunk would fail to parse here.
+   */
   async function run(out: string, c: CopyCollector): Promise<unknown> {
     const g: Record<string, unknown> = {
-      __villageCopyLoad: async (part: string) => c.parts.get(part)!.texts,
+      __villageCopyGet: (part: string) => c.parts.get(part)!.texts,
     };
-    return new AsyncFunction("globalThis", `${out}\nreturn globalThis.__out;`)(g);
+    return new Function("globalThis", `${out}\nreturn globalThis.__out;`)(g); // module-review-ok: runs a chunk body this test just rendered from fixed literals, never remote code
   }
 
   const lazy = () => graph()["assets/shared.js"];
@@ -139,7 +143,7 @@ describe("long string literals in a lazy chunk", () => {
     expect(out).not.toContain(PROSE2);
     const [part] = [...c.parts.keys()];
     expect(part).toMatch(/^[A-Za-z0-9_-]{12}$/);
-    expect(out).toContain(`await globalThis.__villageCopyLoad("${part}")`);
+    expect(out).toContain(`globalThis.__villageCopyGet("${part}")`);
     // Each distinct string is stored once, however often the chunk uses it.
     expect([...c.parts.get(part)!.texts].sort()).toEqual([PROSE2, PROSE].sort());
     expect(await run(out, c)).toEqual([PROSE, PROSE.length, PROSE2]);
@@ -206,5 +210,76 @@ describe("writeCopyParts", () => {
     expect(files).toEqual([`${[...c.parts.keys()][0]}.json`]);
     const body = JSON.parse(fs.readFileSync(path.join(dir, files[0]), "utf8"));
     expect(Object.keys(body.messages).sort()).toEqual(["Pag3_1", "Pag3_2"]);
+  });
+});
+
+/**
+ * The wait moved ahead of each lazy load (crash guard, 19 Nov 2026): the part
+ * rides beside its chunk's file in Vite's dependency list, and the preload
+ * helper fetches it before importing.
+ */
+describe("partsBesideFiles", () => {
+  const partOf = (f: string) => ({ "assets/Page.js": "pagePart0001", "assets/shared.js": "sharedPart01" })[f] ?? null;
+
+  it("names each dependency's part beside its file and leaves the rest alone", () => {
+    expect(partsBesideFiles("assets/Page.js", ["assets/Page.js", "assets/shared.js", "assets/plain.js"], partOf)).toEqual([
+      "assets/Page.js~pagePart0001",
+      "assets/shared.js~sharedPart01",
+      "assets/plain.js",
+    ]);
+  });
+
+  it("adds the target when Vite left it out, which it does for a target that imports nothing", () => {
+    expect(partsBesideFiles("assets/Page.js", [], partOf)).toEqual(["assets/Page.js~pagePart0001"]);
+  });
+
+  it("adds nothing for a target the importer already loaded", () => {
+    expect(partsBesideFiles(null, [], partOf)).toEqual([]);
+  });
+});
+
+describe("wrapPreloadHelper", () => {
+  /** A stand-in with the same export line as Vite's helper: records what it was given, then imports. */
+  const helper = `const seen = [];export const __vitePreload = function preload(baseModule, deps) { seen.push(deps); return Promise.resolve().then(baseModule); }`;
+
+  function load(code: string, g: Record<string, unknown>) {
+    const body = code.replace(/export const /g, "const ") + "\nreturn { __vitePreload, seen };";
+    return new Function("globalThis", body)(g) as // module-review-ok: runs the wrapped helper this test built from a fixed stand-in, never remote code
+       { __vitePreload: (m: () => Promise<unknown>, d?: string[]) => Promise<unknown>; seen: unknown[] };
+  }
+
+  it("fetches every part before the import runs, and passes plain file names on", async () => {
+    const order: string[] = [];
+    let release!: () => void;
+    const g = {
+      __villageCopyReady: (parts: string[]) => {
+        order.push(`ready:${parts.join(",")}`);
+        return new Promise<void>((r) => (release = r));
+      },
+    };
+    const h = load(wrapPreloadHelper(helper), g);
+    const done = h.__vitePreload(async () => order.push("import"), ["assets/Page.js~pagePart0001", "assets/a.css"]);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(order).toEqual(["ready:pagePart0001"]);
+    release();
+    await done;
+    expect(order).toEqual(["ready:pagePart0001", "import"]);
+    expect(h.seen).toEqual([["assets/Page.js", "assets/a.css"]]);
+  });
+
+  it("fails the import when a part cannot arrive", async () => {
+    const h = load(wrapPreloadHelper(helper), { __villageCopyReady: () => Promise.reject(new Error("copy part x: 404")) });
+    await expect(h.__vitePreload(async () => "module", ["assets/Page.js~pagePart0001"])).rejects.toThrow("404");
+  });
+
+  it("asks for nothing when no dependency carries a part", async () => {
+    const h = load(wrapPreloadHelper(helper), {});
+    expect(await h.__vitePreload(async () => "module", ["assets/plain.js"])).toBe("module");
+    expect(await h.__vitePreload(async () => "bare")).toBe("bare");
+  });
+
+  it("refuses a helper whose shape changed, so an upgrade cannot drop the wait silently", () => {
+    expect(() => wrapPreloadHelper("export function __vitePreload() {}")).toThrow(/changed shape/);
   });
 });
