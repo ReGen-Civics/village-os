@@ -26,11 +26,17 @@ export interface SafetyNetProps {
   goals: Array<{ id: string; text: string }>;
   /** The draft as this browser holds it, read at the moment of the download. */
   draft: () => ApplyDraft;
+  /**
+   * Whether this browser holds the draft (they ticked Remember my answers and the write was kept). Without it the
+   * answers live only in the open page, so the words say that and never that they are safe on the device: closing an
+   * in-app browser or reloading would lose them (surface audit, 19 Nov 2026).
+   */
+  kept: boolean;
   onRetry: () => void;
   sending: boolean;
 }
 
-export default function SafetyNet({ village, roles, goals, draft, onRetry, sending }: SafetyNetProps) {
+export default function SafetyNet({ village, roles, goals, draft, kept, onRetry, sending }: SafetyNetProps) {
   const { t, i18n } = useLingui();
   const { contactEmail } = useVillageLinks();
   const box = useRef<HTMLDivElement>(null);
@@ -46,7 +52,9 @@ export default function SafetyNet({ village, roles, goals, draft, onRetry, sendi
   return (
     <div ref={box} id="propose-safety-net" tabIndex={-1} role="status" aria-live="polite" className="mb-8 grid gap-4 rounded-lg border border-notice/60 bg-muted p-4 text-sm text-foreground outline-none" data-safety-net="">
       <p className="text-base leading-relaxed">
-        {t({ message: "Something went wrong sending your application. Your answers are safe on this device.", context: "application safety net" })}{" "}
+        {kept
+          ? t({ message: "Something went wrong sending your application. Your answers are safe on this device.", context: "application safety net" })
+          : t({ message: "Something went wrong sending your application. Your answers are still on this page, so keep it open.", context: "application safety net" })}{" "}
         {contactEmail
           ? t({ message: `Download them and email the file to ${contactEmail} so nothing is lost.`, context: "application safety net" })
           : t({ message: "Download them so nothing is lost.", context: "application safety net" })}{" "}
