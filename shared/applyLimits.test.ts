@@ -98,6 +98,13 @@ describe("the upload's sizes", () => {
     expect([FILES_MAX, TAKES_MAX, CLIPS_DEFAULT, CLIPS_CEILING]).toEqual([6, 6, 24, 48]);
   });
 
+  it("the village's clip setting defaults to the platform's default and stops at its ceiling", async () => {
+    const { VARIABLES_BY_KEY } = await import("./gameVariables");
+    const clips = VARIABLES_BY_KEY["org.voice_clips_max"];
+    expect(clips.default).toBe(String(CLIPS_DEFAULT));
+    expect(clips.max).toBe(CLIPS_CEILING);
+  });
+
   it("every part, sent on its own, arrives inside the host's five minutes on a 1 Mbit/s line", () => {
     const seconds = (bytes: number) => (bytes * 8) / 1_000_000;
     expect(HOST_BODY_UPLOAD_MS).toBe(5 * 60_000);
