@@ -30,7 +30,7 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { OPEN_GLOBAL_HOURLY, OPEN_WORDS, roleTermsOf } from "../../shared/openProposals";
+import { OPEN_GLOBAL_HOURLY, OPEN_WHY_MAX, OPEN_WORDS, roleTermsOf } from "../../shared/openProposals";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -364,6 +364,16 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       expect((await call("GET", "/api/open-proposals/form")).body.roles.every((r: any) => r.opensLater === false)).toBe(true);
     });
 
+    it("room for honest answers (the lead, 19 Nov 2026): a why of 4000 characters across the four prompts is kept whole", async () => {
+      expect(OPEN_WHY_MAX).toBe(4000);
+      const part = (label: string) => `${label} ${"y".repeat(1000 - label.length - 3)}`;
+      const why = ["What I have built before:", "Why this role:", "Why now:", "What I would bring in my first month:"].map(part).join("\n\n");
+      expect(why.length).toBeGreaterThan(1200);
+      expect(why.length).toBeLessThanOrEqual(OPEN_WHY_MAX);
+      const { id } = await send({ why });
+      expect((await readOpenProposal(pool, id))?.body.why).toBe(why);
+    });
+
     it("refuses Human Design or Gene Keys longer than its limit, naming the field", async () => {
       const r = await call("POST", "/api/open-proposals", proposal({ selfKnowledge: "x".repeat(301) }));
       expect(r.status).toBe(400);
@@ -675,7 +685,7 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
       ["a role in a dormant circle", { roles: [{ roleId: "op-role-dormant" }] }, "roles", OPEN_WORDS.unknownRole],
       ["the same role twice", { roles: [{ roleId: "op-role-gate" }, { roleId: "op-role-gate", commitmentPct: 50 }] }, "roles", OPEN_WORDS.sameRoleTwice],
       ["no why", { why: "" }, "why", OPEN_WORDS.needWhy],
-      ["a why too long", { why: "x".repeat(1201) }, "why", OPEN_WORDS.tooLong("Why you", 1200)],
+      ["a why too long", { why: "x".repeat(OPEN_WHY_MAX + 1) }, "why", OPEN_WORDS.tooLong("Why you", OPEN_WHY_MAX)],
     ])("refuses %s, naming the field", async (_label, over, field, error) => {
       const r = await call("POST", "/api/open-proposals", proposal(over));
       expect(r.status).toBe(400);

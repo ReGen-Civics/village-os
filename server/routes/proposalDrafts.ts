@@ -34,7 +34,7 @@ import { seraGuideAsk } from "../lib/seraGuideCall";
 import { guideStateFor } from "./guideChoice";
 import { guidePromptName } from "@shared/guideName";
 import { civilDateKey } from "@shared/lunar";
-import { OPEN_AIM_MAX } from "@shared/openProposals";
+import { OPEN_AIM_MAX, OPEN_WHY_MAX } from "@shared/openProposals";
 import { ABOUT_STORY_MAX, forAssistants } from "@shared/proposalAbout";
 import { GOAL_LIMITS } from "@shared/proposalGoals";
 import { DRAFT_KINDS, DRAFT_WORDS, type DraftKind, type DraftReply } from "@shared/seraDrafts";
@@ -98,7 +98,7 @@ export function register(app: Express, deps: Deps): void {
       .filter((r) => r.roleId)
       .slice(0, ROLES_MAX);
     candidate.roles = asked;
-    candidate.why = typeof candidate.why === "string" ? candidate.why.slice(0, 1200) : "";
+    candidate.why = typeof candidate.why === "string" ? candidate.why.slice(0, OPEN_WHY_MAX) : "";
     candidate.aim = typeof candidate.aim === "string" ? candidate.aim.slice(0, OPEN_AIM_MAX) : "";
 
     const chart = await listOrgRoles(pool);

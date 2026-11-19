@@ -83,7 +83,8 @@ export function carryAsDraft(raw: unknown, roleId: string, now: Date, lastStep: 
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
   const o = raw as Record<string, any>;
   const items = Array.isArray(o.items) ? o.items.filter((g: unknown) => g && typeof g === "object").map((g: any) => ({ ...g, roleId, moves: "", date: "" })) : [];
-  const story = str(o.about?.story, 300);
+  // Read whole, as fromDraft reads it: a carried story is never cut.
+  const story = typeof o.about?.story === "string" ? o.about.story : "";
   // fromDraft does the reading, the limits and the age: one set of rules for both.
   const draft = fromDraft(
     {
@@ -100,7 +101,7 @@ export function carryAsDraft(raw: unknown, roleId: string, now: Date, lastStep: 
       links: o.links,
       aim: "",
       items,
-      marks: str(o.storyMark, 300) && str(o.storyMark, 300) === story ? { story } : {},
+      marks: story && o.storyMark === story ? { story } : {},
       terms: { answers: {}, commitmentPct: null, payAsk: null },
       rampUp: false,
       practical: { timeZone: "", windows: [], earliestStart: "" },
