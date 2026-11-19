@@ -56,6 +56,7 @@ import {
 } from "../../shared/mintRuleKeys";
 import type { VillageMoon } from "../../shared/villageMoon";
 import { GRATITUDE_NEVER_PAYS, GRATITUDE_ONLY_SENT, ceilingBinds, readValueTokens, type TokenAmount } from "../../shared/workValue";
+import { CONTRIBUTION_TOKEN_DEFAULT } from "../../shared/contributionToken";
 import { issuanceRefusal, readGameStart } from "./gameStart";
 import { currentCycle, currentCycleNumber, cycleIdFor, parseCycleId } from "./gratitude-cycles";
 // The import runs both ways, the same shape `./exit` above already has: both
@@ -2623,13 +2624,16 @@ async function owedPreflight(db: Pool | PoolConnection, row: OwedPosting): Promi
   // is `MOON_REWARD_SOURCE` (server/lib/moonReward.ts), spelled here so this
   // file does not import the module that imports it.
   if (row.source === "moon_invoice_reward" && row.tokenSlug === EARNED_EQUITY && !String(tokenDef(EARNED_EQUITY)?.description ?? "").trim()) {
-    return { outcome: "refused", reason: "equity_meaning", message: EQUITY_MEANING_UNWRITTEN };
+    return { outcome: "refused", reason: "equity_meaning", message: equityMeaningUnwritten() };
   }
   return null;
 }
 
-/** Why an End of Moon Earned Equity share waits. */
-export const EQUITY_MEANING_UNWRITTEN = "the village has not written what Earned Equity means yet, so its share stays owed until it does";
+/** Why an End of Moon contribution token share waits, naming the token as the village does (Admin, Tokens), never "equity". */
+export function equityMeaningUnwritten(): string {
+  const name = tokenDef(EARNED_EQUITY)?.name?.trim() || CONTRIBUTION_TOKEN_DEFAULT;
+  return `the village has not written what ${name} means yet, so its share stays owed until it does`;
+}
 
 function owedTransfer(row: OwedPosting): Parameters<typeof postTransfer>[1] {
   return {

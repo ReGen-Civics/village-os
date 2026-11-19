@@ -25,6 +25,8 @@ import {
 } from "@shared/moonRewardReview";
 import * as api from "./moonApi";
 import { ERROR, INPUT, LABEL, MUTED, SMALL_BTN } from "./moonUi";
+import { CONTRIBUTION_TOKEN_SLUG, CREDITS_TOKEN_SLUG } from "@shared/contributionToken";
+import { useShareNames } from "@/components/ContributionWord";
 
 const CHIP = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
 const CHIP_TONE: Record<CashLineStatus | TokenLineStatus, string> = {
@@ -56,10 +58,10 @@ function useStatusWords(): Record<CashLineStatus | TokenLineStatus, string> {
   };
 }
 
-/** A token's name in words: the two End of Moon issues, or its slug. */
+/** A token's name in words: the two End of Moon issues by the village's own names (Admin, Tokens), or its slug. */
 export function useTokenName(): (slug: string) => string {
-  const { t } = useLingui();
-  return (slug) => (slug === "earned-equity" ? t({ message: "Earned Equity", context: "pay board" }) : slug === "credits" ? t({ message: "Credits", context: "pay board" }) : slug);
+  const names = useShareNames();
+  return (slug) => (slug === CONTRIBUTION_TOKEN_SLUG ? names.equity : slug === CREDITS_TOKEN_SLUG ? names.credits : slug);
 }
 
 function StatusChip({ status }: { status: CashLineStatus | TokenLineStatus }) {

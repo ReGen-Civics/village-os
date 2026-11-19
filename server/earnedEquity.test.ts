@@ -173,7 +173,7 @@ describe.skipIf(!configured)("earned equity, claimed toward Hypha", () => {
     expect(rows).toEqual([
       {
         slug: "earned-equity",
-        name: "Earned Equity",
+        name: "Contribution tokens", // 0411
         kind: "equity",
         governance: "platform",
         transferable: 0,

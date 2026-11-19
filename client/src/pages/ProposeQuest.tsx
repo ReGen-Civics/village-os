@@ -63,7 +63,7 @@ export default function ProposeQuest() {
   // ONLY for the recognition token and NOT for the credit or earned equity
   // tokens"). Registry names by slug, so a village's rename reaches it.
   const creditsName = useTokenNameFor("credits", "Credits");
-  const equityName = useTokenNameFor("earned-equity", "Equity");
+  const equityName = useTokenNameFor("earned-equity", "Contribution tokens");
   // Only the pay tokens this village uses are offered as examples (gap G12).
   const creditsInUse = useTokenInUse("credits");
   const equityInUse = useTokenInUse("earned-equity");

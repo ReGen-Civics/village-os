@@ -243,13 +243,13 @@ describe("Join the founding team", () => {
     }
     const pay = within(card).getByTestId("pay-shape");
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
-    expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. To be decided in the onboarding process.");
+    expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% Contribution tokens, 5% Credits. To be decided in the onboarding process.");
     expect(within(pay).getByTestId("pay-at-risk").textContent).toBe(VILLAGE_PAY.atRisk);
     // One footnote: the ceiling's own, so the village's note is not drawn again (copy sweep, 15 Nov 2026).
     expect(within(pay).queryByTestId("pay-note")).toBeNull();
     expect(within(pay).getByTestId("pay-footnote")).toBeTruthy();
     // The split is said once: the tiles show it, and its words stay for screen readers.
-    expect(within(pay).getByTestId("pay-split").querySelector(".sr-only")?.textContent).toBe("Default split: 40% cash, 55% equity, 5% village credits. ");
+    expect(within(pay).getByTestId("pay-split").querySelector(".sr-only")?.textContent).toBe("Default split: 40% cash, 55% Contribution tokens, 5% Credits. ");
     // RANGES AND MINIMUMS STAY HIDDEN, even when an older payload still carries one.
     expect(card.textContent).not.toContain("6,750");
     expect(card.textContent).not.toContain("6750");
@@ -332,10 +332,10 @@ describe("Join the founding team", () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
-    await waitFor(() => expect(within(section).getByTestId("pay-split").textContent).toContain("70% cash, 30% equity"));
+    await waitFor(() => expect(within(section).getByTestId("pay-split").textContent).toContain("70% cash, 30% Contribution tokens"));
     expect(within(section).getByTestId("pay-shape").textContent).not.toContain("55%");
     // With a listed price, the card's own note is the footnote's fine print (steelman, 15 Nov 2026).
-    expect(within(section).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. This role's own note.");
+    expect(within(section).getByTestId("pay-footnote").textContent).toBe("*At 100% commitment. Your first moon starts lower and follows what you deliver. Terms for Contribution tokens and Credits are still being written and are subject to legal review. This role's own note.");
     expect(within(section).queryByTestId("pay-note")).toBeNull();
   });
 });
@@ -401,7 +401,7 @@ describe("the two pay lines on the card", () => {
     const rowsNow = () => Array.from(section.querySelectorAll<HTMLElement>("[data-split-share]"));
     await waitFor(() => expect(rowsNow().map((r) => [r.getAttribute("data-split-share"), (r.querySelector("[data-split-pct]") as HTMLInputElement).value])).toEqual([["cash", "60"], ["equity", "40"], [long, "0"]]));
     const rows = rowsNow();
-    expect(within(section).getByTestId("pay-split").textContent).toBe(`Default split: 60% cash, 40% equity, 0% ${long}. To be decided in the onboarding process.`);
+    expect(within(section).getByTestId("pay-split").textContent).toBe(`Default split: 60% cash, 40% Contribution tokens, 0% ${long}. To be decided in the onboarding process.`);
     // Never cut with an ellipsis: the label wraps, so no truncate and no line clamp on it.
     const label = rows[2].querySelector("span") as HTMLElement;
     expect(label.textContent).toBe(long);
@@ -551,7 +551,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(piece.textContent).not.toContain("$10,800");
     // The footnote (Rye, 15 Nov 2026): the first month with no figure, and the equity and credits clause because the
     // village's split pays 55% in equity and 5% in credits; then the village's own note.
-    expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. Your first moon starts lower and follows what you deliver. Equity and credit terms are still being written and are subject to legal review. Indicative only.`);
+    expect(within(piece).getByTestId("pay-footnote").textContent).toBe(`*At 100% commitment. Your first moon starts lower and follows what you deliver. Terms for Contribution tokens and Credits are still being written and are subject to legal review. Indicative only.`);
     // One footnote (production check of 1.3.24): the village note's own equity and credit line is not said twice.
     // One footnote (copy sweep): the village's own note is not drawn beside it.
     expect(within(piece).queryByTestId("pay-note")).toBeNull();

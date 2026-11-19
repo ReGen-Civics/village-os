@@ -8,9 +8,11 @@ import { useLingui } from "@lingui/react/macro";
 import { changedShares, splitChanged, type ProposalSplit } from "@shared/proposalSplit";
 import { moneyWords } from "@shared/roleRewardWords";
 import { CHIP } from "@/components/journey/look";
+import { ShareLabel, useShareNames } from "@/components/ContributionWord";
 
 export default function SplitReview({ split, currency }: { split: ProposalSplit | null | undefined; currency: string | null }) {
   const { t, i18n } = useLingui();
+  const names = useShareNames();
   if (!split || !split.proposed.shares.length) return null;
   const changed = splitChanged(split.offered, split.proposed);
   const marks = changedShares(split.offered, split.proposed);
@@ -22,7 +24,7 @@ export default function SplitReview({ split, currency }: { split: ProposalSplit 
   return (
     <div className="grid gap-2" data-split-review="" data-split-changed={changed ? "yes" : "no"}>
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Cash, equity and credits", context: "open proposal: the split heading" })}</p>
+        <p className="text-sm font-semibold text-muted-foreground">{t({ message: `Cash, ${names.equity} and ${names.credits}`, context: "open proposal: the split heading, with the village's token names" })}</p>
         {changed && (
           <span className={CHIP} data-split-changed-badge="">
             {t({ message: "Split changed by applicant", context: "open proposal: the split badge" })}
@@ -44,7 +46,7 @@ export default function SplitReview({ split, currency }: { split: ProposalSplit 
             return (
               <tr key={s.label} className={mark ? "bg-notice/10 font-semibold" : ""} data-split-row={s.label} data-split-row-changed={mark ? "yes" : "no"}>
                 <th scope="row" className={`py-1.5 pl-2 pr-3 font-medium capitalize ${mark ? "border-l-4 border-notice" : "border-l-4 border-transparent"}`}>
-                  {s.label}
+                  <ShareLabel label={s.label} />
                   {mark && <span className="ml-2 text-xs font-semibold normal-case text-notice">{t({ message: "changed", context: "open proposal: a changed share" })}</span>}
                 </th>
                 <td className="py-1.5 pr-3">{cell(o?.pct, o?.amount)}</td>

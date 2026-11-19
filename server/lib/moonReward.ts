@@ -38,7 +38,7 @@ import { NOTICE_WORDS, noCashInvoicePaidFrom, type InvoiceLine } from "../../sha
 import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
 import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, keys, toLedgerUnits, villageId, type OwedPosting } from "./economy";
-import { memberAccount } from "./ledger";
+import { memberAccount, tokenDef } from "./ledger";
 import { owedClaimIdsOfSource, owedPostingsFor, recordOwed, settleOwedForClaim, settleOwedPosting, type SettleOutcome } from "../repos/questOwedPostings";
 import { approvedInvoices, insertReviewEvent, invoicesByIds, markInvoicePaid } from "../repos/moonRecaps";
 import type { Notice } from "./moonReview";
@@ -68,7 +68,9 @@ export async function shareLines<L extends InvoiceLine>(pool: Pool, lines: reado
   if (pay.length === 0) return lines.map((l) => ({ ...l }));
   const sections = await sectionsForMany(pool, Array.from(new Set(pay.flatMap((l) => l.roleIds))));
   const village = readVillagePayShape(stringVar("org.pay_shape"));
-  const opts = { equityMeaningWritten: earnedEquityMeaningWritten(), tokens: { equity: EARNED_EQUITY, credits: CREDITS } };
+  // The village's own names for the two token shares (Admin, Tokens): a share labelled with one reads as that share.
+  const names = { equity: tokenDef(EARNED_EQUITY)?.name ?? "", credits: tokenDef(CREDITS)?.name ?? "" };
+  const opts = { equityMeaningWritten: earnedEquityMeaningWritten(), tokens: { equity: EARNED_EQUITY, credits: CREDITS }, names };
   const out: L[] = [];
   for (const l of lines) {
     if (!pay.includes(l)) {

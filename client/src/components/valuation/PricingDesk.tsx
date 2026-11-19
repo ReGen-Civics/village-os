@@ -24,6 +24,7 @@ import { REASON_CODES } from "@shared/valuationSetting";
 import { effortGuess } from "@/lib/questEffortGuess";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
 import NoSignBandNote from "./NoSignBandNote";
+import { useShareNames } from "@/components/ContributionWord";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 
@@ -116,6 +117,7 @@ const workOf = (r: RowState): WorkInputs => ({
 
 export default function PricingDesk({ call }: { call: Call }) {
   const { t } = useLingui();
+  const engineNames = useShareNames();
   const [read, setRead] = useState<DeskRead | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const [rows, setRows] = useState<Record<string, RowState>>({});
@@ -150,7 +152,7 @@ export default function PricingDesk({ call }: { call: Call }) {
       let s: PayeeSuggestion | null = null;
       let problem: string | null = null;
       if (Number(r.hours) > 0 && r.band) {
-        const res = suggestValuation(read.model, workOf(r), { eeMeaningWritten: read.eeMeaningWritten });
+        const res = suggestValuation(read.model, workOf(r), { eeMeaningWritten: read.eeMeaningWritten, names: engineNames });
         if (res.ok) s = res.payees[0];
         else problem = res.refusals[0]?.problem ?? null;
       }
@@ -165,7 +167,7 @@ export default function PricingDesk({ call }: { call: Call }) {
       out[q.id] = { s, problem, status };
     }
     return out;
-  }, [read, rows, currency]);
+  }, [read, rows, currency, engineNames]);
 
   const counts = useMemo(() => {
     const c = { ready: 0, hours: 0, flagged: 0, set: 0, waiting: 0 };
@@ -228,7 +230,7 @@ export default function PricingDesk({ call }: { call: Call }) {
 
       <ol className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         <li className={step(read.eeMeaningWritten, eeNow)}>
-          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}<Trans context="pricing desk">Earned Equity meaning</Trans></b>
+          <b className="block text-sm text-foreground">{read.eeMeaningWritten ? "✓ " : "1 "}{t({ message: `${engineNames.equity} meaning`, context: "pricing desk, the contribution token's name" })}</b>
           <span className="text-sm text-muted-foreground">{read.eeMeaningWritten ? t({ message: `Written`, context: "pricing desk" }) : <a className="underline font-semibold" href="/admin?tab=tokens"><Trans context="pricing desk">Write what it means first</Trans></a>}</span>
         </li>
         <li className={step(read.modelAdopted, modelNow)}>
@@ -247,7 +249,7 @@ export default function PricingDesk({ call }: { call: Call }) {
 
       {!read.cashBudgetLeft && (
         <p className="rounded-xl bg-aqua-light text-foreground px-3 py-2 text-sm mb-3">
-          <Trans context="pricing desk">No cash budget this moon, so every price is paid in Credits and Earned Equity, with no cash.</Trans>
+          {t({ message: `No cash budget this moon, so every price is paid in ${engineNames.credits} and ${engineNames.equity}, with no cash.`, context: "pricing desk, with the village's token names" })}
         </p>
       )}
 

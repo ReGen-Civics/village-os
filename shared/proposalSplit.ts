@@ -48,7 +48,7 @@ export const SPLIT_WORDS = {
 } as const;
 
 const whole = (n: unknown): n is number => typeof n === "number" && Number.isInteger(n);
-const CREDITS = /credit/i;
+const CREDITS = /credit|\busage\b/i;
 
 /**
  * Share `total` by `weights`, whole units, adding up to `total` exactly: each gets its floor, and what is left

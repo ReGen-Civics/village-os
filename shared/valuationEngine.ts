@@ -45,6 +45,7 @@ import {
   voiceFor,
 } from "./valuation";
 import { exponentOf } from "./money";
+import { shareNames, type ShareNames } from "./contributionToken";
 
 export { ENGINE_DEFAULTS };
 
@@ -151,6 +152,11 @@ export interface EngineContext {
   eeMeaningWritten: boolean;
   /** The cycle's one cash share of the base, from the cash budget (spec 3.7). Absent: the model's default. */
   cashSharePct?: number;
+  /**
+   * The village's names for the contribution token and credits (Admin, Tokens), for the receipt's words (the lead,
+   * 19 Nov 2026: never "equity"). Absent: the platform defaults (shared/contributionToken.ts).
+   */
+  names?: Partial<ShareNames>;
 }
 
 const fixFor = (problem: string): Refusal["fixAt"] => {
@@ -172,7 +178,7 @@ export function suggestValuation(model: ValuationModel, work: WorkInputs, ctx: E
   const warnings: Warning[] = priced.price.warnings.map((text) => ({ text }));
   if (!ctx.eeMeaningWritten && model.reward.equityMatchPct > 0) {
     warnings.push({
-      text: "Earned Equity is owed on this work until the village says what Earned Equity means.",
+      text: `The ${shareNames(ctx.names).equity} share is owed on this work until the village says what ${shareNames(ctx.names).equity} means.`,
       fixAt: "admin:tokens:earned-equity",
     });
   }
@@ -206,7 +212,7 @@ export function suggestValuation(model: ValuationModel, work: WorkInputs, ctx: E
     const width: RangeWidth = widthPct < dials.narrowPct ? "narrow" : widthPct < dials.mediumPct ? "medium" : "wide";
     const band = bandAround(p.totalMinor, noSignBand(dials));
 
-    const receipt = receiptOf(model, inputs, p, { lowTotalMinor, highTotalMinor, width, why, held });
+    const receipt = receiptOf(model, inputs, p, { lowTotalMinor, highTotalMinor, width, why, held }, ctx.names);
     const paidAs: PaidAs[] = [];
     if (p.cashMinor) paidAs.push({ token: "cash", amount: p.cashMinor });
     if (credits > 0) paidAs.push({ token: model.tokens.credits, amount: credits });
@@ -235,6 +241,7 @@ function receiptOf(
   work: WorkInputs,
   p: PayeePrice,
   r: { lowTotalMinor: number; highTotalMinor: number; width: RangeWidth; why: string[]; held: number },
+  names?: Partial<ShareNames>,
 ): PayeeSuggestion["receipt"] {
   const cur = model.currency;
   const money = (m: number) => wholeMoney(m, cur);
@@ -262,7 +269,7 @@ function receiptOf(
   const owedWords = r.held ? " (owed)" : "";
   unfolded.push({
     key: "added",
-    label: `Added on top: Earned Equity to match${owedWords}, Credits ${model.reward.creditsBonusPct}%`,
+    label: `Added on top: ${shareNames(names).equity} to match${owedWords}, ${shareNames(names).credits} ${model.reward.creditsBonusPct}%`,
     result: `+${money((p.equityUnits + p.bonusUnits) * 100)}`,
   });
   unfolded.push({ key: "reward", label: "Reward", result: money(p.totalMinor) });

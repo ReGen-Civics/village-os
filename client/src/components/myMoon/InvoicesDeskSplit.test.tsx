@@ -54,7 +54,8 @@ describe("the Finance desk and a member's split", () => {
 
     fireEvent.click(screen.getByRole("button", { name: SPLIT_PAY_WORDS.confirm }));
     await waitFor(() => expect(reload).toHaveBeenCalled());
-    const url = String((fetchMock.mock.calls[0] as unknown[])[0]);
+    // The desk also reads the village config (its token names), so the confirm call is found among the calls.
+    const url = (fetchMock.mock.calls as unknown[][]).map((c) => String(c[0])).find((u) => !u.includes("/api/game/config")) ?? "";
     expect(url).toContain(MOON_ROUTES.confirmSplit.replace(":id", "mv-1"));
   });
 

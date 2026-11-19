@@ -2184,10 +2184,13 @@ html:has(#sera-changes [data-sera-strip-on]) {
  * foot of a phone's screen, and over the word from 640px up, where MoonWord.tsx sets its left and top. It never takes
  * a pointer, so a tap on it is a tap outside. Semantic tokens only, as the design rule asks.
  */
-.moon {
+/* The contribution token's name wears the same tip (ContributionWord.tsx, 19 Nov 2026) under its own class. */
+.moon,
+.tip-word {
   position: relative;
 }
-.moon > [tabindex] {
+.moon > [tabindex],
+.tip-word > [tabindex] {
   margin: 0 -0.25rem;
   padding: 0.875rem 0.25rem;
   border-radius: 0.5rem;
@@ -2196,10 +2199,12 @@ html:has(#sera-changes [data-sera-strip-on]) {
   text-underline-offset: 4px;
   -webkit-tap-highlight-color: transparent;
 }
-.moon > [tabindex]:focus {
+.moon > [tabindex]:focus,
+.tip-word > [tabindex]:focus {
   outline: none;
 }
-.moon > [tabindex]:focus-visible {
+.moon > [tabindex]:focus-visible,
+.tip-word > [tabindex]:focus-visible {
   outline: 2px solid var(--ring);
 }
 .moon-tip {

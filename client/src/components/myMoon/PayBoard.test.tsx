@@ -54,7 +54,7 @@ describe("the Treasurer's pay board", () => {
     expect(lines[0].textContent).toContain("ESCROW-77");
     expect(lines[0].textContent).toContain("by Treas");
     expect(lines[1].textContent).toContain("Claimed, ready to send");
-    expect(screen.getByTestId("token-totals").textContent).toContain("Earned Equity: 2,600 waiting, 0 approved, 0 issued");
+    expect(screen.getByTestId("token-totals").textContent).toContain("Contribution tokens: 2,600 waiting, 0 approved, 0 issued");
   });
 
   it("lets a reviewer pick a waiting line and approve it through the approve door", async () => {
@@ -64,7 +64,7 @@ describe("the Treasurer's pay board", () => {
     render(<PayBoardView board={board()} init={{}} reload={reload} />);
     const approve = screen.getByRole("button", { name: "Approve and issue selected" });
     expect((approve as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getByRole("checkbox", { name: "Earned Equity, Water keeper, October moon" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: "Contribution tokens, Water keeper, October moon" }));
     fireEvent.click(approve);
     await waitFor(() => expect(reload).toHaveBeenCalled());
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
@@ -93,7 +93,7 @@ describe("the Treasurer's pay board", () => {
     const changed = token({ units: 3000, status: "issued", review: "approved", change: { by: "Fin", reason: "A bonus.", at: null }, memberReply: { text: "Thank you.", at: null }, approvedBy: "Fin", approvedAlone: true });
     render(<PayBoardView board={board({}, [changed])} init={{}} reload={async () => undefined} />);
     const line = screen.getByTestId("token-line").textContent ?? "";
-    expect(line).toContain("3,000 Earned Equity, changed from 2,600");
+    expect(line).toContain("3,000 Contribution tokens, changed from 2,600");
     expect(line).toContain("Changed by Fin: A bonus.");
     expect(line).toContain("Their answer: Thank you.");
     expect(line).toContain("who changed it and was the only one who could");
@@ -123,7 +123,7 @@ describe("the member's own token pay", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<MyTokenPay />);
     const line = await screen.findByTestId("my-token-line");
-    expect(line.textContent).toContain("3,000 Earned Equity, changed from 2,600");
+    expect(line.textContent).toContain("3,000 Contribution tokens, changed from 2,600");
     expect(line.textContent).toContain("Why it changed: A bonus for the filter rebuild.");
     expect(line.textContent).toContain("Waiting for the Treasurer's approval");
     expect(screen.getByText(/Approved lines issue to your account when the village launches/)).toBeTruthy();

@@ -36,6 +36,7 @@ import type { MyMoonData } from "./moonApi";
 import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section, SplitBreakdown, useRoomView } from "./moonUi";
 import { ACCOMPLISHED_WORDS } from "@shared/accomplishedReview";
 import { rewardShareLine } from "@shared/rewardShare";
+import { useShareNames } from "@/components/ContributionWord";
 import { AccomplishedBlock, AdjustBreakdown } from "./AccomplishedBlock";
 import { authToken } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
@@ -143,6 +144,7 @@ function emailText(inv: InvoiceView): string {
 
 export default function InvoicePanel({ data, cycleId, editable, reload }: { data: MyMoonData; cycleId: string; editable: boolean; reload: () => Promise<unknown> }) {
   const room = useRoomView();
+  const shareNames = useShareNames();
   const inv = data.invoice;
   const route = data.payRoute?.route ?? "pending";
   const words = data.attestationWords;
@@ -242,7 +244,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                 </div>
                 <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
                 {l.priceNote && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-price-note">{l.priceNote}</p> : null}
-                {l.reward && l.currency && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-reward-parts">{rewardShareLine(l.reward, l.currency)}</p> : null}
+                {l.reward && l.currency && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-reward-parts">{rewardShareLine(l.reward, l.currency, shareNames)}</p> : null}
                 {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
                 {l.adjust && !room ? <AdjustBreakdown adjust={l.adjust} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (

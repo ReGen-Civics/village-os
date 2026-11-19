@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { formatTokenAmount } from "@/lib/tokenAmount";
 import { useTokenNameMap } from "@/hooks/useTokenNameFor";
+import { CONTRIBUTION_TOKEN_DEFAULT, CONTRIBUTION_TOKEN_SLUG } from "@shared/contributionToken";
 
 /** One row of `GET /api/admin/quest-claims/owed`. */
 export interface OwedPostingView {
@@ -37,7 +38,7 @@ export interface OwedPostingView {
 }
 
 /** What a refusal means, in words a steward can act on. */
-function reasonWords(reason: string | null): string {
+function reasonWords(reason: string | null, names: Record<string, string> = {}): string {
   switch (reason) {
     case "not_launched":
       return "the village has not started its Game, so nothing may issue yet";
@@ -48,7 +49,7 @@ function reasonWords(reason: string | null): string {
     case "rule":
       return "the ledger refused it";
     case "equity_meaning":
-      return "the village has not written what Earned Equity means yet, so its share waits until it does";
+      return `the village has not written what ${names[CONTRIBUTION_TOKEN_SLUG]?.trim() || CONTRIBUTION_TOKEN_DEFAULT} means yet, so its share waits until it does`;
     default:
       return "it has not been paid yet";
   }
@@ -65,10 +66,10 @@ function amountWords(row: OwedPostingView, names: Record<string, string>): strin
 
 function rowWords(row: OwedPostingView, names: Record<string, string>): string {
   if (row.state === "refused") {
-    return `${amountWords(row, names)}: refused for good, because ${reasonWords(row.refusalReason)}${row.lastError ? ` (${row.lastError})` : ""}.`;
+    return `${amountWords(row, names)}: refused for good, because ${reasonWords(row.refusalReason, names)}${row.lastError ? ` (${row.lastError})` : ""}.`;
   }
   return row.refusalReason
-    ? `${amountWords(row, names)}: still owed, because ${reasonWords(row.refusalReason)}.`
+    ? `${amountWords(row, names)}: still owed, because ${reasonWords(row.refusalReason, names)}.`
     : `${amountWords(row, names)}: still owed.`;
 }
 

@@ -137,7 +137,7 @@ describe.skipIf(!configured)("GET /api/me/wallet and the claim door", () => {
     expect(new Set(slugs).size).toBe(slugs.length);
 
     const eq = rowFor(json, EARNED_EQUITY);
-    expect(eq).toMatchObject({ name: "Earned Equity", role: "claimable", heldUnits: 3, decimals: 0 });
+    expect(eq).toMatchObject({ name: "Contribution tokens", role: "claimable", heldUnits: 3, decimals: 0 });
     const credits = rowFor(json, "credits");
     expect(credits).toMatchObject({ heldUnits: 1250, decimals: 2, role: "village" });
     expect(credits.staysHere).toBe("Stays in the village. There is nothing to claim on Hypha.");
@@ -170,7 +170,7 @@ describe.skipIf(!configured)("GET /api/me/wallet and the claim door", () => {
       const { json } = await call("GET", "/api/me/wallet", ora);
       expect(rowFor(json, EARNED_EQUITY).name).toBe("Shared Stake");
     } finally {
-      await pool.query("UPDATE `tokens` SET `name` = 'Earned Equity' WHERE `slug` = ?", [EARNED_EQUITY]); // module-review-ok: fixture undoing its own rename
+      await pool.query("UPDATE `tokens` SET `name` = 'Contribution tokens' WHERE `slug` = ?", [EARNED_EQUITY]); // module-review-ok: fixture undoing its own rename
       await loadTokenRegistry(pool);
     }
   });

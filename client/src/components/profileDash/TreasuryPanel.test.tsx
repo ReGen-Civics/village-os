@@ -10,10 +10,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { Router } from "wouter";
+import { I18nProvider } from "@lingui/react";
+import { i18n } from "@lingui/core";
 
+i18n.load("en", {});
+i18n.activate("en");
+
+let config: Record<string, unknown> = { currency: { value: { slug: "village-token" } } };
 vi.mock("@/lib/gameApi", () => ({
   authToken: () => null,
-  useGameConfig: () => ({ currency: { value: { slug: "village-token" } } }),
+  useGameConfig: () => config,
 }));
 vi.mock("@/hooks/useTokenNames", () => ({ useTokenName: () => "Cheers" }));
 vi.mock("@/lib/workPay", () => ({ cashPayWords: () => null, linesWords: () => "", useDisplayRates: () => null }));
@@ -46,9 +52,11 @@ const MECHANICS = /earn|never bought|bought|showing up|weight when|from the pool
 describe("the treasury", () => {
   it("names each token and its number, and says nothing about what a token does", () => {
     render(
+      <I18nProvider i18n={i18n}>
       <Router>
         <TreasuryPanel data={data} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
-      </Router>,
+      </Router>
+      </I18nProvider>,
     );
     expect(screen.getByRole("heading", { name: "What you hold" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Harbour Tokens" })).toBeInTheDocument();
@@ -63,9 +71,11 @@ describe("the treasury", () => {
     villageWords = { heading: "Your hold", byMoon: "By tide" };
     try {
       render(
-        <Router>
+        <I18nProvider i18n={i18n}>
+      <Router>
           <TreasuryPanel data={data} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
-        </Router>,
+        </Router>
+      </I18nProvider>,
       );
       expect(screen.getByRole("heading", { name: "Your hold" })).toBeInTheDocument();
       expect(page()).not.toMatch(MECHANICS);
@@ -80,9 +90,11 @@ describe("the treasury", () => {
       cash: [{ id: "c1", workKind: "moon", workRef: "r1", workTitle: "End of Moon", amountMinor: 610867, currency: "USD", state: "owed", owedAt: "2026-11-10T12:00:00Z", claimedAt: null, paidAt: null, paidNote: null }],
     } as unknown as DashData;
     render(
+      <I18nProvider i18n={i18n}>
       <Router>
         <TreasuryPanel data={owed} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
-      </Router>,
+      </Router>
+      </I18nProvider>,
     );
     // The purse and the moon's row both read it; whole numbers once rounded it to $6,109.
     expect(formatMoney(610867, "USD")).toBe("$6,108.67");
@@ -90,5 +102,40 @@ describe("the treasury", () => {
     expect(purse?.textContent).toContain("$6,108.67");
     expect(page()).toContain("$6,108.67 cash owed");
     expect(page()).not.toContain("$6,109");
+  });
+});
+
+describe("the contribution token in the treasury (the lead, 19 Nov 2026)", () => {
+  const renderWith = (d: DashData) =>
+    render(
+      <I18nProvider i18n={i18n}>
+      <Router>
+        <TreasuryPanel data={d} claimedQuests={[]} particulars={null} redeemOn={false} seasonName={null} />
+      </Router>
+      </I18nProvider>,
+    );
+  afterEach(() => {
+    config = { currency: { value: { slug: "village-token" } } };
+  });
+
+  it("is a holding even at zero, under the platform's neutral name, with its tip", () => {
+    const { container } = renderWith(data);
+    const heading = screen.getByRole("heading", { name: "Contribution tokens" });
+    expect(heading.closest("li")?.textContent).toMatch(/0/);
+    expect(heading.querySelector(".tip-word > [tabindex]")).not.toBeNull();
+    expect(container.textContent).not.toMatch(/equity/i);
+  });
+
+  it("shows the village's own name and what the member holds", () => {
+    config = { currency: { value: { slug: "village-token" }, names: { "earned-equity": "Harbour" } } };
+    renderWith({ ...data, wallet: [...(data.wallet ?? []), { token: "earned-equity", name: "Harbour", kind: "equity", role: "village", decimals: 0, heldUnits: 2600 }] } as unknown as DashData);
+    const heading = screen.getByRole("heading", { name: "Harbour" });
+    expect(heading.closest("li")?.textContent).toMatch(/2,?600/);
+  });
+
+  it("is not drawn while the village has the token switched off", () => {
+    config = { currency: { value: { slug: "village-token" }, unused: ["earned-equity"] } };
+    renderWith(data);
+    expect(screen.queryByRole("heading", { name: "Contribution tokens" })).toBeNull();
   });
 });
