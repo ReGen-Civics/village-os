@@ -20,7 +20,6 @@
  *   - A name and an email address: identity, not an answer (an address is held to 254 by the mail standard, and the
  *     name column is varchar(120)).
  *   - Ids, keys, dates and time zones.
- *   - How many references an applicant gives: the background-check rule is written around that number.
  *
  * Pure: no clock, no pool, no browser. It imports nothing, so every shared module may import it.
  */
@@ -228,10 +227,11 @@ export const APPLY_COUNTS = {
   /** Value items for one role (was 8). */
   goalsPerRole: 24,
   /**
-   * References on the form: unchanged at 3. The count is part of the background-check rule the form states ("leave
-   * all three blank and we run a check"), a policy for the village to change, not a size.
+   * References on the form: 6, doubled from 3 by the lead (19 Nov 2026). The background-check rule asks for none of
+   * a count: a check runs when every reference is left blank (shared/proposalAbout.ts `checkNeeded`), so one to six
+   * references stands in for it, and the copy says "up to six" and "leave them all blank".
    */
-  references: 3,
+  references: 6,
   /** Links to their work (was 5). */
   links: 15,
   /** Suggestions for the role card, across the roles (was 30). */
@@ -241,8 +241,8 @@ export const APPLY_COUNTS = {
   cardServes: 9,
   /** Revisions of one counter-offer (was 50). */
   offerRevisions: 150,
-  /** References given on the status page: unchanged at 5, for the same reason as `references`. */
-  statusReferences: 5,
+  /** References given on the status page, or on a member's own application page: 10, doubled from 5 by the lead (19 Nov 2026). */
+  statusReferences: 10,
   /** A member application's goals (was 9) and usual times (was 6). */
   memberGoals: 27,
   memberWindows: 18,

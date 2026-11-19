@@ -216,7 +216,8 @@ describe("one role per application", () => {
 
   it("SHAPE THE ROLE: a suggestion written on a piece of the role card travels with the application (Rye, 14 Nov 2026)", async () => {
     await applyFor();
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     await completeAll();
     const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
     fireEvent.click(within(shape).getByText("Open the role card"));
@@ -747,9 +748,14 @@ describe("your first day", () => {
 });
 
 describe("the saved draft", () => {
-  it("writes nothing to this device until they tick the box", async () => {
+  it("starts ticked with the shared-device line; unticked, writes nothing, and stays unticked in this browser (the lead, 19 Nov 2026)", async () => {
     await applyFor();
-    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(false);
+    const box = () => screen.getByLabelText("Remember my answers on this device") as HTMLInputElement;
+    expect(box().checked).toBe(true);
+    expect(document.querySelector("[data-remember-shared]")?.textContent).toBe("On a shared device, untick it.");
+    expect(box().getAttribute("aria-describedby")).toContain("propose-remember-shared");
+    fireEvent.click(box());
+    expect(box().checked).toBe(false);
     pressNext();
     fillAbout();
     expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBeNull();
@@ -757,11 +763,25 @@ describe("the saved draft", () => {
     await applyFor();
     expect(screen.queryByText(/We kept your answers from last time/)).toBeNull();
     expect((screen.getByLabelText(OPEN_WORDS.whyLabel) as HTMLTextAreaElement).value).toBe("");
+    // Their untick holds for this browser; ticking again clears the choice.
+    expect(box().checked).toBe(false);
+    fireEvent.click(box());
+    cleanup();
+    await applyFor();
+    expect(box().checked).toBe(true);
+  });
+
+  it("CONTROL: left ticked, the draft is written as they type", async () => {
+    await applyFor();
+    pressNext();
+    fillAbout();
+    expect(window.localStorage.getItem(draftKey("r-gate", ""))).toContain("The gate is always shut.");
   });
 
   it("keeps the words and the step across leaving and coming back, never the references, and is cleared once sent", async () => {
     await applyFor();
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     pressNext();
     fillAbout();
     fireEvent.change(screen.getByLabelText("Reference 1: name"), { target: { value: "Ines Vargas" } });
@@ -792,7 +812,8 @@ describe("the saved draft", () => {
 
   it("a draft for one role never fills another role's application", async () => {
     await applyFor("r-gate");
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     pressNext();
     fillAbout();
     cleanup();
@@ -1174,6 +1195,9 @@ describe("design G2: the desk and the panes", () => {
     expect(rail.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");
     // On the terms step the shape the phone reads steps aside on a desk.
     expect((document.querySelector("[data-comp-shape]") as HTMLElement).parentElement?.className).toContain("lg:hidden");
+    // Off The terms the box is folded to its heading, so it does not repeat open beside every step (the roles lane, 19 Nov 2026).
+    expect(rail.tagName).toBe("DETAILS");
+    expect(rail.hasAttribute("open")).toBe(false);
   });
 
   it("D-06: each written term is one row with a two-part I accept / Let's talk control", async () => {

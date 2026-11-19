@@ -171,12 +171,16 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     many: "{n} applications have not moved for ten days.",
   },
   application_references_in: {
-    blurb: "A shortlisted applicant sent their references. Pick who follows up with each one.",
+    blurb: "An applicant sent their references. Pick who follows up with each one.",
     many: "{n} applications have references waiting for follow-up owners.",
   },
   application_reference_owner: {
     blurb: "You follow up with a reference for an applicant. Read how to reach them on the application, then write your notes.",
     many: "{n} references wait for your follow-up.",
+  },
+  application_references_asked: {
+    blurb: "Your application is for your first long-term role, so references are asked. Add them on your application's page.",
+    many: "{n} of your applications ask for references.",
   },
   application_new_invitation_asked: {
     blurb: "An applicant's invitation to join the team expired, and they asked for a new one. You can make it on their proposal's page.",

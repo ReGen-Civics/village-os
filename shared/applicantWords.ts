@@ -225,6 +225,8 @@ export interface ApplicantMessages {
       step: string;
       heading: string;
       line: string;
+      /** The line for a member taking on their first long-term role, who was never on a shortlist (shared/applicantOnboarding.ts `asksReferences`). */
+      lineFirstRole: string;
       privacy: string;
       name: string;
       contact: string;
@@ -470,6 +472,7 @@ const en: ApplicantMessages = {
       step: "References",
       heading: "Your references",
       line: "You are on our shortlist. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
+      lineFirstRole: "This is your first long-term role with us, so we ask for references. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
       privacy: "Only the people who review your application, and the person who follows up with each reference, read these details. No AI reads them. They are deleted with your application.",
       name: "Their name",
       contact: "How to reach them",
@@ -486,7 +489,7 @@ const en: ApplicantMessages = {
       failed: "That did not send. Try again.",
       errors: {
         none: "Add at least one reference.",
-        too_many: "Add up to five references.",
+        too_many: "Add up to ten references.",
         needs_all: "Give each reference a name, how to reach them and how they know you. Or clear the row.",
         contact: "Give an email address or a phone number we can reach that reference on.",
         twice: "You added the same reference twice.",
@@ -713,6 +716,7 @@ const es: ApplicantMessages = {
       step: "Referencias",
       heading: "Tus referencias",
       line: "Estás en nuestra lista corta. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
+      lineFirstRole: "Este es tu primer rol de largo plazo con nosotros, así que pedimos referencias. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
       privacy: "Solo las personas que revisan tu postulación, y quien da seguimiento a cada referencia, leen estos datos. Ninguna IA los lee. Se borran con tu postulación.",
       name: "Su nombre",
       contact: "Cómo contactarla",
@@ -729,7 +733,7 @@ const es: ApplicantMessages = {
       failed: "No se envió. Inténtalo de nuevo.",
       errors: {
         none: "Agrega al menos una referencia.",
-        too_many: "Agrega hasta cinco referencias.",
+        too_many: "Agrega hasta diez referencias.",
         needs_all: "Da a cada referencia un nombre, cómo contactarla y cómo te conoce. O vacía la fila.",
         contact: "Da un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
         twice: "Agregaste la misma referencia dos veces.",

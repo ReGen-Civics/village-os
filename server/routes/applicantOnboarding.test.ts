@@ -32,6 +32,7 @@ import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { usersRepo } from "../repos/users";
 import { clearReviewOf, forgetMemberReview } from "../repos/applicationReview";
 import { anonymiseOpenProposal } from "../repos/openProposals";
+import { insertApplication } from "../repos/seatApplications";
 import { register } from "./openProposals";
 import { signLink } from "../lib/comms/links";
 
@@ -48,6 +49,8 @@ const IB = person("u-ob-ib", "Ivo Birch");
 const HR = person("u-ob-hr", "Hana Reed");
 const FINAL = person("u-ob-final", "Flor Lima");
 const OUTSIDER = person("u-ob-out", "Olly Out");
+/** A member holding no role yet: their application is for a first long-term role. */
+const NEWBIE = person("u-ob-new", "Nia New");
 
 const REFS = [
   { name: "Ana Reference", contact: "ana.reference@example.test", how: "We built a school garden together.", ally: "She runs the valley seed library." },
@@ -91,7 +94,7 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
     pool = testPool(db, { connectionLimit: 8 });
     await ensureRoleColumns();
     const users = usersRepo(pool);
-    for (const p of [FOUNDER, IA, IB, HR, FINAL, OUTSIDER]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
+    for (const p of [FOUNDER, IA, IB, HR, FINAL, OUTSIDER, NEWBIE]) await users.add({ id: p.id, name: p.name, email: p.email, passwordHash: "x", emailVerifiedAt: "2026-01-01T00:00:00.000Z", paths: [] } as any);
     // The people circle is not the application's circle, so its holders are not asked to consent: they read as owners and the final call only.
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-ob', 'Core Circle', '[]', 0), ('c-ob-people', 'People Circle', '[]', 0)");
     gate = await createOrgRole(pool, { id: "ob-role-lead", name: "Lead Steward", seats: 1, circleId: "c-ob", aim: "Hold the money." });
@@ -422,6 +425,73 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       // CONTROL: the other reference was untouched by the erasure.
       expect((await refRows(id))[1].name).toBe("Ben Reference");
       await clearReviewOf(pool, [id], new Date());
+      expect(await refRows(id)).toEqual([]);
+    });
+  });
+  describe("a member's first long-term role (the lead, 19 Nov 2026)", () => {
+    /** A member's own application (`sa-` ref) for the Channel Role, waiting on a holder. */
+    const memberApplication = async (id: string, candidate: string, status: "awaiting-holder" | "adopted" = "awaiting-holder") => {
+      await insertApplication(pool, { id, candidateUserId: candidate, proposedBy: candidate, seatIds: [roleA], note: null, deliverables: null, settings: { v: 1 } as any, settingsHash: "h", termEndsAt: new Date("2036-12-01T00:00:00Z"), termSeasonId: "s-now", termFollowsSeason: false, startsAt: null, status });
+      return id;
+    };
+    const mine = (id: string, as: string) => call("GET", `${app(id)}/references/mine`, undefined, as);
+
+    it("a member holding no role is asked for references with no shortlist, gives them on their own page, and the team walks them", async () => {
+      const id = await memberApplication("sa-firstrole-0001", NEWBIE.id);
+      // Before anyone asks: the walkthrough shows the references step, and the member's own read says nothing is asked.
+      const before = await walk(id, FOUNDER.id);
+      expect(before.status, JSON.stringify(before.body)).toBe(200);
+      expect(before.body.walkthrough.track.stages.map((x: any) => x.key)).toEqual(["received", "references", "followups", "decision"]);
+      expect(before.body.walkthrough.track.primary).toBe("ask_references");
+      expect(before.body.walkthrough.you).toMatchObject({ mayAskReferences: true, mayShortlist: false, mayAddFinal: false });
+      expect((await mine(id, NEWBIE.id)).body.references).toBeNull();
+      // Only the power to place people asks; the member may not ask for themselves.
+      expect((await call("POST", `${app(id)}/references/ask`, {}, OUTSIDER.id)).status).toBe(403);
+      const asked = await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
+      expect(asked.status, JSON.stringify(asked.body)).toBe(200);
+      // The member hears it on their bell, linked to their application's form. No email: they are a member.
+      const bell = state.notices.find((n) => n.type === "application_references_asked");
+      expect(bell?.userId).toBe(NEWBIE.id);
+      expect(bell?.link).toBe(`/role-applications/${id}#your-references`);
+      expect(state.sent.filter((m) => m.idempotencyKey.includes(id))).toEqual([]);
+      expect((await mine(id, NEWBIE.id)).body.references).toEqual({ asked: true, given: null, mayAdd: true });
+      // CONTROL: nobody else reads the member's own count.
+      expect((await mine(id, OUTSIDER.id)).body.references).toBeNull();
+      // Another member cannot give them for the applicant.
+      expect((await call("POST", `${app(id)}/references`, { references: REFS }, OUTSIDER.id)).status).toBe(404);
+      const given = await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id);
+      expect(given.status, JSON.stringify(given.body)).toBe(200);
+      expect((await mine(id, NEWBIE.id)).body.references).toEqual({ asked: true, given: 2, mayAdd: false });
+      // Each went to the follow-up role, and the reviewers read the details; the applicant and an outsider get a 404.
+      const rows = await refRows(id);
+      expect(rows.map((r: any) => r.owner_role_id)).toEqual([roleHR, roleHR]);
+      const w = await walk(id, FOUNDER.id);
+      expect(w.body.walkthrough.references.list.map((r: any) => r.contact)).toEqual(REFS.map((r) => r.contact));
+      expect(w.body.walkthrough.track.now).toBe("followups");
+      expect((await walk(id, NEWBIE.id)).status).toBe(404);
+      expect((await walk(id, OUTSIDER.id)).status).toBe(404);
+      // A shortlist or a final conversation has no place on a member application.
+      expect((await call("POST", `${app(id)}/shortlist`, { answer: "yes" }, FOUNDER.id)).status).toBe(404);
+      expect((await call("POST", `${app(id)}/final-conversation`, {}, FOUNDER.id)).status).toBe(404);
+    });
+
+    it("CONTROL: a member who already holds a role is not asked, and their application has no walkthrough", async () => {
+      const id = await memberApplication("sa-heldrole-0001", IA.id);
+      expect((await walk(id, FOUNDER.id)).status).toBe(404);
+      const asked = await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id);
+      expect(asked.status).toBe(409);
+      expect(asked.body.error).toBe("first_role_only");
+      expect(await q("SELECT kind FROM application_steps WHERE application_ref = ?", [id])).toEqual([]);
+    });
+
+    it("a decided member application takes no references, and an erased member's references go", async () => {
+      const done = await memberApplication("sa-decided-0001", NEWBIE.id, "adopted");
+      expect((await call("POST", `${app(done)}/references/ask`, {}, FOUNDER.id)).status).toBe(409);
+      const id = await memberApplication("sa-erase-0001", NEWBIE.id);
+      expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+      expect((await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id)).status).toBe(200);
+      expect(await refRows(id)).toHaveLength(2);
+      await forgetMemberReview(pool, NEWBIE.id, new Date());
       expect(await refRows(id)).toEqual([]);
     });
   });

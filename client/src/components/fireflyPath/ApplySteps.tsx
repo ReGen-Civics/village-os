@@ -30,7 +30,7 @@ import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } f
 import { LAST_STONE, stoneOfField } from "./stones";
 import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
-import MicInput from "@/components/form/MicInput";
+import GrowingField from "@/components/form/GrowingField";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
 import type { DraftableGoal } from "@shared/seraDrafts";
 import type { FoundingSetup } from "@shared/foundingApplication";
@@ -255,13 +255,13 @@ export function ValueItems({
                 <label htmlFor={`${prefix}-${i}-title`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "What you will bring", context: "founding application value" })}
                 </label>
-                <MicInput id={`${prefix}-${i}-title`} clip={`value-${i + 1}-title`} limit={GOAL_LIMITS.title} value={g.title} onChange={(title) => set(i, { title, seraDraft: false })} className={`${FIELD} py-3`} />
+                <GrowingField minRows={2} id={`${prefix}-${i}-title`} clip={`value-${i + 1}-title`} limit={GOAL_LIMITS.title} value={g.title} onChange={(title) => set(i, { title, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               <div>
                 <label htmlFor={`${prefix}-${i}-done`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "How we will know it is done", context: "founding application value" })}
                 </label>
-                <MicInput id={`${prefix}-${i}-done`} clip={`value-${i + 1}-done`} limit={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => set(i, { doneWhen, seraDraft: false })} className={`${FIELD} py-3`} />
+                <GrowingField minRows={2} id={`${prefix}-${i}-done`} clip={`value-${i + 1}-done`} limit={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => set(i, { doneWhen, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               {goals.length > 0 && (
                 <div>
@@ -491,19 +491,37 @@ function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyAr
   );
 }
 
-export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
+/**
+ * Open on The terms, where the split is set; `collapsed` on every other step, folded to its heading so the same box
+ * does not repeat beside all of them (the roles lane, 19 Nov 2026). Folded, it still opens with a tap.
+ */
+export function RewardsBeside({ setup, splits = [], collapsed = false }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }>; collapsed?: boolean }) {
   const { t } = useLingui();
-  return (
-    <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
-      <p id="rewards-beside-h" className={EYEBROW}>
-        {t({ message: "How rewards work", context: "founding application compensation" })}
-      </p>
+  const heading = t({ message: "How rewards work", context: "founding application compensation" });
+  const body = (
+    <>
       <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && (
         <p className="text-xs leading-relaxed text-muted-foreground">
           <TokenText text={setup.atRisk} />
         </p>
       )}
+    </>
+  );
+  if (collapsed) {
+    return (
+      <details className="rounded-2xl border border-border bg-card px-6 py-2 shadow-sm" data-rewards-beside="" data-collapsed="">
+        <summary className={`${EYEBROW} flex min-h-11 cursor-pointer items-center`}>{heading}</summary>
+        <div className="grid gap-3 pb-4">{body}</div>
+      </details>
+    );
+  }
+  return (
+    <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
+      <p id="rewards-beside-h" className={EYEBROW}>
+        {heading}
+      </p>
+      {body}
     </section>
   );
 }

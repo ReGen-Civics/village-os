@@ -1,6 +1,6 @@
 /**
  * THE MEMBER DOOR'S "ABOUT YOU" STEP (joining lane PR 2): where you are based,
- * your languages, your story with us, up to three references, and the
+ * your languages, your story with us, up to six references, and the
  * background-check consent. The same pieces as the open form's section
  * (components/openProposal/AboutYou.tsx), so both doors ask the same things.
  *

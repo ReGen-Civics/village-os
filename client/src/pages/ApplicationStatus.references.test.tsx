@@ -98,12 +98,12 @@ describe("the reference form", () => {
     expect(document.querySelector("[data-reference-form]")).not.toBeNull();
   });
 
-  it("adds rows up to five", async () => {
+  it("adds rows up to ten (the lead, 19 Nov 2026)", async () => {
     served = { ...WAITING };
     render(<ApplicationStatus />);
     const add = await screen.findByRole("button", { name: EN.add });
-    for (let i = 0; i < 4; i++) fireEvent.click(screen.getByRole("button", { name: EN.add }));
-    expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(5);
+    for (let i = 0; i < 9; i++) fireEvent.click(screen.getByRole("button", { name: EN.add }));
+    expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(10);
     expect(add).toBeTruthy();
     expect(screen.queryByRole("button", { name: EN.add })).toBeNull();
   });

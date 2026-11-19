@@ -2,7 +2,7 @@
  * ABOUT YOU: REFERENCES, THE BACKGROUND-CHECK CONSENT AND A FEW FACTS (joining
  * lane PR 2, 10 Nov 2026).
  *
- * Somebody proposing for a role can name up to three people who know their work
+ * Somebody proposing for a role can name up to six people who know their work
  * and say where they are based, which languages they use and what their story
  * with us is. Two things here are THIRD-PARTY PERSONAL DATA and are held to the
  * rules #1128 set for links and files (shared/proposalAttachments.ts):
@@ -65,9 +65,9 @@ export interface BackgroundCheck {
 /** The consent, in the lead's words, line by line. The tick below covers all of them. */
 export const CHECK_WORDS = {
   heading: "References and a background check",
-  referencesHint: "Up to three people who know your work. Leave all three blank if you prefer a background check.",
+  referencesHint: "Up to six people who know your work. Leave them all blank if you prefer a background check.",
   lines: [
-    "If you leave the three references blank, we'll run a background check instead. We cover its cost. The provider depends on your country.",
+    "If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country.",
   ],
   contactLine: "We contact your references only after our first conversation, and only with your OK.",
   roleLine: "A check happens for this role whatever the references say.",
@@ -91,7 +91,7 @@ export const ABOUT_WORDS = {
   tooManyReferences: `Add up to ${REFERENCES_MAX} references.`,
   sameReferenceTwice: "You added the same reference twice.",
   tooLong: (what: string, max: number) => `${what} is too long. Keep it under ${max} characters.`,
-  needConsent: "Tick the box to say you agree to the background check, or give three references.",
+  needConsent: "Tick the box to say you agree to the background check, or give at least one reference.",
   consentChanged: "The words about the background check changed while you read them. Read them again and tick.",
   /** The deciders' page. */
   shownHeading: "About you, references and background check",

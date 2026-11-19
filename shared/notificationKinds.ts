@@ -354,6 +354,12 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     celebrate: false,
     waits: true,
   },
+  // A member taking on their first long-term role is asked for references, on their own application's page.
+  application_references_asked: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
   // The applicant's invitation expired and they asked for a new one (their
   // status page's door). Nothing is reissued by itself: a holder makes it.
   application_new_invitation_asked: {

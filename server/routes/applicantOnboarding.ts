@@ -12,6 +12,7 @@
  *   POST /api/governance/applications/:ref/final-conversation      add the final conversation for the final-call role
  *   POST /api/application-status/:ref/references?token=            the applicant gives their references, by the emailed link
  *   POST /api/governance/applications/:ref/references              the same, signed in as the applicant
+ *   GET  /api/governance/applications/:ref/references/mine         a member's own first-role application: asked, and a count once given
  *
  * Every member door asks the gate on `terms.read` first, as the review's own
  * doors do; who may do what past that is the power to place people in roles
@@ -26,7 +27,7 @@ import type { Express } from "express";
 import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
-import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, saveFollowUp, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
+import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, ownReferencesFor, saveFollowUp, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
 
 const TOKEN_MAX = 300;
 const MINUTE = 60_000;
@@ -148,6 +149,16 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     // The link proves who gives them, the way it does for the status page.
     if (!ref || !token || !(await statusByToken(work, ref, token))) return res.status(404).json(NOT_HERE);
     given(res, await giveReferences(work, ref, req.body?.references));
+  });
+
+  // A member's own application (a first long-term role): whether references are asked, a count once given. Never the details.
+  app.get("/api/governance/applications/:ref/references/mine", async (req, res) => {
+    const viewer = await authedUser(req);
+    if (!viewer) return res.status(401).json({ error: "auth_required" });
+    if (await overLimit(`application-references-mine:${String(viewer.id)}`, 120, 10 * MINUTE)) return res.status(429).json({ error: "too_many" });
+    const ref = refOf(req);
+    const mine = ref ? await ownReferencesFor(work, ref, String(viewer.id)) : null;
+    res.set("Cache-Control", "private, no-store").json({ references: mine });
   });
 
   app.post("/api/governance/applications/:ref/references", async (req, res) => {

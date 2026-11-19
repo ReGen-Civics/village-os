@@ -18,7 +18,7 @@
  * shows, so Back loses nothing; every check runs in one place
  * (`findProblems`): Continue judges the step you are on, and Send reviews the
  * whole application in walking order, names every gap, and puts the cursor on
- * the first one (components/fireflyPath/stones.ts). Ticked to remember, the answers
+ * the first one (components/fireflyPath/stones.ts). Ticked to remember (the default), the answers
  * are saved on this device, never references or files (fireflyPath/applyRemember.ts).
  *
  * THE FOUNDING REGISTER (Phase A brief): the same night world, quieter.
@@ -41,7 +41,6 @@
  */
 import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
-import MicInput from "@/components/form/MicInput";
 import { LimitsAtTop } from "@/components/form/LimitSigns";
 import { attachedBytes, attachmentRoom, postBytes } from "@/components/openProposal/uploadSize";
 import { limitProblems } from "@/components/fireflyPath/limitProblems";
@@ -89,6 +88,7 @@ import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraf
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
+import { remembersByDefault } from "@/components/fireflyPath/applyRemember";
 import { needsSafetyNet, sendTimeoutMs, type SendFailure } from "@/components/fireflyPath/applySendFailure";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 export { firstUnanswered } from "@/components/fireflyPath/applyPage";
@@ -188,8 +188,8 @@ export default function ProposeARole() {
   /** The draft for this role has been read back (or there was none), so saving may begin. */
   const [draftFor, setDraftFor] = useState<string | null>(null);
   const [restored, setRestored] = useState<false | "draft" | "carry">(false);
-  /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Off until ticked; nothing is written before. */
-  const [remember, setRemember] = useState(false);
+  /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Ticked to start (the lead, 19 Nov 2026), unless this browser unticked it before. */
+  const [remember, setRemember] = useState(remembersByDefault);
   /** The words of the application just sent, held in this page only, so "Apply for another role too" works with nothing kept on the device. */
   const carriedHere = useRef<ApplyCarry | null>(null);
   /** What to put the cursor on after the next draw: the step's heading, or a field with a problem. */
@@ -219,7 +219,8 @@ export default function ProposeARole() {
         if (d?.open) {
           const picked = roleFromLink(wanted, roles, OPEN_APPLY_ROLES);
           setRoleId(picked.id);
-          setExtras(picked.more.map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
+          // A coming-soon role named after the first is not added: its waitlist is on the roles page (the lead, 19 Nov 2026).
+          setExtras(picked.more.filter((id) => !roles.some((r) => r.id === id && r.comingSoon === true)).map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
           setGone(picked.gone);
         }
       })
@@ -277,7 +278,7 @@ export default function ProposeARole() {
       setReached(d.reached);
       setRestored(own ? "draft" : "carry");
     }
-    if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // nothing kept starts unticked (1.3.22); the card's slider and split (17 Nov 2026)
+    if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the box starts as remembersByDefault set it (19 Nov 2026); the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor]);
 
   /** The draft as toDraft writes it, from what the page holds now. */
@@ -863,7 +864,7 @@ export default function ProposeARole() {
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
                     {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
                   </label>
-                  <MicInput id="propose-self" limit={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
+                  <GrowingField minRows={2} id="propose-self" limit={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>
                   <Beside id="propose-problem-selfKnowledge" message={problemOn("selfKnowledge")} />
                 </div>
@@ -888,7 +889,7 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <MicInput id="propose-aim" clip="aim" required limit={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
+                <GrowingField minRows={2} id="propose-aim" clip="aim" required limit={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
                   {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim); setMarks((m) => ({ ...m, aim: r.aim })); } }} />}
@@ -983,7 +984,8 @@ export default function ProposeARole() {
           {/* A desk has the width: the role stays beside the step. */}
           <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
             <RoleBeside role={role} pct={pct} />
-            <RewardsBeside setup={setup} splits={ownSplits} />
+            {/* The rewards open once, on The terms where the split is set; folded to their heading on every other step (the roles lane, 19 Nov 2026). */}
+            <RewardsBeside setup={setup} splits={ownSplits} collapsed={stone !== STONES.indexOf("terms")} />
           </aside>
         </div>
       )}

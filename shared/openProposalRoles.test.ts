@@ -3,7 +3,7 @@
  * ask and split, read the same way whatever shape the body was stored in.
  */
 import { describe, expect, it } from "vitest";
-import { OPEN_APPLY_ROLES, OPEN_PROPOSAL_MAX_ROLES, openBodyOf, parseOpenProposal, roleTermsOf, termsPerRole } from "./openProposals";
+import { OPEN_APPLY_ROLES, OPEN_PROPOSAL_MAX_ROLES, OPEN_WORDS, openBodyOf, parseOpenProposal, roleTermsOf, termsPerRole } from "./openProposals";
 
 const split = { commitmentPct: 40, offered: { total: 4000, shares: [{ label: "Cash", pct: 60, amount: 2400 }, { label: "Equity", pct: 40, amount: 1600 }] }, proposed: { total: 4000, shares: [{ label: "Cash", pct: 80, amount: 3200 }, { label: "Equity", pct: 20, amount: 800 }] } };
 
@@ -56,6 +56,15 @@ describe("several roles in one proposal", () => {
   describe("as the form sends it", () => {
     const ctx = { roleIds: new Set(["r1", "r2", "r3", "r4"]), address: (s: string) => (s.includes("@") ? s.trim() : null) };
     const base = { name: "Rowan", email: "rowan@example.test", why: "Because.", aim: "", payAsk: { kind: "negotiate" } };
+
+    it("refuses a coming-soon role added after the first, and takes it as the first (the lead, 19 Nov 2026)", () => {
+      const notYetOpen = (id: string) => id === "r2";
+      const added = parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, { ...ctx, notYetOpen });
+      expect(added).toMatchObject({ ok: false, field: "roles.1", error: OPEN_WORDS.addedRoleNotOpen });
+      // CONTROL: the same role as the first one is not refused here, and with no rule nothing is refused.
+      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, { ...ctx, notYetOpen }).ok).toBe(true);
+      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, ctx).ok).toBe(true);
+    });
 
     it("keeps each added role's commitment and ask, and copies the first role's onto it", () => {
       const p = parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 50, payAsk: { kind: "amount", monthly: 3000, per: "month" } }] }, ctx);

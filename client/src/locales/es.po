@@ -23801,3 +23801,55 @@ msgstr "Tus archivos y grabaciones suman {0}, {1} más de lo que puede llevar un
 msgctxt "open proposal attachments"
 msgid "Files and recordings together: {0} of {1}."
 msgstr "Archivos y grabaciones juntos: {0} de {1}."
+
+#: client/src/components/fireflyPath/RememberOnDevice.tsx
+msgctxt "founding application, remember on this device"
+msgid "On a shared device, untick it."
+msgstr "En un dispositivo compartido, desmárcala."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "Up to six people who know your work. Each needs a name, how you know them, and an email or phone number."
+msgstr "Hasta seis personas que conozcan tu trabajo. Cada una necesita un nombre, de dónde la conoces y un correo o número de teléfono."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."
+msgstr "Si dejas en blanco las referencias, haremos una verificación de antecedentes. Nosotros cubrimos su costo. El proveedor depende de tu país."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "Add another reference"
+msgstr "Agregar otra referencia"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add up to 6 references."
+msgstr "Agrega hasta 6 referencias."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick the box to say you agree to the background check, or give at least one reference."
+msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da al menos una referencia."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
+msgstr "Un rol que agregaste aún no está abierto, así que no puede ser parte de esta postulación. Quítalo y únete a su lista de espera en la página de roles."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role kept from before"
+msgid "{0} isn't open yet, so it can't be part of this application. Remove it, and join its waitlist to hear when it opens."
+msgstr "{0} aún no está abierto, así que no puede ser parte de esta postulación. Quítalo y únete a su lista de espera para saber cuándo abre."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role's waitlist"
+msgid "Join the waitlist for {0}"
+msgstr "Únete a la lista de espera de {0}"
+
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, coming-soon roles under the picker"
+msgid "Not open yet. These roles take no applications now. Join a role's waitlist to hear when it opens."
+msgstr "Aún no abiertos. Estos roles no reciben postulaciones por ahora. Únete a la lista de espera de un rol para saber cuándo abre."

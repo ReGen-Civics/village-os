@@ -11,6 +11,7 @@ import {
   parseAboutYou,
   parseReferences,
   referencesOf,
+  REFERENCES_MAX,
 } from "./proposalAbout";
 import { openBodyOf, parseOpenProposal } from "./openProposals";
 
@@ -30,10 +31,14 @@ describe("references", () => {
   it("needs all three parts once a row is started", () => {
     for (const bad of [ref({ how: "" }), ref({ name: "" }), ref({ contact: "" })]) expect(parseReferences([bad])).toMatchObject({ ok: false, error: ABOUT_WORDS.referenceNeedsAll });
   });
-  it("refuses a contact that is neither an email nor a phone, a fourth reference and the same one twice", () => {
+  it("refuses a contact that is neither an email nor a phone, a seventh reference and the same one twice", () => {
     expect(parseReferences([ref({ contact: "see me" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.referenceContact });
     expect(parseReferences([ref({ contact: "12345" })])).toMatchObject({ ok: false });
-    expect(parseReferences([ref(), ref({ name: "A", contact: "a@example.org" }), ref({ name: "B", contact: "b@example.org" }), ref({ name: "C", contact: "c@example.org" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.tooManyReferences });
+    // Up to six (the lead, 19 Nov 2026): six go, a seventh is refused.
+    const many = (n: number) => [ref(), ...Array.from({ length: n - 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.org` }))];
+    expect(REFERENCES_MAX).toBe(6);
+    expect(parseReferences(many(6))).toMatchObject({ ok: true });
+    expect(parseReferences(many(7))).toMatchObject({ ok: false, error: ABOUT_WORDS.tooManyReferences });
     expect(parseReferences([ref(), ref({ name: "Other" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.sameReferenceTwice });
   });
   it("reads a stored body back safely, whatever it holds", () => {
@@ -62,7 +67,7 @@ describe("the background-check consent", () => {
     expect(parseAboutYou({ references: [], consent: { given: true, version: "cc-00000000" } }, { alwaysChecked: false, at: AT })).toMatchObject({ ok: false, error: ABOUT_WORDS.consentChanged });
   });
   it("says the lead's words, and its version moves when a word does", () => {
-    expect(CHECK_WORDS.lines).toEqual(["If you leave the three references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."]);
+    expect(CHECK_WORDS.lines).toEqual(["If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."]);
     expect(CHECK_WORDS.contactLine).toBe("We contact your references only after our first conversation, and only with your OK.");
     expect(checkConsentVersion()).toMatch(/^cc-[0-9a-f]{8}$/);
   });

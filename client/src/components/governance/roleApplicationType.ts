@@ -263,7 +263,7 @@ export const ROLE_APPLICATION_TYPE: WizardTypeConfig = {
     },
     about: {
       label: "About you",
-      intro: "A few facts, up to three references, and how a background check works. Your time zone is on your profile and your earliest start is the first day on the next step, so we don't ask them again.",
+      intro: "A few facts, up to six references, and how a background check works. Your time zone is on your profile and your earliest start is the first day on the next step, so we don't ask them again.",
       fields: [
         {
           key: "aboutYou",

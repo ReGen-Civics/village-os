@@ -8,13 +8,17 @@
  * circle, and the total across every role. Loaded lazily, so none of it rides /propose-a-role's first view
  * (scripts/route-first-view.json).
  *
+ * A COMING-SOON ROLE IS NOT ADDED HERE (the lead, 19 Nov 2026). It is listed under the picker as not open yet, with
+ * a link to join its waitlist on the roles page (`waitlistHref`, the anchor the roles page opens the waitlist form
+ * on), and the server refuses one added to an application (shared/openProposals.ts `notYetOpen`).
+ *
  * The cap on a price stays the server's to judge and is never shown here. Nothing ranks or judges anyone.
  */
 import { useLingui } from "@lingui/react/macro";
 import { askPeriod, ceilingAt } from "@shared/commitmentRange";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
-import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
+import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, LINK, TILE } from "@/components/journey/look";
 import { CommitmentFor, EMPTY_TERMS_STEP, type TermsRole, type TermsStepValue } from "@/components/governance/TermsEight";
 
 /** A role the form offers, as this step reads it. */
@@ -23,7 +27,7 @@ export interface MoreRolesRole extends TermsRole {
   held?: boolean;
   /** Every place taken, still recruiting: offered, marked "More players welcome". */
   stillRecruiting?: boolean;
-  /** Applied for early (the lead, 16 Nov 2026): offered, marked as coming soon. */
+  /** Not open yet: never added here, linked to its waitlist on the roles page instead (the lead, 19 Nov 2026). */
   comingSoon?: boolean;
   /** A future venture asks for a pitch of its own: never added here. */
   futureVenture?: boolean;
@@ -34,6 +38,9 @@ export interface ExtraRole {
   roleId: string;
   terms: TermsStepValue;
 }
+
+/** Where a coming-soon role's waitlist is: its card on the roles page, which opens the waitlist form for this anchor. */
+export const waitlistHref = (roleId: string): string => `/roles#waitlist-${encodeURIComponent(roleId)}`;
 
 /** What one role adds to the total: their own price when they wrote one in the role's period, else the suggested price at their commitment. */
 function priceOf(role: TermsRole | undefined, v: TermsStepValue): { amount: number; currency: string; per: NonNullable<TermsRole["ceiling"]>["per"] } | null {
@@ -64,14 +71,14 @@ export default function MoreRoles({
   const { t, i18n } = useLingui();
   const byId = new Map(offered.map((r) => [r.id, r]));
   const chosen = new Set([first.id, ...extras.map((x) => x.roleId)]);
-  // Open roles, held roles still recruiting and coming-soon roles; never a fully held role or a future venture.
-  const addable = offered.filter((r) => !chosen.has(r.id) && !r.held && !r.futureVenture);
+  // Open roles and held roles still recruiting; never a fully held role, a future venture, or a role not open yet.
+  const addable = offered.filter((r) => !chosen.has(r.id) && !r.held && !r.futureVenture && !r.comingSoon);
+  // Not open yet: shown under the picker, each with the way to its waitlist (the lead, 19 Nov 2026).
+  const notYet = offered.filter((r) => !chosen.has(r.id) && r.comingSoon && !r.futureVenture);
   const optionName = (r: MoreRolesRole) =>
-    r.comingSoon
-      ? t({ message: `${r.name} (coming soon)`, context: "founding application, a coming-soon role to add" })
-      : r.stillRecruiting
-        ? t({ message: `${r.name}: More players welcome`, context: "founding application, a held role that is still recruiting, to add" })
-        : r.name;
+    r.stillRecruiting
+      ? t({ message: `${r.name}: More players welcome`, context: "founding application, a held role that is still recruiting, to add" })
+      : r.name;
   const circles = Array.from(new Set(addable.map((r) => r.circle)));
   const set = (i: number, terms: TermsStepValue) => onChange(extras.map((x, j) => (j === i ? { ...x, terms } : x)));
   const remove = (i: number) => onChange(extras.filter((_, j) => j !== i));
@@ -112,7 +119,16 @@ export default function MoreRoles({
                 {t({ message: `Remove ${role.name}`, context: "founding application, roles added to one application" })}
               </button>
             </div>
-            <CommitmentFor idPrefix={`more-role-${i + 1}`} role={role} value={x.terms} onChange={(next) => set(i, next)} named />
+            {role.comingSoon ? (
+              <p className="border-l-4 border-notice pl-3 text-sm text-foreground" data-more-role-not-open="">
+                {t({ message: `${role.name} isn't open yet, so it can't be part of this application. Remove it, and join its waitlist to hear when it opens.`, context: "founding application, a coming-soon role kept from before" })}{" "}
+                <a className={LINK} href={waitlistHref(role.id)}>
+                  {t({ message: `Join the waitlist for ${role.name}`, context: "founding application, a coming-soon role's waitlist" })}
+                </a>
+              </p>
+            ) : (
+              <CommitmentFor idPrefix={`more-role-${i + 1}`} role={role} value={x.terms} onChange={(next) => set(i, next)} named />
+            )}
             {problem && (
               <p className="border-l-4 border-notice pl-3 text-sm font-medium text-foreground" data-field-problem="">
                 {problem}
@@ -138,6 +154,22 @@ export default function MoreRoles({
               </optgroup>
             ))}
           </select>
+        </div>
+      )}
+      {notYet.length > 0 && (
+        <div className="grid gap-1" data-roles-not-open="">
+          <p className={HINT}>
+            {t({ message: "Not open yet. These roles take no applications now. Join a role's waitlist to hear when it opens.", context: "founding application, coming-soon roles under the picker" })}
+          </p>
+          <ul className="grid gap-1">
+            {notYet.map((r) => (
+              <li key={r.id} className="text-sm">
+                <a className={`${LINK} inline-flex min-h-11 items-center`} href={waitlistHref(r.id)} data-waitlist-role={r.id}>
+                  {t({ message: `Join the waitlist for ${r.name}`, context: "founding application, a coming-soon role's waitlist" })}
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       {extras.length > 0 && (

@@ -11,6 +11,7 @@ import GuideChat from "@/components/GuideChat";
 import { useGuideName } from "@/hooks/useGuideName";
 import { sendProposal, assistantAvailable } from "@/lib/proposals";
 import type { IdeaHold, IdeaReceipt } from "@shared/questIdeas";
+import GrowingField from "@/components/form/GrowingField";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { APPLY_TEXT } from "@shared/applyLimits";
 
@@ -394,14 +395,15 @@ export default function ProposeQuest() {
                   purpose: t({ message: "The quest you want to do: what you would create, and what it brings to the village.", context: "voice field purpose: propose quest description" }),
                 }}
               >
-              <textarea
+              <GrowingField
                 id="quest-what"
                 required
-                rows={4}
+                mic={false}
+                minRows={4}
                 value={form.whatYouWantToDo}
-                onChange={(e) => set("whatYouWantToDo", e.target.value)}
+                onChange={(v) => set("whatYouWantToDo", v)}
                 placeholder="Describe the Quest: what you'd create, and what it brings to the village."
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -411,13 +413,14 @@ export default function ProposeQuest() {
                 What resources are you bringing?
               </label>
               <VoiceArea value={form.resourcesBringing} onValue={(v) => set("resourcesBringing", v)} limit={QUEST_PROSE_MAX}>
-              <textarea
+              <GrowingField
                 id="quest-bringing"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.resourcesBringing}
-                onChange={(e) => set("resourcesBringing", e.target.value)}
+                onChange={(v) => set("resourcesBringing", v)}
                 placeholder="Your skills, time, tools, materials, funding, relationships…"
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -427,13 +430,14 @@ export default function ProposeQuest() {
                 What do you need from {projectName}?
               </label>
               <VoiceArea value={form.resourcesNeeded} onValue={(v) => set("resourcesNeeded", v)} limit={QUEST_PROSE_MAX}>
-              <textarea
+              <GrowingField
                 id="quest-needed"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.resourcesNeeded}
-                onChange={(e) => set("resourcesNeeded", e.target.value)}
+                onChange={(v) => set("resourcesNeeded", v)}
                 placeholder="Land access, materials, budget, people, introductions, space…"
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -443,13 +447,14 @@ export default function ProposeQuest() {
                 What compensation, if any, do you want?
               </label>
               <VoiceArea value={form.compensation} onValue={(v) => set("compensation", v)} limit={QUEST_PROSE_MAX}>
-              <textarea
+              <GrowingField
                 id="quest-compensation"
-                rows={2}
+                mic={false}
+                minRows={2}
                 value={form.compensation}
-                onChange={(e) => set("compensation", e.target.value)}
+                onChange={(v) => set("compensation", v)}
                 placeholder={`${tokenExamples ? `${tokenExamples}, ` : ""}cash, revenue share, a joint venture, or nothing. It's a gift, totally up to you.`}
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -459,13 +464,14 @@ export default function ProposeQuest() {
                 Timeline &amp; payment milestones, if any
               </label>
               <VoiceArea value={form.timelineMilestones} onValue={(v) => set("timelineMilestones", v)} limit={QUEST_PROSE_MAX}>
-              <textarea
+              <GrowingField
                 id="quest-timeline"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.timelineMilestones}
-                onChange={(e) => set("timelineMilestones", e.target.value)}
+                onChange={(v) => set("timelineMilestones", v)}
                 placeholder="Rough phases, dates, and any milestone-based payments you'd propose."
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>

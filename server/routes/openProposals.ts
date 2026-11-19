@@ -600,6 +600,8 @@ export function register(app: Express, deps: Deps): void {
       now: now(),
       // A tick is kept only for a way the village lists now, in its words as they read today.
       knowUs: founding().knowUs,
+      // A coming-soon role is never ADDED to an application; its waitlist is on the roles page (the lead, 19 Nov 2026).
+      notYetOpen: (id) => roles.some((r) => r.id === id && r.comingSoon === true),
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
     // EACH ROLE ON ITS OWN TERMS (the lead, 17 Nov 2026): one proposal may name several roles, each with its own
