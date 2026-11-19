@@ -40,6 +40,20 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.27 (2026-11-19)
+
+### What changed for your village
+
+- **The role application no longer crashes on the voice step.** On iPhone and iPad (Safari, and in-app browsers such as WhatsApp's), /propose-a-role could show an error page instead of the form, at random, in a fresh browser too. The voice step's later half was loaded from two places at once, and Safari could start using it before it had finished loading. It now loads from one place, and the "Write down my words automatically" switch lives in the page's own code, so it is always ready. An applicant's saved answers on their device are not touched: reloading the page brings the form back with them.
+
+- **A way out when sending an application fails.** If a role application cannot be sent (the connection drops, the send times out, or the server refuses for a reason the applicant cannot fix in a field), the page now says so and offers "Try again", "Download my application" (one file with every answer, made on the device) and "Email it to us". The email line shows only when the village has a contact email set (Admin, "Contact email for enquiries"). The saved draft is cleared only after a confirmed send. Every failed send now leaves one log line on the server, with nothing personal in it.
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.26.
+
+---
+
 ## 1.3.26 (2026-11-18)
 
 ### What changed for your village

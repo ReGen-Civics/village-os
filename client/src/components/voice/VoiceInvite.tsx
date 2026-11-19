@@ -26,13 +26,14 @@ import { voiceWord } from "@/components/fireflyPath/applyWordsT";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
 import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import type { VoiceDrafting } from "./VoiceDrafts";
+import { VoiceStepMoreLazy } from "./voiceStepMoreLazy";
 /** The page mounts the clips beside its answers from here too (components/voice/VoiceClips.tsx). */
 export { VoiceClipsProvider } from "./VoiceClips";
 export { useAskBeforeLeaving } from "./useVoiceRecorder";
 export { clipLimitsOf, type VoiceClipLimits } from "@shared/voiceNotes";
 
 /** The step's later additions (limit note and the AI switch, countdown, words written down), loaded after the page: the first view is at its budget. */
-const MoreLazy = lazy(() => import("./VoiceStepMore"));
+const MoreLazy = VoiceStepMoreLazy;
 /** "Draft my answers" too: drawn only once there are words, so it waits for them off the first view. */
 const VoiceDrafts = lazy(() => import("./VoiceDrafts").then((m) => ({ default: m.VoiceDrafts })));
 const More = (p: ComponentProps<typeof MoreLazy>) => (
