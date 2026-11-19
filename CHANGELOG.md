@@ -40,6 +40,20 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.30 (2026-11-19)
+
+### What changed for your village
+
+- **Room for honest answers in "Why you, and why now".** The role application's why box asks four things (what you have built before, why this role, why now, and what you would bring in your first month), and it held only 1200 characters. It now holds 4000, about 1000 for each prompt, and the counter, the voice drafts, the server's check and the drafting helper all read the same limit.
+- **A long why is accepted all the way through.** When the village adopts a proposal, its why becomes the application's note, which was capped at 2000; it now holds 4000 too, so a why that was accepted when sent can no longer be refused at the decision. A voice clip spoken into the box keeps as many words as the box holds.
+- **A saved draft loads whole.** Reading an applicant's saved answers on their device no longer cuts any text: the why, the story, the aim, the Human Design or Gene Keys answer and the value items come back exactly as saved.
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.29.
+
+---
+
 ## 1.3.29 (2026-11-19)
 
 ### What changed for your village

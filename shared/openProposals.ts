@@ -58,7 +58,13 @@ export const KNOW_US_TEXT_MAX = 160;
 export const SELF_KNOWLEDGE_MAX = 300;
 export const OPEN_NAME_MAX = 120;
 export const OPEN_NOTE_MAX = 600;
-export const OPEN_WHY_MAX = 1200;
+/**
+ * "Why you, and why now" asks four things in one box (what they have built, why this role, why now, and their
+ * first month), so it holds about a thousand characters for each (the lead, 19 Nov 2026: 1200 did not fit
+ * honest answers). The one name the form, the drafting helpers and the server all read. A member's application
+ * keeps it as its note, so shared/seatApplications.ts WORDS_MAX is held at least this long.
+ */
+export const OPEN_WHY_MAX = 4000;
 export const OPEN_AIM_MAX = 300;
 /** How long a confirmation link works, and how long an unconfirmed proposal is kept. */
 export const OPEN_CONFIRM_HOURS = 48;

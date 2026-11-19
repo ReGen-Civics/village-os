@@ -24,7 +24,8 @@ import {
   whoAdoptsWords,
 } from "./seatApplications";
 import { whoApprovesWords } from "./roleProposalConsent";
-import { parseApplicationAnswers, whoseMove } from "./seatApplications";
+import { parseApplicationAnswers, whoseMove, WORDS_MAX } from "./seatApplications";
+import { OPEN_WHY_MAX } from "./openProposals";
 
 const body = (over: Record<string, unknown> = {}) => ({
   seatIds: ["seat-a"],
@@ -41,6 +42,14 @@ describe("parseApplicationInput", () => {
     expect(parseApplicationInput(body({ seatIds: ["a", "b", "c", "d"] }))).toMatchObject({ ok: false, field: "seatIds" });
     const old = parseApplicationInput({ ...body(), seatIds: undefined, orgRoleId: "seat-old" });
     expect(old.ok && old.input.seatIds).toEqual(["seat-old"]);
+  });
+
+  it("holds a full open-proposal why as its note: an adopted proposal's answer is never refused for length (the lead, 19 Nov 2026)", () => {
+    expect(WORDS_MAX).toBeGreaterThanOrEqual(OPEN_WHY_MAX);
+    const why = "w".repeat(OPEN_WHY_MAX);
+    const r = parseApplicationInput(body({ fitStatement: undefined, note: why }));
+    expect(r.ok && r.input.note).toBe(why);
+    expect(parseApplicationInput(body({ fitStatement: undefined, note: "w".repeat(WORDS_MAX + 1) }))).toMatchObject({ ok: false, field: "note" });
   });
 
   it("refuses no seat, six seats and a seat named twice", () => {
