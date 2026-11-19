@@ -16,6 +16,7 @@ import { Image } from "@/components/Image";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -101,7 +102,7 @@ export default function Feed() {
         forgetExamplesCache("feed");
         load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const heart = (item: any) => {
@@ -113,7 +114,7 @@ export default function Feed() {
         if (!ok) throw new Error(d?.message ?? d?.error ?? "That didn't send. Try again.");
         load();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   return (

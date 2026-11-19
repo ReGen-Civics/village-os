@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { REPORT_FAILED, reportFeedback } from "@/lib/reportFeedback";
 import VoiceArea from "@/components/voice/VoiceArea";
 import { useLingui } from "@lingui/react/macro";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -86,7 +87,7 @@ function ThreadList() {
         forgetExamplesCache("forum");
         load();
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(failureWords(e)))
       .finally(() => setBusy(false));
   };
 
@@ -307,7 +308,7 @@ function ThreadView({ id }: { id: string }) {
         setOutcome("");
         load();
       })
-      .catch((e) => setStatus(e.message))
+      .catch((e) => setStatus(failureWords(e)))
       .finally(() => setBusy(false));
   };
 
@@ -362,7 +363,7 @@ function ThreadView({ id }: { id: string }) {
         setDraft("");
         load();
       })
-      .catch((e) => setStatus(e.message))
+      .catch((e) => setStatus(failureWords(e)))
       .finally(() => setBusy(false));
   };
 

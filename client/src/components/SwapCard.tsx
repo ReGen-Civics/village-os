@@ -15,6 +15,7 @@
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { ArrowDown, History, Loader2, Repeat, ShieldAlert } from "lucide-react";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -124,7 +125,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
     setError("");
     post("/api/exchange/swap/quote", { payToken, receiveToken, receiveQuantity: want })
       .then(setQuote)
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(failureWords(e)))
       .finally(() => setBusy(false));
   };
 
@@ -152,7 +153,7 @@ export default function SwapCard({ pairs, onDone }: { pairs: SwapPair[]; onDone:
           setQuote(e.body.quote);
           setError("The price moved while you were deciding. This is the trade as it stands now.");
         } else {
-          setError(e.message);
+          setError(failureWords(e));
         }
       })
       .finally(() => setBusy(false));

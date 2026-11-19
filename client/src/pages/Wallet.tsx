@@ -29,6 +29,7 @@ import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import InfoTip from "@/components/InfoTip";
 import { decimalsOf, formatTokenAmount } from "@/lib/tokenAmount";
+import { failureWords } from "@/lib/failureWords";
 
 /**
  * The one truth every token shares, behind a balance row: the ledger.
@@ -139,7 +140,7 @@ export default function Wallet() {
         if (!ok) throw new Error(d?.error || "Checkout didn't start. Try again.");
         window.location.href = d.url;
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const balances: Record<string, number> = data?.mine?.balances ?? {};
