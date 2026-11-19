@@ -103,6 +103,63 @@ describe("the moon word", () => {
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 
+  it("two moons on neighbouring lines of one sentence: a tap opens the word it lands on, never the other (production check of 1.3.29)", () => {
+    // On a phone at 390px "Each moon you share what you'll bring the next moon." wraps its two words onto neighbouring
+    // lines, and the padding that grows each word's box to 44px is taller than a line, so the second word's box lies
+    // over the first word's text. The browser reports a tap there on the second word, which is on top.
+    const { container } = inI18n(<MoonText text="Each moon you share what you'll bring the next moon." />);
+    const [first, second] = Array.from(container.querySelectorAll(".moon > [tabindex]")) as HTMLElement[];
+    const text = new Map([
+      [first, { left: 70, right: 110, top: 360, bottom: 380 }],
+      [second, { left: 70, right: 110, top: 380, bottom: 400 }],
+    ]);
+    const box = (r: { left: number; right: number; top: number; bottom: number }) => ({ ...r, top: r.top - 14, bottom: r.bottom + 14 });
+    const realFromPoint = Object.getOwnPropertyDescriptor(document, "elementsFromPoint");
+    const realRange = document.createRange.bind(document);
+    const fromPoint = (x: number, y: number) =>
+      [second, first].filter((el) => {
+        const b = box(text.get(el)!);
+        return x >= b.left && x <= b.right && y >= b.top && y <= b.bottom;
+      });
+    Object.defineProperty(document, "elementsFromPoint", { configurable: true, value: fromPoint });
+    document.createRange = () => {
+      let of: HTMLElement | null = null;
+      return { selectNodeContents: (n: Node) => (of = n as HTMLElement), getClientRects: () => (of && text.has(of) ? [text.get(of)!] : []) } as unknown as Range;
+    };
+    // The browser's own order for a tap: down and up on the box on top, then the focus and the click it makes up.
+    const tapAt = (y: number) => {
+      const top = fromPoint(90, y)[0] as HTMLElement;
+      fireEvent.pointerDown(top, { pointerType: "touch", clientX: 90, clientY: y });
+      fireEvent.pointerUp(top, { pointerType: "touch", clientX: 90, clientY: y });
+      fireEvent.focus(top);
+      fireEvent.click(top, { clientX: 90, clientY: y });
+    };
+    const opened = () => [first, second].map((w) => !!w.getAttribute("aria-describedby"));
+    try {
+      // The first word's own text, inside the second word's box: the first word opens, and only it.
+      tapAt(372);
+      expect(opened()).toEqual([true, false]);
+      expect(screen.getAllByRole("tooltip")).toHaveLength(1);
+      // The second word: the first closes and the second opens.
+      tapAt(392);
+      expect(opened()).toEqual([false, true]);
+      expect(screen.getAllByRole("tooltip")).toHaveLength(1);
+      // The second word again closes it, and the next tap on the first word still opens the first.
+      tapAt(392);
+      expect(opened()).toEqual([false, false]);
+      tapAt(372);
+      expect(opened()).toEqual([true, false]);
+      // The first word again closes it.
+      tapAt(372);
+      expect(opened()).toEqual([false, false]);
+      expect(screen.queryByRole("tooltip")).toBeNull();
+    } finally {
+      if (realFromPoint) Object.defineProperty(document, "elementsFromPoint", realFromPoint);
+      else Reflect.deleteProperty(document, "elementsFromPoint");
+      document.createRange = realRange;
+    }
+  });
+
   it("draws the tip out of a transformed card, into the night sheet, where a fixed sheet is the screen's own", () => {
     const { container } = inI18n(
       <div className="sheet-night">

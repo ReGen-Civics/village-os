@@ -18,6 +18,7 @@ import { CreditCard, ExternalLink, HeartHandshake, Loader2, Repeat } from "lucid
 import { ExamplesBanner } from "@/components/ExamplesBanner";
 import { ExampleRefusal, readRefusal } from "@/components/ExampleRefusal";
 import { formatTokenAmount } from "@/lib/tokenAmount";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -83,7 +84,7 @@ export default function Contribute() {
           setManual({ name: p.name, text: d.note, receiptNo: d.receiptNo, url: d.url });
         } else setManual({ name: p.name, text: d.instructions, receiptNo: d.receiptNo });
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(failureWords(e)))
       .finally(() => setBusy(""));
   };
 

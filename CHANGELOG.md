@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.32 (2026-11-19)
+
+### What changed for your village
+
+- **No page can start before its words have arrived.** The crash that stopped applicants opening the role application in iPhone Safari (fixed for one page in 1.3.27) came from a page's code starting while it was still waiting for its English text. Seventeen more pieces of the site had the same shape. Now every page fetches its words first and only then starts, so nothing can be read before it exists, and a missing words file fails with a clear error instead of a blank. A new build check fails any release that brings the old shape back.
+- **We hear about crashes before people tell us.** When a page shows its crash screen, it now sends one short report: what broke, where in the code, the page path and the browser. It never sends what was typed, what is saved on the device, links' query strings or anything personal. Admins see these on Village Health and get an alert, and repeats are rate limited.
+- **Every release is tried in real browsers first.** A smoke test now renders 25 key pages in Chromium and in WebKit (the engine behind iPhone Safari) and sends one test application with a long answer, and the build fails if any page crashes or any email goes out. A test application is marked by a server-only token, checked like a real one and deleted at once: never emailed, never counted, never shown to reviewers.
+
+### What you must do
+
+Nothing is required. To run the browser smoke test against your own staging server, set `SMOKE_TEST_TOKEN` there (never on production); `docs/FORK_RUNBOOK.md` has the steps. No migrations since v1.3.31.
+
+---
+
+## 1.3.31 (2026-11-19)
+
+### What changed for your village
+
+- **The "moon" tip opens on the word you tap.** On a phone, when two dotted words sat on neighbouring lines (as on the role selection page), a tap on one could open or close the other's tip. A tap now goes to the word whose text is nearest your finger, and a tap no longer opens a tip twice. Keyboard focus still opens it.
+- **Plain words when there is no signal.** Sign-in, the password pages and the member pages and panels showed the browser's own error ("Failed to fetch" or "Load failed") when the connection dropped. They now say "Nothing answered. Check your connection and try again.", and what was typed stays in place.
+- **The application's safety net tells the truth about saving.** After a failed send, it said "Your answers are safe on this device" even when nothing was saved, because answers are kept on the device only when "Remember my answers on this device" is ticked. It now says so only when the answers are really stored; otherwise it says "Your answers are still on this page, so keep it open."
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.30.
+
+---
+
 ## 1.3.30 (2026-11-19)
 
 ### What changed for your village

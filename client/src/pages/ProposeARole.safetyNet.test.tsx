@@ -106,7 +106,9 @@ describe("the safety net", () => {
     await completeAll();
     sendNow();
     const words = (await net()).textContent ?? "";
-    expect(words).toContain("Your answers are safe on this device.");
+    // Nothing was kept on the device (Remember is off), so the words never say it was (surface audit, 19 Nov 2026).
+    expect(words).toContain("Your answers are still on this page, so keep it open.");
+    expect(words).not.toContain("safe on this device");
     expect(words).toContain("email the file to hello@village.test so nothing is lost.");
     expect(words).toContain("You can also try again.");
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
@@ -163,7 +165,7 @@ describe("the safety net", () => {
     pressNext();
     await completeAll();
     sendNow();
-    await net();
+    expect((await net()).textContent).toContain("Your answers are safe on this device.");
     const kept = window.localStorage.getItem(draftKey("r-gate", "")) ?? "";
     expect(kept).toContain("The gate is always shut.");
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));

@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import { useState } from "react";
 import { m } from "framer-motion";
 import { Mail, CheckCircle2 } from "lucide-react";
+import { failureWords } from "@/lib/failureWords";
 
 /**
  * Account recovery, member-side. The server answers identically whether or
@@ -35,7 +36,7 @@ export default function ForgotPassword() {
       if (!res.ok) throw new Error(data.message ?? data.error ?? "That didn't go through. Try again.");
       setSent(true);
     } catch (err: any) {
-      setError(err?.message || "That didn't go through. Try again.");
+      setError(failureWords(err, "That didn't go through. Try again."));
     }
     setBusy(false);
   };

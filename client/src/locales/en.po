@@ -9250,6 +9250,11 @@ msgstr "{0} listed, {1} unlisted"
 #~ msgid "The founding roles"
 #~ msgstr "The founding roles"
 
+#: client/src/lib/failureWords.ts
+msgctxt "a request timed out"
+msgid "That took too long. Check your connection and try again."
+msgstr "That took too long. Check your connection and try again."
+
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
 msgid "End of Moon, how it adds up"
@@ -12124,6 +12129,11 @@ msgctxt "proposed changes: filter"
 msgid "Show"
 msgstr "Show"
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Something went wrong sending your application. Your answers are still on this page, so keep it open."
+msgstr "Something went wrong sending your application. Your answers are still on this page, so keep it open."
+
 #: client/src/components/review/SeraInDraft.tsx
 #: client/src/components/review/SeraMember.tsx
 msgctxt "sera answers"
@@ -12848,6 +12858,11 @@ msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 msgstr "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 
+#: client/src/lib/failureWords.ts
+msgctxt "a request failed with no connection"
+msgid "Nothing answered. Check your connection and try again."
+msgstr "Nothing answered. Check your connection and try again."
+
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"
 msgid "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
@@ -13150,6 +13165,11 @@ msgstr "None of this is required. These are open doors to meet us."
 msgctxt "task handed to a role"
 msgid "What you sent did not load."
 msgstr "What you sent did not load."
+
+#: client/src/lib/failureWords.ts
+msgctxt "a request got an unreadable answer"
+msgid "The village did not answer properly. Try again in a moment."
+msgstr "The village did not answer properly. Try again in a moment."
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal review"
@@ -17954,6 +17974,11 @@ msgstr "Reading the invoice tracks."
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The line holds the name of someone in this village, so the public page hides it. The word that matched is \"{matched}\". Write it again with the role in place of the name."
 msgstr "The line holds the name of someone in this village, so the public page hides it. The word that matched is \"{matched}\". Write it again with the role in place of the name."
+
+#: client/src/lib/failureWords.ts
+msgctxt "a request failed, no detail"
+msgid "That did not go through. Try again."
+msgstr "That did not go through. Try again."
 
 #: client/src/components/openWork/FitsYouCard.tsx
 #: client/src/components/QuestCard.tsx

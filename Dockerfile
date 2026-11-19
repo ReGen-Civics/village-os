@@ -326,6 +326,11 @@ COPY --from=build /app/docs/knowledge ./docs/knowledge
 COPY --from=build /app/docs/modules ./docs/modules
 COPY --from=build /app/docs/skills ./docs/skills
 COPY --from=build /app/docs/prototypes/grounds-v0.html ./docs/prototypes/grounds-v0.html
+# The release browser smoke, so a deploy can run it from the very image it is
+# about to promote (node scripts/browser-smoke.mjs --base-url ...). It is not
+# opened by the server; it imports only Node's own modules, and Playwright is
+# installed by whoever runs it, never into this image.
+COPY --from=build /app/scripts/browser-smoke.mjs ./scripts/browser-smoke.mjs
 
 # Can this image actually load its own server?
 #
