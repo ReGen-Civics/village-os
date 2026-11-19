@@ -37,6 +37,7 @@
  * Pure: no pool, no clock, no Node builtins.
  */
 import { looksLikePaymentDetails } from "./seatSettings";
+import { readDeliverables, type Deliverable } from "./roleDeliverables";
 
 export interface PayShare {
   label: string;
@@ -58,6 +59,10 @@ export interface RoleCardSections {
   payVisibility?: Exclude<PayVisibility, "village">;
   /** How the ceiling reads. Absent: the village's switch decides. */
   payWording?: Exclude<PayWording, "village">;
+  /** The dated outcomes, drawn as a timeline (shared/roleDeliverables.ts). Absent or empty: the old list. */
+  deliverables?: Deliverable[];
+  /** "Once you're selected": the onboarding steps, one per line. Absent or empty: no tab. */
+  onboarding?: string[];
 }
 
 /**
@@ -104,7 +109,7 @@ export const SECTION_LIMITS = {
   payNoteChars: 300,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -113,6 +118,7 @@ export const SECTION_WORDS = {
   qualities: "Qualities we're looking for",
   // The lead, 12 Nov 2026: "'Digital Companion' (capitalised) replaces AI wording" (QA2-09).
   aiSupport: "Digital Companion",
+  onboarding: "Once you're selected",
   aiCompanionLabel: "Companion",
   paid: "This role is rewarded",
   payShape: "How rewards work",
@@ -293,6 +299,10 @@ export function readSections(raw: unknown): SectionsRead {
   if (!visibility.ok) return { ok: false, problem: SECTION_PROBLEMS.visibility, field: "sections.payVisibility" };
   const wording = choice(o.payWording, PAY_WORDINGS);
   if (!wording.ok) return { ok: false, problem: SECTION_PROBLEMS.wording, field: "sections.payWording" };
+  const deliverables = readDeliverables(o.deliverables);
+  if (!deliverables.ok) return { ok: false, problem: deliverables.problem, field: "sections.deliverables" };
+  const onboarding = lineList(o.onboarding, SECTION_WORDS.onboarding);
+  if (!onboarding.ok) return { ...onboarding, field: "sections.onboarding" };
   const paid = o.paid === true || o.paid === "true" || o.paid === 1;
   return {
     ok: true,
@@ -309,6 +319,9 @@ export function readSections(raw: unknown): SectionsRead {
       // Kept only when the card chose differently from the village, so a card that never chose stores what it stored before.
       ...(visibility.value ? { payVisibility: visibility.value } : {}),
       ...(wording.value ? { payWording: wording.value } : {}),
+      // Kept only once written, so a card without them stores exactly what it stored before.
+      ...(deliverables.value.length ? { deliverables: deliverables.value } : {}),
+      ...(onboarding.value.length ? { onboarding: onboarding.value } : {}),
     },
   };
 }
@@ -355,7 +368,7 @@ export function sectionsForReader(s: RoleCardSections, reader: PayReader): Reade
 /** Whether a card has any of these sections written. */
 export function hasSections(s: RoleCardSections | ReaderSections | null | undefined): boolean {
   if (!s) return false;
-  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote;
+  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0;
 }
 
 /** "Cash 40%", one line per share, for the card. */

@@ -383,10 +383,11 @@ export const AGENT_WORDING_VARIABLES: readonly string[] = [
 
 /**
  * The role card's word sections an agent may write through the role editor (Rye, 15 Nov 2026): the ideal
- * background, the qualities and the Digital Companion's lines. The pay sections (paid, payShape, payNote,
+ * background, the qualities, the Digital Companion's lines, the dated deliverables and the onboarding steps
+ * (the lead, 19 Nov 2026). The pay sections (paid, payShape, payNote,
  * payCeiling, paySplitNote) stay a person's; the editor keeps them as they are when they are not sent.
  */
-export const AGENT_SECTION_KEYS: readonly string[] = ["idealBackground", "qualities", "aiSupport", "aiCompanion"];
+export const AGENT_SECTION_KEYS: readonly string[] = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "deliverables", "onboarding"];
 
 export interface LeadApprovedEntry {
   kind: LeadApprovedKind;

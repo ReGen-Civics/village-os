@@ -25,11 +25,27 @@ import {
 } from "./roleParams";
 import { publicPayWords, type PublicPay } from "./rolePublicPay";
 import { HELD_BY_LABEL, HELD_BY_WORDS, readHeldBy } from "./agentHolders";
+import type { CardBooking } from "./cardBooking";
+
+/**
+ * A conversation's booking as the card reads it back, so a bad answer books nothing. The server built it
+ * (shared/cardBooking.ts `cardBookingOf`); here only its shape and an https address are checked, so the
+ * card's first view does not carry the full link parser.
+ */
+export function readCardBooking(v: unknown): CardBooking | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (o.kind === "note") return { kind: "note" };
+  if ((o.kind === "link" || o.kind === "whatsapp") && typeof o.url === "string" && /^https:\/\/[^\s/@]+(?:\/\S*)?$/i.test(o.url) && o.url.length <= 300) return { kind: o.kind, url: o.url };
+  return null;
+}
 
 export interface CardRow {
   id: "heldBy" | "commitment" | "track" | "goals" | "where" | "languages" | "review" | "interviews" | "criteria" | "budget";
   label: string;
   lines: string[];
+  /** How to book each line, beside it: only the interviews row has these, one per line (null where a line books nothing). */
+  bookings?: Array<CardBooking | null>;
 }
 
 export interface RoleCardView {
@@ -77,8 +93,11 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
   const languages = list(card.languages);
   if (languages.length) rows.push({ id: "languages", label: "Languages", lines: [languages.join(", ")] });
 
+  // The village's words for the first review (`org.role_card_first_review`, the lead, 19 Nov 2026) win over a card's days.
   const days = Number(card.reviewAfterDays);
-  if (Number.isInteger(days) && days > 0) rows.push({ id: "review", label: "Review", lines: [`First review after ${days} ${days === 1 ? "day" : "days"}`] });
+  const firstReview = typeof card.firstReview === "string" ? card.firstReview.trim() : "";
+  if (firstReview) rows.push({ id: "review", label: "Review", lines: [`First review ${firstReview}`] });
+  else if (Number.isInteger(days) && days > 0) rows.push({ id: "review", label: "Review", lines: [`First review after ${days} ${days === 1 ? "day" : "days"}`] });
 
   const steps: InterviewStepView[] = Array.isArray(card.conversations) ? card.conversations : [];
   const first = typeof card.firstConversation === "string" && card.firstConversation.trim() ? `First conversation: ${card.firstConversation.trim()}` : null;
@@ -88,7 +107,11 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
     const total = interviewTotalWords(steps);
     const head = first ? [first] : [];
     const tail = consent ? [consent] : [];
-    rows.push({ id: "interviews", label: "How it is filled", lines: [...head, ...lines, ...(total ? [`${total} of conversations in all`] : []), ...tail] });
+    const totalLine = total ? [`${total} of conversations in all`] : [];
+    // Each conversation with how to book it (the lead, 19 Nov 2026; shared/cardBooking.ts), read again so a bad row books nothing.
+    const stepBookings = steps.map((st) => readCardBooking((st as { booking?: unknown }).booking));
+    const bookings = stepBookings.some(Boolean) ? [...head.map(() => null), ...stepBookings, ...totalLine.map(() => null), ...tail.map(() => null)] : undefined;
+    rows.push({ id: "interviews", label: "How it is filled", lines: [...head, ...lines, ...totalLine, ...tail], ...(bookings ? { bookings } : {}) });
   }
 
   const criteria = list(card.selectionCriteria);

@@ -238,9 +238,11 @@ describe("Join the founding team", () => {
     expect(card.textContent).not.toMatch(/AI support/);
     expect(card.textContent).toContain("Heron");
     // Everything the editor holds: the words under the editor's own headings.
-    for (const h of ["Why it matters", "What I look after", "What I can decide on my own", "What you can count on me for", "What I do regularly", "Bring me", "Not mine to hold", "Holding this role well"]) {
+    // The lead, 19 Nov 2026: "What {village} needs from you", Deliverables, Rhythm, and what goes to the circle for consent.
+    for (const h of [/^What .+ needs from you$/, "What I look after", "What I can decide on my own", "What you can count on me for", "Rhythm", "Bring me", "Goes to the Anchor Circle", "Holding this role well"]) {
       expect(within(card).getByRole("heading", { name: h })).toBeTruthy();
     }
+    expect(within(card).queryByRole("heading", { name: "Why it matters" })).toBeNull();
     const pay = within(card).getByTestId("pay-shape");
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% Contribution tokens, 5% Credits. To be decided in the onboarding process.");
@@ -270,9 +272,11 @@ describe("Join the founding team", () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
-    await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
     // The band, one line under the listed price, with the price and the cap kept as they are.
-    const pay = within(section).getByTestId("pay-shape");
+    const pay = await within(section).findByTestId("pay-shape");
+    await within(pay).findByTestId("pay-band");
+    // Said once (the lead, 19 Nov 2026): the pay piece says it, so "What it pays" under How you're chosen does not repeat it.
+    expect(within(section).queryByTestId("public-pay")).toBeNull();
     await within(pay).findByTestId("value-callout");
     const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
     // No cap line (lead, 17 Nov 2026): the listed price is the high end the card shows.

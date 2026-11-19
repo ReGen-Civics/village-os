@@ -31,6 +31,7 @@
  * accept, and only SAVE writes. A file is held in memory and dropped
  * (server/routes/roleCardImport.ts `wordsOf`).
  */
+import { roleCardSharedFrom } from "../../shared/roleCardShared";
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import type { PublishDeps } from "../lib/orgDraftDecide";
@@ -228,6 +229,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       lastEdited: await lastEditedOf(pool, role.id, { peopleShown: !!user || boolVar("org.public_people") }),
       showPayRanges: boolVar("org.show_pay_ranges"),
       villagePay: villagePay(),
+      // The words every card shares (shared/roleCardShared.ts), said once in the village's settings.
+      shared: roleCardSharedFrom((k) => stringVar(k)),
       mayEdit: editor,
     });
   });

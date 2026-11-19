@@ -22,7 +22,8 @@ import { payStatesRange, publicPayOf } from "../../shared/rolePublicPay";
 import { publicTermsOf, readTermsOffer } from "../../shared/seatTermsOffer";
 import type { OrgRole } from "./orgChart";
 import { mayHold, readHeldBy } from "../../shared/agentHolders";
-import { boolVar } from "./variables";
+import { boolVar, stringVar } from "./variables";
+import { cardBookingOf } from "../../shared/cardBooking";
 
 export interface RoleCardTier {
   terms: boolean;
@@ -85,7 +86,7 @@ export function roleCard(
   held: number,
   state: string,
   tier: RoleCardTier,
-  opts: { roleNames?: ReadonlyMap<string, string>; gated?: boolean; words?: CardVillageWords },
+  opts: { roleNames?: ReadonlyMap<string, string>; roleBooking?: ReadonlyMap<string, string | null>; gated?: boolean; words?: CardVillageWords },
 ): Record<string, unknown> {
   const { pay, gate } = gateOf(role, opts.words?.defaultTrack);
   const open = invitesApplications({ seats: role.seats, held, state, recruiting: role.recruiting, comingSoon: role.comingSoon, futureVenture: role.futureVenture });
@@ -98,11 +99,17 @@ export function roleCard(
     track: trackOf(role.track, opts.words?.defaultTrack),
     villageGoals: role.villageGoals ?? null,
     selectionCriteria: role.selectionCriteria ?? null,
-    conversations: (role.conversations ?? []).map((s) => ({ ...s, roleName: opts.roleNames?.get(s.roleId) ?? null })),
+    // Each conversation with how to book it, from the interviewing role's own public booking setting (shared/cardBooking.ts).
+    conversations: (role.conversations ?? []).map((s) => {
+      const booking = cardBookingOf(opts.roleBooking?.get(s.roleId) ?? null);
+      return { ...s, roleName: opts.roleNames?.get(s.roleId) ?? null, ...(booking ? { booking } : {}) };
+    }),
     conversationMode: conversationModeOf(role.conversationMode),
     whereWorked: role.whereWorked ?? null,
     languages: role.languages ?? null,
     reviewAfterDays: role.reviewAfterDays ?? null,
+    // When the first review happens, in the village's words (`org.role_card_first_review`); empty keeps the days.
+    firstReview: stringVar("org.role_card_first_review").trim() || null,
     // The commitment the role asks (joining lane PR 3): energy and attention, never hours. A planning signal read by no pay code.
     // 0383: the stored value wins; a role with none still reads its terms on offer.
     commitmentPct: role.commitmentPct ?? publicTermsOf(role.termsOffer).commitmentPct,
