@@ -20,6 +20,7 @@ import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql
 import { openBodyOf, OPEN_PROPOSAL_STATUSES, type OpenProposalBody, type OpenProposalStatus } from "../../shared/openProposals";
 import { OPEN_INVITE_PREFIX, type OpenDecision } from "../../shared/openProposalDecide";
 import type { WrittenWords } from "../../shared/voiceNotes";
+import { deleteReferencesOf } from "./applicantOnboarding";
 
 type Db = Pool | PoolConnection;
 
@@ -389,6 +390,9 @@ export async function anonymiseOpenProposal(db: Db, id: string, now: Date): Prom
     "UPDATE open_role_proposals SET body_json = " + REMOVE_PERSONAL + ", name = NULL, email = NULL, email_key = NULL, anonymised_at = ? WHERE id = ? AND anonymised_at IS NULL",
     [now, id],
   );
+  // The references the applicant gave once shortlisted (0412) go now, with the name and address, whoever anonymises.
+  // The bulk paths (decided, expired) are cleared by the same tidy run's `clearReviewOf`.
+  await deleteReferencesOf(db, [id]);
   return Number(result.affectedRows ?? 0) === 1;
 }
 

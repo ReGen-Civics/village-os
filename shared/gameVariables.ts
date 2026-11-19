@@ -2804,6 +2804,24 @@ export const VARIABLES: VariableDef[] = [
     default: "",
   },
   {
+    key: "org.reference_followup_role",
+    category: "The village's people",
+    label: "The role that follows up with an applicant's references",
+    description:
+      "When a shortlisted applicant sends their references, each one is given to this role first: its holders read how to reach the reference and write their follow-up notes. The team can then give any reference to another role or member, whoever is most aligned with that person. Usually the role that holds human relations and operations. Paste the role id from the org chart. Leave it empty and each reference waits for the team to pick who follows up.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.final_call_role",
+    category: "The village's people",
+    label: "The role that makes the final call on an applicant",
+    description:
+      "The role whose holders read everything gathered for an applicant (the reference follow-ups and every conversation's scorecard), hold the final conversation and then make the call. The adoption or decline itself goes through the usual doors, so this role should also carry the power to place people in roles. Paste the role id from the org chart. Leave it empty and the holders of that power make the final call.",
+    type: "text",
+    default: "",
+  },
+  {
     key: "org.applicant_reply_days",
     category: "The village's people",
     label: "Days we promise to reply to a role proposal",

@@ -56,6 +56,7 @@ const TURN_WORDS = {
   consentLine: "The circle asked you, and your answer is still open.",
 } as const;
 import ReviewPanel from "@/components/review/ReviewPanel";
+import Walkthrough from "@/components/openProposal/Walkthrough";
 import type { ConsentAnswerOut, ConsentOut } from "@/components/roleProposal/proposalApi";
 import { gameFetch } from "@/lib/gameApi";
 import { DECIDE_WORDS, DOOR, type DoorReason } from "@shared/openProposalDecide";
@@ -361,6 +362,10 @@ export default function OpenProposal() {
               </p>
             </header>
 
+            {/* The walkthrough (shared/applicantOnboarding.ts): where this application stands, who acts next and the one act that moves it.
+                The door answers 404 to anybody who is not part of this application, and then nothing renders. */}
+            <Walkthrough applicationRef={p.id} onChanged={() => void load()} />
+
             {p.agent && <AgentView agent={p.agent} />}
 
             <section aria-labelledby="op-roles">
@@ -478,6 +483,7 @@ export default function OpenProposal() {
             <aside
               aria-label={DECIDE_WORDS.deciderHeading}
               className="mt-8 space-y-6 lg:sticky lg:top-28 lg:mt-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto lg:pb-1"
+              id="op-decide-panel"
               data-decide-panel=""
             >
 

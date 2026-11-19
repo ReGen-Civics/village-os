@@ -104,6 +104,8 @@ import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposal
 import { registerAgentProposals } from "./agentRoleProposals";
 import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
+import { stagesOf } from "../lib/applicantOnboarding";
+import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
 import { sendClosedLetters, stampQuietClose, type ClosingDeps } from "../lib/applicantFollowups";
 import { loadEmailVillage } from "../lib/comms/render";
@@ -833,13 +835,17 @@ export function register(app: Express, deps: Deps): void {
     const [s, links, waiting, roles] = await Promise.all([settings(), store.listOpenLinks(pool), store.listOpenProposals(pool, ["confirmed"]), offered()]);
     const roleName = new Map(roles.map((r) => [r.id, `${r.name} (${r.circle})`]));
     const linkLabel = new Map(links.map((l) => [l.id, l.label]));
+    // Where each one stands and who acts next, by role (shared/applicantOnboarding.ts): the list is grouped by stage, then by the day it arrived. Never ranked.
+    const stages = await stagesOf({ getPool }, waiting.map((p) => p.id));
+    const ordered = byStageThenDate(waiting.map((p) => ({ p, stage: stages.get(p.id)?.now ?? "received", confirmedAt: p.confirmedAt ? new Date(p.confirmedAt).toISOString() : null }))).map((x) => x.p);
     res.json({
       publicLink: s.publicLink,
       term: s.term,
       publicPath: "/propose-a-role",
       links: links.map((l) => ({ id: l.id, label: l.label, createdAt: l.createdAt, on: !l.revokedAt })),
-      proposals: waiting.map((p) => ({
+      proposals: ordered.map((p) => ({
         id: p.id,
+        stage: stages.get(p.id) ? { key: stages.get(p.id)!.now, label: TRACK_WORDS[stages.get(p.id)!.now], who: stages.get(p.id)!.who, next: stages.get(p.id)!.next } : null,
         name: p.name,
         email: p.email,
         seasonId: p.targetSeasonId,

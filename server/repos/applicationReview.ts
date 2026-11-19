@@ -1,6 +1,8 @@
 /**
  * `application_steps`, `application_interviews`, `application_scores` and
  * `application_recusals`: the review of an application (role journey L5).
+ * `application_references` (0412) has its own file, server/repos/applicantOnboarding.ts,
+ * and is cleared here with the rest of the review.
  *
  * Every statement the review runs lives here, so the tables' readers and
  * writers stay enumerable. The rules are shared/applicationReview.ts and the
@@ -18,6 +20,7 @@ import { GUT_CRITERION, type GutCheck, type GutAnswer, type InterviewState, type
 import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
+import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
 
 type Db = Pool | PoolConnection;
 
@@ -127,6 +130,18 @@ export async function insertInterviews(db: Db, ref: string, list: ReadonlyArray<
       [ref, i + 1, list[i].roleId, list[i].minutes, list[i].final ? 1 : 0, open ? "open" : "waiting", open ? at : null],
     );
   }
+}
+
+/**
+ * One more conversation at a given position (the final conversation the role that makes the final call
+ * holds, shared/applicantOnboarding.ts). Open now when `openedAt` is given, else waiting. Idempotent on (ref, position).
+ */
+export async function insertInterviewAt(db: Db, ref: string, iv: { position: number; roleId: string; minutes: number; final: boolean }, openedAt: Date | null): Promise<boolean> {
+  const [r] = await db.query<ResultSetHeader>(
+    "INSERT IGNORE INTO application_interviews (application_ref, position, interviewer_role_id, minutes, is_final, state, opened_at) VALUES (?,?,?,?,?,?,?)",
+    [ref, iv.position, iv.roleId, iv.minutes, iv.final ? 1 : 0, openedAt ? "open" : "waiting", openedAt],
+  );
+  return Number(r.affectedRows ?? 0) === 1;
 }
 
 export async function interviewsOf(db: Db, ref: string, lock = false): Promise<StoredInterview[]> {
@@ -243,6 +258,8 @@ export async function recusedUsers(db: Db, ref: string): Promise<string[]> {
 export async function clearReviewOf(db: Db, refs: readonly string[], at: Date): Promise<number> {
   if (!refs.length) return 0;
   await db.query("DELETE FROM application_scores WHERE application_ref IN (?)", [[...refs]]);
+  // The references a shortlisted applicant gave (0412) are third-party personal data: they go whole, notes and all.
+  await deleteReferencesOf(db, refs);
   await db.query("UPDATE application_recusals SET reason = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_interviews SET scorer_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_steps SET actor_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
@@ -282,6 +299,8 @@ export async function refsDueForClearing(db: Db, before: Date): Promise<string[]
 export async function forgetMemberReview(db: Db, userId: string, at: Date): Promise<number> {
   await db.query("DELETE FROM application_scores WHERE scorer_user_id = ?", [userId]);
   await db.query("DELETE FROM application_recusals WHERE user_id = ?", [userId]);
+  // The follow-up notes they wrote on a reference go, and their name leaves every reference they owned (0412).
+  await forgetMemberReferences(db, userId);
   await db.query("UPDATE application_interviews SET scorer_user_id = NULL WHERE scorer_user_id = ?", [userId]);
   await db.query("UPDATE application_steps SET actor_user_id = NULL WHERE actor_user_id = ?", [userId]);
   const [rows] = await db.query<RowDataPacket[]>(
@@ -362,6 +381,21 @@ export async function bookingLinksOfMembers(db: Db, userIds: readonly string[]):
     firstName: holderFirstName(r.name) || null,
     bookingUrl: memberBookingUrl(json(r.prefs)),
   }));
+}
+
+/** The live roles on the org chart, by name: what a reference can be given to. Examples left out. */
+export async function activeRoles(db: Db): Promise<Array<{ id: string; name: string }>> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, name FROM org_roles WHERE active = 1 AND is_example = 0 ORDER BY name, id LIMIT 300");
+  return rows.map((r: any) => ({ id: String(r.id), name: String(r.name ?? r.id) }));
+}
+
+/** The members holding a live role now, by first name only: who a reference can be given to. Never an address. */
+export async function membersHoldingRoles(db: Db): Promise<Array<{ id: string; name: string }>> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT DISTINCT u.id, u.name FROM org_role_assignments a JOIN users u ON u.id = a.user_id " +
+      "WHERE a.ended_at IS NULL AND a.holder_kind = 'member' AND a.is_example = 0 AND a.user_id IS NOT NULL ORDER BY u.name, u.id LIMIT 300",
+  );
+  return rows.map((r: any) => ({ id: String(r.id), name: holderFirstName(r.name) || "A member" }));
 }
 
 export async function roleNamesById(db: Db, ids: readonly string[]): Promise<Map<string, string>> {

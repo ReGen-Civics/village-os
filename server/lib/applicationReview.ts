@@ -66,6 +66,7 @@ import { DECIDE_WORDS, openProposalHref } from "../../shared/openProposalDecide"
 import { consentClosesAt } from "../../shared/roleProposalConsent";
 import { inTransaction } from "../repos/liveSessions";
 import * as repo from "../repos/applicationReview";
+import { referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
 import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
 import { listOrgRoles } from "./orgChart";
@@ -79,6 +80,18 @@ import { languageOf } from "./applicantLanguage";
 import { invitationDoorOf, type InvitationDoor } from "./applicantFollowups";
 import type { ApplicantLanguage } from "../../shared/applicantWords";
 import { stepBookingFor, type BookingLink, type StepBooking } from "../../shared/interviewBooking";
+import { FINAL_CALL_ROLE_VARIABLE } from "../../shared/applicantOnboarding";
+
+/** The people holding the role the village names for the final call (`org.final_call_role`), or none when it names none. */
+export async function finalCallHolders(db: Db): Promise<string[]> {
+  const roleId = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
+  return roleId ? repo.liveHoldersOfRole(db, roleId) : [];
+}
+
+/** How many references the applicant gave once shortlisted. A count only: the details never go back to the applicant. */
+async function countReferences(db: Db, ref: string): Promise<number> {
+  return (await storedReferencesOf(db, ref)).length;
+}
 
 type Db = Pool | PoolConnection;
 
@@ -201,7 +214,7 @@ export async function stepBookingOf(db: Db, ref: string, roleId: string): Promis
   return stepBookingFor(roleName, people, roleUrl);
 }
 
-async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
+export async function tellInterviewers(deps: Pick<ReviewDeps, "getPool" | "notify" | "tellApplicant">, ref: string, position: number, roleId: string, minutes: number, applicant: string | null): Promise<void> {
   const pool = deps.getPool();
   // The person who proposed hears the next conversation is asked for, once each (stable part). The first opens as they confirm, and their status email covers it.
   if (kindOfRef(ref) === "open" && deps.tellApplicant && position > 1) {
@@ -424,6 +437,8 @@ export async function scorecardsFor(deps: ReviewDeps, ref: string, viewerId: str
     hasSubmitted: submitted,
     recused,
     holdsSeatPower: seatHolders.includes(viewerId),
+    // The scorecards are gathered for the role that makes the final call (shared/applicantOnboarding.ts).
+    holdsFinalCall: (await finalCallHolders(pool)).includes(viewerId),
   });
   const names = await repo.roleNamesById(pool, interviews.map((i) => i.roleId));
   const cur = currentInterview(interviews);
@@ -635,7 +650,7 @@ export async function requestSplit(deps: ReviewDeps, ref: string): Promise<{ ok:
 // ── The applicant's status ──────────────────────────────────────────────────
 
 /** The status page's data. Steps, roles and times only: never a score, a note or a gut check. A person appears only as a first name beside their own booking link. */
-export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
+export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status & { roles: string[]; booking: string | null; bookNow: { role: string; label: string; url: string | null; links: BookingLink[] } | null; mode: ConversationMode; outcome: "adopted" | "declined" | "withdrawn" | null; replyDays: number | null; afterFounding: boolean; referencesGiven: number | null; referencesAsked: { given: number | null; mayAdd: boolean } | null; locale: ApplicantLanguage; note: string | null; offer: Awaited<ReturnType<typeof applicantOffer>>; reviewFirst: boolean; notInvited: boolean; stayClose: { name: string; href: string } | null; closed: boolean; invitation: InvitationDoor }) | null> {
   const pool = deps.getPool();
   const steps = await repo.stepsOf(pool, ref);
   const confirmed = steps.find((s) => s.kind === "confirmed");
@@ -658,6 +673,8 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     consentOpen: asks.length > 0,
     consentClosesAt: asks.length ? asks.reduce((m, a) => (a.closesAt > m ? a.closesAt : m), asks[0].closesAt) : null,
     timeZone: tz,
+    // References asked of a shortlisted applicant (shared/applicantOnboarding.ts): a step on the path until they are given.
+    references: steps.some((x) => x.kind === "refs_asked") ? { given: steps.some((x) => x.kind === "refs_given") } : null,
   });
   const d = await confirmedDetail(pool, ref);
   const firstReplied = steps.some((x) => x.kind === "first_reply");
@@ -669,6 +686,10 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
   // The language and the decider's note belong to the applicant: they ride on the applicant's own page only (token or their account), never on a decider's read.
   const own = kindOfRef(ref) === "open" ? await proposals.readOpenProposal(pool, ref) : null;
   const referencesGiven = own && own.body.backgroundCheck ? (own.body.references ?? []).length : null;
+  // The references a shortlisted applicant is asked for: a count once given, never the details back, and the form while it waits.
+  const refsAsked = steps.some((x) => x.kind === "refs_asked");
+  const refsGiven = steps.some((x) => x.kind === "refs_given");
+  const referencesAsked = refsAsked ? { given: refsGiven ? await countReferences(pool, ref) : null, mayAdd: !refsGiven && !decidedStep } : null;
   // Reviewed first, the booking line waits for the invitation: before it, nothing is booked.
   const bookingShown = stage === "review" || stage === "not_invited" ? null : booking;
   // The conversation open now, and how to book it (`stepBookingOf`): the later ones are offered only as they open, in order.
@@ -687,6 +708,7 @@ export async function statusOf(deps: ReviewDeps, ref: string): Promise<(Status &
     replyDays: firstReplied ? numberVar("org.applicant_reply_days") : await replyDaysFor(pool, d?.roleIds ?? []),
     afterFounding: !firstReplied && (await afterFounding(pool, d?.roleIds ?? [])),
     referencesGiven,
+    referencesAsked,
     locale: own ? languageOf(own) : "en",
     note: own?.body.note ?? null,
     offer: outcome ? null : await applicantOffer(pool, ref),

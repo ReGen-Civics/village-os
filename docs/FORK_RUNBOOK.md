@@ -2222,3 +2222,7 @@ Admin, Integrations has two new cards, `railway_project_token` (one Railway proj
 ## Proposed changes, reviewed on one page (migration 0379, 2026-11-12)
 
 - No env var and nothing to set. Migration 0379 adds `proposed_change_batches` and `proposed_changes` at boot. An admin's agent proposes through the connector's `propose_changes` (or `POST /api/admin/proposals`); a person reviews, edits and accepts on `/admin/proposals`, linked from Admin with a count, and each change runs through its own admin route as that person. What people edit before accepting is kept and read back by `read_proposal_lessons`.
+
+## Shortlist, references and the final call (migration 0412, 2026-11-19)
+
+- No env var. Migration 0412 adds `application_references` at boot. Two settings, both empty by default (Admin, Game Mechanics, The village's people): `org.reference_followup_role`, the role every reference is first given to for follow-up (usually the role that holds human relations and operations), and `org.final_call_role`, the role that reads everything gathered, holds the final conversation and makes the call (give that role the power to place people in roles too, so it can adopt or decline). Paste each role's id from the org chart. Empty, references wait for the team to pick an owner and the holders of the power to place people make the final call.

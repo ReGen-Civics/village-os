@@ -21,7 +21,7 @@ import { runSeraTool, SERA_TOOLS, type SeraActor } from "./seraAgent";
 const ROOT = path.resolve(__dirname, "..", "..");
 
 /** What a model-facing source must never name. */
-const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "scorecards", "/applications/", "interviewer_roles", "selection_criteria"];
+const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "applicantOnboarding", "scorecards", "walkthrough", "/applications/", "interviewer_roles", "selection_criteria"];
 
 export function namesForbidden(source: string): string[] {
   return FORBIDDEN.filter((f) => source.includes(f));
@@ -48,6 +48,9 @@ describe("the scan sees what it is told to look for", () => {
     expect(namesForbidden("select * from application_scores")).toContain("application_scores");
     expect(namesForbidden("GET /api/governance/applications/:ref/scorecards")).toEqual(expect.arrayContaining(["scorecards", "/applications/"]));
     expect(namesForbidden("a harmless line")).toEqual([]);
+    // The onboarding stage (0412): the references table, its module and its door.
+    expect(namesForbidden("DELETE FROM application_references")).toContain("application_references");
+    expect(namesForbidden('import { walkthroughFor } from "./applicantOnboarding"')).toEqual(expect.arrayContaining(["applicantOnboarding", "walkthrough"]));
   });
 });
 
@@ -62,7 +65,17 @@ describe("no model-facing source names the review", () => {
 });
 
 describe("the review's own files call no model", () => {
-  const OWN = ["server/lib/applicationReview.ts", "server/routes/applicationReview.ts", "server/repos/applicationReview.ts", "shared/applicationReview.ts"];
+  const OWN = [
+    "server/lib/applicationReview.ts",
+    "server/routes/applicationReview.ts",
+    "server/repos/applicationReview.ts",
+    "shared/applicationReview.ts",
+    // Shortlist, references, follow-up owners and the gathered view (0412).
+    "server/lib/applicantOnboarding.ts",
+    "server/routes/applicantOnboarding.ts",
+    "server/repos/applicantOnboarding.ts",
+    "shared/applicantOnboarding.ts",
+  ];
   const MODEL_IMPORT = /anthropic|openai|saberra|seraAgent|companions|roleGuide|llm|generateText|messages\.create/i;
   for (const file of OWN) {
     it(`${file} imports no model client`, () => {
@@ -82,14 +95,23 @@ describe("the agent tool tables are refused the reads", () => {
   it("no MCP tool reaches an application, a score or an interview", () => {
     const routes = MCP_TOOLS.flatMap((t) => t.routes);
     expect(routes.length).toBeGreaterThan(5);
-    expect(routes.filter((r) => /applications\/|open-proposals|application-status|scorecards|recuse/.test(r))).toEqual([]);
+    expect(routes.filter((r) => /applications\/|open-proposals|application-status|scorecards|recuse|walkthrough|references|shortlist|final-conversation/.test(r))).toEqual([]);
   });
   it("CONTROL: the same filter does match a route that would read them", () => {
     expect(["GET /api/governance/applications/:ref/scorecards"].filter((r) => /applications\/|scorecards/.test(r))).toHaveLength(1);
   });
   it("admin_request refuses the review's doors, whatever the village's list holds", () => {
     const doc = DEFAULT_AGENT_ADMIN_PATHS;
-    for (const p of ["/api/governance/applications/op-0123456789abcdef0123/scorecards", "/api/application-status/op-0123456789abcdef0123", "/api/governance/open-proposals/op-0123456789abcdef0123"]) {
+    for (const p of [
+      "/api/governance/applications/op-0123456789abcdef0123/scorecards",
+      "/api/application-status/op-0123456789abcdef0123",
+      "/api/governance/open-proposals/op-0123456789abcdef0123",
+      // The onboarding doors: the walkthrough (references, notes, scorecards), the shortlist and the references.
+      "/api/governance/applications/op-0123456789abcdef0123/walkthrough",
+      "/api/governance/applications/op-0123456789abcdef0123/shortlist",
+      "/api/governance/applications/op-0123456789abcdef0123/references/1/notes",
+      "/api/application-status/op-0123456789abcdef0123/references",
+    ]) {
       expect(adminRequestDecision("GET", p, doc, "u1").ok, p).toBe(false);
     }
     // CONTROL: a path the list does hold is allowed, so the refusals above are about the path.
@@ -102,11 +124,11 @@ describe("Sera's tools", () => {
   const deps = { listDefault: true, today: "2026-11-09" } as any;
   it("has no tool that names the review", () => {
     expect(SERA_TOOLS.length).toBeGreaterThan(0);
-    expect(SERA_TOOLS.filter((t) => /application|score|interview|applicant/i.test(t))).toEqual([]);
+    expect(SERA_TOOLS.filter((t) => /application|score|interview|applicant|reference|shortlist|onboard/i.test(t))).toEqual([]);
   });
   it("refuses a request to read applications, scores or interviews before touching anything", async () => {
     const pool = new Proxy({}, { get: () => { throw new Error("the pool was touched"); } }) as any;
-    for (const tool of ["read_applications", "list_application_scores", "get_scorecards", "summarise_candidates", "rank_applicants"]) {
+    for (const tool of ["read_applications", "list_application_scores", "get_scorecards", "summarise_candidates", "rank_applicants", "read_references", "shortlist_applicants", "summarise_follow_ups"]) {
       const out = await runSeraTool(pool, actor, tool as any, {}, deps);
       expect(out.ok, tool).toBe(false);
       expect((out as any).error).toMatch(/no such Sera tool/);

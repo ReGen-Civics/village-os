@@ -14,6 +14,7 @@
  *   POST /api/governance/applications/:ref/recuse              one click, recorded
  *   POST /api/governance/applications/:ref/first-reply         a person sent the first reply
  *   POST /api/governance/open-proposals/:id/to-the-village     the ballot fallback (G12)
+ *   ...and the onboarding doors (shortlist, references, follow-ups, final call): server/routes/applicantOnboarding.ts
  *
  * ── NOBODY BUT PEOPLE ───────────────────────────────────────────────────────
  *
@@ -54,6 +55,7 @@ import * as store from "../repos/openProposals";
 import type { DecideRouteDeps } from "./openProposalDecide";
 import { makeApplicantTeller } from "../lib/applicantUpdates";
 import { applicantOffer, replyOffer } from "../lib/counterOffer";
+import { registerApplicantOnboarding } from "./applicantOnboarding";
 
 /** A status token: the first email's random one is 32 characters, a signed link's is about 130. */
 const TOKEN_MAX = 300;
@@ -275,6 +277,9 @@ export function registerApplicationReview(app: Express, deps: DecideRouteDeps & 
     if (!placed.ok) return res.status(409).json({ error: placed.code === "pending" ? DECIDE_WORDS.pending : placed.error, ...(placed.code === "pending" ? { applicationId: placed.applicationId } : {}) });
     res.json({ success: true, application: { id: placed.applicationId, href: applicationHref(placed.applicationId) }, ...(placed.applicationIds ? { applications: placed.applicationIds.map((id) => ({ id, href: applicationHref(id) })) } : {}), next: placed.applicationIds ? "Send them to the village from any of their application pages: one vote decides every role." : "Send it to the village from its application page.", back: openProposalHref(p.id) });
   });
+
+  // ── Shortlist, references, follow-ups and the final call (server/routes/applicantOnboarding.ts) ──
+  registerApplicantOnboarding(app, { work, authedUser, guardCapability, overLimit, clientIp: deps.clientIp });
 
   // ── The clock: reminders only ─────────────────────────────────────────────
   registerJob(REVIEW_CLOCK_JOB, CLOCK_EVERY_MS, async () => {

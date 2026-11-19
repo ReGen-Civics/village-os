@@ -85,7 +85,7 @@ async function wordsFor(deps: Pick<TellDeps, "getPool" | "projectName" | "siteUr
     lang: languageOf(p),
     note: p.body.note ?? null,
     // Only the letters that ask the applicant to open the page carry the link; the rest never pointed there.
-    statusLink: kind === "conversation" || kind === "terms" || kind === "first_reply" || kind === "consent" ? statusLinkFor(deps, p.id) : null,
+    statusLink: kind === "conversation" || kind === "terms" || kind === "first_reply" || kind === "consent" || kind === "references" ? statusLinkFor(deps, p.id) : null,
   });
 }
 
