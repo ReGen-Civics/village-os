@@ -32,7 +32,9 @@ import { BTN_SECONDARY, HINT } from "@/components/journey/look";
 import { speechLang } from "@/lib/speechLang";
 import { VOICE_CLIP_WORDS_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH } from "@shared/voiceTranscribe";
+import { autoWriteDown, markTried, running, setAutoWriteDown, subscribeAutoWriteDown, transcriptionOn, triedBefore } from "./voiceWriteDownStore";
 import type { ClipTake, VoiceState } from "./VoiceInvite";
+export { autoWriteDown, forgetTranscriptionOn, setAutoWriteDown, transcriptionOn } from "./voiceWriteDownStore";
 
 /** The last minute of a take: when the countdown shows. */
 export const COUNTDOWN_FROM_SECONDS = 60;
@@ -68,26 +70,6 @@ export function withWrittenWords(v: VoiceState, i: number, text: string): VoiceS
   return { ...v, transcript: transcript.slice(0, VOICE_TRANSCRIPT_MAX), takes: v.takes.map((t, k) => (k === i ? { ...t, words, written: true } : t)) };
 }
 
-/** Whether the village's transcription service is on: asked once per page. */
-let onAnswer: Promise<boolean> | null = null;
-export function transcriptionOn(fetcher: typeof fetch = fetch): Promise<boolean> {
-  if (!onAnswer) {
-    onAnswer = fetcher(VOICE_TRANSCRIBE_PATH)
-      .then((r) => (r.ok ? r.json() : { on: false }))
-      .then((d: any) => d?.on === true)
-      .catch(() => false);
-  }
-  return onAnswer;
-}
-/** For a test: ask again, forget the switch and every send. */
-export function forgetTranscriptionOn(): void {
-  onAnswer = null;
-  autoOn = null;
-  running.forEach((c) => c.abort());
-  running.clear();
-  tried = new WeakSet();
-}
-
 function useTranscriptionOn(): boolean {
   const [on, setOn] = useState(false);
   useEffect(() => {
@@ -100,50 +82,10 @@ function useTranscriptionOn(): boolean {
   return on;
 }
 
-/* ── The switch: on unless turned off, remembered for the visit ─────────── */
-
-const AUTO_KEY = "voice-write-down-automatically";
-let autoOn: boolean | null = null;
-const listeners = new Set<() => void>();
-/** Sends in flight, by the recording they carry: turning the switch off aborts them all. */
-const running = new Map<Blob, AbortController>();
-/** Recordings already sent by themselves once, so a redraw never sends one twice. */
-let tried = new WeakSet<Blob>();
-
-export function autoWriteDown(): boolean {
-  if (autoOn === null) {
-    try {
-      autoOn = window.sessionStorage.getItem(AUTO_KEY) !== "off";
-    } catch {
-      autoOn = true;
-    }
-  }
-  return autoOn;
-}
-
-export function setAutoWriteDown(on: boolean): void {
-  autoOn = on;
-  try {
-    window.sessionStorage.setItem(AUTO_KEY, on ? "on" : "off");
-  } catch {
-    /* remembered for this page only */
-  }
-  if (!on) {
-    running.forEach((c) => c.abort());
-    running.clear();
-  }
-  listeners.forEach((l) => l());
-}
+/* ── The switch: on unless turned off, remembered for the visit (voiceWriteDownStore.ts) ── */
 
 function useAutoWriteDown(): boolean {
-  return useSyncExternalStore(
-    (l) => {
-      listeners.add(l);
-      return () => listeners.delete(l);
-    },
-    autoWriteDown,
-    () => true,
-  );
+  return useSyncExternalStore(subscribeAutoWriteDown, autoWriteDown, () => true);
 }
 
 /** The server's refusals, in the reader's language, keyed by the shared constant itself. */
@@ -213,8 +155,8 @@ function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean,
   };
 
   useEffect(() => {
-    if (!on || !auto || !blob || written || tried.has(blob)) return;
-    tried.add(blob);
+    if (!on || !auto || !blob || written || triedBefore(blob)) return;
+    markTried(blob);
     void go(blob);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on, auto, blob, written]);

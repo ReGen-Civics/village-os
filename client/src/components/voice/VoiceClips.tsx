@@ -27,6 +27,7 @@ import { useVoiceRecorder, voiceSupport } from "./useVoiceRecorder";
 import { forField } from "@/components/form/fieldName";
 import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import type { VoiceState } from "./VoiceInvite";
+import { VoiceStepMoreLazy } from "./voiceStepMoreLazy";
 
 interface ClipsContext {
   voice: VoiceState;
@@ -39,7 +40,7 @@ interface ClipsContext {
 const Clips = createContext<ClipsContext | null>(null);
 
 /** The clip's words written down by themselves, and the AI line before its first recording (VoiceStepMore.tsx), loaded after the page. */
-const More = lazy(() => import("./VoiceStepMore"));
+const More = VoiceStepMoreLazy;
 
 export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMITS, link, children }: Omit<ClipsContext, "limits"> & { limits?: VoiceClipLimits; children: ReactNode }) {
   return <Clips.Provider value={{ voice, setVoice, limits, link }}>{children}</Clips.Provider>;
