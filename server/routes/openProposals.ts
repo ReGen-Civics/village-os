@@ -55,6 +55,7 @@
 import crypto from "node:crypto";
 import type { Express, Request, Response } from "express";
 import multer from "multer";
+import { watchApplyFailures } from "../lib/applyFailureLog";
 import type { Pool } from "mysql2/promise";
 
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
@@ -460,6 +461,8 @@ export function register(app: Express, deps: Deps): void {
     });
   }
 
+  // Every failed application post or voice upload, one line with nothing personal in it (server/lib/applyFailureLog.ts).
+  app.use(watchApplyFailures());
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, villageName: projectName });
   // "Write down my words" (the lead, 17 Nov 2026): one take to the village's transcription service, behind the same door and caps of its own.
