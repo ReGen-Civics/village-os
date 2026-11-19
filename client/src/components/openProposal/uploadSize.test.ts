@@ -1,6 +1,6 @@
 /**
  * What one application post carries, added up before it is sent (the ops request of 19 Nov 2026): an eight-minute
- * take, and a fifteen-minute one at the largest size a take may be, both fit; nothing past a cap is dropped, it is
+ * take at the largest phone rate, and three at the largest size a take may be, both fit; nothing past a cap is dropped, it is
  * named.
  */
 import { describe, expect, it } from "vitest";
@@ -15,9 +15,9 @@ const voice = (takes: number[], clips: number[] = [], consent = true) => ({
 });
 
 describe("an application's uploads, added up", () => {
-  it("an eight-minute take at the largest phone rate fits, and so do three full fifteen-minute takes with three full files", () => {
-    const eight = 8 * 60 * RECORDING_BYTES_PER_SECOND;
-    expect(uploadProblem([], voice([eight]), 12)).toBeNull();
+  it("a seven-minute take at the largest phone rate fits, and so do three takes at their cap with three full files", () => {
+    const seven = 7 * 60 * RECORDING_BYTES_PER_SECOND;
+    expect(uploadProblem([], voice([seven]), 12)).toBeNull();
     // A real Blob of the computed size, as the recorder hands it over.
     const take = new Blob([new Uint8Array(TAKE_MAX_BYTES)], { type: "audio/webm" });
     expect(take.size).toBe(TAKE_MAX_BYTES);

@@ -62,8 +62,9 @@ describe("one source for every limit", () => {
     expect(APPLY_COUNTS.goalsPerRole).toBe(8 * 3);
     expect(APPLY_COUNTS.links).toBe(5 * 3);
     expect(APPLY_COUNTS.suggestions).toBe(30 * 3);
-    expect(TAKE_MAX_SECONDS).toBe(300 * 3);
-    expect(CLIP_SECONDS_CEILING).toBe(180 * 3);
+    // One take is 7 minutes (ops decision, 19 Nov 2026), and a clip never runs longer than a take.
+    expect(TAKE_MAX_SECONDS).toBe(7 * 60);
+    expect(CLIP_SECONDS_CEILING).toBe(TAKE_MAX_SECONDS);
     expect(FILE_MAX_BYTES).toBe(10 * 1024 * 1024 * 3);
     expect(CLIP_MAX_BYTES).toBe(4 * 1024 * 1024 * 3);
   });

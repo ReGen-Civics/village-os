@@ -67,7 +67,7 @@ describe("the application's limits, on the page", () => {
     await waitFor(() => expect(document.querySelector("[data-limits-at-top] [data-limits-explained]")).not.toBeNull());
     const words = document.querySelector("[data-limits-at-top] [data-limits-explained]")?.textContent ?? "";
     expect(words).toContain(`"Why you, and why now" holds 8,000`);
-    expect(words).toContain("One recording runs up to 15 minutes.");
+    expect(words).toContain("You can record up to 7 minutes each time.");
     expect(words).toContain("a send can take several minutes on a slow connection");
   });
 

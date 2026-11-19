@@ -87,7 +87,7 @@ describe("clips beside answers (Rye, 14 Nov 2026)", () => {
     for (const f of ["selfKnowledge", "name", "email", "value-25-title", "reference-4", "term-", "WHY", ""]) expect(isClipField(f), f).toBe(false);
     expect(clipFieldLabel("value-2-done")).toBe("Value 2: how we will know it is done");
     expect(clipLimitsOf({ max: 12, seconds: 60 })).toEqual({ max: 12, seconds: 60 });
-    expect(clipLimitsOf({ max: 99, seconds: 9999 })).toEqual({ max: 48, seconds: 540 });
+    expect(clipLimitsOf({ max: 99, seconds: 9999 })).toEqual({ max: 48, seconds: 420 });
     expect(clipLimitsOf({ max: 0, seconds: 1 })).toEqual({ max: 0, seconds: 10 });
     expect(clipLimitsOf(undefined)).toEqual({ max: 24, seconds: 180 });
   });

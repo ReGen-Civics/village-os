@@ -16,7 +16,7 @@
  *
  * NOTHING SAID IS LOST QUIETLY (an applicant, 17 Nov 2026: "I just recorded like
  * 5 minutes ... it doesn't seem to play back"). Whatever ends a recording, the
- * person's Stop, the time limit (15 minutes a take), or the browser itself (the microphone
+ * person's Stop, the time limit (7 minutes a take), or the browser itself (the microphone
  * taken by another app, a phone call, the tab put away), the sound captured so
  * far becomes a take, the button comes back, and `problem` says what happened.
  * A take with no sound in it is said, never dropped in silence. Where the speech

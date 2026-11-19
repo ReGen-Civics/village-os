@@ -42,6 +42,7 @@ import { createOrgRole, seatHolder } from "../lib/orgChart";
 import { latestBallotsFor, readApplication, rewriteTermsOffer, seatingsHolding, setTogether } from "../repos/seatApplications";
 import { register, seatFromApplication } from "./seatApplications";
 import { WAITING_COPY } from "../../shared/waitingOnYou";
+import { GOAL_LIMITS } from "../../shared/proposalGoals";
 
 const LADDER = ["visitor", "guest", "member"];
 const DAY = 24 * 60 * 60 * 1000;
@@ -341,7 +342,7 @@ describe.skipIf(!configured)("applying, adopting and seating, on a real schema",
 
     it("refuses malformed goals: none, no done when, too many, a date outside this moon", async () => {
       const s = await goalSeat([]);
-      for (const goals of [[], [{ ...GOAL, doneWhen: "" }], Array.from({ length: 9 }, () => GOAL), [{ ...GOAL, date: "2031-01-01" }], "beds"]) {
+      for (const goals of [[], [{ ...GOAL, doneWhen: "" }], Array.from({ length: GOAL_LIMITS.max + 1 }, () => GOAL), [{ ...GOAL, date: "2031-01-01" }], "beds"]) {
         const r = await apply({ seatIds: [s], answers: { goals } });
         expect(r.status, JSON.stringify(goals).slice(0, 40)).toBe(400);
         expect(r.body.field).toBe("goals");

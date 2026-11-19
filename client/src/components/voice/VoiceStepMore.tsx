@@ -4,7 +4,7 @@
  * step that day lives here and arrives a moment after the card, through one
  * lazy import in VoiceInvite.tsx and one in VoiceClips.tsx:
  *
- *   - `limit`: before recording, "Up to 15 minutes per take", and, when the
+ *   - `limit`: before recording, "You can record up to 7 minutes each time.", and, when the
  *     village's transcription service is on, the line that says an AI service
  *     writes recordings down, with the switch that turns it off.
  *   - `countdown`: in the last minute of a take, the seconds left, large, and
@@ -106,7 +106,7 @@ function refusalWords(said: string, i18n: I18n): string {
     [TRANSCRIBE_WORDS.tooMany, msg({ message: "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.unavailable, msg({ message: "We couldn't write this recording down just now. Your recording is still kept. Try again in a moment, or type what you said.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.busy, msg({ message: "A few recordings are being written down already. Try again in a moment.", context: "voice transcription refusal" })],
-    [TRANSCRIBE_WORDS.tooLong, msg({ message: "Only takes up to 15 minutes can be written down.", context: "voice transcription refusal" })],
+    [TRANSCRIBE_WORDS.tooLong, msg({ message: "Only takes up to 7 minutes can be written down.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.heardNothing, msg({ message: "The service heard no words in this recording. Type what you said, or record again.", context: "voice transcription refusal" })],
     [VOICE_WORDS.tooBig, msg({ message: "One recording is too large. Record a shorter one.", context: "voice transcription refusal" })],
     [VOICE_WORDS.wrongType, msg({ message: "We couldn't read one of your recordings. Record it again.", context: "voice transcription refusal" })],
@@ -217,14 +217,15 @@ function AutoSwitch({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** "Up to 15 minutes per take", and the AI line with its switch while the service is on. */
+/** "You can record up to 7 minutes each time.", and the AI line with its switch while the service is on. */
 function LimitNote() {
   const { t } = useLingui();
   const on = useTranscriptionOn();
+  const minutes = VOICE_NOTE_MAX_SECONDS / 60;
   return (
     <div className="grid gap-1" data-voice-limit-note="">
       <p className="text-sm font-medium text-foreground">
-        {t({ message: `Up to ${VOICE_NOTE_MAX_SECONDS / 60} minutes per take. It stops by itself at ${voiceLength(VOICE_NOTE_MAX_SECONDS)}.`, context: "voice note, before recording" })}
+        {t({ message: `You can record up to ${minutes} minutes each time.`, context: "voice note, before recording" })}
       </p>
       {on && <AutoSwitch />}
     </div>

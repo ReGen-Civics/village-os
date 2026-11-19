@@ -282,7 +282,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       { name: "voice-2.m4a", type: "audio/mp4", bytes: fiveMinutes(MP4, 7.5), kind: "m4a" },
       { name: "voice-3.ogg", type: "audio/ogg;codecs=opus", bytes: fiveMinutes(ogg, 4.9), kind: "ogg" },
     ];
-    // All three at once: the post stays inside the upload's total, so a person who talks for the full fifteen minutes is kept.
+    // All three at once: the post stays inside the upload's total, so a person who talks for three full takes is kept.
     const total = cases.reduce((s, c) => s + c.bytes.length, 0);
     expect(total).toBeLessThan(OPEN_UPLOAD_MAX_BYTES);
     const r = await postVoice(proposal(ticked([300, 300, 300], "Five minutes about the land.")), cases);
@@ -303,10 +303,10 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     }
   });
 
-  it("keeps a full take, fifteen minutes at the largest size one take may be, byte for byte (the ops request of 19 Nov 2026)", async () => {
+  it("keeps a full take, seven minutes at the largest size one take may be, byte for byte (the ops request of 19 Nov 2026)", async () => {
     const full = crypto.randomBytes(VOICE_NOTE_MAX_BYTES);
     WEBM.copy(full, 0, 0, WEBM.length);
-    const r = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS], "Fifteen minutes about the land.")), [{ name: "voice-1.webm", bytes: full, type: "audio/webm" }]);
+    const r = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS], "Seven minutes about the land.")), [{ name: "voice-1.webm", bytes: full, type: "audio/webm" }]);
     expect(r.status, JSON.stringify(r.body)).toBe(200);
     const voice = (await readOpenProposal(pool, lastId()))?.body.voice;
     expect(voice?.notes.map((n) => [n.seconds, n.size])).toEqual([[VOICE_NOTE_MAX_SECONDS, VOICE_NOTE_MAX_BYTES]]);
