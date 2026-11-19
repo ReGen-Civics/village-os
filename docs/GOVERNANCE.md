@@ -11,7 +11,7 @@ This describes a FRESH village: what a village standing up a new instance holds 
 <!-- written by a person: generated -->
 This file is generated. `scripts/generate-governance-doc.mjs` reads the engine, the subject registry, the dials, the capability tables, the module definition, the clock and the route registrations, works out the facts, and writes the whole document. `scripts/check-governance-doc.mjs` regenerates it and fails the build when the committed text and the code have come apart.
 
-It describes the sources at fingerprint `6a32e45065ca3001`, which regenerating reproduces.
+It describes the sources at fingerprint `b147fbc5d2f7e913`, which regenerating reproduces.
 
 <!-- written by a person: editing -->
 Editing this file by hand does not hold. Change the code, then run:
@@ -502,13 +502,20 @@ What a village publishes, read from the route registrations. The door on each ro
 | POST | `/api/governance/advisory` | signed in | none |
 | GET | `/api/governance/agreements` | signed in | none |
 | POST | `/api/governance/agreements` | signed in | none |
+| POST | `/api/governance/applications/:ref/final-conversation` | anyone, including a stranger | none |
 | POST | `/api/governance/applications/:ref/first-reply` | signed in | none |
 | POST | `/api/governance/applications/:ref/interviews/:id/score` | signed in | none |
 | POST | `/api/governance/applications/:ref/recuse` | signed in | none |
+| POST | `/api/governance/applications/:ref/references` | signed in | none |
+| POST | `/api/governance/applications/:ref/references/:id/notes` | anyone, including a stranger | none |
+| POST | `/api/governance/applications/:ref/references/:id/owner` | anyone, including a stranger | none |
+| POST | `/api/governance/applications/:ref/references/ask` | anyone, including a stranger | none |
 | GET | `/api/governance/applications/:ref/scorecards` | signed in | none |
+| POST | `/api/governance/applications/:ref/shortlist` | anyone, including a stranger | none |
 | POST | `/api/governance/applications/:ref/split` | signed in | none |
 | GET | `/api/governance/applications/:ref/status` | signed in | none |
 | POST | `/api/governance/applications/:ref/terms` | signed in | none |
+| GET | `/api/governance/applications/:ref/walkthrough` | signed in | none |
 | GET | `/api/governance/ballots` | anyone, including a stranger | none |
 | GET | `/api/governance/ballots/:id` | administrator | none |
 | POST | `/api/governance/ballots/:id/close` | capability | `proposal.decide` |
@@ -576,7 +583,7 @@ What a village publishes, read from the route registrations. The door on each ro
 | GET | `/api/governance/weights` | signed in | none |
 | GET | `/api/governance/wizard` | signed in | none |
 
-90 routes: 76 under the governance prefix and 14 under the mechanics prefix. 10 of them answer a stranger, 5 ask for a named power, and 0 could not be classified from the code by this reader.
+97 routes: 83 under the governance prefix and 14 under the mechanics prefix. 15 of them answer a stranger, 5 ask for a named power, and 0 could not be classified from the code by this reader.
 
 The routes that answer a stranger are the village's public record. At the module's `public` lifecycle a stranger reads the ballot list, one decision and the objection lineage as titles, counts, tallies, dials and status. Who voted, how, who has not voted yet, who objected and the document itself are for signed-in members, and ruling 22, still staged, is about what members read.
 
@@ -1112,7 +1119,7 @@ The same facts, for anything that would sooner parse than read. Regenerated with
 
 ```json
 {
-  "commit": "6a32e45065ca3001",
+  "commit": "b147fbc5d2f7e913",
   "module": {
     "id": "governance",
     "shipsAs": "off",
@@ -2210,6 +2217,13 @@ The same facts, for anything that would sooner parse than read. Regenerated with
     },
     {
       "method": "POST",
+      "path": "/api/governance/applications/:ref/final-conversation",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
+    },
+    {
+      "method": "POST",
       "path": "/api/governance/applications/:ref/first-reply",
       "door": "signed in",
       "capability": null,
@@ -2230,11 +2244,46 @@ The same facts, for anything that would sooner parse than read. Regenerated with
       "file": "server/routes/applicationReview.ts"
     },
     {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/references",
+      "door": "signed in",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/references/:id/notes",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/references/:id/owner",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/references/ask",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
+    },
+    {
       "method": "GET",
       "path": "/api/governance/applications/:ref/scorecards",
       "door": "signed in",
       "capability": null,
       "file": "server/routes/applicationReview.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/shortlist",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
     },
     {
       "method": "POST",
@@ -2256,6 +2305,13 @@ The same facts, for anything that would sooner parse than read. Regenerated with
       "door": "signed in",
       "capability": null,
       "file": "server/routes/applicationReview.ts"
+    },
+    {
+      "method": "GET",
+      "path": "/api/governance/applications/:ref/walkthrough",
+      "door": "signed in",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
     },
     {
       "method": "GET",
@@ -3308,7 +3364,7 @@ The tables and columns the rules above rest on. The generator checks every one a
 | `delegations.accepted_at` | a delegation carries a choice only once the delegate accepts it |
 | `role_holder_terms` | a term survives an unrelated appointment |
 
-Checked against the 278 migration files in `drizzle/`.
+Checked against the 279 migration files in `drizzle/`.
 
 ## What this file is made from
 

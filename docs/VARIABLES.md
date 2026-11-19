@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 268 open and 60 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 270 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 301 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 303 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-328 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 63 text, 9 longtext.
+330 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 65 text, 9 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -58,7 +58,7 @@ Each dial also says WHEN a change lands. 301 of them as soon as it is saved, and
 | Data lifecycle | 3 | 0 | 3 |
 | Automation | 1 | 0 | 1 |
 | Village map | 12 | 9 | 3 |
-| The village's people | 21 | 20 | 1 |
+| The village's people | 23 | 22 | 1 |
 | Companions | 3 | 3 | 0 |
 | The founding team | 19 | 19 | 0 |
 | Events | 3 | 3 | 0 |
@@ -293,6 +293,8 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Show who holds each role to visitors | `org.public_people` | The village's people | boolean | `true` | the founder or an admin |
 | Ask the circle to consent after the conversations | `org.consent_after_interviews` | The village's people | boolean | `false` | the whole village |
 | The role that sends first replies to applicants | `org.onboarding_role` | The village's people | text | blank | the whole village |
+| The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
+| The role that makes the final call on an applicant | `org.final_call_role` | The village's people | text | blank | the whole village |
 | Days we promise to reply to a role proposal | `org.applicant_reply_days` | The village's people | integer | `7` | the whole village |
 | Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `12` | the whole village |
 | Longest voice clip beside an answer | `org.voice_clip_seconds` | The village's people | integer | `60` | the whole village |
@@ -3761,7 +3763,7 @@ A photograph taken down loses its file immediately. What stays is the record of 
 
 ## The village's people
 
-21 dials. 20 for the whole village, 1 for the founder or an admin.
+23 dials. 22 for the whole village, 1 for the founder or an admin.
 
 ### Show who holds each role to visitors
 
@@ -3798,6 +3800,34 @@ The role whose holders are reminded to send each applicant a first reply within 
 | Fact | Value |
 | --- | --- |
 | Key | `org.onboarding_role` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The role that follows up with an applicant's references
+
+When a shortlisted applicant sends their references, each one is given to this role first: its holders read how to reach the reference and write their follow-up notes. The team can then give any reference to another role or member, whoever is most aligned with that person. Usually the role that holds human relations and operations. Paste the role id from the org chart. Leave it empty and each reference waits for the team to pick who follows up.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.reference_followup_role` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The role that makes the final call on an applicant
+
+The role whose holders read everything gathered for an applicant (the reference follow-ups and every conversation's scorecard), hold the final conversation and then make the call. The adoption or decline itself goes through the usual doors, so this role should also carry the power to place people in roles. Paste the role id from the org chart. Leave it empty and the holders of that power make the final call.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.final_call_role` |
 | Type | text, free text, one line |
 | Default | blank |
 | Range | no bounds are set |
