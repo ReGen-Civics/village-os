@@ -8954,6 +8954,10 @@ msgstr ""
 #~ msgid "~20 h half time, ~30 to 40 h full time"
 #~ msgstr ""
 
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgid "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
+msgstr ""
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Say which block of the canvas this document speaks to."
 msgstr ""
@@ -18941,6 +18945,10 @@ msgstr "Cubierto"
 #. placeholder {0}: CANVAS_CREDIT.text
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The questions are quoted from the <0>{0}<1/></0>."
+msgstr ""
+
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgid "Crash screens visitors saw"
 msgstr ""
 
 #: client/src/pages/OpenProposal.tsx

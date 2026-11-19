@@ -8936,6 +8936,10 @@ msgstr "Its owner asked to share it."
 #~ msgid "~20 h half time, ~30 to 40 h full time"
 #~ msgstr "~20 h half time, ~30 to 40 h full time"
 
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgid "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
+msgstr "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
+
 #: client/src/components/notebook/NotebookDocument.tsx
 msgid "Say which block of the canvas this document speaks to."
 msgstr "Say which block of the canvas this document speaks to."
@@ -18892,6 +18896,10 @@ msgstr "Covered"
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The questions are quoted from the <0>{0}<1/></0>."
 msgstr "The questions are quoted from the <0>{0}<1/></0>."
+
+#: client/src/components/health/BrowserCrashesCard.tsx
+msgid "Crash screens visitors saw"
+msgstr "Crash screens visitors saw"
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal, founding application"
