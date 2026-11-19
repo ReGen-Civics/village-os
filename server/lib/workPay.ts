@@ -35,7 +35,6 @@ import {
 import { tokenDef } from "./ledger";
 import { MAX_BADGE_MULTIPLIER, readBadgeMultipliers } from "./badges";
 import { listBadgesWithMultipliers } from "../repos/badgeMultipliers";
-import { CONTRIBUTION_TOKEN_DEFAULT } from "../../shared/contributionToken";
 import {
   GRATITUDE_NEVER_PAYS,
   readWorkValue,
@@ -154,7 +153,7 @@ export function payLineProblem(rules: readonly MintRule[], token: string): strin
   // EARNED EQUITY MEANS WHAT THE VILLAGE SAYS IT MEANS (Rye, 2026-11-05), so a
   // piece of work may not pay it until the village has said, in Admin, Tokens.
   if (token === EARNED_EQUITY && !String(tokenDef(token)?.description ?? "").trim()) {
-    const name = tokenDef(token)?.name?.trim() || CONTRIBUTION_TOKEN_DEFAULT;
+    const name = tokenDef(token)?.name ?? "Earned Equity";
     return `Say what ${name} is a share of here before a piece of work pays it: Admin, Tokens, the meaning beside ${name}.`;
   }
   const offered = payableTokens(rules).find((t) => t.token === token);

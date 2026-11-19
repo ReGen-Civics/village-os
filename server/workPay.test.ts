@@ -592,7 +592,7 @@ describe.skipIf(!configured)("Earned Equity is what the village says it is", () 
 
   it("refuses a line of Earned Equity until the village has said what it is a share of", async () => {
     await meaning(null);
-    expect(payLineProblem(eeRules(), EARNED_EQUITY)).toMatch(/what Contribution tokens is a share of/);
+    expect(payLineProblem(eeRules(), EARNED_EQUITY)).toMatch(/what Earned Equity is a share of/);
     await meaning("A share of the hearth land trust's yearly surplus.");
     expect(payLineProblem(eeRules(), EARNED_EQUITY)).toBeNull();
   });

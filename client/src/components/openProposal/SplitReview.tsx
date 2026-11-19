@@ -8,7 +8,7 @@ import { useLingui } from "@lingui/react/macro";
 import { changedShares, splitChanged, type ProposalSplit } from "@shared/proposalSplit";
 import { moneyWords } from "@shared/roleRewardWords";
 import { CHIP } from "@/components/journey/look";
-import { ShareLabel, useShareNames } from "@/components/ContributionWord";
+import { ShareLabel, TokenText, useShareNames } from "@/components/ContributionWord";
 
 export default function SplitReview({ split, currency }: { split: ProposalSplit | null | undefined; currency: string | null }) {
   const { t, i18n } = useLingui();
@@ -24,7 +24,7 @@ export default function SplitReview({ split, currency }: { split: ProposalSplit 
   return (
     <div className="grid gap-2" data-split-review="" data-split-changed={changed ? "yes" : "no"}>
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm font-semibold text-muted-foreground">{t({ message: `Cash, ${names.equity} and ${names.credits}`, context: "open proposal: the split heading, with the village's token names" })}</p>
+        <p className="text-sm font-semibold text-muted-foreground"><TokenText text={t({ message: `Cash, ${names.equity} and ${names.credits}`, context: "open proposal: the split heading, with the village's token names" })} /></p>
         {changed && (
           <span className={CHIP} data-split-changed-badge="">
             {t({ message: "Split changed by applicant", context: "open proposal: the split badge" })}

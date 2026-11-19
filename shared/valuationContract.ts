@@ -19,7 +19,6 @@
  *
  * Pure: no clock, no pool.
  */
-import { shareNames } from "./contributionToken";
 import { ENGINE_DEFAULTS, bandAround, noSignBand, priceWork, rewardFromTotal, voiceFor, type ValuationModel, type WorkInputs } from "./valuation";
 import { suggestValuation, wholeMoney, type EngineContext, type PayeeSuggestion, type Suggestion, type Warning } from "./valuationEngine";
 
@@ -81,7 +80,7 @@ export function suggestContract(model: ValuationModel, c: ContractInputs, ctx: E
         { key: "base", label: "Base price", result: money(r.baseUnits * 100) },
         {
           key: "added",
-          label: `${shareNames(ctx.names).equity} to match${held ? " (owed)" : ""}, ${shareNames(ctx.names).credits} ${model.reward.creditsBonusPct}%`,
+          label: `Earned Equity to match${held ? " (owed)" : ""}, Credits ${model.reward.creditsBonusPct}%`,
           result: `+${money((r.equityUnits + r.bonusUnits) * 100)}`,
         },
         { key: "reward", label: "Reward", result: money(r.totalMinor) },

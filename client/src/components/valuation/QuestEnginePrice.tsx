@@ -17,7 +17,6 @@ import { suggestValuation, wholeMoney } from "@shared/valuationEngine";
 import type { PayOption, WorkValueDraft } from "@/components/WorkValueEditor";
 import { draftFromEngine } from "@/lib/engineQuestDraft";
 import { gameFetch } from "@/lib/gameApi";
-import { useShareNames } from "@/components/ContributionWord";
 
 type ModelRead = { model: ValuationModel; eeMeaningWritten: boolean; tokenNames: Record<string, string> };
 
@@ -41,7 +40,6 @@ export default function QuestEnginePrice({
   onUse: (draft: WorkValueDraft, use: EngineUse) => void;
 }) {
   const { t } = useLingui();
-  const engineNames = useShareNames();
   const [read, setRead] = useState<ModelRead | null>(null);
   const [failed, setFailed] = useState(false);
   const [band, setBand] = useState("");
@@ -76,9 +74,9 @@ export default function QuestEnginePrice({
   }, [band, hours, low, high, complexity]);
   const suggestion = useMemo(() => {
     if (!model || !work) return null;
-    const s = suggestValuation(model, work, { eeMeaningWritten: !!read?.eeMeaningWritten, names: engineNames });
+    const s = suggestValuation(model, work, { eeMeaningWritten: !!read?.eeMeaningWritten });
     return s.ok ? { ok: true as const, payee: s.payees[0] } : { ok: false as const, problem: s.refusals[0]?.problem ?? "" };
-  }, [model, work, read, engineNames]);
+  }, [model, work, read]);
 
   if (failed) return null;
   if (!read || !model) return <p className="text-xs text-muted-foreground"><Trans context="quest editor">Reading the village's pay settings…</Trans></p>;
@@ -133,7 +131,7 @@ export default function QuestEnginePrice({
             <Trans context="quest editor">Use this price</Trans>
           </button>
           {filled.voiceHeld && <p className="w-full text-xs text-muted-foreground"><Trans context="quest editor">Voice starts when the village adopts its own pay settings.</Trans></p>}
-          {s.expected.earnedEquityHeld > 0 && <p className="w-full text-xs text-muted-foreground">{t({ message: `The ${engineNames.equity} share is owed on this quest until the village writes what ${engineNames.equity} means.`, context: "quest editor, the contribution token's name" })}</p>}
+          {s.expected.earnedEquityHeld > 0 && <p className="w-full text-xs text-muted-foreground"><Trans context="quest editor">Earned Equity is owed on this quest until the village writes what Earned Equity means.</Trans></p>}
           {filled.unoffered.length > 0 && (
             <p className="w-full text-xs text-amber-ink">
               {t({ message: `The rule pays ${filled.unoffered.map(tokenName).join(", ")}, which quests do not pay here yet. Turn it on in the quest pay rules first.`, context: "quest editor" })}

@@ -24,7 +24,7 @@ import { moonOf } from "./moonRecap";
 import { register } from "../routes/moonRecaps";
 import { loadTokenRegistry, memberAccount } from "./ledger";
 import { seedEconomy } from "./economySeed";
-import { CREDITS, EARNED_EQUITY, equityMeaningUnwritten, faucetFor, fromLedgerUnits, keys, mint, runSettlement, toLedgerUnits, villageId } from "./economy";
+import { CREDITS, EARNED_EQUITY, EQUITY_MEANING_UNWRITTEN, faucetFor, fromLedgerUnits, keys, mint, runSettlement, toLedgerUnits, villageId } from "./economy";
 import { loadVariables, setVariable } from "./variables";
 import { lineRewardClaimId, MOON_REWARD_SOURCE, settleLineRewards } from "./moonReward";
 import { PAY_BOARD_ROUTES } from "../../shared/moonRewardReview";
@@ -244,7 +244,7 @@ describe.skipIf(!configured)("one seat-moon is paid its tokens once, and a held 
     await approveTokens();
     const id = await approvedId();
     const rows = await q("SELECT `token_slug`, `units`, `state`, `refusal_reason`, `last_error` FROM `quest_owed_postings` WHERE `claim_id` = ?", [lineRewardClaimId(id)]); // module-review-ok: fixture SQL
-    expect(rows.map((r: any) => [r.token_slug, r.state, r.refusal_reason, r.last_error])).toEqual([[EARNED_EQUITY, "owed", "equity_meaning", equityMeaningUnwritten()]]);
+    expect(rows.map((r: any) => [r.token_slug, r.state, r.refusal_reason, r.last_error])).toEqual([[EARNED_EQUITY, "owed", "equity_meaning", EQUITY_MEANING_UNWRITTEN]]);
     expect(fromLedgerUnits(EARNED_EQUITY, Number(rows[0].units))).toBe(2600);
     // Pressed again while still unwritten: nothing issues.
     expect((await settleLineRewards(pool, id)).map((o) => o.outcome)).toEqual(["still_owed"]);

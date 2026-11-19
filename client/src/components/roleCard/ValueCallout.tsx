@@ -12,7 +12,7 @@ import { Info, X } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { valueExplainerWords } from "./valueExplainerWords";
 import { MoonText } from "@/components/MoonWord";
-import { ContributionText, useShareNames } from "@/components/ContributionWord";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 
 export default function ValueCallout() {
   const { t, i18n } = useLingui();
@@ -68,7 +68,7 @@ export default function ValueCallout() {
               <section key={p.key} data-explainer-part={p.key}>
                 <p className="text-xs font-semibold uppercase tracking-widest text-notice">{p.heading}</p>
                 <p className="mt-1 leading-relaxed text-card-foreground">
-                  {p.key === "aim" ? <ContributionText text={p.text} /> : <MoonText text={p.text} />}
+                  {p.key === "aim" ? <TokenText text={p.text} /> : <MoonText text={p.text} />}
                 </p>
               </section>
             ))}

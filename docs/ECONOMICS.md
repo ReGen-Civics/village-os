@@ -562,15 +562,18 @@ owed posting like any other. It used to be dropped with no row. The ledger door 
 refuses it with `equity_meaning`, a reason that leaves the row owed, until the meaning is written.
 
 **Members never read "equity" for this token (the lead, 2026-11-19).** `earned-equity` is the
-village's contribution token: its display name is the village's own (Admin, Tokens), and 0411 moves
-the untouched seeded name "Earned Equity" to the platform default "Contribution tokens". The slug,
-the kind and every rule above are unchanged. Two things follow for the ledger. A pay share labelled
-with the token's name, or the credits token's name, reads as that share (`partOfLabel`,
-`shared/rewardShare.ts`, via `namedPart` in `shared/contributionToken.ts`), so a village that
-relabels "Equity 40" with its own word still pays the same line; "equity" stays read forever for
-contracts stored before. And the refusal sentence `equityMeaningUnwritten` names the token as the
-village does. The at-risk tooltip a member reads beside the name lives in the client and is never
-written into `tokens.description`, because a written description is what releases held shares.
+village's contribution token: the same token a contributor earns, an investor buys with cash, and the
+Hypha mirror `equity` reads from Base. Its registry name (Admin, Tokens) is left as it is and admin
+pages keep showing it; member and applicant pages read the village's own word from its vocabulary
+(`contributionToken`, shared/vocabulary.ts), full in a sentence and short on a label, and fall back to
+"Contribution tokens" while that word is unset and the registry name says equity
+(shared/contributionToken.ts). The slug, the kind and every rule above are unchanged. One thing
+follows for the ledger: a pay share labelled with any of the token's names, the registry's or the
+village's word full or short, reads as that share (`partOfLabel`, `shared/rewardShare.ts`, given the
+names by `shareLines` in server/lib/moonReward.ts), so a village that relabels "Equity 40" in its own
+words still pays the same line; "equity" stays read forever for contracts stored before. The at-risk
+tooltip a member reads beside the name lives in the client and is never written into
+`tokens.description`, because a written description is what releases held shares.
 
 **An accepted proposal is work (Rye, 2026-10-23: "definitely a work token").** An accepted
 Work With Us proposal is priced like a quest, from the `proposal.accepted` rules (seeded at 10

@@ -17,7 +17,7 @@ import { PAY_BOARD_ROUTES, type PayBoardTokenLine, type TokenLineStatus } from "
 import * as api from "./moonApi";
 import { ERROR, INPUT, LABEL, MUTED, SMALL_BTN } from "./moonUi";
 import { CONTRIBUTION_TOKEN_SLUG, CREDITS_TOKEN_SLUG } from "@shared/contributionToken";
-import { ContributionText, useShareNames } from "@/components/ContributionWord";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 
 const count = (n: number) => n.toLocaleString();
 
@@ -61,6 +61,7 @@ function Reply({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promis
 }
 
 function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise<unknown> }) {
+  const { t } = useLingui();
   const words = useMineWords();
   const tokenName = useTokenName();
   const name = tokenName(line.token);
@@ -72,7 +73,8 @@ function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise
     <li className="flex flex-col gap-1 border-b border-border py-2 last:border-b-0" data-testid="my-token-line">
       <span className="text-sm text-foreground">{line.title}</span>
       <span className="text-sm font-semibold text-foreground">
-        {line.change ? <Trans context="my token pay">{units} {name}, changed from {shared}</Trans> : <>{units} {name}</>}
+        {/* The token's name wears its tip (the lead, 19 Nov 2026). */}
+        <TokenText text={line.change ? t({ message: `${units} ${name}, changed from ${shared}`, context: "my token pay, a changed line" }) : `${units} ${name}`} />
       </span>
       <span className={`text-xs ${MUTED}`} data-status={line.status}>{words[line.status]}</span>
       {line.change ? <p className="m-0 text-xs text-foreground"><Trans context="my token pay">Why it changed: {reason}</Trans></p> : null}
@@ -108,7 +110,7 @@ export default function MyTokenPay() {
     <section id="token-pay" aria-label={t({ message: "Your token pay", context: "my token pay" })} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
       <h3 className="m-0 text-lg font-semibold text-foreground"><Trans context="my token pay">Your token pay</Trans></h3>
       <p className={`m-0 ${MUTED}`}>
-        <ContributionText text={said} />
+        <TokenText text={said} />
       </p>
       <ul className="m-0 flex list-none flex-col p-0">
         {lines.map((l) => <Line key={l.key} line={l} onDone={load} />)}

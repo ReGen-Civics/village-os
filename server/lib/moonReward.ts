@@ -39,6 +39,8 @@ import { shareLine } from "../../shared/rewardShare";
 import { readVillagePayShape } from "../../shared/roleCardSections";
 import { CREDITS, EARNED_EQUITY, decimalsFor, faucetFor, keys, toLedgerUnits, villageId, type OwedPosting } from "./economy";
 import { memberAccount, tokenDef } from "./ledger";
+import { villageNouns } from "./villageNouns";
+import { shareNamesFrom } from "../../shared/contributionToken";
 import { owedClaimIdsOfSource, owedPostingsFor, recordOwed, settleOwedForClaim, settleOwedPosting, type SettleOutcome } from "../repos/questOwedPostings";
 import { approvedInvoices, insertReviewEvent, invoicesByIds, markInvoicePaid } from "../repos/moonRecaps";
 import type { Notice } from "./moonReview";
@@ -68,8 +70,11 @@ export async function shareLines<L extends InvoiceLine>(pool: Pool, lines: reado
   if (pay.length === 0) return lines.map((l) => ({ ...l }));
   const sections = await sectionsForMany(pool, Array.from(new Set(pay.flatMap((l) => l.roleIds))));
   const village = readVillagePayShape(stringVar("org.pay_shape"));
-  // The village's own names for the two token shares (Admin, Tokens): a share labelled with one reads as that share.
-  const names = { equity: tokenDef(EARNED_EQUITY)?.name ?? "", credits: tokenDef(CREDITS)?.name ?? "" };
+  // Every name a share of each token may be labelled with (the lead, 19 Nov 2026): the registry's (Admin, Tokens)
+  // and the village's own word in full and short ("Amora Tokens", "Amora"). A share labelled with one reads as that share.
+  const registry = { [EARNED_EQUITY]: tokenDef(EARNED_EQUITY)?.name ?? "", [CREDITS]: tokenDef(CREDITS)?.name ?? "" };
+  const shown = shareNamesFrom(villageNouns(), registry);
+  const names = { equity: [registry[EARNED_EQUITY], shown.equity, shown.equityShort], credits: [registry[CREDITS], shown.credits] };
   const opts = { equityMeaningWritten: earnedEquityMeaningWritten(), tokens: { equity: EARNED_EQUITY, credits: CREDITS }, names };
   const out: L[] = [];
   for (const l of lines) {

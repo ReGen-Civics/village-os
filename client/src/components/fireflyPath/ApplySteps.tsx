@@ -37,7 +37,7 @@ import type { FoundingSetup } from "@shared/foundingApplication";
 import type { KnowUsLinks } from "@shared/knowUsLinks";
 import { KnowUsWays } from "./KnowUsWays";
 import { MoonText } from "@/components/MoonWord";
-import { ContributionText, useShareNames } from "@/components/ContributionWord";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 
 /** A gold rule, the register's one ornament. */
 export const GOLD_RULE = "border-t border-notice/40";
@@ -318,7 +318,7 @@ export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup
           {t({ message: "How compensation is shaped", context: "founding application compensation" })}
         </h3>
         <p className={`mt-1 ${HINT}`}>
-          <ContributionText text={t({ message: `How your pay is split between cash, ${names.equity} and ${names.credits}. Your price is set above, by your proposal.`, context: "founding application compensation, with the village's token names" })} />
+          <TokenText text={t({ message: `How your pay is split between cash, ${names.equity} and ${names.credits}. Your price is set above, by your proposal.`, context: "founding application compensation, with the village's token names" })} />
         </p>
       </div>
       {/* The phone's stand-in for the rail (production check of 1.3.25): what the rail says, the applicant's own split for
@@ -326,7 +326,7 @@ export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup
       <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && (
         <p className="text-xs leading-relaxed text-muted-foreground" data-at-risk="">
-          <ContributionText text={setup.atRisk} />
+          <TokenText text={setup.atRisk} />
         </p>
       )}
     </section>
@@ -482,7 +482,7 @@ function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyAr
       {splits.map((x) => (
         <li key={x.name} className="break-words">
           {splits.length > 1 ? <span className="font-semibold">{x.name}: </span> : null}
-          <ContributionText text={x.line} />
+          <TokenText text={x.line} />
         </li>
       ))}
     </ul>
@@ -501,7 +501,7 @@ export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; sp
       <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && (
         <p className="text-xs leading-relaxed text-muted-foreground">
-          <ContributionText text={setup.atRisk} />
+          <TokenText text={setup.atRisk} />
         </p>
       )}
     </section>

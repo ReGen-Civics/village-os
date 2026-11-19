@@ -26,7 +26,6 @@ import { REASON_CODES } from "@shared/valuationSetting";
 import ValuationReceipt from "./ValuationReceipt";
 import PayDoorNote, { type PayDoor } from "./PayDoorNote";
 import NoSignBandNote from "./NoSignBandNote";
-import { useShareNames } from "@/components/ContributionWord";
 
 type Call = (path: string, body?: unknown, method?: string) => Promise<any>;
 type ModelRead = { model: ValuationModel; eeMeaningWritten: boolean; tokenNames: Record<string, string>; payDoor?: PayDoor };
@@ -42,7 +41,6 @@ const toMinor = (text: string, currency: string): number | null => {
 
 export default function RolePayWithEngine({ role, call, onSaved }: { role: { id: string; name: string }; call: Call; onSaved: () => void }) {
   const { t } = useLingui();
-  const engineNames = useShareNames();
   const [read, setRead] = useState<ModelRead | null>(null);
   const [band, setBand] = useState("");
   const [hours, setHours] = useState("");
@@ -75,9 +73,9 @@ export default function RolePayWithEngine({ role, call, onSaved }: { role: { id:
   }, [band, hours, low, high, responsibility]);
   const suggestion = useMemo(() => {
     if (!model || !work) return null;
-    const s = suggestValuation(model, work, { eeMeaningWritten: !!read?.eeMeaningWritten, names: engineNames });
+    const s = suggestValuation(model, work, { eeMeaningWritten: !!read?.eeMeaningWritten });
     return s.ok ? { ok: true as const, payee: s.payees[0], warnings: s.warnings } : { ok: false as const, problems: s.refusals.map((r) => r.problem) };
-  }, [model, work, read, engineNames]);
+  }, [model, work, read]);
 
   if (!read) return <p className="text-sm text-muted-foreground"><Trans>Reading the village's pay settings…</Trans></p>;
   if (!model || model.bands.length === 0) {

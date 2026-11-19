@@ -18,7 +18,7 @@ import { ceilingAt, rangeMin } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
 import { partOfLabel } from "@shared/rewardShare";
-import { shareNames, tokensNoun, type ShareNames } from "@shared/contributionToken";
+import { DEFAULT_SHARE_NAMES, type ShareNames } from "@shared/contributionToken";
 
 export interface RewardWords {
   headline: string;
@@ -53,9 +53,9 @@ export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPerio
 export const TOKEN_TERMS_ALWAYS = true;
 
 /** Does the split in force pay any of the reward in the contribution token or credits? A share above 0% only. */
-export function paysInTokens(shape: readonly PayShare[] | null | undefined, names?: Partial<ShareNames> | null): boolean {
+export function paysInTokens(shape: readonly PayShare[] | null | undefined, names: ShareNames = DEFAULT_SHARE_NAMES): boolean {
   return (shape ?? []).some((s) => {
-    const part = partOfLabel(s.label, names);
+    const part = partOfLabel(s.label, { equity: [names.equity, names.equityShort], credits: names.credits });
     return s.pct > 0 && (part === "equity" || part === "credits");
   });
 }
@@ -75,7 +75,8 @@ export function paysInTokens(shape: readonly PayShare[] | null | undefined, name
 export function splitHeadline(i18n: I18n, c: PayCeiling, shares: readonly ShareAmount[]): string {
   const parts = shares.map((s) => {
     const money = moneyWords(s.amount, c.currency, i18n.locale);
-    const label = s.label.toLowerCase();
+    // A generic word reads lower case mid-sentence; a token's own name ("Amora") keeps its capitals.
+    const label = /^(cash|credits?|equity)$/i.test(s.label) ? s.label.toLowerCase() : s.label;
     return i18n._(msg({ message: `${money} in ${label}`, context: "role card rewards: one share of the listed price as its own amount" }));
   });
   let list = parts.join(", ");
@@ -97,11 +98,10 @@ export function rewardWords(
   shape: readonly PayShare[] = [],
   split: readonly ShareAmount[] = [],
   chosen: number | null = null,
-  names: Partial<ShareNames> | null = null,
+  names: ShareNames = DEFAULT_SHARE_NAMES,
 ): RewardWords {
-  const n = shareNames(names);
-  const tokens = tokensNoun(n.equity);
-  const credits = n.credits;
+  const tokens = names.equity;
+  const credits = names.credits;
   const lo = rangeMin(min);
   const shared = lo < 100;
   const at = exampleShare(min, chosen);

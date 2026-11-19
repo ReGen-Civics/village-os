@@ -24,6 +24,7 @@ import { claimPaths, GAME_CONFIG, stageIndex, withCommitmentName } from "../shar
 import { recognitionNameCheck } from "../shared/launchRequirements";
 import { MENU_SECTION, menuDocOf, menuDocProblem } from "../shared/menuDoc";
 import { VOCAB_SECTION, vocabularyOf, vocabularyProblem } from "../shared/vocabulary";
+import { readVillageNounsFrom } from "./lib/villageNouns";
 import { NOTICE_SECTION, noticeBlurbsFor, noticeWordsOf, noticeWordsProblem } from "../shared/noticeWords";
 import { guideVoiceOf } from "../shared/guideVoice";
 import { guidePromptName } from "../shared/guideName";
@@ -1442,6 +1443,7 @@ const roleHoldersRepo = dbCollection<RoleHolderRow>(getPool(), {
 // Each document carries its REAL default; absent rows read as the default and
 // are never persisted, so forks keep inheriting future platform defaults.
 const contentRepo = dbDocument(getPool(), "content", {} as any);
+readVillageNounsFrom(() => vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION])); // the contribution token's own word for End of Moon: server/lib/villageNouns.ts
 const faqsRepo = dbDocument(getPool(), "faqs", DEFAULT_FAQS as any);
 /*
  * `resources` is the founding team's own list of working documents, and it

@@ -28,7 +28,7 @@ describe("a role's price is its total reward, shared out (Rye, 15 Nov 2026, P1-6
     expect(PAYER_IS_BILLED).toBe("cash");
     const r = shareLine(650_000, { card: shape(["Cash", 60], ["Equity", 40]), village: [] }, OPTS);
     expect(billedOfLine({ amountMinor: 650_000, reward: r })).toBe(390_000);
-    expect(earnedBesideLine(r, "USD")).toBe("Also earned, nothing to pay: 2,600 Contribution tokens, 0 Credits. Total reward US$6,500.");
+    expect(earnedBesideLine(r, "USD")).toBe("Also earned, nothing to pay: 2,600 Earned Equity, 0 Credits. Total reward US$6,500.");
     // All in cash: nothing beside it.
     expect(earnedBesideLine(shareLine(650_000, { card: [], village: [] }, OPTS), "USD")).toBeNull();
   });
@@ -58,11 +58,11 @@ describe("a role's price is its total reward, shared out (Rye, 15 Nov 2026, P1-6
   it("Earned Equity is held, never turned into cash, while the village has not written what it means", () => {
     const r = shareLine(650_000, { card: shape(["Cash", 60], ["Equity", 40]), village: [] }, { ...OPTS, equityMeaningWritten: false })!;
     expect(r).toMatchObject({ cashMinor: 390_000, equityUnits: 2600, equityHeld: true });
-    expect(rewardShareLine(r, "USD")).toContain("The Contribution tokens share is owed until the village writes what Contribution tokens means");
+    expect(rewardShareLine(r, "USD")).toContain("Earned Equity is owed until the village writes what it means");
   });
   it("names every part beside the total, a 0% one too", () => {
     const r = shareLine(650_000, { card: shape(["Cash", 60], ["Equity", 40]), village: [] }, OPTS)!;
-    expect(rewardShareLine(r, "USD")).toBe("Total reward US$6,500: US$3,900 cash (60%), 2,600 Contribution tokens (40%), 0 Credits (0%), by the role card's split.");
+    expect(rewardShareLine(r, "USD")).toBe("Total reward US$6,500: US$3,900 cash (60%), 2,600 Earned Equity (40%), 0 Credits (0%), by the role card's split.");
   });
   it("a line from before the split, or whose amount moved since, owes its amount as it stands", () => {
     expect(cashOfLine({ amountMinor: 650_000 })).toBe(650_000);
@@ -74,12 +74,13 @@ describe("a role's price is its total reward, shared out (Rye, 15 Nov 2026, P1-6
 });
 
 describe("a share labelled with the village's own token name (the lead, 19 Nov 2026)", () => {
-  const NAMES = { equity: "Harbour", credits: "Usage tokens" };
+  const NAMES = { equity: ["Earned Equity", "Harbour Tokens", "Harbour"], credits: ["Village Credits"] };
   it("pays the same as the old labels: a relabelled shape never falls through to all cash", () => {
     const old = shareLine(650_000, { card: shape(["Cash", 60], ["Equity", 35], ["Credits", 5]), village: [] }, { ...OPTS, names: NAMES });
-    const renamed = shareLine(650_000, { card: shape(["Cash", 60], ["Harbour", 35], ["Usage tokens", 5]), village: [] }, { ...OPTS, names: NAMES });
+    const renamed = shareLine(650_000, { card: shape(["Cash", 60], ["Harbour", 35], ["Village Credits", 5]), village: [] }, { ...OPTS, names: NAMES });
+    const full = shareLine(650_000, { card: shape(["Cash", 60], ["Harbour Tokens", 35], ["Credits", 5]), village: [] }, { ...OPTS, names: NAMES });
     const plain = shareLine(650_000, { card: shape(["Cash", 60], ["Contribution tokens", 35], ["Usage", 5]), village: [] }, OPTS);
-    for (const r of [old, renamed, plain]) expect(r).toMatchObject({ from: "card", cashMinor: 390_000, equityUnits: 2275, creditsUnits: 325 });
+    for (const r of [old, renamed, full, plain]) expect(r).toMatchObject({ from: "card", cashMinor: 390_000, equityUnits: 2275, creditsUnits: 325 });
     // CONTROL: without the names a label that is only the village's word is read as nothing, and the line is all cash.
     expect(shareLine(650_000, { card: shape(["Cash", 60], ["Harbour", 40]), village: [] }, OPTS)).toMatchObject({ from: "none", cashMinor: 650_000 });
   });
@@ -89,13 +90,14 @@ describe("a share labelled with the village's own token name (the lead, 19 Nov 2
     expect(partOfLabel("Harbour cash", NAMES)).toBe("cash");
     expect(partsOfShape(shape(["Harbour", 50], ["Equity", 50]), NAMES)).toBeNull();
   });
-  it("says each share by the village's names, and keeps them on the line", () => {
+  it("says a member's names when given them, and the registry's seeded names otherwise (admin pages, the payer's PDF)", () => {
     const r = shareLine(650_000, { card: shape(["Cash", 60], ["Harbour", 40]), village: [] }, { ...OPTS, names: NAMES })!;
-    expect(r.names).toEqual({ equity: "Harbour", credits: "Usage tokens" });
-    expect(rewardShareLine(r, "USD")).toBe("Total reward US$6,500: US$3,900 cash (60%), 2,600 Harbour (40%), 0 Usage tokens (0%), by the role card's split.");
-    expect(earnedBesideLine(r, "USD")).toBe("Also earned, nothing to pay: 2,600 Harbour, 0 Usage tokens. Total reward US$6,500.");
-    // The names a reader has now win over those kept on the line.
-    expect(rewardShareLine(r, "USD", { equity: "Tide", credits: "Credits" })).toContain("2,600 Tide (40%)");
-    expect(rewardShareLine(r, "USD")).not.toMatch(/equity/i);
+    const member = { equity: "Harbour Tokens", credits: "Village Credits" };
+    expect(rewardShareLine(r, "USD", member)).toBe("Total reward US$6,500: US$3,900 cash (60%), 2,600 Harbour Tokens (40%), 0 Village Credits (0%), by the role card's split.");
+    expect(rewardShareLine(r, "USD", member)).not.toMatch(/equity/i);
+    expect(earnedBesideLine(r, "USD", member)).toBe("Also earned, nothing to pay: 2,600 Harbour Tokens, 0 Village Credits. Total reward US$6,500.");
+    expect(rewardShareLine(r, "USD")).toContain("2,600 Earned Equity (40%)");
+    const held = shareLine(650_000, { card: shape(["Cash", 60], ["Harbour", 40]), village: [] }, { ...OPTS, equityMeaningWritten: false, names: NAMES })!;
+    expect(rewardShareLine(held, "USD", member)).toContain("The Harbour Tokens share is owed until the village writes what it means.");
   });
 });

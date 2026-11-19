@@ -1,4 +1,5 @@
 import Layout from "@/components/Layout";
+import { useShareNames } from "@/components/ContributionWord";
 import { Link } from "wouter";
 import { m } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -63,7 +64,8 @@ export default function ProposeQuest() {
   // ONLY for the recognition token and NOT for the credit or earned equity
   // tokens"). Registry names by slug, so a village's rename reaches it.
   const creditsName = useTokenNameFor("credits", "Credits");
-  const equityName = useTokenNameFor("earned-equity", "Contribution tokens");
+  // The village's own word for the contribution token, never the registry's "Earned Equity" (the lead, 19 Nov 2026).
+  const equityName = useShareNames().equity;
   // Only the pay tokens this village uses are offered as examples (gap G12).
   const creditsInUse = useTokenInUse("credits");
   const equityInUse = useTokenInUse("earned-equity");

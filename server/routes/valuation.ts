@@ -77,9 +77,6 @@ export function register(app: Express, deps: Deps): void {
   const payLineCheck = deps.payLineCheck ?? payLineProblem;
   const currency = () => defaultDisplayCurrency({ fiatCurrency: projectCurrency() });
 
-  // The village's names for the two token shares (Admin, Tokens), for the receipt's words (the lead, 19 Nov 2026).
-  const namesOf = (model: { tokens: { equity: string; credits: string } }) => ({ equity: deps.tokenName?.(model.tokens.equity) ?? "", credits: deps.tokenName?.(model.tokens.credits) ?? "" });
-
   app.get("/api/valuation/model", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required" });
@@ -103,7 +100,7 @@ export function register(app: Express, deps: Deps): void {
     const work = raw && typeof raw === "object" && Array.isArray(raw.lines) ? ({ ...raw, kind: raw.kind === "role" ? "role" : "quest" } as WorkInputs) : null;
     if (!work) return res.status(400).json({ error: "Send the work's effort lines to price." });
     const model = await currentModel(getPool(), currency());
-    const s = suggestValuation(model, work, { eeMeaningWritten: eeMeaningWritten(), names: namesOf(model) });
+    const s = suggestValuation(model, work, { eeMeaningWritten: eeMeaningWritten() });
     if (!s.ok) return res.status(400).json({ refusals: s.refusals });
     res.json(s);
   });
@@ -185,7 +182,7 @@ export function register(app: Express, deps: Deps): void {
 
     const model = await currentModel(getPool(), currency());
     const ee = eeMeaningWritten();
-    const s = suggestValuation(model, inputs, { eeMeaningWritten: ee, names: namesOf(model) });
+    const s = suggestValuation(model, inputs, { eeMeaningWritten: ee });
     if (!s.ok) return res.status(400).json({ refusals: s.refusals });
     const first: PayeeSuggestion = s.payees[0];
 

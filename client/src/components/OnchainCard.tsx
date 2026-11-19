@@ -8,6 +8,7 @@
  * wallet binding; a failed chain read shows the last known value with when
  * it was true — never a zero the chain didn't say.
  */
+import { ContributionWord } from "@/components/ContributionWord";
 import { useEffect, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { ExternalLink, Link2, ShieldCheck } from "lucide-react";
@@ -169,7 +170,7 @@ export default function OnchainCard() {
 
       {!verified ? (
         <p className="text-sm text-muted-foreground">
-          Equity and governance tokens live on Base and are shown here only
+          <ContributionWord /> and governance tokens live on Base and are shown here only
           against a wallet you have PROVEN you control: one free signature,
           no transaction, no cost.
         </p>
@@ -181,7 +182,8 @@ export default function OnchainCard() {
             return (
               <div key={slug} className="border border-border rounded-xl p-4">
                 <p className="text-xs text-muted-foreground mb-1">
-                  {chain ? `${chain.name} (${chain.symbol})` : TOKEN_ROLE[slug]}
+                  {/* The equity slot is the contribution token itself, read from Base: one token, one name (the lead, 19 Nov 2026). */}
+                  {slug === "equity" ? <ContributionWord /> : chain ? `${chain.name} (${chain.symbol})` : TOKEN_ROLE[slug]}
                 </p>
                 {b ? (
                   <>

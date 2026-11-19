@@ -36,7 +36,7 @@ import type { MyMoonData } from "./moonApi";
 import { Amount, ERROR, INPUT, LABEL, MUTED, SMALL_BTN, Section, SplitBreakdown, useRoomView } from "./moonUi";
 import { ACCOMPLISHED_WORDS } from "@shared/accomplishedReview";
 import { rewardShareLine } from "@shared/rewardShare";
-import { useShareNames } from "@/components/ContributionWord";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 import { AccomplishedBlock, AdjustBreakdown } from "./AccomplishedBlock";
 import { authToken } from "@/lib/gameApi";
 import { Trans } from "@lingui/react/macro";
@@ -244,7 +244,7 @@ export default function InvoicePanel({ data, cycleId, editable, reload }: { data
                 </div>
                 <p className="m-0 text-xs text-muted-foreground">{MY_MOON_WORDS.basis}: {LINE_BASIS_WORDS[l.basis]}{room ? "" : `. ${l.basisLine}`}</p>
                 {l.priceNote && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-price-note">{l.priceNote}</p> : null}
-                {l.reward && l.currency && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-reward-parts">{rewardShareLine(l.reward, l.currency, shareNames)}</p> : null}
+                {l.reward && l.currency && !room ? <p className="m-0 text-xs text-muted-foreground" data-testid="line-reward-parts"><TokenText text={rewardShareLine(l.reward, l.currency, shareNames)} /></p> : null}
                 {l.split && !room ? <SplitBreakdown split={l.split} currency={l.currency} /> : null}
                 {l.adjust && !room ? <AdjustBreakdown adjust={l.adjust} currency={l.currency} /> : null}
                 {l.basis === "range" && unsent && !room && editable ? (

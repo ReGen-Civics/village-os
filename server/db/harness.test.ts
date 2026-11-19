@@ -71,7 +71,7 @@ describe.skipIf(!configured)("the test-database harness", () => {
       "SELECT slug, name, governance FROM tokens WHERE kind = 'equity' ORDER BY slug",
     );
     expect(both.map((r: any) => [r.slug, r.name, r.governance])).toEqual([
-      ["earned-equity", "Contribution tokens", "platform"], // 0411: never "equity" to a member
+      ["earned-equity", "Earned Equity", "platform"],
       ["equity", "Village Equity", "hypha"],
     ]);
     const [rows] = await db.conn.query<any[]>(

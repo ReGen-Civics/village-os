@@ -79,8 +79,7 @@ describe.skipIf(!configured)("0266, earned equity and its three accounts", () =>
   it("seeded one token and three accounts on the first run", async () => {
     const { tokens, accounts } = await seeded();
     expect(tokens).toHaveLength(1);
-    // 0266 seeded "Earned Equity"; 0411 then moved that untouched name to the platform default.
-    expect(tokens[0]).toMatchObject({ name: "Contribution tokens", kind: "equity", governance: "platform", transferable: 0 });
+    expect(tokens[0]).toMatchObject({ name: "Earned Equity", kind: "equity", governance: "platform", transferable: 0 });
     expect(accounts.map((a: any) => [a.id, a.faucet])).toEqual([
       ["sys:equity-bridge", 0],
       ["sys:equity-mint", 1],
