@@ -16,6 +16,7 @@ import { useFocusTarget } from "@/lib/useFocusTarget";
 import ClosingPolicyCard from "@/components/ClosingPolicyCard";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { plural } from "@lingui/core/macro";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -91,7 +92,7 @@ export default function ExitPolicy() {
         setMsg(t`Your departure process is open. The stewards will walk each step with you. Nothing happens automatically.`);
         setPassword(""); setNote(""); identity.reset();
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   const sendIntake = () => {
@@ -108,7 +109,7 @@ export default function ExitPolicy() {
         );
         setIntake("");
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   return (

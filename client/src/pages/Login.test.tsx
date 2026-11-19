@@ -81,6 +81,24 @@ describe("Login", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("Wrong password");
   });
 
+  it("with no signal says to check the connection, never the browser's own 'Failed to fetch' (surface audit, 19 Nov 2026)", async () => {
+    // fetch rejects with a TypeError when nothing answers; Safari's message is "Load failed".
+    loginMock.mockRejectedValueOnce(new TypeError("Load failed"));
+    const user = userEvent.setup();
+    renderLogin();
+
+    await user.type(screen.getByLabelText(/^email$/i), "rye@example.com");
+    await user.type(screen.getByLabelText(/^password$/i), "hunter2");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Nothing answered. Check your connection and try again.");
+    expect(alert).not.toHaveTextContent("Load failed");
+    // What was typed stays, so a second press is all it takes.
+    expect(screen.getByLabelText(/^email$/i)).toHaveValue("rye@example.com");
+    expect(screen.getByLabelText(/^password$/i)).toHaveValue("hunter2");
+  });
+
   it("keeps the Create an account link off the failing text-amber token (contrast regression guard)", () => {
     // The exact defect this lane measured and fixed: text-amber on this
     // page's background reads 1.32:1 against the real body colour, nowhere

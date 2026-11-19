@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authToken } from "@/lib/gameApi";
 import { Globe2, HandHeart, HelpingHand, Loader2, Plus, RefreshCw, Trash2 } from "lucide-react";
 import { ExampleChip, ExamplesBanner, forgetExamplesCache } from "@/components/ExamplesBanner";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -88,7 +89,7 @@ export default function Network() {
         if (!r.ok) throw new Error(d.message ?? d.error ?? "That did not go through");
         return d;
       })
-      .catch((e) => { setError(e.message); return null; })
+      .catch((e) => { setError(failureWords(e)); return null; })
       .finally(() => setBusy(""));
   };
 

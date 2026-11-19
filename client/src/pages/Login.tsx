@@ -8,6 +8,7 @@ import { Heart, ArrowRight, Mail, Lock } from "lucide-react";
 import { useState } from "react";
 import { ShowPasswordButton } from "@/components/auth/ShowPasswordButton";
 import { useLocation } from "wouter";
+import { failureWords } from "@/lib/failureWords";
 
 export default function Login() {
   const [, navigate] = useLocation();
@@ -33,7 +34,7 @@ export default function Login() {
       // bounce anyone offsite.
       navigate(afterSignIn(new URLSearchParams(window.location.search).get("next")));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign-in didn't work. Check your email and password.");
+      setError(failureWords(err, "Sign-in didn't work. Check your email and password."));
     } finally {
       setLoading(false);
     }
