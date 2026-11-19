@@ -43,6 +43,12 @@
       "label": "Admin Pages content: every section"
     },
     {
+      "method": "GET",
+      "path": "/api/content/app-vocabulary",
+      "confirm": "agent",
+      "label": "The village's words for things, as stored (the contribution token's name among them)"
+    },
+    {
       "method": "PUT",
       "path": "/api/admin/content/:section",
       "confirm": "agent",

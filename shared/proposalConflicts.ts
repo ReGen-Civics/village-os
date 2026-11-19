@@ -79,6 +79,12 @@ export function footprintOf(kind: ProposalKind, target: Record<string, unknown>,
       }
       return fields(path, out);
     }
+    case "seat_terms": {
+      // One role's wordings: each wording is one field of that role's terms on offer.
+      const words = obj(b.words) ?? {};
+      const doc = `seat-terms:${String(target.roleId ?? "")}`;
+      return fields(doc, Object.keys(words).length ? Object.keys(words).map((k) => `words.${k}`) : ["words"]);
+    }
     case "faq_add":
     // Agenda items are each made new, so they never write over anything.
     case "session_agenda":

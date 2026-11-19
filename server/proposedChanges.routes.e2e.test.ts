@@ -350,6 +350,40 @@ describe.skipIf(!DB_CONFIGURED)("proposed changes, end to end", () => {
     const summary = await tool(adminVat, "admin_request", { method: "GET", path: "/api/sessions/circles/pc-quiet/summary" });
     expect(summary.json.result.structuredContent).toMatchObject({ circleId: "pc-quiet", rhythm: null, next: null, waiting: 1 });
   });
+
+  it("AGENT POWERS (the lead, 19 Nov 2026): the vocabulary and a role's terms wording are proposed through the connector, and land through the real routes on a person's accept", async () => {
+    const r = await tool(adminVat, "propose_changes", {
+      batch: "Words and terms",
+      items: [
+        { kind: "vocabulary", target: {}, body: { contributionToken: { one: "village token", many: "village tokens" } }, summary: "Call the contribution token the village token." },
+        { kind: "seat_terms", target: { roleId }, body: { words: { bonus: "A share of the moon when its goals are met." } }, summary: "Word the Lead Finance Steward's bonus." },
+      ],
+    });
+    expect(r.json.result.isError, r.text).toBe(false);
+    const filed: string[] = r.json.result.structuredContent.ids;
+    // The agent reads its items waiting, and cannot accept them.
+    const queue = await tool(adminVat, "read_proposal_queue", {});
+    const mine = (queue.json.result.structuredContent.batches as any[]).flatMap((b) => b.items).filter((i) => filed.includes(i.id));
+    expect(mine.map((i) => [i.state, i.yours])).toEqual([["waiting", true], ["waiting", true]]);
+    expect([401, 403]).toContain((await call("POST", "/api/admin/proposals/accept", { items: filed.map((id) => ({ id })) }, adminVat)).status);
+    // A person accepts: the content route takes the words, and the org draft path publishes the terms.
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: filed.map((id) => ({ id })) });
+    expect(acc.json.results, acc.text).toEqual(filed.map((id) => ({ id, ok: true })));
+    expect((await call("GET", "/api/game/config")).json.vocabulary.contributionToken).toMatchObject({ one: "village token", many: "village tokens" });
+    const terms = await tool(adminVat, "read_seat_terms", { roleId });
+    expect(terms.json.result.isError, terms.text).toBe(false);
+    expect(terms.json.result.structuredContent.roles[0].words.bonus).toBe("A share of the moon when its goals are met.");
+    // A superseded draft: filed, then put aside by the agent itself, in two calls.
+    const again = await tool(adminVat, "propose_changes", { batch: "Draft", items: [{ kind: "vocabulary", target: {}, body: { circle: { one: "crew" } }, summary: "Call a circle a crew." }] });
+    const [draft] = again.json.result.structuredContent.ids;
+    const ask = await tool(adminVat, "discard_my_proposals", { ids: [draft] });
+    expect(ask.json.result.structuredContent.confirmRequired, ask.text).toBe(true);
+    const done = await tool(adminVat, "discard_my_proposals", { ids: [draft], confirmToken: ask.json.result.structuredContent.confirmToken });
+    expect(done.json.result.isError, done.text).toBe(false);
+    expect(done.json.result.structuredContent.discarded).toBe(1);
+    const [row] = (await pool.query<any[]>("SELECT status FROM proposed_changes WHERE id = ?", [draft]))[0] as any[]; // module-review-ok: the e2e reading its own scratch schema
+    expect(row.status).toBe("discarded");
+  });
 });
 
 /*
