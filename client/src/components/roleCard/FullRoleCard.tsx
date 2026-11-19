@@ -64,6 +64,8 @@ import { NO_SHARED, onboardingFor } from "@shared/roleCardShared";
 import { LabelledBullets } from "./FoundingRoleCard";
 
 // The directory card's deliverables, shared rhythm and onboarding steps load with the card's lists, off the first view.
+// The waitlist form on a coming-soon card, loaded on open.
+const WaitlistForm = lazy(() => import("./WaitlistForm"));
 const GameCardExtras = lazy(() => import("./CardLists").then((m) => ({ default: m.GameCardExtras })));
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
@@ -237,10 +239,26 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const apply = !noAct && mayApply(seat);
   // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
   const [choiceLink, setChoiceLink] = useState("");
+  const [waitOpen, setWaitOpen] = useState(false);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
-  const act = apply ? (
+  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
+  const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
+  const act = soon ? (
+    <div className="flex flex-col gap-3" data-card-waitlist={id}>
+      <StateNote role={seat} />
+      {waitOpen ? (
+        <Suspense fallback={null}>
+          <WaitlistForm roles={[{ id, name: String(seat?.name ?? "") }]} chosen={id} />
+        </Suspense>
+      ) : (
+        <button type="button" className={`w-full ${BTN_PRIMARY}`} onClick={() => setWaitOpen(true)}>
+          {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
+        </button>
+      )}
+    </div>
+  ) : apply ? (
     <>
       {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
       <StateNote role={seat} className="mb-3" />

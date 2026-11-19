@@ -590,6 +590,25 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
 });
 
 describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
+  it("puts the coming-soon roles under the open roles and above the roles held now, each with its waitlist, and never in opening next (the lead, 19 Nov 2026)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
+    org.roles.push(seat("garden", "Garden Steward", { comingSoon: true }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    const soon = await within(sheet).findByText("Hear when a role opens");
+    const held = within(sheet).getAllByText("Holding it now")[0];
+    const firstOpen = within(sheet).getAllByText("Open role")[0];
+    // Document order: open roles, then coming soon, then held.
+    expect(firstOpen.compareDocumentPosition(soon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(soon.compareDocumentPosition(held) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const card = document.getElementById("role-garden") as HTMLElement;
+    expect(card.textContent).toContain("This role is not open yet, and the card may change before it opens.");
+    expect(card.querySelector('[data-waitlist-open="garden"]')).toBeTruthy();
+    // Said once: not again in "More roles, opening next".
+    expect(document.querySelector('[data-opening-next] [data-role-row="garden"]')).toBeNull();
+  });
+
   it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
     org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
     renderRoles();

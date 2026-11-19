@@ -9,7 +9,7 @@ import { ComingSoonChip, HeldByAgentLine } from "@/components/ComingSoon";
 import Layout from "@/components/Layout";
 import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
-import { ArrowRight, Briefcase, ChevronDown, Link2 } from "lucide-react";
+import { ArrowRight, Briefcase, ChevronDown } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
 import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
@@ -22,7 +22,9 @@ import EditRoleButton, { NewRoleFromCardButton } from "@/components/roleEdit/Edi
 import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/QuickPath";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
+import ComingSoonRoles, { type SoonRole } from "@/components/roleCard/ComingSoonRoles";
+import { waitlistHash } from "@shared/roleWaitlist";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -40,6 +42,8 @@ import { useRootsFilter } from "@/components/roots/useRootsFilter";
 
 // The org chart door beside the roster (Rye, 16 Nov 2026) loads after the first view: it sits below the open roles.
 const OrgPreview = lazy(() => import("@/components/roleCard/OrgPreview"));
+// Who asked to hear when a coming-soon role opens: admins only, loaded only for them.
+const WaitlistAdmin = lazy(() => import("@/components/roleCard/WaitlistAdmin"));
 // A role row's opened body and the conflict steps at the foot of the page load when they are drawn, off the
 // first view of /roles (scripts/route-first-view.json; the lead, 19 Nov 2026: headroom for the role cards).
 const SeatNeeds = lazy(() => import("@/components/power/SeatNeeds"));
@@ -49,6 +53,7 @@ const SeatVendorFacts = lazy(() => import("@/components/power/SeatVendorFacts"))
 const RoleHolderCards = lazy(() => import("@/components/playerCard/RoleHolderCards"));
 const RaiseTension = lazy(() => import("@/components/roleTension/RaiseTension"));
 const SeatAction = lazy(() => import("@/components/power/SeatAction"));
+const SeatLinkCopy = lazy(() => import("@/components/roleCard/SeatLinkCopy"));
 
 interface RoleEntry {
   id: string;
@@ -128,87 +133,6 @@ function writeSeatToUrl(id: string | null) {
   if (id) url.searchParams.set("seat", id);
   else url.searchParams.delete("seat");
   window.history.replaceState(window.history.state, "", url.toString());
-}
-
-/** The absolute link to one seat's card. */
-function seatLink(id: string): string {
-  const url = new URL("/roles", window.location.origin);
-  url.searchParams.set("seat", id);
-  return url.toString();
-}
-
-/**
- * "Copy link" under one seat's card. The clipboard write runs inside the
- * click, which is the user activation a browser asks for. Where the clipboard
- * refuses or is missing (an http origin has no `navigator.clipboard`), the
- * link appears in a read-only field, selected, for the reader to copy by
- * hand. The polite line below is in the row from the moment it opens, so what
- * lands in it is announced.
- *
- * Every name here carries the seat. The control sits outside the card's
- * `aria-labelledby`, and a screen reader listing the page's buttons hears
- * each one on its own, so a fixed "this seat" read the same under every row
- * and named none of them. The visible words stay "Copy link" and open the
- * accessible name, so a reader who says what they see still reaches it.
- */
-function SeatLinkCopy({ seatId, seatName }: { seatId: string; seatName: string }) {
-  const { t } = useLingui();
-  const link = seatLink(seatId);
-  const [said, setSaid] = useState<"" | "copied" | "refused">("");
-  // A count so a second refusal selects the field again.
-  const [refused, setRefused] = useState(0);
-  const field = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (!refused) return;
-    field.current?.focus();
-    field.current?.select();
-  }, [refused]);
-  useEffect(() => {
-    if (said !== "copied") return;
-    const timer = window.setTimeout(() => setSaid(""), 4000);
-    return () => window.clearTimeout(timer);
-  }, [said]);
-  const fallBack = () => {
-    setRefused((n) => n + 1);
-    setSaid("refused");
-  };
-  const copy = () => {
-    setSaid("");
-    const clip = typeof navigator === "undefined" ? undefined : navigator.clipboard;
-    if (!clip?.writeText) return fallBack();
-    clip.writeText(link).then(() => setSaid("copied"), fallBack);
-  };
-  const line =
-    said === "copied"
-      ? t({ message: `Link to ${seatName} copied.`, context: "roles page, role link" })
-      : said === "refused"
-        ? t`Copying did not work here. The link is selected in the field below.`
-        : "";
-  return (
-    <div className="pt-4 border-t border-border space-y-2">
-      <button
-        type="button"
-        onClick={copy}
-        aria-label={t({ message: `Copy link to ${seatName}`, context: "roles page, role link" })}
-        className="inline-flex items-center gap-2 min-h-[44px] text-sm font-medium text-foreground underline underline-offset-2"
-      >
-        <Link2 className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
-        {t({ message: `Copy link`, context: "roles page, role link" })}
-      </button>
-      {refused > 0 && (
-        <input
-          ref={field}
-          type="text"
-          readOnly
-          value={link}
-          aria-label={t({ message: `Link to ${seatName}`, context: "roles page, role link" })}
-          onFocus={(e) => e.currentTarget.select()}
-          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
-        />
-      )}
-      <p role="status" className="text-xs text-muted-foreground">{line}</p>
-    </div>
-  );
 }
 
 interface RoleCardProps {
@@ -455,6 +379,7 @@ export default function Roles() {
   const [showBeyond, setShowBeyond] = useState(false);
   const { t } = useLingui();
   const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
+  const isAdmin = useIsAdmin();
   // "Show only what matches my roots": the same filter and rule the quests board runs.
   const roots = useRootsFilter(user?.id ?? null);
   // The card's clock and the village's class names: one cached read each for
@@ -567,7 +492,13 @@ export default function Roles() {
   // Future ventures (the Operations Steward, 16 Nov 2026): their own section while the founding team leads, with no lead.
   const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)) : [];
   const ventureIds = new Set(ventures.map((r) => r.id));
-  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
+  // Coming soon (the lead, 19 Nov 2026): directly under the open roles and above the roles held now, each with its
+  // waitlist. Shown even while unlisted, as a coming-soon role always is (shared/roleListing.ts).
+  const liveCircles = circles.filter((c: any) => c && c.status !== "dormant" && !c.isExample);
+  const soon = (roles ?? []).filter((r) => r.raw?.comingSoon === true && r.raw?.futureVenture !== true && !r.isExample && r.status !== "filled" && !featuredShown.has(r.id));
+  const soonIds = new Set(soon.map((r) => r.id));
+  const soonRoles: SoonRole[] = soon.map((r) => ({ id: r.id, name: r.name, aim: typeof r.raw?.aim === "string" ? r.raw.aim : null, circleName: r.group || null }));
+  const openingNext = leads ? (roles ?? []).filter((r) => !featuredShown.has(r.id) && !ventureIds.has(r.id) && !soonIds.has(r.id) && r.raw?.listed !== false && !r.isExample && r.status !== "filled") : [];
   // Held and still recruiting (the lead, 17 Nov 2026): it stays where held roles sit and keeps its Apply.
   const welcomesMore = (r: RoleEntry) => heldButRecruiting(r.raw) && mayApply(r.raw);
   const welcomingIds = new Set((roles ?? []).filter(welcomesMore).map((r) => r.id));
@@ -590,6 +521,11 @@ export default function Roles() {
   );
   // A built role opens in its own row, in "opening next" or the directory, and is scrolled to.
   const openBuilt = (id: string) => {
+    // A coming-soon role opens its waitlist card (ComingSoonRoles follows the hash).
+    if (soonIds.has(id)) {
+      window.location.hash = waitlistHash(id);
+      return;
+    }
     setExpandedRole(id);
     requestAnimationFrame(() => document.querySelector(`[data-role-row="${CSS.escape(id)}"]`)?.scrollIntoView?.({ block: "start", behavior: prefersReducedMotion() ? "instant" : "smooth" }));
   };
@@ -597,7 +533,7 @@ export default function Roles() {
   const unlistedCount = (roles ?? []).filter((r) => r.raw?.listed === false).length;
   // Each role appears once: a featured role lives in the founding section. A linked seat is a
   // question about that seat, so it shows wherever it is.
-  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id) && !openingNextIds.has(r.id) && !ventureIds.has(r.id)));
+  const listedDirectory = (roles ?? []).filter((r) => r.id === linked || ((showUnlisted || r.raw?.listed !== false) && !featuredShown.has(r.id) && !openingNextIds.has(r.id) && !ventureIds.has(r.id) && !soonIds.has(r.id)));
   // The roots filter hides only roles tagged with none of the reader's roots; a linked seat always shows.
   const byRoots = roots.apply(listedDirectory, (r) => (Array.isArray(r.raw?.archetypes) ? r.raw.archetypes : []));
   const rootKept = new Set(byRoots.shown.map((r) => r.id));
@@ -759,7 +695,12 @@ export default function Roles() {
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} comingSoon={soonRoles.length ? <ComingSoonRoles roles={soonRoles} /> : null} />}
+              {featuredVisible.length === 0 && soonRoles.length > 0 && (
+                <div className="mx-auto mb-14 max-w-4xl">
+                  <ComingSoonRoles roles={soonRoles} />
+                </div>
+              )}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
                   <h2 id="opening-next-heading" className={`${H2} mb-2`}>{t({ message: "More roles, opening next", context: "roles page, roles after the founding team" })}</h2>
@@ -819,9 +760,13 @@ export default function Roles() {
             </HeroHeading>
             {/* One circle for now (Rye, 14 Nov 2026, through the coordinator): the Anchor Circle holds the whole village.
                 Nothing here implies hiring or building circles. */}
-            <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto sm:text-xl" data-anchor-only="">
-              {t({ message: "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them.", context: "roles page intro, one circle for now" })}
-            </p>
+            {/* Said only while the village has one live circle, named from the data (the lead, 19 Nov 2026: other circles
+                now hold roles, so a line naming one circle as the whole village would be untrue). */}
+            {liveCircles.length === 1 && (
+              <p className="text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto sm:text-xl" data-anchor-only="">
+                {t({ message: `For now the ${String(liveCircles[0].name ?? "")} holds the whole village. Other circles grow only if and when the work needs them.`, context: "roles page intro, one circle for now" })}
+              </p>
+            )}
             <div className="mt-4 flex justify-center">
               <NewRoleFromCardButton onMade={() => window.location.reload()} />
             </div>
@@ -858,6 +803,16 @@ export default function Roles() {
                 Renders nothing for anyone with nothing to claim, which is
                 every visit after the first. */}
             <SeatClaimCard />
+            {isAdmin && (
+              <Suspense fallback={null}>
+                <WaitlistAdmin />
+              </Suspense>
+            )}
+            {!leads && soonRoles.length > 0 && (
+              <div className="mb-14">
+                <ComingSoonRoles roles={soonRoles} />
+              </div>
+            )}
             {/* How it works */}
             <m.div
               initial={{ opacity: 0 }}

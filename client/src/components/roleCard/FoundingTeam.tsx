@@ -72,6 +72,7 @@ export default function FoundingTeam({
   builds = {},
   onOpenBuilt,
   orgPreview = null,
+  comingSoon = null,
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -89,6 +90,8 @@ export default function FoundingTeam({
   onOpenBuilt?: (id: string) => void;
   /** The org chart beside the roles held now (Rye, 16 Nov 2026): one link into /circles. */
   orgPreview?: ReactNode;
+  /** The coming-soon roles and their waitlist, drawn by the lineup under the open roles (the lead, 19 Nov 2026). */
+  comingSoon?: ReactNode;
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -144,6 +147,7 @@ export default function FoundingTeam({
           roles={roles}
           filled={filled}
           orgPreview={orgPreview}
+          comingSoon={comingSoon}
           fill={fill}
           view={view}
           onView={setView}

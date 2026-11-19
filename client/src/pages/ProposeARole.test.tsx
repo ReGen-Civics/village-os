@@ -969,7 +969,7 @@ describe("the sent threshold", () => {
   });
 
   it("COMING SOON (Rye, 16 Nov 2026): the same steps, with the interviews note on the form and again on the confirmation", async () => {
-    const note = "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.";
+    const note = "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.";
     const soon = { ...FORM, roles: [{ ...FORM.roles[0], comingSoon: true, opensLater: true }, FORM.roles[1]] };
     await applyFor("r-gate", soon, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
     // The note's module loads lazily (the form's first-view budget), so it lands after the form.
