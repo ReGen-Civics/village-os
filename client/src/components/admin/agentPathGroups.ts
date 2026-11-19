@@ -33,7 +33,7 @@ const RULES: ReadonlyArray<[PathGroup, RegExp]> = [
   ["map", /^\/api\/(admin\/map|map)(\/|$)/],
   ["events", /^\/api\/admin\/events(\/|$)/],
   ["quests", /^\/api\/admin\/quests(\/|$)/],
-  ["connector", /^\/api\/admin\/(variables|settings|brand|launch|assistant|member-tasks|agent)/],
+  ["connector", /^\/api\/admin\/(variables|settings|brand|launch|assistant|member-tasks|agent|server-capacity)/],
 ];
 
 /** The area a path belongs to. */

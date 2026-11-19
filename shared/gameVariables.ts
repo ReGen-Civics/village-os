@@ -27,7 +27,7 @@ import { MINT_RULE, SUBJECT_THRESHOLDS, VILLAGE_LAUNCH } from "./ballotSubjects"
 import { isAnchorDateAcceptable } from "./villageMoon";
 import { villageSeasonsProblem } from "./villageSeasons";
 import { PREREQUISITES_KEY, prerequisitesProblem } from "./rolePrerequisites";
-import { villageWordsProblem } from "./applyLimits";
+import { CLIPS_CEILING, CLIPS_DEFAULT, villageWordsProblem } from "./applyLimits";
 import { CHANGE_SET_CAP_DEFAULT, CHANGE_SET_CAP_KEY, CHANGE_SET_CAP_MAX, CHANGE_SET_CAP_MIN } from "./changeSetCap";
 import { CONFLICT_INTRO_DEFAULT, CONFLICT_INTRO_KEY } from "./conflictIntro";
 import { GATHERING_LIMIT_DEFAULT, GATHERING_LIMIT_KEY, REVIEW_DAYS_DEFAULT, REVIEW_DAYS_KEY } from "./changeRequestLimits";
@@ -2841,9 +2841,10 @@ export const VARIABLES: VariableDef[] = [
     description:
       "On the public role application, each written answer has a small record button so the applicant can say that answer out loud. This is how many such clips one application may carry, beside the main voice note. They are kept only when the applicant ticks that the people who decide may listen, and go 90 days after the decision. 0 turns the clip buttons off.",
     type: "integer",
-    default: "12",
+    // Doubled by the lead, 19 Nov 2026 (shared/applyLimits.ts CLIPS_DEFAULT and CLIPS_CEILING).
+    default: String(CLIPS_DEFAULT),
     min: 0,
-    max: 24,
+    max: CLIPS_CEILING,
     unit: "clips",
   },
   {

@@ -4,7 +4,7 @@
  * named.
  */
 import { describe, expect, it } from "vitest";
-import { CLIP_MAX_BYTES, FILE_MAX_BYTES, RECORDING_BYTES_PER_SECOND, TAKE_MAX_BYTES, TAKE_MAX_SECONDS, uploadTotalMax } from "@shared/applyLimits";
+import { CLIP_MAX_BYTES, CLIPS_DEFAULT, FILE_MAX_BYTES, FILES_MAX, TAKES_MAX, RECORDING_BYTES_PER_SECOND, TAKE_MAX_BYTES, TAKE_MAX_SECONDS, uploadTotalMax } from "@shared/applyLimits";
 import { attachedBytes, attachmentRoom, uploadProblem } from "./uploadSize";
 
 const blob = (size: number) => ({ size });
@@ -29,8 +29,15 @@ describe("an application's uploads, added up", () => {
     expect(attachmentRoom(12)).toBeLessThan(uploadTotalMax(12));
   });
 
+  it("the doubled counts fit whole (the lead, 19 Nov 2026): six full files, six full takes and 24 full clips", () => {
+    const files = Array.from({ length: FILES_MAX }, (_, i) => ({ name: `cv-${i}.pdf`, size: FILE_MAX_BYTES }));
+    const full = voice(Array.from({ length: TAKES_MAX }, () => TAKE_MAX_BYTES), Array.from({ length: CLIPS_DEFAULT }, () => CLIP_MAX_BYTES));
+    expect(uploadProblem(files, full, CLIPS_DEFAULT)).toBeNull();
+    expect(attachedBytes(files, full)).toBe(attachmentRoom(CLIPS_DEFAULT));
+  });
+
   it("names what is over, and drops nothing", () => {
-    const four = [1, 2, 3, 4].map((i) => ({ name: `f${i}.pdf`, size: 10 }));
+    const four = Array.from({ length: FILES_MAX + 1 }, (_, i) => i).map((i) => ({ name: `f${i}.pdf`, size: 10 }));
     expect(uploadProblem(four, voice([]), 12)).toEqual({ kind: "tooManyFiles", extra: 1 });
     expect(uploadProblem([{ name: "big.pdf", size: FILE_MAX_BYTES + 1 }], voice([]), 12)).toEqual({ kind: "fileTooBig", name: "big.pdf" });
     expect(uploadProblem([], voice([TAKE_MAX_BYTES + 1]), 12)).toEqual({ kind: "takeTooBig" });

@@ -129,7 +129,7 @@ describe("what a screen reader hears while recording (a11y sweep P2-10)", () => 
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.record }));
     });
-    expect(said()?.textContent).toBe("Recording 1 of 3 started.");
+    expect(said()?.textContent).toBe("Recording 1 of 6 started.");
     // The timer is on screen, outside every live region.
     const timer = container.querySelector("[data-voice-timer]");
     expect(timer?.textContent).toMatch(/0:00/);

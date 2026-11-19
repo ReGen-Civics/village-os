@@ -78,6 +78,8 @@ export const ATTACHMENT_WORDS = {
   uploadTooBig: "Your files and recordings together are too large to send. Send fewer files, or record shorter answers.",
   /** Too many uploads in flight on this server at once. */
   uploadBusy: "We're receiving a lot of uploads right now. Please try again in a minute.",
+  /** A part sent ahead is no longer here (swept after hours unsent, or never arrived). */
+  uploadGone: "Something you attached did not reach us whole. Please send again.",
   tooManyLinks: `Add up to ${PROPOSAL_LINKS_MAX} links.`,
   linkNeedsLabel: "Give each link a few words saying what it is.",
   linkLabelTooLong: `Keep each link's label under ${PROPOSAL_LINK_LABEL_MAX} characters.`,
@@ -176,12 +178,17 @@ function includesAscii(bytes: Uint8Array, needle: string): boolean {
   return false;
 }
 
+/** Whether a file's name carries an extension of this kind. */
+export function nameFitsKind(name: string, kind: ProposalFileKind): boolean {
+  const ext = (name.match(/\.([A-Za-z0-9]+)$/)?.[1] ?? "").toLowerCase();
+  return EXTENSIONS[kind].includes(ext);
+}
+
 /** The file's kind when its bytes and its name agree, else null. */
 export function proposalFileKind(name: string, bytes: Uint8Array): ProposalFileKind | null {
   const kind = sniffProposalFile(bytes);
   if (!kind) return null;
-  const ext = (name.match(/\.([A-Za-z0-9]+)$/)?.[1] ?? "").toLowerCase();
-  return EXTENSIONS[kind].includes(ext) ? kind : null;
+  return nameFitsKind(name, kind) ? kind : null;
 }
 
 /** A file's name as the page may show it: no path, no control characters, capped. */

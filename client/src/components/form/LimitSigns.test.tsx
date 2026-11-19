@@ -54,7 +54,7 @@ describe("the signs under a box", () => {
     const words = container.querySelector("[data-limits-explained]")?.textContent ?? "";
     expect(words).toContain("This answer holds 8,000 characters, about 7½ minutes of talking.");
     expect(words).toContain("One recording runs up to 15 minutes.");
-    expect(words).toContain("A file such as a CV can be up to 30 MB, and one recording up to 22 MB.");
+    expect(words).toContain("Up to 6 files, such as a CV, each up to 30 MB, and up to 6 recordings, each up to 22 MB.");
     expect(words).toContain("stay on this page while it sends");
   });
 

@@ -43,9 +43,10 @@ import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
 import MicInput from "@/components/form/MicInput";
 import { LimitsAtTop } from "@/components/form/LimitSigns";
-import { attachedBytes, attachmentRoom, postBytes } from "@/components/openProposal/uploadSize";
+import { attachedBytes, attachmentRoom } from "@/components/openProposal/uploadSize";
+import { sendApplication } from "@/components/openProposal/sendParts";
 import { limitProblems } from "@/components/fireflyPath/limitProblems";
-import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
+import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import type { PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -89,7 +90,7 @@ import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraf
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
-import { needsSafetyNet, sendTimeoutMs, type SendFailure } from "@/components/fireflyPath/applySendFailure";
+import { needsSafetyNet, type SendFailure } from "@/components/fireflyPath/applySendFailure";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 export { firstUnanswered } from "@/components/fireflyPath/applyPage";
 // Roles added to one application (the lead, 17 Nov 2026): loaded with The terms, off the first view.
@@ -449,7 +450,6 @@ export default function ProposeARole() {
     setFailure(null);
     // A send that hangs is a failure too: given up after a while long enough for files on a slow line.
     const stop = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const proposal = {
         name,
@@ -480,12 +480,9 @@ export default function ProposeARole() {
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
         ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
-      // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
-      const request = applicationRequest(proposal, files, voice);
-      // Its own window for its size on a slow line, the one the server gives it too (shared/applyLimits.ts uploadWindowMs).
-      const multipart = request.body instanceof FormData;
-      timer = setTimeout(() => stop.abort(), sendTimeoutMs(multipart, multipart ? postBytes(files, voice, new Blob([JSON.stringify(proposal)]).size) : 0));
-      const res = await fetch("/api/open-proposals", { ...request, signal: stop.signal });
+      // Each file, take and clip goes first in a request of its own, inside the host's five minutes, and then the
+      // application naming them; every request has its own window for its size (components/openProposal/sendParts.ts).
+      const res = await sendApplication(proposal, files, voice, { link: link || undefined, signal: stop.signal });
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
       if (!res.ok && data?.field === "membership") setLetterRead((n) => n + 1);
@@ -522,7 +519,6 @@ export default function ProposeARole() {
       // The network dropped or the send took too long: the way out, and the draft stays as it is.
       setFailure({ kind: stop.signal.aborted || (e as { name?: string } | null)?.name === "AbortError" ? "timeout" : "network" });
     } finally {
-      if (timer) clearTimeout(timer);
       setSending(false);
     }
   };

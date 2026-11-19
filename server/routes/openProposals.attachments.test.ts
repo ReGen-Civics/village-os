@@ -22,7 +22,7 @@ import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
-import { ATTACHMENT_WORDS, PROPOSAL_FILE_MAX_BYTES } from "../../shared/proposalAttachments";
+import { ATTACHMENT_WORDS, PROPOSAL_FILE_MAX_BYTES, PROPOSAL_FILES_MAX } from "../../shared/proposalAttachments";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -132,7 +132,8 @@ describe.skipIf(!configured)("a proposal's links and files at the intake, on a r
   };
 
   const lastId = () => state.sent[state.sent.length - 1].idempotencyKey.split(":")[1];
-  const folders = async () => (await fs.promises.readdir(dir)).sort();
+  // The proposals' folders: the folder uploads stream through (.incoming, server/lib/uploadDisk.ts) is not one.
+  const folders = async () => (await fs.promises.readdir(dir)).filter((n) => !n.startsWith(".")).sort();
 
   it("keeps checked links on the proposal, and refuses a bad one with the field named", async () => {
     const ok = await postJson(proposal({ links: [{ label: "Portfolio", url: "https://work.example.org/me" }, { label: "", url: "" }] }));
@@ -169,7 +170,8 @@ describe.skipIf(!configured)("a proposal's links and files at the intake, on a r
     for (const files of [
       [{ name: "page.html", bytes: Buffer.from("<script>alert(1)</script>") }],
       [{ name: "run.pdf", bytes: Buffer.from("MZ\x90\x00 not a pdf") }],
-      [{ name: "a.pdf", bytes: PDF }, { name: "b.pdf", bytes: PDF }, { name: "c.pdf", bytes: PDF }, { name: "d.pdf", bytes: PDF }],
+      // One past the six one application carries (doubled by the lead, 19 Nov 2026).
+      Array.from({ length: PROPOSAL_FILES_MAX + 1 }, (_, i) => ({ name: `f${i + 1}.pdf`, bytes: PDF })),
     ]) {
       const r = await postFiles(proposal(), files);
       expect(r.status, files.map((f) => f.name).join()).toBe(400);

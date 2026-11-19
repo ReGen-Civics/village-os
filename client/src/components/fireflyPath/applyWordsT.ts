@@ -11,7 +11,7 @@
 // that imports it and skips one that only uses `msg`.
 import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { VOICE_WORDS } from "@shared/voiceNotes";
+import { VOICE_NOTES_MAX, VOICE_TRANSCRIPT_MAX, VOICE_WORDS } from "@shared/voiceNotes";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { ABOUT_WORDS } from "@shared/proposalAbout";
 import { ATTACHMENT_WORDS } from "@shared/proposalAttachments";
@@ -95,18 +95,19 @@ const PROBLEMS: ReadonlyArray<readonly [string, MessageDescriptor]> = [
   [ABOUT_WORDS.sameReferenceTwice, msg({ message: "You added the same reference twice.", context: "founding application refusal" })],
   [ABOUT_WORDS.needConsent, msg({ message: "Tick the box to say you agree to the background check, or give three references.", context: "founding application refusal" })],
   [ABOUT_WORDS.consentChanged, msg({ message: "The words about the background check changed while you read them. Read them again and tick.", context: "founding application refusal" })],
-  [VOICE_WORDS.tooMany, msg({ message: "Send up to 3 recordings.", context: "founding application refusal" })],
+  [VOICE_WORDS.tooMany, msg({ message: `Send up to ${VOICE_NOTES_MAX} recordings.`, context: "founding application refusal" })],
   [VOICE_WORDS.tooBig, msg({ message: "One recording is too large. Record a shorter one.", context: "founding application refusal" })],
   [VOICE_WORDS.tooLong, msg({ message: "Keep each recording under 15 minutes.", context: "founding application refusal" })],
   [VOICE_WORDS.wrongType, msg({ message: "We couldn't read one of your recordings. Record it again.", context: "founding application refusal" })],
   [VOICE_WORDS.needConsent, msg({ message: "Tick that we may keep your voice note, or remove the recordings.", context: "founding application refusal" })],
-  [VOICE_WORDS.transcriptTooLong, msg({ message: "Keep what we heard under 48000 characters.", context: "founding application refusal" })],
+  [VOICE_WORDS.transcriptTooLong, msg({ message: `Keep what we heard under ${VOICE_TRANSCRIPT_MAX} characters.`, context: "founding application refusal" })],
   [VOICE_WORDS.clipWordsTooLong, msg({ message: "Keep the words with each clip under 12000 characters.", context: "founding application refusal" })],
   [VOICE_WORDS.micBlocked, VOICE.micBlocked],
   [VOICE_WORDS.noMic, VOICE.noMic],
   [VOICE_WORDS.noTranscribe, VOICE.noTranscribe],
   [ATTACHMENT_WORDS.uploadTooBig, msg({ message: "Your files and recordings together are too large to send. Send fewer files, or record shorter answers.", context: "founding application refusal" })],
   [ATTACHMENT_WORDS.uploadBusy, msg({ message: "We're receiving a lot of uploads right now. Please try again in a minute.", context: "founding application refusal" })],
+  [ATTACHMENT_WORDS.uploadGone, msg({ message: "Something you attached did not reach us whole. Please send again.", context: "founding application refusal" })],
 ];
 const BY_TEXT = new Map(PROBLEMS);
 

@@ -14,9 +14,10 @@
  * WHAT DID NOT MOVE, AND WHY:
  *   - Rate and abuse caps (tries an hour per connection, per address, the village's hourly ceiling, transcriptions
  *     a day). They count people and paid calls, not the size of an answer.
- *   - How MANY files, takes and clips one post carries. Their sizes tripled, and every byte of a post is held in
- *     memory while it is judged, so tripling the count as well would multiply what one post holds by nine.
- *     OPEN_UPLOAD_BYTES_IN_FLIGHT bounds what the server holds at once instead.
+ *   - How MANY files, takes and clips one post carries moved on its own, later the same day (the lead, 19 Nov 2026:
+ *     "double the limits"): six files, six takes, 24 clips by default and 48 at the ceiling. That became safe once
+ *     uploads stream to disk (server/lib/uploadDisk.ts): what a post costs the server is disk, and a post's memory
+ *     no longer grows with how many parts it carries.
  *   - A name and an email address: identity, not an answer (an address is held to 254 by the mail standard, and the
  *     name column is varchar(120)).
  *   - Ids, keys, dates and time zones.
@@ -36,14 +37,14 @@ const voiceBox = (old: number): number => Math.max(old * 3, VOICE_BOX_FLOOR);
 
 /** One take: 15 minutes (was 5). */
 export const TAKE_MAX_SECONDS = 15 * 60;
-/** Takes one application carries (unchanged: a count of uploads, see above). */
-export const TAKES_MAX = 3;
+/** Takes one application carries (was 3, doubled by the lead, 19 Nov 2026). */
+export const TAKES_MAX = 6;
 /** A clip beside one answer: the village's default length and the platform's ceiling (were 60 and 180). */
 export const CLIP_SECONDS_DEFAULT = 180;
 export const CLIP_SECONDS_CEILING = 540;
-/** Clips one application may carry: the village's default and the platform's ceiling (unchanged: counts of uploads). */
-export const CLIPS_DEFAULT = 12;
-export const CLIPS_CEILING = 24;
+/** Clips one application may carry: the village's default and the platform's ceiling (were 12 and 24, doubled by the lead, 19 Nov 2026). */
+export const CLIPS_DEFAULT = 24;
+export const CLIPS_CEILING = 48;
 
 /*
  * HOW BIG A RECORDING CAN BE. The page asks for 64 kbit/s (useVoiceRecorder.ts VOICE_BITS_PER_SECOND), but a
@@ -66,20 +67,21 @@ export const CLIP_MAX_BYTES = 12 * 1024 * 1024;
 
 /* ── Files ─────────────────────────────────────────────────────────────── */
 
-/** Files one application carries (unchanged: a count of uploads), and how big each may be (was 10 MiB). */
-export const FILES_MAX = 3;
+/** Files one application carries (was 3, doubled by the lead, 19 Nov 2026), and how big each may be (was 10 MiB). */
+export const FILES_MAX = 6;
 export const FILE_MAX_BYTES = 30 * 1024 * 1024;
 
 /* ── The whole post ────────────────────────────────────────────────────── */
 
 /*
  * THE PROPOSAL'S OWN WORDS, AS JSON. With every list full and every answer at its cap, one application is about
- * 2.6 million characters: three roles x 24 value items x (7,500 + 7,500 + 900 + 900) = 1,209,600; 90 suggestions
- * x 7,500 = 675,000; term notes, ten for each of three roles, 225,000; the heard words 48,000; 24 clips' words
- * 288,000; references, links, the about lines and the card about 175,000. As UTF-8 inside JSON a character costs
- * at most three bytes (a letter outside the BMP is two UTF-16 units of two bytes each), so about 7.9 MB.
+ * 2.94 million characters: three roles x 24 value items x (7,500 + 7,500 + 900 + 900) = 1,209,600; 90 suggestions
+ * x 7,500 = 675,000; term notes, ten for each of three roles, 225,000; the heard words 96,000; 48 clips' words at
+ * the ceiling 576,000; references, links, the about lines and the card about 175,000. As UTF-8 inside JSON a
+ * character costs at most three bytes (a letter outside the BMP is two UTF-16 units of two bytes each), so about
+ * 8.9 MB.
  */
-export const PROPOSAL_JSON_MAX_BYTES = 8 * 1024 * 1024;
+export const PROPOSAL_JSON_MAX_BYTES = 9 * 1024 * 1024;
 /**
  * The server's ordinary JSON body limit (express.json, 1 MB in server/index.ts). A proposal longer than this goes
  * as one field of a multipart post, which takes up to PROPOSAL_JSON_MAX_BYTES (VoiceInvite.tsx applicationRequest).
@@ -89,24 +91,41 @@ export const JSON_BODY_MAX_BYTES = 1_000_000;
 export const UPLOAD_ENVELOPE_BYTES = PROPOSAL_JSON_MAX_BYTES + 1024 * 1024;
 
 /**
- * The most one application post may carry, for a village that takes `clipsMax` clips: every file, take and clip at
- * its own cap, and the envelope. The server refuses a longer Content-Length before reading a byte; the form adds
- * the same sum up before it sends. With the default twelve clips that is 90 MiB + 68.7 MiB + 144 MiB + 9 MiB,
- * about 312 MiB; at the ceiling of 24 clips, about 456 MiB.
+ * The most one application may carry, for a village that takes `clipsMax` clips: every file, take and clip at its
+ * own cap, and the envelope. The server refuses a longer Content-Length on the one-post route before reading a
+ * byte; the form adds the same sum up before it sends. With the default 24 clips that is 180 MiB + 137.3 MiB +
+ * 288 MiB + 10 MiB, about 615 MiB; at the ceiling of 48 clips, about 903 MiB.
  */
 export function uploadTotalMax(clipsMax: number): number {
   const clips = Math.max(0, Math.min(CLIPS_CEILING, Math.floor(Number.isFinite(clipsMax) ? clipsMax : 0)));
   return FILES_MAX * FILE_MAX_BYTES + TAKES_MAX * TAKE_MAX_BYTES + clips * CLIP_MAX_BYTES + UPLOAD_ENVELOPE_BYTES;
 }
 
-/**
- * What the server holds in memory for application posts at once, in bytes, counted by each post's Content-Length
- * as it starts. Three times the old most (four posts of 45 MiB, 180 MiB). Larger than the largest single post, so
- * any post that fits its own cap can be read when nothing else is.
+/*
+ * HOW MUCH AT ONCE. An upload streams to a private folder on the data volume as it arrives (server/lib/uploadDisk.ts),
+ * so the server holds a small buffer per part in memory, never the post. What a post costs is disk: before one is
+ * read, the volume must have room for its Content-Length, the Content-Length of every upload already being read, and
+ * OPEN_UPLOAD_DISK_RESERVE_BYTES left over for everything else the village keeps there. Short of that, the post is
+ * refused as busy before a byte is read.
  */
-export const OPEN_UPLOAD_BYTES_IN_FLIGHT = 540 * 1024 * 1024;
-/** Application posts read at once, whatever their size (unchanged). */
+export const OPEN_UPLOAD_DISK_RESERVE_BYTES = 512 * 1024 * 1024;
+/** Upload posts read at once, whatever their size: application posts and single parts together (unchanged at 4). */
 export const OPEN_UPLOADS_AT_ONCE = 4;
+
+/*
+ * THE HOST'S EDGE (Railway's published limits, read 19 Nov 2026 at
+ * https://docs.railway.com/networking/public-networking/specs-and-limits): "Request bodies must finish uploading
+ * within 5 minutes", a request runs at most 15 minutes while data moves, and no body size limit is stated. A whole
+ * application at 615 MiB needs about 86 minutes on a 1 Mbit/s line, so it can never arrive in one request there.
+ * The form therefore sends each file, take and clip in a request of its own first (POST /api/open-proposals/parts),
+ * and the application itself after, naming the parts it sent. The largest part, a 30 MiB file, takes about 4.2
+ * minutes at 1 Mbit/s, inside the five.
+ */
+export const HOST_BODY_UPLOAD_MS = 5 * 60_000;
+/** How long a part sent ahead waits for its application before it is swept. */
+export const PART_KEPT_MS = 6 * 60 * 60_000;
+/** Parts one connection may send in an hour: three whole applications at the ceiling (6 + 6 + 48 = 60 parts each). */
+export const PART_UPLOADS_HOURLY = 180;
 
 /* ── How long a send may take ──────────────────────────────────────────── */
 
@@ -119,8 +138,9 @@ export const UPLOAD_IDLE_MS = 120_000;
 
 /**
  * How long an upload of `bytes` is given to arrive: its time on a slow uplink, half as long again, and never less
- * than Node's own five minutes. A 15-minute take at 64 kbit/s (7.2 MB) gets the five minutes; a full application
- * of about 312 MiB gets about 65 minutes. Only the upload routes use it (server/lib/uploadWindow.ts).
+ * than Node's own five minutes. One take, clip or file sent ahead as a part gets the five minutes, or a little more
+ * for a 30 MiB file. The host's edge still closes any body that is arriving after HOST_BODY_UPLOAD_MS (above), which
+ * is why the form sends parts one at a time. Only the upload routes use it (server/lib/uploadWindow.ts).
  */
 export function uploadWindowMs(bytes: number): number {
   const b = Math.max(0, Number.isFinite(bytes) ? bytes : 0);
@@ -199,10 +219,10 @@ export const APPLY_TEXT = {
   statusRefHow: 900,
   statusRefAlly: 1200,
   /**
-   * "What we heard, in your words", across every take: three 15-minute takes of talking (3 x 15 x 1,050 =
-   * 47,250), rounded up (was 12,000).
+   * "What we heard, in your words", across every take: six 15-minute takes of talking (6 x 15 x 1,050 =
+   * 94,500), rounded up (was 48,000 for three takes, and 12,000 before that).
    */
-  heard: 48000,
+  heard: 96000,
   /** The words a transcription service sends back for one take: a 15-minute take is about 15,750 (was 6000). */
   transcribed: 18000,
   /** An AI transcript kept with a sent recording (was 6000). */

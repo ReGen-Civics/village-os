@@ -51,13 +51,21 @@ const LETTER = { version: "lv-0123456789abcdef", title: "Membership agreement", 
 let posted: any[] = [];
 /** How each post went: its files, and the headers set by hand. */
 let sentAs: Array<{ files: File[]; headers: RequestInit["headers"] }> = [];
+/** The parts sent ahead of the application (components/openProposal/sendParts.ts): their list and file. */
+let partsSent: Array<{ kind: string; file: File }> = [];
 
 function serve(form: unknown, answer: { status: number; body: unknown } = { status: 200, body: { sent: true, message: "The server's own English words, never shown." } }) {
   posted = [];
   sentAs = [];
+  partsSent = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "POST" && String(url) === "/api/open-proposals/parts") {
+        const fd = init.body as FormData;
+        partsSent.push({ kind: String(fd.get("kind")), file: fd.get("part") as File });
+        return new Response(JSON.stringify({ id: `up-${String(partsSent.length).padStart(32, "0")}`, size: 1 }), { status: 200, headers: { "content-type": "application/json" } });
+      }
       if (init?.method === "POST") {
         const multipart = init.body instanceof FormData ? init.body : null;
         posted.push({ url, body: JSON.parse(String(multipart ? multipart.get("proposal") : init.body)) });
@@ -830,7 +838,7 @@ describe("what the form kept from the Firefly Path", () => {
     expect(screen.queryByLabelText(LETTER.intent)).toBeNull();
   });
 
-  it("links and files: a link is sent with its label, a file goes as multipart, and the data promise is on the form", async () => {
+  it("links and files: a link is sent with its label, a file goes ahead as a part and the application names it, and the data promise is on the form", async () => {
     await applyFor();
     expect(document.querySelector("[data-attachments-promise]")?.textContent).toBe(ATTACHMENT_WORDS.promise);
     fireEvent.change(screen.getByLabelText("Link 1: what it is"), { target: { value: "Gates I built" } });
@@ -841,8 +849,10 @@ describe("what the form kept from the Firefly Path", () => {
     sendNow();
     await waitFor(() => expect(posted).toHaveLength(1));
     expect(posted[0].body.links).toEqual([{ label: "Gates I built", url: "https://gates.example.org/rowan" }]);
-    expect(sentAs[0].files.map((f) => f.name)).toEqual(["portfolio.pdf"]);
-    expect(sentAs[0].headers).toBeUndefined();
+    // The file went first, in a request of its own (the host's five-minute body limit), and the application names it.
+    expect(partsSent.map((p) => [p.kind, p.file.name])).toEqual([["files", "portfolio.pdf"]]);
+    expect(posted[0].body.parts).toEqual({ files: [`up-${"1".padStart(32, "0")}`], voice: [], clips: [] });
+    expect(sentAs[0]).toEqual({ files: [], headers: { "Content-Type": "application/json" } });
   });
 
   it("without files the application goes as JSON, and blank link rows are not sent", async () => {
