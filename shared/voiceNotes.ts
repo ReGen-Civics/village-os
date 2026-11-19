@@ -84,7 +84,12 @@ export const VOICE_CLIP_SECONDS_CEILING = 180;
 export const VOICE_CLIPS_DEFAULT = 12;
 export const VOICE_CLIP_SECONDS_DEFAULT = 60;
 export const VOICE_CLIP_MAX_BYTES = 4 * 1024 * 1024;
-export const VOICE_CLIP_WORDS_MAX = 2000;
+/**
+ * The words kept with one clip. A clip writes into the answer it sits beside, and the longest answer is "Why you,
+ * and why now" (shared/openProposals.ts OPEN_WHY_MAX), so a clip keeps at least that many; voiceNotes.test.ts
+ * holds the two together.
+ */
+export const VOICE_CLIP_WORDS_MAX = 4000;
 
 /** The village's limits on clips, as the form is told them. */
 export interface VoiceClipLimits {

@@ -3,7 +3,8 @@
  * it is, what a form may send, and how a stored part reads.
  */
 import { describe, expect, it } from "vitest";
-import { VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, clipFieldLabel, clipLimitsOf, isClipField, parseSentVoice, storedVoiceOf, voiceKindOfType, voiceLength, voiceNoteKind } from "./voiceNotes";
+import { OPEN_WHY_MAX } from "./openProposals";
+import { VOICE_CLIP_WORDS_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, clipFieldLabel, clipLimitsOf, isClipField, parseSentVoice, storedVoiceOf, voiceKindOfType, voiceLength, voiceNoteKind } from "./voiceNotes";
 
 const bytes = (...head: number[]) => new Uint8Array([...head, ...new Array(16).fill(0)]);
 
@@ -40,6 +41,11 @@ describe("what a form may send", () => {
     expect(parseSentVoice({ consent: true, seconds: [VOICE_NOTE_MAX_SECONDS + 60], transcript: "" }, 1)).toEqual({ ok: false, error: VOICE_WORDS.tooLong });
     expect(parseSentVoice({ consent: true, seconds: [10], transcript: "" }, 2)).toEqual({ ok: false, error: VOICE_WORDS.tooLong });
     expect(parseSentVoice({ consent: true, seconds: [], transcript: "x".repeat(VOICE_TRANSCRIPT_MAX + 1) }, 0)).toEqual({ ok: false, error: VOICE_WORDS.transcriptTooLong });
+  });
+
+  it("a clip keeps as many words as the longest answer it can write into, and the heard words hold more (the lead, 19 Nov 2026)", () => {
+    expect(VOICE_CLIP_WORDS_MAX).toBeGreaterThanOrEqual(OPEN_WHY_MAX);
+    expect(VOICE_TRANSCRIPT_MAX).toBeGreaterThanOrEqual(OPEN_WHY_MAX);
   });
 });
 

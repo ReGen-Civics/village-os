@@ -20,6 +20,7 @@ import MapLightSetting from "@/components/map/MapLightSetting";
 import VillageSoundToggle from "@/components/VillageSoundToggle";
 import { useModuleOn } from "@/modules/ModuleProvider";
 import { TASK_COPY, TASK_EMAIL_PREFS, isTaskEmailPref } from "@shared/sessionTasks";
+import { failureWords } from "@/lib/failureWords";
 
 const CADENCES: Record<string, Array<{ v: string; label: string }>> = {
   questsEmail: [
@@ -239,7 +240,7 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
         }
         window.location.href = "/";
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => setError(failureWords(e)));
   };
 
   if (!prefs) return null;

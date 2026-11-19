@@ -40,6 +40,34 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.31 (2026-11-19)
+
+### What changed for your village
+
+- **The "moon" tip opens on the word you tap.** On a phone, when two dotted words sat on neighbouring lines (as on the role selection page), a tap on one could open or close the other's tip. A tap now goes to the word whose text is nearest your finger, and a tap no longer opens a tip twice. Keyboard focus still opens it.
+- **Plain words when there is no signal.** Sign-in, the password pages and the member pages and panels showed the browser's own error ("Failed to fetch" or "Load failed") when the connection dropped. They now say "Nothing answered. Check your connection and try again.", and what was typed stays in place.
+- **The application's safety net tells the truth about saving.** After a failed send, it said "Your answers are safe on this device" even when nothing was saved, because answers are kept on the device only when "Remember my answers on this device" is ticked. It now says so only when the answers are really stored; otherwise it says "Your answers are still on this page, so keep it open."
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.30.
+
+---
+
+## 1.3.30 (2026-11-19)
+
+### What changed for your village
+
+- **Room for honest answers in "Why you, and why now".** The role application's why box asks four things (what you have built before, why this role, why now, and what you would bring in your first month), and it held only 1200 characters. It now holds 4000, about 1000 for each prompt, and the counter, the voice drafts, the server's check and the drafting helper all read the same limit.
+- **A long why is accepted all the way through.** When the village adopts a proposal, its why becomes the application's note, which was capped at 2000; it now holds 4000 too, so a why that was accepted when sent can no longer be refused at the decision. A voice clip spoken into the box keeps as many words as the box holds.
+- **A saved draft loads whole.** Reading an applicant's saved answers on their device no longer cuts any text: the why, the story, the aim, the Human Design or Gene Keys answer and the value items come back exactly as saved.
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.29.
+
+---
+
 ## 1.3.29 (2026-11-19)
 
 ### What changed for your village

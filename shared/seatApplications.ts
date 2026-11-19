@@ -57,8 +57,12 @@ export const ADOPTING_POWER = "org.seat";
 export const MIN_SEATS = 1;
 export const MAX_SEATS = 3;
 
-/** The longest the member's own words may run, each. */
-export const WORDS_MAX = 2000;
+/**
+ * The longest the member's own words may run, each. An open proposal's "Why you, and why now" becomes the
+ * application's note when it is adopted (server/lib/openProposalDecide.ts), so this is never shorter than
+ * shared/openProposals.ts OPEN_WHY_MAX; seatApplications.test.ts holds the two together.
+ */
+export const WORDS_MAX = 4000;
 
 export const APPLICATION_STATUSES = ["awaiting-holder", "voting", "adopted", "not-adopted", "withdrawn", "held-full"] as const;
 export type ApplicationStatus = (typeof APPLICATION_STATUSES)[number];

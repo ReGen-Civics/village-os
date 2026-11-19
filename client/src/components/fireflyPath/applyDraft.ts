@@ -66,7 +66,14 @@ export interface DraftExtra {
 /** The most roles one application adds after the first (shared/openProposals.ts OPEN_APPLY_ROLES, less the first). */
 const EXTRAS_MAX = 2;
 
-const str = (v: unknown, max = 4000): string => (typeof v === "string" ? v.slice(0, max) : "");
+/** An id, a key or a date: held to its own short length. */
+const str = (v: unknown, max: number): string => (typeof v === "string" ? v.slice(0, max) : "");
+/**
+ * The applicant's own words, read back WHOLE (the lead, 19 Nov 2026: a draft is never cut). A draft typed when a
+ * box held more, or under a cap since raised, comes back exactly as it was kept. The box shows its count and the
+ * send says what is too long; reading a draft back never shortens it.
+ */
+const own = (v: unknown): string => (typeof v === "string" ? v : "");
 const strs = (v: unknown, n: number, max = 300): string[] => (Array.isArray(v) ? v.filter((x) => typeof x === "string").map((x) => x.slice(0, max)).slice(0, n) : []);
 
 /**
@@ -137,7 +144,7 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     ? o.items
         .filter((g: unknown) => g && typeof g === "object")
         .slice(0, 8)
-        .map((g: any) => ({ title: str(g.title, 160), doneWhen: str(g.doneWhen, 200), moves: "", serves: str(g.serves, 64), date: "", roleId: str(g.roleId, 128), ...(g.seraDraft === true ? { seraDraft: true } : {}) }))
+        .map((g: any) => ({ title: own(g.title), doneWhen: own(g.doneWhen), moves: "", serves: str(g.serves, 64), date: "", roleId: str(g.roleId, 128), ...(g.seraDraft === true ? { seraDraft: true } : {}) }))
     : [];
   const extras = extrasOf(o.extras);
   return {
@@ -145,15 +152,15 @@ export function fromDraft(raw: unknown, now: Date, lastStep: number): ApplyDraft
     step: step(o.step),
     reached: Math.max(step(o.step), step(o.reached)),
     knowUs: strs(o.knowUs, 8, 160),
-    why: str(o.why, 1200),
-    name: str(o.name, 120),
-    email: str(o.email, 254),
-    about: { based: str(o.about?.based, 200), languages: str(o.about?.languages, 200), story: str(o.about?.story, 300) },
-    selfKnowledge: str(o.selfKnowledge, 300),
-    links: Array.isArray(o.links) ? o.links.filter((l: any) => l && typeof l === "object").slice(0, 5).map((l: any) => ({ label: str(l.label, 80), url: str(l.url, 500) })) : [],
-    aim: str(o.aim, 300),
+    why: own(o.why),
+    name: own(o.name),
+    email: own(o.email),
+    about: { based: own(o.about?.based), languages: own(o.about?.languages), story: own(o.about?.story) },
+    selfKnowledge: own(o.selfKnowledge),
+    links: Array.isArray(o.links) ? o.links.filter((l: any) => l && typeof l === "object").slice(0, 5).map((l: any) => ({ label: own(l.label), url: own(l.url) })) : [],
+    aim: own(o.aim),
     items,
-    marks: { ...(str(o.marks?.aim, 300) ? { aim: str(o.marks.aim, 300) } : {}), ...(str(o.marks?.story, 300) ? { story: str(o.marks.story, 300) } : {}) },
+    marks: { ...(own(o.marks?.aim) ? { aim: own(o.marks.aim) } : {}), ...(own(o.marks?.story) ? { story: own(o.marks.story) } : {}) },
     terms: termsFromDraft(o.terms),
     rampUp: o.rampUp === true,
     practical: { timeZone: str(o.practical?.timeZone, 64), windows: strs(o.practical?.windows, 6, 40), earliestStart: str(o.practical?.earliestStart, 10) },

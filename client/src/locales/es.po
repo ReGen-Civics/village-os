@@ -9269,6 +9269,11 @@ msgstr ""
 #~ msgid "The founding roles"
 #~ msgstr "Los roles fundadores"
 
+#: client/src/lib/failureWords.ts
+msgctxt "a request timed out"
+msgid "That took too long. Check your connection and try again."
+msgstr ""
+
 #: client/src/components/companionWelcome/WelcomeParts.tsx
 msgctxt "companion welcome"
 msgid "End of Moon, how it adds up"
@@ -12161,6 +12166,11 @@ msgctxt "proposed changes: filter"
 msgid "Show"
 msgstr ""
 
+#: client/src/components/fireflyPath/SafetyNet.tsx
+msgctxt "application safety net"
+msgid "Something went wrong sending your application. Your answers are still on this page, so keep it open."
+msgstr ""
+
 #: client/src/components/review/SeraInDraft.tsx
 #: client/src/components/review/SeraMember.tsx
 msgctxt "sera answers"
@@ -12889,6 +12899,11 @@ msgctxt "circle hearth, the drawing"
 msgid "The {circleName} hearth: {0} roles around the fire, {held} held. Threads reach to {1} linked circles."
 msgstr "El fogón de {circleName}: {0} roles alrededor del fuego, {held} ocupados. Los hilos llegan a {1} círculos vinculados."
 
+#: client/src/lib/failureWords.ts
+msgctxt "a request failed with no connection"
+msgid "Nothing answered. Check your connection and try again."
+msgstr ""
+
 #: client/src/components/admin/comms/LetterSamples.tsx
 msgctxt "admin letter samples"
 msgid "The letters the platform writes for you, in your village's look, with a made-up reader. Send any of them to your own inbox to see it the way an applicant or member will."
@@ -13192,6 +13207,11 @@ msgstr "Nada de esto es obligatorio. Son puertas abiertas para conocernos."
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "What you sent did not load."
+msgstr ""
+
+#: client/src/lib/failureWords.ts
+msgctxt "a request got an unreadable answer"
+msgid "The village did not answer properly. Try again in a moment."
 msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
@@ -18008,6 +18028,11 @@ msgstr "Leyendo el seguimiento de las facturas."
 
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "The line holds the name of someone in this village, so the public page hides it. The word that matched is \"{matched}\". Write it again with the role in place of the name."
+msgstr ""
+
+#: client/src/lib/failureWords.ts
+msgctxt "a request failed, no detail"
+msgid "That did not go through. Try again."
 msgstr ""
 
 #: client/src/components/openWork/FitsYouCard.tsx

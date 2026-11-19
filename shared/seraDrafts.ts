@@ -28,6 +28,7 @@
  * Pure: no clock, no pool, no browser.
  */
 import type { ProposalGoal } from "./proposalGoals";
+import { OPEN_WHY_MAX } from "./openProposals";
 
 export type DraftKind = "aim" | "goals" | "story";
 export const DRAFT_KINDS: readonly DraftKind[] = ["aim", "goals", "story"];
@@ -54,7 +55,7 @@ export function draftBody(kind: DraftKind, input: { roles: readonly DraftRoleIn[
   return {
     kind,
     roles: input.roles.slice(0, 5).map((r) => ({ roleId: r.roleId, ...(r.note?.trim() ? { note: r.note.trim().slice(0, 600) } : {}) })),
-    why: input.why.trim().slice(0, 1200),
+    why: input.why.trim().slice(0, OPEN_WHY_MAX),
     aim: input.aim.trim().slice(0, 300),
   };
 }

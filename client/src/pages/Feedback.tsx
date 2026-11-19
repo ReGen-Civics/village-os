@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from "react";
 import { authToken } from "@/lib/gameApi";
 import { Bug, Check, Lightbulb } from "lucide-react";
 import BreathingLoader from "@/components/natural/BreathingLoader";
+import { failureWords } from "@/lib/failureWords";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -55,7 +56,7 @@ export default function Feedback() {
         if (!r.ok) throw new Error(d.message ?? d.error ?? "Could not send that");
         setSent({ shared: !!d.shared });
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setError(failureWords(e)))
       .finally(() => setBusy(false));
   };
 
