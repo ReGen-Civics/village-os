@@ -54,6 +54,17 @@ describe("the saved draft", () => {
     expect(fromDraft(JSON.parse(JSON.stringify(toDraft(STATE, NOW))), NOW, 5)).not.toHaveProperty("extras");
   });
 
+  it("loads a long draft WHOLE (the lead, 19 Nov 2026): words typed under any cap come back exactly as kept", () => {
+    // Longer than the old 1200 cap on "Why you, and why now", and longer than today's box, as a raised or lowered cap would leave it.
+    const why = ["What I have built before:", "Why this role:", "Why now:", "What I would bring in my first month:"].map((p) => `${p} ${"word ".repeat(260)}`).join("\n\n");
+    expect(why.length).toBeGreaterThan(4000);
+    const long = { ...STATE, why, aim: "a".repeat(900), about: { based: "b".repeat(500), languages: "l".repeat(500), story: "s".repeat(800) }, selfKnowledge: "k".repeat(700), items: [{ ...STATE.items[0], title: "t".repeat(400), doneWhen: "d".repeat(500) }], marks: { aim: "a".repeat(900), story: "s".repeat(800) } };
+    const back = fromDraft(JSON.parse(JSON.stringify(toDraft(long, NOW))), NOW, 5);
+    expect(back?.why).toBe(why);
+    expect(back).toMatchObject({ aim: long.aim, about: long.about, selfKnowledge: long.selfKnowledge, marks: long.marks });
+    expect(back?.items[0]).toMatchObject({ title: long.items[0].title, doneWhen: long.items[0].doneWhen });
+  });
+
   it("is one per role and per personal link", () => {
     expect(draftKey("r1", "")).not.toBe(draftKey("r2", ""));
     expect(draftKey("r1", "")).not.toBe(draftKey("r1", "tok"));
