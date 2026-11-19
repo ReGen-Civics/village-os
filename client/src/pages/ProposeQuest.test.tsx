@@ -113,3 +113,21 @@ describe("after a Quest idea is sent", () => {
     await waitFor(() => expect(screen.getByText("Your Quest idea is in.")).toBeTruthy());
   });
 });
+
+describe("each answer's limit (the ops request of 19 Nov 2026)", () => {
+  it("counts every answer, keeps a long one whole, and holds the send with the reason", async () => {
+    serve({ ok: true });
+    render(<ProposeQuest />);
+    fireEvent.change(screen.getByLabelText(/Your name/), { target: { value: "Ada Wren" } });
+    fireEvent.change(screen.getByLabelText(/^Email/), { target: { value: "ada@example.test" } });
+    const what = screen.getByLabelText(/What do you want to do/) as HTMLTextAreaElement;
+    const long = "s".repeat(8000 + 12);
+    fireEvent.change(what, { target: { value: long } });
+    expect(what.value).toBe(long);
+    expect(document.querySelectorAll("[data-limit-signs]").length).toBe(5);
+    expect(document.querySelector('[data-limit-signs="over"] [data-limit-notice]')?.textContent).toBe("12 characters over the limit. Trim 12 characters to send. Everything you wrote is kept.");
+    fireEvent.click(screen.getByRole("button", { name: /Send your Quest proposal/ }));
+    expect(await screen.findByText("One answer is longer than its box holds. Trim the answer marked under its box, then send.")).toBeTruthy();
+    expect(fetchMock.mock.calls.some(([url]) => url === "/api/forms/submit")).toBe(false);
+  });
+});

@@ -7,7 +7,9 @@
  * The words are messages, so every shipped language reads them; the trim line is the same message the box's own
  * signs show (components/form/LimitSigns.tsx `useTrimWords`).
  */
-import type { I18n } from "@lingui/core";
+// A value import of the runtime, as applyWordsT.ts has: precompileEnglish compiles the messages of a file that
+// imports it and skips one that only uses `msg` (client/src/i18n/precompileEnglish.ts).
+import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { OPEN_AIM_MAX, OPEN_WHY_MAX, SELF_KNOWLEDGE_MAX } from "@shared/openProposals";
 import { ABOUT_BASED_MAX, ABOUT_LANGUAGES_MAX, ABOUT_STORY_MAX, REFERENCE_CONTACT_MAX, REFERENCE_HOW_MAX, REFERENCE_NAME_MAX, type ProposalReference } from "@shared/proposalAbout";
@@ -45,7 +47,7 @@ export interface LimitProblem {
   target?: string | null;
 }
 
-export function limitProblems(f: LimitInput, i18n: I18n): LimitProblem[] {
+export function limitProblems(f: LimitInput, i18n: I18n = appI18n): LimitProblem[] {
   const found: LimitProblem[] = [];
   const over = (field: string, label: string, text: string, max: number, target?: string | null) => {
     if (text.length > max) found.push({ field, message: `${label}: ${trimWords(text.length - max, i18n)}`, target });
