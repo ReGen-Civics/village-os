@@ -13,9 +13,12 @@ import { formSplit, splitChanged, withAmounts } from "@shared/proposalSplit";
 import SplitControl from "@/components/roleCard/SplitControl";
 import { splitFromQuery } from "@/components/roleCard/applyChoice";
 import type { TermsRole, TermsStepValue } from "./TermsEight";
+import { useShareLabel } from "@/components/ContributionWord";
 
 export default function TermsSplit({ idPrefix, role, value, onChange }: { idPrefix: string; role: TermsRole; value: TermsStepValue; onChange: (next: TermsStepValue) => void }) {
   const { t, i18n } = useLingui();
+  // Each share under the village's own token names (the lead, 19 Nov 2026); the split itself keeps the stored labels.
+  const label = useShareLabel();
   const shape = role.payShape ?? [];
   const own = value.payAsk?.kind === "amount" ? value.payAsk.monthly : null;
   const split = formSplit(shape, role.ceiling?.amount ?? null, value.commitmentPct, own, value.paySplit ?? null);
@@ -24,8 +27,8 @@ export default function TermsSplit({ idPrefix, role, value, onChange }: { idPref
   const said = (split?.shown.shares ?? [])
     .map((s) =>
       typeof s.amount === "number" && role.ceiling
-        ? t({ message: `${s.pct}% ${s.label} (${moneyWords(s.amount, role.ceiling.currency, i18n.locale)})`, context: "founding application review: one share of the split, with its amount" })
-        : t({ message: `${s.pct}% ${s.label}`, context: "founding application review: one share of the split" }),
+        ? t({ message: `${s.pct}% ${label(s.label)} (${moneyWords(s.amount, role.ceiling.currency, i18n.locale)})`, context: "founding application review: one share of the split, with its amount" })
+        : t({ message: `${s.pct}% ${label(s.label)}`, context: "founding application review: one share of the split" }),
     )
     .join(", ");
   const line = changed ? t({ message: `${said} · changed from the village's split`, context: "founding application review: a split they changed" }) : said;

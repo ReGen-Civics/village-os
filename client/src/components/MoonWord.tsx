@@ -23,80 +23,15 @@
  * `MoonText` takes a whole sentence, as the words modules build it, and wraps each whole-word "moon" or "moons" in
  * it. The words modules stay plain strings driven by the role's `per`, so a price set per month never shows a tip.
  */
-import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
 import { useLingui } from "@lingui/react/macro";
 import { msg } from "@lingui/core/macro";
+import { WordTip } from "./WordTip";
 
 const TIP = msg({ message: "We work in moon cycles, from new moon to new moon.", context: "tooltip on the word moon, applicant pages" });
 
 export function MoonWord({ children = "moon" }: { children?: string }) {
   const { i18n } = useLingui();
-  const [open, setOpen] = useState(false);
-  const id = useId();
-  const word = useRef<HTMLSpanElement>(null);
-  // When a touch last toggled the tip, so the click a browser makes up after the tap does not toggle it back.
-  const tapped = useRef(0);
-  const on = () => setOpen(true);
-  const off = () => setOpen(false);
-  useEffect(() => {
-    if (!open) return;
-    const key = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.stopPropagation();
-        off();
-      }
-    };
-    const away = (e: Event) => {
-      if (!word.current?.contains(e.target as Node)) off();
-    };
-    addEventListener("keydown", key, true);
-    addEventListener("pointerdown", away, true);
-    addEventListener("scroll", off, true);
-    return () => {
-      removeEventListener("keydown", key, true);
-      removeEventListener("pointerdown", away, true);
-      removeEventListener("scroll", off, true);
-    };
-  }, [open]);
-
-  // From 640px up the tip sits over the word, placed from the word's box; on a phone the CSS sheet places it.
-  let at: CSSProperties | undefined;
-  const r = open && innerWidth >= 640 ? word.current?.getBoundingClientRect() : null;
-  // Above the word, or below it when the word is too near the top of the screen for the tip to fit.
-  if (r) at = { left: Math.max(8, Math.min(r.left, innerWidth - 240)), ...(r.top > 96 ? { top: r.top - 8, transform: "translateY(-100%)" } : { top: r.bottom + 8 }) };
-
-  return (
-    <span className="moon">
-      <span
-        ref={word}
-        tabIndex={0}
-        aria-describedby={open ? id : undefined}
-        onPointerEnter={(e) => e.pointerType === "mouse" && on()}
-        onPointerLeave={(e) => e.pointerType === "mouse" && word.current !== document.activeElement && off()}
-        onPointerUp={(e) => {
-          if (e.pointerType === "mouse") return;
-          tapped.current = e.timeStamp;
-          setOpen((o) => !o);
-        }}
-        onFocus={on}
-        onBlur={off}
-        onClick={(e) => {
-          e.preventDefault();
-          if (e.timeStamp - tapped.current > 800) on();
-        }}
-      >
-        {children}
-      </span>
-      {open &&
-        createPortal(
-          <span id={id} role="tooltip" className="moon-tip" style={at}>
-            {i18n._(TIP)}
-          </span>,
-          word.current?.closest(".sheet-night") ?? document.body,
-        )}
-    </span>
-  );
+  return <WordTip tip={i18n._(TIP)}>{children}</WordTip>;
 }
 
 /** A sentence with each whole-word "moon" or "moons" in it wearing the tip. Text without one comes back as is. */

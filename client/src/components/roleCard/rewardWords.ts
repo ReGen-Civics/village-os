@@ -17,6 +17,8 @@ import { msg } from "@lingui/core/macro";
 import { ceilingAt, rangeMin } from "@shared/commitmentRange";
 import type { CeilingPeriod, PayCeiling, PayShare, ShareAmount } from "@shared/roleCardSections";
 import { moneyWords } from "@shared/roleRewardWords";
+import { partOfLabel } from "@shared/rewardShare";
+import { DEFAULT_SHARE_NAMES, type ShareNames } from "@shared/contributionToken";
 
 export interface RewardWords {
   headline: string;
@@ -50,9 +52,12 @@ export function perPeriod(i18n: I18n = appI18n, money: string, per: CeilingPerio
  */
 export const TOKEN_TERMS_ALWAYS = true;
 
-/** Does the split in force pay any of the reward in equity or credits? A share above 0% only. */
-export function paysInTokens(shape: readonly PayShare[] | null | undefined): boolean {
-  return (shape ?? []).some((s) => s.pct > 0 && /equity|credit/i.test(s.label));
+/** Does the split in force pay any of the reward in the contribution token or credits? A share above 0% only. */
+export function paysInTokens(shape: readonly PayShare[] | null | undefined, names: ShareNames = DEFAULT_SHARE_NAMES): boolean {
+  return (shape ?? []).some((s) => {
+    const part = partOfLabel(s.label, { equity: [names.equity, names.equityShort], credits: names.credits });
+    return s.pct > 0 && (part === "equity" || part === "credits");
+  });
 }
 
 /**
@@ -70,7 +75,8 @@ export function paysInTokens(shape: readonly PayShare[] | null | undefined): boo
 export function splitHeadline(i18n: I18n, c: PayCeiling, shares: readonly ShareAmount[]): string {
   const parts = shares.map((s) => {
     const money = moneyWords(s.amount, c.currency, i18n.locale);
-    const label = s.label.toLowerCase();
+    // A generic word reads lower case mid-sentence; a token's own name ("Amora") keeps its capitals.
+    const label = /^(cash|credits?|equity)$/i.test(s.label) ? s.label.toLowerCase() : s.label;
     return i18n._(msg({ message: `${money} in ${label}`, context: "role card rewards: one share of the listed price as its own amount" }));
   });
   let list = parts.join(", ");
@@ -84,7 +90,18 @@ export function splitHeadline(i18n: I18n, c: PayCeiling, shares: readonly ShareA
   return i18n._(msg({ message: `Up to ${list} a month for the full role*`, context: "role card rewards: the listed price, each share as its own amount" }));
 }
 
-export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | undefined, note = "", shape: readonly PayShare[] = [], split: readonly ShareAmount[] = [], chosen: number | null = null): RewardWords {
+export function rewardWords(
+  i18n: I18n,
+  c: PayCeiling,
+  min: number | null | undefined,
+  note = "",
+  shape: readonly PayShare[] = [],
+  split: readonly ShareAmount[] = [],
+  chosen: number | null = null,
+  names: ShareNames = DEFAULT_SHARE_NAMES,
+): RewardWords {
+  const tokens = names.equity;
+  const credits = names.credits;
   const lo = rangeMin(min);
   const shared = lo < 100;
   const at = exampleShare(min, chosen);
@@ -110,7 +127,10 @@ export function rewardWords(i18n: I18n, c: PayCeiling, min: number | null | unde
     footnote: [
       i18n._(msg({ message: "*At 100% commitment.", context: "role card rewards: the one footnote" })),
       i18n._(msg({ message: "Your first moon starts lower and follows what you deliver.", context: "role card rewards: the footnote, the first moon" })),
-      TOKEN_TERMS_ALWAYS || paysInTokens(shape) ? i18n._(msg({ message: "Equity and credit terms are still being written and are subject to legal review.", context: "role card rewards: the footnote, equity and credits" })) : null,
+      // The contribution token, never "equity" (the lead, 19 Nov 2026); its name is the village's own.
+      TOKEN_TERMS_ALWAYS || paysInTokens(shape, names)
+        ? i18n._(msg({ message: `Terms for ${tokens} and ${credits} are still being written and are subject to legal review.`, context: "role card rewards: the footnote, the contribution token and credits" }))
+        : null,
       // The card's or the village's note, without what the footnote already says (production check of 1.3.24).
       notSaidTwice(String(note ?? "").replace(/^\*\s*/, "").trim()),
     ]

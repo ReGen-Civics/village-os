@@ -37,6 +37,8 @@ export const NOUN_SLOTS = {
   ballot: { one: "ballot", many: "ballots", what: "A vote the village holds" },
   constitution: { one: "constitution", many: "constitutions", what: "The village's founding rules" },
   vouch: { one: "vouch", many: "vouches", what: "One member speaking for a newcomer" },
+  // The lead, 19 Nov 2026: the non-cash share of pay, never "equity" to a member (shared/contributionToken.ts).
+  contributionToken: { one: "contribution token", many: "contribution tokens", what: "The token a member earns for what they contribute and an investor buys with cash" },
 } as const;
 
 export type NounSlot = keyof typeof NOUN_SLOTS;

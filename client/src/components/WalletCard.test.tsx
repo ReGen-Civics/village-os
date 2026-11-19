@@ -18,6 +18,11 @@
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import { I18nProvider } from "@lingui/react";
+import { i18n } from "@lingui/core";
+
+i18n.load("en", {});
+i18n.activate("en");
 
 const modules = vi.hoisted(() => ({ exchange: false }));
 
@@ -32,7 +37,7 @@ vi.mock("@/modules/ModuleProvider", () => ({
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: { id: "usr-ora", name: "Ora" } }),
 }));
-vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-session" }));
+vi.mock("@/lib/gameApi", () => ({ authToken: () => "a-session", useGameConfig: () => null }));
 vi.mock("wouter", () => ({
   Link: ({ children }: { children: React.ReactNode }) => <a href="/tokens">{children}</a>,
 }));
@@ -95,23 +100,23 @@ describe("the wallet on a member's own profile", () => {
 
   it("says what an equity token is in plain words, and lets the village's own words win", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    const { unmount } = render(<WalletCard />);
-    await waitFor(() => expect(screen.getByText(/Earned Equity tracks contributions that were not paid\. It has no financial value yet\. What it will represent is still being decided together\./)).toBeInTheDocument());
+    const { unmount } = render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
+    await waitFor(() => expect(screen.getByText(/Contribution tokens track contributions that were not paid\. They have no financial value yet\. What they will represent is still being decided together\./)).toBeInTheDocument());
     // Only the equity row carries it: credits and voice are left as they were.
-    expect(screen.getAllByText(/tracks contributions that were not paid/)).toHaveLength(1);
+    expect(screen.getAllByText(/tracks? contributions that were not paid/)).toHaveLength(1);
     unmount();
     const own = { ...PAYLOAD, rows: PAYLOAD.rows.map((r) => (r.token === "earned-equity" ? { ...r, description: "The village's own sentence." } : r)) };
     vi.stubGlobal("fetch", serve(own));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText("The village's own sentence.")).toBeInTheDocument());
-    expect(screen.queryByText(/tracks contributions that were not paid/)).toBeNull();
+    expect(screen.queryByText(/tracks? contributions that were not paid/)).toBeNull();
   });
 
   it("renders with the exchange module off, and asks the wallet route with the session", async () => {
     const fetchMock = serve(PAYLOAD);
     vi.stubGlobal("fetch", fetchMock);
-    render(<WalletCard />);
-    await waitFor(() => expect(screen.getByText("Earned Equity")).toBeInTheDocument());
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
+    await waitFor(() => expect(screen.getByText("Contribution tokens")).toBeInTheDocument());
     expect(fetchMock.mock.calls[0][0]).toBe("/api/me/wallet");
     expect((fetchMock.mock.calls[0][1] as RequestInit).headers).toMatchObject({ Authorization: "Bearer a-session" });
     // No exchange, no link to it.
@@ -120,7 +125,7 @@ describe("the wallet on a member's own profile", () => {
 
   it("prints ten for ten Village Voice, and never the ledger's thousand", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText("10")).toBeInTheDocument());
     expect(screen.queryByText("1000")).toBeNull();
     expect(screen.getByText("12.5")).toBeInTheDocument();
@@ -128,7 +133,7 @@ describe("the wallet on a member's own profile", () => {
 
   it("says no price in words and prints no money figure for an unpriced token", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    const { container } = render(<WalletCard />);
+    const { container } = render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getAllByText("No price set").length).toBe(3));
     // Not a $0, and not a currency sign anywhere on the card.
     expect(container.textContent).not.toMatch(/\$|USD|CHF|€/);
@@ -136,7 +141,7 @@ describe("the wallet on a member's own profile", () => {
 
   it("shows Gratitude as thanks received and giving left, with no price and no claim", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText("Thanks received")).toBeInTheDocument());
     expect(screen.getByText("45")).toBeInTheDocument();
     expect(screen.getByText("70 of 100 left to give this cycle. What you do not give expires when the cycle closes.")).toBeInTheDocument();
@@ -145,7 +150,7 @@ describe("the wallet on a member's own profile", () => {
 
   it("says why a claim cannot be made and when that changes, and offers no button that would fail", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() =>
       expect(screen.getByText("3 gathered, and ready. The connection to Hypha is still being finished.")).toBeInTheDocument(),
     );
@@ -157,13 +162,13 @@ describe("the wallet on a member's own profile", () => {
     const open = JSON.parse(JSON.stringify(PAYLOAD));
     open.rows[0].claim = { ...blocked, claimable: true, says: "3 ready to claim.", opens: "Claims Week is open now." };
     vi.stubGlobal("fetch", serve(open));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByRole("button", { name: "Claim 3 on Hypha" })).toBeInTheDocument());
   });
 
   it("prints a Base figure only when Base said one", async () => {
     vi.stubGlobal("fetch", serve(PAYLOAD));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText("On Base, as Voice")).toBeInTheDocument());
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("On Base, as Village Equity")).toBeInTheDocument();
@@ -175,7 +180,7 @@ describe("the wallet on a member's own profile", () => {
     const priced = JSON.parse(JSON.stringify(PAYLOAD));
     priced.rows[2].price = { state: "priced", currency: "USD", perTokenMinor: 40, heldValueMinor: 500, since: "2026-10-01T00:00:00.000Z" };
     vi.stubGlobal("fetch", serve(priced));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText(/\$0\.40 each at the exchange/)).toBeInTheDocument());
     expect(screen.getByText(/yours come to \$5\.00/)).toBeInTheDocument();
     expect(screen.getByText("The Exchange")).toBeInTheDocument();
@@ -183,7 +188,7 @@ describe("the wallet on a member's own profile", () => {
 
   it("tells a failed load apart from an empty wallet", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) } as unknown as Response));
-    render(<WalletCard />);
+    render(<I18nProvider i18n={i18n}><WalletCard /></I18nProvider>);
     await waitFor(() => expect(screen.getByText(/Your wallet didn't load/)).toBeInTheDocument());
     expect(screen.queryByText("This village has no tokens yet.")).toBeNull();
   });

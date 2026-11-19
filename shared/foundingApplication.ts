@@ -55,7 +55,7 @@ export interface PayShare {
 }
 
 /** The placeholder the page shows while the village has written no shape: "N%" for each (build list 7.1). */
-export const PLACEHOLDER_PARTS = ["Cash", "Equity", "Credits"] as const;
+export const PLACEHOLDER_PARTS = ["Cash", "Contribution tokens", "Credits"] as const;
 
 export interface FoundingSetup {
   /** The ways to get to know the village, each one a tick on step 1. */

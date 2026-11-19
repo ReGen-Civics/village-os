@@ -221,7 +221,7 @@ export const CARD_WORDS = {
   allowance: "Allowance",
   bonus: "Bonus",
   bonusEquity: (village: string, token: string) => `Paid in ${village} as ${token}, then claimed off the platform.`,
-  bonusEquityNoToken: "Paid as an equity bonus, then claimed off the platform.",
+  bonusEquityNoToken: "Paid as a contribution token bonus, then claimed off the platform.",
   bonusCap: (w: string) => `Cap: ${w}`,
   bonusRatedBy: (w: string) => `Rated by ${w}`,
   bonusCadence: (w: string) => `Cadence: ${w}`,

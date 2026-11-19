@@ -22,6 +22,12 @@ describe("the equity token note", () => {
     expect(n.startsWith("Earned Equity tracks")).toBe(true);
     saysTheThreeThings(n);
   });
+  it("reads a plural name as one", () => {
+    const n = equityTokenNote("Harbour Tokens");
+    expect(n.startsWith("Harbour Tokens track contributions")).toBe(true);
+    expect(n).toContain("They have no financial value yet.");
+    saysTheThreeThings(n);
+  });
   it("still reads when the token has no name", () => {
     expect(equityTokenNote("  ").startsWith("This token tracks")).toBe(true);
   });

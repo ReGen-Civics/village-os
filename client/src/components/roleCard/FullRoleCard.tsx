@@ -36,7 +36,7 @@ import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squ
 import { Trans, useLingui } from "@lingui/react/macro";
 import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
-import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
+import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
 import { rewardWords, splitNotRestated } from "./rewardWords";
@@ -57,6 +57,7 @@ import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
 import { MoonText } from "@/components/MoonWord";
+import { ShareLabel, TokenText, shareLabelFor, useShareNames } from "@/components/ContributionWord";
 import { useVillageName } from "@/hooks/useVillageName";
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
@@ -187,7 +188,13 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const machine = (translation?.machine.length ?? 0) > 0;
   const read = overlaySections(answer?.sections ?? given ?? null, translation);
   // How rewards work: the village's shape on every card, the card's own where it wrote one (lead, 11 Nov).
-  const pay = cardPay(read, answer?.villagePay ?? givenPay ?? NO_VILLAGE_PAY);
+  // Shown with the village's token names on its shares (the lead, 19 Nov 2026: never "equity"); `rawShape` is the
+  // shape as stored, which the split control sends and the server checks a proposal against.
+  const villagePay = answer?.villagePay ?? givenPay ?? NO_VILLAGE_PAY;
+  const shareNames = useShareNames();
+  const shownShape = (shape: readonly PayShare[]): PayShare[] => shape.map((sh) => ({ ...sh, label: shareLabelFor(sh.label, shareNames) }));
+  const pay = cardPay(read ? { ...read, payShape: shownShape(read.payShape) } : read, { ...villagePay, shape: shownShape(villagePay.shape) });
+  const rawShape = cardPay(read, villagePay)?.shape ?? [];
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
   // keeps it hidden, and the card drops it again here so an older payload can never draw one.
   const showsRange = answer?.showPayRanges === true;
@@ -247,14 +254,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
   // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
-  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen) : null;
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen, shareNames) : null;
   // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
   const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
         <>
-          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><MoonText text={reward.headline} /></p>
+          <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><TokenText text={reward.headline} plain={(x: string) => <MoonText text={x} />} /></p>
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
@@ -264,7 +271,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </>
       ) : (
         <>
-          {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
+          {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><TokenText text={pay.ceiling} /></p>}
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>
             <ValueCallout />
@@ -274,10 +281,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {/* The village's shares as tiles only where the card offers no editable split (the lead, 18 Nov 2026): inside an
           application and for the people deciding. Elsewhere the split control below is the one place to read it. */}
       {pay.shape.length > 0 && noAct && (
-        <ul className="grid grid-cols-3 gap-2" aria-hidden="true" data-testid="pay-tiles">
+        // Not aria-hidden since 19 Nov 2026: the contribution share's label carries its at-risk tip, which must be reachable.
+        <ul className="grid grid-cols-3 gap-2" data-testid="pay-tiles">
           {pay.shape.map((sh) => (
             <li key={sh.label} className="min-w-0 rounded-xl border border-border bg-muted px-3 py-2">
-              <span className="block break-words text-xs capitalize text-muted-foreground" data-testid="pay-tile-label">{sh.label}</span>
+              <span className="block break-words text-xs capitalize text-muted-foreground" data-testid="pay-tile-label"><ShareLabel label={sh.label} /></span>
               <span className="block font-display text-2xl text-card-foreground">{sh.pct}%</span>
             </li>
           ))}
@@ -301,21 +309,21 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
             ) : pay.shape.length > 0 && !own ? (
               <span className="sr-only">{said}</span>
             ) : (
-              own ? `${said} ${own}` : said
+              <TokenText text={own ? `${said} ${own}` : said} />
             )}
           </p>
         );
       })()}
       {!noAct && (
         <Suspense fallback={null}>
-          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={pay.shape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} onPct={setSliderPct} />
+          <CardCommitment idPrefix={`card-${id}`} min={seat?.card?.commitmentMin ?? null} ceiling={sections?.payCeiling ?? null} shape={rawShape} publicPay={seat?.card?.publicPay} showsRange={showsRange} onChoice={setChoiceLink} onPct={setSliderPct} />
         </Suspense>
       )}
-      {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote"><MoonText text={reward.footnote} /></p>}
+      {pay.atRisk && <p className="text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk"><TokenText text={pay.atRisk} /></p>}
+      {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote"><TokenText text={reward.footnote} plain={(x: string) => <MoonText text={x} />} /></p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else
           the village's) is the footnote's fine print, so it is not drawn again here. */}
-      {pay.note && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note">{pay.note}</p>}
+      {pay.note && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note"><TokenText text={pay.note} /></p>}
     </div>
   ) : null;
 
@@ -396,10 +404,10 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {pay && (
         <section className="rounded-xl border border-border bg-card p-4" data-testid="pay-shape">
           <H4 className="font-display text-lg text-card-foreground">{SECTION_WORDS.payShape}</H4>
-          {pay.ceiling && <p className="mt-2 font-display text-xl leading-snug text-notice" data-testid="pay-ceiling">{pay.ceiling}</p>}
-          {pay.split && <p className="mt-2 leading-relaxed text-card-foreground" data-testid="pay-split">{pay.split}</p>}
-          {pay.atRisk && <p className="mt-3 text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk">{pay.atRisk}</p>}
-          {pay.note && <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-note">{pay.note}</p>}
+          {pay.ceiling && <p className="mt-2 font-display text-xl leading-snug text-notice" data-testid="pay-ceiling"><TokenText text={pay.ceiling} /></p>}
+          {pay.split && <p className="mt-2 leading-relaxed text-card-foreground" data-testid="pay-split"><TokenText text={pay.split} /></p>}
+          {pay.atRisk && <p className="mt-3 text-sm leading-relaxed text-card-foreground" data-testid="pay-at-risk"><TokenText text={pay.atRisk} /></p>}
+          {pay.note && <p className="mt-3 border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-note"><TokenText text={pay.note} /></p>}
         </section>
       )}
       {commitment && (

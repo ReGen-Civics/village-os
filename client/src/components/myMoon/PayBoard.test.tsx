@@ -123,7 +123,7 @@ describe("the member's own token pay", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<MyTokenPay />);
     const line = await screen.findByTestId("my-token-line");
-    expect(line.textContent).toContain("3,000 Earned Equity, changed from 2,600");
+    expect(line.textContent).toContain("3,000 Contribution tokens, changed from 2,600");
     expect(line.textContent).toContain("Why it changed: A bonus for the filter rebuild.");
     expect(line.textContent).toContain("Waiting for the Treasurer's approval");
     expect(screen.getByText(/Approved lines issue to your account when the village launches/)).toBeTruthy();

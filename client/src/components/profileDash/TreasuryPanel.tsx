@@ -32,6 +32,9 @@ import { formatMoney } from "@shared/money";
 import { cashSummary, earnedIn, moonRows, pickTokens, whole, type MoonRow } from "./dashModel";
 import { KICKER, LINK } from "./dashUi";
 import { useAppWords } from "@/hooks/useAppWords";
+import { useTokenInUse } from "@/hooks/useTokenNameFor";
+import { ContributionWord, CreditsWord, useShareNames } from "@/components/ContributionWord";
+import { CREDITS_TOKEN_SLUG } from "@shared/contributionToken";
 
 type Coin = "cash" | "gold" | "voice" | "thanks";
 const COIN: Record<Coin, string> = {
@@ -80,7 +83,8 @@ function Purse({
 }: {
   coin: Coin;
   glyph: string;
-  name: string;
+  /** The heading: a token's name, or its name wearing a tip (the contribution token's). */
+  name: ReactNode;
   value: string;
   delta: string;
   what: string | null;
@@ -130,8 +134,13 @@ export default function TreasuryPanel({
   const [claiming, setClaiming] = useState(false);
   const [said, setSaid] = useState("");
   const { village, voice } = pickTokens(data.wallet ?? [], config?.currency?.value?.slug);
-  /** The token End of Moon issues as a role's equity share (server `EARNED_EQUITY`), shown per moon beside the rest (launch rehearsal F4). */
+  /** The token End of Moon issues as a role's contribution share (server `EARNED_EQUITY`), shown per moon beside the rest (launch rehearsal F4). */
   const equity = (data.wallet ?? []).find((r) => r.token === PLATFORM_DEFAULT_MODEL.tokens.equity) ?? null;
+  // The contribution token is a holding too, even at zero (the lead, 19 Nov 2026), while the village has it on.
+  // The village's own word, never the registry's (the lead, 19 Nov 2026): the registry may still say "Earned Equity".
+  const shareNames = useShareNames();
+  const contributionName = shareNames.equity;
+  const contributionOn = useTokenInUse(PLATFORM_DEFAULT_MODEL.tokens.equity);
   const cash = data.cash ? cashSummary(data.cash) : null;
   const cycleStart = data.cycle?.startsAt ?? null;
   const thisMoon = (token: string | undefined) => (token && data.ledger && cycleStart ? earnedIn(data.ledger, token, cycleStart) : null);
@@ -254,7 +263,7 @@ export default function TreasuryPanel({
           <Purse
             coin="gold"
             glyph={village.name.trim().slice(0, 1).toUpperCase()}
-            name={tokensName(village.name)}
+            name={village.token === CREDITS_TOKEN_SLUG ? <CreditsWord>{tokensName(village.name)}</CreditsWord> : tokensName(village.name)}
             value={whole(held(village))}
             delta={thisMoon(village.token) === null ? "" : `+${whole(thisMoon(village.token) ?? 0)} this moon`}
             what={null}
@@ -270,6 +279,18 @@ export default function TreasuryPanel({
                 </a>
               </>
             }
+          />
+        ) : null}
+
+        {data.wallet && contributionOn ? (
+          <Purse
+            coin="gold"
+            glyph={contributionName.trim().slice(0, 1).toUpperCase()}
+            name={<ContributionWord />}
+            value={whole(equity ? held(equity) : 0)}
+            delta={equity && thisMoon(equity.token) !== null ? `+${whole(thisMoon(equity.token) ?? 0)} this moon` : ""}
+            what={null}
+            actions={null}
           />
         ) : null}
 
@@ -344,7 +365,9 @@ export default function TreasuryPanel({
                     </div>
                   ) : null}
                   {equity && m.equity > 0 ? (
-                    <span className="text-xs">{whole(m.equity)} {equity.name}</span>
+                    <span className="text-xs">
+                      {whole(m.equity)} <ContributionWord short />
+                    </span>
                   ) : null}
                   {data.cash ? (
                     <span className="text-xs text-muted-foreground">

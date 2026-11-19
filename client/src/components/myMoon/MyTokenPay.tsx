@@ -16,13 +16,15 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { PAY_BOARD_ROUTES, type PayBoardTokenLine, type TokenLineStatus } from "@shared/moonRewardReview";
 import * as api from "./moonApi";
 import { ERROR, INPUT, LABEL, MUTED, SMALL_BTN } from "./moonUi";
+import { CONTRIBUTION_TOKEN_SLUG, CREDITS_TOKEN_SLUG } from "@shared/contributionToken";
+import { TokenText, useShareNames } from "@/components/ContributionWord";
 
 const count = (n: number) => n.toLocaleString();
 
-/** A token's name in words: the two End of Moon issues, or its slug. Kept here so this page never pulls in the Treasurer's board. */
+/** A token's name in words: the two End of Moon issues by the village's own names (Admin, Tokens), or its slug. Kept here so this page never pulls in the Treasurer's board. */
 function useTokenName(): (slug: string) => string {
-  const { t } = useLingui();
-  return (slug) => (slug === "earned-equity" ? t({ message: "Earned Equity", context: "my token pay" }) : slug === "credits" ? t({ message: "Credits", context: "my token pay" }) : slug);
+  const names = useShareNames();
+  return (slug) => (slug === CONTRIBUTION_TOKEN_SLUG ? names.equity : slug === CREDITS_TOKEN_SLUG ? names.credits : slug);
 }
 
 function useMineWords(): Record<TokenLineStatus, string> {
@@ -59,6 +61,7 @@ function Reply({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promis
 }
 
 function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise<unknown> }) {
+  const { t } = useLingui();
   const words = useMineWords();
   const tokenName = useTokenName();
   const name = tokenName(line.token);
@@ -70,7 +73,8 @@ function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise
     <li className="flex flex-col gap-1 border-b border-border py-2 last:border-b-0" data-testid="my-token-line">
       <span className="text-sm text-foreground">{line.title}</span>
       <span className="text-sm font-semibold text-foreground">
-        {line.change ? <Trans context="my token pay">{units} {name}, changed from {shared}</Trans> : <>{units} {name}</>}
+        {/* The token's name wears its tip (the lead, 19 Nov 2026). */}
+        <TokenText text={line.change ? t({ message: `${units} ${name}, changed from ${shared}`, context: "my token pay, a changed line" }) : `${units} ${name}`} />
       </span>
       <span className={`text-xs ${MUTED}`} data-status={line.status}>{words[line.status]}</span>
       {line.change ? <p className="m-0 text-xs text-foreground"><Trans context="my token pay">Why it changed: {reason}</Trans></p> : null}
@@ -87,6 +91,7 @@ function Line({ line, onDone }: { line: PayBoardTokenLine; onDone: () => Promise
 
 export default function MyTokenPay() {
   const { t } = useLingui();
+  const names = useShareNames();
   const [lines, setLines] = useState<PayBoardTokenLine[] | null>(null);
   const [launched, setLaunched] = useState(true);
   const load = useCallback(async () => {
@@ -98,13 +103,14 @@ export default function MyTokenPay() {
   }, []);
   useEffect(() => { void load(); }, [load]);
   if (!lines || lines.length === 0) return null;
+  const said = launched
+    ? t({ message: `The ${names.equity} and ${names.credits} on your pay. Each line issues to your account once the Treasurer approves it.`, context: "my token pay, with the village's token names" })
+    : t({ message: `The ${names.equity} and ${names.credits} on your pay. Approved lines issue to your account when the village launches.`, context: "my token pay, with the village's token names" });
   return (
     <section id="token-pay" aria-label={t({ message: "Your token pay", context: "my token pay" })} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
       <h3 className="m-0 text-lg font-semibold text-foreground"><Trans context="my token pay">Your token pay</Trans></h3>
       <p className={`m-0 ${MUTED}`}>
-        {launched
-          ? <Trans context="my token pay">The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it.</Trans>
-          : <Trans context="my token pay">The Earned Equity and Credits on your pay. Approved lines issue to your account when the village launches.</Trans>}
+        <TokenText text={said} />
       </p>
       <ul className="m-0 flex list-none flex-col p-0">
         {lines.map((l) => <Line key={l.key} line={l} onDone={load} />)}

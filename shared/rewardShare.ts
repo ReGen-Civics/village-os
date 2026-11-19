@@ -33,6 +33,8 @@
  * `PayShare`). Written here, never imported: a module that moves value stays clear of the seat settings
  * model, which roleCardSections reaches (shared/seatSettings.boundary.test.ts).
  */
+import { namedPart, type LabelNames } from "./contributionToken";
+
 export interface PayShare {
   label: string;
   pct: number;
@@ -69,22 +71,30 @@ export interface LineReward {
 }
 
 const CASH = /\bcash\b/i;
-const EQUITY = /equity/i;
-const CREDITS = /credit/i;
+// "equity" stays read forever: contracts written before 19 Nov 2026 carry it in their stored shape.
+const EQUITY = /equity|\bcontribution/i;
+const CREDITS = /credit|\busage\b/i;
 
-/** Which part a share's label names, or null when it names none or more than one. */
-export function partOfLabel(label: string): RewardPart | null {
+/**
+ * Which part a share's label names, or null when it names none or more than one. A label that is exactly one of
+ * the token's names (the village's own word "Amora Tokens" or "Amora", its registry name) names that share first
+ * (the lead, 19 Nov 2026), so a village can label its shares in its own words and End of Moon still pays each
+ * where it was meant (shared/contributionToken.ts `namedPart`).
+ */
+export function partOfLabel(label: string, names?: LabelNames | null): RewardPart | null {
+  const named = namedPart(label, names);
+  if (named) return named;
   const hits = ([["cash", CASH], ["equity", EQUITY], ["credits", CREDITS]] as const).filter(([, re]) => re.test(label));
   return hits.length === 1 ? hits[0][0] : null;
 }
 
 /** A shape as three percents, or null when any label reads as no part, a part is named twice, or it adds past 100. */
-export function partsOfShape(shape: readonly PayShare[]): { cash: number; equity: number; credits: number; rest: number } | null {
+export function partsOfShape(shape: readonly PayShare[], names?: LabelNames | null): { cash: number; equity: number; credits: number; rest: number } | null {
   if (!shape.length) return null;
   const out = { cash: 0, equity: 0, credits: 0 };
   const seen = new Set<RewardPart>();
   for (const s of shape) {
-    const part = partOfLabel(s.label);
+    const part = partOfLabel(s.label, names);
     if (!part || seen.has(part) || !Number.isInteger(s.pct) || s.pct < 0 || s.pct > 100) return null;
     seen.add(part);
     out[part] = s.pct;
@@ -106,14 +116,14 @@ const wholeShare = (totalMinor: number, pct: number): number => Math.floor((tota
 export function shareLine(
   totalMinor: number | null,
   shapes: { contract?: readonly PayShare[]; card: readonly PayShare[]; village: readonly PayShare[] },
-  opts: { equityMeaningWritten: boolean; tokens: { equity: string; credits: string } },
+  opts: { equityMeaningWritten: boolean; tokens: { equity: string; credits: string }; names?: LabelNames | null },
 ): LineReward | null {
   if (totalMinor === null || !Number.isInteger(totalMinor) || totalMinor <= 0) return null;
   const tried: Array<[RewardSplitFrom, readonly PayShare[]]> = [["contract", shapes.contract ?? []], ["card", shapes.card], ["village", shapes.village]];
   let from: RewardSplitFrom = "none";
   let parts: ReturnType<typeof partsOfShape> = null;
   for (const [who, shape] of tried) {
-    parts = partsOfShape(shape);
+    parts = partsOfShape(shape, opts.names);
     if (parts) {
       from = who;
       break;
@@ -145,10 +155,21 @@ export function billedOfLine(line: { amountMinor: number | null; reward?: LineRe
 }
 
 /** "Also earned, nothing to pay: 2,600 Earned Equity, 0 Credits. Total reward US$6,500." Null when the payer is billed it all, or nothing was shared. */
-export function earnedBesideLine(r: LineReward | null | undefined, currency: string): string | null {
+export function earnedBesideLine(r: LineReward | null | undefined, currency: string, names: ShownNames = ADMIN_NAMES): string | null {
   if (PAYER_IS_BILLED !== "cash" || !r || r.equityUnits + r.creditsUnits === 0) return null;
-  return `${REWARD_SHARE_WORDS.earnedBeside}: ${r.equityUnits.toLocaleString("en-US")} Earned Equity, ${r.creditsUnits.toLocaleString("en-US")} Credits. Total reward ${moneyWords(r.totalMinor, currency)}.`;
+  return `${REWARD_SHARE_WORDS.earnedBeside}: ${r.equityUnits.toLocaleString("en-US")} ${names.equity}, ${r.creditsUnits.toLocaleString("en-US")} ${names.credits}. Total reward ${moneyWords(r.totalMinor, currency)}.`;
 }
+
+/**
+ * The token names the words say. The Treasurer's desk and the payer's PDF keep the registry's seeded names, as
+ * admin pages do (the lead, 19 Nov 2026); a member's own invoice passes the names a member reads
+ * (client ContributionWord.tsx `useShareNames`), never "equity".
+ */
+export interface ShownNames {
+  equity: string;
+  credits: string;
+}
+export const ADMIN_NAMES: ShownNames = { equity: "Earned Equity", credits: "Credits" };
 
 /** A whole percent of the total, for the words. */
 const pctOf = (part: number, total: number): number => (total > 0 ? Math.round((part * 100) / total) : 0);
@@ -165,16 +186,17 @@ export const REWARD_SHARE_WORDS = {
  * "Total reward $6,500.00: $3,900.00 cash (60%), 2,600 Earned Equity (40%), 0 Credits (0%), by the role card's split."
  * Every part is said, a 0% one too, so a Treasurer can read the split back to the member.
  */
-export function rewardShareLine(r: LineReward, currency: string): string {
+export function rewardShareLine(r: LineReward, currency: string, names: ShownNames = ADMIN_NAMES): string {
   if (r.from === "none") return `${REWARD_SHARE_WORDS.none} Total reward ${moneyWords(r.totalMinor, currency)}.`;
   const t = r.totalMinor;
   const eq = r.equityUnits * 100;
   const cr = r.creditsUnits * 100;
   const parts = [
     `${moneyWords(r.cashMinor, currency)} cash (${pctOf(r.cashMinor, t)}%)`,
-    `${r.equityUnits.toLocaleString("en-US")} Earned Equity (${pctOf(eq, t)}%)`,
-    `${r.creditsUnits.toLocaleString("en-US")} Credits (${pctOf(cr, t)}%)`,
+    `${r.equityUnits.toLocaleString("en-US")} ${names.equity} (${pctOf(eq, t)}%)`,
+    `${r.creditsUnits.toLocaleString("en-US")} ${names.credits} (${pctOf(cr, t)}%)`,
   ];
-  const rest = r.restToCreditsPct > 0 ? ` The split names ${100 - r.restToCreditsPct}%, so the other ${r.restToCreditsPct}% is Credits.` : "";
-  return `Total reward ${moneyWords(t, currency)}: ${parts.join(", ")}, ${REWARD_SHARE_WORDS.from[r.from]}.${rest}${r.equityHeld ? ` ${REWARD_SHARE_WORDS.held}` : ""}`;
+  const rest = r.restToCreditsPct > 0 ? ` The split names ${100 - r.restToCreditsPct}%, so the other ${r.restToCreditsPct}% is ${names.credits}.` : "";
+  const held = names === ADMIN_NAMES ? REWARD_SHARE_WORDS.held : `The ${names.equity} share is owed until the village writes what it means.`;
+  return `Total reward ${moneyWords(t, currency)}: ${parts.join(", ")}, ${REWARD_SHARE_WORDS.from[r.from]}.${rest}${r.equityHeld ? ` ${held}` : ""}`;
 }

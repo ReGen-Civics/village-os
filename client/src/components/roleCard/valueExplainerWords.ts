@@ -7,6 +7,7 @@
 import { i18n as appI18n, type I18n } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 import { ROLE_PAY_CAP_PCT } from "@shared/commitmentRange";
+import { CONTRIBUTION_TOKEN_DEFAULT, tokensNoun } from "@shared/contributionToken";
 
 /**
  * THE PAY BAND THE EXPLAINER NAMES, as a percent of a role's price: 80% to 100%. HARDCODED for now (lead,
@@ -25,8 +26,15 @@ export interface ValueExplainerWords {
 }
 
 /** "Value in equals value out.", the control that opens its explainer, and the explainer's three parts. */
-export function valueExplainerWords(i18n: I18n = appI18n, band: { lowPct: number; highPct: number } = EXPLAINER_BAND, capPct: number = ROLE_PAY_CAP_PCT): ValueExplainerWords {
+export function valueExplainerWords(
+  i18n: I18n = appI18n,
+  band: { lowPct: number; highPct: number } = EXPLAINER_BAND,
+  capPct: number = ROLE_PAY_CAP_PCT,
+  tokenName: string = CONTRIBUTION_TOKEN_DEFAULT,
+): ValueExplainerWords {
   const { lowPct, highPct } = band;
+  // The contribution token, never equity or ownership (the lead, 19 Nov 2026): its name is the village's own.
+  const tokens = tokensNoun(tokenName);
   return {
     callout: i18n._(msg({ message: "Value in equals value out.", context: "role card rewards: the callout beside the price" })),
     open: i18n._(msg({ message: "How rewards are set", context: "role card rewards: the control that opens the value explainer" })),
@@ -56,7 +64,7 @@ export function valueExplainerWords(i18n: I18n = appI18n, band: { lowPct: number
         heading: i18n._(msg({ message: "What we're aiming for", context: "role card rewards explainer: heading" })),
         text: i18n._(
           msg({
-            message: "What you put in comes back to you fairly, in cash and in equity, a share of ownership in the village. We track value out as carefully as value in, and we shape this together each season.",
+            message: `What you put in comes back to you fairly, in cash and in ${tokens}, which track what you contribute. We track value out as carefully as value in, and we shape this together each season.`,
             context: "role card rewards explainer: what we're aiming for",
           }),
         ),

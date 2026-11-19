@@ -340,7 +340,7 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.change(screen.getByLabelText("Credits, amount in USD"), { target: { value: "780" } });
     expect((screen.getByLabelText("Credits, percent of the total") as HTMLInputElement).value).toBe("10");
     // The phone's stand-in for the rail says their own split, as the rail does (production check of 1.3.25).
-    await waitFor(() => expect(document.querySelector("[data-comp-shape] [data-own-splits]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780)"));
+    await waitFor(() => expect(document.querySelector("[data-comp-shape] [data-own-splits]")?.textContent).toContain("45% Cash ($3,510), 45% Contribution tokens ($3,510), 10% Credits ($780)"));
     expect(document.querySelector("[data-comp-shape] [data-own-splits]")?.textContent).toBe(document.querySelector("[data-rewards-beside] [data-own-splits]")?.textContent);
     // The ramp-up is the applicant's own choice: nothing the link, the split or a default does ticks it (1.3.22 check).
     expect((screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement).checked).toBe(false);
@@ -351,7 +351,7 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(screen.getByLabelText(/confidentiality agreement before I see/));
     // Review & submit says the split, and that they changed it.
     walk();
-    expect(document.querySelector("[data-review]")?.textContent).toContain("45% Cash ($3,510), 45% Equity ($3,510), 10% Credits ($780) · changed from the village's split");
+    expect(document.querySelector("[data-review]")?.textContent).toContain("45% Cash ($3,510), 45% Contribution tokens ($3,510), 10% Credits ($780) · changed from the village's split");
     expect(document.querySelector("[data-review]")?.textContent).toContain("Commitment: 60%");
     expect(document.querySelector("[data-review]")?.textContent).not.toContain("ramp-up");
     sendNow();
