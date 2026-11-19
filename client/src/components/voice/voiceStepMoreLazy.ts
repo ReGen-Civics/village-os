@@ -3,7 +3,7 @@
  *
  * VoiceInvite.tsx and VoiceClips.tsx both draw VoiceStepMore.tsx lazily. Its
  * chunk opens with a top-level await (the long English it carries, see
- * client/src/i18n/copySplit.ts), and two separate `import()` calls racing for
+ * client/src/i18n/copySplit.ts), and two separate dynamic imports racing for
  * a module that is still awaiting can hand one of them the module before its
  * top-level `let`s exist on iOS Safari. The page then threw "Cannot access
  * uninitialized variable" inside useSyncExternalStore and an applicant could
