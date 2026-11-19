@@ -51,6 +51,15 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 
 import Roles from "./Roles";
 
+/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
+const powerCard = () =>
+  waitFor(() => {
+    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
+    if (!el) throw new Error("no card yet");
+    return el;
+  });
+
+
 class NoopIntersectionObserver {
   observe() {}
   unobserve() {}
@@ -198,7 +207,7 @@ describe("an agent on /roles", () => {
     expect(JSON.stringify(withAgent)).toContain(VENDOR);
     expect(row.textContent).toContain("Ines, An agent");
     fireEvent.click(row);
-    const card = document.querySelector("article[data-power-card]") as HTMLElement;
+    const card = await powerCard();
     expect(within(card).getByText("An agent")).toBeTruthy();
     expect(document.body.textContent).not.toContain(VENDOR);
   });
@@ -214,7 +223,7 @@ describe("an opened /roles row", () => {
     fireEvent.click(row);
     expect(row.getAttribute("aria-expanded")).toBe("true");
 
-    const card = document.querySelector("article[data-power-card]") as HTMLElement;
+    const card = await powerCard();
     expect(card).toBeTruthy();
     expect(card.getAttribute("aria-labelledby")).toBe(row.id);
     // Embedded: the header already names the seat and says its state, so the
@@ -269,7 +278,7 @@ describe("the door a /roles card opens", () => {
     );
     renderRoles();
     fireEvent.click(await header("Seed Keeper"));
-    const card = document.querySelector("article[data-power-card]") as HTMLElement;
+    const card = await powerCard();
     expect(within(card).getByText("Ines")).toBeTruthy();
     expect(within(card).queryByRole("button", { name: /^Contact/ })).toBeNull();
     expect(within(card).queryByRole("button", { name: /Apply for this role/ })).toBeNull();
@@ -281,7 +290,7 @@ describe("the door a /roles card opens", () => {
     catalog.modules = [];
     renderRoles();
     fireEvent.click(await header("Seed Keeper"));
-    const card = document.querySelector("article[data-power-card]") as HTMLElement;
+    const card = await powerCard();
     // The card itself rendered (known positive), and it has no door.
     expect(within(card).getByText("Holding it now")).toBeTruthy();
     expect(within(card).queryByRole("button", { name: /Apply for this role/ })).toBeNull();

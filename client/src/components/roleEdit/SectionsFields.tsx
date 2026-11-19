@@ -36,6 +36,8 @@ export interface SectionsForm {
   deliverables: string;
   /** "Once you're selected", one step per line. */
   onboarding: string;
+  /** Where the role is worked, in the card's own words. */
+  where: string;
 }
 
 export function sectionsFormOf(s: RoleCardSections | undefined | null): SectionsForm {
@@ -56,6 +58,7 @@ export function sectionsFormOf(s: RoleCardSections | undefined | null): Sections
     payWording: v.payWording ?? "village",
     deliverables: (v.deliverables ?? []).map(deliverableLine).join("\n"),
     onboarding: (v.onboarding ?? []).join("\n"),
+    where: v.where ?? "",
   };
 }
 
@@ -80,6 +83,7 @@ export function sectionsOf(f: SectionsForm): Record<string, unknown> {
     // Read into rows here; text that does not read is sent as it is, and the server refuses it in words.
     deliverables: ((r) => (r.ok ? r.value : f.deliverables))(deliverablesFromText(f.deliverables)),
     onboarding: lines(f.onboarding),
+    where: f.where.trim(),
   };
 }
 
@@ -123,6 +127,9 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
         <p className={LEDE}>{t({ message: "One per line: start | end | title | workstream, with dates as year-month-day. A milestone has one date, or the same date twice.", context: "role editor: how to write the deliverables" })}</p>
         <textarea className={AREA} value={value.deliverables} onChange={(e) => set("deliverables", e.target.value)} aria-label={t({ message: "Deliverables", context: "role editor: the dated outcomes" })} placeholder="2027-01-15 | 2027-03-01 | ... | ..." data-editor-deliverables="" />
         {((r) => (r.ok ? null : <p className="mt-1 text-sm text-destructive">{t({ message: `Line ${r.line}: ${r.problem}`, context: "role editor: a deliverable line that does not read" })}</p>))(deliverablesFromText(value.deliverables))}
+      </Field>
+      <Field label={SECTION_WORDS.where} changed={!same("where")}>
+        <input className={INPUT} value={value.where} maxLength={SECTION_LIMITS.whereChars} onChange={(e) => set("where", e.target.value)} aria-label={SECTION_WORDS.where} data-editor-where="" />
       </Field>
       <Field label={SECTION_WORDS.onboarding} changed={!same("onboarding")}>
         <p className={LEDE}>{t({ message: "The first steps once someone is chosen, one per line. Empty: the village's own steps show.", context: "role editor: how to write the onboarding steps" })}</p>

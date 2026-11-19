@@ -1,4 +1,5 @@
 import ArchetypeStep from "@/components/roleDraft/ArchetypeStep";
+import SeatHistory from "@/components/power/SeatHistory"; // kept static: lazy, it folds the shared shell chunk into the main bundle (main JS budget)
 import CircleName from "@/components/circles/CircleName";
 import { anchorCircleId } from "@shared/circlePicker";
 import SeasonGoals from "@/components/roleDraft/SeasonGoals";
@@ -16,16 +17,8 @@ import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
 import { gameFetch, useSeason } from "@/lib/gameApi";
 import { PeopleLockNote, type PeopleTier } from "@/components/PeopleLock";
-import SeatAction from "@/components/power/SeatAction";
 import { applyHrefFor, guardedAction, termsSlotFor } from "@/components/power/SeatTermsSlot";
-import SeatHistory from "@/components/power/SeatHistory";
-import SeatNeeds from "@/components/power/SeatNeeds";
-import VillageConflictSteps from "@/components/governance/VillageConflictSteps";
-import SeatTradingCard from "@/components/power/SeatTradingCard";
 import EditRoleButton, { NewRoleFromCardButton } from "@/components/roleEdit/EditRoleButton";
-import SeatVendorFacts from "@/components/power/SeatVendorFacts";
-import RoleHolderCards from "@/components/playerCard/RoleHolderCards";
-import RaiseTension from "@/components/roleTension/RaiseTension";
 import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/QuickPath";
 import { useClassNames } from "@/components/power/useClassNames";
 import { useModule } from "@/modules/ModuleProvider";
@@ -47,6 +40,15 @@ import { useRootsFilter } from "@/components/roots/useRootsFilter";
 
 // The org chart door beside the roster (Rye, 16 Nov 2026) loads after the first view: it sits below the open roles.
 const OrgPreview = lazy(() => import("@/components/roleCard/OrgPreview"));
+// A role row's opened body and the conflict steps at the foot of the page load when they are drawn, off the
+// first view of /roles (scripts/route-first-view.json; the lead, 19 Nov 2026: headroom for the role cards).
+const SeatNeeds = lazy(() => import("@/components/power/SeatNeeds"));
+const VillageConflictSteps = lazy(() => import("@/components/governance/VillageConflictSteps"));
+const SeatTradingCard = lazy(() => import("@/components/power/SeatTradingCard"));
+const SeatVendorFacts = lazy(() => import("@/components/power/SeatVendorFacts"));
+const RoleHolderCards = lazy(() => import("@/components/playerCard/RoleHolderCards"));
+const RaiseTension = lazy(() => import("@/components/roleTension/RaiseTension"));
+const SeatAction = lazy(() => import("@/components/power/SeatAction"));
 
 interface RoleEntry {
   id: string;
@@ -322,6 +324,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
             className="overflow-hidden"
           >
             <div className="bg-muted p-6 rounded-b-xl border border-t-0 border-border space-y-5">
+              <Suspense fallback={null}>
               {/* The role card, the same one the map draws, from this page's
                   own `/api/org` row at whatever tier it was served. The row
                   header above already says the circle and the state, so the
@@ -396,6 +399,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
                   <SeatVendorFacts entityKind="org_role" entityId={role.id} serviceName={vendorName} />
                 </div>
               )}
+              </Suspense>
             </div>
           </m.div>
         )}
@@ -975,7 +979,9 @@ export default function Roles() {
               <h2 className={`${H2} mb-4`}>
                 {t({ message: "How we evolve through conflict", context: "roles page, conflict steps heading" })}
               </h2>
-              <VillageConflictSteps />
+              <Suspense fallback={null}>
+                <VillageConflictSteps />
+              </Suspense>
             </m.div>
           </div>
 

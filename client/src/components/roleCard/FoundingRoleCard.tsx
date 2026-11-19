@@ -132,7 +132,8 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   const open = seat.state !== "filled";
 
   // The four quick facts, from the same view model every card host reads.
-  const rows = roleCardView(seat).rows;
+  // Read from the params, which carry the card's own words for where (sections.where) when it has them.
+  const rows = roleCardView(p.params ?? seat).rows;
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
   const facts: Array<{ icon: LucideIcon; label: string; value: string }> = [
     // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
@@ -145,7 +146,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // The details under "How you're chosen" leave out what the facts already say.
   const card = p.params?.card && typeof p.params.card === "object" ? p.params.card : null;
   // The pay is said once, on the Rewards piece (the lead, 19 Nov 2026), so "What it pays" is not said again here.
-  const chosenSeat = card ? { ...p.params, card: { ...card, commitmentPct: undefined, track: undefined, whereWorked: undefined, languages: undefined, ...(p.pay ? { publicPay: undefined } : {}) } } : p.params;
+  const chosenSeat = card ? { ...p.params, card: { ...card, commitmentPct: undefined, track: undefined, whereWorked: undefined, whereText: undefined, languages: undefined, ...(p.pay ? { publicPay: undefined } : {}) } } : p.params;
   const shared = p.shared ?? NO_SHARED;
 
 

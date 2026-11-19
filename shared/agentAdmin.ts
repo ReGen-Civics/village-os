@@ -387,7 +387,7 @@ export const AGENT_WORDING_VARIABLES: readonly string[] = [
  * (the lead, 19 Nov 2026). The pay sections (paid, payShape, payNote,
  * payCeiling, paySplitNote) stay a person's; the editor keeps them as they are when they are not sent.
  */
-export const AGENT_SECTION_KEYS: readonly string[] = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "deliverables", "onboarding"];
+export const AGENT_SECTION_KEYS: readonly string[] = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "deliverables", "onboarding", "where"];
 
 export interface LeadApprovedEntry {
   kind: LeadApprovedKind;

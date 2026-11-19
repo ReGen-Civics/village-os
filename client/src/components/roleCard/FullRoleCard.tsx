@@ -200,7 +200,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
   // keeps it hidden, and the card drops it again here so an older payload can never draw one.
   const showsRange = answer?.showPayRanges === true;
-  const params = showsRange || !seat?.card?.publicPay ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
+  const ranged = showsRange || !seat?.card?.publicPay ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
+  // Where, in the card's own words (sections.where), in place of the listing's land or remote label.
+  const params = read?.where ? { ...ranged, card: { ...(ranged.card ?? {}), whereText: read.where } } : ranged;
   const founding = register === "founding";
   const words: Array<{ key: string; heading: string; lines: string[] }> = [
     // "What {village} needs from you" (the lead, 19 Nov 2026): goals and deadlines, one bullet per line.

@@ -88,7 +88,10 @@ export function roleCardView(seat: unknown, locale = "en-GB"): RoleCardView {
   if (goals.length) rows.push({ id: "goals", label: "Village goals it serves", lines: goals });
 
   const where = card.whereWorked as WhereWorked | null | undefined;
-  if (where && WHERE_WORDS[where]) rows.push({ id: "where", label: "Where", lines: [WHERE_WORDS[where]] });
+  // The card's own words for where (sections.where, the lead, 19 Nov 2026) stand in for the listing's label.
+  const whereText = typeof card.whereText === "string" ? card.whereText.trim() : "";
+  if (whereText) rows.push({ id: "where", label: "Where", lines: [whereText] });
+  else if (where && WHERE_WORDS[where]) rows.push({ id: "where", label: "Where", lines: [WHERE_WORDS[where]] });
 
   const languages = list(card.languages);
   if (languages.length) rows.push({ id: "languages", label: "Languages", lines: [languages.join(", ")] });

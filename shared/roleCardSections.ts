@@ -63,6 +63,8 @@ export interface RoleCardSections {
   deliverables?: Deliverable[];
   /** "Once you're selected": the onboarding steps, one per line. Absent or empty: no tab. */
   onboarding?: string[];
+  /** Where the role is worked, in the card's own words; drawn in place of the listing's land or remote label. */
+  where?: string;
 }
 
 /**
@@ -104,12 +106,13 @@ export const SECTION_LIMITS = {
   lineChars: 200,
   aiSupportChars: 400,
   companionChars: 40,
+  whereChars: 120,
   shares: 5,
   shareLabelChars: 40,
   payNoteChars: 300,
 } as const;
 
-export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding"] as const;
+export const SECTION_KEYS = ["idealBackground", "qualities", "aiSupport", "aiCompanion", "paid", "payShape", "payNote", "payCeiling", "paySplitNote", "payVisibility", "payWording", "deliverables", "onboarding", "where"] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
 /** The card's own headings and lines for these sections. Plain words, the village's "we". */
@@ -119,6 +122,7 @@ export const SECTION_WORDS = {
   // The lead, 12 Nov 2026: "'Digital Companion' (capitalised) replaces AI wording" (QA2-09).
   aiSupport: "Digital Companion",
   onboarding: "Once you're selected",
+  where: "Where, in the card's own words",
   aiCompanionLabel: "Companion",
   paid: "This role is rewarded",
   payShape: "How rewards work",
@@ -303,6 +307,8 @@ export function readSections(raw: unknown): SectionsRead {
   if (!deliverables.ok) return { ok: false, problem: deliverables.problem, field: "sections.deliverables" };
   const onboarding = lineList(o.onboarding, SECTION_WORDS.onboarding);
   if (!onboarding.ok) return { ...onboarding, field: "sections.onboarding" };
+  const where = text(o.where, SECTION_LIMITS.whereChars, SECTION_WORDS.where);
+  if (!where.ok) return { ...where, field: "sections.where" };
   const paid = o.paid === true || o.paid === "true" || o.paid === 1;
   return {
     ok: true,
@@ -322,6 +328,7 @@ export function readSections(raw: unknown): SectionsRead {
       // Kept only once written, so a card without them stores exactly what it stored before.
       ...(deliverables.value.length ? { deliverables: deliverables.value } : {}),
       ...(onboarding.value.length ? { onboarding: onboarding.value } : {}),
+      ...(where.value ? { where: where.value } : {}),
     },
   };
 }
@@ -368,7 +375,7 @@ export function sectionsForReader(s: RoleCardSections, reader: PayReader): Reade
 /** Whether a card has any of these sections written. */
 export function hasSections(s: RoleCardSections | ReaderSections | null | undefined): boolean {
   if (!s) return false;
-  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0;
+  return s.paid || s.idealBackground.length > 0 || s.qualities.length > 0 || !!s.aiSupport || !!s.aiCompanion || s.payShape.length > 0 || !!s.payNote || !!s.payCeiling || !!s.paySplitNote || (s.deliverables?.length ?? 0) > 0 || (s.onboarding?.length ?? 0) > 0 || !!s.where;
 }
 
 /** "Cash 40%", one line per share, for the card. */

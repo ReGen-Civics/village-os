@@ -84,3 +84,15 @@ describe("the timeline's geometry", () => {
     expect(ganttLayout([])).toBeNull();
   });
 });
+
+describe("where, in the card's own words", () => {
+  it("is kept once written, capped, and stands in for the listing's label", async () => {
+    const { roleCardView } = await import("./roleCardView");
+    const r = readSections({ where: "Near the village (preferred) or remote (possible)" });
+    expect(r.ok && r.value.where).toBe("Near the village (preferred) or remote (possible)");
+    expect(readSections({ where: "x".repeat(121) }).ok).toBe(false);
+    expect(roleCardView({ card: { whereWorked: "both", whereText: "On the land for site work" } }).rows.find((x) => x.id === "where")!.lines).toEqual(["On the land for site work"]);
+    // Control: without the card's words, the listing's label.
+    expect(roleCardView({ card: { whereWorked: "land" } }).rows.find((x) => x.id === "where")!.lines[0]).not.toBe("On the land for site work");
+  });
+});
