@@ -8,6 +8,7 @@
  * nothing. An empty list draws nothing too: no news is the good case.
  */
 import { useEffect, useState } from "react";
+import { Trans } from "@lingui/react/macro";
 import { AlertTriangle } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
 
@@ -34,9 +35,11 @@ export function BrowserCrashesCard({ load = defaultLoad }: { load?: () => Promis
     <div className="bg-card border border-border rounded-xl p-5 shadow-sm" data-testid="browser-crashes">
       <p className="flex items-center gap-2 font-semibold text-foreground text-sm mb-1">
         <AlertTriangle size={16} className="text-destructive" aria-hidden="true" />
-        Crash screens visitors saw
+        <Trans>Crash screens visitors saw</Trans>
       </p>
-      <p className="text-xs text-muted-foreground mb-3">Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept.</p>
+      <p className="text-xs text-muted-foreground mb-3">
+        <Trans>Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept.</Trans>
+      </p>
       <ul className="space-y-2">
         {crashes.map((c) => (
           <li key={c.id} className="text-sm text-foreground break-words">
