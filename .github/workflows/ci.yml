@@ -1380,3 +1380,78 @@ jobs:
       - name: Every test file ran exactly once and passed
         if: ${{ !cancelled() }}
         run: node scripts/check-test-shards.mjs --shards 4 --dir test-results
+
+  # THE PAGES RENDER IN REAL BROWSERS (19 Nov 2026). Release 1.3.27 shipped a
+  # page that crashed for every iOS Safari visitor of /propose-a-role while
+  # every job above was green, because none of them draws a page in a
+  # browser. This boots the BUILT server on a scratch schema exactly as the e2e
+  # suites do (scripts/browser-smoke-local.mjs), renders every key signed-out
+  # page in Chromium and in WebKit with an iPhone profile, sends one TEST
+  # application through the apply flow at the village's own longest "why",
+  # and fails on any page error, crash screen, crash report, blank page, or a
+  # single email leaving during the run. The same scripts/browser-smoke.mjs
+  # runs standalone against a staging URL for the deploy repository.
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mirror.gcr.io/library/mysql:9.7.2
+        env:
+          MYSQL_ROOT_PASSWORD: ci-test
+        ports:
+          - 3306:3306
+        options: >-
+          --tmpfs /var/lib/mysql:rw,size=4g
+          --health-cmd "mysqladmin ping -h localhost -pci-test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: mysql://root:ci-test@127.0.0.1:3306/mysql
+      # Pinned, and installed beside the repository rather than into it, so
+      # package.json and the lockfile carry no browser tooling.
+      PLAYWRIGHT_VERSION: 1.63.0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright and its browsers
+        run: |
+          npm install --no-save --no-audit --no-fund --prefix "$RUNNER_TEMP/pw" "playwright@${PLAYWRIGHT_VERSION}"
+          echo "PLAYWRIGHT_MODULE=$RUNNER_TEMP/pw/node_modules/playwright" >> "$GITHUB_ENV"
+          (cd "$RUNNER_TEMP/pw" && npx playwright install --with-deps webkit chromium)
+
+      - name: Build
+        id: build
+        run: pnpm build
+
+      - name: The smoke refuses what it should
+        # A page that throws, the crash screen, a blank page, a crash report,
+        # a 404: each must fail the smoke before its green means anything.
+        run: node scripts/browser-smoke.test.mjs
+
+      - name: Browser smoke (Chromium, WebKit iPhone, the apply flow)
+        if: ${{ steps.build.outcome == 'success' }}
+        run: |
+          # The "why" at exactly the village's own ceiling, at most 7500, so the
+          # longest real answer is the one sent (shared/openProposals.ts).
+          export SMOKE_WHY_CHARS=$(node -e "const s=require('fs').readFileSync('shared/openProposals.ts','utf8');const m=/OPEN_WHY_MAX\s*=\s*([\d_]+)/.exec(s);console.log(Math.min(7500,Number((m?m[1]:'7500').replace(/_/g,''))))")
+          echo "why: ${SMOKE_WHY_CHARS} characters"
+          npx tsx scripts/browser-smoke-local.mjs --require-webkit --json browser-smoke.json
+
+      - name: Upload the smoke report
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-smoke-${{ github.run_attempt }}
+          path: browser-smoke.json
+          if-no-files-found: warn
+          retention-days: 7

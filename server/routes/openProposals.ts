@@ -52,6 +52,7 @@
  *
  * The desk side asks the gate on `intake.moderate`, as the other public queues do.
  */
+import { isSmokeSubmission, SMOKE_HEADER } from "../lib/smokeTest";
 import crypto from "node:crypto";
 import type { Express, Request, Response } from "express";
 import multer from "multer";
@@ -670,6 +671,17 @@ export function register(app: Express, deps: Deps): void {
     const locale = await languageForNewProposal({ getPool, members: deps.members }, { clientLocale: body.locale, email, acceptLanguage: req.headers["accept-language"] });
     const proposal = { ...parsed.value.body, roles: rolesKept, ...paySplit, ...(card ? { card } : {}), ...(t.term ? { term: t.term } : {}), ...(membership ? { membership } : {}), locale };
     const emailKey = emailKeyOf(email);
+    // A release smoke test (server/lib/smokeTest.ts): judged above like any other, then written and removed at once,
+    // so the table takes it. No cap is spent, no email goes, and no reviewer can ever list it.
+    if (isSmokeSubmission(req.headers[SMOKE_HEADER], email)) {
+      const smokeId = `op-${crypto.randomBytes(10).toString("hex")}`;
+      try {
+        await store.insertOpenProposal(getPool(), { id: smokeId, name: name.slice(0, OPEN_NAME_MAX), email, emailKey, targetSeasonId: season.id, body: proposal, confirmHash: hashOf(newToken()), linkId: d.linkId, now: now() });
+      } finally {
+        await store.deleteOpenProposal(getPool(), smokeId);
+      }
+      return res.json({ sent: true, test: true, email, message: OPEN_WORDS.sent(email), replyDays: null, afterFounding: false });
+    }
     // Every refusal above has been given. Only now, with the proposal acceptable, does this connection spend one of its five an hour.
     if (await overLimit(`open-proposal:ip:${ipBucket(clientIp(req))}`, 5, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooMany });
     if (await overLimit(`open-proposal:email:${limiterAddressKey(emailKey)}`, 3, 24 * 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooManyForAddress });
