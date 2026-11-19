@@ -40,6 +40,21 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.28 (2026-11-19)
+
+### What changed for your village
+
+- **Member and applicant pages call the non-cash share of pay the village's contribution token.** No member or applicant page says "equity" for it any more. The name comes from a new word in Admin, Make it yours, "Your words for things": the contribution token. It reads in full in a sentence and short on a tile or a narrow cell (the full word without a trailing "Tokens"). With no word set, a village reads its token's registry name, unless that name says "equity"; then it reads "Contribution tokens". It is one token whether a contributor earns it or an investor buys it with cash, and the same token as its Hypha mirror.
+- **Every mention carries a plain tip.** The contribution token's tip says what it tracks, that what it becomes is still being defined with legal advice, and that it is at risk. Village Credits carry a tip saying they are usage tokens, on the first mention in a passage.
+- **Admin pages and the token registry keep their names.** The pricing desk, role pay, the Treasurer's and Finance desks, the review page, invoices and the server's words are unchanged.
+- **End of Moon still pays the right share.** A pay share labelled with any of the token's names (the registry name, or the village's word in full or short) pays in that token, and a label that says "equity" is still read, so contracts stored before today keep working.
+
+### What you must do
+
+Nothing is required. To show your own name for the contribution token, set the word in Admin, Make it yours, "Your words for things". No migrations since v1.3.27.
+
+---
+
 ## 1.3.27 (2026-11-19)
 
 ### What changed for your village
