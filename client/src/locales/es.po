@@ -23734,8 +23734,8 @@ msgstr "Si una respuesta se pasa, cada palabra se queda en la casilla, y te most
 
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
-msgid "One recording runs up to {take} minutes. A timer shows the time left, and at the end it stops by itself and keeps everything you said."
-msgstr "Cada grabación dura hasta {take} minutos. Un temporizador muestra el tiempo que queda, y al final se detiene sola y guarda todo lo que dijiste."
+msgid "You can record up to {take} minutes each time. A timer shows the time left. At {take} minutes the recording stops by itself and keeps everything you said, and you can record again to add more."
+msgstr "Puedes grabar hasta {take} minutos cada vez. Un temporizador muestra el tiempo que queda. A los {take} minutos la grabación se detiene sola y guarda todo lo que dijiste, y puedes grabar otra vez para añadir más."
 
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
@@ -23774,18 +23774,18 @@ msgstr "Añadir estas palabras a la respuesta"
 
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription refusal"
-msgid "Only takes up to 15 minutes can be written down."
-msgstr "Solo se pueden escribir tomas de hasta 15 minutos."
+msgid "Only takes up to 7 minutes can be written down."
+msgstr "Solo se pueden escribir tomas de hasta 7 minutos."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
-msgid "That recording reached the 15-minute limit and stopped by itself. It is kept below. Record another to keep going."
-msgstr "Esa grabación llegó al límite de 15 minutos y se detuvo sola. Está guardada abajo. Graba otra para seguir."
+msgid "That's 7 minutes, the most for one recording. Your words are kept. Record again to add more."
+msgstr "Son 7 minutos, lo máximo para una grabación. Tus palabras se guardan. Graba otra vez para añadir más."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
-msgid "Keep each recording under 15 minutes."
-msgstr "Que cada grabación dure menos de 15 minutos."
+msgid "Keep each recording under 7 minutes."
+msgstr "Que cada grabación dure menos de 7 minutos."
 
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -23801,3 +23801,13 @@ msgstr "Tus archivos y grabaciones suman {0}, {1} más de lo que puede llevar un
 msgctxt "open proposal attachments"
 msgid "Files and recordings together: {0} of {1}."
 msgstr "Archivos y grabaciones juntos: {0} de {1}."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, before recording"
+msgid "You can record up to {minutes} minutes each time."
+msgstr "Puedes grabar hasta {minutes} minutos cada vez."
+
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note, read aloud"
+msgid "About a minute left in this recording."
+msgstr "Queda alrededor de un minuto en esta grabación."

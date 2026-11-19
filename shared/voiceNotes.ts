@@ -50,7 +50,7 @@ import { APPLY_TEXT, CLIP_MAX_BYTES, CLIP_SECONDS_CEILING, CLIP_SECONDS_DEFAULT,
 
 export const VOICE_NOTES_MAX = TAKES_MAX;
 export const VOICE_NOTE_MAX_SECONDS = TAKE_MAX_SECONDS;
-/** Fifteen minutes of the largest phone recording, under the transcription providers' 25 MB (shared/applyLimits.ts has the arithmetic). */
+/** Seven minutes of the largest phone recording, with headroom, under the transcription providers' 25 MB (shared/applyLimits.ts has the arithmetic). */
 export const VOICE_NOTE_MAX_BYTES = TAKE_MAX_BYTES;
 export const VOICE_TRANSCRIPT_MAX = APPLY_TEXT.heard;
 
@@ -257,7 +257,7 @@ export const VOICE_WORDS = {
   nearEnd: "About 30 seconds left in this recording.",
   // When a recording ends or plays other than as planned (an applicant, 17 Nov 2026): what happened, and what to do.
   noEngine: "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it.",
-  reachedLimit: `That recording reached the ${VOICE_NOTE_MAX_SECONDS / 60}-minute limit and stopped by itself. It is kept below. Record another to keep going.`,
+  reachedLimit: `That's ${VOICE_NOTE_MAX_SECONDS / 60} minutes, the most for one recording. Your words are kept. Record again to add more.`,
   cutShort: "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing.",
   emptyTake: "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again.",
   cantPlay: "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device.",

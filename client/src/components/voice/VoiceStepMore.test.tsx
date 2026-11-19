@@ -92,7 +92,7 @@ function Card({ start = EMPTY_VOICE, seen }: { start?: VoiceState; seen?: (v: Vo
 describe("the countdown and the hard stop", () => {
   it("counts the last minute down, whole seconds, never below zero", () => {
     const T = VOICE_NOTE_MAX_SECONDS;
-    expect(T).toBe(900);
+    expect(T).toBe(420);
     expect(countdownLeft(0)).toBeNull();
     expect(countdownLeft(T - 60.1)).toBeNull();
     expect(countdownLeft(T - 60)).toBe(60);
@@ -102,12 +102,12 @@ describe("the countdown and the hard stop", () => {
     expect(countdownLeft(T + 12)).toBe(0);
   });
 
-  it("says the limit before recording, shows the time left, warns at 30 seconds with a buzz, and stops at 15:00 keeping the take", async () => {
+  it("says the limit before recording, shows the time left, warns at 30 seconds with a buzz, and stops at 7:00 keeping the take", async () => {
     const buzzes: unknown[] = [];
     Object.defineProperty(navigator, "vibrate", { configurable: true, value: (p: unknown) => (buzzes.push(p), true) });
     const { container } = render(<Card />);
     await settle();
-    expect(container.querySelector("[data-voice-limit-note]")?.textContent).toContain("Up to 15 minutes per take. It stops by itself at 15:00.");
+    expect(container.querySelector("[data-voice-limit-note]")?.textContent).toContain("You can record up to 7 minutes each time.");
     vi.useFakeTimers({ toFake: ["setInterval", "setTimeout", "clearInterval", "clearTimeout", "Date"] });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.record }));
@@ -116,12 +116,14 @@ describe("the countdown and the hard stop", () => {
     expect(container.querySelector("[data-voice-limit-note]")).toBeNull();
     // The time left shows from the start.
     await act(async () => void vi.advanceTimersByTime(1_000));
-    expect(container.querySelector("[data-voice-left]")?.textContent).toBe("14:59 left");
-    await act(async () => void vi.advanceTimersByTime(838_000));
+    expect(container.querySelector("[data-voice-left]")?.textContent).toBe("6:59 left");
+    await act(async () => void vi.advanceTimersByTime(358_000));
     expect(container.querySelector("[data-voice-countdown]")).toBeNull();
     // The lazy half loaded with the note above, so the countdown draws at once.
     await act(async () => void vi.advanceTimersByTime(1_000));
     expect(container.querySelector("[data-voice-countdown]")?.textContent).toContain("1:00 left");
+    // One minute left: the gentle notice, said aloud too.
+    expect(container.querySelector("[data-voice-said]")?.textContent).toBe("About a minute left in this recording.");
     // Thirty seconds left: the gentle warning, seen and felt, once.
     expect(container.querySelector("[data-voice-warned]")).toBeNull();
     expect(buzzes).toHaveLength(0);
@@ -133,10 +135,11 @@ describe("the countdown and the hard stop", () => {
     expect(container.querySelector("[data-voice-countdown]")?.textContent).toContain("0:01 left");
     expect(screen.getByRole("button", { name: VOICE_WORDS.stop })).toBeTruthy();
     await act(async () => void vi.advanceTimersByTime(1_000));
-    // 15:00: stopped by itself, the take kept, and said so.
+    // 7:00: stopped by itself, the take kept, and said so.
     expect(screen.queryByRole("button", { name: VOICE_WORDS.stop })).toBeNull();
     expect(container.querySelector("[data-voice-countdown]")).toBeNull();
     expect(container.querySelector('[data-voice-problem="limit"]')?.textContent).toBe(VOICE_WORDS.reachedLimit);
+    expect(VOICE_WORDS.reachedLimit).toBe("That's 7 minutes, the most for one recording. Your words are kept. Record again to add more.");
     expect(container.querySelectorAll("[data-voice-takes] li")).toHaveLength(1);
   });
 });

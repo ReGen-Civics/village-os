@@ -23,7 +23,7 @@
  *     the multilingual `base` model, quantised; Dockerfile, the `whisper`
  *     stage). No key, no account, no cost per use, and the recording never
  *     leaves the server. Slower: about a minute of two cores for a five-minute
- *     take (three for the fifteen-minute take a page now records), measured 17 Nov 2026, so one runs at a time.
+ *     take (about a minute and a half for the 7-minute take a page now records), measured 17 Nov 2026, so one runs at a time.
  *
  * `auto` (the default) asks them in that order, skipping any that is not
  * ready, and when one fails the next is tried. So with no key at all the image
@@ -212,7 +212,7 @@ export function languageHint(lang: unknown): string | null {
 
 /** How long one call to a provider may take before the recording is reported unwritten (shared/applyLimits.ts). */
 export const TRANSCRIBE_TIMEOUT_MS = TRANSCRIBE_PROVIDER_TIMEOUT_MS;
-/** How long this server's own Whisper may take on one recording: a fifteen-minute take on one slow core. */
+/** How long this server's own Whisper may take on one recording: a 7-minute take on one slow core. */
 export const LOCAL_TIMEOUT_MS = TRANSCRIBE_LOCAL_TIMEOUT_MS;
 
 /** One multipart body, as bytes: the provider reads a form, and the pinned dialer sends bytes as they are. */

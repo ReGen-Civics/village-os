@@ -224,7 +224,9 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
             {recorder.recording
               ? left <= 30
                 ? voiceWord("nearEnd")
-                : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
+                : left <= 60
+                  ? t({ message: "About a minute left in this recording.", context: "voice note, read aloud" })
+                  : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
               : stopped
                 ? t({ message: "Recording stopped. You can play it back below.", context: "voice note, read aloud" })
                 : ""}
