@@ -140,7 +140,7 @@ const browserSender: CrashSender = {
       const body = JSON.stringify(report);
       const blob = new Blob([body], { type: "application/json" });
       if (typeof navigator !== "undefined" && navigator.sendBeacon?.(CRASH_REPORT_PATH, blob)) return;
-      void fetch(CRASH_REPORT_PATH, { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true, credentials: "omit" }).catch(() => {});
+      void fetch(CRASH_REPORT_PATH, /* save-ok: a crash report is fire and forget; nothing on the page waits on it */ { method: "POST", body, headers: { "Content-Type": "application/json" }, keepalive: true, credentials: "omit" }).catch(() => {});
     } catch {
       /* a report that fails must not become a second crash */
     }
