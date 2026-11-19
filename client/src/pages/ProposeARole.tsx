@@ -86,12 +86,15 @@ import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraf
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
+import { needsSafetyNet, sendTimeoutMs, type SendFailure } from "@/components/fireflyPath/applySendFailure";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 export { firstUnanswered } from "@/components/fireflyPath/applyPage";
 // Roles added to one application (the lead, 17 Nov 2026): loaded with The terms, off the first view.
 const MoreRoles = lazy(() => import("@/components/fireflyPath/MoreRoles"));
 // Shaping the role card, on Your value: loaded with the step, off the first view (scripts/route-first-view.json).
 const ShapeTheRole = lazy(() => import("@/components/roleCard/ShapeTheRole"));
+// The way out when a send fails (apply safety net, 19 Nov 2026): loaded only after a failure, off the first view.
+const SafetyNet = lazy(() => import("@/components/fireflyPath/SafetyNet"));
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -157,6 +160,8 @@ export default function ProposeARole() {
   const error = problems[0] ?? null;
   const problemOn = (field: string) => { const m = problems.find((p) => p.field === field)?.message; return m ? applyWordT(m) : null; };
   const [sent, setSent] = useState<SentNote | null>(null);
+  /** The last send's failure when it needs the safety net (fireflyPath/applySendFailure.ts); cleared by the next send. */
+  const [failure, setFailure] = useState<SendFailure | null>(null);
   const [practical, setPractical] = useState<Practical>(() => ({ timeZone: browserTimeZone(), windows: [], earliestStart: "" }));
   /** The eight settings answered and the commitment chosen (components/governance/TermsEight.tsx). */
   const [termsStep, setTermsStep] = useState<TermsStepValue>(EMPTY_TERMS_STEP);
@@ -272,14 +277,23 @@ export default function ProposeARole() {
     if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // nothing kept starts unticked (1.3.22); the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor]);
 
+  /** The draft as toDraft writes it, from what the page holds now. */
+  const draftNow = () => toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date());
+  /** What the safety net downloads: the draft this browser saved, or, with nothing kept on the device, the same fields from the page. */
+  const draftForBackup = () => {
+    if (roleId) {
+      const read = readStoredJson("local", draftKey(roleId, link));
+      const kept = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
+      if (kept) return kept;
+    }
+    return draftNow();
+  };
+
   // THE DRAFT, saved as they go. Only the fields toDraft names: references, consent, files and agreements cannot reach it.
   useEffect(() => {
     if (!roleId || draftFor !== roleId || sent || !remember) return;
-    writeStoredJson(
-      "local",
-      draftKey(roleId, link),
-      toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date()),
-    );
+    writeStoredJson("local", draftKey(roleId, link), draftNow());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleId, draftFor, link, sent, remember, stone, reached, knowUs, why, name, email, about.based, about.languages, about.story, selfKnowledge, links, aim, items, marks, termsStep, rampUp, practical, pieceSuggestions, extras]);
 
   // After a step: the cursor on the new step's heading, or on the field that needs a look.
@@ -424,6 +438,10 @@ export default function ProposeARole() {
     }
     setSending(true);
     setProblems([]);
+    setFailure(null);
+    // A send that hangs is a failure too: given up after a while long enough for files on a slow line.
+    const stop = new AbortController();
+    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const proposal = {
         name,
@@ -455,7 +473,9 @@ export default function ProposeARole() {
         ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
       // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
-      const res = await fetch("/api/open-proposals", applicationRequest(proposal, files, voice));
+      const request = applicationRequest(proposal, files, voice);
+      timer = setTimeout(() => stop.abort(), sendTimeoutMs(request.body instanceof FormData));
+      const res = await fetch("/api/open-proposals", { ...request, signal: stop.signal });
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
       if (!res.ok && data?.field === "membership") setLetterRead((n) => n + 1);
@@ -464,10 +484,13 @@ export default function ProposeARole() {
         const field = typeof data?.field === "string" ? data.field : null;
         const p = { field, message: typeof data?.error === "string" ? data.error : notSentWords(), target: targetFor(field) };
         setProblems([p]);
+        // Nothing the applicant can fix in an answer: the way out, beside the server's words. The draft stays as it is.
+        const f: SendFailure = { kind: "status", status: res.status, field };
+        if (needsSafetyNet(f)) setFailure(f);
         show(p);
         return;
       }
-      // Sent: the draft has done its work, and their own words wait for a next role (fireflyPath/applyCarry.ts).
+      // Sent, and only now: the draft has done its work, and their own words wait for a next role (fireflyPath/applyCarry.ts).
       removeStored("local", draftKey(roleId, link));
       const carryFields = { name, email, about, selfKnowledge, links, knowUs, items, marks, transcript: voice.transcript };
       carriedHere.current = toCarry(carryFields, new Date());
@@ -485,9 +508,11 @@ export default function ProposeARole() {
         ...(kept ? { kept, statusPath: typeof data?.statusPath === "string" && data.statusPath.startsWith("/application-status/") ? data.statusPath : null } : {}),
       });
       window.scrollTo?.({ top: 0 });
-    } catch {
-      setProblems([{ field: null, message: notSentWords(), target: null }]);
+    } catch (e) {
+      // The network dropped or the send took too long: the way out, and the draft stays as it is.
+      setFailure({ kind: stop.signal.aborted || (e as { name?: string } | null)?.name === "AbortError" ? "timeout" : "network" });
     } finally {
+      if (timer) clearTimeout(timer);
       setSending(false);
     }
   };
@@ -752,6 +777,18 @@ export default function ProposeARole() {
             </div>
 
             <ProblemsList problems={problems} labels={labels} stone={stone} onShow={show} />
+            {failure && (
+              <Suspense fallback={null}>
+                <SafetyNet
+                  village={form.village}
+                  roles={[{ id: role.id, name: role.name }, ...extras.map((x, i) => ({ id: x.roleId, name: extraRoles[i]?.name ?? x.roleId }))]}
+                  goals={form.goals}
+                  draft={draftForBackup}
+                  onRetry={() => void send()}
+                  sending={sending}
+                />
+              </Suspense>
+            )}
 
             {/* STEP 1: get to know us. Never locks. */}
             <section {...panel(0)}>
