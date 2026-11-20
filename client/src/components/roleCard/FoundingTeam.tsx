@@ -24,7 +24,7 @@ import FullRoleCard from "./FullRoleCard";
 import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
 import { useWide } from "./useWide";
 
-// The team's deliverables on one timeline (the lead, 19 Nov 2026), loaded only once two roles have dated ones.
+// The team's deliverables on one timeline (the lead, 19 and 20 Nov 2026), loaded only once two roles have dated ones.
 const DeliverablesGantt = lazy(() => import("./DeliverablesGantt"));
 
 /** The Seed of Life as quiet line work: structure, never ornament that moves. */
@@ -44,6 +44,8 @@ export interface FoundingRole {
   seat: Record<string, any>;
   circleName: string | null;
   sections: RoleCardSections | null;
+  /** Its own page, `/roles/<slug>`, for the card's share link. */
+  path?: string;
 }
 
 /**
@@ -116,7 +118,9 @@ export default function FoundingTeam({
   // Every open founding role's dated deliverables, each row named by its role.
   const withDates = roles.filter((r) => (r.sections?.deliverables?.length ?? 0) > 0);
   const teamRows = withDates.length >= 2 ? withDates.flatMap((r) => (r.sections?.deliverables ?? []).map((d) => ({ ...d, role: String(r.seat.name ?? "") }))) : [];
-  const teamTitle = t({ message: "The team's deliverables", context: "founding team: every open role's dated outcomes on one timeline" });
+  // "Three roles, one timeline" (the lead, 20 Nov 2026): the open roles' dated deliverables, one lane each, with
+  // today and the gates they share drawn through every lane (DeliverablesGantt.tsx).
+  const teamTitle = t({ message: `${withDates.length} roles, one timeline`, context: "founding team: every open role's dated outcomes on one timeline" });
 
   // On the team sheet the card opens under its own row, so the reader stays where they clicked (QA F7). The formation
   // has no rows to open under, and a sheet with nothing open has no card, so both keep the slot below the lineup.
@@ -125,7 +129,7 @@ export default function FoundingTeam({
     <div id={`${headingId}-card`} tabIndex={-1} className="scroll-mt-24 focus:outline-none" data-founding-card-slot="">
       {current ? (
         <>
-          <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
+          <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} sharePath={current.path} />
           {onOpenBuilt && <LeadBuilds leadName={String(current.seat.name ?? "")} roles={builds[String(current.seat.id)] ?? []} onOpen={onOpenBuilt} />}
         </>
       ) : wide ? (
@@ -189,7 +193,8 @@ export default function FoundingTeam({
         {!inlineCard && cardSlot}
         {teamRows.length > 0 && (
           <section aria-label={teamTitle} className="sheet-night rounded-2xl border border-notice/40 bg-card p-5 shadow-sm sm:p-7" data-team-deliverables="">
-            <p className="mb-4 font-display text-2xl text-card-foreground">{teamTitle}</p>
+            <p className="font-display text-2xl text-card-foreground">{teamTitle}</p>
+            <p className="mb-4 mt-1 text-sm text-muted-foreground">{t({ message: "Tap a bar for its dates. The dotted lines are the gates the roles share.", context: "founding team timeline: how to read it" })}</p>
             <Suspense fallback={null}>
               <DeliverablesGantt rows={teamRows} label={teamTitle} />
             </Suspense>

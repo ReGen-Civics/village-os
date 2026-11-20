@@ -5,7 +5,7 @@
  * Kept in the role's founding sections (`sections.deliverables`, the
  * `role-card-sections` app_config document), so no migration:
  *
- *   { title, start: "YYYY-MM-DD", end: "YYYY-MM-DD", workstream?, milestone? }
+ *   { title, start: "YYYY-MM-DD", end: "YYYY-MM-DD", workstream?, milestone?, feeds? }
  *
  * A milestone is one day: its start and end are the same date and it is
  * drawn as a diamond. The role on the card is the owner, so no row names a
@@ -33,18 +33,21 @@ export interface Deliverable {
   workstream?: string;
   /** One day, drawn as a diamond. */
   milestone?: boolean;
+  /** What it feeds, in a few words, shown in the bar's tip (the lead, 20 Nov 2026). Empty: none. */
+  feeds?: string;
 }
 
 export const DELIVERABLE_LIMITS = {
   rows: 12,
   titleChars: 120,
   workstreamChars: 40,
+  feedsChars: 80,
 } as const;
 
 export const DELIVERABLE_PROBLEMS = {
   notAList: "Deliverables is a list of dated outcomes: title, start and end.",
   tooMany: `Deliverables: at most ${DELIVERABLE_LIMITS.rows}.`,
-  row: `Each deliverable needs a title of up to ${DELIVERABLE_LIMITS.titleChars} characters, a workstream of up to ${DELIVERABLE_LIMITS.workstreamChars}, and dates as year-month-day, like 2027-01-15, ending on or after it starts.`,
+  row: `Each deliverable needs a title of up to ${DELIVERABLE_LIMITS.titleChars} characters, a workstream of up to ${DELIVERABLE_LIMITS.workstreamChars}, what it feeds in up to ${DELIVERABLE_LIMITS.feedsChars}, and dates as year-month-day, like 2027-01-15, ending on or after it starts.`,
   payment: "Keep bank, card and account numbers out of a role card.",
 } as const;
 
@@ -75,13 +78,14 @@ export function readDeliverables(raw: unknown): DeliverablesRead {
     const o = (item && typeof item === "object" ? item : {}) as Record<string, unknown>;
     const title = clean(o.title);
     const workstream = clean(o.workstream);
+    const feeds = clean(o.feeds);
     const start = readDay(o.start);
     // Dates as YYYY-MM-DD order as text, so an end before its start is a smaller string.
     const end = o.end === undefined || o.end === null || o.end === "" ? start : readDay(o.end);
-    if (!title || title.length > DELIVERABLE_LIMITS.titleChars || workstream.length > DELIVERABLE_LIMITS.workstreamChars || !start || !end || end < start) return { ok: false, problem: DELIVERABLE_PROBLEMS.row };
-    if (looksLikePaymentDetails(`${title} ${workstream}`)) return { ok: false, problem: DELIVERABLE_PROBLEMS.payment };
+    if (!title || title.length > DELIVERABLE_LIMITS.titleChars || workstream.length > DELIVERABLE_LIMITS.workstreamChars || feeds.length > DELIVERABLE_LIMITS.feedsChars || !start || !end || end < start) return { ok: false, problem: DELIVERABLE_PROBLEMS.row };
+    if (looksLikePaymentDetails(`${title} ${workstream} ${feeds}`)) return { ok: false, problem: DELIVERABLE_PROBLEMS.payment };
     const milestone = o.milestone === true || start === end;
-    out.push({ title, start, end: milestone ? start : end, ...(workstream ? { workstream } : {}), ...(milestone ? { milestone: true } : {}) });
+    out.push({ title, start, end: milestone ? start : end, ...(workstream ? { workstream } : {}), ...(milestone ? { milestone: true } : {}), ...(feeds ? { feeds } : {}) });
   }
   if (out.length > DELIVERABLE_LIMITS.rows) return { ok: false, problem: DELIVERABLE_PROBLEMS.tooMany };
   return { ok: true, value: out };

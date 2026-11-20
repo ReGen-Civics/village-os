@@ -172,6 +172,7 @@ const QuestDetail = lazyPage(() => import("./pages/QuestDetail"));
 const ProposeQuest = lazyPage(() => import("./pages/ProposeQuest"));
 const Roles = lazyPage(() => import("./pages/Roles"));
 const RoleDraft = lazyPage(() => import("./pages/RoleDraft"));
+const RoleShare = lazyPage(() => import("./pages/RoleShare"));
 const HowWeCreate = brochurePage(() => import("./pages/HowWeCreate"));
 const CoCreatorsGuide = brochurePage(() => import("./pages/CoCreatorsGuide"));
 const Housing = brochurePage(() => import("./pages/Housing"));
@@ -394,6 +395,8 @@ function Router() {
       {/* The old address, kept so every shared link and bookmark still lands (the board was called a draft until 9 Nov 2026). */}
       <Route path="/roles/draft">{() => <Redirect to="/roles/select" replace />}</Route>
       <Route path="/roles" component={Roles} />
+      {/* One role's own page and share link (the lead, 20 Nov 2026), after /roles/select and /roles/draft, which it must not take. */}
+      <Route path="/roles/:slug" component={RoleShare} />
       {/* /join and /apply were 404s that people guessed at. There is one front door now. */}
       <Route path="/join">{() => <Redirect to="/roles" replace />}</Route>
       <Route path="/apply">{() => <Redirect to="/roles" replace />}</Route>

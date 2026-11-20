@@ -13,6 +13,7 @@ import { ArrowRight, Briefcase, ChevronDown } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
 import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
 import { AnchorCircleTip } from "@/components/roleCard/CardTips";
+import { rolePath } from "@shared/roleSlug";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
@@ -70,6 +71,8 @@ interface RoleEntry {
   isExample?: boolean;
   /** The `/api/org` row as it arrived, which the role card reads for itself. */
   raw: any;
+  /** Its own page's address, `/roles/<slug>` (shared/roleSlug.ts). */
+  path: string;
 }
 
 /** What every expanded card on the page reads besides its own row. */
@@ -284,7 +287,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
                   on a demonstration seat: nobody is recruited for one, so a
                   link to it has nothing to ask anybody. */}
               {!role.isExample && <RoleHolderCards role={role.raw} />}
-              {!role.isExample && <SeatLinkCopy seatId={role.id} seatName={role.name} />}
+              {!role.isExample && <SeatLinkCopy path={role.path} seatName={role.name} />}
               {/* For a holder of the power to decide the structure, and nobody else: the editor is its own chunk. */}
               {!role.isExample && <EditRoleButton roleId={role.id} onSaved={() => window.location.reload()} />}
               {!role.isExample && (
@@ -434,6 +437,7 @@ export default function Roles() {
             color: r.color ?? undefined,
             isExample: !!r.isExample,
             raw: r,
+            path: rolePath({ id: String(r.id ?? `role-${i}`), name: r.name, slug: r.slug }, data.roles),
           })),
         );
       })
@@ -484,7 +488,7 @@ export default function Roles() {
     ? founding.roleIds
         .map((id) => (roles ?? []).find((r) => r.id === id))
         .filter((r): r is RoleEntry => !!r && r.raw?.listed !== false)
-        .map((r) => ({ seat: r.raw, circleName: r.group, sections: founding.sections[r.id] ?? null }))
+        .map((r) => ({ seat: r.raw, circleName: r.group, sections: founding.sections[r.id] ?? null, path: r.path }))
     : [];
   const otherWays = founding?.otherWays ?? DEFAULT_OTHER_WAYS;
   const leads = featured.length > 0;

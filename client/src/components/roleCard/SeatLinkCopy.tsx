@@ -1,16 +1,16 @@
 /**
- * "COPY LINK" UNDER ONE ROLE ON /roles: the link `/roles?seat=<id>` (Roles.tsx reads it on arrival). Moved out
- * of Roles.tsx (19 Nov 2026) to keep that page under the file-length gate; it loads with an opened row.
+ * "COPY LINK" UNDER ONE ROLE: the role's own page, `/roles/<slug>` (the lead, 20 Nov 2026; shared/roleSlug.ts),
+ * which a messaging app previews with the role's name, purpose and art (server/routes/roleShare.ts). It was
+ * `/roles?seat=<id>`, which still opens the row. Moved out of Roles.tsx (19 Nov 2026) to keep that page under the
+ * file-length gate; it loads with an opened row and on the role's own page.
  */
 import { useEffect, useRef, useState } from "react";
 import { Link2 } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 
-/** The absolute link to one seat's card. */
-function seatLink(id: string): string {
-  const url = new URL("/roles", window.location.origin);
-  url.searchParams.set("seat", id);
-  return url.toString();
+/** The absolute link to one role's page. */
+function seatLink(path: string): string {
+  return new URL(path, window.location.origin).toString();
 }
 
 /**
@@ -27,9 +27,9 @@ function seatLink(id: string): string {
  * and named none of them. The visible words stay "Copy link" and open the
  * accessible name, so a reader who says what they see still reaches it.
  */
-export default function SeatLinkCopy({ seatId, seatName }: { seatId: string; seatName: string }) {
+export default function SeatLinkCopy({ path, seatName, bare = false }: { path: string; seatName: string; bare?: boolean }) {
   const { t } = useLingui();
-  const link = seatLink(seatId);
+  const link = seatLink(path);
   const [said, setSaid] = useState<"" | "copied" | "refused">("");
   // A count so a second refusal selects the field again.
   const [refused, setRefused] = useState(0);
@@ -61,7 +61,7 @@ export default function SeatLinkCopy({ seatId, seatName }: { seatId: string; sea
         ? t`Copying did not work here. The link is selected in the field below.`
         : "";
   return (
-    <div className="pt-4 border-t border-border space-y-2">
+    <div className={bare ? "space-y-2" : "pt-4 border-t border-border space-y-2"}>
       <button
         type="button"
         onClick={copy}

@@ -1,5 +1,5 @@
 /**
- * THE EDITOR'S TEXT FORM FOR DELIVERABLES: one per line, "start | end | title | workstream".
+ * THE EDITOR'S TEXT FORM FOR DELIVERABLES: one per line, "start | end | title | workstream | feeds".
  * Kept apart from the reader (shared/roleDeliverables.ts) so a card that only reads its sections
  * does not carry it.
  *
@@ -7,11 +7,13 @@
  */
 import type { Deliverable } from "./roleDeliverables";
 
-const LINE_PROBLEM = "Write each deliverable as: start | end | title | workstream.";
+const LINE_PROBLEM = "Write each deliverable as: start | end | title | workstream | feeds.";
 
-/** The editor's line for one deliverable: "start | end | title | workstream". */
+/** The editor's line for one deliverable: "start | end | title | workstream | feeds", with empty ends left off. */
 export function deliverableLine(d: Deliverable): string {
-  return [d.start, d.milestone ? d.start : d.end, d.title, d.workstream ?? ""].join(" | ").replace(/\s\|\s$/, "");
+  const parts = [d.start, d.milestone ? d.start : d.end, d.title, d.workstream ?? "", d.feeds ?? ""];
+  while (parts.length > 3 && !parts[parts.length - 1]) parts.pop();
+  return parts.join(" | ");
 }
 
 /**
@@ -26,7 +28,7 @@ export function deliverablesFromText(text: string): { ok: true; value: Array<Rec
     if (!t) continue;
     const parts = t.split("|").map((p) => p.trim());
     if (parts.length < 3 || !parts[2]) return { ok: false, problem: LINE_PROBLEM, line: i + 1 };
-    out.push({ start: parts[0], end: parts[1] || parts[0], title: parts[2], workstream: parts[3] ?? "" });
+    out.push({ start: parts[0], end: parts[1] || parts[0], title: parts[2], workstream: parts[3] ?? "", feeds: parts.slice(4).join(" | ") });
   }
   return { ok: true, value: out };
 }

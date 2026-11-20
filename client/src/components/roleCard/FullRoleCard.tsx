@@ -79,6 +79,8 @@ const GameCardExtras = lazy(() => import("./CardLists").then((m) => ({ default: 
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
 const CardCommitment = lazy(() => import("./CardCommitment"));
+// The share link in the footer, loaded with a card that offers one.
+const SeatLinkCopy = lazy(() => import("./SeatLinkCopy"));
 
 export type CardRegister = "founding" | "game";
 
@@ -174,9 +176,11 @@ export interface FullRoleCardProps {
   marks?: (pieceKey: string) => number;
   /** The share the applicant chose, while they apply: the focus line follows it (shared/focusLine.ts). */
   commitmentChosen?: number | null;
+  /** The role's own page, `/roles/<slug>`: the card offers "Copy link" to it in its footer (the lead, 20 Nov 2026). */
+  sharePath?: string;
 }
 
-export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
@@ -412,7 +416,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       <p className={HINT} data-testid="last-edited">
         {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}
       </p>
-      {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
+      <div className="flex flex-wrap items-center gap-3">
+        {sharePath && !seat.isExample && (
+          <Suspense fallback={null}>
+            <SeatLinkCopy path={sharePath} seatName={String(seat?.name ?? "")} bare />
+          </Suspense>
+        )}
+        {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
+      </div>
     </footer>
   );
 

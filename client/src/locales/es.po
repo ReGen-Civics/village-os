@@ -24368,3 +24368,62 @@ msgstr "El asistente de IA que trabaja junto a la persona en este rol. Redacta, 
 msgctxt "role card tooltip: the anchor circle, when it has no purpose written"
 msgid "The circle every other circle links back to. It holds the village's shared direction."
 msgstr "El círculo al que se vinculan todos los demás. Sostiene la dirección compartida de la aldea."
+
+# needs-native-review: new words, 20 Nov 2026 (roles page timeline and a role's own page)
+#. placeholder {0}: withDates.length
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team: every open role's dated outcomes on one timeline"
+msgid "{0} roles, one timeline"
+msgstr "{0} roles, una línea de tiempo"
+
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team timeline: how to read it"
+msgid "Tap a bar for its dates. The dotted lines are the gates the roles share."
+msgstr "Toca una barra para ver sus fechas. Las líneas punteadas son los hitos que comparten los roles."
+
+#. placeholder {0}: gateWords(g)
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: a gate several roles share, its titles and day"
+msgid "Gate: {0}"
+msgstr "Hito compartido: {0}"
+
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: the line for today"
+msgid "Today"
+msgstr "Hoy"
+
+#. placeholder {0}: r.feeds
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: what a deliverable feeds"
+msgid "Feeds: {0}"
+msgstr "Alimenta: {0}"
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: how to write the deliverables"
+msgid "One per line: start | end | title | workstream | what it feeds, with dates as year-month-day. A milestone has one date, or the same date twice; one that several roles share is drawn as a gate on the team's timeline. What it feeds, up to 80 characters, shows when someone taps the bar."
+msgstr "Uno por línea: inicio | fin | título | área de trabajo | qué alimenta, con fechas como año-mes-día. Un hito tiene una fecha, o la misma fecha dos veces; uno que comparten varios roles se dibuja como un hito compartido en la línea de tiempo del equipo. Qué alimenta, hasta 80 caracteres, se muestra al tocar la barra."
+
+#: client/src/pages/RoleShare.tsx
+msgctxt "a role's own page: back to the roles page"
+msgid "All roles"
+msgstr "Todos los roles"
+
+#: client/src/pages/RoleShare.tsx
+msgctxt "a role's own page"
+msgid "Loading the role…"
+msgstr "Cargando el rol…"
+
+#: client/src/pages/RoleShare.tsx
+msgctxt "a role's own page: no role by this address"
+msgid "That role is not on this page anymore."
+msgstr "Ese rol ya no está en esta página."
+
+#: client/src/pages/RoleShare.tsx
+msgctxt "a role's own page: no role by this address"
+msgid "Every role the village lists is on the roles page."
+msgstr "Todos los roles que la aldea publica están en la página de roles."
+
+#: client/src/pages/RoleShare.tsx
+msgctxt "a role's own page: the roles page"
+msgid "See every role"
+msgstr "Ver todos los roles"
