@@ -46,7 +46,7 @@ Either download `village-os-starter-<version>.zip` from the latest release at
 whole repository if you mean to change the code:
 
 ```
-git clone --branch v1.3.36 https://github.com/ReGen-Civics/village-os.git
+git clone --branch v1.3.37 https://github.com/ReGen-Civics/village-os.git
 ```
 
 That is the release this file belongs to. Never clone without `--branch`: the
@@ -181,7 +181,7 @@ in your Admin.
 ## Part B: a hosting provider (Railway)
 
 1. Create a project with three things: a MySQL service, a service that runs
-   the image `ghcr.io/regen-civics/village-os:1.3.36`, and a volume on that service
+   the image `ghcr.io/regen-civics/village-os:1.3.37`, and a volume on that service
    mounted at `/app/data`.
 2. On your own computer, get the files (step 2 above) and run
    `node scripts/fork-init.mjs --village-name "Your Village" --admin-email you@example.org --domain village.example.org`.

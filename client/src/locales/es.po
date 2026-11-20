@@ -481,6 +481,12 @@ msgctxt "hidden map, one place's details"
 msgid "A return visit"
 msgstr ""
 
+#. placeholder {0}: g.name
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: open the letter"
+msgid "Write to everyone waiting for {0}"
+msgstr "Escribir a todas las personas que esperan {0}"
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, copy the crew invite link"
 msgid "Copy the crew link"
@@ -1113,6 +1119,11 @@ msgstr ""
 #~ msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
 #~ msgstr "La Participación Ganada y los Créditos de tu pago. Cada línea se emite a tu cuenta cuando la Tesorería la aprueba."
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: what happens"
+msgid "{count} of {total} said yes to letters, so this goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
+msgstr "{count} de {total} dijeron que sí a las cartas, así que esto llega a {count} personas. Se envía solo cuando pulsas enviar, y cada carta termina con un enlace que saca a la persona de la lista de espera."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nobody has written yet."
 msgstr ""
@@ -1548,6 +1559,12 @@ msgctxt "funding rounds"
 msgid "A short name"
 msgstr ""
 
+#. placeholder {0}: result.sent
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the result"
+msgid "Sent to {0} people."
+msgstr "Enviada a {0} personas."
+
 #: client/src/components/admin/VoiceTranscriptionPicker.tsx
 msgctxt "voice transcription choice"
 msgid "No key and no outside service: the recording never leaves the server. About a minute for a five-minute take, one at a time."
@@ -1756,6 +1773,12 @@ msgstr ""
 msgctxt "open proposal kept"
 msgid "Keep this link: we couldn't email it to you. Keep it to yourself too: it is how we know it is you."
 msgstr "Guarda este enlace: no pudimos enviártelo por correo. Y no lo compartas: es como sabemos que eres tú."
+
+#. placeholder {0}: i.text
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: a question made from a quality the card hopes for"
+msgid "How did this quality show in the conversation: {0}?"
+msgstr "¿Cómo se mostró esta cualidad en la conversación: {0}?"
 
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, we meet"
@@ -2479,6 +2502,11 @@ msgctxt "proposal goals list"
 msgid "Pick one"
 msgstr "Elige una"
 
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: one sign-up's tick"
+msgid "said yes to letters"
+msgstr "dijo que sí a las cartas"
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "The reading above is the first one of {name}."
 msgstr ""
@@ -3079,6 +3107,11 @@ msgstr "Tu camino"
 msgctxt "budget line status"
 msgid "Closed"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: field"
+msgid "Letter"
+msgstr "Carta"
 
 #: client/src/pages/Roles.tsx
 #~ msgctxt "roles page, intro word with a tooltip"
@@ -3961,6 +3994,19 @@ msgctxt "founding application refusal"
 msgid "One of those roles isn't open any more. Reload the page and pick again."
 msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
 
+#. placeholder {0}: g.yes
+#. placeholder {1}: g.count
+#. placeholder {2}: g.yes
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: how many said yes to letters"
+msgid "{0} of {1} said yes to letters. A letter goes to those {2}."
+msgstr "{0} de {1} dijeron que sí a las cartas. Una carta llega a esas {2}."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: after signing up without the tick"
+msgid "Thank you. Your details are saved. We will not write to you unless you tick the box next time."
+msgstr "Gracias. Tus datos están guardados. No te escribiremos a menos que marques la casilla la próxima vez."
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -4146,6 +4192,11 @@ msgstr "Abrir las misiones"
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "The agreement this vote would adopt"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+#~ msgctxt "waitlist letter: what happens"
+#~ msgid "This goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
+#~ msgstr "Esto llega a {count} personas. Se envía solo cuando pulsas enviar, y cada carta termina con un enlace que saca a la persona de la lista de espera."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "label of the season file text box"
@@ -4540,6 +4591,23 @@ msgstr ""
 msgctxt "admin character classes: while a set of stock portraits uploads"
 msgid "Loading the set…"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the drafted body"
+msgid "Hello,\n"
+"\n"
+"You asked us to tell you when {roleName} opens at {village}. Here is where it stands: (write the latest news here).\n"
+"\n"
+"You can read the role card here: {link}\n"
+"\n"
+"With care,"
+msgstr "Hola,\n"
+"\n"
+"Nos pediste que te avisáramos cuando se abra {roleName} en {village}. Así están las cosas: (escribe aquí las novedades).\n"
+"\n"
+"Puedes leer la ficha del rol aquí: {link}\n"
+"\n"
+"Con cariño,"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "an outside contact's organisation"
@@ -5084,6 +5152,11 @@ msgstr ""
 msgctxt "an ask's place in line, when the holder expects to pick it up"
 msgid "Next week"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the drafted subject"
+msgid "{roleName} is opening at {village}"
+msgstr "{roleName} se abre en {village}"
 
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch fact"
@@ -5721,6 +5794,11 @@ msgstr ""
 #: client/src/pages/FundingRounds.tsx
 msgid "When shaping starts (leave empty to keep the round in Seed)"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: what the details are for"
+msgid "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off."
+msgstr "Usamos estos datos solo para esta lista de espera, y puedes pedirnos que los quitemos en cualquier momento. Cada carta trae un enlace para salir."
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -7297,6 +7375,12 @@ msgctxt "thanks wall heading"
 msgid "What we saw in each other"
 msgstr "Lo que vimos en cada persona"
 
+#. placeholder {0}: i.text
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: a question made from a selection criterion"
+msgid "What have you heard or seen that speaks to this: {0}?"
+msgstr "¿Qué has oído o visto que responda a esto: {0}?"
+
 #. placeholder {0}: outcome.landed.length
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
@@ -7710,6 +7794,13 @@ msgstr ""
 msgctxt "rites welcome pulse"
 msgid "Quiet for now."
 msgstr ""
+
+#. placeholder {0}: result.skipped
+#. placeholder {1}: result.failed
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the result, the ones that did not go"
+msgid "{0} skipped because they asked for no mail, {1} did not go through."
+msgstr "{0} omitidas porque pidieron no recibir correo, {1} no llegaron."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgctxt "open proposal side by side"
@@ -8856,6 +8947,13 @@ msgstr ""
 msgid "Saved as a draft. Nobody has adopted it yet."
 msgstr ""
 
+#. placeholder {0}: g.name
+#. placeholder {1}: g.count
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: one role's waitlist and its count"
+msgid "{0}: {1} waiting"
+msgstr "{0}: {1} en espera"
+
 #: client/src/components/admin/NoticeWordsPanel.tsx
 msgctxt "admin notices: a notice description field"
 msgid "Description"
@@ -9238,6 +9336,11 @@ msgstr ""
 msgctxt "roles page, how it works"
 msgid "Consent"
 msgstr "Consentimiento"
+
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: what it is"
+msgid "Questions from the role card to talk through. Write notes for yourself and the other reviewers. Nothing here is scored or ranked, and the notes are deleted with the application."
+msgstr "Preguntas de la ficha del rol para conversar. Escribe notas para ti y para las demás personas que revisan. Nada aquí se puntúa ni se ordena, y las notas se borran junto con la solicitud."
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Why not, in one line"
@@ -9630,6 +9733,11 @@ msgctxt "who last wrote a matrix row, when the name is missing"
 msgid "a founder"
 msgstr ""
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: it failed"
+msgid "The letter was not sent. Nothing went out."
+msgstr "No se envió la carta. No salió nada."
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "What it is for"
@@ -9995,6 +10103,11 @@ msgstr "Los miembros inician sesión aquí para proponer los roles que tendrán 
 msgctxt "founding application review: the cap on a proposal"
 msgid "Proposals up to {0}"
 msgstr "Propuestas de hasta {0}"
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: go to the review"
+msgid "Read it once more"
+msgstr "Leerla una vez más"
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -11217,6 +11330,11 @@ msgctxt "budget upload error"
 msgid "Choose a sheet or paste its cells first."
 msgstr ""
 
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: saved"
+msgid "Saved."
+msgstr "Guardado."
+
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "review response"
 msgid "Suggest an edit"
@@ -11343,6 +11461,11 @@ msgstr ""
 msgctxt "circle hearth, a stone"
 msgid "{0}, open"
 msgstr "{0}, abierto"
+
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: one sign-up without the tick"
+msgid "no tick"
+msgstr "sin casilla marcada"
 
 #: client/src/components/governance/TermsOnOfferField.tsx
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -13388,6 +13511,17 @@ msgstr ""
 msgid "What closing this village means"
 msgstr ""
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+#~ msgctxt "waitlist letter: the drafted body"
+#~ msgid "Hello,\n"
+#~ "\n"
+#~ "You asked us to tell you when {roleName} opens at {village}. Here is where it stands: \n"
+#~ "\n"
+#~ "You can read the role card here: {link}\n"
+#~ "\n"
+#~ "With care,"
+#~ msgstr ""
+
 #: client/src/components/circleCard/HearthSections.tsx
 msgctxt "circle hearth, a plant"
 msgid "In bud, being carried"
@@ -14099,6 +14233,11 @@ msgstr ""
 msgid "We just updated the site"
 msgstr "Acabamos de actualizar el sitio"
 
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the consent tick"
+msgid "Yes, write to me about this role and other ways into the village. One click takes me off."
+msgstr "Sí, escríbeme sobre este rol y otras maneras de entrar en la aldea. Un clic me saca de la lista."
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "Opening the role card…"
@@ -14338,6 +14477,11 @@ msgctxt "mic button"
 msgid "Speak instead of typing"
 msgstr "Habla en lugar de escribir"
 
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: save"
+msgid "Save my note"
+msgstr "Guardar mi nota"
+
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal, founding application"
 msgid "Ramp-up"
@@ -14450,9 +14594,9 @@ msgid "something on the calendar"
 msgstr "algo en el calendario"
 
 #: client/src/components/roleCard/WaitlistForm.tsx
-msgctxt "coming-soon waitlist: what the details are for"
-msgid "We use these details only to tell you when the role opens. You can ask us to remove them."
-msgstr ""
+#~ msgctxt "coming-soon waitlist: what the details are for"
+#~ msgid "We use these details only to tell you when the role opens. You can ask us to remove them."
+#~ msgstr ""
 
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -15028,6 +15172,11 @@ msgctxt "voice note, read aloud"
 msgid "Recording stopped. You can play it back below."
 msgstr "Grabación detenida. Puedes escucharla abajo."
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: field"
+msgid "Subject"
+msgstr "Asunto"
+
 #. placeholder {0}: fileSizeWords(total)
 #. placeholder {1}: fileSizeWords(overTogether)
 #: client/src/components/openProposal/ProposalAttachments.tsx
@@ -15377,6 +15526,11 @@ msgstr ""
 msgctxt "talk it out: quick start with words in the box"
 msgid "Help me make what I've written clearer."
 msgstr "Ayúdame a que lo que escribí quede más claro."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+#~ msgctxt "coming-soon waitlist: what the details are for"
+#~ msgid "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time."
+#~ msgstr "Usamos estos datos solo para avisarte cuando se abra el rol. Cada carta trae un enlace que te saca de la lista de espera, y puedes pedirnos que los quitemos en cualquier momento."
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you reference"
@@ -17479,6 +17633,11 @@ msgctxt "open proposal side by side"
 msgid "Time zone: {tz}"
 msgstr "Zona horaria: {tz}"
 
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: the heading"
+msgid "Conversation guide"
+msgstr "Guía de conversación"
+
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Write the words you would like in place of the current ones, and why. They are frozen into the document when the vote opens, so they cannot change while people are voting."
 msgstr ""
@@ -17875,6 +18034,11 @@ msgstr "La luna siguiente"
 msgctxt "budget upload error"
 msgid "The sheet needs a label column, so every line has a name."
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the send button"
+msgid "Send this letter to {count} people now"
+msgstr "Enviar esta carta a {count} personas ahora"
 
 #: client/src/components/LoadFailed.tsx
 msgid "This page didn't load. Check your connection and try again."
@@ -19005,6 +19169,11 @@ msgctxt "how pay works, the toggle"
 msgid "How pay works"
 msgstr ""
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: back to writing"
+msgid "Keep editing"
+msgstr "Seguir editando"
+
 #: client/src/components/admin/AdminHeader.tsx
 msgctxt "admin header, per-device dark colours"
 msgid "Night look"
@@ -19413,6 +19582,11 @@ msgstr ""
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgid "Could be as little as"
 msgstr ""
+
+#: client/src/components/openProposal/ConversationGuide.tsx
+msgctxt "conversation guide: failed"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Accepts the terms on offer."
@@ -19909,6 +20083,11 @@ msgstr ""
 #: client/src/components/review/SeraDifferences.tsx
 msgid "See them at the bottom of this page."
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: the waitlist"
+msgid "Only admins see this. Nothing is sent unless a person writes a letter and presses send."
+msgstr "Solo las personas administradoras ven esto. No se envía nada a menos que alguien escriba una carta y pulse enviar."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -20863,6 +21042,11 @@ msgstr "Compromiso completo o parcial (desde el {lo}%)"
 msgctxt "proposed changes"
 msgid "Confirm discarding the batch"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: the sent log"
+msgid "Letters sent so far"
+msgstr "Cartas enviadas hasta ahora"
 
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role count, one"
@@ -22391,6 +22575,11 @@ msgctxt "character card, link to the quest board"
 msgid "Try a quest on the board"
 msgstr "Prueba una misión del tablero"
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: the heading"
+msgid "Write to everyone waiting for {roleName}"
+msgstr "Escribir a todas las personas que esperan {roleName}"
+
 #. placeholder {0}: wholeMoney(s.expected.totalMinor, currency)
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
@@ -23319,9 +23508,9 @@ msgid "Make an invitation"
 msgstr ""
 
 #: client/src/components/roleCard/WaitlistAdmin.tsx
-msgctxt "roles page, admins only: the waitlist"
-msgid "Only admins see this. Nothing is sent from it."
-msgstr ""
+#~ msgctxt "roles page, admins only: the waitlist"
+#~ msgid "Only admins see this. Nothing is sent from it."
+#~ msgstr ""
 
 #: client/src/pages/CanvasWorkbook.tsx
 msgctxt "a button that downloads the workbook as a file"

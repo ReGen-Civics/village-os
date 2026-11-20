@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.37 (2026-11-20)
+
+### What changed for your village
+
+- **Letters to the people waiting for a role.** The admin waitlist is grouped by role with a count. "Write to everyone waiting for" a role opens a draft with the role's name and card link filled in. Nothing is sent until a person presses a second button that names how many people it goes to, and one press reaches at most 150. Every letter carries a one-click link off the waitlist that the sender cannot remove, and the log keeps who sent what and when, with no addresses.
+- **A box to say yes to letters.** The waitlist sign-up has an optional tick, unticked by default: "Yes, write to me about this role and other ways into the village. One click takes me off." Letters go only to people who ticked it, as ordinary mail that honours unsubscribes, Pause all and the daily limit. People who signed up before the tick existed are never written to. While Comms is in Preview or Off the send button stays closed and says which switch opens it.
+- **A kind no.** A declined applicant's letter now ends with three ways to stay close: the waitlist, quests, and the resident path, in English and Spanish. It can be switched off.
+- **A conversation guide for reviewers.** The role's selection criteria, worded as questions, with a notes box beside each. It has no score, rank or rating, only reviewers and the final call see it, and the notes are deleted with the review.
+- **The nightly rehearsal follows the new role cards** and passes every act again.
+
+### What you must do
+
+Nothing. To send waitlist letters, Comms must be set to Members or Public.
+
+### Does it touch your data
+
+Yes, by adding only. Migration 0417 adds a table for reviewers' conversation notes, and 0418 adds two empty columns to the waitlist for the yes to letters and its date. The previous release ignores both, so going back is safe.
+
+---
+
 ## 1.3.36 (2026-11-20)
 
 ### What changed for your village

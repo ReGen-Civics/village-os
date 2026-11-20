@@ -35,6 +35,8 @@ import { anonymiseOpenProposal } from "../repos/openProposals";
 import { insertApplication } from "../repos/seatApplications";
 import { register, tidyOpenProposals } from "./openProposals";
 import { signLink } from "../lib/comms/links";
+import { saveSections } from "../lib/roleCardSections";
+import { EMPTY_SECTIONS } from "../../shared/roleCardSections";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[applicantOnboarding] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -518,6 +520,72 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(await refRows(id)).toHaveLength(2);
       await forgetMemberReview(pool, NEWBIE.id, new Date());
       expect(await refRows(id)).toEqual([]);
+    });
+  });
+  describe("the conversation guide (0417)", () => {
+    const notesOf = (id: string) => q("SELECT item_key, author_user_id, note FROM application_guide_notes WHERE application_ref = ? ORDER BY id", [id]);
+    const note = (id: string, key: string, text: string, as: string | null) => call("POST", `${app(id)}/guide-notes`, { key, note: text }, as);
+
+    it("is made from the role's criteria and qualities, for the reviewers and the final-call role only", async () => {
+      await saveSections(pool, gate, { ...EMPTY_SECTIONS, qualities: ["Listens before answering"] }, FOUNDER.id);
+      const id = await confirmed("guide@example.test");
+      for (const who of [FOUNDER.id, FINAL.id]) {
+        const w = await walk(id, who);
+        expect(w.status, who).toBe(200);
+        expect(w.body.walkthrough.guide.items).toEqual([
+          { key: "c:c1", kind: "criterion", text: "Keeps the village's pace" },
+          { key: "q:1", kind: "quality", text: "Listens before answering" },
+        ]);
+      }
+      // The follow-up role may read its own references and nothing of the guide; a stranger gets the 404.
+      expect((await walk(id, OUTSIDER.id)).status).toBe(404);
+      expect((await note(id, "c:c1", "A note", OUTSIDER.id)).status).toBe(403);
+      expect((await note(id, "c:c1", "A note", HR.id)).status).toBe(403);
+      expect(await notesOf(id)).toEqual([]);
+    });
+
+    it("keeps one note per reviewer and line, read by the others, and nothing in it is a score, a rank or a rating", async () => {
+      const id = await confirmed("guide2@example.test");
+      expect((await note(id, "c:c1", "She answered with an example from the seed library.", FOUNDER.id)).status).toBe(200);
+      expect((await note(id, "c:c1", "Clear about the hours.", FINAL.id)).status).toBe(200);
+      // Saving again replaces the writer's own note; it does not add a second.
+      expect((await note(id, "c:c1", "She gave two examples from the seed library.", FOUNDER.id)).status).toBe(200);
+      expect(await notesOf(id)).toHaveLength(2);
+      const w = await walk(id, FINAL.id);
+      const guide = w.body.walkthrough.guide;
+      expect(guide.notes).toEqual([
+        { key: "c:c1", by: "Flor", note: "Clear about the hours.", mine: true },
+        { key: "c:c1", by: "Fern", note: "She gave two examples from the seed library.", mine: false },
+      ].sort((a, b) => (a.by === "Fern" ? -1 : 1) - (b.by === "Fern" ? -1 : 1)));
+      // The served shapes carry words only: no level, score, rank or rating anywhere in the guide.
+      expect(Object.keys(guide.items[0]).sort()).toEqual(["key", "kind", "text"]);
+      expect(Object.keys(guide.notes[0]).sort()).toEqual(["by", "key", "mine", "note"]);
+      expect(JSON.stringify(guide)).not.toMatch(/"(score|level|rank|rating|total)/i);
+      // CONTROL: the table itself has no column to hold one.
+      const cols = (await q("SELECT COLUMN_NAME AS c FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'application_guide_notes'")).map((r: any) => String(r.c));
+      expect(cols.length).toBeGreaterThan(3);
+      expect(cols.filter((c) => /score|level|rank|rating|grade|total/i.test(c))).toEqual([]);
+    });
+
+    it("refuses a line that is not on the guide and a note that is too long, and an empty note clears the line", async () => {
+      const id = await confirmed("guide3@example.test");
+      expect((await note(id, "c:nope", "x", FOUNDER.id)).status).toBe(400);
+      expect((await note(id, "c:c1", "x".repeat(1001), FOUNDER.id)).status).toBe(400);
+      expect(await notesOf(id)).toEqual([]);
+      expect((await note(id, "c:c1", "Something to clear.", FOUNDER.id)).status).toBe(200);
+      expect(await notesOf(id)).toHaveLength(1);
+      expect((await note(id, "c:c1", "  ", FOUNDER.id)).status).toBe(200);
+      expect(await notesOf(id)).toEqual([]);
+    });
+
+    it("is deleted with the application's review, and a reviewer's notes go when the reviewer is erased", async () => {
+      const id = await confirmed("guide4@example.test");
+      await note(id, "c:c1", "From Fern.", FOUNDER.id);
+      await note(id, "c:c1", "From Flor.", FINAL.id);
+      await forgetMemberReview(pool, FINAL.id, new Date());
+      expect((await notesOf(id)).map((n: any) => n.author_user_id)).toEqual([FOUNDER.id]);
+      await clearReviewOf(pool, [id], new Date());
+      expect(await notesOf(id)).toEqual([]);
     });
   });
 });

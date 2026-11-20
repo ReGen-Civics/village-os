@@ -21,6 +21,7 @@ import { parseBookingUrl } from "../../shared/roleBooking";
 import { memberBookingUrl } from "../../shared/interviewBooking";
 import { holderFirstName } from "../../shared/roleHolderLabel";
 import { deleteReferencesOf, forgetMemberReferences } from "./applicantOnboarding";
+import { deleteGuideNotesOf, forgetGuideNotesBy } from "./applicationGuide";
 
 type Db = Pool | PoolConnection;
 
@@ -260,6 +261,8 @@ export async function clearReviewOf(db: Db, refs: readonly string[], at: Date): 
   await db.query("DELETE FROM application_scores WHERE application_ref IN (?)", [[...refs]]);
   // The references a shortlisted applicant gave (0412) are third-party personal data: they go whole, notes and all.
   await deleteReferencesOf(db, refs);
+  // The reviewers' conversation notes (0417) go with the scores: words about a person, kept only as long as the review.
+  await deleteGuideNotesOf(db, refs);
   await db.query("UPDATE application_recusals SET reason = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_interviews SET scorer_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
   await db.query("UPDATE application_steps SET actor_user_id = NULL WHERE application_ref IN (?)", [[...refs]]);
@@ -298,6 +301,7 @@ export async function refsDueForClearing(db: Db, before: Date): Promise<string[]
  */
 export async function forgetMemberReview(db: Db, userId: string, at: Date): Promise<number> {
   await db.query("DELETE FROM application_scores WHERE scorer_user_id = ?", [userId]);
+  await forgetGuideNotesBy(db, userId);
   await db.query("DELETE FROM application_recusals WHERE user_id = ?", [userId]);
   // The follow-up notes they wrote on a reference go, and their name leaves every reference they owned (0412).
   await forgetMemberReferences(db, userId);

@@ -1,29 +1,55 @@
 /**
- * THE COMING-SOON WAITLIST, FOR ADMINS ONLY (shared/roleWaitlist.ts): who asked to hear when a role opens.
- * Mounted on /roles only for a reader `useIsAdmin` says is an admin, and loaded lazily, so a member's page
- * never asks the admin route. A list, never a ranking: nothing here selects anyone. Remove takes one row out
- * when its person asks.
+ * THE COMING-SOON WAITLIST, FOR ADMINS ONLY (shared/roleWaitlist.ts): who asked to hear when a role opens,
+ * grouped by role with a count. Mounted on /roles only for a reader `useIsAdmin` says is an admin, and loaded
+ * lazily, so a member's page never asks the admin route. A list, never a ranking: nothing here selects anyone.
+ * Remove takes one row out when its person asks. "Write to everyone waiting" opens a letter that is sent only
+ * when the person presses send (WaitlistLetter.tsx), and the letters sent so far are listed below, with no address.
  */
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { civilDayWords } from "@shared/seasonPlans";
 import type { WaitlistRow } from "@shared/roleWaitlist";
+import { waitlistByRole } from "@shared/roleWaitlistLetters";
 import { BTN_SECONDARY, HINT, TILE } from "@/components/journey/look";
 
+const WaitlistLetter = lazy(() => import("@/components/roleCard/WaitlistLetter"));
+
+interface SentLetter {
+  id: string;
+  at: string;
+  by: string;
+  line: string;
+}
+
 export default function WaitlistAdmin() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [rows, setRows] = useState<WaitlistRow[] | null>(null);
+  const [writing, setWriting] = useState<string | null>(null);
+  const [sent, setSent] = useState<SentLetter[]>([]);
+  const [blocked, setBlocked] = useState<string | null>(null);
+  const loadSent = useCallback(() => {
+    void gameFetch(`/api/admin/roles/waitlist-letters?lang=${i18n.locale.startsWith("es") ? "es" : "en"}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!d) return;
+        setSent(Array.isArray(d.sent) ? d.sent : []);
+        setBlocked(typeof d.blocked === "string" ? d.blocked : null);
+      })
+      .catch(() => undefined);
+  }, [i18n.locale]);
   useEffect(() => {
     let live = true;
     void gameFetch("/api/admin/roles/waitlist")
       .then((r) => (r.ok ? r.json() : { rows: [] }))
       .then((d) => live && setRows(Array.isArray(d?.rows) ? d.rows : []))
       .catch(() => live && setRows([]));
+    loadSent();
     return () => {
       live = false;
     };
-  }, []);
+  }, [loadSent]);
+  const groups = useMemo(() => waitlistByRole(rows ?? []), [rows]);
   if (!rows) return null;
   const remove = async (id: string) => {
     const r = await gameFetch(`/api/admin/roles/waitlist/${encodeURIComponent(id)}`, { method: "DELETE" });
@@ -34,20 +60,57 @@ export default function WaitlistAdmin() {
       <summary className="cursor-pointer font-semibold text-foreground">
         {t({ message: `Waitlist for coming-soon roles (${rows.length})`, context: "roles page, admins only: the waitlist" })}
       </summary>
-      <p className={`mt-2 ${HINT}`}>{t({ message: "Only admins see this. Nothing is sent from it.", context: "roles page, admins only: the waitlist" })}</p>
-      <ul className="mt-3 grid gap-2">
-        {rows.map((r) => (
-          <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground">
-            <span className="min-w-0 break-words">
-              <span className="font-semibold">{r.email}</span>
-              {r.whatsapp ? ` · ${r.whatsapp}` : ""} · {r.roles.map((x) => x.name).join(", ")} · {civilDayWords(r.createdAt.slice(0, 10))}
-            </span>
-            <button type="button" className={BTN_SECONDARY} onClick={() => void remove(r.id)}>
-              {t({ message: "Remove", context: "roles page, admins only: remove a waitlist sign-up" })}
-            </button>
-          </li>
+      <p className={`mt-2 ${HINT}`}>
+        {t({ message: "Only admins see this. Nothing is sent unless a person writes a letter and presses send.", context: "roles page, admins only: the waitlist" })}
+      </p>
+      {blocked && (
+        <p className={`mt-2 ${HINT}`} data-waitlist-blocked="">
+          {blocked}
+        </p>
+      )}
+      <div className="mt-3 grid gap-4">
+        {groups.map((g) => (
+          <section key={g.roleId} className="grid gap-2" data-waitlist-role={g.roleId}>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="font-semibold text-foreground">{t({ message: `${g.name}: ${g.count} waiting`, context: "roles page, admins only: one role's waitlist and its count" })}</h3>
+              <button type="button" className={BTN_SECONDARY} disabled={blocked !== null || g.yes === 0} onClick={() => setWriting(writing === g.roleId ? null : g.roleId)}>
+                {t({ message: `Write to everyone waiting for ${g.name}`, context: "roles page, admins only: open the letter" })}
+              </button>
+            </div>
+            <p className={HINT}>{t({ message: `${g.yes} of ${g.count} said yes to letters. A letter goes to those ${g.yes}.`, context: "roles page, admins only: how many said yes to letters" })}</p>
+            {writing === g.roleId && (
+              <Suspense fallback={null}>
+                <WaitlistLetter roleId={g.roleId} roleName={g.name} count={g.yes} total={g.count} onDone={loadSent} />
+              </Suspense>
+            )}
+            <ul className="grid gap-2">
+              {g.rows.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground">
+                  <span className="min-w-0 break-words">
+                    <span className="font-semibold">{r.email}</span>
+                    {r.whatsapp ? ` · ${r.whatsapp}` : ""} · {r.consent ? t({ message: "said yes to letters", context: "roles page, admins only: one sign-up's tick" }) : t({ message: "no tick", context: "roles page, admins only: one sign-up without the tick" })} · {civilDayWords(r.createdAt.slice(0, 10))}
+                  </span>
+                  <button type="button" className={BTN_SECONDARY} onClick={() => void remove(r.id)}>
+                    {t({ message: "Remove", context: "roles page, admins only: remove a waitlist sign-up" })}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
-      </ul>
+      </div>
+      {sent.length > 0 && (
+        <section className="mt-4 grid gap-1" data-waitlist-sent>
+          <h3 className="font-semibold text-foreground">{t({ message: "Letters sent so far", context: "roles page, admins only: the sent log" })}</h3>
+          <ul className={`grid gap-1 ${HINT}`}>
+            {sent.map((s) => (
+              <li key={s.id}>
+                {civilDayWords(s.at.slice(0, 10))} · {s.by} · {s.line}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </details>
   );
 }

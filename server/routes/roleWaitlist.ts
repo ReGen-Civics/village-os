@@ -47,6 +47,7 @@ export function registerRoleWaitlistRoutes(app: Express, g: WaitlistGate): void 
       whatsapp: r.whatsapp,
       roles: r.roleIds.map((id) => ({ id, name: names.get(id) ?? id })),
       member: r.userId !== null,
+      consent: r.consent,
       createdAt: r.createdAt,
     }));
     res.set("Cache-Control", "no-store").json({ rows });

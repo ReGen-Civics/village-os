@@ -69,7 +69,7 @@ describe.skipIf(!configured)("the coming-soon waitlist", () => {
     const read = await call("GET", "/api/admin/roles/waitlist", "admin-1");
     expect(read.status).toBe(200);
     expect(read.json.rows).toHaveLength(1);
-    expect(read.json.rows[0]).toMatchObject({ email: "ana@example.org", whatsapp: "+506 8888 8888", roles: [{ id: ids.soon, name: "Garden Steward" }], member: false });
+    expect(read.json.rows[0]).toMatchObject({ email: "ana@example.org", whatsapp: "+506 8888 8888", roles: [{ id: ids.soon, name: "Garden Steward" }], member: false, consent: false });
   });
 
   it("refuses a role that is not coming soon, a bad address and a bad number, and stores nothing (control: the good one above)", async () => {
@@ -78,6 +78,24 @@ describe.skipIf(!configured)("the coming-soon waitlist", () => {
     expect((await call("POST", "/api/roles/waitlist", null, { email: "not-an-address", roleIds: [ids.soon] })).json.field).toBe("email");
     expect((await call("POST", "/api/roles/waitlist", null, { email: "b@example.org", whatsapp: "call me", roleIds: [ids.soon] })).json.field).toBe("whatsapp");
     expect((await call("GET", "/api/admin/roles/waitlist", "admin-1")).json.rows.length).toBe(before);
+  });
+
+  it("stores the tick and its date only when it is given, and a row from before the tick reads as no", async () => {
+    expect((await call("POST", "/api/roles/waitlist", null, { email: "ticked@example.org", roleIds: [ids.soon], consent: true })).status).toBe(200);
+    expect((await call("POST", "/api/roles/waitlist", null, { email: "untick@example.org", roleIds: [ids.soon] })).status).toBe(200);
+    await pool.query("INSERT INTO role_waitlist (id, email_key, role_ids, created_at) VALUES ('wl-old-row', 'old@example.org', ?, '2026-11-19 10:00:00')", [JSON.stringify([ids.soon])]); // module-review-ok: a row as written before migration 0418
+    const rows = (await call("GET", "/api/admin/roles/waitlist", "admin-1")).json.rows as any[];
+    const by = (e: string) => rows.find((r) => r.email === e);
+    expect([by("ticked@example.org").consent, by("untick@example.org").consent, by("old@example.org").consent]).toEqual([true, false, false]);
+    const [stored] = (await pool.query<any[]>("SELECT email_key, letters_consent, consent_at FROM role_waitlist WHERE email_key IN ('ticked@example.org','untick@example.org','old@example.org') ORDER BY email_key"))[0] as any[]; // module-review-ok: reading back what the route stored
+    expect(stored.email_key).toBe("old@example.org");
+    expect([stored.letters_consent, stored.consent_at]).toEqual([null, null]);
+    const [t] = (await pool.query<any[]>("SELECT letters_consent, consent_at FROM role_waitlist WHERE email_key = 'ticked@example.org'"))[0] as any[]; // module-review-ok: reading back what the route stored
+    expect(t.letters_consent).toBe(1);
+    expect(t.consent_at).toBeInstanceOf(Date);
+    const [u] = (await pool.query<any[]>("SELECT letters_consent, consent_at FROM role_waitlist WHERE email_key = 'untick@example.org'"))[0] as any[]; // module-review-ok: reading back what the route stored
+    expect([u.letters_consent, u.consent_at]).toEqual([0, null]);
+    await pool.query("DELETE FROM role_waitlist WHERE email_key IN ('ticked@example.org','untick@example.org','old@example.org')"); // module-review-ok: cleaning the rows this case made
   });
 
   it("is rate limited", async () => {

@@ -19,6 +19,8 @@ import { useCallback, useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import { FOLLOWUP_NOTE_MAX, ONBOARDING_WORDS, TRACK_WORDS, type PrimaryAction, type ShortlistAnswer, type TrackStage, type TrackState } from "@shared/applicantOnboarding";
+import ConversationGuide from "@/components/openProposal/ConversationGuide";
+import type { GuideView } from "@shared/conversationGuide";
 import { GUT_WORDS, LEVEL_WORDS, PANEL_WORDS, type GutAnswer, type InterviewState, type ScoreLevel } from "@shared/applicationReview";
 
 /** A conversation's state in the review panel's own words. */
@@ -50,6 +52,7 @@ interface ServedWalkthrough {
     interviews: Array<{ position: number; roleName: string; minutes: number; final: boolean; state: InterviewState; entries: Array<{ criterionId: string; level: string; evidence: string }> | null; gut: { answer: GutAnswer; note: string } | null }>;
   } | null;
   roleNames: { followup: string | null; finalCall: string | null };
+  guide?: GuideView | null;
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -166,6 +169,7 @@ export default function Walkthrough({ applicationRef, onChanged, decideHref = "#
         <References w={w} busy={busy} act={act} />
       )}
 
+      {w.guide && <ConversationGuide base={base} guide={w.guide} onSaved={() => void load()} />}
       {gathered && <Gathered w={w} />}
     </section>
   );

@@ -116,6 +116,9 @@ import { AGENT_PROPOSAL_WORDS, scopeWords } from "../../shared/agentHolders";
 import { seatAdoptedAgent } from "../lib/agentRoleProposals";
 import { agentsWithReach, isAgentAccount } from "../repos/agentAccounts";
 import { voiceForViewer, voiceViewerOf } from "../lib/voiceForViewer";
+import { declineNextStepsLines, DECLINE_STEPS_KEYS } from "../../shared/declineNextSteps";
+import type { PlayDoor } from "../../shared/comms/comeAndPlay";
+import { boolVar, stringVar } from "../lib/variables";
 
 export type DecideRouteDeps = Pick<
   AppDeps,
@@ -146,6 +149,9 @@ const ACTS_PER_WINDOW = 10;
 const WINDOW_MS = 10 * 60 * 1000;
 
 /** A send the provider took, or one already taken under the same key. */
+/** The come-and-play cards the decline letter's next steps already say, so the letter names each way in once. */
+const NEXT_STEP_DOORS: readonly PlayDoor[] = ["quests", "roles", "stayClose"];
+
 const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
 
 /** The status a member reads, for every status the page can show. */
@@ -276,9 +282,9 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     origin: string,
     to: { email: string; name: string | null },
     words: { subject: string; text: string; button?: { label: string; url: string } },
-    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean } = {},
+    o: { lang?: ApplicantLanguage | null; comeAndPlay?: boolean; skip?: readonly PlayDoor[] } = {},
   ): Promise<OutgoingEmail> {
-    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName() });
+    const dressed = await dressLetter(getPool(), site(), words, { lang: o.lang ?? null, comeAndPlay: o.comeAndPlay ? "public" : false, villageName: projectName(), skip: o.skip });
     return {
       idempotencyKey: key,
       kind: "essential",
@@ -847,9 +853,11 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       return res.json({ success: true, status: "declined", decided, emailed: false, message: AGENT_PROPOSAL_WORDS.declined });
     }
     const firstName = greetingName(p.name);
+    // The kind no's next steps, from the village's own settings (shared/declineNextSteps.ts). The person who pressed decline still sends it.
+    const nextSteps = declineNextStepsLines((k) => stringVar(k), { site: site(), on: boolVar(DECLINE_STEPS_KEYS.on), lang: languageOf(p) });
     const why = await sent(
       p.email
-        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true }), { lang: languageOf(p), comeAndPlay: true })
+        ? await letter(`open-proposal:${p.id}:declined`, "open_proposal.declined", { email: p.email, name: firstName }, declinedLetter({ firstName, village: projectName(), roleNames: namesOf(await rolesOf(pool, p)), site: site(), lang: languageOf(p), note, doorsInBlock: true, nextSteps }), { lang: languageOf(p), comeAndPlay: true, skip: nextSteps.length ? NEXT_STEP_DOORS : undefined })
         : null,
     );
     await tell(p.id, "declined");
