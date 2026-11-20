@@ -249,7 +249,7 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect(String(app?.deliverables ?? "")).toContain("Accepts the terms on offer.");
   });
 
-  it("audit B3: a second person for the full one-seat role is refused by default, adopted only for when a seat opens, and never told 'within the hour'", async () => {
+  it("audit B3, with the commitment limit (the lead, 20 Nov 2026): a second person whose commitment takes the full role above its limit is refused by default, told nothing, and adopted only when the decider says continue anyway", async () => {
     const SECOND = { email: `journey-second-${PORT}@example.test`, name: "Ivy Lane", password: "JourneySecond123!" };
     const card = { roles: [{ roleId: state.roleId, moves: [], firstMoon: [{ quest: "Read last moon's books", doneWhen: "the notes are shared" }] }], serves: [{ goalId: state.goalId, how: "Fresh eyes on the numbers." }], commitmentPct: 40, agreed: { loveLetter: true, nda: true }, terms: { choice: "accept", note: "" } };
     const sent = await call("POST", "/api/open-proposals", { name: SECOND.name, email: SECOND.email, roles: [{ roleId: state.roleId, note: "I audit cooperatives." }], why: "I can step in when the seat frees.", aim: "Books anyone can read.", hp: "", card });
@@ -259,31 +259,24 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect((await call("POST", "/api/open-proposals/confirm", { token })).status).toBe(200);
     const id = String((await call("GET", "/api/admin/open-proposals", undefined, state.founder)).json.proposals.find((p: any) => p.email === SECOND.email).id);
 
-    // The decider reads the seat count before pressing anything.
+    // The decider reads the limit before pressing anything: the role is full by commitment, and this would take it above.
     const page = (await call("GET", `/api/governance/open-proposals/${id}`, undefined, state.founder)).json.proposal;
-    expect(page.beforeAdopt.seatsFull).toEqual([{ name: "Lead Financial Steward", seats: 1, taken: 1 }]);
+    expect(page.beforeAdopt.overLimit?.ask).toBe("This is above the limit set for this role, continue anyway?");
+    expect(page.beforeAdopt.overLimit?.roles.map((r: any) => r.name)).toEqual(["Lead Financial Steward"]);
+    expect(page.beforeAdopt.overLimit?.roles[0].adding).toBe(40);
 
+    // Refused by default, with the question and the numbers, and the applicant is told nothing.
     const refused = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, state.founder);
     expect(refused.status, JSON.stringify(refused.json)).toBe(409);
-    expect(refused.json).toMatchObject({ error: "seats_full", canAdoptForWhenASeatOpens: true });
-    expect(refused.json.message).toContain("Lead Financial Steward has room for 1 person, and that place is filled");
+    expect(refused.json).toMatchObject({ error: "over_limit", message: "This is above the limit set for this role, continue anyway?", canContinueAboveTheLimit: true });
+    expect(String(refused.json.overLimit?.[0]?.words ?? "")).toContain("Lead Financial Steward:");
     expect(mailTo(SECOND.email, /said yes to your proposal/)).toHaveLength(0);
 
-    const adopted = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { whenASeatOpens: true }, state.founder);
+    // Adopted only with the decider's explicit choice to continue above the limit.
+    const adopted = await call("POST", `/api/governance/open-proposals/${id}/adopt`, { confirmOverLimit: true }, state.founder);
     expect(adopted.status, JSON.stringify(adopted.json)).toBe(200);
     const letter = mailTo(SECOND.email, /said yes to your proposal/).pop();
-    expect(String(letter!.body.text)).toContain("your role starts when a place opens");
-    expect(String(letter!.body.text)).not.toContain("within the hour");
-    expect(String(letter!.body.text)).not.toContain("Your roles run from");
-
-    // The account it makes is held, not seated, and the profile says the role starts when a seat opens.
-    const inviteToken = new URL(linkIn(letter!.body.text, "/register")).searchParams.get("invite");
-    const made = await call("POST", "/api/auth/register", { name: SECOND.name, email: SECOND.email, password: SECOND.password, paths: ["steward"], invite: inviteToken });
-    expect(made.status, JSON.stringify(made.json)).toBe(200);
-    const steps = (await call("GET", "/api/profile/role-start-steps", undefined, String(made.json.token))).json;
-    expect(steps.waiting).toMatchObject([{ roles: ["Lead Financial Steward"], waitsForSeat: true }]);
-    const held = (await call("GET", "/api/org/holders", undefined, state.founder)).json?.holdings ?? [];
-    expect(held.filter((h: any) => h?.orgRoleId === state.roleId)).toHaveLength(1);
+    expect(letter, "the yes letter goes once the decider chose to continue").toBeTruthy();
   });
 
   it("D34: the moon term crosses the season's end; the turn leaves it running, and next season's goals apply from the turn", async () => {
