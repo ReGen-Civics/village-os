@@ -22,7 +22,7 @@ describe("RoleCardParams", () => {
     expect(screen.getByText("40%")).toBeTruthy();
     expect(screen.queryByText(/Roughly|hours a week/)).toBeNull();
     expect(screen.getByText("1. Human Operations Lead, 60 minutes")).toBeTruthy();
-    expect(screen.getByText("2. Visionary Channel, 20 minutes, final approval")).toBeTruthy();
+    expect(screen.getByText("2. Visionary Channel, 20 minutes, the final conversation")).toBeTruthy();
     expect(screen.getByTestId("public-pay").textContent).toContain("Depends on funding");
   });
 
