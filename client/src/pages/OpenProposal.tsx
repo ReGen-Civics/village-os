@@ -57,6 +57,7 @@ const TURN_WORDS = {
 } as const;
 import ReviewPanel from "@/components/review/ReviewPanel";
 import Walkthrough from "@/components/openProposal/Walkthrough";
+import { WayInNote } from "@/components/openProposal/WayInNote";
 import type { ConsentAnswerOut, ConsentOut } from "@/components/roleProposal/proposalApi";
 import { gameFetch } from "@/lib/gameApi";
 import { DECIDE_WORDS, DOOR, type DoorReason } from "@shared/openProposalDecide";
@@ -74,7 +75,7 @@ export interface ServedOpenProposal {
   season: { id: string; name: string | null; startsOn: string } | null;
   /** Set when the proposal is for a moon (shared/openProposalTerm.ts). */
   term?: { kind: "moon"; startsOn: string; endsOn: string } | null;
-  roles: Array<{ id: string; name: string | null; circle: string | null; note: string; accountabilities?: string[]; commitmentPct?: number | null }>;
+  roles: Array<{ id: string; name: string | null; circle: string | null; note: string; accountabilities?: string[]; commitmentPct?: number | null; early?: boolean }>;
   /** The applicant's own role card (shared/openProposalCard.ts); null on a proposal sent before cards. */
   card?: Parameters<typeof CardSideBySide>[0]["card"];
   /** The membership letter, aligned with at application or from their account (Rye's answer 8). */
@@ -87,6 +88,8 @@ export interface ServedOpenProposal {
   contractPrice?: ContractPriceData | null;
   /** Each role's own contract price, when the proposal names several roles with a commitment for each. */
   contractPrices?: Array<{ roleId: string; price: ContractPriceData | null }>;
+  /** "Start a conversation" (the lead, 20 Nov 2026): the short way in, invited to the full proposal later. */
+  kind?: "conversation" | null;
   why: string;
   aim: string;
   confirmedOn: string | null;
@@ -339,6 +342,7 @@ export default function OpenProposal() {
                   {p.addressUnconfirmed.account ? ` ${p.addressUnconfirmed.account}` : ""}
                 </p>
               )}
+              <WayInNote id={p.id} conversation={p.kind === "conversation"} early={p.roles.filter((r) => r.early).map((r) => r.name ?? DECIDE_WORDS.roleGone)} mayInvite={p.status === "confirmed" && p.you.mayDecline} />
               <h1 className="mt-1 font-display text-3xl font-bold text-foreground">
                 {p.agent
                   ? <AgentHeading name={p.agent.name} roles={p.roles.map((r) => r.name ?? DECIDE_WORDS.roleGone).join(", ")} />

@@ -37,6 +37,7 @@ import type { DraftableGoal } from "@shared/seraDrafts";
 import type { FoundingSetup } from "@shared/foundingApplication";
 import type { KnowUsLinks } from "@shared/knowUsLinks";
 import { KnowUsWays } from "./KnowUsWays";
+import { EarlyWords } from "./EarlyWords";
 import { MoonText } from "@/components/MoonWord";
 import { TokenText, useShareNames } from "@/components/ContributionWord";
 
@@ -373,11 +374,11 @@ export function FirstDayFacts({ setup, firstConversation = null }: { setup: Foun
 
 /** The quiet way back to the roles, under the title when more than one is open. */
 /**
- * A COMING-SOON ROLE TAKES NO APPLICATION (the lead, 19 Nov 2026): a card's Apply link or a link naming one first
- * opens this in place of the form, with the way to its waitlist on the roles page. A draft this device keeps for it
- * is left as it is.
+ * A COMING-SOON ROLE: ITS WAITLIST FIRST, AND AN EARLY APPLICATION (the lead, 19 and 20 Nov 2026). A card's Apply link
+ * or a link naming one opens this in place of the form: the way to its waitlist on the roles page, then the lead's
+ * words and "Apply early", which opens the form. A draft this device keeps for it is left as it is until then.
  */
-export function NotOpenYet({ role, children }: { role: { id: string; name: string; circle: string }; children?: ReactNode }) {
+export function NotOpenYet({ role, onEarly, children }: { role: { id: string; name: string; circle: string }; onEarly: () => void; children?: ReactNode }) {
   const { t } = useLingui();
   return (
     <section aria-labelledby="not-open-h" className={`${CARD} grid gap-4`} data-role-not-open={role.id}>
@@ -386,17 +387,24 @@ export function NotOpenYet({ role, children }: { role: { id: string; name: strin
         {t({ message: `${role.name} is not open yet`, context: "founding application, a coming-soon role" })}
       </h1>
       <p className="text-base leading-relaxed text-foreground">
-        {t({ message: "This role takes no applications yet. Join its waitlist to hear when it opens.", context: "founding application, a coming-soon role" })}
+        {t({ message: "Join its waitlist to hear when it opens.", context: "founding application, a coming-soon role" })}
       </p>
       <a href={waitlistHref(role.id)} className={`${DOOR} justify-self-start`} data-waitlist-role={role.id}>
         {t({ message: `Join the waitlist for ${role.name}`, context: "founding application, a coming-soon role's waitlist" })}
         <ArrowRight className="size-4" aria-hidden="true" />
       </a>
+      <div className={`${GOLD_RULE} grid gap-3 pt-4`} data-early-offer="">
+        <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
+        <button type="button" onClick={onEarly} className={`${BTN_SECONDARY} justify-self-start`} data-apply-early={role.id}>
+          {t({ message: `Apply early for ${role.name}`, context: "founding application, add a coming-soon role as an early application" })}
+        </button>
+      </div>
       {children}
     </section>
   );
 }
 
+/** The quiet way back to the roles, under the title when more than one is open. */
 export function OtherRole({ onChoose }: { onChoose: () => void }) {
   const { t } = useLingui();
   return (

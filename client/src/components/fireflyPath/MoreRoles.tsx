@@ -8,9 +8,10 @@
  * circle, and the total across every role. Loaded lazily, so none of it rides /propose-a-role's first view
  * (scripts/route-first-view.json).
  *
- * A COMING-SOON ROLE IS NOT ADDED HERE (the lead, 19 Nov 2026). It is listed under the picker as not open yet, with
- * a link to join its waitlist on the roles page (`waitlistHref` in shared/roleListing.ts, the anchor the roles page
- * opens the waitlist form on), and the server refuses one added to an application (shared/openProposals.ts `notYetOpen`).
+ * A COMING-SOON ROLE: ITS WAITLIST FIRST, AND AN EARLY APPLICATION (the lead, 20 Nov 2026). It is listed under the
+ * picker as not open yet, each with the link to join its waitlist on the roles page (`waitlistHref` in
+ * shared/roleListing.ts) and, after it, "Apply early", which adds it here on its own terms. The server keeps it
+ * marked as an early application (shared/openProposals.ts `notYetOpen`).
  *
  * The cap on a price stays the server's to judge and is never shown here. Nothing ranks or judges anyone.
  */
@@ -21,6 +22,7 @@ import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
 import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, LINK, TILE } from "@/components/journey/look";
 import { CommitmentFor, EMPTY_TERMS_STEP, type TermsRole, type TermsStepValue } from "@/components/governance/TermsEight";
+import { EarlyWords } from "./EarlyWords";
 
 /** A role the form offers, as this step reads it. */
 export interface MoreRolesRole extends TermsRole {
@@ -28,7 +30,7 @@ export interface MoreRolesRole extends TermsRole {
   held?: boolean;
   /** Every place taken, still recruiting: offered, marked "More players welcome". */
   stillRecruiting?: boolean;
-  /** Not open yet: never added here, linked to its waitlist on the roles page instead (the lead, 19 Nov 2026). */
+  /** Not open yet: its waitlist first, and added only as an early application (the lead, 20 Nov 2026). */
   comingSoon?: boolean;
   /** A future venture asks for a pitch of its own: never added here. */
   futureVenture?: boolean;
@@ -71,7 +73,7 @@ export default function MoreRoles({
   const chosen = new Set([first.id, ...extras.map((x) => x.roleId)]);
   // Open roles and held roles still recruiting; never a fully held role, a future venture, or a role not open yet.
   const addable = offered.filter((r) => !chosen.has(r.id) && !r.held && !r.futureVenture && !r.comingSoon);
-  // Not open yet: shown under the picker, each with the way to its waitlist (the lead, 19 Nov 2026).
+  // Not open yet: shown under the picker, each with its waitlist and then "Apply early" (the lead, 20 Nov 2026).
   const notYet = offered.filter((r) => !chosen.has(r.id) && r.comingSoon && !r.futureVenture);
   const optionName = (r: MoreRolesRole) =>
     r.stillRecruiting
@@ -117,16 +119,12 @@ export default function MoreRoles({
                 {t({ message: `Remove ${role.name}`, context: "founding application, roles added to one application" })}
               </button>
             </div>
-            {role.comingSoon ? (
-              <p className="border-l-4 border-notice pl-3 text-sm text-foreground" data-more-role-not-open="">
-                {t({ message: `${role.name} isn't open yet, so it can't be part of this application. Remove it, and join its waitlist to hear when it opens.`, context: "founding application, a coming-soon role kept from before" })}{" "}
-                <a className={LINK} href={waitlistHref(role.id)}>
-                  {t({ message: `Join the waitlist for ${role.name}`, context: "founding application, a coming-soon role's waitlist" })}
-                </a>
+            {role.comingSoon && (
+              <p className="border-l-4 border-notice pl-3 text-sm text-foreground" data-more-role-early="">
+                {t({ message: "An early application. This role isn't open yet: we may not get back to you, and the card details may change.", context: "founding application, a coming-soon role added early" })}
               </p>
-            ) : (
-              <CommitmentFor idPrefix={`more-role-${i + 1}`} role={role} value={x.terms} onChange={(next) => set(i, next)} named />
             )}
+            <CommitmentFor idPrefix={`more-role-${i + 1}`} role={role} value={x.terms} onChange={(next) => set(i, next)} named />
             {problem && (
               <p className="border-l-4 border-notice pl-3 text-sm font-medium text-foreground" data-field-problem="">
                 {problem}
@@ -157,14 +155,19 @@ export default function MoreRoles({
       {notYet.length > 0 && (
         <div className="grid gap-1" data-roles-not-open="">
           <p className={HINT}>
-            {t({ message: "Not open yet. These roles take no applications now. Join a role's waitlist to hear when it opens.", context: "founding application, coming-soon roles under the picker" })}
+            {t({ message: "Not open yet. Join a role's waitlist to hear when it opens.", context: "founding application, coming-soon roles under the picker" })} <EarlyWords />
           </p>
           <ul className="grid gap-1">
             {notYet.map((r) => (
-              <li key={r.id} className="text-sm">
+              <li key={r.id} className="flex flex-wrap items-center gap-x-4 text-sm">
                 <a className={`${LINK} inline-flex min-h-11 items-center`} href={waitlistHref(r.id)} data-waitlist-role={r.id}>
                   {t({ message: `Join the waitlist for ${r.name}`, context: "founding application, a coming-soon role's waitlist" })}
                 </a>
+                {extras.length + 1 < max && (
+                  <button type="button" className={`${LINK} inline-flex min-h-11 items-center`} onClick={() => add(r.id)} data-apply-early={r.id}>
+                    {t({ message: `Apply early for ${r.name}`, context: "founding application, add a coming-soon role as an early application" })}
+                  </button>
+                )}
               </li>
             ))}
           </ul>

@@ -60,7 +60,7 @@ import { publicTermsOf } from "../../shared/seatTermsOffer";
 import { listOrgRoles } from "../lib/orgChart";
 import { commitmentReviewFor } from "../lib/commitmentReview";
 import { membershipAlignedFor } from "../lib/applicationMembership";
-import { identityKey, OPEN_WORDS } from "../../shared/openProposals";
+import { identityKey, OPEN_NAME_MAX, OPEN_WORDS } from "../../shared/openProposals";
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
@@ -104,6 +104,7 @@ import { statusLinkFor } from "../lib/applicantUpdates";
 import { stepsOf } from "../repos/applicationReview";
 import { activeClock } from "../lib/gratitude-cycles";
 import { createInviteOn, inviteById, reissueInviteOn, revokeInvite } from "../repos/memberInvites";
+import crypto from "node:crypto";
 import * as store from "../repos/openProposals";
 import { asksFor, type StoredAsk } from "../repos/roleProposals";
 import { PROPOSAL_FILE_ID, PROPOSAL_FILE_TYPES, proposalFileHref } from "../../shared/proposalAttachments";
@@ -220,6 +221,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         name: named.get(r.roleId)?.name ?? null,
         circle: named.get(r.roleId)?.circle ?? null,
         note: r.note,
+        // An early application (the lead, 20 Nov 2026): the role was coming soon when it was sent.
+        ...(r.early === true ? { early: true } : {}),
         accountabilities: Array.isArray(role?.accountabilities) ? role.accountabilities.map((a: unknown) => String(a ?? "").trim()).filter(Boolean) : [],
         commitmentPct: publicTermsOf(role?.termsOffer ?? null).commitmentPct,
       };
@@ -432,6 +435,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
         season: season ? { id: String(season.id), name: String(season.name ?? "") || null, startsOn: String(season.startsOn) } : null,
         term: p.body.term ?? null,
         card: p.body.card ?? null,
+        // "Start a conversation" (the lead, 20 Nov 2026): a short way in, to be invited to the full proposal later.
+        kind: p.body.kind ?? null,
         // The membership letter, aligned with at application or from their account (Rye's answer 8): a yes or a no.
         membership: agent ? null : { aligned: await membershipAlignedFor(pool, p.email, may.own ?? null) },
         agent,
@@ -463,7 +468,7 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
           holdsThePower,
           own: !!may.own && may.own === viewerId,
           // While our review waits, its two answers stand in place of adopt and decline.
-          mayAdopt: open && may.ok && !former && !reviewing && !(p.addressUnconfirmed && may.own && !p.body.agent),
+          mayAdopt: open && may.ok && !former && !reviewing && !(p.addressUnconfirmed && may.own && !p.body.agent) && p.body.kind !== "conversation",
           mayDecline: open && may.ok && !reviewing,
           mayReview: reviewing && may.ok,
           formerMember: former,
@@ -615,6 +620,30 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
 
   // ── Adopt ─────────────────────────────────────────────────────────────────
 
+  /*
+   * "START A CONVERSATION", THEN THE FULL PROPOSAL (the lead, 20 Nov 2026). A decider makes a link for this one person,
+   * the same kind of link Admin makes (open_proposal_links, only its hash kept), opening the full application for the
+   * role they named. The answer is the only place the link appears: the decider sends it in their reply.
+   */
+  app.post(`${BASE}/:id/full-proposal-link`, async (req, res) => {
+    const viewer = await reader(req, res);
+    if (!viewer) return;
+    const actorId = String(viewer.id);
+    if (await limited(res, `open-proposal-decide:${actorId}`)) return;
+    const p = await found(req, res);
+    if (!p) return;
+    if (p.status !== "confirmed" || p.body.kind !== "conversation") return res.status(409).json({ error: "not_a_conversation" });
+    const may = await deciding(p, actorId);
+    if (!may.ok) return res.status(may.status).json(may.body);
+    const token = crypto.randomBytes(24).toString("base64url");
+    const id = `opl-${crypto.randomBytes(8).toString("hex")}`;
+    // Labelled so Admin's list of links says who it is for and where it came from.
+    const label = `${p.name} (from a conversation)`.slice(0, OPEN_NAME_MAX);
+    await store.insertOpenLink(getPool(), { id, tokenHash: crypto.createHash("sha256").update(token).digest("hex"), label, createdBy: actorId, now: now() });
+    const role = p.body.roles[0]?.roleId;
+    res.json({ url: `${site()}/propose-a-role/${encodeURIComponent(token)}${role ? `?role=${encodeURIComponent(role)}` : ""}` });
+  });
+
   app.post(`${BASE}/:id/adopt`, async (req, res) => {
     const viewer = await reader(req, res);
     if (!viewer) return;
@@ -627,6 +656,8 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     if (!may.ok) return res.status(may.status).json(may.body);
     // Kept when our confirmation email failed (server/lib/openProposalKept.ts): an address nobody confirmed places nobody on the account that has it.
     if (p.addressUnconfirmed && may.own && !p.body.agent) return res.status(409).json({ error: "address_unconfirmed", message: OPEN_WORDS.addressUnconfirmedAccount });
+    // "Start a conversation" carries no terms (the lead, 20 Nov 2026): nobody is placed on it; the full proposal comes first.
+    if (p.body.kind === "conversation") return res.status(409).json({ error: "conversation_first", message: OPEN_WORDS.conversationFirst });
     /*
      * AN AGENT'S PROPOSAL (0374): deciding stays human, and seating an agent is
      * its own power. An agent account never adopts, and the adopter needs

@@ -1,7 +1,7 @@
 /**
  * "HEAR WHEN A ROLE OPENS" (the lead, Anchor session of 19 Nov 2026): the coming-soon roles, directly under the
  * open roles and above the roles held now. Each card says the role is not open yet and may change, and offers
- * "Notify me", which opens the waitlist form (loaded on open, WaitlistForm.tsx).
+ * "Notify me", which opens the waitlist form (loaded on open, WaitlistForm.tsx), then "Apply early" (the lead, 20 Nov 2026).
  *
  * Each card carries `id="role-<roleId>"`, and `/roles#waitlist-<roleId>` scrolls to it and opens its form, so
  * the apply flow's picker can send a person straight here (shared/roleWaitlist.ts).
@@ -11,6 +11,7 @@ import { useLingui } from "@lingui/react/macro";
 import { roleAnchor, waitlistHash } from "@shared/roleWaitlist";
 import { BTN_SECONDARY, EYEBROW } from "@/components/journey/look";
 import { ComingSoonNote } from "@/components/ComingSoon";
+import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 
 const WaitlistForm = lazy(() => import("./WaitlistForm"));
 
@@ -54,6 +55,9 @@ export default function ComingSoonRoles({ roles }: { roles: SoonRole[] }) {
       <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
         {t({ message: "Leave your details and we will write when a role you like opens.", context: "roles page: the coming-soon roles and their waitlist" })}
       </p>
+      <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground" data-early-words="">
+        <EarlyWords />
+      </p>
       <ul className="grid gap-3">
         {roles.map((r) => (
           <li key={r.id} id={roleAnchor(r.id)} className="scroll-mt-24 rounded-2xl border border-border bg-card p-4" data-coming-soon-role={r.id}>
@@ -73,6 +77,10 @@ export default function ComingSoonRoles({ roles }: { roles: SoonRole[] }) {
                 <span className="sr-only">{`: ${r.name}`}</span>
               </button>
             )}
+            {/* After the waitlist, the early way (the lead, 20 Nov 2026): the words once, above the list, and a link per role. */}
+            <a href={`/propose-a-role?role=${encodeURIComponent(r.id)}&early=1`} className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-apply-early={r.id}>
+              {t({ message: `Apply early for ${r.name}`, context: "founding application, add a coming-soon role as an early application" })}
+            </a>
           </li>
         ))}
       </ul>

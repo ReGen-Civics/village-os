@@ -86,6 +86,8 @@ import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
 import { ABOUT_PANES, AboutPanes, CompensationShape, NotOpenYet, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
+import { useApplyWords } from "@/components/fireflyPath/applyWords";
+import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
@@ -99,6 +101,8 @@ const MoreRoles = lazy(() => import("@/components/fireflyPath/MoreRoles"));
 const ShapeTheRole = lazy(() => import("@/components/roleCard/ShapeTheRole"));
 // The way out when a send fails (apply safety net, 19 Nov 2026): loaded only after a failure, off the first view.
 const SafetyNet = lazy(() => import("@/components/fireflyPath/SafetyNet"));
+// "Start a conversation", the two-minute way in (the lead, 20 Nov 2026): loaded only when asked for.
+const StartConversation = lazy(() => import("@/components/fireflyPath/StartConversation"));
 
 // The sheet's field and main button (docs/DESIGN_RULE.md, components/journey/look.ts).
 const FIELD = `${LOOK_FIELD} py-3`;
@@ -145,6 +149,9 @@ export default function ProposeARole() {
   const [form, setForm] = useState<FormState>({ kind: "loading" });
   const [formTries, setFormTries] = useState(0); // bumped by "Try again" after a failed load
   const [roleId, setRoleId] = useState<string | null>(null);
+  /** A coming-soon role, applied for early (the lead, 20 Nov 2026): from the not-open page's button, or `?early=1`. */
+  const [talk, setTalk] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("way") === "talk"); // "Start a conversation" (idea 14)
+  const [early, setEarly] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("early") === "1");
   /** The roles added after the first, each with its own commitment, price and split (the lead, 17 Nov 2026). */
   const [extras, setExtras] = useState<ExtraRole[]>([]);
   const [gone, setGone] = useState(false);
@@ -220,8 +227,8 @@ export default function ProposeARole() {
         if (d?.open) {
           const picked = roleFromLink(wanted, roles, OPEN_APPLY_ROLES);
           setRoleId(picked.id);
-          // A coming-soon role named after the first is not added: its waitlist is on the roles page (the lead, 19 Nov 2026).
-          setExtras(picked.more.filter((id) => !roles.some((r) => r.id === id && r.comingSoon === true)).map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
+          // A coming-soon role named after the first is added as an early application (the lead, 20 Nov 2026).
+          setExtras(picked.more.map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
           setGone(picked.gone);
         }
       })
@@ -245,7 +252,7 @@ export default function ProposeARole() {
   // THE SAVED DRAFT, read back once the role is known: the words, the step they were on. Never references or files.
   useEffect(() => {
     if (form.kind !== "open" || !roleId || draftFor === roleId) return;
-    if (form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is never read or touched
+    if (!early && form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is untouched until they apply early
     const read = readStoredJson("local", draftKey(roleId, link));
     const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
     // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
@@ -281,7 +288,7 @@ export default function ProposeARole() {
       setRestored(own ? "draft" : "carry");
     }
     if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the box starts as remembersByDefault set it (19 Nov 2026); the card's slider and split (17 Nov 2026)
-  }, [form, roleId, link, draftFor]);
+  }, [form, roleId, link, draftFor, early]);
 
   /** The draft as toDraft writes it, from what the page holds now. */
   const draftNow = () => toDraft({ step: stone, reached, knowUs, why, name, email, about: { based: about.based, languages: about.languages, story: about.story }, selfKnowledge, links, aim, items, marks, terms: draftTerms(termsStep), rampUp, practical, pieceSuggestions, extras: extras.map((x) => ({ roleId: x.roleId, terms: draftTerms(x.terms) })) }, new Date());
@@ -324,14 +331,7 @@ export default function ProposeARole() {
   /** An added role's commitment: none chosen yet, or below what the role takes from one person. */
   const extraRoleCheck = (x: ExtraRole, r: FormRole | undefined) => (x.terms.commitmentPct === null ? "none" : x.terms.commitmentPct < (r?.commitmentMin ?? 0) ? "below" : null);
 
-  const labels = [
-    t({ message: "Get to know us", context: "founding application step" }),
-    t({ message: "About you", context: "founding application step" }),
-    t({ message: "Your value", context: "founding application step" }),
-    t({ message: "The terms", context: "founding application step" }),
-    t({ message: "Your first day", context: "founding application step" }),
-    t({ message: "Review & submit", context: "founding application step" }),
-  ] as const;
+  const { labels, intro, starters, paneNames } = useApplyWords();
 
   /** The value items as the card sends them: blank rows out, the draft flag off. */
   const filledItems = items.filter((g) => g.title.trim() || g.doneWhen.trim() || g.serves);
@@ -614,6 +614,7 @@ export default function ProposeARole() {
   const setup = form.setup;
   const choose = (id: string | null) => {
     setRoleId(id);
+    setEarly(false);
     setExtras([]);
     setGone(false);
     setProblems([]);
@@ -622,6 +623,9 @@ export default function ProposeARole() {
     setRestored(false);
     showRoleInAddress(id);
   };
+
+  // "START A CONVERSATION" (the lead, 20 Nov 2026): the short way in, through the same door; the sent page follows as for any application.
+  if (talk && form.season) return <Shell>{backDoor}<Suspense fallback={<BreathingLoader label={t({ message: "Opening the application", context: "founding application" })} showLabel />}><StartConversation village={form.village} roles={form.roles} first={roleId} link={link} me={me ? { name: String(me.name ?? ""), email: String(me.email ?? "") } : null} onSent={(s, ids) => { setRoleId(ids[0] ?? null); setExtras(ids.slice(1).map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP }))); setSent(s); }} onFull={() => setTalk(false)} /></Suspense></Shell>;
 
   // NO ROLE NAMED: the open roles, one door each. One application is for one role.
   if (!role) {
@@ -649,23 +653,9 @@ export default function ProposeARole() {
     );
   }
 
-  // A COMING-SOON ROLE takes no application (the lead, 19 Nov 2026): its waitlist in place of the form.
-  if (role.comingSoon) return <Shell>{backDoor}<NotOpenYet role={role}>{form.roles.some((r) => !r.comingSoon && r.id !== role.id) && <OtherRole onChoose={() => choose(null)} />}</NotOpenYet></Shell>;
+  // A COMING-SOON ROLE: its waitlist first, and "Apply early" opens the form (the lead, 19 and 20 Nov 2026).
+  if (role.comingSoon && !early) return <Shell>{backDoor}<NotOpenYet role={role} onEarly={() => setEarly(true)}>{form.roles.some((r) => !r.comingSoon && r.id !== role.id) && <OtherRole onChoose={() => choose(null)} />}</NotOpenYet></Shell>;
   const invalid = (field: string) => (problems.some((p) => p.field === field) ? { "aria-invalid": true, "aria-describedby": `propose-problem-${field}` } : {});
-  const intro = [
-    t({ message: "Before you apply, come and meet us. Tick what you have done so far.", context: "founding application intro" }),
-    t({ message: "Who you are, and why this role, now. A few honest lines is enough: the people who decide read every word.", context: "founding application intro" }),
-    t({ message: "The value you would bring in your first months, item by item, each tagged to the seasonal goal it serves.", context: "founding application intro" }),
-    t({ message: "A starting point we agree together. Choose your commitment, and mark anything you would like to talk through.", context: "founding application intro" }),
-    t({ message: "What your first month with us would look like, and when you could begin.", context: "founding application intro" }),
-    t({ message: "Read it through once, then send. Nothing reaches us until you confirm your email.", context: "founding application intro" }),
-  ];
-  const starters = [
-    t({ message: "What I have built before:", context: "founding application why starter" }),
-    t({ message: "Why this role:", context: "founding application why starter" }),
-    t({ message: "Why now:", context: "founding application why starter" }),
-    t({ message: "What I would bring in my first month:", context: "founding application why starter" }),
-  ];
   const startWith = (phrase: string) => {
     const next = why.trim() ? `${why.trimEnd()}\n\n${phrase} ` : `${phrase} `;
     setWhy(next);
@@ -679,11 +669,6 @@ export default function ProposeARole() {
   const commitment = termsStep.commitmentPct;
   const stepNumber = stone + 1;
   const stepCount = STONES.length;
-  const paneNames = [
-    t({ message: "You", context: "founding application about pane" }),
-    t({ message: "Your story", context: "founding application about pane" }),
-    t({ message: "Who can speak for you", context: "founding application about pane" }),
-  ] as const;
   const nextName = stone === STONES.indexOf("about") && pane < ABOUT_PANES - 1 ? paneNames[pane + 1] : labels[Math.min(stone + 1, LAST_STONE)];
   const ticked = knowUs.length;
   const ways = setup.knowUs.length;
@@ -747,7 +732,7 @@ export default function ProposeARole() {
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
         {/* Coming soon or a future venture (16 Nov 2026): its own note says the later start, so the founding-team note steps aside. */}
-        {role.comingSoon || role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
+        {role.comingSoon ? <p className={`mt-4 ${TILE} text-sm text-foreground`} data-early-application=""><EarlyWords /></p> : role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
         {setup.updatedNote && (
           <p className="mt-2 text-sm text-foreground" data-updated-note="">
@@ -758,6 +743,7 @@ export default function ProposeARole() {
         <LimitsAtTop className="mt-3" />
         {restored && <RestoredNote kind={restored} />}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
+        <button type="button" onClick={() => setTalk(true)} className="ml-4 min-h-11 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" data-start-conversation-door="">{t({ message: "Short on time? Start a conversation", context: "founding application: the short way in" })}</button>
       </header>
 
       {!form.season ? (

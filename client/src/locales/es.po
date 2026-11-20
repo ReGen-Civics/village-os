@@ -24244,3 +24244,165 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/EarlyWords.tsx
+msgctxt "coming-soon role: the early application"
+msgid "You can apply early if you feel you're a particularly strong fit. We may not get back to you, and the card details may change, but if you're feeling inspired, go ahead."
+msgstr "Puedes postularte antes si sientes que encajas especialmente bien. Puede que no te respondamos, y los detalles de la tarjeta pueden cambiar, pero si te sientes con ganas, adelante."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, add a coming-soon role as an early application"
+msgid "Apply early for {0}"
+msgstr "Postúlate antes para {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role added early"
+msgid "An early application. This role isn't open yet: we may not get back to you, and the card details may change."
+msgstr "Una postulación anticipada. Este rol aún no está abierto: puede que no te respondamos, y los detalles de la tarjeta pueden cambiar."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, coming-soon roles under the picker"
+msgid "Not open yet. Join a role's waitlist to hear when it opens."
+msgstr "Aún no están abiertos. Únete a la lista de espera de un rol para saber cuándo abre."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, a coming-soon role"
+msgid "Join its waitlist to hear when it opens."
+msgstr "Únete a su lista de espera para saber cuándo abre."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "full role card: the short way in"
+msgid "Start a conversation"
+msgstr "Empieza una conversación"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "Start a conversation"
+msgstr "Empieza una conversación"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "About two minutes. Tell us who you are and why, and we shape your proposal together later."
+msgstr "Unos dos minutos. Cuéntanos quién eres y por qué, y más adelante damos forma juntos a tu propuesta."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "A link to your work (optional)"
+msgstr "Un enlace a tu trabajo (opcional)"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "Why you, and why this role, in a few lines"
+msgstr "Por qué tú, y por qué este rol, en unas pocas líneas"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "The role you have in mind (up to {OPEN_APPLY_ROLES})"
+msgstr "El rol que tienes en mente (hasta {OPEN_APPLY_ROLES})"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "Sending"
+msgstr "Enviando"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: the button"
+msgid "Send"
+msgstr "Enviar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "Fill in the full application instead"
+msgstr "Completar la postulación entera"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation"
+msgid "We send a link to confirm your email. Nothing reaches us until you open it."
+msgstr "Te enviamos un enlace para confirmar tu correo. Nada nos llega hasta que lo abras."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation check"
+msgid "Keep it to {CONVERSATION_WHY_MAX} characters. The full proposal has room for more."
+msgstr "Mantenlo en {CONVERSATION_WHY_MAX} caracteres. La propuesta completa tiene espacio para más."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: the link's label"
+msgid "My work"
+msgstr "Mi trabajo"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application: the short way in"
+msgid "Short on time? Start a conversation"
+msgstr "¿Poco tiempo? Empieza una conversación"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "Started as a conversation: a name, an email, a link and a few lines on why. It has no terms yet, so it can't be adopted as it stands. When you're ready, invite them to complete the full proposal."
+msgstr "Empezó como una conversación: un nombre, un correo, un enlace y unas líneas sobre el porqué. Aún no tiene condiciones, así que no se puede adoptar tal como está. Cuando estés listo, invítale a completar la propuesta entera."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "An early application: {earlyList} was coming soon when they applied, so its card may have changed since."
+msgstr "Una postulación anticipada: {earlyList} estaba por abrir cuando se postuló, así que su tarjeta puede haber cambiado desde entonces."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "Make a link to the full proposal"
+msgstr "Crear un enlace a la propuesta completa"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "Send this link in your reply. It opens the full application for this person."
+msgstr "Envía este enlace en tu respuesta. Abre la postulación completa para esta persona."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "The link to the full proposal"
+msgstr "El enlace a la propuesta completa"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/WayInNote.tsx
+msgctxt "open proposal: the way in"
+msgid "The link could not be made. Try again in a moment."
+msgstr "No se pudo crear el enlace. Inténtalo de nuevo en un momento."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Early application"
+msgstr "Postulación anticipada"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/OpenProposalsPanel.tsx
+msgctxt "admin open proposals"
+msgid "Started as a conversation: invite them to the full proposal from its page."
+msgstr "Empezó como una conversación: invítale a la propuesta completa desde su página."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: the link placeholder"
+msgid "https://"
+msgstr "https://"

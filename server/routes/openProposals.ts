@@ -395,7 +395,7 @@ export function register(app: Express, deps: Deps): void {
     for (const s of await liveSeatingsOf(pool, roles.map((r) => r.id))) taken.set(s.orgRoleId, (taken.get(s.orgRoleId) ?? 0) + 1);
     return roles
       // A coming-soon role is offered, even while unlisted and before its card is complete, so the form can send its
-      // link to the waitlist (the lead, 19 Nov 2026); the intake refuses an application naming it (`notYetOpen`).
+      // link to the waitlist (the lead, 19 Nov 2026); an application naming it is kept as an early one (`notYetOpen`, 20 Nov 2026).
       .filter((r) => r.active && !r.isExample && isShown(r) && r.circleId && live.has(r.circleId))
       .filter((r) => !needsCard || isComingSoon(r) || isFutureVenture(r) || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
       .map((r) => ({
@@ -723,7 +723,7 @@ export function register(app: Express, deps: Deps): void {
       now: now(),
       // A tick is kept only for a way the village lists now, in its words as they read today.
       knowUs: founding().knowUs,
-      // A coming-soon role takes no application, first or added; its waitlist is on the roles page (the lead, 19 Nov 2026).
+      // A coming-soon role: its waitlist first, and an application naming it is kept marked early (the lead, 20 Nov 2026).
       notYetOpen: (id) => roles.some((r) => r.id === id && r.comingSoon === true),
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
@@ -738,7 +738,9 @@ export function register(app: Express, deps: Deps): void {
     const sentRoles: any[] = Array.isArray(body.roles) ? body.roles : [];
     type Kept = { commitmentPct: number | null; offered: ReturnType<typeof offeredSplit>; proposed: ReturnType<typeof offeredSplit> };
     const splits: Array<Kept | null> = [];
-    for (let i = 0; i < picked.length; i++) {
+    // "Start a conversation" carries no terms (the lead, 20 Nov 2026): the commitment, price and split come with the full proposal.
+    const talk = parsed.value.body.kind === "conversation";
+    for (let i = 0; i < picked.length && !talk; i++) {
       const one = picked[i];
       // The first role's terms are where a one-role proposal sends them; each role after it carries its own.
       const pct = i === 0 ? parsed.value.body.card?.commitmentPct : one.commitmentPct;
@@ -1002,7 +1004,9 @@ export function register(app: Express, deps: Deps): void {
         email: p.email,
         seasonId: p.targetSeasonId,
         via: p.linkId ? (linkLabel.get(p.linkId) ?? null) : null,
-        roles: p.body.roles.map((r) => ({ roleId: r.roleId, name: roleName.get(r.roleId) ?? null, note: r.note })),
+        roles: p.body.roles.map((r) => ({ roleId: r.roleId, name: roleName.get(r.roleId) ?? null, note: r.note, ...(r.early ? { early: true } : {}) })),
+        // The way in (the lead, 20 Nov 2026): "Start a conversation" is marked so the list tells it from a full application.
+        kind: p.body.kind ?? null,
         why: p.body.why,
         aim: p.body.aim,
         term: p.body.term ?? null,
