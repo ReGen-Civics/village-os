@@ -39,7 +39,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
-import { commitmentRowWords, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
+import { commitmentLine, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
 import { moneyWords } from "@shared/roleRewardWords";
 import { goalOf, nextDeliverables } from "@shared/roleOneMinute";
 import { CardTipsProvider, TipText, useCardTips } from "./CardTips";
@@ -325,7 +325,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     goal: goal || aim,
     next: nextDeliverables(sections?.deliverables ?? [], todayIso()),
     // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
-    commitment: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : commitmentPct !== null ? `${commitmentPct}%` : (commitment ?? ""),
+    commitment: commitmentLine(i18n, seat),
     // The full role's figure, once; the Rewards tab works it out at the reader's own share.
     price: founding && ceiling ? (
       <>

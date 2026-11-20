@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { ComingSoonChip, ComingSoonNote, HeldByAgentLine } from "@/components/ComingSoon";
 import { BTN_SECONDARY } from "@/components/journey/look";
+import { rolesLeadWillBuild } from "@shared/roleListing";
 import { applyHrefForRole } from "./FullRoleCard";
 
 export interface BuiltRole {
@@ -21,6 +22,26 @@ export interface BuiltRole {
   recruiting?: boolean;
   /** Held by an agent alone: said so, never by name. */
   heldByAgent?: boolean;
+}
+
+/**
+ * What one lead will build, for its own page: its circles' coming-soon roles (`rolesLeadWillBuild`), then the
+ * roles already held in those circles, as Held (the content list, 16 Nov 2026). `recruiting` names the held roles
+ * still welcoming more players. The /roles index shows only the coming-soon names, as one line in the card.
+ */
+export function buildsFor(
+  leadId: string,
+  rows: ReadonlyArray<Record<string, any> & { id: string }>,
+  circles: ReadonlyArray<{ id: string; leadRoleId?: string | null }>,
+  recruiting: (row: Record<string, any>) => boolean,
+): BuiltRole[] {
+  const soon = rolesLeadWillBuild(leadId, rows as any[], circles);
+  const led = new Set(circles.filter((c) => c.leadRoleId === leadId).map((c) => String(c.id)));
+  const held = rows.filter((r) => r.id !== leadId && !!r.circleId && led.has(String(r.circleId)) && !r.isExample && r.futureVenture !== true && r.listed !== false && r.state === "filled");
+  return [
+    ...soon.map((r: any) => ({ id: String(r.id), name: String(r.name ?? ""), aim: r.aim ?? null })),
+    ...held.map((r) => ({ id: r.id, name: String(r.name ?? ""), aim: r.aim ?? null, held: true, heldByAgent: r.heldByAgent === true, recruiting: recruiting(r) })),
+  ];
 }
 
 export default function LeadBuilds({ leadName, roles, onOpen }: { leadName: string; roles: readonly BuiltRole[]; onOpen: (id: string) => void }) {

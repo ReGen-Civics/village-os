@@ -13,7 +13,7 @@
  * under "How you're chosen" leave them out.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { BadgeCheck, CalendarDays, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
+import { BadgeCheck, CalendarDays, Clock, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
@@ -173,8 +173,12 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // Read from the params, which carry the card's own words for where (sections.where) when it has them.
   const rows = roleCardView(p.params ?? seat).rows;
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
-  // The commitment and where are said once, in the one-minute summary at the top of the pieces (the lead, 20 Nov 2026).
+  // Commitment and where come back as tiles beside track and languages (the Amora operations role, 20 Nov 2026,
+  // reversing 1.3.38's "said once" on purpose): the seat column had two tiles and empty space under them. Each tile
+  // reads the very line "The role in one minute" draws, so there is one source and nothing to keep twice.
   const facts: Array<{ icon: LucideIcon; label: string; value: string }> = [
+    { icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: p.oneMinute.commitment },
+    { icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: p.oneMinute.where },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") ? trackWords(i18n, row("track")) : "" },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },
   ].filter((f) => f.value);

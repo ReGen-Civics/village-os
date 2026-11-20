@@ -5,7 +5,7 @@
  * role's own address, and one line when no role answers.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
@@ -88,5 +88,33 @@ describe("a role's own page", () => {
     expect(within(missing).getByRole("heading", { level: 1 }).textContent).toBe("That role is not on this page anymore.");
     expect(document.querySelector("[data-full-role-card]")).toBeNull();
     expect((document.querySelector("[data-role-page-back]") as HTMLAnchorElement).getAttribute("href")).toBe("/roles");
+  });
+
+  it("lists the roles this steward will build in full under its card, each opening that role's page (the /roles index has one line of them)", async () => {
+    const withChildren = {
+      circles: [...ORG.circles, { id: "money", name: "Money Circle", purpose: "", leadRoleId: "role1a" }],
+      roles: [...ORG.roles, { id: "dev", name: "Development Steward", aim: "Build in step with the land.", circleId: "money", state: "forming", comingSoon: true, archetypes: [], card: {} }],
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+        if (u === "/api/org") return reply(withChildren);
+        if (u === "/api/org/founding-team") return reply(founding);
+        return reply({}, 404);
+      }),
+    );
+    at("/roles/lead-finance-steward");
+    const list = await waitFor(() => {
+      const el = document.querySelector("[data-lead-builds]") as HTMLElement | null;
+      if (!el) throw new Error("not yet");
+      return el;
+    });
+    expect(within(list).getByRole("heading", { name: "Roles this steward will build" })).toBeTruthy();
+    fireEvent.click(list.querySelector('[data-lead-builds-role="dev"]') as HTMLElement);
+    await waitFor(() => expect(window.location.pathname).toBe("/roles/development-steward"));
+    // Control: a role that leads no circle lists nothing.
+    expect(document.querySelector("[data-lead-builds]")).toBeNull();
   });
 });

@@ -87,8 +87,10 @@ describe("the role in one minute", () => {
     expect(summary.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("60%");
     expect(summary.querySelector('[data-one-minute-fact="price"]')?.textContent).toContain("$9,000 a moon for the full role");
     expect(summary.querySelector('[data-one-minute-fact="where"]')?.textContent).toContain("On the land");
-    // Said once: the seat column no longer repeats the commitment or where.
-    expect((el.querySelector("header") as HTMLElement).textContent).not.toContain("60%");
+    // The seat column draws them again as tiles (the Amora operations role, 20 Nov 2026), from the same lines.
+    const facts = (el.querySelector("header") as HTMLElement).querySelector('[data-testid="card-facts"]') as HTMLElement;
+    expect(facts.textContent).toContain("Commitment60%");
+    expect(facts.textContent).toContain("WhereOn the land");
   });
 
   it("puts a phone's Apply under the goal, once, with the bar along the foot kept as the card's last child", async () => {

@@ -11,6 +11,30 @@ msgstr ""
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: open this role's own page"
+msgid "Read the role"
+msgstr "Leer el rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: apply for this role"
+msgid "Apply"
+msgstr "Postular"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: the coming-soon roles this steward will build"
+msgid "Will grow into:"
+msgstr "Dará lugar a:"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open role"
+msgid "No role is open right now."
+msgstr "Ahora mismo no hay ningún rol abierto."
+
 #: client/src/components/roleCard/LeadBuilds.tsx
 msgctxt "under a lead role's card, the roles it will build"
 msgid "Coming soon, under the {leadName}."

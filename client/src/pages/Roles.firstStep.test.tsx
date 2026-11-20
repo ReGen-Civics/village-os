@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 /**
  * /roles, first step. Season goals are drawn from the live season, the roles
- * list waits behind the archetype step, "See all roles" opens it, and an
- * archetype card carries its pick to /roles/select.
+ * show at once as the index's cards (20 Nov 2026; they used to wait behind the
+ * archetype step and "See all roles"), and an archetype card carries its pick
+ * to /roles/select.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
@@ -156,25 +157,24 @@ describe("season goals on /roles", () => {
 });
 
 describe("step one: the archetype", () => {
-  it("hides the roles until a choice, then reveals them with See all roles", async () => {
+  it("shows the roles at once, as the index's cards, with the archetype step below them and no gate (the /roles index, 20 Nov 2026)", async () => {
     renderRoles();
-    expect(screen.getByRole("heading", { name: "Choose the root you grow from" })).toBeTruthy();
-    // Wait for the archetypes, which prove the page has had time to load the chart too.
+    expect(await screen.findByRole("heading", { name: "Choose the root you grow from" })).toBeTruthy();
     await screen.findByText("The Builder");
-    expect(screen.queryByText("Gardener")).toBeNull();
-    expect(screen.queryByRole("heading", { name: "Land Circle" })).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
-    expect(await screen.findByRole("heading", { name: "Land Circle" })).toBeTruthy();
-    expect(screen.getByText("Gardener")).toBeTruthy();
+    // The role is on the page without a press: its card, under Open now.
+    expect(await screen.findByRole("heading", { level: 3, name: "Gardener" })).toBeTruthy();
+    expect(document.querySelector('[data-role-card="garden"]')).toBeTruthy();
     expect(screen.queryByRole("button", { name: "See all roles" })).toBeNull();
-    // Focus moves to the new section so a keyboard or screen reader user lands on it.
-    expect(document.activeElement?.textContent).toBe("All roles and circles");
+    // The cards come first, the step after them.
+    const card = document.querySelector('[data-role-card="garden"]') as HTMLElement;
+    const step = document.querySelector("[data-archetype-step]") as HTMLElement;
+    expect(card.compareDocumentPosition(step) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("opens the roles for a link to one seat", async () => {
+  it("sends a link to one seat to that role's own page", async () => {
     window.history.replaceState(null, "", "/roles?seat=garden");
-    renderRoles();
-    expect(await screen.findByRole("heading", { name: "Land Circle" })).toBeTruthy();
+    const { loc } = renderRoles();
+    await waitFor(() => expect(loc.history?.at(-1)).toBe("/roles/gardener"));
   });
 
   it("explains each archetype from the village's own cast, with a line on who would pick it", async () => {
