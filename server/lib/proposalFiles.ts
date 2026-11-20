@@ -30,6 +30,7 @@ import {
   type ProposalFileKind,
 } from "../../shared/proposalAttachments";
 import { VOICE_CLIP_MAX_BYTES, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind, type SentClip, type VoiceClip, type VoiceNote, type VoiceNoteKind } from "../../shared/voiceNotes";
+import { uploadedFilePath } from "./uploadDisk";
 
 /** A proposal id as the intake makes it. Anything else never becomes a path. */
 const PROPOSAL_DIR = /^op-[0-9a-f]{20}$/;
@@ -51,7 +52,7 @@ export function sizeOf(f: UploadedFile): number {
 /** A part's first `n` bytes. */
 export async function headOf(f: UploadedFile, n: number): Promise<Buffer> {
   if (!onDisk(f)) return f.buffer.subarray(0, n);
-  const fh = await fs.promises.open(f.path, "r");
+  const fh = await fs.promises.open(uploadedFilePath(f.path), "r");
   try {
     const buf = Buffer.alloc(n);
     const { bytesRead } = await fh.read(buf, 0, n, 0);
@@ -65,7 +66,7 @@ export async function headOf(f: UploadedFile, n: number): Promise<Buffer> {
 async function fileHasAscii(file: string, needle: string): Promise<boolean> {
   const want = Buffer.from(needle, "latin1");
   let carry = Buffer.alloc(0);
-  for await (const chunk of fs.createReadStream(file, { highWaterMark: 256 * 1024 })) {
+  for await (const chunk of fs.createReadStream(uploadedFilePath(file), { highWaterMark: 256 * 1024 })) {
     const joined = Buffer.concat([carry, chunk as Buffer]);
     if (joined.includes(want)) return true;
     carry = joined.subarray(Math.max(0, joined.length - (want.length - 1)));
@@ -95,7 +96,7 @@ async function keepPart(f: UploadedFile, target: string): Promise<{ size: number
   let size = 0;
   try {
     await pipeline(
-      fs.createReadStream(f.path),
+      fs.createReadStream(uploadedFilePath(f.path)),
       async function* (source) {
         for await (const chunk of source) {
           hash.update(chunk as Buffer);

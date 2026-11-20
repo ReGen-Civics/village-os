@@ -52,6 +52,7 @@ import { ffmpegAvailable, ffmpegBinary } from "./voicePlayback";
 import { dbDocument } from "../repos/store-db";
 import type { VoiceNoteKind } from "../../shared/voiceNotes";
 import { VOICE_NOTE_TYPES } from "../../shared/voiceNotes";
+import { uploadedFilePath } from "./uploadDisk";
 import {
   TRANSCRIPTION_PROVIDER_IDS,
   VOICE_TRANSCRIBE_TEXT_MAX,
@@ -258,7 +259,7 @@ export async function transcribeWithHttp(input: TranscribeInput, provider: { def
   const timeout = AbortSignal.timeout(TRANSCRIBE_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
   try {
-    const bytes = input.bytes ?? (await fs.promises.readFile(input.path));
+    const bytes = input.bytes ?? (await fs.promises.readFile(uploadedFilePath(input.path)));
     const { body, contentType } = multipartBody(fields, { name: `take.${input.kind}`, type: VOICE_NOTE_TYPES[input.kind], bytes });
     const res = await doFetch(provider.def.url, {
       method: "POST",
@@ -381,7 +382,7 @@ export async function transcribeLocally(input: TranscribeInput, local: LocalWhis
     const wav = path.join(scratch, "in.wav");
     const out = path.join(scratch, "out");
     if (input.bytes) await fs.promises.writeFile(source, input.bytes);
-    else await fs.promises.copyFile(input.path, source);
+    else await fs.promises.copyFile(uploadedFilePath(input.path), source);
     const started = Date.now();
     const decoded = await run(
       ffmpegBinary(),

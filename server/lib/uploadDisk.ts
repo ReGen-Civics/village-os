@@ -42,6 +42,31 @@ function trackOf(req: Request): Tracked {
   return r[TEMPS];
 }
 
+
+/* ── Only files this server wrote ────────────────────────────────────────────
+ * Every path an upload reader opens, copies or moves came from this module: a folder registered below and a name
+ * it generated (`in-<32 hex>.part` while streaming, `up-<32 hex>.bin` once kept as a part). A path that is not
+ * both is refused before any file call, so a value from a request can never steer a read, copy or move elsewhere.
+ */
+const UPLOAD_ROOTS = new Set<string>();
+const UPLOAD_NAME = /^(?:in-[0-9a-f]{32}\.part|up-[0-9a-f]{32}\.bin)$/;
+
+/** Record a folder this server streams uploads into or keeps parts in. */
+export function registerUploadRoot(dir: string): void {
+  UPLOAD_ROOTS.add(path.resolve(dir));
+}
+
+/** The resolved path when it is a file this server wrote under a registered upload folder; otherwise it throws. */
+export function uploadedFilePath(p: string): string {
+  const resolved = path.resolve(String(p));
+  const name = path.basename(resolved);
+  if (!UPLOAD_NAME.test(name)) throw new Error("not an uploaded file");
+  for (const root of Array.from(UPLOAD_ROOTS)) {
+    if (resolved.startsWith(root + path.sep) && path.dirname(resolved) === root) return resolved;
+  }
+  throw new Error("not an uploaded file");
+}
+
 /** The folder uploads stream into: under the private root when there is one, else the system's temp folder. */
 export function incomingDir(privateRoot?: string): string {
   return privateRoot ? path.join(privateRoot, ".incoming") : path.join(os.tmpdir(), "village-incoming-uploads");
@@ -60,6 +85,7 @@ export interface DiskFile {
  * limits (fileSize, files, fields) still apply: they work on the stream, whatever the engine.
  */
 export function streamToDisk(dir: string): StorageEngine {
+  registerUploadRoot(dir);
   return {
     _handleFile(req, file, cb) {
       const t = trackOf(req);

@@ -17,6 +17,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { UploadedFile } from "./proposalFiles";
+import { registerUploadRoot, uploadedFilePath } from "./uploadDisk";
 
 /** Which list of the application a part belongs to, as the multipart route names its fields. */
 export const PART_KINDS = ["files", "voice", "clips"] as const;
@@ -33,7 +34,11 @@ interface PartMeta {
   size: number;
 }
 
-export const partsDir = (incoming: string): string => path.join(incoming, "parts");
+export const partsDir = (incoming: string): string => {
+  const dir = path.join(incoming, "parts");
+  registerUploadRoot(dir);
+  return dir;
+};
 
 /**
  * Keep an uploaded file as a part: moved (a rename on the same volume) from where the upload streamed it, with a
@@ -44,10 +49,11 @@ export async function stagePart(incoming: string, file: { path: string; size: nu
   await fs.promises.mkdir(dir, { recursive: true, mode: 0o700 });
   const id = `up-${crypto.randomBytes(16).toString("hex")}`;
   const target = path.join(dir, `${id}.bin`);
+  const from = uploadedFilePath(file.path);
   try {
-    await fs.promises.rename(file.path, target);
+    await fs.promises.rename(from, target);
   } catch {
-    await fs.promises.copyFile(file.path, target);
+    await fs.promises.copyFile(from, target);
   }
   const meta: PartMeta = { kind, name: String(file.originalname ?? "").slice(0, 400), size: file.size };
   await fs.promises.writeFile(path.join(dir, `${id}.json`), JSON.stringify(meta), { mode: 0o600 });
