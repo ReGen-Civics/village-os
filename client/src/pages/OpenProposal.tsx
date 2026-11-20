@@ -35,7 +35,7 @@ import CommitmentReview, { type CommitmentReviewData } from "@/components/openPr
 import ContractPrice, { type ContractPriceData } from "@/components/openProposal/ContractPrice";
 import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
-import TermsWeOffer, { OpenTalksWarning, type ServedDeciderOffer } from "@/components/openProposal/TermsWeOffer";
+import TermsWeOffer, { OpenTalksWarning, prefillFromSearch, type ServedDeciderOffer } from "@/components/openProposal/TermsWeOffer";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, Check, Copy, Mail, X } from "lucide-react";
@@ -404,7 +404,7 @@ export default function OpenProposal() {
               : <ContractPrice data={p.contractPrice} />)}
 
             {/* An agent is offered no pay, allowance or commitment (verify B153, B8): a person's terms never show for one. */}
-            {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} />}
+            {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
 
             <section aria-labelledby="op-words">
               <h2 id="op-words" className="text-lg font-bold text-foreground">

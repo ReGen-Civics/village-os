@@ -38,7 +38,7 @@
  * outside the platform." beside every money row.
  */
 import { AboutYouView } from "@/components/openProposal/AboutYou";
-import TermsWeOffer, { OpenTalksWarning } from "@/components/openProposal/TermsWeOffer";
+import TermsWeOffer, { OpenTalksWarning, prefillFromSearch } from "@/components/openProposal/TermsWeOffer";
 import { ABOUT_WORDS } from "@shared/proposalAbout";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
@@ -440,7 +440,7 @@ export default function SeatApplication() {
               )}
             </section>
 
-            {app.offer && <TermsWeOffer offer={app.offer} mayEdit={!!app.you?.mayEditTerms} savePath={`/api/governance/role-applications/${encodeURIComponent(app.id)}/terms`} onSaved={() => void load()} />}
+            {app.offer && <TermsWeOffer offer={app.offer} mayEdit={!!app.you?.mayEditTerms} savePath={`/api/governance/role-applications/${encodeURIComponent(app.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
             <AboutYouView about={app.aboutYou} />
             {typeof app.referencesGiven === "number" && (
               <p className="text-sm text-muted-foreground" data-references-given="">
