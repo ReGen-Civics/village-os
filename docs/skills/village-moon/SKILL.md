@@ -47,6 +47,9 @@ The village connector is a remote MCP server at `VILLAGE_ORIGIN/api/agent/v1/mcp
 | `admin_request` | `admin` | For an admin's agent only: call one admin path the village has opened to agents, as the admin, with their own admin checks. The list is the village's (Admin, agent paths); erasure, powers, money, secrets and the agent accounts are never on it. |
 | `propose_changes` | `admin` | For an admin's agent: put one change, or a whole batch, in front of a person on the review page (`/admin/proposals`). Nothing changes live; the person edits and accepts it there. Covers every setting an admin can change. |
 | `read_proposal_lessons` | `admin` | What people changed in earlier proposals before accepting them, by kind and field. Read it before drafting. |
+| `read_proposal_queue` | `admin` | What waits on the review page and what was decided lately: each change's batch, id, kind, sentence and state (waiting, accepted, discarded), and `yours` for what you filed. Never a body, a live value or who decided. |
+| `discard_my_proposals` | `admin` | Put aside changes you filed through the connector that still wait, such as a superseded draft. Two calls. Never accepts, and never touches what somebody else filed. |
+| `read_seat_terms` | `admin` | Each role's terms on offer as words: the eight suggested wordings, the commitment, and the names of the settings set. Never an amount, a currency or a pay shape. |
 
 Every write here, the moon tools included, takes the two calls below. A moon tool answers "My moon is not open here yet" while the village has the moon review off.
 
@@ -65,14 +68,16 @@ Done tells Sera exactly as a tap on the board does. Do not also close the task i
 
 ## Proposing changes for a person to review
 
-`propose_changes` needs no `confirmToken`, because a proposal changes nothing: a person reads it on `/admin/proposals` beside what is live, edits the words, and accepts or discards it there. Accepting runs each change through its own admin route as that person, so it lands only where they hold the power. The connector can never accept or discard.
+`propose_changes` needs no `confirmToken`, because a proposal changes nothing: a person reads it on `/admin/proposals` beside what is live, edits the words, and accepts or discards it there. Accepting runs each change through its own admin route as that person, so it lands only where they hold the power. The connector can never accept. It discards only what it filed itself, while that still waits, with `discard_my_proposals`; a person puts aside everything else.
 
 Send `{batch, items}`, where `batch` is a short title ("Phase A content") or `batchId` adds to a batch already waiting, and each item is `{kind, target, body, summary}`. `summary` is one plain sentence. The kinds:
 
 | kind | target | body |
 |---|---|---|
 | `role_card` | `{roleId}` | any of `{words, parameters, pay, archetypes, sections}`; sections merge onto the card |
-| `page_content` | `{section}`, such as `page-home` | the fields to change, merged onto the page |
+| `page_content` | `{section}`, such as `page-home`, or a word document: `app-vocabulary`, `app-menu`, `app-notices` | the fields to change, merged onto the page or document |
+| `vocabulary` | `{}` | the word slots to change, each `{one, many}`, such as `{contributionToken: {one, many}}`; filed as `page_content` on `app-vocabulary` |
+| `seat_terms` | `{roleId}` | `{words: {...}}`: the suggested wording for any of term, clocks, rhythm, allowance, bonus, goals, scoreboard, ending; `""` takes one off. Words only: figures and every other setting stay as they are |
 | `faq_add` | `{pathway}` | `{question, answer}` |
 | `faq_edit` | `{pathway, id}` | `{question, answer}` |
 | `faq_remove` | `{pathway, id}` | `{}` |

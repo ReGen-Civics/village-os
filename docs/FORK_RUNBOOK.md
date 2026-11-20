@@ -2240,6 +2240,7 @@ Admin, Integrations has two new cards, `railway_project_token` (one Railway proj
 ## Proposed changes, reviewed on one page (migration 0379, 2026-11-12)
 
 - No env var and nothing to set. Migration 0379 adds `proposed_change_batches` and `proposed_changes` at boot. An admin's agent proposes through the connector's `propose_changes` (or `POST /api/admin/proposals`); a person reviews, edits and accepts on `/admin/proposals`, linked from Admin with a count, and each change runs through its own admin route as that person. What people edit before accepting is kept and read back by `read_proposal_lessons`.
+- Agent powers, 19 Nov 2026: no env var, no migration, nothing to set. The connector proposes the village's word documents (`app-vocabulary` through kind `vocabulary` or `page_content`, `app-menu`, `app-notices`) and a role's terms wording (kind `seat_terms`, words only), reads the review queue redacted (`read_proposal_queue`), reads a role's terms as words (`read_seat_terms`) and puts aside what it filed (`discard_my_proposals`). Amora's agent paths seed gains `GET /api/content/app-vocabulary`; a person still applies the seed. Delegated acceptance is a design only: `docs/AGENT_ACCEPTANCE_DESIGN.md`.
 
 ## Shortlist, references and the final call (migration 0412, 2026-11-19)
 

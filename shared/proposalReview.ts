@@ -53,6 +53,8 @@ export function faceOf(kind: ProposalKind, route: RouteRef): ChangeFace {
     case "page_content":
       return "page_words";
     case "role_card":
+    // A role's terms on offer, words only: read on the role's own card.
+    case "seat_terms":
       return "role_card";
     case "faq_add":
     case "faq_edit":
@@ -116,6 +118,7 @@ export function flagsOf(kind: ProposalKind, route: RouteRef, target: Record<stri
     kind === "faq_edit" ||
     kind === "faq_remove" ||
     kind === "role_card" ||
+    kind === "seat_terms" ||
     kind === "role_listing" ||
     (kind === "module_lifecycle" && body.lifecycle === "public") ||
     (kind === "setting" && PUBLIC_SETTINGS.test(route.path))

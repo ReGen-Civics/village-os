@@ -61,6 +61,12 @@ import { neverPutBack } from "../../shared/proposalPutBack";
 import { agendaItemBody, readProposedAgenda } from "../../shared/sessionAgendaProposal";
 import { circleWords } from "../../shared/sessionTasks";
 import { circleRhythmRows } from "../repos/sessionRhythm";
+import { contentDocumentFor, contentDocumentLive } from "../../shared/contentDocuments";
+import { CANVAS_PUBLIC_SECTION } from "../../shared/canvasPublicLines";
+import { liveSeatWords, readSeatTermsBody, SEAT_TERMS_WORDS, seatTermsProblem, termsWithWords } from "../../shared/seatTermsProposal";
+import { readTermsOffer } from "../../shared/seatTermsOffer";
+import { TERM_KEYS, TERM_LABELS } from "../../shared/termsWords";
+import { withdrawDraft } from "./orgDrafts";
 
 /** The route that makes a new role, checked at filing by `createRoleProblem`. */
 const NEW_ROLE_ROUTE = "/api/admin/org/roles";
@@ -150,10 +156,15 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       const section = String(t.section ?? "");
       const live = deps.content()[section];
       const spec = pageSpecForSection(section);
-      if (!spec && live === undefined) return bad("There is no page section by that name.", "target.section");
-      const problem = pageContentProblem(section, mergeOnto(live ?? {}, b));
+      // A word document that is not a page (the vocabulary, the menu, the notices) is proposable whether or not the
+      // village ever saved it, and is read by the content route's own validator for it (shared/contentDocuments.ts).
+      const doc = contentDocumentFor(section);
+      if (section === CANVAS_PUBLIC_SECTION) return bad("The governance canvas has its own page, and a proposal does not reach it.", "target.section");
+      if (!spec && !doc && live === undefined) return bad("There is no page section by that name.", "target.section");
+      const merged = mergeOnto(live ?? {}, b);
+      const problem = pageContentProblem(section, merged) ?? (doc ? doc.problem(merged) : null);
       if (problem) return bad(problem, "body");
-      return ok(spec ? `${spec.label} page` : `${section} words`);
+      return ok(spec ? `${spec.label} page` : doc ? doc.label : `${section} words`);
     }
     case "faq_add":
     case "faq_edit":
@@ -229,6 +240,17 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       const n = read.value.items.length;
       return ok(`${n === 1 ? "1 agenda item" : `${n} agenda items`} for ${where.label}`);
     }
+    case "seat_terms": {
+      const { role } = await roleOf(deps.pool, String(t.roleId ?? ""));
+      if (!role) return bad("There is no role by that id.", "target.roleId");
+      if (role.isExample) return bad("A standing example is never changed.", "target.roleId");
+      const read = readSeatTermsBody(b);
+      if (!read.ok) return bad(read.error, read.field);
+      // The org draft's own check on the whole offer, as it would be written (`termsBlock`, server/lib/orgDrafts.ts).
+      const problem = seatTermsProblem(role.termsOffer, read.words);
+      if (problem) return bad(problem, "words");
+      return ok(`${role.name} terms on offer, wording`);
+    }
     case "setting": {
       if (!deps.routeExists(route.method, route.path)) return bad(REVIEW_WORDS.noRoute, "target.path");
       if (typeof t.readPath === "string") {
@@ -302,6 +324,7 @@ export function labelsFor(kind: ProposalKind, target: Record<string, unknown>, b
       for (const l of s.lists ?? []) out[`${s.id}.${l.key}`] = l.label;
     }
   }
+  if (kind === "seat_terms") for (const k of TERM_KEYS) out[`words.${k}`] = `${TERM_LABELS[k]}, suggested wording`;
   if (kind === "variable") out.value = VARIABLES_BY_KEY[String(target.key ?? "")]?.label ?? fieldLabel("value");
   return out;
 }
@@ -330,8 +353,11 @@ export function whereOf(kind: ProposalKind, target: Record<string, unknown>): Wh
   switch (kind) {
     case "page_content": {
       const spec = pageSpecForSection(t("section"));
-      return spec ? { label: `${spec.label} page`, href: spec.path } : { label: t("section"), href: null };
+      const doc = contentDocumentFor(t("section"));
+      return spec ? { label: `${spec.label} page`, href: spec.path } : doc ? { ...doc.where } : { label: t("section"), href: null };
     }
+    case "seat_terms":
+      return { label: "Roles page", href: `/roles?seat=${encodeURIComponent(t("roleId"))}` };
     case "faq_add":
     case "faq_edit":
     case "faq_remove": {
@@ -383,8 +409,15 @@ export async function liveOf(deps: KindDeps, run: Run, kind: ProposalKind, targe
         if (obj(body.sections)) out.sections = pick(s.sections as unknown as Record<string, unknown>, Object.keys(obj(body.sections)!));
         return out;
       }
-      case "page_content":
-        return deps.content()[String(target.section ?? "")] ?? null;
+      case "page_content": {
+        const section = String(target.section ?? "");
+        const stored = deps.content()[section];
+        return contentDocumentFor(section) ? contentDocumentLive(section, stored) : stored ?? null;
+      }
+      case "seat_terms": {
+        const { role } = await roleOf(deps.pool, String(target.roleId ?? ""));
+        return role ? liveSeatWords(role.termsOffer) : null;
+      }
       case "faq_add":
         return null;
       case "faq_edit":
@@ -550,12 +583,56 @@ export async function applyProposal(deps: KindDeps, run: Run, kind: ProposalKind
       }
       return { ok: true };
     }
+    case "seat_terms":
+      return applySeatTerms(deps, run, target, body);
     case "setting": {
       // A new gathering with no status goes on the calendar, for a proposal filed before the filing rule (`settingBodyToApply`).
       const payload = settingBodyToApply(route.method, route.path, body);
       return through(route.method, route.path, route.method === "DELETE" && !Object.keys(payload).length ? undefined : payload);
     }
   }
+}
+
+/**
+ * A role's wordings, through the org draft path as the person (the path Admin's terms editor takes): a one-change
+ * draft carrying the whole offer, read fresh now, with only the wordings changed; its preview; its publish. Every
+ * group the role holds, pay among them, is written back exactly as it is. A draft that does not publish is withdrawn,
+ * so nothing is left open for somebody else to find.
+ */
+async function applySeatTerms(deps: KindDeps, run: Run, target: Record<string, unknown>, body: Record<string, unknown>): Promise<Applied> {
+  const read = readSeatTermsBody(body);
+  if (!read.ok) return { ok: false, error: read.error, field: read.field };
+  const { role } = await roleOf(deps.pool, String(target.roleId ?? ""));
+  if (!role) return { ok: false, error: "That role is not here any more." };
+  const held = readTermsOffer(role.termsOffer);
+  if (!held.ok) return { ok: false, error: held.problem };
+  const termsOffer = termsWithWords(held.settings, read.words);
+  const fail = (a: { status: number; body: unknown }): Applied => ({ ok: false, error: routeError(a), field: fieldOf(a), status: a.status });
+  const made = await run("POST", "/api/admin/org/drafts", { title: SEAT_TERMS_WORDS.draftTitle(role.name) });
+  const draftId = typeof obj(made.body)?.id === "string" ? String(obj(made.body)!.id) : "";
+  if (made.status >= 300 || !draftId) return fail(made);
+  const id = encodeURIComponent(draftId);
+  const withdraw = async () => {
+    await withdrawDraft(deps.pool, draftId).catch(() => undefined);
+  };
+  const added = await run("POST", `/api/admin/org/drafts/${id}/changes`, { op: "update_seat", orgRoleId: role.id, payload: { termsOffer } });
+  if (added.status >= 300) {
+    await withdraw();
+    return fail(added);
+  }
+  const preview = await run("GET", `/api/admin/org/drafts/${id}/preview`);
+  const lines = Array.isArray(obj(preview.body)?.lines) ? (obj(preview.body)!.lines as unknown[]) : [];
+  const blocked = lines.map((l) => obj(l)?.blocked).find((x) => typeof x === "string" && x);
+  if (preview.status >= 300 || blocked) {
+    await withdraw();
+    return preview.status >= 300 ? fail(preview) : { ok: false, error: `${String(blocked)}. Nothing was saved.` };
+  }
+  const published = await run("POST", `/api/admin/org/drafts/${id}/publish`, {});
+  if (published.status >= 300) {
+    await withdraw();
+    return fail(published);
+  }
+  return { ok: true };
 }
 
 /** Whether Express registered a route for `method path`, read off the app's own router (Express 5), sub-routers included. */

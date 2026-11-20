@@ -70,6 +70,9 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
       if (slowTarget.on) await new Promise((r) => setTimeout(r, 300));
       if (refuse.has(req.path)) return res.status(403).json({ error: "capability_required", message: "This needs the power to turn the village's dials." });
       if (req.method === "PUT" && req.path.startsWith("/api/admin/content/")) content[req.path.split("/").pop()!] = req.body;
+      // The org draft path a role's terms wording is accepted through: a draft with an id, a preview that blocks nothing.
+      if (req.method === "POST" && req.path === "/api/admin/org/drafts") return res.json({ success: true, id: "d-terms" });
+      if (req.method === "GET" && req.path === "/api/admin/org/drafts/d-terms/preview") return res.json({ lines: [{ blocked: null }] });
       if (req.method === "POST" && req.path === "/api/admin/faqs/steward") faqs.steward.push({ id: `ste-${faqs.steward.length + 1}`, ...req.body });
       res.json({ success: true });
     });
@@ -469,5 +472,89 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(read.body.decided.find((d: any) => d.id === "pc_was").putBack).toEqual({ can: false, reason: "not_kept" });
     expect((await call("POST", "/api/admin/proposals/pc_was/put-back")).body.reason).toBe("not_kept");
     expect((await call("POST", "/api/admin/proposals/pc_nope/put-back")).status).toBe(404);
+  });
+
+  // ── Agent powers (the lead, 19 Nov 2026) ──────────────────────────────────
+
+  const CONNECTOR = { "x-village-connector": "1" };
+
+  it("the village's words for things are proposable through the connector before they were ever saved, and land through the content route as the person", async () => {
+    delete content["app-vocabulary"];
+    const broken = await call("POST", "/api/admin/proposals", { batch: "Words", items: [{ kind: "vocabulary", target: {}, body: { notASlot: { one: "x" } }, summary: "A word that is not a slot." }] }, ADMIN.id, CONNECTOR);
+    expect(broken.status).toBe(400);
+    expect(broken.body.refused[0].error).toContain("not one of the words");
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Words", items: [{ kind: "vocabulary", target: {}, body: { contributionToken: { one: "village token", many: "village tokens" } }, summary: "Call the contribution token the village token." }] }, ADMIN.id, CONNECTOR);
+    expect(filed.status, JSON.stringify(filed.body)).toBe(200);
+    const page = await call("GET", "/api/admin/proposals");
+    const c = page.body.changes[0];
+    expect(c.kind).toBe("page_content");
+    expect(c.target).toEqual({ section: "app-vocabulary" });
+    expect(c.live.contributionToken).toEqual({ one: "contribution token", many: "contribution tokens" });
+    expect(c.where.label).toContain("Make it yours");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: filed.body.ids[0] }] });
+    expect(acc.body.accepted).toBe(1);
+    expect(hits.find((h) => h.method === "PUT")).toEqual(expect.objectContaining({ path: "/api/admin/content/app-vocabulary", auth: `Bearer ${ADMIN.id}` }));
+    expect(content["app-vocabulary"].contributionToken).toEqual({ one: "village token", many: "village tokens" });
+    // The lessons read finds it by its alias.
+    expect((await call("GET", "/api/admin/proposals/lessons?kind=vocabulary")).status).toBe(200);
+  });
+
+  it("the queue an agent reads carries batch, id, kind, sentence and state, and marks what it filed", async () => {
+    const mine = await call("POST", "/api/admin/proposals", { batch: "Mine", items: [FAQ] }, AGENT.id);
+    const theirs = await call("POST", "/api/admin/proposals", { batch: "Theirs", items: [DIAL] });
+    const q = await call("GET", "/api/admin/proposals/queue", undefined, AGENT.id, CONNECTOR);
+    expect(q.status).toBe(200);
+    expect(q.body.waiting).toBe(2);
+    const items = q.body.batches.flatMap((b: any) => b.items);
+    expect(items.find((i: any) => i.id === mine.body.ids[0])).toEqual({ id: mine.body.ids[0], batchId: mine.body.batchId, kind: "faq_add", summary: FAQ.summary, state: "waiting", stuck: false, yours: true });
+    expect(items.find((i: any) => i.id === theirs.body.ids[0]).yours).toBe(false);
+    expect(JSON.stringify(q.body)).not.toMatch(/"body"|"live"|"route"|Write to the circle/);
+    expect((await call("GET", "/api/admin/proposals/queue", undefined, STRANGER.id)).status).toBe(403);
+  });
+
+  it("an agent puts aside what it filed while it waits, and nothing that a person filed or that was decided", async () => {
+    const mine = await call("POST", "/api/admin/proposals", { batch: "Mine", items: [FAQ, PAGE] }, ADMIN.id, CONNECTOR);
+    const theirs = await call("POST", "/api/admin/proposals", { batch: "Theirs", items: [DIAL] });
+    const [draftA, draftB] = mine.body.ids;
+    await call("POST", "/api/admin/proposals/accept", { items: [{ id: draftB }] });
+    const r = await call("POST", "/api/admin/proposals/discard-mine", { ids: [draftA, draftB, theirs.body.ids[0]] }, ADMIN.id, CONNECTOR);
+    expect(r.status).toBe(200);
+    expect(r.body.results.map((x: any) => x.ok)).toEqual([true, false, false]);
+    expect(r.body.discarded).toBe(1);
+    const rows = await q("SELECT id, status FROM proposed_changes ORDER BY id");
+    expect(Object.fromEntries(rows.map((x: any) => [x.id, x.status]))).toEqual({ [draftA]: "discarded", [draftB]: "accepted", [theirs.body.ids[0]]: "proposed" });
+    // Another agent account cannot put aside what this one filed.
+    const other = await call("POST", "/api/admin/proposals", { batch: "Agent's", items: [FAQ] }, AGENT.id);
+    expect((await call("POST", "/api/admin/proposals/discard-mine", { ids: other.body.ids }, ADMIN.id, CONNECTOR)).body.discarded).toBe(0);
+    // Accepting is still refused to the connector.
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id: theirs.body.ids[0] }] }, ADMIN.id, CONNECTOR)).status).toBe(403);
+  });
+
+  it("a role's terms read as words with no figure, are proposed as words only, and land through the draft path keeping the pay", async () => {
+    const held = { v: 1, pay: { kind: "fixed", currency: "USD", amountMinor: 300000, per: "moon" }, words: { bonus: "Earned Equity under the moon-contract rule.", term: "We renew together each moon." } };
+    await q("DELETE FROM org_roles WHERE id = 'r-terms'");
+    await q("INSERT INTO org_roles (id, circle_id, name, seats, active, terms_offer) VALUES ('r-terms', 'c-hub', 'Lead Steward', 1, 1, ?)", [JSON.stringify(held)]);
+    const read = await call("GET", "/api/admin/proposals/seat-terms?roleId=r-terms", undefined, ADMIN.id, CONNECTOR);
+    expect(read.status).toBe(200);
+    expect(read.body.roles[0]).toEqual(expect.objectContaining({ roleId: "r-terms", commitmentPct: null, setGroups: ["Pay"] }));
+    expect(read.body.roles[0].words.bonus).toBe("Earned Equity under the moon-contract rule.");
+    expect(JSON.stringify(read.body)).not.toMatch(/300000|USD|amountMinor/);
+    expect((await call("GET", "/api/admin/proposals/seat-terms?roleId=nope")).status).toBe(404);
+
+    const pay = await call("POST", "/api/admin/proposals", { batch: "Terms", items: [{ kind: "seat_terms", target: { roleId: "r-terms" }, body: { words: { bonus: "x" }, pay: { kind: "fixed", amountMinor: 1 } }, summary: "Raise the pay." }] }, ADMIN.id, CONNECTOR);
+    expect(pay.status).toBe(400);
+    expect(pay.body.refused[0].error).toContain("words");
+    const filed = await call("POST", "/api/admin/proposals", { batch: "Terms", items: [{ kind: "seat_terms", target: { roleId: "r-terms" }, body: { words: { bonus: "Five to ten percent of the moon when its goals are met." } }, summary: "Reword the Lead Steward's bonus." }] }, ADMIN.id, CONNECTOR);
+    expect(filed.status, JSON.stringify(filed.body)).toBe(200);
+    const page = await call("GET", "/api/admin/proposals");
+    expect(page.body.changes[0].live.words.bonus).toBe("Earned Equity under the moon-contract rule.");
+    const acc = await call("POST", "/api/admin/proposals/accept", { items: [{ id: filed.body.ids[0] }] });
+    expect(acc.body.accepted, JSON.stringify(acc.body)).toBe(1);
+    expect(hits.map((h) => `${h.method} ${h.path}`)).toEqual(["POST /api/admin/org/drafts", "POST /api/admin/org/drafts/d-terms/changes", "GET /api/admin/org/drafts/d-terms/preview", "POST /api/admin/org/drafts/d-terms/publish"]);
+    expect(hits.every((h) => h.auth === `Bearer ${ADMIN.id}`)).toBe(true);
+    const offer = hits[1].body.payload.termsOffer;
+    expect(offer.pay).toEqual(held.pay);
+    expect(offer.words).toEqual({ term: "We renew together each moon.", bonus: "Five to ten percent of the moon when its goals are met." });
+    await q("DELETE FROM org_roles WHERE id = 'r-terms'");
   });
 });

@@ -24,7 +24,7 @@ export type PathGroup = (typeof PATH_GROUPS)[number];
 
 /** First match wins, so the narrower areas come before the wider ones (circles before the org chart). */
 const RULES: ReadonlyArray<[PathGroup, RegExp]> = [
-  ["pages", /^\/api\/(admin\/(content|brochure-pages|village-paths|archetypes|confidentiality)|confidentiality)(\/|$)/],
+  ["pages", /^\/api\/(admin\/(content|brochure-pages|village-paths|archetypes|confidentiality)|confidentiality|content)(\/|$)/],
   ["faqs", /^\/api\/admin\/faqs(\/|$)/],
   ["circles", /^\/api\/(admin\/circles|org\/circles)(\/|$)/],
   ["roles", /^\/api\/(admin\/org|org)(\/|$)|^\/api\/admin\/variables\/org\./],

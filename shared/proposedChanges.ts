@@ -27,6 +27,9 @@
  */
 import { ALWAYS_A_PERSON } from "./agentAdmin";
 import { AGENDA_PROPOSAL_ROUTE } from "./sessionAgendaProposal";
+import { CONTENT_DOCUMENTS } from "./contentDocuments";
+import { SEAT_TERMS_ROUTE } from "./seatTermsProposal";
+import { VOCAB_SECTION } from "./vocabulary";
 
 export const PROPOSAL_KINDS = [
   "role_card",
@@ -41,6 +44,7 @@ export const PROPOSAL_KINDS = [
   "season_goals",
   "onboarding_path",
   "session_agenda",
+  "seat_terms",
   "setting",
 ] as const;
 export type ProposalKind = (typeof PROPOSAL_KINDS)[number];
@@ -54,7 +58,7 @@ export type WriteMethod = "PUT" | "POST" | "PATCH" | "DELETE";
 /** What each kind names, in plain words, for the connector's description and a refusal. */
 export const KIND_WORDS: Record<ProposalKind, string> = {
   role_card: "A role card: words, listing details, pay on offer, characters and the founding sections. target {roleId}; body any of {words, parameters, pay, archetypes, sections, circleId}. parameters.comingSoon true shows the role as coming soon (applied for early); parameters.listed false with comingSoon false unlists it.",
-  page_content: "A page's words. target {section}, such as page-home; body the fields to change, merged onto the page as it stands.",
+  page_content: `A page's words, or one of the village's word documents. target {section}, such as page-home, or ${CONTENT_DOCUMENTS.map((d) => d.section).join(", ")}; body the fields to change, merged onto it as it stands.`,
   faq_add: "A new FAQ. target {pathway}; body {question, answer}.",
   faq_edit: "An FAQ reworded. target {pathway, id}; body {question, answer}.",
   faq_remove: "An FAQ taken down. target {pathway, id}; body {}.",
@@ -66,6 +70,8 @@ export const KIND_WORDS: Record<ProposalKind, string> = {
   onboarding_path: "The village's onboarding path document. target {}; body {doc}.",
   session_agenda:
     "Open agenda items for a circle on /sessions. target {circleId}: the items wait as the circle's open agenda items, whether or not it keeps a meeting rhythm, and the next session anyone opens for the circle takes them up. Add rhythmKey only to tie them to one of its meeting rhythms (GET /api/sessions, comingUp.rows[].rhythms[].key). body {items: [{title, detail?, kind: consent | decision | discussion, ownerRole?}]}, at most 20. Each accepted item is added by the person accepting, through the member's own door.",
+  seat_terms:
+    "A role's terms on offer, the words only: the suggested wording a candidate reads for any of term, clocks, rhythm, allowance, bonus, goals, scoreboard, ending. target {roleId}; body {words: {bonus: \"...\"}}; a wording sent as \"\" takes it off. Pay, allowance and bonus figures and every other setting stay a person's, and are kept as they are. Read them first with read_seat_terms.",
   setting: "Any other admin setting, through its own route. target {method, path, readPath?}; body the route's own body.",
 };
 
@@ -96,8 +102,25 @@ export function routePatternFor(kind: Exclude<ProposalKind, "setting">): { metho
       return { method: "PUT", path: "/api/admin/onboarding-path" };
     case "session_agenda":
       return { method: AGENDA_PROPOSAL_ROUTE.method, path: AGENDA_PROPOSAL_ROUTE.path };
+    case "seat_terms":
+      return { method: SEAT_TERMS_ROUTE.method, path: SEAT_TERMS_ROUTE.path };
   }
 }
+
+/**
+ * Kinds a proposal may name that are another kind with its target filled in. `vocabulary` is the village's words for
+ * things (shared/vocabulary.ts): page_content on the app-vocabulary document, target {}, body the word slots to
+ * change, such as {contributionToken: {one, many}}, merged onto the words as they stand.
+ */
+export const KIND_ALIASES = {
+  vocabulary: { kind: "page_content", target: { section: VOCAB_SECTION } },
+} as const satisfies Record<string, { kind: ProposalKind; target: Record<string, string> }>;
+export type KindAlias = keyof typeof KIND_ALIASES;
+export const KIND_ALIAS_NAMES = Object.keys(KIND_ALIASES) as KindAlias[];
+export const ALIAS_WORDS: Record<KindAlias, string> = {
+  vocabulary:
+    "The village's words for things, such as its contribution token's name. target {}; body the word slots to change, each {one, many}, such as {contributionToken: {one: \"village token\", many: \"village tokens\"}}, merged onto the words as they stand. Filed as page_content on app-vocabulary.",
+};
 
 /** The pattern with the target's values put in. */
 export function fillPattern(pattern: string, target: Record<string, unknown>): string {
@@ -297,7 +320,9 @@ export function readProposalInput(raw: unknown): { ok: true; value: ProposalInpu
   if (JSON.stringify(body).length > PROPOSAL_LIMITS.bodyBytes) return { ok: false, error: "That body is longer than a proposal can carry." };
   const target = objectOr(r.target) ?? {};
   let kind = typeof r.kind === "string" && r.kind ? r.kind : "setting";
-  if (!(PROPOSAL_KINDS as readonly string[]).includes(kind)) return { ok: false, error: `kind is one of ${PROPOSAL_KINDS.join(", ")}.` };
+  const alias = Object.prototype.hasOwnProperty.call(KIND_ALIASES, kind) ? KIND_ALIASES[kind as KindAlias] : null;
+  if (alias) return { ok: true, value: { kind: alias.kind, target: { ...alias.target }, body, summary } };
+  if (!(PROPOSAL_KINDS as readonly string[]).includes(kind)) return { ok: false, error: `kind is one of ${[...PROPOSAL_KINDS, ...KIND_ALIAS_NAMES].join(", ")}.` };
   if (kind === "setting") {
     const method = String(target.method ?? "").toUpperCase();
     if (!["PUT", "POST", "PATCH", "DELETE"].includes(method)) return { ok: false, error: "A setting names target.method: PUT, POST, PATCH or DELETE." };

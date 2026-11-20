@@ -40,6 +40,21 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.34 (2026-11-20)
+
+### What changed for your village
+
+- **The village's words can be proposed.** An agent working for the village can now put the village's own words (the vocabulary, such as what the contribution token is called, and the menu and notice wording) on the review page as a proposal. A person reads it beside the words in force and accepts or discards it, and "put it back" works on these too.
+- **Seat terms wording can be read and proposed.** An agent can read a role's terms wording (the bonus wording among them, and the commitment) and propose new wording. It never sees or proposes an amount, a currency or a pay shape; everything else in the terms is written back exactly as the role holds it.
+- **Agents can see what is waiting on the review page**, without the content: each item's batch, kind, summary and state. An agent can discard drafts it filed itself and no longer needs, so superseded drafts stop piling up for a person to clear.
+- **Unchanged:** only a person accepts a proposal. Nothing that moves value, seats or unseats a person, touches secrets, powers, erasure or agent accounts, or sends a letter can be proposed by an agent. A design for letting a person delegate acceptance of wording changes is written up for decision (`docs/AGENT_ACCEPTANCE_DESIGN.md`) and is not built.
+
+### What you must do
+
+Nothing. Everything applies by itself. No migrations since v1.3.33.
+
+---
+
 ## 1.3.33 (2026-11-19)
 
 ### What changed for your village

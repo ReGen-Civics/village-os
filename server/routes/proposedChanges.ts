@@ -4,6 +4,9 @@
  * Proposing (the connector's `propose_changes`, as the token's holder, or a person):
  *   POST /api/admin/proposals            one change or a batch; refused whole, with a reason per item, when any is broken
  *   GET  /api/admin/proposals/lessons    what people changed before accepting, grouped by kind and field
+ *   GET  /api/admin/proposals/queue      the queue, redacted: batch, id, kind, sentence, state, and whether you filed it
+ *   GET  /api/admin/proposals/seat-terms a role's terms as words: the wordings, the commitment, the names of groups set
+ *   POST /api/admin/proposals/discard-mine  put aside changes the caller filed through the connector, while they wait
  *
  * Reviewing (a person, on /admin/proposals):
  *   GET  /api/admin/proposals            everything waiting, by batch, each beside what is live now
@@ -50,6 +53,8 @@ import * as store from "../repos/proposedChanges";
 import {
   ACCEPT_NOTE,
   fieldDiffs,
+  KIND_ALIASES,
+  type KindAlias,
   groupLessons,
   PROPOSAL_LIMITS,
   readProposalInput,
@@ -60,6 +65,9 @@ import {
 import { APPROVAL_FIELDS } from "../../shared/agentAdmin";
 import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
 import { staleAgainst, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
+import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
+import { seatTermsRead } from "../../shared/seatTermsProposal";
+import { listOrgRoles } from "../lib/orgChart";
 
 type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin" | "overLimit" | "members" | "contentRepo" | "faqsRepo" | "seasonState"> & {
   liveHoldersOf: (capability: string) => Promise<string[]>;
@@ -230,11 +238,16 @@ export function register(app: Express, deps: Deps): void {
   app.get("/api/admin/proposals/lessons", async (req, res) => {
     const user = await reader(req, res);
     if (!user) return;
-    const kind = typeof req.query.kind === "string" ? req.query.kind : null;
+    const asked = typeof req.query.kind === "string" ? req.query.kind : null;
+    // An alias (`vocabulary`) reads the lessons of the kind and target it stands for.
+    const alias = asked && Object.prototype.hasOwnProperty.call(KIND_ALIASES, asked) ? KIND_ALIASES[asked as KindAlias] : null;
+    const kind = alias ? alias.kind : asked;
+    const section = alias ? alias.target.section : null;
     const limit = Math.max(1, Math.min(200, Number(req.query.limit ?? 100) || 100));
     const lessons: Lesson[] = [];
     for (const c of await store.listDecided(getPool(), 200, true)) {
       if (kind && c.kind !== kind) continue;
+      if (section && c.target.section !== section) continue;
       for (const l of (c.lessons ?? []) as Array<{ field: string; proposed: unknown; accepted: unknown }>) {
         lessons.push({ proposalId: c.id, kind: c.kind, target: c.targetLabel, summary: c.summary, field: l.field, proposed: l.proposed, accepted: l.accepted, acceptedAt: c.decidedAt ?? "" });
       }
@@ -245,6 +258,75 @@ export function register(app: Express, deps: Deps): void {
       count: recent.length,
       groups: groupLessons(recent),
     });
+  });
+
+  // ── What an agent may read and do (the lead, 19 Nov 2026) ─────────────────
+
+  /**
+   * THE QUEUE, REDACTED: what waits and what was decided lately, each change as its batch, id, kind, one sentence and
+   * state (waiting, accepted, discarded), and whether the reader filed it through the connector. Never a body, a draft,
+   * what is live, a route, or who decided: an agent checks what is waiting and confirms its own items, and the page is
+   * where a person reads the rest. Open to the connector (shared/proposalQueue.ts).
+   */
+  app.get("/api/admin/proposals/queue", async (req, res) => {
+    const user = await reader(req, res);
+    if (!user) return;
+    const pool = getPool();
+    const uid = String(user.id);
+    const { batches, changes } = await store.listOpen(pool);
+    const decided = await store.listDecided(pool, Math.max(1, Math.min(100, Number(req.query.decided ?? 40) || 40)));
+    const titles = new Map(batches.map((b) => [b.id, b.title]));
+    for (const id of Array.from(new Set(decided.map((c) => c.batchId)))) {
+      if (titles.has(id)) continue;
+      const b = await store.batchById(pool, id);
+      if (b) titles.set(id, b.title);
+    }
+    const items = [...changes, ...decided].map((c) => queueItemOf(c, uid));
+    const batchIds = Array.from(new Set(items.map((i) => i.batchId)));
+    res.set("Cache-Control", "no-store").json({
+      note: QUEUE_WORDS.note,
+      waiting: items.filter((i) => i.state === "waiting").length,
+      batches: batchIds.map((id) => ({ batchId: id, title: titles.get(id) ?? "", items: items.filter((i) => i.batchId === id) })),
+    });
+  });
+
+  /**
+   * A ROLE'S TERMS, AS WORDS: the suggested wording for each setting, the commitment it asks, and the names of the
+   * groups its offer sets. Never a value of a group: no amount, currency or pay shape (shared/seatTermsProposal.ts).
+   * `roleId` names one role; without it, every role that is not a standing example.
+   */
+  app.get("/api/admin/proposals/seat-terms", async (req, res) => {
+    const user = await reader(req, res);
+    if (!user) return;
+    const want = typeof req.query.roleId === "string" ? req.query.roleId.slice(0, 120) : "";
+    const roles = (await listOrgRoles(getPool())).filter((r) => !r.isExample && (!want || r.id === want));
+    if (want && !roles.length) return res.status(404).json({ error: "not_found", message: "There is no role by that id." });
+    res.set("Cache-Control", "no-store").json({ note: QUEUE_WORDS.termsNote, roles: roles.map((r) => seatTermsRead(r)) });
+  });
+
+  /**
+   * AN AGENT PUTS ASIDE WHAT IT FILED: a superseded draft no longer waits on a person to discard it. Only changes the
+   * caller filed through the connector or as an agent account, and only while they wait or failed. Discard only:
+   * accepting stays a person's act on the review page.
+   */
+  app.post("/api/admin/proposals/discard-mine", async (req, res) => {
+    const user = await reader(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    if (await overLimit(`proposals-discard:${uid}`, 120, WINDOW)) return res.status(429).json({ error: "too_many" });
+    const ids = Array.isArray(req.body?.ids) ? (req.body.ids as unknown[]).map((x) => String(x).slice(0, 60)).slice(0, 100) : [];
+    if (!ids.length) return res.status(400).json({ error: "bad_request", message: "Send ids: the changes you filed that you want put aside." });
+    const pool = getPool();
+    const agent = !!req.get("x-village-connector") || (await isAgentAccount(pool, uid));
+    const results = [];
+    for (const id of ids) {
+      const ok = await store.markDiscardedByFiler(pool, id, uid);
+      if (ok) {
+        await recordEvent(pool, { kind: "proposed_change", text: "A proposed change was put aside by the one who filed it", actorUserId: uid, actorKind: agent ? "agent" : "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
+      }
+      results.push({ id, ok, ...(ok ? {} : { error: QUEUE_WORDS.notYours }) });
+    }
+    res.json({ results, discarded: results.filter((r) => r.ok).length });
   });
 
   // ── Reviewing ──────────────────────────────────────────────────────────────
