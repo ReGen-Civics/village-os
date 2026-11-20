@@ -11,7 +11,9 @@ import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, ChevronDown } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
-import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { AnchorCircleTip } from "@/components/roleCard/CardTips";
+import { rolePath } from "@shared/roleSlug";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
@@ -69,6 +71,8 @@ interface RoleEntry {
   isExample?: boolean;
   /** The `/api/org` row as it arrived, which the role card reads for itself. */
   raw: any;
+  /** Its own page's address, `/roles/<slug>` (shared/roleSlug.ts). */
+  path: string;
 }
 
 /** What every expanded card on the page reads besides its own row. */
@@ -117,10 +121,11 @@ function normalizeStatus(s: unknown): SeatStateWord {
 // A seat id is a slug of the seat's own name (`createOrgRole`), so no person
 // is ever written into the address.
 
-/** The seat the address names, read once on arrival. */
+/** The seat the address names, read once on arrival: `?seat=<id>`, or the older `?role=<id>`. */
 function seatFromUrl(): string | null {
   if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("seat") || null;
+  const q = new URLSearchParams(window.location.search);
+  return q.get("seat") || q.get("role") || null;
 }
 
 /**
@@ -130,6 +135,7 @@ function seatFromUrl(): string | null {
  */
 function writeSeatToUrl(id: string | null) {
   const url = new URL(window.location.href);
+  url.searchParams.delete("role");
   if (id) url.searchParams.set("seat", id);
   else url.searchParams.delete("seat");
   window.history.replaceState(window.history.state, "", url.toString());
@@ -281,7 +287,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet, arrive 
                   on a demonstration seat: nobody is recruited for one, so a
                   link to it has nothing to ask anybody. */}
               {!role.isExample && <RoleHolderCards role={role.raw} />}
-              {!role.isExample && <SeatLinkCopy seatId={role.id} seatName={role.name} />}
+              {!role.isExample && <SeatLinkCopy path={role.path} seatName={role.name} />}
               {/* For a holder of the power to decide the structure, and nobody else: the editor is its own chunk. */}
               {!role.isExample && <EditRoleButton roleId={role.id} onSaved={() => window.location.reload()} />}
               {!role.isExample && (
@@ -431,6 +437,7 @@ export default function Roles() {
             color: r.color ?? undefined,
             isExample: !!r.isExample,
             raw: r,
+            path: rolePath({ id: String(r.id ?? `role-${i}`), name: r.name, slug: r.slug }, data.roles),
           })),
         );
       })
@@ -468,6 +475,9 @@ export default function Roles() {
   // Held invisible until /api/org answers, so the sentence never grows a
   // clause in front of the reader.
   const anchorId = anchorCircleId(circles);
+  // The anchor circle's own purpose is its tooltip on every role card here (the lead, 20 Nov 2026; CardTips.tsx).
+  const anchorRow = circles.find((c) => String(c?.id) === anchorId);
+  const anchorTip = useMemo(() => (anchorRow?.name ? { name: String(anchorRow.name), purpose: String(anchorRow.purpose ?? "") } : null), [anchorRow?.name, anchorRow?.purpose]);
   // A link to one role (?seat=) names that role in the page heading, not the whole page.
   const linkedName = linked ? ((roles ?? []) as Array<{ id: string; name: string }>).find((r) => r.id === linked)?.name ?? null : null;
 
@@ -478,7 +488,7 @@ export default function Roles() {
     ? founding.roleIds
         .map((id) => (roles ?? []).find((r) => r.id === id))
         .filter((r): r is RoleEntry => !!r && r.raw?.listed !== false)
-        .map((r) => ({ seat: r.raw, circleName: r.group, sections: founding.sections[r.id] ?? null }))
+        .map((r) => ({ seat: r.raw, circleName: r.group, sections: founding.sections[r.id] ?? null, path: r.path }))
     : [];
   const otherWays = founding?.otherWays ?? DEFAULT_OTHER_WAYS;
   const leads = featured.length > 0;
@@ -659,6 +669,7 @@ export default function Roles() {
   );
 
   return (
+    <AnchorCircleTip.Provider value={anchorTip}>
     <Layout>
       {/* The sheet's world (docs/DESIGN_RULE.md): the same night ground and display face as the profile. */}
       {/* Until the reads decide whether the founding team leads, the page keeps the leading
@@ -943,5 +954,6 @@ export default function Roles() {
         </div>
       </section>
     </Layout>
+    </AnchorCircleTip.Provider>
   );
 }

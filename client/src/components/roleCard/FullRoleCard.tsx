@@ -30,7 +30,7 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -39,17 +39,23 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
-import { rewardWords, splitNotRestated } from "./rewardWords";
+import { commitmentRowWords, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
+import { moneyWords } from "@shared/roleRewardWords";
+import { goalOf, nextDeliverables } from "@shared/roleOneMinute";
+import { CardTipsProvider, TipText, useCardTips } from "./CardTips";
+import RoleOneMinute from "./RoleOneMinute";
 import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
-import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
+import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { Fireflies } from "@/components/journey/nature";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import EditRoleButton from "@/components/roleEdit/EditRoleButton";
 import FoundingRoleCard from "./FoundingRoleCard";
 import RootsSlot from "./RootsSlot";
 import { useWide } from "./useWide";
+import { useApplyBarStuck } from "./useApplyBarStuck";
 import { readRoleCard, type RoleCardAnswer } from "./roleCardApi";
 import { overlaySeat, overlaySections } from "@shared/contentTranslationOverlay";
 import { useLocale } from "@/i18n/LocaleProvider";
@@ -61,7 +67,12 @@ import { MoonText } from "@/components/MoonWord";
 import { ShareLabel, TokenText, shareLabelFor, useShareNames } from "@/components/ContributionWord";
 import { useVillageName } from "@/hooks/useVillageName";
 import { NO_SHARED, onboardingFor } from "@shared/roleCardShared";
-import { LabelledBullets } from "./FoundingRoleCard";
+import { LabelledBullets, VillageGoalBanner } from "./FoundingRoleCard";
+
+const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
 // The directory card's deliverables, shared rhythm and onboarding steps load with the card's lists, off the first view.
 // The waitlist form on a coming-soon card, loaded on open.
@@ -70,6 +81,8 @@ const GameCardExtras = lazy(() => import("./CardLists").then((m) => ({ default: 
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
 const CardCommitment = lazy(() => import("./CardCommitment"));
+// The share link in the footer, loaded with a card that offers one.
+const SeatLinkCopy = lazy(() => import("./SeatLinkCopy"));
 
 export type CardRegister = "founding" | "game";
 
@@ -165,9 +178,11 @@ export interface FullRoleCardProps {
   marks?: (pieceKey: string) => number;
   /** The share the applicant chose, while they apply: the focus line follows it (shared/focusLine.ts). */
   commitmentChosen?: number | null;
+  /** The role's own page, `/roles/<slug>`: the card offers "Copy link" to it in its footer (the lead, 20 Nov 2026). */
+  sharePath?: string;
 }
 
-export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
@@ -206,9 +221,13 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // Where, in the card's own words (sections.where), in place of the listing's land or remote label.
   const params = read?.where ? { ...ranged, card: { ...(ranged.card ?? {}), whereText: read.where } } : ranged;
   const founding = register === "founding";
+  // The role's own lines under "What {village} needs from you", and its goal line lifted into the one-minute summary.
+  // The village's shared lines stand apart above them, as a banner (the lead, 20 Nov 2026).
+  const ownNeeds = asLines(seat.whyItMatters).flatMap((l) => l.split(/\r?\n/)).map((l) => l.replace(/^\s*(?:[-*•]|\d{1,2}[.)])\s+/, "").trim()).filter(Boolean);
+  const { goal, rest: needsLines } = goalOf(ownNeeds);
   const words: Array<{ key: string; heading: string; lines: string[] }> = [
     // "What {village} needs from you" (the lead, 19 Nov 2026): goals and deadlines, one bullet per line.
-    { key: "whyItMatters", heading: t({ message: `What ${villageInSentence} needs from you`, context: "full role card heading" }), lines: [...(answer?.shared?.lines ?? []), ...asLines(seat.whyItMatters)].flatMap((l) => l.split(/\r?\n/)).map((l) => l.replace(/^\s*(?:[-*•]|\d{1,2}[.)])\s+/, "").trim()).filter(Boolean) },
+    { key: "whyItMatters", heading: t({ message: `What ${villageInSentence} needs from you`, context: "full role card heading" }), lines: needsLines },
     { key: "domain", heading: W.decide, lines: asLines(seat.domain) },
     { key: "authorities", heading: W.authorities, lines: asLines(seat.authorities) },
     { key: "accountabilities", heading: W.countOnMe, lines: asLines(seat.accountabilities) },
@@ -242,6 +261,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const [waitOpen, setWaitOpen] = useState(false);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
+  const barRef = useRef<HTMLDivElement | null>(null);
 
   // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
@@ -257,6 +277,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
         </button>
       )}
+      {/* The waitlist stays first; a strong fit may apply early (the lead, 20 Nov 2026). */}
+      <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
+      <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_SECONDARY}`} data-apply-early={id}>
+        {t({ message: `Apply early for ${String(seat?.name ?? "")}`, context: "founding application, add a coming-soon role as an early application" })}
+      </Link>
     </div>
   ) : apply ? (
     <>
@@ -268,6 +293,10 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
+      {/* The two-speed way in (the lead, 20 Nov 2026, idea 14): two minutes now, the full proposal shaped together later. */}
+      <Link href={`${applyHrefForRole(id)}&way=talk`} className={`mt-3 w-full ${BTN_SECONDARY}`} data-start-conversation={id}>
+        {t({ message: "Start a conversation", context: "full role card: the short way in" })}
+      </Link>
     </>
   ) : !noAct ? (
     // Held by an agent alone: said, with no Apply and no name (Rye, 16 Nov 2026).
@@ -289,6 +318,23 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const slider = !noAct && rangeMin(seat?.card?.commitmentMin ?? null) < 100;
   const band = slider ? null : bandWords(i18n, seat?.card?.publicPay, showsRange);
   const shared = answer?.shared ?? NO_SHARED;
+  const tips = useCardTips(shared.tips);
+  // THE ROLE IN ONE MINUTE (the lead, 20 Nov 2026): the goal, the next three deliverables, commitment, price, where.
+  const ceiling = sections?.payCeiling ?? null;
+  const oneMinute = {
+    goal: goal || aim,
+    next: nextDeliverables(sections?.deliverables ?? [], todayIso()),
+    // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
+    commitment: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : commitmentPct !== null ? `${commitmentPct}%` : (commitment ?? ""),
+    // The full role's figure, once; the Rewards tab works it out at the reader's own share.
+    price: founding && ceiling ? (
+      <>
+        <MoonText text={perPeriod(i18n, moneyWords(ceiling.amount, ceiling.currency, i18n.locale), ceiling.per)} />{" "}
+        <span className="font-normal text-muted-foreground">{t({ message: "for the full role", context: "role in one minute: after the price" })}</span>
+      </>
+    ) : null,
+    where: roleCardView(params).rows.find((r) => r.id === "where")?.lines.join(", ") ?? "",
+  };
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
@@ -364,7 +410,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const companion =
     sections && (sections.aiSupport || sections.aiCompanion) ? (
       <section data-testid="ai-support">
-        <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}>{SECTION_WORDS.aiSupport}</CompanionH>
+        <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}><TipText text={SECTION_WORDS.aiSupport} /></CompanionH>
         <div className="mt-2 flex items-start gap-3 text-card-foreground">
           <span className="grid size-11 shrink-0 place-items-center rounded-full border border-notice/50">
             <AnimalIcon name={sections.aiCompanion} />
@@ -382,15 +428,41 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       <p className={HINT} data-testid="last-edited">
         {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}
       </p>
-      {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
+      <div className="flex flex-wrap items-center gap-3">
+        {sharePath && !seat.isExample && (
+          <Suspense fallback={null}>
+            <SeatLinkCopy path={sharePath} seatName={String(seat?.name ?? "")} bare />
+          </Suspense>
+        )}
+        {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
+      </div>
     </footer>
   );
 
+  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11): the one act rides the bottom of the screen in a
+  // bar while the card is read. It is the card's last child, so it is reached last by the keyboard, after everything it
+  // sits over, and its own slot at the end of the card means the last lines scroll clear of it. On a desktop the act
+  // sits in the summary (founding) or the side column (directory).
+  // Opaque, and riding the screen only once the goal line is clear above it (screenshot check of 1.3.38,
+  // useApplyBarStuck.ts): before that it waits in its slot at the card's end, so the first screen shows the goal whole.
+  const barStuck = useApplyBarStuck(barRef, !wide && !!act);
+  const phoneBar = !wide && act && (
+    <div
+      ref={barRef}
+      className={`${barStuck ? "sticky bottom-[var(--tabbar-h,0px)] z-20" : "relative"} border-t border-notice/40 bg-card ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
+      data-phone-apply-bar=""
+      data-stuck={barStuck ? "" : undefined}
+    >
+      {act}
+    </div>
+  );
+
   // THE FOUNDING CARD, PIECE BY PIECE (Rye, 14 Nov 2026; FoundingRoleCard.tsx): the role as a seat on
-  // the left with the one act, its words one piece at a time on the right.
+  // the left, the role in one minute and its words in five tabs on the right.
   if (founding) {
     // The founding card's own heading is one level below the title, so its companion heading is too.
     return (
+      <CardTipsProvider tips={tips}>
       <article
         aria-labelledby={labelledBy}
         aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
@@ -425,10 +497,12 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           allPieces={allPieces}
           marks={marks}
           shared={shared}
+          oneMinute={oneMinute}
         />
-        {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 px-5 pb-5">{act}</div>}
         {footer}
+        {phoneBar}
       </article>
+      </CardTipsProvider>
     );
   }
 
@@ -455,6 +529,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   );
 
   return (
+    <CardTipsProvider tips={tips}>
     <article
       aria-labelledby={labelledBy}
       aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
@@ -476,6 +551,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
 
       <div className={`mt-5 grid gap-6 ${founding ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10" : "lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8"}`}>
         <div className="flex min-w-0 flex-col gap-5 break-words">
+          {/* The role in one minute (the lead, 20 Nov 2026). The price and the act stay in the side column here. */}
+          <RoleOneMinute {...oneMinute} as={H4} act={null} />
           {aim && (
             <section className="rounded-xl border-l-4 border-notice bg-muted px-4 py-3" data-testid="purpose">
               <H4 className={EYEBROW}>{W.purpose}</H4>
@@ -487,6 +564,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
               )}
             </section>
           )}
+          {/* The village's goal as a banner, above what the village needs from this role (the lead, 20 Nov 2026). */}
+          <VillageGoalBanner lines={shared.lines} as={H4} />
           {gameWords.map((w) => (
             <Block key={w.key} heading={w.heading} register={register} lifted={lifted} testId={`words-${w.key}`}>
               <Lines lines={w.lines} />
@@ -546,15 +625,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <div className="lg:sticky lg:top-28 lg:self-start">{side}</div>
       </div>
 
-      {/* A PHONE'S THUMB: the one act rides at the bottom of the screen while the card is read
-          (rehearsal, 11 Nov: it sat three screens down). On a desktop it stays in the side column. */}
-      {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 mt-6">{act}</div>}
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <p className={HINT} data-testid="last-edited">
           {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}
         </p>
         {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
       </footer>
+      {phoneBar}
     </article>
+    </CardTipsProvider>
   );
 }

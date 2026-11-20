@@ -36,6 +36,12 @@ interface ClipsContext {
   limits: VoiceClipLimits;
   /** The application's own link, when it came through one: the transcription door is the same door as the form. */
   link?: string;
+  /**
+   * Where the AI line and its switch show before a first clip (idea 16: said once, on the first voice field). Absent:
+   * beside every clip, as before. A field name: beside that clip alone. Null: no clip says it, because the page's
+   * voice card above already does.
+   */
+  aiLineAt?: string | null;
 }
 
 const Clips = createContext<ClipsContext | null>(null);
@@ -43,8 +49,8 @@ const Clips = createContext<ClipsContext | null>(null);
 /** The clip's words written down by themselves, and the AI line before its first recording (VoiceStepMore.tsx), loaded after the page. */
 const More = VoiceStepMoreLazy;
 
-export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMITS, link, children }: Omit<ClipsContext, "limits"> & { limits?: VoiceClipLimits; children: ReactNode }) {
-  return <Clips.Provider value={{ voice, setVoice, limits, link }}>{children}</Clips.Provider>;
+export function VoiceClipsProvider({ voice, setVoice, limits = DEFAULT_CLIP_LIMITS, link, aiLineAt, children }: Omit<ClipsContext, "limits"> & { limits?: VoiceClipLimits; children: ReactNode }) {
+  return <Clips.Provider value={{ voice, setVoice, limits, link, aiLineAt }}>{children}</Clips.Provider>;
 }
 
 /** The record button, the clip and, until it is given, the tick. Nothing without a provider, a recorder, or clips allowed. */
@@ -128,6 +134,7 @@ export function ClipBar({ field, onWords, fieldName = "", answer }: {
             clip={mine}
             answer={answer}
             link={ctx.link}
+            aiLine={ctx.aiLineAt === undefined || ctx.aiLineAt === field}
             setClipWords={(blob, words) => ctx.setVoice((v) => (v.clips[field]?.blob === blob ? { ...v, clips: { ...v.clips, [field]: { ...v.clips[field], words, written: true } } } : v))}
           />
         </Suspense>

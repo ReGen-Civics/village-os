@@ -55,6 +55,7 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 }));
 
 import Roles from "./Roles";
+import { roleForSlug } from "@shared/roleSlug";
 
 /** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
 const powerCard = () =>
@@ -274,7 +275,8 @@ describe("copying a seat's link", () => {
     // Called before any await: the write ran inside the click handler.
     expect(writeText).toHaveBeenCalledTimes(1);
     const copied = writeText.mock.calls[0][0];
-    expect(copied).toBe(`${window.location.origin}/roles?seat=seed-keeper`);
+    // The role's own page (the lead, 20 Nov 2026), which a messaging app previews with the role.
+    expect(copied).toBe(`${window.location.origin}/roles/seed-keeper`);
     expect(new URL(copied).origin).toBe(window.location.origin);
 
     // The line names the seat it copied.
@@ -283,10 +285,11 @@ describe("copying a seat's link", () => {
     // No fallback field after a copy that worked; the next test is its positive.
     expect(screen.queryByRole("textbox", { name: FIELD("Seed Keeper") })).toBeNull();
 
-    // The link it copied opens that seat.
+    // The link it copied names that seat: its own page reads the address back to it (shared/roleSlug.ts).
     view.unmount();
-    const { pathname, search } = new URL(copied);
-    window.history.replaceState(null, "", `${pathname}${search}`);
+    expect(roleForSlug(new URL(copied).pathname.replace(/^\/roles\//, ""), org.roles)?.id).toBe("seed-keeper");
+    // The old link still opens the row (control).
+    window.history.replaceState(null, "", "/roles?seat=seed-keeper");
     renderRoles();
     expect((await header("Seed Keeper")).getAttribute("aria-expanded")).toBe("true");
   });
@@ -305,7 +308,7 @@ describe("copying a seat's link", () => {
     fireEvent.click(control);
     expect(writeText).toHaveBeenCalledTimes(1);
     const field = (await screen.findByRole("textbox", { name: FIELD("Water Keeper") })) as HTMLInputElement;
-    const link = `${window.location.origin}/roles?seat=water-keeper`;
+    const link = `${window.location.origin}/roles/water-keeper`;
     expect(field.value).toBe(link);
     expect(field.readOnly).toBe(true);
     await waitFor(() => expect(document.activeElement).toBe(field));
@@ -322,7 +325,7 @@ describe("copying a seat's link", () => {
     // Known positive: the control is there to press.
     fireEvent.click(await screen.findByRole("button", { name: COPY("Seed Keeper") }));
     const field = (await screen.findByRole("textbox", { name: FIELD("Seed Keeper") })) as HTMLInputElement;
-    expect(field.value).toBe(`${window.location.origin}/roles?seat=seed-keeper`);
+    expect(field.value).toBe(`${window.location.origin}/roles/seed-keeper`);
     await waitFor(() => expect(document.activeElement).toBe(field));
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, field.value.length]);
   });

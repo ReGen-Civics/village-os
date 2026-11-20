@@ -40,6 +40,30 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.38 (2026-11-20)
+
+### What changed for your village
+
+- **The role in one minute.** Every role card opens with a short panel: the role's goal, its next three deliverables by date, and three facts (commitment, price, where). Each is said once on the card.
+- **Five tabs on every role card:** The role, Deliverables, How we work, You and rewards, The path in. Old links to a piece still open the tab that holds it. On a phone, Apply sits in a bar along the bottom of the card.
+- **The roles on one timeline.** The roles page draws each role as a lane, with today as one line through all of them and shared gates marked once. Tap a bar for its dates and what it feeds. "Dates as a list" is still there.
+- **The timeline reads cleanly on a phone.** Today has a row of its own, gate names never cover each other and stay inside the chart, and the dotted lines sit exactly on their dates without crossing any words. On a phone the Apply bar is solid and appears once the role's goal has scrolled by, so the first screen shows the goal whole. A tab with nothing to show says so in one line, and the phone tab rail fades at the edge to show there is more.
+- **A page for each role** at `/roles/<name>`, with a link to share it and a preview picture when the link is pasted. Old role links still work.
+- **The village's shared goal** shows as its own banner on the card, and words like consent, steward and Founding Seeder carry a small tip the first time they appear. A village can add its own words in Admin.
+- **Apply early for a role that is coming soon.** The waitlist comes first, then "Apply early". Reviewers see "An early application".
+- **Start a conversation.** For someone short on time: name, email, a link to their work, a few lines on why, and up to three roles. A decider can turn it into a link to the full proposal.
+- **Fewer words on the application.** The form is about a third shorter, with every consent and legal sentence kept. It opens with "6 steps. About 25 minutes. You can answer by voice." The confirmation says when we reply, taken from the village's own reply setting.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No migration. A deliverable may carry an optional "feeds" line, stored with the role's existing data.
+
+---
+
 ## 1.3.37 (2026-11-20)
 
 ### What changed for your village

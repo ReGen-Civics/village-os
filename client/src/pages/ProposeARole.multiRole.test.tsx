@@ -96,7 +96,7 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     await fillToTerms("/propose-a-role?role=r-gate");
     const add = (await screen.findByLabelText("Add another role")) as HTMLSelectElement;
     // Any circle, never the role already chosen.
-    // A coming-soon role is never added here (the lead, 19 Nov 2026): it is named under the picker, linked to its waitlist.
+    // A coming-soon role is not in the picker (the lead, 19 Nov 2026): it is named under it, its waitlist first, then "Apply early" (20 Nov).
     expect(Array.from(add.options).map((o) => o.value)).toEqual(["", "r-host", "r-well", "r-oven"]);
     expect(Array.from(add.options).map((o) => o.textContent).slice(3)).toEqual(["Oven Keeper: More players welcome"]);
     const notYet = document.querySelector("[data-roles-not-open]") as HTMLElement;
@@ -135,12 +135,22 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(posted[0].card.commitmentPct).toBe(50);
   });
 
-  it("a link naming a coming-soon role after the first does not add it; the picker offers its waitlist (the lead, 19 Nov 2026)", async () => {
+  it("EARLY (the lead, 20 Nov 2026): a coming-soon role is added from under the picker, or by a link, as an early application on its own terms", async () => {
+    await fillToTerms("/propose-a-role?role=r-gate");
+    const notYet = document.querySelector("[data-roles-not-open]") as HTMLElement;
+    expect(notYet.textContent).toContain("You can apply early if you feel you're a particularly strong fit.");
+    // The waitlist comes first, then the early way.
+    const links = Array.from(notYet.querySelectorAll("a, button")).map((e) => e.textContent);
+    expect(links).toEqual(["Join the waitlist for Bee Keeper", "Apply early for Bee Keeper"]);
+    fireEvent.click(notYet.querySelector('[data-apply-early="r-bees"]') as HTMLElement);
+    expect(await screen.findByLabelText("Your commitment: Bee Keeper")).toBeTruthy();
+    expect(document.querySelector('[data-more-role="1"] [data-more-role-early]')?.textContent).toMatch(/An early application/);
+    expect(document.querySelector("[data-roles-not-open]")).toBeNull();
+    cleanup();
+    window.localStorage.clear();
+    // A link naming it after the first adds it the same way.
     await fillToTerms("/propose-a-role?role=r-gate&role=r-bees");
-    await screen.findByLabelText("Add another role");
-    expect(screen.queryByLabelText("Your commitment: Bee Keeper")).toBeNull();
-    expect(document.querySelector('[data-more-role="1"]')).toBeNull();
-    expect(document.querySelector('[data-waitlist-role="r-bees"]')?.getAttribute("href")).toBe("/roles#waitlist-r-bees");
+    expect(await screen.findByLabelText("Your commitment: Bee Keeper")).toBeTruthy();
   });
 
   it("a link naming two roles starts with both, and an added role with no commitment holds the send on The terms", async () => {

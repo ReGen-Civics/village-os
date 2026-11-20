@@ -3188,6 +3188,15 @@ export const VARIABLES: VariableDef[] = [
     type: "longtext",
     default: "",
   },
+  // The village's own words for the tooltips on a role card (the lead, 20 Nov 2026; shared/roleCardWordTips.ts).
+  {
+    key: "org.role_card_word_tips",
+    category: "The founding team",
+    label: "Tooltips for your own words on the role cards",
+    description: "One per line, written as word: what it means, for example consent: a decision passes when nobody has a reasoned objection. The first time a role card says the word, it carries your words as a tooltip. Your line replaces the platform's tip for consent, steward, Founding Seeder, Digital Companion or your anchor circle's name, and a new word gets a tip too. Empty, the platform's tips, and the anchor circle's own purpose.",
+    type: "longtext",
+    default: "",
+  },
   // "Other ways to join" on the Roles page: the resident path and the gifts tile. shared/otherWays.ts
   // holds the same keys and defaults, and shared/otherWays.test.ts holds the two equal.
   // The resident path tile goes to the way to stay close (org.stay_close_link), or /resident while that is empty.

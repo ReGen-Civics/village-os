@@ -59,7 +59,7 @@ describe("the invitation", () => {
     const { unmount } = render(<Card />);
     expect(screen.getByText(VOICE_WORDS.inviteTitle)).toBeTruthy();
     // A person who won't record is told typing counts the same, before they choose (steelman QA, 15 Nov 2026).
-    expect(screen.getByText(/Typed answers are read with the same care/)).toBeTruthy();
+    expect(screen.getByText(/Typed answers count just the same/)).toBeTruthy();
     expect(screen.getByRole("button", { name: VOICE_WORDS.record })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: VOICE_WORDS.skip }));
     expect(screen.queryByText(VOICE_WORDS.inviteTitle)).toBeNull();

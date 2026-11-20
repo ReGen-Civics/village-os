@@ -78,7 +78,7 @@ export function AttachmentFields({
       <fieldset className="grid gap-3" aria-invalid={invalid?.field === "links" || undefined}>
         <legend className="mb-1 text-sm font-semibold text-card-foreground">{t({ message: "Links to your work (optional)", context: "open proposal attachments" })}</legend>
         <p className="text-sm text-muted-foreground">
-          {t`Up to ${PROPOSAL_LINKS_MAX} links, each starting with https://. We never open them for you: only the people who decide your proposal see them.`}
+          {t`Up to ${PROPOSAL_LINKS_MAX} links, each starting with https://. We never open them for you.`}
         </p>
         {rows.map((r, i) => {
           const bad = r.url.trim() !== "" && !safeHttpsUrl(r.url.trim());

@@ -54,6 +54,17 @@ describe("the words", () => {
     expect(OPEN_AI_DRAFTS).toMatch(/no AI takes part in choosing/);
   });
 
+  it("says when we reply, from the days it is given (idea 18, 20 Nov 2026), in the reader's language", () => {
+    const at = (replyDays: number | null | undefined, lang?: "es") => confirmLetter({ firstName: null, village: "Willowmere", roleNames: ["Cook"], link: "https://x", replyDays, lang }).text;
+    expect(at(5)).toContain("We reply within 5 days.");
+    expect(at(9)).toContain("We reply within 9 days.");
+    expect(at(5, "es")).toContain("Respondemos en un plazo de 5 días.");
+    // The founding team first: the wait said in words, never a number.
+    expect(at(null)).toContain("We're filling our founding team first");
+    // CONTROL: a caller that sends no days gets no promise.
+    expect(at(undefined)).not.toContain("We reply within");
+  });
+
   it("keeps a season proposal's words as they were", () => {
     expect(confirmLetter({ firstName: null, village: "Willowmere", roleNames: ["Cook"], link: "https://x" }).text).toContain("in Willowmere next season.");
   });

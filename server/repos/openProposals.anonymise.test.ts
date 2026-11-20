@@ -17,6 +17,7 @@ import { ANONYMISE_KEEPS, ANONYMISE_REMOVES, anonymiseDecidedBefore, anonymiseOp
 
 /** One of every field, by name. The values only need to be there. */
 const FULL: { [K in keyof Required<OpenProposalBody>]: unknown } = {
+  kind: "conversation",
   roles: [
     { roleId: "r-1", note: "I keep wells.", commitmentPct: 60, payAsk: { kind: "amount", monthly: 4321 } },
     { roleId: "r-2", note: "", commitmentPct: 40, payAsk: { kind: "amount", monthly: 7777 }, paySplit: { commitmentPct: 40, offered: { total: 7777, shares: [{ label: "Cash", pct: 60, amount: 4666 }] }, proposed: { total: 7777, shares: [{ label: "Cash", pct: 100, amount: 7777 }] } } },

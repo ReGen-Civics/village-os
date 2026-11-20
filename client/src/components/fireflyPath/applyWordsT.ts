@@ -26,7 +26,7 @@ export type VoiceKey = Extract<
 
 const VOICE: Record<VoiceKey, MessageDescriptor> = {
   inviteTitle: msg({ message: "We love hearing your voice.", context: "voice invite" }),
-  inviteBody: msg({ message: "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one.", context: "voice invite" }),
+  inviteBody: msg({ message: "If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We turn what you say into answers you can edit.", context: "voice invite" }),
   record: msg({ message: "Record", context: "voice invite: start a recording" }),
   recordAnother: msg({ message: "Record another", context: "voice invite" }),
   stop: msg({ message: "Stop recording", context: "voice invite" }),

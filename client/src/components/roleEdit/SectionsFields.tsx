@@ -32,7 +32,7 @@ export interface SectionsForm {
   payVisibility: PayVisibility;
   /** How the listed price reads: the village's switch, one figure, or each share's amount. */
   payWording: PayWording;
-  /** The dated deliverables, one per line: start | end | title | workstream. */
+  /** The dated deliverables, one per line: start | end | title | workstream | feeds. */
   deliverables: string;
   /** "Once you're selected", one step per line. */
   onboarding: string;
@@ -124,7 +124,7 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
       </Field>
 
       <Field label={t({ message: "Deliverables", context: "role editor: the dated outcomes" })} changed={!same("deliverables")}>
-        <p className={LEDE}>{t({ message: "One per line: start | end | title | workstream, with dates as year-month-day. A milestone has one date, or the same date twice.", context: "role editor: how to write the deliverables" })}</p>
+        <p className={LEDE}>{t({ message: "One per line: start | end | title | workstream | what it feeds, with dates as year-month-day. A milestone has one date, or the same date twice; one that several roles share is drawn as a gate on the team's timeline. What it feeds, up to 80 characters, shows when someone taps the bar.", context: "role editor: how to write the deliverables" })}</p>
         <textarea className={AREA} value={value.deliverables} onChange={(e) => set("deliverables", e.target.value)} aria-label={t({ message: "Deliverables", context: "role editor: the dated outcomes" })} placeholder="2027-01-15 | 2027-03-01 | ... | ..." data-editor-deliverables="" />
         {((r) => (r.ok ? null : <p className="mt-1 text-sm text-destructive">{t({ message: `Line ${r.line}: ${r.problem}`, context: "role editor: a deliverable line that does not read" })}</p>))(deliverablesFromText(value.deliverables))}
       </Field>

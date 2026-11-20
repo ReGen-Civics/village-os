@@ -3,7 +3,7 @@
  * ask and split, read the same way whatever shape the body was stored in.
  */
 import { describe, expect, it } from "vitest";
-import { OPEN_APPLY_ROLES, OPEN_PROPOSAL_MAX_ROLES, OPEN_WORDS, openBodyOf, parseOpenProposal, roleTermsOf, termsPerRole } from "./openProposals";
+import { CONVERSATION_WHY_MAX, OPEN_APPLY_ROLES, OPEN_PROPOSAL_MAX_ROLES, OPEN_WORDS, openBodyOf, parseOpenProposal, roleTermsOf, termsPerRole } from "./openProposals";
 
 const split = { commitmentPct: 40, offered: { total: 4000, shares: [{ label: "Cash", pct: 60, amount: 2400 }, { label: "Equity", pct: 40, amount: 1600 }] }, proposed: { total: 4000, shares: [{ label: "Cash", pct: 80, amount: 3200 }, { label: "Equity", pct: 20, amount: 800 }] } };
 
@@ -57,14 +57,33 @@ describe("several roles in one proposal", () => {
     const ctx = { roleIds: new Set(["r1", "r2", "r3", "r4"]), address: (s: string) => (s.includes("@") ? s.trim() : null) };
     const base = { name: "Rowan", email: "rowan@example.test", why: "Because.", aim: "", payAsk: { kind: "negotiate" } };
 
-    it("refuses any coming-soon role, added or first (the lead, 19 Nov 2026)", () => {
+    it("takes a coming-soon role, added or first, marked as an early application (the lead, 20 Nov 2026)", () => {
       const notYetOpen = (id: string) => id === "r2";
       const added = parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, { ...ctx, notYetOpen });
-      expect(added).toMatchObject({ ok: false, field: "roles.1", error: OPEN_WORDS.addedRoleNotOpen });
-      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, { ...ctx, notYetOpen })).toMatchObject({ ok: false, field: "roles", error: OPEN_WORDS.roleNotOpen });
-      // CONTROL: an open role alone is taken, and with no rule nothing is refused.
-      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }] }, { ...ctx, notYetOpen }).ok).toBe(true);
-      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, ctx).ok).toBe(true);
+      expect(added.ok && added.value.body.roles).toEqual([{ roleId: "r1", note: "", payAsk: { kind: "negotiate" } }, { roleId: "r2", note: "", commitmentPct: 40, early: true }]);
+      const first = parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, { ...ctx, notYetOpen });
+      expect(first.ok && first.value.body.roles).toEqual([{ roleId: "r2", note: "", early: true }]);
+      // The mark is the server's, read from the role: a form that says early for an open role is not believed.
+      const claimed = parseOpenProposal({ ...base, roles: [{ roleId: "r1", early: true }] }, { ...ctx, notYetOpen });
+      expect(claimed.ok && claimed.value.body.roles).toEqual([{ roleId: "r1", note: "" }]);
+      // And it survives being stored and read back.
+      expect(openBodyOf(first.ok ? first.value.body : {}).roles[0]).toEqual({ roleId: "r2", note: "", early: true });
+    });
+
+    it("START A CONVERSATION (the lead, 20 Nov 2026): name, email, a link, a few lines and the roles, with no terms asked", () => {
+      const talk = { kind: "conversation", name: "Rowan", email: "rowan@example.test", why: "I have run village books for ten years.", roles: [{ roleId: "r1" }, { roleId: "r2" }], links: [{ label: "My work", url: "https://example.test/rowan" }] };
+      const read = parseOpenProposal(talk, ctx);
+      expect(read).toEqual({ ok: true, value: { name: "Rowan", email: "rowan@example.test", body: { kind: "conversation", roles: [{ roleId: "r1", note: "" }, { roleId: "r2", note: "" }], why: "I have run village books for ten years.", aim: "", links: [{ label: "My work", url: "https://example.test/rowan" }] } } });
+      // Nothing beyond its own fields is kept, even when sent.
+      const extra = parseOpenProposal({ ...talk, aim: "An aim", rampUp: true, payAsk: { kind: "negotiate" }, card: { roles: [] } }, ctx);
+      expect(extra.ok && Object.keys(extra.value.body).sort()).toEqual(["aim", "kind", "links", "roles", "why"]);
+      // A few lines, held to their own limit; and a why is still asked.
+      expect(parseOpenProposal({ ...talk, why: "x".repeat(CONVERSATION_WHY_MAX + 1) }, ctx)).toMatchObject({ ok: false, field: "why" });
+      expect(parseOpenProposal({ ...talk, why: " " }, ctx)).toMatchObject({ ok: false, field: "why", error: OPEN_WORDS.needWhy });
+      expect(parseOpenProposal({ ...talk, links: [{ label: "My work", url: "http://plain.example" }] }, ctx)).toMatchObject({ ok: false, field: "links" });
+      // Stored and read back, it is still a conversation. CONTROL: a full application carries no kind.
+      expect(openBodyOf(read.ok ? read.value.body : {}).kind).toBe("conversation");
+      expect(openBodyOf({ roles: [{ roleId: "r1" }], why: "w", aim: "a" }).kind).toBeUndefined();
     });
 
     it("keeps each added role's commitment and ask, and copies the first role's onto it", () => {

@@ -350,7 +350,7 @@ export const ANONYMISE_REMOVES = [
 ] as const;
 
 /** What anonymising leaves: the application's substance, with nothing that names or reaches the person. */
-export const ANONYMISE_KEEPS = ["roles", "why", "aim", "term", "card", "membership", "locale", "counterOffer", "agent", "knowUs", "rampUp"] as const;
+export const ANONYMISE_KEEPS = ["kind", "roles", "why", "aim", "term", "card", "membership", "locale", "counterOffer", "agent", "knowUs", "rampUp"] as const;
 
 const REMOVE_PERSONAL = `JSON_REMOVE(COALESCE(body_json, JSON_OBJECT()), ${ANONYMISE_REMOVES.map((path) => `'${path}'`).join(", ")})`;
 

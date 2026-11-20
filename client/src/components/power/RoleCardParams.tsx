@@ -22,12 +22,18 @@ const book = (b: CardBooking | null | undefined) =>
     </Suspense>
   );
 
+/** Whether the block draws anything for this seat, so a host can say a line in its place (never an empty panel). */
+export function roleCardParamsShown(seat: Record<string, any>): boolean {
+  const view = roleCardView(seat);
+  return view.rows.length > 0 || (!!view.pay && !("termsOffer" in seat)) || !!view.beingWritten;
+}
+
 export default function RoleCardParams({ seat }: { seat: Record<string, any> }) {
   const { t } = useLingui();
   const view = roleCardView(seat);
   const readsTerms = "termsOffer" in seat;
   const showPay = !!view.pay && !readsTerms;
-  if (view.rows.length === 0 && !showPay && !view.beingWritten) return null;
+  if (!roleCardParamsShown(seat)) return null;
   return (
     <section aria-label={t({ message: "About this role", context: "full role card parameters block" })} className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm text-card-foreground" data-testid="role-card-params">
       {view.beingWritten && (

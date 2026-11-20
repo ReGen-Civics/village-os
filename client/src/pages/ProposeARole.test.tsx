@@ -249,8 +249,9 @@ describe("one role per application", () => {
     expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
     expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
     // The piece's chip on the rail carries a dot, and the words wait in the draft on this device (they ticked to remember).
-    expect(shape.querySelector('[data-piece-tab="purpose"] [data-piece-marked]')).toBeTruthy();
-    expect(shape.querySelector('[data-piece-tab="domain"] [data-piece-marked]')).toBeNull();
+    // The tab that holds the piece carries it (five tabs, the lead, 20 Nov 2026): Purpose sits in The role.
+    expect(shape.querySelector('[data-piece-tab="role"] [data-piece-marked]')).toBeTruthy();
+    expect(shape.querySelector('[data-piece-tab="deliverables"] [data-piece-marked]')).toBeNull();
     await waitFor(() => expect(Object.values({ ...window.localStorage }).join(" ")).toContain("Who keeps the key when I am away."));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
@@ -478,14 +479,16 @@ describe("the six steps", () => {
     expect(screen.getByLabelText(OPEN_WORDS.nameLabel).getAttribute("aria-invalid")).toBe("true");
   });
 
-  it("Your value: items can be added and removed, each must say how we will know it is done, and each is tagged to a season goal shown right there", async () => {
+  it("Your value: items can be added and removed, each must say how we will know it is done, and each is tagged to a season goal from its own choice", async () => {
     await applyFor();
     pressNext();
     fillAbout();
     pressNext();
     expect(stoneNow()).toBe("value");
-    const goalsShown = document.querySelector("[data-season-goals]") as HTMLElement;
-    for (const g of GOALS) expect(within(goalsShown).getByText(g.text)).toBeTruthy();
+    // The goals are offered once, in each item's choice, with no list above it as well (idea 16, 20 Nov 2026).
+    expect(document.querySelector("[data-season-goals]")).toBeNull();
+    const choice = document.getElementById("value-r-gate-0-serves") as HTMLSelectElement;
+    expect(Array.from(choice.options).slice(1).map((o) => o.textContent)).toEqual(GOALS.map((g) => g.text));
     // Paid on what we truly accomplish, said where the contract is written (steelman QA, 15 Nov 2026).
     expect(document.querySelector("[data-value-pay-follows]")?.textContent).toContain("nothing is paid until the Treasurer confirms");
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
@@ -749,8 +752,8 @@ describe("your first day", () => {
     await applyFor("r-gate", { ...FORM, roles: [{ ...(FORM as any).roles[0], conversations }] });
     const step = document.querySelector('[data-stone="first"]') as HTMLElement;
     const said = step.querySelector("[data-first-booking]")?.textContent ?? "";
-    expect(said).toContain("With Operations Role.");
-    expect(said).toContain("through the booking link in your invitation, or we'll write to you with times");
+    expect(said).toContain("First, a conversation with Operations Role.");
+    expect(said).toContain("you book it through the link in your invitation, or we write with times");
     expect(said).not.toContain("Hiring Role");
   });
 });

@@ -171,6 +171,8 @@ export const TRANSCRIBE_LOCAL_TIMEOUT_MS = 420_000;
 export const APPLY_TEXT = {
   /** "Why you, and why now" (was 4000 in 1.3.30, 1200 before). */
   why: 8000,
+  /** "Start a conversation": a few lines on why (the lead, 20 Nov 2026), the two-minute way in. */
+  conversationWhy: 1500,
   /** What they bring to one role (was 600). */
   roleNote: 1800,
   /** Their aim in this role (was 300; voice). */
