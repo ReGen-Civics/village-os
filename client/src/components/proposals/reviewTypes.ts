@@ -12,7 +12,10 @@ export interface Where {
 
 export interface Proposal {
   id: string;
+  /** The short code, such as B-27.2; older servers sent none. */
+  code?: string | null;
   batchId: string;
+  batchCode?: string | null;
   kind: ProposalKind;
   target: Record<string, unknown>;
   targetLabel: string;
@@ -39,6 +42,8 @@ export interface Proposal {
 
 export interface Batch {
   id: string;
+  /** The short code, such as B-27; older servers sent none. */
+  code?: string | null;
   title: string;
   by: string;
   byKind?: "agent" | "person";
@@ -47,7 +52,9 @@ export interface Batch {
 
 export interface Decided {
   id: string;
+  code?: string | null;
   batchId?: string;
+  batchCode?: string | null;
   batchTitle?: string;
   kind?: ProposalKind;
   target?: Record<string, unknown>;

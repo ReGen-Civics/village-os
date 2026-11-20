@@ -615,15 +615,15 @@ describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and
     const h = holder();
     const calls: Array<{ method: string; path: string; body?: any }> = [];
     const items = [
-      { id: "c-mine", batchId: "b-1", kind: "page_content", summary: "Rename the contribution token.", state: "waiting", stuck: false, yours: true },
-      { id: "c-theirs", batchId: "b-1", kind: "variable", summary: "A person's own change.", state: "waiting", stuck: false, yours: false },
-      { id: "c-done", batchId: "b-2", kind: "faq_add", summary: "An accepted one.", state: "accepted", stuck: false, yours: true },
+      { id: "c-mine", code: "B-1.1", batchId: "b-1", kind: "page_content", summary: "Rename the contribution token.", state: "waiting", stuck: false, yours: true },
+      { id: "c-theirs", code: "B-1.2", batchId: "b-1", kind: "variable", summary: "A person's own change.", state: "waiting", stuck: false, yours: false },
+      { id: "c-done", code: "B-2.1", batchId: "b-2", kind: "faq_add", summary: "An accepted one.", state: "accepted", stuck: false, yours: true },
     ];
     const ctx: ToolContext = {
       ...h.ctx,
       dispatch: async (method, path, body) => {
         calls.push({ method, path, body });
-        if (method === "GET" && path.startsWith("/api/admin/proposals/queue")) return { status: 200, body: { waiting: 2, batches: [{ batchId: "b-1", items: items.slice(0, 2) }, { batchId: "b-2", items: items.slice(2) }] } };
+        if (method === "GET" && path.startsWith("/api/admin/proposals/queue")) return { status: 200, body: { waiting: 2, batches: [{ batchId: "b-1", code: "B-1", items: items.slice(0, 2) }, { batchId: "b-2", code: "B-2", items: items.slice(2) }] } };
         if (method === "POST" && path === "/api/admin/proposals/discard-mine") return discardAnswer;
         if (method === "GET" && path.startsWith("/api/admin/proposals/seat-terms")) {
           // A route that sent too much: the connector's redaction still keeps every figure out.
@@ -639,7 +639,7 @@ describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and
     const q = queueHolder();
     const r = await ask(callTool("read_proposal_queue", {}), ["admin"], q.ctx);
     expect(r.result.isError).toBe(false);
-    expect(r.result.structuredContent.batches[0].items[0]).toEqual(expect.objectContaining({ id: "c-mine", state: "waiting", yours: true }));
+    expect(r.result.structuredContent.batches[0].items[0]).toEqual(expect.objectContaining({ id: "c-mine", code: "B-1.1", state: "waiting", yours: true }));
     expect(q.calls.map((c) => `${c.method} ${c.path}`)).toEqual(["GET /api/admin/proposals/queue"]);
   });
 
@@ -648,7 +648,7 @@ describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and
     const first = await ask(callTool("discard_my_proposals", { ids: ["c-mine", "c-theirs", "c-done"] }), ["admin"], q.ctx);
     const asked = first.result.structuredContent;
     expect(asked.confirmRequired).toBe(true);
-    expect(asked.echo.putAside).toEqual([{ id: "c-mine", summary: "Rename the contribution token." }]);
+    expect(asked.echo.putAside).toEqual([{ id: "c-mine", code: "B-1.1", summary: "Rename the contribution token." }]);
     expect(asked.skipped.sort()).toEqual(["c-done", "c-theirs"]);
     expect(q.calls.some((c) => c.method === "POST")).toBe(false);
     const second = await ask(callTool("discard_my_proposals", { ids: ["c-done", "c-theirs", "c-mine"], confirmToken: asked.confirmToken }), ["admin"], q.ctx);
@@ -656,6 +656,21 @@ describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and
     const posts = q.calls.filter((c) => c.method === "POST");
     expect(posts).toEqual([{ method: "POST", path: "/api/admin/proposals/discard-mine", body: { ids: ["c-mine"] } }]);
     expect(MCP_TOOLS.flatMap((t) => t.routes).some((r) => /\/accept/.test(r))).toBe(false);
+  });
+
+  it("names changes by short code too: a change code, and a batch code for every one of its own that waits", async () => {
+    const q = queueHolder();
+    const byCode = await ask(callTool("discard_my_proposals", { ids: ["b-1.1"] }), ["admin"], q.ctx);
+    expect(byCode.result.structuredContent.echo.putAside).toEqual([{ id: "c-mine", code: "B-1.1", summary: "Rename the contribution token." }]);
+    const byBatch = await ask(callTool("discard_my_proposals", { ids: ["B-1"] }), ["admin"], q.ctx);
+    expect(byBatch.result.structuredContent.echo.putAside.map((x: any) => x.id)).toEqual(["c-mine"]);
+    expect(byBatch.result.structuredContent.skipped).toEqual(["c-theirs"]);
+    // A batch code never reaches into another batch.
+    const other = await ask(callTool("discard_my_proposals", { ids: ["B-2"] }), ["admin"], q.ctx);
+    expect(other.result.isError).toBe(true);
+    const confirmed = await ask(callTool("discard_my_proposals", { ids: ["B-1.1"], confirmToken: byCode.result.structuredContent.confirmToken }), ["admin"], q.ctx);
+    expect(confirmed.result.isError).toBe(false);
+    expect(q.calls.filter((c) => c.method === "POST")).toEqual([{ method: "POST", path: "/api/admin/proposals/discard-mine", body: { ids: ["c-mine"] } }]);
   });
 
   it("refuses at once when none of the ids is its own and waiting", async () => {

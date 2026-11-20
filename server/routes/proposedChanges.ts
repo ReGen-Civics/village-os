@@ -232,7 +232,9 @@ export function register(app: Express, deps: Deps): void {
       entityRef: bid,
       audience: "admin",
     });
-    res.json({ success: true, batchId: bid, ids, applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
+    const filedBatch = await store.batchById(pool, bid);
+    const filed = await Promise.all(ids.map((id) => store.changeById(pool, id)));
+    res.json({ success: true, batchId: bid, batchCode: filedBatch?.code ?? null, ids, codes: ids.map((id, i) => ({ id, code: filed[i]?.code ?? null })), applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
   });
 
   app.get("/api/admin/proposals/lessons", async (req, res) => {
@@ -273,20 +275,25 @@ export function register(app: Express, deps: Deps): void {
     if (!user) return;
     const pool = getPool();
     const uid = String(user.id);
+    await store.ensureCodes(pool);
     const { batches, changes } = await store.listOpen(pool);
     const decided = await store.listDecided(pool, Math.max(1, Math.min(100, Number(req.query.decided ?? 40) || 40)));
     const titles = new Map(batches.map((b) => [b.id, b.title]));
+    const batchCodes = new Map(batches.map((b) => [b.id, b.code]));
     for (const id of Array.from(new Set(decided.map((c) => c.batchId)))) {
       if (titles.has(id)) continue;
       const b = await store.batchById(pool, id);
-      if (b) titles.set(id, b.title);
+      if (b) {
+        titles.set(id, b.title);
+        batchCodes.set(id, b.code);
+      }
     }
     const items = [...changes, ...decided].map((c) => queueItemOf(c, uid));
     const batchIds = Array.from(new Set(items.map((i) => i.batchId)));
     res.set("Cache-Control", "no-store").json({
       note: QUEUE_WORDS.note,
       waiting: items.filter((i) => i.state === "waiting").length,
-      batches: batchIds.map((id) => ({ batchId: id, title: titles.get(id) ?? "", items: items.filter((i) => i.batchId === id) })),
+      batches: batchIds.map((id) => ({ batchId: id, code: batchCodes.get(id) ?? null, title: titles.get(id) ?? "", items: items.filter((i) => i.batchId === id) })),
     });
   });
 
@@ -324,7 +331,7 @@ export function register(app: Express, deps: Deps): void {
       if (ok) {
         await recordEvent(pool, { kind: "proposed_change", text: "A proposed change was put aside by the one who filed it", actorUserId: uid, actorKind: agent ? "agent" : "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
       }
-      results.push({ id, ok, ...(ok ? {} : { error: QUEUE_WORDS.notYours }) });
+      results.push({ id, code: (await store.changeById(pool, id))?.code ?? null, ok, ...(ok ? {} : { error: QUEUE_WORDS.notYours }) });
     }
     res.json({ results, discarded: results.filter((r) => r.ok).length });
   });
@@ -343,6 +350,7 @@ export function register(app: Express, deps: Deps): void {
     const pool = getPool();
     const kd = kindDeps();
     const run = runAs(req);
+    await store.ensureCodes(pool);
     const { batches, changes } = await store.listOpen(pool);
     const decided = await store.listDecided(pool, 40);
     const names = new Map<string, string>();
@@ -371,7 +379,9 @@ export function register(app: Express, deps: Deps): void {
     for (const c of changes) {
       served.push({
         id: c.id,
+        code: c.code,
         batchId: c.batchId,
+        batchCode: batches.find((b) => b.id === c.batchId)?.code ?? null,
         kind: c.kind,
         target: c.target,
         targetLabel: c.targetLabel,
@@ -401,7 +411,7 @@ export function register(app: Express, deps: Deps): void {
     res.set("Cache-Control", "no-store").json({
       // Every time on the page is read in village time, named when it is not the reader's own.
       timezone: deps.seasonState().timezone || "UTC",
-      batches: batches.map((b) => ({ id: b.id, title: b.title, by: names.get(b.proposedBy) ?? firstName(""), byKind: b.proposedByKind, at: b.createdAt })),
+      batches: batches.map((b) => ({ id: b.id, code: b.code, title: b.title, by: names.get(b.proposedBy) ?? firstName(""), byKind: b.proposedByKind, at: b.createdAt })),
       changes: served,
       // The history: what was proposed, what was accepted (the person's edits included), who decided and when, and
       // the last reason a change did not land, which a discarded change keeps, and whether it may be proposed back.
@@ -409,7 +419,9 @@ export function register(app: Express, deps: Deps): void {
         const b = decidedBatches.get(c.batchId);
         return {
           id: c.id,
+          code: c.code,
           batchId: c.batchId,
+          batchCode: b?.code ?? null,
           batchTitle: b?.title ?? "",
           kind: c.kind,
           target: c.target,
@@ -594,7 +606,8 @@ export function register(app: Express, deps: Deps): void {
       entityRef: batchId,
       audience: "admin",
     });
-    res.json({ success: true, batchId, id: newId, reverts: c.id, applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
+    const filedBack = await store.changeById(pool, newId);
+    res.json({ success: true, batchId, batchCode: (await store.batchById(pool, batchId))?.code ?? null, id: newId, code: filedBack?.code ?? null, reverts: c.id, applied: false, reviewAt: "/admin/proposals", message: REVIEW_WORDS.nothingLive });
   });
 
   app.post("/api/admin/proposals/discard", async (req, res) => {

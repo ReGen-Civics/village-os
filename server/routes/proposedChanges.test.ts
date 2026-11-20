@@ -143,6 +143,60 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(await q("SELECT id FROM proposed_changes")).toHaveLength(0);
   });
 
+  it("SHORT CODES (the lead, 20 Nov 2026): a batch is B-n in filing order and its changes B-n.m, given at filing, shown on the page and in the queue, and never reused", async () => {
+    const one = await call("POST", "/api/admin/proposals", { batch: "First", items: [PAGE, FAQ] }, AGENT.id);
+    expect(one.body.batchCode).toBe("B-1");
+    expect(one.body.codes.map((c: any) => c.code)).toEqual(["B-1.1", "B-1.2"]);
+    const two = await call("POST", "/api/admin/proposals", { batch: "Second", items: [DIAL] }, AGENT.id);
+    expect(two.body.batchCode).toBe("B-2");
+    expect(two.body.codes).toEqual([{ id: two.body.ids[0], code: "B-2.1" }]);
+    // Adding to a batch already waiting carries on its numbering.
+    const more = await call("POST", "/api/admin/proposals", { batchId: one.body.batchId, items: [DIAL] }, AGENT.id);
+    expect(more.body.batchCode).toBe("B-1");
+    expect(more.body.codes.map((c: any) => c.code)).toEqual(["B-1.3"]);
+
+    const page = await call("GET", "/api/admin/proposals");
+    expect(page.body.batches.map((b: any) => b.code)).toEqual(["B-1", "B-2"]);
+    expect(page.body.changes.map((c: any) => [c.code, c.batchCode])).toEqual([["B-1.1", "B-1"], ["B-1.2", "B-1"], ["B-2.1", "B-2"], ["B-1.3", "B-1"]]);
+
+    const queue = await call("GET", "/api/admin/proposals/queue", undefined, AGENT.id);
+    expect(queue.body.batches.map((b: any) => [b.code, b.items.map((i: any) => i.code)])).toEqual([["B-1", ["B-1.1", "B-1.2", "B-1.3"]], ["B-2", ["B-2.1"]]]);
+
+    // A discarded change keeps its code, and the next batch is never given a number already used.
+    await call("POST", "/api/admin/proposals/discard", { ids: two.body.ids });
+    const three = await call("POST", "/api/admin/proposals", { batch: "Third", items: [FAQ] }, AGENT.id);
+    expect(three.body.batchCode).toBe("B-3");
+    const decided = (await call("GET", "/api/admin/proposals")).body.decided;
+    expect(decided).toEqual([expect.objectContaining({ code: "B-2.1", batchCode: "B-2" })]);
+  });
+
+  it("SHORT CODES: batches and changes filed before the codes existed are numbered by filing order, once, and a second pass changes nothing", async () => {
+    const insertBatch = (id: string, at: string) => q("INSERT INTO proposed_change_batches (id, title, proposed_by, proposed_by_kind, created_at) VALUES (?,?,?,?,?)", [id, `Batch ${id}`, AGENT.id, "agent", at]);
+    const insertChange = (id: string, batch: string, position: number) =>
+      q("INSERT INTO proposed_changes (id, batch_id, position, kind, target_json, target_label, route_method, route_path, summary, body_json, proposed_by, proposed_by_kind) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", [id, batch, position, "page_content", "{}", "Home page", "PUT", "/api/admin/content/page-home", "Old one.", "{}", AGENT.id, "agent"]);
+    // Filed out of id order on purpose: the code follows when it was filed.
+    await insertBatch("pcb_zzz", "2026-11-01 10:00:00.000");
+    await insertBatch("pcb_aaa", "2026-11-02 10:00:00.000");
+    await insertChange("pc_z0", "pcb_zzz", 0);
+    await insertChange("pc_z1", "pcb_zzz", 1);
+    await insertChange("pc_a0", "pcb_aaa", 0);
+    const { ensureCodes } = await import("../repos/proposedChanges");
+    await ensureCodes(pool);
+    const read = async () => ({
+      batches: await q("SELECT id, code_no, code FROM proposed_change_batches ORDER BY code_no"),
+      changes: await q("SELECT id, code FROM proposed_changes ORDER BY code"),
+    });
+    const first = await read();
+    expect(first.batches.map((b: any) => [b.id, b.code])).toEqual([["pcb_zzz", "B-1"], ["pcb_aaa", "B-2"]]);
+    expect(first.changes.map((c: any) => [c.id, c.code])).toEqual([["pc_a0", "B-2.1"], ["pc_z0", "B-1.1"], ["pc_z1", "B-1.2"]].sort((a, b) => (a[1] < b[1] ? -1 : 1)));
+    await ensureCodes(pool);
+    await Promise.all([ensureCodes(pool), ensureCodes(pool)]);
+    expect(await read()).toEqual(first);
+    // The next filing carries on from the backfill.
+    const next = await call("POST", "/api/admin/proposals", { batch: "New", items: [FAQ] }, AGENT.id);
+    expect(next.body.batchCode).toBe("B-3");
+  });
+
   it("the target's validator refuses a broken proposal when it is proposed, naming the field", async () => {
     const r = await call("POST", "/api/admin/proposals", {
       batch: "Broken",
@@ -506,7 +560,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(q.status).toBe(200);
     expect(q.body.waiting).toBe(2);
     const items = q.body.batches.flatMap((b: any) => b.items);
-    expect(items.find((i: any) => i.id === mine.body.ids[0])).toEqual({ id: mine.body.ids[0], batchId: mine.body.batchId, kind: "faq_add", summary: FAQ.summary, state: "waiting", stuck: false, yours: true });
+    expect(items.find((i: any) => i.id === mine.body.ids[0])).toEqual({ id: mine.body.ids[0], code: mine.body.codes[0].code, batchId: mine.body.batchId, kind: "faq_add", summary: FAQ.summary, state: "waiting", stuck: false, yours: true });
     expect(items.find((i: any) => i.id === theirs.body.ids[0]).yours).toBe(false);
     expect(JSON.stringify(q.body)).not.toMatch(/"body"|"live"|"route"|Write to the circle/);
     expect((await call("GET", "/api/admin/proposals/queue", undefined, STRANGER.id)).status).toBe(403);
