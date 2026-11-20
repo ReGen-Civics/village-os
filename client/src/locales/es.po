@@ -12110,8 +12110,8 @@ msgstr "Por qué cambió. La persona lo lee y puede responder."
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "badge on a role offered as a venture to build and run, applied for with a pitch"
-msgid "Future venture"
-msgstr ""
+msgid "Open venture"
+msgstr "Emprendimiento abierto"
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"

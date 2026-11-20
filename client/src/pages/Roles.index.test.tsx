@@ -228,7 +228,7 @@ describe("one card, the same anatomy for every role", () => {
     expect(dev.querySelector('[data-apply-early="dev"]')?.getAttribute("href")).toBe("/propose-a-role?role=dev&early=1");
     expect(dev.querySelector("[data-read-role]")?.getAttribute("href")).toBe("/roles/development-steward");
     const guest = card("guest");
-    expect(guest.querySelector("[data-role-card-badge]")?.textContent).toBe("Future venture");
+    expect(guest.querySelector("[data-role-card-badge]")?.textContent).toBe("Open venture");
     expect(guest.querySelector('[data-apply-role="guest"]')?.getAttribute("href")).toBe("/propose-a-role?role=guest");
     expect(within(guest).getByRole("link", { name: "Bring your venture: Guest House Venture Steward" })).toBeTruthy();
     expect(within(dev).getByRole("button", { name: /^Join the waitlist/ })).toBeTruthy();

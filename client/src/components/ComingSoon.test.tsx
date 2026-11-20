@@ -61,7 +61,7 @@ describe("a future venture and an agent-held role on the card", () => {
     expect(note.querySelectorAll("li")).toHaveLength(5);
     expect(note.textContent).toMatch(/A first financial picture/);
     render(<ComingSoonChip role={{ futureVenture: true }} />);
-    expect(screen.getByText("Future venture")).toBeTruthy();
+    expect(screen.getByText("Open venture")).toBeTruthy();
   });
 
   it("says an agent holds it, never by name; a person-held role says nothing", () => {
