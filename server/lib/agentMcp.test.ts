@@ -218,7 +218,7 @@ describe("admin_request (check 52)", () => {
 
   it("is listed only for the admin scope", () => {
     expect(toolsFor(["moon.read", "tasks.write"]).map((t) => t.name)).not.toContain("admin_request");
-    expect(toolsFor(["admin"]).map((t) => t.name)).toEqual(["admin_request", "propose_changes", "read_proposal_lessons"]);
+    expect(toolsFor(["admin"]).map((t) => t.name)).toEqual(["admin_request", "propose_changes", "read_proposal_lessons", "read_proposal_queue", "discard_my_proposals", "read_seat_terms"]);
   });
 
   it("reads an allowed path at once and records the call", async () => {
@@ -607,5 +607,81 @@ describe("hand_task_to_role (tasks.write)", () => {
     const r = await ask(callTool("hand_task_to_role", { ...args, confirmToken: token }), ["tasks.write"], h.ctx);
     expect(r.result.isError).toBe(true);
     expect(r.result.structuredContent.error).toContain("Pick a day from today on.");
+  });
+});
+
+describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and a role's terms as words", () => {
+  function queueHolder(discardAnswer: RouteAnswer = { status: 200, body: { results: [{ id: "c-mine", ok: true }], discarded: 1 } }) {
+    const h = holder();
+    const calls: Array<{ method: string; path: string; body?: any }> = [];
+    const items = [
+      { id: "c-mine", batchId: "b-1", kind: "page_content", summary: "Rename the contribution token.", state: "waiting", stuck: false, yours: true },
+      { id: "c-theirs", batchId: "b-1", kind: "variable", summary: "A person's own change.", state: "waiting", stuck: false, yours: false },
+      { id: "c-done", batchId: "b-2", kind: "faq_add", summary: "An accepted one.", state: "accepted", stuck: false, yours: true },
+    ];
+    const ctx: ToolContext = {
+      ...h.ctx,
+      dispatch: async (method, path, body) => {
+        calls.push({ method, path, body });
+        if (method === "GET" && path.startsWith("/api/admin/proposals/queue")) return { status: 200, body: { waiting: 2, batches: [{ batchId: "b-1", items: items.slice(0, 2) }, { batchId: "b-2", items: items.slice(2) }] } };
+        if (method === "POST" && path === "/api/admin/proposals/discard-mine") return discardAnswer;
+        if (method === "GET" && path.startsWith("/api/admin/proposals/seat-terms")) {
+          // A route that sent too much: the connector's redaction still keeps every figure out.
+          return { status: 200, body: { roles: [{ roleId: "r-1", name: "Lead Steward", words: { bonus: "A share of the moon when its goals are met." }, commitmentPct: 100, setGroups: ["Pay", "Bonus"], pay: { kind: "fixed", amountMinor: 300000, currency: "USD" } }] } };
+        }
+        return { status: 404, body: { error: "Not found" } };
+      },
+    };
+    return { ctx, calls };
+  }
+
+  it("reads the queue through its own route and never through admin_request", async () => {
+    const q = queueHolder();
+    const r = await ask(callTool("read_proposal_queue", {}), ["admin"], q.ctx);
+    expect(r.result.isError).toBe(false);
+    expect(r.result.structuredContent.batches[0].items[0]).toEqual(expect.objectContaining({ id: "c-mine", state: "waiting", yours: true }));
+    expect(q.calls.map((c) => `${c.method} ${c.path}`)).toEqual(["GET /api/admin/proposals/queue"]);
+  });
+
+  it("puts aside only what it filed and still waits, after two calls, and never accepts", async () => {
+    const q = queueHolder();
+    const first = await ask(callTool("discard_my_proposals", { ids: ["c-mine", "c-theirs", "c-done"] }), ["admin"], q.ctx);
+    const asked = first.result.structuredContent;
+    expect(asked.confirmRequired).toBe(true);
+    expect(asked.echo.putAside).toEqual([{ id: "c-mine", summary: "Rename the contribution token." }]);
+    expect(asked.skipped.sort()).toEqual(["c-done", "c-theirs"]);
+    expect(q.calls.some((c) => c.method === "POST")).toBe(false);
+    const second = await ask(callTool("discard_my_proposals", { ids: ["c-done", "c-theirs", "c-mine"], confirmToken: asked.confirmToken }), ["admin"], q.ctx);
+    expect(second.result.isError).toBe(false);
+    const posts = q.calls.filter((c) => c.method === "POST");
+    expect(posts).toEqual([{ method: "POST", path: "/api/admin/proposals/discard-mine", body: { ids: ["c-mine"] } }]);
+    expect(MCP_TOOLS.flatMap((t) => t.routes).some((r) => /\/accept/.test(r))).toBe(false);
+  });
+
+  it("refuses at once when none of the ids is its own and waiting", async () => {
+    const q = queueHolder();
+    const r = await ask(callTool("discard_my_proposals", { ids: ["c-theirs"] }), ["admin"], q.ctx);
+    expect(r.result.isError).toBe(true);
+    expect(r.result.structuredContent.error).toContain("nothing would be put aside");
+  });
+
+  it("reads a role's terms as words, and no figure survives the connector's redaction", async () => {
+    const q = queueHolder();
+    const r = await ask(callTool("read_seat_terms", { roleId: "r-1" }), ["admin"], q.ctx);
+    expect(q.calls[0].path).toBe("/api/admin/proposals/seat-terms?roleId=r-1");
+    const text = JSON.stringify(r.result);
+    expect(text).toContain("A share of the moon");
+    for (const k of ["amountMinor", "300000", "USD", "\"pay\""]) expect(text).not.toContain(k);
+  });
+
+  it("names the vocabulary and the terms wording in the proposal tool's own words", () => {
+    const t = MCP_TOOLS.find((x) => x.name === "propose_changes")!;
+    expect(t.description).toContain("app-vocabulary");
+    expect(t.description).toContain("contributionToken");
+    expect(t.description).toContain("seat_terms");
+    const kinds = ((t.inputSchema as any).properties.items.items.properties.kind.enum) as string[];
+    expect(kinds).toEqual(expect.arrayContaining(["vocabulary", "seat_terms", "page_content"]));
+    const lessons = MCP_TOOLS.find((x) => x.name === "read_proposal_lessons")!;
+    expect((lessons.inputSchema as any).properties.kind.enum).toEqual(expect.arrayContaining(["vocabulary", "seat_terms"]));
   });
 });

@@ -118,10 +118,10 @@ describe("with the opt-in on", () => {
     }
   });
 
-  it("saves the seed list, 91 paths, with every lead-approved write confirmed by the agent", () => {
+  it("saves the seed list, 92 paths, with every lead-approved write confirmed by the agent", () => {
     const r = parseAgentAdminPaths(seed, ON);
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.paths).toHaveLength(91);
+    if (r.ok) expect(r.value.paths).toHaveLength(92);
   });
 
   it("never lifts erasure, money, members, personal data, secrets, accounts or agents", () => {
@@ -340,6 +340,6 @@ describe("pasting a list in the panel", () => {
     expect(mergePastedAgentPaths(current, seed).ok).toBe(false);
     const on = mergePastedAgentPaths(current, seed, ON);
     expect(on.ok).toBe(true);
-    if (on.ok) expect(on.plan.merged).toHaveLength(91); // both paths on screen are on the seed list already
+    if (on.ok) expect(on.plan.merged).toHaveLength(92); // both paths on screen are on the seed list already
   });
 });

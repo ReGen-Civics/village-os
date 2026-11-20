@@ -272,6 +272,19 @@ export async function markDiscarded(pool: Pool, id: string, by: string): Promise
   return Number(r?.affectedRows ?? 0) > 0;
 }
 
+/**
+ * An agent puts aside a change IT filed (the lead, 19 Nov 2026): only one filed through the connector or by an agent
+ * account (`proposed_by_kind` 'agent') by this same account, and only while it waits or failed. One whose outcome is
+ * unknown may have landed, so a person checks its page; one being applied, or decided, is not the agent's to touch.
+ */
+export async function markDiscardedByFiler(pool: Pool, id: string, by: string): Promise<boolean> {
+  const [r] = await pool.query<any>(
+    "UPDATE `proposed_changes` SET `status` = 'discarded', `decided_by` = ?, `decided_at` = CURRENT_TIMESTAMP(3) WHERE `id` = ? AND `proposed_by` = ? AND `proposed_by_kind` = 'agent' AND `status` IN ('proposed','failed')",
+    [by, id, by],
+  );
+  return Number(r?.affectedRows ?? 0) > 0;
+}
+
 /** Member erasure: what they proposed goes; their name comes off what they decided. */
 export async function forgetProposedChanges(pool: Pool, userId: string): Promise<void> {
   await pool.query("DELETE FROM `proposed_changes` WHERE `proposed_by` = ?", [userId]);
