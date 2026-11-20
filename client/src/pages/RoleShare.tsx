@@ -32,6 +32,7 @@ import { gameFetch } from "@/lib/gameApi";
 import { anchorCircleId } from "@shared/circlePicker";
 import { roleForSlug, rolePath } from "@shared/roleSlug";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
+import { termsSlotFor } from "@/components/power/SeatTermsSlot";
 import { AnchorCircleTip } from "@/components/roleCard/CardTips";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 
@@ -130,6 +131,7 @@ export default function RoleShare() {
                   sections={featured ? (founding?.sections[String(role.id)] ?? null) : null}
                   villagePay={founding?.villagePay ?? null}
                   lifted
+                  settings={termsSlotFor(role)}
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <Suspense fallback={null}>
