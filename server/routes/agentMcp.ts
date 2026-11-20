@@ -48,6 +48,7 @@ import { PLATFORM_VERSION } from "../lib/identity";
 import { AI_APPROVAL_DOC, parseAiApproval } from "../../shared/agentProposals";
 import { runSeraTool, undoSeraAction } from "../lib/seraAgent";
 import { wwwAuthenticate } from "../lib/agentOAuth";
+import { fullAccessFor, recordFullAccessWrite } from "../lib/agentFullAccess";
 
 export const MCP_PATH = "/api/agent/v1/mcp";
 
@@ -204,6 +205,12 @@ export function register(app: Express, deps: Deps): void {
           recorded: (a) => recordLeadApproval({ pool: getPool(), agentUserId: userId, tokenPrefix: row.prefix }, a),
           settled: (a, outcome) =>
             settleLeadApproval({ pool: getPool(), agentUserId: userId, tokenPrefix: row.prefix, notifyAdmins: notifyAdmins ?? (async () => {}) }, a, outcome),
+        },
+        // The full-access switch (the lead, 20 Nov 2026; shared/agentFullAccess.ts): a live seat in the named role, read
+        // at every call, and the audit each full-access write leaves before it is made.
+        fullAccess: {
+          on: () => fullAccessFor(getPool(), userId),
+          recorded: (a) => recordFullAccessWrite(getPool(), { ...a, agentUserId: userId, tokenPrefix: row.prefix }),
         },
         recordAction: async (a) => {
           await recordAgentAction(getPool(), { ...a, tokenId: row.id, actorUserId: userId });

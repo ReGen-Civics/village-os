@@ -7,6 +7,8 @@
  *   PUT /api/admin/agent-admin-paths       change that list
  *   GET /api/admin/agent-actions           what agents did through the admin and Sera scopes, newest first
  *   POST /api/admin/agent-actions/:id/undo put back one of Sera's actions (B7), within 30 days
+ *   GET /api/admin/agent-accounts/full-access  the full-access switch: which role, if any, and the roles to pick from
+ *   PUT /api/admin/agent-accounts/full-access  name one role, or none (the lead, 20 Nov 2026; shared/agentFullAccess.ts)
  *
  * Every route is an admin's, and the two writes are a PERSON's: an agent
  * account is refused them even with a session, and `admin_request` can never
@@ -27,8 +29,13 @@ import { undoSeraAction } from "../lib/seraAgent";
 import { AGENT_ADMIN_PATHS_DOC, ALWAYS_A_PERSON, DEFAULT_AGENT_ADMIN_PATHS, effectiveAgentAdminPaths, LEAD_APPROVED_WRITES, LEAD_APPROVED_WRITES_VARIABLE, parseAgentAdminPaths } from "../../shared/agentAdmin";
 import { boolVar } from "../lib/variables";
 import { recentApprovedWrites } from "../lib/agentLeadApproval";
+import { orgRoleForFullAccess } from "../repos/agentAccounts";
+import { listOrgRoles } from "../lib/orgChart";
+import { noticeFullAccessChange, readFullAccess } from "../lib/agentFullAccess";
+import { FULL_ACCESS_DOC, FULL_ACCESS_FLOOR, type FullAccessDoc } from "../../shared/agentFullAccess";
 
-type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin">;
+/** `notify` and `circlesRepo` tell the Anchor Circle when the full-access switch moves; without them it is only recorded. */
+type Deps = Pick<AppDeps, "authedUser" | "getPool" | "isAdmin"> & Partial<Pick<AppDeps, "notify" | "circlesRepo">>;
 
 export function register(app: Express, deps: Deps): void {
   const { authedUser, getPool, isAdmin } = deps;
@@ -117,6 +124,50 @@ export function register(app: Express, deps: Deps): void {
       audience: "admin",
     });
     res.json({ document: parsed.value });
+  });
+
+  // ── The full-access switch (the lead, 20 Nov 2026) ─────────────────────────
+  // One role, never a person. A person sets it, never an agent account, and `ALWAYS_A_PERSON` keeps the connector off
+  // this path (the `agents` rule reads agent-accounts). It reaches only the agent of whoever holds a live seat in it.
+
+  app.get("/api/admin/agent-accounts/full-access", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const doc = await readFullAccess(getPool());
+    const roles = (await listOrgRoles(getPool())).filter((r: any) => !r.isExample && r.active !== false).map((r: any) => ({ id: String(r.id), name: String(r.name ?? r.id) }));
+    const role = doc.roleId ? await orgRoleForFullAccess(getPool(), doc.roleId) : null;
+    const setByName = doc.setBy ? (await namesOf(getPool(), [doc.setBy]))[doc.setBy] ?? null : null;
+    res.json({
+      on: !!doc.roleId,
+      roleId: doc.roleId,
+      roleName: role?.name ?? null,
+      setBy: setByName,
+      setAt: doc.setAt,
+      roles,
+      floor: FULL_ACCESS_FLOOR.map((f) => f.why).filter((w, i, all) => all.indexOf(w) === i),
+    });
+  });
+
+  app.put("/api/admin/agent-accounts/full-access", async (req, res) => {
+    const actor = await person(req, res);
+    if (!actor) return;
+    const raw = (req.body as { roleId?: unknown } | undefined)?.roleId;
+    const roleId = typeof raw === "string" && raw.trim() ? raw.trim().slice(0, 120) : null;
+    if (raw !== undefined && raw !== null && raw !== "" && typeof raw !== "string") return res.status(400).json({ error: "Send roleId: a role's id, or null to turn full access off." });
+    if (roleId) {
+      const role = await orgRoleForFullAccess(getPool(), roleId);
+      if (!role) return res.status(404).json({ error: "There is no role by that id." });
+      if (!role.usable) return res.status(409).json({ error: "Name a live role. A standing example or a retired role cannot carry full access." });
+    }
+    const before = await readFullAccess(getPool());
+    if ((before.roleId ?? null) === roleId) return res.json({ on: !!roleId, roleId, unchanged: true });
+    const after: FullAccessDoc = { roleId, setBy: actor.id, setAt: new Date().toISOString() };
+    await writeConfigDocument(getPool(), FULL_ACCESS_DOC, after as unknown as Record<string, unknown>);
+    const told = await noticeFullAccessChange(
+      getPool(),
+      { notify: deps.notify ? (n) => deps.notify!(n) : async () => undefined, circles: () => (deps.circlesRepo ? (deps.circlesRepo.all() as any[]) : []) },
+      { actorUserId: actor.id, before, after },
+    );
+    res.json({ on: !!roleId, roleId, anchorNotified: told.anchorNotified });
   });
 
   app.get("/api/admin/agent-actions", async (req, res) => {

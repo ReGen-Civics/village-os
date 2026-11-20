@@ -25,6 +25,13 @@
  * setting next to money, so the connector does not make it, and a person
  * makes it in the app. A path an admin adds is `person` unless they say
  * otherwise.
+ *
+ * 20 NOVEMBER 2026 (the lead: "you should be able to do this, make it so and
+ * get it done"; "For my role only (ops) I should have the power for agents to
+ * just about everything for me, and if not using the accept proposal route"):
+ * withdrawing agenda items, two more shipped reads, the `seat_power` write, and
+ * a full-access switch tied to one ROLE, with a floor that stays a person's.
+ * The whole record is the comment above LEAD_APPROVED_WRITES_VARIABLE below.
  */
 
 import { BREAK_GLASS_SEAT, isBadgeGrantable } from "./capabilities";
@@ -73,7 +80,34 @@ export const DEFAULT_AGENT_ADMIN_PATHS: AgentAdminPathsDoc = {
 export const SHIPPED_AGENT_READS: readonly AllowedAdminPath[] = [
   { method: "GET", path: "/api/sessions", confirm: "agent", label: "Live Sessions: coming meetings, each circle's rhythms, and the waiting agenda items" },
   { method: "GET", path: "/api/sessions/circles/:circleId/summary", confirm: "agent", label: "One circle's meetings: its rhythms, next meeting and what waits for it" },
+  // The lead, 20 Nov 2026: what a role's power groups are, and which powers the village holds where. Read only; the
+  // connector strips contact data from both answers (`stripContactData`), and the route's own gate still decides.
+  { method: "GET", path: "/api/admin/org-roles/:id/power-groups", confirm: "agent", label: "One role's power groups, and every group it could carry" },
+  { method: "GET", path: "/api/admin/capabilities/holding", confirm: "agent", label: "Which powers the village holds, and which role carries each" },
 ];
+
+/** Whether a GET is one of the reads the connector always has. */
+export function isShippedAgentRead(method: string, path: string): boolean {
+  return String(method ?? "").toUpperCase() === "GET" && SHIPPED_AGENT_READS.some((e) => pathMatches(e.path, path));
+}
+
+/** Keys that carry a way to reach a person, or name the account a warning is about. Never in a connector read of powers. */
+const CONTACT_KEY = /e-?mail|phone|mobile|whats-?app|telegram|signal|contact_?(?:detail|info)|leftEmptyByRemoval/i;
+
+/** The value with every contact key removed, at any depth (the lead, 20 Nov 2026). Arrays keep their order. */
+export function stripContactData(value: unknown, depth = 0): unknown {
+  if (depth > 40) return null;
+  if (Array.isArray(value)) return value.map((v) => stripContactData(v, depth + 1));
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (CONTACT_KEY.test(k)) continue;
+      out[k] = stripContactData(v, depth + 1);
+    }
+    return out;
+  }
+  return value;
+}
 
 /** The things an agent never does through the connector, whatever the allow-list says. */
 export type PersonMode =
@@ -241,7 +275,7 @@ export function alwaysAPerson(
 }
 
 export type AdminRequestDecision =
-  | { ok: true; entry: AllowedAdminPath; write: boolean; confirm: AdminConfirm; leadApproved?: LeadApprovedKind }
+  | { ok: true; entry: AllowedAdminPath; write: boolean; confirm: AdminConfirm; leadApproved?: LeadApprovedKind; fullAccess?: true }
   | { ok: false; code: "bad_path" | "always_a_person" | "not_allowed"; words: string };
 
 /** Whether an agent may call `method path` through `admin_request`, and who confirms it. */
@@ -359,13 +393,52 @@ export function effectiveAgentAdminPaths(stored: unknown): AgentAdminPathsDoc {
  * reach the route; the one capability gate decides there. Nothing in code
  * grants a power. A seating never seats the holder (`self` below).
  */
+/**
+ * THE LEAD'S RULING OF 20 NOVEMBER 2026, binding, in the lead's words:
+ *
+ *   "you should be able to do this, make it so and get it done"
+ *
+ *   "For my role only (ops) I should have the power for agents to just about
+ *   everything for me, and if not using the accept proposal route."
+ *
+ * Four things, each narrow, and each still asked of the one capability gate as the token's holder:
+ *
+ *   1. `withdraw_agenda_item` (server/lib/agentMcp.ts): the sibling of add_agenda_item. It withdraws through the
+ *      member door, `DELETE /api/sessions/library/:itemId`, whose own check (`withdrawItem`) decides, so it withdraws
+ *      only what the holder may. Up to 20 at once, in two calls.
+ *
+ *   2. Two more reads in `SHIPPED_AGENT_READS`: a role's power groups and which powers the village holds. GET only,
+ *      without the person-saved list, with contact data stripped (`stripContactData`).
+ *
+ *   3. `seat_power`, a lead-approved write on `PUT /api/admin/org-roles/:id/power-groups`, lifting `powers` for that
+ *      route alone. ADDITIVE ONLY: a group the role carries now and the body leaves out is refused, so taking a
+ *      group away stays a person's act. It refuses any group carrying the veto, the break-glass, money, a power a
+ *      badge may never carry, or the admin panel (`isFloorCapability`, built from BADGE_GRANTABLE, BREAK_GLASS_SEAT,
+ *      MONEY_OR_POWER_KEY and the money rule below), and it always carries approvedBy and approvalNote.
+ *
+ *   4. THE FULL-ACCESS SWITCH, tied to a ROLE and never a person (shared/agentFullAccess.ts). An admin setting names
+ *      one role. It reaches only an agent token whose holder holds a live seat in that role at the moment of the
+ *      call, so it drops off when the seat changes hands. Off by default; only a person sets it, through the agent
+ *      accounts settings, which the `agents` rule keeps always a person's. Turning it on or off is recorded with
+ *      who did it (audience admin) and posted as a notice to the Anchor Circle's role holders, so the village sees
+ *      that the operations role's agent has full access. With it on, for that token only:
+ *        a) `admin_request` reaches `/api/admin/` paths without the person-saved list and the lead-approved list,
+ *           every write in two calls, carrying approvedBy and approvalNote, and audited with the note;
+ *        b) `accept_proposals` accepts or discards waiting changes as the review page does, as the holder, once the
+ *           approval note names the batch code or every change's code.
+ *      THE FLOOR stays a person's act with it on: the `ALWAYS_A_PERSON` rules for secrets, erasure, money, members,
+ *      accounts, the agent accounts, voice, comparing and applicant data, and the veto, break-glass and letters or
+ *      email parts of the powers, settings and tier C rules (`FULL_ACCESS_FLOOR`). The rules are reused, so a new
+ *      route matching one is covered. With the switch off, nothing above it changes (a regression test walks the
+ *      whole list).
+ */
 export const LEAD_APPROVED_WRITES_VARIABLE = "agents.lead_approved_writes";
 
 /** The rules a lead-approved write may lift. Never erasure, money, members, personal, secrets, accounts or agents. */
 export const LIFTABLE_RULES = ["powers", "tier_c", "settings"] as const;
 export type LiftableRule = (typeof LIFTABLE_RULES)[number];
 
-export type LeadApprovedKind = "role_text" | "role_edit" | "role_draft" | "seat" | "unseat" | "seat_note" | "wording_variable";
+export type LeadApprovedKind = "role_text" | "role_edit" | "role_draft" | "seat" | "unseat" | "seat_note" | "wording_variable" | "seat_power";
 
 export interface AgentDecisionOpts {
   /** Whether the Anchor has recorded its approval of AI agents (personal data reads). */
@@ -423,6 +496,9 @@ export const LEAD_APPROVED_WRITES: readonly LeadApprovedEntry[] = [
   { kind: "seat_note", method: "PATCH", path: "/api/admin/org/seatings/:id", lifts: ["powers", "tier_c"] },
   // c. The wording and the non-money switches among the game variables, by name.
   { kind: "wording_variable", method: "PUT", path: "/api/admin/variables/:key", lifts: ["settings"], when: (s) => AGENT_WORDING_VARIABLES.includes(s[s.length - 1] ?? "") },
+  // d. A role's power groups, added to and never taken from (the lead, 20 Nov 2026). The body check refuses a group
+  // carrying the veto, the break-glass, money or the admin panel, and any group the role carries now left out.
+  { kind: "seat_power", method: "PUT", path: "/api/admin/org-roles/:id/power-groups", lifts: ["powers"] },
 ];
 
 /** The lead-approved entry a concrete call falls under, or null. Pure; says nothing about the opt-in. */
@@ -453,6 +529,43 @@ const MONEY_OR_POWER_KEY = /value|cash|pay|budget|funded|capabilit|power|grantsA
 const TERMS_MONEY_GROUPS = ["pay", "allowance", "bonus"];
 // Retiring a role is drafted too (Rye, 15 Nov 2026); publishing the draft stays a person's act (tier_c is not lifted).
 const DRAFT_OPS = ["create_seat", "update_seat", "rest_seat"];
+
+/**
+ * What the platform knows about a role's power groups, read fresh at each call from the route's own GET
+ * (`GET /api/admin/org-roles/:id/power-groups`, as the token's holder), for `seat_power`.
+ */
+export interface SeatPowerFacts {
+  /** False when there is no such role. */
+  found: boolean;
+  isExample: boolean;
+  /** The groups the role carries now. */
+  linked: readonly string[];
+  /** Every group the role could carry, with what each carries. */
+  groups: ReadonlyArray<{ id: string; capabilities: readonly string[]; grantsAdmin: boolean; isExample: boolean }>;
+}
+
+/**
+ * The money capabilities by module, for the keys whose own names do not say money: a funding pot belongs to the
+ * crowdpool module and the member rate to stays, both in `MONEY_MODULES` (shared/regenImport.ts).
+ */
+const MONEY_CAPABILITY_MODULE: Readonly<Record<string, string>> = { pot: "crowdpool", stay: "stays" };
+/** `MONEY_MODULES` (shared/regenImport.ts), copied so the client panel does not load that file; a test holds the two equal. */
+export const MONEY_MODULE_IDS: readonly string[] = ["exchange", "redemption", "commerce", "stays", "crowdpool"];
+
+/**
+ * A capability an agent never hands out, under any switch (the lead, 20 Nov 2026): one a badge may never carry
+ * (`BADGE_GRANTABLE`, the steward's veto among them), the break-glass seat itself (`BREAK_GLASS_SEAT`), a key whose
+ * name reads as money or power (`MONEY_OR_POWER_KEY`), or one the money rule of `ALWAYS_A_PERSON` reads as money
+ * (payments, payouts, treasury, ledger, mint, settlement, exchange), or one of a money module.
+ */
+export function isFloorCapability(cap: string): boolean {
+  const c = String(cap ?? "");
+  if (!isBadgeGrantable(c) || c === BREAK_GLASS_SEAT || MONEY_OR_POWER_KEY.test(c)) return true;
+  const money = ALWAYS_A_PERSON.find((r) => r.key === "money");
+  if (money?.test("PUT", `/${c.split(".").join("/")}`)) return true;
+  const head = c.split(".")[0] ?? "";
+  return MONEY_MODULE_IDS.includes(head) || MONEY_MODULE_IDS.includes(MONEY_CAPABILITY_MODULE[head] ?? "");
+}
 
 /** What the platform knows about the seat a seating or unseating reaches, read fresh at each call. */
 export interface LeadSeatFacts {
@@ -493,6 +606,9 @@ export const LEAD_APPROVAL_WORDS = {
     "This role carries a power a badge may never carry (the steward's veto and the break-glass among them), or it opens the admin panel. The village fills it by its own vote, and a person does it.",
   variable: "That game variable is not one an agent may set. A person sets it in Admin, Variables.",
   draftOp: "An agent may draft a role's creation, its words or its retirement. Other draft changes are a person's to make.",
+  powerRemoved: "An agent only adds power groups to a role. Taking one away is a person's act in the app.",
+  powerFloor:
+    "That power group carries the steward's veto, the break-glass, money, a power a badge may never carry, or the admin panel. A person gives it in the app, or the village votes.",
 } as const;
 
 /** The approval a seating or unseating carries, read and checked. */
@@ -530,6 +646,8 @@ export function leadApprovedBodyProblem(
   ctx: {
     holderId?: string | null;
     seat?: LeadSeatFacts | null;
+    /** For `seat_power`: the role's power groups as they are now. */
+    seatPower?: SeatPowerFacts | null;
     /**
      * Whether this write must carry the approval. True unless the caller says otherwise: the one exception is the
      * role editor with the village's switch off, which agents could already reach before the switch existed.
@@ -597,6 +715,28 @@ export function leadApprovedBodyProblem(
       const segs = segmentsOf(path) ?? [];
       return AGENT_WORDING_VARIABLES.includes(segs[segs.length - 1] ?? "") ? null : LEAD_APPROVAL_WORDS.variable;
     }
+    case "seat_power": {
+      // The approval always, whatever the caller asked: this write hands a role more powers.
+      const approval = readLeadApproval(body);
+      if (!approval.ok) return approval.words;
+      const bad = keys.filter((k) => k !== "roleIds");
+      if (bad.length) return `An agent sends the role's power groups and nothing else: ${bad.slice(0, 8).join(", ")}.`;
+      if (!Array.isArray(b.roleIds) || b.roleIds.some((x) => typeof x !== "string")) return "Send roleIds: the role's power groups as a list of ids.";
+      const facts = ctx.seatPower;
+      if (!facts || !facts.found) return LEAD_APPROVAL_WORDS.missingSeat;
+      if (facts.isExample) return LEAD_APPROVAL_WORDS.example;
+      const wanted = new Set(b.roleIds as string[]);
+      const dropped = facts.linked.filter((id) => !wanted.has(id));
+      if (dropped.length) return LEAD_APPROVAL_WORDS.powerRemoved;
+      for (const id of Array.from(wanted)) {
+        if (facts.linked.includes(id)) continue;
+        const g = facts.groups.find((x) => x.id === id);
+        if (!g) return `There is no power group called ${id.slice(0, 60)}.`;
+        if (g.isExample) return LEAD_APPROVAL_WORDS.example;
+        if (g.grantsAdmin || g.capabilities.some(isFloorCapability)) return LEAD_APPROVAL_WORDS.powerFloor;
+      }
+      return null;
+    }
   }
 }
 
@@ -641,6 +781,8 @@ export function leadApprovalSubject(kind: LeadApprovedKind, path: string, body: 
       return { what: "Changed a seating's note", target: seatRoleId ?? null, changed: top.filter((k) => k === "focus" || k === "note") };
     case "wording_variable":
       return { what: "Set a wording variable", target: segs[segs.length - 1] ?? null, changed: ["value"] };
+    case "seat_power":
+      return { what: "Gave a role more power groups", target: segs[3] ?? null, changed: ["roleIds"] };
   }
 }
 
