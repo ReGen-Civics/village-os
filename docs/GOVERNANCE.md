@@ -11,7 +11,7 @@ This describes a FRESH village: what a village standing up a new instance holds 
 <!-- written by a person: generated -->
 This file is generated. `scripts/generate-governance-doc.mjs` reads the engine, the subject registry, the dials, the capability tables, the module definition, the clock and the route registrations, works out the facts, and writes the whole document. `scripts/check-governance-doc.mjs` regenerates it and fails the build when the committed text and the code have come apart.
 
-It describes the sources at fingerprint `72ae20b43529e190`, which regenerating reproduces.
+It describes the sources at fingerprint `67effb2867af08c9`, which regenerating reproduces.
 
 <!-- written by a person: editing -->
 Editing this file by hand does not hold. Change the code, then run:
@@ -504,6 +504,7 @@ What a village publishes, read from the route registrations. The door on each ro
 | POST | `/api/governance/agreements` | signed in | none |
 | POST | `/api/governance/applications/:ref/final-conversation` | anyone, including a stranger | none |
 | POST | `/api/governance/applications/:ref/first-reply` | signed in | none |
+| POST | `/api/governance/applications/:ref/guide-notes` | anyone, including a stranger | none |
 | POST | `/api/governance/applications/:ref/interviews/:id/score` | signed in | none |
 | POST | `/api/governance/applications/:ref/recuse` | signed in | none |
 | POST | `/api/governance/applications/:ref/references` | signed in | none |
@@ -584,7 +585,7 @@ What a village publishes, read from the route registrations. The door on each ro
 | GET | `/api/governance/weights` | signed in | none |
 | GET | `/api/governance/wizard` | signed in | none |
 
-98 routes: 84 under the governance prefix and 14 under the mechanics prefix. 15 of them answer a stranger, 5 ask for a named power, and 0 could not be classified from the code by this reader.
+99 routes: 85 under the governance prefix and 14 under the mechanics prefix. 16 of them answer a stranger, 5 ask for a named power, and 0 could not be classified from the code by this reader.
 
 The routes that answer a stranger are the village's public record. At the module's `public` lifecycle a stranger reads the ballot list, one decision and the objection lineage as titles, counts, tallies, dials and status. Who voted, how, who has not voted yet, who objected and the document itself are for signed-in members, and ruling 22, still staged, is about what members read.
 
@@ -1120,7 +1121,7 @@ The same facts, for anything that would sooner parse than read. Regenerated with
 
 ```json
 {
-  "commit": "72ae20b43529e190",
+  "commit": "67effb2867af08c9",
   "module": {
     "id": "governance",
     "shipsAs": "off",
@@ -2229,6 +2230,13 @@ The same facts, for anything that would sooner parse than read. Regenerated with
       "door": "signed in",
       "capability": null,
       "file": "server/routes/applicationReview.ts"
+    },
+    {
+      "method": "POST",
+      "path": "/api/governance/applications/:ref/guide-notes",
+      "door": "anyone, including a stranger",
+      "capability": null,
+      "file": "server/routes/applicantOnboarding.ts"
     },
     {
       "method": "POST",
@@ -3372,7 +3380,7 @@ The tables and columns the rules above rest on. The generator checks every one a
 | `delegations.accepted_at` | a delegation carries a choice only once the delegate accepts it |
 | `role_holder_terms` | a term survives an unrelated appointment |
 
-Checked against the 282 migration files in `drizzle/`.
+Checked against the 284 migration files in `drizzle/`.
 
 ## What this file is made from
 

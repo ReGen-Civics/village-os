@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 274 open and 60 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 278 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 307 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 311 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-334 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 66 text, 12 longtext.
+338 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 47 boolean, 37 choice, 69 text, 12 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ Each dial also says WHEN a change lands. 307 of them as soon as it is saved, and
 | Village map | 12 | 9 | 3 |
 | The village's people | 23 | 22 | 1 |
 | Companions | 3 | 3 | 0 |
-| The founding team | 23 | 23 | 0 |
+| The founding team | 27 | 27 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Messages | 2 | 2 | 0 |
@@ -339,6 +339,10 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Other ways to join: the line under the resident path tile | `org.other_ways_seeder_line` | The founding team | text | `Live here one day? Start on the resident path.` | the whole village |
 | Other ways to join: the gifts tile | `org.other_ways_gifts_title` | The founding team | text | `Offer your gifts` | the whole village |
 | Other ways to join: the line under the gifts tile | `org.other_ways_gifts_line` | The founding team | text | `Volunteer or work-trade: tell us what you would like to give.` | the whole village |
+| Decline letter: offer next steps | `org.decline_next_steps_on` | The founding team | boolean | `true` | the whole village |
+| Decline letter: the line above the next steps | `org.decline_next_steps_intro` | The founding team | text | `If you would like to stay close, here are three ways in.` | the whole village |
+| Decline letter: the waitlist line | `org.decline_next_steps_waitlist` | The founding team | text | `Other roles are coming soon. Ask to hear when one opens:` | the whole village |
+| Decline letter: the quests line | `org.decline_next_steps_quests` | The founding team | text | `Quests anyone can take today:` | the whole village |
 | Let members RSVP | `events.rsvp_enabled` | Events | boolean | `true` | the whole village |
 | Show gatherings this far ahead | `events.upcoming_days` | Events | integer | `90` | the whole village |
 | Keep finished gatherings listed for | `events.past_visible_days` | Events | integer | `30` | the whole village |
@@ -4143,7 +4147,7 @@ Which roles give their holders a companion that speaks for the role. Write all f
 
 ## The founding team
 
-23 dials. 23 for the whole village.
+27 dials. 27 for the whole village.
 
 ### When a moon counts as far from what was agreed
 
@@ -4463,6 +4467,62 @@ One short line under the gifts tile.
 | Key | `org.other_ways_gifts_line` |
 | Type | text, free text, one line |
 | Default | `Volunteer or work-trade: tell us what you would like to give.` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Decline letter: offer next steps
+
+When on, the letter that says no to an application also offers the waitlist for other roles, open quests and the resident path, as links.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.decline_next_steps_on` |
+| Type | boolean, on or off |
+| Default | `true` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Decline letter: the line above the next steps
+
+One short line that introduces the three ways to stay close.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.decline_next_steps_intro` |
+| Type | text, free text, one line |
+| Default | `If you would like to stay close, here are three ways in.` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Decline letter: the waitlist line
+
+The line above the link to the Roles page, where a coming-soon role says Notify me.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.decline_next_steps_waitlist` |
+| Type | text, free text, one line |
+| Default | `Other roles are coming soon. Ask to hear when one opens:` |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Decline letter: the quests line
+
+The line above the link to the Quests page.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.decline_next_steps_quests` |
+| Type | text, free text, one line |
+| Default | `Quests anyone can take today:` |
 | Range | no bounds are set |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
