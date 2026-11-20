@@ -231,9 +231,17 @@ export const APPLY_COUNTS = {
   /**
    * References on the form: 6, doubled from 3 by the lead (19 Nov 2026). The background-check rule asks for none of
    * a count: a check runs when every reference is left blank (shared/proposalAbout.ts `checkNeeded`), so one to six
-   * references stands in for it, and the copy says "up to six" and "leave them all blank".
+   * references stands in for it, and the copy says "up to six" and "leave them all blank". When any are given, at
+   * least `referencesMin`.
    */
   references: 6,
+  /**
+   * The fewest references a person gives when they give any (the lead, 19 Nov 2026: "at least 2, we prefer 3"), on
+   * the form, the status page and a member's own application alike. None at all stays the background-check path.
+   */
+  referencesMin: 2,
+  /** How many the village prefers, said beside the minimum. */
+  referencesPreferred: 3,
   /** Links to their work (was 5). */
   links: 15,
   /** Suggestions for the role card, across the roles (was 30). */

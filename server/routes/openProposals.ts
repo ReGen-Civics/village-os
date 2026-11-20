@@ -106,6 +106,7 @@ import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposal
 import { registerAgentProposals } from "./agentRoleProposals";
 import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
+import { deleteReferencesOf, memberReferencesDecidedBefore } from "../repos/applicantOnboarding";
 import { stagesOf } from "../lib/applicantOnboarding";
 import { byStageThenDate, TRACK_WORDS } from "../../shared/applicantOnboarding";
 import { boolVar, numberVar, rawValue, stringVar } from "../lib/variables";
@@ -382,8 +383,8 @@ export function register(app: Express, deps: Deps): void {
     const taken = new Map<string, number>();
     for (const s of await liveSeatingsOf(pool, roles.map((r) => r.id))) taken.set(s.orgRoleId, (taken.get(s.orgRoleId) ?? 0) + 1);
     return roles
-      // A coming-soon role takes applications early, through this same form (Rye, 16 Nov 2026), even while
-      // unlisted and before its card is complete: its card is short until its lead is in place.
+      // A coming-soon role is offered, even while unlisted and before its card is complete, so the form can send its
+      // link to the waitlist (the lead, 19 Nov 2026); the intake refuses an application naming it (`notYetOpen`).
       .filter((r) => r.active && !r.isExample && isShown(r) && r.circleId && live.has(r.circleId))
       .filter((r) => !needsCard || isComingSoon(r) || isFutureVenture(r) || gateOf(r, deps.stringVar?.("org.default_track") ?? null).gate.complete)
       .map((r) => ({
@@ -600,7 +601,7 @@ export function register(app: Express, deps: Deps): void {
       now: now(),
       // A tick is kept only for a way the village lists now, in its words as they read today.
       knowUs: founding().knowUs,
-      // A coming-soon role is never ADDED to an application; its waitlist is on the roles page (the lead, 19 Nov 2026).
+      // A coming-soon role takes no application, first or added; its waitlist is on the roles page (the lead, 19 Nov 2026).
       notYetOpen: (id) => roles.some((r) => r.id === id && r.comingSoon === true),
     });
     if (!parsed.ok) return res.status(400).json({ error: parsed.error, field: parsed.field });
@@ -1093,11 +1094,14 @@ export async function tidyOpenProposals(pool: Pool, at: Date, fileDir?: string, 
   // Scores and conversation notes follow the application's retention (role journey L5): cleared with the name and address.
   const cleared = await clearReviewOf(pool, await refsDueForClearing(pool, cutoff), at);
   if (cleared > 0) console.log(`[open-proposals] ${cleared} reviews cleared with their anonymised applications`);
+  // A member's references, given for a first long-term role, go 90 days after their application is decided (the lead, 19 Nov 2026).
+  const memberRefs = await memberReferencesDecidedBefore(pool, cutoff);
+  const memberRefsGone = memberRefs.length ? await deleteReferencesOf(pool, memberRefs) : 0;
   // Files follow the row (Rye, 10 Nov 2026): a deleted or anonymised proposal keeps none.
   const files = fileDir ? await sweepProposalFiles(fileDir, (ids) => store.proposalsKeepingFiles(pool, ids)) : 0;
   // A voice note goes 90 days after the decision in every case (shared/voiceNotes.ts): the recordings first, then the record of them.
   const voiced = await store.voiceDecidedBefore(pool, cutoff);
   if (fileDir) for (const id of voiced) await removeVoiceNotes(fileDir, id);
   const voices = await store.clearVoiceOf(pool, voiced);
-  return `${deleted} unconfirmed deleted, ${expired} undecided closed${letters ? ` (${letters} closed letters sent)` : ""}, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
+  return `${deleted} unconfirmed deleted, ${expired} undecided closed${letters ? ` (${letters} closed letters sent)` : ""}, ${anonymised} anonymised${doorCleared ? `, ${doorCleared} member-door applications cleared of references` : ""}${memberRefsGone ? `, ${memberRefsGone} member application references deleted` : ""}${files ? `, ${files} file folders removed` : ""}${voices ? `, ${voices} voice notes removed` : ""}`;
 }

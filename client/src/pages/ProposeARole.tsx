@@ -83,7 +83,7 @@ import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components
 import StoneBar from "@/components/fireflyPath/StoneBar";
 import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
-import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
+import { ABOUT_PANES, AboutPanes, CompensationShape, NotOpenYet, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
@@ -244,6 +244,7 @@ export default function ProposeARole() {
   // THE SAVED DRAFT, read back once the role is known: the words, the step they were on. Never references or files.
   useEffect(() => {
     if (form.kind !== "open" || !roleId || draftFor === roleId) return;
+    if (form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is never read or touched
     const read = readStoredJson("local", draftKey(roleId, link));
     const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
     // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
@@ -652,6 +653,8 @@ export default function ProposeARole() {
     );
   }
 
+  // A COMING-SOON ROLE takes no application (the lead, 19 Nov 2026): its waitlist in place of the form.
+  if (role.comingSoon) return <Shell>{backDoor}<NotOpenYet role={role}>{form.roles.some((r) => !r.comingSoon && r.id !== role.id) && <OtherRole onChoose={() => choose(null)} />}</NotOpenYet></Shell>;
   const invalid = (field: string) => (problems.some((p) => p.field === field) ? { "aria-invalid": true, "aria-describedby": `propose-problem-${field}` } : {});
   const intro = [
     t({ message: "Before you apply, come and meet us. Tick what you have done so far.", context: "founding application intro" }),

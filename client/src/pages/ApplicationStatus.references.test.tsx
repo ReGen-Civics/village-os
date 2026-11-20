@@ -77,9 +77,15 @@ describe("the reference form", () => {
     render(<ApplicationStatus />);
     expect(await screen.findByRole("heading", { level: 2, name: EN.heading })).toBeTruthy();
     expect(screen.getByText(EN.privacy)).toBeTruthy();
-    fireEvent.change(screen.getByLabelText(EN.name), { target: { value: "Ana Reference" } });
-    fireEvent.change(screen.getByLabelText(EN.contact), { target: { value: "ana@example.test" } });
-    fireEvent.change(screen.getByLabelText(EN.how), { target: { value: "We built a garden." } });
+    // Three rows to start, and the minimum said (the lead, 19 Nov 2026: at least two, we prefer three).
+    expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(3);
+    expect(document.querySelector("[data-reference-how-many]")?.textContent).toBe(EN.howMany);
+    fireEvent.change(screen.getAllByLabelText(EN.name)[0], { target: { value: "Ana Reference" } });
+    fireEvent.change(screen.getAllByLabelText(EN.contact)[0], { target: { value: "ana@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.how)[0], { target: { value: "We built a garden." } });
+    fireEvent.change(screen.getAllByLabelText(EN.name)[1], { target: { value: "Ben Reference" } });
+    fireEvent.change(screen.getAllByLabelText(EN.contact)[1], { target: { value: "ben@example.test" } });
+    fireEvent.change(screen.getAllByLabelText(EN.how)[1], { target: { value: "He hired me." } });
     fireEvent.click(screen.getByRole("button", { name: EN.send }));
     expect(await screen.findByText(EN.given(1))).toBeTruthy();
     expect(posts).toHaveLength(1);
@@ -102,7 +108,7 @@ describe("the reference form", () => {
     served = { ...WAITING };
     render(<ApplicationStatus />);
     const add = await screen.findByRole("button", { name: EN.add });
-    for (let i = 0; i < 9; i++) fireEvent.click(screen.getByRole("button", { name: EN.add }));
+    for (let i = 0; i < 7; i++) fireEvent.click(screen.getByRole("button", { name: EN.add }));
     expect(document.querySelectorAll("[data-reference-row]")).toHaveLength(10);
     expect(add).toBeTruthy();
     expect(screen.queryByRole("button", { name: EN.add })).toBeNull();
@@ -112,7 +118,16 @@ describe("the reference form", () => {
     render(<ReferenceForm postUrl="/x" words={ES} onGiven={() => {}} />);
     expect(screen.getByRole("heading", { level: 2, name: ES.heading })).toBeTruthy();
     expect(screen.getByRole("button", { name: ES.send })).toBeTruthy();
-    expect(screen.getByLabelText(ES.contact)).toBeTruthy();
+    expect(screen.getAllByLabelText(ES.contact).length).toBe(3);
+    expect(screen.getByText(ES.howMany)).toBeTruthy();
+  });
+
+  it("a single reference is refused in the applicant's words (too_few)", async () => {
+    served = { ...WAITING };
+    answer = { status: 400, body: { error: "too_few" } };
+    render(<ApplicationStatus />);
+    fireEvent.click(await screen.findByRole("button", { name: EN.send }));
+    expect((await screen.findByRole("alert")).textContent).toBe(EN.errors.too_few);
   });
 
   it("is not offered before references are asked for, nor after they are given", async () => {

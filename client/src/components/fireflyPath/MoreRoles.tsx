@@ -9,13 +9,14 @@
  * (scripts/route-first-view.json).
  *
  * A COMING-SOON ROLE IS NOT ADDED HERE (the lead, 19 Nov 2026). It is listed under the picker as not open yet, with
- * a link to join its waitlist on the roles page (`waitlistHref`, the anchor the roles page opens the waitlist form
- * on), and the server refuses one added to an application (shared/openProposals.ts `notYetOpen`).
+ * a link to join its waitlist on the roles page (`waitlistHref` in shared/roleListing.ts, the anchor the roles page
+ * opens the waitlist form on), and the server refuses one added to an application (shared/openProposals.ts `notYetOpen`).
  *
  * The cap on a price stays the server's to judge and is never shown here. Nothing ranks or judges anyone.
  */
 import { useLingui } from "@lingui/react/macro";
 import { askPeriod, ceilingAt } from "@shared/commitmentRange";
+import { waitlistHref } from "@shared/roleListing";
 import { moneyWords } from "@shared/roleRewardWords";
 import { perPeriod } from "@/components/roleCard/rewardWords";
 import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, LINK, TILE } from "@/components/journey/look";
@@ -38,9 +39,6 @@ export interface ExtraRole {
   roleId: string;
   terms: TermsStepValue;
 }
-
-/** Where a coming-soon role's waitlist is: its card on the roles page, which opens the waitlist form for this anchor. */
-export const waitlistHref = (roleId: string): string => `/roles#waitlist-${encodeURIComponent(roleId)}`;
 
 /** What one role adds to the total: their own price when they wrote one in the role's period, else the suggested price at their commitment. */
 function priceOf(role: TermsRole | undefined, v: TermsStepValue): { amount: number; currency: string; per: NonNullable<TermsRole["ceiling"]>["per"] } | null {

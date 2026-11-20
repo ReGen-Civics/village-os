@@ -33,7 +33,7 @@ import { usersRepo } from "../repos/users";
 import { clearReviewOf, forgetMemberReview } from "../repos/applicationReview";
 import { anonymiseOpenProposal } from "../repos/openProposals";
 import { insertApplication } from "../repos/seatApplications";
-import { register } from "./openProposals";
+import { register, tidyOpenProposals } from "./openProposals";
 import { signLink } from "../lib/comms/links";
 
 const configured = testDbConfigured();
@@ -292,6 +292,9 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       const bad = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0], { name: "No Way", contact: "nowhere", how: "x" }] }, null);
       expect(bad.status).toBe(400);
       expect(bad.body).toMatchObject({ error: "contact", row: 1 });
+      // The status page asks at least two too (the lead, 19 Nov 2026).
+      const one = await call("POST", `/api/application-status/${id}/references?token=${encodeURIComponent(tokenOf(letter))}`, { references: [REFS[0]] }, null);
+      expect([one.status, one.body.error]).toEqual([400, "too_few"]);
       expect(await refRows(id)).toEqual([]);
     });
 
@@ -459,6 +462,10 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect((await mine(id, OUTSIDER.id)).body.references).toBeNull();
       // Another member cannot give them for the applicant.
       expect((await call("POST", `${app(id)}/references`, { references: REFS }, OUTSIDER.id)).status).toBe(404);
+      // At least two (the lead, 19 Nov 2026): one alone is refused, and nothing is kept.
+      const one = await call("POST", `${app(id)}/references`, { references: [REFS[0]] }, NEWBIE.id);
+      expect([one.status, one.body.error]).toEqual([400, "too_few"]);
+      expect(await refRows(id)).toEqual([]);
       const given = await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id);
       expect(given.status, JSON.stringify(given.body)).toBe(200);
       expect((await mine(id, NEWBIE.id)).body.references).toEqual({ asked: true, given: 2, mayAdd: false });
@@ -482,6 +489,24 @@ describe.skipIf(!configured)("applicant onboarding, on a real schema", () => {
       expect(asked.status).toBe(409);
       expect(asked.body.error).toBe("first_role_only");
       expect(await q("SELECT kind FROM application_steps WHERE application_ref = ?", [id])).toEqual([]);
+    });
+
+    it("a member's references go 90 days after the application is decided, by the tidy run; a newer decision keeps them", async () => {
+      const old = await memberApplication("sa-retain-old-0001", NEWBIE.id);
+      const fresh = await memberApplication("sa-retain-new-0001", NEWBIE.id);
+      for (const id of [old, fresh]) {
+        expect((await call("POST", `${app(id)}/references/ask`, {}, FOUNDER.id)).status).toBe(200);
+        expect((await call("POST", `${app(id)}/references`, { references: REFS }, NEWBIE.id)).status).toBe(200);
+      }
+      const day = 24 * 60 * 60_000;
+      const now = new Date();
+      await q("UPDATE seat_applications SET status = 'adopted', decided_at = ? WHERE id = ?", [new Date(now.getTime() - 91 * day), old]);
+      await q("UPDATE seat_applications SET status = 'not-adopted', decided_at = ? WHERE id = ?", [new Date(now.getTime() - 10 * day), fresh]);
+      const said = await tidyOpenProposals(pool, now);
+      expect(await refRows(old)).toEqual([]);
+      expect(said).toContain("2 member application references deleted");
+      // CONTROL: decided ten days ago, its references stay until their 90 days are up.
+      expect(await refRows(fresh)).toHaveLength(2);
     });
 
     it("a decided member application takes no references, and an erased member's references go", async () => {

@@ -169,7 +169,7 @@ export function ReferencesBlock({
   return (
     <fieldset className="grid gap-4" data-references="" aria-invalid={invalid || undefined}>
       <legend className="mb-1 text-sm font-semibold text-card-foreground">{t({ message: "References (optional)", context: "about you" })}</legend>
-      <p className="text-sm text-muted-foreground">{t({ message: "Up to six people who know your work. Each needs a name, how you know them, and an email or phone number.", context: "about you" })}</p>
+      <p className="text-sm text-muted-foreground">{t({ message: "Give at least two references. We prefer three, and you can add up to six. Each needs a name, how you know them, and an email or phone number.", context: "about you" })}</p>
       {rows.map((r, i) => (
         <div key={i} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1.2fr)]" data-reference-row={i}>
           <div className="min-w-0">

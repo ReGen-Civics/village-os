@@ -1,6 +1,6 @@
 /**
  * THE APPLICANT'S REFERENCES: people connected with this work, ideally allies or
- * partners of the village. Up to ten rows (shared/applyLimits.ts
+ * partners of the village. At least two, three preferred, up to ten rows (shared/applyLimits.ts
  * `APPLY_COUNTS.statusReferences`), sent once. The page never shows the details
  * back: the answer is a count.
  *
@@ -12,6 +12,7 @@ import { useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, H2, HINT, LABEL, TILE } from "@/components/journey/look";
 import type { wordsIn } from "@shared/applicantWords";
+import { APPLY_COUNTS } from "@shared/applyLimits";
 import { ONBOARDING_REFERENCES_MAX, REF_ALLY_MAX, REF_CONTACT_MAX, REF_HOW_MAX, REF_NAME_MAX, type ReferenceError } from "@shared/applicantOnboarding";
 
 type ReferenceRow = { name: string; contact: string; how: string; ally: string };
@@ -19,7 +20,8 @@ const EMPTY_ROW: ReferenceRow = { name: "", contact: "", how: "", ally: "" };
 type ReferenceFormWords = ReturnType<typeof wordsIn>["status"]["referenceForm"];
 
 export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: string; words: ReferenceFormWords; onGiven: (n: number) => void; line?: string }) {
-  const [rows, setRows] = useState<ReferenceRow[]>([{ ...EMPTY_ROW }]);
+  // Three rows to start, the number the village prefers; at least two are asked (the lead, 19 Nov 2026).
+  const [rows, setRows] = useState<ReferenceRow[]>(() => Array.from({ length: APPLY_COUNTS.referencesPreferred }, () => ({ ...EMPTY_ROW })));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<{ text: string; row: number | null } | null>(null);
   const set = (i: number, key: keyof ReferenceRow, value: string) => setRows((cur) => cur.map((r, j) => (j === i ? { ...r, [key]: value } : r)));
@@ -45,6 +47,7 @@ export function ReferenceForm({ postUrl, words, onGiven, line }: { postUrl: stri
       <p className={EYEBROW}>{words.step}</p>
       <h2 id="your-references" className={H2}>{words.heading}</h2>
       <p className="mt-1 text-foreground">{line ?? words.line}</p>
+      <p className="mt-1 font-semibold text-foreground" data-reference-how-many="">{words.howMany}</p>
       <p className={`mt-2 ${HINT}`}>{words.privacy}</p>
       <div className="mt-4 grid gap-3">
         {rows.map((r, i) => (

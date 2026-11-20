@@ -119,7 +119,7 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
   const consent = () => ({ given: true, version: checkConsentVersion() });
   const form = async () => (await fetch(`${base}/api/open-proposals/form`)).json() as Promise<any>; // module-review-ok: a test calling its own local server
 
-  it("offers an unlisted coming-soon role on the form, flagged, and takes the application; unmarked, it is offered nowhere", async () => {
+  it("offers an unlisted coming-soon role on the form, flagged so the form sends its waitlist, and refuses an application for it; unmarked, it is offered nowhere", async () => {
     await q("UPDATE org_roles SET listed = 0 WHERE id = ?", [gate]);
     // CONTROL: unlisted and unmarked, the role is not offered and a proposal naming it is not taken.
     expect((await form()).roles.map((r: any) => r.id)).not.toContain(gate);
@@ -130,9 +130,10 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
       const offered = (await form()).roles.find((r: any) => r.id === gate);
       expect(offered).toMatchObject({ id: gate, comingSoon: true });
       state.sent.length = 0;
-      const taken = await postJson(proposal({ checkConsent: consent() }));
-      expect(taken.status, JSON.stringify(taken.body)).toBe(200);
-      expect(state.sent).toHaveLength(1);
+      // A coming-soon role takes no application, even as the only role (the lead, 19 Nov 2026): its waitlist instead.
+      const refused = await postJson(proposal({ checkConsent: consent() }));
+      expect(refused).toEqual({ status: 400, body: { error: OPEN_WORDS.roleNotOpen, field: "roles" } });
+      expect(state.sent).toHaveLength(0);
     } finally {
       await q("UPDATE org_roles SET coming_soon = 0, listed = NULL WHERE id = ?", [gate]);
     }

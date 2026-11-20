@@ -57,12 +57,13 @@ describe("several roles in one proposal", () => {
     const ctx = { roleIds: new Set(["r1", "r2", "r3", "r4"]), address: (s: string) => (s.includes("@") ? s.trim() : null) };
     const base = { name: "Rowan", email: "rowan@example.test", why: "Because.", aim: "", payAsk: { kind: "negotiate" } };
 
-    it("refuses a coming-soon role added after the first, and takes it as the first (the lead, 19 Nov 2026)", () => {
+    it("refuses any coming-soon role, added or first (the lead, 19 Nov 2026)", () => {
       const notYetOpen = (id: string) => id === "r2";
       const added = parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, { ...ctx, notYetOpen });
       expect(added).toMatchObject({ ok: false, field: "roles.1", error: OPEN_WORDS.addedRoleNotOpen });
-      // CONTROL: the same role as the first one is not refused here, and with no rule nothing is refused.
-      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, { ...ctx, notYetOpen }).ok).toBe(true);
+      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r2" }] }, { ...ctx, notYetOpen })).toMatchObject({ ok: false, field: "roles", error: OPEN_WORDS.roleNotOpen });
+      // CONTROL: an open role alone is taken, and with no rule nothing is refused.
+      expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }] }, { ...ctx, notYetOpen }).ok).toBe(true);
       expect(parseOpenProposal({ ...base, roles: [{ roleId: "r1" }, { roleId: "r2", commitmentPct: 40 }] }, ctx).ok).toBe(true);
     });
 

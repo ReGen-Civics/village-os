@@ -347,8 +347,8 @@ export function parseOpenProposal(
     /** The ways to get to know the village it lists now; a tick for one no longer listed is dropped, never refused. Absent: none are kept. */
     knowUs?: readonly string[];
     /**
-     * A role not open yet (coming soon): it may not be ADDED to an application after the first (the lead, 19 Nov
-     * 2026); its waitlist is on the roles page. Absent: nothing is refused for it.
+     * A role not open yet (coming soon): no application may name it, first or added (the lead, 19 Nov 2026); its
+     * waitlist is on the roles page. Absent: nothing is refused for it.
      */
     notYetOpen?: (roleId: string) => boolean;
   },
@@ -369,7 +369,7 @@ export function parseOpenProposal(
     const roleId = String(r?.roleId ?? "").trim();
     if (!ctx.roleIds.has(roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.unknownRole };
     if (roles.some((x) => x.roleId === roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.sameRoleTwice };
-    if (i > 0 && ctx.notYetOpen?.(roleId)) return { ok: false, field: `roles.${i}`, error: OPEN_WORDS.addedRoleNotOpen };
+    if (ctx.notYetOpen?.(roleId)) return i > 0 ? { ok: false, field: `roles.${i}`, error: OPEN_WORDS.addedRoleNotOpen } : { ok: false, field: "roles", error: OPEN_WORDS.roleNotOpen };
     const note = text(r?.note, OPEN_NOTE_MAX);
     if (note.length > OPEN_NOTE_MAX) return { ok: false, field: "roles", error: OPEN_WORDS.tooLong("What you bring to a role", OPEN_NOTE_MAX) };
     // Each role after the first carries its own commitment and price ask (the lead, 17 Nov 2026). The first role's
@@ -584,6 +584,7 @@ export const OPEN_WORDS = {
   /** A role added after the first, sent without its own commitment. */
   needRoleCommitment: "Choose your commitment for each role you added.",
   unknownRole: "One of those roles isn't open any more. Reload the page and pick again.",
+  roleNotOpen: "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens.",
   addedRoleNotOpen: "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page.",
   sameRoleTwice: "You picked the same role twice.",
   needWhy: "Say why you, and why now.",

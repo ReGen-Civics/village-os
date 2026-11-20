@@ -68,7 +68,8 @@ export function shortlistOf(steps: ReadonlyArray<{ kind: string; detail?: unknow
 // ── The references ──────────────────────────────────────────────────────────
 
 export const ONBOARDING_REFERENCES_MAX = APPLY_COUNTS.statusReferences;
-export const ONBOARDING_REFERENCES_MIN = 1;
+/** The fewest references the applicant gives here (the lead, 19 Nov 2026: "at least 2, we prefer 3"). */
+export const ONBOARDING_REFERENCES_MIN = APPLY_COUNTS.referencesMin;
 export const REF_NAME_MAX = APPLY_TEXT.statusRefName;
 export const REF_CONTACT_MAX = APPLY_TEXT.statusRefContact;
 export const REF_HOW_MAX = APPLY_TEXT.statusRefHow;
@@ -99,7 +100,7 @@ export function reachable(contact: string): boolean {
 const clean = (v: unknown): string => String(typeof v === "string" ? v : "").replace(/\s+/g, " ").trim();
 
 /** The reasons a list is refused, in the applicant's language (shared/applicantWords.ts `status.referenceForm.errors`). */
-export type ReferenceError = "none" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
+export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
 
 export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null };
 
@@ -128,7 +129,8 @@ export function parseReferenceList(raw: unknown): ReferenceParse {
     out.push({ name, contact, how, ally });
     if (out.length > ONBOARDING_REFERENCES_MAX) return { ok: false, error: "too_many", row: i };
   }
-  if (out.length < ONBOARDING_REFERENCES_MIN) return { ok: false, error: "none", row: null };
+  if (out.length === 0) return { ok: false, error: "none", row: null };
+  if (out.length < ONBOARDING_REFERENCES_MIN) return { ok: false, error: "too_few", row: null };
   return { ok: true, value: out };
 }
 

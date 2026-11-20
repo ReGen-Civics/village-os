@@ -23809,8 +23809,8 @@ msgstr "En un dispositivo compartido, desmárcala."
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
-msgid "Up to six people who know your work. Each needs a name, how you know them, and an email or phone number."
-msgstr "Hasta seis personas que conozcan tu trabajo. Cada una necesita un nombre, de dónde la conoces y un correo o número de teléfono."
+msgid "Give at least two references. We prefer three, and you can add up to six. Each needs a name, how you know them, and an email or phone number."
+msgstr "Da al menos dos referencias. Preferimos tres, y puedes agregar hasta seis. Cada una necesita un nombre, de dónde la conoces y un correo o número de teléfono."
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -23829,8 +23829,8 @@ msgstr "Agrega hasta 6 referencias."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
-msgid "Tick the box to say you agree to the background check, or give at least one reference."
-msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da al menos una referencia."
+msgid "Tick the box to say you agree to the background check, or give at least two references."
+msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da al menos dos referencias."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -23863,3 +23863,24 @@ msgstr "Puedes grabar hasta {minutes} minutos cada vez."
 msgctxt "voice note, read aloud"
 msgid "About a minute left in this recording."
 msgstr "Queda alrededor de un minuto en esta grabación."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give at least two references. We prefer three."
+msgstr "Da al menos dos referencias. Preferimos tres."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens."
+msgstr "Este rol aún no está abierto, así que no recibe postulaciones. Únete a su lista de espera en la página de roles para saber cuándo abre."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, a coming-soon role"
+msgid "{0} is not open yet"
+msgstr "{0} aún no está abierto"
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, a coming-soon role"
+msgid "This role takes no applications yet. Join its waitlist to hear when it opens."
+msgstr "Este rol aún no recibe postulaciones. Únete a su lista de espera para saber cuándo abre."

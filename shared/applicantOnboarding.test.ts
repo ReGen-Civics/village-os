@@ -27,16 +27,18 @@ describe("the reference list", () => {
     expect(out.ok && out.value.map((r) => r.name)).toEqual(["Ana Ref", "Ben"]);
   });
   it("leaves the ally line optional and needs a name, a way to reach them and how they know the applicant", () => {
-    expect(parseReferenceList([ref({ ally: "" })]).ok).toBe(true);
+    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", contact: "ben@example.test" })]).ok).toBe(true);
+    // At least two (the lead, 19 Nov 2026): one alone is refused.
+    expect(parseReferenceList([ref()])).toEqual({ ok: false, error: "too_few", row: null });
     expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0 });
     expect(parseReferenceList([ref(), ref({ contact: "not a way to reach", name: "C" })])).toEqual({ ok: false, error: "contact", row: 1 });
   });
-  it("refuses none, the same reference twice and more than five", () => {
+  it("refuses none, the same reference twice and more than ten", () => {
     expect(parseReferenceList([])).toEqual({ ok: false, error: "none", row: null });
     expect(parseReferenceList([ref(), ref({ name: "Again", contact: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
     const six = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.test` }));
     expect(parseReferenceList(six)).toMatchObject({ ok: false, error: "too_many" });
-    // CONTROL: five is fine.
+    // CONTROL: ten is fine.
     expect(parseReferenceList(six.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
   });
 });

@@ -241,7 +241,9 @@ export interface ApplicantMessages {
       sent: string;
       given(n: number): string;
       failed: string;
-      errors: Record<"none" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+      errors: Record<"none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+      /** The fewest and the preferred number, said under the form's line (the lead, 19 Nov 2026). */
+      howMany: string;
     };
     private: string;
     wait: { heading: string; line: string; quests: string; map: string; events: string };
@@ -480,6 +482,7 @@ const en: ApplicantMessages = {
       how: "How they know you",
       ally: "Why they might be an ally or partner (optional)",
       allyHint: "What they might bring to the village, or how they might work with us.",
+      howMany: "Give at least two references. We prefer three.",
       add: "Add another reference",
       remove: (n) => `Remove reference ${n}`,
       row: (n) => `Reference ${n}`,
@@ -488,7 +491,8 @@ const en: ApplicantMessages = {
       given: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. Thank you. If something changes, write to us.`,
       failed: "That did not send. Try again.",
       errors: {
-        none: "Add at least one reference.",
+        none: "Give at least two references.",
+        too_few: "Give at least two references. We prefer three.",
         too_many: "Add up to ten references.",
         needs_all: "Give each reference a name, how to reach them and how they know you. Or clear the row.",
         contact: "Give an email address or a phone number we can reach that reference on.",
@@ -724,6 +728,7 @@ const es: ApplicantMessages = {
       how: "Cómo te conoce",
       ally: "Por qué podría ser aliada o socia (opcional)",
       allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
+      howMany: "Da al menos dos referencias. Preferimos tres.",
       add: "Agregar otra referencia",
       remove: (n) => `Quitar la referencia ${n}`,
       row: (n) => `Referencia ${n}`,
@@ -732,7 +737,8 @@ const es: ApplicantMessages = {
       given: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbenos.`,
       failed: "No se envió. Inténtalo de nuevo.",
       errors: {
-        none: "Agrega al menos una referencia.",
+        none: "Da al menos dos referencias.",
+        too_few: "Da al menos dos referencias. Preferimos tres.",
         too_many: "Agrega hasta diez referencias.",
         needs_all: "Da a cada referencia un nombre, cómo contactarla y cómo te conoce. O vacía la fila.",
         contact: "Da un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",

@@ -787,6 +787,9 @@ describe("the saved draft", () => {
     fireEvent.change(screen.getByLabelText("Reference 1: name"), { target: { value: "Ines Vargas" } });
     fireEvent.change(screen.getByLabelText("Reference 1: how you know them"), { target: { value: "We built a fence" } });
     fireEvent.change(screen.getByLabelText("Reference 1: email or phone"), { target: { value: "ines@example.org" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: name"), { target: { value: "Tomas Rey" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: how you know them"), { target: { value: "My neighbour" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: email or phone"), { target: { value: "tomas@example.org" } });
     pressNext();
     expect(stoneNow()).toBe("value");
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
@@ -989,20 +992,23 @@ describe("the sent threshold", () => {
     expect(document.querySelector("[data-dated-steps]")?.textContent ?? "").not.toMatch(/write to you by /);
   });
 
-  it("COMING SOON (Rye, 16 Nov 2026): the same steps, with the interviews note on the form and again on the confirmation", async () => {
-    const note = "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.";
+  it("COMING SOON (the lead, 19 Nov 2026): a card's Apply link opens the role's waitlist in place of the form, and a kept draft is left alone", async () => {
     const soon = { ...FORM, roles: [{ ...FORM.roles[0], comingSoon: true, opensLater: true }, FORM.roles[1]] };
-    await applyFor("r-gate", soon, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
-    // The note's module loads lazily (the form's first-view budget), so it lands after the form.
-    await waitFor(() => expect(document.querySelector("[data-coming-soon-note]")?.textContent).toBe(note));
-    // Its own note says the later start, so the founding-team note steps aside.
-    expect(document.querySelector("[data-opens-later]")).toBeNull();
-    await completeAll();
-    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
-    sendNow();
-    await screen.findByRole("heading", { name: "Check your email" });
-    await waitFor(() => expect(document.querySelector('[data-threshold="sent"] [data-coming-soon-note]')?.textContent).toBe(note));
-    expect(document.querySelector("[data-after-founding]")).toBeNull();
+    const kept = JSON.stringify({ v: 1, why: "Kept from before" });
+    window.localStorage.setItem(draftKey("r-gate", ""), kept);
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate");
+    serve(soon);
+    render(<ProposeARole />);
+    expect(await screen.findByRole("heading", { level: 1, name: "Gate Keeper is not open yet" })).toBeTruthy();
+    const wait = document.querySelector('[data-role-not-open] [data-waitlist-role="r-gate"]') as HTMLAnchorElement;
+    expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-gate");
+    expect(wait.textContent).toContain("Join the waitlist for Gate Keeper");
+    // No form, and the draft this device kept is exactly as it was.
+    expect(document.querySelector("[data-open-proposal]")).toBeNull();
+    expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBe(kept);
+    // Another open role is one press away.
+    fireEvent.click(screen.getByRole("button", { name: "Apply for a different role" }));
+    expect(await screen.findByRole("heading", { level: 1, name: OPEN_WORDS.chooseHeading })).toBeTruthy();
   });
 
   it("FUTURE VENTURE: the form and its confirmation say what holding one means and the pitch's five parts", async () => {
