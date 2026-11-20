@@ -1042,7 +1042,7 @@ describe("the sent threshold", () => {
     ];
     await sendAs("rowan@example.test", undefined, { ...FORM, roles: [{ ...FORM.roles[0], conversations }] });
     const items = Array.from((document.querySelector("[data-next-for-roles]") as HTMLElement).querySelectorAll("li")).map((li) => li.textContent);
-    expect(items).toEqual(["60 minutes with Operations Steward", "30 minutes with CRM & Hiring Coordination Steward", "30 minutes with Visionary Channel, the final approval"]);
+    expect(items).toEqual(["60 minutes with Operations Steward", "30 minutes with CRM & Hiring Coordination Steward", "30 minutes with Visionary Channel, the final conversation"]);
   });
 
   it("no inbox button for a domain we do not know, and Fix the address goes back to the address with every answer kept", async () => {
