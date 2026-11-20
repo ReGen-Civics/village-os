@@ -87,10 +87,12 @@ hold on the new repository:
 - Settings, Actions, General, Workflow permissions: the workflow asks for `contents: write` and
   `issues: write` itself, which works under the default "read" setting; an organization policy that
   forbids elevating it must be relaxed for this workflow.
-- Main must allow the Actions bot to push. If main ever gets branch protection or a ruleset that
-  requires pull requests, the bot cannot push. Stop and decide before changing it: the safe options are a
-  bypass entry for the `github-actions` app in that rule, or a second workflow that opens a pull request
-  with the regenerated files (which then needs a human merge each time and is slower).
+- Main must let the bot's commit in. Since 20 Nov 2026 main carries a ruleset that requires the seven
+  CI jobs, and GitHub refuses the `github-actions` app as a bypass entry on a repository ruleset. So the
+  workflow pushes with a write-enabled DEPLOY KEY held in the `DOCS_DEPLOY_KEY` secret, and the ruleset
+  names deploy keys as its bypass. Without that secret the workflow falls back to the built-in token,
+  which works only while main is unprotected. A push made with the deploy key starts workflow runs, so
+  the job skips its own commit by message.
 
 ## For lane briefs and the integrator
 
