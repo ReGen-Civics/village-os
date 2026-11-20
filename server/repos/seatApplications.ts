@@ -20,6 +20,8 @@
  * Raw SQL only, never `dbCollection`: its `replaceAll` resets every column a
  * caller leaves out.
  */
+import { overLimitOf, type OverLimitStamp } from "../../shared/commitmentLimit";
+import { heldSplitsOf, type HeldSplit } from "../../shared/proposalCompare";
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import type { SeatSettings } from "../../shared/seatSettings";
 import { parseApplicationAnswers, type ApplicationAnswers, type ApplicationStatus } from "../../shared/seatApplications";
@@ -60,6 +62,10 @@ export interface StoredApplication {
    * keeps it). Absent: the application stands alone.
    */
   together?: string[];
+  /** A decider's choice to adopt above a role's limit (shared/commitmentLimit.ts), kept as `answers.overLimit`. */
+  overLimit?: OverLimitStamp[];
+  /** The deliverables a saved split gives this person, by role (shared/proposalCompare.ts), kept as `answers.heldSplit`. */
+  held?: HeldSplit[];
 }
 
 /** The group an application's answers name, when it names one of two or more that includes itself. */
@@ -118,7 +124,16 @@ function rowToApplication(r: any): StoredApplication {
     decidedAt: instant(r.decided_at),
     createdAt: instant(r.created_at) as Date,
     ...(togetherOf(String(r.id), r.answers) ? { together: togetherOf(String(r.id), r.answers) } : {}),
+    ...applicationStampsOf(r.answers),
   };
+}
+
+/** The deciders' stamps in stored answers (server/repos/proposalStamps.ts), left out when there are none. */
+function applicationStampsOf(raw: unknown): Pick<StoredApplication, "overLimit" | "held"> {
+  const o = json<Record<string, unknown> | null>(raw, null) ?? {};
+  const over = overLimitOf(o.overLimit);
+  const held = heldSplitsOf(o.heldSplit);
+  return { ...(over.length ? { overLimit: over } : {}), ...(held.length ? { held } : {}) };
 }
 
 /** Name the group on every application in it (see `together`). In the caller's transaction. */
@@ -464,13 +479,15 @@ export interface SeatForCapacity {
   expiresEachSeason: boolean | null;
   /** The door (`org_roles.recruiting`): a full role still recruiting takes applications (the lead, 17 Nov 2026). */
   recruiting?: boolean;
+  /** The commitment the role needs in all (shared/commitmentLimit.ts). Null reads as 100. */
+  commitmentTarget?: number | null;
 }
 
 /** The seats an application names, locked when handed a transaction's connection. */
 export async function seatsForUpdate(db: Db, seatIds: readonly string[], lock = false): Promise<SeatForCapacity[]> {
   if (seatIds.length === 0) return [];
   const [rows] = await db.query<RowDataPacket[]>(
-    `SELECT id, name, aim, seats, active, is_example, expires_each_season, recruiting FROM org_roles WHERE id IN (${seatIds.map(() => "?").join(",")})${lock ? " FOR UPDATE" : ""}`,
+    `SELECT id, name, aim, seats, active, is_example, expires_each_season, recruiting, commitment_target FROM org_roles WHERE id IN (${seatIds.map(() => "?").join(",")})${lock ? " FOR UPDATE" : ""}`,
     [...seatIds],
   );
   return rows.map((r: any) => ({
@@ -482,6 +499,7 @@ export async function seatsForUpdate(db: Db, seatIds: readonly string[], lock = 
     isExample: !!r.is_example,
     expiresEachSeason: r.expires_each_season === null || r.expires_each_season === undefined ? null : !!r.expires_each_season,
     recruiting: !!r.recruiting,
+    commitmentTarget: r.commitment_target === null || r.commitment_target === undefined ? null : Number(r.commitment_target),
   }));
 }
 

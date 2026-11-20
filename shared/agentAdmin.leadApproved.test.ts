@@ -56,7 +56,8 @@ const STILL_A_PERSON: Array<[string, string]> = [
   ["POST", "/api/admin/badges/b-1/award"],
   ["PUT", "/api/admin/roles/r-1/capabilities"],
   ["POST", "/api/admin/roles/r-1/holders"],
-  ["PUT", "/api/admin/org-roles/r-1/power-groups"],
+  // PUT /api/admin/org-roles/:id/power-groups left this list on 20 Nov 2026: it is the `seat_power` lead-approved write,
+  // additive only, held in shared/agentFullAccess.test.ts.
   ["PUT", "/api/admin/roles/r-1/admin-access"],
   ["POST", "/api/admin/org/drafts/d-1/publish"],
   ["PUT", "/api/org/roles/r-1/pay"],

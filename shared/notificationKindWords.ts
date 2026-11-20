@@ -26,6 +26,10 @@ export const NOTIFICATION_KIND_WORDS: Record<string, NotificationKindWords> = {
     blurb: "The village opened a vote and you are on the roll for it. Your answer counts toward the outcome.",
     many: "{n} votes opened, and you are on the roll for each one.",
   },
+  agent_full_access: {
+    blurb: "Full access for one role's agent was turned on or off. With it on, that role's agent can make admin changes and accept proposals for the role holder, each one carrying their approval.",
+    many: "{n} changes to the full access an agent holds.",
+  },
   time_poll_open: {
     blurb: "Pick the times you can make. The time with the most picks becomes the gathering's time.",
     many: "{n} gatherings are choosing a time.",

@@ -741,3 +741,109 @@ describe("no public event anywhere in this feature", () => {
     expect(sibling).toMatch(/\brecordEvent\s*\(/);
   });
 });
+
+describe.skipIf(!configured)("a role's limit is its commitment, and going above it is a person's recorded choice (the lead, 20 Nov 2026)", () => {
+  const h = harness();
+  let db: TestDb;
+  let pool: mysql.Pool;
+  beforeAll(async () => {
+    db = await provisionTestDb();
+    pool = testPool(db, { connectionLimit: 4 });
+    h.state.pool = () => pool;
+    await h.start();
+  });
+  afterAll(async () => {
+    await h.stop();
+    await pool?.end();
+    await db?.drop();
+  });
+
+  /** One application at `pct`, by its own candidate, adopted (or refused) by the steward. */
+  const applyAt = async (candidate: string, seatId: string, pct: number) => {
+    h.state.viewer = { id: candidate, stage: "member" };
+    const a = await h.call("POST", "/api/governance/role-applications", {
+      seatIds: [seatId],
+      deliverables: DELIVERABLES,
+      fitStatement: NOTE,
+      seatSettings: { v: 1 },
+      answers: { terms: { choice: "accept", note: "", answers: {}, commitmentPct: pct } },
+    });
+    expect(a.status, JSON.stringify(a.body)).toBe(201);
+    expect((await readApplication(pool, a.body.id))!.answers!.terms!.commitmentPct).toBe(pct);
+    return a.body.id as string;
+  };
+  const adopt = (id: string, body?: Record<string, unknown>) => {
+    h.state.viewer = { id: "u-hal", stage: "member" };
+    return h.call("POST", `/api/governance/role-applications/${id}/adopt`, body);
+  };
+  const seated = async (seatId: string) =>
+    (await pool.query<any[]>("SELECT user_id FROM org_role_assignments WHERE org_role_id = ? AND ended_at IS NULL ORDER BY id", [seatId]))[0].map((r: any) => r.user_id); // module-review-ok: fixture SQL against the S5 scratch schema
+
+  it("seats people by commitment up to the limit, refuses one above it, and takes it only on the explicit choice, stamped and audited", async () => {
+    h.state.holders = ["u-hal"];
+    // One place on the chart and a need of 100%: by places this role took one person.
+    const s = await createOrgRole(pool, { id: "seat-limit-garden", name: "Garden steward", seats: 1, aim: null });
+    await pool.query("UPDATE org_roles SET commitment_target = 100 WHERE id = ?", [s]); // module-review-ok: fixture SQL against the S5 scratch schema
+
+    // UNDER the limit: 40% then 50%, two people on a one-place role.
+    for (const [who, pct] of [["u-c1", 40], ["u-c2", 50]] as const) {
+      const id = await applyAt(who, s, pct);
+      const r = await adopt(id);
+      expect(r.status, JSON.stringify(r.body)).toBe(200);
+      expect(r.body.status).toBe("adopted");
+    }
+    expect(await seated(s)).toEqual(["u-c1", "u-c2"]);
+
+    // AT the limit: 10% more makes exactly 100%.
+    const at = await applyAt("u-c3", s, 10);
+    expect((await adopt(at)).body.status).toBe("adopted");
+    expect(await seated(s)).toHaveLength(3);
+
+    // OVER the limit, no choice made: refused with the lead's words and the numbers, nobody seated, nothing stamped.
+    const over = await applyAt("u-c4", s, 30);
+    h.state.viewer = { id: "u-hal", stage: "member" };
+    const page = await h.call("GET", `/api/governance/role-applications/${over}`);
+    expect(page.body.application.overLimit).toMatchObject({ ask: "This is above the limit set for this role, continue anyway?", roles: [{ roleId: s, used: 100, adding: 30, target: 100 }] });
+    const refused = await adopt(over);
+    expect(refused.status).toBe(409);
+    expect(refused.body).toMatchObject({ error: "over_limit", message: "This is above the limit set for this role, continue anyway?" });
+    expect(refused.body.overLimit[0]).toMatchObject({ roleId: s, used: 100, adding: 30, target: 100 });
+    expect(await seated(s)).toHaveLength(3);
+    expect((await readApplication(pool, over))!).toMatchObject({ status: "awaiting-holder" });
+    expect((await readApplication(pool, over))!.overLimit).toBeUndefined();
+
+    // A member who may not adopt cannot make the choice either.
+    h.state.viewer = { id: "u-ivo", stage: "member" };
+    expect((await h.call("POST", `/api/governance/role-applications/${over}/adopt`, { confirmOverLimit: true })).status).toBe(403);
+
+    // OVER the limit, with the steward's explicit choice: adopted and seated, the choice stamped and audited.
+    const ok = await adopt(over, { confirmOverLimit: true });
+    expect(ok.status, JSON.stringify(ok.body)).toBe(200);
+    expect(ok.body.status).toBe("adopted");
+    expect(await seated(s)).toEqual(["u-c1", "u-c2", "u-c3", "u-c4"]);
+    expect((await readApplication(pool, over))!.overLimit).toEqual([expect.objectContaining({ roleId: s, by: "u-hal", used: 100, adding: 30, target: 100 })]);
+    const [events] = await pool.query<any[]>("SELECT kind, text, actor_user_id, audience, entity_ref FROM health_events WHERE entity_ref = ?", [over]); // module-review-ok: fixture SQL against the S5 scratch schema
+    expect(events).toEqual([expect.objectContaining({ kind: "audit", actor_user_id: "u-hal", audience: "admin" })]);
+    expect(events[0].text).toContain(`role-limit:over:${over}:${s}`);
+    // CONTROL: the audit names the role and the numbers, never the person proposed.
+    expect(events[0].text).not.toContain("u-c4");
+  });
+
+  it("a newcomer who gave no commitment is still counted by places", async () => {
+    h.state.holders = ["u-hal"];
+    const s = await createOrgRole(pool, { id: "seat-limit-places", name: "Places keeper", seats: 1, aim: null });
+    h.state.viewer = { id: "u-c5", stage: "member" };
+    const first = await h.call("POST", "/api/governance/role-applications", { seatIds: [s], deliverables: DELIVERABLES, fitStatement: NOTE, seatSettings: { v: 1 } });
+    expect((await adopt(first.body.id)).body.status).toBe("adopted");
+    h.state.viewer = { id: "u-c6", stage: "member" };
+    const second = await h.call("POST", "/api/governance/role-applications", { seatIds: [s], deliverables: DELIVERABLES, fitStatement: NOTE, seatSettings: { v: 1 } });
+    // No commitment to weigh: the one place is taken, so the door says the role is full, as it always did.
+    expect(second.status).toBe(409);
+    expect(second.body.code).toBe("seat_full");
+    // CONTROL: the same person WITH a commitment is taken, and weighed at adoption by the limit.
+    const weighed = await applyAt("u-c6", s, 20);
+    const r = await adopt(weighed);
+    expect(r.status).toBe(409);
+    expect(r.body.error).toBe("over_limit");
+  });
+});

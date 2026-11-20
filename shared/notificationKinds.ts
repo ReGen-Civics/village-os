@@ -110,6 +110,16 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
     waits: true,
   },
   /*
+   * Connector full access (the lead, 20 Nov 2026): a person turned full access on
+   * or off for one role's agent, and the Anchor Circle is told, so the village can
+   * see it. A decision about who acts for the village, read when it happens.
+   */
+  agent_full_access: {
+    group: "decisions",
+    celebrate: false,
+    waits: true,
+  },
+  /*
    * Village Comms 5.10: a host asked you to pick the times you can make for
    * a gathering. Decisions, because the time with the most picks becomes the
    * gathering's time.

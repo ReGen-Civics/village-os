@@ -15,6 +15,7 @@
  *   POST /api/admin/proposals/check      the dry run: each edited change read by its own validator, nothing written
  *   POST /api/admin/proposals/accept     accept a selection, in order, each through its own route AS THE PERSON
  *   POST /api/admin/proposals/discard    put a selection aside
+ *   POST /api/admin/proposals/accept-as-holder  the full-access agent's accept or discard, through the connector only
  *   POST /api/admin/proposals/:id/put-back  file a NEW proposal that puts an accepted change back; applies nothing
  *
  * ACCEPTING IS A PERSON'S ACT. Each change runs over the loopback with the
@@ -62,7 +63,9 @@ import {
   type Lesson,
   type ProposalInput,
 } from "../../shared/proposedChanges";
-import { APPROVAL_FIELDS } from "../../shared/agentAdmin";
+import { APPROVAL_FIELDS, readLeadApproval } from "../../shared/agentAdmin";
+import { ACCEPT_PROPOSAL_WORDS, approvalCovers, FULL_ACCESS_WORDS, fullAccessFloor } from "../../shared/agentFullAccess";
+import { fullAccessFor } from "../lib/agentFullAccess";
 import { putBackOf, putBackVerdict, type PutBackVerdict } from "../../shared/proposalPutBack";
 import { staleAgainst, type AcceptedRecord, type StaleBy } from "../../shared/proposalConflicts";
 import { queueItemOf, QUEUE_WORDS } from "../../shared/proposalQueue";
@@ -484,6 +487,83 @@ export function register(app: Express, deps: Deps): void {
     res.json({ results });
   });
 
+  type AcceptResult = { id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: StaleBy[]; code?: string };
+  /** Who an accept is recorded as: the person on the review page, or the full-access agent acting on their approval. */
+  interface AcceptAs {
+    actorKind: "human" | "agent";
+    approvedBy: string;
+    approvalNote: string;
+    /** "accepted by Ana, accepted on the review page" or "accepted by Ana's agent, on the approval: ...". */
+    said: string;
+  }
+
+  /**
+   * One change, accepted through its own route as the person in this request. A failure stops nothing and undoes
+   * nothing. The review page's Accept and the full-access agent's accept run exactly this (the lead, 20 Nov 2026).
+   */
+  async function acceptOne(req: express.Request, uid: string, it: unknown, as: AcceptAs): Promise<AcceptResult> {
+    const pool = getPool();
+    const run = runAs(req);
+    const id = String(obj(it)?.id ?? "");
+    const c = await store.changeById(pool, id);
+    if (!c) return { id, ok: false, error: REVIEW_WORDS.gone };
+    // A change whose last try may have landed is tried again only once the person says they checked its page.
+    const checked = obj(it)?.checked === true;
+    if (store.needsACheck(c) && !checked) return { id, ok: false, error: REVIEW_WORDS.checkFirst, field: null, code: "check_target" };
+    if (c.status !== "proposed" && c.status !== "failed" && !store.needsACheck(c)) return { id, ok: false, error: REVIEW_WORDS.notProposed };
+    const body = finalBody(c, obj(it)?.body);
+    // Read again now, so the page's warning is never itself out of date: the accepts since this change was proposed
+    // that wrote what it writes, an earlier item of this same accept included. It informs; it never stops the accept.
+    const stale = staleOf(c, body, (await store.acceptedSince(pool, new Date(c.createdAt))).map(acceptedRecord));
+    const staleOut = stale.length ? { stale } : {};
+    // The latest edits are kept even when the change fails, so fixing it starts from them.
+    if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
+    // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
+    if (!(await store.claimForApplying(pool, id, uid, checked))) return { id, ok: false, error: REVIEW_WORDS.notProposed };
+    const kd = kindDeps();
+    // A change that throws on its way to its route (the loopback timing out, a read that fails) is THIS change's
+    // outcome, recorded, and the loop goes on. It is NOT a plain "failed": the route may have committed before the
+    // answer was lost, so it is `unknown`, and a person checks its page before it is tried again (audit, 15 Nov 2026).
+    let out: { ok: true; note?: string } | { ok: false; error: string; field?: string | null };
+    try {
+      // A retry whose earlier try already made the role: that try landed, so this one records it (`newRoleAlreadyMade`).
+      const retried = c.status === "failed" || store.needsACheck(c);
+      const valid = retried && (await newRoleAlreadyMade(pool, c.kind, c.target, body))
+        ? null
+        : await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
+      if (valid === null) out = { ok: true, note: NEW_ROLE_ALREADY_MADE };
+      else if (valid.ok) {
+        // What is live now, kept so this change can be proposed back (0400). A read that fails keeps null and never
+        // stops the accept; a kind that is never put back reads nothing.
+        const before = await readBefore(kd, run, c.kind, c.target, body);
+        if (before.keep) await store.saveBefore(pool, id, before.value);
+        out = await applyProposal(kd, run, c.kind, c.target, body);
+      } else out = { ok: false as const, error: valid.error, field: valid.field };
+    } catch (e) {
+      const error = `${REVIEW_WORDS.unknown} (${String((e as Error)?.message ?? e).slice(0, 200)})`;
+      await store.markUnknown(pool, id, uid, error);
+      await recordEvent(pool, { kind: "proposed_change", text: `A proposed change may or may not have landed, so it waits on a check: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: as.actorKind, entityType: "proposed_change", entityRef: id, audience: "admin" });
+      return { id, ok: false, error, field: null, ...staleOut };
+    }
+    if (!out.ok) {
+      await store.markFailed(pool, id, uid, out.error);
+      await recordEvent(pool, { kind: "proposed_change", text: `A proposed change did not land: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: as.actorKind, entityType: "proposed_change", entityRef: id, audience: "admin" });
+      return { id, ok: false, error: out.error, field: out.field ?? null, ...staleOut };
+    }
+    const lessons = fieldDiffs(c.body, body);
+    await store.markAccepted(pool, id, { by: uid, accepted: body, lessons, approvedBy: as.approvedBy, approvalNote: as.approvalNote });
+    await recordEvent(pool, {
+      kind: "proposed_change",
+      text: `A proposed change was ${as.said}${lessons.length ? `, with ${lessons.length} field${lessons.length === 1 ? "" : "s"} edited` : ""}: ${c.summary.slice(0, 140)}`,
+      actorUserId: uid,
+      actorKind: as.actorKind,
+      entityType: "proposed_change",
+      entityRef: id,
+      audience: "admin",
+    });
+    return { id, ok: true, ...(out.note ? { note: out.note } : {}), ...staleOut };
+  }
+
   app.post("/api/admin/proposals/accept", async (req, res) => {
     const user = await person(req, res);
     if (!user) return;
@@ -491,86 +571,74 @@ export function register(app: Express, deps: Deps): void {
     if (await overLimit(`proposals-accept:${uid}`, 60, WINDOW)) return res.status(429).json({ error: "too_many" });
     const items = Array.isArray(req.body?.items) ? (req.body.items as unknown[]).slice(0, 100) : [];
     if (!items.length) return res.status(400).json({ error: "bad_request", message: "Send items: the changes to accept, in order." });
-    const pool = getPool();
-    const run = runAs(req);
     const name = String(user.name ?? "").trim() || "A person";
-    const results: Array<{ id: string; ok: boolean; error?: string; field?: string | null; note?: string; stale?: StaleBy[] }> = [];
+    const as: AcceptAs = { actorKind: "human", approvedBy: name, approvalNote: ACCEPT_NOTE, said: `accepted by ${firstName(name)}, ${ACCEPT_NOTE}` };
+    const results: AcceptResult[] = [];
     // One after another, each through its own route. A failure stops nothing and undoes nothing.
-    for (const it of items) {
-      const id = String(obj(it)?.id ?? "");
-      const c = await store.changeById(pool, id);
+    for (const it of items) results.push(await acceptOne(req, uid, it, as));
+    res.json({ results, accepted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
+  });
+
+  /**
+   * THE FULL-ACCESS AGENT'S ACCEPT AND DISCARD (the lead, 20 Nov 2026; shared/agentFullAccess.ts). The connector's
+   * `accept_proposals` calls it, as the token's holder, and nothing else may: the call must come through the
+   * connector, from a person (never an agent account) who holds a live seat in the role a person named for full
+   * access, right now. The approval note must name the batch code or every change's code. A change whose route is
+   * in the floor (money, secrets, erasure, the veto, the agent accounts, letters) is refused here whatever the
+   * queue says. Each accepted change then runs exactly as the review page's Accept runs it, recorded as the agent's,
+   * on the person's approval, with the note.
+   */
+  app.post("/api/admin/proposals/accept-as-holder", async (req, res) => {
+    if (!req.get("x-village-connector")) return res.status(403).json({ error: "connector_only", message: "This door is the connector's. A person accepts on the review page." });
+    const user = await reader(req, res);
+    if (!user) return;
+    const uid = String(user.id);
+    if (!(await fullAccessFor(getPool(), uid))) return res.status(403).json({ error: "full_access_off", message: FULL_ACCESS_WORDS.notOn });
+    if (await overLimit(`proposals-accept:${uid}`, 60, WINDOW)) return res.status(429).json({ error: "too_many" });
+    const action = req.body?.action === "accept" || req.body?.action === "discard" ? (req.body.action as "accept" | "discard") : null;
+    if (!action) return res.status(400).json({ error: "bad_request", message: "action is accept or discard." });
+    const ids = Array.isArray(req.body?.ids) ? Array.from(new Set((req.body.ids as unknown[]).map((x) => String(x).slice(0, 60)))).slice(0, 100) : [];
+    if (!ids.length) return res.status(400).json({ error: "bad_request", message: "Send ids: the changes, in order." });
+    const approval = readLeadApproval(obj(req.body) ?? {});
+    if (!approval.ok) return res.status(400).json({ error: "approval_required", message: approval.words });
+    const pool = getPool();
+    await store.ensureCodes(pool);
+    const changes = await Promise.all(ids.map((id) => store.changeById(pool, id)));
+    const codes = await Promise.all(changes.map(async (c) => ({ code: c?.code ?? null, batchCode: c ? (await store.batchById(pool, c.batchId))?.code ?? null : null })));
+    if (!approvalCovers(approval.approvalNote, codes)) return res.status(400).json({ error: "approval_not_covering", message: ACCEPT_PROPOSAL_WORDS.notCovered });
+    const name = String(user.name ?? "").trim() || "A person";
+    const as: AcceptAs = {
+      actorKind: "agent",
+      approvedBy: approval.approvedBy,
+      approvalNote: approval.approvalNote,
+      said: `accepted by ${firstName(name)}'s agent with full access, approved by ${approval.approvedBy.slice(0, 80)}: "${approval.approvalNote.slice(0, 300)}"`,
+    };
+    const results: AcceptResult[] = [];
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i]!;
+      const c = changes[i];
+      const code = codes[i]?.code ?? undefined;
       if (!c) {
         results.push({ id, ok: false, error: REVIEW_WORDS.gone });
         continue;
       }
-      // A change whose last try may have landed is tried again only once the person says they checked its page.
-      const checked = obj(it)?.checked === true;
-      if (store.needsACheck(c) && !checked) {
-        results.push({ id, ok: false, error: REVIEW_WORDS.checkFirst, field: null, code: "check_target" } as any);
+      // The floor, read off the route the change would run: a person's act whatever the switch says.
+      const floor = fullAccessFloor(c.routeMethod, c.routePath, uid, { applicantDataOpen: false });
+      if (floor) {
+        results.push({ id, ok: false, error: `A person accepts this one on the review page. ${floor.words}`, ...(code ? { code } : {}) });
         continue;
       }
-      if (c.status !== "proposed" && c.status !== "failed" && !store.needsACheck(c)) {
-        results.push({ id, ok: false, error: REVIEW_WORDS.notProposed });
+      if (action === "discard") {
+        const ok = await store.markDiscarded(pool, id, uid);
+        if (ok) {
+          await recordEvent(pool, { kind: "proposed_change", text: `A proposed change was put aside by ${firstName(name)}'s agent with full access, approved by ${approval.approvedBy.slice(0, 80)}: "${approval.approvalNote.slice(0, 300)}"`, actorUserId: uid, actorKind: "agent", entityType: "proposed_change", entityRef: id, audience: "admin" });
+        }
+        results.push({ id, ok, ...(ok ? {} : { error: REVIEW_WORDS.notProposed }), ...(code ? { code } : {}) });
         continue;
       }
-      const body = finalBody(c, obj(it)?.body);
-      // Read again now, so the page's warning is never itself out of date: the accepts since this change was proposed
-      // that wrote what it writes, an earlier item of this same accept included. It informs; it never stops the accept.
-      const stale = staleOf(c, body, (await store.acceptedSince(pool, new Date(c.createdAt))).map(acceptedRecord));
-      const staleOut = stale.length ? { stale } : {};
-      // The latest edits are kept even when the change fails, so fixing it starts from them.
-      if (obj(obj(it)?.body)) await store.saveDraft(pool, id, body, uid);
-      // Claimed before it is applied, so a second accept racing this one applies nothing (audit, 15 Nov 2026).
-      if (!(await store.claimForApplying(pool, id, uid, checked))) {
-        results.push({ id, ok: false, error: REVIEW_WORDS.notProposed });
-        continue;
-      }
-      const kd = kindDeps();
-      // A change that throws on its way to its route (the loopback timing out, a read that fails) is THIS change's
-      // outcome, recorded, and the loop goes on. It is NOT a plain "failed": the route may have committed before the
-      // answer was lost, so it is `unknown`, and a person checks its page before it is tried again (audit, 15 Nov 2026).
-      let out: { ok: true; note?: string } | { ok: false; error: string; field?: string | null };
-      try {
-        // A retry whose earlier try already made the role: that try landed, so this one records it (`newRoleAlreadyMade`).
-        const retried = c.status === "failed" || store.needsACheck(c);
-        const valid = retried && (await newRoleAlreadyMade(pool, c.kind, c.target, body))
-          ? null
-          : await checkProposal(kd, { kind: c.kind, target: c.target, body, summary: c.summary });
-        if (valid === null) out = { ok: true, note: NEW_ROLE_ALREADY_MADE };
-        else if (valid.ok) {
-          // What is live now, kept so this change can be proposed back (0400). A read that fails keeps null and never
-          // stops the accept; a kind that is never put back reads nothing.
-          const before = await readBefore(kd, run, c.kind, c.target, body);
-          if (before.keep) await store.saveBefore(pool, id, before.value);
-          out = await applyProposal(kd, run, c.kind, c.target, body);
-        } else out = { ok: false as const, error: valid.error, field: valid.field };
-      } catch (e) {
-        const error = `${REVIEW_WORDS.unknown} (${String((e as Error)?.message ?? e).slice(0, 200)})`;
-        await store.markUnknown(pool, id, uid, error);
-        await recordEvent(pool, { kind: "proposed_change", text: `A proposed change may or may not have landed, so it waits on a check: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
-        results.push({ id, ok: false, error, field: null, ...staleOut });
-        continue;
-      }
-      if (!out.ok) {
-        await store.markFailed(pool, id, uid, out.error);
-        await recordEvent(pool, { kind: "proposed_change", text: `A proposed change did not land: ${c.summary.slice(0, 140)}`, actorUserId: uid, actorKind: "human", entityType: "proposed_change", entityRef: id, audience: "admin" });
-        results.push({ id, ok: false, error: out.error, field: out.field ?? null, ...staleOut });
-        continue;
-      }
-      const lessons = fieldDiffs(c.body, body);
-      await store.markAccepted(pool, id, { by: uid, accepted: body, lessons, approvedBy: name, approvalNote: ACCEPT_NOTE });
-      await recordEvent(pool, {
-        kind: "proposed_change",
-        text: `A proposed change was accepted by ${firstName(name)}, ${ACCEPT_NOTE}${lessons.length ? `, with ${lessons.length} field${lessons.length === 1 ? "" : "s"} edited` : ""}: ${c.summary.slice(0, 140)}`,
-        actorUserId: uid,
-        actorKind: "human",
-        entityType: "proposed_change",
-        entityRef: id,
-        audience: "admin",
-      });
-      results.push({ id, ok: true, ...(out.note ? { note: out.note } : {}), ...staleOut });
+      results.push({ ...(await acceptOne(req, uid, { id }, as)), ...(code ? { code } : {}) });
     }
-    res.json({ results, accepted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
+    res.json({ action, results, landed: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length });
   });
 
   app.post("/api/admin/proposals/:id/put-back", async (req, res) => {

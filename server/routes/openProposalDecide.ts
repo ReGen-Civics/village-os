@@ -53,6 +53,9 @@
  * account it makes finishes the adoption at the welcome step
  * (server/lib/inviteDoor.ts).
  */
+import { OVER_LIMIT_WORDS } from "../../shared/commitmentLimit";
+import { auditOverLimit, overLimitRefusal, overLimitRoles } from "../lib/commitmentLimit";
+import { stampOpenProposal } from "../repos/proposalStamps";
 import { playableCopy, wantsMp4 } from "../lib/voicePlayback";
 import { writeDownStored, type StoredTranscribeDeps } from "./openProposalVoiceWritten";
 import { providersNow } from "../lib/voiceTranscription";
@@ -401,10 +404,14 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
     // What is left before Adopt (audit M10, B3): the conversations not written up, and the roles with every seat taken. Deciders only.
     const deciderHere = open && may.ok && !former && holdsThePower;
     const left = deciderHere ? await conversationsLeft(pool, p.id) : [];
-    const full = deciderHere ? await roomFor(work, p, may.own ?? null) : [];
+    const room = deciderHere ? await roomFor(work, p, may.own ?? null) : [];
+    const full = room.filter((f) => !f.limit);
+    const over = overLimitRoles(room);
     const beforeAdopt = deciderHere
       ? {
           conversations: left.map((c) => ({ roleId: c.roleId, role: c.role, unheld: c.unheld, words: c.unheld ? DECIDE_WORDS.conversationUnheld(c.role) : DECIDE_WORDS.conversationMissing(c.role) })),
+          // Above the role's commitment limit (the lead, 20 Nov 2026): a confirm step before Adopt, with the numbers.
+          overLimit: over.length ? { ask: OVER_LIMIT_WORDS.ask, roles: over.map((o) => ({ ...o, words: OVER_LIMIT_WORDS.role(o.name, o.used, o.adding, o.target) })) } : null,
           seatsFull: full.map((f) => ({ name: f.name, seats: f.seats, taken: f.taken })),
           seatsWords: full.length ? DECIDE_WORDS.seatsFull(full) : null,
         }
@@ -706,9 +713,23 @@ export function registerOpenProposalDecide(app: Express, deps: DecideRouteDeps):
       }
       moonNow = currentMoonTerm(at, activeClock(), tz());
     }
+    // ABOVE THE ROLE'S LIMIT (the lead, 20 Nov 2026): the commitments would go above what the role needs. Refused with
+    // the question, and taken only with the explicit flag from somebody who may adopt here, stamped and audited.
+    {
+      const read = await roomFor(work, moonNow ? { ...p, body: { ...p.body, term: moonNow } } : p, may.own ?? null);
+      const over = overLimitRoles(read);
+      if (over.length) {
+        if (req.body?.confirmOverLimit !== true) return res.status(409).json(overLimitRefusal(over));
+        const stamps = [...(p.overLimit ?? []), ...over.map((o) => ({ roleId: o.roleId, by: actorId, at: at.toISOString(), used: o.used, adding: o.adding, target: o.target }))];
+        await stampOpenProposal(pool, p.id, "overLimit", stamps);
+        await auditOverLimit(pool, p.id, "open_proposal", over, actorId);
+        p = { ...p, overLimit: stamps };
+      }
+    }
     // Every seat taken (audit B3, 11 Nov 2026): refused, unless the holder chose to adopt for when a seat opens.
-    // Counted for the term it would start on, before anything is written.
-    const full = await roomFor(work, moonNow ? { ...p, body: { ...p.body, term: moonNow } } : p, may.own ?? null);
+    // Counted for the term it would start on, before anything is written. A role held to its commitment limit is
+    // answered above and never counted here as well.
+    const full = (await roomFor(work, moonNow ? { ...p, body: { ...p.body, term: moonNow } } : p, may.own ?? null)).filter((f) => !f.limit);
     const waitsForSeat = full.length > 0;
     if (waitsForSeat && req.body?.whenASeatOpens !== true) {
       return res.status(409).json({ error: "seats_full", message: DECIDE_WORDS.seatsFull(full), seatsFull: full.map((f) => ({ name: f.name, seats: f.seats, taken: f.taken })), canAdoptForWhenASeatOpens: true });

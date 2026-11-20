@@ -50,9 +50,10 @@
  * pay route, a legal name or an address, at any depth. It runs for every
  * holder, a `cash.pay` holder included.
  */
-import { adminRequestDecision, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts } from "../../shared/agentAdmin";
+import { isShippedAgentRead, leadApprovalSubject, leadApprovedBodyProblem, leadSeatTarget, readLeadApproval, stripContactData, withoutApproval, type AgentAdminPathsDoc, type LeadApprovalSubject, type LeadApprovedKind, type LeadSeatFacts, type SeatPowerFacts } from "../../shared/agentAdmin";
+import { fullAccessBodyProblem, fullAccessDecision } from "../../shared/agentFullAccess";
 import { MOON_ROUTES, PACK_FORBIDDEN_KEY } from "../../shared/moonRecap";
-import { LIBRARY_API, LIBRARY_LIMITS } from "../../shared/sessionLibrary";
+import { LIBRARY_API, LIBRARY_LIMITS, libraryItemUrl } from "../../shared/sessionLibrary";
 import { ITEM_AIMS, cleanLine, cleanText } from "../../shared/sessions";
 import { HANDOFF_LIMITS, HANDOFF_REFUSALS, HANDOFFS_URL } from "../../shared/roleTaskHandoff";
 import { isDayKey } from "../../shared/memberTasks";
@@ -140,6 +141,15 @@ export interface ToolContext {
     /** After the route answered: the notice and the memory record for a write, or an event saying it was refused. Never throws. */
     settled: (a: LeadApprovalRecordInput, outcome: "written" | "refused") => Promise<void>;
   };
+  /**
+   * The full-access switch (the lead, 20 Nov 2026; shared/agentFullAccess.ts): whether THIS holder's agent has full
+   * access now (a live seat in the role a person named), and the audit each full-access write leaves BEFORE it is
+   * dispatched, which throws when it cannot be stored, so nothing is written without it.
+   */
+  fullAccess?: {
+    on: () => Promise<boolean>;
+    recorded: (a: { method: string; path: string; summary: string; approvedBy: string; approvalNote: string }) => Promise<void>;
+  };
   /** Writes one `agent_actions` row. Only the admin and Sera tools record through it. */
   recordAction?: (a: { scope: string; tool: string; method: string | null; path: string | null; echoHash: string; state: "done" | "refused" | "asked" }) => Promise<void>;
 }
@@ -190,6 +200,23 @@ function refusal(what: string, a: RouteAnswer): ToolOutcome {
   const b = (a.body && typeof a.body === "object" ? a.body : {}) as Record<string, unknown>;
   const words = typeof b.message === "string" ? b.message : typeof b.error === "string" ? b.error : `status ${a.status}`;
   return { ok: false, error: `${what}: ${words}`, detail: { status: a.status } };
+}
+
+/**
+ * A role's power groups as the holder reads them, for `seat_power` (the lead, 20 Nov 2026): the route's own GET,
+ * so its gate answers for the holder. A route that is not there, or refuses, reads as no such role.
+ */
+async function readSeatPower(ctx: ToolContext, path: string): Promise<SeatPowerFacts> {
+  const a = await ctx.dispatch("GET", path);
+  const b = (a.body && typeof a.body === "object" ? a.body : {}) as Record<string, any>;
+  if (a.status !== 200 || !b.seat) return { found: false, isExample: false, linked: [], groups: [] };
+  const groups = ((Array.isArray(b.groups) ? b.groups : []) as unknown[]).filter((g): g is Record<string, unknown> => !!g && typeof g === "object").map((g) => ({
+    id: String(g.id ?? ""),
+    capabilities: Array.isArray(g.capabilities) ? g.capabilities.map(String) : [],
+    grantsAdmin: g.grantsAdmin === true,
+    isExample: !!g.isExample,
+  }));
+  return { found: true, isExample: !!b.seat.isExample, linked: Array.isArray(b.roleIds) ? b.roleIds.map(String) : [], groups };
 }
 
 // ── The board, for mark_my_task ──────────────────────────────────────────────
@@ -251,6 +278,9 @@ async function twoCallWrite(
   if (a.status >= 300) return a.status === 404 ? { ok: false, error: NOT_OPEN } : refusal("My moon did not take that", a);
   return { ok: true, result: { written: true, echo, answer: a.body } };
 }
+
+/** How many agenda items one withdraw_agenda_item call may name. */
+export const WITHDRAW_MAX = 20;
 
 /** What a moon tool says while its route is not on this server, or the moon review is off. */
 const NOT_OPEN = "My moon is not open here yet: the moon review is off in this village, or this server does not carry that part of it.";
@@ -557,6 +587,77 @@ export const MCP_TOOLS: readonly ToolDef[] = [
     },
   },
   {
+    // The lead, 20 Nov 2026: the sibling of add_agenda_item, through the member door, whose own check decides.
+    name: "withdraw_agenda_item",
+    scope: "sessions.write",
+    kind: "write",
+    destructive: true,
+    title: "Withdraw agenda items",
+    description:
+      `Withdraws items from the agenda library, exactly as the holder pressing Withdraw on the sessions page does, so it withdraws only what the holder may withdraw. Name one id or several, up to ${WITHDRAW_MAX}, from GET /api/sessions (library.items). Call it first without confirmToken: it writes nothing and answers with the titles it would withdraw, and which it may not, and a confirmToken. Show that to the member, and after their yes call it again with the same ids and the confirmToken.`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        itemIds: { type: "array", maxItems: WITHDRAW_MAX, items: { type: ["number", "string"] }, description: "The agenda items' ids, from library.items." },
+        itemId: { type: ["number", "string"], description: "One item's id, when there is only one." },
+        confirmToken: { type: "string", description: "From the first call. Leave it out to see what would be withdrawn." },
+      },
+      additionalProperties: false,
+    },
+    routes: ["GET /api/sessions", `DELETE ${LIBRARY_API}/:itemId`],
+    async run(args, ctx) {
+      const raw = [...(Array.isArray(args.itemIds) ? args.itemIds : []), ...(args.itemId !== undefined && args.itemId !== null ? [args.itemId] : [])];
+      const ids = Array.from(new Set(raw.map((x) => (typeof x === "number" ? x : typeof x === "string" && /^\d{1,12}$/.test(x.trim()) ? Number(x.trim()) : NaN)))).filter((n) => Number.isSafeInteger(n) && n > 0);
+      if (raw.length && ids.length !== new Set(raw.map(String)).size) return { ok: false, error: "Each id is an agenda item's number, from library.items." };
+      if (!ids.length) return { ok: false, error: "Name the items: itemIds, from library.items on GET /api/sessions." };
+      if (ids.length > WITHDRAW_MAX) return { ok: false, error: `Up to ${WITHDRAW_MAX} items at once.` };
+      ids.sort((x, y) => x - y);
+      // What the holder sees, read fresh at both calls, so the token covers exactly the titles the member said yes to.
+      const list = await ctx.dispatch("GET", "/api/sessions");
+      if (list.status === 404) return { ok: false, error: "The agenda library is not open here: the sessions module is off in this village." };
+      if (list.status !== 200) return refusal("The agenda library could not be read", list);
+      const cards = (((list.body as { library?: { items?: unknown[] } } | null)?.library?.items ?? []) as unknown[])
+        .filter((c): c is Record<string, unknown> => !!c && typeof c === "object");
+      const items = ids.map((id) => {
+        const c = cards.find((x) => Number(x.id) === id);
+        return { id, title: c ? String(c.title ?? "") : null, canWithdraw: !!c && c.canWithdraw === true };
+      });
+      const going = items.filter((i) => i.canWithdraw).map((i) => ({ id: i.id, title: i.title }));
+      const refused = items.filter((i) => !i.canWithdraw).map((i) => ({ id: i.id, title: i.title, why: i.title === null ? "not one the holder can see" : "not one the holder may withdraw" }));
+      if (!going.length) return { ok: false, error: "None of these is an item the holder may withdraw, so nothing would be withdrawn.", detail: { refused } };
+      const echo = { method: "DELETE", withdraw: going };
+      if (args.confirmToken === undefined) {
+        const { token, expiresAt } = ctx.mintConfirm("withdraw_agenda_item", echo);
+        return {
+          ok: true,
+          result: {
+            confirmRequired: true,
+            echo,
+            refused,
+            confirmToken: token,
+            expiresAt,
+            message: "Nothing was withdrawn. Show the member these titles, and after their yes call withdraw_agenda_item again with the same ids and this confirmToken.",
+          },
+        };
+      }
+      const check = ctx.verifyConfirm("withdraw_agenda_item", args.confirmToken, echo);
+      if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
+      // Each through the member door, one by one: the library's own check answers for each, as it does for a tap.
+      const results: Array<{ id: number; title: string | null; withdrawn: boolean; error?: string }> = [];
+      for (const g of going) {
+        const a = await ctx.dispatch("DELETE", libraryItemUrl(g.id));
+        if (a.status < 300) results.push({ id: g.id, title: g.title, withdrawn: true });
+        else {
+          const why = refusal("The agenda library did not take that", a);
+          results.push({ id: g.id, title: g.title, withdrawn: false, error: why.ok ? "" : why.error });
+        }
+      }
+      const n = results.filter((r) => r.withdrawn).length;
+      if (!n) return { ok: false, error: "Nothing was withdrawn.", detail: { results } };
+      return { ok: true, result: { written: true, echo, withdrawn: n, results } };
+    },
+  },
+  {
     name: "import_moon_pack",
     scope: "moon.write",
     kind: "write",
@@ -711,14 +812,18 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         ctx.recordAction!({ scope: "admin", tool: "admin_request", method: method.slice(0, 8) || null, path: path.slice(0, 500) || null, echoHash: hash, state });
 
       const leadOn = ctx.leadApproved ? await ctx.leadApproved.on() : false;
-      const decision = adminRequestDecision(method, path, await ctx.adminPaths(), ctx.holderId ?? null, {
+      // The full-access switch (the lead, 20 Nov 2026): read at every call, so it ends when the holder's seat does.
+      const fullOn = ctx.fullAccess ? await ctx.fullAccess.on() : false;
+      const decision = fullAccessDecision(method, path, await ctx.adminPaths(), ctx.holderId ?? null, {
         applicantDataOpen: ctx.applicantDataOpen ? await ctx.applicantDataOpen() : false,
         leadApprovedWrites: leadOn,
+        fullAccess: fullOn,
       });
       if (!decision.ok) {
         await record("refused");
         return { ok: false, error: decision.words, detail: { code: decision.code } };
       }
+      const full = decision.fullAccess === true;
       // A lead-approved write (the lead's ruling, 10 and 11 Nov 2026): the body is checked at both calls, and a
       // seat's facts are read fresh each time, so a seat that gained a veto between the two calls is refused.
       const lead = decision.leadApproved ?? null;
@@ -727,17 +832,31 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         const target = leadSeatTarget(lead, path);
         const seat = target && ctx.leadApproved ? await ctx.leadApproved.seat(target) : null;
         seatRoleId = seat?.roleId ?? (target && "roleId" in target ? target.roleId : null);
+        // A role's power groups are read through the route's own GET, as the holder, at both calls.
+        const seatPower = lead === "seat_power" ? await readSeatPower(ctx, path) : null;
+        if (lead === "seat_power") seatRoleId = path.split("/")[4] ?? null;
         // Every write the switch made possible carries the approval; the role editor with the switch off is as before.
-        const problem = leadApprovedBodyProblem(lead, path, body, { holderId: ctx.holderId ?? null, seat, approvalRequired: leadOn || lead !== "role_edit" });
+        const problem = leadApprovedBodyProblem(lead, path, body, { holderId: ctx.holderId ?? null, seat, seatPower, approvalRequired: leadOn || full || lead !== "role_edit" });
         if (problem) {
           await record("refused");
           return { ok: false, error: problem, detail: { code: "lead_approved_refused" } };
         }
       }
+      // A full-access write carries the approval, and its body never names a power an agent may not hand out.
+      if (full && decision.write) {
+        const approval = readLeadApproval(body);
+        const problem = approval.ok ? fullAccessBodyProblem(withoutApproval(body)) : approval.words;
+        if (problem) {
+          await record("refused");
+          return { ok: false, error: problem, detail: { code: "full_access_refused" } };
+        }
+      }
       if (!decision.write) {
         const a = await ctx.dispatch("GET", path);
         await record(a.status < 300 ? "done" : "refused");
-        return a.status < 300 ? { ok: true, result: a.body } : refusal("The admin path refused", a);
+        // The shipped reads of powers, and every full-access read, come back without contact data.
+        const answer = full || isShippedAgentRead("GET", path) ? stripContactData(a.body) : a.body;
+        return a.status < 300 ? { ok: true, result: answer } : refusal("The admin path refused", a);
       }
       if (decision.confirm === "person") {
         await record("refused");
@@ -752,7 +871,7 @@ export const MCP_TOOLS: readonly ToolDef[] = [
         return { ok: false, error: "Say what this does in one plain sentence, naming the people and roles, in summary or, if your connector has no summary argument yet, in body.summary. The person sees it before they approve.", detail: { code: "summary_required" } };
       }
       // What the platform itself says the call does, where it has a line for it, so the person reads both.
-      const platformSays = lead ? leadApprovalSubject(lead, path, body, seatRoleId).what : null;
+      const platformSays = lead ? leadApprovalSubject(lead, path, body, seatRoleId).what : full ? "A change made with the operations role's full access" : null;
       if (args.confirmToken === undefined) {
         const { token, expiresAt } = ctx.mintConfirm("admin_request", echo);
         await record("asked");
@@ -800,8 +919,20 @@ export const MCP_TOOLS: readonly ToolDef[] = [
           }
         }
       }
+      // A full-access write the lead-approved record did not already cover is audited with its note, before it is made.
+      if (full && !approvalRecord) {
+        const approval = readLeadApproval(body);
+        try {
+          if (!approval.ok || !ctx.fullAccess) throw new Error("no approval to record");
+          await ctx.fullAccess.recorded({ method, path, summary, approvedBy: approval.approvedBy, approvalNote: approval.approvalNote });
+        } catch (err) {
+          console.error("[agent-mcp] the full-access record failed, so the write was not made", err);
+          await record("refused");
+          return { ok: false, error: "The record of this change could not be kept, so nothing was written. Try again in a moment.", detail: { code: "record_failed" } };
+        }
+      }
       // The approval is the connector's record, never the route's input: it is taken out before the route sees the body.
-      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead ? withoutApproval(body) : body ?? {});
+      const a = await ctx.dispatch(method as "POST" | "PUT" | "PATCH" | "DELETE", path, lead || full ? withoutApproval(body) : body ?? {});
       await record(a.status < 300 ? "done" : "refused");
       if (approvalRecord && ctx.leadApproved) await ctx.leadApproved.settled(approvalRecord, a.status < 300 ? "written" : "refused").catch(() => undefined);
       if (a.status >= 300) return refusal("The admin path refused", a);

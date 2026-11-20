@@ -89,7 +89,45 @@ describe("the Compare section", () => {
     expect(overlaps).toMatch(/Person 1 and Person 3 both offered: Run the weekly garden circle/);
     expect(document.querySelectorAll("[data-compare-split-row]")).toHaveLength(2);
     expect(document.querySelector("[data-compare-commitment]")?.getAttribute("data-compare-commitment")).toBe("fits");
-    // Two people for a role with one place: the page says the Org Chart needs a second place first.
-    expect(document.querySelector("[data-compare-places]")?.textContent).toMatch(/Org Chart/);
+    // Two people at 50% on a one-place role that needs 100%: the commitment decides, so both fit (the lead, 20 Nov 2026).
+    expect(document.querySelector("[data-compare-places]")?.getAttribute("data-compare-places")).toBe("fits");
+  });
+});
+
+describe("saving a split, the saved splits, and the quest part (the lead, 20 Nov 2026)", () => {
+  it("saves which deliverables each marked person holds, to Compare's own door, and lists it as saved", async () => {
+    const posted: any[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init?: { method?: string; body?: string }) => {
+        if (init?.method === "POST") {
+          posted.push({ url, body: JSON.parse(String(init.body)) });
+          return new Response(JSON.stringify({ success: true, saved: { at: "2026-11-20T12:00:00.000Z" } }), { status: 200, headers: { "Content-Type": "application/json" } });
+        }
+        return new Response(JSON.stringify({ ...PAYLOAD, maySave: true, saved: [] }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }),
+    );
+    render(<CompareTab password="pw" />);
+    await waitFor(() => expect(pick("op:op-1:r-garden")).toBeTruthy());
+    await userEvent.click(pick("op:op-1:r-garden"));
+    await userEvent.click(pick("op:op-2:r-garden"));
+    await userEvent.click(document.querySelector('[data-compare-qualified="op:op-1:r-garden"]') as HTMLInputElement);
+    await userEvent.click(document.querySelector('[data-compare-qualified="op:op-2:r-garden"]') as HTMLInputElement);
+    await userEvent.click(screen.getByRole("button", { name: "Save this split" }));
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0].url).toBe("/api/admin/proposal-compare/split");
+    expect(posted[0].body.roleId).toBe("r-garden");
+    expect(posted[0].body.rows.map((r: any) => r.key)).toEqual(["op:op-1:r-garden", "op:op-2:r-garden"]);
+    expect(posted[0].body.rows.flatMap((r: any) => r.holds)).toEqual(expect.arrayContaining(["Own piece 1", "Own piece 2", "Run the weekly garden circle", "Keep the seed bank catalogued"]));
+    await waitFor(() => expect(document.querySelector('[data-compare-saved-role="r-garden"]')).toBeTruthy());
+  });
+
+  it("offers no save to a reader who may not save, and says when only the quest part is shown", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ items: [item(9, { key: "qp:q9", kind: "quest", way: "quest", roleId: null, category: "quest:none", title: "Mulch the beds" })], roles: [], categories: [{ key: "quest:none", label: "", count: 1 }], readsPay: false, scope: "quests" }), { status: 200, headers: { "Content-Type": "application/json" } })));
+    render(<CompareTab password="pw" />);
+    await waitFor(() => expect(document.querySelector("[data-compare-quests-only]")).toBeTruthy());
+    await userEvent.click(pick("qp:q9"));
+    expect(document.querySelector("[data-compare-split]")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Save this split" })).toBeNull();
   });
 });

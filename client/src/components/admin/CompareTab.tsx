@@ -7,8 +7,9 @@
  *
  * THE LINE, said on screen in one sentence: no AI chooses, ranks or scores anybody here. The person marks who they
  * consider qualified first; the helper then only maps deliverables and commitments (shared/deliverableSplit.ts, plain
- * rules, no model). Every split is a suggestion a person edits, and nothing on this page accepts, declines, sends or
- * saves: each proposal's own page is where a person decides, and the links open its counter-offer prefilled for them
+ * rules, no model). Every split is a suggestion a person edits. The one write is "Save this split", which keeps which
+ * deliverables each person holds, for deciders only (the lead, 20 Nov 2026). Nothing here accepts, declines or sends:
+ * each proposal's own page is where a person decides, and the links open its counter-offer prefilled for them
  * to read and save, or not.
  *
  * Rows line up across the columns on a wide screen (one grid, the same field on the same line); on a phone the
@@ -18,9 +19,9 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
-import { MAX_COMPARE, inCategory, pickedItems, togglePick, type CompareItem, type ComparePayload, type CompareRole, type CompareWay, type PickProblem } from "@shared/proposalCompare";
+import { MAX_COMPARE, inCategory, pickedItems, togglePick, type CompareItem, type ComparePayload, type CompareRole, type CompareWay, type PickProblem, type SavedSplitView } from "@shared/proposalCompare";
 import { fittedCommitments, heldByNobody, heldTwice, mapDeliverables, movePiece, type DeliverableMap, type SplitRule } from "@shared/deliverableSplit";
-import { BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, HINT, LINK, TILE } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, CARD, CHIP_SOFT, EYEBROW, FIELD, HINT, LINK, TILE } from "@/components/journey/look";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
 
 const COL = "min-w-0 border-t border-border px-3 py-3 text-sm text-foreground";
@@ -89,6 +90,11 @@ export default function CompareTab({ password }: { password: string }) {
         <p className="max-w-2xl text-sm font-semibold text-foreground" data-compare-rule="">
           {t({ message: "No AI chooses, ranks or scores anyone here: you decide who is qualified, and accepting happens on each proposal's own page.", context: "admin compare" })}
         </p>
+        {data?.scope === "quests" && (
+          <p className={`max-w-2xl ${HINT}`} data-compare-quests-only="">
+            {t({ message: "You see the quest part of Compare: quest ideas only, since you approve quests.", context: "admin compare" })}
+          </p>
+        )}
       </header>
 
       {error && <p role="alert" className="rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">{error}</p>}
@@ -139,7 +145,8 @@ export default function CompareTab({ password }: { password: string }) {
       )}
 
       {picked.length > 0 && <SideBySide items={picked} wayWords={wayWords} whoWords={whoWords} onUntick={tick} />}
-      {picked.some((i) => i.kind === "role") && data && <SplitHelper items={picked.filter((i) => i.kind === "role")} roles={data.roles} whoWords={whoWords} />}
+      {picked.some((i) => i.kind === "role") && data && <SplitHelper items={picked.filter((i) => i.kind === "role")} roles={data.roles} whoWords={whoWords} password={password} maySave={data.maySave === true} onSaved={(view) => setData((d) => (d ? { ...d, saved: [view, ...(d.saved ?? []).filter((x) => x.roleId !== view.roleId)] } : d))} />}
+      {data?.saved && data.saved.length > 0 && <SavedSplits saved={data.saved} />}
     </div>
   );
 }
@@ -275,8 +282,10 @@ function Dates({ item }: { item: CompareItem }) {
  * role: what overlaps (each overlap named), what only one offered, what the role asks that nobody offered, whether the
  * commitments add up, and one or two ways to share the work so nobody doubles up. Every piece can be moved by hand.
  */
-function SplitHelper({ items, roles, whoWords }: { items: CompareItem[]; roles: CompareRole[]; whoWords: (i: CompareItem) => string }) {
+function SplitHelper({ items, roles, whoWords, password, maySave, onSaved }: { items: CompareItem[]; roles: CompareRole[]; whoWords: (i: CompareItem) => string; password: string; maySave: boolean; onSaved: (view: SavedSplitView) => void }) {
   const { t } = useLingui();
+  const [saving, setSaving] = useState(false);
+  const [savedLine, setSavedLine] = useState<{ ok: boolean; text: string } | null>(null);
   const roleIds = Array.from(new Set(items.map((i) => i.roleId).filter((x): x is string => !!x)));
   const [roleId, setRoleId] = useState<string>(roleIds[0] ?? "");
   const [qualified, setQualified] = useState<string[]>([]);
@@ -313,7 +322,7 @@ function SplitHelper({ items, roles, whoWords }: { items: CompareItem[]; roles: 
       <p className={EYEBROW}>{t({ message: "Split helper", context: "admin compare" })}</p>
       <h3 id="compare-split" className="font-display text-xl font-bold text-foreground">{t({ message: "Share one role across several people", context: "admin compare" })}</h3>
       <p className={`mt-2 max-w-2xl ${HINT}`}>
-        {t({ message: "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent or saved.", context: "admin compare" })}
+        {t({ message: "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent to anyone.", context: "admin compare" })}
       </p>
 
       {roleIds.length > 1 && (
@@ -357,10 +366,13 @@ function SplitHelper({ items, roles, whoWords }: { items: CompareItem[]; roles: 
                   : t({ message: `Together they give ${map.commitment.total}%, ${map.commitment.gap}% short of the ${map.commitment.target}% the role needs.`, context: "admin compare" })}
             </p>
             {map.commitment.unknown.length > 0 && <p className={`mt-1 ${HINT}`}>{t({ message: `Gave no commitment: ${map.commitment.unknown.map(nameOf).join(", ")}.`, context: "admin compare" })}</p>}
-            <p className={`mt-1 ${HINT}`} data-compare-places="">
-              {role.taken + order.length > role.places
-                ? t({ message: `The role holds ${role.places} at once and ${role.taken} hold it now. Seating ${order.length} more needs ${role.taken + order.length} places: change the number on the role in the Org Chart first.`, context: "admin compare" })
-                : t({ message: `The role holds ${role.places} at once and ${role.taken} hold it now, so there is room for ${order.length} more.`, context: "admin compare" })}
+            {/* The role's limit is its commitment (the lead, 20 Nov 2026): places on the chart no longer stop people who gave one. */}
+            <p className={`mt-1 ${HINT}`} data-compare-places={map.commitment.state === "over" ? "over" : map.commitment.unknown.length ? "places" : "fits"}>
+              {map.commitment.state === "over"
+                ? t({ message: "Adopting all of them goes above the role's limit. Each proposal's page asks you to confirm before it adopts one above the limit.", context: "admin compare" })
+                : map.commitment.unknown.length
+                  ? t({ message: `Somebody here gave no commitment, so they are counted by places: the role holds ${role.places} at once and ${role.taken} hold it now.`, context: "admin compare" })
+                  : t({ message: "Their commitments fit the role's limit, so they can all hold it, whatever the number of places on the chart.", context: "admin compare" })}
             </p>
           </div>
 
@@ -463,9 +475,77 @@ function SplitHelper({ items, roles, whoWords }: { items: CompareItem[]; roles: 
             <p className={`mt-3 ${HINT}`}>
               {t({ message: "The link opens their proposal with the commitment typed into the counter-offer. Nothing changes until you read it and press Save there, and accepting stays on that page.", context: "admin compare" })}
             </p>
+            {maySave && (
+              <div className="mt-4 grid gap-2" data-compare-save="">
+                <button
+                  type="button"
+                  className={`${BTN_PRIMARY} w-fit`}
+                  disabled={saving || twice.length > 0}
+                  onClick={async () => {
+                    setSaving(true);
+                    setSavedLine(null);
+                    const rows = map.candidates.map((k) => ({ key: k, holds: (holds[k] ?? []).map(pieceText) }));
+                    try {
+                      const r = await fetch(`${API_BASE}/admin/proposal-compare/split`, { method: "POST", headers: authHeaders(password, { "Content-Type": "application/json" }), body: JSON.stringify({ roleId: activeRole, rows }) });
+                      const d = await r.json().catch(() => ({}));
+                      if (!r.ok) {
+                        setSavedLine({ ok: false, text: refusal(d, t({ message: "The split was not saved. Try again.", context: "admin compare" })) });
+                        return;
+                      }
+                      onSaved({ roleId: activeRole, roleName: role.name, by: "", at: String(d?.saved?.at ?? new Date().toISOString()), rows: rows.map((x) => { const it = forRole.find((i) => i.key === x.key); return { key: x.key, who: nameOf(x.key), status: "waiting" as const, holds: x.holds, href: it?.href ?? "" }; }) });
+                      setSavedLine({ ok: true, text: t({ message: "Saved. The people who decide see it here and on each person's proposal.", context: "admin compare" }) });
+                    } catch {
+                      setSavedLine({ ok: false, text: t({ message: "The split was not saved. Try again.", context: "admin compare" }) });
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                >
+                  {t({ message: "Save this split", context: "admin compare" })}
+                </button>
+                <p className={HINT}>{t({ message: "Saving keeps which deliverables each person holds, for the people who decide. Nobody is accepted, told or sent anything.", context: "admin compare" })}</p>
+                {twice.length > 0 && <p className="text-sm text-notice">{t({ message: "Give each piece to one person before saving.", context: "admin compare" })}</p>}
+                {savedLine && <p role="status" className={`text-sm font-semibold ${savedLine.ok ? "text-open" : "text-destructive"}`}>{savedLine.text}</p>}
+              </div>
+            )}
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+/** THE SAVED SPLITS (the lead, 20 Nov 2026): by role, each person and the deliverables they hold. Deciders only. */
+function SavedSplits({ saved }: { saved: SavedSplitView[] }) {
+  const { t } = useLingui();
+  const statusWords = (st: SavedSplitView["rows"][number]["status"]) =>
+    st === "adopted" ? t({ message: "Adopted", context: "admin compare saved split" }) : st === "waiting" ? t({ message: "Waiting for a decision", context: "admin compare saved split" }) : t({ message: "Closed", context: "admin compare saved split" });
+  return (
+    <section className={CARD} aria-labelledby="compare-saved" data-compare-saved="">
+      <p className={EYEBROW}>{t({ message: "Saved splits", context: "admin compare" })}</p>
+      <h3 id="compare-saved" className="font-display text-xl font-bold text-foreground">{t({ message: "Which deliverables each person holds", context: "admin compare" })}</h3>
+      <p className={`mt-1 ${HINT}`}>{t({ message: "Only the people who decide see these, here and on each person's proposal.", context: "admin compare" })}</p>
+      <div className="mt-4 grid gap-4">
+        {saved.map((sp) => (
+          <div key={sp.roleId} className={TILE} data-compare-saved-role={sp.roleId}>
+            <p className="font-semibold text-foreground">{sp.roleName}</p>
+            <p className={HINT}>{sp.by ? t({ message: `Saved by ${sp.by} on ${sp.at.slice(0, 10)}`, context: "admin compare saved split" }) : t({ message: `Saved on ${sp.at.slice(0, 10)}`, context: "admin compare saved split" })}</p>
+            <ul className="mt-2 grid gap-3">
+              {sp.rows.map((r) => (
+                <li key={r.key}>
+                  <p className="text-sm text-foreground">
+                    <a className={LINK} href={r.href}>{r.who || t({ message: "No name given", context: "admin compare" })}</a>
+                    <span className={`ml-2 ${CHIP_SOFT}`}>{statusWords(r.status)}</span>
+                  </p>
+                  <ul className="mt-1 list-disc pl-5 text-sm text-foreground">
+                    {r.holds.length ? r.holds.map((h, i) => <li key={i}>{h}</li>) : <li className="text-muted-foreground">{t({ message: "Nothing in this split", context: "admin compare" })}</li>}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </section>
   );
 }

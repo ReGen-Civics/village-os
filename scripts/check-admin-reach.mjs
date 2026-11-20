@@ -147,6 +147,8 @@ const ALLOWED = {
     "A repair, run from the review page: a proposal names it as a setting, a person reads its counts there and accepts it, and the accept calls it as that person. It moves a season's links off a goal id a rewording replaced (server/lib/goalLinkRemap.ts). A button for it in Admin, Season would invite running a repair nobody needs.",
   "POST /api/admin/proposals/discard-mine":
     "The connector's door (discard_my_proposals): an agent puts aside a proposal it filed itself while it waits. A person puts aside any proposal on the review page through POST /api/admin/proposals/discard, which has its control, so this one has no screen by design.",
+  "POST /api/admin/proposals/accept-as-holder":
+    "The connector's door (accept_proposals), full access only (the lead, 20 Nov 2026): the agent of whoever holds the role a person named accepts or puts aside proposals on that person's approval in the chat. It refuses any call that did not come through the connector, so a screen could never use it; a person accepts on the review page through POST /api/admin/proposals/accept, which has its control.",
   "PUT /api/admin/suggestion-routes":
     "The suggestion dial (§4.5), server slice, built apart from its screen the same way. Its control is a row on the Powers board, which the suggest-to-edit screens bring. Delete this line when that row lands.",
 };

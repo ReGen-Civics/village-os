@@ -157,6 +157,8 @@ type Deps = Pick<
   postEmail?: (email: OutgoingEmail) => Promise<PostResult>;
   /** The governance module's lifecycle; the roles are its own. */
   governanceLifecycle?: () => string;
+  /** The read-side gate (server/index.ts), so Compare can open its quest part alone to a holder of `quest.approve`. */
+  mayStillSee?: AppDeps["mayStillSee"];
   /**
    * The membership letter's inputs now (`letterSourceFrom`), so an applicant
    * aligns on the form with the words they read (Rye's answer 8). Absent: the

@@ -218,7 +218,7 @@ describe("admin_request (check 52)", () => {
 
   it("is listed only for the admin scope", () => {
     expect(toolsFor(["moon.read", "tasks.write"]).map((t) => t.name)).not.toContain("admin_request");
-    expect(toolsFor(["admin"]).map((t) => t.name)).toEqual(["admin_request", "propose_changes", "read_proposal_lessons", "read_proposal_queue", "discard_my_proposals", "read_seat_terms"]);
+    expect(toolsFor(["admin"]).map((t) => t.name)).toEqual(["admin_request", "propose_changes", "read_proposal_lessons", "read_proposal_queue", "discard_my_proposals", "accept_proposals", "read_seat_terms"]);
   });
 
   it("reads an allowed path at once and records the call", async () => {
@@ -442,8 +442,8 @@ describe("add_agenda_item (sessions.write)", () => {
   }
   const args = { title: "Budget for the three lead roles", circleId: "general", aim: "decide", note: "Pay bands first." };
 
-  it("is the only tool sessions.write opens, and no other scope opens it", () => {
-    expect(toolsFor(["sessions.write"]).map((t) => t.name)).toEqual(["add_agenda_item"]);
+  it("is the only tool sessions.write opens beside its sibling withdraw_agenda_item, and no other scope opens it", () => {
+    expect(toolsFor(["sessions.write"]).map((t) => t.name)).toEqual(["add_agenda_item", "withdraw_agenda_item"]);
     const others = (["moon.read", "tasks.write", "moon.write", "roles.propose", "sera.undoable"] as AgentScope[]).flatMap((s) => toolsFor([s]).map((t) => t.name));
     expect(others).not.toContain("add_agenda_item");
   });
@@ -655,7 +655,8 @@ describe("agent powers, 19 Nov 2026: the queue, putting aside what it filed, and
     expect(second.result.isError).toBe(false);
     const posts = q.calls.filter((c) => c.method === "POST");
     expect(posts).toEqual([{ method: "POST", path: "/api/admin/proposals/discard-mine", body: { ids: ["c-mine"] } }]);
-    expect(MCP_TOOLS.flatMap((t) => t.routes).some((r) => /\/accept/.test(r))).toBe(false);
+    // Only accept_proposals names an accept route, and it refuses unless full access is on (the lead, 20 Nov 2026).
+    expect(MCP_TOOLS.filter((t) => t.routes.some((r) => /\/accept/.test(r))).map((t) => t.name)).toEqual(["accept_proposals"]);
   });
 
   it("names changes by short code too: a change code, and a batch code for every one of its own that waits", async () => {
