@@ -112,6 +112,10 @@ export const LEDGER_SOURCE_PAYS_A_CONTRIBUTION: Readonly<Record<string, boolean>
   // want letters, server/lib/comms/actions.ts). It moves no value, so it pays
   // nobody, and it can never put a token in anyone's hands.
   letters_confirm: false,
+  // NOT A LEDGER SOURCE either, for the same reason: the `source` of the email
+  // permission a waitlist sign-up's yes to letters becomes when a person sends
+  // the waitlist letter (server/routes/roleWaitlistLetters.ts). It moves no value.
+  role_waitlist: false,
 };
 
 /** The sources that count, for the one query that asks. */
