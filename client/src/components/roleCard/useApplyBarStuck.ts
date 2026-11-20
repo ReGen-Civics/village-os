@@ -1,4 +1,8 @@
 /**
+ * Since 1.3.43 (the lead, after 1.3.42) the act sits right after the card's title, ABOVE the one-minute panel: under
+ * the goal its top edge sat behind the phone's tab bar on a 390x664 iPhone. With the goal below the act, `measure`
+ * passes no goal line, so the bar reads the act's own top. What follows is the history of the rule.
+ *
  * THE PHONE'S APPLY, VISIBLE FROM THE START (the lead, 20 Nov 2026, after 1.3.38). On a phone the act is drawn in
  * the card's flow, right under the goal of "the role in one minute", so the first screen shows the goal whole and
  * Apply beneath it. The bar along the phone's foot shows only while that act is off the screen: scrolled past above,
@@ -57,8 +61,11 @@ function measure(act: HTMLElement): boolean {
   // Not laid out (a test's document, or a hidden card): the act in the flow stands, and there is no bar.
   if (r.width === 0 && r.height === 0) return false;
   // The bar holds the same act with its padding, so the act's own height plus the bar's padding is the bar's height.
+  // The goal counts only while it sits above the act. Since 1.3.43 a phone's act comes right after the title, above
+  // the goal, so the bar reads the act's own top: below, it covers only what comes before the act.
   const goal = goalOf(act);
-  return applyBarShows({ top: r.top, bottom: r.bottom }, window.innerHeight, tabbarPx(act), act.offsetHeight + 24, topInsetPx(), goal ? goal.getBoundingClientRect().top : null);
+  const goalTop = goal ? goal.getBoundingClientRect().top : null;
+  return applyBarShows({ top: r.top, bottom: r.bottom }, window.innerHeight, tabbarPx(act), act.offsetHeight + 24, topInsetPx(), goalTop !== null && goalTop < r.top ? goalTop : null);
 }
 
 /** Whether the phone's bar shows, read from the in-flow act (`act`), on every scroll, resize and render. */

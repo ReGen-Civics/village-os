@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /**
- * THE SCREENSHOT CHECK OF 1.3.38, and the lead's rule after it: a phone's Apply is in the flow under the goal from
- * the first screen, and the opaque bar shows only while that act is off the screen; the
+ * THE SCREENSHOT CHECK OF 1.3.38, and the lead's rules after it and after 1.3.42: a phone's Apply is in the flow
+ * right after the title, whole above the tab bar on the first screen, and the opaque bar shows only while that act is
+ * off the screen; the
  * path-in tab never draws an empty panel; the phone's tab rail says it scrolls.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,6 +11,23 @@ import { Sprout } from "lucide-react";
 import FullRoleCard from "./FullRoleCard";
 import RolePieces, { railEdges } from "./RolePieces";
 import { applyBarShows } from "./useApplyBarStuck";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+/**
+ * The phone tab bar's height in CSS pixels, from the shell's own token in client/src/index.css (`--tabbar-h`, a
+ * calc of rem, px and the safe area). The safe area is 0 on the first screen in Safari, where its own toolbar sits
+ * over the home indicator.
+ */
+const TABBAR_PX = (() => {
+  const css = readFileSync(resolve(__dirname, "../../index.css"), "utf8");
+  const m = /--tabbar-h:\s*calc\(([^;]+)\);/.exec(css);
+  if (!m) throw new Error("--tabbar-h is not in index.css");
+  const body = m[1].replace(/env\([^)]*\)/g, "0px");
+  let px = 0;
+  for (const [, n, unit] of Array.from(body.matchAll(/([\d.]+)(rem|px)/g))) px += Number(n) * (unit === "rem" ? 16 : 1);
+  return px;
+})();
 
 const SECTIONS = {
   idealBackground: [],
@@ -75,25 +93,44 @@ describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", (
     expect(applyBarShows(null, 664, 64, 130)).toBe(false);
   });
 
-  it("draws Apply under the goal on the first screen with the goal whole, and the opaque bar once it scrolls away", async () => {
-    // A phone's first screen: the goal at 290 to 370, the act in the flow at 380 to 500, all above the bar line.
+  it("draws Apply whole above the tab bar on the first screen, and the opaque bar once it scrolls away", async () => {
+    // jsdom lays nothing out, so this models the phone's first screen from the card's own order, with the heights the
+    // 1.3.42 page measured on a 390x664 iPhone (the browser smoke measures the real page in WebKit and Chromium):
+    // everything above the card, the title block, and, when the act follows the goal, the panel down to the goal's
+    // foot. 1.3.42 drew the act under the goal and its lower edge fell behind the tab bar; this model fails it.
     let scrolled = 0;
+    const ABOVE_CARD = 239;
+    const TITLE_BLOCK = 115;
+    const PANEL_TO_GOAL_FOOT = 192;
+    const ACT = 44;
     vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
       const box = (top: number, height: number) => ({ top: top - scrolled, bottom: top - scrolled + height, left: 0, right: 390, width: 390, height, x: 0, y: top - scrolled, toJSON: () => ({}) }) as DOMRect;
-      if (this.hasAttribute("data-one-minute-goal")) return box(290, 80);
-      if (this.hasAttribute("data-phone-act")) return box(380, 120);
+      const card = this.closest("[data-full-role-card]");
+      const act = card?.querySelector("[data-phone-act]");
+      const goal = card?.querySelector("[data-one-minute-goal]");
+      const actAfterGoal = !!act && !!goal && !!(goal.compareDocumentPosition(act) & Node.DOCUMENT_POSITION_FOLLOWING);
+      const actTop = ABOVE_CARD + TITLE_BLOCK + 16 + (actAfterGoal ? PANEL_TO_GOAL_FOOT : 0);
+      if (this.hasAttribute("data-phone-act")) return box(actTop, ACT);
+      if (this.hasAttribute("data-one-minute-goal")) return box(actAfterGoal ? actTop - 96 : actTop + ACT + 80, 80);
       return box(0, 0);
     });
-    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(120);
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(ACT);
     Object.defineProperty(window, "innerHeight", { configurable: true, value: 664 });
     const el = await card(seat({ commitmentPct: 60, track: "contractor" }));
     const inflow = el.querySelector("[data-phone-act]") as HTMLElement;
     const bar = el.querySelector("[data-phone-apply-bar]") as HTMLElement;
-    const goal = el.querySelector("[data-one-minute-goal]") as HTMLElement;
-    // Apply is on the first screen, under the goal, and nothing covers the goal: the bar is not drawn.
-    expect(inflow.getBoundingClientRect().top).toBeGreaterThanOrEqual(goal.getBoundingClientRect().bottom);
-    expect(inflow.getBoundingClientRect().bottom).toBeLessThanOrEqual(664);
-    // The fact tiles come after the act on a phone, so they never push it off the first screen (the lead, 20 Nov 2026).
+    const panel = el.querySelector("[data-role-one-minute]") as HTMLElement;
+    // The whole box inside what the tab bar leaves of the screen: the tab bar's own height is read from the shell's
+    // token, never assumed. The old test read `bottom <= 664`, the whole screen, and passed while the tab bar hid it.
+    expect(TABBAR_PX).toBeGreaterThan(40);
+    const visibleFoot = 664 - TABBAR_PX;
+    const box = inflow.getBoundingClientRect();
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(visibleFoot);
+    // Right after the title block, above the panel and its goal (the lead, after 1.3.42).
+    expect(within(el).getByText("Lead Finance Steward").compareDocumentPosition(inflow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(inflow.compareDocumentPosition(panel) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(panel.contains(inflow)).toBe(false);
     const tiles = el.querySelector('[data-testid="card-facts"]');
     expect(tiles).toBeTruthy();
     expect(inflow.compareDocumentPosition(tiles!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
