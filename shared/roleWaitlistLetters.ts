@@ -11,6 +11,9 @@
  *   GET  /api/admin/roles/waitlist-letters            counts per role and the letters sent so far
  *   POST /api/admin/roles/waitlist-letters/send       one letter to everyone waiting for one role
  *
+ * A letter goes only to the people who ticked "write to me" on the sign-up (`lettersRecipients`);
+ * a sign-up from before the tick existed is never written to, and the screen says "N of M said yes".
+ *
  * Who may send is the capability `comms.manage` (shared/capabilities.ts):
  * the village's letters to people who agreed to hear from it.
  *
@@ -40,7 +43,7 @@ export const WAITLIST_LETTER_PROBLEMS = {
   confirm: "Read the letter and press send yourself. Nothing is sent without that press.",
   count: "The list changed since you read it. Read the count again and press send once more.",
   tooMany: `That is more than ${WAITLIST_LETTER_LIMITS.recipients} people. Write to them in parts.`,
-  nobody: "Nobody is waiting for this role right now.",
+  nobody: "Nobody who said yes to letters is waiting for this role right now.",
 } as const;
 
 /** The people waiting for one role, as the admin list groups them. */
@@ -49,6 +52,8 @@ export interface WaitlistGroup {
   name: string;
   /** Distinct addresses waiting. A person who signed up twice counts once. */
   count: number;
+  /** Of those, how many said yes to letters. A letter goes to this many. */
+  yes: number;
   rows: WaitlistRow[];
 }
 
@@ -57,17 +62,38 @@ export function waitlistByRole(rows: readonly WaitlistRow[]): WaitlistGroup[] {
   const groups = new Map<string, WaitlistGroup>();
   for (const row of rows) {
     for (const role of row.roles) {
-      const g = groups.get(role.id) ?? { roleId: role.id, name: role.name, count: 0, rows: [] };
+      const g = groups.get(role.id) ?? { roleId: role.id, name: role.name, count: 0, yes: 0, rows: [] };
       g.rows.push(row);
       groups.set(role.id, g);
     }
   }
   return Array.from(groups.values())
-    .map((g) => ({ ...g, count: new Set(g.rows.map((r) => r.email)).size }))
+    .map((g) => ({ ...g, count: new Set(g.rows.map((r) => r.email)).size, yes: lettersRecipients(g.rows).length }))
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-/** One address per person: the newest row of each address, so a repeat sign-up is written to once. */
+/** The words for why the button is closed, in each language the screen speaks. `switch` names where it opens. */
+export const BLOCKED_WORDS: Record<ApplicantLanguage, Record<"noSender" | "paused" | "off" | "preview" | "unreadable", string>> = {
+  en: {
+    noSender: "This village has no email sender set up yet. Set one up under Email settings first.",
+    paused: "The village's email is paused. Take the pause off in the Comms settings first.",
+    off: "Letters are closed because the Comms module is off. Turn it on to Members or Public in Admin, Modules, Comms.",
+    preview: "Letters are closed while the Comms module is in Preview, because a letter sent now would go to the rehearsal inbox and not to the people. Set Comms to Members or Public in Admin, Modules, Comms.",
+    unreadable: "The village's email state could not be read, so nothing is sent.",
+  },
+  es: {
+    noSender: "Esta aldea aún no tiene un remitente de correo. Configúralo primero en los ajustes de correo.",
+    paused: "El correo de la aldea está en pausa. Quita la pausa en los ajustes de Comms primero.",
+    off: "Las cartas están cerradas porque el módulo Comms está apagado. Enciéndelo en Miembros o Público en Admin, Módulos, Comms.",
+    preview: "Las cartas están cerradas mientras el módulo Comms está en Vista previa, porque una carta enviada ahora iría a la bandeja de ensayo y no a las personas. Pon Comms en Miembros o Público en Admin, Módulos, Comms.",
+    unreadable: "No se pudo leer el estado del correo de la aldea, así que no se envía nada.",
+  },
+};
+
+/**
+ * One address per person: the newest row of each address, so a repeat sign-up is written to once.
+ * The newest row's tick decides, so a person who later signs up without it is not written to.
+ */
 export function oneRowPerAddress<T extends { email: string; createdAt: string }>(rows: readonly T[]): T[] {
   const seen = new Map<string, T>();
   for (const r of rows) {
@@ -75,6 +101,11 @@ export function oneRowPerAddress<T extends { email: string; createdAt: string }>
     if (!had || r.createdAt > had.createdAt) seen.set(r.email, r);
   }
   return Array.from(seen.values());
+}
+
+/** The people a letter for one role goes to: one row per address, only those whose newest row said yes to letters. */
+export function lettersRecipients<T extends { email: string; createdAt: string; consent: boolean }>(rows: readonly T[]): T[] {
+  return oneRowPerAddress(rows).filter((r) => r.consent === true);
 }
 
 export interface WaitlistLetterAsk {

@@ -10,11 +10,14 @@
  * the capability gate passed (`comms.manage`, the village's letters to people who agreed to
  * hear from it). The letter's words come from that person's own screen.
  *
- * Each letter goes as essential mail, because the person asked to hear about this role, and
- * essential mail has no permission ledger to ask. So this route asks the questions essential
- * mail skips: an address on the suppression list is skipped, a village that paused its email or
- * is rehearsing sends nothing, and every letter carries a one-click link off the waitlist
- * (purpose `waitlist_remove`, below).
+ * Each letter is ordinary consented mail, kind `letters`, through the post office. It goes only
+ * to an address whose newest sign-up ticked "write to me" (`lettersRecipients`); that tick, with
+ * its date, is recorded as the person's yes to letters (basis `asked`) unless they already have
+ * an answer, so an earlier unsubscribe is never overwritten. The post office then does what it
+ * does for every letter: the suppression list, permission, Pause all, the daily cap, the
+ * unsubscribe header. The comms module must be live: while it is off or in preview the button is
+ * closed and says which switch opens it. Every letter also carries a one-click link off the
+ * waitlist (purpose `waitlist_remove`, below).
  *
  * The log keeps who sent, which role, the subject, when and how many. It keeps no address.
  */
@@ -23,14 +26,17 @@ import type { AppDeps } from "../lib/appDeps";
 import { post } from "../lib/comms/postOffice";
 import { registerAction, type ActionHandler } from "../lib/comms/actions";
 import { signLink } from "../lib/comms/links";
-import { isSuppressed } from "../lib/comms/suppressions";
+import { contactByEmailKey, upsertContact } from "../repos/commsContacts";
+import { permissionRow, upsertPermission } from "../repos/commsPermissions";
+import { randomBytes } from "node:crypto";
 import { dressLetter } from "../lib/comms/villageLetter";
 import { recentEvents, recordEvent } from "../lib/events";
 import { listOrgRoles } from "../lib/orgChart";
 import { removeWaitlistAddressOf, waitlistForRole, waitlistRowById } from "../repos/roleWaitlist";
 import { createHash } from "node:crypto";
 import {
-  oneRowPerAddress,
+  BLOCKED_WORDS,
+  lettersRecipients,
   readWaitlistLetter,
   REMOVE_PAGE_WORDS,
   UNSUBSCRIBE_LINES,
@@ -44,7 +50,9 @@ import type { PostResult } from "../../shared/comms/contracts";
 type Deps = Pick<AppDeps, "authedUser" | "guardCapability" | "mayStillSee" | "getPool" | "commsPostOffice" | "members" | "projectName">;
 
 const REFUSAL = { status: 403, body: { error: "Sending the village's letters is an appointment" } };
-const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["sending", "sent", "delivered", "duplicate"]);
+/** Accepted: sent, or queued for the post office to send under its own cap. */
+const WENT: ReadonlySet<PostResult["status"]> = new Set<PostResult["status"]>(["queued", "sending", "sent", "delivered", "duplicate"]);
+const CONSENT_WORDS = "Yes, write to me about this role and other ways into the village. One click takes me off.";
 const LINK_DAYS = 365;
 /** Sends in the air at once. */
 const AT_ONCE = 8;
@@ -94,14 +102,16 @@ export function register(app: Express, deps: Deps): void {
   registerAction(waitlistRemoveAction({ getPool }));
 
   /** Whether this village can send real letters right now, and the sentence when it cannot. */
-  async function blocker(): Promise<string | null> {
-    if (!commsPostOffice.hasApiKey() || commsPostOffice.sender() === "") return "This village has no email sender set up yet. Set it up under Email settings first.";
+  async function blocker(lang: "en" | "es"): Promise<string | null> {
+    const w = BLOCKED_WORDS[lang];
+    if (!commsPostOffice.hasApiKey() || commsPostOffice.sender() === "") return w.noSender;
     try {
       const mode = commsPostOffice.mode ? await commsPostOffice.mode() : null;
-      if (mode?.paused) return "The village's email is paused. Take the pause off first.";
-      if (mode?.lifecycle === "preview") return "The village's email is rehearsing, so no real letter goes out. Switch it live first.";
+      if (mode?.lifecycle === "off") return w.off;
+      if (mode?.lifecycle === "preview") return w.preview;
+      if (mode?.paused) return w.paused;
     } catch {
-      return "The village's email state could not be read, so nothing is sent.";
+      return w.unreadable;
     }
     return null;
   }
@@ -118,7 +128,7 @@ export function register(app: Express, deps: Deps): void {
       }
     }
     res.set("Cache-Control", "no-store").json({
-      blocked: await blocker(),
+      blocked: await blocker(req.query.lang === "es" ? "es" : "en"),
       sent: events.map((e) => ({ id: e.id, at: e.at, by: e.actorUserId ? names.get(e.actorUserId) ?? "A member" : "A member", line: e.text, roleId: e.entityRef })),
     });
   });
@@ -131,13 +141,13 @@ export function register(app: Express, deps: Deps): void {
     if (!read.ok) return res.status(400).json({ error: "invalid", field: read.field, message: read.problem });
     const ask = read.value;
     if (pressedTooOften(String(user.id))) return res.status(429).json({ error: "too_many", message: "Too many letters this hour. Try again later." });
-    const why = await blocker();
+    const why = await blocker(ask.lang);
     if (why) return res.status(409).json({ error: "cannot_send", message: why });
 
     const pool = getPool();
     const role = (await listOrgRoles(pool)).find((r) => r.id === ask.roleId);
     if (!role) return res.status(404).json({ error: "no_role", message: WAITLIST_LETTER_PROBLEMS.role });
-    const rows = oneRowPerAddress((await waitlistForRole(pool, ask.roleId)).map((r) => ({ ...r, email: r.emailKey })));
+    const rows = lettersRecipients((await waitlistForRole(pool, ask.roleId)).map((r) => ({ ...r, email: r.emailKey })));
     if (!rows.length) return res.status(409).json({ error: "nobody", message: WAITLIST_LETTER_PROBLEMS.nobody });
     if (rows.length > WAITLIST_LETTER_LIMITS.recipients) return res.status(409).json({ error: "too_many_people", message: WAITLIST_LETTER_PROBLEMS.tooMany, count: rows.length });
     if (ask.expectedCount !== rows.length) return res.status(409).json({ error: "count_changed", message: WAITLIST_LETTER_PROBLEMS.count, count: rows.length });
@@ -151,9 +161,11 @@ export function register(app: Express, deps: Deps): void {
     let failed = 0;
 
     async function one(row: (typeof rows)[number]): Promise<void> {
-      if (await isSuppressed(pool, row.emailKey)) {
-        skipped += 1;
-        return;
+      // The tick is the yes to letters, recorded once. An answer already on file (an unsubscribe, say) is never overwritten.
+      const contact = (await contactByEmailKey(pool, row.emailKey)) ?? null;
+      const contactId = contact?.id ?? (await upsertContact(pool, { id: `ct_${randomBytes(12).toString("hex")}`, emailKey: row.emailKey, email: row.emailKey, name: null, userId: row.userId, source: "role_waitlist.letter", timezone: null })).id;
+      if (!(await permissionRow(pool, contactId, "letters"))) {
+        await upsertPermission(pool, { contactId, kind: "letters", state: "yes", basis: "asked", source: "role_waitlist", evidence: { words: CONSENT_WORDS, roleIds: row.roleIds, at: row.consentAt } });
       }
       const token = signLink("waitlist_remove", { w: row.id, l: ask.lang }, LINK_DAYS);
       const link = `${origin.replace(/\/$/, "")}/email/a?t=${encodeURIComponent(token)}`;
@@ -161,9 +173,9 @@ export function register(app: Express, deps: Deps): void {
       const dressed = await dressLetter(pool, origin, { subject: ask.subject, text }, { lang: ask.lang, comeAndPlay: false, villageName: village });
       const result = await post(commsPostOffice, {
         idempotencyKey: `waitlist-letter:${pressId}:${row.id}`,
-        kind: "essential",
+        kind: "letters",
         origin: "role_waitlist.letter",
-        to: { email: row.emailKey },
+        to: { email: row.emailKey, contactId },
         subject: ask.subject,
         html: dressed.html,
         text: dressed.text,

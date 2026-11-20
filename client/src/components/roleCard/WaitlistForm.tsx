@@ -20,6 +20,8 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
   const base = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  // Unticked by default: the village writes only to people who say yes.
+  const [consent, setConsent] = useState(false);
   const [picked, setPicked] = useState<string[]>(chosen ? [chosen] : []);
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [problem, setProblem] = useState<string | null>(null);
@@ -27,7 +29,9 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
   if (state === "done") {
     return (
       <p role="status" className="rounded-xl border border-notice/50 bg-muted px-4 py-3 text-card-foreground" data-waitlist-done="">
-        {t({ message: "Thank you. Your details are saved. We will write when the role opens.", context: "coming-soon waitlist: after signing up" })}
+        {consent
+          ? t({ message: "Thank you. Your details are saved. We will write when the role opens.", context: "coming-soon waitlist: after signing up" })
+          : t({ message: "Thank you. Your details are saved. We will not write to you unless you tick the box next time.", context: "coming-soon waitlist: after signing up without the tick" })}
       </p>
     );
   }
@@ -37,7 +41,7 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
     setProblem(null);
     setState("sending");
     try {
-      const r = await gameFetch("/api/roles/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, whatsapp, roleIds: picked }) });
+      const r = await gameFetch("/api/roles/waitlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, whatsapp, roleIds: picked, consent }) });
       if (r.ok) return setState("done");
       const d = await r.json().catch(() => ({}));
       setProblem(r.status === 429 ? t({ message: "Too many sign-ups from here just now. Please try again in an hour.", context: "coming-soon waitlist: rate limited" }) : String(d?.message ?? t({ message: "That did not save. Please try again.", context: "coming-soon waitlist: failed" })));
@@ -68,7 +72,11 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
           ))}
         </fieldset>
       )}
-      <p className={HINT}>{t({ message: "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time.", context: "coming-soon waitlist: what the details are for" })}</p>
+      <label className="flex min-h-11 items-start gap-2 text-card-foreground" htmlFor={`${base}-consent`}>
+        <input id={`${base}-consent`} type="checkbox" className="mt-1 size-5 accent-notice" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        <span>{t({ message: "Yes, write to me about this role and other ways into the village. One click takes me off.", context: "coming-soon waitlist: the consent tick" })}</span>
+      </label>
+      <p className={HINT}>{t({ message: "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off.", context: "coming-soon waitlist: what the details are for" })}</p>
       {problem && (
         <p role="alert" className="text-sm text-destructive">
           {problem}

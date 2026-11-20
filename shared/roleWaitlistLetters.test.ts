@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { WaitlistRow } from "./roleWaitlist";
-import { oneRowPerAddress, readWaitlistLetter, REMOVE_PAGE_WORDS, UNSUBSCRIBE_LINES, waitlistByRole, waitlistLetterLogLine, WAITLIST_LETTER_LIMITS } from "./roleWaitlistLetters";
+import { lettersRecipients, oneRowPerAddress, readWaitlistLetter, REMOVE_PAGE_WORDS, UNSUBSCRIBE_LINES, waitlistByRole, waitlistLetterLogLine, WAITLIST_LETTER_LIMITS } from "./roleWaitlistLetters";
 
-const row = (id: string, email: string, roles: string[], createdAt = "2026-11-01T00:00:00.000Z"): WaitlistRow => ({
+const row = (id: string, email: string, roles: string[], createdAt = "2026-11-01T00:00:00.000Z", consent = true): WaitlistRow => ({
   id,
   email,
   whatsapp: null,
   roles: roles.map((r) => ({ id: r, name: r.toUpperCase() })),
   member: false,
+  consent,
   createdAt,
 });
 
@@ -26,6 +27,24 @@ describe("the waitlist, grouped by role", () => {
   it("writes to one row per address, the newest", () => {
     const rows = oneRowPerAddress([row("1", "a@x.org", ["g"], "2026-11-01T00:00:00.000Z"), row("2", "a@x.org", ["g"], "2026-11-05T00:00:00.000Z"), row("3", "b@x.org", ["g"])]);
     expect(rows.map((r) => r.id).sort()).toEqual(["2", "3"]);
+  });
+});
+
+describe("who a letter goes to", () => {
+  it("is only the people whose newest sign-up ticked, once each; unticked and pre-tick rows are never in it", () => {
+    const rows = [
+      row("1", "yes@x.org", ["g"], "2026-11-01T00:00:00.000Z", true),
+      row("2", "yes@x.org", ["g"], "2026-11-02T00:00:00.000Z", true),
+      row("3", "no@x.org", ["g"], "2026-11-01T00:00:00.000Z", false),
+      row("4", "old@x.org", ["g"], "2026-10-01T00:00:00.000Z", false),
+      // Ticked once, then signed up again without the tick: the newest answer decides.
+      row("5", "changed@x.org", ["g"], "2026-11-01T00:00:00.000Z", true),
+      row("6", "changed@x.org", ["g"], "2026-11-09T00:00:00.000Z", false),
+    ];
+    expect(lettersRecipients(rows).map((r) => r.email)).toEqual(["yes@x.org"]);
+    expect(lettersRecipients(rows.filter((r) => !r.consent))).toEqual([]);
+    const g = waitlistByRole(rows)[0];
+    expect([g.count, g.yes]).toEqual([4, 1]);
   });
 });
 

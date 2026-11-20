@@ -13,7 +13,7 @@ import { roleAnchor } from "@shared/roleWaitlist";
 import { WAITLIST_LETTER_LIMITS } from "@shared/roleWaitlistLetters";
 import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL, TILE } from "@/components/journey/look";
 
-export default function WaitlistLetter({ roleId, roleName, count, onDone }: { roleId: string; roleName: string; count: number; onDone: () => void }) {
+export default function WaitlistLetter({ roleId, roleName, count, total, onDone }: { roleId: string; roleName: string; count: number; total: number; onDone: () => void }) {
   const { t, i18n } = useLingui();
   const village = useVillageName();
   const link = `${typeof window === "undefined" ? "" : window.location.origin}/roles#${roleAnchor(roleId)}`;
@@ -67,7 +67,7 @@ export default function WaitlistLetter({ roleId, roleName, count, onDone }: { ro
     <div className={`${TILE} grid gap-3`} data-waitlist-letter={roleId}>
       <h3 className="font-semibold text-foreground">{t({ message: `Write to everyone waiting for ${roleName}`, context: "waitlist letter: the heading" })}</h3>
       <p className={HINT}>
-        {t({ message: `This goes to ${count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist.`, context: "waitlist letter: what happens" })}
+        {t({ message: `${count} of ${total} said yes to letters, so this goes to ${count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist.`, context: "waitlist letter: what happens" })}
       </p>
       <label className="grid gap-1">
         <span className={LABEL}>{t({ message: "Subject", context: "waitlist letter: field" })}</span>

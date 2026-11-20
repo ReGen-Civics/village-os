@@ -1119,6 +1119,11 @@ msgstr ""
 #~ msgid "The Earned Equity and Credits on your pay. Each line issues to your account once the Treasurer approves it."
 #~ msgstr "La Participación Ganada y los Créditos de tu pago. Cada línea se emite a tu cuenta cuando la Tesorería la aprueba."
 
+#: client/src/components/roleCard/WaitlistLetter.tsx
+msgctxt "waitlist letter: what happens"
+msgid "{count} of {total} said yes to letters, so this goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
+msgstr "{count} de {total} dijeron que sí a las cartas, así que esto llega a {count} personas. Se envía solo cuando pulsas enviar, y cada carta termina con un enlace que saca a la persona de la lista de espera."
+
 #: client/src/pages/ChangeRequests.tsx
 msgid "Nobody has written yet."
 msgstr ""
@@ -2496,6 +2501,11 @@ msgstr ""
 msgctxt "proposal goals list"
 msgid "Pick one"
 msgstr "Elige una"
+
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: one sign-up's tick"
+msgid "said yes to letters"
+msgstr "dijo que sí a las cartas"
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "The reading above is the first one of {name}."
@@ -3984,6 +3994,19 @@ msgctxt "founding application refusal"
 msgid "One of those roles isn't open any more. Reload the page and pick again."
 msgstr "Uno de esos roles ya no está abierto. Vuelve a cargar la página y elige de nuevo."
 
+#. placeholder {0}: g.yes
+#. placeholder {1}: g.count
+#. placeholder {2}: g.yes
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: how many said yes to letters"
+msgid "{0} of {1} said yes to letters. A letter goes to those {2}."
+msgstr "{0} de {1} dijeron que sí a las cartas. Una carta llega a esas {2}."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: after signing up without the tick"
+msgid "Thank you. Your details are saved. We will not write to you unless you tick the box next time."
+msgstr "Gracias. Tus datos están guardados. No te escribiremos a menos que marques la casilla la próxima vez."
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -4171,9 +4194,9 @@ msgid "The agreement this vote would adopt"
 msgstr ""
 
 #: client/src/components/roleCard/WaitlistLetter.tsx
-msgctxt "waitlist letter: what happens"
-msgid "This goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
-msgstr "Esto llega a {count} personas. Se envía solo cuando pulsas enviar, y cada carta termina con un enlace que saca a la persona de la lista de espera."
+#~ msgctxt "waitlist letter: what happens"
+#~ msgid "This goes to {count} people. It is sent only when you press send, and every letter ends with a link that takes the person off the waitlist."
+#~ msgstr "Esto llega a {count} personas. Se envía solo cuando pulsas enviar, y cada carta termina con un enlace que saca a la persona de la lista de espera."
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgctxt "label of the season file text box"
@@ -4578,8 +4601,7 @@ msgid "Hello,\n"
 "You can read the role card here: {link}\n"
 "\n"
 "With care,"
-msgstr ""
-"Hola,\n"
+msgstr "Hola,\n"
 "\n"
 "Nos pediste que te avisáramos cuando se abra {roleName} en {village}. Así están las cosas: (escribe aquí las novedades).\n"
 "\n"
@@ -5772,6 +5794,11 @@ msgstr ""
 #: client/src/pages/FundingRounds.tsx
 msgid "When shaping starts (leave empty to keep the round in Seed)"
 msgstr ""
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: what the details are for"
+msgid "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off."
+msgstr "Usamos estos datos solo para esta lista de espera, y puedes pedirnos que los quitemos en cualquier momento. Cada carta trae un enlace para salir."
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -11435,6 +11462,11 @@ msgctxt "circle hearth, a stone"
 msgid "{0}, open"
 msgstr "{0}, abierto"
 
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: one sign-up without the tick"
+msgid "no tick"
+msgstr "sin casilla marcada"
+
 #: client/src/components/governance/TermsOnOfferField.tsx
 #: client/src/components/openProposal/RoleCardBridge.tsx
 #~ msgid "I'd like to talk about the terms."
@@ -14191,6 +14223,11 @@ msgstr ""
 msgid "We just updated the site"
 msgstr "Acabamos de actualizar el sitio"
 
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the consent tick"
+msgid "Yes, write to me about this role and other ways into the village. One click takes me off."
+msgstr "Sí, escríbeme sobre este rol y otras maneras de entrar en la aldea. Un clic me saca de la lista."
+
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role"
 msgid "Opening the role card…"
@@ -15481,9 +15518,9 @@ msgid "Help me make what I've written clearer."
 msgstr "Ayúdame a que lo que escribí quede más claro."
 
 #: client/src/components/roleCard/WaitlistForm.tsx
-msgctxt "coming-soon waitlist: what the details are for"
-msgid "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time."
-msgstr "Usamos estos datos solo para avisarte cuando se abra el rol. Cada carta trae un enlace que te saca de la lista de espera, y puedes pedirnos que los quitemos en cualquier momento."
+#~ msgctxt "coming-soon waitlist: what the details are for"
+#~ msgid "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time."
+#~ msgstr "Usamos estos datos solo para avisarte cuando se abra el rol. Cada carta trae un enlace que te saca de la lista de espera, y puedes pedirnos que los quitemos en cualquier momento."
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you reference"

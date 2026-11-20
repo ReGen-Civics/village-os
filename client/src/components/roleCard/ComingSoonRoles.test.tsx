@@ -27,17 +27,34 @@ describe("the coming-soon roles", () => {
     expect((screen.getByLabelText("Garden Steward") as HTMLInputElement).checked).toBe(false);
   });
 
-  it("opens the named role's form from the hash, and says thank you once saved", async () => {
+  it("opens the named role's form from the hash, leaves the consent tick unticked, and says thank you once saved", async () => {
     window.history.replaceState(null, "", "/roles#waitlist-garden");
     const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
     vi.stubGlobal("fetch", fetchMock);
     render(<ComingSoonRoles roles={ROLES} />);
     await waitFor(() => expect(document.querySelector("[data-waitlist-form]")).toBeTruthy());
     expect((screen.getByLabelText("Garden Steward") as HTMLInputElement).checked).toBe(true);
+    // The tick is unticked by default.
+    const tick = screen.getByLabelText(/Yes, write to me about this role/) as HTMLInputElement;
+    expect(tick.checked).toBe(false);
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ana@example.org" } });
     fireEvent.click(screen.getByRole("button", { name: "Notify me" }));
+    await waitFor(() => expect(document.querySelector("[data-waitlist-done]")).toBeTruthy());
+    // Signing up without the tick works, sends consent false, and promises no letters.
+    expect(document.querySelector("[data-waitlist-done]")?.textContent).toContain("We will not write to you");
+    expect(JSON.parse(String((fetchMock.mock.calls[0] as any)[1].body))).toEqual({ email: "ana@example.org", whatsapp: "", roleIds: ["garden"], consent: false });
+  });
+
+  it("sends consent true only when the person ticks, and then promises a letter", async () => {
+    window.history.replaceState(null, "", "/roles#waitlist-garden");
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ ok: true }) }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ComingSoonRoles roles={ROLES} />);
+    await waitFor(() => expect(document.querySelector("[data-waitlist-form]")).toBeTruthy());
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "ben@example.org" } });
+    fireEvent.click(screen.getByLabelText(/Yes, write to me about this role/));
+    fireEvent.click(screen.getByRole("button", { name: "Notify me" }));
     await waitFor(() => expect(document.querySelector("[data-waitlist-done]")?.textContent).toBe("Thank you. Your details are saved. We will write when the role opens."));
-    const body = JSON.parse(String((fetchMock.mock.calls[0] as any)[1].body));
-    expect(body).toEqual({ email: "ana@example.org", whatsapp: "", roleIds: ["garden"] });
+    expect(JSON.parse(String((fetchMock.mock.calls[0] as any)[1].body)).consent).toBe(true);
   });
 });

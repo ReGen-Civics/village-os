@@ -23,13 +23,13 @@ interface SentLetter {
 }
 
 export default function WaitlistAdmin() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [rows, setRows] = useState<WaitlistRow[] | null>(null);
   const [writing, setWriting] = useState<string | null>(null);
   const [sent, setSent] = useState<SentLetter[]>([]);
   const [blocked, setBlocked] = useState<string | null>(null);
   const loadSent = useCallback(() => {
-    void gameFetch("/api/admin/roles/waitlist-letters")
+    void gameFetch(`/api/admin/roles/waitlist-letters?lang=${i18n.locale.startsWith("es") ? "es" : "en"}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (!d) return;
@@ -37,7 +37,7 @@ export default function WaitlistAdmin() {
         setBlocked(typeof d.blocked === "string" ? d.blocked : null);
       })
       .catch(() => undefined);
-  }, []);
+  }, [i18n.locale]);
   useEffect(() => {
     let live = true;
     void gameFetch("/api/admin/roles/waitlist")
@@ -63,19 +63,24 @@ export default function WaitlistAdmin() {
       <p className={`mt-2 ${HINT}`}>
         {t({ message: "Only admins see this. Nothing is sent unless a person writes a letter and presses send.", context: "roles page, admins only: the waitlist" })}
       </p>
+      {blocked && (
+        <p className={`mt-2 ${HINT}`} data-waitlist-blocked="">
+          {blocked}
+        </p>
+      )}
       <div className="mt-3 grid gap-4">
         {groups.map((g) => (
           <section key={g.roleId} className="grid gap-2" data-waitlist-role={g.roleId}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-semibold text-foreground">{t({ message: `${g.name}: ${g.count} waiting`, context: "roles page, admins only: one role's waitlist and its count" })}</h3>
-              <button type="button" className={BTN_SECONDARY} disabled={blocked !== null} onClick={() => setWriting(writing === g.roleId ? null : g.roleId)}>
+              <button type="button" className={BTN_SECONDARY} disabled={blocked !== null || g.yes === 0} onClick={() => setWriting(writing === g.roleId ? null : g.roleId)}>
                 {t({ message: `Write to everyone waiting for ${g.name}`, context: "roles page, admins only: open the letter" })}
               </button>
             </div>
-            {blocked && writing === null && <p className={HINT}>{blocked}</p>}
+            <p className={HINT}>{t({ message: `${g.yes} of ${g.count} said yes to letters. A letter goes to those ${g.yes}.`, context: "roles page, admins only: how many said yes to letters" })}</p>
             {writing === g.roleId && (
               <Suspense fallback={null}>
-                <WaitlistLetter roleId={g.roleId} roleName={g.name} count={g.count} onDone={loadSent} />
+                <WaitlistLetter roleId={g.roleId} roleName={g.name} count={g.yes} total={g.count} onDone={loadSent} />
               </Suspense>
             )}
             <ul className="grid gap-2">
@@ -83,7 +88,7 @@ export default function WaitlistAdmin() {
                 <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm text-card-foreground">
                   <span className="min-w-0 break-words">
                     <span className="font-semibold">{r.email}</span>
-                    {r.whatsapp ? ` · ${r.whatsapp}` : ""} · {civilDayWords(r.createdAt.slice(0, 10))}
+                    {r.whatsapp ? ` · ${r.whatsapp}` : ""} · {r.consent ? t({ message: "said yes to letters", context: "roles page, admins only: one sign-up's tick" }) : t({ message: "no tick", context: "roles page, admins only: one sign-up without the tick" })} · {civilDayWords(r.createdAt.slice(0, 10))}
                   </span>
                   <button type="button" className={BTN_SECONDARY} onClick={() => void remove(r.id)}>
                     {t({ message: "Remove", context: "roles page, admins only: remove a waitlist sign-up" })}
