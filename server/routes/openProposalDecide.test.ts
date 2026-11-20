@@ -597,7 +597,7 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       const c = decider.body.proposal.commitment;
       expect(c).toMatchObject({ pct: null, ask: { kind: "negotiate", why: "It depends on the first moon." }, suggestionCount: 2 });
       expect(c.roles).toHaveLength(1);
-      expect(c.roles[0]).toMatchObject({ roleId: gate, full: null, atCommitment: null, targetPct: 100 });
+      expect(c.roles[0]).toMatchObject({ roleId: gate, full: null, atCommitment: null, targetPct: 1000 });
       expect(c.roles[0].withThisPct).toBe(c.roles[0].heldPct);
       const mo = await page(id, MO.id);
       expect(mo.body.proposal.commitment).toBeNull();
