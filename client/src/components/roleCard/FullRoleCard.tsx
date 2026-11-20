@@ -261,7 +261,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const [waitOpen, setWaitOpen] = useState(false);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
-  const barRef = useRef<HTMLDivElement | null>(null);
+  const inflowRef = useRef<HTMLDivElement | null>(null);
 
   // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
@@ -439,21 +439,28 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     </footer>
   );
 
-  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11): the one act rides the bottom of the screen in a
-  // bar while the card is read. It is the card's last child, so it is reached last by the keyboard, after everything it
-  // sits over, and its own slot at the end of the card means the last lines scroll clear of it. On a desktop the act
-  // sits in the summary (founding) or the side column (directory).
-  // Opaque, and riding the screen only once the goal line is clear above it (screenshot check of 1.3.38,
-  // useApplyBarStuck.ts): before that it waits in its slot at the card's end, so the first screen shows the goal whole.
-  const barStuck = useApplyBarStuck(barRef, !wide && !!act);
+  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11), VISIBLE FROM THE START (the lead, after 1.3.38):
+  // on a phone the act sits in the flow right under the goal of "the role in one minute", so the first screen shows the
+  // goal whole and Apply beneath it. The bar along the phone's foot shows only while that act is off the screen
+  // (useApplyBarStuck.ts), so one Apply is in view at a time and the bar never covers the goal. The bar is opaque and
+  // the card's last child, so the keyboard reaches it last and its own slot lets the card's last lines scroll clear.
+  // While the bar shows, the act in the flow is off the screen and inert, so the act is offered once. On a desktop the
+  // act sits in the summary (founding) or the side column (directory).
+  // An open waitlist form stays in the flow alone: a form never rides the screen, and is never drawn twice.
+  const barShows = useApplyBarStuck(inflowRef, !wide && !!act && !(soon && waitOpen));
+  const phoneAct = !wide && act ? (
+    <div ref={inflowRef} className="mt-4" data-phone-act="" inert={barShows || undefined}>
+      {act}
+    </div>
+  ) : null;
   const phoneBar = !wide && act && (
     <div
-      ref={barRef}
-      className={`${barStuck ? "sticky bottom-[var(--tabbar-h,0px)] z-20" : "relative"} border-t border-notice/40 bg-card ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
+      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 border-t border-notice/40 bg-card ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
       data-phone-apply-bar=""
-      data-stuck={barStuck ? "" : undefined}
+      data-stuck={barShows ? "" : undefined}
+      hidden={!barShows}
     >
-      {act}
+      {barShows ? act : null}
     </div>
   );
 
@@ -498,6 +505,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           marks={marks}
           shared={shared}
           oneMinute={oneMinute}
+          phoneAct={phoneAct}
         />
         {footer}
         {phoneBar}
@@ -552,7 +560,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       <div className={`mt-5 grid gap-6 ${founding ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10" : "lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8"}`}>
         <div className="flex min-w-0 flex-col gap-5 break-words">
           {/* The role in one minute (the lead, 20 Nov 2026). The price and the act stay in the side column here. */}
-          <RoleOneMinute {...oneMinute} as={H4} act={null} />
+          <RoleOneMinute {...oneMinute} as={H4} act={null} phoneAct={phoneAct} />
           {aim && (
             <section className="rounded-xl border-l-4 border-notice bg-muted px-4 py-3" data-testid="purpose">
               <H4 className={EYEBROW}>{W.purpose}</H4>

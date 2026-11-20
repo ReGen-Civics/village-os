@@ -33,6 +33,7 @@ export default function SplitControl({
   per,
   pct,
   band = null,
+  explain = true,
 }: {
   idPrefix: string;
   split: Split;
@@ -46,6 +47,8 @@ export default function SplitControl({
   pct: number | null;
   /** The band at the same commitment, when the village shows ranges: a total outside it is said. */
   band?: BandAt | null;
+  /** Say how the shares rebalance. The application's terms step leaves it out (the lead, 20 Nov 2026). */
+  explain?: boolean;
 }) {
   const { t, i18n } = useLingui();
   const label = useShareLabel();
@@ -109,7 +112,7 @@ export default function SplitControl({
           );
         })}
       </ul>
-      <p className={HINT}>{t({ message: "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total.", context: "split control: how the shares rebalance" })}</p>
+      {explain && <p className={HINT} data-split-explainer="">{t({ message: "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total.", context: "split control: how the shares rebalance" })}</p>}
       {totalWords && (
         <p className="font-medium text-foreground" aria-live="polite" data-split-total="">
           <MoonText

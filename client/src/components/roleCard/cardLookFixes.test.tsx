@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 /**
- * THE SCREENSHOT CHECK OF 1.3.38: the phone's Apply bar waits until the goal is clear above it, and is opaque; the
+ * THE SCREENSHOT CHECK OF 1.3.38, and the lead's rule after it: a phone's Apply is in the flow under the goal from
+ * the first screen, and the opaque bar shows only while that act is off the screen; the
  * path-in tab never draws an empty panel; the phone's tab rail says it scrolls.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,7 +9,7 @@ import { cleanup, fireEvent, render, waitFor, within } from "@testing-library/re
 import { Sprout } from "lucide-react";
 import FullRoleCard from "./FullRoleCard";
 import RolePieces, { railEdges } from "./RolePieces";
-import { applyBarMayStick } from "./useApplyBarStuck";
+import { applyBarShows } from "./useApplyBarStuck";
 
 const SECTIONS = {
   idealBackground: [],
@@ -54,37 +55,60 @@ async function card(s = seat()) {
   return el;
 }
 
-describe("the phone's Apply bar", () => {
-  it("may ride the screen only once the goal's bottom is above where the bar would sit", () => {
+describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", () => {
+  it("shows the bar only while the act in the flow is off the screen", () => {
     // A 664px screen, a 64px tab bar and a 130px bar: the bar's top would be at 470.
-    expect(applyBarMayStick(520, 664, 64, 130)).toBe(false);
-    expect(applyBarMayStick(470, 664, 64, 130)).toBe(true);
-    expect(applyBarMayStick(-200, 664, 64, 130)).toBe(true);
-    // A card with no goal line has nothing to cover (control).
-    expect(applyBarMayStick(null, 664, 64, 130)).toBe(true);
+    // The act on the first screen, under the goal: no bar.
+    expect(applyBarShows({ top: 380, bottom: 500 }, 664, 64, 130)).toBe(false);
+    // Still below where the bar would sit (the card is low on the screen): the bar shows.
+    expect(applyBarShows({ top: 520, bottom: 640 }, 664, 64, 130)).toBe(true);
+    // Scrolled past above, or under a 60px sticky header: the bar shows.
+    expect(applyBarShows({ top: -200, bottom: -80 }, 664, 64, 130)).toBe(true);
+    expect(applyBarShows({ top: -60, bottom: 50 }, 664, 64, 130, 60)).toBe(true);
+    // Nothing laid out (control): the act in the flow stands alone.
+    expect(applyBarShows(null, 664, 64, 130)).toBe(false);
   });
 
-  it("waits in its slot at the card's end while the goal is low on the screen, and is opaque", async () => {
-    // The goal sits low on the first screen, where the bar would cover it.
-    const rect = vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
-      const bottom = this.hasAttribute("data-one-minute-goal") ? window.innerHeight - 40 : 0;
-      return { top: bottom - 30, bottom, left: 0, right: 0, width: 0, height: 30, x: 0, y: bottom - 30, toJSON: () => ({}) } as DOMRect;
+  it("draws Apply under the goal on the first screen with the goal whole, and the opaque bar once it scrolls away", async () => {
+    // A phone's first screen: the goal at 290 to 370, the act in the flow at 380 to 500, all above the bar line.
+    let scrolled = 0;
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+      const box = (top: number, height: number) => ({ top: top - scrolled, bottom: top - scrolled + height, left: 0, right: 390, width: 390, height, x: 0, y: top - scrolled, toJSON: () => ({}) }) as DOMRect;
+      if (this.hasAttribute("data-one-minute-goal")) return box(290, 80);
+      if (this.hasAttribute("data-phone-act")) return box(380, 120);
+      return box(0, 0);
     });
-    // The bar is 130px tall, so it would cover the goal's last 90px.
-    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(130);
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(120);
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 664 });
     const el = await card();
+    const inflow = el.querySelector("[data-phone-act]") as HTMLElement;
     const bar = el.querySelector("[data-phone-apply-bar]") as HTMLElement;
-    await waitFor(() => expect(bar.className).not.toContain("sticky"));
-    expect(bar.hasAttribute("data-stuck")).toBe(false);
+    const goal = el.querySelector("[data-one-minute-goal]") as HTMLElement;
+    // Apply is on the first screen, under the goal, and nothing covers the goal: the bar is not drawn.
+    expect(inflow.getBoundingClientRect().top).toBeGreaterThanOrEqual(goal.getBoundingClientRect().bottom);
+    expect(inflow.getBoundingClientRect().bottom).toBeLessThanOrEqual(664);
+    await waitFor(() => expect(bar.hidden).toBe(true));
+    expect(within(el).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
+    expect(within(inflow).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
+    // Scrolled on: the act in the flow has gone above the screen, so the bar rides the foot, opaque, and the act in
+    // the flow is inert, so one Apply is offered.
+    scrolled = 700;
+    window.dispatchEvent(new Event("scroll"));
+    await waitFor(() => expect(bar.hidden).toBe(false));
+    expect(bar.hasAttribute("data-stuck")).toBe(true);
+    expect(bar.className).toContain("sticky");
     expect(bar.className).toMatch(/(^|\s)bg-card(\s|$)/);
     expect(bar.className).not.toMatch(/bg-card\/|backdrop-blur/);
-    // Still the card's last child, with the one act, so the end of the card keeps it.
+    expect(inflow.hasAttribute("inert")).toBe(true);
+    expect(within(bar).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
+    // Still the card's last child, so the end of the card keeps its controls above the bar's own slot.
     expect(el.lastElementChild).toBe(bar);
-    expect(within(el).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
-    // Once the goal has scrolled clear above it, the bar rides the screen.
-    rect.mockImplementation(() => ({ top: -100, bottom: -70, left: 0, right: 0, width: 0, height: 30, x: 0, y: -100, toJSON: () => ({}) }) as DOMRect);
+    expect(el.querySelector('[data-testid="last-edited"]')).toBeTruthy();
+    // Scrolled back to the top: the bar goes again.
+    scrolled = 0;
     window.dispatchEvent(new Event("scroll"));
-    await waitFor(() => expect(bar.className).toContain("sticky"));
+    await waitFor(() => expect(bar.hidden).toBe(true));
+    expect(inflow.hasAttribute("inert")).toBe(false);
   });
 });
 
