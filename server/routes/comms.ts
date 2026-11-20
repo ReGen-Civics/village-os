@@ -42,6 +42,7 @@ import { register as registerJourneys, journeysTickDeps } from "./commsJourneys"
 import { runTimePollsNow, timePollDepsOf } from "./commsPolls";
 import { register as registerLetters, runLettersNow } from "./commsLetters";
 import { register as registerPaths } from "./commsPaths";
+import { register as registerWaitlistLetters } from "./roleWaitlistLetters";
 
 type Deps = Pick<
   AppDeps,
@@ -129,4 +130,6 @@ export function register(app: Express, deps: Deps): void {
   registerLetters(app, deps);
   // Paths: the path journeys' options, and the paths lane's rules, values and hand-off (server/routes/commsPaths.ts).
   registerPaths(app, deps);
+  // A person's letter to the people waiting for one coming-soon role (server/routes/roleWaitlistLetters.ts).
+  registerWaitlistLetters(app, deps);
 }

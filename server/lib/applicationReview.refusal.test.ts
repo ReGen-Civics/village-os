@@ -21,7 +21,7 @@ import { runSeraTool, SERA_TOOLS, type SeraActor } from "./seraAgent";
 const ROOT = path.resolve(__dirname, "..", "..");
 
 /** What a model-facing source must never name. */
-const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "applicantOnboarding", "scorecards", "walkthrough", "/applications/", "interviewer_roles", "selection_criteria"];
+const FORBIDDEN = [...SELECTION_IS_HUMAN, "applicationReview", "applicantOnboarding", "scorecards", "walkthrough", "/applications/", "interviewer_roles", "selection_criteria", "application_guide_notes", "conversationGuide", "applicationGuide", "guide-notes"];
 
 export function namesForbidden(source: string): string[] {
   return FORBIDDEN.filter((f) => source.includes(f));
@@ -51,6 +51,11 @@ describe("the scan sees what it is told to look for", () => {
     // The onboarding stage (0412): the references table, its module and its door.
     expect(namesForbidden("DELETE FROM application_references")).toContain("application_references");
     expect(namesForbidden('import { walkthroughFor } from "./applicantOnboarding"')).toEqual(expect.arrayContaining(["applicantOnboarding", "walkthrough"]));
+    // The conversation guide (0417): its notes table, its repo, its rules and its door.
+    expect(namesForbidden("SELECT note FROM application_guide_notes")).toContain("application_guide_notes");
+    expect(namesForbidden('import { guideItems } from "../../shared/conversationGuide"')).toContain("conversationGuide");
+    expect(namesForbidden('import * as g from "../repos/applicationGuide"')).toContain("applicationGuide");
+    expect(namesForbidden("POST /api/governance/applications/:ref/guide-notes")).toContain("guide-notes");
   });
 });
 
@@ -75,6 +80,9 @@ describe("the review's own files call no model", () => {
     "server/routes/applicantOnboarding.ts",
     "server/repos/applicantOnboarding.ts",
     "shared/applicantOnboarding.ts",
+    // The conversation guide's notes (0417): written and read by people, never by a model.
+    "server/repos/applicationGuide.ts",
+    "shared/conversationGuide.ts",
   ];
   const MODEL_IMPORT = /anthropic|openai|saberra|seraAgent|companions|roleGuide|llm|generateText|messages\.create/i;
   for (const file of OWN) {
@@ -95,7 +103,7 @@ describe("the agent tool tables are refused the reads", () => {
   it("no MCP tool reaches an application, a score or an interview", () => {
     const routes = MCP_TOOLS.flatMap((t) => t.routes);
     expect(routes.length).toBeGreaterThan(5);
-    expect(routes.filter((r) => /applications\/|open-proposals|application-status|scorecards|recuse|walkthrough|references|shortlist|final-conversation/.test(r))).toEqual([]);
+    expect(routes.filter((r) => /applications\/|open-proposals|application-status|scorecards|recuse|walkthrough|references|shortlist|final-conversation|guide-notes/.test(r))).toEqual([]);
   });
   it("CONTROL: the same filter does match a route that would read them", () => {
     expect(["GET /api/governance/applications/:ref/scorecards"].filter((r) => /applications\/|scorecards/.test(r))).toHaveLength(1);
@@ -119,6 +127,8 @@ describe("the agent tool tables are refused the reads", () => {
       "/api/governance/applications/sa-0123456789abcdef/references/mine",
       "/api/governance/applications/sa-0123456789abcdef/references",
       "/api/governance/applications/sa-0123456789abcdef/references/1/notes",
+      // The conversation guide's notes (0417): the reviewers' words against the role's criteria.
+      "/api/governance/applications/op-0123456789abcdef0123/guide-notes",
     ]) {
       expect(adminRequestDecision("GET", p, doc, "u1").ok, p).toBe(false);
     }
@@ -141,5 +151,35 @@ describe("Sera's tools", () => {
       expect(out.ok, tool).toBe(false);
       expect((out as any).error).toMatch(/no such Sera tool/);
     }
+  });
+});
+
+describe("the conversation guide's notes are read and written by people alone (0417)", () => {
+  const GUIDE_FILES = ["server/repos/applicationGuide.ts", "shared/conversationGuide.ts"];
+  it("the guide's own files exist and import no model client", () => {
+    const MODEL_IMPORT = /anthropic|openai|saberra|seraAgent|companions|roleGuide|llm|generateText|messages\.create/i;
+    for (const file of GUIDE_FILES) {
+      const full = path.join(ROOT, file);
+      expect(fs.existsSync(full), file).toBe(true);
+      const imports = fs.readFileSync(full, "utf8").split("\n").filter((l) => /^\s*import\b/.test(l));
+      expect(imports.filter((l) => MODEL_IMPORT.test(l)), file).toEqual([]);
+    }
+  });
+  it("the guide's door is not one an agent token can reach, whatever the village's admin list holds", () => {
+    for (const method of ["GET", "POST"]) {
+      expect(adminRequestDecision(method, "/api/governance/applications/op-0123456789abcdef0123/guide-notes", DEFAULT_AGENT_ADMIN_PATHS, "u1").ok, method).toBe(false);
+    }
+  });
+  it("no MCP tool and no Sera tool names the guide", () => {
+    expect(MCP_TOOLS.flatMap((t) => t.routes).filter((r) => /guide-notes/.test(r))).toEqual([]);
+    expect(SERA_TOOLS.filter((t) => /guide|note/i.test(t) && /application|applicant|review|criteri/i.test(t))).toEqual([]);
+  });
+  it("walkthroughFor's guide has no score, level, rank or rating field in its shape", () => {
+    const src = fs.readFileSync(path.join(ROOT, "shared/conversationGuide.ts"), "utf8");
+    const shape = src.slice(src.indexOf("export interface GuideItem"), src.indexOf("export function guideItems")) + src.slice(src.indexOf("export interface GuideNoteView"));
+    expect(shape).toContain("key: string");
+    expect(shape.match(/\b(score|level|rank|rating|grade)\w*\s*[?:]/gi) ?? []).toEqual([]);
+    // CONTROL: the same pattern does match a field that would hold one.
+    expect("  level: number;".match(/\b(score|level|rank|rating|grade)\w*\s*[?:]/gi)).toHaveLength(1);
   });
 });

@@ -34,9 +34,12 @@ import {
   type ShortlistAnswer,
   type Track,
 } from "../../shared/applicantOnboarding";
-import { kindOfRef, reviewStageOf } from "../../shared/applicationReview";
+import { kindOfRef, parseCriteria, reviewStageOf } from "../../shared/applicationReview";
 import * as review from "../repos/applicationReview";
 import * as repo from "../repos/applicantOnboarding";
+import * as guideRepo from "../repos/applicationGuide";
+import { guideItems, mayUseGuide, readGuideNote, GUIDE_WORDS, type GuideItem, type GuideView } from "../../shared/conversationGuide";
+import { sectionsForMany } from "./roleCardSections";
 import * as proposals from "../repos/openProposals";
 import { asksFor } from "../repos/roleProposals";
 import { inTransaction } from "../repos/liveSessions";
@@ -341,6 +344,49 @@ export async function addFinalConversation(deps: ReviewDeps, ref: string, viewer
   return { ok: true, opened: !!o };
 }
 
+// ── The conversation guide ──────────────────────────────────────────────────
+
+/** The guide's lines for one application: its snapshotted selection criteria, then its roles' qualities. Null when it has no review. */
+async function guideItemsOf(deps: Pick<ReviewDeps, "getPool">, ref: string): Promise<GuideItem[] | null> {
+  const pool = deps.getPool();
+  const confirmed = (await review.stepsOf(pool, ref)).find((x) => x.kind === "confirmed");
+  if (!confirmed) return null;
+  const d = confirmed.detail ?? {};
+  const roleIds: string[] = Array.isArray(d.roleIds) ? d.roleIds.map(String) : [];
+  const sections = await sectionsForMany(pool, roleIds);
+  const qualities: string[] = roleIds.flatMap((id: string) => sections.get(id)?.qualities ?? []);
+  return guideItems(parseCriteria(d.criteria), qualities);
+}
+
+/** The guide and the notes the viewer may read, or null when they may not use it. Notes only: nothing is scored or ranked. */
+async function guideFor(deps: ReviewDeps, ref: string, s: Standing, viewerId: string): Promise<GuideView | null> {
+  if (kindOfRef(ref) !== "open" || !mayUseGuide(s)) return null;
+  const items = await guideItemsOf(deps, ref);
+  if (!items) return null;
+  const stored = (await guideRepo.guideNotesOf(deps.getPool(), ref)).filter((n) => items.some((i) => i.key === n.key));
+  const first = new Map<string, string>();
+  for (const u of Array.from(new Set(stored.map((n) => n.authorUserId)))) {
+    const m: any = await deps.members.byId(u);
+    first.set(u, String(m?.name ?? "").trim().split(/\s+/)[0] || "A member");
+  }
+  return { items, notes: stored.map((n) => ({ key: n.key, by: first.get(n.authorUserId) ?? "A member", note: n.note, mine: n.authorUserId === viewerId })) };
+}
+
+/** One reviewer's note on one line of the guide. An empty note clears it. */
+export async function saveGuideNote(deps: ReviewDeps, ref: string, viewerId: string, body: unknown): Promise<{ ok: true } | Refusal> {
+  const pool = deps.getPool();
+  if (kindOfRef(ref) !== "open") return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+  const closed = await openAndConfirmed(pool, ref);
+  if (closed) return closed;
+  const s = await standingOf(deps, ref, viewerId);
+  if (!mayUseGuide(s)) return refuse(403, "not_allowed", GUIDE_WORDS.notAllowed);
+  const items = (await guideItemsOf(deps, ref)) ?? [];
+  const read = readGuideNote(body, items);
+  if (!read.ok) return refuse(400, "note", read.error);
+  await guideRepo.saveGuideNote(pool, { ref, key: read.key, userId: viewerId, note: read.note, at: deps.now() });
+  return { ok: true };
+}
+
 // ── The walkthrough ─────────────────────────────────────────────────────────
 
 export interface ServedReference {
@@ -377,6 +423,8 @@ export interface Walkthrough {
   /** The scorecards, read through the review's own rule (`scorecardsFor`). */
   scorecards: ScorecardView | null;
   roleNames: { followup: string | null; finalCall: string | null };
+  /** The conversation guide: the role's criteria and qualities as prompts, with reviewers' notes. Null for anybody who may not use it. */
+  guide: GuideView | null;
   you: { mayShortlist: boolean; mayAskReferences: boolean; mayAddFinal: boolean; isFinalCall: boolean; holdsPower: boolean };
 }
 
@@ -454,6 +502,7 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     roles: mayAssign ? await review.activeRoles(pool) : [],
     members: mayAssign ? await review.membersHoldingRoles(pool) : [],
     scorecards: await scorecardsFor(deps, ref, viewerId),
+    guide: await guideFor(deps, ref, s, viewerId),
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
       mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",

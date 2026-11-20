@@ -27,7 +27,7 @@ import type { Express } from "express";
 import { kindOfRef } from "../../shared/applicationReview";
 import { ONBOARDING_WORDS } from "../../shared/applicantOnboarding";
 import { isApplicant, statusByToken, type ReviewDeps } from "../lib/applicationReview";
-import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, ownReferencesFor, saveFollowUp, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
+import { addFinalConversation, answerShortlist, askForReferences, assignOwner, giveReferences, ownReferencesFor, saveFollowUp, saveGuideNote, walkthroughFor, type GiveOutcome } from "../lib/applicantOnboarding";
 
 const TOKEN_MAX = 300;
 const MINUTE = 60_000;
@@ -127,6 +127,12 @@ export function registerApplicantOnboarding(app: Express, deps: OnboardingRouteD
     const id = idOf(req);
     if (!id) return res.status(404).json(NOT_HERE);
     answer(res, await saveFollowUp(work, a.ref, a.viewerId, id, req.body), { message: ONBOARDING_WORDS.notesSaved });
+  });
+
+  app.post("/api/governance/applications/:ref/guide-notes", async (req, res) => {
+    const a = await acting(req, res, "guide");
+    if (!a) return;
+    answer(res, await saveGuideNote(work, a.ref, a.viewerId, req.body), { message: ONBOARDING_WORDS.notesSaved });
   });
 
   app.post("/api/governance/applications/:ref/final-conversation", async (req, res) => {

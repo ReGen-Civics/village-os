@@ -43,6 +43,8 @@ export interface WaitlistSignUp {
   emailKey: string;
   whatsapp: string | null;
   roleIds: string[];
+  /** The optional tick: "write to me". Unticked unless the request says `true` exactly. */
+  consent: boolean;
 }
 
 export type WaitlistRead = { ok: true; value: WaitlistSignUp } | { ok: false; field: "email" | "whatsapp" | "roleIds"; problem: string };
@@ -65,7 +67,7 @@ export function readWaitlistSignUp(raw: unknown, isComingSoon: (roleId: string) 
   if (ids.length > WAITLIST_LIMITS.roles) return { ok: false, field: "roleIds", problem: WAITLIST_PROBLEMS.tooManyRoles };
   const roleIds = ids.filter(isComingSoon);
   if (!roleIds.length || roleIds.length !== ids.length) return { ok: false, field: "roleIds", problem: WAITLIST_PROBLEMS.roles };
-  return { ok: true, value: { emailKey: emailKeyOf(email), whatsapp: wa || null, roleIds } };
+  return { ok: true, value: { emailKey: emailKeyOf(email), whatsapp: wa || null, roleIds, consent: o.consent === true } };
 }
 
 /** One row as an admin reads it. */
@@ -75,5 +77,7 @@ export interface WaitlistRow {
   whatsapp: string | null;
   roles: Array<{ id: string; name: string }>;
   member: boolean;
+  /** Said yes to letters on this sign-up. False for a sign-up without the tick and for one from before the tick existed. */
+  consent: boolean;
   createdAt: string;
 }
