@@ -40,6 +40,29 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.41 (2026-11-20)
+
+### What changed for your village
+
+- **Taking on several people for one role.** A role's limit now follows its total commitment (100% unless the role sets another), not only its number of places, so three people at 30% fit a one-place role. A decider may still go above the limit after one question: "This is above the limit set for this role, continue anyway?", with the numbers shown. Each choice to go above is recorded, and nobody goes over the limit without it.
+- **Saving a split.** In Compare Proposals, a decider can save which deliverables each person will hold. It shows in Compare and on each person's admin proposal page, and never to the person it is about, the public or agents.
+- **Quest approvers see the quest part of Compare**, with no role applications and no pay.
+- **New connector powers for the village's own AI coordinator:**
+  - Withdraw agenda items the holder may withdraw.
+  - Read which power groups a role carries.
+  - Add a power group to a seat with a person's approval quoted, never the veto, the break-glass or anything to do with money, and never removing one.
+- **A full-access switch for one role's agent.** Off unless a person turns it on in Admin, Players, Agents, and it is tied to a role, not a person: it reaches only an agent whose holder sits in that role, and stops the moment the seat changes hands. With it on, the agent can make admin changes and accept or discard review-page items for the holder, each shown first and carrying the holder's approval in the audit. Secrets, erasure, money, the agent accounts, the veto and break-glass, and sending letters or email stay a person's act. Turning it on or off is recorded and the Anchor Circle is told.
+
+### What you must do
+
+Nothing. The full-access switch stays off until a person turns it on.
+
+### Does it touch your data
+
+No migration. Saved splits and over-limit choices sit in each proposal's existing record, and the switch is one stored setting.
+
+---
+
 ## 1.3.40 (2026-11-20)
 
 ### What changed for your village
