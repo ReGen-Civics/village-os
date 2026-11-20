@@ -1,6 +1,6 @@
 /**
  * "COMING SOON" ON THE /roles INDEX (the lead, Anchor session of 19 Nov 2026; one card per role since 20 Nov 2026).
- * Each role is the index's own card (RoleIndexCard.tsx) with the waitlist's acts in place of Apply: "Notify me",
+ * Each role is the index's own card (RoleIndexCard.tsx) with the waitlist's acts in place of Apply: "Join the waitlist",
  * which opens the waitlist form inside that card (loaded on open, WaitlistForm.tsx), then "Apply early".
  *
  * Each card carries `id="role-<roleId>"`, and `/roles#waitlist-<roleId>` scrolls to it and opens its form, so
@@ -9,10 +9,10 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { roleAnchor, waitlistHash } from "@shared/roleWaitlist";
-import { BTN_SECONDARY, H2 } from "@/components/journey/look";
+import { BTN_SECONDARY, EYEBROW } from "@/components/journey/look";
 import { ComingSoonNote } from "@/components/ComingSoon";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
-import RoleIndexCard from "./RoleIndexCard";
+import RoleIndexCard, { GROUP_H2 } from "./RoleIndexCard";
 
 const WaitlistForm = lazy(() => import("./WaitlistForm"));
 
@@ -32,7 +32,7 @@ function hashed(roles: SoonRole[]): string | null {
   return roles.find((r) => h === waitlistHash(r.id))?.id ?? null;
 }
 
-export default function ComingSoonRoles({ roles }: { roles: SoonRole[] }) {
+export default function ComingSoonRoles({ roles, className = "" }: { roles: SoonRole[]; className?: string }) {
   const { t } = useLingui();
   const [open, setOpen] = useState<string | null>(() => hashed(roles));
   useEffect(() => {
@@ -51,12 +51,13 @@ export default function ComingSoonRoles({ roles }: { roles: SoonRole[] }) {
   const list = roles.map((r) => ({ id: r.id, name: r.name }));
 
   return (
-    <section aria-labelledby="coming-soon-heading" className="scroll-mt-24" id="coming-soon" data-coming-soon-roles={roles.length}>
-      <h2 id="coming-soon-heading" className={H2}>
-        {t({ message: "Coming soon", context: "badge on a role whose interviews start after the lead hires" })} ({roles.length})
+    <section aria-labelledby="coming-soon-heading" className={`scroll-mt-24 ${className}`} id="coming-soon" data-coming-soon-roles={roles.length}>
+      <p className={EYEBROW}>{t({ message: "Coming soon", context: "badge on a role whose interviews start after the lead hires" })}</p>
+      <h2 id="coming-soon-heading" className={`${GROUP_H2} mt-1`}>
+        {t({ message: "Upcoming roles", context: "roles page, the roles opening after the lead hires" })} <span className="text-lg font-normal text-muted-foreground">({roles.length})</span>
       </h2>
       {/* The approved notice, said once for every card under it, then the early way. */}
-      <ComingSoonNote className="mt-1 max-w-2xl" />
+      <ComingSoonNote className="mt-2 max-w-2xl" />
       <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground" data-early-words="">
         <EarlyWords />
       </p>
@@ -73,7 +74,7 @@ export default function ComingSoonRoles({ roles }: { roles: SoonRole[] }) {
                 <>
                   {open !== r.id && (
                     <button type="button" className={BTN_SECONDARY} onClick={() => setOpen(r.id)} aria-expanded={false} data-waitlist-open={r.id}>
-                      {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
+                      {t({ message: "Join the waitlist", context: "coming-soon waitlist: the button" })}
                       <span className="sr-only">{`: ${r.name}`}</span>
                     </button>
                   )}

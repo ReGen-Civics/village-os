@@ -96,14 +96,14 @@ describe("About you, on the open form", () => {
     expect(section).toBeTruthy();
     for (const label of [OPEN_WORDS.nameLabel, OPEN_WORDS.emailLabel, OPEN_WORDS.whyLabel, "Reference 1: name", /Your Human Design, Gene Keys, or other ways of working/]) expect(within(section).getByLabelText(label)).toBeTruthy();
     expect(section.querySelector("[data-attachments]")).toBeTruthy();
-    // The time zone and the start date belong to Your first day now, once.
+    // The time zone and the start date belong to Your first moon now, once.
     expect(within(section).queryByLabelText("Your time zone")).toBeNull();
     expect(within(document.querySelector('[data-stone="first"]') as HTMLElement).getByLabelText("Your time zone")).toBeTruthy();
     expect(document.querySelectorAll("[data-attachments]")).toHaveLength(1);
     expect(document.querySelectorAll('input[id="card-tz"]')).toHaveLength(1);
     const form = document.querySelector("[data-open-proposal]") as HTMLElement;
     const order = (sel: string) => Array.from(form.querySelectorAll("*")).indexOf(form.querySelector(sel) as Element);
-    // The brief's order (Phase A): Get to know us, About you, Your value, The terms, Your first day, Review & submit.
+    // The brief's order (Phase A): Get to know us, About you, Your value, The terms, Your first moon, Review & submit.
     expect(order("[data-know-us]")).toBeLessThan(order("[data-about-you-section]"));
     expect(order("[data-about-you-section]")).toBeLessThan(order("[data-goals-list]"));
     expect(order("[data-goals-list]")).toBeLessThan(order("[data-commitment]"));
@@ -193,7 +193,8 @@ describe("About you, on the open form", () => {
     sendNow();
     expect((await screen.findByRole("alert")).textContent).toMatch(/Tick the box/);
     expect(stoneNow()).toBe("about");
-    // The cursor lands on the tick itself, never the first box at the top of the step (final verification).
+    // The line above Continue takes the cursor to the tick itself, never the first box at the top of the step (final verification).
+    fireEvent.click(within(document.querySelector("[data-problems]") as HTMLElement).getByRole("link", { name: /Tick the box/ }));
     await waitFor(() => expect(document.activeElement?.id).toBe("propose-about-consent"));
     expect(posted).toHaveLength(0);
     fireEvent.click(screen.getByLabelText(/agree to the background check/i));

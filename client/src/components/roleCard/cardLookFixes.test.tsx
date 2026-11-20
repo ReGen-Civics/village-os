@@ -123,14 +123,16 @@ describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", (
 });
 
 describe("a long state note never pushes the phone's act off the first screen (the lead, 20 Nov 2026)", () => {
-  it("puts a venture's pitch note after Apply, and a coming-soon notice after Notify me, on a phone", async () => {
+  it("puts a venture's pitch note after Apply, and a coming-soon notice after Join the waitlist, on a phone", async () => {
     const v = await card({ ...seat(), futureVenture: true, state: "forming" } as any);
     const apply = v.querySelector("[data-phone-act] [data-apply-role]") as HTMLElement;
     const pitch = v.querySelector("[data-phone-act] [data-venture-note]") as HTMLElement;
     expect(apply.compareDocumentPosition(pitch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // A venture's act says what it asks for, into the same apply flow.
+    expect(apply.textContent).toBe("Bring your venture");
     cleanup();
     const c = await card({ ...seat(), comingSoon: true, state: "forming" } as any);
-    const notify = within(c.querySelector("[data-phone-act]") as HTMLElement).getByRole("button", { name: "Notify me" });
+    const notify = within(c.querySelector("[data-phone-act]") as HTMLElement).getByRole("button", { name: "Join the waitlist" });
     const note = c.querySelector("[data-phone-act] [data-coming-soon-note]") as HTMLElement;
     expect(notify.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });

@@ -10,8 +10,10 @@
  * reading it. With no word of its own a village reads its registry name, unless that name says "equity", in
  * which case it reads the platform default, "Contribution tokens". The slug `earned-equity` never moves.
  *
- * THE SHORT FORM is derived, never typed: the village's plural with a trailing "Tokens" dropped ("Amora Tokens"
- * reads "Amora" on a share's label, a tile or a narrow cell). The platform default keeps its whole name.
+ * THE SHORT FORM is derived, never typed: the village's plural with "tokens" said in lower case ("Amora Tokens"
+ * reads "Amora tokens" on a share's label, a tile or a narrow cell). It used to drop the word altogether, and an
+ * applicant read a bare "Amora" as the village's name, never as a token (the lead, 20 Nov 2026). A name with no
+ * "token" in it ("Seeds") is its own short form. The platform default keeps its whole name.
  *
  * THE CREDITS TOKEN keeps its registry name ("Village Credits") and carries its own tip saying it is a usage token.
  *
@@ -38,7 +40,7 @@ export const CREDITS_TOKEN_DEFAULT = "Credits";
 export interface ShareNames {
   /** The contribution token in full, for a sentence ("Amora Tokens"). */
   equity: string;
-  /** The same, short, for a label, a tile or a narrow cell ("Amora"). */
+  /** The same, short, for a label, a tile or a narrow cell ("Amora tokens"). */
   equityShort: string;
   /** The credits token ("Village Credits"). */
   credits: string;
@@ -54,6 +56,13 @@ export function shortName(full: string): string {
   return f.replace(/\s+tokens?$/i, "").trim() || f;
 }
 
+/** The label form of the village's own token name: "Amora Tokens" reads "Amora tokens"; a name without "token" stays whole. */
+export function shortLabel(full: string): string {
+  const f = trimmed(full);
+  const base = shortName(f);
+  return base !== f ? `${base} tokens` : f;
+}
+
 /**
  * The names a member reads, from the village's vocabulary and the registry's names by slug. Either may be absent
  * (loading, or an older server): every blank falls to its default.
@@ -65,7 +74,7 @@ export function shareNamesFrom(vocabulary: Partial<Vocabulary> | null | undefine
   const equity = typed || (registered && !/equity/i.test(registered) ? registered : "") || CONTRIBUTION_TOKEN_DEFAULT;
   return {
     equity,
-    equityShort: typed ? shortName(typed) : equity,
+    equityShort: typed ? shortLabel(typed) : equity,
     credits: trimmed(registry?.[CREDITS_TOKEN_SLUG]) || CREDITS_TOKEN_DEFAULT,
   };
 }

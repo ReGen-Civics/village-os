@@ -418,7 +418,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         {shownFacts.map((f) => (
           <div key={f.label} className={`min-w-0 rounded-xl px-3 py-2.5 ${p.wide ? "bg-card" : "bg-muted/50"}`}>
             <dt className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-              <f.icon className="size-3.5 text-notice" aria-hidden="true" />
+              <f.icon className="size-3.5 shrink-0 text-notice" aria-hidden="true" />
               {f.label}
             </dt>
             <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>

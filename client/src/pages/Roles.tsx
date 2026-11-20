@@ -4,7 +4,7 @@
  * The page used to open the first founding role's whole card inline, with the roles that steward will build
  * between it and the next role, so a reader could not tell where one role ended. Now every role is one compact,
  * bounded card (RoleIndexCard.tsx) with the same anatomy, grouped by status under headings with counts:
- * "Open now", "Coming soon", "Future ventures". Nothing expands inline and nothing pops out: the whole role, with
+ * "Open roles", "Open ventures", "Upcoming roles". Nothing expands inline and nothing pops out: the whole role, with
  * its one-minute panel, its tabs, its phone Apply and its share link, lives on its own page, `/roles/<slug>`
  * (RoleShare.tsx). A steward's coming-soon roles are one line inside its card.
  *
@@ -33,6 +33,7 @@ import { gameFetch } from "@/lib/gameApi";
 import { NewRoleFromCardButton } from "@/components/roleEdit/EditRoleButton";
 import { useAuth, useIsAdmin } from "@/contexts/AuthContext";
 import ComingSoonRoles, { type SoonRole } from "@/components/roleCard/ComingSoonRoles";
+import RoleIndexCard, { GROUP_BREAK, GROUP_H2 } from "@/components/roleCard/RoleIndexCard";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { useLingui } from "@lingui/react/macro";
@@ -42,7 +43,6 @@ import type { FilledRole } from "@/components/roleCard/RosterCards";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import { heldButRecruiting, rolesLeadWillBuild } from "@shared/roleListing";
 import { applyHrefForRole, mayApply } from "@/components/roleCard/FullRoleCard";
-import RoleIndexCard from "@/components/roleCard/RoleIndexCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
 import RootsFilterToggle from "@/components/roots/RootsFilterToggle";
@@ -370,8 +370,9 @@ export default function Roles() {
             {roles !== null && (
               <div className="flex flex-col gap-12">
                 <section aria-labelledby="open-now-heading" data-open-now={open.length}>
-                  <h2 id="open-now-heading" className={H2}>
-                    {t({ message: "Open now", context: "team sheet group" })} {roleCount(open.length)}
+                  <p className={EYEBROW}>{t({ message: "Join the team", context: "roles page, the open roles' eyebrow" })}</p>
+                  <h2 id="open-now-heading" className={`${GROUP_H2} mt-1`}>
+                    {t({ message: "Open roles", context: "team sheet group" })} {roleCount(open.length)}
                   </h2>
                   {openFeatured.length > 0 && <ul className="mt-4 grid gap-4 md:grid-cols-2" data-open-founding="">{openFeatured.map(card)}</ul>}
                   {openNext.length > 0 && (
@@ -403,19 +404,28 @@ export default function Roles() {
                   {open.length === 0 && <p className="mt-2 text-sm text-muted-foreground" data-open-none="">{t({ message: "No role is open right now.", context: "roles page, no open role" })}</p>}
                 </section>
 
-                {soonRoles.length > 0 && <ComingSoonRoles roles={soonRoles} />}
-
-                {ventures.length > 0 && (
-                  <section id="future-ventures" aria-labelledby="future-ventures-heading" className="scroll-mt-24" data-future-ventures={ventures.length}>
-                    <h2 id="future-ventures-heading" className={H2}>
-                      {t({ message: "Future ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
-                    </h2>
-                    <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                      {t({ message: "Pieces of the village we're inviting people to build and run. Apply to hold one, and pitch your vision.", context: "roles page, future ventures" })}
-                    </p>
+                {/* THREE GROUPS, EACH ITS OWN CHAPTER (the lead, 20 Nov 2026): open roles, open ventures, then the roles
+                    still to come, with a clear break between them. A venture is a row the village flagged
+                    `futureVenture` (0399), so the group reads the flag the card already carries and needs no new field. */}
+                <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`scroll-mt-24 ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
+                  <p className={EYEBROW}>{t({ message: "Build with us", context: "roles page, the open ventures' eyebrow" })}</p>
+                  <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1`}>
+                    {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
+                  </p>
+                  {ventures.length > 0 ? (
                     <ul className="mt-4 grid gap-4 md:grid-cols-2">{ventures.map(card)}</ul>
-                  </section>
-                )}
+                  ) : (
+                    <p className={`mt-4 ${TILE} text-sm text-muted-foreground`} data-ventures-none="">
+                      {t({ message: "No venture is open yet. When the village opens one, it shows here.", context: "roles page, no open venture" })}{" "}
+                      <Link href="/role-proposals/new" className={LINK} data-ventures-propose="">{t({ message: "Have one in mind? Propose it.", context: "roles page, no open venture: propose one as a new role" })}</Link>
+                    </p>
+                  )}
+                </section>
+
+                {soonRoles.length > 0 && <ComingSoonRoles roles={soonRoles} className={GROUP_BREAK} />}
 
                 {/* The founding roles' deliverables on one timeline, below the open roles (the lead, 19 and 20 Nov 2026). */}
                 {teamRows.length > 0 && (

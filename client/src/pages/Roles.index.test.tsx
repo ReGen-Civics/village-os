@@ -2,12 +2,13 @@
 /**
  * /roles AS AN INDEX OF ROLE CARDS (the lead, 20 Nov 2026: "redesign /roles so roles are easy to tell apart").
  *
- *   1. GROUPS WITH COUNTS: "Open now (n)", "Coming soon (n)", "Future ventures (n)", read from the row's own flags
+ *   1. GROUPS WITH COUNTS: "Open roles (n)", "Open ventures (n)", "Upcoming roles (n)", read from the row's own flags
  *      (`comingSoon`, `futureVenture`), the founding team first in the village's order, each role once.
  *   2. ONE ANATOMY: every card has a badge, the title as a link to its own page, a one-line purpose, the circle,
  *      commitment and place tags, the held/open bar, "Read the role" and Apply. Nothing expands inline, and no
  *      control sits inside another.
- *   3. APPLY LANDS IN THAT ROLE'S FORM: `/propose-a-role?role=<id>`; a coming-soon card keeps Notify me and Apply early.
+ *   3. APPLY LANDS IN THAT ROLE'S FORM: `/propose-a-role?role=<id>`; a coming-soon card keeps Join the waitlist and Apply early;
+ *      a venture's act says "Bring your venture", into the same form.
  *   4. A STEWARD'S CHILDREN are one line inside its card, each a link to the child's page.
  *   5. OLD LINKS (`?seat=`, `?role=`, `#<id>`, `#role-<id>`, `#<slug>`) become the role's page; `#waitlist-<id>` still
  *      opens that card's waitlist here; a link to a role that is gone says so in one line.
@@ -114,15 +115,18 @@ const card = (id: string) => document.querySelector(`[data-role-card="${id}"]`) 
 describe("the groups and their counts", () => {
   it("puts each role in one group by its own flags, the founding team first in its order, each role once", async () => {
     renderRoles();
-    const open = (await screen.findByRole("heading", { level: 2, name: "Open now (3)" })).closest("section") as HTMLElement;
+    const open = (await screen.findByRole("heading", { level: 2, name: "Open roles (3)" })).closest("section") as HTMLElement;
     expect(cardIds(open)).toEqual(["land", "finance", "cook"]);
-    const soon = screen.getByRole("heading", { level: 2, name: "Coming soon (2)" }).closest("section") as HTMLElement;
+    const soon = screen.getByRole("heading", { level: 2, name: "Upcoming roles (2)" }).closest("section") as HTMLElement;
     expect(cardIds(soon)).toEqual(["dev", "perma"]);
-    const ventures = screen.getByRole("heading", { level: 2, name: "Future ventures (1)" }).closest("section") as HTMLElement;
+    const ventures = screen.getByRole("heading", { level: 2, name: "Open ventures (1)" }).closest("section") as HTMLElement;
     expect(cardIds(ventures)).toEqual(["guest"]);
-    // Document order: open, then coming soon, then ventures.
-    expect(open.compareDocumentPosition(soon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(soon.compareDocumentPosition(ventures) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Document order (the lead, 20 Nov 2026): open roles, then open ventures, then the roles still to come.
+    expect(open.compareDocumentPosition(ventures) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(ventures.compareDocumentPosition(soon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The second and third groups each open on a break, so the three read as chapters.
+    for (const s of [ventures, soon]) expect(s.className).toContain("border-t-2");
+    expect(open.className).not.toContain("border-t-2");
     // Each role once, the held role on no card and no demonstration seat at all.
     const all = cardIds(document);
     expect(new Set(all).size).toBe(all.length);
@@ -130,16 +134,27 @@ describe("the groups and their counts", () => {
     expect(all).not.toContain("demo");
   });
 
+  it("with no venture flagged, Open ventures still stands above the upcoming roles and says so honestly", async () => {
+    org.roles = org.roles.filter((r: any) => r.id !== "guest");
+    renderRoles();
+    const ventures = (await screen.findByRole("heading", { level: 2, name: "Open ventures (0)" })).closest("section") as HTMLElement;
+    expect(ventures.querySelector("[data-role-card]")).toBeNull();
+    expect(ventures.querySelector("[data-ventures-none]")?.textContent).toContain("No venture is open yet.");
+    expect(ventures.querySelector("[data-ventures-propose]")?.getAttribute("href")).toBe("/role-proposals/new");
+    const soon = screen.getByRole("heading", { level: 2, name: "Upcoming roles (2)" }).closest("section") as HTMLElement;
+    expect(ventures.compareDocumentPosition(soon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("with the founding team off, every listed open role is open now and the board's door is the header's act (control)", async () => {
     founding = { on: false, roleIds: [], sections: {}, showPayRanges: false, villagePay: { shape: [], atRisk: "", note: "" } };
     renderRoles();
-    const open = (await screen.findByRole("heading", { level: 2, name: "Open now (3)" })).closest("section") as HTMLElement;
+    const open = (await screen.findByRole("heading", { level: 2, name: "Open roles (3)" })).closest("section") as HTMLElement;
     expect(cardIds(open)).toEqual(["finance", "land", "cook"]);
     expect(screen.getByRole("heading", { level: 1, name: "Roles and Circles" })).toBeTruthy();
     expect(screen.getByRole("link", { name: /Browse the open roles/ }).getAttribute("href")).toBe("/roles/select");
   });
 
-  it("says the founding roles come first, and the rest open next with the calls to hear first, inside Open now", async () => {
+  it("says the founding roles come first, and the rest open next with the calls to hear first, inside Open roles", async () => {
     founding = { ...founding, otherWays: { newsletter: "https://news.example.test/join" } };
     renderRoles();
     const h1 = await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
@@ -157,7 +172,7 @@ describe("the groups and their counts", () => {
 
   it("keeps the page's outline whole: no heading skips a level (axe heading-order)", async () => {
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (3)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const levels = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((h) => Number(h.tagName[1]));
     expect(levels[0]).toBe(1);
     for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1], `heading ${i}: h${levels[i - 1]} then h${levels[i]}`).toBeLessThanOrEqual(1);
@@ -167,7 +182,7 @@ describe("the groups and their counts", () => {
 describe("one card, the same anatomy for every role", () => {
   it("has the badge, the title linking to its page, the purpose, three tags, the bar, Read the role and Apply", async () => {
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (3)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const c = card("finance");
     expect(c.querySelector("[data-role-card-badge]")?.textContent).toBe("Open");
     const title = within(c).getByRole("heading", { level: 3, name: "Lead Finance Steward" });
@@ -184,7 +199,7 @@ describe("one card, the same anatomy for every role", () => {
 
   it("opens nothing inline and nests no control inside another (a stretched link, the acts above it)", async () => {
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (3)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     for (const c of Array.from(document.querySelectorAll<HTMLElement>("[data-role-card]"))) {
       expect(c.querySelector("[aria-expanded='true'], details, dialog, [data-full-role-card]")).toBeNull();
       expect(c.querySelector("a a, a button, button a, button button")).toBeNull();
@@ -198,14 +213,14 @@ describe("one card, the same anatomy for every role", () => {
   it("says a seat waiting to be re-chosen in its badge, never Open (control: an open seat says Open)", async () => {
     org.roles.push(seat("water", "Water Keeper", { state: "expired", holderCount: 1 }));
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (4)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (4)" });
     expect(card("water").querySelector("[data-role-card-badge]")?.textContent).toBe("Ready to be re-chosen");
     expect(card("cook").querySelector("[data-role-card-badge]")?.textContent).toBe("Open");
   });
 
-  it("a coming-soon card keeps Notify me and Apply early in place of Apply; a venture keeps its Apply", async () => {
+  it("a coming-soon card keeps Join the waitlist and Apply early in place of Apply; a venture's act is Bring your venture, into the apply flow", async () => {
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Coming soon (2)" });
+    await screen.findByRole("heading", { level: 2, name: "Upcoming roles (2)" });
     const dev = card("dev");
     expect(dev.querySelector("[data-role-card-badge]")?.textContent).toBe("Coming soon");
     expect(dev.querySelector("[data-apply-role]")).toBeNull();
@@ -215,12 +230,14 @@ describe("one card, the same anatomy for every role", () => {
     const guest = card("guest");
     expect(guest.querySelector("[data-role-card-badge]")?.textContent).toBe("Future venture");
     expect(guest.querySelector('[data-apply-role="guest"]')?.getAttribute("href")).toBe("/propose-a-role?role=guest");
+    expect(within(guest).getByRole("link", { name: "Bring your venture: Guest House Venture Steward" })).toBeTruthy();
+    expect(within(dev).getByRole("button", { name: /^Join the waitlist/ })).toBeTruthy();
   });
 
   it("offers no Apply on a card the village holds back as Being written (control: Read the role stays)", async () => {
     org.roles[2] = seat("cook", "Village Cook", { card: { complete: false, missing: ["aim"], written: 3, of: 11, gated: true } });
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (3)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     expect(card("cook").querySelector("[data-apply-role]")).toBeNull();
     expect(card("cook").querySelector("[data-read-role]")).toBeTruthy();
   });
@@ -229,7 +246,7 @@ describe("one card, the same anatomy for every role", () => {
 describe("a steward's children", () => {
   it("are one indented line inside the steward's card, each a link to its own page, and nowhere between cards", async () => {
     renderRoles();
-    await screen.findByRole("heading", { level: 2, name: "Open now (3)" });
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const line = card("finance").querySelector("[data-role-card-children]") as HTMLElement;
     expect(line.textContent).toBe("Will grow into: Development Steward · Permaculture Steward");
     expect(Array.from(line.querySelectorAll("a")).map((a) => a.getAttribute("href"))).toEqual(["/roles/development-steward", "/roles/permaculture-steward"]);

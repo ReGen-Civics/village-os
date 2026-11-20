@@ -67,7 +67,7 @@ const W = {
   rampUp: msg({ message: "Ramp-up", context: "application backup file" }),
   yes: msg({ message: "Yes", context: "application backup file" }),
   no: msg({ message: "No", context: "application backup file" }),
-  firstDay: msg({ message: "Your first day", context: "application backup file" }),
+  firstDay: msg({ message: "Your first moon", context: "application backup file" }),
   timeZone: msg({ message: "Time zone", context: "application backup file" }),
   windows: msg({ message: "Times that suit you", context: "application backup file" }),
   start: msg({ message: "Earliest start", context: "application backup file" }),

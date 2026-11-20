@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { LAST_STONE, STONES, confirmBy, inboxFor, onStone, orderByStone, ownsKeys, replyBy, stoneOfField, swipeStep } from "./stones";
 
 describe("the steps", () => {
-  it("are six, in the brief's order: Get to know us, About you, Your value, The terms, Your first day, Review & submit", () => {
+  it("are six, in the brief's order: Get to know us, About you, Your value, The terms, Your first moon, Review & submit", () => {
     expect(STONES).toEqual(["know", "about", "value", "terms", "first", "review"]);
     expect(LAST_STONE).toBe(5);
   });

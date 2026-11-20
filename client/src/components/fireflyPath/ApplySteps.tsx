@@ -330,8 +330,10 @@ export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup
 }
 
 /**
- * Step 5's facts: the first conversation, the first cycle, and the village's first conversations, as one short list
- * with no headings of their own (idea 16: the Steward path already names these steps).
+ * Step 5's facts, YOUR FIRST MOON (the lead, 20 Nov 2026): the first conversation, the village's first
+ * conversations, the deliverables timeline reshaped with the circle, and last the first cycle itself (one month,
+ * paid), drawn as one path with a line from each step to the next. No headings of their own (idea 16: the Steward
+ * path already names these steps). An ordered list, so a screen reader hears the steps and their count in order.
  */
 export function FirstDayFacts({ setup, firstConversation = null }: { setup: FoundingSetup; firstConversation?: string | null }) {
   const { t } = useLingui();
@@ -339,18 +341,28 @@ export function FirstDayFacts({ setup, firstConversation = null }: { setup: Foun
     // The first conversation of the role's own list (conversations[0]). Its booking link comes with the invitation and
     // on the status page, so nobody books before we invite them (role journey L6).
     ...(firstConversation ? [{ key: "booking", text: t({ message: `First, a conversation with ${firstConversation}. Once we invite you, you book it through the link in your invitation, or we write with times.`, context: "founding application first day" }) }] : []),
-    ...(setup.firstCycle ? [{ key: "cycle", text: setup.firstCycle }] : []),
     ...setup.firstConversations.map((c) => ({ key: `talk:${c}`, text: c })),
+    // A new holder's deliverables are a first draft: the holder and the circle reshape them together (the lead, 20 Nov 2026).
+    { key: "reshape", text: t({ message: "In your first moon, you and the circle reshape your deliverables timeline together.", context: "founding application first moon: a step" }) },
+    ...(setup.firstCycle ? [{ key: "cycle", text: setup.firstCycle }] : []),
   ];
-  if (items.length === 0) return null;
   return (
-    <ul className="grid gap-2" data-first-day="">
-      {items.map((x) => (
-        <li key={x.key} className={`${QUIET} whitespace-pre-line text-base leading-relaxed text-foreground`} data-first-booking={x.key === "booking" ? "" : undefined} data-first-cycle={x.key === "cycle" ? "" : undefined} data-first-conversations={x.key.startsWith("talk:") ? "" : undefined}>
-          {x.text}
-        </li>
-      ))}
-    </ul>
+    <ol className="grid" data-first-day="">
+      {items.map((x, i) => {
+        const last = i === items.length - 1;
+        return (
+          <li key={x.key} className="grid grid-cols-[1.75rem_minmax(0,1fr)] gap-x-3" data-first-step={x.key} data-first-booking={x.key === "booking" ? "" : undefined} data-first-cycle={x.key === "cycle" ? "" : undefined} data-first-conversations={x.key.startsWith("talk:") ? "" : undefined}>
+            <span className="flex flex-col items-center" aria-hidden="true">
+              <span className={`flex size-7 shrink-0 items-center justify-center rounded-full border-2 border-notice text-xs font-semibold ${last ? "bg-notice text-background" : "bg-card text-notice"}`}>{i + 1}</span>
+              {!last && <span className="w-0.5 flex-1 bg-notice/40" data-first-line="" />}
+            </span>
+            <span className={`whitespace-pre-line pt-0.5 text-base leading-relaxed text-foreground ${last ? "font-semibold" : "pb-6"}`}>
+              <MoonText text={x.text} />
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -545,11 +557,16 @@ export function RewardsBeside({ setup, splits = [], collapsed = false }: { setup
 }
 
 /** Every problem found on the last Continue or Send, each a way to its own place (audit M1). */
-export function ProblemsList<P extends { field: string | null; message: string }>({ problems, labels, stone, onShow }: { problems: readonly P[]; labels: readonly string[]; stone: number; onShow: (p: P) => void }) {
+/**
+ * What a press found missing, each a way to its field. On Review & submit it heads the step (Send reviews the whole
+ * application). On any other step it stands JUST ABOVE Continue (the lead, 20 Nov 2026), where the press was, so a
+ * blocked Continue shows what is missing in place and each line is a link that scrolls to its field and focuses it.
+ */
+export function ProblemsList<P extends { field: string | null; message: string; target?: string | null }>({ problems, labels, stone, onShow, atButton = false }: { problems: readonly P[]; labels: readonly string[]; stone: number; onShow: (p: P) => void; atButton?: boolean }) {
   const { t } = useLingui();
   if (problems.length === 0) return null;
   return (
-    <div id="propose-problems" tabIndex={-1} role="alert" className="mb-8 rounded-lg border border-border bg-muted p-4 text-sm text-foreground outline-none" data-problems="">
+    <div id="propose-problems" tabIndex={-1} role="alert" className={`${atButton ? "mt-10 scroll-mt-28 border-l-4 border-l-notice" : "mb-8"} rounded-lg border border-border bg-muted p-4 text-sm text-foreground outline-none`} data-problems="" data-problems-at={atButton ? "button" : "top"}>
       <p className="font-semibold">
         {stone === LAST_STONE
           ? problems.length === 1
@@ -559,18 +576,32 @@ export function ProblemsList<P extends { field: string | null; message: string }
             ? t({ message: "One thing to look at before you continue:", context: "founding application check" })
             : t({ message: `${problems.length} things to look at before you continue:`, context: "founding application check" })}
       </p>
-      <ul className="mt-2 grid gap-1">
+      <ul className={`mt-2 grid gap-1 ${atButton ? "list-disc pl-5 marker:text-notice" : ""}`}>
         {problems.map((p, i) => {
           const where = labels[stoneOfField(p.field)];
+          const words = stoneOfField(p.field) !== stone ? `${where}: ${applyWordT(p.message)}` : applyWordT(p.message);
           return (
             <li key={`${p.field}-${i}`}>
               {/* A refusal that names no answer (a busy connection, the hour's limit) is said as words, never as a link
                   that leads nowhere (applicant QA, 20 Nov 2026). */}
               {!p.field ? (
                 <span className="block py-2" data-problem-plain="">{applyWordT(p.message)}</span>
+              ) : atButton ? (
+                // A real link to the field's own place; the press is taken here, so the step and pane open first.
+                <a
+                  href={p.target && /^#[\w-]+$/.test(p.target) ? p.target : "#propose-problems"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onShow(p);
+                  }}
+                  className="inline-flex min-h-11 items-center text-left font-medium text-notice underline underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                  data-problem-link={p.field}
+                >
+                  {words}
+                </a>
               ) : (
               <button type="button" onClick={() => onShow(p)} className="min-h-11 text-left underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">
-                {stoneOfField(p.field) !== stone ? `${where}: ${applyWordT(p.message)}` : applyWordT(p.message)}
+                {words}
               </button>
               )}
             </li>
@@ -632,7 +663,7 @@ export function ReviewLines({ review, labels, onChange, extras = [] }: { review:
       {rows.map(({ key, step, label, line }) => (
         <li key={key} className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border/60 px-4 py-3" data-review-row={key}>
           <span className="grid min-w-0">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">{label}</span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground"><MoonText text={label} /></span>
             <span className="break-words text-sm text-foreground">
               <MoonText text={line} />
             </span>
