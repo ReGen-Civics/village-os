@@ -10,7 +10,7 @@
  * TYPED WORDS ARE NEVER LOST QUIETLY (audit M5): every unsaved wording or commitment counts on the
  * house save bar ("1 change not saved yet · Revision 2"), which also guards leaving the page.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { COMMITMENT_CHOICES } from "@shared/termsWords";
 import { OFFER_WORD_MAX } from "@shared/counterOffer";
@@ -69,12 +69,42 @@ function day(iso: string): string {
   return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
 
-export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved }: { offer: ServedDeciderOffer; mayEdit: boolean; savePath: string; onSaved: () => void }) {
+/**
+ * A commitment the Compare section's split suggests for this proposal (`?commitment=40&role=<id>` on the page's link),
+ * typed into the counter-offer for a person to read, change or drop. It is never saved by itself: it counts on the save
+ * bar as an unsaved change, and only Save sends it (the lead, 20 Nov 2026).
+ */
+export interface CommitmentPrefill {
+  commitmentPct: number;
+  roleId?: string | null;
+}
+
+/** The prefill on a page's address, when it reads as one: a whole step of ten from 10 to 100. */
+export function prefillFromSearch(search: string): CommitmentPrefill | null {
+  const q = new URLSearchParams(search);
+  const n = Number(q.get("commitment"));
+  if (!Number.isInteger(n) || n < 10 || n > 100 || n % 10 !== 0) return null;
+  const roleId = (q.get("role") ?? "").trim().slice(0, 64);
+  return { commitmentPct: n, ...(roleId ? { roleId } : {}) };
+}
+
+export default function TermsWeOffer({ offer, mayEdit, savePath, onSaved, prefill }: { offer: ServedDeciderOffer; mayEdit: boolean; savePath: string; onSaved: () => void; prefill?: CommitmentPrefill | null }) {
   const { t, i18n } = useLingui();
   const [words, setWords] = useState<Record<string, string>>({});
+  // A suggested commitment for a later role lands on that role's row; for the first or only role, on the commitment.
+  const prefillRow = mayEdit && prefill?.roleId ? (offer.roles ?? []).find((r) => r.roleId === prefill.roleId && !r.first) : undefined;
   const [pct, setPct] = useState<string>("");
   /** Each role's countered commitment and price, typed and not saved yet. */
   const [roleEdits, setRoleEdits] = useState<Record<string, { commitmentPct?: string; price?: string }>>({});
+  // Typed in once, after the first render, as a person's typing would be: the save bar counts a change that arrives
+  // after it is listening, and one present before it subscribed would never show.
+  const prefilled = useRef(false);
+  useEffect(() => {
+    if (prefilled.current || !mayEdit || !prefill) return;
+    prefilled.current = true;
+    if (prefillRow) setRoleEdits({ [prefillRow.roleId]: { commitmentPct: String(prefill.commitmentPct) } });
+    else setPct(String(prefill.commitmentPct));
+  }, [mayEdit, prefill, prefillRow]);
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
 

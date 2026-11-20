@@ -24958,3 +24958,604 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Waiting for a decision"
+msgstr "Esperando una decisión"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The proposals could not be read just now. Try again in a moment."
+msgstr "No se pudieron leer las propuestas ahora. Inténtalo de nuevo en un momento."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: items.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "All ({0})"
+msgstr "Todas ({0})"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The deliverables they would hold"
+msgstr "Las entregas que tendría"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.termEnds
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Term ends: {0}"
+msgstr "El periodo termina: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No AI chooses, ranks or scores anyone here: you decide who is qualified, and accepting happens on each proposal's own page."
+msgstr "Aquí ninguna IA elige, ordena ni puntúa a nadie: tú decides quién está calificado, y aceptar sucede en la página de cada propuesta."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Every role application and quest idea waiting for a decision. Pick a category, then tick up to {MAX_COMPARE} to read them side by side."
+msgstr "Cada solicitud de rol e idea de misión que espera una decisión. Elige una categoría y marca hasta {MAX_COMPARE} para leerlas lado a lado."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: o.by.map(nameOf).join(" and ")
+#. placeholder {1}: o.text
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare overlap"
+msgid "{0} both offered: {1}"
+msgstr "{0} ofrecieron lo mismo: {1}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Split helper"
+msgstr "Ayuda para repartir"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A tie goes to whoever you marked first. Move any piece to someone else; this is a suggestion for you to edit."
+msgstr "Un empate va a quien marcaste primero. Mueve cualquier parte a otra persona; es una sugerencia que puedes editar."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Accepts the terms on offer"
+msgstr "Acepta las condiciones ofrecidas"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: x.talkAbout.join(", ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "To talk about: {0}"
+msgstr "Para hablar: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: items.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} proposals"
+msgstr "{0} propuestas"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.doneWhen
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Done when: {0}"
+msgstr "Listo cuando: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Early application, the role was coming soon"
+msgstr "Solicitud temprana, el rol aún no abría"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.startsOn
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks to begin: {0}"
+msgstr "Pide empezar: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "What they would deliver"
+msgstr "Lo que entregaría"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, exactly the {1}% the role needs."
+msgstr "Juntas dan {0}%, justo el {1}% que el rol necesita."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: pieceText(id)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Move \"{0}\" to"
+msgstr "Mover \"{0}\" a"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: twice.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Held twice in this split: {0}."
+msgstr "Repetido en este reparto: {0}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Price to talk about on the first call"
+msgstr "Precio para hablar en la primera llamada"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare split rule"
+msgid "Each shared piece goes to whoever holds the fewest so far"
+msgstr "Cada parte compartida va a quien tiene menos hasta ahora"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The link opens their proposal with the commitment typed into the counter-offer. Nothing changes until you read it and press Save there, and accepting stays on that page."
+msgstr "El enlace abre su propuesta con el compromiso escrito en la contraoferta. Nada cambia hasta que lo leas y pulses Guardar allí, y aceptar sigue en esa página."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Side by side"
+msgstr "Lado a lado"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "A member's application"
+msgstr "La solicitud de un miembro"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Share one role across several people"
+msgstr "Repartir un rol entre varias personas"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nothing is waiting for a decision here."
+msgstr "Aquí no hay nada esperando una decisión."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No circle"
+msgstr "Sin círculo"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Role"
+msgstr "Rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: role.places
+#. placeholder {1}: role.taken
+#. placeholder {2}: order.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role holds {0} at once and {1} hold it now, so there is room for {2} more."
+msgstr "El rol admite {0} a la vez y {1} lo tienen ahora, así que hay espacio para {2} más."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: picked.length
+#. placeholder {1}: categoryLabel(picked[0].category)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} of {MAX_COMPARE} ticked, all in {1}."
+msgstr "{0} de {MAX_COMPARE} marcadas, todas en {1}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Quest idea"
+msgstr "Idea de misión"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nobody for now"
+msgstr "Nadie por ahora"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Put the suggestion back"
+msgstr "Volver a la sugerencia"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks to ramp up over time"
+msgstr "Pide ir aumentando con el tiempo"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Where they overlap"
+msgstr "Dónde se repiten"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Commitment"
+msgstr "Compromiso"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: role.places
+#. placeholder {1}: role.taken
+#. placeholder {2}: order.length
+#. placeholder {3}: role.taken + order.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
+msgstr "El rol admite {0} a la vez y {1} lo tienen ahora. Sumar {2} más necesita {3} lugares: cambia primero el número en el rol, en el Organigrama."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Start a conversation"
+msgstr "Iniciar una conversación"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Commitment"
+msgstr "Compromiso"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No two of them offered the same piece of work."
+msgstr "Nadie ofreció la misma parte del trabajo que otra persona."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.received
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Arrived: {0}"
+msgstr "Llegó: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: nobody.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Offered but held by nobody now: {0}."
+msgstr "Ofrecido pero sin nadie ahora: {0}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent or saved."
+msgstr "Marca a quién consideras calificada. La ayuda solo traza sus entregas y compromisos, con reglas simples escritas junto a cada reparto. Nunca dice quién es mejor, y nada aquí se envía ni se guarda."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Reading the proposals…"
+msgstr "Leyendo las propuestas…"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "How it came in"
+msgstr "Cómo llegó"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Role or quest"
+msgstr "Rol o misión"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.gap
+#. placeholder {2}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, {1}% short of the {2}% the role needs."
+msgstr "Juntas dan {0}%, {1}% menos que el {2}% que el rol necesita."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nothing in this split"
+msgstr "Nada en este reparto"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.date
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "By {0}"
+msgstr "Para el {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Who"
+msgstr "Quién"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: role?.name ?? ""
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Who do you consider qualified for {0}?"
+msgstr "¿A quién consideras calificada para {0}?"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: i.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% commitment"
+msgstr "{0}% de compromiso"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare split rule"
+msgid "Each shared piece goes to whoever has the most room for their commitment"
+msgstr "Cada parte compartida va a quien tiene más espacio según su compromiso"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.earliestStart
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Earliest start: {0}"
+msgstr "Inicio más temprano: {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: nameOf(c)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} (did not offer it)"
+msgstr "{0} (no lo ofreció)"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: item.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% offered"
+msgstr "{0}% ofrecido"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Candidate"
+msgstr "Candidatura"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Full application"
+msgstr "Solicitud completa"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Their aim"
+msgstr "Su propósito"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Quests with no circle"
+msgstr "Misiones sin círculo"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Would like to talk about the terms"
+msgstr "Quiere hablar de las condiciones"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.gap
+#. placeholder {2}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, {1}% more than the {2}% the role needs."
+msgstr "Juntas dan {0}%, {1}% más que el {2}% que el rol necesita."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Compare"
+msgstr "Comparar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open the full proposal"
+msgstr "Abrir la propuesta completa"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A way to share the work"
+msgstr "Una forma de repartir el trabajo"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: map.unclaimed.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role asks for this and nobody offered it: {0}."
+msgstr "El rol pide esto y nadie lo ofreció: {0}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open their proposal"
+msgstr "Abrir su propuesta"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Their terms"
+msgstr "Sus condiciones"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
+msgstr "Puedes comparar hasta {MAX_COMPARE} a la vez. Desmarca una para añadir otra."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Full proposal"
+msgstr "Propuesta completa"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A visitor"
+msgstr "Una persona visitante"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: x.ask.amount
+#. placeholder {1}: x.ask.per
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks {0} each {1}"
+msgstr "Pide {0} cada {1}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Comparing proposals is open to the people who read them at the admin desk."
+msgstr "Comparar propuestas está abierto a quienes las leen en el escritorio de administración."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: d.termStarts
+#. placeholder {1}: d.termEnds
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "For the moon {0} to {1}"
+msgstr "Para la luna del {0} al {1}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Split rule"
+msgstr "Regla de reparto"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No name given"
+msgstr "Sin nombre"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: map.commitment.unknown.map(nameOf).join(", ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Gave no commitment: {0}."
+msgstr "No indicó compromiso: {0}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Not given"
+msgstr "Sin indicar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Compare one category at a time. Untick these first to pick from another."
+msgstr "Compara una categoría a la vez. Desmarca estas primero para elegir de otra."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Swipe sideways to read the next one."
+msgstr "Desliza de lado para leer la siguiente."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: i.dates.received
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "arrived {0}"
+msgstr "llegó el {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Drafted by a tool, sent for a person to read"
+msgstr "Redactada por una herramienta, enviada para que la lea una persona"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open their proposal with {fit}% in the counter-offer"
+msgstr "Abrir su propuesta con {fit}% en la contraoferta"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{fit}% would fit the role"
+msgstr "{fit}% encajaría en el rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Untick"
+msgstr "Desmarcar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Proposals side by side"
+msgstr "Propuestas lado a lado"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: i.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% of their energy and attention"
+msgstr "{0}% de su energía y atención"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Mark at least one person to see the map."
+msgstr "Marca al menos a una persona para ver el mapa."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "None given"
+msgstr "Sin indicar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Counter-offer sent"
+msgstr "Contraoferta enviada"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Dates"
+msgstr "Fechas"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Category"
+msgstr "Categoría"

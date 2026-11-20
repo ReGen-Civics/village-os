@@ -74,4 +74,28 @@ describe("the counter-offer keeps what was typed", () => {
     await waitFor(() => expect(posted).toHaveLength(1));
     expect(posted[0]).toMatchObject({ expectedRevision: 1, roles: [{ roleId: "r2", commitmentPct: 60, price: 4500 }] });
   });
+
+  it("types a commitment the Compare split suggests into the counter-offer, sends nothing until Save, and posts it then (the lead, 20 Nov 2026)", async () => {
+    const posted: any[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: string, init?: { body?: string }) => {
+        posted.push(JSON.parse(String(init?.body ?? "{}")));
+        return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+      }),
+    );
+    render(<TermsWeOffer offer={OFFER} mayEdit savePath="/api/x/terms" onSaved={() => {}} prefill={{ commitmentPct: 40 }} />);
+    await waitFor(() => expect(bar()).not.toBeNull());
+    expect(posted).toEqual([]);
+    expect(unsavedCount()).toBe(1);
+    fireEvent.click(Array.from((bar() as HTMLElement).querySelectorAll("button")).find((b) => b.textContent === "Save") as HTMLButtonElement);
+    await waitFor(() => expect(posted).toHaveLength(1));
+    expect(posted[0]).toMatchObject({ expectedRevision: 1, commitmentPct: 40 });
+  });
+
+  it("CONTROL: a reader who may not edit gets no prefill and no save bar", () => {
+    render(<TermsWeOffer offer={OFFER} mayEdit={false} savePath="/api/x/terms" onSaved={() => {}} prefill={{ commitmentPct: 40 }} />);
+    expect(bar()).toBeNull();
+    expect(unsavedCount()).toBe(0);
+  });
 });

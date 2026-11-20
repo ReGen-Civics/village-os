@@ -183,3 +183,80 @@ describe("the conversation guide's notes are read and written by people alone (0
     expect("  level: number;".match(/\b(score|level|rank|rating|grade)\w*\s*[?:]/gi)).toHaveLength(1);
   });
 });
+
+describe("comparing proposals side by side maps work and never judges people (the lead, 20 Nov 2026)", () => {
+  const COMPARE_FILES = ["shared/proposalCompare.ts", "shared/deliverableSplit.ts", "server/lib/proposalCompare.ts", "server/routes/proposalCompare.ts", "client/src/components/admin/CompareTab.tsx"];
+  const MODEL_IMPORT = /anthropic|openai|saberra|seraAgent|companions|roleGuide|adminHelper|assistant|llm|generateText|messages\.create/i;
+  const RANKING = /\b(score|rank|rating|grade|merit|best|recommend)\w*\s*[?:]/gi;
+
+  it("the compare files exist and import no model client, the admin helper included", () => {
+    for (const file of COMPARE_FILES) {
+      const full = path.join(ROOT, file);
+      expect(fs.existsSync(full), file).toBe(true);
+      const imports = fs.readFileSync(full, "utf8").split("\n").filter((l) => /^\s*import\b/.test(l));
+      expect(imports.filter((l) => MODEL_IMPORT.test(l)), file).toEqual([]);
+    }
+  });
+
+  it("CONTROL: the import filter catches the admin helper's own client", () => {
+    expect(['import { askHelper } from "./adminHelperApi";'].filter((l) => MODEL_IMPORT.test(l))).toHaveLength(1);
+  });
+
+  it("no source a model can reach names the compare files or their door", () => {
+    for (const file of MODEL_FACING) {
+      const src = fs.readFileSync(path.join(ROOT, file), "utf8");
+      // shared/agentAdmin.ts names the door once, to refuse it.
+      const named = ["proposalCompare", "deliverableSplit", "CompareTab"].filter((n) => src.includes(n));
+      expect(named, file).toEqual([]);
+    }
+    expect(MCP_TOOLS.flatMap((t) => t.routes).filter((r) => /proposal-?compare/.test(r))).toEqual([]);
+    expect(SERA_TOOLS.filter((t) => /compare|split|candidate|deliverable/i.test(t))).toEqual([]);
+  });
+
+  it("admin_request refuses the compare door always, even once the Anchor opens applicant data to agents", () => {
+    for (const opts of [{}, { applicantDataOpen: true }]) {
+      const d = adminRequestDecision("GET", "/api/admin/proposal-compare", { ...DEFAULT_AGENT_ADMIN_PATHS, paths: [...DEFAULT_AGENT_ADMIN_PATHS.paths, { method: "GET", path: "/api/admin/proposal-compare" } as any] }, "u1", opts as any);
+      expect(d.ok, JSON.stringify(opts)).toBe(false);
+      expect((d as any).code).toBe("always_a_person");
+    }
+    // CONTROL: the open proposals desk itself does open to an agent once the Anchor approves and the village lists it.
+    const desk = adminRequestDecision("GET", "/api/admin/open-proposals", { ...DEFAULT_AGENT_ADMIN_PATHS, paths: [...DEFAULT_AGENT_ADMIN_PATHS.paths, { method: "GET", path: "/api/admin/open-proposals" } as any] }, "u1", { applicantDataOpen: true } as any);
+    expect(desk.ok).toBe(true);
+  });
+
+  it("the shapes the comparison and the split hand back hold no score, rank, rating or recommendation", () => {
+    for (const file of ["shared/proposalCompare.ts", "shared/deliverableSplit.ts"]) {
+      const src = fs.readFileSync(path.join(ROOT, file), "utf8");
+      const shapes = src.split(/\n(?=export (?:interface|type) )/).filter((b) => /^export (interface|type) /.test(b)).map((b) => b.slice(0, b.indexOf("\n}") + 2 || undefined)).join("\n");
+      expect(shapes.length, file).toBeGreaterThan(200);
+      expect(shapes.match(RANKING) ?? [], file).toEqual([]);
+    }
+    // CONTROL: the same pattern does match a field that would hold one.
+    expect("  rank: number;\n  recommended?: boolean;".match(RANKING)).toHaveLength(2);
+  });
+
+  it("the split reads only deliverables and commitments: the same work under other people's names maps the same way", async () => {
+    const { mapDeliverables } = await import("../../shared/deliverableSplit");
+    const work = [
+      { deliverables: ["Keep the seed bank catalogued", "Run the weekly garden circle"], commitmentPct: 50 },
+      { deliverables: ["Run the weekly garden circle", "Plan the dry season planting"], commitmentPct: 50 },
+    ];
+    const one = mapDeliverables(work.map((w, i) => ({ key: `Q7Q${i}`, ...w })), ["Q7Q0", "Q7Q1"], [], 100);
+    const two = mapDeliverables(work.map((w, i) => ({ key: `W9W${i}`, ...w })), ["W9W0", "W9W1"], [], 100);
+    const strip = (m: typeof one, prefix: string) => JSON.stringify(m).split(prefix).join("X");
+    expect(strip(one, "Q7Q")).toBe(strip(two, "W9W"));
+    // Extra facts about a person are not even accepted: the candidate shape is a key, deliverables and a commitment.
+    const src = fs.readFileSync(path.join(ROOT, "shared/deliverableSplit.ts"), "utf8");
+    const shape = src.slice(src.indexOf("export interface SplitCandidate"), src.indexOf("}", src.indexOf("export interface SplitCandidate")));
+    expect(shape.match(/^\s+(\w+)\??:/gm)?.map((l) => l.trim().replace(/\??:$/, ""))).toEqual(["key", "deliverables", "commitmentPct"]);
+  });
+
+  it("nothing on the compare page writes: it only reads its own door", () => {
+    const page = fs.readFileSync(path.join(ROOT, "client/src/components/admin/CompareTab.tsx"), "utf8");
+    expect(page.match(/method:\s*"(POST|PUT|PATCH|DELETE)"/g) ?? []).toEqual([]);
+    expect(page.match(/fetch\(/g)).toHaveLength(1);
+    expect(page).toContain("/admin/proposal-compare");
+    // CONTROL: the write pattern does match a write.
+    expect('{ method: "POST" }'.match(/method:\s*"(POST|PUT|PATCH|DELETE)"/g)).toHaveLength(1);
+  });
+});

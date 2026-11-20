@@ -108,6 +108,7 @@ import { confirmationEmail, keepsWhenUnsent, retryOwedConfirmations, WENT } from
 import { inviteById } from "../repos/memberInvites";
 import { dbDocument } from "../repos/store-db";
 import { registerOpenProposalDecide, type DecideRouteDeps } from "./openProposalDecide";
+import { registerProposalCompare } from "./proposalCompare";
 import { registerAgentProposals } from "./agentRoleProposals";
 import { registerApplicationReview } from "./applicationReview";
 import { clearReviewOf, refsDueForClearing } from "../repos/applicationReview";
@@ -1178,6 +1179,8 @@ export function register(app: Express, deps: Deps): void {
   // ── The decision (part B) ─────────────────────────────────────────────────
 
   registerOpenProposalDecide(app, { ...deps, postEmail, now });
+  // Compare proposals side by side (the lead, 20 Nov 2026): the admin desk's readers, read only.
+  registerProposalCompare(app, deps);
   // An agent proposed by its keeper (0374): the member door's agent side, the same proposal and the same decision.
   registerAgentProposals(app, deps, { target: async () => target((await settings()).term), offered, decide, now });
   /*

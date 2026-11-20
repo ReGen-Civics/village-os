@@ -70,6 +70,8 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         { key: "players", label: "Players", icon: Users },
         { key: "game-roles", label: "Power groups", icon: Users2 },
         { key: "org-chart", label: "Org Chart", icon: Users2 },
+        // Proposals side by side (the lead, 20 Nov 2026): beside the chart, because it is about who could hold its roles.
+        { key: "compare", label: "Compare Proposals", icon: Scale },
         { key: "role-discover", label: "Role discovery", icon: Compass },
         { key: "handover", label: "The Handover", icon: KeyRound },
         { key: "governance-weights", label: "Voting Weights", icon: Scale },

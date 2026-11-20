@@ -109,7 +109,7 @@ describe("navGroups", () => {
   const ORDER: Array<[string, string[]]> = [
     ["Today", ["home"]],
     ["Start here", ["setup"]],
-    ["Who runs this village", ["players", "game-roles", "org-chart", "role-discover", "handover", "governance-weights"]],
+    ["Who runs this village", ["players", "game-roles", "org-chart", "compare", "role-discover", "handover", "governance-weights"]],
     // `money` is a CONTENT_SECTIONS entry the economics branch adds (Money &
     // Value Claims, the editor behind `client/src/lib/moneyClaims.ts`), so it
     // rides in with the other three rather than being placed here.
@@ -182,6 +182,8 @@ describe("navGroups", () => {
       "pricing-desk",
       // Cash budget, 2026-11-18: the Treasurer uploads the cash budget (0360).
       "budgets",
+      // Compare proposals, 2026-11-20: role applications and quest ideas side by side.
+      "compare",
       // Confidentiality Agreement, 2026-11-09: the words and the PDF members align with (role journey L7).
       "confidentiality",
       // Home, the start page. The side rail stays one tap away.

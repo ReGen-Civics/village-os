@@ -59,6 +59,8 @@ const HomeBase = lazy(() => import("@/components/admin/HomeBase"));
 const VoiceTranscriptionPicker = lazy(() => import("@/components/admin/VoiceTranscriptionPicker"));
 const PricingDeskTab = lazy(() => import("@/components/admin/PricingDeskTab"));
 const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
+// Compare proposals side by side (the lead, 20 Nov 2026), lazy so the first page never pays for it.
+const CompareTab = lazy(() => import("@/components/admin/CompareTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
 import { adminNavRailClass, filterNavByModules, TAB_MODULE, type TabBadge } from "@/lib/adminNav";
@@ -7999,6 +8001,7 @@ export default function Admin() {
           {activeTab === "needs-admin" && <NeedsPanel password={password} onOpenTab={setActiveTab} />}
           {activeTab === "housing" && <HousingAdminPanel password={password} />}
           {activeTab === "org-chart" && <OrgChartTab password={password} />}
+          {activeTab === "compare" && <Suspense fallback={null}><CompareTab password={password} /></Suspense>}
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
           {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
           {activeTab === "budgets" && <Suspense fallback={null}><BudgetsTab password={password} /></Suspense>}

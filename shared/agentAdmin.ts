@@ -144,6 +144,14 @@ export const ALWAYS_A_PERSON: ReadonlyArray<{ key: string; words: string; mode: 
     test: (_m, p) => /\/voice(\/|$)/i.test(p),
   },
   {
+    // Proposals side by side (the lead, 20 Nov 2026): reading candidates beside each other is a person's look, and no
+    // assistant or agent tool gets it, whatever the Anchor's approval opens. Before "personal", which a GET can pass.
+    key: "compare",
+    mode: "always",
+    words: "Comparing proposals side by side is only ever done by a person.",
+    test: (_m, p) => /proposal-?compare/i.test(p),
+  },
+  {
     // Applicant and member personal data (role journey L13, part B). Reads open only with the Anchor's approval of AI agents.
     key: "personal",
     mode: "personal",
