@@ -296,7 +296,7 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | The role that follows up with an applicant's references | `org.reference_followup_role` | The village's people | text | blank | the whole village |
 | The role that makes the final call on an applicant | `org.final_call_role` | The village's people | text | blank | the whole village |
 | Days we promise to reply to a role proposal | `org.applicant_reply_days` | The village's people | integer | `7` | the whole village |
-| Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `12` | the whole village |
+| Voice clips an applicant may record beside their answers | `org.voice_clips_max` | The village's people | integer | `24` | the whole village |
 | Longest voice clip beside an answer | `org.voice_clip_seconds` | The village's people | integer | `60` | the whole village |
 | Review each application before the conversations | `org.review_before_conversations` | The village's people | boolean | `false` | the whole village |
 | The team that signs letters to applicants | `org.letter_team` | The village's people | text | blank | the whole village |
@@ -3862,8 +3862,8 @@ On the public role application, each written answer has a small record button so
 | --- | --- |
 | Key | `org.voice_clips_max` |
 | Type | integer, a whole number |
-| Default | `12` |
-| Range | 0 to 24 |
+| Default | `24` |
+| Range | 0 to 48 |
 | Counted in | clips |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
@@ -4204,7 +4204,7 @@ The last line under the pay shape on every role card. When a card lists a price,
 
 ### Ways to get to know us before applying
 
-The first step of the application lists these, one per line, and the applicant ticks the ones they have done. The step never stops anyone applying. Up to eight lines.
+The first step of the application lists these, one per line, and the applicant ticks the ones they have done. The step never stops anyone applying. Up to 24 lines.
 
 | Fact | Value |
 | --- | --- |
@@ -5831,6 +5831,7 @@ What it may be set to:
 The generator reads these and fails loudly if any of them moves:
 
 - `shared/agreements.ts`
+- `shared/applyLimits.ts`
 - `shared/ballotSubjects.ts`
 - `shared/capabilities.ts`
 - `shared/changeRequestLimits.ts`
