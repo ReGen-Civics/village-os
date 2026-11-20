@@ -51,6 +51,8 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **"Your first day" is now "Your first moon"**, drawn as a numbered path. It says you and the circle reshape your deliverables timeline together, and the paid first cycle comes last.
 - **Get to know us** says "webinar recording" and "webinar call", and every event time carries a "your time" note.
 - **The village token is named in full, for example "Amora tokens"**, wherever it was shortened to the village's name alone.
+- **A coming-soon role or an open venture can be listed once its card says its purpose and what it looks after.** An open role still needs its whole card, pay on offer included.
+- **Proposals that could never land are refused when they are filed, not when someone accepts them.** That covers a new role carrying words that change only by consent, and a card asking to be listed before it is ready. The refusal says what is missing.
 
 ## 1.3.42 (2026-11-20)
 
