@@ -430,7 +430,7 @@ export function parseOpenProposal(
   const listed = new Set((ctx.knowUs ?? []).map((l) => l.trim()));
   const knowUs = knowUsOf(o.knowUs).filter((l) => listed.has(l));
   const selfKnowledge = text(o.selfKnowledge, SELF_KNOWLEDGE_MAX);
-  if (selfKnowledge.length > SELF_KNOWLEDGE_MAX) return { ok: false, field: "selfKnowledge", error: OPEN_WORDS.tooLong("Human Design or Gene Keys", SELF_KNOWLEDGE_MAX) };
+  if (selfKnowledge.length > SELF_KNOWLEDGE_MAX) return { ok: false, field: "selfKnowledge", error: OPEN_WORDS.tooLong("Your Human Design, Gene Keys, or ways of working", SELF_KNOWLEDGE_MAX) };
   // What they would make of the role card, piece by piece (Rye, 14 Nov 2026): optional, for the roles picked.
   const suggested = parsePieceSuggestions(o.pieceSuggestions, new Set(roles.map((r) => r.roleId)));
   if (!suggested.ok) return { ok: false, field: "pieceSuggestions", error: suggested.error };

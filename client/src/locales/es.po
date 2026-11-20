@@ -2036,6 +2036,11 @@ msgctxt "founding application why starter"
 msgid "Why now:"
 msgstr "Por qué ahora:"
 
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application why starter hint"
+msgid "Click one, then talk or type. Then click the next."
+msgstr "Haz clic en una, luego habla o escribe. Después haz clic en la siguiente."
+
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
 msgid "Remove"
@@ -7829,8 +7834,8 @@ msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application about"
-msgid "Your Human Design or Gene Keys (optional)"
-msgstr "Tu Diseño Humano o tus Gene Keys (opcional)"
+msgid "Your Human Design, Gene Keys, or other ways of working we should know about (optional)"
+msgstr "Tu Diseño Humano, tus Gene Keys u otras formas de trabajar que debamos conocer (opcional)"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line error"
@@ -18954,8 +18959,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
-msgid "Your Human Design or Gene Keys"
-msgstr ""
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Tu Diseño Humano, tus Gene Keys o formas de trabajar"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -19063,8 +19068,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
-msgid "Your Human Design or Gene Keys"
-msgstr ""
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Tu Diseño Humano, tus Gene Keys o formas de trabajar"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"

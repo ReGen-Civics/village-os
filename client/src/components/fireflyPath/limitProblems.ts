@@ -56,7 +56,7 @@ export function limitProblems(f: LimitInput, i18n: I18n = appI18n): LimitProblem
   over("about", i18n._(msg({ message: "Where you are based", context: "founding application check, a box over its limit" })), f.about.based, ABOUT_BASED_MAX, "#propose-about-based");
   over("about", i18n._(msg({ message: "Languages you work in", context: "founding application check, a box over its limit" })), f.about.languages, ABOUT_LANGUAGES_MAX, "#propose-about-languages");
   over("about", i18n._(msg({ message: "Your story with us", context: "founding application check, a box over its limit" })), f.about.story, ABOUT_STORY_MAX, "#propose-about-story");
-  over("selfKnowledge", i18n._(msg({ message: "Your Human Design or Gene Keys", context: "founding application check, a box over its limit" })), f.selfKnowledge, SELF_KNOWLEDGE_MAX, "#propose-self");
+  over("selfKnowledge", i18n._(msg({ message: "Your Human Design, Gene Keys, or ways of working", context: "founding application check, a box over its limit" })), f.selfKnowledge, SELF_KNOWLEDGE_MAX, "#propose-self");
   f.about.references.forEach((r, i) => {
     const n = i + 1;
     over("references", i18n._(msg({ message: `Reference ${n}: name`, context: "founding application check, a box over its limit" })), r.name, REFERENCE_NAME_MAX);

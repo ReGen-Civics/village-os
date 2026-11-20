@@ -1,6 +1,6 @@
 /**
  * THE APPLICATION'S OWN STEP WORDS (pages/ProposeARole.tsx): each step's name, the line under its heading, the
- * starters for "Why you, and why now", and About you's pane names. Kept here so the page stays under the
+ * starters for "Why you, and why now" and the line that says how to use them, and About you's pane names. Kept here so the page stays under the
  * file-lines ratchet (scripts/check-file-lines.mjs) and the words sit in one place.
  */
 import { useLingui } from "@lingui/react/macro";
@@ -29,10 +29,12 @@ export function useApplyWords() {
     t({ message: "Why now:", context: "founding application why starter" }),
     t({ message: "What I would bring in my first month:", context: "founding application why starter" }),
   ];
+  /** Over the starters: applicants did not see that a starter is clicked, then talked or typed, then the next one (the lead, Nov 2026). */
+  const starterHint = t({ message: "Click one, then talk or type. Then click the next.", context: "founding application why starter hint" });
   const paneNames = [
     t({ message: "You", context: "founding application about pane" }),
     t({ message: "Your story", context: "founding application about pane" }),
     t({ message: "Who can speak for you", context: "founding application about pane" }),
   ] as const;
-  return { labels, intro, starters, paneNames };
+  return { labels, intro, starters, starterHint, paneNames };
 }

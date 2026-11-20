@@ -51,7 +51,7 @@ const W = {
   based: msg({ message: "Where you are based", context: "application backup file" }),
   languages: msg({ message: "Languages", context: "application backup file" }),
   story: msg({ message: "Your story", context: "application backup file" }),
-  self: msg({ message: "Your Human Design or Gene Keys", context: "application backup file" }),
+  self: msg({ message: "Your Human Design, Gene Keys, or ways of working", context: "application backup file" }),
   links: msg({ message: "Links to your work", context: "application backup file" }),
   aim: msg({ message: "Your aim in this role", context: "application backup file" }),
   items: msg({ message: "Value items", context: "application backup file" }),
