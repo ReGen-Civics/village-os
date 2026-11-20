@@ -129,8 +129,9 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-land', 'Land Circle', '[]', 0), ('c-core', 'Core Circle', '[]', 0)");
     // Room for everybody this file adopts: a role with every place filled refuses an adoption (audit B3),
     // which proposalCounterOffer.test.ts and the role journey e2e hold. These tests are about everything else.
-    gate = await createOrgRole(pool, { id: "opd-role-gate", name: "Gate Keeper", seats: 40, circleId: "c-land", aim: "Open the gate at dawn." });
-    well = await createOrgRole(pool, { id: "opd-role-well", name: "Well Keeper", seats: 40, circleId: "c-land", aim: "Keep the well clean." });
+    // Forty places and a 1000% commitment target: a role with plenty of room, so no test here meets the role limit (the lead, 20 Nov 2026).
+    gate = await createOrgRole(pool, { id: "opd-role-gate", name: "Gate Keeper", seats: 40, commitmentTarget: 1000, circleId: "c-land", aim: "Open the gate at dawn." });
+    well = await createOrgRole(pool, { id: "opd-role-well", name: "Well Keeper", seats: 40, commitmentTarget: 1000, circleId: "c-land", aim: "Keep the well clean." });
     const orchard = await createOrgRole(pool, { id: "opd-role-orchard", name: "Orchard Keeper", seats: 1, circleId: "c-land", aim: "Tend the trees." });
     const compost = await createOrgRole(pool, { id: "opd-role-compost", name: "Compost Keeper", seats: 2, circleId: "c-land", aim: "Turn the heap." });
     founderRole = await createOrgRole(pool, { id: "opd-role-founder", name: "Founder", seats: 1, circleId: "c-core", aim: "Hold the village." });
