@@ -117,7 +117,7 @@ export const NOTIFICATION_KINDS: Record<string, NotificationKind> = {
   agent_full_access: {
     group: "decisions",
     celebrate: false,
-    waits: false,
+    waits: true,
   },
   /*
    * Village Comms 5.10: a host asked you to pick the times you can make for
