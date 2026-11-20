@@ -602,6 +602,11 @@ describe("the six steps", () => {
     pressNext();
     const why = screen.getByLabelText(OPEN_WORDS.whyLabel) as HTMLTextAreaElement;
     expect(why.placeholder).toBe("");
+    // A line over the starters says how to use them, visible at every width (no sr-only, no sm: gate).
+    const hint = document.querySelector("[data-starter-hint]") as HTMLElement;
+    expect(hint.textContent).toBe("Click one, then talk or type. Then click the next.");
+    expect(hint.compareDocumentPosition(document.querySelector("[data-starters]")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(hint.className).not.toMatch(/sr-only|hidden/);
     fireEvent.click(screen.getByRole("button", { name: "Start with: What I have built before:" }));
     fireEvent.click(screen.getByRole("button", { name: "Start with: Why now:" }));
     expect(why.value).toBe("What I have built before:\n\nWhy now: ");
@@ -1254,7 +1259,7 @@ describe("design G2: the desk and the panes", () => {
     fillAbout();
     pressOnce();
     expect(panes()).toEqual([false, true, false]);
-    expect(screen.getByLabelText("Your Human Design or Gene Keys (optional)").closest("[data-about-pane]")?.getAttribute("data-about-pane")).toBe("1");
+    expect(screen.getByLabelText("Your Human Design, Gene Keys, or other ways of working we should know about (optional)").closest("[data-about-pane]")?.getAttribute("data-about-pane")).toBe("1");
     pressOnce();
     expect(panes()).toEqual([false, false, true]);
     expect(document.querySelector("[data-references]")?.closest("[data-about-pane]")?.getAttribute("data-about-pane")).toBe("2");

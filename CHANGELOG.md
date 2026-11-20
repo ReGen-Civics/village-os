@@ -40,6 +40,16 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.42 (2026-11-20)
+
+### What changed for your village
+
+- **/roles is an index of compact role cards.** Each card shows the role's name, its circle, the role in one minute, and its state. The full role now lives on its own page at /roles/<role>, so the list stays short and easy to scan.
+- **Coming-soon roles show their name once**, with two choices: be told when the role opens, or apply early.
+- **On a phone, Apply is on the first screen of a role's page**, under the role in one minute. The fact tiles and long notes come after it.
+- **A hint above the "Why you, and why now" starters:** "Click one, then talk or type. Then click the next."
+- **The optional self-knowledge box now asks for any way of working you should know about**: "Your Human Design, Gene Keys, or other ways of working we should know about (optional)". It is still never shown to the people who decide.
+
 ## 1.3.41 (2026-11-20)
 
 ### What changed for your village

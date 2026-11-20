@@ -149,7 +149,7 @@ describe("the safety net", () => {
   it("the download holds the village, the role, every answer, the time, the page and the raw draft", async () => {
     await open(["network"]);
     await completeAll();
-    fireEvent.change(screen.getByLabelText(/Your Human Design or Gene Keys/), { target: { value: "Projector 2/4" } });
+    fireEvent.change(screen.getByLabelText(/Your Human Design, Gene Keys, or other ways of working/), { target: { value: "Projector 2/4" } });
     sendNow();
     await net();
     fireEvent.click(screen.getByRole("button", { name: "Download my application" }));

@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 /**
  * /roles: EACH HOLDER'S CARD IS ONE TAP AWAY, AND THE PAGE NEVER LOADS IT (PR 3).
+ * Since the /roles index (20 Nov 2026) this is on the role's own page, `/roles/<slug>`, below its card.
  *
- *   - an open row shows the role's health line from its own `/api/org` row and
+ *   - the role's page shows the role's health line from its own `/api/org` row and
  *     "See their card" for each member holder with a handle, linking
  *     `/profile/:handle#role-<id>`;
  *   - the page asks `/api/org` and never the card endpoint, however many
@@ -10,7 +11,7 @@
  *   - CONTROL: a holder row with no handle (below the member tier) gets no link.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, within, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 import { ROLE_ANCHOR } from "@shared/playerCard";
@@ -37,15 +38,8 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
   prefersReducedMotion: () => true,
 }));
 
-import Roles from "./Roles";
+import RoleShare from "./RoleShare";
 
-/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
-const powerCard = () =>
-  waitFor(() => {
-    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
-    if (!el) throw new Error("no card yet");
-    return el;
-  });
 
 
 class NoopIntersectionObserver {
@@ -127,23 +121,29 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const open = async (name: string) => {
-  const btn = (await screen.findByRole("heading", { level: 3, name })).closest("button")!;
-  fireEvent.click(btn);
-  await powerCard();
+const renderRole = (id: string) => {
+  window.history.replaceState(null, "", `/roles/${id}`);
+  return render(
+    <Router>
+      <RoleShare />
+    </Router>,
+  );
 };
+const cardDrawn = () =>
+  waitFor(() => {
+    if (!document.querySelector("[data-full-role-card]")) throw new Error("no card yet");
+  });
 
-describe("See their card on /roles", () => {
+describe("See their card on a role's page", () => {
   it("links each of 40 holders to their card at this role, with the health line, and never loads a card", async () => {
     org = orgWith([{ id: "water-keeper", name: "Water Keeper", holders: holders(40), health: HEALTH }]);
-    render(
-      <Router>
-        <Roles />
-      </Router>,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
-    await open("Water Keeper");
-    const block = document.querySelector("[data-role-holder-cards]") as HTMLElement;
+    renderRole("water-keeper");
+    await cardDrawn();
+    const block = await waitFor(() => {
+      const el = document.querySelector("[data-role-holder-cards]") as HTMLElement | null;
+      if (!el) throw new Error("not yet");
+      return el;
+    });
     expect(block).toBeTruthy();
     const links = within(block).getAllByRole("link");
     expect(links).toHaveLength(40);
@@ -153,20 +153,15 @@ describe("See their card on /roles", () => {
     expect(block.textContent).toContain("Worth a look");
     expect(block.textContent).toContain("Within term, to 31 December 2026");
     expect(block.textContent).toContain("2 open tensions");
-    // One read of the org, and no card endpoint at all.
+    // One read of the org, and no holder's card endpoint at all (the role's own card text, /api/org/role-card, is the page's).
     expect(asked.filter((u) => u === "/api/org")).toHaveLength(1);
-    expect(asked.some((u) => u.includes("/role-card") || u.endsWith("/card"))).toBe(false);
+    expect(asked.some((u) => u.endsWith("/card") || u.includes("/player-card") || u.includes("/profile"))).toBe(false);
   });
 
   it("CONTROL: a holder with no handle gets no link", async () => {
     org = orgWith([{ id: "seed-keeper", name: "Seed Keeper", holders: holders(2, false), health: null }]);
-    render(
-      <Router>
-        <Roles />
-      </Router>,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
-    await open("Seed Keeper");
+    renderRole("seed-keeper");
+    await cardDrawn();
     expect(document.querySelector("[data-role-holder-cards]")).toBeNull();
     expect(screen.queryByText("See their card")).toBeNull();
   });

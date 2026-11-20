@@ -7,31 +7,58 @@
  * what a messaging app shows. A role the village does not list, or no longer has, says so in one line and
  * leads back to /roles.
  *
- * Its own lazily loaded page, so none of it rides /roles' first view. The card is the same FullRoleCard /roles
- * draws: a founding team role in the founding register with its sections, any other in the directory's.
+ * Its own lazily loaded page, so none of it rides /roles' first view. The card is FullRoleCard: a founding team
+ * role in the founding register with its sections, any other in the directory's.
+ *
+ * THE FULL ROLE (20 Nov 2026): /roles became an index of compact cards, so everything a role's row used to open
+ * inline lives here, below the card: the roles this steward will build (in full, where the index has one line),
+ * the holders' cards, proposing it for next season or proposing an agent, raising a tension, the seat's history,
+ * the needs it carries and what a connected service holds about it.
  */
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useLocation, useRoute } from "wouter";
 import { ArrowLeft } from "lucide-react";
-import { useLingui } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
-import { HINT, LINK, TILE, WORLD } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_SECONDARY, HINT, LINK, TILE, WORLD } from "@/components/journey/look";
+import SeatHistory from "@/components/power/SeatHistory";
+import LeadBuilds, { buildsFor } from "@/components/roleCard/LeadBuilds";
+import { agentProposalHref, proposeRoleHref } from "@/components/roleProposal/QuickPath";
+import { useAuth } from "@/contexts/AuthContext";
+import { useModule } from "@/modules/ModuleProvider";
+import { seatHistoryShown } from "@shared/roleSheetInputs";
+import { heldButRecruiting } from "@shared/roleListing";
 import { gameFetch } from "@/lib/gameApi";
 import { anchorCircleId } from "@shared/circlePicker";
 import { roleForSlug, rolePath } from "@shared/roleSlug";
-import FullRoleCard from "@/components/roleCard/FullRoleCard";
+import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
+import { termsSlotFor } from "@/components/power/SeatTermsSlot";
 import { AnchorCircleTip } from "@/components/roleCard/CardTips";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 
 const SeatLinkCopy = lazy(() => import("@/components/roleCard/SeatLinkCopy"));
+// The seat's record below the card, each loaded when it is drawn.
+const RoleHolderCards = lazy(() => import("@/components/playerCard/RoleHolderCards"));
+const RaiseTension = lazy(() => import("@/components/roleTension/RaiseTension"));
+const SeatNeeds = lazy(() => import("@/components/power/SeatNeeds"));
+const SeatVendorFacts = lazy(() => import("@/components/power/SeatVendorFacts"));
 
 interface OrgRead {
   roles: Array<Record<string, any> & { id: string }>;
   circles: Array<Record<string, any>>;
+  people: unknown;
+  /** Every row as served, demonstration seats included, for the history's reach (`seatHistoryShown`). */
+  allRoles: unknown[];
 }
 
 export default function RoleShare() {
   const { t } = useLingui();
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
+  // Who may say what a seat is held for; the server refuses everybody else by itself.
+  const canTagNeeds = !!user && (user.role === "admin" || user.role === "founder");
+  // Whose words the vendor panel shows: the listing's, so no connector is named here.
+  const vendorName = useModule("saberra")?.name ?? t({ message: `the connected service`, context: "roles page, a connected service's fallback name" });
   const [, params] = useRoute("/roles/:slug");
   const slug = params?.slug ?? "";
   const [org, setOrg] = useState<OrgRead | null | "failed">(null);
@@ -40,7 +67,7 @@ export default function RoleShare() {
     let live = true;
     gameFetch("/api/org")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((d) => live && setOrg({ roles: Array.isArray(d?.roles) ? d.roles.filter((r: any) => r && !r.isExample && typeof r.id === "string") : [], circles: Array.isArray(d?.circles) ? d.circles : [] }))
+      .then((d) => live && setOrg({ roles: Array.isArray(d?.roles) ? d.roles.filter((r: any) => r && !r.isExample && typeof r.id === "string") : [], circles: Array.isArray(d?.circles) ? d.circles : [], people: d?.people ?? null, allRoles: Array.isArray(d?.roles) ? d.roles : [] }))
       .catch(() => live && setOrg("failed"));
     void readFoundingTeam().then((a) => live && setFounding(a));
     return () => {
@@ -56,12 +83,21 @@ export default function RoleShare() {
   const anchorRow = circles.find((c) => String(c?.id) === anchorId);
   const anchorTip = useMemo(() => (anchorRow?.name ? { name: String(anchorRow.name), purpose: String(anchorRow.purpose ?? "") } : null), [anchorRow?.name, anchorRow?.purpose]);
   const featured = !!role && !!founding?.on && founding.roleIds.includes(String(role.id));
+  const pathOf = (r: { id: string; name?: unknown; slug?: unknown }) => rolePath({ id: String(r.id), name: r.name as string, slug: r.slug as string }, roles.map((x) => ({ id: String(x.id), name: x.name, slug: x.slug })));
+  // The roles this steward will build, in full (the index has one line of them).
+  const builds = role ? buildsFor(String(role.id), roles, circles as Array<{ id: string; leadRoleId?: string | null }>, (r) => heldButRecruiting(r) && mayApply(r)) : [];
+  const historyShown = org && org !== "failed" ? seatHistoryShown(org.people as any, org.allRoles as any) : false;
   const path = role ? rolePath({ id: String(role.id), name: role.name, slug: role.slug }, roles.map((r) => ({ id: String(r.id), name: r.name, slug: r.slug }))) : "";
 
   // The bar says the role's own address, so a reader who arrived by its id copies the same link a card copies.
   useEffect(() => {
-    if (role && path && window.location.pathname !== path) window.history.replaceState(window.history.state, "", path + window.location.hash);
-  }, [role, path]);
+    if (!role || !path || window.location.pathname === path) return;
+    // Only while the bar still names THIS role: an effect that runs late, after a press already moved to another role's
+    // page, must never write the old role back over it (a race seen under load, 20 Nov 2026).
+    const now = window.location.pathname.match(/^\/roles\/([^/]+)/)?.[1] ?? "";
+    if (roleForSlug(now, roles) !== role) return;
+    window.history.replaceState(window.history.state, "", path + window.location.hash);
+  }, [role, path, roles]);
 
   const back = (
     <Link href="/roles" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`} data-role-page-back="">
@@ -74,7 +110,8 @@ export default function RoleShare() {
     <AnchorCircleTip.Provider value={anchorTip}>
       <Layout>
         <section className={`${WORLD} pb-16 pt-4 sm:py-12`}>
-          <div className="container mx-auto flex max-w-6xl flex-col gap-5" data-role-page={role ? String(role.id) : ""}>
+          {/* A tighter gap on a phone, so a coming-soon card's longer note still leaves its act whole on the first screen. */}
+          <div className="container mx-auto flex max-w-6xl flex-col gap-3 sm:gap-5" data-role-page={role ? String(role.id) : ""}>
             {back}
             {org === null || (role && founding === null) ? (
               <p role="status" className={`py-10 text-center ${HINT}`}>{t({ message: "Loading the role…", context: "a role's own page" })}</p>
@@ -94,6 +131,7 @@ export default function RoleShare() {
                   sections={featured ? (founding?.sections[String(role.id)] ?? null) : null}
                   villagePay={founding?.villagePay ?? null}
                   lifted
+                  settings={termsSlotFor(role)}
                 />
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <Suspense fallback={null}>
@@ -103,6 +141,41 @@ export default function RoleShare() {
                     {t({ message: "See every role", context: "a role's own page: the roles page" })}
                   </Link>
                 </div>
+                <LeadBuilds
+                  leadName={String(role.name ?? "")}
+                  roles={builds}
+                  onOpen={(id) => {
+                    const child = roles.find((r) => String(r.id) === id);
+                    if (child) navigate(pathOf(child));
+                  }}
+                />
+                <Suspense fallback={null}>
+                  <div className="flex flex-col gap-4" data-role-page-record="">
+                    <RoleHolderCards role={role} />
+                    <div className="flex flex-wrap gap-3">
+                      <Link href={proposeRoleHref(String(role.id))} className={BTN_NOTICE}>
+                        {t`Propose this role for next season`}
+                      </Link>
+                      {role.card?.agentMayHold === true && (
+                        <Link href={agentProposalHref(String(role.id))} className={BTN_SECONDARY}>
+                          <Trans context="roles directory: a member proposes an agent they keep">Propose an agent for this role</Trans>
+                        </Link>
+                      )}
+                    </div>
+                    <RaiseTension roleId={String(role.id)} roleName={String(role.name ?? "")} />
+                    {/* The seat's whole record, ended holdings included. */}
+                    <div className="border-t border-border pt-4">
+                      <SeatHistory roleId={String(role.id)} canSeePeople={historyShown} />
+                    </div>
+                    {/* Which of the village's needs this seat carries (R18): a description, never a condition on holding it. */}
+                    <div className="border-t border-border pt-4">
+                      <SeatNeeds roleId={String(role.id)} canEdit={canTagNeeds} />
+                    </div>
+                    <div className="border-t border-border pt-4 empty:hidden empty:border-t-0 empty:pt-0">
+                      <SeatVendorFacts entityKind="org_role" entityId={String(role.id)} serviceName={vendorName} />
+                    </div>
+                  </div>
+                </Suspense>
               </>
             )}
           </div>

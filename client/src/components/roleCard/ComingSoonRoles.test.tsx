@@ -7,7 +7,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ComingSoonRoles from "./ComingSoonRoles";
 
-const ROLES = [{ id: "garden", name: "Garden Steward", aim: "Grow food" }, { id: "kitchen", name: "Kitchen Steward" }];
+const ROLES = [
+  { id: "garden", name: "Garden Steward", seat: { id: "garden", name: "Garden Steward", aim: "Grow food", comingSoon: true, state: "forming" }, path: "/roles/garden-steward" },
+  { id: "kitchen", name: "Kitchen Steward", seat: { id: "kitchen", name: "Kitchen Steward", comingSoon: true, state: "forming" }, path: "/roles/kitchen-steward" },
+];
 
 afterEach(() => {
   cleanup();
@@ -16,10 +19,14 @@ afterEach(() => {
 });
 
 describe("the coming-soon roles", () => {
-  it("draws each card with its anchor and the notice, and opens the form on Notify me", async () => {
+  it("draws each card with its anchor, the notice once above them, and opens the form on Notify me", async () => {
     render(<ComingSoonRoles roles={ROLES} />);
-    expect(screen.getByText("Hear when a role opens")).toBeTruthy();
-    expect(document.getElementById("role-garden")?.textContent).toContain("This role is not open yet, and the card may change before it opens.");
+    expect(screen.getByRole("heading", { name: "Coming soon (2)" })).toBeTruthy();
+    // The approved notice is said once for the group, above the cards (20 Nov 2026: one card per role).
+    expect(document.querySelectorAll("[data-coming-soon-note]").length).toBe(1);
+    expect(document.querySelector("[data-coming-soon-note]")?.textContent).toContain("This role is not open yet, and the card may change before it opens.");
+    expect(document.getElementById("role-garden")?.getAttribute("data-role-card")).toBe("garden");
+    expect(document.getElementById("role-garden")?.querySelector('[data-apply-early="garden"]')?.getAttribute("href")).toBe("/propose-a-role?role=garden&early=1");
     expect(document.querySelector("[data-waitlist-form]")).toBeNull();
     fireEvent.click(document.querySelector('[data-waitlist-open="kitchen"]') as HTMLElement);
     await waitFor(() => expect(document.querySelector("[data-waitlist-form]")).toBeTruthy());

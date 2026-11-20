@@ -12,6 +12,29 @@ msgid "{source}'s wording replaces ours wherever {source} sent some, and the res
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: open this role's own page"
+msgid "Read the role"
+msgstr "Leer el rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: apply for this role"
+msgid "Apply"
+msgstr "Postular"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: the coming-soon roles this steward will build"
+msgid "Will grow into:"
+msgstr "Dará lugar a:"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open role"
+msgid "No role is open right now."
+msgstr "Ahora mismo no hay ningún rol abierto."
+
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Full access is on for that role's agent."
 msgstr "El acceso total está activo para el agente de ese rol."
@@ -69,6 +92,48 @@ msgstr "Continuar"
 msgctxt "role editor"
 msgid "Currency"
 msgstr ""
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "Your recordings"
+msgstr "Tus grabaciones"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, sent with your application"
+msgstr "1 grabación, enviada con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, sent with your application"
+msgstr "{n} grabaciones, enviadas con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, not sent. Tick the box under it to send it."
+msgstr "1 grabación, sin enviar. Marca la casilla debajo para enviarla."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, not sent. Tick the box under them to send them."
+msgstr "{n} grabaciones, sin enviar. Marca la casilla debajo para enviarlas."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments: a file over the size limit"
+msgid "Too big"
+msgstr "Demasiado grande"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: a coming-soon role"
+msgid "Not open yet. Choosing it makes this an early application."
+msgstr "Aún no está abierto. Elegirlo hace de esta una solicitud temprana."
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
@@ -2060,6 +2125,11 @@ msgstr ""
 msgctxt "founding application why starter"
 msgid "Why now:"
 msgstr "Por qué ahora:"
+
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application why starter hint"
+msgid "Click one, then talk or type. Then click the next."
+msgstr "Haz clic en una, luego habla o escribe. Después haz clic en la siguiente."
 
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
@@ -7906,8 +7976,8 @@ msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application about"
-msgid "Your Human Design or Gene Keys (optional)"
-msgstr "Tu Diseño Humano o tus Gene Keys (opcional)"
+msgid "Your Human Design, Gene Keys, or other ways of working we should know about (optional)"
+msgstr "Tu Diseño Humano, tus Gene Keys u otras formas de trabajar que debamos conocer (opcional)"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line error"
@@ -19148,8 +19218,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
-msgid "Your Human Design or Gene Keys"
-msgstr ""
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Tu Diseño Humano, tus Gene Keys o formas de trabajar"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -19257,8 +19327,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/applyBackup.ts
 msgctxt "application backup file"
-msgid "Your Human Design or Gene Keys"
-msgstr ""
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Tu Diseño Humano, tus Gene Keys o formas de trabajar"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"

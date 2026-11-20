@@ -332,7 +332,7 @@ export default function ProposeARole() {
   /** An added role's commitment: none chosen yet, or below what the role takes from one person. */
   const extraRoleCheck = (x: ExtraRole, r: FormRole | undefined) => (x.terms.commitmentPct === null ? "none" : x.terms.commitmentPct < (r?.commitmentMin ?? 0) ? "below" : null);
 
-  const { labels, intro, starters, paneNames } = useApplyWords();
+  const { labels, intro, starters, starterHint, paneNames } = useApplyWords();
 
   /** The value items as the card sends them: blank rows out, the draft flag off. */
   const filledItems = items.filter((g) => g.title.trim() || g.doneWhen.trim() || g.serves);
@@ -823,6 +823,7 @@ export default function ProposeARole() {
                 <label htmlFor="propose-why" className={LABEL}>
                   {t`Why you, and why now`}
                 </label>
+                <p className={HINT} data-starter-hint="">{starterHint}</p>
                 <div className="flex flex-wrap gap-2" data-starters="">
                   {starters.map((s) => (
                     <button key={s} type="button" onClick={() => startWith(s)} aria-label={t({ message: `Start with: ${s}`, context: "founding application why starter" })} className="jw-btn inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm text-foreground hover:border-notice focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
@@ -848,7 +849,7 @@ export default function ProposeARole() {
                 />
                 <div>
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
-                    {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
+                    {t({ message: "Your Human Design, Gene Keys, or other ways of working we should know about (optional)", context: "founding application about" })}
                   </label>
                   <GrowingField minRows={2} id="propose-self" limit={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>

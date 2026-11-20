@@ -1,23 +1,23 @@
 // @vitest-environment jsdom
 /**
- * QA FAULTS ON THE ROLE CARDS (production 1.3.34): the team sheet's tile says the card's own words for where, the
- * opened card sits under its own row, the split is named once, and the piece rail is one scrolling row on a phone.
+ * QA FAULTS ON THE ROLE CARDS (production 1.3.34): the index card says the card's own words for where (the team
+ * sheet's tile, until the /roles index replaced it on 20 Nov 2026), the split is named once, and the piece rail is
+ * one scrolling row on a phone. (F7, the opened card under its own row, went with the inline card: nothing opens
+ * on /roles now, and Roles.index.test.tsx holds that.)
  * jsdom has no layout, so the rail is held by its class contract and its tab order.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, within } from "@testing-library/react";
-import FoundingTeam, { type FoundingRole } from "./FoundingTeam";
+import RoleIndexCard from "./RoleIndexCard";
 import RolePieces from "./RolePieces";
 import { Sprout } from "lucide-react";
 import { offeredSplit } from "@shared/proposalSplit";
 import SplitControl from "./SplitControl";
 
-const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanion: "", paid: false, payShape: [], payNote: "", payCeiling: null, paySplitNote: "" };
-const role = (id: string, name: string, where?: string): FoundingRole => ({
-  seat: { id, name, aim: "An aim.", state: "open", archetypes: [], card: { whereWorked: "both" } },
-  circleName: "Anchor Circle",
-  sections: { ...SECTIONS, ...(where ? { where } : {}) } as FoundingRole["sections"],
-});
+const seat = (id: string, name: string) => ({ id, name, aim: "An aim.", state: "open", archetypes: [], card: { whereWorked: "both" } });
+const cardOf = (id: string, name: string, where?: string) => (
+  <RoleIndexCard seat={seat(id, name)} path={`/roles/${id}`} circleName="Anchor Circle" kind="open" whereWords={where ?? null} />
+);
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })));
@@ -28,25 +28,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("the team sheet", () => {
-  it("F2: a tile says the card's own words for where, and the fixed label only when the card has none", () => {
-    const { container } = render(<FoundingTeam roles={[role("a", "Role A", "Near the coast (preferred) or remote (possible)"), role("b", "Role B")]} />);
-    const tiles = Array.from(container.querySelectorAll('[data-testid="team-sheet"] > ul > li')).filter((li) => li.querySelector("[data-founding-role]"));
+describe("the index card", () => {
+  it("F2: a card says the card's own words for where, and the fixed label only when the card has none", () => {
+    const { container } = render(
+      <ul>
+        {cardOf("a", "Role A", "Near the coast (preferred) or remote (possible)")}
+        {cardOf("b", "Role B")}
+      </ul>,
+    );
+    const tiles = Array.from(container.querySelectorAll("[data-role-card]"));
     expect(tiles[0].textContent).toContain("Near the coast (preferred) or remote (possible)");
     expect(tiles[0].textContent).not.toContain("On the land or remote");
     expect(tiles[1].textContent).toContain("On the land or remote");
-  });
-
-  it("F7: the opened card sits right under its own row, not at the bottom of the page", () => {
-    const { container } = render(<FoundingTeam roles={[role("a", "Role A"), role("b", "Role B")]} />);
-    fireEvent.click(container.querySelector('[data-founding-role="b"]')!);
-    const slot = container.querySelector("[data-founding-card-slot]")!;
-    const row = container.querySelector('[data-founding-role="b"]')!.closest("li")!;
-    expect(row.nextElementSibling?.contains(slot)).toBe(true);
-    expect(container.querySelectorAll("[data-founding-card-slot]").length).toBe(1);
-    // The card moves with the choice: opening A puts it under A.
-    fireEvent.click(container.querySelector('[data-founding-role="a"]')!);
-    expect(container.querySelector('[data-founding-role="a"]')!.closest("li")!.nextElementSibling?.contains(container.querySelector("[data-founding-card-slot]"))).toBe(true);
   });
 });
 

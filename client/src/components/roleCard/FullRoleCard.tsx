@@ -39,7 +39,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
-import { commitmentRowWords, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
+import { commitmentLine, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
 import { moneyWords } from "@shared/roleRewardWords";
 import { goalOf, nextDeliverables } from "@shared/roleOneMinute";
 import { CardTipsProvider, TipText, useCardTips } from "./CardTips";
@@ -180,9 +180,14 @@ export interface FullRoleCardProps {
   commitmentChosen?: number | null;
   /** The role's own page, `/roles/<slug>`: the card offers "Copy link" to it in its footer (the lead, 20 Nov 2026). */
   sharePath?: string;
+  /**
+   * The terms drawer for a reader allowed to read terms (SeatTermsSlot's `termsSlotFor`), drawn above the
+   * footer. The role's own page is the live-card host since /roles became an index (20 Nov 2026).
+   */
+  settings?: ReactNode;
 }
 
-export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath, settings }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
@@ -267,7 +272,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
   const act = soon ? (
     <div className="flex flex-col gap-3" data-card-waitlist={id}>
-      <StateNote role={seat} />
+      {/* On a phone the note follows the button, so the act stays on the first screen (the lead, 20 Nov 2026). */}
+      {wide && <StateNote role={seat} />}
       {waitOpen ? (
         <Suspense fallback={null}>
           <WaitlistForm roles={[{ id, name: String(seat?.name ?? "") }]} chosen={id} />
@@ -277,6 +283,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
         </button>
       )}
+      {!wide && <StateNote role={seat} />}
       {/* The waitlist stays first; a strong fit may apply early (the lead, 20 Nov 2026). */}
       <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
       <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_SECONDARY}`} data-apply-early={id}>
@@ -286,13 +293,15 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   ) : apply ? (
     <>
       {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
-      <StateNote role={seat} className="mb-3" />
+      {wide && <StateNote role={seat} className="mb-3" />}
       <Fireflies block>
         <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
           <Trans context="full role card: the one act">Apply for this role</Trans>
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
+      {/* A venture's pitch note is long: on a phone it follows Apply, so Apply is on the first screen. */}
+      {!wide && <StateNote role={seat} className="mt-3" />}
       {/* The two-speed way in (the lead, 20 Nov 2026, idea 14): two minutes now, the full proposal shaped together later. */}
       <Link href={`${applyHrefForRole(id)}&way=talk`} className={`mt-3 w-full ${BTN_SECONDARY}`} data-start-conversation={id}>
         {t({ message: "Start a conversation", context: "full role card: the short way in" })}
@@ -325,7 +334,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     goal: goal || aim,
     next: nextDeliverables(sections?.deliverables ?? [], todayIso()),
     // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
-    commitment: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : commitmentPct !== null ? `${commitmentPct}%` : (commitment ?? ""),
+    commitment: commitmentLine(i18n, seat),
     // The full role's figure, once; the Rewards tab works it out at the reader's own share.
     price: founding && ceiling ? (
       <>
@@ -633,6 +642,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <div className="lg:sticky lg:top-28 lg:self-start">{side}</div>
       </div>
 
+      {settings ? <div className="mt-6" data-testid="card-settings">{settings}</div> : null}
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <p className={HINT} data-testid="last-edited">
           {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}

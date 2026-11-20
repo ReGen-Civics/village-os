@@ -105,7 +105,7 @@ import Review from "./Review";
 import Training from "./Training";
 import LivingMap from "./LivingMap";
 import Profile from "./Profile";
-import Roles from "./Roles";
+import RoleShare from "./RoleShare";
 import Circles from "./Circles";
 import RedemptionQueue from "@/components/RedemptionQueue";
 
@@ -340,7 +340,7 @@ describe("/map", () => {
 
 
 /*
- * /roles AND /circles: A SEAT'S HISTORY AND ITS NEEDS.
+ * /roles/<slug> AND /circles: A SEAT'S HISTORY AND ITS NEEDS.
  *
  * Both pages open a seat's card from `/api/org`, whose names are public by
  * default (R57), and both mounted the seat's history under the card on
@@ -362,19 +362,11 @@ class NoopIntersectionObserver {
   }
 }
 
-/** The roles sit behind step one (the archetype pick) until "See all roles"; a seat link, or a URL a test before left behind, opens them already. */
-async function openAllRoles() {
-  await waitFor(() => expect(screen.queryByRole("button", { name: "See all roles" }) ?? screen.queryAllByRole("heading", { level: 3 })[0]).toBeTruthy());
-  const seeAll = screen.queryByRole("button", { name: "See all roles" });
-  if (seeAll) fireEvent.click(seeAll);
-}
-
+/** A seat's record sits under its card on the role's own page since the /roles index (20 Nov 2026). */
 async function openRolesRow() {
-  inRouter(<Roles />);
-  // The roles sit behind step one (the archetype pick) until "See all roles".
-  await openAllRoles();
-  const row = (await screen.findByRole("heading", { level: 3, name: "Seed Keeper" })).closest("button")!;
-  fireEvent.click(row);
+  window.history.replaceState(null, "", "/roles/seed-keeper");
+  inRouter(<RoleShare />);
+  await waitFor(() => expect(document.querySelector('[data-full-role-card="seed-keeper"]')).toBeTruthy());
 }
 
 async function openCirclesSeat() {
@@ -383,7 +375,7 @@ async function openCirclesSeat() {
   fireEvent.click(screen.getByRole("button", { name: "Seed Keeper" }));
 }
 
-describe("/roles", () => {
+describe("/roles/<slug>", () => {
   beforeEach(() => vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver));
 
   it("signed out, offers the history's sign-in line and asks neither the history nor the needs", async () => {
