@@ -66,48 +66,6 @@ msgid "Currency"
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review"
-msgid "Your recordings"
-msgstr "Tus grabaciones"
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review"
-msgid "1 recording, sent with your application"
-msgstr "1 grabación, enviada con tu solicitud"
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review"
-msgid "{n} recordings, sent with your application"
-msgstr "{n} grabaciones, enviadas con tu solicitud"
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review"
-msgid "1 recording, not sent. Tick the box under it to send it."
-msgstr "1 grabación, sin enviar. Marca la casilla debajo para enviarla."
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/reviewExtras.ts
-msgctxt "founding application review"
-msgid "{n} recordings, not sent. Tick the box under them to send them."
-msgstr "{n} grabaciones, sin enviar. Marca la casilla debajo para enviarlas."
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/openProposal/ProposalAttachments.tsx
-msgctxt "open proposal attachments: a file over the size limit"
-msgid "Too big"
-msgstr "Demasiado grande"
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/StartConversation.tsx
-msgctxt "start a conversation: a coming-soon role"
-msgid "Not open yet. Choosing it makes this an early application."
-msgstr "Aún no está abierto. Elegirlo hace de esta una solicitud temprana."
-
-# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application, a coming-soon role"
 msgid "Join its waitlist to hear when it opens."
@@ -3894,6 +3852,12 @@ msgid "This asks {name} for {what}. It sends the role you are applying for, your
 msgstr "Esto le pide a {name} {what}. Envía el rol al que postulas, tu \"Por qué tú\" y tu objetivo, y nada más: ni tus referencias, enlaces, archivos, nombre o correo. No se envía nada hasta que lo presionas."
 
 # needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "Your recordings"
+msgstr "Tus grabaciones"
+
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare, how a proposal came in"
 msgid "Early application, the role was coming soon"
@@ -4546,6 +4510,12 @@ msgstr "Mover \"{0}\" a"
 msgctxt "budget desk"
 msgid "Cash for role pay and quest pay"
 msgstr ""
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, not sent. Tick the box under it to send it."
+msgstr "1 grabación, sin enviar. Marca la casilla debajo para enviarla."
 
 #: client/src/components/openProposal/CommitmentReview.tsx
 msgctxt "open proposal: commitment"
@@ -5209,8 +5179,8 @@ msgid "Role (if the line pays one role)"
 msgstr ""
 
 #: client/src/components/governance/TermsEight.tsx
-msgid "How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload."
-msgstr "Cuánta de tu energía y atención recibe este rol en una semana. 100 % es compromiso completo, y tú manejas tu propia carga de trabajo."
+#~ msgid "How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload."
+#~ msgstr "Cuánta de tu energía y atención recibe este rol en una semana. 100 % es compromiso completo, y tú manejas tu propia carga de trabajo."
 
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome, what the companion says"
@@ -7627,6 +7597,12 @@ msgctxt "sera answers"
 msgid "Something here changed since it was taken. Undo it or take it again before this draft is published."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, sent with your application"
+msgstr "{n} grabaciones, enviadas con tu solicitud"
+
 #: client/src/components/yourList/ReasonSheet.tsx
 msgctxt "task handed to a role"
 msgid "It waits for the role's holder to accept it. You'll see where it stands under Sent."
@@ -7832,6 +7808,12 @@ msgstr "Meta de la temporada"
 #: client/src/pages/HiddenMap.tsx
 msgid "That did not go through."
 msgstr ""
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "Without the tick, your recordings are not sent. They stay on this page until you close it."
+msgstr "Sin la marca, tus grabaciones no se envían. Se quedan en esta página hasta que la cierres."
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "What happens after you propose"
@@ -12475,6 +12457,12 @@ msgstr ""
 msgctxt "thanks composer: the plain allowance line"
 msgid "Each cycle every member receives an allowance to send."
 msgstr ""
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, sent with your application"
+msgstr "1 grabación, enviada con tu solicitud"
 
 #: client/src/components/review/SeraActs.tsx
 msgid "Keep ours means {owner} version stays out of the list until {agent} changes it again. Undo brings it back."
@@ -17871,6 +17859,12 @@ msgctxt "next step box, nobody named on the quest"
 msgid "Ask in the quest chat below"
 msgstr "Pregunta en el chat de la misión, más abajo"
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: a coming-soon role"
+msgid "Not open yet. Choosing it makes this an early application."
+msgstr "Aún no está abierto. Elegirlo hace de esta una solicitud temprana."
+
 #: client/src/components/gratitude/Lantern.tsx
 msgctxt "lantern: a thanks arrived"
 msgid "Your lantern reached {name}"
@@ -18977,12 +18971,6 @@ msgstr ""
 msgctxt "role listing panel heading"
 msgid "Listed roles"
 msgstr ""
-
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/fireflyPath/applyWordsT.ts
-msgctxt "voice invite"
-msgid "Without the tick, your recordings are not sent. They stay on this page until you close it."
-msgstr "Sin la marca, tus grabaciones no se envían. Se quedan en esta página hasta que la cierres."
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook block page, lines for the group's answer"
@@ -21574,6 +21562,12 @@ msgstr ""
 msgid "Anybody in the village can suggest a change to it under Say."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, not sent. Tick the box under them to send them."
+msgstr "{n} grabaciones, sin enviar. Marca la casilla debajo para enviarlas."
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal stones"
 #~ msgid "Proposing for: {pickedNames}"
@@ -23961,6 +23955,12 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "Propose a role in {village}"
 #~ msgstr "Proponer un rol en {village}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments: a file over the size limit"
+msgid "Too big"
+msgstr "Demasiado grande"
 
 #: client/src/components/TreasurySync.tsx
 msgctxt "treasury sync"
