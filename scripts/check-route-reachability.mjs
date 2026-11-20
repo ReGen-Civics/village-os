@@ -78,6 +78,10 @@ const ALLOWLIST = {
   "/aboard/welcome": "where joining lands, once; reached from the joining form and the Google return",
   "/welcome": "a village's public front door: the invitation letter, links the village posts outside the app, and its own bottom bar",
 
+  // One role's own page (the lead, 20 Nov 2026). Every link to it is built from the role (shared/roleSlug.ts rolePath): the
+  // Copy link on the role card's footer and on a directory row, and the link people share outside the app.
+  "/roles/:slug": "a role's own page; its links are built from each role and shared outside the app",
+
   // A members-only report of the role journey (counts and medians, no names). Its one door is the signed-in link on /roles; a second link would only add a header entry nobody needs.
   "/role-measures": "a members-only report reached from the roles page",
 

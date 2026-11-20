@@ -13,6 +13,14 @@
  * `motion-safe` only, and the platform's reduced-motion rule (client/src/index.css) stops it too.
  *
  * `after` lets a host add something under each piece (the applicant's suggestion layer).
+ *
+ * FIVE TABS, NOT ELEVEN (the lead, 20 Nov 2026; the roles lane's idea 2). A host may pass `tabs`, each naming
+ * the pieces it holds, and the rail then shows the tabs: one tab opens every piece it holds, in order. Every
+ * piece keeps its own section, heading, `data-piece` and `after`, so a suggestion still belongs to one piece
+ * and a tab's chip carries the dot when any of its pieces is marked. With no `tabs`, each piece is its own tab.
+ *
+ * A LINK TO A PIECE OPENS ITS TAB: `#rewards` or `#piece-rewards` (a piece's key) and `#you` (a tab's key) open
+ * the tab that holds it, on arrival and when the hash changes, and bring that piece's heading into view.
  */
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Rows3, type LucideIcon } from "lucide-react";
@@ -30,24 +38,111 @@ export interface RolePiece {
   body: ReactNode;
 }
 
+/** A tab on the rail and the pieces it opens, by key, in the order they are drawn. */
+export interface PieceTab {
+  key: string;
+  tab: string;
+  icon: LucideIcon;
+  pieces: readonly string[];
+}
+
 type Level = 2 | 3 | 4;
 const HEADING: Record<Level, "h2" | "h3" | "h4"> = { 2: "h2", 3: "h3", 4: "h4" };
 
-export default function RolePieces({ pieces, level, after, marks, initial = 0, initialAll = false }: { pieces: RolePiece[]; level: Level; after?: (key: string) => ReactNode; marks?: (key: string) => number; initial?: number; initialAll?: boolean }) {
+interface Group {
+  key: string;
+  tab: string;
+  icon: LucideIcon;
+  items: RolePiece[];
+}
+
+/** The tabs the rail shows: the host's, holding only pieces the card drew, with any piece no tab names as its own. */
+export function groupPieces(pieces: readonly RolePiece[], tabs?: readonly PieceTab[]): Group[] {
+  if (!tabs) return pieces.map((p) => ({ key: p.key, tab: p.tab, icon: p.icon, items: [p] }));
+  const named = new Set(tabs.flatMap((t) => t.pieces));
+  const groups: Group[] = tabs
+    .map((t) => ({ key: t.key, tab: t.tab, icon: t.icon, items: t.pieces.map((k) => pieces.find((p) => p.key === k)).filter((p): p is RolePiece => !!p) }))
+    .filter((g) => g.items.length > 0);
+  for (const p of pieces) if (!named.has(p.key)) groups.push({ key: p.key, tab: p.tab, icon: p.icon, items: [p] });
+  return groups;
+}
+
+/** The tab a link names, by a piece's key (with or without "piece-") or a tab's key; -1 for none. */
+export function tabForHash(groups: readonly Group[], hash: string): number {
+  let h = "";
+  try {
+    h = decodeURIComponent(hash.replace(/^#/, ""));
+  } catch {
+    return -1;
+  }
+  h = h.replace(/^piece-/, "");
+  if (!h) return -1;
+  return groups.findIndex((g) => g.key === h || g.items.some((p) => p.key === h));
+}
+
+const hashNow = () => (typeof window === "undefined" ? "" : window.location.hash);
+
+export default function RolePieces({ pieces, tabs, level, after, marks, initial = 0, initialAll = false }: { pieces: RolePiece[]; tabs?: readonly PieceTab[]; level: Level; after?: (key: string) => ReactNode; marks?: (key: string) => number; initial?: number; initialAll?: boolean }) {
   const { t } = useLingui();
   const base = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const [at, setAt] = useState(Math.min(Math.max(initial, 0), Math.max(pieces.length - 1, 0)));
+  // A host builds its pieces afresh on every render, so effects key on the tabs' shape, never on the array.
+  const groups = groupPieces(pieces, tabs);
+  const shape = groups.map((g) => `${g.key}:${g.items.map((p) => p.key).join(",")}`).join("|");
+  const live = useRef(groups);
+  live.current = groups;
+  const linked = tabForHash(groups, hashNow());
+  const [at, setAt] = useState(() => Math.min(Math.max(linked >= 0 ? linked : initial, 0), Math.max(groups.length - 1, 0)));
   const [all, setAll] = useState(initialAll);
   const [seen, setSeen] = useState<Set<number>>(() => new Set([at]));
   const moved = useRef(false);
-  const headings = useRef<Array<HTMLElement | null>>([]);
+  // The piece a link named, to bring into view once its tab is open.
+  const target = useRef<string | null>(linked >= 0 ? hashNow().replace(/^#(piece-)?/, "") : null);
+  const headings = useRef<Record<string, HTMLElement | null>>({});
   const rail = useRef<HTMLUListElement | null>(null);
   const H = HEADING[level];
 
   useEffect(() => {
+    if (target.current) {
+      const key = target.current;
+      target.current = null;
+      const g = live.current[at];
+      const piece = g?.items.find((p) => p.key === key) ?? g?.items[0];
+      const el = piece ? headings.current[piece.key] : null;
+      el?.scrollIntoView?.({ block: "center" });
+      el?.focus({ preventScroll: true });
+      return;
+    }
     if (!moved.current || all) return;
-    headings.current[at]?.focus();
+    const first = live.current[at]?.items[0];
+    if (first) headings.current[first.key]?.focus();
   }, [at, all]);
+
+  // A card's pieces can arrive after it mounts (its sections are read), so a link that named nothing yet is tried
+  // again as the pieces change, until it lands or the reader moves.
+  const waiting = useRef(linked < 0 && hashNow().length > 1);
+  useEffect(() => {
+    if (!waiting.current || moved.current) return;
+    const k = tabForHash(live.current, hashNow());
+    if (k < 0) return;
+    waiting.current = false;
+    target.current = hashNow().replace(/^#(piece-)?/, "");
+    setAt(k);
+    setSeen((s) => new Set(s).add(k));
+  }, [shape]);
+
+  // A link to a piece followed while the card is open (another link on the page, or Back) opens its tab too.
+  useEffect(() => {
+    const follow = () => {
+      const k = tabForHash(live.current, hashNow());
+      if (k < 0) return;
+      target.current = hashNow().replace(/^#(piece-)?/, "");
+      setAll(false);
+      setAt(k);
+      setSeen((s) => new Set(s).add(k));
+    };
+    window.addEventListener("hashchange", follow);
+    return () => window.removeEventListener("hashchange", follow);
+  }, [shape]);
 
   // The open tab stays in sight on a phone, where the rail scrolls sideways. Only the rail moves, never the page.
   useEffect(() => {
@@ -57,10 +152,10 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
     ul.scrollLeft = here.offsetLeft - (ul.clientWidth - here.offsetWidth) / 2;
   }, [at, all]);
 
-  if (pieces.length === 0) return null;
-  const i = Math.min(at, pieces.length - 1);
+  if (groups.length === 0) return null;
+  const i = Math.min(at, groups.length - 1);
   const go = (n: number) => {
-    if (n < 0 || n >= pieces.length) return;
+    if (n < 0 || n >= groups.length) return;
     moved.current = true;
     setAt(n);
     setSeen((s) => new Set(s).add(n));
@@ -76,7 +171,8 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
     e.preventDefault();
     e.stopPropagation();
   };
-  const next = pieces[i + 1];
+  const next = groups[i + 1];
+  const marked = (g: Group) => g.items.reduce((n, p) => n + (marks?.(p.key) ?? 0), 0);
 
   return (
     <div className="flex min-w-0 flex-col gap-5" onKeyDown={onKey} data-role-pieces="">
@@ -86,25 +182,26 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
         {!all && (
           <nav aria-label={t({ message: "Pieces of this role", context: "role card piece rail" })} className="min-w-0 flex-1 sm:contents">
             <ul ref={rail} className="relative flex gap-1.5 overflow-x-auto overscroll-x-contain sm:flex-wrap sm:overflow-visible" data-piece-scroll="">
-              {pieces.map((p, k) => {
-                const Icon = p.icon;
+              {groups.map((g, k) => {
+                const Icon = g.icon;
                 const here = k === i;
+                const count = marked(g);
                 return (
-                  <li key={p.key} className="shrink-0">
+                  <li key={g.key} className="shrink-0">
                     <button
                       type="button"
                       onClick={() => go(k)}
                       aria-current={here ? "step" : undefined}
-                      aria-controls={`${base}-${p.key}`}
+                      aria-controls={g.items.map((p) => `${base}-${p.key}`).join(" ")}
                       className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice text-background" : seen.has(k) ? "border-border text-card-foreground hover:border-notice/60" : "border-border/60 text-muted-foreground hover:border-notice/60"}`}
-                      data-piece-tab={p.key}
+                      data-piece-tab={g.key}
                     >
                       <Icon className="size-4" aria-hidden="true" />
-                      {p.tab}
-                      {(marks?.(p.key) ?? 0) > 0 && (
+                      {g.tab}
+                      {count > 0 && (
                         <>
                           <span className={`size-2 rounded-full ${here ? "bg-background" : "bg-notice"}`} aria-hidden="true" data-piece-marked="" />
-                          <span className="sr-only">{t({ message: `, ${marks?.(p.key) ?? 0} suggestions`, context: "role card rail: how many suggestions a piece carries" })}</span>
+                          <span className="sr-only">{t({ message: `, ${count} suggestions`, context: "role card rail: how many suggestions a piece carries" })}</span>
                         </>
                       )}
                     </button>
@@ -126,41 +223,46 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
       </div>
 
       <div className="flex min-w-0 flex-col gap-8">
-        {pieces.map((p, k) => {
-          const open = all || k === i;
-          const Icon = p.icon;
-          return (
-            <section
-              key={p.key}
-              id={`${base}-${p.key}`}
-              hidden={!open}
-              aria-labelledby={`${base}-${p.key}-h`}
-              className={`flex min-w-0 flex-col gap-4 break-words ${open && !all ? "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500" : ""}`}
-              data-piece={p.key}
-            >
-              <div className="flex items-center gap-3.5">
-                <span className="grid size-12 shrink-0 place-items-center rounded-xl border border-notice/50 bg-muted text-notice" aria-hidden="true">
-                  <Icon className="size-6" />
-                </span>
-                <div className="min-w-0">
-                  <H
-                    id={`${base}-${p.key}-h`}
-                    ref={(el: HTMLElement | null) => {
-                      headings.current[k] = el;
-                    }}
-                    tabIndex={-1}
-                    className="font-display text-2xl leading-tight text-card-foreground outline-none sm:text-3xl"
-                  >
-                    {p.title}
-                  </H>
-                  {p.sub && <p className="mt-0.5 text-sm text-muted-foreground">{p.sub}</p>}
+        {groups.flatMap((g, k) =>
+          g.items.map((p, n) => {
+            const open = all || k === i;
+            const Icon = p.icon;
+            // A tab that holds several pieces draws them a step quieter, each under a rule, so the tab reads as one page.
+            const several = g.items.length > 1;
+            return (
+              <section
+                key={p.key}
+                id={`${base}-${p.key}`}
+                hidden={!open}
+                aria-labelledby={`${base}-${p.key}-h`}
+                className={`flex min-w-0 scroll-mt-40 flex-col gap-4 break-words ${several && n > 0 ? "border-t border-border pt-7" : ""} ${open && !all && n === 0 ? "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-500" : ""}`}
+                data-piece={p.key}
+                data-piece-in={g.key}
+              >
+                <div className="flex items-center gap-3.5">
+                  <span className={`grid shrink-0 place-items-center rounded-xl border border-notice/50 bg-muted text-notice ${several ? "size-10" : "size-12"}`} aria-hidden="true">
+                    <Icon className={several ? "size-5" : "size-6"} />
+                  </span>
+                  <div className="min-w-0">
+                    <H
+                      id={`${base}-${p.key}-h`}
+                      ref={(el: HTMLElement | null) => {
+                        headings.current[p.key] = el;
+                      }}
+                      tabIndex={-1}
+                      className={`font-display leading-tight text-card-foreground outline-none ${several ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"}`}
+                    >
+                      {p.title}
+                    </H>
+                    {p.sub && <p className="mt-0.5 text-sm text-muted-foreground">{p.sub}</p>}
+                  </div>
                 </div>
-              </div>
-              {p.body}
-              {after?.(p.key)}
-            </section>
-          );
-        })}
+                {p.body}
+                {after?.(p.key)}
+              </section>
+            );
+          }),
+        )}
       </div>
 
       {!all && (
@@ -175,7 +277,7 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
             {t({ message: "Back", context: "role card: the previous piece" })}
           </button>
           <span className="sr-only text-center text-sm tabular-nums text-muted-foreground @md:not-sr-only" aria-live="polite">
-            {t({ message: `${i + 1} of ${pieces.length}`, context: "role card: which piece is open, out of how many" })}
+            {t({ message: `${i + 1} of ${groups.length}`, context: "role card: which piece is open, out of how many" })}
           </span>
           {next ? (
             <button

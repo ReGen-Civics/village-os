@@ -96,6 +96,7 @@ import { climbLadder, freezeStandingAboveTheDoor, questsThatCarriedPastTheDoor, 
 import { adminGateWasConsulted, markAdminGate } from "./lib/adminGate";
 import { type FaqPathway, register as registerFaqRoutes } from "./routes/faqs";
 import { register as registerBrochurePagesRoutes } from "./routes/brochurePages";
+import { register as registerRoleShareRoutes } from "./routes/roleShare";
 import { register as registerVillagePathsRoutes, loadVillagePaths, servedPathWords, stageName } from "./routes/villagePaths";
 import { register as registerPeopleLock, ballotCardForViewer, ballotForViewer, firstNameOf, hiddenFromStranger } from "./routes/peopleLock";
 import { register as registerBrandRoutes } from "./routes/brand";
@@ -25886,6 +25887,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     // asks for a bundle hash that no longer exists, which is a white screen.
     res.type("html").set("Cache-Control", "no-cache").send(html);
   });
+  registerRoleShareRoutes(app, { shell: () => { const bare = indexShell(); return bare ? shellWithTheme(bare, getBrand) : null; }, config: mergedConfig, origin: requestOrigin, content: () => contentRepo.get() ?? null, send: (req, res, html) => res.type("html").set("Cache-Control", "no-cache").send(withShellLocale(html, req, res)), pool: getPool });
 
   /*
    * AN ADDRESS NO PAGE DRAWS IS A 404, with the same shell, so a person still

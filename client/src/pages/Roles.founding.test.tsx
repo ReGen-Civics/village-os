@@ -500,13 +500,15 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
       return el;
     });
   };
-  it("keeps the role, its facts and the one act together in the seat column, beside the pieces", async () => {
+  it("keeps the role and its facts in the seat column, and the commitment once, in the one-minute summary beside the pieces", async () => {
     org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentPct: 100 } });
     const card = await open();
     const header = card.querySelector("header") as HTMLElement;
     expect(within(header).getByTestId("open-seat").textContent).toBe("Open role");
-    expect(within(header).getByTestId("card-facts").textContent).toContain("100%");
     expect(within(header).getByTestId("card-facts").textContent).toContain("Paid contractor");
+    // The commitment is said once (the lead, 20 Nov 2026): in "The role in one minute", never again in the seat column.
+    expect(within(header).getByTestId("card-facts").textContent).not.toContain("100%");
+    expect(card.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("100%");
     // One act: in the seat column on a desktop, riding the bottom of the screen on a phone (jsdom is narrow).
     expect(within(card).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
     // Each concept once: the details under "How you're chosen" leave out the track the facts say.
@@ -515,19 +517,22 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
   it("opens on the purpose, one piece at a time, and steps through the rest", async () => {
     const card = await open();
     const visible = () => Array.from(card.querySelectorAll<HTMLElement>("[data-piece]")).filter((el) => !el.hidden).map((el) => el.dataset.piece);
-    expect(visible()).toEqual(["purpose"]);
-    fireEvent.click(within(card).getByRole("button", { name: /Next: Looks after/ }));
-    expect(visible()).toEqual(["domain"]);
+    // Five tabs (the lead, 20 Nov 2026): The role opens Purpose and Looks after together.
+    const tabs = Array.from(card.querySelectorAll<HTMLElement>("[data-piece-tab]")).map((b) => b.textContent);
+    expect(tabs).toEqual(["The role", "Deliverables", "How we work", "You and rewards", "The path in"]);
+    expect(visible()).toEqual(["purpose", "domain"]);
+    fireEvent.click(within(card).getByRole("button", { name: /Next: Deliverables/ }));
+    expect(visible()).toEqual(["accountabilities"]);
     fireEvent.click(within(card).getByRole("button", { name: "Back" }));
-    expect(visible()).toEqual(["purpose"]);
-    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
-    expect(visible()).toEqual(["rewards"]);
+    expect(visible()).toEqual(["purpose", "domain"]);
+    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
+    expect(visible()).toEqual(["who", "rewards"]);
     fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
     expect(visible().length).toBeGreaterThan(5);
   });
   it("holds the ceiling, the shares in the editable split and the split line in the rewards piece", async () => {
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
@@ -539,7 +544,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
   it("a role that can be shared says the range, that the proposal sets the pay, the pay at 50%, and the footnote (Rye, 14 Nov 2026)", async () => {
     org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentMin: 30, commitmentTarget: 100 } });
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
@@ -561,11 +566,11 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     expect(within(piece).queryByTestId("pay-note")).toBeNull();
     expect(piece.textContent).not.toContain("full band");
     expect(piece.textContent).not.toContain("value in, value out");
-    expect(within(card.querySelector("header") as HTMLElement).getByTestId("card-facts").textContent).toContain("Full or part commitment (from 30%)");
+    expect(card.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("Full or part commitment (from 30%)");
   });
   it("a role offered whole says nothing about sharing (control)", async () => {
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /Rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
     expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
