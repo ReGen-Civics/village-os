@@ -180,9 +180,14 @@ export interface FullRoleCardProps {
   commitmentChosen?: number | null;
   /** The role's own page, `/roles/<slug>`: the card offers "Copy link" to it in its footer (the lead, 20 Nov 2026). */
   sharePath?: string;
+  /**
+   * The terms drawer for a reader allowed to read terms (SeatTermsSlot's `termsSlotFor`), drawn above the
+   * footer. The role's own page is the live-card host since /roles became an index (20 Nov 2026).
+   */
+  settings?: ReactNode;
 }
 
-export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath }: FullRoleCardProps) {
+export default function FullRoleCard({ seat: givenSeat, circleName = null, register = "game", sections: given, labelledBy, showTitle = true, villagePay: givenPay = null, lifted = false, after, noAct = false, allPieces = false, marks, commitmentChosen = null, sharePath, settings }: FullRoleCardProps) {
   const H3 = lifted ? "h2" : "h3";
   const H4 = lifted ? "h3" : "h4";
   const { t, i18n } = useLingui();
@@ -638,6 +643,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <div className="lg:sticky lg:top-28 lg:self-start">{side}</div>
       </div>
 
+      {settings ? <div className="mt-6" data-testid="card-settings">{settings}</div> : null}
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <p className={HINT} data-testid="last-edited">
           {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}

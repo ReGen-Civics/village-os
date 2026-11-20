@@ -176,7 +176,7 @@ describe("a seat somebody holds on adopted terms (red team U2, U4)", () => {
 
 describe("every live-card host goes through the one slot", () => {
   const ROOT = path.resolve(__dirname, "../../../..");
-  for (const file of ["client/src/pages/Roles.tsx", "client/src/pages/Circles.tsx", "client/src/components/power/MapSeatCard.tsx"]) {
+  for (const file of ["client/src/pages/RoleShare.tsx", "client/src/pages/Circles.tsx", "client/src/components/power/MapSeatCard.tsx"]) {
     it(`${file} passes settings={termsSlotFor(...)}`, () => {
       const src = fs.readFileSync(path.join(ROOT, file), "utf8");
       expect(src).toMatch(/settings=\{termsSlotFor\(/);
