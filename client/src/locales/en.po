@@ -337,6 +337,11 @@ msgstr "{name} is writing a first draft. You can keep going while you wait."
 #~ msgid "Start with a quest. Quests walk a path, and a path leads to a role."
 #~ msgstr "Start with a quest. Quests walk a path, and a path leads to a role."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Waiting for a decision"
+msgstr "Waiting for a decision"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Proposals are closed right now. Your selection stays here, and you can propose when they open."
 #~ msgstr "Proposals are closed right now. Your selection stays here, and you can propose when they open."
@@ -1521,6 +1526,11 @@ msgctxt "agent paths, search hint"
 msgid "A word, a path or GET"
 msgstr "A word, a path or GET"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The proposals could not be read just now. Try again in a moment."
+msgstr "The proposals could not be read just now. Try again in a moment."
+
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, adoption"
 msgid "The circle said yes. We'd love you on the team. Your invitation to make your account is in your email."
@@ -1657,6 +1667,12 @@ msgctxt "role card: the onboarding steps"
 msgid "Once you're selected"
 msgstr "Once you're selected"
 
+#. placeholder {0}: items.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "All ({0})"
+msgstr "All ({0})"
+
 #: client/src/components/canvas/CanvasMoon.tsx
 msgctxt "the canvas moon is being published"
 msgid "Publishing"
@@ -1670,6 +1686,11 @@ msgstr "Take the new price"
 msgctxt "start a conversation: the link's label"
 msgid "My work"
 msgstr "My work"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The deliverables they would hold"
+msgstr "The deliverables they would hold"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line error"
@@ -1709,6 +1730,12 @@ msgstr "The cash budget for this moon"
 msgctxt "funding rounds"
 msgid "What the village chose"
 msgstr "What the village chose"
+
+#. placeholder {0}: d.termEnds
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Term ends: {0}"
+msgstr "Term ends: {0}"
 
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: confirm a batch"
@@ -1791,6 +1818,11 @@ msgstr "The amount must be a number above zero."
 msgctxt "reviewer's terms panel, one role's commitment"
 msgid "They chose {0}%"
 msgstr "They chose {0}%"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No AI chooses, ranks or scores anyone here: you decide who is qualified, and accepting happens on each proposal's own page."
+msgstr "No AI chooses, ranks or scores anyone here: you decide who is qualified, and accepting happens on each proposal's own page."
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
@@ -2201,6 +2233,11 @@ msgctxt "circle hearth, what we decided"
 msgid "The whole log and its review dates are in Sessions"
 msgstr "The whole log and its review dates are in Sessions"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Every role application and quest idea waiting for a decision. Pick a category, then tick up to {MAX_COMPARE} to read them side by side."
+msgstr "Every role application and quest idea waiting for a decision. Pick a category, then tick up to {MAX_COMPARE} to read them side by side."
+
 #: client/src/pages/RoleShare.tsx
 msgctxt "a role's own page"
 msgid "Loading the role…"
@@ -2519,6 +2556,13 @@ msgstr "Cancel"
 msgctxt "role editor"
 msgid "What the Digital Companion does for this role"
 msgstr "What the Digital Companion does for this role"
+
+#. placeholder {0}: o.by.map(nameOf).join(" and ")
+#. placeholder {1}: o.text
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare overlap"
+msgid "{0} both offered: {1}"
+msgstr "{0} both offered: {1}"
 
 #: client/src/pages/OpenProposal.tsx
 msgctxt "open proposal: the keeper reads their own agent's proposal"
@@ -2932,6 +2976,11 @@ msgctxt "budget upload error"
 msgid "One upload carries at most {IMPORT_ROWS_MAX} lines. Split the sheet by period and upload each part."
 msgstr "One upload carries at most {IMPORT_ROWS_MAX} lines. Split the sheet by period and upload each part."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Split helper"
+msgstr "Split helper"
+
 #: client/src/components/admin/QuestSafetyEditor.tsx
 #~ msgctxt "admin quest safety"
 #~ msgid "Physical work on site"
@@ -3016,6 +3065,11 @@ msgctxt "role editor"
 msgid "How the conversations are held"
 msgstr "How the conversations are held"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A tie goes to whoever you marked first. Move any piece to someone else; this is a suggestion for you to edit."
+msgstr "A tie goes to whoever you marked first. Move any piece to someone else; this is a suggestion for you to edit."
+
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
 msgid "Times across the village show in this zone. You have not chosen one, so we use your browser's ({zone})."
@@ -3026,10 +3080,21 @@ msgstr "Times across the village show in this zone. You have not chosen one, so 
 #~ msgid "Select your roles"
 #~ msgstr "Select your roles"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Accepts the terms on offer"
+msgstr "Accepts the terms on offer"
+
 #: client/src/pages/FundingRounds.tsx
 msgctxt "funding rounds"
 msgid "Open a pot"
 msgstr "Open a pot"
+
+#. placeholder {0}: x.talkAbout.join(", ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "To talk about: {0}"
+msgstr "To talk about: {0}"
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 #~ msgctxt "founding card fact"
@@ -3405,6 +3470,12 @@ msgctxt "voice clip beside an answer"
 msgid "Record again"
 msgstr "Record again"
 
+#. placeholder {0}: items.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} proposals"
+msgstr "{0} proposals"
+
 #. placeholder {0}: priced(r.atCommitment, r.full.currency, r.full.per)
 #. placeholder {1}: money(r.full.amount, r.full.currency)
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -3601,6 +3672,12 @@ msgstr "Budget line"
 msgid "Who is asked first"
 msgstr "Who is asked first"
 
+#. placeholder {0}: d.doneWhen
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Done when: {0}"
+msgstr "Done when: {0}"
+
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
 msgid "Edited"
@@ -3741,6 +3818,11 @@ msgctxt "founding application sera"
 msgid "This asks {name} for {what}. It sends the role you are applying for, your \"Why you\" and your aim, and nothing else: not your references, links, files, name or email. Nothing is sent until you press it."
 msgstr "This asks {name} for {what}. It sends the role you are applying for, your \"Why you\" and your aim, and nothing else: not your references, links, files, name or email. Nothing is sent until you press it."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Early application, the role was coming soon"
+msgstr "Early application, the role was coming soon"
+
 #: client/src/components/governance/ExportByVote.tsx
 msgid "No steward is sitting now, so there is nobody to name."
 msgstr "No steward is sitting now, so there is nobody to name."
@@ -3775,6 +3857,12 @@ msgstr "Suggested."
 msgctxt "hidden map, one place's details"
 msgid "Sprout"
 msgstr "Sprout"
+
+#. placeholder {0}: d.startsOn
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks to begin: {0}"
+msgstr "Asks to begin: {0}"
 
 #: client/src/components/roleCard/valueExplainerWords.ts
 msgctxt "role card rewards explainer: heading"
@@ -3894,6 +3982,11 @@ msgstr "Share it without my name. It shows as \"a member\" everywhere, and its f
 msgctxt "your path, the next act"
 msgid "Read the terms"
 msgstr "Read the terms"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "What they would deliver"
+msgstr "What they would deliver"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -4067,6 +4160,13 @@ msgstr "Make the role"
 #: client/src/components/journey/LaunchGuide.tsx
 msgid "The guide needs an Anthropic key. Set one in <0>Integrations</0>. The checklist above works fine without the guide."
 msgstr "The guide needs an Anthropic key. Set one in <0>Integrations</0>. The checklist above works fine without the guide."
+
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, exactly the {1}% the role needs."
+msgstr "Together they give {0}%, exactly the {1}% the role needs."
 
 #. placeholder {0}: d.by
 #. placeholder {1}: day(d.at)
@@ -4349,6 +4449,12 @@ msgctxt "thanks thread: who thanked whom"
 msgid "{from} thanked {to}"
 msgstr "{from} thanked {to}"
 
+#. placeholder {0}: pieceText(id)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Move \"{0}\" to"
+msgstr "Move \"{0}\" to"
+
 #: client/src/components/budgets/BudgetDesk.tsx
 msgctxt "budget desk"
 msgid "Cash for role pay and quest pay"
@@ -4483,6 +4589,12 @@ msgctxt "open proposal: an agent's proposal"
 msgid "Proposed by the member who keeps it. The circle decides by consent, as for a person."
 msgstr "Proposed by the member who keeps it. The circle decides by consent, as for a person."
 
+#. placeholder {0}: twice.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Held twice in this split: {0}."
+msgstr "Held twice in this split: {0}."
+
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "Nobody has backed this yet."
 msgstr "Nobody has backed this yet."
@@ -4601,6 +4713,11 @@ msgstr "Your first moon starts lower and follows what you deliver."
 #: client/src/pages/HiddenMap.tsx
 msgid "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
 msgstr "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Price to talk about on the first call"
+msgstr "Price to talk about on the first call"
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgctxt "button asking the companion about a canvas block"
@@ -4828,6 +4945,11 @@ msgstr "“{summary}” was drafted before “{other}” was accepted. Look at i
 msgctxt "admin menu: the group names"
 msgid "Groups"
 msgstr "Groups"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare split rule"
+msgid "Each shared piece goes to whoever holds the fewest so far"
+msgstr "Each shared piece goes to whoever holds the fewest so far"
 
 #: client/src/components/admin/MintDesk.tsx
 msgid "Why are you turning this down? The record keeps it."
@@ -5211,6 +5333,11 @@ msgstr "today"
 msgctxt "open work card: one person carries this quest now"
 msgid "1 hand on this"
 msgstr "1 hand on this"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The link opens their proposal with the commitment typed into the counter-offer. Nothing changes until you read it and press Save there, and accepting stays on that page."
+msgstr "The link opens their proposal with the commitment typed into the counter-offer. Nothing changes until you read it and press Save there, and accepting stays on that page."
 
 #: client/src/pages/ExitPolicy.tsx
 msgctxt "the circle that decides an involuntary exit"
@@ -5728,6 +5855,11 @@ msgstr "Path"
 msgid "Thank you. We have your answers."
 msgstr "Thank you. We have your answers."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Side by side"
+msgstr "Side by side"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
 msgid "From"
@@ -5764,6 +5896,11 @@ msgctxt "roles directory chip"
 msgid "Can be held by an agent"
 msgstr "Can be held by an agent"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "A member's application"
+msgstr "A member's application"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgctxt "role draft next"
 #~ msgid "Next: review my selection"
@@ -5777,6 +5914,11 @@ msgstr "Sapling"
 #: client/src/pages/rites/ComeAboard.tsx
 msgid "We couldn't make your account. Try again."
 msgstr "We couldn't make your account. Try again."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Share one role across several people"
+msgstr "Share one role across several people"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -5998,6 +6140,11 @@ msgctxt "rites"
 msgid "Your witnesses confirm now."
 msgstr "Your witnesses confirm now."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nothing is waiting for a decision here."
+msgstr "Nothing is waiting for a decision here."
+
 #: client/src/components/commitment/CommitmentField.tsx
 #~ msgctxt "commitment field: heading"
 #~ msgid "How much can you give right now?"
@@ -6026,6 +6173,11 @@ msgctxt "site footer"
 msgid "Village OS source"
 msgstr "Village OS source"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No circle"
+msgstr "No circle"
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget add line button"
 msgid "Add the line"
@@ -6040,6 +6192,11 @@ msgstr "Funded from"
 #~ msgctxt "roles page, roles after the founding team"
 #~ msgid "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk."
 #~ msgstr "We are filling the founding team first. You are welcome to apply for any of these now. It may be a while before we reply, and we will write to you as soon as we are ready to talk."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Role"
+msgstr "Role"
 
 #: client/src/components/valuation/NoSignBandNote.tsx
 msgctxt "no-sign band"
@@ -6438,6 +6595,14 @@ msgctxt "companion welcome"
 msgid "Should I speak aloud, or stay quiet and only write?"
 msgstr "Should I speak aloud, or stay quiet and only write?"
 
+#. placeholder {0}: role.places
+#. placeholder {1}: role.taken
+#. placeholder {2}: order.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role holds {0} at once and {1} hold it now, so there is room for {2} more."
+msgstr "The role holds {0} at once and {1} hold it now, so there is room for {2} more."
+
 #: client/src/components/profile/ProgressionPowers.tsx
 msgctxt "progression: a kind of power"
 msgid "Places and gatherings"
@@ -6730,6 +6895,13 @@ msgstr "Back to the role"
 #: client/src/components/admin/MintDesk.tsx
 msgid "Could not turn that grant down"
 msgstr "Could not turn that grant down"
+
+#. placeholder {0}: picked.length
+#. placeholder {1}: categoryLabel(picked[0].category)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} of {MAX_COMPARE} ticked, all in {1}."
+msgstr "{0} of {MAX_COMPARE} ticked, all in {1}."
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "role card tab: who we hope for and the rewards"
@@ -7490,6 +7662,11 @@ msgctxt "protocols page"
 msgid "Remove"
 msgstr "Remove"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Quest idea"
+msgstr "Quest idea"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall heading"
 msgid "What we saw in each other"
@@ -7899,6 +8076,11 @@ msgstr "No token pay this month."
 #~ msgid "{units} {name}, changed from {shared}"
 #~ msgstr "{units} {name}, changed from {shared}"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nobody for now"
+msgstr "Nobody for now"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "founding application lede"
 #~ msgid "Six steps. Your name and email come from your account, and your answers are saved on this device as you go."
@@ -7990,6 +8172,11 @@ msgstr "A role you added isn't open yet, so it can't be part of this application
 msgctxt "admin protocols editor"
 msgid "Step {n}"
 msgstr "Step {n}"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Put the suggestion back"
+msgstr "Put the suggestion back"
 
 #: client/src/components/proposals/BatchCard.tsx
 msgctxt "proposed changes: a batch"
@@ -8448,6 +8635,11 @@ msgctxt "founding application value"
 msgid "Value {n}"
 msgstr "Value {n}"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks to ramp up over time"
+msgstr "Asks to ramp up over time"
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page"
 msgid "Roles and Circles"
@@ -8877,6 +9069,11 @@ msgctxt "admin open proposals"
 msgid "Transcribe all waiting"
 msgstr "Transcribe all waiting"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Where they overlap"
+msgstr "Where they overlap"
+
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 msgctxt "founding application know us act"
 msgid "Watch the last recording"
@@ -8913,6 +9110,11 @@ msgstr "Waits on you"
 #~ msgctxt "open proposal: the ceiling at their commitment"
 #~ msgid "At {0}%, the role pays up to {1} a {2} (the full role: {3})."
 #~ msgstr "At {0}%, the role pays up to {1} a {2} (the full role: {3})."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Commitment"
+msgstr "Commitment"
 
 #: client/src/components/notebook/NotebookAdd.tsx
 msgid "How to add it"
@@ -9402,6 +9604,15 @@ msgstr "Its owner asked to share it."
 #~ msgid "~20 h half time, ~30 to 40 h full time"
 #~ msgstr "~20 h half time, ~30 to 40 h full time"
 
+#. placeholder {0}: role.places
+#. placeholder {1}: role.taken
+#. placeholder {2}: order.length
+#. placeholder {3}: role.taken + order.length
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
+msgstr "The role holds {0} at once and {1} hold it now. Seating {2} more needs {3} places: change the number on the role in the Org Chart first."
+
 #: client/src/components/health/BrowserCrashesCard.tsx
 msgid "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
 msgstr "Only admins see this. Each line is the error, the page, the browser and the build. Nothing about the person is kept."
@@ -9667,6 +9878,11 @@ msgctxt "funding rounds"
 msgid "When it is done:"
 msgstr "When it is done:"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Start a conversation"
+msgstr "Start a conversation"
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "You hear back within {replyHours, plural, one {# hour} other {# hours}}."
 msgstr "You hear back within {replyHours, plural, one {# hour} other {# hours}}."
@@ -9841,6 +10057,11 @@ msgstr "A photo of this place"
 #: client/src/components/hiddenMap/CoverTool.tsx
 msgid "The photo you are about to add"
 msgstr "The photo you are about to add"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Commitment"
+msgstr "Commitment"
 
 #: client/src/components/form/GrowingField.tsx
 msgctxt "character count under a box"
@@ -10468,6 +10689,11 @@ msgctxt "while you wait"
 msgid "How we live together"
 msgstr "How we live together"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No two of them offered the same piece of work."
+msgstr "No two of them offered the same piece of work."
+
 #: client/src/components/fireflyPath/KnowUsWays.tsx
 msgctxt "founding application know us fork"
 msgid "Explore the Steward path first"
@@ -10625,6 +10851,18 @@ msgstr "{0}: the font stack, typed"
 msgctxt "age band option"
 msgid "18 or older"
 msgstr "18 or older"
+
+#. placeholder {0}: d.received
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Arrived: {0}"
+msgstr "Arrived: {0}"
+
+#. placeholder {0}: nobody.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Offered but held by nobody now: {0}."
+msgstr "Offered but held by nobody now: {0}."
 
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
@@ -10853,6 +11091,11 @@ msgstr "This pot now counts all Voice."
 msgctxt "founding application: the short way in"
 msgid "Short on time? Start a conversation"
 msgstr "Short on time? Start a conversation"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent or saved."
+msgstr "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent or saved."
 
 #. placeholder {0}: own.pct
 #: client/src/components/openProposal/CommitmentReview.tsx
@@ -11171,6 +11414,11 @@ msgctxt "role editor history"
 msgid "Read again"
 msgstr "Read again"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Reading the proposals…"
+msgstr "Reading the proposals…"
+
 #: client/src/pages/RoleDraft.tsx
 msgid "Remove {rn} from your selection"
 msgstr "Remove {rn} from your selection"
@@ -11229,6 +11477,11 @@ msgstr "Withdrawn. The village keeps its key."
 msgid "Where your asks sit"
 msgstr "Where your asks sit"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "How it came in"
+msgstr "How it came in"
+
 #: client/src/components/NextStepBox.tsx
 msgctxt "next step box, the quest has no first step written"
 msgid "Read the quest above, then start with the first thing you can do today"
@@ -11259,6 +11512,11 @@ msgstr "Delete this document"
 msgctxt "deliverables timeline: a deliverable's dates"
 msgid "{0} to {1}"
 msgstr "{0} to {1}"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Role or quest"
+msgstr "Role or quest"
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -11656,6 +11914,14 @@ msgstr "Holding it now"
 msgid "Nobody has read {name} yet."
 msgstr "Nobody has read {name} yet."
 
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.gap
+#. placeholder {2}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, {1}% short of the {2}% the role needs."
+msgstr "Together they give {0}%, {1}% short of the {2}% the role needs."
+
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "You are signed in, so a block can also open the words the village keeps for its members. Visitors read the public lines only."
 msgstr "You are signed in, so a block can also open the words the village keeps for its members. Visitors read the public lines only."
@@ -11998,6 +12264,11 @@ msgstr "Choose the root you grow from"
 #~ msgid "Time: roughly {time}"
 #~ msgstr "Time: roughly {time}"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Nothing in this split"
+msgstr "Nothing in this split"
+
 #. placeholder {0}: RASHI[moon.rashi]
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -12240,6 +12511,12 @@ msgstr "Off now. The connector does only what it did before."
 msgctxt "founding application check, a box over its limit"
 msgid "Where you are based"
 msgstr "Where you are based"
+
+#. placeholder {0}: d.date
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "By {0}"
+msgstr "By {0}"
 
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"
@@ -12799,6 +13076,11 @@ msgctxt "budget desk loading"
 msgid "Reading the budget…"
 msgstr "Reading the budget…"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Who"
+msgstr "Who"
+
 #: client/src/components/tracks/FirstSteps.tsx
 msgctxt "first steps ticked off"
 msgid "{doneCount} of {stepCount}"
@@ -12886,6 +13168,12 @@ msgstr "Uploading…"
 #: client/src/components/ClosingPolicyCard.tsx
 msgid "Propose a change to what closing means"
 msgstr "Propose a change to what closing means"
+
+#. placeholder {0}: role?.name ?? ""
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Who do you consider qualified for {0}?"
+msgstr "Who do you consider qualified for {0}?"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles directory: a member proposes an agent they keep"
@@ -13232,6 +13520,12 @@ msgctxt "quest goal thread editor: empty choice"
 msgid "Not said yet"
 msgstr "Not said yet"
 
+#. placeholder {0}: i.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% commitment"
+msgstr "{0}% commitment"
+
 #: client/src/components/governance/TermsEight.tsx
 msgctxt "terms settings no role has written, in one line"
 msgid "We'll set this together: {togetherNames}."
@@ -13316,6 +13610,11 @@ msgctxt "calendar day panel heading"
 msgid "What is on this day"
 msgstr "What is on this day"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare split rule"
+msgid "Each shared piece goes to whoever has the most room for their commitment"
+msgstr "Each shared piece goes to whoever has the most room for their commitment"
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line field"
 msgid "Note"
@@ -13339,6 +13638,18 @@ msgstr "Working"
 msgid "Could not sign that grant"
 msgstr "Could not sign that grant"
 
+#. placeholder {0}: d.earliestStart
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Earliest start: {0}"
+msgstr "Earliest start: {0}"
+
+#. placeholder {0}: nameOf(c)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0} (did not offer it)"
+msgstr "{0} (did not offer it)"
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar page: today's place in the moon"
 msgid "Today is day {lunarDay} of {moonLength}"
@@ -13358,6 +13669,12 @@ msgstr "{n} changes are in a draft, waiting to be published."
 msgctxt "admin quest safety"
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
+
+#. placeholder {0}: item.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% offered"
+msgstr "{0}% offered"
 
 #. placeholder {0}: r.name
 #: client/src/components/fireflyPath/reviewExtras.ts
@@ -13800,6 +14117,11 @@ msgstr "None in particular"
 msgctxt "hidden map, one place's details"
 msgid "Withdraw my vouch"
 msgstr "Withdraw my vouch"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Candidate"
+msgstr "Candidate"
 
 #: client/src/components/profile/HandoffRespondRow.tsx
 msgctxt "task handed to a role"
@@ -14389,6 +14711,11 @@ msgctxt "coming up, i'll be there"
 msgid "You said you will be there."
 msgstr "You said you will be there."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare, how a proposal came in"
+msgid "Full application"
+msgstr "Full application"
+
 #: client/src/components/admin/OrgChartTab.tsx
 msgid "Roles in no circle"
 msgstr "Roles in no circle"
@@ -14502,6 +14829,11 @@ msgstr "Hours it takes"
 msgctxt "roles page season"
 msgid "This season's goals"
 msgstr "This season's goals"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Their aim"
+msgstr "Their aim"
 
 #: client/src/components/review/AgentProposalsCard.tsx
 msgctxt "connector proposals"
@@ -15080,6 +15412,11 @@ msgstr "{cname} is yours."
 msgid "Approved by {0} on {1}. {2}"
 msgstr "Approved by {0} on {1}. {2}"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Quests with no circle"
+msgstr "Quests with no circle"
+
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
 msgid "{agent} didn't answer at {lastAt}"
@@ -15450,6 +15787,11 @@ msgstr "{0}, {1}"
 #~ msgctxt "open proposal: the split heading"
 #~ msgid "Cash, equity and credits"
 #~ msgstr "Cash, equity and credits"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Would like to talk about the terms"
+msgstr "Would like to talk about the terms"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
 msgctxt "team sheet group: the roles held now"
@@ -15998,6 +16340,14 @@ msgctxt "sera answers"
 msgid "including {n} roles inside {name}"
 msgstr "including {n} roles inside {name}"
 
+#. placeholder {0}: map.commitment.total
+#. placeholder {1}: map.commitment.gap
+#. placeholder {2}: map.commitment.target
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Together they give {0}%, {1}% more than the {2}% the role needs."
+msgstr "Together they give {0}%, {1}% more than the {2}% the role needs."
+
 #. placeholder {0}: roleWithHolders(waitingOn.who.roleTitle, holders[waitingOn.who.roleId])
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -16007,6 +16357,11 @@ msgstr "Waiting for {0}."
 #: client/src/pages/FundingRounds.tsx
 msgid "This round could not be found."
 msgstr "This round could not be found."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Compare"
+msgstr "Compare"
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal section"
@@ -16572,6 +16927,11 @@ msgstr "Asking now."
 msgctxt "calendar turnings"
 msgid "Full moon"
 msgstr "Full moon"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open the full proposal"
+msgstr "Open the full proposal"
 
 #: client/src/components/voice/StoredWords.tsx
 msgctxt "AI transcript, who wrote it"
@@ -17157,6 +17517,11 @@ msgstr "Recording is optional. Typed answers count just the same."
 msgid "What will be done when it is finished?"
 msgstr "What will be done when it is finished?"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A way to share the work"
+msgstr "A way to share the work"
+
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Kept in this browser only. Nothing is sent until you apply."
 #~ msgstr "Kept in this browser only. Nothing is sent until you apply."
@@ -17500,6 +17865,12 @@ msgstr "Prefer your hosting? Add a variable named ANTHROPIC_API_KEY to the villa
 msgid "Reading the village's pay settings…"
 msgstr "Reading the village's pay settings…"
 
+#. placeholder {0}: map.unclaimed.map(pieceText).join("; ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The role asks for this and nobody offered it: {0}."
+msgstr "The role asks for this and nobody offered it: {0}."
+
 #: client/src/pages/rites/Card.tsx
 msgctxt "rites"
 msgid "you"
@@ -17599,6 +17970,11 @@ msgstr "Everyone on this quest is at least {minAge}."
 msgctxt "admin age band"
 msgid "Confirm"
 msgstr "Confirm"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open their proposal"
+msgstr "Open their proposal"
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -17872,6 +18248,11 @@ msgctxt "fresh start page: sign out on this device too"
 msgid "Also sign me out"
 msgstr "Also sign me out"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Their terms"
+msgstr "Their terms"
+
 #: client/src/pages/FundingRounds.tsx
 msgid "No ideas yet. The first one can be yours."
 msgstr "No ideas yet. The first one can be yours."
@@ -18083,6 +18464,11 @@ msgstr "Show everything ({0} unchanged)"
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
 #~ msgstr "1 role you picked is not open any more. Pick from the roles below."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
+msgstr "You can compare up to {MAX_COMPARE} at a time. Untick one to add another."
+
 #: client/src/components/hiddenMap/PinPanel.tsx
 msgid "Vouch: this is real"
 msgstr "Vouch: this is real"
@@ -18175,6 +18561,11 @@ msgctxt "admin protocols editor"
 msgid "What it is for"
 msgstr "What it is for"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Full proposal"
+msgstr "Full proposal"
+
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Kinds, one a line"
 msgstr "Kinds, one a line"
@@ -18204,6 +18595,11 @@ msgstr "Launch"
 msgctxt "when a section of the village's answer was last edited"
 msgid "Last changed on {0}"
 msgstr "Last changed on {0}"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "A visitor"
+msgstr "A visitor"
 
 #: client/src/components/roleCard/rewardWords.ts
 #~ msgctxt "role card rewards: the proposal sets the pay"
@@ -18386,6 +18782,13 @@ msgstr "I keep this agent, {keeperName}: I am responsible for what it does in th
 #~ msgctxt "open proposal companion"
 #~ msgid "Read it through once, then send. Nothing reaches the village until you confirm your email."
 #~ msgstr "Read it through once, then send. Nothing reaches the village until you confirm your email."
+
+#. placeholder {0}: x.ask.amount
+#. placeholder {1}: x.ask.per
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Asks {0} each {1}"
+msgstr "Asks {0} each {1}"
 
 #: client/src/components/canvas/CanvasSuggestionForm.tsx
 #: client/src/components/canvas/DecisionMatrixRows.tsx
@@ -18725,6 +19128,11 @@ msgstr "Who keeps it"
 msgctxt "open work card: how much of a person the quest asks"
 msgid "{commitment}% of you"
 msgstr "{commitment}% of you"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Comparing proposals is open to the people who read them at the admin desk."
+msgstr "Comparing proposals is open to the people who read them at the admin desk."
 
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
@@ -19541,6 +19949,13 @@ msgstr "The line could not be saved just now."
 msgid "e.g. night-sea teal, deck green, parchment, lantern gold"
 msgstr "e.g. night-sea teal, deck green, parchment, lantern gold"
 
+#. placeholder {0}: d.termStarts
+#. placeholder {1}: d.termEnds
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "For the moon {0} to {1}"
+msgstr "For the moon {0} to {1}"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "This month has more pay than one board shows. The first 2,000 lines of each kind are here."
@@ -19835,6 +20250,11 @@ msgctxt "conversation guide: failed"
 msgid "That did not save. Try again."
 msgstr "That did not save. Try again."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Split rule"
+msgstr "Split rule"
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Accepts the terms on offer."
 msgstr "Accepts the terms on offer."
@@ -19988,6 +20408,11 @@ msgstr "Done: {0}"
 #: client/src/components/Layout.tsx
 #~ msgid "Sign out everywhere"
 #~ msgstr "Sign out everywhere"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "No name given"
+msgstr "No name given"
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -20432,6 +20857,12 @@ msgstr "Open"
 msgctxt "open proposal sent"
 msgid "Not {sentTo}? Fix the address"
 msgstr "Not {sentTo}? Fix the address"
+
+#. placeholder {0}: map.commitment.unknown.map(nameOf).join(", ")
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Gave no commitment: {0}."
+msgstr "Gave no commitment: {0}."
 
 #: client/src/components/journey/EconomicsView.tsx
 msgctxt "consent queue empty"
@@ -20980,6 +21411,11 @@ msgstr "Lead role"
 msgctxt "thanks wall eyebrow"
 msgid "Thanks between us"
 msgstr "Thanks between us"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Not given"
+msgstr "Not given"
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -21583,6 +22019,11 @@ msgctxt "open work card: the quest's size beside the reader's own percent"
 msgid "Fits what you can give"
 msgstr "Fits what you can give"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Compare one category at a time. Untick these first to pick from another."
+msgstr "Compare one category at a time. Untick these first to pick from another."
+
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
 msgid "Write what it means first"
@@ -22101,6 +22542,11 @@ msgctxt "roles page goal"
 msgid "Done"
 msgstr "Done"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Swipe sideways to read the next one."
+msgstr "Swipe sideways to read the next one."
+
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line error"
 msgid "Some cells cannot be saved as written:"
@@ -22130,6 +22576,12 @@ msgstr "Which of the village's goals for the season will your work serve? Pick u
 msgctxt "profile, your move"
 msgid "Align with {title}"
 msgstr "Align with {title}"
+
+#. placeholder {0}: i.dates.received
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "arrived {0}"
+msgstr "arrived {0}"
 
 #: client/src/i18n/LanguagePicker.tsx
 msgctxt "language picker"
@@ -22406,6 +22858,11 @@ msgstr "These are still the platform's starting steps. Write them in the village
 #~ msgctxt "price ask: more than one role"
 #~ msgid "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
 #~ msgstr "Applying for more than one role? Send one application for each. Each is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Drafted by a tool, sent for a person to read"
+msgstr "Drafted by a tool, sent for a person to read"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "Ask for a copy"
@@ -23140,6 +23597,11 @@ msgstr "{0} of {1} held"
 #~ msgid "We'll set this together."
 #~ msgstr "We'll set this together."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Open their proposal with {fit}% in the counter-offer"
+msgstr "Open their proposal with {fit}% in the counter-offer"
+
 #: client/src/pages/RoleProposal.tsx
 msgid "Propose a role for this moon without an account"
 msgstr "Propose a role for this moon without an account"
@@ -23299,6 +23761,11 @@ msgctxt "talk it out: draft used"
 msgid "In the box. Change anything you like before you send."
 msgstr "In the box. Change anything you like before you send."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{fit}% would fit the role"
+msgstr "{fit}% would fit the role"
+
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal section"
 #~ msgid "Your season"
@@ -23341,6 +23808,11 @@ msgctxt "founding application beside"
 msgid "About the role"
 msgstr "About the role"
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Untick"
+msgstr "Untick"
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall lede"
 msgid "Each thanks is a thread between two people. The wall keeps the words and never a count."
@@ -23349,6 +23821,11 @@ msgstr "Each thanks is a thread between two people. The wall keeps the words and
 #: client/src/components/canvas/CanvasPublicLines.tsx
 msgid "Anyone can read this line, signed in or not. Name the role that does the work, never a person. Leave it empty and save to take the line down."
 msgstr "Anyone can read this line, signed in or not. Name the role that does the work, never a person. Leave it empty and save to take the line down."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Proposals side by side"
+msgstr "Proposals side by side"
 
 #: client/src/pages/Roles.tsx
 #~ msgid "is a way to hold some of it with your own hands, by"
@@ -23695,6 +24172,12 @@ msgstr "The recording stopped before you pressed Stop, perhaps because another a
 msgid "How this was worked out"
 msgstr "How this was worked out"
 
+#. placeholder {0}: i.commitmentPct
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "{0}% of their energy and attention"
+msgstr "{0}% of their energy and attention"
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "That run is not on this phone. It may have been started on another phone that has not sent it yet."
@@ -23772,6 +24255,11 @@ msgstr "First what your roles and groups hand you, then what opened most recentl
 msgctxt "protocols install card"
 msgid "Then open it once from your home screen while you have signal and sign in. After that it works with no signal."
 msgstr "Then open it once from your home screen while you have signal and sign in. After that it works with no signal."
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Mark at least one person to see the map."
+msgstr "Mark at least one person to see the map."
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board status"
@@ -23957,10 +24445,20 @@ msgstr "Serves the season goal: {goalWords}"
 msgid "Each column needs an answer. \"Nobody yet\" is an answer."
 msgstr "Each column needs an answer. \"Nobody yet\" is an answer."
 
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "None given"
+msgstr "None given"
+
 #: client/src/components/commitment/RolesCommitment.tsx
 msgctxt "commitment split: a role's part of the whole person"
 msgid "{ofYou}% of you"
 msgstr "{ofYou}% of you"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Counter-offer sent"
+msgstr "Counter-offer sent"
 
 #: client/src/components/canvas/CanvasBlockCard.tsx
 msgid "What the canvas says about it"
@@ -24041,6 +24539,11 @@ msgstr "Edit this role"
 msgctxt "quest editor"
 msgid "Kind of work"
 msgstr "Kind of work"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare row"
+msgid "Dates"
+msgstr "Dates"
 
 #: client/src/components/fireflyPath/RestoredNote.tsx
 msgctxt "founding application draft"
@@ -24523,6 +25026,11 @@ msgstr "Send links, a CV or any other files to {contactEmail} with your name in 
 msgctxt "funding rounds"
 msgid "Who it helps:"
 msgstr "Who it helps:"
+
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Category"
+msgstr "Category"
 
 #: client/src/components/valuation/RolePayWithEngine.tsx
 msgctxt "role pay"
