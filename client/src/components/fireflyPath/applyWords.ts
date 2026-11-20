@@ -12,7 +12,7 @@ export function useApplyWords() {
     t({ message: "About you", context: "founding application step" }),
     t({ message: "Your value", context: "founding application step" }),
     t({ message: "The terms", context: "founding application step" }),
-    t({ message: "Your first day", context: "founding application step" }),
+    t({ message: "Your first moon", context: "founding application step" }),
     t({ message: "Review & submit", context: "founding application step" }),
   ] as const;
   const intro = [
@@ -20,7 +20,7 @@ export function useApplyWords() {
     t({ message: "Who you are, and why this role, now. A few honest lines is enough: the people who decide read every word.", context: "founding application intro" }),
     t({ message: "The value you would bring in your first months, item by item.", context: "founding application intro" }),
     t({ message: "A starting point we agree together.", context: "founding application intro" }),
-    t({ message: "What your first month with us would look like, and when you could begin.", context: "founding application intro" }),
+    t({ message: "What your first moon with us would look like, step by step, and when you could begin.", context: "founding application intro" }),
     t({ message: "Read it through once, then send. Nothing reaches us until you confirm your email.", context: "founding application intro" }),
   ];
   const starters = [

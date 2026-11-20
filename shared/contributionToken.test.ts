@@ -4,7 +4,7 @@
  * so End of Moon pays each share where it was meant.
  */
 import { describe, expect, it } from "vitest";
-import { labelKey, namedPart, shareNamesFrom, shortName, tokensNoun } from "./contributionToken";
+import { labelKey, namedPart, shareNamesFrom, shortLabel, shortName, tokensNoun } from "./contributionToken";
 import { vocabularyOf } from "./vocabulary";
 
 const REGISTRY = { "earned-equity": "Earned Equity", credits: "Village Credits" };
@@ -12,7 +12,7 @@ const REGISTRY = { "earned-equity": "Earned Equity", credits: "Village Credits" 
 describe("the names a member reads", () => {
   it("is the village's own word, in full and short, and never the registry's equity", () => {
     const vocab = vocabularyOf({ contributionToken: { one: "Harbour Token", many: "Harbour Tokens" } });
-    expect(shareNamesFrom(vocab, REGISTRY)).toEqual({ equity: "Harbour Tokens", equityShort: "Harbour", credits: "Village Credits" });
+    expect(shareNamesFrom(vocab, REGISTRY)).toEqual({ equity: "Harbour Tokens", equityShort: "Harbour tokens", credits: "Village Credits" });
   });
 
   it("falls to the platform default while the village has no word and the registry says equity", () => {
@@ -29,6 +29,15 @@ describe("the names a member reads", () => {
     expect(shortName("Harbour token")).toBe("Harbour");
     expect(shortName("Tokens")).toBe("Tokens");
     expect(shortName("Seeds")).toBe("Seeds");
+  });
+
+  it("labels the token as tokens, never the bare village word (the lead, 20 Nov 2026)", () => {
+    expect(shortLabel("Harbour Tokens")).toBe("Harbour tokens");
+    expect(shortLabel("Harbour token")).toBe("Harbour tokens");
+    expect(shortLabel("Seeds")).toBe("Seeds");
+    expect(shortLabel("Tokens")).toBe("Tokens");
+    // The short label still reads a share labelled with the bare word as the contribution share, so pay is unchanged.
+    expect(namedPart("Harbour", { equity: ["Harbour Tokens", shortLabel("Harbour Tokens")], credits: "Village Credits" })).toBe("equity");
   });
 });
 

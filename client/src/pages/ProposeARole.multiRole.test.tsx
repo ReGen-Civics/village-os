@@ -105,7 +105,7 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(terms.textContent).toContain("This is about energy and attention, never hours. You can change it later.");
     // Every agreement line keeps its words.
     expect(terms.textContent).toContain("Nothing is final until we agree together.");
-    expect(document.querySelector("[data-ramp-up]")?.textContent).toContain("We agree the steps together.");
+    expect(document.querySelector("[data-ramp-up]")?.textContent).toContain("we agree them together.");
   });
 
   it("adds a role from another circle on The terms, with its own commitment, shows the total, and sends each role's terms", async () => {

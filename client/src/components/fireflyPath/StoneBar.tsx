@@ -17,13 +17,13 @@ import { EnterHint } from "./ApplySteps";
 
 const BUTTON = `${BTN_PRIMARY} py-3`;
 
-export default function StoneBar({ keyboard, stone, last, nextName, sending, onBack, onNext }: { keyboard: number; stone: number; last: number; nextName: string; sending: boolean; onBack: () => void; onNext: () => void }) {
+export default function StoneBar({ keyboard, stone, last, nextName, sending, onBack, onNext, close = false }: { keyboard: number; stone: number; last: number; nextName: string; sending: boolean; onBack: () => void; onNext: () => void; close?: boolean }) {
   const { t } = useLingui();
   return (
     <div
       style={{ "--stone-kb": `${keyboard}px` } as React.CSSProperties}
       data-keyboard={keyboard > 0 ? "open" : undefined}
-      className="sticky bottom-[calc(var(--stone-kb,0px)+env(safe-area-inset-bottom,0px)+0.5rem)] z-20 -mx-5 mt-10 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm sm:-mx-10 sm:px-8 lg:static lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:shadow-none"
+      className={`sticky bottom-[calc(var(--stone-kb,0px)+env(safe-area-inset-bottom,0px)+0.5rem)] z-20 -mx-5 ${close ? "mt-3" : "mt-10"} flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-sm sm:-mx-10 sm:px-8 lg:static lg:mx-0 lg:rounded-none lg:border-x-0 lg:border-b-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:shadow-none`}
       data-stone-bar=""
     >
       <button type="button" onClick={onBack} disabled={stone === 0} className={`${BTN_SECONDARY} disabled:invisible`} data-stone-back="">

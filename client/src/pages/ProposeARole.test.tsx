@@ -412,32 +412,43 @@ describe("the six steps", () => {
       "Step 2: About you",
       "Step 3: Your value",
       "Step 4: The terms",
-      "Step 5: Your first day",
+      "Step 5: Your first moon",
       "Step 6: Review & submit",
     ]);
     // Nothing of the game register on this page.
     expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
     // Moon is the village's rhythm and is said here (the lead, 18 Nov 2026), and every moon wears its tip (MoonWord.tsx).
-    expect((document.body.textContent ?? "").match(/\bmoons?\b/gi)?.length ?? 0).toBe(document.querySelectorAll(".moon > [tabindex]").length);
+    // A step's name in the step mark, the trail beside or on Continue is a control's words, where a tip cannot sit: a control never
+    // holds another. Every other moon wears it, the first moon step's heading and its line among them.
+    const said = document.body.cloneNode(true) as HTMLElement;
+    for (const b of Array.from(said.querySelectorAll("[data-step-mark], [data-step-trail-beside], [data-stone-bar]"))) b.remove();
+    // A heading's last word runs into the next line's first in textContent ("moonWhat"), so the word ends at any
+    // letter that is not lower case.
+    expect((said.textContent ?? "").match(/\b[Mm]oons?(?![a-z])/g)?.length ?? 0).toBe(document.querySelectorAll(".moon > [tabindex]").length);
+    expect(document.querySelector('[data-stone="first"] h2 .moon')?.textContent).toBe("moon");
   });
 
   it("Get to know us: each way is a link in a new tab, the warm push, and the Steward path for the completely new (Rye, 15 Nov 2026)", async () => {
     const knowUsLinks = {
       recording: "https://video.example.test/last-call",
       call: { href: "/events", next: { title: "Community Call", startsAt: "2099-01-08T17:00:00.000Z", place: null, href: "/events" } },
-      tour: { href: "https://book.example.test/tour", next: null },
+      tour: { href: "https://book.example.test/tour", next: { title: "Land tour", startsAt: "2099-01-10T15:00:00.000Z", place: "The gate", href: "https://book.example.test/tour" } },
       potluck: { href: null, next: null },
       stewardPath: "/steward",
     };
     await applyFor("r-gate", { ...FORM, founding: { ...SETUP, knowUsLinks } });
     const ways = document.querySelector("[data-know-us-ways]") as HTMLElement;
-    expect(ways.textContent).toMatch(/Most people haven't done these yet, and that's fine\. Watching the last recording is the easiest first step\./);
+    expect(ways.textContent).toMatch(/Most people haven't done these yet, and that's fine\. Watching the last webinar recording is the easiest first step\./);
     const acts = within(ways.querySelector("[data-know-us-acts]") as HTMLElement).getAllByRole("link");
     expect(acts.map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
-      ["Watch the last recording", "https://video.example.test/last-call"],
-      ["Join the next call", "/events"],
+      ["Watch the last webinar recording", "https://video.example.test/last-call"],
+      ["Join the next webinar call", "/events"],
       ["Book a land tour", "https://book.example.test/tour"],
     ]);
+    // The tour's time is converted to the viewer's zone, and a small note says so (the lead, 20 Nov 2026).
+    const tourWhen = (acts[2].closest("li") as HTMLElement).querySelector("[data-know-us-when]") as HTMLElement;
+    expect(tourWhen.querySelector("[data-your-time]")?.textContent).toBe("your time");
+    expect(tourWhen.textContent).toMatch(/· The gate$/);
     // No potluck link and no potluck event: no act, never a dead link.
     expect(ways.textContent).not.toMatch(/potluck/);
     // Every link opens in a new tab, so the draft stays.
@@ -468,7 +479,7 @@ describe("the six steps", () => {
     await waitFor(() => expect(document.activeElement?.id).toBe("stone-1-h"));
   });
 
-  it("per step (M1): Continue with gaps posts nothing, lists only this step's gaps at once, shows each beside its field, and moves the cursor to the first", async () => {
+  it("per step (M1): Continue with gaps posts nothing, lists only this step's gaps just above Continue, shows each beside its field, and each line takes the cursor to its field", async () => {
     await applyFor();
     pressNext();
     pressNext();
@@ -477,9 +488,20 @@ describe("the six steps", () => {
     for (const words of [OPEN_WORDS.needName, OPEN_WORDS.needEmail, OPEN_WORDS.needWhy]) expect(list.textContent).toContain(words);
     for (const words of [OPEN_WORDS.needAim, "Tick that you will align"]) expect(list.textContent).not.toContain(words);
     expect(posted).toHaveLength(0);
+    // Just above Continue (the lead, 20 Nov 2026): the list is the bar's previous sibling, and the press is answered there.
+    expect(list.getAttribute("data-problems-at")).toBe("button");
+    expect(list.nextElementSibling?.hasAttribute("data-stone-bar")).toBe(true);
+    expect(document.querySelectorAll("[data-problems]")).toHaveLength(1);
+    await waitFor(() => expect(document.activeElement?.id).toBe("propose-problems"));
     expect(document.querySelector("#propose-problem-name")?.textContent).toBe(OPEN_WORDS.needName);
-    await waitFor(() => expect(document.activeElement?.id).toBe("propose-name"));
     expect(screen.getByLabelText(OPEN_WORDS.nameLabel).getAttribute("aria-invalid")).toBe("true");
+    // Each line is a link to its own field: the email line focuses the email, the why line the why.
+    const email = within(list).getByRole("link", { name: OPEN_WORDS.needEmail });
+    expect(email.getAttribute("href")).toBe("#propose-email");
+    fireEvent.click(email);
+    await waitFor(() => expect(document.activeElement?.id).toBe("propose-email"));
+    fireEvent.click(within(list).getByRole("link", { name: OPEN_WORDS.needWhy }));
+    await waitFor(() => expect(document.activeElement?.id).toBe("propose-why"));
   });
 
   it("Your value: items can be added and removed, each must say how we will know it is done, and each is tagged to a season goal from its own choice", async () => {
@@ -500,9 +522,12 @@ describe("the six steps", () => {
     const list = (await screen.findByText(/things to look at before you continue/)).closest("[data-problems]") as HTMLElement;
     expect(list.textContent).toContain("Say how we'll know value 1 is done.");
     expect(list.textContent).toContain("Choose the season goal value 1 serves.");
+    fireEvent.click(within(list).getByRole("link", { name: "Say how we'll know value 1 is done." }));
     await waitFor(() => expect(document.activeElement?.id).toBe("value-r-gate-0-done"));
     fireEvent.change(document.getElementById("value-r-gate-0-done") as HTMLInputElement, { target: { value: "at sunrise" } });
     pressNext();
+    const again = document.querySelector("[data-problems]") as HTMLElement;
+    fireEvent.click(within(again).getByRole("link", { name: "Choose the season goal value 1 serves." }));
     await waitFor(() => expect(document.activeElement?.id).toBe("value-r-gate-0-serves"));
     fireEvent.change(document.getElementById("value-r-gate-0-serves") as HTMLSelectElement, { target: { value: "g-team" } });
     fireEvent.click(screen.getByRole("button", { name: "Add another value item" }));
@@ -548,7 +573,7 @@ describe("the six steps", () => {
     expect(stoneNow()).toBe("value");
     expect((screen.getByLabelText(OPEN_WORDS.aimLabel) as HTMLInputElement).value).toBe("The gate opens at dawn.");
     // A step not reached yet is no button.
-    expect(screen.queryByRole("button", { name: "Step 5: Your first day" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Step 5: Your first moon" })).toBeNull();
   });
 
   it("a desk: Enter in a one-line field moves on, the arrows walk when the caret is not in a field, and a field keeps its own keys", async () => {
@@ -623,7 +648,7 @@ describe("the six steps", () => {
       "Change About you",
       "Change Your value",
       "Change The terms",
-      "Change Your first day",
+      "Change Your first moon",
     ]);
     fireEvent.click(within(review).getByRole("button", { name: "Change Your value" }));
     expect(stoneNow()).toBe("value");
@@ -725,7 +750,7 @@ describe("the ramp-up is the applicant's own choice (production check, 1.3.22)",
     const box = screen.getByLabelText(/I would like a ramp-up/) as HTMLInputElement;
     expect(box.checked).toBe(false);
     // A tap on the tile around the box (as a phone does to close its keyboard) changes nothing.
-    fireEvent.click(screen.getByText("Partial rewards while you build to your full commitment. We agree the steps together."));
+    fireEvent.click(screen.getByText("For when you want a higher commitment and would like to start lower, so the change goes well for you and the work. For example, half time the first month and full time the second. Rewards follow the steps, and we agree them together."));
     fireEvent.click(document.querySelector("[data-ramp-up]") as HTMLElement);
     expect(box.checked).toBe(false);
     fireEvent.change(screen.getByLabelText("Your commitment"), { target: { value: "50" } });
@@ -739,7 +764,7 @@ describe("the ramp-up is the applicant's own choice (production check, 1.3.22)",
   });
 });
 
-describe("your first day", () => {
+describe("your first moon", () => {
   it("says what the first cycle looks like, the first conversations, and asks the time zone from the browser and the earliest start", async () => {
     await applyFor();
     const step = document.querySelector('[data-stone="first"]') as HTMLElement;
@@ -748,6 +773,19 @@ describe("your first day", () => {
     expect((within(step).getByLabelText("Your time zone") as HTMLInputElement).value).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     expect(within(step).getByLabelText(/earliest you could start/)).toBeTruthy();
     expect(step.querySelector("[data-first-booking]"), "control: a role with no conversations names no first one").toBeNull();
+  });
+
+  it("draws the first moon as a path: the reshaped deliverables timeline as a step, the paid first cycle last, a line between each", async () => {
+    await applyFor();
+    const step = document.querySelector('[data-stone="first"]') as HTMLElement;
+    const path = step.querySelector("ol[data-first-day]") as HTMLElement;
+    const keys = Array.from(path.querySelectorAll("li")).map((li) => li.getAttribute("data-first-step"));
+    expect(keys[keys.length - 1]).toBe("cycle");
+    expect(keys[keys.length - 2]).toBe("reshape");
+    expect(path.querySelector('[data-first-step="reshape"]')?.textContent).toBe(`${keys.length - 1}In your first moon, you and the circle reshape your deliverables timeline together.`);
+    // One line from each step to the next, none after the last.
+    expect(path.querySelectorAll("[data-first-line]")).toHaveLength(keys.length - 1);
+    expect(path.querySelector('[data-first-step="cycle"] [data-first-line]')).toBeNull();
   });
 
   it("names the first interviewer from the role's own list, and says its booking link comes with the invitation", async () => {

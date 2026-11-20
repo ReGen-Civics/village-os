@@ -161,7 +161,7 @@ describe("step one: the archetype", () => {
     renderRoles();
     expect(await screen.findByRole("heading", { name: "Choose the root you grow from" })).toBeTruthy();
     await screen.findByText("The Builder");
-    // The role is on the page without a press: its card, under Open now.
+    // The role is on the page without a press: its card, under Open roles.
     expect(await screen.findByRole("heading", { level: 3, name: "Gardener" })).toBeTruthy();
     expect(document.querySelector('[data-role-card="garden"]')).toBeTruthy();
     expect(screen.queryByRole("button", { name: "See all roles" })).toBeNull();

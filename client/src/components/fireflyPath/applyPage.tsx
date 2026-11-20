@@ -3,7 +3,7 @@
  * ceiling: where each field lives on the form, how the cursor is put on a problem, and the roles the
  * address bar names.
  */
-import { prefersStill } from "./Thresholds";
+import { scrollBehavior } from "@/components/natural/scrollBehavior";
 
 /** One thing to fix before sending: the field's name, the words, and where to look for it on the page. */
 export interface FormProblem {
@@ -48,7 +48,7 @@ export function goToProblem(target: string | null) {
   const form = document.querySelector<HTMLElement>("[data-open-proposal]");
   const spot = el ?? form?.querySelector<HTMLElement>("#propose-problems") ?? null;
   if (!spot) return;
-  spot.scrollIntoView?.({ block: "center", behavior: prefersStill() ? "auto" : "smooth" });
+  spot.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
   const focusable = spot.matches("input,textarea,select,button,[tabindex]") ? spot : (firstUnanswered(spot) ?? spot.querySelector<HTMLElement>("input,textarea,select,button"));
   const at = focusable ?? spot;
   // A field found inside a section is centred itself, so the cursor is never off screen.

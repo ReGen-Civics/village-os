@@ -26,6 +26,11 @@ import { commitmentLine } from "./rewardWords";
 
 export type IndexKind = "open" | "soon" | "venture";
 
+/** A group's heading on /roles: one size up from a panel's H2, so each group reads as its own chapter (the lead, 20 Nov 2026). */
+export const GROUP_H2 = "font-display text-3xl font-bold leading-tight text-card-foreground sm:text-4xl";
+/** The break above the second and third groups: a gold rule and a wide gap, clearly bigger than the gap between cards. */
+export const GROUP_BREAK = "border-t-2 border-notice/40 pt-12 sm:pt-16";
+
 export interface IndexChild {
   id: string;
   name: string;
@@ -135,7 +140,7 @@ export default function RoleIndexCard({ seat, path, circleName, kind, stateWord,
         {acts ??
           (applyHref ? (
             <Link href={applyHref} className={BTN_PRIMARY} data-apply-role={id}>
-              {t({ message: "Apply", context: "roles index card: apply for this role" })}
+              {kind === "venture" ? t({ message: "Bring your venture", context: "roles index card: apply to build and run this venture" }) : t({ message: "Apply", context: "roles index card: apply for this role" })}
               <span className="sr-only">{`: ${name}`}</span>
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>

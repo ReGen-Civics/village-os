@@ -263,7 +263,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const wide = useWide();
   const inflowRef = useRef<HTMLDivElement | null>(null);
 
-  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
+  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Join the waitlist", never Apply.
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
   const act = soon ? (
     <div className="flex flex-col gap-3" data-card-waitlist={id}>
@@ -275,7 +275,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </Suspense>
       ) : (
         <button type="button" className={`w-full ${BTN_PRIMARY}`} onClick={() => setWaitOpen(true)}>
-          {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
+          {t({ message: "Join the waitlist", context: "coming-soon waitlist: the button" })}
         </button>
       )}
       {!wide && <StateNote role={seat} />}
@@ -291,7 +291,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {wide && <StateNote role={seat} className="mb-3" />}
       <Fireflies block>
         <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
-          <Trans context="full role card: the one act">Apply for this role</Trans>
+          {/* A venture is brought, not only applied for (the lead, 20 Nov 2026); the same apply flow either way. */}
+          {seat?.futureVenture === true ? t({ message: "Bring your venture", context: "full role card: the one act, on a venture" }) : <Trans context="full role card: the one act">Apply for this role</Trans>}
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
