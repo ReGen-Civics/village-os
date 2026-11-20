@@ -17,22 +17,101 @@
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { pipeline } from "node:stream/promises";
 import {
   ATTACHMENT_WORDS,
   PROPOSAL_FILES_MAX,
   PROPOSAL_FILE_MAX_BYTES,
+  nameFitsKind,
   proposalFileKind,
   safeFileName,
+  sniffProposalFile,
   type ProposalFile,
+  type ProposalFileKind,
 } from "../../shared/proposalAttachments";
 import { VOICE_CLIP_MAX_BYTES, VOICE_NOTES_MAX, VOICE_NOTE_ID, VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind, type SentClip, type VoiceClip, type VoiceNote, type VoiceNoteKind } from "../../shared/voiceNotes";
+import { uploadedFilePath } from "./uploadDisk";
 
 /** A proposal id as the intake makes it. Anything else never becomes a path. */
 const PROPOSAL_DIR = /^op-[0-9a-f]{20}$/;
 
-export interface UploadedFile {
-  originalname: string;
-  buffer: Buffer;
+/**
+ * One uploaded part: its bytes in memory (a suite, or an older caller), or a file on disk that the upload streamed
+ * into (server/lib/uploadDisk.ts, the 19 Nov 2026 change). Every check and write below reads either, and a file on
+ * disk is read in chunks, never whole.
+ */
+export type UploadedFile = { originalname: string; buffer: Buffer } | { originalname: string; path: string; size: number };
+
+const onDisk = (f: UploadedFile): f is { originalname: string; path: string; size: number } => typeof (f as { path?: unknown }).path === "string";
+
+/** How many bytes a part holds. */
+export function sizeOf(f: UploadedFile): number {
+  return onDisk(f) ? f.size : (f.buffer?.length ?? 0);
+}
+
+/** A part's first `n` bytes. */
+export async function headOf(f: UploadedFile, n: number): Promise<Buffer> {
+  if (!onDisk(f)) return f.buffer.subarray(0, n);
+  const fh = await fs.promises.open(uploadedFilePath(f.path), "r");
+  try {
+    const buf = Buffer.alloc(n);
+    const { bytesRead } = await fh.read(buf, 0, n, 0);
+    return buf.subarray(0, bytesRead);
+  } finally {
+    await fh.close();
+  }
+}
+
+/** Whether a file on disk holds `needle` anywhere, read in chunks with an overlap so a match across two is found. */
+async function fileHasAscii(file: string, needle: string): Promise<boolean> {
+  const want = Buffer.from(needle, "latin1");
+  let carry = Buffer.alloc(0);
+  for await (const chunk of fs.createReadStream(uploadedFilePath(file), { highWaterMark: 256 * 1024 })) {
+    const joined = Buffer.concat([carry, chunk as Buffer]);
+    if (joined.includes(want)) return true;
+    carry = joined.subarray(Math.max(0, joined.length - (want.length - 1)));
+  }
+  return false;
+}
+
+/** A proposal file's kind when its bytes and its name agree, else null, as `proposalFileKind` reads it. */
+async function kindOfFile(f: UploadedFile): Promise<ProposalFileKind | null> {
+  if (!onDisk(f)) return proposalFileKind(f.originalname, f.buffer);
+  const head = await headOf(f, 64);
+  // A zip is a .docx only with the Word part in it, which can sit anywhere in the file.
+  const zip = head.length >= 4 && head[0] === 0x50 && head[1] === 0x4b && head[2] === 0x03 && head[3] === 0x04;
+  const kind = zip ? ((await fileHasAscii(f.path, "word/document.xml")) ? "docx" : null) : sniffProposalFile(head);
+  return kind && nameFitsKind(f.originalname, kind) ? kind : null;
+}
+
+/** Copy a part to `target` (through a temp name and a rename), returning its size and SHA-256. */
+async function keepPart(f: UploadedFile, target: string): Promise<{ size: number; sha256: string }> {
+  const temp = `${target}.${crypto.randomBytes(4).toString("hex")}.part`;
+  if (!onDisk(f)) {
+    await fs.promises.writeFile(temp, f.buffer);
+    await fs.promises.rename(temp, target);
+    return { size: f.buffer.length, sha256: crypto.createHash("sha256").update(f.buffer).digest("hex") };
+  }
+  const hash = crypto.createHash("sha256");
+  let size = 0;
+  try {
+    await pipeline(
+      fs.createReadStream(uploadedFilePath(f.path)),
+      async function* (source) {
+        for await (const chunk of source) {
+          hash.update(chunk as Buffer);
+          size += (chunk as Buffer).length;
+          yield chunk;
+        }
+      },
+      fs.createWriteStream(temp, { flags: "wx", mode: 0o600 }),
+    );
+    await fs.promises.rename(temp, target);
+  } catch (e) {
+    await fs.promises.rm(temp, { force: true });
+    throw e;
+  }
+  return { size, sha256: hash.digest("hex") };
 }
 
 function folderOf(root: string, proposalId: string): string {
@@ -41,13 +120,14 @@ function folderOf(root: string, proposalId: string): string {
 }
 
 /** Every file checked, before any is written. The first problem is answered. */
-export function checkProposalFiles(files: readonly UploadedFile[]): { ok: true; kinds: ProposalFile["kind"][] } | { ok: false; error: string } {
+export async function checkProposalFiles(files: readonly UploadedFile[]): Promise<{ ok: true; kinds: ProposalFile["kind"][] } | { ok: false; error: string }> {
   if (files.length > PROPOSAL_FILES_MAX) return { ok: false, error: ATTACHMENT_WORDS.tooManyFiles };
   const kinds: ProposalFile["kind"][] = [];
   for (const f of files) {
-    if (!f.buffer?.length) return { ok: false, error: ATTACHMENT_WORDS.fileUnreadable };
-    if (f.buffer.length > PROPOSAL_FILE_MAX_BYTES) return { ok: false, error: ATTACHMENT_WORDS.fileTooBig };
-    const kind = proposalFileKind(f.originalname, f.buffer);
+    const size = sizeOf(f);
+    if (!size) return { ok: false, error: ATTACHMENT_WORDS.fileUnreadable };
+    if (size > PROPOSAL_FILE_MAX_BYTES) return { ok: false, error: ATTACHMENT_WORDS.fileTooBig };
+    const kind = await kindOfFile(f).catch(() => null);
     if (!kind) return { ok: false, error: ATTACHMENT_WORDS.fileWrongType };
     kinds.push(kind);
   }
@@ -56,7 +136,7 @@ export function checkProposalFiles(files: readonly UploadedFile[]): { ok: true; 
 
 /** Write a proposal's files into its own folder. Call `checkProposalFiles` first. */
 export async function writeProposalFiles(root: string, proposalId: string, files: readonly UploadedFile[]): Promise<ProposalFile[]> {
-  const checked = checkProposalFiles(files);
+  const checked = await checkProposalFiles(files);
   if (!checked.ok) throw new Error(checked.error);
   if (!files.length) return [];
   const dir = folderOf(root, proposalId);
@@ -66,11 +146,8 @@ export async function writeProposalFiles(root: string, proposalId: string, files
     const f = files[i];
     const kind = checked.kinds[i];
     const id = `pf-${crypto.randomBytes(8).toString("hex")}`;
-    const target = path.join(dir, `${id}.${kind}`);
-    const temp = `${target}.${crypto.randomBytes(4).toString("hex")}.part`;
-    await fs.promises.writeFile(temp, f.buffer);
-    await fs.promises.rename(temp, target);
-    out.push({ id, kind, name: safeFileName(f.originalname, kind), size: f.buffer.length, sha256: crypto.createHash("sha256").update(f.buffer).digest("hex") });
+    const kept = await keepPart(f, path.join(dir, `${id}.${kind}`));
+    out.push({ id, kind, name: safeFileName(f.originalname, kind), size: kept.size, sha256: kept.sha256 });
   }
   return out;
 }
@@ -124,13 +201,14 @@ export async function sweepProposalFiles(root: string, keeping: (ids: string[]) 
  */
 
 /** Every recording checked, before any is written. The first problem is answered. */
-export function checkVoiceNotes(notes: readonly UploadedFile[]): { ok: true; kinds: VoiceNoteKind[] } | { ok: false; error: string } {
+export async function checkVoiceNotes(notes: readonly UploadedFile[]): Promise<{ ok: true; kinds: VoiceNoteKind[] } | { ok: false; error: string }> {
   if (notes.length > VOICE_NOTES_MAX) return { ok: false, error: VOICE_WORDS.tooMany };
   const kinds: VoiceNoteKind[] = [];
   for (const n of notes) {
-    if (!n.buffer?.length) return { ok: false, error: VOICE_WORDS.wrongType };
-    if (n.buffer.length > VOICE_NOTE_MAX_BYTES) return { ok: false, error: VOICE_WORDS.tooBig };
-    const kind = voiceNoteKind(n.buffer);
+    const size = sizeOf(n);
+    if (!size) return { ok: false, error: VOICE_WORDS.wrongType };
+    if (size > VOICE_NOTE_MAX_BYTES) return { ok: false, error: VOICE_WORDS.tooBig };
+    const kind = voiceNoteKind(await headOf(n, 16).catch(() => Buffer.alloc(0)));
     if (!kind) return { ok: false, error: VOICE_WORDS.wrongType };
     kinds.push(kind);
   }
@@ -139,7 +217,7 @@ export function checkVoiceNotes(notes: readonly UploadedFile[]): { ok: true; kin
 
 /** Write a proposal's recordings into its own folder, with the lengths the page timed. Call `checkVoiceNotes` first. */
 export async function writeVoiceNotes(root: string, proposalId: string, notes: readonly UploadedFile[], seconds: readonly number[]): Promise<VoiceNote[]> {
-  const checked = checkVoiceNotes(notes);
+  const checked = await checkVoiceNotes(notes);
   if (!checked.ok) throw new Error(checked.error);
   if (!notes.length) return [];
   const dir = folderOf(root, proposalId);
@@ -148,11 +226,8 @@ export async function writeVoiceNotes(root: string, proposalId: string, notes: r
   for (let i = 0; i < notes.length; i++) {
     const kind = checked.kinds[i];
     const id = `pv-${crypto.randomBytes(8).toString("hex")}`;
-    const target = path.join(dir, `${id}.${kind}`);
-    const temp = `${target}.${crypto.randomBytes(4).toString("hex")}.part`;
-    await fs.promises.writeFile(temp, notes[i].buffer);
-    await fs.promises.rename(temp, target);
-    out.push({ id, kind, seconds: seconds[i] ?? 0, size: notes[i].buffer.length, sha256: crypto.createHash("sha256").update(notes[i].buffer).digest("hex") });
+    const kept = await keepPart(notes[i], path.join(dir, `${id}.${kind}`));
+    out.push({ id, kind, seconds: seconds[i] ?? 0, size: kept.size, sha256: kept.sha256 });
   }
   return out;
 }
@@ -184,12 +259,13 @@ export async function removeVoiceNotes(root: string, proposalId: string): Promis
 }
 
 /** Every clip beside an answer checked, before any is written: its bytes, its size. The first problem is answered. */
-export function checkVoiceClips(clips: readonly UploadedFile[]): { ok: true; kinds: VoiceNoteKind[] } | { ok: false; error: string } {
+export async function checkVoiceClips(clips: readonly UploadedFile[]): Promise<{ ok: true; kinds: VoiceNoteKind[] } | { ok: false; error: string }> {
   const kinds: VoiceNoteKind[] = [];
   for (const c of clips) {
-    if (!c.buffer?.length) return { ok: false, error: VOICE_WORDS.wrongType };
-    if (c.buffer.length > VOICE_CLIP_MAX_BYTES) return { ok: false, error: VOICE_WORDS.tooBig };
-    const kind = voiceNoteKind(c.buffer);
+    const size = sizeOf(c);
+    if (!size) return { ok: false, error: VOICE_WORDS.wrongType };
+    if (size > VOICE_CLIP_MAX_BYTES) return { ok: false, error: VOICE_WORDS.tooBig };
+    const kind = voiceNoteKind(await headOf(c, 16).catch(() => Buffer.alloc(0)));
     if (!kind) return { ok: false, error: VOICE_WORDS.wrongType };
     kinds.push(kind);
   }
@@ -202,7 +278,7 @@ export function checkVoiceClips(clips: readonly UploadedFile[]): { ok: true; kin
  * each clip's answer, length and words, in the order the bytes came.
  */
 export async function writeVoiceClips(root: string, proposalId: string, clips: readonly UploadedFile[], sent: readonly SentClip[]): Promise<VoiceClip[]> {
-  const checked = checkVoiceClips(clips);
+  const checked = await checkVoiceClips(clips);
   if (!checked.ok) throw new Error(checked.error);
   if (!clips.length) return [];
   const dir = folderOf(root, proposalId);
@@ -211,12 +287,9 @@ export async function writeVoiceClips(root: string, proposalId: string, clips: r
   for (let i = 0; i < clips.length; i++) {
     const kind = checked.kinds[i];
     const id = `pv-${crypto.randomBytes(8).toString("hex")}`;
-    const target = path.join(dir, `${id}.${kind}`);
-    const temp = `${target}.${crypto.randomBytes(4).toString("hex")}.part`;
-    await fs.promises.writeFile(temp, clips[i].buffer);
-    await fs.promises.rename(temp, target);
+    const kept = await keepPart(clips[i], path.join(dir, `${id}.${kind}`));
     const meta = sent[i];
-    out.push({ id, kind, field: meta.field, seconds: meta.seconds, words: meta.words, size: clips[i].buffer.length, sha256: crypto.createHash("sha256").update(clips[i].buffer).digest("hex") });
+    out.push({ id, kind, field: meta.field, seconds: meta.seconds, words: meta.words, size: kept.size, sha256: kept.sha256 });
   }
   return out;
 }

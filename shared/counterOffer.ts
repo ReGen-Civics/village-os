@@ -18,6 +18,7 @@
  * Commitment is a planning signal and nothing here, or anywhere that reads it,
  * computes pay (`shared/termsWords.boundary.test.ts`).
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 import { roleCounterOf, type RoleCounter } from "./roleCounterOffer";
 import { isCommitment, TERM_KEYS, TERM_LABELS, TERM_NOTE_MAX, type TermAnswers, type TermKey, type TermsWords } from "./termsWords";
 
@@ -25,8 +26,8 @@ export type OfferKey = TermKey | "commitment";
 export const OFFER_KEYS: readonly OfferKey[] = [...TERM_KEYS, "commitment"];
 export const OFFER_LABELS: Record<OfferKey, string> = { ...TERM_LABELS, commitment: "Commitment" };
 
-export const OFFER_WORD_MAX = 600;
-export const OFFER_REVISIONS_MAX = 50;
+export const OFFER_WORD_MAX = APPLY_TEXT.offerWord;
+export const OFFER_REVISIONS_MAX = APPLY_COUNTS.offerRevisions;
 
 export interface OfferChange {
   key: OfferKey;

@@ -545,6 +545,12 @@
       "path": "/api/admin/variables/org.pay_shape_note",
       "confirm": "agent",
       "label": "Set org.pay_shape_note"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/server-capacity",
+      "confirm": "agent",
+      "label": "What the server can hold: memory, room on the uploads volume, and the upload caps"
     }
   ]
 }

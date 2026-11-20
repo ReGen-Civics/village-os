@@ -23,7 +23,7 @@
  *     the multilingual `base` model, quantised; Dockerfile, the `whisper`
  *     stage). No key, no account, no cost per use, and the recording never
  *     leaves the server. Slower: about a minute of two cores for a five-minute
- *     take, measured 17 Nov 2026, so one runs at a time.
+ *     take (about a minute and a half for the 7-minute take a page now records), measured 17 Nov 2026, so one runs at a time.
  *
  * `auto` (the default) asks them in that order, skipping any that is not
  * ready, and when one fails the next is tried. So with no key at all the image
@@ -39,6 +39,7 @@
  * WHAT IS SENT. The bytes of the one recording, its format, and (to Groq) the
  * language the page is in. No name, address, application or other answer.
  */
+import { TRANSCRIBE_LOCAL_TIMEOUT_MS, TRANSCRIBE_PROVIDER_TIMEOUT_MS } from "../../shared/applyLimits";
 import { spawn } from "node:child_process";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -51,6 +52,7 @@ import { ffmpegAvailable, ffmpegBinary } from "./voicePlayback";
 import { dbDocument } from "../repos/store-db";
 import type { VoiceNoteKind } from "../../shared/voiceNotes";
 import { VOICE_NOTE_TYPES } from "../../shared/voiceNotes";
+import { uploadedFilePath } from "./uploadDisk";
 import {
   TRANSCRIPTION_PROVIDER_IDS,
   VOICE_TRANSCRIBE_TEXT_MAX,
@@ -192,8 +194,12 @@ export async function transcriptionSettings(pool: Pool, env: NodeJS.ProcessEnv =
 
 /* ── One recording, written down ────────────────────────────────────────── */
 
-export interface TranscribeInput {
-  bytes: Buffer;
+/**
+ * One recording: its bytes in memory (a stored note read back), or the file an upload streamed it into
+ * (server/lib/uploadDisk.ts, 19 Nov 2026). This server's own Whisper reads the file where it lies; a provider's
+ * request reads it at the moment of the call (the pinned dialer sends a byte body), for that call only.
+ */
+export type TranscribeInput = ({ bytes: Buffer; path?: undefined } | { path: string; bytes?: undefined }) & {
   kind: VoiceNoteKind;
   /** The page's language, "es-CR" or "en": only its first part is used. */
   lang?: string;
@@ -209,10 +215,10 @@ export function languageHint(lang: unknown): string | null {
   return m ? m[1] : null;
 }
 
-/** How long one call to a provider may take before the recording is reported unwritten. */
-export const TRANSCRIBE_TIMEOUT_MS = 90_000;
-/** How long this server's own Whisper may take on one recording: a five-minute take on one slow core. */
-export const LOCAL_TIMEOUT_MS = 240_000;
+/** How long one call to a provider may take before the recording is reported unwritten (shared/applyLimits.ts). */
+export const TRANSCRIBE_TIMEOUT_MS = TRANSCRIBE_PROVIDER_TIMEOUT_MS;
+/** How long this server's own Whisper may take on one recording: a 7-minute take on one slow core. */
+export const LOCAL_TIMEOUT_MS = TRANSCRIBE_LOCAL_TIMEOUT_MS;
 
 /** One multipart body, as bytes: the provider reads a form, and the pinned dialer sends bytes as they are. */
 export function multipartBody(fields: Record<string, string>, file: { name: string; type: string; bytes: Buffer }): { body: Buffer; contentType: string } {
@@ -250,10 +256,11 @@ export async function transcribeWithHttp(input: TranscribeInput, provider: { def
   const doFetch: TranscribeFetch = fetchImpl ?? ((url, init) => guardedFetch(url, init as RequestInit));
   const hint = provider.def.sendsLanguage ? languageHint(input.lang) : null;
   const fields: Record<string, string> = { model: provider.def.model, ...(provider.def.id === "groq" ? { response_format: "json" } : {}), ...(hint ? { language: hint } : {}) };
-  const { body, contentType } = multipartBody(fields, { name: `take.${input.kind}`, type: VOICE_NOTE_TYPES[input.kind], bytes: input.bytes });
   const timeout = AbortSignal.timeout(TRANSCRIBE_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
   try {
+    const bytes = input.bytes ?? (await fs.promises.readFile(uploadedFilePath(input.path)));
+    const { body, contentType } = multipartBody(fields, { name: `take.${input.kind}`, type: VOICE_NOTE_TYPES[input.kind], bytes });
     const res = await doFetch(provider.def.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${provider.key}`, "Content-Type": contentType, Accept: "application/json" },
@@ -374,7 +381,8 @@ export async function transcribeLocally(input: TranscribeInput, local: LocalWhis
     const source = path.join(scratch, `in.${input.kind}`);
     const wav = path.join(scratch, "in.wav");
     const out = path.join(scratch, "out");
-    await fs.promises.writeFile(source, input.bytes);
+    if (input.bytes) await fs.promises.writeFile(source, input.bytes);
+    else await fs.promises.copyFile(uploadedFilePath(input.path), source);
     const started = Date.now();
     const decoded = await run(
       ffmpegBinary(),

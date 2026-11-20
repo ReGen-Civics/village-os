@@ -14,6 +14,7 @@
  * PURE: the server reads the variables and hands them in as `get`, and the page
  * reads the result from the form's answer, so both read one spelling.
  */
+import { VILLAGE_WORDS } from "./applyLimits";
 import { KNOW_US_MAX, KNOW_US_TEXT_MAX } from "./openProposals";
 import { knowUsLinksOf, type KnowUsLinks } from "./knowUsLinks";
 
@@ -79,7 +80,7 @@ export interface FoundingSetup {
 }
 
 /** Lines of a long setting: one per line, trimmed, blank lines dropped. */
-export function linesOf(raw: unknown, max = 12, each = 300): string[] {
+export function linesOf(raw: unknown, max: number = VILLAGE_WORDS.lines, each: number = VILLAGE_WORDS.lineEach): string[] {
   return String(typeof raw === "string" ? raw : "")
     .split(/\r?\n/)
     .map((l) => l.trim().slice(0, each))
@@ -127,7 +128,12 @@ export function payShapeOf(setting: unknown): PayShare[] {
   return out.slice(0, 6).reduce((n, s) => n + s.pct, 0) > 100 ? [] : out.slice(0, 6);
 }
 
-const words = (raw: unknown, max = 1200): string => String(typeof raw === "string" ? raw : "").trim().slice(0, max);
+/**
+ * A note the village wrote, read WHOLE (ops check of live 1.3.30, 19 Nov 2026: the form cut these at 1200 and 300).
+ * Its limit is held at Admin's save door, which refuses a longer note with the reason (shared/applyLimits.ts
+ * `villageWordsProblem`, and 255 for a one-line setting), so nothing an applicant reads is ever shortened here.
+ */
+const words = (raw: unknown): string => String(typeof raw === "string" ? raw : "").trim();
 
 /** The setup from the village's settings, read through `get` (the setting's current value; "" for one the registry does not know). */
 export function foundingSetupFrom(get: (key: FoundingKey) => string): FoundingSetup {
@@ -135,28 +141,28 @@ export function foundingSetupFrom(get: (key: FoundingKey) => string): FoundingSe
     knowUs: linesOf(get(FOUNDING_KEYS.knowUs), KNOW_US_MAX, KNOW_US_TEXT_MAX),
     knowUsNote: words(get(FOUNDING_KEYS.knowUsNote)),
     shares: payShapeOf(get(PAY_SHAPE_KEYS.shape)),
-    atRisk: words(get(PAY_SHAPE_KEYS.atRisk), 600),
-    footer: words(get(PAY_SHAPE_KEYS.note), 300),
+    atRisk: words(get(PAY_SHAPE_KEYS.atRisk)),
+    footer: words(get(PAY_SHAPE_KEYS.note)),
     firstCycle: words(get(FOUNDING_KEYS.firstCycle)),
     firstConversations: linesOf(get(FOUNDING_KEYS.firstConversations)),
-    updatedNote: words(get(UPDATED_NOTE_KEY), 300),
+    updatedNote: words(get(UPDATED_NOTE_KEY)),
   };
 }
 
 /** The setup as the form's answer carries it, read back safely: anything missing is empty, nothing throws. */
 export function foundingSetupOf(raw: unknown): FoundingSetup {
   const o = raw && typeof raw === "object" ? (raw as Record<string, any>) : {};
-  const lines = (v: unknown, max = 12, each = 300) => (Array.isArray(v) ? linesOf(v.filter((x) => typeof x === "string").join("\n"), max, each) : []);
+  const lines = (v: unknown, max: number = VILLAGE_WORDS.lines, each: number = VILLAGE_WORDS.lineEach) => (Array.isArray(v) ? linesOf(v.filter((x) => typeof x === "string").join("\n"), max, each) : []);
   const shares = Array.isArray(o.shares) ? payShapeOf(o.shares.filter((x: any) => x && typeof x.label === "string" && typeof x.pct === "number").map((x: any) => `${x.label} ${x.pct}`).join(", ")) : [];
   return {
     knowUs: lines(o.knowUs, KNOW_US_MAX, KNOW_US_TEXT_MAX),
     knowUsNote: words(o.knowUsNote),
     shares,
-    atRisk: words(o.atRisk, 600),
-    footer: words(o.footer, 300),
+    atRisk: words(o.atRisk),
+    footer: words(o.footer),
     firstCycle: words(o.firstCycle),
     firstConversations: lines(o.firstConversations),
-    updatedNote: words(o.updatedNote, 300),
+    updatedNote: words(o.updatedNote),
     knowUsLinks: knowUsLinksOf(o.knowUsLinks),
   };
 }

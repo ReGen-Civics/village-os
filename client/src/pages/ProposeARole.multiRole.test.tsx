@@ -96,8 +96,14 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     await fillToTerms("/propose-a-role?role=r-gate");
     const add = (await screen.findByLabelText("Add another role")) as HTMLSelectElement;
     // Any circle, never the role already chosen.
-    expect(Array.from(add.options).map((o) => o.value)).toEqual(["", "r-host", "r-well", "r-oven", "r-bees"]);
-    expect(Array.from(add.options).map((o) => o.textContent).slice(3)).toEqual(["Oven Keeper: More players welcome", "Bee Keeper (coming soon)"]);
+    // A coming-soon role is never added here (the lead, 19 Nov 2026): it is named under the picker, linked to its waitlist.
+    expect(Array.from(add.options).map((o) => o.value)).toEqual(["", "r-host", "r-well", "r-oven"]);
+    expect(Array.from(add.options).map((o) => o.textContent).slice(3)).toEqual(["Oven Keeper: More players welcome"]);
+    const notYet = document.querySelector("[data-roles-not-open]") as HTMLElement;
+    expect(notYet.textContent).toContain("Not open yet.");
+    const wait = notYet.querySelector('[data-waitlist-role="r-bees"]') as HTMLAnchorElement;
+    expect(wait.textContent).toBe("Join the waitlist for Bee Keeper");
+    expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-bees");
     fireEvent.change(add, { target: { value: "r-host" } });
     fireEvent.change(await screen.findByLabelText("Your commitment: Gate Keeper"), { target: { value: "50" } });
     const host = screen.getByLabelText("Your commitment: Welcome Host") as HTMLSelectElement;
@@ -129,6 +135,14 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(posted[0].card.commitmentPct).toBe(50);
   });
 
+  it("a link naming a coming-soon role after the first does not add it; the picker offers its waitlist (the lead, 19 Nov 2026)", async () => {
+    await fillToTerms("/propose-a-role?role=r-gate&role=r-bees");
+    await screen.findByLabelText("Add another role");
+    expect(screen.queryByLabelText("Your commitment: Bee Keeper")).toBeNull();
+    expect(document.querySelector('[data-more-role="1"]')).toBeNull();
+    expect(document.querySelector('[data-waitlist-role="r-bees"]')?.getAttribute("href")).toBe("/roles#waitlist-r-bees");
+  });
+
   it("a link naming two roles starts with both, and an added role with no commitment holds the send on The terms", async () => {
     await fillToTerms("/propose-a-role?role=r-gate&role=r-well");
     expect(await screen.findByLabelText("Your commitment: Well Keeper")).toBeTruthy();
@@ -145,7 +159,8 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
 
   it("ticked to remember, a reload comes back with the role added and its commitment (the lead, 18 Nov 2026)", async () => {
     await fillToTerms("/propose-a-role?role=r-gate");
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     fireEvent.change(await screen.findByLabelText("Add another role"), { target: { value: "r-host" } });
     fireEvent.change(await screen.findByLabelText("Your commitment: Welcome Host"), { target: { value: "40" } });
     await waitFor(() => expect(JSON.stringify(Object.values({ ...window.localStorage }))).toContain("r-host"));

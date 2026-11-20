@@ -25,6 +25,7 @@ import { useLingui } from "@lingui/react/macro";
 import MicButton from "@/components/MicButton";
 import { appendSpoken } from "@/components/journal/GrowingTextarea";
 import { useOptionalAuth } from "@/contexts/AuthContext";
+import { LimitSigns } from "@/components/form/LimitSigns";
 
 const TalkItOut = lazy(() => import("./TalkItOut"));
 
@@ -40,6 +41,7 @@ export default function VoiceArea({
   onValue,
   talk,
   disabled,
+  limit,
   children,
 }: {
   value: string;
@@ -47,6 +49,8 @@ export default function VoiceArea({
   /** Offer "Talk it out" for this box. Members only; visitors get the mic alone. */
   talk?: TalkTarget;
   disabled?: boolean;
+  /** A limit that never cuts: the count, the notices and the trim under the box (components/form/LimitSigns.tsx). */
+  limit?: number;
   children: ReactNode;
 }) {
   const { t } = useLingui();
@@ -54,9 +58,8 @@ export default function VoiceArea({
   const user = useOptionalAuth()?.user ?? null;
   const [open, setOpen] = useState(false);
   const only = Children.only(children);
-  // The box's own limit holds for what is spoken or drafted too; the browser only stops typing.
-  const max = isValidElement(only) ? Number((only.props as { maxLength?: number }).maxLength) || 0 : 0;
-  const set = (next: string) => onValue(max > 0 ? next.slice(0, max) : next);
+  // What is spoken or drafted goes in whole (the ops request of 19 Nov 2026: never cut silently); the box's own count shows a limit.
+  const set = (next: string) => onValue(next);
   // Room in the corner for the mic, so the last line of text never sits under it.
   const box = isValidElement(only)
     ? cloneElement(only as ReactElement<{ className?: string }>, {
@@ -74,6 +77,7 @@ export default function VoiceArea({
           onText={(chunk) => set(appendSpoken(value, chunk))}
         />
       </div>
+      {limit ? <LimitSigns value={value} max={limit} /> : null}
       {talk && user && !open && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <button

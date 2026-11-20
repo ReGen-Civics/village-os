@@ -700,8 +700,8 @@ The retention sweep never deletes an unstamped row, at any age.
   line. Nothing unconfirmed reaches a person: until its address answers,
   a proposal notifies nobody and no queue lists it.
   **Links and files** (Rye, 10 Nov 2026; `shared/proposalAttachments.ts`):
-  up to five labelled https links, never fetched, and up to three files
-  (PDF, DOCX, PNG, JPG; 10 MB each; typed by their own first bytes) in
+  up to fifteen labelled https links, never fetched, and up to six files
+  (PDF, DOCX, PNG, JPG; 30 MB each; typed by their own first bytes) in
   `DATA_DIR/private-proposal-files/<proposal id>/`, outside the uploads
   volume. Only the deciders read them (the live holders of `org.seat` and
   the circle's asked holders, never the applicant), through the proposal's
@@ -709,6 +709,16 @@ The retention sweep never deletes an unstamped row, at any age.
   the proposal: deleted with it at 48 hours, and removed with the name and
   address at 90 days; the tidy job also sweeps any folder whose row is
   gone or anonymised.
+  **Uploads stream to disk** (the lead, 19 Nov 2026; `server/lib/uploadDisk.ts`):
+  every part of an application post, and a take sent to be written down,
+  is written to `private-proposal-files/.incoming/` as it arrives, never
+  held in memory, and removed when the answer goes or the connection
+  closes. A post is admitted while the volume has room for it, everything
+  already arriving and a reserve. The host's edge closes a request body
+  still arriving after five minutes, so the form sends each file, take and
+  clip ahead (`POST /api/open-proposals/parts`, `server/lib/uploadParts.ts`)
+  and the application names them by id. Admins read the server's memory,
+  disk and upload caps at `GET /api/admin/server-capacity`.
 - **Export** (`GET /api/profile/export`): everything the village
   holds on the member — profile minus secrets, stage, claims, gratitude
   both directions, full signed ledger, balances, stage events, submissions,

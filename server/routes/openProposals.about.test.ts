@@ -157,8 +157,10 @@ describe.skipIf(!configured)("a proposal's About-you section at the intake, on a
     expect(half).toEqual({ status: 400, body: { error: ABOUT_WORDS.referenceNeedsAll, field: "references" } });
     const bad = await postJson(proposal({ references: [{ name: "Ines", how: "Fence", contact: "see me" }], checkConsent: consent() }));
     expect(bad).toEqual({ status: 400, body: { error: ABOUT_WORDS.referenceContact, field: "references" } });
-    const four = await postJson(proposal({ references: [...refs, { name: "A", how: "b", contact: "a@example.org" }, { name: "B", how: "c", contact: "b@example.org" }] }));
-    expect(four.status).toBe(400);
+    // Up to six (the lead, 19 Nov 2026): a seventh is refused.
+    const extra = (n: number) => Array.from({ length: n }, (_, i) => ({ name: `R${i}`, how: "b", contact: `r${i}@example.org` }));
+    const seven = await postJson(proposal({ references: [...refs, ...extra(5)] }));
+    expect(seven).toEqual({ status: 400, body: { error: ABOUT_WORDS.tooManyReferences, field: "references" } });
   });
 
   it("CONSENT: required when the references are all blank, refused with none", async () => {

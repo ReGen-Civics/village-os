@@ -37,10 +37,17 @@ describe("what a form may send", () => {
 
   it("takes the tick with a length for each recording, within the limits", () => {
     expect(parseSentVoice({ consent: true, seconds: [42.4, 61], transcript: " I keep gates. " }, 2)).toEqual({ ok: true, value: { consent: true, seconds: [42, 61], transcript: "I keep gates." } });
-    expect(parseSentVoice({ consent: true, seconds: [10, 10, 10, 10], transcript: "" }, 4)).toEqual({ ok: false, error: VOICE_WORDS.tooMany });
+    expect(parseSentVoice({ consent: true, seconds: [10, 10, 10, 10, 10, 10, 10], transcript: "" }, 7)).toEqual({ ok: false, error: VOICE_WORDS.tooMany });
     expect(parseSentVoice({ consent: true, seconds: [VOICE_NOTE_MAX_SECONDS + 60], transcript: "" }, 1)).toEqual({ ok: false, error: VOICE_WORDS.tooLong });
     expect(parseSentVoice({ consent: true, seconds: [10], transcript: "" }, 2)).toEqual({ ok: false, error: VOICE_WORDS.tooLong });
     expect(parseSentVoice({ consent: true, seconds: [], transcript: "x".repeat(VOICE_TRANSCRIPT_MAX + 1) }, 0)).toEqual({ ok: false, error: VOICE_WORDS.transcriptTooLong });
+  });
+
+  it("refuses a clip whose words run past their limit, and never keeps them cut (the ops request of 19 Nov 2026)", () => {
+    const clip = (words: string) => parseSentVoice({ consent: true, seconds: [], transcript: "", clips: [{ field: "why", seconds: 10, words }] }, 0, 1);
+    const whole = "w".repeat(VOICE_CLIP_WORDS_MAX);
+    expect(clip(whole)).toMatchObject({ ok: true, value: { clips: [{ words: whole }] } });
+    expect(clip(`${whole}w`)).toEqual({ ok: false, error: VOICE_WORDS.clipWordsTooLong });
   });
 
   it("a clip keeps as many words as the longest answer it can write into, and the heard words hold more (the lead, 19 Nov 2026)", () => {
@@ -76,13 +83,13 @@ describe("clips beside answers (Rye, 14 Nov 2026)", () => {
   });
 
   it("knows the answers a clip may belong to, names them for deciders, and holds the settings to the ceilings", () => {
-    for (const f of ["why", "aim", "story", "based", "languages", "suggestion", "value-1-title", "value-12-done", "term-clocks", "reference-3"]) expect(isClipField(f), f).toBe(true);
-    for (const f of ["selfKnowledge", "name", "email", "value-13-title", "reference-4", "term-", "WHY", ""]) expect(isClipField(f), f).toBe(false);
+    for (const f of ["why", "aim", "story", "based", "languages", "suggestion", "value-1-title", "value-12-done", "value-24-done", "term-clocks", "reference-3"]) expect(isClipField(f), f).toBe(true);
+    for (const f of ["selfKnowledge", "name", "email", "value-25-title", "reference-4", "term-", "WHY", ""]) expect(isClipField(f), f).toBe(false);
     expect(clipFieldLabel("value-2-done")).toBe("Value 2: how we will know it is done");
     expect(clipLimitsOf({ max: 12, seconds: 60 })).toEqual({ max: 12, seconds: 60 });
-    expect(clipLimitsOf({ max: 99, seconds: 999 })).toEqual({ max: 24, seconds: 180 });
+    expect(clipLimitsOf({ max: 99, seconds: 9999 })).toEqual({ max: 48, seconds: 420 });
     expect(clipLimitsOf({ max: 0, seconds: 1 })).toEqual({ max: 0, seconds: 10 });
-    expect(clipLimitsOf(undefined)).toEqual({ max: 12, seconds: 60 });
+    expect(clipLimitsOf(undefined)).toEqual({ max: 24, seconds: 180 });
   });
 
   it("reads stored clips back, dropping any that are not well formed", () => {

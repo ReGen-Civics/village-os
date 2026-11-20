@@ -101,6 +101,14 @@ export function isComingSoon(role: { comingSoon?: boolean | null } | null | unde
   return role?.comingSoon === true;
 }
 
+/**
+ * WHERE A COMING-SOON ROLE'S WAITLIST IS: its card on the roles page, which opens the waitlist form for this anchor
+ * (lane D). A coming-soon role takes no application (the lead, 19 Nov 2026): every door to one leads here.
+ */
+export function waitlistHref(roleId: string): string {
+  return `/roles#waitlist-${encodeURIComponent(roleId)}`;
+}
+
 export function isFutureVenture(role: { futureVenture?: boolean | null } | null | undefined): boolean {
   return role?.futureVenture === true;
 }

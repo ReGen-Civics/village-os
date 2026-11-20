@@ -20,6 +20,7 @@
  */
 import { createContext, lazy, Suspense, useContext, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { Circle, Square, Trash2 } from "lucide-react";
+import { useLingui } from "@lingui/react/macro";
 import { HINT } from "@/components/journey/look";
 import { DEFAULT_CLIP_LIMITS, isClipField, voiceLength, type VoiceClipLimits } from "@shared/voiceNotes";
 import { clipsFullWords, voiceWord } from "@/components/fireflyPath/applyWordsT";
@@ -53,9 +54,10 @@ export function ClipBar({ field, onWords, fieldName = "", answer }: {
   /** The answer's own label, so each control is named for it (components/form/fieldName.ts). */
   fieldName?: string;
   /** The answer itself, so the clip's written-down words can replace what the live engine caught there. */
-  answer?: { value: string; set: (next: string) => void; maxLength?: number };
+  answer?: { value: string; set: (next: string) => void; limit?: number };
 }) {
   const ctx = useContext(Clips);
+  const { t } = useLingui();
   const [support] = useState(voiceSupport);
   const recorder = useVoiceRecorder((take) => {
     if (!ctx) return;
@@ -109,6 +111,12 @@ export function ClipBar({ field, onWords, fieldName = "", answer }: {
           </>
         )}
       </div>
+      {recorder.recording && (
+        <p className="text-sm tabular-nums text-foreground" data-voice-clip-left={recorder.left}>
+          {t({ message: `${voiceLength(recorder.left)} left`, context: "voice note timer" })}
+          {recorder.warned && <span className="ml-2 font-semibold" role="status">{voiceWord("nearEnd")}</span>}
+        </p>
+      )}
       {recorder.recording && recorder.live && <p className="border-l-2 border-notice pl-3 text-sm italic text-muted-foreground">{recorder.live}</p>}
       {recorder.noWords && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{recorder.engine ? voiceWord("noTranscribe") : voiceWord("noEngine")}</p>}
       {problem && <p className="border-l-4 border-notice pl-3 text-sm text-foreground" role="status">{problem}</p>}

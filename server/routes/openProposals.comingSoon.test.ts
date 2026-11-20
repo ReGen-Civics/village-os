@@ -16,6 +16,7 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { checkConsentVersion } from "../../shared/proposalAbout";
+import { OPEN_WORDS } from "../../shared/openProposals";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -36,6 +37,7 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
   let server: http.Server;
   let base = "";
   let gate = "";
+  let well = "";
   let dir = "";
   const state = { sent: [] as OutgoingEmail[], answer: { status: "sent", messageId: "m-1" } as PostResult };
   const q = (sql: string, args: unknown[] = []) => pool.query<any[]>(sql, args).then(([rows]) => rows); // module-review-ok: fixture SQL on the scratch schema this suite provisioned
@@ -46,6 +48,7 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
     dir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "proposal-soon-"));
     await q("INSERT INTO circles (id, name, aliases, is_example) VALUES ('c-land', 'Land Circle', '[]', 0)");
     gate = await createOrgRole(pool, { id: "ops-role-soon", name: "Gate Keeper", seats: 2, circleId: "c-land", aim: "Open the gate at dawn." });
+    well = await createOrgRole(pool, { id: "ops-role-well", name: "Well Keeper", seats: 1, circleId: "c-land", aim: "Keep the well." });
     const app = express();
     app.use(express.json());
     register(app, {
@@ -116,7 +119,7 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
   const consent = () => ({ given: true, version: checkConsentVersion() });
   const form = async () => (await fetch(`${base}/api/open-proposals/form`)).json() as Promise<any>; // module-review-ok: a test calling its own local server
 
-  it("offers an unlisted coming-soon role on the form, flagged, and takes the application; unmarked, it is offered nowhere", async () => {
+  it("offers an unlisted coming-soon role on the form, flagged so the form sends its waitlist, and refuses an application for it; unmarked, it is offered nowhere", async () => {
     await q("UPDATE org_roles SET listed = 0 WHERE id = ?", [gate]);
     // CONTROL: unlisted and unmarked, the role is not offered and a proposal naming it is not taken.
     expect((await form()).roles.map((r: any) => r.id)).not.toContain(gate);
@@ -127,9 +130,10 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
       const offered = (await form()).roles.find((r: any) => r.id === gate);
       expect(offered).toMatchObject({ id: gate, comingSoon: true });
       state.sent.length = 0;
-      const taken = await postJson(proposal({ checkConsent: consent() }));
-      expect(taken.status, JSON.stringify(taken.body)).toBe(200);
-      expect(state.sent).toHaveLength(1);
+      // A coming-soon role takes no application, even as the only role (the lead, 19 Nov 2026): its waitlist instead.
+      const refused = await postJson(proposal({ checkConsent: consent() }));
+      expect(refused).toEqual({ status: 400, body: { error: OPEN_WORDS.roleNotOpen, field: "roles" } });
+      expect(state.sent).toHaveLength(0);
     } finally {
       await q("UPDATE org_roles SET coming_soon = 0, listed = NULL WHERE id = ?", [gate]);
     }
@@ -154,5 +158,19 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
     }
     // CONTROL: a plain listed role carries no flag.
     expect("comingSoon" in (await form()).roles.find((r: any) => r.id === gate)).toBe(false);
+  });
+
+  it("a coming-soon role is never ADDED after the first; its waitlist is on the roles page (the lead, 19 Nov 2026)", async () => {
+    await q("UPDATE org_roles SET coming_soon = 1 WHERE id = ?", [well]);
+    try {
+      const added = await postJson(proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] }));
+      expect(added.status).toBe(400);
+      expect(added.body).toMatchObject({ error: OPEN_WORDS.addedRoleNotOpen, field: "roles.1" });
+    } finally {
+      await q("UPDATE org_roles SET coming_soon = 0 WHERE id = ?", [well]);
+    }
+    // CONTROL: the same two roles, the second open, are taken.
+    const open = await postJson(proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] }));
+    expect(open.status, JSON.stringify(open.body)).toBe(200);
   });
 });

@@ -44,6 +44,7 @@
  */
 import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
+import { summaryWithin } from "../../shared/applyLimits";
 import { roleTermsOf, termsPerRole, type RoleTerms } from "../../shared/openProposals";
 import type { PayAsk } from "../../shared/commitmentRange";
 import { currentRoleValue, rolePriceCountered } from "../../shared/roleCounterOffer";
@@ -305,7 +306,7 @@ function deliverablesOf(whole: store.StoredOpenProposal["body"], seats: Array<{ 
       }
     : body.card;
   const text = [aim, cardSummary(card, name, goal)].filter(Boolean).join("\n\n");
-  return text.length > 2000 ? `${text.slice(0, 1997)}...` : text;
+  return summaryWithin(text);
 }
 
 type Agreed = ReturnType<typeof agreedTerms>;

@@ -171,7 +171,7 @@ export default function TermsEight({
                   placeholder={t`A note, if you like`}
                   minRows={2}
                   clip={`term-${k}`}
-                  maxLength={TERM_NOTE_MAX}
+                  limit={TERM_NOTE_MAX}
                   value={answer.note}
                   onChange={(note) => setAnswer(k, { choice: "talk", note })}
                   className={FIELD}

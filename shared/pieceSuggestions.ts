@@ -13,6 +13,7 @@
  *
  * Pure: no React, no pool.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
 export const PIECE_KEYS = ["purpose", "domain", "accountabilities", "authorities", "responsibilities", "who", "rewards", "chosen", "holding"] as const;
 export type PieceKey = (typeof PIECE_KEYS)[number];
@@ -29,9 +30,9 @@ export interface PieceSuggestion {
 
 export const SUGGESTION_LIMITS = {
   /** Characters in one suggestion. */
-  text: 600,
+  text: APPLY_TEXT.suggestion,
   /** Suggestions in one application, across its roles. */
-  total: 30,
+  total: APPLY_COUNTS.suggestions,
 } as const;
 
 /** Each piece by its short name, as the card's rail says it (FoundingRoleCard.tsx). */

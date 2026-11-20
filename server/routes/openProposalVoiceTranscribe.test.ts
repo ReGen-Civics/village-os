@@ -10,11 +10,15 @@
  *     cannot be read refuses; a take over five minutes or not audio is refused
  *     before any of that.
  */
+import fs from "node:fs";
 import http from "node:http";
+import os from "node:os";
+import path from "node:path";
 import express from "express";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS } from "../../shared/voiceNotes";
-import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
+import { VOICE_NOTE_MAX_BYTES, VOICE_NOTE_MAX_SECONDS, VOICE_WORDS } from "../../shared/voiceNotes";
+import { PROVIDER_UPLOAD_MAX_BYTES, RECORDING_BYTES_PER_SECOND } from "../../shared/applyLimits";
+import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_MAX_SECONDS, VOICE_TRANSCRIBE_CLIPS_PER_DAY, VOICE_TRANSCRIBE_CLIPS_PER_HOUR, VOICE_TRANSCRIBE_PATH, VOICE_TRANSCRIBE_PER_DAY, VOICE_TRANSCRIBE_PER_HOUR } from "../../shared/voiceTranscribe";
 import { HTTP_PROVIDERS, languageHint, transcribeTake, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 import { registerVoiceTranscribe } from "./openProposalVoiceTranscribe";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
@@ -30,7 +34,8 @@ describe("the door, over real HTTP", () => {
     open: true,
     limiter: "counting" as "counting" | "unavailable",
     hits: new Map<string, number>(),
-    calls: [] as TranscribeInput[],
+    /** Each call as the provider saw it: the take's bytes read from where the upload streamed them, and that path. */
+    calls: [] as Array<TranscribeInput & { bytes: Buffer; onDisk: string | null }>,
     answer: { ok: true, text: "I keep the gate at dawn.", by: "groq" } as TranscribeResult,
     /** Hold the provider call until the asker goes away, and note whether it was told to stop. */
     hold: false,
@@ -38,9 +43,20 @@ describe("the door, over real HTTP", () => {
     ip: "203.0.113.9",
   };
 
+  let incoming = "";
+  /** The take files the upload streamed, wherever they are now: none should outlive its request. */
+  const leftOver = () => {
+    try {
+      return fs.readdirSync(path.join(incoming, "takes"));
+    } catch {
+      return [];
+    }
+  };
   beforeAll(async () => {
+    incoming = fs.mkdtempSync(path.join(os.tmpdir(), "transcribe-incoming-"));
     const app = express();
     registerVoiceTranscribe(app, {
+      incoming,
       door: async () => ({ open: state.open }),
       limitState: async (key, max) => {
         if (state.limiter === "unavailable") return "unavailable";
@@ -52,7 +68,8 @@ describe("the door, over real HTTP", () => {
       ipBucket: (ip) => ip,
       enabled: () => state.on,
       transcribe: async (input) => {
-        state.calls.push(input);
+        // Streamed to disk, never held: the route hands over a path, and the bytes are read from it here.
+        state.calls.push({ ...input, bytes: input.path ? fs.readFileSync(input.path) : (input.bytes as Buffer), onDisk: input.path ?? null } as TranscribeInput & { bytes: Buffer; onDisk: string | null });
         if (state.hold) {
           await new Promise<void>((resolve) => input.signal?.addEventListener("abort", () => resolve()));
           state.stopped.push(!!input.signal?.aborted);
@@ -69,6 +86,7 @@ describe("the door, over real HTTP", () => {
   });
   afterAll(async () => {
     await new Promise<void>((resolve) => server?.close(() => resolve()));
+    fs.rmSync(incoming, { recursive: true, force: true });
   });
   beforeEach(() => {
     state.on = true;
@@ -99,9 +117,32 @@ describe("the door, over real HTTP", () => {
     expect(state.calls[0].kind).toBe("webm");
     expect(state.calls[0].lang).toBe("es-CR");
     expect(state.calls[0].bytes.equals(TINY_WEBM_OPUS)).toBe(true);
+    // The take was a file on disk (19 Nov 2026), and it is gone once the words came back.
+    expect(state.calls[0].onDisk).toMatch(/in-[0-9a-f]{32}\.part$/);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(fs.existsSync(state.calls[0].onDisk!)).toBe(false);
+    expect(leftOver()).toEqual([]);
     // Safari's MP4 goes as MP4.
     expect((await send(MP4, { seconds: "61" }, "audio/mp4")).status).toBe(200);
     expect(state.calls[1].kind).toBe("m4a");
+  });
+
+  it("a full take at the largest size and length one take may be (the ops request of 19 Nov 2026) goes whole to the provider and its words come back", async () => {
+    // 7 minutes at the largest phone rate, as shared/applyLimits.ts sizes it, under the providers' 25 MB.
+    expect(VOICE_NOTE_MAX_SECONDS).toBe(7 * 60);
+    expect(VOICE_NOTE_MAX_BYTES).toBeGreaterThanOrEqual(VOICE_NOTE_MAX_SECONDS * RECORDING_BYTES_PER_SECOND);
+    expect(VOICE_NOTE_MAX_BYTES).toBeLessThan(PROVIDER_UPLOAD_MAX_BYTES);
+    const full = Buffer.alloc(VOICE_NOTE_MAX_BYTES, 7);
+    TINY_WEBM_OPUS.copy(full, 0, 0, Math.min(TINY_WEBM_OPUS.length, 64));
+    const words = "word ".repeat(3000).trim();
+    state.answer = { ok: true, text: words, by: "groq" };
+    const r = await send(full, { seconds: String(VOICE_NOTE_MAX_SECONDS), lang: "en" });
+    expect(r).toEqual({ status: 200, body: { text: words } });
+    expect(state.calls).toHaveLength(1);
+    expect(state.calls[0].bytes.length).toBe(VOICE_NOTE_MAX_BYTES);
+    // One byte more is refused, before the provider is asked.
+    expect((await send(Buffer.concat([full, Buffer.alloc(1)]), { seconds: String(VOICE_NOTE_MAX_SECONDS) })).status).toBe(413);
+    expect(state.calls).toHaveLength(1);
   });
 
   it("off with no key: the GET says so, the POST refuses, and nothing is sent", async () => {
@@ -161,8 +202,8 @@ describe("the door, over real HTTP", () => {
     expect(state.calls).toEqual([]);
   });
 
-  it("refuses a take over five minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
-    expect(await send(TINY_WEBM_OPUS, { seconds: "306" })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
+  it("refuses a take over seven minutes, bytes that are not audio, one too big, and a closed door, before any cap or call", async () => {
+    expect(await send(TINY_WEBM_OPUS, { seconds: String(VOICE_TRANSCRIBE_MAX_SECONDS + 1) })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(TINY_WEBM_OPUS, { seconds: "nope" })).toEqual({ status: 400, body: { error: TRANSCRIBE_WORDS.tooLong } });
     expect(await send(HTML)).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType } });
     const big = Buffer.concat([TINY_WEBM_OPUS, Buffer.alloc(VOICE_NOTE_MAX_BYTES, 1)]);
@@ -189,6 +230,25 @@ describe("the door, over real HTTP", () => {
     await going;
     for (let i = 0; i < 100 && state.stopped.length === 0; i += 1) await new Promise((r) => setTimeout(r, 10));
     expect(state.stopped).toEqual([true]);
+    // The take's file goes with the asker.
+    for (let i = 0; i < 100 && leftOver().length; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(leftOver()).toEqual([]);
+  });
+
+  it("an asker who walks away halfway through sending a take leaves no file behind (19 Nov 2026)", async () => {
+    const url = new URL(`${base}${VOICE_TRANSCRIBE_PATH}`);
+    const head = `--xx\r\nContent-Disposition: form-data; name="seconds"\r\n\r\n300\r\n--xx\r\nContent-Disposition: form-data; name="voice"; filename="take.webm"\r\nContent-Type: audio/webm\r\n\r\n`;
+    const req = http.request({ host: url.hostname, port: url.port, path: url.pathname, method: "POST", headers: { "content-type": "multipart/form-data; boundary=xx", "content-length": String(head.length + 5_000_000) } });
+    req.on("error", () => undefined);
+    req.write(head);
+    req.write(Buffer.concat([TINY_WEBM_OPUS, Buffer.alloc(1_000_000, 1)]));
+    // Half a take is on disk while it arrives.
+    for (let i = 0; i < 200 && leftOver().length === 0; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(leftOver()).toHaveLength(1);
+    req.destroy();
+    for (let i = 0; i < 200 && leftOver().length; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(leftOver()).toEqual([]);
+    expect(state.calls).toHaveLength(0);
   });
 
   it("a provider that fails says the recording is kept, and an empty answer says nothing was heard", async () => {

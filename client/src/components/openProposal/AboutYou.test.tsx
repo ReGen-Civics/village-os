@@ -17,6 +17,7 @@ import { walkFor } from "@/components/governance/wizardWalk";
 afterEach(cleanup);
 
 const REF = { name: "Ines Vargas", how: "We built a fence", contact: "ines@example.org" };
+const REF2 = { name: "Tomas Rey", how: "My neighbour", contact: "tomas@example.org" };
 
 describe("the deciders' view", () => {
   it("shows the facts, the references, the check line and the consent day", () => {
@@ -48,11 +49,13 @@ describe("the step's verdict and what it sends", () => {
   it("needs the tick with no references, or with an always-checked role", () => {
     expect(aboutYouProblem({ references: [] }, false)).toBe(ABOUT_WORDS.needConsent);
     expect(aboutYouProblem({ references: [], consent: true }, false)).toBeNull();
-    expect(aboutYouProblem({ references: [REF] }, false)).toBeNull();
-    expect(aboutYouProblem({ references: [REF] }, true)).toBe(ABOUT_WORDS.needConsent);
-    expect(aboutYouProblem({ references: [REF], consent: true }, true)).toBeNull();
+    expect(aboutYouProblem({ references: [REF, REF2] }, false)).toBeNull();
+    expect(aboutYouProblem({ references: [REF, REF2] }, true)).toBe(ABOUT_WORDS.needConsent);
+    expect(aboutYouProblem({ references: [REF, REF2], consent: true }, true)).toBeNull();
+    // One reference alone is not enough (the lead, 19 Nov 2026: at least two, three preferred).
+    expect(aboutYouProblem({ references: [REF], consent: true }, false)).toBe(ABOUT_WORDS.tooFewReferences);
     expect(aboutYouProblem({ references: [{ name: "Ines", how: "", contact: "" }] }, false)).toBe(ABOUT_WORDS.referenceNeedsAll);
-    expect(consentRequired(aboutYouOf({ references: [REF] }), true)).toBe(true);
+    expect(consentRequired(aboutYouOf({ references: [REF, REF2] }), true)).toBe(true);
   });
   it("sends the references, the facts and the tick with the wording version shown", () => {
     const body = aboutYouBody(aboutYouOf({ based: " Uvita ", references: [REF, { name: "", how: "", contact: "" }], consent: true }));

@@ -13,6 +13,8 @@
  * (SafetyNet.tsx, applyBackup.ts) loads when it is needed.
  */
 
+import { JSON_SEND_TIMEOUT_MS, uploadWindowMs } from "@shared/applyLimits";
+
 export type SendFailure =
   | { kind: "network" }
   | { kind: "timeout" }
@@ -29,7 +31,12 @@ export function needsSafetyNet(f: SendFailure): boolean {
   return UPLOAD_FIELDS.includes(f.field);
 }
 
-/** How long a send may take before the page gives up: a post with files on a slow line takes minutes. */
-export function sendTimeoutMs(multipart: boolean): number {
-  return multipart ? 6 * 60_000 : 90_000;
+/**
+ * How long a send may take before the page gives up (the ops request of 19 Nov 2026). A post with files or
+ * recordings gets the server's own window for its size on a slow line (shared/applyLimits.ts `uploadWindowMs`,
+ * the window server/lib/uploadWindow.ts gives it), and a minute more for the answer to come back; a plain send gets
+ * three times the old 90 seconds.
+ */
+export function sendTimeoutMs(multipart: boolean, bytes = 0): number {
+  return multipart ? uploadWindowMs(bytes) + 60_000 : JSON_SEND_TIMEOUT_MS;
 }

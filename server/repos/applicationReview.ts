@@ -307,7 +307,14 @@ export async function forgetMemberReview(db: Db, userId: string, at: Date): Prom
     "SELECT application_ref FROM application_steps WHERE kind = 'confirmed' AND JSON_UNQUOTE(JSON_EXTRACT(detail_json, '$.applicantUserId')) = ?",
     [userId],
   );
-  return clearReviewOf(db, rows.map((r: any) => String(r.application_ref)), at);
+  // A member's own application (`sa-` refs) has no confirmed step: its references, asked for a first long-term role
+  // (shared/applicantOnboarding.ts `asksReferences`), are found through the application's candidate and go too.
+  const [own] = await db.query<RowDataPacket[]>(
+    "SELECT DISTINCT r.application_ref FROM application_references r JOIN seat_applications a ON a.id = r.application_ref WHERE a.candidate_user_id = ?",
+    [userId],
+  );
+  const refs = new Set([...rows, ...own].map((r: any) => String(r.application_ref)));
+  return clearReviewOf(db, Array.from(refs), at);
 }
 
 // ── Holders of a role, live ─────────────────────────────────────────────────

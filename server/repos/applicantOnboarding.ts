@@ -119,6 +119,20 @@ export async function ownedByMember(db: Db, userId: string): Promise<Array<{ ref
 // ── Retention and erasure ───────────────────────────────────────────────────
 
 /** Delete every reference of these applications: the contact details, the notes, all of it. How many rows went. */
+/**
+ * A MEMBER'S OWN APPLICATION (`sa-` ref) whose references are due to go: decided (adopted, not adopted or withdrawn)
+ * before `before`, the 90 days after the decision the open proposals keep (the lead, 19 Nov 2026), so the form's
+ * "deleted with your application" holds. Erasing the member deletes them at once (`forgetMemberReview`).
+ */
+export async function memberReferencesDecidedBefore(db: Db, before: Date): Promise<string[]> {
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT DISTINCT r.application_ref FROM application_references r JOIN seat_applications a ON a.id = r.application_ref " +
+      "WHERE a.status IN ('adopted','not-adopted','withdrawn') AND a.decided_at IS NOT NULL AND a.decided_at < ? LIMIT 500",
+    [before],
+  );
+  return rows.map((r: any) => String(r.application_ref));
+}
+
 export async function deleteReferencesOf(db: Db, refs: readonly string[]): Promise<number> {
   if (!refs.length) return 0;
   const [r] = await db.query<ResultSetHeader>("DELETE FROM application_references WHERE application_ref IN (?)", [[...refs]]);

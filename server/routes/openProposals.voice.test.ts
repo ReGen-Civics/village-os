@@ -21,7 +21,7 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { spawnSync } from "node:child_process";
-import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
+import { VOICE_NOTE_MAX_BYTES, VOICE_NOTE_MAX_SECONDS, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
 import { TINY_WEBM_OPUS } from "../lib/voiceRecordingFixtures";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
@@ -61,7 +61,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   const stored = {
     on: true,
     calls: [] as TranscribeInput[],
-    answer: (input: TranscribeInput): TranscribeResult => ({ ok: true, text: `Words of a ${input.kind} recording, ${input.bytes.length} bytes.`, by: "groq" }),
+    answer: (input: TranscribeInput): TranscribeResult => ({ ok: true, text: `Words of a ${input.kind} recording, ${input.bytes?.length ?? 0} bytes.`, by: "groq" }),
     hold: null as Promise<void> | null,
     limiter: "counting" as "counting" | "unavailable",
     hits: new Map<string, number>(),
@@ -185,7 +185,8 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
   };
 
   const lastId = () => state.sent[state.sent.length - 1].idempotencyKey.split(":")[1];
-  const folders = async () => (await fs.promises.readdir(dir)).sort();
+  // The proposals' folders: the folder uploads stream through (.incoming, server/lib/uploadDisk.ts) is not one.
+  const folders = async () => (await fs.promises.readdir(dir)).filter((n) => !n.startsWith(".")).sort();
 
   const ticked = (seconds: number[], transcript = "I keep gates.") => ({ voice: { consent: true, seconds, transcript } });
 
@@ -225,9 +226,11 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
     expect(wordsOnly).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
     const html = await postVoice(proposal(ticked([10])), [{ name: "voice-1.webm", bytes: HTML, type: "audio/webm" }]);
     expect(html).toEqual({ status: 400, body: { error: VOICE_WORDS.wrongType, field: "voice" } });
-    const tooLong = await postVoice(proposal(ticked([900])), [{ name: "voice-1.webm", bytes: WEBM }]);
+    const tooLong = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS + 6])), [{ name: "voice-1.webm", bytes: WEBM }]);
     expect(tooLong).toEqual({ status: 400, body: { error: VOICE_WORDS.tooLong, field: "voice" } });
-    const four = await postVoice(proposal(ticked([1, 2, 3, 4])), [1, 2, 3, 4].map((i) => ({ name: `voice-${i}.webm`, bytes: WEBM })));
+    // One past the six takes one application carries (doubled by the lead, 19 Nov 2026).
+    const seven = [1, 2, 3, 4, 5, 6, 7];
+    const four = await postVoice(proposal(ticked(seven)), seven.map((i) => ({ name: `voice-${i}.webm`, bytes: WEBM })));
     expect(four).toEqual({ status: 400, body: { error: VOICE_WORDS.tooMany, field: "voice" } });
     expect(state.sent.length).toBe(sent);
     expect(await folders()).toEqual(before);
@@ -279,7 +282,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       { name: "voice-2.m4a", type: "audio/mp4", bytes: fiveMinutes(MP4, 7.5), kind: "m4a" },
       { name: "voice-3.ogg", type: "audio/ogg;codecs=opus", bytes: fiveMinutes(ogg, 4.9), kind: "ogg" },
     ];
-    // All three at once: the post stays inside the upload's total, so a person who talks for the full fifteen minutes is kept.
+    // All three at once: the post stays inside the upload's total, so a person who talks for three full takes is kept.
     const total = cases.reduce((s, c) => s + c.bytes.length, 0);
     expect(total).toBeLessThan(OPEN_UPLOAD_MAX_BYTES);
     const r = await postVoice(proposal(ticked([300, 300, 300], "Five minutes about the land.")), cases);
@@ -298,6 +301,15 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       expect(play.headers.get("content-type")).toBe({ webm: "audio/webm", m4a: "audio/mp4", ogg: "audio/ogg" }[c.kind]);
       expect(Buffer.from(await play.arrayBuffer()).equals(c.bytes), c.name).toBe(true);
     }
+  });
+
+  it("keeps a full take, seven minutes at the largest size one take may be, byte for byte (the ops request of 19 Nov 2026)", async () => {
+    const full = crypto.randomBytes(VOICE_NOTE_MAX_BYTES);
+    WEBM.copy(full, 0, 0, WEBM.length);
+    const r = await postVoice(proposal(ticked([VOICE_NOTE_MAX_SECONDS], "Seven minutes about the land.")), [{ name: "voice-1.webm", bytes: full, type: "audio/webm" }]);
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    const voice = (await readOpenProposal(pool, lastId()))?.body.voice;
+    expect(voice?.notes.map((n) => [n.seconds, n.size])).toEqual([[VOICE_NOTE_MAX_SECONDS, VOICE_NOTE_MAX_BYTES]]);
   });
 
   it("refuses a recording over the note's own size with the voice named, keeping nothing", async () => {
@@ -441,7 +453,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
 
     it("tells the form the village's limits, and keeps each clip with its answer and words, beside the main note", async () => {
       const form = await fetch(`${base}/api/open-proposals/form`).then((r) => r.json() as Promise<any>); // module-review-ok: a test calling its own local server
-      expect(form.voice).toEqual({ max: 12, seconds: 60 });
+      expect(form.voice).toEqual({ max: 24, seconds: 60 });
       const r = await postClips(
         proposal(withClips([{ field: "why", seconds: 24, words: "I keep the gate." }, { field: "value-1-title", seconds: 9, words: "A seed swap." }])),
         [{ name: "voice-1.webm", bytes: WEBM }],
@@ -505,9 +517,10 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       const before = await folders();
       const unticked = await postClips(proposal(), [], [{ name: "why.webm", bytes: WEBM }]);
       expect(unticked).toEqual({ status: 400, body: { error: VOICE_WORDS.needConsent, field: "voice" } });
-      const thirteen = Array.from({ length: 13 }, (_, i) => ({ field: i < 12 ? `value-${i + 1}-title` : "why", seconds: 5, words: "" }));
-      const many = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: thirteen } }), [], thirteen.map((c) => ({ name: `${c.field}.webm`, bytes: WEBM })));
-      expect(many).toEqual({ status: 400, body: { error: VOICE_WORDS.tooManyClips(12), field: "voice" } });
+      // One past the village's default of 24 (doubled by the lead, 19 Nov 2026).
+      const oneTooMany = Array.from({ length: 25 }, (_, i) => ({ field: i < 24 ? `value-${i + 1}-title` : "why", seconds: 5, words: "" }));
+      const many = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: oneTooMany } }), [], oneTooMany.map((c) => ({ name: `${c.field}.webm`, bytes: WEBM })));
+      expect(many).toEqual({ status: 400, body: { error: VOICE_WORDS.tooManyClips(24), field: "voice" } });
       const odd = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "email", seconds: 5, words: "" }] } }), [], [{ name: "email.webm", bytes: WEBM }]);
       expect(odd.status).toBe(400);
       const html = await postClips(proposal({ voice: { consent: true, seconds: [], transcript: "", clips: [{ field: "aim", seconds: 5, words: "" }] } }), [], [{ name: "aim.webm", bytes: HTML }]);
@@ -594,7 +607,7 @@ describe.skipIf(!configured)("a voice note at the intake, on a real schema", () 
       const after = (await desk()).proposals.find((p: any) => p.id === id);
       expect(after.voice.written[note.id].text).toBe(one.body.written.text);
       // The recording sent was the kept file, checked by its fingerprint.
-      expect(stored.calls.map((c) => c.bytes.equals(WEBM))).toEqual([true, true]);
+      expect(stored.calls.map((c) => c.bytes!.equals(WEBM))).toEqual([true, true]);
       // One line a run: ids, the service and the outcome; never the words, never the name.
       expect(stored.logs).toHaveLength(2);
       expect(stored.logs[0]).toContain(`proposal=${id} recording=${note.id}`);

@@ -17,11 +17,13 @@
  */
 import type { Pool, PoolConnection } from "mysql2/promise";
 import {
+  asksReferences,
   FINAL_CALL_ROLE_VARIABLE,
   FOLLOWUP_NOTE_MAX,
   FOLLOWUP_ROLE_VARIABLE,
   mayAssignOwners,
   mayReadReference,
+  memberTrackOf,
   ONBOARDING_NOTICES,
   ONBOARDING_WORDS,
   parseReferenceList,
@@ -38,6 +40,8 @@ import * as repo from "../repos/applicantOnboarding";
 import * as proposals from "../repos/openProposals";
 import { asksFor } from "../repos/roleProposals";
 import { inTransaction } from "../repos/liveSessions";
+import { readApplication as readSeatApplication } from "../repos/seatApplications";
+import { applicationHref } from "../../shared/seatApplications";
 import { finalCallHolders, isApplicant, scorecardHref, scorecardsFor, tellInterviewers, type ReviewDeps, type ScorecardView } from "./applicationReview";
 import { stringVar } from "./variables";
 
@@ -76,8 +80,41 @@ export async function standingOf(deps: ReviewDeps, ref: string, viewerId: string
 
 const ownsReference = (s: Standing, r: repo.StoredReference, viewerId: string): boolean => (r.ownerUserId ? r.ownerUserId === viewerId : !!r.ownerRoleId && s.roles.has(r.ownerRoleId));
 
+// ── A member's own application ──────────────────────────────────────────────
+
+/** A member application as this stage reads it: who applied, whether it is still open, whether it is their first long-term role. */
+export interface MemberApplicationFacts {
+  candidateUserId: string;
+  open: boolean;
+  decided: "adopted" | "declined" | "withdrawn" | null;
+  /** The candidate holds no live role seat now (shared/applicantOnboarding.ts `asksReferences`). */
+  firstRole: boolean;
+  roleIds: string[];
+}
+
+/** The facts of a member application (`sa-` ref), or null for an open proposal or an application that is not there. */
+export async function memberApplicationFacts(db: Db, ref: string): Promise<MemberApplicationFacts | null> {
+  if (kindOfRef(ref) !== "member") return null;
+  const a = await readSeatApplication(db, ref);
+  if (!a) return null;
+  const open = a.status === "awaiting-holder" || a.status === "voting";
+  const decided = open ? null : a.status === "adopted" ? "adopted" : a.status === "withdrawn" ? "withdrawn" : "declined";
+  return { candidateUserId: a.candidateUserId, open, decided, firstRole: asksReferences("member", (await review.rolesHeldBy(db, a.candidateUserId)).length), roleIds: a.seatIds };
+}
+
+/** A member application outside the review: it has references here and nothing else (no shortlist, no final conversation). */
+async function referencesOnly(db: Db, ref: string): Promise<boolean> {
+  return kindOfRef(ref) === "member" && !(await review.stepsOf(db, ref)).some((s) => s.kind === "confirmed");
+}
+
 async function openAndConfirmed(db: Db, ref: string): Promise<Refusal | null> {
   const steps = await review.stepsOf(db, ref);
+  if (kindOfRef(ref) === "member" && !steps.some((s) => s.kind === "confirmed")) {
+    // A member application never enters the review: the application itself says whether it is there and still open.
+    const m = await memberApplicationFacts(db, ref);
+    if (!m) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
+    return m.open ? null : refuse(409, "decided", ONBOARDING_WORDS.decided);
+  }
   if (!steps.some((s) => s.kind === "confirmed")) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   if (steps.some((s) => s.kind === "decided")) return refuse(409, "decided", ONBOARDING_WORDS.decided);
   return null;
@@ -85,7 +122,7 @@ async function openAndConfirmed(db: Db, ref: string): Promise<Refusal | null> {
 
 async function roleNamesOfApplication(db: Db, ref: string): Promise<string[]> {
   const confirmed = (await review.stepsOf(db, ref)).find((s) => s.kind === "confirmed");
-  const ids: string[] = Array.isArray(confirmed?.detail?.roleIds) ? confirmed!.detail.roleIds.map(String) : [];
+  const ids: string[] = Array.isArray(confirmed?.detail?.roleIds) ? confirmed!.detail.roleIds.map(String) : ((await memberApplicationFacts(db, ref))?.roleIds ?? []);
   const names = await review.roleNamesById(db, ids);
   return ids.map((id) => names.get(id) ?? id);
 }
@@ -102,6 +139,7 @@ export async function answerShortlist(deps: ReviewDeps, ref: string, viewerId: s
   const pool = deps.getPool();
   const answer = parseShortlistAnswer(raw);
   if (!answer) return refuse(400, "answer", "Say yes or no.");
+  if (await referencesOnly(pool, ref)) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
@@ -123,14 +161,21 @@ export async function answerShortlist(deps: ReviewDeps, ref: string, viewerId: s
  */
 export async function askForReferences(deps: ReviewDeps, ref: string, viewerId: string): Promise<{ ok: true } | Refusal> {
   const pool = deps.getPool();
-  if (kindOfRef(ref) !== "open") return refuse(409, "open_only", "References are asked from the applicant's status page, which an open proposal has.");
+  // A member's own application asks only for a first long-term role (the lead, 19 Nov 2026), with no shortlist before.
+  const member = kindOfRef(ref) === "member" ? await memberApplicationFacts(pool, ref) : null;
+  if (kindOfRef(ref) === "member" && !member) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
   if (s.isApplicant || s.recused || !s.holdsPower) return refuse(403, "not_allowed", ONBOARDING_WORDS.notAllowed);
-  if (shortlistOf(await review.stepsOf(pool, ref)) !== "yes") return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
+  if (member && !member.firstRole) return refuse(409, "first_role_only", ONBOARDING_WORDS.referencesFirstRoleOnly);
+  if (!member && shortlistOf(await review.stepsOf(pool, ref)) !== "yes") return refuse(409, "shortlist_first", ONBOARDING_WORDS.referencesNeedShortlist);
   if (!(await review.stampStep(pool, { ref, kind: "refs_asked", at: deps.now(), actorUserId: viewerId }))) return refuse(409, "done", ONBOARDING_WORDS.referencesAskedAlready);
-  await deps.tellApplicant?.(ref, "references");
+  if (member) {
+    // The member hears it on their bell, linked to the form on their own application's page. No name or contact rides on it.
+    const names = await roleNamesOfApplication(pool, ref);
+    await deps.notify({ userId: member.candidateUserId, type: "application_references_asked", title: ONBOARDING_NOTICES.memberAskedTitle(names), body: ONBOARDING_NOTICES.memberAskedBody, link: `${applicationHref(ref)}#your-references`, actorUserId: null, dedupeKey: `app:${ref}:refs-asked:${member.candidateUserId}` });
+  } else await deps.tellApplicant?.(ref, "references");
   return { ok: true };
 }
 
@@ -151,6 +196,9 @@ export async function giveReferences(deps: ReviewDeps, ref: string, raw: unknown
   if (!steps.some((s) => s.kind === "refs_asked")) return { ok: false, status: 409, error: "not_asked", row: null };
   if (steps.some((s) => s.kind === "decided")) return { ok: false, status: 409, error: "decided", row: null };
   if (steps.some((s) => s.kind === "refs_given")) return { ok: false, status: 409, error: "given", row: null };
+  // A member application is decided on its own row, never by a step here.
+  const member = kindOfRef(ref) === "member" ? await memberApplicationFacts(pool, ref) : null;
+  if (member && !member.open) return { ok: false, status: 409, error: "decided", row: null };
   const parsed = parseReferenceList(raw);
   if (!parsed.ok) return { ok: false, status: 400, error: parsed.error, row: parsed.row };
   const at = deps.now();
@@ -182,6 +230,21 @@ async function tellTeamReferencesIn(deps: ReviewDeps, ref: string, ownerRole: st
 
 /** The page the team walks an application through: the application's own page, at the walkthrough. */
 export const walkthroughHref = (ref: string): string => scorecardHref(ref).replace(/#scorecards$/, "#walkthrough");
+
+/**
+ * WHAT A MEMBER READS OF THEIR OWN REFERENCES, on their application's page: whether they were asked, how many they
+ * gave (a count, never the details back), and whether the form is open. Null for anybody but the applicant, and for an
+ * application whose references were never asked for.
+ */
+export async function ownReferencesFor(deps: ReviewDeps, ref: string, viewerId: string): Promise<{ asked: true; given: number | null; mayAdd: boolean } | null> {
+  const pool = deps.getPool();
+  if (kindOfRef(ref) !== "member" || !(await isApplicant(deps, ref, viewerId))) return null;
+  const steps = await review.stepsOf(pool, ref);
+  if (!steps.some((x) => x.kind === "refs_asked")) return null;
+  const given = steps.some((x) => x.kind === "refs_given");
+  const m = await memberApplicationFacts(pool, ref);
+  return { asked: true, given: given ? (await repo.referencesOf(pool, ref)).length : null, mayAdd: !given && !!m?.open };
+}
 
 // ── Follow-up owners ────────────────────────────────────────────────────────
 
@@ -246,6 +309,7 @@ export async function saveFollowUp(deps: ReviewDeps, ref: string, viewerId: stri
  */
 export async function addFinalConversation(deps: ReviewDeps, ref: string, viewerId: string): Promise<{ ok: true; opened: boolean } | Refusal> {
   const pool = deps.getPool();
+  if (await referencesOnly(pool, ref)) return refuse(404, "not_found", ONBOARDING_WORDS.notFound);
   const closed = await openAndConfirmed(pool, ref);
   if (closed) return closed;
   const s = await standingOf(deps, ref, viewerId);
@@ -325,7 +389,10 @@ export interface Walkthrough {
 export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: string): Promise<Walkthrough | null> {
   const pool = deps.getPool();
   const steps = await review.stepsOf(pool, ref);
-  if (!steps.some((s) => s.kind === "confirmed")) return null;
+  // A member's own application walks only its references here, and only when it asks for them: a first long-term
+  // role, or one whose references were already asked for (the lead, 19 Nov 2026). The rest stays on its own page.
+  const member = !steps.some((x) => x.kind === "confirmed") ? await memberApplicationFacts(pool, ref) : null;
+  if (!steps.some((x) => x.kind === "confirmed") && !(member && (member.firstRole || steps.some((x) => x.kind === "refs_asked")))) return null;
   const s = await standingOf(deps, ref, viewerId);
   if (s.isApplicant) return null;
   const stored = await repo.referencesOf(pool, ref);
@@ -340,8 +407,10 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
   const finalRole = stringVar(FINAL_CALL_ROLE_VARIABLE).trim();
   const welcomeRole = stringVar("org.onboarding_role").trim();
   const names = await review.roleNamesById(pool, [followRole, finalRole, welcomeRole, ...stored.map((r) => r.ownerRoleId)].filter(Boolean));
-  const shortlist = shortlistOf(steps);
-  const track = trackOf(
+  const shortlist = member ? null : shortlistOf(steps);
+  const track = member
+    ? memberTrackOf({ decided: member.decided, refsAsked: steps.some((x) => x.kind === "refs_asked"), refsGiven: steps.some((x) => x.kind === "refs_given"), references: stored.map((r) => ({ followedUp: !!r.followedUpAt })) })
+    : trackOf(
     {
       decided: how === "adopted" || how === "declined" || how === "withdrawn" ? how : decidedStep ? "declined" : null,
       reviewStage: reviewStageOf(steps),
@@ -363,7 +432,8 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     const m: any = await deps.members.byId(u);
     ownerNames.set(u, String(m?.name ?? "").trim().split(/\s+/)[0] || "A member");
   }
-  const mayAssign = mayAssignOwners(s) && !decidedStep;
+  const open = member ? member.open : !decidedStep;
+  const mayAssign = mayAssignOwners(s) && open;
   const list: ServedReference[] = visible.map((r) => ({
     id: r.id,
     position: r.position,
@@ -377,7 +447,6 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     followedUp: !!r.followedUpAt,
     mine: !s.recused && ownsReference(s, r, viewerId),
   }));
-  const open = !decidedStep;
   return {
     track,
     shortlist,
@@ -387,9 +456,9 @@ export async function walkthroughFor(deps: ReviewDeps, ref: string, viewerId: st
     scorecards: await scorecardsFor(deps, ref, viewerId),
     roleNames: { followup: followRole ? (names.get(followRole) ?? null) : null, finalCall: finalRole ? (names.get(finalRole) ?? null) : null },
     you: {
-      mayShortlist: open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
-      mayAskReferences: open && s.holdsPower && !s.recused && shortlist === "yes" && kindOfRef(ref) === "open" && !steps.some((x) => x.kind === "refs_asked"),
-      mayAddFinal: open && (s.holdsPower || s.isFinalCall) && !s.recused && shortlist === "yes" && !!finalRole && !interviews.some((i) => i.final),
+      mayShortlist: !member && open && s.holdsPower && !s.recused && shortlist === null && reviewStageOf(steps) !== "review" && reviewStageOf(steps) !== "not_invited",
+      mayAskReferences: open && s.holdsPower && !s.recused && (member ? member.firstRole : shortlist === "yes" && kindOfRef(ref) === "open") && !steps.some((x) => x.kind === "refs_asked"),
+      mayAddFinal: !member && open && (s.holdsPower || s.isFinalCall) && !s.recused && shortlist === "yes" && !!finalRole && !interviews.some((i) => i.final),
       isFinalCall: s.isFinalCall,
       holdsPower: s.holdsPower,
     },

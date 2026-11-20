@@ -23,6 +23,7 @@ import GrowingField from "@/components/form/GrowingField";
 import { BTN_PRIMARY, BTN_SECONDARY, FIELD, HINT, LABEL } from "@/components/journey/look";
 import { VOICE_NOTES_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { voiceWord } from "@/components/fireflyPath/applyWordsT";
+import { JSON_BODY_MAX_BYTES } from "@shared/applyLimits";
 import { useVoiceRecorder, voiceSupport, type FinishedTake } from "./useVoiceRecorder";
 import { TakePlayer, recorderProblemWords } from "./TakePlayer";
 import type { VoiceDrafting } from "./VoiceDrafts";
@@ -78,8 +79,12 @@ export function voiceSent(v: VoiceState): boolean {
  * The application's post. With files or ticked recordings it goes as multipart
  * (the proposal as JSON in `proposal`, files in `files`, recordings in `voice`);
  * otherwise as JSON. Without the tick, no recording and no transcript is sent.
+ *
+ * With `staged`, the files and recordings were sent ahead as parts
+ * (components/openProposal/sendParts.ts) and the post only names them, so it
+ * carries no bytes of its own.
  */
-export function applicationRequest(proposal: Record<string, unknown>, files: readonly File[], voice: VoiceState): RequestInit {
+export function applicationRequest(proposal: Record<string, unknown>, files: readonly File[], voice: VoiceState, staged?: { files: string[]; voice: string[]; clips: string[] }): RequestInit {
   const sent = voiceSent(voice);
   const clips = sent ? Object.entries(voice.clips) : [];
   const body = sent
@@ -88,15 +93,26 @@ export function applicationRequest(proposal: Record<string, unknown>, files: rea
         voice: {
           consent: true,
           seconds: voice.takes.map((t) => t.seconds),
-          transcript: voice.transcript.trim().slice(0, VOICE_TRANSCRIPT_MAX),
+          // Whole: the page holds a send over the limit and names the box (never cut, the ops request of 19 Nov 2026).
+          transcript: voice.transcript.trim(),
           ...(clips.length ? { clips: clips.map(([field, c]) => ({ field, seconds: c.seconds, words: c.words })) } : {}),
         },
       }
     : proposal;
+  if (staged) {
+    const named = JSON.stringify({ ...body, parts: staged });
+    if (new Blob([named]).size <= JSON_BODY_MAX_BYTES) return { method: "POST", headers: { "Content-Type": "application/json" }, body: named };
+    const one = new FormData();
+    one.append("proposal", named);
+    return { method: "POST", body: one };
+  }
   const takes = sent ? voice.takes : [];
-  if (!files.length && !takes.length && !clips.length) return { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+  const json = JSON.stringify(body);
+  // A long application with nothing attached still goes whole: past the server's ordinary JSON limit it goes as the
+  // multipart post's one field, which holds the longest application there can be (shared/applyLimits.ts).
+  if (!files.length && !takes.length && !clips.length && new Blob([json]).size <= JSON_BODY_MAX_BYTES) return { method: "POST", headers: { "Content-Type": "application/json" }, body: json };
   const fd = new FormData();
-  fd.append("proposal", JSON.stringify(body));
+  fd.append("proposal", json);
   for (const f of files) fd.append("files", f, f.name);
   takes.forEach((t, i) => fd.append("voice", t.blob, `voice-${i + 1}.${voiceKindOfType(t.blob.type)}`));
   // Clips in the same order as their descriptions above, which is how the server pairs them.
@@ -114,7 +130,8 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
   const took = (take: FinishedTake) => {
     const v = latest.v;
     if (v.takes.length >= VOICE_NOTES_MAX) return;
-    const transcript = take.words ? (v.transcript.trim() ? `${v.transcript.trimEnd()}\n\n${take.words}` : take.words).slice(0, VOICE_TRANSCRIPT_MAX) : v.transcript;
+    // Every word heard, however long: the box shows its count and how much to trim.
+    const transcript = take.words ? (v.transcript.trim() ? `${v.transcript.trimEnd()}\n\n${take.words}` : take.words) : v.transcript;
     onChange({ ...v, takes: [...v.takes, { blob: take.blob, seconds: take.seconds, url: URL.createObjectURL(take.blob), words: take.words }], transcript });
   };
   const recorder = useVoiceRecorder(took);
@@ -201,7 +218,15 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
               <span>{t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX}`, context: "voice note" })}</span>
               <span>
                 {voiceLength(recorder.elapsed)} / {voiceLength(VOICE_NOTE_MAX_SECONDS)}
+                <span className="ml-2 font-semibold text-foreground" data-voice-left={recorder.left}>
+                  {t({ message: `${voiceLength(recorder.left)} left`, context: "voice note timer" })}
+                </span>
               </span>
+            </p>
+          )}
+          {recorder.warned && (
+            <p aria-hidden="true" className="border-l-4 border-notice pl-3 text-sm font-semibold text-foreground" data-voice-warned="">
+              {voiceWord("nearEnd")} {t({ message: "It stops by itself at the limit and keeps everything you said.", context: "voice note timer" })}
             </p>
           )}
           {recorder.recording && left <= 60 && <More part="countdown" elapsed={recorder.elapsed} />}
@@ -210,7 +235,9 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
             {recorder.recording
               ? left <= 30
                 ? voiceWord("nearEnd")
-                : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
+                : left <= 60
+                  ? t({ message: "About a minute left in this recording.", context: "voice note, read aloud" })
+                  : t({ message: `Recording ${value.takes.length + 1} of ${VOICE_NOTES_MAX} started.`, context: "voice note, read aloud" })
               : stopped
                 ? t({ message: "Recording stopped. You can play it back below.", context: "voice note, read aloud" })
                 : ""}
@@ -232,7 +259,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
               {voiceWord("heardNothing")}
             </p>
           )}
-          <GrowingField id={`${id}-heard`} minRows={3} maxLength={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
+          <GrowingField id={`${id}-heard`} minRows={3} limit={VOICE_TRANSCRIPT_MAX} value={value.transcript} onChange={(transcript) => onChange({ ...value, transcript })} className={FIELD} />
           <p className={HINT}>{voiceWord("heardHint")}</p>
           {drafting && !recorder.recording && (
             <Suspense fallback={null}>

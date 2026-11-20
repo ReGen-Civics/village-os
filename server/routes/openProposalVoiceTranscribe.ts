@@ -20,16 +20,21 @@
  * front of a paid call: per connection an hour and a day, per signed-in person
  * an hour and a day instead, and a ceiling a day for the whole village.
  *
- * ONE TAKE, AT MOST FIVE MINUTES. The bytes are read by their own first bytes
+ * ONE TAKE, AT MOST FIFTEEN MINUTES (shared/applyLimits.ts). The bytes are read by their own first bytes
  * (WebM, Ogg or MP4 audio, as Send reads them), held to VOICE_NOTE_MAX_BYTES,
  * and the page's own length for the take to VOICE_TRANSCRIBE_MAX_SECONDS.
  * Only a few are read at once.
  *
- * NOTHING IS STORED OR LOGGED. The take is held in memory for the one call;
+ * NOTHING IS KEPT OR LOGGED. The take streams to a private temp file as it
+ * arrives (server/lib/uploadDisk.ts, 19 Nov 2026), is read from there for the
+ * one call, and the file is removed when the answer goes or the asker leaves;
  * its words go back to the asker's page alone.
  */
 import type { Express, NextFunction, Request, Response } from "express";
 import multer from "multer";
+import path from "node:path";
+import { incomingDir, removeTempsWhenDone, streamToDisk, type DiskFile } from "../lib/uploadDisk";
+import { headOf } from "../lib/proposalFiles";
 import { VOICE_NOTE_MAX_BYTES, VOICE_WORDS, voiceNoteKind } from "../../shared/voiceNotes";
 import {
   TRANSCRIBE_WORDS,
@@ -43,6 +48,8 @@ import {
   VOICE_TRANSCRIBE_PER_DAY,
   VOICE_TRANSCRIBE_PER_HOUR,
 } from "../../shared/voiceTranscribe";
+import { uploadWindowMs } from "../../shared/applyLimits";
+import { liftRequestTimeout } from "../lib/uploadWindow";
 import { transcribeTake, type ReadyProvider, type TranscribeInput, type TranscribeResult } from "../lib/voiceTranscription";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -62,6 +69,8 @@ export interface VoiceTranscribeDeps {
   enabled?: () => boolean | Promise<boolean>;
   /** The provider call; tests hand in their own. */
   transcribe?: (input: TranscribeInput) => Promise<TranscribeResult>;
+  /** Where takes stream to while they are written down; absent, the system's temp folder. */
+  incoming?: string;
 }
 
 export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps): void {
@@ -76,7 +85,7 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
     }
   };
   const upload = multer({
-    storage: multer.memoryStorage(),
+    storage: streamToDisk(deps.incoming ? path.join(deps.incoming, "takes") : path.join(incomingDir(), "takes")),
     limits: { fileSize: VOICE_NOTE_MAX_BYTES, files: 1, fields: 6, fieldSize: 4096, parts: 8 },
   }).single("voice");
   let reading = 0;
@@ -104,6 +113,10 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
       };
       res.on("close", release);
       res.on("finish", release);
+      // The take's file goes when the answer does, or when the asker leaves.
+      removeTempsWhenDone(req, res);
+      // One take may take longer than Node's five minutes to arrive on a slow line: this request alone gets its own window.
+      liftRequestTimeout(req, uploadWindowMs(length));
       upload(req, res, (err: any) => {
         if (err) return void res.status(err?.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({ error: err?.code === "LIMIT_FILE_SIZE" ? VOICE_WORDS.tooBig : VOICE_WORDS.wrongType });
         next();
@@ -113,10 +126,9 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
       try {
         const body = (req.body ?? {}) as Record<string, unknown>;
         if (!(await deps.door(body.link)).open) return res.status(403).json({ error: TRANSCRIBE_WORDS.closed });
-        const file = (req as any).file as { buffer: Buffer } | undefined;
-        const bytes = file?.buffer;
-        const kind = bytes ? voiceNoteKind(new Uint8Array(bytes.subarray(0, 16))) : null;
-        if (!bytes || !kind) return res.status(400).json({ error: VOICE_WORDS.wrongType });
+        const file = (req as Request & { file?: DiskFile }).file;
+        const kind = file?.size ? voiceNoteKind(new Uint8Array(await headOf({ originalname: file.originalname, path: file.path, size: file.size }, 16))) : null;
+        if (!file || !kind) return res.status(400).json({ error: VOICE_WORDS.wrongType });
         const seconds = Number(body.seconds);
         if (!Number.isFinite(seconds) || seconds <= 0 || seconds > VOICE_TRANSCRIBE_MAX_SECONDS) return res.status(400).json({ error: TRANSCRIBE_WORDS.tooLong });
 
@@ -149,7 +161,7 @@ export function registerVoiceTranscribe(app: Express, deps: VoiceTranscribeDeps)
         res.on("close", () => {
           if (!res.writableEnded) stop.abort();
         });
-        const got = await transcribe({ bytes, kind, lang, signal: stop.signal });
+        const got = await transcribe({ path: file.path, kind, lang, signal: stop.signal });
         if (!got.ok && got.reason === "cancelled") return res.status(499).end();
         if (!got.ok) return res.status(got.reason === "off" ? 404 : 503).json({ error: got.reason === "off" ? TRANSCRIBE_WORDS.off : TRANSCRIBE_WORDS.unavailable });
         if (!got.text) return res.status(200).json({ text: "", note: TRANSCRIBE_WORDS.heardNothing });

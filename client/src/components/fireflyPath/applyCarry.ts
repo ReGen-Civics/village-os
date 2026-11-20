@@ -21,7 +21,6 @@
 import type { ProposalLink } from "@shared/proposalAttachments";
 import type { ProposalGoal } from "@shared/proposalGoals";
 import type { DraftMarks, DraftableGoal } from "@shared/seraDrafts";
-import { VOICE_TRANSCRIPT_MAX } from "@shared/voiceNotes";
 import { readStoredJson, writeStoredJson } from "@/lib/safeStorage";
 import { DRAFT_VERSION, fromDraft, type ApplyDraft } from "./applyDraft";
 
@@ -49,7 +48,6 @@ export interface ApplyCarry {
 
 export type CarryFields = Omit<ApplyCarry, "savedAt" | "items" | "storyMark"> & { items: DraftableGoal[]; marks: DraftMarks };
 
-const str = (v: unknown, max: number): string => (typeof v === "string" ? v.slice(0, max) : "");
 
 /** What is kept when an application is sent: exactly the fields above, copied one by one. */
 export function toCarry(f: CarryFields, now: Date): ApplyCarry {
@@ -65,7 +63,8 @@ export function toCarry(f: CarryFields, now: Date): ApplyCarry {
       .filter((g) => g.title.trim() || g.doneWhen.trim())
       .map((g) => ({ title: g.title, doneWhen: g.doneWhen, serves: g.serves, ...(g.seraDraft === true ? { seraDraft: true as const } : {}) })),
     storyMark: f.marks.story && f.marks.story === f.about.story ? f.marks.story : "",
-    transcript: f.transcript.trim().slice(0, VOICE_TRANSCRIPT_MAX),
+    // Whole, as every carried word is (never cut, the ops request of 19 Nov 2026).
+    transcript: f.transcript.trim(),
   };
 }
 
@@ -111,7 +110,8 @@ export function carryAsDraft(raw: unknown, roleId: string, now: Date, lastStep: 
     lastStep,
   );
   if (!draft) return null;
-  const transcript = str(o.transcript, VOICE_TRANSCRIPT_MAX);
+  // Read whole, as fromDraft reads every answer: a carried transcript is never cut.
+  const transcript = typeof o.transcript === "string" ? o.transcript : "";
   const carried = toCarry({ ...draft, marks: draft.marks, transcript }, now);
   return carriesAnything(carried) ? { draft, transcript } : null;
 }

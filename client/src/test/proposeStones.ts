@@ -13,8 +13,8 @@ import { OPEN_WORDS } from "@shared/openProposals";
  */
 export const fillValue = () => {
   for (const card of Array.from(document.querySelectorAll("[data-role-card]"))) {
-    const title = card.querySelector<HTMLInputElement>('input[id$="-0-title"]');
-    const done = card.querySelector<HTMLInputElement>('input[id$="-0-done"]');
+    const title = card.querySelector<HTMLTextAreaElement>('textarea[id$="-0-title"]');
+    const done = card.querySelector<HTMLTextAreaElement>('textarea[id$="-0-done"]');
     const serves = card.querySelector<HTMLSelectElement>('select[id$="-0-serves"]');
     if (title && !title.value) fireEvent.change(title, { target: { value: "Open the gate each dawn" } });
     if (done && !done.value) fireEvent.change(done, { target: { value: "the gate is open by sunrise" } });

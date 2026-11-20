@@ -58,7 +58,7 @@ describe("VoiceArea", () => {
     expect(screen.getByTestId("value").textContent).toBe("I grow food. spoken words");
   });
 
-  it("keeps the box's own length limit for spoken words too", async () => {
+  it("never cuts spoken words, even past the box's own length limit (the ops request of 19 Nov 2026)", async () => {
     function Short() {
       const [v, setV] = useState("12345678");
       return (
@@ -72,7 +72,7 @@ describe("VoiceArea", () => {
     }
     render(<Short />);
     await userEvent.click(screen.getByRole("button", { name: "Speak instead of typing" }));
-    expect(screen.getByTestId("short").textContent).toBe("12345678 spo");
+    expect(screen.getByTestId("short").textContent).toBe("12345678 spoken words");
   });
 
   it("offers Talk it out to a member only", () => {

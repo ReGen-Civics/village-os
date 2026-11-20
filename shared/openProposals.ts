@@ -19,6 +19,7 @@
  */
 
 /** The village's public link. */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 import { parsePieceSuggestions, pieceSuggestionsOf, type PieceSuggestion } from "./pieceSuggestions";
 import { storedVoiceOf, type StoredVoice } from "./voiceNotes";
 import { payAskOf, readPayAsk, type PayAsk } from "./commitmentRange";
@@ -52,20 +53,20 @@ export const OPEN_PROPOSAL_MAX_ROLES = 3;
  */
 export const OPEN_APPLY_ROLES = OPEN_PROPOSAL_MAX_ROLES;
 /** "Get to know us": how many ways the village may list, and how long each may be. */
-export const KNOW_US_MAX = 8;
-export const KNOW_US_TEXT_MAX = 160;
+export const KNOW_US_MAX = APPLY_COUNTS.knowUs;
+export const KNOW_US_TEXT_MAX = APPLY_TEXT.knowUsText;
 /** Human Design or Gene Keys, in the applicant's own words: optional, and never served to the people who decide. */
-export const SELF_KNOWLEDGE_MAX = 300;
+export const SELF_KNOWLEDGE_MAX = APPLY_TEXT.selfKnowledge;
 export const OPEN_NAME_MAX = 120;
-export const OPEN_NOTE_MAX = 600;
+export const OPEN_NOTE_MAX = APPLY_TEXT.roleNote;
 /**
  * "Why you, and why now" asks four things in one box (what they have built, why this role, why now, and their
  * first month), so it holds about a thousand characters for each (the lead, 19 Nov 2026: 1200 did not fit
  * honest answers). The one name the form, the drafting helpers and the server all read. A member's application
  * keeps it as its note, so shared/seatApplications.ts WORDS_MAX is held at least this long.
  */
-export const OPEN_WHY_MAX = 4000;
-export const OPEN_AIM_MAX = 300;
+export const OPEN_WHY_MAX = APPLY_TEXT.why;
+export const OPEN_AIM_MAX = APPLY_TEXT.aim;
 /** How long a confirmation link works, and how long an unconfirmed proposal is kept. */
 export const OPEN_CONFIRM_HOURS = 48;
 
@@ -345,6 +346,11 @@ export function parseOpenProposal(
     now?: Date;
     /** The ways to get to know the village it lists now; a tick for one no longer listed is dropped, never refused. Absent: none are kept. */
     knowUs?: readonly string[];
+    /**
+     * A role not open yet (coming soon): no application may name it, first or added (the lead, 19 Nov 2026); its
+     * waitlist is on the roles page. Absent: nothing is refused for it.
+     */
+    notYetOpen?: (roleId: string) => boolean;
   },
 ): Parsed<OpenProposalInput> {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
@@ -363,6 +369,7 @@ export function parseOpenProposal(
     const roleId = String(r?.roleId ?? "").trim();
     if (!ctx.roleIds.has(roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.unknownRole };
     if (roles.some((x) => x.roleId === roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.sameRoleTwice };
+    if (ctx.notYetOpen?.(roleId)) return i > 0 ? { ok: false, field: `roles.${i}`, error: OPEN_WORDS.addedRoleNotOpen } : { ok: false, field: "roles", error: OPEN_WORDS.roleNotOpen };
     const note = text(r?.note, OPEN_NOTE_MAX);
     if (note.length > OPEN_NOTE_MAX) return { ok: false, field: "roles", error: OPEN_WORDS.tooLong("What you bring to a role", OPEN_NOTE_MAX) };
     // Each role after the first carries its own commitment and price ask (the lead, 17 Nov 2026). The first role's
@@ -577,6 +584,8 @@ export const OPEN_WORDS = {
   /** A role added after the first, sent without its own commitment. */
   needRoleCommitment: "Choose your commitment for each role you added.",
   unknownRole: "One of those roles isn't open any more. Reload the page and pick again.",
+  roleNotOpen: "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens.",
+  addedRoleNotOpen: "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page.",
   sameRoleTwice: "You picked the same role twice.",
   needWhy: "Say why you, and why now.",
   needAim: "Say your aim in this role, in a line.",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { baseWordsOf, counterOfferOf, currentCommitment, currentWords, editOffer, offerForCandidate, openTalks, replyToOffer } from "./counterOffer";
+import { OFFER_WORD_MAX, baseWordsOf, counterOfferOf, currentCommitment, currentWords, editOffer, offerForCandidate, openTalks, replyToOffer } from "./counterOffer";
 
 const by = { id: "u1", name: "A holder" };
 const at = new Date("2026-11-10T10:00:00Z");
@@ -21,7 +21,7 @@ describe("counter-offer rules", () => {
   it("refuses an empty edit, a bad commitment and a long wording", () => {
     expect(editOffer({ base, theirs: null, co: null, edit: { words: { term: base.term } }, by, now: at }).ok).toBe(false);
     expect(editOffer({ base, theirs: null, co: null, edit: { commitmentPct: 55 }, by, now: at }).ok).toBe(false);
-    expect(editOffer({ base, theirs: null, co: null, edit: { words: { term: "x".repeat(601) } }, by, now: at }).ok).toBe(false);
+    expect(editOffer({ base, theirs: null, co: null, edit: { words: { term: "x".repeat(OFFER_WORD_MAX + 1) } }, by, now: at }).ok).toBe(false);
   });
 
   it("asks again when a setting changes after the applicant answered, and leaves the rest accepted", () => {

@@ -2553,6 +2553,11 @@ msgctxt "founding application refusal"
 msgid "We're receiving a lot of uploads right now. Please try again in a minute."
 msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en un minuto."
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Something you attached did not reach us whole. Please send again."
+msgstr "Algo que adjuntaste no nos llegó completo. Envíalo de nuevo, por favor."
+
 #. placeholder {0}: i + 1
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
@@ -19546,8 +19551,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
-msgid "Send up to 3 recordings."
-msgstr "Envía hasta 3 grabaciones."
+msgid "Send up to {VOICE_NOTES_MAX} recordings."
+msgstr "Envía hasta {VOICE_NOTES_MAX} grabaciones."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -23848,3 +23853,261 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "Less than a minute of talking left in this answer."
+msgstr "Queda menos de un minuto para hablar en esta respuesta."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "About half a minute of talking left in this answer."
+msgstr "Queda alrededor de medio minuto para hablar en esta respuesta."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "About a minute of talking left in this answer."
+msgstr "Queda alrededor de un minuto para hablar en esta respuesta."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "About {minutes} minutes of talking left in this answer."
+msgstr "Quedan alrededor de {minutes} minutos para hablar en esta respuesta."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "Nearly full: {0} characters left."
+msgstr "Casi llena: quedan {0} caracteres."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice under a box"
+msgid "{0} characters left in this answer."
+msgstr "Quedan {0} caracteres en esta respuesta."
+
+#: client/src/components/form/trimWords.ts
+msgctxt "limit notice under a box"
+msgid "{count} characters over the limit. Trim {count} characters to send. Everything you wrote is kept."
+msgstr "{count} caracteres por encima del límite. Recorta {count} caracteres para enviar. Todo lo que escribiste se conserva."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice, read aloud"
+msgid "This answer is over its limit. Trim it to send."
+msgstr "Esta respuesta pasa del límite. Recórtala para enviar."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice, read aloud"
+msgid "This answer is nearly full."
+msgstr "Esta respuesta está casi llena."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit notice, read aloud"
+msgid "This answer is getting full."
+msgstr "Esta respuesta se está llenando."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "limit help button beside a box"
+msgid "How the limits work"
+msgstr "Cómo funcionan los límites"
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "founding application, the limits"
+msgid "There is room for long answers: about seven minutes of talking in each, and a count under every box."
+msgstr "Hay espacio para respuestas largas: unos siete minutos de habla en cada una, y un contador bajo cada casilla."
+
+#: client/src/components/form/LimitSigns.tsx
+msgctxt "founding application, the limits"
+msgid "How the limits work"
+msgstr "Cómo funcionan los límites"
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "This answer holds {0} characters, about {1} minutes of talking. The count under the box shows how much is used."
+msgstr "Esta respuesta admite {0} caracteres, unos {1} minutos de habla. El contador bajo la casilla muestra cuánto has usado."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "This answer holds {0} characters. The count under the box shows how much is used."
+msgstr "Esta respuesta admite {0} caracteres. El contador bajo la casilla muestra cuánto has usado."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Each answer has a writing limit, counted under its box in characters. \"Why you, and why now\" holds {0}, and every answer you can speak into holds at least {1}, about {2} minutes of talking."
+msgstr "Cada respuesta tiene un límite de escritura, contado en caracteres bajo su casilla. \"Por qué tú, y por qué ahora\" admite {0}, y cada respuesta en la que puedes hablar admite al menos {1}, unos {2} minutos de habla."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Writing:"
+msgstr "Escritura:"
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Recording:"
+msgstr "Grabación:"
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Uploads:"
+msgstr "Archivos:"
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Sending:"
+msgstr "Envío:"
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "If an answer runs over, every word stays in the box, and we show how much to trim before it can be sent."
+msgstr "Si una respuesta se pasa, cada palabra se queda en la casilla, y te mostramos cuánto recortar antes de poder enviarla."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "You can record up to {take} minutes each time. A timer shows the time left. At {take} minutes the recording stops by itself and keeps everything you said, and you can record again to add more."
+msgstr "Puedes grabar hasta {take} minutos cada vez. Un temporizador muestra el tiempo que queda. A los {take} minutos la grabación se detiene sola y guarda todo lo que dijiste, y puedes grabar otra vez para añadir más."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "Up to {FILES_MAX} files, such as a CV, each up to {fileMb} MB, and up to {TAKES_MAX} recordings, each up to {takeMb} MB."
+msgstr "Hasta {FILES_MAX} archivos, como un CV, de hasta {fileMb} MB cada uno, y hasta {TAKES_MAX} grabaciones, de hasta {takeMb} MB cada una."
+
+#: client/src/components/form/LimitsExplained.tsx
+msgctxt "how the limits work"
+msgid "With recordings or files, a send can take several minutes on a slow connection: each file and recording goes on its own, one after another. Keep this page open until it says it is sent. Your answers stay on this page while it sends, and on this device too when you have chosen to remember them."
+msgstr "Con grabaciones o archivos, un envío puede tardar varios minutos en una conexión lenta: cada archivo y cada grabación va por separado, uno tras otro. Mantén esta página abierta hasta que diga que se envió. Tus respuestas se quedan en esta página mientras se envía, y también en este dispositivo si elegiste recordarlas."
+
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note timer"
+msgid "{0} left"
+msgstr "Quedan {0}"
+
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note timer"
+msgid "It stops by itself at the limit and keeps everything you said."
+msgstr "Se detiene sola al llegar al límite y guarda todo lo que dijiste."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Writing down your words. A long take can take a few minutes."
+msgstr "Escribiendo tus palabras. Una toma larga puede tardar unos minutos."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "You changed this answer, so we left it as you wrote it. The written-down words go with your clip, and you can add them to the answer."
+msgstr "Cambiaste esta respuesta, así que la dejamos como la escribiste. Las palabras escritas van con tu grabación, y puedes añadirlas a la respuesta."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription"
+msgid "Add these words to the answer"
+msgstr "Añadir estas palabras a la respuesta"
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice transcription refusal"
+msgid "Only takes up to 7 minutes can be written down."
+msgstr "Solo se pueden escribir tomas de hasta 7 minutos."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "That's 7 minutes, the most for one recording. Your words are kept. Record again to add more."
+msgstr "Son 7 minutos, lo máximo para una grabación. Tus palabras se guardan. Graba otra vez para añadir más."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Keep each recording under 7 minutes."
+msgstr "Que cada grabación dure menos de 7 minutos."
+
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments"
+msgid "You attached {0} files. Up to {PROPOSAL_FILES_MAX} can be sent: remove {extra} to send."
+msgstr "Adjuntaste {0} archivos. Se pueden enviar hasta {PROPOSAL_FILES_MAX}: quita {extra} para enviar."
+
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments"
+msgid "Your files and recordings come to {0}, {1} more than one application can carry. Remove a file or a recording to send."
+msgstr "Tus archivos y grabaciones suman {0}, {1} más de lo que puede llevar una solicitud. Quita un archivo o una grabación para enviar."
+
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments"
+msgid "Files and recordings together: {0} of {1}."
+msgstr "Archivos y grabaciones juntos: {0} de {1}."
+
+#: client/src/components/fireflyPath/RememberOnDevice.tsx
+msgctxt "founding application, remember on this device"
+msgid "On a shared device, untick it."
+msgstr "En un dispositivo compartido, desmárcala."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "Give at least two references. We prefer three, and you can add up to six. Each needs a name, how you know them, and an email or phone number."
+msgstr "Da al menos dos referencias. Preferimos tres, y puedes agregar hasta seis. Cada una necesita un nombre, de dónde la conoces y un correo o número de teléfono."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."
+msgstr "Si dejas en blanco las referencias, haremos una verificación de antecedentes. Nosotros cubrimos su costo. El proveedor depende de tu país."
+
+#: client/src/components/openProposal/AboutYou.tsx
+msgctxt "about you"
+msgid "Add another reference"
+msgstr "Agregar otra referencia"
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Add up to 6 references."
+msgstr "Agrega hasta 6 referencias."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Tick the box to say you agree to the background check, or give at least two references."
+msgstr "Marca la casilla para aceptar la verificación de antecedentes, o da al menos dos referencias."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page."
+msgstr "Un rol que agregaste aún no está abierto, así que no puede ser parte de esta postulación. Quítalo y únete a su lista de espera en la página de roles."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role kept from before"
+msgid "{0} isn't open yet, so it can't be part of this application. Remove it, and join its waitlist to hear when it opens."
+msgstr "{0} aún no está abierto, así que no puede ser parte de esta postulación. Quítalo y únete a su lista de espera para saber cuándo abre."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, a coming-soon role's waitlist"
+msgid "Join the waitlist for {0}"
+msgstr "Únete a la lista de espera de {0}"
+
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, coming-soon roles under the picker"
+msgid "Not open yet. These roles take no applications now. Join a role's waitlist to hear when it opens."
+msgstr "Aún no abiertos. Estos roles no reciben postulaciones por ahora. Únete a la lista de espera de un rol para saber cuándo abre."
+
+#: client/src/components/voice/VoiceStepMore.tsx
+msgctxt "voice note, before recording"
+msgid "You can record up to {minutes} minutes each time."
+msgstr "Puedes grabar hasta {minutes} minutos cada vez."
+
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note, read aloud"
+msgid "About a minute left in this recording."
+msgstr "Queda alrededor de un minuto en esta grabación."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Give at least two references. We prefer three."
+msgstr "Da al menos dos referencias. Preferimos tres."
+
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens."
+msgstr "Este rol aún no está abierto, así que no recibe postulaciones. Únete a su lista de espera en la página de roles para saber cuándo abre."
+
+#. placeholder {0}: role.name
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, a coming-soon role"
+msgid "{0} is not open yet"
+msgstr "{0} aún no está abierto"
+
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application, a coming-soon role"
+msgid "This role takes no applications yet. Join its waitlist to hear when it opens."
+msgstr "Este rol aún no recibe postulaciones. Únete a su lista de espera para saber cuándo abre."

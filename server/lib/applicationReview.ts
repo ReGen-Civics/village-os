@@ -66,6 +66,7 @@ import { DECIDE_WORDS, openProposalHref } from "../../shared/openProposalDecide"
 import { consentClosesAt } from "../../shared/roleProposalConsent";
 import { inTransaction } from "../repos/liveSessions";
 import * as repo from "../repos/applicationReview";
+import { readApplication as readSeatApplication } from "../repos/seatApplications";
 import { referencesOf as storedReferencesOf } from "../repos/applicantOnboarding";
 import * as proposals from "../repos/openProposals";
 import { asksFor, holdersInCircles, insertAsks } from "../repos/roleProposals";
@@ -261,7 +262,13 @@ async function confirmedDetail(db: Db, ref: string): Promise<{ roleIds: string[]
 /** Whether this account is the applicant. By stored account, or for an open proposal by its address's account. */
 export async function isApplicant(deps: ReviewDeps, ref: string, userId: string): Promise<boolean> {
   const pool = deps.getPool();
-  if (kindOfRef(ref) !== "open") return (await confirmedDetail(pool, ref))?.applicantUserId === userId;
+  if (kindOfRef(ref) !== "open") {
+    const d = await confirmedDetail(pool, ref);
+    if (d) return d.applicantUserId === userId;
+    // A member's own application that never entered the review (the usual case): its candidate is the applicant, so
+    // the references a first long-term role asks for are given by them alone (shared/applicantOnboarding.ts).
+    return (await readSeatApplication(pool, ref))?.candidateUserId === userId;
+  }
   // An open proposal is asked now, never by the account stored at confirm: a row confirmed before the
   // audit of 15 Nov 2026 may have stored an account that never proved the address (server/lib/applicantAccount.ts).
   const p = await proposals.readOpenProposal(pool, ref);

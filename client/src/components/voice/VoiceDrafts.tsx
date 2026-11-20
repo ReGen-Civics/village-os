@@ -129,17 +129,17 @@ export function VoiceDrafts({ heard, drafting }: { heard: string; drafting: Voic
                     {VOICE_DRAFT_WORDS.labels[p]}
                   </label>
                 )}
-                {p === "why" && <GrowingField id={id} minRows={4} maxLength={OPEN_WHY_MAX} disabled={done} value={draft.why ?? ""} onChange={(why) => setDraft({ ...draft, why })} className={FIELD} />}
+                {p === "why" && <GrowingField id={id} minRows={4} limit={OPEN_WHY_MAX} disabled={done} value={draft.why ?? ""} onChange={(why) => setDraft({ ...draft, why })} className={FIELD} />}
                 {(p === "aim" || p === "story") && (
-                  <GrowingField id={id} mic={false} minRows={1} disabled={done} maxLength={p === "aim" ? OPEN_AIM_MAX : ABOUT_STORY_MAX} value={draft[p] ?? ""} onChange={(v) => setDraft({ ...draft, [p]: v })} className={`${FIELD} py-3`} />
+                  <GrowingField id={id} mic={false} minRows={1} disabled={done} limit={p === "aim" ? OPEN_AIM_MAX : ABOUT_STORY_MAX} value={draft[p] ?? ""} onChange={(v) => setDraft({ ...draft, [p]: v })} className={`${FIELD} py-3`} />
                 )}
                 {p === "items" && (
                   <fieldset className="grid gap-3" disabled={done}>
                     <legend className={`mb-1 ${LABEL}`}>{VOICE_DRAFT_WORDS.labels.items}</legend>
                     {(draft.items ?? []).map((g, i) => (
                       <div key={i} className="grid gap-2 rounded-lg border border-border p-3">
-                        <GrowingField aria-label={`${VOICE_DRAFT_WORDS.itemTitle} ${i + 1}`} mic={false} minRows={1} maxLength={GOAL_LIMITS.title} value={g.title} onChange={(title) => setItem(i, { title })} className={`${FIELD} py-2 font-semibold`} />
-                        <GrowingField aria-label={`${VOICE_DRAFT_WORDS.itemDone} ${i + 1}`} mic={false} minRows={1} maxLength={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => setItem(i, { doneWhen })} className={`${FIELD} py-2`} />
+                        <GrowingField aria-label={`${VOICE_DRAFT_WORDS.itemTitle} ${i + 1}`} mic={false} minRows={1} limit={GOAL_LIMITS.title} value={g.title} onChange={(title) => setItem(i, { title })} className={`${FIELD} py-2 font-semibold`} />
+                        <GrowingField aria-label={`${VOICE_DRAFT_WORDS.itemDone} ${i + 1}`} mic={false} minRows={1} limit={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => setItem(i, { doneWhen })} className={`${FIELD} py-2`} />
                       </div>
                     ))}
                   </fieldset>

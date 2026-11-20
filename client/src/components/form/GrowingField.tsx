@@ -10,6 +10,7 @@ import { spokenInto } from "@/components/form/MicInput";
 import { ClipBar } from "@/components/voice/VoiceClips";
 import { useFieldName } from "@/components/form/fieldName";
 import { useLingui } from "@lingui/react/macro";
+import { LimitSigns } from "@/components/form/LimitSigns";
 
 export default function GrowingField({
   value,
@@ -19,6 +20,7 @@ export default function GrowingField({
   mic = true,
   clip,
   counter = false,
+  limit,
   ...rest
 }: Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange"> & {
   value: string;
@@ -30,6 +32,12 @@ export default function GrowingField({
   clip?: string;
   /** Show how many characters are left of `maxLength`, so the box never cuts an answer off unseen (a11y sweep, 14 Nov 2026). */
   counter?: boolean;
+  /**
+   * A limit that never cuts (the ops request of 19 Nov 2026): the box takes every word, typed, pasted or spoken,
+   * always shows its count, warns at 80% and 95%, and past the limit says how much to trim (LimitSigns.tsx). The
+   * page's send holds an answer over its limit. Use it in place of `maxLength`, which lets the browser cut a paste.
+   */
+  limit?: number;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const fieldName = useFieldName(ref);
@@ -63,13 +71,15 @@ export default function GrowingField({
       onChange={(e) => onChange(e.target.value)}
       className={`min-h-[44px] w-full max-w-full resize-none overflow-hidden whitespace-pre-wrap break-words ${mic ? "pr-12" : ""} ${className}`}
       {...rest}
-      aria-describedby={[rest["aria-describedby"], counter && rest.maxLength && rest.id ? `${rest.id}-count` : ""].filter(Boolean).join(" ") || undefined}
+      {...(limit && value.length > limit && rest["aria-invalid"] === undefined ? { "aria-invalid": true } : {})}
+      aria-describedby={[rest["aria-describedby"], (limit || (counter && rest.maxLength)) && rest.id ? `${rest.id}-count` : ""].filter(Boolean).join(" ") || undefined}
     />
   );
-  const said = (chunk: string) => onChange(spokenInto(value, chunk, rest.maxLength));
-  const clipBar = clip ? <ClipBar field={clip} onWords={said} fieldName={fieldName} answer={{ value, set: onChange, maxLength: rest.maxLength }} /> : null;
+  const said = (chunk: string) => onChange(spokenInto(value, chunk, limit ? undefined : rest.maxLength));
+  const clipBar = clip ? <ClipBar field={clip} onWords={said} fieldName={fieldName} answer={{ value, set: onChange, limit: limit ?? rest.maxLength }} /> : null;
   const max = typeof rest.maxLength === "number" && rest.maxLength > 0 ? rest.maxLength : 0;
-  const count = counter && max ? <CharacterCount used={value.length} max={max} id={rest.id ? `${rest.id}-count` : undefined} /> : null;
+  const countId = rest.id ? `${rest.id}-count` : undefined;
+  const count = limit ? <LimitSigns value={value} max={limit} id={countId} voice={mic || !!clip} /> : counter && max ? <CharacterCount used={value.length} max={max} id={countId} /> : null;
   if (!mic) return clipBar || count ? <div>{box}{count}{clipBar}</div> : box;
   return (
     <div>

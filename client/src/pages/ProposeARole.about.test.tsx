@@ -143,14 +143,31 @@ describe("About you, on the open form", () => {
     await applyFor("r-gate");
     await fillRest();
     ref(1, "Ines Vargas", "We built a fence together", "ines@example.org");
+    // One alone is not enough (the lead, 19 Nov 2026: at least two, three preferred), so the tick still shows.
+    expect(document.querySelector("[data-check-consent]")).toBeTruthy();
+    ref(2, "Tomas Rey", "My neighbour for ten years", "tomas@example.org");
     expect(document.querySelector("[data-check-consent]")).toBeNull();
     fireEvent.change(screen.getByLabelText(/Where you are based/), { target: { value: "Uvita" } });
     fillGoals();
     sendNow();
     await waitFor(() => expect(posted).toHaveLength(1));
-    expect(posted[0].body.references).toEqual([{ name: "Ines Vargas", how: "We built a fence together", contact: "ines@example.org" }]);
+    expect(posted[0].body.references).toEqual([
+      { name: "Ines Vargas", how: "We built a fence together", contact: "ines@example.org" },
+      { name: "Tomas Rey", how: "My neighbour for ten years", contact: "tomas@example.org" },
+    ]);
     expect(posted[0].body.about).toEqual({ based: "Uvita" });
     expect(posted[0].body).not.toHaveProperty("checkConsent");
+  });
+
+  it("one reference alone is stopped with the minimum's words (the lead, 19 Nov 2026)", async () => {
+    await applyFor("r-gate");
+    await fillRest();
+    ref(1, "Ines Vargas", "We built a fence together", "ines@example.org");
+    fireEvent.click(screen.getByLabelText(/agree to the background check/i));
+    fillGoals();
+    sendNow();
+    expect((await screen.findByRole("alert")).textContent).toContain("Give at least two references. We prefer three.");
+    expect(posted).toHaveLength(0);
   });
 
   it("a half-filled reference is stopped with the shared rule's words", async () => {
@@ -170,6 +187,7 @@ describe("About you, on the open form", () => {
     expect(document.querySelector("[data-check-role]")).toBeTruthy();
     await fillRest();
     ref(1, "Ines Vargas", "We built a fence together", "ines@example.org");
+    ref(2, "Tomas Rey", "My neighbour for ten years", "tomas@example.org");
     expect(document.querySelector("[data-check-consent]")).toBeTruthy();
     fillGoals();
     sendNow();

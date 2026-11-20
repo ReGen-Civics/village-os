@@ -11,11 +11,15 @@ import {
   parseAboutYou,
   parseReferences,
   referencesOf,
+  REFERENCES_MAX,
+  REFERENCES_MIN,
 } from "./proposalAbout";
 import { openBodyOf, parseOpenProposal } from "./openProposals";
 
 const AT = new Date("2026-11-10T12:00:00Z");
 const ref = (over: Record<string, string> = {}) => ({ name: "Ines Vargas", how: "We built a fence together", contact: "ines@example.org", ...over });
+/** Two references: the fewest a person gives when they give any (the lead, 19 Nov 2026). */
+const two = () => [ref(), ref({ name: "Tomas Rey", contact: "tomas@example.org" })];
 const consent = { given: true, version: checkConsentVersion() };
 
 describe("references", () => {
@@ -30,10 +34,19 @@ describe("references", () => {
   it("needs all three parts once a row is started", () => {
     for (const bad of [ref({ how: "" }), ref({ name: "" }), ref({ contact: "" })]) expect(parseReferences([bad])).toMatchObject({ ok: false, error: ABOUT_WORDS.referenceNeedsAll });
   });
-  it("refuses a contact that is neither an email nor a phone, a fourth reference and the same one twice", () => {
+  it("refuses a contact that is neither an email nor a phone, a seventh reference and the same one twice", () => {
     expect(parseReferences([ref({ contact: "see me" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.referenceContact });
     expect(parseReferences([ref({ contact: "12345" })])).toMatchObject({ ok: false });
-    expect(parseReferences([ref(), ref({ name: "A", contact: "a@example.org" }), ref({ name: "B", contact: "b@example.org" }), ref({ name: "C", contact: "c@example.org" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.tooManyReferences });
+    // Up to six (the lead, 19 Nov 2026): six go, a seventh is refused.
+    const many = (n: number) => [ref(), ...Array.from({ length: n - 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.org` }))];
+    expect(REFERENCES_MAX).toBe(6);
+    expect(parseReferences(many(6))).toMatchObject({ ok: true });
+    expect(parseReferences(many(7))).toMatchObject({ ok: false, error: ABOUT_WORDS.tooManyReferences });
+    // At least two when any are given (the lead, 19 Nov 2026); none is the background-check path.
+    expect(REFERENCES_MIN).toBe(2);
+    expect(parseReferences([ref()])).toMatchObject({ ok: false, field: "references", error: ABOUT_WORDS.tooFewReferences });
+    expect(parseReferences(many(2))).toMatchObject({ ok: true });
+    expect(parseReferences([])).toMatchObject({ ok: true, value: [] });
     expect(parseReferences([ref(), ref({ name: "Other" })])).toMatchObject({ ok: false, error: ABOUT_WORDS.sameReferenceTwice });
   });
   it("reads a stored body back safely, whatever it holds", () => {
@@ -50,19 +63,19 @@ describe("the background-check consent", () => {
     expect(ok.ok && ok.value.backgroundCheck).toEqual({ needed: true, because: "no_references", consent: { at: AT.toISOString(), version: checkConsentVersion() } });
   });
   it("is required for an always-checked role even with references given", () => {
-    expect(parseAboutYou({ references: [ref()] }, { alwaysChecked: true, at: AT })).toMatchObject({ ok: false, field: "checkConsent" });
-    const ok = parseAboutYou({ references: [ref()], consent }, { alwaysChecked: true, at: AT });
+    expect(parseAboutYou({ references: two() }, { alwaysChecked: true, at: AT })).toMatchObject({ ok: false, field: "checkConsent" });
+    const ok = parseAboutYou({ references: two(), consent }, { alwaysChecked: true, at: AT });
     expect(ok.ok && ok.value.backgroundCheck).toMatchObject({ needed: true, because: "role" });
   });
   it("is not required when references are given and no role is always checked", () => {
-    const ok = parseAboutYou({ references: [ref()] }, { alwaysChecked: false, at: AT });
+    const ok = parseAboutYou({ references: two() }, { alwaysChecked: false, at: AT });
     expect(ok.ok && ok.value.backgroundCheck).toEqual({ needed: false, because: null });
   });
   it("is refused when it names an older wording", () => {
     expect(parseAboutYou({ references: [], consent: { given: true, version: "cc-00000000" } }, { alwaysChecked: false, at: AT })).toMatchObject({ ok: false, error: ABOUT_WORDS.consentChanged });
   });
   it("says the lead's words, and its version moves when a word does", () => {
-    expect(CHECK_WORDS.lines).toEqual(["If you leave the three references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."]);
+    expect(CHECK_WORDS.lines).toEqual(["If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country."]);
     expect(CHECK_WORDS.contactLine).toBe("We contact your references only after our first conversation, and only with your OK.");
     expect(checkConsentVersion()).toMatch(/^cc-[0-9a-f]{8}$/);
   });
@@ -88,9 +101,9 @@ describe("the open proposal, with and without the section", () => {
     expect(openBodyOf({ roles: [{ roleId: "r1", note: "" }], why: "w", aim: "a" })).toEqual({ roles: [{ roleId: "r1", note: "" }], why: "w", aim: "a" });
   });
   it("a form that sends the section is judged by the role flag", () => {
-    expect(parseOpenProposal({ ...base, references: [ref()] }, { ...ctx, alwaysChecked: () => true, now: AT })).toMatchObject({ ok: false, field: "checkConsent" });
-    const ok = parseOpenProposal({ ...base, references: [ref()], checkConsent: consent, about: { based: "Uvita" } }, { ...ctx, alwaysChecked: () => true, now: AT });
-    expect(ok.ok && ok.value.body.references).toHaveLength(1);
+    expect(parseOpenProposal({ ...base, references: two() }, { ...ctx, alwaysChecked: () => true, now: AT })).toMatchObject({ ok: false, field: "checkConsent" });
+    const ok = parseOpenProposal({ ...base, references: two(), checkConsent: consent, about: { based: "Uvita" } }, { ...ctx, alwaysChecked: () => true, now: AT });
+    expect(ok.ok && ok.value.body.references).toHaveLength(2);
     expect(ok.ok && ok.value.body.about).toEqual({ based: "Uvita" });
   });
 });

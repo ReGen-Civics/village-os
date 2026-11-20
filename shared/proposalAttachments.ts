@@ -28,13 +28,14 @@
  *
  * Pure, so the page and the server import it alike.
  */
+import { APPLY_COUNTS, APPLY_TEXT, FILES_MAX, FILE_MAX_BYTES } from "./applyLimits";
 
-export const PROPOSAL_LINKS_MAX = 5;
-export const PROPOSAL_LINK_LABEL_MAX = 80;
-export const PROPOSAL_LINK_URL_MAX = 500;
-export const PROPOSAL_FILES_MAX = 3;
-export const PROPOSAL_FILE_MAX_BYTES = 10 * 1024 * 1024;
-export const PROPOSAL_FILE_NAME_MAX = 120;
+export const PROPOSAL_LINKS_MAX = APPLY_COUNTS.links;
+export const PROPOSAL_LINK_LABEL_MAX = APPLY_TEXT.linkLabel;
+export const PROPOSAL_LINK_URL_MAX = APPLY_TEXT.linkUrl;
+export const PROPOSAL_FILES_MAX = FILES_MAX;
+export const PROPOSAL_FILE_MAX_BYTES = FILE_MAX_BYTES;
+export const PROPOSAL_FILE_NAME_MAX = APPLY_TEXT.fileName;
 
 export const PROPOSAL_FILE_KINDS = ["pdf", "docx", "png", "jpg"] as const;
 export type ProposalFileKind = (typeof PROPOSAL_FILE_KINDS)[number];
@@ -77,6 +78,8 @@ export const ATTACHMENT_WORDS = {
   uploadTooBig: "Your files and recordings together are too large to send. Send fewer files, or record shorter answers.",
   /** Too many uploads in flight on this server at once. */
   uploadBusy: "We're receiving a lot of uploads right now. Please try again in a minute.",
+  /** A part sent ahead is no longer here (swept after hours unsent, or never arrived). */
+  uploadGone: "Something you attached did not reach us whole. Please send again.",
   tooManyLinks: `Add up to ${PROPOSAL_LINKS_MAX} links.`,
   linkNeedsLabel: "Give each link a few words saying what it is.",
   linkLabelTooLong: `Keep each link's label under ${PROPOSAL_LINK_LABEL_MAX} characters.`,
@@ -175,12 +178,17 @@ function includesAscii(bytes: Uint8Array, needle: string): boolean {
   return false;
 }
 
+/** Whether a file's name carries an extension of this kind. */
+export function nameFitsKind(name: string, kind: ProposalFileKind): boolean {
+  const ext = (name.match(/\.([A-Za-z0-9]+)$/)?.[1] ?? "").toLowerCase();
+  return EXTENSIONS[kind].includes(ext);
+}
+
 /** The file's kind when its bytes and its name agree, else null. */
 export function proposalFileKind(name: string, bytes: Uint8Array): ProposalFileKind | null {
   const kind = sniffProposalFile(bytes);
   if (!kind) return null;
-  const ext = (name.match(/\.([A-Za-z0-9]+)$/)?.[1] ?? "").toLowerCase();
-  return EXTENSIONS[kind].includes(ext) ? kind : null;
+  return nameFitsKind(name, kind) ? kind : null;
 }
 
 /** A file's name as the page may show it: no path, no control characters, capped. */

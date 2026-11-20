@@ -2,6 +2,9 @@
  * THE APPLICATION'S SAVED DRAFT: what it keeps, what it never keeps, and how
  * long it lasts (components/fireflyPath/applyDraft.ts).
  */
+import { OPEN_WHY_MAX } from "@shared/openProposals";
+import { GOAL_LIMITS } from "@shared/proposalGoals";
+import { PROPOSAL_LINKS_MAX } from "@shared/proposalAttachments";
 import { describe, expect, it } from "vitest";
 import { DRAFT_DAYS, draftKey, fromDraft, toDraft } from "./applyDraft";
 
@@ -63,6 +66,19 @@ describe("the saved draft", () => {
     expect(back?.why).toBe(why);
     expect(back).toMatchObject({ aim: long.aim, about: long.about, selfKnowledge: long.selfKnowledge, marks: long.marks });
     expect(back?.items[0]).toMatchObject({ title: long.items[0].title, doneWhen: long.items[0].doneWhen });
+  });
+
+  it("loads a draft longer than any box, with more items and links than the old counts, WHOLE (the ops request of 19 Nov 2026)", () => {
+    const why = "w".repeat(OPEN_WHY_MAX + 500);
+    const items = Array.from({ length: GOAL_LIMITS.max }, (_, i) => ({ ...STATE.items[0], title: `t${i} ${"x".repeat(9000)}`, doneWhen: "d".repeat(9000) }));
+    const links = Array.from({ length: PROPOSAL_LINKS_MAX }, (_, i) => ({ label: `l${i}`, url: `https://example.test/${i}` }));
+    const long = { ...STATE, why, aim: "a".repeat(9000), about: { based: "b".repeat(9000), languages: "l".repeat(9000), story: "s".repeat(9000) }, selfKnowledge: "k".repeat(9000), items, links };
+    const back = fromDraft(JSON.parse(JSON.stringify(toDraft(long, NOW))), NOW, 5);
+    expect(back?.why).toBe(why);
+    expect(back).toMatchObject({ aim: long.aim, about: long.about, selfKnowledge: long.selfKnowledge });
+    expect(back?.items).toHaveLength(GOAL_LIMITS.max);
+    expect(back?.items[GOAL_LIMITS.max - 1].title).toBe(items[GOAL_LIMITS.max - 1].title);
+    expect(back?.links).toHaveLength(PROPOSAL_LINKS_MAX);
   });
 
   it("is one per role and per personal link", () => {

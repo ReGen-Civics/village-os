@@ -4,7 +4,7 @@
  * step that day lives here and arrives a moment after the card, through one
  * lazy import in VoiceInvite.tsx and one in VoiceClips.tsx:
  *
- *   - `limit`: before recording, "Up to 5 minutes per take", and, when the
+ *   - `limit`: before recording, "You can record up to 7 minutes each time.", and, when the
  *     village's transcription service is on, the line that says an AI service
  *     writes recordings down, with the switch that turns it off.
  *   - `countdown`: in the last minute of a take, the seconds left, large, and
@@ -30,7 +30,7 @@ import { msg } from "@lingui/core/macro";
 import { Sparkles } from "lucide-react";
 import { BTN_SECONDARY, HINT } from "@/components/journey/look";
 import { speechLang } from "@/lib/speechLang";
-import { VOICE_CLIP_WORDS_MAX, VOICE_NOTE_MAX_SECONDS, VOICE_TRANSCRIPT_MAX, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
+import { VOICE_NOTE_MAX_SECONDS, VOICE_WORDS, voiceKindOfType, voiceLength } from "@shared/voiceNotes";
 import { TRANSCRIBE_WORDS, VOICE_TRANSCRIBE_PATH } from "@shared/voiceTranscribe";
 import { autoWriteDown, markTried, running, setAutoWriteDown, subscribeAutoWriteDown, transcriptionOn, triedBefore } from "./voiceWriteDownStore";
 import type { ClipTake, VoiceState } from "./VoiceInvite";
@@ -45,12 +45,21 @@ export function countdownLeft(elapsed: number, max: number = VOICE_NOTE_MAX_SECO
   return left <= COUNTDOWN_FROM_SECONDS ? left : null;
 }
 
-/** Replace the words the live engine caught where they still stand as caught; add them where nothing was caught; otherwise leave the text alone. */
-export function placeWords(text: string, caught: string, words: string, max: number): { text: string; placed: boolean } {
+/**
+ * Replace the words the live engine caught where they still stand as caught; add them where nothing was caught;
+ * otherwise leave the text alone. Always whole (the ops request of 19 Nov 2026): words that run a box past its
+ * limit are kept and shown, and the box's own signs say how much to trim.
+ */
+export function placeWords(text: string, caught: string, words: string): { text: string; placed: boolean } {
   const c = caught.trim();
-  if (c && text.includes(c)) return { text: text.replace(c, words).slice(0, max), placed: true };
-  if (!c) return { text: (text.trim() ? `${text.trimEnd()} ${words}` : words).slice(0, max), placed: true };
+  if (c && text.includes(c)) return { text: text.replace(c, words), placed: true };
+  if (!c) return { text: addWords(text, words), placed: true };
   return { text, placed: false };
+}
+
+/** Words added at the end of an answer, whole. */
+export function addWords(text: string, words: string): string {
+  return text.trim() ? `${text.trimEnd()} ${words}` : words;
 }
 
 /**
@@ -67,7 +76,8 @@ export function withWrittenWords(v: VoiceState, i: number, text: string): VoiceS
   const box = v.transcript;
   const transcript =
     caught && box.includes(caught) ? box.replace(caught, words) : box.trim() ? `${box.trimEnd()}\n\n${words}` : words;
-  return { ...v, transcript: transcript.slice(0, VOICE_TRANSCRIPT_MAX), takes: v.takes.map((t, k) => (k === i ? { ...t, words, written: true } : t)) };
+  // Whole, however long: the box shows its count and how much to trim (never cut, the ops request of 19 Nov 2026).
+  return { ...v, transcript, takes: v.takes.map((t, k) => (k === i ? { ...t, words, written: true } : t)) };
 }
 
 function useTranscriptionOn(): boolean {
@@ -96,7 +106,7 @@ function refusalWords(said: string, i18n: I18n): string {
     [TRANSCRIBE_WORDS.tooMany, msg({ message: "That's a lot of recordings written down for one connection. Your recording is still kept. Type what you said, or try again in an hour.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.unavailable, msg({ message: "We couldn't write this recording down just now. Your recording is still kept. Try again in a moment, or type what you said.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.busy, msg({ message: "A few recordings are being written down already. Try again in a moment.", context: "voice transcription refusal" })],
-    [TRANSCRIBE_WORDS.tooLong, msg({ message: "Only takes up to 5 minutes can be written down.", context: "voice transcription refusal" })],
+    [TRANSCRIBE_WORDS.tooLong, msg({ message: "Only takes up to 7 minutes can be written down.", context: "voice transcription refusal" })],
     [TRANSCRIBE_WORDS.heardNothing, msg({ message: "The service heard no words in this recording. Type what you said, or record again.", context: "voice transcription refusal" })],
     [VOICE_WORDS.tooBig, msg({ message: "One recording is too large. Record a shorter one.", context: "voice transcription refusal" })],
     [VOICE_WORDS.wrongType, msg({ message: "We couldn't read one of your recordings. Record it again.", context: "voice transcription refusal" })],
@@ -131,13 +141,15 @@ export async function sendForWords(blob: Blob, seconds: number, link?: string, w
   }
 }
 
-type Phase = { kind: "idle" } | { kind: "busy" } | { kind: "done" } | { kind: "said"; words: string } | { kind: "stopped" };
+/** What `apply` may answer: nothing to say, a note, or a note with words still to place, offered as a button. */
+type Applied = string | null | { note: string; offer: () => void };
+type Phase = { kind: "idle" } | { kind: "busy" } | { kind: "done" } | { kind: "said"; words: string; offer?: () => void } | { kind: "stopped" };
 
 /**
  * Send one recording by itself once it exists, while the service and the
  * switch are on, and offer the button otherwise. `apply` puts the words in.
  */
-function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean, link: string | undefined, apply: (text: string) => string | null, what: "take" | "clip" = "take") {
+function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean, link: string | undefined, apply: (text: string) => Applied, what: "take" | "clip" = "take") {
   const { t, i18n } = useLingui();
   const on = useTranscriptionOn();
   const auto = useAutoWriteDown();
@@ -151,7 +163,7 @@ function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean,
     if (!got) return setPhase({ kind: "stopped" });
     if ("error" in got) return setPhase({ kind: "said", words: refusalWords(got.error, i18n) });
     const note = applyRef.current(got.text);
-    setPhase(note ? { kind: "said", words: note } : { kind: "done" });
+    setPhase(!note ? { kind: "done" } : typeof note === "string" ? { kind: "said", words: note } : { kind: "said", words: note.note, offer: note.offer });
   };
 
   useEffect(() => {
@@ -172,7 +184,7 @@ function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean,
 
   const status =
     phase.kind === "busy"
-      ? t({ message: "Writing down your words. A five-minute take can take a minute or two.", context: "voice transcription" })
+      ? t({ message: "Writing down your words. A long take can take a few minutes.", context: "voice transcription" })
       : phase.kind === "done"
         ? t({ message: "Your words are in the box. Read them and fix anything we got wrong.", context: "voice transcription" })
         : phase.kind === "stopped"
@@ -181,7 +193,11 @@ function useWriteDown(blob: Blob | undefined, seconds: number, written: boolean,
             ? phase.words
             : "";
   const showButton = on && !!blob && phase.kind !== "busy" && (!auto || phase.kind === "said" || phase.kind === "stopped");
-  return { on, status, showButton, busy: phase.kind === "busy", press: () => blob && void go(blob) };
+  const offer = phase.kind === "said" && phase.offer ? () => {
+    phase.offer?.();
+    setPhase({ kind: "done" });
+  } : null;
+  return { on, status, showButton, busy: phase.kind === "busy", press: () => blob && void go(blob), offer };
 }
 
 /** The AI line and the switch, shown before recording while the service is on. */
@@ -201,14 +217,15 @@ function AutoSwitch({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** "Up to 5 minutes per take", and the AI line with its switch while the service is on. */
+/** "You can record up to 7 minutes each time.", and the AI line with its switch while the service is on. */
 function LimitNote() {
   const { t } = useLingui();
   const on = useTranscriptionOn();
+  const minutes = VOICE_NOTE_MAX_SECONDS / 60;
   return (
     <div className="grid gap-1" data-voice-limit-note="">
       <p className="text-sm font-medium text-foreground">
-        {t({ message: `Up to ${VOICE_NOTE_MAX_SECONDS / 60} minutes per take. It stops by itself at ${voiceLength(VOICE_NOTE_MAX_SECONDS)}.`, context: "voice note, before recording" })}
+        {t({ message: `You can record up to ${minutes} minutes each time.`, context: "voice note, before recording" })}
       </p>
       {on && <AutoSwitch />}
     </div>
@@ -263,15 +280,27 @@ function TranscribeTake({ index, state, onChange, link }: { index: number; state
 function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepClipProps) {
   const { t } = useLingui();
   const blob = clip?.blob;
-  const w = useWriteDown(blob, clip?.seconds ?? 0, !!clip?.written, link, (text) => {
+  // The answer as it stands when the offer is pressed, never as it stood when the words came back.
+  const answerNow = useRef(answer);
+  answerNow.current = answer;
+  const w = useWriteDown(blob, clip?.seconds ?? 0, !!clip?.written, link, (text): Applied => {
     const caught = clip?.words ?? "";
-    let note: string | null = null;
+    let note: Applied = null;
     if (answer) {
-      const placed = placeWords(answer.value, caught, text, answer.maxLength ?? VOICE_TRANSCRIPT_MAX);
+      // Whole, however long: an answer the words run past its limit shows how much to trim (never cut).
+      const placed = placeWords(answer.value, caught, text);
       if (placed.placed) answer.set(placed.text);
-      else note = t({ message: "You changed this answer, so we left it as you wrote it. The written-down words go with your clip.", context: "voice transcription" });
+      else
+        note = {
+          note: t({ message: "You changed this answer, so we left it as you wrote it. The written-down words go with your clip, and you can add them to the answer.", context: "voice transcription" }),
+          offer: () => {
+            const a = answerNow.current;
+            if (a) a.set(addWords(a.value, text));
+          },
+        };
     }
-    if (blob) setClipWords(blob, text.slice(0, VOICE_CLIP_WORDS_MAX));
+    // The clip keeps every word the service wrote down; a clip over its own limit is named at send.
+    if (blob) setClipWords(blob, text);
     return note;
   }, "clip");
   if (!w.on) return null;
@@ -282,6 +311,11 @@ function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepCl
       <p role="status" className="text-xs text-foreground" data-voice-transcribe-said="">
         {w.status}
       </p>
+      {w.offer && (
+        <button type="button" onClick={w.offer} className={`${BTN_SECONDARY} min-h-11 justify-self-start`} data-voice-place-words="">
+          {t({ message: "Add these words to the answer", context: "voice transcription" })}
+        </button>
+      )}
     </div>
   );
 }
@@ -290,7 +324,7 @@ export interface VoiceStepClipProps {
   field: string;
   clip: ClipTake | undefined;
   /** The answer the clip belongs to, read fresh on each draw. */
-  answer?: { value: string; set: (next: string) => void; maxLength?: number };
+  answer?: { value: string; set: (next: string) => void; limit?: number };
   /** Keep the written-down words with the clip, when it is still the same recording. */
   setClipWords: (blob: Blob, words: string) => void;
   link?: string;

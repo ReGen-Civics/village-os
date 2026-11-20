@@ -11,7 +11,7 @@
 // that imports it and skips one that only uses `msg`.
 import { i18n as appI18n, type I18n, type MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { VOICE_WORDS } from "@shared/voiceNotes";
+import { VOICE_NOTES_MAX, VOICE_TRANSCRIPT_MAX, VOICE_WORDS } from "@shared/voiceNotes";
 import { OPEN_WORDS } from "@shared/openProposals";
 import { ABOUT_WORDS } from "@shared/proposalAbout";
 import { ATTACHMENT_WORDS } from "@shared/proposalAttachments";
@@ -47,7 +47,7 @@ const VOICE: Record<VoiceKey, MessageDescriptor> = {
   noMic: msg({ message: "No microphone was found on this device. Typing works just as well.", context: "voice invite" }),
   nearEnd: msg({ message: "About 30 seconds left in this recording.", context: "voice invite" }),
   noEngine: msg({ message: "This browser doesn't write down your words as you speak. Your recording is kept, and you can type what you said in the box under it.", context: "voice invite" }),
-  reachedLimit: msg({ message: "That recording reached the 5-minute limit and stopped by itself. It is kept below. Record another to keep going.", context: "voice invite" }),
+  reachedLimit: msg({ message: "That's 7 minutes, the most for one recording. Your words are kept. Record again to add more.", context: "voice invite" }),
   cutShort: msg({ message: "The recording stopped before you pressed Stop, perhaps because another app needed the microphone. What you said until then is kept below: play it back, and record another if anything is missing.", context: "voice invite" }),
   emptyTake: msg({ message: "No sound reached the recording, so there is nothing to keep. Check that your microphone is on, then record again.", context: "voice invite" }),
   cantPlay: msg({ message: "This browser can't play the recording back here. It is still kept, and it goes with your application when you tick below. You can save a copy to this device.", context: "voice invite" }),
@@ -79,6 +79,8 @@ const PROBLEMS: ReadonlyArray<readonly [string, MessageDescriptor]> = [
   [OPEN_WORDS.tooManyRoles, msg({ message: "One application takes up to 3 roles. Remove one, and apply for it separately.", context: "founding application refusal" })],
   [OPEN_WORDS.needRoleCommitment, msg({ message: "Choose your commitment for each role you added.", context: "founding application refusal" })],
   [OPEN_WORDS.unknownRole, msg({ message: "One of those roles isn't open any more. Reload the page and pick again.", context: "founding application refusal" })],
+  [OPEN_WORDS.roleNotOpen, msg({ message: "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens.", context: "founding application refusal" })],
+  [OPEN_WORDS.addedRoleNotOpen, msg({ message: "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page.", context: "founding application refusal" })],
   [OPEN_WORDS.sameRoleTwice, msg({ message: "You picked the same role twice.", context: "founding application refusal" })],
   [OPEN_WORDS.needWhy, msg({ message: "Say why you, and why now.", context: "founding application refusal" })],
   [OPEN_WORDS.needAim, msg({ message: "Say your aim in this role, in a line.", context: "founding application refusal" })],
@@ -91,20 +93,24 @@ const PROBLEMS: ReadonlyArray<readonly [string, MessageDescriptor]> = [
   [OPEN_WORDS.tooManyOpens, msg({ message: "That link has been opened many times from this connection. Please wait about an hour and try again.", context: "founding application refusal" })],
   [ABOUT_WORDS.referenceNeedsAll, msg({ message: "Give each reference a name, how you know them, and an email or a phone number. Or clear the row.", context: "founding application refusal" })],
   [ABOUT_WORDS.referenceContact, msg({ message: "Give an email address or a phone number we can reach that reference on.", context: "founding application refusal" })],
-  [ABOUT_WORDS.tooManyReferences, msg({ message: "Add up to 3 references.", context: "founding application refusal" })],
+  [ABOUT_WORDS.tooManyReferences, msg({ message: "Add up to 6 references.", context: "founding application refusal" })],
   [ABOUT_WORDS.sameReferenceTwice, msg({ message: "You added the same reference twice.", context: "founding application refusal" })],
-  [ABOUT_WORDS.needConsent, msg({ message: "Tick the box to say you agree to the background check, or give three references.", context: "founding application refusal" })],
+  [ABOUT_WORDS.tooFewReferences, msg({ message: "Give at least two references. We prefer three.", context: "founding application refusal" })],
+  [ABOUT_WORDS.needConsent, msg({ message: "Tick the box to say you agree to the background check, or give at least two references.", context: "founding application refusal" })],
   [ABOUT_WORDS.consentChanged, msg({ message: "The words about the background check changed while you read them. Read them again and tick.", context: "founding application refusal" })],
-  [VOICE_WORDS.tooMany, msg({ message: "Send up to 3 recordings.", context: "founding application refusal" })],
+  [VOICE_WORDS.tooMany, msg({ message: `Send up to ${VOICE_NOTES_MAX} recordings.`, context: "founding application refusal" })],
   [VOICE_WORDS.tooBig, msg({ message: "One recording is too large. Record a shorter one.", context: "founding application refusal" })],
-  [VOICE_WORDS.tooLong, msg({ message: "Keep each recording under 5 minutes.", context: "founding application refusal" })],
+  [VOICE_WORDS.tooLong, msg({ message: "Keep each recording under 7 minutes.", context: "founding application refusal" })],
   [VOICE_WORDS.wrongType, msg({ message: "We couldn't read one of your recordings. Record it again.", context: "founding application refusal" })],
   [VOICE_WORDS.needConsent, msg({ message: "Tick that we may keep your voice note, or remove the recordings.", context: "founding application refusal" })],
+  [VOICE_WORDS.transcriptTooLong, msg({ message: `Keep what we heard under ${VOICE_TRANSCRIPT_MAX} characters.`, context: "founding application refusal" })],
+  [VOICE_WORDS.clipWordsTooLong, msg({ message: "Keep the words with each clip under 12000 characters.", context: "founding application refusal" })],
   [VOICE_WORDS.micBlocked, VOICE.micBlocked],
   [VOICE_WORDS.noMic, VOICE.noMic],
   [VOICE_WORDS.noTranscribe, VOICE.noTranscribe],
   [ATTACHMENT_WORDS.uploadTooBig, msg({ message: "Your files and recordings together are too large to send. Send fewer files, or record shorter answers.", context: "founding application refusal" })],
   [ATTACHMENT_WORDS.uploadBusy, msg({ message: "We're receiving a lot of uploads right now. Please try again in a minute.", context: "founding application refusal" })],
+  [ATTACHMENT_WORDS.uploadGone, msg({ message: "Something you attached did not reach us whole. Please send again.", context: "founding application refusal" })],
 ];
 const BY_TEXT = new Map(PROBLEMS);
 

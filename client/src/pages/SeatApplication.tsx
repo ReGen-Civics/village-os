@@ -41,7 +41,7 @@ import { AboutYouView } from "@/components/openProposal/AboutYou";
 import TermsWeOffer, { OpenTalksWarning } from "@/components/openProposal/TermsWeOffer";
 import { ABOUT_WORDS } from "@shared/proposalAbout";
 import WorkPayBlock from "@/components/WorkPayBlock";
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, Send, Undo2 } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -77,6 +77,14 @@ import CircleConsent from "@/components/roleProposal/CircleConsent";
 import { CONSENT_WORDS } from "@shared/roleProposalConsent";
 import YourTurn from "@/components/governance/YourTurn";
 import ConsentSeal from "@/components/governance/ConsentSeal";
+
+/*
+ * REFERENCES FOR A FIRST LONG-TERM ROLE (the lead, 19 Nov 2026; shared/applicantOnboarding.ts `asksReferences`): the
+ * member gives them here, and the people who review the application walk them here. Each loads only on this page and
+ * draws nothing when the application asks for none.
+ */
+const OwnReferences = lazy(() => import("@/components/openProposal/OwnReferences"));
+const Walkthrough = lazy(() => import("@/components/openProposal/Walkthrough"));
 
 export const APPLICATION_WORDS = {
   membersOnly: "Members read role proposals.",
@@ -478,6 +486,10 @@ export default function SeatApplication() {
               </section>
             )}
             {app.status === "adopted" && app.startsOn && <p className="text-foreground">{APPLICATION_WORDS.laterLine}</p>}
+
+            <Suspense fallback={null}>
+              {app.you?.isCandidate ? <OwnReferences applicationRef={app.id} /> : app.you ? <Walkthrough applicationRef={app.id} decideHref="#sa-holder-card" onChanged={() => void load()} /> : null}
+            </Suspense>
 
             {app.you && app.status === "awaiting-holder" && app.you.holdsThePower && (
               <section id="sa-holder-card" aria-labelledby="sa-holder" className={`${CARD_FEATURED} scroll-mt-24 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring`}>

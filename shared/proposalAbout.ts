@@ -2,7 +2,7 @@
  * ABOUT YOU: REFERENCES, THE BACKGROUND-CHECK CONSENT AND A FEW FACTS (joining
  * lane PR 2, 10 Nov 2026).
  *
- * Somebody proposing for a role can name up to three people who know their work
+ * Somebody proposing for a role can name two to six people who know their work (three preferred)
  * and say where they are based, which languages they use and what their story
  * with us is. Two things here are THIRD-PARTY PERSONAL DATA and are held to the
  * rules #1128 set for links and files (shared/proposalAttachments.ts):
@@ -27,14 +27,17 @@
  *
  * Pure, so the page and the server import it alike.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
-export const REFERENCES_MAX = 3;
-export const REFERENCE_NAME_MAX = 80;
-export const REFERENCE_HOW_MAX = 160;
-export const REFERENCE_CONTACT_MAX = 120;
-export const ABOUT_BASED_MAX = 120;
-export const ABOUT_LANGUAGES_MAX = 160;
-export const ABOUT_STORY_MAX = 400;
+export const REFERENCES_MAX = APPLY_COUNTS.references;
+/** The fewest references given when any are (the lead, 19 Nov 2026); none at all is the background-check path. */
+export const REFERENCES_MIN = APPLY_COUNTS.referencesMin;
+export const REFERENCE_NAME_MAX = APPLY_TEXT.referenceName;
+export const REFERENCE_HOW_MAX = APPLY_TEXT.referenceHow;
+export const REFERENCE_CONTACT_MAX = APPLY_TEXT.referenceContact;
+export const ABOUT_BASED_MAX = APPLY_TEXT.based;
+export const ABOUT_LANGUAGES_MAX = APPLY_TEXT.languages;
+export const ABOUT_STORY_MAX = APPLY_TEXT.story;
 
 export interface ProposalReference {
   name: string;
@@ -64,9 +67,9 @@ export interface BackgroundCheck {
 /** The consent, in the lead's words, line by line. The tick below covers all of them. */
 export const CHECK_WORDS = {
   heading: "References and a background check",
-  referencesHint: "Up to three people who know your work. Leave all three blank if you prefer a background check.",
+  referencesHint: "Give at least two references. We prefer three, and you can add up to six. Leave them all blank if you prefer a background check.",
   lines: [
-    "If you leave the three references blank, we'll run a background check instead. We cover its cost. The provider depends on your country.",
+    "If you leave the references blank, we'll run a background check instead. We cover its cost. The provider depends on your country.",
   ],
   contactLine: "We contact your references only after our first conversation, and only with your OK.",
   roleLine: "A check happens for this role whatever the references say.",
@@ -88,9 +91,10 @@ export const ABOUT_WORDS = {
   referenceNeedsAll: "Give each reference a name, how you know them, and an email or a phone number. Or clear the row.",
   referenceContact: "Give an email address or a phone number we can reach that reference on.",
   tooManyReferences: `Add up to ${REFERENCES_MAX} references.`,
+  tooFewReferences: "Give at least two references. We prefer three.",
   sameReferenceTwice: "You added the same reference twice.",
   tooLong: (what: string, max: number) => `${what} is too long. Keep it under ${max} characters.`,
-  needConsent: "Tick the box to say you agree to the background check, or give three references.",
+  needConsent: "Tick the box to say you agree to the background check, or give at least two references.",
   consentChanged: "The words about the background check changed while you read them. Read them again and tick.",
   /** The deciders' page. */
   shownHeading: "About you, references and background check",
@@ -142,6 +146,8 @@ export function parseReferences(raw: unknown): Checked<ProposalReference[]> {
     out.push({ name, how, contact });
     if (out.length > REFERENCES_MAX) return { ok: false, field: "references", error: ABOUT_WORDS.tooManyReferences };
   }
+  // Giving references (not the background-check path): at least two (the lead, 19 Nov 2026).
+  if (out.length > 0 && out.length < REFERENCES_MIN) return { ok: false, field: "references", error: ABOUT_WORDS.tooFewReferences };
   return { ok: true, value: out };
 }
 

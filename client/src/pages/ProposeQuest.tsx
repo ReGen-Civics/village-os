@@ -11,7 +11,12 @@ import GuideChat from "@/components/GuideChat";
 import { useGuideName } from "@/hooks/useGuideName";
 import { sendProposal, assistantAvailable } from "@/lib/proposals";
 import type { IdeaHold, IdeaReceipt } from "@shared/questIdeas";
+import GrowingField from "@/components/form/GrowingField";
 import VoiceArea from "@/components/voice/VoiceArea";
+import { APPLY_TEXT } from "@shared/applyLimits";
+
+/** Each answer here (shared/applyLimits.ts): kept whole, counted under its box, and held at send when over. */
+const QUEST_PROSE_MAX = APPLY_TEXT.questProse;
 import { useLingui } from "@lingui/react/macro";
 
 interface QuestProposal {
@@ -121,6 +126,11 @@ export default function ProposeQuest() {
     setError("");
     if (!form.name.trim() || !form.email.trim() || !form.whatYouWantToDo.trim()) {
       setError("Add your name, email, and what you'd like to do.");
+      return;
+    }
+    // Every word stays in its box; a box over its limit holds the send and says how much to trim (never cut).
+    if ([form.whatYouWantToDo, form.resourcesBringing, form.resourcesNeeded, form.compensation, form.timelineMilestones].some((v) => v.length > QUEST_PROSE_MAX)) {
+      setError("One answer is longer than its box holds. Trim the answer marked under its box, then send.");
       return;
     }
     setSubmitting(true);
@@ -379,20 +389,21 @@ export default function ProposeQuest() {
               <label htmlFor="quest-what" className="block text-sm font-medium text-foreground mb-2">
                 What do you want to do? <span className="text-destructive">*</span>
               </label>
-              <VoiceArea value={form.whatYouWantToDo} onValue={(v) => set("whatYouWantToDo", v)}
+              <VoiceArea value={form.whatYouWantToDo} onValue={(v) => set("whatYouWantToDo", v)} limit={QUEST_PROSE_MAX}
                 talk={{
                   label: t({ message: "Your quest", context: "voice field label: propose quest description" }),
                   purpose: t({ message: "The quest you want to do: what you would create, and what it brings to the village.", context: "voice field purpose: propose quest description" }),
                 }}
               >
-              <textarea
+              <GrowingField
                 id="quest-what"
                 required
-                rows={4}
+                mic={false}
+                minRows={4}
                 value={form.whatYouWantToDo}
-                onChange={(e) => set("whatYouWantToDo", e.target.value)}
+                onChange={(v) => set("whatYouWantToDo", v)}
                 placeholder="Describe the Quest: what you'd create, and what it brings to the village."
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -401,14 +412,15 @@ export default function ProposeQuest() {
               <label htmlFor="quest-bringing" className="block text-sm font-medium text-foreground mb-2">
                 What resources are you bringing?
               </label>
-              <VoiceArea value={form.resourcesBringing} onValue={(v) => set("resourcesBringing", v)}>
-              <textarea
+              <VoiceArea value={form.resourcesBringing} onValue={(v) => set("resourcesBringing", v)} limit={QUEST_PROSE_MAX}>
+              <GrowingField
                 id="quest-bringing"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.resourcesBringing}
-                onChange={(e) => set("resourcesBringing", e.target.value)}
+                onChange={(v) => set("resourcesBringing", v)}
                 placeholder="Your skills, time, tools, materials, funding, relationships…"
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -417,14 +429,15 @@ export default function ProposeQuest() {
               <label htmlFor="quest-needed" className="block text-sm font-medium text-foreground mb-2">
                 What do you need from {projectName}?
               </label>
-              <VoiceArea value={form.resourcesNeeded} onValue={(v) => set("resourcesNeeded", v)}>
-              <textarea
+              <VoiceArea value={form.resourcesNeeded} onValue={(v) => set("resourcesNeeded", v)} limit={QUEST_PROSE_MAX}>
+              <GrowingField
                 id="quest-needed"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.resourcesNeeded}
-                onChange={(e) => set("resourcesNeeded", e.target.value)}
+                onChange={(v) => set("resourcesNeeded", v)}
                 placeholder="Land access, materials, budget, people, introductions, space…"
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -433,14 +446,15 @@ export default function ProposeQuest() {
               <label htmlFor="quest-compensation" className="block text-sm font-medium text-foreground mb-2">
                 What compensation, if any, do you want?
               </label>
-              <VoiceArea value={form.compensation} onValue={(v) => set("compensation", v)}>
-              <textarea
+              <VoiceArea value={form.compensation} onValue={(v) => set("compensation", v)} limit={QUEST_PROSE_MAX}>
+              <GrowingField
                 id="quest-compensation"
-                rows={2}
+                mic={false}
+                minRows={2}
                 value={form.compensation}
-                onChange={(e) => set("compensation", e.target.value)}
+                onChange={(v) => set("compensation", v)}
                 placeholder={`${tokenExamples ? `${tokenExamples}, ` : ""}cash, revenue share, a joint venture, or nothing. It's a gift, totally up to you.`}
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>
@@ -449,14 +463,15 @@ export default function ProposeQuest() {
               <label htmlFor="quest-timeline" className="block text-sm font-medium text-foreground mb-2">
                 Timeline &amp; payment milestones, if any
               </label>
-              <VoiceArea value={form.timelineMilestones} onValue={(v) => set("timelineMilestones", v)}>
-              <textarea
+              <VoiceArea value={form.timelineMilestones} onValue={(v) => set("timelineMilestones", v)} limit={QUEST_PROSE_MAX}>
+              <GrowingField
                 id="quest-timeline"
-                rows={3}
+                mic={false}
+                minRows={3}
                 value={form.timelineMilestones}
-                onChange={(e) => set("timelineMilestones", e.target.value)}
+                onChange={(v) => set("timelineMilestones", v)}
                 placeholder="Rough phases, dates, and any milestone-based payments you'd propose."
-                className={`${field} resize-y`}
+                className={field}
               />
               </VoiceArea>
             </div>

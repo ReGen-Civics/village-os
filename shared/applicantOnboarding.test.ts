@@ -5,7 +5,9 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  asksReferences,
   byStageThenDate,
+  memberTrackOf,
   mayAssignOwners,
   mayReadReference,
   ONBOARDING_REFERENCES_MAX,
@@ -25,16 +27,18 @@ describe("the reference list", () => {
     expect(out.ok && out.value.map((r) => r.name)).toEqual(["Ana Ref", "Ben"]);
   });
   it("leaves the ally line optional and needs a name, a way to reach them and how they know the applicant", () => {
-    expect(parseReferenceList([ref({ ally: "" })]).ok).toBe(true);
+    expect(parseReferenceList([ref({ ally: "" }), ref({ name: "Ben", contact: "ben@example.test" })]).ok).toBe(true);
+    // At least two (the lead, 19 Nov 2026): one alone is refused.
+    expect(parseReferenceList([ref()])).toEqual({ ok: false, error: "too_few", row: null });
     expect(parseReferenceList([ref({ how: "" })])).toEqual({ ok: false, error: "needs_all", row: 0 });
     expect(parseReferenceList([ref(), ref({ contact: "not a way to reach", name: "C" })])).toEqual({ ok: false, error: "contact", row: 1 });
   });
-  it("refuses none, the same reference twice and more than five", () => {
+  it("refuses none, the same reference twice and more than ten", () => {
     expect(parseReferenceList([])).toEqual({ ok: false, error: "none", row: null });
     expect(parseReferenceList([ref(), ref({ name: "Again", contact: "ANA@example.test" })])).toEqual({ ok: false, error: "twice", row: 1 });
     const six = Array.from({ length: ONBOARDING_REFERENCES_MAX + 1 }, (_, i) => ref({ name: `R${i}`, contact: `r${i}@example.test` }));
     expect(parseReferenceList(six)).toMatchObject({ ok: false, error: "too_many" });
-    // CONTROL: five is fine.
+    // CONTROL: ten is fine.
     expect(parseReferenceList(six.slice(0, ONBOARDING_REFERENCES_MAX)).ok).toBe(true);
   });
 });
@@ -156,5 +160,29 @@ describe("the admin list order", () => {
       { id: "a", stage: "review" as const, confirmedAt: "2026-11-02T00:00:00Z" },
     ];
     expect(byStageThenDate(rows).map((r) => r.id)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("references for a member's first long-term role (the lead, 19 Nov 2026)", () => {
+  it("an open proposal may always be asked; a member only while they hold no live role seat", () => {
+    expect(asksReferences("open", 3)).toBe(true);
+    expect(asksReferences("member", 0)).toBe(true);
+    // CONTROL: a member who already holds a role is not asked.
+    expect(asksReferences("member", 1)).toBe(false);
+  });
+  it("walks the references, the follow-ups and the decision, never a shortlist or a final conversation", () => {
+    const facts = { decided: null, refsAsked: false, refsGiven: false, references: [] as Array<{ followedUp: boolean }> };
+    const ask = memberTrackOf(facts);
+    expect(ask.stages.map((s) => s.key)).toEqual(["received", "references", "followups", "decision"]);
+    expect([ask.now, ask.primary]).toEqual(["references", "ask_references"]);
+    expect(memberTrackOf({ ...facts, refsAsked: true }).primary).toBe("wait_applicant");
+    expect(memberTrackOf({ ...facts, refsAsked: true, refsGiven: true, references: [{ followedUp: false }] }).primary).toBe("follow_up");
+    expect(memberTrackOf({ ...facts, refsAsked: true, refsGiven: true, references: [{ followedUp: true }] }).primary).toBe("decide");
+    const decided = memberTrackOf({ ...facts, decided: "adopted" });
+    expect(decided.primary).toBe("none");
+    expect(decided.stages.find((s) => s.key === "references")?.state).toBe("skipped");
+  });
+  it("doubles the status page's references to ten", () => {
+    expect(ONBOARDING_REFERENCES_MAX).toBe(10);
   });
 });

@@ -10,7 +10,9 @@
  * The rules are shared/applicantOnboarding.ts and the doors
  * server/routes/applicantOnboarding.ts. The door answers 404 to anybody who is
  * not part of this application, and to the applicant, and the panel then
- * renders nothing. Nothing here ranks, scores or judges the applicant: the
+ * renders nothing. A member's own application for a first long-term role
+ * (pages/SeatApplication.tsx) gets the same panel with its shorter track: the
+ * references, the follow-ups and the decision. Nothing here ranks, scores or judges the applicant: the
  * scorecards are shown as written, untotalled.
  */
 import { useCallback, useEffect, useState } from "react";
@@ -71,9 +73,11 @@ export interface WalkthroughProps {
   applicationRef: string;
   /** The page reloads its own data after an act here (the decision panel reads the same steps). */
   onChanged?: () => void;
+  /** Where "Go to the decision" leads on this page: the open proposal's decide panel, or a member application's holder card. */
+  decideHref?: string;
 }
 
-export default function Walkthrough({ applicationRef, onChanged }: WalkthroughProps) {
+export default function Walkthrough({ applicationRef, onChanged, decideHref = "#op-decide-panel" }: WalkthroughProps) {
   const [w, setW] = useState<ServedWalkthrough | null>(null);
   const [busy, setBusy] = useState(false);
   const [said, setSaid] = useState<{ ok: boolean; text: string } | null>(null);
@@ -126,7 +130,7 @@ export default function Walkthrough({ applicationRef, onChanged }: WalkthroughPr
         return <a className={BTN_PRIMARY} href="#scorecards">{label}</a>;
       case "review":
       case "decide":
-        return <a className={BTN_PRIMARY} href="#op-decide-panel">{label}</a>;
+        return <a className={BTN_PRIMARY} href={decideHref}>{label}</a>;
     }
   })();
 

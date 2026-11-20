@@ -14,6 +14,7 @@
  * referrer and no opener: the page never fetches or previews it.
  */
 import { useLingui } from "@lingui/react/macro";
+import { LimitSigns } from "@/components/form/LimitSigns";
 import { FileText, Link2, Paperclip, Plus, X } from "lucide-react";
 import {
   PROPOSAL_FILES_MAX,
@@ -47,6 +48,7 @@ export function AttachmentFields({
   files,
   onFiles,
   invalid,
+  together,
 }: {
   links: ProposalLink[];
   onLinks: (next: ProposalLink[]) => void;
@@ -54,15 +56,22 @@ export function AttachmentFields({
   onFiles: (next: File[]) => void;
   /** The server's refusal, when it is about these fields: the form says it at the top; here the field is marked. */
   invalid?: { field: "links" | "files"; message: string } | null;
+  /** The recordings and clips that go with the files (only with the tick), and the room one post has for them all (components/openProposal/uploadSize.ts). */
+  together?: { voiceBytes: number; room: number };
 }) {
   const { t } = useLingui();
   const rows = links.length ? links : [EMPTY_LINK];
   const setRow = (i: number, next: ProposalLink) => onLinks(rows.map((r, k) => (k === i ? next : r)));
   const tooBig = files.find((f) => f.size > PROPOSAL_FILE_MAX_BYTES);
+  // Every file picked is kept and listed (the ops request of 19 Nov 2026: nothing dropped unseen); past the count,
+  // the list says how many to remove and the send waits.
   const add = (picked: FileList | null) => {
     if (!picked) return;
-    onFiles([...files, ...Array.from(picked)].slice(0, PROPOSAL_FILES_MAX));
+    onFiles([...files, ...Array.from(picked)]);
   };
+  const extra = Math.max(0, files.length - PROPOSAL_FILES_MAX);
+  const total = files.reduce((n, f) => n + f.size, 0) + (together?.voiceBytes ?? 0);
+  const overTogether = together ? total - together.room : 0;
   const mb = PROPOSAL_FILE_MAX_BYTES / 1024 / 1024;
   return (
     <div className="grid gap-5" data-attachments="">
@@ -78,21 +87,20 @@ export function AttachmentFields({
               <input
                 aria-label={t({ message: `Link ${i + 1}: what it is`, context: "open proposal attachments" })}
                 placeholder={t({ message: "What it is", context: "open proposal link label placeholder" })}
-                maxLength={PROPOSAL_LINK_LABEL_MAX}
                 value={r.label}
                 onChange={(e) => setRow(i, { ...r, label: e.target.value })}
                 className={FIELD}
+                aria-invalid={r.label.length > PROPOSAL_LINK_LABEL_MAX || undefined}
               />
               <input
                 type="url"
                 inputMode="url"
                 aria-label={t({ message: `Link ${i + 1}: web address`, context: "open proposal attachments" })}
                 placeholder={HTTPS}
-                maxLength={PROPOSAL_LINK_URL_MAX}
                 value={r.url}
                 onChange={(e) => setRow(i, { ...r, url: e.target.value })}
                 className={FIELD}
-                aria-invalid={bad || undefined}
+                aria-invalid={bad || r.url.length > PROPOSAL_LINK_URL_MAX || undefined}
               />
               {rows.length > 1 && (
                 <button type="button" className={SMALL_BUTTON} onClick={() => onLinks(rows.filter((_, k) => k !== i))}>
@@ -100,6 +108,10 @@ export function AttachmentFields({
                   <span className="sr-only">{t({ message: `Remove link ${i + 1}`, context: "open proposal attachments" })}</span>
                 </button>
               )}
+              <div className="sm:col-span-3 grid gap-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+                <LimitSigns value={r.label} max={PROPOSAL_LINK_LABEL_MAX} voice={false} />
+                <LimitSigns value={r.url} max={PROPOSAL_LINK_URL_MAX} voice={false} />
+              </div>
               {bad && (
                 <p className="text-sm text-destructive sm:col-span-3" role="alert">
                   {t`Each link has to be a full web address starting with https://.`}
@@ -118,7 +130,7 @@ export function AttachmentFields({
         )}
       </fieldset>
 
-      <fieldset className="grid gap-3" aria-invalid={invalid?.field === "files" || !!tooBig || undefined}>
+      <fieldset className="grid gap-3" aria-invalid={invalid?.field === "files" || !!tooBig || extra > 0 || overTogether > 0 || undefined}>
         <legend className="mb-1 text-sm font-semibold text-card-foreground">{t({ message: "Files (optional)", context: "open proposal attachments" })}</legend>
         <p className="text-sm text-muted-foreground">{t`Up to ${PROPOSAL_FILES_MAX} files: PDF, Word (.docx), PNG or JPG, ${mb} MB each.`}</p>
         {files.length > 0 && (
@@ -157,6 +169,18 @@ export function AttachmentFields({
         {tooBig && (
           <p className="text-sm text-destructive" role="alert">
             {t`Each file has to be ${mb} MB or less.`}
+          </p>
+        )}
+        {extra > 0 && (
+          <p className="text-sm font-semibold text-foreground" role="alert" data-files-extra={extra}>
+            {t({ message: `You attached ${files.length} files. Up to ${PROPOSAL_FILES_MAX} can be sent: remove ${extra} to send.`, context: "open proposal attachments" })}
+          </p>
+        )}
+        {together && total > 0 && (
+          <p className={`text-sm ${overTogether > 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`} data-upload-together="">
+            {overTogether > 0
+              ? t({ message: `Your files and recordings come to ${fileSizeWords(total)}, ${fileSizeWords(overTogether)} more than one application can carry. Remove a file or a recording to send.`, context: "open proposal attachments" })
+              : t({ message: `Files and recordings together: ${fileSizeWords(total)} of ${fileSizeWords(together.room)}.`, context: "open proposal attachments" })}
           </p>
         )}
       </fieldset>

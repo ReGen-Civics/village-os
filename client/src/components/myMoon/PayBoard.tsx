@@ -24,6 +24,7 @@ import {
   PAY_BOARD_ROUTES, monthOf, type CashLineStatus, type PayBoard as PayBoardData, type PayBoardCashLine, type PayBoardMember, type PayBoardTokenLine, type TokenLineStatus,
 } from "@shared/moonRewardReview";
 import * as api from "./moonApi";
+import { useShareNames } from "@/components/ContributionWord";
 import { ERROR, INPUT, LABEL, MUTED, SMALL_BTN } from "./moonUi";
 
 const CHIP = "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium";
@@ -56,10 +57,13 @@ function useStatusWords(): Record<CashLineStatus | TokenLineStatus, string> {
   };
 }
 
-/** A token's name in words: the two End of Moon issues, or its slug. */
+/**
+ * A token's name in words: the two End of Moon issues under the village's own words (the contribution token from the
+ * vocabulary, never the registry's "Earned Equity", as 1.3.28 set), or its slug.
+ */
 export function useTokenName(): (slug: string) => string {
-  const { t } = useLingui();
-  return (slug) => (slug === "earned-equity" ? t({ message: "Earned Equity", context: "pay board" }) : slug === "credits" ? t({ message: "Credits", context: "pay board" }) : slug);
+  const names = useShareNames();
+  return (slug) => (slug === "earned-equity" ? names.equity : slug === "credits" ? names.credits : slug);
 }
 
 function StatusChip({ status }: { status: CashLineStatus | TokenLineStatus }) {

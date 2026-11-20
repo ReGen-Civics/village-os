@@ -13,6 +13,15 @@
  *     (`refs_asked`, `refs_given`).
  *   - the references themselves live in `application_references` (0412):
  *     third-party personal data, read only through `mayReadReference`.
+ *   - REFERENCES ARE ASKED of an open proposal once shortlisted, and of a
+ *     member's own application (`sa-` refs) when the member holds no live role
+ *     seat, so it is their first long-term role (the lead, 19 Nov 2026:
+ *     "someone could be a member for a minor contribution in another way and
+ *     would still want references for holding a long-term role"). A member who
+ *     already holds a role is not asked (`asksReferences`). A member application
+ *     has no shortlist or conversations here, so its track is shorter
+ *     (`memberTrackOf`), and the member gives the references on their own
+ *     application's page.
  *   - the FINAL INTERVIEW is a conversation in the existing model
  *     (`application_interviews`, `is_final` = 1) held by the role that makes
  *     the final call. The DECISION is the existing adopt or decline.
@@ -32,6 +41,7 @@
  * now. The role that makes the final call is a setting too
  * (`org.final_call_role`). Neither names a person in code.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
 // ── The settings ────────────────────────────────────────────────────────────
 
@@ -57,12 +67,13 @@ export function shortlistOf(steps: ReadonlyArray<{ kind: string; detail?: unknow
 
 // ── The references ──────────────────────────────────────────────────────────
 
-export const ONBOARDING_REFERENCES_MAX = 5;
-export const ONBOARDING_REFERENCES_MIN = 1;
-export const REF_NAME_MAX = 80;
-export const REF_CONTACT_MAX = 120;
-export const REF_HOW_MAX = 300;
-export const REF_ALLY_MAX = 400;
+export const ONBOARDING_REFERENCES_MAX = APPLY_COUNTS.statusReferences;
+/** The fewest references the applicant gives here (the lead, 19 Nov 2026: "at least 2, we prefer 3"). */
+export const ONBOARDING_REFERENCES_MIN = APPLY_COUNTS.referencesMin;
+export const REF_NAME_MAX = APPLY_TEXT.statusRefName;
+export const REF_CONTACT_MAX = APPLY_TEXT.statusRefContact;
+export const REF_HOW_MAX = APPLY_TEXT.statusRefHow;
+export const REF_ALLY_MAX = APPLY_TEXT.statusRefAlly;
 export const FOLLOWUP_NOTE_MAX = 2000;
 
 /** One reference as the applicant gives it. */
@@ -89,7 +100,7 @@ export function reachable(contact: string): boolean {
 const clean = (v: unknown): string => String(typeof v === "string" ? v : "").replace(/\s+/g, " ").trim();
 
 /** The reasons a list is refused, in the applicant's language (shared/applicantWords.ts `status.referenceForm.errors`). */
-export type ReferenceError = "none" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
+export type ReferenceError = "none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long";
 
 export type ReferenceParse = { ok: true; value: GivenReference[] } | { ok: false; error: ReferenceError; row: number | null };
 
@@ -118,8 +129,19 @@ export function parseReferenceList(raw: unknown): ReferenceParse {
     out.push({ name, contact, how, ally });
     if (out.length > ONBOARDING_REFERENCES_MAX) return { ok: false, error: "too_many", row: i };
   }
-  if (out.length < ONBOARDING_REFERENCES_MIN) return { ok: false, error: "none", row: null };
+  if (out.length === 0) return { ok: false, error: "none", row: null };
+  if (out.length < ONBOARDING_REFERENCES_MIN) return { ok: false, error: "too_few", row: null };
   return { ok: true, value: out };
+}
+
+// ── Whose application asks for references ───────────────────────────────────
+
+/**
+ * WHETHER AN APPLICATION ASKS FOR REFERENCES (the lead, 19 Nov 2026). An open proposal always may (once shortlisted).
+ * A member's own application only for a first long-term role: the member holds no live role seat now.
+ */
+export function asksReferences(kind: "open" | "member", liveRoleSeats: number): boolean {
+  return kind === "open" || liveRoleSeats <= 0;
 }
 
 // ── Who reads a reference ───────────────────────────────────────────────────
@@ -284,6 +306,43 @@ export function trackOf(f: TrackFacts, roles: TrackRoles): Track {
   }
 }
 
+export interface MemberTrackFacts {
+  decided: "adopted" | "declined" | "withdrawn" | null;
+  refsAsked: boolean;
+  refsGiven: boolean;
+  references: ReadonlyArray<{ followedUp: boolean }>;
+}
+
+/** The stages a member's first-role application walks here: no review, shortlist or conversations, which its own page holds. */
+export const MEMBER_TRACK: readonly TrackStage[] = ["received", "references", "followups", "decision"];
+
+/**
+ * WHERE A MEMBER'S FIRST-ROLE APPLICATION STANDS on its references: asked, given, followed up, then the decision on
+ * the application's own page. Who acts is said as a role, never a person, never a score.
+ */
+export function memberTrackOf(f: MemberTrackFacts): Track {
+  const followedUp = f.refsGiven && f.references.every((r) => r.followedUp);
+  const state: Record<TrackStage, TrackState> = {
+    received: "done",
+    review: "skipped",
+    shortlist: "skipped",
+    references: f.refsGiven ? "done" : "now",
+    followups: !f.refsGiven ? "later" : followedUp ? "done" : "now",
+    final_interview: "skipped",
+    decision: f.decided ? "done" : followedUp ? "now" : "later",
+  };
+  if (f.decided) for (const k of MEMBER_TRACK) if (state[k] === "now" || state[k] === "later") state[k] = k === "decision" ? "done" : "skipped";
+  const stages = MEMBER_TRACK.map((key) => ({ key, label: TRACK_WORDS[key], state: state[key] }));
+  if (f.decided) return { stages, now: "decision", who: "Nobody. The decision is made.", next: "Nothing is left to do here.", primary: "none" };
+  if (!f.refsGiven) {
+    return f.refsAsked
+      ? { stages, now: "references", who: "The applicant", next: "The member adds their references on their application's page.", primary: "wait_applicant" }
+      : { stages, now: "references", who: PLACING_POWER_WORDS, next: "Ask the member for references. This is their first long-term role.", primary: "ask_references" };
+  }
+  if (!followedUp) return { stages, now: "followups", who: "The follow-up owners", next: "Each owner follows up with their reference and writes notes.", primary: "follow_up" };
+  return { stages, now: "decision", who: "The people who adopt this application", next: "Read the follow-up notes, then adopt or decline on this page.", primary: "decide" };
+}
+
 /** The order of the admin list: by stage, then by the day the application arrived. Never by anything about the person. */
 export function byStageThenDate<T extends { stage: TrackStage; confirmedAt: string | null }>(rows: readonly T[]): T[] {
   const at = (r: T) => (r.confirmedAt ? Date.parse(r.confirmedAt) : 0) || 0;
@@ -320,6 +379,7 @@ export const ONBOARDING_WORDS = {
   referencesAskedNow: "Asked. The letter went to the applicant in their language.",
   referencesAskedAlready: "References were already asked for.",
   referencesNeedShortlist: "Shortlist the application before asking for references.",
+  referencesFirstRoleOnly: "References are asked of a member only for their first long-term role, and this member already holds a role.",
   referencesNone: "No references yet.",
   owner: "Follows up",
   ownerDefault: (role: string) => `${role} (the default)`,
@@ -359,4 +419,7 @@ export const ONBOARDING_NOTICES = {
   referencesIn: (roles: readonly string[]) => `References arrived for an application for ${roles.join(", ") || "a role"}. Pick who follows up with each.`,
   ownerTitle: (roles: readonly string[]) => `You follow up with a reference for an application for ${roles.join(", ") || "a role"}`,
   ownerBody: "Open the application to read how to reach them, then write your follow-up notes on the reference.",
+  /** To the member, on their own application for a first long-term role. No name or contact rides on it. */
+  memberAskedTitle: (roles: readonly string[]) => `References are asked for your application for ${roles.join(", ") || "a role"}`,
+  memberAskedBody: "This is your first long-term role with us. Add the people who know your work on your application's page.",
 } as const;

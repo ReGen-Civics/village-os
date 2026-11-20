@@ -30,8 +30,9 @@ import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } f
 import { LAST_STONE, stoneOfField } from "./stones";
 import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
-import MicInput from "@/components/form/MicInput";
+import GrowingField from "@/components/form/GrowingField";
 import { BLANK_GOAL, GOAL_LIMITS } from "@shared/proposalGoals";
+import { waitlistHref } from "@shared/roleListing";
 import type { DraftableGoal } from "@shared/seraDrafts";
 import type { FoundingSetup } from "@shared/foundingApplication";
 import type { KnowUsLinks } from "@shared/knowUsLinks";
@@ -255,13 +256,13 @@ export function ValueItems({
                 <label htmlFor={`${prefix}-${i}-title`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "What you will bring", context: "founding application value" })}
                 </label>
-                <MicInput id={`${prefix}-${i}-title`} clip={`value-${i + 1}-title`} maxLength={GOAL_LIMITS.title} value={g.title} onChange={(title) => set(i, { title, seraDraft: false })} className={`${FIELD} py-3`} />
+                <GrowingField minRows={2} id={`${prefix}-${i}-title`} clip={`value-${i + 1}-title`} limit={GOAL_LIMITS.title} value={g.title} onChange={(title) => set(i, { title, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               <div>
                 <label htmlFor={`${prefix}-${i}-done`} className={`mb-2 block ${LABEL}`}>
                   {t({ message: "How we will know it is done", context: "founding application value" })}
                 </label>
-                <MicInput id={`${prefix}-${i}-done`} clip={`value-${i + 1}-done`} maxLength={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => set(i, { doneWhen, seraDraft: false })} className={`${FIELD} py-3`} />
+                <GrowingField minRows={2} id={`${prefix}-${i}-done`} clip={`value-${i + 1}-done`} limit={GOAL_LIMITS.doneWhen} value={g.doneWhen} onChange={(doneWhen) => set(i, { doneWhen, seraDraft: false })} className={`${FIELD} py-3`} />
               </div>
               {goals.length > 0 && (
                 <div>
@@ -371,6 +372,31 @@ export function FirstDayFacts({ setup, firstConversation = null }: { setup: Foun
 }
 
 /** The quiet way back to the roles, under the title when more than one is open. */
+/**
+ * A COMING-SOON ROLE TAKES NO APPLICATION (the lead, 19 Nov 2026): a card's Apply link or a link naming one first
+ * opens this in place of the form, with the way to its waitlist on the roles page. A draft this device keeps for it
+ * is left as it is.
+ */
+export function NotOpenYet({ role, children }: { role: { id: string; name: string; circle: string }; children?: ReactNode }) {
+  const { t } = useLingui();
+  return (
+    <section aria-labelledby="not-open-h" className={`${CARD} grid gap-4`} data-role-not-open={role.id}>
+      <p className={EYEBROW}>{role.circle}</p>
+      <h1 id="not-open-h" className="break-words font-display text-4xl leading-tight text-card-foreground">
+        {t({ message: `${role.name} is not open yet`, context: "founding application, a coming-soon role" })}
+      </h1>
+      <p className="text-base leading-relaxed text-foreground">
+        {t({ message: "This role takes no applications yet. Join its waitlist to hear when it opens.", context: "founding application, a coming-soon role" })}
+      </p>
+      <a href={waitlistHref(role.id)} className={`${DOOR} justify-self-start`} data-waitlist-role={role.id}>
+        {t({ message: `Join the waitlist for ${role.name}`, context: "founding application, a coming-soon role's waitlist" })}
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </a>
+      {children}
+    </section>
+  );
+}
+
 export function OtherRole({ onChoose }: { onChoose: () => void }) {
   const { t } = useLingui();
   return (
@@ -491,19 +517,37 @@ function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyAr
   );
 }
 
-export function RewardsBeside({ setup, splits = [] }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }> }) {
+/**
+ * Open on The terms, where the split is set; `collapsed` on every other step, folded to its heading so the same box
+ * does not repeat beside all of them (the roles lane, 19 Nov 2026). Folded, it still opens with a tap.
+ */
+export function RewardsBeside({ setup, splits = [], collapsed = false }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }>; collapsed?: boolean }) {
   const { t } = useLingui();
-  return (
-    <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
-      <p id="rewards-beside-h" className={EYEBROW}>
-        {t({ message: "How rewards work", context: "founding application compensation" })}
-      </p>
+  const heading = t({ message: "How rewards work", context: "founding application compensation" });
+  const body = (
+    <>
       <OwnSplits setup={setup} splits={splits} />
       {setup.atRisk && (
         <p className="text-xs leading-relaxed text-muted-foreground">
           <TokenText text={setup.atRisk} />
         </p>
       )}
+    </>
+  );
+  if (collapsed) {
+    return (
+      <details className="rounded-2xl border border-border bg-card px-6 py-2 shadow-sm" data-rewards-beside="" data-collapsed="">
+        <summary className={`${EYEBROW} flex min-h-11 cursor-pointer items-center`}>{heading}</summary>
+        <div className="grid gap-3 pb-4">{body}</div>
+      </details>
+    );
+  }
+  return (
+    <section aria-labelledby="rewards-beside-h" className="grid gap-3 rounded-2xl border border-border bg-card p-6 shadow-sm" data-rewards-beside="">
+      <p id="rewards-beside-h" className={EYEBROW}>
+        {heading}
+      </p>
+      {body}
     </section>
   );
 }

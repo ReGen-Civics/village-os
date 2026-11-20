@@ -16,6 +16,7 @@
  * Pure and dependency-free, so the form, the open-proposal route and the member-door route judge
  * with one set of words.
  */
+import { APPLY_TEXT } from "./applyLimits";
 
 /** The eight, in the order the terms step reads them. `goals` is the role's goals each moon. */
 export const TERM_KEYS = ["term", "clocks", "rhythm", "allowance", "bonus", "goals", "scoreboard", "ending"] as const;
@@ -44,7 +45,7 @@ export const COMMITMENT_CHOICES = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] a
 export const isCommitment = (v: unknown): v is number => typeof v === "number" && (COMMITMENT_CHOICES as readonly number[]).includes(v);
 export const commitmentWords = (pct: number): string => `Commitment: ${pct}%`;
 
-export const TERM_NOTE_MAX = 300;
+export const TERM_NOTE_MAX = APPLY_TEXT.termNote;
 
 export interface TermAnswer {
   choice: "accept" | "talk";

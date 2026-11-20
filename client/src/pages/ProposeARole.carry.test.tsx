@@ -61,11 +61,15 @@ const applyFor = async (id: string, form: unknown = FORM) => {
 const value = (label: string | RegExp) => (screen.getByLabelText(label) as HTMLInputElement).value;
 
 /** The first application, whole: their own words, the background-check consent, the role's answers and its commitment, then Send. */
-const tickRemember = () => fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+/** The box starts ticked (the lead, 19 Nov 2026): set it to what the test needs. */
+const setRemember = (on: boolean) => {
+  const box = screen.getByLabelText("Remember my answers on this device") as HTMLInputElement;
+  if (box.checked !== on) fireEvent.click(box);
+};
 
 async function sendFirst(form: unknown = FORM, { remember = true }: { remember?: boolean } = {}) {
   await applyFor("r-gate", form);
-  if (remember) tickRemember();
+  setRemember(remember);
   pressNext();
   fireEvent.change(screen.getByLabelText(OPEN_WORDS.nameLabel), { target: { value: "Rowan" } });
   fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@example.test" } });
@@ -90,7 +94,7 @@ async function expectCarried() {
   expect(value(OPEN_WORDS.nameLabel)).toBe("Rowan");
   expect(value(OPEN_WORDS.emailLabel)).toBe("rowan@example.test");
   expect(value(/Where you are based/)).toBe("San José");
-  expect((document.querySelector('[data-role-card] input[id$="-0-title"]') as HTMLInputElement).value).toBe("Open the gate each dawn");
+  expect((document.querySelector('[data-role-card] textarea[id$="-0-title"]') as HTMLInputElement).value).toBe("Open the gate each dawn");
   // The role's own answers, references, consent and the price start fresh.
   expect(value(OPEN_WORDS.whyLabel)).toBe("");
   expect(value(OPEN_WORDS.aimLabel)).toBe("");
@@ -175,6 +179,8 @@ describe("a second application", () => {
     await applyFor("r-host");
     expect(document.querySelector("[data-carried-over]")).toBeNull();
     expect(value(OPEN_WORDS.nameLabel)).toBe("");
+    // Their own untick holds for this browser: the box starts unticked from now on (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(false);
   });
 
   it("with only one role on offer, the sent screen has no door to another", async () => {

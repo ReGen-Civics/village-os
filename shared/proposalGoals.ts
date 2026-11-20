@@ -19,8 +19,9 @@
  * answers are JSON). Both read this file, so a goal is judged the same way
  * whichever door it came through.
  */
+import { APPLY_COUNTS, APPLY_TEXT } from "./applyLimits";
 
-export const GOAL_LIMITS = { min: 1, aimMin: 3, aimMax: 5, max: 8, title: 160, doneWhen: 200, text: 300 } as const;
+export const GOAL_LIMITS = { min: 1, aimMin: 3, aimMax: 5, max: APPLY_COUNTS.goalsPerRole, title: APPLY_TEXT.goalTitle, doneWhen: APPLY_TEXT.goalDoneWhen, text: APPLY_TEXT.goalText } as const;
 
 /** The days ahead of today a goal's date may fall: one moon, with a little room. */
 export const GOAL_DATE_DAYS = { before: 1, after: 31 } as const;

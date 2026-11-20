@@ -16,7 +16,7 @@
  *
  * NOTHING SAID IS LOST QUIETLY (an applicant, 17 Nov 2026: "I just recorded like
  * 5 minutes ... it doesn't seem to play back"). Whatever ends a recording, the
- * person's Stop, the five-minute limit, or the browser itself (the microphone
+ * person's Stop, the time limit (7 minutes a take), or the browser itself (the microphone
  * taken by another app, a phone call, the tab put away), the sound captured so
  * far becomes a take, the button comes back, and `problem` says what happened.
  * A take with no sound in it is said, never dropped in silence. Where the speech
@@ -27,6 +27,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { VOICE_NOTE_MAX_SECONDS } from "@shared/voiceNotes";
+import { TAKE_WARN_SECONDS_LEFT } from "@shared/applyLimits";
 import { speechLang } from "@/lib/speechLang";
 
 /** The browser's speech engine, read when it is needed (so a test can stand one in). */
@@ -112,12 +113,30 @@ export interface FinishedTake {
  */
 export type RecorderProblem = "blocked" | "noMic" | "cut" | "empty" | "limit" | null;
 
+/**
+ * THE GENTLE WARNING (the ops request of 19 Nov 2026): once, when TAKE_WARN_SECONDS_LEFT remain, a short buzz where
+ * the phone can (`navigator.vibrate`), and `warned` turns on so the page can say it. Only for a take long enough
+ * that the warning is news, never at the start of a short clip. Never throws.
+ */
+export function shouldWarn(elapsed: number, limit: number, already: boolean): boolean {
+  return !already && limit > TAKE_WARN_SECONDS_LEFT * 2 && limit - elapsed <= TAKE_WARN_SECONDS_LEFT;
+}
+export function buzz(): void {
+  try {
+    (navigator as Navigator & { vibrate?: (p: number | number[]) => boolean }).vibrate?.([120, 80, 120]);
+  } catch {
+    /* no vibration here */
+  }
+}
+
 export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSeconds: number = VOICE_NOTE_MAX_SECONDS) {
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [live, setLive] = useState("");
   const [noWords, setNoWords] = useState(false);
   const [problem, setProblem] = useState<RecorderProblem>(null);
+  const [warned, setWarned] = useState(false);
+  const warnedRef = useRef(false);
   const on = useRef(false);
   /** Who ended the recording: the person, the time limit, or (null) the browser itself. */
   const asked = useRef<"person" | "limit" | null>(null);
@@ -240,6 +259,8 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
     interim.current = "";
     hearing.current = true;
     asked.current = null;
+    warnedRef.current = false;
+    setWarned(false);
     let media: MediaStream;
     try {
       media = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -322,6 +343,11 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
     timer.current = window.setInterval(() => {
       const s = (Date.now() - began.current) / 1000;
       setElapsed(s);
+      if (shouldWarn(s, limit.current, warnedRef.current)) {
+        warnedRef.current = true;
+        setWarned(true);
+        buzz();
+      }
       if (s >= limit.current) stopFor("limit");
     }, 250);
     // The limit, exactly (the lead, 17 Nov 2026: "cut them off at 5 min"): the interval above only notices on its next tick.
@@ -337,5 +363,7 @@ export function useVoiceRecorder(onTake: (take: FinishedTake) => void, maxSecond
 
   /** Whether this browser has a speech engine at all, so the card can say the right thing when no words come. */
   const [hasEngine] = useState(() => !!speechEngine());
-  return { recording, elapsed, live, noWords, problem, engine: hasEngine, start, stop };
+  /** The seconds left in this take, whole, for the timer the page shows while it records. */
+  const left = Math.max(0, Math.ceil(maxSeconds - elapsed));
+  return { recording, elapsed, left, warned: recording && warned, live, noWords, problem, engine: hasEngine, start, stop };
 }

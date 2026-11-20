@@ -225,6 +225,8 @@ export interface ApplicantMessages {
       step: string;
       heading: string;
       line: string;
+      /** The line for a member taking on their first long-term role, who was never on a shortlist (shared/applicantOnboarding.ts `asksReferences`). */
+      lineFirstRole: string;
       privacy: string;
       name: string;
       contact: string;
@@ -239,7 +241,9 @@ export interface ApplicantMessages {
       sent: string;
       given(n: number): string;
       failed: string;
-      errors: Record<"none" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+      errors: Record<"none" | "too_few" | "too_many" | "needs_all" | "contact" | "twice" | "too_long", string>;
+      /** The fewest and the preferred number, said under the form's line (the lead, 19 Nov 2026). */
+      howMany: string;
     };
     private: string;
     wait: { heading: string; line: string; quests: string; map: string; events: string };
@@ -470,6 +474,7 @@ const en: ApplicantMessages = {
       step: "References",
       heading: "Your references",
       line: "You are on our shortlist. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
+      lineFirstRole: "This is your first long-term role with us, so we ask for references. Add the people connected with this work who know you, ideally people who could also become allies or partners of the village.",
       privacy: "Only the people who review your application, and the person who follows up with each reference, read these details. No AI reads them. They are deleted with your application.",
       name: "Their name",
       contact: "How to reach them",
@@ -477,6 +482,7 @@ const en: ApplicantMessages = {
       how: "How they know you",
       ally: "Why they might be an ally or partner (optional)",
       allyHint: "What they might bring to the village, or how they might work with us.",
+      howMany: "Give at least two references. We prefer three.",
       add: "Add another reference",
       remove: (n) => `Remove reference ${n}`,
       row: (n) => `Reference ${n}`,
@@ -485,8 +491,9 @@ const en: ApplicantMessages = {
       given: (n) => `You gave ${n} ${n === 1 ? "reference" : "references"}. Thank you. If something changes, write to us.`,
       failed: "That did not send. Try again.",
       errors: {
-        none: "Add at least one reference.",
-        too_many: "Add up to five references.",
+        none: "Give at least two references.",
+        too_few: "Give at least two references. We prefer three.",
+        too_many: "Add up to ten references.",
         needs_all: "Give each reference a name, how to reach them and how they know you. Or clear the row.",
         contact: "Give an email address or a phone number we can reach that reference on.",
         twice: "You added the same reference twice.",
@@ -713,6 +720,7 @@ const es: ApplicantMessages = {
       step: "Referencias",
       heading: "Tus referencias",
       line: "Estás en nuestra lista corta. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
+      lineFirstRole: "Este es tu primer rol de largo plazo con nosotros, así que pedimos referencias. Agrega a las personas vinculadas con este trabajo que te conocen, idealmente personas que también podrían ser aliadas o socias de la aldea.",
       privacy: "Solo las personas que revisan tu postulación, y quien da seguimiento a cada referencia, leen estos datos. Ninguna IA los lee. Se borran con tu postulación.",
       name: "Su nombre",
       contact: "Cómo contactarla",
@@ -720,6 +728,7 @@ const es: ApplicantMessages = {
       how: "Cómo te conoce",
       ally: "Por qué podría ser aliada o socia (opcional)",
       allyHint: "Lo que podría aportar a la aldea, o cómo podría trabajar con nosotros.",
+      howMany: "Da al menos dos referencias. Preferimos tres.",
       add: "Agregar otra referencia",
       remove: (n) => `Quitar la referencia ${n}`,
       row: (n) => `Referencia ${n}`,
@@ -728,8 +737,9 @@ const es: ApplicantMessages = {
       given: (n) => `Diste ${n} ${n === 1 ? "referencia" : "referencias"}. Gracias. Si algo cambia, escríbenos.`,
       failed: "No se envió. Inténtalo de nuevo.",
       errors: {
-        none: "Agrega al menos una referencia.",
-        too_many: "Agrega hasta cinco referencias.",
+        none: "Da al menos dos referencias.",
+        too_few: "Da al menos dos referencias. Preferimos tres.",
+        too_many: "Agrega hasta diez referencias.",
         needs_all: "Da a cada referencia un nombre, cómo contactarla y cómo te conoce. O vacía la fila.",
         contact: "Da un correo electrónico o un número de teléfono donde podamos contactar a esa referencia.",
         twice: "Agregaste la misma referencia dos veces.",

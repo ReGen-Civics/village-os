@@ -99,6 +99,8 @@ describe("the agent tool tables are refused the reads", () => {
   });
   it("CONTROL: the same filter does match a route that would read them", () => {
     expect(["GET /api/governance/applications/:ref/scorecards"].filter((r) => /applications\/|scorecards/.test(r))).toHaveLength(1);
+    // And a member's own references door (`sa-` refs, a first long-term role).
+    expect(["GET /api/governance/applications/:ref/references/mine"].filter((r) => /applications\/|references/.test(r))).toHaveLength(1);
   });
   it("admin_request refuses the review's doors, whatever the village's list holds", () => {
     const doc = DEFAULT_AGENT_ADMIN_PATHS;
@@ -111,6 +113,12 @@ describe("the agent tool tables are refused the reads", () => {
       "/api/governance/applications/op-0123456789abcdef0123/shortlist",
       "/api/governance/applications/op-0123456789abcdef0123/references/1/notes",
       "/api/application-status/op-0123456789abcdef0123/references",
+      // A member's own application for a first long-term role (the lead, 19 Nov 2026): its walkthrough, the member's
+      // count of their references and the door they give them through.
+      "/api/governance/applications/sa-0123456789abcdef/walkthrough",
+      "/api/governance/applications/sa-0123456789abcdef/references/mine",
+      "/api/governance/applications/sa-0123456789abcdef/references",
+      "/api/governance/applications/sa-0123456789abcdef/references/1/notes",
     ]) {
       expect(adminRequestDecision("GET", p, doc, "u1").ok, p).toBe(false);
     }

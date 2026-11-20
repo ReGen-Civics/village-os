@@ -40,6 +40,26 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.35 (2026-11-20)
+
+### What changed for your village
+
+- **Room for seven minutes of talking, shown and never cut.** On the role application, "Why you, and why now" holds 8,000 characters and every box that takes voice holds at least 7,500 (about seven minutes of speech). The other applicant limits are tripled: answers, titles and lists. Every limit lives in one place (`shared/applyLimits.ts`) that the page, the server and transcription all read.
+- **Nothing is cut without warning.** Text over a limit is kept in full and shown, and sending waits with a sentence saying how much to trim. Spoken words that would overflow a box are kept whole, with an offer to add them. Speech is no longer cut in any form on the site. Each limited box shows a counter at all times, with a calm notice at 80% and a stronger one at 95%, and a small "?" by each box explains the kinds of limit in plain words.
+- **Recordings: up to 7 minutes each, and unmissable.** Beside the mic: "You can record up to 7 minutes each time." While recording, the time left is always shown. A gentle notice comes at 1 minute left, and a stronger one with a vibration at 30 seconds. At 7:00 the recording stops and keeps every word: "That's 7 minutes, the most for one recording. Your words are kept. Record again to add more."
+- **Full uploads get through.** Files and recordings are written to disk as they arrive, so the server's memory is no longer the limit. Each file and recording now uploads on its own before the application is sent, so a slow phone connection stays inside the host's time limit for one upload. An application can carry up to 6 files, 6 recordings and 24 answer clips (doubled). Admins can see the server's memory, free disk and upload limits on a new capacity view.
+- **The form grows with what people say.** Every box that takes voice is a multi-line box that grows to fit the whole answer.
+- **"Remember my answers on this device" starts ticked**, with "On a shared device, untick it." beside it. A person who unticks it keeps that choice on that browser, and nothing clears a saved draft except the person's own untick or Forget.
+- **Coming-soon roles go to their waitlist.** A coming-soon role cannot be applied for, alone or added to another role: its Apply link and the picker lead to "Join the waitlist for <role>" on the roles page, and the server refuses an application that names one.
+- **References: at least two, we prefer three.** When references are given (leaving them all blank still means a background check), at least two are needed and up to six can be given on the form, ten on the status page. Members applying for their first long-term role are asked for references too. A member application's references are deleted 90 days after it is decided.
+- The My Moon pay board names the contribution token in the village's own word.
+
+### What you must do
+
+Nothing is required. One migration (0415) widens the reference columns; it applies by itself at boot.
+
+---
+
 ## 1.3.34 (2026-11-20)
 
 ### What changed for your village

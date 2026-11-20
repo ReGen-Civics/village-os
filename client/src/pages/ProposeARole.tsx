@@ -18,7 +18,7 @@
  * shows, so Back loses nothing; every check runs in one place
  * (`findProblems`): Continue judges the step you are on, and Send reviews the
  * whole application in walking order, names every gap, and puts the cursor on
- * the first one (components/fireflyPath/stones.ts). Ticked to remember, the answers
+ * the first one (components/fireflyPath/stones.ts). Ticked to remember (the default), the answers
  * are saved on this device, never references or files (fireflyPath/applyRemember.ts).
  *
  * THE FOUNDING REGISTER (Phase A brief): the same night world, quieter.
@@ -41,8 +41,11 @@
  */
 import LoadFailed from "@/components/LoadFailed";
 import GrowingField from "@/components/form/GrowingField";
-import MicInput from "@/components/form/MicInput";
-import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, applicationRequest, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
+import { LimitsAtTop } from "@/components/form/LimitSigns";
+import { attachedBytes, attachmentRoom } from "@/components/openProposal/uploadSize";
+import { sendApplication } from "@/components/openProposal/sendParts";
+import { limitProblems } from "@/components/fireflyPath/limitProblems";
+import { EMPTY_VOICE, useAskBeforeLeaving, VoiceClipsProvider, VoiceInvite, clipLimitsOf, type VoiceClipLimits, type VoiceState } from "@/components/voice/VoiceInvite";
 import type { PieceSuggestion } from "@/components/roleCard/ShapeTheRole";
 import { MembershipAtApplication, type MembershipChoice } from "@/components/openProposal/MembershipAtApplication";
 import { AttachmentFields, linksToSend } from "@/components/openProposal/ProposalAttachments";
@@ -81,12 +84,13 @@ import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components
 import StoneBar from "@/components/fireflyPath/StoneBar";
 import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
-import { ABOUT_PANES, AboutPanes, CompensationShape, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
+import { ABOUT_PANES, AboutPanes, CompensationShape, NotOpenYet, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
-import { needsSafetyNet, sendTimeoutMs, type SendFailure } from "@/components/fireflyPath/applySendFailure";
+import { remembersByDefault } from "@/components/fireflyPath/applyRemember";
+import { needsSafetyNet, type SendFailure } from "@/components/fireflyPath/applySendFailure";
 export { ConfirmProposal } from "@/components/fireflyPath/Thresholds"; // The confirmation link lives with the other threshold; App.tsx and the tests still find it here.
 export { firstUnanswered } from "@/components/fireflyPath/applyPage";
 // Roles added to one application (the lead, 17 Nov 2026): loaded with The terms, off the first view.
@@ -185,8 +189,8 @@ export default function ProposeARole() {
   /** The draft for this role has been read back (or there was none), so saving may begin. */
   const [draftFor, setDraftFor] = useState<string | null>(null);
   const [restored, setRestored] = useState<false | "draft" | "carry">(false);
-  /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Off until ticked; nothing is written before. */
-  const [remember, setRemember] = useState(false);
+  /** Their own choice to keep the answers on this device (fireflyPath/applyRemember.ts). Ticked to start (the lead, 19 Nov 2026), unless this browser unticked it before. */
+  const [remember, setRemember] = useState(remembersByDefault);
   /** The words of the application just sent, held in this page only, so "Apply for another role too" works with nothing kept on the device. */
   const carriedHere = useRef<ApplyCarry | null>(null);
   /** What to put the cursor on after the next draw: the step's heading, or a field with a problem. */
@@ -216,7 +220,8 @@ export default function ProposeARole() {
         if (d?.open) {
           const picked = roleFromLink(wanted, roles, OPEN_APPLY_ROLES);
           setRoleId(picked.id);
-          setExtras(picked.more.map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
+          // A coming-soon role named after the first is not added: its waitlist is on the roles page (the lead, 19 Nov 2026).
+          setExtras(picked.more.filter((id) => !roles.some((r) => r.id === id && r.comingSoon === true)).map((id) => ({ roleId: id, terms: EMPTY_TERMS_STEP })));
           setGone(picked.gone);
         }
       })
@@ -240,6 +245,7 @@ export default function ProposeARole() {
   // THE SAVED DRAFT, read back once the role is known: the words, the step they were on. Never references or files.
   useEffect(() => {
     if (form.kind !== "open" || !roleId || draftFor === roleId) return;
+    if (form.roles.some((r) => r.id === roleId && r.comingSoon === true)) return; // a coming-soon role's draft is never read or touched
     const read = readStoredJson("local", draftKey(roleId, link));
     const own = fromDraft(read.status === "value" ? read.value : null, new Date(), LAST_STONE);
     // No draft of its own: what they wrote in an earlier application, with this role's own answers blank (fireflyPath/applyCarry.ts).
@@ -274,7 +280,7 @@ export default function ProposeARole() {
       setReached(d.reached);
       setRestored(own ? "draft" : "carry");
     }
-    if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // nothing kept starts unticked (1.3.22); the card's slider and split (17 Nov 2026)
+    if (!d) setRampUp(false); setTermsStep((s) => withCardChoice(s, window.location.search, form.roles.find((r) => r.id === roleId))); setDraftFor(roleId); // the box starts as remembersByDefault set it (19 Nov 2026); the card's slider and split (17 Nov 2026)
   }, [form, roleId, link, draftFor]);
 
   /** The draft as toDraft writes it, from what the page holds now. */
@@ -379,6 +385,11 @@ export default function ProposeARole() {
       if (p) add(`roles.${i + 1}`, p === "none" ? OPEN_WORDS.needRoleCommitment : t({ message: `Choose ${extraRoles[i]?.commitmentMin ?? 10}% or more for ${extraRoles[i]?.name ?? ""}.`, context: "founding application check" }));
     });
     if (!agreed.nda) add("agreed", t({ message: "Tick that you will align with the village's confidentiality agreement once you are approved.", context: "founding application check" }));
+    // NOTHING OVER ITS LIMIT GOES, AND NOTHING IS CUT (the ops request of 19 Nov 2026): every answer stays whole in its
+    // box; the send names each one that runs over, with how much to trim, and anything too big to upload.
+    for (const p of limitProblems({ why, about, selfKnowledge, links, aim, items, valuePrefix: prefix, pieceSuggestions, terms: [termsStep, ...extras.map((x) => x.terms)], voice, files, clipsMax: form.kind === "open" ? form.clips.max : 0 }, i18n)) {
+      add(p.field, p.message, p.target === undefined ? targetFor(p.field) : p.target);
+    }
     return orderByStone(found);
   };
 
@@ -441,7 +452,6 @@ export default function ProposeARole() {
     setFailure(null);
     // A send that hangs is a failure too: given up after a while long enough for files on a slow line.
     const stop = new AbortController();
-    let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       const proposal = {
         name,
@@ -472,10 +482,9 @@ export default function ProposeARole() {
         ...(linksToSend(links).length ? { links: linksToSend(links) } : {}),
         ...aboutYouBody(about), ...(pieceSuggestions.length ? { pieceSuggestions } : {}), ...splitBody(termsStep), ...(termsStep.payAsk && (termsStep.payAsk.kind === "negotiate" || termsStep.payAsk.monthly > 0) ? { payAsk: termsStep.payAsk } : {}),
       };
-      // With files or a ticked voice note, the application goes as one field of a multipart post (server/routes/openProposals.ts).
-      const request = applicationRequest(proposal, files, voice);
-      timer = setTimeout(() => stop.abort(), sendTimeoutMs(request.body instanceof FormData));
-      const res = await fetch("/api/open-proposals", { ...request, signal: stop.signal });
+      // Each file, take and clip goes first in a request of its own, inside the host's five minutes, and then the
+      // application naming them; every request has its own window for its size (components/openProposal/sendParts.ts).
+      const res = await sendApplication(proposal, files, voice, { link: link || undefined, signal: stop.signal });
       const data = await res.json().catch(() => ({}));
       // The letter changed while they read it: show it again, untick, and say so.
       if (!res.ok && data?.field === "membership") setLetterRead((n) => n + 1);
@@ -512,7 +521,6 @@ export default function ProposeARole() {
       // The network dropped or the send took too long: the way out, and the draft stays as it is.
       setFailure({ kind: stop.signal.aborted || (e as { name?: string } | null)?.name === "AbortError" ? "timeout" : "network" });
     } finally {
-      if (timer) clearTimeout(timer);
       setSending(false);
     }
   };
@@ -641,6 +649,8 @@ export default function ProposeARole() {
     );
   }
 
+  // A COMING-SOON ROLE takes no application (the lead, 19 Nov 2026): its waitlist in place of the form.
+  if (role.comingSoon) return <Shell>{backDoor}<NotOpenYet role={role}>{form.roles.some((r) => !r.comingSoon && r.id !== role.id) && <OtherRole onChoose={() => choose(null)} />}</NotOpenYet></Shell>;
   const invalid = (field: string) => (problems.some((p) => p.field === field) ? { "aria-invalid": true, "aria-describedby": `propose-problem-${field}` } : {});
   const intro = [
     t({ message: "Before you apply, come and meet us. Tick what you have done so far.", context: "founding application intro" }),
@@ -658,7 +668,7 @@ export default function ProposeARole() {
   ];
   const startWith = (phrase: string) => {
     const next = why.trim() ? `${why.trimEnd()}\n\n${phrase} ` : `${phrase} `;
-    setWhy(next.slice(0, OPEN_WHY_MAX));
+    setWhy(next);
     window.setTimeout(() => {
       const box = document.getElementById("propose-why") as HTMLTextAreaElement | null;
       box?.focus();
@@ -745,6 +755,7 @@ export default function ProposeARole() {
           </p>
         )}
         <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} />
+        <LimitsAtTop className="mt-3" />
         {restored && <RestoredNote kind={restored} />}
         {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
       </header>
@@ -832,7 +843,7 @@ export default function ProposeARole() {
                     </button>
                   ))}
                 </div>
-                <GrowingField id="propose-why" clip="why" counter required minRows={7} maxLength={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
+                <GrowingField id="propose-why" clip="why" required minRows={7} limit={OPEN_WHY_MAX} value={why} onChange={setWhy} className={FIELD} {...invalid("why")} />
                 <Beside id="propose-problem-why" message={problemOn("why")} />
               </div>
               </div>
@@ -852,7 +863,7 @@ export default function ProposeARole() {
                   <label htmlFor="propose-self" className={`mb-2 block ${LABEL}`}>
                     {t({ message: "Your Human Design or Gene Keys (optional)", context: "founding application about" })}
                   </label>
-                  <MicInput id="propose-self" maxLength={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
+                  <GrowingField minRows={2} id="propose-self" limit={SELF_KNOWLEDGE_MAX} value={selfKnowledge} onChange={setSelfKnowledge} className={FIELD} {...invalid("selfKnowledge")} />
                   <p className={`mt-2 ${HINT}`}>{t({ message: "For your own profile once you join. The people who decide never see it.", context: "founding application about" })}</p>
                   <Beside id="propose-problem-selfKnowledge" message={problemOn("selfKnowledge")} />
                 </div>
@@ -861,6 +872,7 @@ export default function ProposeARole() {
                   onLinks={setLinks}
                   files={files}
                   onFiles={setFiles}
+                  together={{ voiceBytes: attachedBytes([], voice), room: attachmentRoom(form.clips.max) }}
                   invalid={error && (error.field === "links" || error.field === "files") ? { field: error.field, message: error.message } : null}
                 />
               </div>
@@ -876,10 +888,10 @@ export default function ProposeARole() {
                 <label htmlFor="propose-aim" className={`mb-2 block ${LABEL}`}>
                   {t({ message: "Your aim in this role, in a line", context: "founding application value" })}
                 </label>
-                <MicInput id="propose-aim" clip="aim" required maxLength={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
+                <GrowingField minRows={2} id="propose-aim" clip="aim" required limit={OPEN_AIM_MAX} value={aim} onChange={setAim} className={FIELD} {...invalid("aim")} />
                 <Beside id="propose-problem-aim" message={problemOn("aim")} />
                 <div className="mt-2 grid gap-2">
-                  {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim.slice(0, OPEN_AIM_MAX)); setMarks((m) => ({ ...m, aim: r.aim!.slice(0, OPEN_AIM_MAX) })); } }} />}
+                  {(!aim.trim() || isTextDraft(aim, marks.aim)) && <AskSera founding kind="aim" roles={askRoles} why={why} aim={aim} onDraft={(r) => { if (r.aim) { setAim(r.aim); setMarks((m) => ({ ...m, aim: r.aim })); } }} />}
                   {isTextDraft(aim, marks.aim) && <DraftMark founding onKeep={() => setMarks((m) => ({ ...m, aim: undefined }))} />}
                 </div>
               </div>
@@ -971,7 +983,8 @@ export default function ProposeARole() {
           {/* A desk has the width: the role stays beside the step. */}
           <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
             <RoleBeside role={role} pct={pct} />
-            <RewardsBeside setup={setup} splits={ownSplits} />
+            {/* The rewards open once, on The terms where the split is set; folded to their heading on every other step (the roles lane, 19 Nov 2026). */}
+            <RewardsBeside setup={setup} splits={ownSplits} collapsed={stone !== STONES.indexOf("terms")} />
           </aside>
         </div>
       )}

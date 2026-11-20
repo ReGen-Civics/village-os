@@ -51,13 +51,21 @@ const LETTER = { version: "lv-0123456789abcdef", title: "Membership agreement", 
 let posted: any[] = [];
 /** How each post went: its files, and the headers set by hand. */
 let sentAs: Array<{ files: File[]; headers: RequestInit["headers"] }> = [];
+/** The parts sent ahead of the application (components/openProposal/sendParts.ts): their list and file. */
+let partsSent: Array<{ kind: string; file: File }> = [];
 
 function serve(form: unknown, answer: { status: number; body: unknown } = { status: 200, body: { sent: true, message: "The server's own English words, never shown." } }) {
   posted = [];
   sentAs = [];
+  partsSent = [];
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string, init?: RequestInit) => {
+      if (init?.method === "POST" && String(url) === "/api/open-proposals/parts") {
+        const fd = init.body as FormData;
+        partsSent.push({ kind: String(fd.get("kind")), file: fd.get("part") as File });
+        return new Response(JSON.stringify({ id: `up-${String(partsSent.length).padStart(32, "0")}`, size: 1 }), { status: 200, headers: { "content-type": "application/json" } });
+      }
       if (init?.method === "POST") {
         const multipart = init.body instanceof FormData ? init.body : null;
         posted.push({ url, body: JSON.parse(String(multipart ? multipart.get("proposal") : init.body)) });
@@ -216,7 +224,8 @@ describe("one role per application", () => {
 
   it("SHAPE THE ROLE: a suggestion written on a piece of the role card travels with the application (Rye, 14 Nov 2026)", async () => {
     await applyFor();
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     await completeAll();
     const shape = document.querySelector("[data-shape-the-role]") as HTMLElement;
     fireEvent.click(within(shape).getByText("Open the role card"));
@@ -747,9 +756,14 @@ describe("your first day", () => {
 });
 
 describe("the saved draft", () => {
-  it("writes nothing to this device until they tick the box", async () => {
+  it("starts ticked with the shared-device line; unticked, writes nothing, and stays unticked in this browser (the lead, 19 Nov 2026)", async () => {
     await applyFor();
-    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(false);
+    const box = () => screen.getByLabelText("Remember my answers on this device") as HTMLInputElement;
+    expect(box().checked).toBe(true);
+    expect(document.querySelector("[data-remember-shared]")?.textContent).toBe("On a shared device, untick it.");
+    expect(box().getAttribute("aria-describedby")).toContain("propose-remember-shared");
+    fireEvent.click(box());
+    expect(box().checked).toBe(false);
     pressNext();
     fillAbout();
     expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBeNull();
@@ -757,16 +771,33 @@ describe("the saved draft", () => {
     await applyFor();
     expect(screen.queryByText(/We kept your answers from last time/)).toBeNull();
     expect((screen.getByLabelText(OPEN_WORDS.whyLabel) as HTMLTextAreaElement).value).toBe("");
+    // Their untick holds for this browser; ticking again clears the choice.
+    expect(box().checked).toBe(false);
+    fireEvent.click(box());
+    cleanup();
+    await applyFor();
+    expect(box().checked).toBe(true);
+  });
+
+  it("CONTROL: left ticked, the draft is written as they type", async () => {
+    await applyFor();
+    pressNext();
+    fillAbout();
+    expect(window.localStorage.getItem(draftKey("r-gate", ""))).toContain("The gate is always shut.");
   });
 
   it("keeps the words and the step across leaving and coming back, never the references, and is cleared once sent", async () => {
     await applyFor();
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     pressNext();
     fillAbout();
     fireEvent.change(screen.getByLabelText("Reference 1: name"), { target: { value: "Ines Vargas" } });
     fireEvent.change(screen.getByLabelText("Reference 1: how you know them"), { target: { value: "We built a fence" } });
     fireEvent.change(screen.getByLabelText("Reference 1: email or phone"), { target: { value: "ines@example.org" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: name"), { target: { value: "Tomas Rey" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: how you know them"), { target: { value: "My neighbour" } });
+    fireEvent.change(screen.getByLabelText("Reference 2: email or phone"), { target: { value: "tomas@example.org" } });
     pressNext();
     expect(stoneNow()).toBe("value");
     fireEvent.change(screen.getByLabelText(OPEN_WORDS.aimLabel), { target: { value: "The gate opens at dawn." } });
@@ -792,7 +823,8 @@ describe("the saved draft", () => {
 
   it("a draft for one role never fills another role's application", async () => {
     await applyFor("r-gate");
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     pressNext();
     fillAbout();
     cleanup();
@@ -830,7 +862,7 @@ describe("what the form kept from the Firefly Path", () => {
     expect(screen.queryByLabelText(LETTER.intent)).toBeNull();
   });
 
-  it("links and files: a link is sent with its label, a file goes as multipart, and the data promise is on the form", async () => {
+  it("links and files: a link is sent with its label, a file goes ahead as a part and the application names it, and the data promise is on the form", async () => {
     await applyFor();
     expect(document.querySelector("[data-attachments-promise]")?.textContent).toBe(ATTACHMENT_WORDS.promise);
     fireEvent.change(screen.getByLabelText("Link 1: what it is"), { target: { value: "Gates I built" } });
@@ -841,8 +873,10 @@ describe("what the form kept from the Firefly Path", () => {
     sendNow();
     await waitFor(() => expect(posted).toHaveLength(1));
     expect(posted[0].body.links).toEqual([{ label: "Gates I built", url: "https://gates.example.org/rowan" }]);
-    expect(sentAs[0].files.map((f) => f.name)).toEqual(["portfolio.pdf"]);
-    expect(sentAs[0].headers).toBeUndefined();
+    // The file went first, in a request of its own (the host's five-minute body limit), and the application names it.
+    expect(partsSent.map((p) => [p.kind, p.file.name])).toEqual([["files", "portfolio.pdf"]]);
+    expect(posted[0].body.parts).toEqual({ files: [`up-${"1".padStart(32, "0")}`], voice: [], clips: [] });
+    expect(sentAs[0]).toEqual({ files: [], headers: { "Content-Type": "application/json" } });
   });
 
   it("without files the application goes as JSON, and blank link rows are not sent", async () => {
@@ -968,20 +1002,23 @@ describe("the sent threshold", () => {
     expect(document.querySelector("[data-dated-steps]")?.textContent ?? "").not.toMatch(/write to you by /);
   });
 
-  it("COMING SOON (Rye, 16 Nov 2026): the same steps, with the interviews note on the form and again on the confirmation", async () => {
-    const note = "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.";
+  it("COMING SOON (the lead, 19 Nov 2026): a card's Apply link opens the role's waitlist in place of the form, and a kept draft is left alone", async () => {
     const soon = { ...FORM, roles: [{ ...FORM.roles[0], comingSoon: true, opensLater: true }, FORM.roles[1]] };
-    await applyFor("r-gate", soon, { status: 200, body: { sent: true, message: OPEN_WORDS.sent("rowan@gmail.com"), replyDays: null, afterFounding: true } });
-    // The note's module loads lazily (the form's first-view budget), so it lands after the form.
-    await waitFor(() => expect(document.querySelector("[data-coming-soon-note]")?.textContent).toBe(note));
-    // Its own note says the later start, so the founding-team note steps aside.
-    expect(document.querySelector("[data-opens-later]")).toBeNull();
-    await completeAll();
-    fireEvent.change(screen.getByLabelText(OPEN_WORDS.emailLabel), { target: { value: "rowan@gmail.com" } });
-    sendNow();
-    await screen.findByRole("heading", { name: "Check your email" });
-    await waitFor(() => expect(document.querySelector('[data-threshold="sent"] [data-coming-soon-note]')?.textContent).toBe(note));
-    expect(document.querySelector("[data-after-founding]")).toBeNull();
+    const kept = JSON.stringify({ v: 1, why: "Kept from before" });
+    window.localStorage.setItem(draftKey("r-gate", ""), kept);
+    window.history.pushState({}, "", "/propose-a-role?role=r-gate");
+    serve(soon);
+    render(<ProposeARole />);
+    expect(await screen.findByRole("heading", { level: 1, name: "Gate Keeper is not open yet" })).toBeTruthy();
+    const wait = document.querySelector('[data-role-not-open] [data-waitlist-role="r-gate"]') as HTMLAnchorElement;
+    expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-gate");
+    expect(wait.textContent).toContain("Join the waitlist for Gate Keeper");
+    // No form, and the draft this device kept is exactly as it was.
+    expect(document.querySelector("[data-open-proposal]")).toBeNull();
+    expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBe(kept);
+    // Another open role is one press away.
+    fireEvent.click(screen.getByRole("button", { name: "Apply for a different role" }));
+    expect(await screen.findByRole("heading", { level: 1, name: OPEN_WORDS.chooseHeading })).toBeTruthy();
   });
 
   it("FUTURE VENTURE: the form and its confirmation say what holding one means and the pitch's five parts", async () => {
@@ -1174,6 +1211,9 @@ describe("design G2: the desk and the panes", () => {
     expect(rail.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");
     // On the terms step the shape the phone reads steps aside on a desk.
     expect((document.querySelector("[data-comp-shape]") as HTMLElement).parentElement?.className).toContain("lg:hidden");
+    // Off The terms the box is folded to its heading, so it does not repeat open beside every step (the roles lane, 19 Nov 2026).
+    expect(rail.tagName).toBe("DETAILS");
+    expect(rail.hasAttribute("open")).toBe(false);
   });
 
   it("D-06: each written term is one row with a two-part I accept / Let's talk control", async () => {

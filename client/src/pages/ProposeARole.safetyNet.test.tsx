@@ -103,6 +103,8 @@ describe("the safety net", () => {
   it("a 500: the calm words, Try again, the download and the email link to the village's own address", async () => {
     links.contactEmail = "hello@village.test";
     await open([{ status: 500, body: { error: OPEN_WORDS.notSent } }]);
+    // Unticked (it starts ticked since 19 Nov 2026), so this device keeps nothing.
+    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
     await completeAll();
     sendNow();
     const words = (await net()).textContent ?? "";
@@ -161,7 +163,8 @@ describe("the safety net", () => {
 
   it("the saved draft survives a failed send, and a later success clears it", async () => {
     await open([{ status: 500, body: {} }, { status: 200, body: { sent: true } }]);
-    fireEvent.click(screen.getByLabelText("Remember my answers on this device"));
+    // The box starts ticked (the lead, 19 Nov 2026).
+    expect((screen.getByLabelText("Remember my answers on this device") as HTMLInputElement).checked).toBe(true);
     pressNext();
     await completeAll();
     sendNow();

@@ -14,6 +14,7 @@
  * longer shown to applicants (lead, 17 Nov 2026): the popup names no cap figure, refuses a price above it
  * in plain words and will not save one; the server refuses it too (server/routes/openProposals.ts).
  */
+import { LimitSigns } from "@/components/form/LimitSigns";
 import { lazy, Suspense, useRef, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
@@ -81,7 +82,9 @@ export default function PriceAsk({
   const overCap = choice === "amount" && cap > 0 && typed > cap;
   const diff = suggested && typed > 0 ? priceDifferencePct(suggested, typed) : null;
   const save = () => {
-    const w = why.trim().slice(0, PRICE_WHY_MAX);
+    // Whole: a why over its limit holds Save and says how much to trim (never cut, the ops request of 19 Nov 2026).
+    if (why.trim().length > PRICE_WHY_MAX) return;
+    const w = why.trim();
     const withWhy = w ? { why: w } : {};
     if (choice === "suggested") onChange(null);
     else if (choice === "negotiate") onChange({ kind: "negotiate", ...withWhy });
@@ -215,7 +218,8 @@ export default function PriceAsk({
                             : t({ message: `You suggested ${suggestionCount} changes to the role. If they change the work, say how they change the price.`, context: "price popup nudge, several" })}
                         </p>
                       )}
-                      <textarea id={`${idPrefix}-price-why`} rows={3} maxLength={PRICE_WHY_MAX} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} />
+                      <textarea id={`${idPrefix}-price-why`} rows={3} value={why} onChange={(e) => setWhy(e.target.value)} className={FIELD} aria-describedby={`${idPrefix}-price-why-count`} aria-invalid={why.trim().length > PRICE_WHY_MAX || undefined} />
+                      <LimitSigns value={why.trim()} max={PRICE_WHY_MAX} id={`${idPrefix}-price-why-count`} voice={false} />
                     </div>
                   )}
                   {choice === "amount" && typed <= 0 && (
@@ -230,7 +234,7 @@ export default function PriceAsk({
                     <button
                       type="button"
                       onClick={save}
-                      disabled={choice === "amount" && (typed <= 0 || overCap)}
+                      disabled={(choice === "amount" && (typed <= 0 || overCap)) || why.trim().length > PRICE_WHY_MAX}
                       aria-describedby={choice === "amount" && typed <= 0 ? `${idPrefix}-price-why-off` : overCap ? `${idPrefix}-price-over-cap` : undefined}
                       className="min-h-11 rounded-lg border border-notice bg-notice px-4 font-semibold text-background disabled:opacity-40"
                       data-save-price=""
