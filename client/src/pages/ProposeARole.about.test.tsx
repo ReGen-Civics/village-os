@@ -94,7 +94,7 @@ describe("About you, on the open form", () => {
     await applyFor("r-gate");
     const section = document.querySelector('[data-stone="about"]') as HTMLElement;
     expect(section).toBeTruthy();
-    for (const label of [OPEN_WORDS.nameLabel, OPEN_WORDS.emailLabel, OPEN_WORDS.whyLabel, "Reference 1: name", /Human Design or Gene Keys/]) expect(within(section).getByLabelText(label)).toBeTruthy();
+    for (const label of [OPEN_WORDS.nameLabel, OPEN_WORDS.emailLabel, OPEN_WORDS.whyLabel, "Reference 1: name", /Your Human Design, Gene Keys, or other ways of working/]) expect(within(section).getByLabelText(label)).toBeTruthy();
     expect(section.querySelector("[data-attachments]")).toBeTruthy();
     // The time zone and the start date belong to Your first day now, once.
     expect(within(section).queryByLabelText("Your time zone")).toBeNull();
@@ -114,7 +114,7 @@ describe("About you, on the open form", () => {
     expect(screen.getByText(/The people who decide never see it/)).toBeTruthy();
     await fillRest();
     fireEvent.click(screen.getByLabelText(/agree to the background check/i));
-    fireEvent.change(screen.getByLabelText(/Human Design or Gene Keys/), { target: { value: "Projector, 4/6" } });
+    fireEvent.change(screen.getByLabelText(/Your Human Design, Gene Keys, or other ways of working/), { target: { value: "Projector, 4/6" } });
     fillGoals();
     sendNow();
     await waitFor(() => expect(posted).toHaveLength(1));
