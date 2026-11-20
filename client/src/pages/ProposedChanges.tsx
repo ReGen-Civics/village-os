@@ -29,6 +29,7 @@
  * says why in one plain line (shared/proposalPutBack.ts).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { Link } from "wouter";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
@@ -270,7 +271,7 @@ export default function ProposedChanges() {
   useEffect(() => {
     if (!firstFound) return;
     const el = document.getElementById(`proposal-${firstFound}`) ?? document.getElementById(`decided-${firstFound}`) ?? document.getElementById(`batch-card-${firstFound}`);
-    el?.scrollIntoView?.({ block: "center", behavior: "smooth" });
+    el?.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
   }, [firstFound, state, open]);
 
   const showWaiting = status !== "decided";
