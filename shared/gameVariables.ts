@@ -3224,6 +3224,42 @@ export const VARIABLES: VariableDef[] = [
     default: "Volunteer or work-trade: tell us what you would like to give.",
   },
 
+  // A kind no's next steps: the block the decline letter adds. shared/declineNextSteps.ts holds the
+  // same keys and defaults, and shared/declineNextSteps.test.ts holds the two equal. The Founding Seeder
+  // line is the resident path tile's own title and line above, and its link is org.stay_close_link.
+  {
+    key: "org.decline_next_steps_on",
+    category: "The founding team",
+    label: "Decline letter: offer next steps",
+    description: "When on, the letter that says no to an application also offers the waitlist for other roles, open quests and the resident path, as links.",
+    type: "boolean",
+    default: "true",
+  },
+  {
+    key: "org.decline_next_steps_intro",
+    category: "The founding team",
+    label: "Decline letter: the line above the next steps",
+    description: "One short line that introduces the three ways to stay close.",
+    type: "text",
+    default: "If you would like to stay close, here are three ways in.",
+  },
+  {
+    key: "org.decline_next_steps_waitlist",
+    category: "The founding team",
+    label: "Decline letter: the waitlist line",
+    description: "The line above the link to the Roles page, where a coming-soon role says Notify me.",
+    type: "text",
+    default: "Other roles are coming soon. Ask to hear when one opens:",
+  },
+  {
+    key: "org.decline_next_steps_quests",
+    category: "The founding team",
+    label: "Decline letter: the quests line",
+    description: "The line above the link to the Quests page.",
+    type: "text",
+    default: "Quests anyone can take today:",
+  },
+
   // ── Events (0059; visible in Admin only while the module is non-off) ─────
   //
   // Three knobs, and all three are READ. A registered variable nothing reads

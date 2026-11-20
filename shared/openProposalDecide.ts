@@ -440,11 +440,16 @@ export function declinedLetter(i: {
   note?: string | null;
   /** The ways in ride in the come-and-play block under the letter (shared/comms/comeAndPlay.ts), so the words leave them out. */
   doorsInBlock?: boolean;
+  /** The next steps, as lines with their links (shared/declineNextSteps.ts). Given: they replace the pointers to quests and roles. */
+  nextSteps?: readonly string[];
 }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
+  const steps = i.nextSteps?.length ? [...i.nextSteps, ""] : [];
   const doors = i.doorsInBlock
-    ? [w.declined.againOwn]
-    : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
+    ? [...steps, w.declined.againOwn]
+    : steps.length
+      ? [...steps, w.declined.again]
+      : [w.declined.stayClose, w.declined.quest(`${i.site}/quests`), w.declined.roles(`${i.site}/roles`), w.declined.again];
   return {
     subject: w.declined.subject(i.village),
     text: [w.hello(i.firstName), "", w.declined.thanks(w.list(i.roleNames) || w.aRole, i.village), ...noteLines(i.lang, i.note), "", ...doors, ""].join("\n"),

@@ -42,6 +42,7 @@ import path from "node:path";
 import express from "express";
 import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { loadVariables } from "../lib/variables";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { consentClosesAt, CONSENT_WORDS } from "../../shared/roleProposalConsent";
 import { DECIDE_WORDS, openInviteId, roleStartsOn } from "../../shared/openProposalDecide";
@@ -1388,6 +1389,41 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
       // 90 days on, the tidy job takes the name and address off.
       await tidyOpenProposals(pool, new Date(Date.now() + 91 * 24 * 60 * 60_000));
       expect(await readOpenProposal(pool, id)).toMatchObject({ status: "declined", name: null, email: null });
+    });
+
+    it("the kind no offers next steps as links from data: the waitlist, quests and the seeder path, still sent by the person who declined", async () => {
+      const { id } = await confirmed("nextsteps@example.test");
+      // Nothing goes until a person declines.
+      expect(state.sent.filter((m) => m.origin === "open_proposal.declined")).toEqual([]);
+      const r = await call("POST", `/api/governance/open-proposals/${id}/decline`, {}, FOUNDER.id);
+      expect(r.status).toBe(200);
+      const mail = state.sent.find((m) => m.origin === "open_proposal.declined")!;
+      expect(mail.text).toContain("Other roles are coming soon. Ask to hear when one opens:");
+      expect(mail.text).toContain(`${ORIGIN}/roles`);
+      expect(mail.text).toContain(`${ORIGIN}/quests`);
+      expect(mail.text).toContain("Become a Founding Seeder");
+      expect(mail.text).toContain(`${ORIGIN}/resident`);
+      // Each way in is named once: the come-and-play block leaves out the cards the next steps already say.
+      expect(mail.html.split(`href="${ORIGIN}/quests"`).length - 1).toBe(1);
+    });
+
+    it("the village's own words replace the defaults, and turning the block off sends the letter without it", async () => {
+      await q("INSERT INTO game_variables (config_key, value) VALUES ('org.decline_next_steps_quests', 'Try a quest this week:') ON DUPLICATE KEY UPDATE value = VALUES(value)");
+      await loadVariables(pool);
+      const own = await confirmed("ownwords@example.test");
+      await call("POST", `/api/governance/open-proposals/${own.id}/decline`, {}, FOUNDER.id);
+      const withOwn = state.sent.find((m) => m.idempotencyKey === `open-proposal:${own.id}:declined`)!;
+      expect(withOwn.text).toContain("Try a quest this week:");
+      expect(withOwn.text).not.toContain("Quests anyone can take today:");
+      await q("INSERT INTO game_variables (config_key, value) VALUES ('org.decline_next_steps_on', 'false') ON DUPLICATE KEY UPDATE value = VALUES(value)");
+      await loadVariables(pool);
+      const off = await confirmed("blockoff@example.test");
+      await call("POST", `/api/governance/open-proposals/${off.id}/decline`, {}, FOUNDER.id);
+      const without = state.sent.find((m) => m.idempotencyKey === `open-proposal:${off.id}:declined`)!;
+      expect(without.text).not.toContain("Other roles are coming soon");
+      expect(without.text).toContain("We can't say yes this time.");
+      await q("DELETE FROM game_variables WHERE config_key IN ('org.decline_next_steps_quests', 'org.decline_next_steps_on')");
+      await loadVariables(pool);
     });
 
     it("with email off it says nothing went", async () => {
