@@ -86,6 +86,41 @@ async function sendOpenForm(page) {
   if (still) throw new Error("the form is still on screen after send");
 }
 
+/**
+ * Opens a founding role's card on /roles. The team sheet's role buttons carry the role id
+ * (`data-founding-role`); a desktop opens on the first role, a phone on the team alone.
+ */
+async function openFoundingCard(page, roleId) {
+  const section = page.locator("[data-founding-team]");
+  await section.waitFor();
+  const row = section.locator(`[data-founding-role="${roleId}"]`);
+  await row.waitFor();
+  if ((await row.getAttribute("aria-expanded")) !== "true") await row.click();
+  await section.locator(`[data-full-role-card="${roleId}"]`).waitFor();
+}
+
+/** Steps a role card to one of its pieces (Purpose, Deliverables, Who we hope for, Rewards, ...), by key. */
+async function openCardPiece(page, roleId, key) {
+  const card = page.locator(`[data-full-role-card="${roleId}"]`);
+  const tab = card.locator(`[data-piece-tab="${key}"]`);
+  await tab.click();
+  const piece = card.locator(`[data-piece="${key}"]`);
+  await piece.waitFor({ state: "visible" });
+  return piece;
+}
+
+/**
+ * A new member's first profile opens on the companion's welcome, a full-screen layer with "Skip for now". It covers the
+ * page until it is answered, so a walk that has not come to read it skips it.
+ */
+async function skipWelcome(page) {
+  const skip = page.getByRole("button", { name: /^Skip for now$/ }).first();
+  if (await skip.waitFor({ timeout: 4000 }).then(() => true, () => false)) {
+    await skip.click();
+    await skip.waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
+  }
+}
+
 async function check(page, label) {
   const box = page.getByLabel(label).first();
   if (await box.count() && await box.isVisible()) await box.check();
@@ -125,8 +160,8 @@ async function throughAbout(page, consent) {
 /** The first value item on Your value: what it brings, how we know it is done, and the season goal it serves. */
 async function valueItem(page, what, doneWhen, goal) {
   const list = page.locator("[data-goals-list]");
-  await list.locator('input[id$="-0-title"]').fill(what);
-  await list.locator('input[id$="-0-done"]').fill(doneWhen);
+  await list.locator("[id$=\"-0-title\"]").fill(what);
+  await list.locator("[id$=\"-0-done\"]").fill(doneWhen);
   const pick = list.locator('select[id$="-0-serves"]');
   if (await pick.count()) {
     const options = await pick.locator("option").allTextContents();
@@ -159,18 +194,21 @@ export async function neighbour(w, ctx) {
   });
   await w.look("roles");
   // Phase D: the season's goals are the commons, circles with moss for each goal reached. The seed reaches one.
+  // Since the founding team leads /roles the drawing sits on the landing page (the commons section), not on /roles.
   await w.step("see the season's goals as the commons", async () => {
-    const drawing = page.getByRole("img", { name: /goals as circles|metas de esta temporada como círculos/i }).first();
+    await w.goto("/");
+    const drawing = page.locator("[data-testid=landing-commons]").getByRole("img", { name: /goals as circles|metas de esta temporada como círculos/i }).first();
     await drawing.scrollIntoViewIfNeeded();
     if ((await drawing.locator("[data-state=reached]").count()) !== 1) throw new Error("the commons should show one goal reached, with moss");
     if ((await drawing.locator("[data-state=seed]").count()) !== 3) throw new Error("the commons should show three goals still seeds");
   });
-  // QA2-02: the founding team leads /roles, and the game's roots sit inside "Other ways to join"
-  // with no second "Step one" under it.
-  await w.step("one step one only: the roots sit inside Other ways to join", async () => {
+  // QA2-02: the founding team leads /roles, and the game's way in sits inside "Other ways to join" as one quiet
+  // door, with no "Step one" anywhere on the page (the roots live on /roles/select).
+  await w.step("one step one only: the game's door sits inside Other ways to join", async () => {
+    await w.goto("/roles");
     await page.locator("[data-founding-team]").waitFor();
-    await page.locator("[data-other-ways] [data-archetype-step=nested]").waitFor({ state: "attached" });
-    if (await page.locator("[data-archetype-step=step]").count()) throw new Error("a second Step one sits under the founding team");
+    await page.locator("[data-other-ways] [data-game-way] [data-game-door]").waitFor({ state: "attached" });
+    if (await page.locator("[data-archetype-step]").count()) throw new Error("a Step one sits on the founding team's page");
   });
   // QA2-01: the founding roles are applied for from their own card, never picked on the game's board.
   await w.step("the game's board leaves the founding roles off", async () => {
@@ -184,10 +222,7 @@ export async function neighbour(w, ctx) {
   await w.step("follow the line back to the founding team", async () => {
     await page.locator("[data-founding-elsewhere] a").click();
     await page.waitForURL((u) => new URL(u).pathname === "/roles");
-    const section = page.locator("[data-founding-team]");
-    await section.waitFor();
-    const row = section.getByRole("button", { name: /Land Steward/ }).first();
-    if ((await row.getAttribute("aria-expanded")) !== "true") await row.click();
+    await openFoundingCard(page, ctx.seed.roles.land);
     await page.locator(`[data-apply-role="${ctx.seed.roles.land}"]`).first().waitFor();
     await settle(page);
   });
@@ -259,21 +294,28 @@ export async function professional(w, ctx) {
     await settle(page);
   });
   await w.look("find-your-role");
-  // Phase A: the founding team leads /roles; the professional reads the Finance Steward's card there.
+  // Phase A: the founding team leads /roles; the professional reads the Finance Steward's card there, piece by piece
+  // (1.3.33: Purpose, Deliverables, Who we hope for, Rewards, How you're chosen, Holding it well).
   await w.step("read the founding team's Finance Steward card", async () => {
     await w.goto("/roles");
-    const section = page.getByRole("region", { name: /Join the founding team|equipo fundador/i });
-    await section.waitFor();
-    const row = section.getByRole("button", { name: /Finance Steward/ }).first();
-    if ((await row.getAttribute("aria-expanded")) !== "true") await row.click();
-    await section.locator("[data-testid=pay-split]").first().waitFor();
+    const id = ctx.seed.roles.finance;
+    await openFoundingCard(page, id);
+    const purpose = await openCardPiece(page, id, "purpose");
+    await purpose.locator("[data-testid=words-whyItMatters]").getByRole("heading", { name: /needs from you/i }).waitFor();
+    const deliverables = await openCardPiece(page, id, "accountabilities");
+    if (!(await deliverables.locator("[data-testid=words-accountabilities] li").count())) throw new Error("the Deliverables piece lists nothing");
+    await openCardPiece(page, id, "who");
+    const rewards = await openCardPiece(page, id, "rewards");
+    await rewards.locator("[data-testid=pay-split]").first().waitFor();
+    await openCardPiece(page, id, "holding");
+    await openCardPiece(page, id, "rewards");
     await settle(page);
   });
-  await w.look("founding-card", { next: page.getByRole("link", { name: /Apply for this role/ }).first() });
-  // QA2-02: no second "Step one" under the founding team; the roots sit inside "Other ways to join".
-  await w.step("one step one only: the roots sit inside Other ways to join", async () => {
-    await page.locator("[data-other-ways] [data-archetype-step=nested]").waitFor({ state: "attached" });
-    if (await page.locator("[data-archetype-step=step]").count()) throw new Error("a second Step one sits under the founding team");
+  await w.look("founding-card", { next: page.locator(`[data-apply-role="${ctx.seed.roles.finance}"]`).first() });
+  // QA2-02: no "Step one" on the founding team's page; the game's door sits inside "Other ways to join".
+  await w.step("one step one only: the game's door sits inside Other ways to join", async () => {
+    await page.locator("[data-other-ways] [data-game-way] [data-game-door]").waitFor({ state: "attached" });
+    if (await page.locator("[data-archetype-step]").count()) throw new Error("a Step one sits on the founding team's page");
     if (await page.getByText(/^Step one$/i).count()) throw new Error("the page still reads Step one");
   });
   // QA2-01: the Finance Steward is not on the game's board; one line points back to the founding team.
@@ -300,18 +342,18 @@ export async function professional(w, ctx) {
     await page.fill("#propose-aim", "One set of numbers every member trusts, by the end of the season.");
     await valueItem(page, "Publish the first weekly view of our money", "every circle has read it", /Clear and trusted money/);
     await stoneNext(page, "terms");
-    const groups = page.locator("[role=radiogroup]");
-    const n = await groups.count();
-    for (let i = 0; i < n; i++) {
-      const g = groups.nth(i);
-      const label = (await g.getAttribute("aria-label")) ?? "";
-      if (/Allowance|Bonus/.test(label)) {
-        await g.getByLabel(/talk/i).check();
-        await page.waitForTimeout(150);
-        await page.getByLabel(new RegExp(`talk about: ${label}`)).fill(label === "Allowance" ? "Could the tools allowance cover my accounting software?" : "I would like to understand how the share is worked out.");
+    // One row per term (`data-term`), each with an "I accept" / "Let's talk" pair; the allowance and the bonus are
+    // the two to talk about, and a note field opens under a row once "Let's talk" is chosen.
+    const talk = { allowance: "Could the tools allowance cover my accounting software?", bonus: "I would like to understand how the share is worked out." };
+    for (const row of await page.locator("[data-term]").all()) {
+      const group = row.locator("[role=radiogroup]");
+      if (!(await group.count())) continue;
+      const key = await row.getAttribute("data-term");
+      if (key in talk) {
+        await group.getByLabel(/talk/i).check();
+        await row.locator("textarea").fill(talk[key]);
       } else {
-        const accept = g.getByLabel(/accept/i);
-        if (await accept.count()) await accept.check();
+        await group.getByLabel(/accept/i).check();
       }
     }
     const commit = page.locator("#propose-terms-commitment");
@@ -467,7 +509,7 @@ export async function steward(w, ctx) {
     if (said.some((s) => /not|cannot|refus|409/i.test(s))) throw new Error(`adopt refused: ${said.join(" | ").slice(0, 200)}`);
   });
   await w.look("adopted");
-  await w.step("the applicant is invited", () => waitForMail(ctx.mail, applicant, /adopt/i));
+  await w.step("the applicant is invited", () => waitForMail(ctx.mail, applicant, /said yes|adopt/i));
   // The neighbour's application, answered with the not-invited letter: warm, never personal.
   const neighbour = emailFor("neighbour", w.vp);
   let nid;
@@ -496,7 +538,7 @@ export async function holder(w, ctx) {
   const password = "RehearsalHolder123!";
   await w.step("open the invitation", async () => {
     if (!email) throw new Error("persona 2 did not send a proposal at this width");
-    const invite = await waitForMail(ctx.mail, email, /adopt/i);
+    const invite = await waitForMail(ctx.mail, email, /said yes|adopt/i);
     await openMailLink(w, linkIn(invite, /\/register/));
     await page.locator("input[type=password]").first().waitFor();
   });
@@ -513,6 +555,7 @@ export async function holder(w, ctx) {
   await w.look("landing");
   await w.step("align with confidentiality", async () => {
     await w.goto("/profile");
+    await skipWelcome(page);
     const box = page.locator("[data-role-start-steps]");
     await box.waitFor();
     await box.locator("input[type=checkbox]").first().check().catch(() => {});
@@ -743,11 +786,20 @@ export async function reviewer(w, ctx) {
   const page = await w.open();
   await w.step("open the review page", async () => {
     await w.goto("/admin/proposals");
-    await page.locator(`[data-proposal="${ids[1]}"]`).waitFor();
+    // A batch folds to one line per change while another is waiting above it; a press on a row opens them all.
+    const card = page.locator(`[data-proposal="${ids[1]}"]`);
+    const row = page.getByTestId(`row-${ids[1]}`);
+    await card.or(row).first().waitFor();
+    if (!(await card.count())) await row.click();
+    await card.waitFor();
   });
-  await w.look("review", { next: page.getByTestId("accept-selected") });
+  await w.look("review", { next: page.getByTestId("batch-accept-all").first() });
   const edited = w.vp === "phone" ? "Our money is clear and trusted, and the books are open to every member each moon." : "Our money is clear and trusted, and every member can read the books, in plain words, each moon.";
   await w.step("edit the role's aim in place", async () => {
+    // The words open behind the card's "Edit words" button (aria-expanded), and save as they are typed.
+    const toggle = page.getByTestId(`edit-${ids[1]}`);
+    await toggle.scrollIntoViewIfNeeded();
+    if ((await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
     const box = page.locator(`[data-proposal="${ids[1]}"] [data-field="words.aim"] textarea`);
     await box.scrollIntoViewIfNeeded();
     await box.fill(edited);
@@ -757,11 +809,13 @@ export async function reviewer(w, ctx) {
     if (draft?.words?.aim !== edited) throw new Error("the edit was not saved on the server");
   });
   await w.look("edited");
-  await w.step("select the batch and accept", async () => {
-    const all = page.getByLabel(/^Select all$/).first();
-    await all.scrollIntoViewIfNeeded();
-    await all.check();
-    await page.getByTestId("accept-selected").click();
+  await w.step("accept the batch", async () => {
+    // Accept all, asked once on the batch's own card, which is the one holding this role card's change.
+    const batch = page.locator("article").filter({ has: page.locator(`[data-proposal="${ids[1]}"]`) }).first();
+    const acceptAll = batch.getByTestId("batch-accept-all");
+    await acceptAll.scrollIntoViewIfNeeded();
+    await acceptAll.click();
+    await batch.getByTestId("batch-confirm-yes").click();
     await page.getByTestId("accept-outcome").waitFor({ timeout: 15_000 });
     const said = (await page.getByTestId("accept-outcome").innerText()).trim();
     if (!/^3 accepted/.test(said)) throw new Error(`not all three landed: ${said.slice(0, 240)}`);
