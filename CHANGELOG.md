@@ -40,6 +40,33 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.40 (2026-11-20)
+
+### What changed for your village
+
+- **Rate limits count each visitor, not everyone at once.** Behind the hosting edge, the waitlist, the role card's reads, the founding team and the member companion's cost cap all counted every visitor as one, so five waitlist sign-ups in an hour from anybody closed the waitlist to the whole village. Each now counts the visitor's own address, the same rule sign-in already uses.
+- **Apply is on a phone's first screen.** On a role card, Apply and "Start a conversation" sit right under the role's goal. A solid bar along the bottom offers Apply only while those are off the screen, so one Apply shows at a time and the goal is never covered.
+- **Fewer words on "The terms".** The split explainer and the longer commitment hint are gone from that step. Every consent and agreement line stays.
+- **Recordings are said on Review.** Review & submit now says how many recordings there are and whether each goes, with a way back to tick one. Before, an unticked recording was dropped at Send with nothing said.
+- **Small fixes from an applicant walk-through:**
+  - The phone's step marks are read aloud.
+  - Growing boxes no longer clip their last line.
+  - A file that is too big is marked on its own row.
+  - "Start a conversation" shows a problem under the box it names, and marks a role that is not open yet.
+  - A refusal that names no answer is plain words, not a dead link.
+  - 32 more Spanish lines on the way in.
+- **For people who run the platform:** the bot that rebuilds the generated docs can push with a deploy key, so main can require green CI.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No. There is no migration.
+
+---
+
 ## 1.3.39 (2026-11-20)
 
 ### What changed for your village
