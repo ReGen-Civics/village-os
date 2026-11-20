@@ -49,7 +49,7 @@ msgctxt "pricing desk"
 msgid "Pick a reason"
 msgstr "Pick a reason"
 
-#: client/src/components/roleCard/FoundingLineup.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team: the no-stats line"
 msgid "A role shows the work it holds. Nothing here rates or compares people."
 msgstr "A role shows the work it holds. Nothing here rates or compares people."
@@ -183,6 +183,7 @@ msgctxt "founding application review"
 msgid "Commitment: {commitment}%, with a ramp-up"
 msgstr "Commitment: {commitment}%, with a ramp-up"
 
+#: client/src/components/roleCard/RoleIndexCard.tsx
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, role state"
 msgid "Open"
@@ -1962,9 +1963,9 @@ msgid "Apply with your selection"
 msgstr "Apply with your selection"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team view: the team drawn in rings"
-msgid "Formation"
-msgstr "Formation"
+#~ msgctxt "founding team view: the team drawn in rings"
+#~ msgid "Formation"
+#~ msgstr "Formation"
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
@@ -2060,9 +2061,9 @@ msgid "Finish practice"
 msgstr "Finish practice"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team: the domains a role holds"
-msgid "Domains they hold"
-msgstr "Domains they hold"
+#~ msgctxt "founding team: the domains a role holds"
+#~ msgid "Domains they hold"
+#~ msgstr "Domains they hold"
 
 #: client/src/pages/RoleDraft.tsx
 msgid "Each role's circle is asked to consent and pick who they'll co-create with."
@@ -2325,6 +2326,7 @@ msgstr "What a connector proposed and only a person may do. Read each one before
 msgid "The village is deciding a change to this right now."
 msgstr "The village is deciding a change to this right now."
 
+#: client/src/components/roleCard/FoundingRoleCard.tsx
 #: client/src/components/roleCard/RoleOneMinute.tsx
 msgctxt "role in one minute: a fact"
 msgid "Commitment"
@@ -2473,7 +2475,7 @@ msgctxt "economics view heading"
 msgid "Module health"
 msgstr "Module health"
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team timeline: how to read it"
 msgid "Tap a bar for its dates. The dotted lines are the gates the roles share."
 msgstr "Tap a bar for its dates. The dotted lines are the gates the roles share."
@@ -3433,7 +3435,7 @@ msgid "Month"
 msgstr "Month"
 
 #. placeholder {0}: withDates.length
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team: every open role's dated outcomes on one timeline"
 msgid "{0} roles, one timeline"
 msgstr "{0} roles, one timeline"
@@ -5318,9 +5320,9 @@ msgid "You picked the same role twice."
 msgstr "You picked the same role twice."
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "team sheet: open this role's card"
-msgid "Read the card"
-msgstr "Read the card"
+#~ msgctxt "team sheet: open this role's card"
+#~ msgid "Read the card"
+#~ msgstr "Read the card"
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -5942,9 +5944,9 @@ msgid "On {0}"
 msgstr "On {0}"
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles directory chip"
-msgid "Can be held by an agent"
-msgstr "Can be held by an agent"
+#~ msgctxt "roles directory chip"
+#~ msgid "Can be held by an agent"
+#~ msgstr "Can be held by an agent"
 
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare, how a proposal came in"
@@ -6599,6 +6601,11 @@ msgstr "Nothing is on the calendar for you this week."
 msgctxt "admin notices: a notice title field"
 msgid "Title"
 msgstr "Title"
+
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: apply for this role"
+msgid "Apply"
+msgstr "Apply"
 
 #. placeholder {0}: item.by
 #: client/src/components/review/SeraInDraft.tsx
@@ -7591,9 +7598,9 @@ msgid "Send the suggestion"
 msgstr "Send the suggestion"
 
 #: client/src/components/roleCard/FoundingTeam.tsx
-msgctxt "founding team, no role open"
-msgid "Choose a role to read it in full."
-msgstr "Choose a role to read it in full."
+#~ msgctxt "founding team, no role open"
+#~ msgid "Choose a role to read it in full."
+#~ msgstr "Choose a role to read it in full."
 
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgid "Filed. The village renews filed roles together."
@@ -7769,6 +7776,7 @@ msgid "See your whole path"
 msgstr "See your whole path"
 
 #: client/src/components/ComingSoon.tsx
+#: client/src/components/roleCard/ComingSoonRoles.tsx
 msgctxt "badge on a role whose interviews start after the lead hires"
 msgid "Coming soon"
 msgstr "Coming soon"
@@ -7833,9 +7841,9 @@ msgid "Update what I will contribute"
 msgstr "Update what I will contribute"
 
 #: client/src/pages/ProposeARole.tsx
-msgctxt "founding application about"
-msgid "Your Human Design or Gene Keys (optional)"
-msgstr "Your Human Design or Gene Keys (optional)"
+#~ msgctxt "founding application about"
+#~ msgid "Your Human Design or Gene Keys (optional)"
+#~ msgstr "Your Human Design or Gene Keys (optional)"
 
 #: client/src/components/budgets/BudgetEditor.tsx
 msgctxt "budget line error"
@@ -10254,9 +10262,9 @@ msgid "Written"
 msgstr "Written"
 
 #: client/src/components/roleCard/ComingSoonRoles.tsx
-msgctxt "roles page: the coming-soon roles and their waitlist"
-msgid "Hear when a role opens"
-msgstr "Hear when a role opens"
+#~ msgctxt "roles page: the coming-soon roles and their waitlist"
+#~ msgid "Hear when a role opens"
+#~ msgstr "Hear when a role opens"
 
 #: client/src/components/power/SeatAction.tsx
 #~ msgctxt "role card button, signed out"
@@ -10741,8 +10749,8 @@ msgid "All protocols"
 msgstr "All protocols"
 
 #: client/src/pages/Roles.tsx
-msgid "Open this circle's card"
-msgstr "Open this circle's card"
+#~ msgid "Open this circle's card"
+#~ msgstr "Open this circle's card"
 
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms: the pay ask"
@@ -10941,9 +10949,9 @@ msgid "Approve {count} selected"
 msgstr "Approve {count} selected"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team view: a list of roles"
-msgid "Team sheet"
-msgstr "Team sheet"
+#~ msgctxt "founding team view: a list of roles"
+#~ msgid "Team sheet"
+#~ msgstr "Team sheet"
 
 #. placeholder {0}: ROLE_LABELS[role].title
 #: client/src/components/TypographyPanel.tsx
@@ -11738,9 +11746,9 @@ msgstr "Enter a birth date and a time."
 
 #. placeholder {0}: filled.length
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team tally: filled roles"
-msgid "{0} filled"
-msgstr "{0} filled"
+#~ msgctxt "founding team tally: filled roles"
+#~ msgid "{0} filled"
+#~ msgstr "{0} filled"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application review"
@@ -11913,7 +11921,7 @@ msgctxt "pay board"
 msgid "The End of Moon review is not on in this village."
 msgstr "The End of Moon review is not on in this village."
 
-#: client/src/pages/Roles.tsx
+#: client/src/pages/RoleShare.tsx
 msgctxt "roles page, a connected service's fallback name"
 msgid "the connected service"
 msgstr "the connected service"
@@ -12022,9 +12030,9 @@ msgid "Turned down. The cap has its room back"
 msgstr "Turned down. The cap has its room back"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "formation: the roles held now"
-msgid "Holding it now"
-msgstr "Holding it now"
+#~ msgctxt "formation: the roles held now"
+#~ msgid "Holding it now"
+#~ msgstr "Holding it now"
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Nobody has read {name} yet."
@@ -12182,6 +12190,11 @@ msgctxt "pricing desk"
 msgid "All checked"
 msgstr "All checked"
 
+#: client/src/components/fireflyPath/limitProblems.ts
+msgctxt "founding application check, a box over its limit"
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Your Human Design, Gene Keys, or ways of working"
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Events"
@@ -12207,9 +12220,9 @@ msgstr "What each of these holds is in the list above, so none of it is offered 
 
 #. placeholder {0}: f.targetPct
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "role fill, a target other than 100"
-msgid "(of {0}%)"
-msgstr "(of {0}%)"
+#~ msgctxt "role fill, a target other than 100"
+#~ msgid "(of {0}%)"
+#~ msgstr "(of {0}%)"
 
 #: client/src/components/myMoon/MyTokenPay.tsx
 msgctxt "my token pay"
@@ -12314,6 +12327,7 @@ msgctxt "journal guide tasks: done"
 msgid "Marked done"
 msgstr "Marked done"
 
+#: client/src/components/roleCard/FoundingRoleCard.tsx
 #: client/src/components/roleCard/RoleOneMinute.tsx
 msgctxt "role in one minute: a fact"
 msgid "Where"
@@ -13302,7 +13316,7 @@ msgctxt "admin compare"
 msgid "Who do you consider qualified for {0}?"
 msgstr "Who do you consider qualified for {0}?"
 
-#: client/src/pages/Roles.tsx
+#: client/src/pages/RoleShare.tsx
 msgctxt "roles directory: a member proposes an agent they keep"
 msgid "Propose an agent for this role"
 msgstr "Propose an agent for this role"
@@ -13366,7 +13380,6 @@ msgid "Circle {name}"
 msgstr "Circle {name}"
 
 #: client/src/components/roleDraft/ArchetypeStep.tsx
-#: client/src/pages/Roles.tsx
 msgctxt "roles page archetypes"
 msgid "See all roles"
 msgstr "See all roles"
@@ -15192,15 +15205,15 @@ msgctxt "circle name"
 msgid "Anchor circle"
 msgstr "Anchor circle"
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team section, hiring first"
 msgid "See the roles opening next"
 msgstr "See the roles opening next"
 
 #: client/src/components/roleCard/ComingSoonRoles.tsx
-msgctxt "roles page: the coming-soon roles and their waitlist"
-msgid "Leave your details and we will write when a role you like opens."
-msgstr "Leave your details and we will write when a role you like opens."
+#~ msgctxt "roles page: the coming-soon roles and their waitlist"
+#~ msgid "Leave your details and we will write when a role you like opens."
+#~ msgstr "Leave your details and we will write when a role you like opens."
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -15433,9 +15446,9 @@ msgid "Change any words, share it for feedback, then send it to the circle."
 msgstr "Change any words, share it for feedback, then send it to the circle."
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles page, opens a role's full card"
-msgid "Read the full card"
-msgstr "Read the full card"
+#~ msgctxt "roles page, opens a role's full card"
+#~ msgid "Read the full card"
+#~ msgstr "Read the full card"
 
 #: client/src/components/priorities/TeamWeek.tsx
 msgid "This week, each person's top priority"
@@ -15949,7 +15962,7 @@ msgctxt "admin compare"
 msgid "Would like to talk about the terms"
 msgstr "Would like to talk about the terms"
 
-#: client/src/components/roleCard/FoundingLineup.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "team sheet group: the roles held now"
 msgid "Holding it now"
 msgstr "Holding it now"
@@ -15984,7 +15997,7 @@ msgctxt "roles page, other ways to join"
 msgid "Find your place in the game"
 msgstr "Find your place in the game"
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team section heading"
 msgid "Join the founding team"
 msgstr "Join the founding team"
@@ -16578,9 +16591,9 @@ msgid "Discard"
 msgstr "Discard"
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team: nobody holds this role yet"
-msgid "Open role"
-msgstr "Open role"
+#~ msgctxt "founding team: nobody holds this role yet"
+#~ msgid "Open role"
+#~ msgstr "Open role"
 
 #: client/src/pages/Roles.tsx
 #~ msgid "A role is a named responsibility inside a circle, with an aim, a domain, and accountabilities. The role belongs to the circle, and a person steps into it."
@@ -17045,7 +17058,7 @@ msgctxt "task handed to a role"
 msgid "From {from}"
 msgstr "From {from}"
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team section lede"
 msgid "We are forming the founding team: the people who will hold each domain of the village, from the foundation through to completion."
 msgstr "We are forming the founding team: the people who will hold each domain of the village, from the foundation through to completion."
@@ -17565,6 +17578,16 @@ msgctxt "task handed to a role"
 msgid "Role"
 msgstr "Role"
 
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your Human Design, Gene Keys, or ways of working"
+msgstr "Your Human Design, Gene Keys, or ways of working"
+
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application about"
+msgid "Your Human Design, Gene Keys, or other ways of working we should know about (optional)"
+msgstr "Your Human Design, Gene Keys, or other ways of working we should know about (optional)"
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Sent. It waits for the role to accept it."
@@ -18037,6 +18060,11 @@ msgstr "it comes with its circle"
 msgctxt "founding application check, a box over its limit"
 msgid "Languages you work in"
 msgstr "Languages you work in"
+
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: open this role's own page"
+msgid "Read the role"
+msgstr "Read the role"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 #: client/src/components/admin/LetterDraftsPanel.tsx
@@ -18908,9 +18936,9 @@ msgid "Add to draft"
 msgstr "Add to draft"
 
 #: client/src/components/fireflyPath/limitProblems.ts
-msgctxt "founding application check, a box over its limit"
-msgid "Your Human Design or Gene Keys"
-msgstr "Your Human Design or Gene Keys"
+#~ msgctxt "founding application check, a box over its limit"
+#~ msgid "Your Human Design or Gene Keys"
+#~ msgstr "Your Human Design or Gene Keys"
 
 #: client/src/components/review/SeraActs.tsx
 msgctxt "sera answers"
@@ -19019,9 +19047,9 @@ msgid "Not started"
 msgstr "Not started"
 
 #: client/src/components/fireflyPath/applyBackup.ts
-msgctxt "application backup file"
-msgid "Your Human Design or Gene Keys"
-msgstr "Your Human Design or Gene Keys"
+#~ msgctxt "application backup file"
+#~ msgid "Your Human Design or Gene Keys"
+#~ msgstr "Your Human Design or Gene Keys"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request checklist"
@@ -19679,7 +19707,7 @@ msgctxt "connector setup panel, copy the address"
 msgid "Select the address and copy it."
 msgstr "Select the address and copy it."
 
-#: client/src/components/roleCard/FoundingLineup.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "team sheet group"
 msgid "Open now"
 msgstr "Open now"
@@ -19723,9 +19751,9 @@ msgid "Take this step"
 msgstr "Take this step"
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles page, empty directory"
-msgid "The roles open now are the founding roles above."
-msgstr "The roles open now are the founding roles above."
+#~ msgctxt "roles page, empty directory"
+#~ msgid "The roles open now are the founding roles above."
+#~ msgstr "The roles open now are the founding roles above."
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -20133,7 +20161,7 @@ msgstr "No rate is locked for this currency yet, so this line does not count."
 msgid "You confirm your email within 48 hours."
 msgstr "You confirm your email within 48 hours."
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team section, hiring first"
 msgid "We are filling these roles first. More roles open after them."
 msgstr "We are filling these roles first. More roles open after them."
@@ -20699,6 +20727,11 @@ msgstr "Split changed by applicant"
 msgctxt "approval inbox"
 msgid "Put back"
 msgstr "Put back"
+
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: the coming-soon roles this steward will build"
+msgid "Will grow into:"
+msgstr "Will grow into:"
 
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgctxt "moon renewal action"
@@ -22454,6 +22487,11 @@ msgctxt "budget page"
 msgid "Cash budget"
 msgstr "Cash budget"
 
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open role"
+msgid "No role is open right now."
+msgstr "No role is open right now."
+
 #: client/src/components/Layout.tsx
 #~ msgid "Your account, {firstName}"
 #~ msgstr "Your account, {firstName}"
@@ -22484,9 +22522,9 @@ msgid "We contact your references only after our first conversation, and only wi
 msgstr "We contact your references only after our first conversation, and only with your OK."
 
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team view switch"
-msgid "How to show the team"
-msgstr "How to show the team"
+#~ msgctxt "founding team view switch"
+#~ msgid "How to show the team"
+#~ msgstr "How to show the team"
 
 #: client/src/components/admin/HiddenMapConfigPanel.tsx
 msgid "Every member sees this layer, before their map opens"
@@ -22618,7 +22656,7 @@ msgctxt "voice transcription choice"
 msgid "Nothing writes recordings down now: the voice step works as it always did."
 msgstr "Nothing writes recordings down now: the voice step works as it always did."
 
-#: client/src/pages/Roles.tsx
+#: client/src/pages/RoleShare.tsx
 msgid "Propose this role for next season"
 msgstr "Propose this role for next season"
 
@@ -22656,7 +22694,7 @@ msgctxt "admin quest roots"
 msgid "Save roots"
 msgstr "Save roots"
 
-#: client/src/components/roleCard/FoundingTeam.tsx
+#: client/src/pages/Roles.tsx
 msgctxt "founding team section eyebrow"
 msgid "Founding team"
 msgstr "Founding team"
@@ -24280,9 +24318,9 @@ msgid "<0>{0}.</0> Give it a name."
 msgstr "<0>{0}.</0> Give it a name."
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles page archetypes"
-msgid "All roles and circles"
-msgstr "All roles and circles"
+#~ msgctxt "roles page archetypes"
+#~ msgid "All roles and circles"
+#~ msgstr "All roles and circles"
 
 #: client/src/pages/Characters.tsx
 msgctxt "characters page, your roots"
@@ -24291,9 +24329,9 @@ msgstr "The quests board shows what grows from these first. You can turn that of
 
 #. placeholder {0}: roles.length
 #: client/src/components/roleCard/FoundingLineup.tsx
-msgctxt "founding team tally: open roles"
-msgid "{0} open"
-msgstr "{0} open"
+#~ msgctxt "founding team tally: open roles"
+#~ msgid "{0} open"
+#~ msgstr "{0} open"
 
 #: client/src/components/notebook/NotebookAdd.tsx
 msgctxt "notebook add mode"
@@ -24323,6 +24361,11 @@ msgstr "A Treasurer confirms each payment drawn from it."
 msgctxt "circle hearth, we meet"
 msgid "You said you will be there."
 msgstr "You said you will be there."
+
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application why starter hint"
+msgid "Click one, then talk or type. Then click the next."
+msgstr "Click one, then talk or type. Then click the next."
 
 #. placeholder {0}: outcome.landed.length
 #. placeholder {1}: outcome.failed
