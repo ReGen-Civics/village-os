@@ -404,7 +404,10 @@ describe("the six steps", () => {
     expect(document.querySelectorAll("[data-open-proposal] .jw-btn.bg-notice")).toHaveLength(1);
     // The six steps in the brief's order, on the gold rule.
     const mark = document.querySelector("[data-step-mark]") as HTMLElement;
-    expect(Array.from(mark.querySelectorAll("li")).map((li) => li.querySelector("[aria-label]")?.getAttribute("aria-label"))).toEqual([
+    // Each step's name as a screen reader hears it: a button's label, or the step's own words; never a name on a plain
+    // span, which a screen reader does not read (applicant QA, 20 Nov 2026: the phone's steps read as nothing).
+    expect(mark.querySelector("span[aria-label]")).toBeNull();
+    expect(Array.from(mark.querySelectorAll("li")).map((li) => li.querySelector("button[aria-label]")?.getAttribute("aria-label") ?? li.querySelector(".sr-only")?.textContent)).toEqual([
       "Step 1: Get to know us",
       "Step 2: About you",
       "Step 3: Your value",

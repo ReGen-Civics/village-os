@@ -80,8 +80,11 @@ export function StepMark({ labels, now, reached, onGo }: { labels: readonly stri
                   {inner}
                 </button>
               ) : (
-                <span aria-label={name} aria-current={here ? "step" : undefined} className="grid justify-items-center">
-                  {inner}
+                // A plain span may not carry a name (applicant QA, 20 Nov 2026): a screen reader read nothing on a phone, where
+                // the label is hidden. The name is said as text, once, and the drawn words are hidden from it.
+                <span aria-current={here ? "step" : undefined} className="grid justify-items-center">
+                  <span className="sr-only">{name}</span>
+                  <span aria-hidden="true" className="contents">{inner}</span>
                 </span>
               )}
             </li>
@@ -430,8 +433,9 @@ export function StepTrail({ labels, now, reached, onGo }: { labels: readonly str
                   {inner}
                 </button>
               ) : (
-                <span aria-label={name} aria-current={here ? "step" : undefined} className="flex min-h-11 items-center gap-3">
-                  {inner}
+                <span aria-current={here ? "step" : undefined} className="flex min-h-11 items-center gap-3">
+                  <span className="sr-only">{name}</span>
+                  <span aria-hidden="true" className="contents">{inner}</span>
                 </span>
               )}
             </li>

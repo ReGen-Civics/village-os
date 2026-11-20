@@ -12,6 +12,11 @@ import { useFieldName } from "@/components/form/fieldName";
 import { useLingui } from "@lingui/react/macro";
 import { LimitSigns } from "@/components/form/LimitSigns";
 
+/** The height that shows every line of a border-box textarea: its content's height plus its own borders. */
+export function growHeight(scrollHeight: number, offsetHeight: number, clientHeight: number): number {
+  return scrollHeight + Math.max(0, offsetHeight - clientHeight);
+}
+
 export default function GrowingField({
   value,
   onChange,
@@ -46,7 +51,9 @@ export default function GrowingField({
     const el = ref.current;
     if (!el) return;
     el.style.height = "auto";
-    if (el.scrollHeight > 0) el.style.height = `${el.scrollHeight}px`;
+    // The box's own borders on top (applicant QA, 20 Nov 2026): a border-box height of scrollHeight alone was two pixels
+    // short, and the last line's foot was clipped under overflow-hidden.
+    if (el.scrollHeight > 0) el.style.height = `${growHeight(el.scrollHeight, el.offsetHeight, el.clientHeight)}px`;
   };
   useLayoutEffect(fit, [value]);
   // Shown, or its width changed: fit again. Only a width change counts, so fitting never feeds itself.
