@@ -16,6 +16,8 @@
  * body's reader (`openBodyOf`) never sees them, and they name nobody, so the
  * tidy job's anonymising leaves them as they are.
  */
+import { overLimitOf, type OverLimitStamp } from "../../shared/commitmentLimit";
+import { heldSplitsOf, type HeldSplit } from "../../shared/proposalCompare";
 import type { Pool, PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { openBodyOf, OPEN_PROPOSAL_STATUSES, type OpenProposalBody, type OpenProposalStatus } from "../../shared/openProposals";
 import { OPEN_INVITE_PREFIX, type OpenDecision } from "../../shared/openProposalDecide";
@@ -39,6 +41,10 @@ export interface StoredOpenProposal {
   decision: OpenDecision;
   /** Kept although its confirmation email did not go: the address is not confirmed yet. Null for every other proposal. */
   addressUnconfirmed: AddressUnconfirmed | null;
+  /** A decider's choice to adopt above a role's limit (shared/commitmentLimit.ts). Written by the decider door only. */
+  overLimit?: OverLimitStamp[];
+  /** The deliverables a saved split gives this person, by role (shared/proposalCompare.ts). Read by the admin section only. */
+  held?: HeldSplit[];
 }
 
 /**
@@ -111,7 +117,16 @@ function rowOf(r: any): StoredOpenProposal {
     decidedAt: fromSeconds(r.decided_s),
     decision: decisionOf(json(r.body_json)),
     addressUnconfirmed: addressUnconfirmedOf(json(r.body_json)),
+    ...stampsOf(json(r.body_json)),
   };
+}
+
+/** The deciders' stamps in a stored body (server/repos/proposalStamps.ts), left out when there are none. */
+function stampsOf(raw: unknown): Pick<StoredOpenProposal, "overLimit" | "held"> {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const over = overLimitOf(o.overLimit);
+  const held = heldSplitsOf(o.heldSplit);
+  return { ...(over.length ? { overLimit: over } : {}), ...(held.length ? { held } : {}) };
 }
 
 export async function insertOpenProposal(

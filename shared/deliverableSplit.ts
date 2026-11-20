@@ -94,7 +94,8 @@ export function wordsOf(text: string): string[] {
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length > 1 && !SMALL_WORDS.has(w))
+    // A number is kept whatever its length: "Phase 1" and "Phase 2" are two pieces of work.
+    .filter((w) => (w.length > 1 || /\d/.test(w)) && !SMALL_WORDS.has(w))
     .map((w) => (w.length > 3 && w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w))
     .map((w) => (w.length > 5 && w.endsWith("ing") ? w.slice(0, -3) : w));
 }
@@ -105,6 +106,9 @@ export function samePiece(a: string, b: string): boolean {
   const wb = wordsOf(b);
   if (!wa.length || !wb.length) return false;
   if (wa.join(" ") === wb.join(" ")) return true;
+  // Different numbers are different pieces: "Phase 1" is not "Phase 2".
+  const nums = (w: string[]) => w.filter((x) => /\d/.test(x)).sort().join(" ");
+  if (nums(wa) !== nums(wb)) return false;
   const A = new Set(wa);
   const B = new Set(wb);
   let shared = 0;

@@ -185,7 +185,7 @@ describe("the conversation guide's notes are read and written by people alone (0
 });
 
 describe("comparing proposals side by side maps work and never judges people (the lead, 20 Nov 2026)", () => {
-  const COMPARE_FILES = ["shared/proposalCompare.ts", "shared/deliverableSplit.ts", "server/lib/proposalCompare.ts", "server/routes/proposalCompare.ts", "client/src/components/admin/CompareTab.tsx"];
+  const COMPARE_FILES = ["shared/proposalCompare.ts", "shared/deliverableSplit.ts", "server/lib/proposalCompare.ts", "server/routes/proposalCompare.ts", "client/src/components/admin/CompareTab.tsx", "server/repos/proposalStamps.ts", "shared/commitmentLimit.ts", "server/lib/commitmentLimit.ts"];
   const MODEL_IMPORT = /anthropic|openai|saberra|seraAgent|companions|roleGuide|adminHelper|assistant|llm|generateText|messages\.create/i;
   const RANKING = /\b(score|rank|rating|grade|merit|best|recommend)\w*\s*[?:]/gi;
 
@@ -206,7 +206,7 @@ describe("comparing proposals side by side maps work and never judges people (th
     for (const file of MODEL_FACING) {
       const src = fs.readFileSync(path.join(ROOT, file), "utf8");
       // shared/agentAdmin.ts names the door once, to refuse it.
-      const named = ["proposalCompare", "deliverableSplit", "CompareTab"].filter((n) => src.includes(n));
+      const named = ["proposalCompare", "deliverableSplit", "CompareTab", "proposalStamps", "heldSplit"].filter((n) => src.includes(n));
       expect(named, file).toEqual([]);
     }
     expect(MCP_TOOLS.flatMap((t) => t.routes).filter((r) => /proposal-?compare/.test(r))).toEqual([]);
@@ -218,6 +218,14 @@ describe("comparing proposals side by side maps work and never judges people (th
       const d = adminRequestDecision("GET", "/api/admin/proposal-compare", { ...DEFAULT_AGENT_ADMIN_PATHS, paths: [...DEFAULT_AGENT_ADMIN_PATHS.paths, { method: "GET", path: "/api/admin/proposal-compare" } as any] }, "u1", opts as any);
       expect(d.ok, JSON.stringify(opts)).toBe(false);
       expect((d as any).code).toBe("always_a_person");
+    }
+    // The saved split's doors (the lead, 20 Nov 2026): never read or written by an agent, whatever is listed or approved.
+    for (const [m, p] of [["POST", "/api/admin/proposal-compare/split"], ["GET", "/api/admin/proposal-compare/held/op-0123456789abcdef0123"], ["GET", "/api/admin/proposal-compare/held/sa-0123456789abcdef"]] as const) {
+      for (const opts of [{}, { applicantDataOpen: true, leadApprovedWrites: true }]) {
+        const d = adminRequestDecision(m, p, { ...DEFAULT_AGENT_ADMIN_PATHS, paths: [...DEFAULT_AGENT_ADMIN_PATHS.paths, { method: m, path: p, confirm: "agent" } as any] }, "u1", opts as any);
+        expect(d.ok, `${m} ${p} ${JSON.stringify(opts)}`).toBe(false);
+        expect((d as any).code).toBe("always_a_person");
+      }
     }
     // CONTROL: the open proposals desk itself does open to an agent once the Anchor approves and the village lists it.
     const desk = adminRequestDecision("GET", "/api/admin/open-proposals", { ...DEFAULT_AGENT_ADMIN_PATHS, paths: [...DEFAULT_AGENT_ADMIN_PATHS.paths, { method: "GET", path: "/api/admin/open-proposals" } as any] }, "u1", { applicantDataOpen: true } as any);
@@ -251,11 +259,13 @@ describe("comparing proposals side by side maps work and never judges people (th
     expect(shape.match(/^\s+(\w+)\??:/gm)?.map((l) => l.trim().replace(/\??:$/, ""))).toEqual(["key", "deliverables", "commitmentPct"]);
   });
 
-  it("nothing on the compare page writes: it only reads its own door", () => {
+  it("the compare page reads its own door and writes one thing, the saved split, to its own door", () => {
     const page = fs.readFileSync(path.join(ROOT, "client/src/components/admin/CompareTab.tsx"), "utf8");
-    expect(page.match(/method:\s*"(POST|PUT|PATCH|DELETE)"/g) ?? []).toEqual([]);
-    expect(page.match(/fetch\(/g)).toHaveLength(1);
-    expect(page).toContain("/admin/proposal-compare");
+    // The one write (the lead, 20 Nov 2026): the saved split. No adopt, decline, terms or send door is called.
+    expect(page.match(/method:\s*"(POST|PUT|PATCH|DELETE)"/g) ?? []).toEqual(['method: "POST"']);
+    expect(page.match(/fetch\(/g)).toHaveLength(2);
+    expect(Array.from(page.matchAll(/\{API_BASE\}([^`]*)`/g), (m) => m[1])).toEqual(["/admin/proposal-compare", "/admin/proposal-compare/split"]);
+    expect(page).not.toMatch(/\/adopt|\/decline|\/terms|\/invite|\/send/);
     // CONTROL: the write pattern does match a write.
     expect('{ method: "POST" }'.match(/method:\s*"(POST|PUT|PATCH|DELETE)"/g)).toHaveLength(1);
   });

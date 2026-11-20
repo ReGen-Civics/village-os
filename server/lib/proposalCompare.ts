@@ -20,7 +20,7 @@ import { openProposalHref } from "../../shared/openProposalDecide";
 import { applicationHref, goalsOfApplication, OPEN_STATUSES, type ApplicationAnswers } from "../../shared/seatApplications";
 import { TERM_LABELS, type TermKey } from "../../shared/termsWords";
 import { askPeriod, COMMITMENT_TARGET_DEFAULT, type PayAsk } from "../../shared/commitmentRange";
-import { categoriesOf, questCategory, roleCategory, NO_CIRCLE, type CompareDeliverable, type CompareItem, type ComparePayload, type CompareRole, type CompareTerms } from "../../shared/proposalCompare";
+import { categoriesOf, questCategory, roleCategory, NO_CIRCLE, type CompareDeliverable, type CompareItem, type ComparePayload, type CompareRole, type CompareScope, type CompareTerms, type SavedSplitView } from "../../shared/proposalCompare";
 import type { StoredOpenProposal } from "../repos/openProposals";
 import type { StoredApplication } from "../repos/seatApplications";
 import type { QuestProposalRow } from "./questProposals";
@@ -163,8 +163,17 @@ export function questEntry(q: QuestProposalRow, who: string): CompareItem {
 }
 
 /** Every proposal waiting for a decision, in the order each arrived. */
-export async function buildComparison(src: CompareSources, readsPay: boolean): Promise<ComparePayload> {
-  const [open, apps, quests, roles, circles] = await Promise.all([src.openProposals(), src.applications(), src.questProposals(), src.roles(), src.circles()]);
+export async function buildComparison(src: CompareSources, readsPay: boolean, scope: CompareScope = "all"): Promise<ComparePayload> {
+  // The quest part alone (a holder of `quest.approve` only, the lead, 20 Nov 2026): no proposal for a role is even read.
+  const roleSide = scope === "all";
+  const [open, apps, quests, roles, circles] = await Promise.all([
+    roleSide ? src.openProposals() : Promise.resolve([] as StoredOpenProposal[]),
+    roleSide ? src.applications() : Promise.resolve([] as StoredApplication[]),
+    src.questProposals(),
+    roleSide ? src.roles() : Promise.resolve([] as OrgRole[]),
+    src.circles(),
+  ]);
+  if (!roleSide) readsPay = false;
   const roleById = new Map(roles.map((r) => [r.id, r]));
   const circleName = new Map(circles.map((c) => [c.id, c.name]));
   const waitingApps = apps.filter((a) => (OPEN_STATUSES as readonly string[]).includes(a.status));
@@ -203,5 +212,47 @@ export async function buildComparison(src: CompareSources, readsPay: boolean): P
     const quest = items.find((i) => i.category === key && i.kind === "quest");
     return quest ? clip(quests.find((q) => q.id === quest.ref)?.prose.circle, 80) : "";
   };
-  return { items, roles: compareRoles, categories: categoriesOf(items, labelOf), readsPay };
+  const saved = roleSide ? await savedSplits(open, apps, roleById, nameOf) : undefined;
+  return { items, roles: compareRoles, categories: categoriesOf(items, labelOf), readsPay, scope, ...(saved ? { saved, maySave: true } : {}) };
+}
+
+const openStatus = (s: string): SavedSplitView["rows"][number]["status"] => (s === "confirmed" ? "waiting" : s === "adopted" ? "adopted" : "closed");
+const memberStatus = (s: string): SavedSplitView["rows"][number]["status"] =>
+  (OPEN_STATUSES as readonly string[]).includes(s) ? "waiting" : s === "adopted" || s === "held-full" ? "adopted" : "closed";
+
+/**
+ * THE SAVED SPLITS, by role: the latest save for each role, each person in it and what they hold. A stranger's
+ * proposal and the application its adoption made carry the same record; the application's row is kept.
+ */
+export async function savedSplits(
+  open: readonly StoredOpenProposal[],
+  apps: readonly StoredApplication[],
+  roleById: ReadonlyMap<string, OrgRole>,
+  nameOf: (userId: string | null) => Promise<string>,
+): Promise<SavedSplitView[]> {
+  type Row = SavedSplitView["rows"][number] & { by: string; at: string; roleId: string };
+  const rows: Row[] = [];
+  for (const a of apps) {
+    for (const h of a.held ?? []) rows.push({ key: `sa:${a.id}:${h.roleId}`, who: await nameOf(a.candidateUserId), status: memberStatus(a.status), holds: h.holds, href: applicationHref(a.id), by: h.by, at: h.at, roleId: h.roleId });
+  }
+  for (const p of open) {
+    for (const h of p.held ?? []) {
+      const copy = rows.some((r) => r.roleId === h.roleId && r.at === h.at && r.by === h.by && r.holds.join("\n") === h.holds.join("\n"));
+      if (!copy) rows.push({ key: `op:${p.id}:${h.roleId}`, who: clip(p.name, 120), status: openStatus(p.status), holds: h.holds, href: openProposalHref(p.id), by: h.by, at: h.at, roleId: h.roleId });
+    }
+  }
+  const out: SavedSplitView[] = [];
+  for (const roleId of Array.from(new Set(rows.map((r) => r.roleId)))) {
+    const mine = rows.filter((r) => r.roleId === roleId);
+    const latest = mine.reduce((m, r) => (r.at > m ? r.at : m), "");
+    const inIt = mine.filter((r) => r.at === latest);
+    out.push({
+      roleId,
+      roleName: roleById.get(roleId)?.name ?? roleId,
+      by: (await nameOf(inIt[0].by)) || "",
+      at: latest,
+      rows: inIt.map(({ key, who, status, holds, href }) => ({ key, who, status, holds, href })),
+    });
+  }
+  return out;
 }

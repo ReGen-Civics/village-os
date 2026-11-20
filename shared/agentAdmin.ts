@@ -148,7 +148,8 @@ export const ALWAYS_A_PERSON: ReadonlyArray<{ key: string; words: string; mode: 
     // assistant or agent tool gets it, whatever the Anchor's approval opens. Before "personal", which a GET can pass.
     key: "compare",
     mode: "always",
-    words: "Comparing proposals side by side is only ever done by a person.",
+    // The splits saved there (the lead, 20 Nov 2026) are under the same door, read and written by people alone.
+    words: "Comparing proposals side by side, and the splits saved there, are only ever a person's to read or write.",
     test: (_m, p) => /proposal-?compare/i.test(p),
   },
   {

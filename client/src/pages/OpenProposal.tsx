@@ -35,7 +35,7 @@ import CommitmentReview, { type CommitmentReviewData } from "@/components/openPr
 import ContractPrice, { type ContractPriceData } from "@/components/openProposal/ContractPrice";
 import type { PieceSuggestion } from "@shared/pieceSuggestions";
 import DecideDock from "@/components/openProposal/DecideDock";
-import TermsWeOffer, { OpenTalksWarning, prefillFromSearch, type ServedDeciderOffer } from "@/components/openProposal/TermsWeOffer";
+import TermsWeOffer, { HeldByThem, OpenTalksWarning, OverLimitWarning, prefillFromSearch, type ServedDeciderOffer, type ServedOverLimit } from "@/components/openProposal/TermsWeOffer";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "wouter";
 import { ArrowLeft, Check, Copy, Mail, X } from "lucide-react";
@@ -115,6 +115,8 @@ export interface ServedOpenProposal {
     conversations: Array<{ roleId: string; role: string; unheld: boolean; words: string }>;
     seatsFull: Array<{ name: string; seats: number; taken: number }>;
     seatsWords: string | null;
+    /** Above the role's commitment limit (the lead, 20 Nov 2026): a confirm step before Adopt. */
+    overLimit?: ServedOverLimit | null;
   } | null;
   /** An agent proposed by its keeper (0374): what it is, who keeps it, its reach and how to switch it off. */
   agent?: ServedAgent | null;
@@ -235,6 +237,7 @@ export default function OpenProposal() {
   const [knowsOpenTalks, setKnowsOpenTalks] = useState(false);
   // Every seat taken: adopting is for when a seat opens, chosen on purpose (audit B3).
   const [forASeat, setForASeat] = useState(false);
+  const [aboveLimit, setAboveLimit] = useState(false);
 
   const load = useCallback(async () => {
     const answer = await ask<{ proposal: ServedOpenProposal }>(base(id));
@@ -309,7 +312,7 @@ export default function OpenProposal() {
 
   const record = p?.consent.record ?? null;
   // Adopt waits on open talks not yet acknowledged, conversations still open, or a full role not chosen on purpose.
-  const adoptWaits = !!p && ((!!p.offer?.openTalks.length && !knowsOpenTalks && !p.agent) || !!p.beforeAdopt?.conversations.length || (!!p.beforeAdopt?.seatsFull.length && !forASeat));
+  const adoptWaits = !!p && ((!!p.offer?.openTalks.length && !knowsOpenTalks && !p.agent) || !!p.beforeAdopt?.conversations.length || (!!p.beforeAdopt?.seatsFull.length && !forASeat) || (!!p.beforeAdopt?.overLimit?.roles.length && !aboveLimit));
   // On a wide screen the decision sits in a panel beside the proposal, held in view while the steward reads (lead, 11 Nov 2026).
   // After the decision the two columns stay (D-08): the panel then says what was decided.
   const side = state === "ready" && !!p && (p.status === "confirmed" || p.status === "adopted" || p.status === "declined" || !!said);
@@ -404,6 +407,7 @@ export default function OpenProposal() {
               : <ContractPrice data={p.contractPrice} />)}
 
             {/* An agent is offered no pay, allowance or commitment (verify B153, B8): a person's terms never show for one. */}
+            {!p.agent && <HeldByThem applicationRef={p.id} />}
             {p.offer && !p.agent && <TermsWeOffer offer={p.offer} mayEdit={!!p.you.mayEditTerms} savePath={`${base(p.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
 
             <section aria-labelledby="op-words">
@@ -538,6 +542,7 @@ export default function OpenProposal() {
                     </div>
                     {p.you.mayAdopt && p.offer && !p.agent && <div className="mt-3"><OpenTalksWarning settings={p.offer.openTalks} confirmed={knowsOpenTalks} onConfirm={setKnowsOpenTalks} /></div>}
                     {p.you.mayAdopt && <BeforeAdopt left={p.beforeAdopt ?? null} forASeat={forASeat} onForASeat={setForASeat} />}
+                    {p.you.mayAdopt && <div className="mt-3"><OverLimitWarning over={p.beforeAdopt?.overLimit} confirmed={aboveLimit} onConfirm={setAboveLimit} /></div>}
                     {!declining ? (
                       // On a wide screen the row stays at the foot of the side panel while its note and checks scroll above it.
                       <div className="mt-4 lg:sticky lg:bottom-0 lg:-mx-5 lg:-mb-5 lg:rounded-b-xl lg:bg-card lg:px-5 lg:py-4">
@@ -551,7 +556,7 @@ export default function OpenProposal() {
                             type="button"
                             disabled={busy || adoptWaits}
                             aria-describedby={p.beforeAdopt && (p.beforeAdopt.conversations.length || p.beforeAdopt.seatsFull.length) ? "op-before-adopt" : undefined}
-                            onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}) }, true)}
+                            onClick={() => void act(`${base(p.id)}/adopt`, { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(forASeat ? { whenASeatOpens: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}) }, true)}
                             className={PRIMARY}
                           >
                             <Check className="h-4 w-4" aria-hidden="true" />

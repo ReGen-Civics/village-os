@@ -37,7 +37,10 @@
  * ── NO PUBLIC EVENT ────────────────────────────────────────────────────────
  *
  * No `recordEvent` and no `addActivity` anywhere in this door: both reach the
- * village's public record by default. The row is the record. A member hears
+ * village's public record by default. The row is the record. The one audit
+ * line it asks for, a holder's choice to adopt above a role's commitment limit
+ * (the lead, 20 Nov 2026), is written at the ADMIN audience by
+ * server/lib/commitmentLimit.ts, naming the role and the numbers, never the person. A member hears
  * through a notification naming the seats and linking the page.
  *
  * ── THE CANDIDATE ALIGNS WHEN THEY PROPOSE (PR5) ───────────────────────────
@@ -109,7 +112,10 @@ import { openBallot, openBallotFor, withdrawBallot } from "../lib/ballots";
 import type { WeightModeSnapshot } from "../lib/governanceWeights";
 import type { LapseContext } from "../lib/orgChart";
 import { seatVoteLandsAt } from "../lib/seatTermLanding";
-import { adoptApplication, seatApplicationCloser, settleDepsOf, tellOutcome } from "../lib/seatApplicationCloser";
+import { adoptApplication, limitInputs, seatApplicationCloser, seatsWithoutRoom, settleDepsOf, tellOutcome } from "../lib/seatApplicationCloser";
+import { OVER_LIMIT_WORDS, type OverLimitRole } from "../../shared/commitmentLimit";
+import { auditOverLimit, overLimitRefusal, overLimitRoles } from "../lib/commitmentLimit";
+import { stampApplication } from "../repos/proposalStamps";
 import { prepareApplication, writeApplicationOn } from "../lib/seatApplicationWrite";
 import { openProposalsWaitingOn } from "../lib/openProposalDecide";
 import { carriesMoney, intentSentence, noticeDaysOf, RECONFIRM_FRESH_MS, userParty, ALIGN_WORDS } from "../../shared/alignments";
@@ -670,7 +676,10 @@ export function register(app: Express, deps: Deps): void {
       if (later) continue;
       const current = here.filter((l) => !isLapsed({ ...l, endedAt: null }, seat, lapseNow).lapsed).length;
       // A full role still recruiting takes the application (the lead, 17 Nov 2026); adoption waits for a free place.
-      if (current >= seat.seats && seat.recruiting !== true) {
+      // An application with a commitment is weighed by the role's commitment limit at adoption, never by its places
+      // here (the lead, 20 Nov 2026): whoever may adopt sees the limit and decides.
+      const weighed = typeof input.answers?.terms?.commitmentPct === "number";
+      if (!weighed && current >= seat.seats && seat.recruiting !== true) {
         return answer(409, { error: `${seat.name} is full: every place in it is held.`, seatId: id, code: "seat_full" });
       }
     }
@@ -959,7 +968,14 @@ export function register(app: Express, deps: Deps): void {
       const proposal = (await proposalsForApplications(getPool(), [a.id])).get(a.id) ?? null;
       whoAdopts = whoAdoptsWords({ ...(await adopterFacts(viewer, a.candidateUserId)), changesRoles: !!proposal && changesRoles(proposal.body) });
     }
-    res.json({ application: await served(a, String(viewer.id), await adoptionRule(viewer), undefined, whoAdopts) });
+    const application = await served(a, String(viewer.id), await adoptionRule(viewer), undefined, whoAdopts);
+    // Above the role's commitment limit (the lead, 20 Nov 2026): the confirm step, for whoever may adopt it only.
+    let overLimit: { ask: string; roles: Array<OverLimitRole & { words: string }> } | null = null;
+    if (a.status === "awaiting-holder" && (application as any)?.you?.mayAdopt) {
+      const over = overLimitRoles(await seatsWithoutRoom(getPool(), { seatIds: a.seatIds, candidateUserId: a.candidateUserId, at: new Date(), calendar: seatCalendar(), lapse: lapse(), before: a, ...limitInputs(a) }));
+      if (over.length) overLimit = { ask: OVER_LIMIT_WORDS.ask, roles: over.map((o) => ({ ...o, words: OVER_LIMIT_WORDS.role(o.name, o.used, o.adding, o.target) })) };
+    }
+    res.json({ application: overLimit ? { ...application, overLimit } : application });
   });
 
   /** The application a holder door acts on, or null after answering. */
@@ -1075,6 +1091,18 @@ export function register(app: Express, deps: Deps): void {
       const talks = subject ? openTalks({ answers: subject.answers, co: subject.co }) : [];
       if (talks.length && req.body?.confirmOpenTalks !== true) {
         return res.status(409).json({ error: "terms_open", message: OFFER_WORDS.stillTalking(talks.map((k) => OFFER_LABELS[k])), settings: talks.map((k) => OFFER_LABELS[k]) });
+      }
+    }
+
+    // ABOVE THE ROLE'S LIMIT (the lead, 20 Nov 2026): refused with the question until the holder confirms, then stamped
+    // on the application, which the seating reads, and written to the admin audit.
+    {
+      const over = overLimitRoles(await seatsWithoutRoom(getPool(), { seatIds: a.seatIds, candidateUserId: a.candidateUserId, at: new Date(), calendar: seatCalendar(), lapse: lapse(), before: a, ...limitInputs(a) }));
+      if (over.length) {
+        if (req.body?.confirmOverLimit !== true) return res.status(409).json(overLimitRefusal(over));
+        const at = new Date().toISOString();
+        await stampApplication(getPool(), a.id, "overLimit", [...(a.overLimit ?? []), ...over.map((o) => ({ roleId: o.roleId, by: actorId, at, used: o.used, adding: o.adding, target: o.target }))]);
+        await auditOverLimit(getPool(), a.id, "role_application", over, actorId);
       }
     }
 

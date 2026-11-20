@@ -44,6 +44,7 @@
  */
 import { adoptedShape } from "../../shared/proposalSplit";
 import { cardSummary } from "../../shared/openProposalCard";
+import { stampApplication } from "../repos/proposalStamps";
 import { summaryWithin } from "../../shared/applyLimits";
 import { roleTermsOf, termsPerRole, type RoleTerms } from "../../shared/openProposals";
 import type { PayAsk } from "../../shared/commitmentRange";
@@ -461,6 +462,8 @@ export async function roomFor(deps: Pick<DecideDeps, "getPool" | "calendar" | "l
   if (!at) return [];
   const seatIds = proposal.body.roles.map((r) => r.roleId);
   const promised = new Map<string, number>();
+  // The commitments behind those promised places (the lead, 20 Nov 2026), for the commitment limit.
+  const promisedCommitments = new Map<string, Array<number | null>>();
   const mine = proposal.email ? emailKeyOf(proposal.email) : null;
   for (const other of await store.listOpenProposals(pool, ["adopted"], 5000)) {
     if (other.id === proposal.id || (mine && other.email && emailKeyOf(other.email) === mine)) continue;
@@ -468,9 +471,16 @@ export async function roomFor(deps: Pick<DecideDeps, "getPool" | "calendar" | "l
     if (!roles.length) continue;
     const inv = await inviteById(pool, openInviteId(other.id));
     if (!inv || inv.usedByUserId || inv.revokedAt || inv.expired) continue;
-    for (const id of roles) promised.set(id, (promised.get(id) ?? 0) + 1);
+    const terms = roleTermsOf(other.body);
+    for (const id of roles) {
+      promised.set(id, (promised.get(id) ?? 0) + 1);
+      promisedCommitments.set(id, [...(promisedCommitments.get(id) ?? []), terms.find((t) => t.roleId === id)?.commitmentPct ?? null]);
+    }
   }
-  return seatsWithoutRoom(pool, { seatIds, candidateUserId: own, at, calendar: deps.calendar(), lapse: { ...deps.lapse(), now: deps.now() }, seasonId: proposal.body.term ? null : proposal.targetSeasonId, promised });
+  // This proposal's own commitment for each role, and the roles a decider already chose to go above.
+  const adding = new Map(roleTermsOf(proposal.body).map((t) => [t.roleId, proposal.body.kind === "conversation" ? null : t.commitmentPct]));
+  const overridden = new Set(seatIds.filter((id) => (proposal.overLimit ?? []).some((s) => s.roleId === id)));
+  return seatsWithoutRoom(pool, { seatIds, candidateUserId: own, at, calendar: deps.calendar(), lapse: { ...deps.lapse(), now: deps.now() }, seasonId: proposal.body.term ? null : proposal.targetSeasonId, promised, promisedCommitments, adding, overridden });
 }
 
 export async function placeOnRoles(
@@ -561,7 +571,16 @@ export async function placeOnRoles(
   }
   try {
     await inApplicationTransaction(pool, async (conn) => {
-      for (const made of prepared) await writeApplicationOn(conn, made.app, "awaiting-holder", { candidateAligns: false });
+      for (const made of prepared) {
+        await writeApplicationOn(conn, made.app, "awaiting-holder", { candidateAligns: false });
+        // The deciders' stamps ride onto the application made for those roles (the lead, 20 Nov 2026): a choice to go
+        // above a role's limit, and the deliverables a saved split gives this person.
+        const roles = new Set(made.app.row.seatIds);
+        const over = (p.proposal.overLimit ?? []).filter((x) => roles.has(x.roleId));
+        const held = (p.proposal.held ?? []).filter((x) => roles.has(x.roleId));
+        if (over.length) await stampApplication(conn, made.app.row.id, "overLimit", over);
+        if (held.length) await stampApplication(conn, made.app.row.id, "heldSplit", held);
+      }
       // One proposal's roles are decided together: by one holder's adoption, or by ONE village vote (the lead, 18 Nov 2026).
       await setTogether(conn, prepared.map((made) => made.app.row.id));
     });
