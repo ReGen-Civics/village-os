@@ -836,6 +836,12 @@ msgctxt "role editor"
 msgid "Move up"
 msgstr ""
 
+#. placeholder {0}: p.circleName
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card: what goes to the circle for consent"
+msgid "Goes to the {0}"
+msgstr ""
+
 #: client/src/pages/HiddenMap.tsx
 msgid "You keep this map, so you can vouch for members' places now."
 msgstr ""
@@ -1373,6 +1379,11 @@ msgctxt "open proposal side by side"
 msgid "(done when {doneWhen})"
 msgstr "(lista cuando {doneWhen})"
 
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "full role card heading"
+msgid "What {villageInSentence} needs from you"
+msgstr ""
+
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We are waiting for your answer."
 msgstr "Estamos esperando tu respuesta."
@@ -1518,9 +1529,9 @@ msgid "No key and no outside service: the recording never leaves the server. Abo
 msgstr ""
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "founding card piece, short"
-msgid "Delivers"
-msgstr "Entrega"
+#~ msgctxt "founding card piece, short"
+#~ msgid "Delivers"
+#~ msgstr "Entrega"
 
 #: client/src/components/canvas/DecisionMatrix.tsx
 #: client/src/components/canvas/DecisionMatrixRows.tsx
@@ -1573,6 +1584,12 @@ msgstr ""
 msgctxt "week strip, the days as a group"
 msgid "The seven days"
 msgstr "Los siete días"
+
+#: client/src/components/roleCard/CardLists.tsx
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card: the onboarding steps"
+msgid "Once you're selected"
+msgstr ""
 
 #: client/src/components/canvas/CanvasMoon.tsx
 msgctxt "the canvas moon is being published"
@@ -1817,6 +1834,13 @@ msgstr "Formación"
 msgctxt "roles page, other ways to join"
 msgid "Offer your gifts"
 msgstr "Ofrece tus dones"
+
+#. placeholder {0}: r.line
+#. placeholder {1}: r.problem
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: a deliverable line that does not read"
+msgid "Line {0}: {1}"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 msgid "See the places and their open roles on the Living Map"
@@ -2077,7 +2101,7 @@ msgctxt "open proposal attachments heading"
 msgid "Links and files"
 msgstr "Enlaces y archivos"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/SeatLinkCopy.tsx
 msgid "Copying did not work here. The link is selected in the field below."
 msgstr "No se pudo copiar aquí. El enlace quedó seleccionado en el campo de abajo."
 
@@ -2443,6 +2467,11 @@ msgstr ""
 msgctxt "progression: a kind of power"
 msgid "Work and value"
 msgstr "Trabajo y valor"
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist field"
+msgid "Email"
+msgstr ""
 
 #: client/src/components/admin/MintDesk.tsx
 msgctxt "admin mint form, what stood behind a grant"
@@ -3264,7 +3293,7 @@ msgstr "Todavía no hemos acordado estos: {0}."
 #~ msgid "Take a quest"
 #~ msgstr "Toma una misión"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/SeatLinkCopy.tsx
 msgctxt "roles page, role link"
 msgid "Copy link"
 msgstr "Copiar enlace"
@@ -3417,6 +3446,11 @@ msgstr ""
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
 msgid "Edited"
+msgstr ""
+
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: how to write the deliverables"
+msgid "One per line: start | end | title | workstream, with dates as year-month-day. A milestone has one date, or the same date twice."
 msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
@@ -4566,6 +4600,12 @@ msgctxt "proposed changes"
 msgid "Remove this one"
 msgstr ""
 
+#. placeholder {0}: rows.length
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: the waitlist"
+msgid "Waitlist for coming-soon roles ({0})"
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "button that adds a practice that keeps tensions small"
 msgid "Add a practice"
@@ -5038,6 +5078,11 @@ msgstr ""
 msgid "That did not save. Try again."
 msgstr "No se guardó. Inténtalo de nuevo."
 
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist field"
+msgid "WhatsApp number (optional)"
+msgstr ""
+
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
 msgid "Send"
@@ -5086,6 +5131,11 @@ msgstr ""
 msgctxt "companion welcome, what the companion says"
 msgid "Drop in anything that helps me understand you. Each one changes how I talk to you. All optional, all private, all deletable."
 msgstr "Añade lo que me ayude a entenderte. Cada cosa cambia cómo te hablo. Todo es opcional, privado y se puede borrar."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist field"
+msgid "Which roles interest you"
+msgstr ""
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgid "Choose where this is first."
@@ -5789,6 +5839,11 @@ msgstr ""
 msgctxt "price ask summary"
 msgid "Negotiate on the first call if chosen."
 msgstr "Lo negociamos en la primera llamada si te eligen."
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: rate limited"
+msgid "Too many sign-ups from here just now. Please try again in an hour."
+msgstr ""
 
 #: client/src/components/voice/VoiceStepMore.tsx
 msgctxt "voice transcription refusal"
@@ -6588,6 +6643,11 @@ msgstr "Crear una cuenta"
 msgid "A short sound at a few moments, such as a quest done or a stage reached. Off until you turn it on, on this device."
 msgstr ""
 
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: failed"
+msgid "That did not save. Please try again."
+msgstr ""
+
 #. placeholder {0}: card.commitmentPct
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgctxt "open proposal side by side"
@@ -6852,9 +6912,9 @@ msgid "That could not be deleted just now."
 msgstr "No se pudo borrar en este momento."
 
 #: client/src/components/ComingSoon.tsx
-msgctxt "note on a coming-soon role: the card, the application form and its confirmation"
-msgid "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start."
-msgstr ""
+#~ msgctxt "note on a coming-soon role: the card, the application form and its confirmation"
+#~ msgid "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start."
+#~ msgstr ""
 
 #. placeholder {0}: season.name
 #. placeholder {1}: season.timezone
@@ -7644,7 +7704,7 @@ msgctxt "founding application refusal"
 msgid "That's a lot of tries from this connection in a short while. Please wait about an hour and try again."
 msgstr "Son muchos intentos desde esta conexión en poco tiempo. Espera una hora más o menos e inténtalo de nuevo."
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/SeatLinkCopy.tsx
 msgctxt "roles page, role link"
 msgid "Link to {seatName}"
 msgstr "Enlace a {seatName}"
@@ -8296,6 +8356,11 @@ msgstr "{was}% desde {from}, {span}"
 msgid "Saved. Members see it on their next look at the map."
 msgstr ""
 
+#: client/src/components/power/CardBookingLink.tsx
+msgctxt "role card: a conversation held on WhatsApp, no number shown"
+msgid "We'll message you on WhatsApp"
+msgstr ""
+
 #: client/src/pages/StructureReview.tsx
 msgctxt "a live role takes the name an outside service sent"
 msgid "{liveName} is renamed {theirName}."
@@ -8802,6 +8867,11 @@ msgctxt "roster card: the roles a person holds"
 msgid "Positions"
 msgstr ""
 
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: the text version"
+msgid "Dates as a list"
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "What it is for"
@@ -9069,6 +9139,11 @@ msgstr "De noche rindo más. Mensajes cortos. Me encantan las metáforas."
 msgctxt "calendar turnings"
 msgid "New moon, the next moon opens"
 msgstr "Luna nueva, se abre la próxima luna"
+
+#: client/src/components/power/CardBookingLink.tsx
+msgctxt "role card: book a conversation on WhatsApp"
+msgid "Message on WhatsApp"
+msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "The people outside the village it names"
@@ -9469,6 +9544,11 @@ msgctxt "pricing desk"
 msgid "Written"
 msgstr ""
 
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "roles page: the coming-soon roles and their waitlist"
+msgid "Hear when a role opens"
+msgstr ""
+
 #: client/src/components/power/SeatAction.tsx
 #~ msgctxt "role card button, signed out"
 #~ msgid "Apply for {seatName}"
@@ -9835,6 +9915,11 @@ msgstr "Lo común"
 #~ msgctxt "founding application compensation"
 #~ msgid "The shape of the whole, before any amount. Amounts come later, in conversation."
 #~ msgstr "La forma del conjunto, antes de cualquier monto. Los montos vienen después, conversando."
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card piece heading"
+msgid "Rhythm"
+msgstr ""
 
 #: client/src/components/roleEdit/HistoryPanel.tsx
 msgctxt "role editor history"
@@ -10741,6 +10826,13 @@ msgctxt "notebook document action"
 msgid "Delete this document"
 msgstr ""
 
+#. placeholder {0}: dayWords(r.start, locale)
+#. placeholder {1}: dayWords(r.end, locale)
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: a deliverable's dates"
+msgid "{0} to {1}"
+msgstr ""
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Not yet"
@@ -10901,6 +10993,12 @@ msgstr "Todavía no se ha enviado ninguna factura."
 msgctxt "open work: gated quests explained once"
 msgid "Some of this work opens as you walk the {ladder} or step into a role. Each card says what opens it."
 msgstr "Parte de este trabajo se abre a medida que recorres el {ladder} o asumes un rol. Cada tarjeta dice qué lo abre."
+
+#. placeholder {0}: dayWords(r.start, locale)
+#: client/src/components/roleCard/DeliverablesGantt.tsx
+msgctxt "deliverables timeline: a milestone's day"
+msgid "On {0}"
+msgstr ""
 
 #: client/src/pages/ProposeARole.tsx
 #~ msgctxt "open proposal"
@@ -12030,6 +12128,11 @@ msgstr "El muro espera su primer agradecimiento."
 msgid "This browser blocks saving, so your answers last for this visit only."
 msgstr "Este navegador bloquea el guardado, así que tus respuestas duran solo esta visita."
 
+#: client/src/components/power/CardBookingLink.tsx
+msgctxt "role card: book a conversation"
+msgid "Book a time"
+msgstr ""
+
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose a new role"
@@ -12594,6 +12697,12 @@ msgctxt "budget upload preview"
 msgid "Withdraws: {0}"
 msgstr ""
 
+#: client/src/components/roleCard/CardLists.tsx
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card: the dated outcomes"
+msgid "Deliverables"
+msgstr ""
+
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Ask a question about {name}"
 msgstr ""
@@ -12812,9 +12921,9 @@ msgid "with {withOthers}"
 msgstr ""
 
 #: client/src/components/roleCard/FullRoleCard.tsx
-msgctxt "full role card heading"
-msgid "Why it matters"
-msgstr "Por qué importa"
+#~ msgctxt "full role card heading"
+#~ msgid "Why it matters"
+#~ msgstr "Por qué importa"
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "A village that designs its exits before it needs them can afford to welcome people wholeheartedly. This is how departure works here."
@@ -13106,6 +13215,12 @@ msgstr "Negociarlo en la primera llamada si me eligen"
 msgctxt "language picker"
 msgid "Close"
 msgstr "Cerrar"
+
+#. placeholder {0}: String(liveCircles[0].name ?? "")
+#: client/src/pages/Roles.tsx
+msgctxt "roles page intro, one circle for now"
+msgid "For now the {0} holds the whole village. Other circles grow only if and when the work needs them."
+msgstr ""
 
 #. placeholder {0}: card.hours
 #: client/src/components/openProposal/RoleCardBridge.tsx
@@ -14050,6 +14165,11 @@ msgctxt "founding team section, hiring first"
 msgid "See the roles opening next"
 msgstr "Ver los roles que abren después"
 
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "roles page: the coming-soon roles and their waitlist"
+msgid "Leave your details and we will write when a role you like opens."
+msgstr ""
+
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "{name}, an agent"
@@ -14115,6 +14235,11 @@ msgstr "Iniciar sesión"
 msgctxt "calendar spiral: what is on a day"
 msgid "something on the calendar"
 msgstr "algo en el calendario"
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: what the details are for"
+msgid "We use these details only to tell you when the role opens. You can ask us to remove them."
+msgstr ""
 
 #: client/src/components/review/SeraInDraft.tsx
 msgctxt "sera answers"
@@ -15101,6 +15226,11 @@ msgctxt "proposed changes: a batch fact"
 msgid "When"
 msgstr ""
 
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "role card: what goes to the circle for consent"
+msgid "Goes to the {circleName}"
+msgstr ""
+
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths, a group"
 msgid "Other"
@@ -15483,6 +15613,11 @@ msgstr "Tú y la aldea, a punto de conocerse"
 msgctxt "module library, after copying the agent text"
 msgid "Copied"
 msgstr "Copiado"
+
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: remove a waitlist sign-up"
+msgid "Remove"
+msgstr ""
 
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
@@ -15867,6 +16002,11 @@ msgstr ""
 msgid "For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this half in itself."
 msgstr ""
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: how to write the onboarding steps"
+msgid "The first steps once someone is chosen, one per line. Empty: the village's own steps show."
+msgstr ""
+
 #: client/src/components/companionWelcome/CompanionWelcome.tsx
 msgctxt "companion welcome"
 msgid "Every member gets a companion. Yours is still an egg. Let's find out who's inside."
@@ -16205,6 +16345,11 @@ msgctxt "open a notebook document"
 msgid "Open {0}"
 msgstr ""
 
+#: client/src/components/ComingSoon.tsx
+msgctxt "note on a coming-soon role: the card, the application form and its confirmation"
+msgid "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does."
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar page lede"
 msgid "Pick a day to see what is on. The village keeps two clocks: the twelve months everyone shares, and the moons the land turns by."
@@ -16388,9 +16533,9 @@ msgid "Hand a task to a role"
 msgstr ""
 
 #: client/src/pages/Roles.tsx
-msgctxt "roles page intro, one circle for now"
-msgid "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them."
-msgstr "Por ahora el Círculo ancla sostiene toda la aldea: las personas fundadoras y los stewards ancla. Otros círculos crecen solo si el trabajo los necesita, y cuando los necesite."
+#~ msgctxt "roles page intro, one circle for now"
+#~ msgid "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them."
+#~ msgstr "Por ahora el Círculo ancla sostiene toda la aldea: las personas fundadoras y los stewards ancla. Otros círculos crecen solo si el trabajo los necesita, y cuando los necesite."
 
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
@@ -17400,6 +17545,12 @@ msgctxt "proposed changes: conflict"
 msgid "Each one is flagged on its card. Accept one, then look again."
 msgstr ""
 
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "role card: what goes to the circle for consent"
+msgid "Goes to the circle"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar: step on one moon"
 msgid "The moon after"
@@ -17738,6 +17889,13 @@ msgctxt "hidden map settings"
 msgid "Loading"
 msgstr ""
 
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+#: client/src/components/roleCard/FullRoleCard.tsx
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: the button"
+msgid "Notify me"
+msgstr ""
+
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
 msgid "Take {owner} for {n} changes?"
@@ -17895,6 +18053,11 @@ msgstr ""
 #: client/src/components/modules/SuggestDial.tsx
 msgctxt "add a suggestion to a change request"
 msgid "Add to {targetTitle}"
+msgstr ""
+
+#: client/src/components/roleCard/WaitlistForm.tsx
+msgctxt "coming-soon waitlist: after signing up"
+msgid "Thank you. Your details are saved. We will write when the role opens."
 msgstr ""
 
 #: client/src/components/admin/MenuPanel.tsx
@@ -18428,7 +18591,7 @@ msgctxt "a setting whose value is hidden"
 msgid "Kept private"
 msgstr ""
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/SeatLinkCopy.tsx
 msgctxt "roles page, role link"
 msgid "Copy link to {seatName}"
 msgstr "Copiar el enlace a {seatName}"
@@ -18681,6 +18844,11 @@ msgstr ""
 msgid " · no key set, so this module answers 503"
 msgstr ""
 
+#: client/src/components/roleEdit/SectionsFields.tsx
+msgctxt "role editor: the dated outcomes"
+msgid "Deliverables"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Complete"
@@ -18837,7 +19005,7 @@ msgctxt "founding application choose"
 msgid "Apply: {0}"
 msgstr "Postular: {0}"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/SeatLinkCopy.tsx
 msgctxt "roles page, role link"
 msgid "Link to {seatName} copied."
 msgstr "Se copió el enlace a {seatName}."
@@ -20836,6 +21004,12 @@ msgstr ""
 msgid "One thing would not work as set"
 msgstr ""
 
+#: client/src/components/roleCard/CardLists.tsx
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card: the village's shared sessions"
+msgid "Sessions everyone attends"
+msgstr ""
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes"
 msgid "Oldest first, so you accept in the order they were proposed."
@@ -21693,6 +21867,11 @@ msgstr ""
 #: client/src/components/governance/GoalsList.tsx
 #~ msgid "Most people list three to five goals for a month. More is allowed, and a shorter list is easier to read and to check."
 #~ msgstr ""
+
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team: every open role's dated outcomes on one timeline"
+msgid "The team's deliverables"
+msgstr ""
 
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
@@ -22738,6 +22917,11 @@ msgctxt "rites"
 msgid "Make an invitation"
 msgstr ""
 
+#: client/src/components/roleCard/WaitlistAdmin.tsx
+msgctxt "roles page, admins only: the waitlist"
+msgid "Only admins see this. Nothing is sent from it."
+msgstr ""
+
 #: client/src/pages/CanvasWorkbook.tsx
 msgctxt "a button that downloads the workbook as a file"
 msgid "Save as Markdown"
@@ -22901,6 +23085,11 @@ msgstr ""
 msgctxt "founding application choose"
 msgid "The role in your link is not open any more. These are open now."
 msgstr "El rol de tu enlace ya no está abierto. Estos están abiertos ahora."
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card piece, short"
+msgid "Bring me"
+msgstr ""
 
 #: client/src/components/priorities/MyWeekCard.tsx
 #: client/src/components/priorities/PlaceInLine.tsx
