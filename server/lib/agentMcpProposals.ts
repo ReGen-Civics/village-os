@@ -13,10 +13,20 @@
  * came through it, and `ALWAYS_A_PERSON` keeps them off the agent paths list.
  * It may put aside what it filed itself (the lead, 19 Nov 2026), through its
  * own route, which checks the filer in the same statement that discards.
+ *
+ *   accept_proposals        FULL ACCESS ONLY (the lead, 20 Nov 2026; shared/agentFullAccess.ts): accept or discard
+ *                           waiting changes as the review page does, as the holder, once the approval note names
+ *                           the batch code or every change's code. Its route checks the switch, the seat, the note
+ *                           and the floor again, and refuses every other caller.
  */
 import type { ToolDef, RouteAnswer } from "./agentMcp";
 import { ALIAS_WORDS, KIND_ALIAS_NAMES, KIND_WORDS, PROPOSAL_KINDS, PROPOSAL_LIMITS, normalizeCode } from "../../shared/proposedChanges";
 import { CONTENT_DOCUMENTS, vocabularySlotsLine } from "../../shared/contentDocuments";
+import { ACCEPT_PROPOSAL_WORDS, approvalCovers, FULL_ACCESS_WORDS } from "../../shared/agentFullAccess";
+import { readLeadApproval } from "../../shared/agentAdmin";
+
+/** The connector's own door for accepting as the holder, full access only (server/routes/proposedChanges.ts). */
+export const ACCEPT_AS_HOLDER_PATH = "/api/admin/proposals/accept-as-holder";
 
 const refusal = (what: string, a: RouteAnswer) => {
   const b = (a.body && typeof a.body === "object" ? a.body : {}) as Record<string, unknown>;
@@ -162,6 +172,81 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
       const a = await ctx.dispatch("POST", "/api/admin/proposals/discard-mine", { ids: going.map((i) => i.id) });
       if (a.status !== 200) return refusal("Nothing was put aside", a);
       return { ok: true, result: { written: true, echo, ...(a.body as Record<string, unknown>) } };
+    },
+  },
+  {
+    name: "accept_proposals",
+    scope: "admin",
+    kind: "write",
+    destructive: true,
+    title: "Accept or discard proposals (full access)",
+    description:
+      "Only for the agent of whoever holds the role a person named for full access in Admin, Players, Agents; for every other connector it refuses. Accepts or discards changes waiting on the review page, exactly as the page's Accept or Discard does, as the holder, so each change runs through its own route and the holder's own checks. Name a batch (batchId, its id or its code such as B-66) or the changes (itemIds, ids or codes such as B-66.2), and action accept or discard. The first call writes nothing and lists every change with its code and summary, and a confirmToken. " +
+      ACCEPT_PROPOSAL_WORDS.note +
+      " Call again with the same batch or items, the confirmToken, approvedBy and approvalNote. The answer says per change what landed.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        batchId: { type: "string", description: "A batch's id or its code, such as B-66: every change of it that waits." },
+        itemIds: { type: "array", maxItems: 100, items: { type: "string" }, description: "Changes by id or code, such as B-66.2." },
+        action: { type: "string", enum: ["accept", "discard"] },
+        approvedBy: { type: "string", description: "Second call: who approved it in the chat." },
+        approvalNote: { type: "string", description: "Second call: their approval, quoted, naming the batch code or every change's code." },
+        confirmToken: { type: "string", description: "From the first call. Leave it out to see what would happen." },
+      },
+      required: ["action"],
+      additionalProperties: false,
+    },
+    routes: ["GET /api/admin/proposals/queue", `POST ${ACCEPT_AS_HOLDER_PATH}`],
+    async run(args, ctx) {
+      if (!ctx.fullAccess || !(await ctx.fullAccess.on())) return { ok: false, error: `${FULL_ACCESS_WORDS.notOn} A person accepts on the review page, /admin/proposals.` };
+      const action = args.action === "accept" || args.action === "discard" ? args.action : null;
+      if (!action) return { ok: false, error: "action is accept or discard." };
+      const batchArg = typeof args.batchId === "string" ? args.batchId.trim().slice(0, 60) : "";
+      const named = Array.isArray(args.itemIds) ? Array.from(new Set(args.itemIds.filter((x): x is string => typeof x === "string" && !!x.trim()).map((x) => x.trim().slice(0, 60)))) : [];
+      if (!batchArg && !named.length) return { ok: false, error: "Name a batch (batchId, or its code such as B-66) or the changes (itemIds)." };
+      // The queue, read fresh at both calls, so the token covers exactly the changes the person saw listed.
+      const q = await ctx.dispatch("GET", "/api/admin/proposals/queue?decided=1");
+      if (q.status !== 200) return refusal("The queue could not be read", q);
+      const batches = ((q.body as { batches?: Array<{ batchId?: string; code?: string | null; items?: Array<Record<string, unknown>> }> })?.batches ?? []);
+      const waiting = batches.flatMap((b) => (b.items ?? []).filter((i) => i.state === "waiting").map((i) => ({ id: String(i.id ?? ""), code: typeof i.code === "string" ? i.code : null, summary: typeof i.summary === "string" ? i.summary : "", kind: typeof i.kind === "string" ? i.kind : "", stuck: i.stuck === true, batchId: String(b.batchId ?? ""), batchCode: b.code ?? null })));
+      const batchCode = batchArg ? normalizeCode(batchArg) : null;
+      const picked = waiting.filter((i) => {
+        if (batchArg && (i.batchId === batchArg || (!!batchCode && i.batchCode === batchCode))) return true;
+        return named.some((n) => n === i.id || (!!normalizeCode(n) && (normalizeCode(n) === i.code || (!normalizeCode(n)!.includes(".") && normalizeCode(n) === i.batchCode))));
+      });
+      // A change whose last try may have landed waits for a person to check its page first.
+      const items = picked.filter((i) => !i.stuck).sort((x, y) => (x.code ?? x.id).localeCompare(y.code ?? y.id, undefined, { numeric: true }));
+      const held = picked.filter((i) => i.stuck).map((i) => ({ id: i.id, code: i.code, summary: i.summary, why: "it may already have landed, so a person checks its page first" }));
+      if (!items.length) return { ok: false, error: ACCEPT_PROPOSAL_WORDS.nothing, detail: { held } };
+      const echo = { action, items: items.map((i) => ({ id: i.id, code: i.code, batchCode: i.batchCode, kind: i.kind, summary: i.summary })) };
+      if (args.confirmToken === undefined) {
+        const { token, expiresAt } = ctx.mintConfirm("accept_proposals", echo);
+        return {
+          ok: true,
+          result: {
+            confirmRequired: true,
+            echo,
+            held,
+            confirmToken: token,
+            expiresAt,
+            message: `Nothing was ${action === "accept" ? "accepted" : "put aside"}. Show the person every change listed here, by code and summary. ${ACCEPT_PROPOSAL_WORDS.note}`,
+          },
+        };
+      }
+      const approval = readLeadApproval({ approvedBy: args.approvedBy, approvalNote: args.approvalNote });
+      if (!approval.ok) return { ok: false, error: `${approval.words} ${ACCEPT_PROPOSAL_WORDS.note}`, detail: { code: "approval_required" } };
+      if (!approvalCovers(approval.approvalNote, echo.items)) return { ok: false, error: ACCEPT_PROPOSAL_WORDS.notCovered, detail: { code: "approval_not_covering" } };
+      const check = ctx.verifyConfirm("accept_proposals", args.confirmToken, echo);
+      if (!check.ok) return { ok: false, error: check.sentence, detail: { reason: check.reason } };
+      const a = await ctx.dispatch("POST", ACCEPT_AS_HOLDER_PATH, { action, ids: items.map((i) => i.id), approvedBy: approval.approvedBy, approvalNote: approval.approvalNote });
+      if (a.status !== 200) return refusal(`Nothing was ${action === "accept" ? "accepted" : "put aside"}`, a);
+      const results = ((a.body as { results?: Array<Record<string, unknown>> })?.results ?? []).map((r) => {
+        const it = items.find((i) => i.id === r.id);
+        return { id: String(r.id ?? ""), code: it?.code ?? null, summary: it?.summary ?? "", landed: r.ok === true, ...(r.ok === true ? {} : { error: String(r.error ?? "It did not land.") }), ...(typeof r.note === "string" ? { note: r.note } : {}) };
+      });
+      const landed = results.filter((r) => r.landed).length;
+      return { ok: true, result: { written: landed > 0, action, landed, failed: results.length - landed, results } };
     },
   },
   {

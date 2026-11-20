@@ -201,3 +201,26 @@ export async function agentsWithReach(db: Db, onlyId?: string): Promise<Array<{ 
   }
   return agents.map((a) => ({ id: String(a.id), name: String(a.name ?? "").trim() || "An agent", scopes: Array.from(reach.get(String(a.id)) ?? []).sort() }));
 }
+
+/**
+ * Whether this account holds a LIVE seat in this org role now: a member's seating, not ended, its term not run
+ * out, on a real role that is active. The full-access switch reads it at every connector call (the lead,
+ * 20 Nov 2026; shared/agentFullAccess.ts), so the access ends the moment the seat changes hands.
+ */
+export async function holdsLiveSeat(db: Db, userId: string, orgRoleId: string): Promise<boolean> {
+  if (!userId || !orgRoleId) return false;
+  const [rows] = await db.query<RowDataPacket[]>(
+    "SELECT 1 AS `ok` FROM `org_role_assignments` a JOIN `org_roles` r ON r.`id` = a.`org_role_id` " +
+      "WHERE a.`user_id` = ? AND a.`org_role_id` = ? AND a.`ended_at` IS NULL AND a.`holder_kind` = 'member' AND a.`is_example` = 0 " +
+      "AND (a.`term_ends_at` IS NULL OR a.`term_ends_at` > NOW()) AND r.`is_example` = 0 AND r.`active` = 1 LIMIT 1",
+    [userId, orgRoleId],
+  );
+  return rows.length > 0;
+}
+
+/** One org role's name and whether it can be named for full access (real and active), or null. */
+export async function orgRoleForFullAccess(db: Db, orgRoleId: string): Promise<{ id: string; name: string; usable: boolean } | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT `id`, `name`, `is_example`, `active` FROM `org_roles` WHERE `id` = ? LIMIT 1", [orgRoleId]);
+  const r = rows[0];
+  return r ? { id: String(r.id), name: String(r.name ?? r.id), usable: !Number(r.is_example) && Number(r.active) === 1 } : null;
+}

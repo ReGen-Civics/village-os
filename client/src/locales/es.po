@@ -22818,6 +22818,81 @@ msgstr ""
 #~ msgid "We are building our team of people who will lead each domain of the village from the foundation through to completion."
 #~ msgstr "Estamos formando el equipo de personas que guiarán cada ámbito de la aldea, desde los cimientos hasta su culminación."
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Give full access to the agent of whoever holds {name}? The Anchor Circle is told."
+msgstr "¿Dar acceso total al agente de quien ocupe {name}? Se avisa al Círculo Ancla."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Turn full access off? The Anchor Circle is told."
+msgstr "¿Quitar el acceso total? Se avisa al Círculo Ancla."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Full access is on for that role's agent."
+msgstr "El acceso total está activo para el agente de ese rol."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Full access is off."
+msgstr "El acceso total está desactivado."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Full access for one role's agent"
+msgstr "Acceso total para el agente de un rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Warning: with this on, the agent of whoever holds this role can make most admin changes and accept proposals, each one approved in the chat and recorded. Money, secrets, erasure, the veto, the agent accounts and letters stay a person's act."
+msgstr "Aviso: con esto activo, el agente de quien ocupe este rol puede hacer la mayoría de los cambios de administración y aceptar propuestas, cada uno aprobado en el chat y registrado. El dinero, los secretos, el borrado, el veto, las cuentas de agentes y las cartas siguen siendo un acto de una persona."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "full access, the role picker"
+msgid "Role"
+msgstr "Rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Role whose agent has full access"
+msgstr "Rol cuyo agente tiene acceso total"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "full access, the role picker"
+msgid "Off: no role"
+msgstr "Desactivado: ningún rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "full access, the save button"
+msgid "Saving"
+msgstr "Guardando"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "full access, the save button"
+msgid "Save"
+msgstr "Guardar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgctxt "full access, who set it when the name is unknown"
+msgid "a person"
+msgstr "una persona"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "On for the agent of whoever holds {roleName}. Set by {setBy}."
+msgstr "Activo para el agente de quien ocupe {roleName}. Lo activó {setBy}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/AgentFullAccessPanel.tsx
+msgid "Off. Agents reach only the paths listed below and the changes approved one by one."
+msgstr "Desactivado. Los agentes solo llegan a las rutas de la lista de abajo y a los cambios aprobados uno por uno."
+
 #: client/src/components/admin/AgentsPanel.tsx
 msgctxt "agent paths"
 msgid "Paste a list"

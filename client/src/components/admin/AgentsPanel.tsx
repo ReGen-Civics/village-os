@@ -17,6 +17,7 @@ import type { Player } from "./PlayerCard";
 import AiAgentsApprovalPanel from "./AiAgentsApprovalPanel";
 import LetterDraftsPanel from "./LetterDraftsPanel";
 import ApprovedWritesPanel from "./ApprovedWritesPanel";
+import AgentFullAccessPanel from "./AgentFullAccessPanel";
 import { PathTree } from "./AgentPathTree";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { mergePastedAgentPaths, type PastedPathsPlan } from "@shared/agentAdmin";
@@ -186,6 +187,8 @@ export default function AgentsPanel({ password, players }: { password: string; p
           <button type="button" className={button} disabled={!pick} onClick={() => void mark(pick, true)}>Mark as an agent account</button>
         </div>
       </div>
+
+      <AgentFullAccessPanel password={password} />
 
       <div className="space-y-3 rounded-xl border border-border bg-white p-4">
         <p className="text-sm font-semibold text-foreground">Admin paths an agent may call</p>
