@@ -345,12 +345,18 @@ describe.skipIf(!configured)("open role proposals, the intake, on a real schema"
         expect(flag(gate)).toBe(false);
         expect(flag(well)).toBe(true);
         // The founding role keeps the village's days (control).
+        await setVar("org.applicant_reply_days", "6");
+        const sentBefore = state.sent.length;
         const founding = await call("POST", "/api/open-proposals", proposal({ email: "first@example.test" }));
-        expect(founding.body).toMatchObject({ replyDays: expect.any(Number), afterFounding: false });
+        expect(founding.body).toMatchObject({ replyDays: 6, afterFounding: false });
+        // The confirmation email says when we reply, from the village's own days (idea 18, 20 Nov 2026).
+        expect(state.sent[sentBefore].text).toContain("We reply within 6 days.");
+        await setVar("org.applicant_reply_days", null);
         // A role opening next: no days, and said.
         const before = state.sent.length;
         const later = await call("POST", "/api/open-proposals", proposal({ email: "later@example.test", roles: [{ roleId: well, note: "Wells are my life." }] }));
         expect(later.body).toMatchObject({ sent: true, replyDays: null, afterFounding: true });
+        expect(state.sent[before].text).toContain(LANGUAGES.en.replyPromise(null));
         const confirmed = await call("POST", "/api/open-proposals/confirm", { token: tokenOf(state.sent[before]) });
         expect(confirmed.body).toMatchObject({ confirmed: true, replyDays: null, afterFounding: true, steps: applicantSteps("en", null) });
         expect(confirmed.body.steps.find((s: any) => s.key === "review").when).toMatch(/Once our founding team is in place/);

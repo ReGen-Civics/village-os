@@ -16,7 +16,6 @@ import type mysql from "mysql2/promise";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { OutgoingEmail, PostResult } from "../../shared/comms/contracts";
 import { checkConsentVersion } from "../../shared/proposalAbout";
-import { OPEN_WORDS } from "../../shared/openProposals";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { escapeHtml } from "../lib/comms/mailer";
 import { createOrgRole } from "../lib/orgChart";
@@ -116,6 +115,11 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
     return { status: res.status, body: (await res.json()) as any };
   };
 
+  /** The roles kept with the application this address sent, as stored. */
+  const keptRoles = async (email: string): Promise<any[]> => {
+    const [row] = await q("SELECT body_json AS body FROM open_role_proposals WHERE email = ? ORDER BY created_at DESC LIMIT 1", [email]);
+    return (typeof row.body === "string" ? JSON.parse(row.body) : row.body).roles;
+  };
   const consent = () => ({ given: true, version: checkConsentVersion() });
   const form = async () => (await fetch(`${base}/api/open-proposals/form`)).json() as Promise<any>; // module-review-ok: a test calling its own local server
 
@@ -130,10 +134,13 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
       const offered = (await form()).roles.find((r: any) => r.id === gate);
       expect(offered).toMatchObject({ id: gate, comingSoon: true });
       state.sent.length = 0;
-      // A coming-soon role takes no application, even as the only role (the lead, 19 Nov 2026): its waitlist instead.
-      const refused = await postJson(proposal({ checkConsent: consent() }));
-      expect(refused).toEqual({ status: 400, body: { error: OPEN_WORDS.roleNotOpen, field: "roles" } });
-      expect(state.sent).toHaveLength(0);
+      // A coming-soon role keeps its waitlist first and still takes an EARLY application (the lead, 20 Nov 2026),
+      // marked as one in what is kept so reviewers can tell.
+      const sent = proposal({ checkConsent: consent() });
+      const early = await postJson(sent);
+      expect(early.status, JSON.stringify(early.body)).toBe(200);
+      expect(state.sent).toHaveLength(1);
+      expect(await keptRoles(sent.email as string)).toEqual([{ roleId: gate, note: "I open gates for a living.", early: true }]);
     } finally {
       await q("UPDATE org_roles SET coming_soon = 0, listed = NULL WHERE id = ?", [gate]);
     }
@@ -160,17 +167,41 @@ describe.skipIf(!configured)("a coming-soon role at the no-account door, on a re
     expect("comingSoon" in (await form()).roles.find((r: any) => r.id === gate)).toBe(false);
   });
 
-  it("a coming-soon role is never ADDED after the first; its waitlist is on the roles page (the lead, 19 Nov 2026)", async () => {
+  it("a coming-soon role ADDED after the first is kept as an early application (the lead, 20 Nov 2026)", async () => {
     await q("UPDATE org_roles SET coming_soon = 1 WHERE id = ?", [well]);
     try {
-      const added = await postJson(proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] }));
-      expect(added.status).toBe(400);
-      expect(added.body).toMatchObject({ error: OPEN_WORDS.addedRoleNotOpen, field: "roles.1" });
+      const body = proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] });
+      const added = await postJson(body);
+      expect(added.status, JSON.stringify(added.body)).toBe(200);
+      const roles = await keptRoles(body.email as string);
+      expect(roles[0].early).toBeUndefined();
+      expect(roles[1]).toMatchObject({ roleId: well, early: true });
     } finally {
       await q("UPDATE org_roles SET coming_soon = 0 WHERE id = ?", [well]);
     }
-    // CONTROL: the same two roles, the second open, are taken.
-    const open = await postJson(proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] }));
+    // CONTROL: the same two roles, the second open, carry no mark.
+    const body = proposal({ checkConsent: consent(), roles: [{ roleId: gate, note: "" }, { roleId: well, note: "", commitmentPct: 40 }] });
+    const open = await postJson(body);
     expect(open.status, JSON.stringify(open.body)).toBe(200);
+    expect((await keptRoles(body.email as string)).some((r) => r.early)).toBe(false);
+  });
+
+  it("START A CONVERSATION (the lead, 20 Nov 2026): kept through the same door, confirmation sent, no commitment asked even where the role sets a minimum", async () => {
+    await q("UPDATE org_roles SET commitment_min = 50 WHERE id = ?", [gate]);
+    try {
+      // CONTROL: a full application with no commitment is refused below the role's minimum.
+      expect((await postJson(proposal({ checkConsent: consent() }))).status).toBe(400);
+      const email = `talk${++n}@example.test`;
+      const talk = await postJson({ kind: "conversation", name: "Rowan Field", email, why: "Ten years keeping gates.", roles: [{ roleId: gate, note: "" }], links: [{ label: "My work", url: "https://example.test/rowan" }] });
+      expect(talk.status, JSON.stringify(talk.body)).toBe(200);
+      expect(talk.body).toMatchObject({ sent: true });
+      expect(state.sent).toHaveLength(1);
+      const [row] = await q("SELECT body_json AS body FROM open_role_proposals WHERE email = ? LIMIT 1", [email]);
+      const kept = typeof row.body === "string" ? JSON.parse(row.body) : row.body;
+      expect(kept).toMatchObject({ kind: "conversation", why: "Ten years keeping gates.", roles: [{ roleId: gate, note: "" }], links: [{ label: "My work", url: "https://example.test/rowan" }] });
+      expect(kept.card).toBeUndefined();
+    } finally {
+      await q("UPDATE org_roles SET commitment_min = NULL WHERE id = ?", [gate]);
+    }
   });
 });

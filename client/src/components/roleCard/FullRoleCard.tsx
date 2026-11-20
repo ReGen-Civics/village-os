@@ -47,7 +47,8 @@ import RoleOneMinute from "./RoleOneMinute";
 import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
-import { BTN_PRIMARY, EYEBROW, HINT } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
+import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { Fireflies } from "@/components/journey/nature";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import EditRoleButton from "@/components/roleEdit/EditRoleButton";
@@ -274,6 +275,11 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
         </button>
       )}
+      {/* The waitlist stays first; a strong fit may apply early (the lead, 20 Nov 2026). */}
+      <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
+      <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_SECONDARY}`} data-apply-early={id}>
+        {t({ message: `Apply early for ${String(seat?.name ?? "")}`, context: "founding application, add a coming-soon role as an early application" })}
+      </Link>
     </div>
   ) : apply ? (
     <>
@@ -285,6 +291,10 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
+      {/* The two-speed way in (the lead, 20 Nov 2026, idea 14): two minutes now, the full proposal shaped together later. */}
+      <Link href={`${applyHrefForRole(id)}&way=talk`} className={`mt-3 w-full ${BTN_SECONDARY}`} data-start-conversation={id}>
+        {t({ message: "Start a conversation", context: "full role card: the short way in" })}
+      </Link>
     </>
   ) : !noAct ? (
     // Held by an agent alone: said, with no Apply and no name (Rye, 16 Nov 2026).

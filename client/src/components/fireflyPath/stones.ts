@@ -17,6 +17,13 @@ export type Stone = (typeof STONES)[number];
 export const LAST_STONE = STONES.length - 1;
 
 /**
+ * About how long the application takes, said at its start with the step count (the lead, 20 Nov 2026, idea 7):
+ * "About 25 minutes. You can answer by voice." A sensible constant: six steps, About you in three short panes,
+ * with typed or spoken answers. The step count itself is always STONES.length, never a typed number.
+ */
+export const APPLY_MINUTES = 25;
+
+/**
  * Which step a field the checks or the server name lives on. A field nobody
  * placed (a server refusal with no field, a rate limit, the role itself)
  * belongs to Review & submit, where the person pressed the button.

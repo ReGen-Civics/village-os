@@ -338,6 +338,14 @@ export default function RoleDraft() {
     .map((g, i) => ({ id: String(g.id ?? i), text: String(g.text).trim(), done: !!g.done }));
   const playing = chars.map(castName).join(", ");
 
+  // The draft board's steps: the bar's name counts them, never a typed number (idea 7, 20 Nov 2026).
+  const selectSteps = [
+    t({ message: "This season's goals", context: "role draft step" }),
+    t({ message: "Your Ikigai and your characters", context: "role draft step" }),
+    t({ message: "Scout the open roles", context: "role draft step" }),
+    t({ message: "Select up to three", context: "role draft step" }),
+    t({ message: "Apply", context: "role draft step" }),
+  ];
   return (
     <Layout>
       <div className={`${WORLD} py-10 sm:py-14`}>
@@ -358,18 +366,12 @@ export default function RoleDraft() {
 
           <div className="sm:sticky sm:top-24 z-20 -mx-4 bg-background/95 px-4 pb-3 pt-1 backdrop-blur">
             <SelectStepper
-              labels={[
-                t({ message: "This season's goals", context: "role draft step" }),
-                t({ message: "Your Ikigai and your characters", context: "role draft step" }),
-                t({ message: "Scout the open roles", context: "role draft step" }),
-                t({ message: "Select up to three", context: "role draft step" }),
-                t({ message: "Apply", context: "role draft step" }),
-              ]}
+              labels={selectSteps}
               step={step}
               reached={4}
               visited={visited}
               onGo={go}
-              barLabel={t({ message: "Your progress through the five steps", context: "role draft steps" })}
+              barLabel={t({ message: `Your progress through the ${selectSteps.length} steps`, context: "role draft steps" })}
             />
           </div>
 

@@ -112,12 +112,7 @@ export default function PriceAsk({
         <p className={HINT}>{t({ message: "Choose your commitment to see a suggested price.", context: "price ask" })}</p>
       )}
       <p className={HINT}><MoonText text={t({ message: "Your first moon starts lower and follows what you deliver.", context: "price ask: the first moon" })} /></p>
-      {/* Across roles (QA-1115 Spanish applicant P1-2): each application is priced once, at its own commitment. */}
-      <p className={HINT} data-price-across-roles="">
-        {/* No "send one for each" (production check, 18 Nov 2026): the lead ruled one person may hold several roles in one
-            collective proposal, which this form cannot carry yet, so it says only what holds either way. */}
-        {t({ message: "Each role is priced at the commitment you give it, and the prices add up: two roles at 50% are rewarded like one whole role.", context: "price ask: more than one role" })}
-      </p>
+      {/* Across roles (QA-1115 Spanish applicant P1-2): said once, under "More than one role" (MoreRoles.tsx; idea 16). */}
       {summary && (
         <p className="font-medium text-foreground" data-price-summary="">
           <MoonText text={summary} />

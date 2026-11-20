@@ -885,6 +885,40 @@ describe.skipIf(!configured)("open role proposals, the decision, on a real schem
     });
   });
 
+  describe("START A CONVERSATION, then the full proposal (the lead, 20 Nov 2026)", () => {
+    it("reads as a conversation, is never adopted as it stands, and a decider makes a working link to the full proposal", async () => {
+      const before = state.sent.length;
+      const sent = await call("POST", "/api/open-proposals", { kind: "conversation", name: "Rowan Field", email: "talk@example.test", why: "Ten years keeping gates.", roles: [{ roleId: gate, note: "" }] }, null);
+      expect(sent.status, JSON.stringify(sent.body)).toBe(200);
+      const mail = state.sent[before];
+      const id = mail.idempotencyKey.split(":")[1];
+      expect((await call("POST", "/api/open-proposals/confirm", { token: tokenOf(mail) }, null)).status).toBe(200);
+      const p = (await page(id, FOUNDER.id)).body.proposal;
+      expect(p.kind).toBe("conversation");
+      expect(p.you).toMatchObject({ mayAdopt: false, mayDecline: true });
+      const tried = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, FOUNDER.id);
+      expect(tried.status).toBe(409);
+      expect(tried.body.error).toBe("conversation_first");
+      expect((await readOpenProposal(pool, id))?.status).toBe("confirmed");
+      // A member who does not decide makes no link.
+      expect((await call("POST", `/api/governance/open-proposals/${id}/full-proposal-link`, {}, ANA.id)).status).toBe(403);
+      const made = await call("POST", `/api/governance/open-proposals/${id}/full-proposal-link`, {}, FOUNDER.id);
+      expect(made.status, JSON.stringify(made.body)).toBe(200);
+      const url = new URL(made.body.url);
+      expect(url.origin).toBe(new URL(ORIGIN).origin);
+      expect(url.searchParams.get("role")).toBe(gate);
+      const token = decodeURIComponent(url.pathname.split("/").pop() as string);
+      // The link opens the form for that person, by the hash Admin's links use.
+      const form = await call("GET", `/api/open-proposals/form?link=${encodeURIComponent(token)}`, undefined, null);
+      expect(form.status).toBe(200);
+      expect(form.body.open).toBe(true);
+      // CONTROL: a full application makes no such link.
+      const full = await confirmed("fullapp@example.test");
+      expect((await call("POST", `/api/governance/open-proposals/${full.id}/full-proposal-link`, {}, FOUNDER.id)).status).toBe(409);
+      expect((await page(full.id, FOUNDER.id)).body.proposal.kind).toBeNull();
+    });
+  });
+
   describe("adopting, for an address with no account", () => {
     it("records the decision, makes one invitation named after the proposal, and emails it to the address alone", async () => {
       const { id } = await confirmed("newcomer@example.test");

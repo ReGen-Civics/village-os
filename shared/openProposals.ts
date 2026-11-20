@@ -67,6 +67,8 @@ export const OPEN_NOTE_MAX = APPLY_TEXT.roleNote;
  */
 export const OPEN_WHY_MAX = APPLY_TEXT.why;
 export const OPEN_AIM_MAX = APPLY_TEXT.aim;
+/** "Start a conversation": a few lines on why (the lead, 20 Nov 2026). */
+export const CONVERSATION_WHY_MAX = APPLY_TEXT.conversationWhy;
 /** How long a confirmation link works, and how long an unconfirmed proposal is kept. */
 export const OPEN_CONFIRM_HOURS = 48;
 
@@ -148,9 +150,22 @@ export interface OpenProposalRole {
   commitmentPct?: number;
   payAsk?: PayAsk;
   paySplit?: ProposalSplit;
+  /**
+   * An EARLY APPLICATION (the lead, 20 Nov 2026): the role was coming soon when it was sent. Set by the server from
+   * the role's own state, never taken from the form, so reviewers can tell it apart.
+   */
+  early?: true;
 }
 
+/** The ways in (the lead, 20 Nov 2026): the full application, or "Start a conversation", the two-minute one. */
+export type OpenProposalKind = "conversation";
+
 export interface OpenProposalBody {
+  /**
+   * "Start a conversation" (idea 14): name, email, a link, a few lines on why and the roles. The same pipeline as the
+   * full application; reviewers can invite the person to complete the full proposal later. Absent: the full one.
+   */
+  kind?: OpenProposalKind;
   roles: OpenProposalRole[];
   why: string;
   aim: string;
@@ -243,6 +258,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const roles = Array.isArray(o.roles) ? o.roles : [];
   return {
+    ...(o.kind === "conversation" ? { kind: "conversation" as const } : {}),
     roles: roles
       .map((r: any): OpenProposalRole => ({
         roleId: String(r?.roleId ?? "").trim(),
@@ -250,6 +266,7 @@ export function openBodyOf(raw: unknown): OpenProposalBody {
         ...(isProposedCommitment(r?.commitmentPct) ? { commitmentPct: r.commitmentPct as number } : {}),
         ...(payAskOf(r?.payAsk) ? { payAsk: payAskOf(r?.payAsk) as PayAsk } : {}),
         ...(proposalSplitOf(r?.paySplit) ? { paySplit: proposalSplitOf(r?.paySplit) as ProposalSplit } : {}),
+        ...(r?.early === true ? { early: true as const } : {}),
       }))
       .filter((r) => r.roleId)
       .slice(0, OPEN_PROPOSAL_MAX_ROLES),
@@ -347,8 +364,8 @@ export function parseOpenProposal(
     /** The ways to get to know the village it lists now; a tick for one no longer listed is dropped, never refused. Absent: none are kept. */
     knowUs?: readonly string[];
     /**
-     * A role not open yet (coming soon): no application may name it, first or added (the lead, 19 Nov 2026); its
-     * waitlist is on the roles page. Absent: nothing is refused for it.
+     * A role not open yet (coming soon). Its waitlist stays first, and since the lead's decision of 20 Nov 2026 an
+     * application may still name it, first or added: each such role is marked `early` (an early application).
      */
     notYetOpen?: (roleId: string) => boolean;
   },
@@ -360,6 +377,8 @@ export function parseOpenProposal(
   if (name.length > OPEN_NAME_MAX) return { ok: false, field: "name", error: OPEN_WORDS.tooLong("Your name", OPEN_NAME_MAX) };
   const email = ctx.address(String(o.email ?? ""));
   if (!email) return { ok: false, field: "email", error: String(o.email ?? "").trim() ? OPEN_WORDS.badEmail : OPEN_WORDS.needEmail };
+  // "Start a conversation" (idea 14): the two-minute way in, read below with only its own fields.
+  const conversation = o.kind === "conversation";
   const picked = Array.isArray(o.roles) ? o.roles : [];
   if (picked.length === 0) return { ok: false, field: "roles", error: OPEN_WORDS.needRole };
   if (picked.length > OPEN_APPLY_ROLES) return { ok: false, field: "roles", error: OPEN_WORDS.tooManyRoles };
@@ -369,19 +388,34 @@ export function parseOpenProposal(
     const roleId = String(r?.roleId ?? "").trim();
     if (!ctx.roleIds.has(roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.unknownRole };
     if (roles.some((x) => x.roleId === roleId)) return { ok: false, field: "roles", error: OPEN_WORDS.sameRoleTwice };
-    if (ctx.notYetOpen?.(roleId)) return i > 0 ? { ok: false, field: `roles.${i}`, error: OPEN_WORDS.addedRoleNotOpen } : { ok: false, field: "roles", error: OPEN_WORDS.roleNotOpen };
+    // Coming soon: taken as an early application (the lead, 20 Nov 2026), marked from the role's state here.
+    const early = ctx.notYetOpen?.(roleId) ? { early: true as const } : {};
     const note = text(r?.note, OPEN_NOTE_MAX);
     if (note.length > OPEN_NOTE_MAX) return { ok: false, field: "roles", error: OPEN_WORDS.tooLong("What you bring to a role", OPEN_NOTE_MAX) };
+    // A conversation names its roles and nothing more: the terms come later, with the full proposal.
+    if (conversation) {
+      roles.push({ roleId, note, ...early });
+      continue;
+    }
     // Each role after the first carries its own commitment and price ask (the lead, 17 Nov 2026). The first role's
     // are where a one-role proposal sends them (`card.commitmentPct`, `payAsk`), copied onto it below.
     if (i > 0) {
       if (!isProposedCommitment(r?.commitmentPct)) return { ok: false, field: `roles.${i}`, error: OPEN_WORDS.needRoleCommitment };
       const own = readPayAsk(r?.payAsk);
       if (!own.ok) return { ok: false, field: `roles.${i}`, error: own.problem };
-      roles.push({ roleId, note, commitmentPct: r.commitmentPct, ...(own.value ? { payAsk: own.value } : {}) });
+      roles.push({ roleId, note, commitmentPct: r.commitmentPct, ...(own.value ? { payAsk: own.value } : {}), ...early });
       continue;
     }
-    roles.push({ roleId, note });
+    roles.push({ roleId, note, ...early });
+  }
+  if (conversation) {
+    // Name, email, a link to their work, a few lines on why, the roles (the lead, 20 Nov 2026). Nothing else is kept.
+    const said = text(o.why, CONVERSATION_WHY_MAX);
+    if (!said) return { ok: false, field: "why", error: OPEN_WORDS.needWhy };
+    if (said.length > CONVERSATION_WHY_MAX) return { ok: false, field: "why", error: OPEN_WORDS.tooLong("Why you", CONVERSATION_WHY_MAX) };
+    const linkedTalk = parseProposalLinks(o.links);
+    if (!linkedTalk.ok) return { ok: false, field: "links", error: linkedTalk.error };
+    return { ok: true, value: { name, email, body: { kind: "conversation", roles, why: said, aim: "", ...(linkedTalk.links.length ? { links: linkedTalk.links } : {}) } } };
   }
   const why = text(o.why, OPEN_WHY_MAX);
   if (!why) return { ok: false, field: "why", error: OPEN_WORDS.needWhy };
@@ -529,7 +563,11 @@ export function stepsAsLines(steps: readonly StepAfterSubmit[]): string {
  * The email that asks the address to confirm. Nothing else reaches anybody until it is answered. `when` is already in the reader's language.
  * `kind: "application"` (the form for a listed role) says application; a proposal for a new role keeps its own words.
  */
-export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean }): { subject: string; text: string } {
+/**
+ * `replyDays` (the lead, 20 Nov 2026, idea 18): when given, the letter says when we reply, from the village's own
+ * `org.applicant_reply_days` (null: the founding team comes first, said in words). Never a typed number.
+ */
+export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean; replyDays?: number | null }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const a = i.kind === "application" ? APPLY_EMAIL_WORDS[isApplicantLanguage(i.lang) ? i.lang : "en"] : null;
   const roles = w.list(i.roleNames) || w.aRole;
@@ -545,6 +583,7 @@ export function confirmLetter(i: { firstName: string | null; village: string; ro
       "",
       a && i.kept ? a.keptValidFor(OPEN_CONFIRM_HOURS) : w.confirm.validFor(OPEN_CONFIRM_HOURS),
       "",
+      ...(i.replyDays !== undefined ? [w.replyPromise(i.replyDays), ""] : []),
       w.confirm.aiDrafts,
       "",
     ].join("\n"),
@@ -584,6 +623,7 @@ export const OPEN_WORDS = {
   /** A role added after the first, sent without its own commitment. */
   needRoleCommitment: "Choose your commitment for each role you added.",
   unknownRole: "One of those roles isn't open any more. Reload the page and pick again.",
+  conversationFirst: "This began as a conversation, so it has no terms yet. Invite them to complete the full proposal first.",
   roleNotOpen: "This role isn't open yet, so it takes no applications. Join its waitlist on the roles page to hear when it opens.",
   addedRoleNotOpen: "A role you added isn't open yet, so it can't be part of this application. Remove it, and join its waitlist on the roles page.",
   sameRoleTwice: "You picked the same role twice.",

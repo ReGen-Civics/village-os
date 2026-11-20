@@ -231,7 +231,7 @@ export function voiceKindOfType(type: string): VoiceNoteKind {
 export const VOICE_WORDS = {
   inviteTitle: "We love hearing your voice.",
   inviteBody:
-    "We learn so much from how you say things, and we read every word too. If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We'll help turn what you say into your answers, and you edit every one.",
+    "If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We turn what you say into answers you can edit.",
   record: "Record",
   recordAnother: "Record another",
   stop: "Stop recording",

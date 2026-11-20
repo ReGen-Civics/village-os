@@ -33,7 +33,9 @@ interface DeskProposal {
   name: string | null;
   email: string | null;
   via: string | null;
-  roles: Array<{ roleId: string; name: string | null; note: string }>;
+  roles: Array<{ roleId: string; name: string | null; note: string; early?: boolean }>;
+  /** "Start a conversation" (the lead, 20 Nov 2026). */
+  kind?: "conversation" | null;
   why: string;
   aim: string;
   confirmedAt: string | null;
@@ -316,10 +318,14 @@ export default function OpenProposalsPanel({ password }: { password: string }) {
                     {p.addressUnconfirmed}
                   </p>
                 )}
+                {p.kind === "conversation" && (
+                  <p className="font-semibold text-notice" data-conversation-row="">{t({ message: "Started as a conversation: invite them to the full proposal from its page.", context: "admin open proposals" })}</p>
+                )}
                 <ul className="grid gap-1">
                   {p.roles.map((r) => (
                     <li key={r.roleId} className="break-words text-gray-800">
                       <span className="font-medium">{r.name ?? "A role no longer offered"}</span>
+                      {r.early && <span className="ml-2 text-xs font-semibold text-notice" data-early-role="">{t({ message: "Early application", context: "admin open proposals" })}</span>}
                       {r.note && <span className="text-gray-600">: {r.note}</span>}
                     </li>
                   ))}
