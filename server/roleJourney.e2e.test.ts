@@ -251,7 +251,7 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
 
   it("audit B3, with the commitment limit (the lead, 20 Nov 2026): a second person whose commitment takes the full role above its limit is refused by default, told nothing, and adopted only when the decider says continue anyway", async () => {
     const SECOND = { email: `journey-second-${PORT}@example.test`, name: "Ivy Lane", password: "JourneySecond123!" };
-    const card = { roles: [{ roleId: state.roleId, moves: [], firstMoon: [{ quest: "Read last moon's books", doneWhen: "the notes are shared" }] }], serves: [{ goalId: state.goalId, how: "Fresh eyes on the numbers." }], commitmentPct: 40, agreed: { loveLetter: true, nda: true }, terms: { choice: "accept", note: "" } };
+    const card = { roles: [{ roleId: state.roleId, moves: [], firstMoon: [{ quest: "Read last moon's books", doneWhen: "the notes are shared" }] }], serves: [{ goalId: state.goalId, how: "Fresh eyes on the numbers." }], commitmentPct: 60, agreed: { loveLetter: true, nda: true }, terms: { choice: "accept", note: "" } };
     const sent = await call("POST", "/api/open-proposals", { name: SECOND.name, email: SECOND.email, roles: [{ roleId: state.roleId, note: "I audit cooperatives." }], why: "I can step in when the seat frees.", aim: "Books anyone can read.", hp: "", card });
     expect(sent.status, JSON.stringify(sent.json)).toBe(200);
     const confirm = mailTo(SECOND.email, /^Confirm your application/).pop();
@@ -259,11 +259,11 @@ describe.skipIf(!DB_CONFIGURED)("the role journey: one stranger takes one role t
     expect((await call("POST", "/api/open-proposals/confirm", { token })).status).toBe(200);
     const id = String((await call("GET", "/api/admin/open-proposals", undefined, state.founder)).json.proposals.find((p: any) => p.email === SECOND.email).id);
 
-    // The decider reads the limit before pressing anything: the role is full by commitment, and this would take it above.
+    // The decider reads the limit before pressing anything: the first person holds 50%, this asks 60%, and the role needs 100%.
     const page = (await call("GET", `/api/governance/open-proposals/${id}`, undefined, state.founder)).json.proposal;
     expect(page.beforeAdopt.overLimit?.ask).toBe("This is above the limit set for this role, continue anyway?");
     expect(page.beforeAdopt.overLimit?.roles.map((r: any) => r.name)).toEqual(["Lead Financial Steward"]);
-    expect(page.beforeAdopt.overLimit?.roles[0].adding).toBe(40);
+    expect(page.beforeAdopt.overLimit?.roles[0].adding).toBe(60);
 
     // Refused by default, with the question and the numbers, and the applicant is told nothing.
     const refused = await call("POST", `/api/governance/open-proposals/${id}/adopt`, {}, state.founder);
