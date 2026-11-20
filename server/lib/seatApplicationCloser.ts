@@ -64,6 +64,7 @@ import { applyProposalChanges } from "./roleProposals";
 import { raiseGrantTasks } from "./roleAccess";
 import { agreementWritten, stepHref, stepsBeforeStart, stepsBody, START_WORDS, type StartStep } from "./roleStartAgreements";
 import { revertDraft } from "./orgDrafts";
+import { limitFor, overridden, type LimitRead } from "../../shared/commitmentLimit";
 import { proposalsForApplications } from "../repos/roleProposals";
 import {
   applicationsToSeat,
@@ -71,6 +72,7 @@ import {
   inApplicationTransaction,
   liveSeatingsOf,
   readApplication,
+  readApplications,
   seatingsEverHolding,
   seatsForUpdate,
   setStatus,
@@ -164,6 +166,25 @@ export interface FullSeat {
   seats: number;
   /** Live seatings still running at the start, plus places already promised to adopted applications and invitations. */
   taken: number;
+  /**
+   * The commitment read (the lead, 20 Nov 2026), when the newcomer gave a commitment: the role is full because the
+   * commitments would go above its limit, and a person who may adopt can choose to continue anyway. Absent: counted
+   * by places, as before.
+   */
+  limit?: LimitRead;
+}
+
+/** An application's commitment for one of its roles, or null when it gave none. */
+export function commitmentOf(app: Pick<StoredApplication, "answers"> | null | undefined): number | null {
+  const c = app?.answers?.terms?.commitmentPct;
+  return typeof c === "number" && Number.isFinite(c) ? c : null;
+}
+
+/** The commitments of the applications live seatings came through (null for a seating with none). */
+async function holderCommitments(db: Pool | PoolConnection, seatings: ReadonlyArray<{ applicationId: string | null }>): Promise<Array<number | null>> {
+  const ids = Array.from(new Set(seatings.map((s) => s.applicationId).filter((x): x is string => !!x)));
+  const apps = new Map((await readApplications(db, ids)).map((a) => [a.id, a]));
+  return seatings.map((s) => (s.applicationId ? commitmentOf(apps.get(s.applicationId)) : null));
 }
 
 /**
@@ -201,6 +222,12 @@ export async function seatsWithoutRoom(
     /** This application, when there is one: itself and anything after it are not ahead of it. */
     before?: Pick<StoredApplication, "id" | "createdAt"> | null;
     promised?: ReadonlyMap<string, number>;
+    /** The commitments behind `promised`, by role, when the caller knows them (null for one it does not). */
+    promisedCommitments?: ReadonlyMap<string, ReadonlyArray<number | null>>;
+    /** The newcomer's commitment for each role (the lead, 20 Nov 2026). A role with a number is held to the commitment limit. */
+    adding?: ReadonlyMap<string, number | null>;
+    /** Roles a person chose to go above the limit on, for this newcomer (`OverLimitStamp`). */
+    overridden?: ReadonlySet<string>;
   },
 ): Promise<FullSeat[]> {
   if (!p.seatIds.length) return [];
@@ -223,9 +250,18 @@ export async function seatsWithoutRoom(
   for (const id of p.seatIds) {
     const seat = seats.find((s) => s.id === id);
     if (!seat) continue;
-    const seated = live.filter((l) => l.orgRoleId === id && l.userId !== p.candidateUserId && !isLapsed({ ...l, endedAt: null }, seat, lapse).lapsed).length;
-    const waiting = ahead.filter((a) => a.seatIds.includes(id)).length;
-    const taken = seated + waiting + (p.promised?.get(id) ?? 0);
+    const seatedRows = live.filter((l) => l.orgRoleId === id && l.userId !== p.candidateUserId && !isLapsed({ ...l, endedAt: null }, seat, lapse).lapsed);
+    const waitingApps = ahead.filter((a) => a.seatIds.includes(id));
+    const taken = seatedRows.length + waitingApps.length + (p.promised?.get(id) ?? 0);
+    const adding = p.adding?.get(id) ?? null;
+    if (adding !== null) {
+      // THE COMMITMENT LIMIT (the lead, 20 Nov 2026): what the holders, the adopted and the promised give, plus this.
+      const promisedCs = p.promisedCommitments?.get(id) ?? Array.from({ length: p.promised?.get(id) ?? 0 }, () => null);
+      const holders = [...(await holderCommitments(db, seatedRows)), ...waitingApps.map(commitmentOf), ...promisedCs];
+      const limit = limitFor(seat, holders, adding);
+      if (limit.over && !p.overridden?.has(id)) out.push({ id, name: seat.name, seats: seat.seats, taken, limit });
+      continue;
+    }
     if (taken >= seat.seats) out.push({ id, name: seat.name, seats: seat.seats, taken });
   }
   return out;
@@ -235,8 +271,14 @@ export async function seatsWithoutRoom(
 export async function fullSeatsFor(db: Pool | PoolConnection, app: StoredApplication, ctx: SeatingContext): Promise<string[]> {
   const first = firstDayOf(app, ctx.calendar);
   const at = first && first.getTime() > ctx.now.getTime() ? first : ctx.now;
-  const full = await seatsWithoutRoom(db, { seatIds: app.seatIds, candidateUserId: app.candidateUserId, at, calendar: ctx.calendar, lapse: ctx.lapse, seasonId: first && first.getTime() > ctx.now.getTime() ? app.termSeasonId : null, before: app });
+  const full = await seatsWithoutRoom(db, { seatIds: app.seatIds, candidateUserId: app.candidateUserId, at, calendar: ctx.calendar, lapse: ctx.lapse, seasonId: first && first.getTime() > ctx.now.getTime() ? app.termSeasonId : null, before: app, ...limitInputs(app) });
   return full.map((f) => f.name);
+}
+
+/** What the commitment limit reads from one application: its commitment for each role and the roles a person chose to go above. */
+export function limitInputs(app: Pick<StoredApplication, "seatIds" | "answers" | "overLimit">): { adding: Map<string, number | null>; overridden: Set<string> } {
+  const c = commitmentOf(app);
+  return { adding: new Map(app.seatIds.map((id) => [id, c])), overridden: new Set(app.seatIds.filter((id) => overridden(app.overLimit ?? [], id))) };
 }
 
 /**
@@ -266,8 +308,15 @@ async function seatInTransaction(conn: PoolConnection, app: StoredApplication, c
       if (mine.applicationId !== app.id) toRenew.push({ seatId, old: mine });
       continue;
     }
-    const current = here.filter((l) => !isLapsed({ ...l, endedAt: null }, seat, lapse).lapsed).length;
-    if (current >= seat.seats) full.push(seat.name);
+    const current = here.filter((l) => !isLapsed({ ...l, endedAt: null }, seat, lapse).lapsed);
+    // A newcomer with a commitment is held to the role's commitment limit, and may go above it only on a person's
+    // recorded choice (shared/commitmentLimit.ts). A newcomer with none is counted by places, as before.
+    const adding = commitmentOf(app);
+    const isFull =
+      adding !== null
+        ? limitFor(seat, await holderCommitments(conn, current), adding).over && !overridden(app.overLimit ?? [], seatId)
+        : current.length >= seat.seats;
+    if (isFull) full.push(seat.name);
     else toSeat.push(seatId);
   }
   if (full.length > 0) return { kind: "held-full", full };

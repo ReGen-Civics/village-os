@@ -358,3 +358,80 @@ export function OpenTalksWarning({ settings, confirmed, onConfirm }: { settings:
     </div>
   );
 }
+
+/** One role above its commitment limit, as the decider's page serves it (shared/commitmentLimit.ts). */
+export interface ServedOverLimit {
+  ask: string;
+  roles: Array<{ roleId: string; name: string; used: number; adding: number; target: number; words: string }>;
+}
+
+/**
+ * ABOVE THE ROLE'S LIMIT (the lead, 20 Nov 2026): the confirm step before Adopt, in the lead's own words. Adopt stays
+ * closed until it is ticked, and the tick is sent as `confirmOverLimit`, which the server stamps and audits.
+ */
+export function OverLimitWarning({ over, confirmed, onConfirm }: { over: ServedOverLimit | null | undefined; confirmed: boolean; onConfirm: (v: boolean) => void }) {
+  const { t } = useLingui();
+  if (!over?.roles.length) return null;
+  return (
+    <div className="rounded-xl border-2 border-notice/60 bg-card p-4" role="alert" data-over-limit="">
+      <p className="font-semibold text-foreground">{t({ message: "This is above the limit set for this role, continue anyway?", context: "decider, a role's commitment limit" })}</p>
+      <ul className="mt-1 grid gap-1 text-sm text-muted-foreground">
+        {over.roles.map((r) => (
+          <li key={r.roleId}>{t({ message: `${r.name}: ${r.used}% is given already, this adds ${r.adding}%, and the role's limit is ${r.target}%.`, context: "decider, a role's commitment limit" })}</li>
+        ))}
+      </ul>
+      <label className="mt-2 flex min-h-11 items-center gap-2 text-sm text-foreground">
+        <input type="checkbox" checked={confirmed} onChange={(e) => onConfirm(e.target.checked)} className="size-5" data-over-limit-confirm="" />
+        {t({ message: "Yes, continue above the limit", context: "decider, a role's commitment limit" })}
+      </label>
+    </div>
+  );
+}
+
+interface ServedHeld {
+  roleId: string;
+  roleName: string;
+  holds: string[];
+  with: string[];
+  by: string;
+  at: string;
+}
+
+/**
+ * THE SAVED SPLIT ON ONE PERSON'S PROPOSAL (the lead, 20 Nov 2026): the deliverables a decider saved for them in
+ * Compare. Read from the admin door at the Compare key; anybody else gets nothing back, so nothing is drawn for them.
+ */
+export function HeldByThem({ applicationRef }: { applicationRef: string }) {
+  const { t } = useLingui();
+  const [held, setHeld] = useState<ServedHeld[]>([]);
+  useEffect(() => {
+    let live = true;
+    gameFetch(`/api/admin/proposal-compare/held/${encodeURIComponent(applicationRef)}`, { cache: "no-store" })
+      .then(async (r) => (r.ok ? ((await r.json().catch(() => ({}))) as { held?: ServedHeld[] }) : {}))
+      .then((d) => {
+        if (live) setHeld(Array.isArray(d.held) ? d.held : []);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [applicationRef]);
+  if (!held.length) return null;
+  return (
+    <section className={PANEL} aria-labelledby="held-by-them" data-held-by-them="">
+      <p className={EYEBROW}>{t({ message: "Saved split, for deciders", context: "a proposal's saved split" })}</p>
+      {held.map((h) => (
+        <div key={h.roleId} className="mt-3">
+          <h2 id="held-by-them" className="font-semibold text-foreground">{t({ message: `What they hold in ${h.roleName}`, context: "a proposal's saved split" })}</h2>
+          <ul className="mt-2 grid gap-2">
+            {h.holds.map((x, i) => (
+              <li key={i} className={TILE}>{x}</li>
+            ))}
+          </ul>
+          {h.with.length > 0 && <p className="mt-2 text-sm text-muted-foreground">{t({ message: `Shared with ${h.with.join(", ")}.`, context: "a proposal's saved split" })}</p>}
+          <p className="mt-1 text-sm text-muted-foreground">{t({ message: `Saved by ${h.by} on ${day(h.at)}. Only the people who decide see this.`, context: "a proposal's saved split" })}</p>
+        </div>
+      ))}
+    </section>
+  );
+}

@@ -99,3 +99,24 @@ describe("the counter-offer keeps what was typed", () => {
     expect(unsavedCount()).toBe(0);
   });
 });
+
+describe("the over-limit confirm step (the lead, 20 Nov 2026)", () => {
+  it("asks in the lead's exact words, names the numbers, and only a tick says yes", async () => {
+    const { OverLimitWarning } = await import("./TermsWeOffer");
+    const { OVER_LIMIT_WORDS } = await import("@shared/commitmentLimit");
+    const seen: boolean[] = [];
+    render(<OverLimitWarning over={{ ask: OVER_LIMIT_WORDS.ask, roles: [{ roleId: "r", name: "Land Steward", used: 90, adding: 30, target: 100, words: "" }] }} confirmed={false} onConfirm={(v) => seen.push(v)} />);
+    const box = document.querySelector("[data-over-limit]") as HTMLElement;
+    expect(box.textContent).toContain(OVER_LIMIT_WORDS.ask);
+    expect(box.textContent).toContain("Land Steward: 90% is given already, this adds 30%, and the role's limit is 100%.");
+    fireEvent.click(document.querySelector("[data-over-limit-confirm]") as HTMLInputElement);
+    expect(seen).toEqual([true]);
+    cleanup();
+  });
+  it("draws nothing when no role is above its limit", async () => {
+    const { OverLimitWarning } = await import("./TermsWeOffer");
+    render(<OverLimitWarning over={null} confirmed={false} onConfirm={() => {}} />);
+    expect(document.querySelector("[data-over-limit]")).toBeNull();
+    cleanup();
+  });
+});

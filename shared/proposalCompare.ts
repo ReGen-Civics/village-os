@@ -118,6 +118,12 @@ export interface ComparePayload {
   categories: CompareCategory[];
   /** Whether the reader may read pay; the asks are left out when not. */
   readsPay: boolean;
+  /** What the reader may see (the lead, 20 Nov 2026): "quests" is the quest part alone, with no role and no pay. Absent reads as "all". */
+  scope?: CompareScope;
+  /** The splits deciders saved, by role. Absent for a reader of the quest part. */
+  saved?: SavedSplitView[];
+  /** Whether this reader may save a split (the Compare key itself). */
+  maySave?: boolean;
 }
 
 /** The category a quest with no circle files under. */
@@ -175,3 +181,92 @@ export function pickedItems(keys: readonly string[], items: readonly CompareItem
 /** The rows a comparison lines up, in order, so the same field sits on the same line in every column. */
 export const COMPARE_ROWS = ["who", "title", "way", "commitment", "deliverables", "terms", "dates", "link"] as const;
 export type CompareRow = (typeof COMPARE_ROWS)[number];
+
+// ── The saved split (the lead, 20 Nov 2026) ─────────────────────────────────────────────────────────────────────
+//
+// "Which deliverables each adopted person holds" for one role, saved by a decider from Compare. Kept on each
+// person's own proposal (its stored data, beside the other deciders-only parts), so it is erased with it. Read by
+// the admin section alone, at the Compare key; never served to the applicant, the public or an agent.
+
+/** The most words one saved piece keeps, and the most pieces one person holds in a saved split. */
+export const HELD_LIMITS = { text: 400, pieces: 24, rows: MAX_COMPARE } as const;
+
+/** One person's part of a saved split, as kept on their proposal. */
+export interface HeldSplit {
+  roleId: string;
+  /** The deliverables they hold, in the words the split showed. */
+  holds: string[];
+  /** The comparison keys of the others in the same split, so each record names its whole split. */
+  with: string[];
+  by: string;
+  at: string;
+}
+
+const COMPARE_KEY = /^(op|sa):[A-Za-z0-9-]{1,40}:[A-Za-z0-9_-]{1,64}$/;
+
+/** The saved splits on one proposal, read tolerantly. */
+export function heldSplitsOf(raw: unknown): HeldSplit[] {
+  if (!Array.isArray(raw)) return [];
+  const out: HeldSplit[] = [];
+  for (const s of raw.slice(0, 6)) {
+    if (!s || typeof s !== "object") continue;
+    const o = s as Record<string, unknown>;
+    if (typeof o.roleId !== "string" || !o.roleId || typeof o.by !== "string" || typeof o.at !== "string" || !Array.isArray(o.holds)) continue;
+    out.push({
+      roleId: o.roleId.slice(0, 64),
+      holds: o.holds.filter((h): h is string => typeof h === "string" && !!h.trim()).map((h) => h.trim().slice(0, HELD_LIMITS.text)).slice(0, HELD_LIMITS.pieces),
+      with: Array.isArray(o.with) ? o.with.filter((k): k is string => typeof k === "string" && COMPARE_KEY.test(k)).slice(0, HELD_LIMITS.rows) : [],
+      by: o.by.slice(0, 64),
+      at: o.at.slice(0, 40),
+    });
+  }
+  return out;
+}
+
+/** A split to save, as the page sends it. */
+export interface SplitToSave {
+  roleId: string;
+  rows: Array<{ key: string; holds: string[] }>;
+}
+
+export const SAVE_SPLIT_WORDS = {
+  shape: "Send the role and, for each person, the deliverables they would hold.",
+  rows: `A split names between one and ${MAX_COMPARE} people.`,
+  key: "A person in the split is not one of the proposals in Compare.",
+  role: "Everyone in a split must have proposed for the same role.",
+  tooLong: `Keep each deliverable under ${HELD_LIMITS.text} characters.`,
+  tooMany: `Up to ${HELD_LIMITS.pieces} deliverables for one person.`,
+} as const;
+
+/** The split the page sent, checked for shape. Whether each proposal exists is the route's to check. */
+export function parseSplitToSave(raw: unknown): { ok: true; value: SplitToSave } | { ok: false; error: string } {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : null;
+  if (!o || typeof o.roleId !== "string" || !o.roleId.trim() || !Array.isArray(o.rows)) return { ok: false, error: SAVE_SPLIT_WORDS.shape };
+  const roleId = o.roleId.trim();
+  if (o.rows.length < 1 || o.rows.length > HELD_LIMITS.rows) return { ok: false, error: SAVE_SPLIT_WORDS.rows };
+  const rows: SplitToSave["rows"] = [];
+  for (const r of o.rows) {
+    const x = r && typeof r === "object" ? (r as Record<string, unknown>) : {};
+    const key = typeof x.key === "string" ? x.key : "";
+    if (!COMPARE_KEY.test(key) || rows.some((y) => y.key === key)) return { ok: false, error: SAVE_SPLIT_WORDS.key };
+    if (!key.endsWith(`:${roleId}`)) return { ok: false, error: SAVE_SPLIT_WORDS.role };
+    if (!Array.isArray(x.holds)) return { ok: false, error: SAVE_SPLIT_WORDS.shape };
+    const holds = x.holds.filter((h): h is string => typeof h === "string").map((h) => h.trim()).filter(Boolean);
+    if (holds.some((h) => h.length > HELD_LIMITS.text)) return { ok: false, error: SAVE_SPLIT_WORDS.tooLong };
+    if (holds.length > HELD_LIMITS.pieces) return { ok: false, error: SAVE_SPLIT_WORDS.tooMany };
+    rows.push({ key, holds });
+  }
+  return { ok: true, value: { roleId, rows } };
+}
+
+/** A saved split as Compare shows it: one role, each person and what they hold. */
+export interface SavedSplitView {
+  roleId: string;
+  roleName: string;
+  by: string;
+  at: string;
+  rows: Array<{ key: string; who: string; status: "waiting" | "adopted" | "closed"; holds: string[]; href: string }>;
+}
+
+/** What Compare's reader may see: everything, or the quest part alone (a holder of `quest.approve` only). */
+export type CompareScope = "all" | "quests";

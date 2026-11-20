@@ -25633,3 +25633,164 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: sp.by
+#. placeholder {1}: sp.at.slice(0, 10)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare saved split"
+msgid "Saved by {0} on {1}"
+msgstr "Guardado por {0} el {1}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Only the people who decide see these, here and on each person's proposal."
+msgstr "Solo quienes deciden ven esto, aquí y en la propuesta de cada persona."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Saved splits"
+msgstr "Repartos guardados"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "decider, a role's commitment limit"
+msgid "This is above the limit set for this role, continue anyway?"
+msgstr "Esto supera el límite fijado para este rol, ¿continuar de todos modos?"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: h.roleName
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "a proposal's saved split"
+msgid "What they hold in {0}"
+msgstr "Lo que tiene en {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare saved split"
+msgid "Closed"
+msgstr "Cerrada"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Saving keeps which deliverables each person holds, for the people who decide. Nobody is accepted, told or sent anything."
+msgstr "Guardar conserva qué entregas tiene cada persona, para quienes deciden. No se acepta a nadie, ni se avisa ni se envía nada."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "a proposal's saved split"
+msgid "Saved split, for deciders"
+msgstr "Reparto guardado, para quienes deciden"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Mark who you consider qualified. The helper then maps only their deliverables and commitments, by plain rules written beside each split. It never says who is better, and nothing here is sent to anyone."
+msgstr "Marca a quién consideras calificada. La ayuda solo traza sus entregas y compromisos, con reglas simples escritas junto a cada reparto. Nunca dice quién es mejor, y nada aquí se envía a nadie."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: h.by
+#. placeholder {1}: day(h.at)
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "a proposal's saved split"
+msgid "Saved by {0} on {1}. Only the people who decide see this."
+msgstr "Guardado por {0} el {1}. Solo quienes deciden ven esto."
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: sp.at.slice(0, 10)
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare saved split"
+msgid "Saved on {0}"
+msgstr "Guardado el {0}"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Save this split"
+msgstr "Guardar este reparto"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: h.with.join(", ")
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "a proposal's saved split"
+msgid "Shared with {0}."
+msgstr "Compartido con {0}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare saved split"
+msgid "Adopted"
+msgstr "Adoptada"
+
+# needs-native-review: new words, 20 Nov 2026
+#. placeholder {0}: r.name
+#. placeholder {1}: r.used
+#. placeholder {2}: r.adding
+#. placeholder {3}: r.target
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "decider, a role's commitment limit"
+msgid "{0}: {1}% is given already, this adds {2}%, and the role's limit is {3}%."
+msgstr "{0}: ya se da {1}%, esto suma {2}%, y el límite del rol es {3}%."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Which deliverables each person holds"
+msgstr "Qué entregas tiene cada persona"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Saved. The people who decide see it here and on each person's proposal."
+msgstr "Guardado. Quienes deciden lo ven aquí y en la propuesta de cada persona."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "You see the quest part of Compare: quest ideas only, since you approve quests."
+msgstr "Ves la parte de misiones de Comparar: solo ideas de misiones, porque apruebas misiones."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Give each piece to one person before saving."
+msgstr "Da cada parte a una sola persona antes de guardar."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare saved split"
+msgid "Waiting for a decision"
+msgstr "Esperando una decisión"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "The split was not saved. Try again."
+msgstr "El reparto no se guardó. Inténtalo de nuevo."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/TermsWeOffer.tsx
+msgctxt "decider, a role's commitment limit"
+msgid "Yes, continue above the limit"
+msgstr "Sí, continuar por encima del límite"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Adopting all of them goes above the role's limit. Each proposal's page asks you to confirm before it adopts one above the limit."
+msgstr "Adoptar a todas supera el límite del rol. La página de cada propuesta te pide confirmar antes de adoptar a una por encima del límite."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Somebody here gave no commitment, so they are counted by places: the role holds {0} at once and {1} hold it now."
+msgstr "Alguien aquí no indicó compromiso, así que se cuenta por lugares: el rol admite {0} a la vez y {1} lo tienen ahora."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/admin/CompareTab.tsx
+msgctxt "admin compare"
+msgid "Their commitments fit the role's limit, so they can all hold it, whatever the number of places on the chart."
+msgstr "Sus compromisos caben en el límite del rol, así que todas pueden tenerlo, sea cual sea el número de lugares en el organigrama."

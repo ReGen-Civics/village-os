@@ -16,6 +16,8 @@ describe("telling two deliverables apart", () => {
     expect(samePiece("Plan the dry season planting", "Plan the dry-season planting")).toBe(true);
     expect(samePiece("Build a compost system", "Teach children to save seeds")).toBe(false);
     expect(wordsOf("The seeds, and the plantings!")).toEqual(["seed", "plant"]);
+    // A number tells two pieces apart, however short.
+    expect(samePiece("Own piece 1", "Own piece 2")).toBe(false);
   });
 });
 

@@ -38,7 +38,7 @@
  * outside the platform." beside every money row.
  */
 import { AboutYouView } from "@/components/openProposal/AboutYou";
-import TermsWeOffer, { OpenTalksWarning, prefillFromSearch } from "@/components/openProposal/TermsWeOffer";
+import TermsWeOffer, { HeldByThem, OpenTalksWarning, OverLimitWarning, prefillFromSearch, type ServedOverLimit } from "@/components/openProposal/TermsWeOffer";
 import { ABOUT_WORDS } from "@shared/proposalAbout";
 import WorkPayBlock from "@/components/WorkPayBlock";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
@@ -259,6 +259,7 @@ export default function SeatApplication() {
   const [asking, setAsking] = useState(false);
   // Adopting while a setting is still being talked about asks once more (joining lane PR 4).
   const [knowsOpenTalks, setKnowsOpenTalks] = useState(false);
+  const [aboveLimit, setAboveLimit] = useState(false);
 
   const load = useCallback(async () => {
     const answer = await fetchApplication(id);
@@ -440,6 +441,7 @@ export default function SeatApplication() {
               )}
             </section>
 
+            {app.you && !app.you.isCandidate && <HeldByThem applicationRef={app.id} />}
             {app.offer && <TermsWeOffer offer={app.offer} mayEdit={!!app.you?.mayEditTerms} savePath={`/api/governance/role-applications/${encodeURIComponent(app.id)}/terms`} onSaved={() => void load()} prefill={prefillFromSearch(window.location.search)} />}
             <AboutYouView about={app.aboutYou} />
             {typeof app.referencesGiven === "number" && (
@@ -504,6 +506,7 @@ export default function SeatApplication() {
                   </p>
                 )}
                 {app.you.mayAdopt && app.offer && <div className="mt-3"><OpenTalksWarning settings={app.offer.openTalks} confirmed={knowsOpenTalks} onConfirm={setKnowsOpenTalks} /></div>}
+                {app.you.mayAdopt && <div className="mt-3"><OverLimitWarning over={(app as { overLimit?: ServedOverLimit }).overLimit} confirmed={aboveLimit} onConfirm={setAboveLimit} /></div>}
                 <div className="mt-4 flex flex-wrap gap-2">
                   {app.you.mayAdopt && (
                     // The holder's adopt click IS the village's alignment. Money terms may ask the re-confirm first.
@@ -511,8 +514,8 @@ export default function SeatApplication() {
                     <AlignButton
                       label={record ?? ALIGN_WORDS.forTheVillage}
                       sentence={intentSentence(app.seats.map((x) => x.name), true)}
-                      disabled={busy || (!!app.offer?.openTalks.length && !knowsOpenTalks)}
-                      onAlign={() => alignCall<any>(`/api/governance/role-applications/${encodeURIComponent(app.id)}/adopt`, "POST", knowsOpenTalks ? { confirmOpenTalks: true } : undefined)}
+                      disabled={busy || (!!app.offer?.openTalks.length && !knowsOpenTalks) || (!!(app as { overLimit?: ServedOverLimit }).overLimit?.roles.length && !aboveLimit)}
+                      onAlign={() => alignCall<any>(`/api/governance/role-applications/${encodeURIComponent(app.id)}/adopt`, "POST", knowsOpenTalks || aboveLimit ? { ...(knowsOpenTalks ? { confirmOpenTalks: true } : {}), ...(aboveLimit ? { confirmOverLimit: true } : {}) } : undefined)}
                       onDone={(data) => {
                         // A role proposal answers with its decision record, which names a role, never a person.
                         const text = typeof data?.decided === "string" ? data.decided : typeof data?.message === "string" ? data.message : "Adopted for the village.";

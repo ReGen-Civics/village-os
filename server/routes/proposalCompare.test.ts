@@ -50,6 +50,7 @@ const SOURCES: CompareSources = {
       { ...open("op-b", { kind: "conversation" }), confirmedAt: new Date("2026-11-12T09:00:00Z") },
       { ...open("op-c", { roles: [{ roleId: "r-garden", note: "", early: true }] }), confirmedAt: new Date("2026-11-11T09:00:00Z") },
       { ...open("op-old", {}), status: "adopted" },
+      { ...open("op-0123456789abcdef0123", {}), name: "Lina Brook", email: "lina@example.test", status: "adopted", held: [{ roleId: "r-garden", holds: ["Map every spring"], with: ["op:op-a:r-garden"], by: "u-ivo", at: "2026-11-19T10:00:00.000Z" }] },
     ] as any,
   applications: async () =>
     [
@@ -68,7 +69,10 @@ const SOURCES: CompareSources = {
 };
 
 function harness() {
-  const state = { caps: [] as Capability[], isAdmin: false, readsPay: false, reads: 0 };
+  const state = { caps: [] as Capability[], isAdmin: false, readsPay: false, reads: 0, viewer: "u-hal" as string | null, gate: "both" as "both" | "guard-only" };
+  const stamped: Array<{ kind: "op" | "sa"; id: string; held: any[] }> = [];
+  const audits: string[] = [];
+  const ctx = () => ({ isAdmin: state.isAdmin, stage: "member", ladder: ["member"], roleCapabilities: state.caps }) as any;
   let server: http.Server | null = null;
   let base = "";
   const counted = Object.fromEntries(
@@ -79,12 +83,25 @@ function harness() {
   ) as unknown as CompareSources;
   const start = async () => {
     const app = express();
+    app.use(express.json());
     registerProposalCompare(app, {
       guardCapability: async (_req: any, res: any, cap: Capability) => {
-        const ok = hasCapability(cap, { isAdmin: state.isAdmin, stage: "member", ladder: ["member"], roleCapabilities: state.caps } as any);
+        const ok = hasCapability(cap, ctx());
         if (!ok) res.status(401).json({ error: "auth_required" });
         return ok;
       },
+      ...(state.gate === "both" ? { mayStillSee: async (_req: any, cap: Capability) => hasCapability(cap, ctx()) } : {}),
+      authedUser: async () => (state.viewer ? { id: state.viewer, email: `${state.viewer}@example.test` } : null),
+      compareStore: {
+        openProposal: async (id: string) => ((await SOURCES.openProposals()) as any[]).find((p) => p.id === id) ?? null,
+        application: async (id: string) => ((await SOURCES.applications()) as any[]).find((a) => a.id === id) ?? null,
+        stampOpen: async (id: string, held: any[]) => (stamped.push({ kind: "op", id, held }), true),
+        stampApplication: async (id: string, held: any[]) => (stamped.push({ kind: "sa", id, held }), true),
+        audit: async (text: string) => {
+          audits.push(text);
+        },
+      },
+      now: () => new Date("2026-11-20T12:00:00Z"),
       getPool: () => {
         throw new Error("the database was read");
       },
@@ -99,18 +116,18 @@ function harness() {
     base = `http://127.0.0.1:${addr.port}`;
   };
   const stop = () => new Promise<void>((resolve) => server?.close(() => resolve()));
-  const call = async () => {
-    const res = await fetch(`${base}${COMPARE_PATH}`); // module-review-ok: this suite's own loopback server, not an outbound call
-    return { status: res.status, body: (await res.json().catch(() => ({}))) as ComparePayload & { error?: string } };
+  const call = async (path = "", method = "GET", body?: unknown) => {
+    const res = await fetch(`${base}${COMPARE_PATH}${path}`, { method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) }); // module-review-ok: this suite's own loopback server, not an outbound call
+    return { status: res.status, body: (await res.json().catch(() => ({}))) as ComparePayload & { error?: string } & Record<string, any> };
   };
-  return { state, start, stop, call };
+  return { state, start, stop, call, stamped, audits };
 }
 
 describe("who may compare", () => {
   const h = harness();
   beforeAll(h.start);
   afterAll(h.stop);
-  beforeEach(() => Object.assign(h.state, { caps: [], isAdmin: false, readsPay: false, reads: 0 }));
+  beforeEach(() => Object.assign(h.state, { caps: [], isAdmin: false, readsPay: false, reads: 0, viewer: "u-hal" }));
 
   it("refuses a member without the desk's key, and reads nothing", async () => {
     const r = await h.call();
@@ -142,7 +159,7 @@ describe("what it lists", () => {
     await h.start();
   });
   afterAll(h.stop);
-  beforeEach(() => Object.assign(h.state, { caps: ["intake.moderate"], isAdmin: false, readsPay: false, reads: 0 }));
+  beforeEach(() => Object.assign(h.state, { caps: ["intake.moderate"], isAdmin: false, readsPay: false, reads: 0, viewer: "u-hal" }));
 
   it("lists every proposal waiting, one entry per role, in the order each arrived", async () => {
     const { body } = await h.call();
@@ -189,5 +206,101 @@ describe("what it lists", () => {
     h.state.readsPay = true;
     const withPay = await h.call();
     expect(withPay.body.items.find((i) => i.key === "op:op-a:r-garden")!.terms!.ask).toEqual({ kind: "amount", amount: 2000, per: "month" });
+  });
+});
+
+describe("each key sees its own part (the lead, 20 Nov 2026)", () => {
+  const h = harness();
+  beforeAll(h.start);
+  afterAll(h.stop);
+  beforeEach(() => Object.assign(h.state, { caps: [], isAdmin: false, readsPay: true, reads: 0, viewer: "u-hal" }));
+
+  it("quest.approve alone sees the quest part only: quest proposals and the quest category, no role, no pay, no saved split", async () => {
+    h.state.caps = ["quest.approve"];
+    const r = await h.call();
+    expect(r.status).toBe(200);
+    expect(r.body.scope).toBe("quests");
+    expect(r.body.items.map((i) => i.key)).toEqual(["qp:qp-1"]);
+    expect(r.body.items.every((i) => i.kind === "quest")).toBe(true);
+    expect(r.body.categories.map((c) => c.key)).toEqual(["quest:land"]);
+    expect(r.body.roles).toEqual([]);
+    expect(r.body.readsPay).toBe(false);
+    expect(r.body.saved).toBeUndefined();
+    expect(r.body.maySave).toBeUndefined();
+    expect(JSON.stringify(r.body)).not.toMatch(/op-a|sa-1|Person|2000/);
+  });
+
+  it("intake.moderate sees everything, the saved splits included", async () => {
+    h.state.caps = ["intake.moderate"];
+    const r = await h.call();
+    expect(r.body.scope).toBe("all");
+    expect(r.body.items.some((i) => i.kind === "role")).toBe(true);
+    expect(r.body.maySave).toBe(true);
+    expect(Array.isArray(r.body.saved)).toBe(true);
+  });
+
+  it("a key for something else sees nothing, and nothing is read", async () => {
+    h.state.caps = ["terms.read"];
+    expect((await h.call()).status).toBe(401);
+    expect(h.state.reads).toBe(0);
+  });
+
+  it("quest.approve cannot save a split or read one person's saved split", async () => {
+    h.state.caps = ["quest.approve"];
+    expect((await h.call("/split", "POST", { roleId: "r-garden", rows: [{ key: "op:op-a:r-garden", holds: ["x"] }] })).status).toBe(401);
+    expect((await h.call("/held/op-aaaaaaaaaaaaaaaaaaaa")).status).toBe(401);
+    expect(h.stamped).toEqual([]);
+  });
+});
+
+describe("saving a split (the lead, 20 Nov 2026)", () => {
+  const h = harness();
+  beforeAll(h.start);
+  afterAll(h.stop);
+  beforeEach(() => {
+    Object.assign(h.state, { caps: ["intake.moderate"], isAdmin: false, readsPay: false, reads: 0, viewer: "u-hal" });
+    h.stamped.length = 0;
+    h.audits.length = 0;
+  });
+
+  it("keeps on each person's proposal what they hold, who else is in the split, who saved it and when, and audits it", async () => {
+    const r = await h.call("/split", "POST", { roleId: "r-garden", rows: [{ key: "op:op-a:r-garden", holds: ["Keep the seed bank catalogued"] }, { key: "op:op-c:r-garden", holds: ["Build a compost system", " "] }] });
+    expect(r.status, JSON.stringify(r.body)).toBe(200);
+    expect(h.stamped).toEqual([
+      { kind: "op", id: "op-a", held: [{ roleId: "r-garden", holds: ["Keep the seed bank catalogued"], with: ["op:op-c:r-garden"], by: "u-hal", at: "2026-11-20T12:00:00.000Z" }] },
+      { kind: "op", id: "op-c", held: [{ roleId: "r-garden", holds: ["Build a compost system"], with: ["op:op-a:r-garden"], by: "u-hal", at: "2026-11-20T12:00:00.000Z" }] },
+    ]);
+    expect(h.audits).toEqual(["proposal-split:saved:r-garden: a split of 2 for the role was saved"]);
+  });
+
+  it("refuses a split naming a proposal that is not in Compare, one for another role, or a closed one, and writes nothing", async () => {
+    for (const body of [
+      { roleId: "r-garden", rows: [{ key: "op:op-nope:r-garden", holds: ["x"] }] },
+      { roleId: "r-garden", rows: [{ key: "op:op-a:r-water", holds: ["x"] }] },
+      { roleId: "r-garden", rows: [] },
+    ]) {
+      expect((await h.call("/split", "POST", body)).status, JSON.stringify(body)).toBe(400);
+    }
+    // CONTROL: sa-2 is adopted, so it may be split; the refusal above was the empty and unknown rows.
+    expect((await h.call("/split", "POST", { roleId: "r-cook", rows: [{ key: "sa:sa-2:r-cook", holds: ["x"] }] })).status).toBe(200);
+    expect(h.stamped.map((x) => x.id)).toEqual(["sa-2"]);
+  });
+
+  it("shows one person's saved split to a decider, and never to the person it is about", async () => {
+    const r = await h.call("/held/op-0123456789abcdef0123");
+    expect(r.status).toBe(200);
+    expect(r.body.held).toEqual([{ roleId: "r-garden", roleName: "Garden steward", holds: ["Map every spring"], with: ["Person op-a"], by: "Ivo Lantern", at: "2026-11-19T10:00:00.000Z" }]);
+    // The person it is about, even holding the key, reads nothing here.
+    h.state.viewer = "lina";
+    expect((await h.call("/held/op-0123456789abcdef0123")).body.held).toEqual([]);
+    expect((await h.call("/held/op-aaaaaaaaaaaaaaaaaaaa")).status).toBe(404);
+    expect((await h.call("/held/not-a-ref")).status).toBe(404);
+  });
+
+  it("Compare lists the saved splits by role, with each person, their status and what they hold", async () => {
+    const r = await h.call();
+    expect(r.body.saved).toEqual([
+      { roleId: "r-garden", roleName: "Garden steward", by: "Ivo Lantern", at: "2026-11-19T10:00:00.000Z", rows: [{ key: "op:op-0123456789abcdef0123:r-garden", who: "Lina Brook", status: "adopted", holds: ["Map every spring"], href: "/open-proposals/op-0123456789abcdef0123" }] },
+    ]);
   });
 });
