@@ -13,21 +13,22 @@
  * under "How you're chosen" leave them out.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { BadgeCheck, CalendarDays, Clock, Coins, Compass, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound } from "lucide-react";
+import { BadgeCheck, CalendarDays, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
 import { splitDomain, splitLine } from "@shared/rolePieces";
-import { commitmentRowWords } from "./rewardWords";
 import { paidRoleLine, trackWords } from "./cardWordsT";
 import { EYEBROW, HINT } from "@/components/journey/look";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import RoleCardParams from "@/components/power/RoleCardParams";
 import RootsSlot from "./RootsSlot";
-import RolePieces, { type RolePiece } from "./RolePieces";
+import RolePieces, { type PieceTab, type RolePiece } from "./RolePieces";
 import { NO_SHARED, onboardingFor, type RoleCardShared } from "@shared/roleCardShared";
+import { TipText } from "./CardTips";
+import RoleOneMinute, { type OneMinuteProps } from "./RoleOneMinute";
 
 // The timeline loads when a card has dated deliverables, off the first view of /roles (route-first-view.json).
 const DeliverablesGantt = lazy(() => import("./DeliverablesGantt"));
@@ -45,10 +46,10 @@ export function LabelledBullets({ lines }: { lines: string[] }) {
           <li key={k} className="text-card-foreground">
             {s.title ? (
               <>
-                <span className="font-semibold">{s.title}:</span> {s.body}
+                <span className="font-semibold">{s.title}:</span> <TipText text={s.body} />
               </>
             ) : (
-              s.body
+              <TipText text={s.body} />
             )}
           </li>
         );
@@ -58,6 +59,26 @@ export function LabelledBullets({ lines }: { lines: string[] }) {
 }
 
 type LucideIcon = typeof Compass;
+
+/**
+ * THE VILLAGE'S GOAL AS A BANNER (the lead, 20 Nov 2026; the roles lane's idea 10): the lines every card shares
+ * (`org.role_card_shared`) stand apart, above "What {village} needs from you", which keeps the role's own lines.
+ */
+export function VillageGoalBanner({ lines, as: As }: { lines: string[]; as: "h3" | "h4" | "h5" }) {
+  const { t } = useLingui();
+  if (!lines.length) return null;
+  return (
+    <div className="flex gap-3 rounded-2xl border border-notice/50 bg-notice/10 p-4" data-testid="village-goal">
+      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-notice/60 text-notice" aria-hidden="true">
+        <Sprout className="size-4" />
+      </span>
+      <div className="min-w-0">
+        <As className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-notice">{t({ message: "The goal we share", context: "role card: the lines every role shares, as a banner" })}</As>
+        <LabelledBullets lines={lines} />
+      </div>
+    </div>
+  );
+}
 
 /** Lines as tiles: a "Lead: rest" line gets its lead as the tile's title. */
 function Tiles({ lines, icon: Icon }: { lines: string[]; icon: LucideIcon }) {
@@ -74,10 +95,10 @@ function Tiles({ lines, icon: Icon }: { lines: string[]; icon: LucideIcon }) {
               {s.title ? (
                 <>
                   <span className="block font-semibold text-card-foreground">{s.title}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-muted-foreground">{s.body}</span>
+                  <span className="mt-0.5 block text-sm leading-relaxed text-muted-foreground"><TipText text={s.body} /></span>
                 </>
               ) : (
-                <span className="block text-card-foreground">{s.body}</span>
+                <span className="block text-card-foreground"><TipText text={s.body} /></span>
               )}
             </span>
           </li>
@@ -120,11 +141,26 @@ export interface FoundingRoleCardProps {
   marks?: (key: string) => number;
   /** The words every card shares (shared/roleCardShared.ts). */
   shared?: RoleCardShared;
+  /** "The role in one minute" (RoleOneMinute.tsx), less the act and the heading level, which the card sets. */
+  oneMinute: Omit<OneMinuteProps, "act" | "as">;
+}
+
+/** The five tabs (the lead, 20 Nov 2026; the roles lane's idea 2), each naming the pieces it opens. */
+function useTabs(): PieceTab[] {
+  const { t } = useLingui();
+  return [
+    { key: "role", tab: t({ message: "The role", context: "role card tab: purpose and what it looks after" }), icon: Compass, pieces: ["purpose", "domain"] },
+    { key: "deliverables", tab: t({ message: "Deliverables", context: "role card: the dated outcomes" }), icon: Handshake, pieces: ["accountabilities"] },
+    { key: "work", tab: t({ message: "How we work", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: Users, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
+    { key: "you", tab: t({ message: "You and rewards", context: "role card tab: who we hope for and the rewards" }), icon: Coins, pieces: ["who", "rewards"] },
+    { key: "path", tab: t({ message: "The path in", context: "role card tab: how you're chosen and once you're selected" }), icon: DoorOpen, pieces: ["chosen", "onboarding"] },
+  ];
 }
 
 export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   const { t, i18n } = useLingui();
   const { seat, lifted } = p;
+  const tabs = useTabs();
   const Title = lifted ? "h2" : "h3";
   const SubH = lifted ? "h4" : "h5";
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
@@ -135,11 +171,9 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // Read from the params, which carry the card's own words for where (sections.where) when it has them.
   const rows = roleCardView(p.params ?? seat).rows;
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
+  // The commitment and where are said once, in the one-minute summary at the top of the pieces (the lead, 20 Nov 2026).
   const facts: Array<{ icon: LucideIcon; label: string; value: string }> = [
-    // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
-    { icon: Clock, label: W.timeCommitment, value: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : p.commitmentPct !== null ? `${p.commitmentPct}%` : (p.commitment ?? "") },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") ? trackWords(i18n, row("track")) : "" },
-    { icon: MapPin, label: t({ message: "Where", context: "founding card fact" }), value: row("where") },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },
   ].filter((f) => f.value);
 
@@ -157,7 +191,8 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // What the village needs: the lines every card shares, then the role's own, each a bullet.
   // The host already put the village's shared lines first and split the role's own into one line each.
   const needs = why?.lines ?? [];
-  if (p.aim || needs.length) {
+  const banner = shared.lines;
+  if (p.aim || needs.length || banner.length) {
     pieces.push({
       key: "purpose",
       tab: W.purpose,
@@ -175,6 +210,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
               )}
             </div>
           )}
+          <VillageGoalBanner lines={banner} as={SubH} />
           {needs.length > 0 && (
             <div data-testid="words-whyItMatters" className="rounded-xl border border-border bg-muted p-3.5">
               <Sub as={SubH}>{why?.heading}</Sub>
@@ -195,13 +231,13 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
       title: domain.heading,
       body: (
         <div className="flex flex-col gap-3" data-testid="words-domain">
-          <p className="max-w-prose leading-relaxed text-card-foreground">{d.lead}</p>
+          <p className="max-w-prose leading-relaxed text-card-foreground"><TipText text={d.lead} /></p>
           {d.parts.length > 0 && (
             <ul className="flex flex-wrap gap-2">
               {d.parts.map((part, k) => (
                 <li key={k} className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-sm text-card-foreground">
                   <Sprout className="size-3.5 shrink-0 text-notice" aria-hidden="true" />
-                  {part}
+                  <TipText text={part} />
                 </li>
               ))}
             </ul>
@@ -325,7 +361,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
               {p.holding.map((h) => (
                 <div key={h.key} className="rounded-xl border border-border bg-muted p-3.5">
                   <dt className="text-sm font-semibold text-notice">{h.heading}</dt>
-                  <dd className="mt-1 leading-relaxed text-card-foreground">{h.text}</dd>
+                  <dd className="mt-1 leading-relaxed text-card-foreground"><TipText text={h.text} /></dd>
                 </div>
               ))}
             </dl>
@@ -333,7 +369,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
           {p.companion}
           {p.notMine.length > 0 && (
             <div data-testid="words-notMine">
-              <Sub as={SubH}>{goesToHeading}</Sub>
+              <Sub as={SubH}><TipText text={goesToHeading} /></Sub>
               <Tiles lines={p.notMine} icon={ShieldCheck} />
             </div>
           )}
@@ -375,7 +411,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             )}
           </div>
           <div className="flex min-w-0 flex-col gap-2">
-            {p.circleName && <p className={EYEBROW}>{p.circleName}</p>}
+            {p.circleName && <p className={EYEBROW}><TipText text={p.circleName} /></p>}
             <Title className="font-display text-xl leading-tight text-card-foreground @md:text-2xl @lg:text-3xl">{String(seat?.name ?? "")}</Title>
             <RootsSlot roots={roots} />
             {p.sections?.paid && <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>}
@@ -394,15 +430,22 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             ))}
           </dl>
         )}
-        {p.wide && p.act && (
-          <div className="mt-auto">
-            {p.act}
-            <p className={`mt-2 text-center ${HINT}`}>{t({ message: "No account needed.", context: "full role card, under the one act" })}</p>
-          </div>
-        )}
       </header>
-      <div className="min-w-0 p-5 @lg:p-7">
-        <RolePieces pieces={pieces} level={lifted ? 3 : 4} after={p.after} initialAll={p.allPieces} marks={p.marks} />
+      <div className="flex min-w-0 flex-col gap-6 p-5 @lg:p-7">
+        {/* The role in one minute, then the tabs for depth (the lead, 20 Nov 2026). On a desktop the act sits in it. */}
+        <RoleOneMinute
+          {...p.oneMinute}
+          as={lifted ? "h3" : "h4"}
+          act={
+            p.wide && p.act ? (
+              <>
+                {p.act}
+                <p className={`mt-2 text-center ${HINT}`}>{t({ message: "No account needed.", context: "full role card, under the one act" })}</p>
+              </>
+            ) : null
+          }
+        />
+        <RolePieces pieces={pieces} tabs={tabs} level={lifted ? 3 : 4} after={p.after} initialAll={p.allPieces} marks={p.marks} />
       </div>
     </div>
     </div>

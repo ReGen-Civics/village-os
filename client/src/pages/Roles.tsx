@@ -11,7 +11,8 @@ import { Link } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
 import { ArrowRight, Briefcase, ChevronDown } from "lucide-react";
 import { iconFor } from "@/lib/circleIcons";
-import { lazy, Suspense, useEffect, useId, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { AnchorCircleTip } from "@/components/roleCard/CardTips";
 import { prefersReducedMotion } from "@/components/natural/useReducedMotion";
 import SeatClaimCard from "@/components/SeatClaimCard";
 import { swatchFor } from "@/lib/swatch";
@@ -117,10 +118,11 @@ function normalizeStatus(s: unknown): SeatStateWord {
 // A seat id is a slug of the seat's own name (`createOrgRole`), so no person
 // is ever written into the address.
 
-/** The seat the address names, read once on arrival. */
+/** The seat the address names, read once on arrival: `?seat=<id>`, or the older `?role=<id>`. */
 function seatFromUrl(): string | null {
   if (typeof window === "undefined") return null;
-  return new URLSearchParams(window.location.search).get("seat") || null;
+  const q = new URLSearchParams(window.location.search);
+  return q.get("seat") || q.get("role") || null;
 }
 
 /**
@@ -130,6 +132,7 @@ function seatFromUrl(): string | null {
  */
 function writeSeatToUrl(id: string | null) {
   const url = new URL(window.location.href);
+  url.searchParams.delete("role");
   if (id) url.searchParams.set("seat", id);
   else url.searchParams.delete("seat");
   window.history.replaceState(window.history.state, "", url.toString());
@@ -468,6 +471,9 @@ export default function Roles() {
   // Held invisible until /api/org answers, so the sentence never grows a
   // clause in front of the reader.
   const anchorId = anchorCircleId(circles);
+  // The anchor circle's own purpose is its tooltip on every role card here (the lead, 20 Nov 2026; CardTips.tsx).
+  const anchorRow = circles.find((c) => String(c?.id) === anchorId);
+  const anchorTip = useMemo(() => (anchorRow?.name ? { name: String(anchorRow.name), purpose: String(anchorRow.purpose ?? "") } : null), [anchorRow?.name, anchorRow?.purpose]);
   // A link to one role (?seat=) names that role in the page heading, not the whole page.
   const linkedName = linked ? ((roles ?? []) as Array<{ id: string; name: string }>).find((r) => r.id === linked)?.name ?? null : null;
 
@@ -659,6 +665,7 @@ export default function Roles() {
   );
 
   return (
+    <AnchorCircleTip.Provider value={anchorTip}>
     <Layout>
       {/* The sheet's world (docs/DESIGN_RULE.md): the same night ground and display face as the profile. */}
       {/* Until the reads decide whether the founding team leads, the page keeps the leading
@@ -943,5 +950,6 @@ export default function Roles() {
         </div>
       </section>
     </Layout>
+    </AnchorCircleTip.Provider>
   );
 }

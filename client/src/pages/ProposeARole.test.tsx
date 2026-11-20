@@ -249,8 +249,9 @@ describe("one role per application", () => {
     expect(within(bar).getByText("Who keeps the key when I am away.")).toBeTruthy();
     expect(within(shape).getByText("1 suggestion travels with your application.")).toBeTruthy();
     // The piece's chip on the rail carries a dot, and the words wait in the draft on this device (they ticked to remember).
-    expect(shape.querySelector('[data-piece-tab="purpose"] [data-piece-marked]')).toBeTruthy();
-    expect(shape.querySelector('[data-piece-tab="domain"] [data-piece-marked]')).toBeNull();
+    // The tab that holds the piece carries it (five tabs, the lead, 20 Nov 2026): Purpose sits in The role.
+    expect(shape.querySelector('[data-piece-tab="role"] [data-piece-marked]')).toBeTruthy();
+    expect(shape.querySelector('[data-piece-tab="deliverables"] [data-piece-marked]')).toBeNull();
     await waitFor(() => expect(Object.values({ ...window.localStorage }).join(" ")).toContain("Who keeps the key when I am away."));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();

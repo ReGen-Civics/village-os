@@ -39,7 +39,11 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { cardPay, NO_VILLAGE_PAY, SECTION_WORDS, type PayShare, type RoleCardSections, type VillagePay } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { heldButRecruiting } from "@shared/roleListing";
-import { rewardWords, splitNotRestated } from "./rewardWords";
+import { commitmentRowWords, perPeriod, rewardWords, splitNotRestated } from "./rewardWords";
+import { moneyWords } from "@shared/roleRewardWords";
+import { goalOf, nextDeliverables } from "@shared/roleOneMinute";
+import { CardTipsProvider, TipText, useCardTips } from "./CardTips";
+import RoleOneMinute from "./RoleOneMinute";
 import { bandWords } from "./payBandWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
@@ -61,7 +65,12 @@ import { MoonText } from "@/components/MoonWord";
 import { ShareLabel, TokenText, shareLabelFor, useShareNames } from "@/components/ContributionWord";
 import { useVillageName } from "@/hooks/useVillageName";
 import { NO_SHARED, onboardingFor } from "@shared/roleCardShared";
-import { LabelledBullets } from "./FoundingRoleCard";
+import { LabelledBullets, VillageGoalBanner } from "./FoundingRoleCard";
+
+const todayIso = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
 
 // The directory card's deliverables, shared rhythm and onboarding steps load with the card's lists, off the first view.
 // The waitlist form on a coming-soon card, loaded on open.
@@ -206,9 +215,13 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // Where, in the card's own words (sections.where), in place of the listing's land or remote label.
   const params = read?.where ? { ...ranged, card: { ...(ranged.card ?? {}), whereText: read.where } } : ranged;
   const founding = register === "founding";
+  // The role's own lines under "What {village} needs from you", and its goal line lifted into the one-minute summary.
+  // The village's shared lines stand apart above them, as a banner (the lead, 20 Nov 2026).
+  const ownNeeds = asLines(seat.whyItMatters).flatMap((l) => l.split(/\r?\n/)).map((l) => l.replace(/^\s*(?:[-*•]|\d{1,2}[.)])\s+/, "").trim()).filter(Boolean);
+  const { goal, rest: needsLines } = goalOf(ownNeeds);
   const words: Array<{ key: string; heading: string; lines: string[] }> = [
     // "What {village} needs from you" (the lead, 19 Nov 2026): goals and deadlines, one bullet per line.
-    { key: "whyItMatters", heading: t({ message: `What ${villageInSentence} needs from you`, context: "full role card heading" }), lines: [...(answer?.shared?.lines ?? []), ...asLines(seat.whyItMatters)].flatMap((l) => l.split(/\r?\n/)).map((l) => l.replace(/^\s*(?:[-*•]|\d{1,2}[.)])\s+/, "").trim()).filter(Boolean) },
+    { key: "whyItMatters", heading: t({ message: `What ${villageInSentence} needs from you`, context: "full role card heading" }), lines: needsLines },
     { key: "domain", heading: W.decide, lines: asLines(seat.domain) },
     { key: "authorities", heading: W.authorities, lines: asLines(seat.authorities) },
     { key: "accountabilities", heading: W.countOnMe, lines: asLines(seat.accountabilities) },
@@ -289,6 +302,23 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const slider = !noAct && rangeMin(seat?.card?.commitmentMin ?? null) < 100;
   const band = slider ? null : bandWords(i18n, seat?.card?.publicPay, showsRange);
   const shared = answer?.shared ?? NO_SHARED;
+  const tips = useCardTips(shared.tips);
+  // THE ROLE IN ONE MINUTE (the lead, 20 Nov 2026): the goal, the next three deliverables, commitment, price, where.
+  const ceiling = sections?.payCeiling ?? null;
+  const oneMinute = {
+    goal: goal || aim,
+    next: nextDeliverables(sections?.deliverables ?? [], todayIso()),
+    // A role that can be shared says its range (Rye, 14 Nov 2026); a whole role says what it says today.
+    commitment: typeof seat?.card?.commitmentMin === "number" ? commitmentRowWords(i18n, seat.card.commitmentMin) : commitmentPct !== null ? `${commitmentPct}%` : (commitment ?? ""),
+    // The full role's figure, once; the Rewards tab works it out at the reader's own share.
+    price: founding && ceiling ? (
+      <>
+        <MoonText text={perPeriod(i18n, moneyWords(ceiling.amount, ceiling.currency, i18n.locale), ceiling.per)} />{" "}
+        <span className="font-normal text-muted-foreground">{t({ message: "for the full role", context: "role in one minute: after the price" })}</span>
+      </>
+    ) : null,
+    where: roleCardView(params).rows.find((r) => r.id === "where")?.lines.join(", ") ?? "",
+  };
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
@@ -364,7 +394,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const companion =
     sections && (sections.aiSupport || sections.aiCompanion) ? (
       <section data-testid="ai-support">
-        <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}>{SECTION_WORDS.aiSupport}</CompanionH>
+        <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}><TipText text={SECTION_WORDS.aiSupport} /></CompanionH>
         <div className="mt-2 flex items-start gap-3 text-card-foreground">
           <span className="grid size-11 shrink-0 place-items-center rounded-full border border-notice/50">
             <AnimalIcon name={sections.aiCompanion} />
@@ -386,11 +416,25 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     </footer>
   );
 
+  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11): the one act rides the bottom of the screen in a
+  // bar while the card is read. It is the card's last child, so it is reached last by the keyboard, after everything it
+  // sits over, and its own slot at the end of the card means the last lines scroll clear of it. On a desktop the act
+  // sits in the summary (founding) or the side column (directory).
+  const phoneBar = !wide && act && (
+    <div
+      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 border-t border-notice/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/85 ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
+      data-phone-apply-bar=""
+    >
+      {act}
+    </div>
+  );
+
   // THE FOUNDING CARD, PIECE BY PIECE (Rye, 14 Nov 2026; FoundingRoleCard.tsx): the role as a seat on
-  // the left with the one act, its words one piece at a time on the right.
+  // the left, the role in one minute and its words in five tabs on the right.
   if (founding) {
     // The founding card's own heading is one level below the title, so its companion heading is too.
     return (
+      <CardTipsProvider tips={tips}>
       <article
         aria-labelledby={labelledBy}
         aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
@@ -425,10 +469,12 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           allPieces={allPieces}
           marks={marks}
           shared={shared}
+          oneMinute={oneMinute}
         />
-        {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 px-5 pb-5">{act}</div>}
         {footer}
+        {phoneBar}
       </article>
+      </CardTipsProvider>
     );
   }
 
@@ -455,6 +501,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   );
 
   return (
+    <CardTipsProvider tips={tips}>
     <article
       aria-labelledby={labelledBy}
       aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
@@ -476,6 +523,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
 
       <div className={`mt-5 grid gap-6 ${founding ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10" : "lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8"}`}>
         <div className="flex min-w-0 flex-col gap-5 break-words">
+          {/* The role in one minute (the lead, 20 Nov 2026). The price and the act stay in the side column here. */}
+          <RoleOneMinute {...oneMinute} as={H4} act={null} />
           {aim && (
             <section className="rounded-xl border-l-4 border-notice bg-muted px-4 py-3" data-testid="purpose">
               <H4 className={EYEBROW}>{W.purpose}</H4>
@@ -487,6 +536,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
               )}
             </section>
           )}
+          {/* The village's goal as a banner, above what the village needs from this role (the lead, 20 Nov 2026). */}
+          <VillageGoalBanner lines={shared.lines} as={H4} />
           {gameWords.map((w) => (
             <Block key={w.key} heading={w.heading} register={register} lifted={lifted} testId={`words-${w.key}`}>
               <Lines lines={w.lines} />
@@ -546,15 +597,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <div className="lg:sticky lg:top-28 lg:self-start">{side}</div>
       </div>
 
-      {/* A PHONE'S THUMB: the one act rides at the bottom of the screen while the card is read
-          (rehearsal, 11 Nov: it sat three screens down). On a desktop it stays in the side column. */}
-      {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 mt-6">{act}</div>}
       <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
         <p className={HINT} data-testid="last-edited">
           {last ? SECTION_WORDS.lastEdited(last.by, civilDayWords(last.on)) : ""}
         </p>
         {!seat.isExample && <EditRoleButton roleId={id} onSaved={() => window.location.reload()} />}
       </footer>
+      {phoneBar}
     </article>
+    </CardTipsProvider>
   );
 }

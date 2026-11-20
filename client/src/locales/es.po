@@ -24244,3 +24244,127 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 20 Nov 2026 (role card redesign)
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role card: the summary at the top"
+msgid "The role in one minute"
+msgstr "El rol en un minuto"
+
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: before the goal, for a screen reader"
+msgid "Goal:"
+msgstr "Meta:"
+
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: the next three dated outcomes"
+msgid "Next deliverables"
+msgstr "Próximos entregables"
+
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: a fact"
+msgid "Commitment"
+msgstr "Dedicación"
+
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: a fact"
+msgid "Price"
+msgstr "Precio"
+
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: a fact"
+msgid "Where"
+msgstr "Dónde"
+
+#. placeholder {0}: dayWords(d.start, locale)
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: a milestone's day"
+msgid "On {0}"
+msgstr "El {0}"
+
+#. placeholder {0}: dayWords(d.end, locale)
+#: client/src/components/roleCard/RoleOneMinute.tsx
+msgctxt "role in one minute: when a deliverable is due"
+msgid "By {0}"
+msgstr "Para el {0}"
+
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "role in one minute: after the price"
+msgid "for the full role"
+msgstr "por el rol completo"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card: the lines every role shares, as a banner"
+msgid "The goal we share"
+msgstr "La meta que compartimos"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: purpose and what it looks after"
+msgid "The role"
+msgstr "El rol"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+msgid "How we work"
+msgstr "Cómo trabajamos"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: who we hope for and the rewards"
+msgid "You and rewards"
+msgstr "Tú y las recompensas"
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: how you're chosen and once you're selected"
+msgid "The path in"
+msgstr "El camino de entrada"
+
+#. placeholder {count}: count
+#: client/src/components/roleCard/RolePieces.tsx
+msgctxt "role card rail: how many suggestions a piece carries"
+msgid ", {count} suggestions"
+msgstr ", {count} sugerencias"
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: the word"
+msgid "consent"
+msgstr "consentimiento"
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: consent"
+msgid "A decision passes by consent when nobody in the circle has a reasoned objection. It is safe enough to try, and it can change."
+msgstr "Una decisión se aprueba por consentimiento cuando nadie en el círculo tiene una objeción razonada. Es lo bastante segura para probarla, y puede cambiar."
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: the word"
+msgid "steward"
+msgstr "custodio"
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: steward"
+msgid "A steward looks after one part of the village on everyone's behalf, and answers to their circle."
+msgstr "Un custodio cuida una parte de la aldea en nombre de todos, y responde ante su círculo."
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: the word"
+msgid "Founding Seeder"
+msgstr "Sembrador Fundador"
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: Founding Seeder"
+msgid "Someone who means to live in the village one day and starts on the resident path now."
+msgstr "Alguien que quiere vivir en la aldea algún día y empieza ya el camino de residente."
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: the word"
+msgid "Digital Companion"
+msgstr "Compañero Digital"
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: Digital Companion"
+msgid "The AI assistant that works beside the person in this role. It drafts, remembers and prepares; the person decides."
+msgstr "El asistente de IA que trabaja junto a la persona en este rol. Redacta, recuerda y prepara; la persona decide."
+
+#: client/src/components/roleCard/CardTips.tsx
+msgctxt "role card tooltip: the anchor circle, when it has no purpose written"
+msgid "The circle every other circle links back to. It holds the village's shared direction."
+msgstr "El círculo al que se vinculan todos los demás. Sostiene la dirección compartida de la aldea."

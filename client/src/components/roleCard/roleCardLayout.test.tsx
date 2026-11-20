@@ -71,12 +71,22 @@ async function openCard() {
 }
 
 describe("the role card's layout", () => {
-  it("says what the village needs as bullets, the shared lines first, each label in bold", async () => {
+  it("sets the village's shared lines apart as a banner above what the village needs, and lifts the goal into the summary (the lead, 20 Nov 2026)", async () => {
     const card = await openCard();
     expect(within(card).getByRole("heading", { name: /^What .+ needs from you$/ })).toBeTruthy();
-    const items = Array.from(card.querySelectorAll('[data-testid="words-whyItMatters"] li'));
-    expect(items.map((li) => li.textContent)).toEqual(["Where: on the land", "Goal: a funded first season", "Your part: the budget"]);
-    expect(items[1].querySelector(".font-semibold")?.textContent).toBe("Goal:");
+    const banner = within(card).getByTestId("village-goal");
+    expect(Array.from(banner.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["Where: on the land"]);
+    expect(banner.querySelector("li .font-semibold")?.textContent).toBe("Where:");
+    // The box keeps the role's own labelled lines, without the goal the summary already says.
+    const box = within(card).getByTestId("words-whyItMatters");
+    expect(Array.from(box.querySelectorAll("li")).map((li) => li.textContent)).toEqual(["Your part: the budget"]);
+    expect(banner.compareDocumentPosition(box) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The role in one minute: the goal, then the deliverables by date.
+    const summary = card.querySelector("[data-role-one-minute]") as HTMLElement;
+    expect(summary.querySelector("[data-one-minute-goal]")?.textContent).toBe("Goal: a funded first season");
+    expect(Array.from(summary.querySelectorAll("[data-one-minute-next] li")).map((li) => li.querySelector("span span")?.textContent)).toEqual(["Budget agreed", "Accounts open"]);
+    // The summary sits above the tabs.
+    expect(summary.compareDocumentPosition(card.querySelector("[data-piece-rail]") as HTMLElement) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
   it("draws Deliverables as a timeline with its dates as a list, and keeps the accountabilities beside it", async () => {
