@@ -18,6 +18,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { provisionTestDb, testDbConfigured, type TestDb, testPool } from "../db/testDb";
 import { usersRepo } from "../repos/users";
 import { register } from "./proposedChanges";
+import { CCOS_WORDS_REFUSAL, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 
 const configured = testDbConfigured();
 if (!configured) console.warn("[proposedChanges] TEST_DATABASE_URL not set - DB cases SKIPPED. A skip is not a pass.");
@@ -88,6 +89,7 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     app.use(express.json());
     app.put("/api/admin/brand", (_req, res) => res.json({ success: true })); // a route a `setting` may name
     app.post("/api/admin/events", (_req, res) => res.json({ success: true })); // the calendar's new-gathering route, which a `setting` may name
+    app.post("/api/admin/org/roles", (_req, res) => res.json({ success: true })); // the new-role route, which a `setting` may name
     register(app, {
       authedUser,
       getPool: () => pool,
@@ -209,6 +211,34 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(r.status).toBe(400);
     expect(r.body.refused.map((x: any) => [x.index, x.field])).toEqual([[0, "value"], [1, "body"], [2, "target.path"]]);
     expect(await q("SELECT id FROM proposed_changes")).toHaveLength(0);
+  });
+
+  it("FILING MIRRORS ACCEPT (20 Nov 2026): a new role carrying handover or CCOS words is refused when filed, in the route's own words", async () => {
+    const role = (extra: Record<string, unknown>) => ({ kind: "setting", target: { method: "POST", path: "/api/admin/org/roles" }, body: { name: "Seed Keeper", ...extra }, summary: "A new role." });
+    const r = await call("POST", "/api/admin/proposals", { batch: "Roles", items: [role({ bringMe: ["Questions"] }), role({ runbook: "Open the store." }), role({ existsWhile: "While seeds are kept" })] }, AGENT.id);
+    expect(r.status).toBe(400);
+    expect(r.body.refused.map((x: any) => [x.index, x.error])).toEqual([[0, HANDOVER_WORDS_REFUSAL], [1, HANDOVER_WORDS_REFUSAL], [2, CCOS_WORDS_REFUSAL]]);
+    expect(await q("SELECT id FROM proposed_changes")).toHaveLength(0);
+    // Control: the same role without those words is filed.
+    const fine = await call("POST", "/api/admin/proposals", { batch: "Roles", items: [role({ aim: "Keep the seeds." })] }, AGENT.id);
+    expect(fine.status).toBe(200);
+  });
+
+  it("FILING MIRRORS ACCEPT: listing a card that would fail the listing gate is refused when filed; coming soon needs only its aim and domain", async () => {
+    await q("DELETE FROM org_roles WHERE id IN ('rc-list', 'rc-soon')");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active, listed) VALUES ('rc-list', 'Seed Keeper', 'Keep the seeds.', 1, 1, 0)");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active, listed) VALUES ('rc-soon', 'Oven Keeper', 'Keep the oven.', 1, 1, 0)");
+    const list = (roleId: string, body: Record<string, unknown>) => ({ kind: "role_card", target: { roleId }, body, summary: "List it." });
+    const open = await call("POST", "/api/admin/proposals", { batch: "List", items: [list("rc-list", { words: { domain: "The seed store." }, parameters: { listed: true } })] }, AGENT.id);
+    expect(open.status).toBe(400);
+    expect(open.body.refused[0].field).toBe("parameters.listed");
+    expect(open.body.refused[0].error).toMatch(/^This card is not ready to list yet\. Still to write: What you can count on me for, Time commitment, Track, /);
+    // Coming soon, set in the same change: aim and domain are enough.
+    const soon = await call("POST", "/api/admin/proposals", { batch: "List", items: [list("rc-soon", { words: { domain: "The oven." }, parameters: { listed: true, comingSoon: true } })] }, AGENT.id);
+    expect(soon.status).toBe(200);
+    // Coming soon without a domain is refused, naming only that.
+    const bare = await call("POST", "/api/admin/proposals", { batch: "List", items: [list("rc-soon", { parameters: { listed: true, comingSoon: true } })] }, AGENT.id);
+    expect(bare.body.refused[0].error).toBe("This card is not ready to list yet. Still to write: What it looks after.");
   });
 
   it("files a batch, then a bulk accept lands two and leaves the refused one, which is fixed and accepted again", async () => {

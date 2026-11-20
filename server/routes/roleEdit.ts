@@ -339,7 +339,10 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
     res.set("Cache-Control", "no-store").json({
       state,
       door: me.door,
+      // The gate as the card stands (a coming soon or future venture card needs only its aim and domain), and the
+      // gate as an open role, which the editor shows when the form is switched to open.
       lacksToList: listingProblems(state),
+      lacksToOpen: listingProblems(state, { asOpen: true }),
       mayReadTerms: await g.canReadTerms(req),
       roles: found.roles.filter((r) => !r.isExample && r.id !== found.role.id).map((r) => ({ id: r.id, name: r.name })),
       // The circles a role can move to (Rye, 16 Nov 2026), the village's own, dormant ones included.

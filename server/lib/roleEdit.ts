@@ -166,14 +166,24 @@ export async function editorState(pool: Pool, role: OrgRole): Promise<EditorStat
  * is listed only once its card passes the gate). The words are the card's
  * own headings. A role already listed is not re-judged by this: it is asked
  * only when a save turns `listed` on.
+ *
+ * A role that is COMING SOON or a FUTURE VENTURE is shown so people can say
+ * they are interested, and nobody applies to it yet, so its card is listed
+ * once it has its Purpose and What it looks after (20 Nov 2026: such cards
+ * were filed through the connector and then refused on accept). Every other
+ * requirement stays for an open role. The state is the MERGED one, so a save
+ * that sets comingSoon and listed together is read as coming soon. `asOpen`
+ * asks what the card lacks to open, whatever it is now: the editor shows that
+ * when the form is switched to open.
  */
-export function listingProblems(state: Pick<EditorState, "words" | "parameters" | "pay">): string[] {
+export function listingProblems(state: Pick<EditorState, "words" | "parameters" | "pay">, opts: { asOpen?: boolean } = {}): string[] {
   const w = state.words;
   const p = state.parameters;
   const missing: string[] = [];
   const has = (v: WordValue | undefined) => (Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.trim() !== "");
   if (!has(w.aim)) missing.push("Purpose");
   if (!has(w.domain)) missing.push("What it looks after");
+  if (opts.asOpen !== true && (p.comingSoon === true || p.futureVenture === true)) return missing;
   if (!has(w.accountabilities)) missing.push("What you can count on me for");
   if (!has(w.timeCommitment)) missing.push("Time commitment");
   if (!p.track) missing.push("Track");
@@ -183,6 +193,25 @@ export function listingProblems(state: Pick<EditorState, "words" | "parameters" 
   // Every paid track asks for pay on offer, as the card's gate does (shared/roleTracks.ts, guide v2).
   if (p.track && PAID_TRACKS.includes(p.track as Track) && !(state.pay && (state.pay.kind === "fixed" || state.pay.kind === "range"))) missing.push("Pay on offer");
   return missing;
+}
+
+/** Said when a save or a proposal would list a card that does not pass the gate. */
+export function notReadyToList(lacking: readonly string[]): string {
+  return `This card is not ready to list yet. Still to write: ${lacking.join(", ")}.`;
+}
+
+/**
+ * The card as it would stand after a change: the role's editor state with the change's words and parameters laid
+ * over it, and the pay it would offer. The save and the proposal check both read the gate against this, so a
+ * proposal is refused at filing exactly when its accept would be.
+ */
+export function mergedForListing(state: EditorState, changes: Record<string, unknown>, pay: PaySettings | null): EditorState {
+  return {
+    ...state,
+    words: { ...state.words, ...Object.fromEntries(Object.entries(changes).filter(([k]) => WORD_KEYS.includes(k)).map(([k, v]) => [k, normalWord(v, ROLE_WORD_FIELDS.lists.has(k))])) },
+    parameters: { ...state.parameters, ...Object.fromEntries(Object.entries(changes).filter(([k]) => (PARAMETER_KEYS as readonly string[]).includes(k))) } as ParameterValues,
+    pay,
+  };
 }
 
 // ── Save ────────────────────────────────────────────────────────────────────
@@ -321,15 +350,8 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
 
   // A role is listed only once its card passes the gate.
   if (payload.listed === true) {
-    const state = await editorState(pool, role);
-    const merged: EditorState = {
-      ...state,
-      words: { ...state.words, ...Object.fromEntries(Object.entries(payload).filter(([k]) => WORD_KEYS.includes(k)).map(([k, v]) => [k, normalWord(v, ROLE_WORD_FIELDS.lists.has(k))])) },
-      parameters: { ...state.parameters, ...Object.fromEntries(Object.entries(payload).filter(([k]) => (PARAMETER_KEYS as readonly string[]).includes(k))) } as ParameterValues,
-      pay: nextPay,
-    };
-    const lacking = listingProblems(merged);
-    if (lacking.length) return bad(`This card is not ready to list yet. Still to write: ${lacking.join(", ")}.`, 409, lacking);
+    const lacking = listingProblems(mergedForListing(await editorState(pool, role), payload, nextPay));
+    if (lacking.length) return bad(notReadyToList(lacking), 409, lacking);
   }
 
   let draftId: string | null = null;

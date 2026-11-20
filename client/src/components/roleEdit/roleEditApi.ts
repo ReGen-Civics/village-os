@@ -54,7 +54,10 @@ export interface EditorState {
 export interface EditorOpen {
   state: EditorState;
   door: "power" | "admin";
+  /** What the card lacks to be listed as it stands now: a coming soon or future venture card needs only its aim and domain. */
   lacksToList: string[];
+  /** What the card lacks to be listed as an OPEN role (absent from an older server, which sent only `lacksToList`). */
+  lacksToOpen?: string[];
   /** Whether the reader may read terms, which "Use Sera's range" needs. */
   mayReadTerms: boolean;
   roles: Array<{ id: string; name: string }>;
