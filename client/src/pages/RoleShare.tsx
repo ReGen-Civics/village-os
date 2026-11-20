@@ -90,8 +90,13 @@ export default function RoleShare() {
 
   // The bar says the role's own address, so a reader who arrived by its id copies the same link a card copies.
   useEffect(() => {
-    if (role && path && window.location.pathname !== path) window.history.replaceState(window.history.state, "", path + window.location.hash);
-  }, [role, path]);
+    if (!role || !path || window.location.pathname === path) return;
+    // Only while the bar still names THIS role: an effect that runs late, after a press already moved to another role's
+    // page, must never write the old role back over it (a race seen under load, 20 Nov 2026).
+    const now = window.location.pathname.match(/^\/roles\/([^/]+)/)?.[1] ?? "";
+    if (roleForSlug(now, roles) !== role) return;
+    window.history.replaceState(window.history.state, "", path + window.location.hash);
+  }, [role, path, roles]);
 
   const back = (
     <Link href="/roles" className={`inline-flex min-h-11 items-center gap-2 ${LINK}`} data-role-page-back="">
@@ -104,7 +109,8 @@ export default function RoleShare() {
     <AnchorCircleTip.Provider value={anchorTip}>
       <Layout>
         <section className={`${WORLD} pb-16 pt-4 sm:py-12`}>
-          <div className="container mx-auto flex max-w-6xl flex-col gap-5" data-role-page={role ? String(role.id) : ""}>
+          {/* A tighter gap on a phone, so a coming-soon card's longer note still leaves its act whole on the first screen. */}
+          <div className="container mx-auto flex max-w-6xl flex-col gap-3 sm:gap-5" data-role-page={role ? String(role.id) : ""}>
             {back}
             {org === null || (role && founding === null) ? (
               <p role="status" className={`py-10 text-center ${HINT}`}>{t({ message: "Loading the role…", context: "a role's own page" })}</p>

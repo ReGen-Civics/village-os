@@ -86,13 +86,17 @@ describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", (
     });
     vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockReturnValue(120);
     Object.defineProperty(window, "innerHeight", { configurable: true, value: 664 });
-    const el = await card();
+    const el = await card(seat({ commitmentPct: 60, track: "contractor" }));
     const inflow = el.querySelector("[data-phone-act]") as HTMLElement;
     const bar = el.querySelector("[data-phone-apply-bar]") as HTMLElement;
     const goal = el.querySelector("[data-one-minute-goal]") as HTMLElement;
     // Apply is on the first screen, under the goal, and nothing covers the goal: the bar is not drawn.
     expect(inflow.getBoundingClientRect().top).toBeGreaterThanOrEqual(goal.getBoundingClientRect().bottom);
     expect(inflow.getBoundingClientRect().bottom).toBeLessThanOrEqual(664);
+    // The fact tiles come after the act on a phone, so they never push it off the first screen (the lead, 20 Nov 2026).
+    const tiles = el.querySelector('[data-testid="card-facts"]');
+    expect(tiles).toBeTruthy();
+    expect(inflow.compareDocumentPosition(tiles!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await waitFor(() => expect(bar.hidden).toBe(true));
     expect(within(el).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
     expect(within(inflow).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
@@ -115,6 +119,28 @@ describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", (
     window.dispatchEvent(new Event("scroll"));
     await waitFor(() => expect(bar.hidden).toBe(true));
     expect(inflow.hasAttribute("inert")).toBe(false);
+  });
+});
+
+describe("a long state note never pushes the phone's act off the first screen (the lead, 20 Nov 2026)", () => {
+  it("puts a venture's pitch note after Apply, and a coming-soon notice after Notify me, on a phone", async () => {
+    const v = await card({ ...seat(), futureVenture: true, state: "forming" } as any);
+    const apply = v.querySelector("[data-phone-act] [data-apply-role]") as HTMLElement;
+    const pitch = v.querySelector("[data-phone-act] [data-venture-note]") as HTMLElement;
+    expect(apply.compareDocumentPosition(pitch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    cleanup();
+    const c = await card({ ...seat(), comingSoon: true, state: "forming" } as any);
+    const notify = within(c.querySelector("[data-phone-act]") as HTMLElement).getByRole("button", { name: "Notify me" });
+    const note = c.querySelector("[data-phone-act] [data-coming-soon-note]") as HTMLElement;
+    expect(notify.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("CONTROL: on a desktop the note stays above the act, beside it as before", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    const v = await card({ ...seat(), futureVenture: true, state: "forming" } as any);
+    const apply = v.querySelector("[data-apply-role]") as HTMLElement;
+    const pitch = v.querySelector("[data-venture-note]") as HTMLElement;
+    expect(pitch.compareDocumentPosition(apply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 

@@ -267,7 +267,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
   const act = soon ? (
     <div className="flex flex-col gap-3" data-card-waitlist={id}>
-      <StateNote role={seat} />
+      {/* On a phone the note follows the button, so the act stays on the first screen (the lead, 20 Nov 2026). */}
+      {wide && <StateNote role={seat} />}
       {waitOpen ? (
         <Suspense fallback={null}>
           <WaitlistForm roles={[{ id, name: String(seat?.name ?? "") }]} chosen={id} />
@@ -277,6 +278,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
         </button>
       )}
+      {!wide && <StateNote role={seat} />}
       {/* The waitlist stays first; a strong fit may apply early (the lead, 20 Nov 2026). */}
       <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
       <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_SECONDARY}`} data-apply-early={id}>
@@ -286,13 +288,15 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   ) : apply ? (
     <>
       {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
-      <StateNote role={seat} className="mb-3" />
+      {wide && <StateNote role={seat} className="mb-3" />}
       <Fireflies block>
         <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
           <Trans context="full role card: the one act">Apply for this role</Trans>
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
+      {/* A venture's pitch note is long: on a phone it follows Apply, so Apply is on the first screen. */}
+      {!wide && <StateNote role={seat} className="mt-3" />}
       {/* The two-speed way in (the lead, 20 Nov 2026, idea 14): two minutes now, the full proposal shaped together later. */}
       <Link href={`${applyHrefForRole(id)}&way=talk`} className={`mt-3 w-full ${BTN_SECONDARY}`} data-start-conversation={id}>
         {t({ message: "Start a conversation", context: "full role card: the short way in" })}

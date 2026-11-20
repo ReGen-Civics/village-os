@@ -378,19 +378,18 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
       return el;
     });
   };
-  it("keeps the role and its facts in the seat column, the commitment and where among them as the one-minute summary says them", async () => {
+  it("keeps the role and its facts in the seat column, and on a phone the tiles after the one-minute summary, which says the commitment and where", async () => {
     org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentPct: 100, whereWorked: "both" } });
     const card = await open();
     const header = card.querySelector("header") as HTMLElement;
     expect(within(header).getByTestId("open-seat").textContent).toBe("Open role");
-    expect(within(header).getByTestId("card-facts").textContent).toContain("Paid contractor");
-    // The commitment is back in the seat column as a tile (the Amora operations role, 20 Nov 2026, reversing 1.3.38's
-    // "said once" on purpose), and it is the very line "The role in one minute" draws: one source, said the same.
-    const tile = Array.from(within(header).getByTestId("card-facts").querySelectorAll("div")).find((d) => d.querySelector("dt")?.textContent === "Commitment");
-    expect(tile?.querySelector("dd")?.textContent).toBe("100%");
-    expect(card.querySelector('[data-one-minute-fact="commitment"] dd')?.textContent).toBe(tile?.querySelector("dd")?.textContent);
-    const where = Array.from(within(header).getByTestId("card-facts").querySelectorAll("div")).find((d) => d.querySelector("dt")?.textContent === "Where");
-    expect(where?.querySelector("dd")?.textContent).toBe("On the land or remote");
+    // jsdom is narrow, so this is the phone: the tiles follow the one-minute panel (its Apply on the first screen), and
+    // leave commitment and where to the panel right above them. The desktop's seat-column tiles: roleCardRedesign.test.tsx.
+    const facts = within(card).getByTestId("card-facts");
+    expect(header.contains(facts)).toBe(false);
+    expect(facts.textContent).toContain("Paid contractor");
+    expect(facts.textContent).not.toContain("Commitment");
+    expect(card.querySelector('[data-one-minute-fact="commitment"] dd')?.textContent).toBe("100%");
     expect(card.querySelector('[data-one-minute-fact="where"] dd')?.textContent).toBe("On the land or remote");
     // One act: in the seat column on a desktop, riding the bottom of the screen on a phone (jsdom is narrow).
     expect(within(card).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
