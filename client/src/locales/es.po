@@ -12066,6 +12066,11 @@ msgctxt "role draft"
 msgid "Loading the open roles…"
 msgstr "Cargando los roles abiertos…"
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: filter"
+msgid "B-27 or B-27.2, or an older long id"
+msgstr ""
+
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -12594,6 +12599,11 @@ msgstr ""
 msgid "The governing purpose statement"
 msgstr ""
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: filter"
+msgid "Find a code"
+msgstr ""
+
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "That could not be discarded"
 msgstr ""
@@ -12986,9 +12996,9 @@ msgid "Location read from the photo. It is removed from the photo before it goes
 msgstr ""
 
 #: client/src/components/roleCard/SplitControl.tsx
-msgctxt "split control heading"
-msgid "How your total is split"
-msgstr ""
+#~ msgctxt "split control heading"
+#~ msgid "How your total is split"
+#~ msgstr ""
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar day panel heading"
@@ -15951,6 +15961,11 @@ msgctxt "admin quests"
 msgid "Price the quests on the pricing desk"
 msgstr ""
 
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Tap to copy"
+msgstr ""
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal: an empty value"
 msgid "(blank)"
@@ -16064,6 +16079,11 @@ msgstr ""
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
 msgid "Checklists"
+msgstr ""
+
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Copy code {code}"
 msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
@@ -17730,6 +17750,11 @@ msgstr ""
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Who is asked first:"
+msgstr ""
+
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Copied"
 msgstr ""
 
 #: client/src/components/ComingSoon.tsx
@@ -22833,6 +22858,11 @@ msgctxt "admin typography: upload role picker"
 msgid "The role this font fills"
 msgstr ""
 
+#: client/src/components/openProposal/RoleCardBridge.tsx
+msgctxt "open proposal conversations"
+msgid "{minutes} minutes with {who}, the final conversation"
+msgstr ""
+
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, terms"
 msgid "Terms"
@@ -23815,9 +23845,9 @@ msgid "them"
 msgstr "esa persona"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
-msgctxt "open proposal conversations"
-msgid "{minutes} minutes with {who}, the final approval"
-msgstr "{minutes} minutos con {who}, la aprobación final"
+#~ msgctxt "open proposal conversations"
+#~ msgid "{minutes} minutes with {who}, the final approval"
+#~ msgstr "{minutes} minutos con {who}, la aprobación final"
 
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"

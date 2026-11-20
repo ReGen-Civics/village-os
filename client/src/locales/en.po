@@ -12031,6 +12031,11 @@ msgctxt "role draft"
 msgid "Loading the open roles…"
 msgstr "Loading the open roles…"
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: filter"
+msgid "B-27 or B-27.2, or an older long id"
+msgstr "B-27 or B-27.2, or an older long id"
+
 #. placeholder {0}: i + 1
 #: client/src/components/openProposal/ProposalAttachments.tsx
 msgctxt "open proposal attachments"
@@ -12556,6 +12561,11 @@ msgstr ", {0}: "
 msgid "The governing purpose statement"
 msgstr "The governing purpose statement"
 
+#: client/src/pages/ProposedChanges.tsx
+msgctxt "proposed changes: filter"
+msgid "Find a code"
+msgstr "Find a code"
+
 #: client/src/components/admin/LetterDraftsPanel.tsx
 msgid "That could not be discarded"
 msgstr "That could not be discarded"
@@ -12946,9 +12956,9 @@ msgid "Location read from the photo. It is removed from the photo before it goes
 msgstr "Location read from the photo. It is removed from the photo before it goes up."
 
 #: client/src/components/roleCard/SplitControl.tsx
-msgctxt "split control heading"
-msgid "How your total is split"
-msgstr "How your total is split"
+#~ msgctxt "split control heading"
+#~ msgid "How your total is split"
+#~ msgstr "How your total is split"
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar day panel heading"
@@ -15906,6 +15916,11 @@ msgctxt "admin quests"
 msgid "Price the quests on the pricing desk"
 msgstr "Price the quests on the pricing desk"
 
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Tap to copy"
+msgstr "Tap to copy"
+
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, proposal: an empty value"
 msgid "(blank)"
@@ -16019,6 +16034,11 @@ msgstr "This moon"
 msgctxt "admin protocols editor"
 msgid "Checklists"
 msgstr "Checklists"
+
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Copy code {code}"
+msgstr "Copy code {code}"
 
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #~ msgctxt "founding application split line: a later part, credits"
@@ -17683,6 +17703,11 @@ msgstr "Loaded {done} faces."
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgid "Who is asked first:"
 msgstr "Who is asked first:"
+
+#: client/src/components/proposals/CodeChip.tsx
+msgctxt "proposed changes: a short code"
+msgid "Copied"
+msgstr "Copied"
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "future venture pitch, part 1"
@@ -22784,6 +22809,11 @@ msgctxt "admin typography: upload role picker"
 msgid "The role this font fills"
 msgstr "The role this font fills"
 
+#: client/src/components/openProposal/RoleCardBridge.tsx
+msgctxt "open proposal conversations"
+msgid "{minutes} minutes with {who}, the final conversation"
+msgstr "{minutes} minutes with {who}, the final conversation"
+
 #: client/src/pages/ApplicationStatus.tsx
 msgctxt "applicant's application status, terms"
 msgid "Terms"
@@ -23758,9 +23788,9 @@ msgid "them"
 msgstr "them"
 
 #: client/src/components/openProposal/RoleCardBridge.tsx
-msgctxt "open proposal conversations"
-msgid "{minutes} minutes with {who}, the final approval"
-msgstr "{minutes} minutes with {who}, the final approval"
+#~ msgctxt "open proposal conversations"
+#~ msgid "{minutes} minutes with {who}, the final approval"
+#~ msgstr "{minutes} minutes with {who}, the final approval"
 
 #: client/src/components/roleEdit/BringInCard.tsx
 msgctxt "role editor card"
