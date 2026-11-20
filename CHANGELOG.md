@@ -40,6 +40,38 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.33 (2026-11-19)
+
+### What changed for your village
+
+- **Role cards read as cards.** Lists show as bullets with the label before a colon in bold. "Why it matters" becomes "What {village} needs from you", with the village's shared lines first and then the role's own. "Not mine to hold" reads "Goes to the {circle}". "Bring me" sits beside what the role decides. The pay band, what it pays and "Value in equals value out." each appear once.
+- **Dated deliverables, as a timeline.** A role can carry up to 12 dated deliverables (`sections.deliverables`), drawn as a timeline chart with a text list beside it; the founding team gets one combined chart. A card with no dated rows reads as before.
+- **One shared rhythm, written once.** Four new village settings hold text every card shares: the shared lines (`org.role_card_shared`), the weekly and moon rhythm everyone attends (`org.role_card_rhythm`), the default onboarding steps (`org.role_card_onboarding`) and when the first review happens (`org.role_card_first_review`). Each card shows the shared rhythm first, then its own.
+- **"Once you're selected"**, a new tab after "Holding it well", lists the onboarding steps (the village default, or the role's own).
+- **Where the role is held, in the village's words** (`sections.where`), in place of the fixed on the land or remote label.
+- **How to book each conversation** shows on the public card, from the interviewing role's own booking setting, which may now be a WhatsApp link or simply the word "whatsapp".
+- **Coming-soon roles have a waitlist.** On the roles page they now sit under the open roles, each saying it is not open yet and may change, with a "Notify me" form: email, an optional WhatsApp number and which roles interest the person. Sign-ups are kept privately, readable only by admins, removed when a member is erased, and nothing is sent from them. The one-circle introduction shows only while the village has a single live circle.
+
+### What you must do
+
+Nothing is required. Fill the four new settings and the role cards' new sections when you are ready; until then cards read as before. One migration (0414) adds the waitlist table; it applies by itself at boot.
+
+---
+
+## 1.3.32 (2026-11-19)
+
+### What changed for your village
+
+- **No page can start before its words have arrived.** The crash that stopped applicants opening the role application in iPhone Safari (fixed for one page in 1.3.27) came from a page's code starting while it was still waiting for its English text. Seventeen more pieces of the site had the same shape. Now every page fetches its words first and only then starts, so nothing can be read before it exists, and a missing words file fails with a clear error instead of a blank. A new build check fails any release that brings the old shape back.
+- **We hear about crashes before people tell us.** When a page shows its crash screen, it now sends one short report: what broke, where in the code, the page path and the browser. It never sends what was typed, what is saved on the device, links' query strings or anything personal. Admins see these on Village Health and get an alert, and repeats are rate limited.
+- **Every release is tried in real browsers first.** A smoke test now renders 25 key pages in Chromium and in WebKit (the engine behind iPhone Safari) and sends one test application with a long answer, and the build fails if any page crashes or any email goes out. A test application is marked by a server-only token, checked like a real one and deleted at once: never emailed, never counted, never shown to reviewers.
+
+### What you must do
+
+Nothing is required. To run the browser smoke test against your own staging server, set `SMOKE_TEST_TOKEN` there (never on production); `docs/FORK_RUNBOOK.md` has the steps. No migrations since v1.3.31.
+
+---
+
 ## 1.3.31 (2026-11-19)
 
 ### What changed for your village

@@ -102,16 +102,16 @@ export interface ChunkFacts {
   facadeModuleId: string | null;
   /** CSS files this chunk pulls in. */
   css: readonly string[];
-  /** Parts of moved English this chunk awaits before it runs (client/src/i18n/copySplit.ts). */
+  /** Parts of moved English this chunk reads when it runs (client/src/i18n/copySplit.ts). */
   copyParts?: readonly string[];
 }
 
 /** Where a part of moved English is served, relative to `base` (server/routes/i18n.ts). */
 export const copyPartPath = (part: string) => `api/i18n/catalog/en/part/${part}`;
 
-/** The parts a built chunk awaits, read off its code: `__villageCopyLoad("<part>")`. */
+/** The parts a built chunk reads, off its code: `__villageCopyGet("<part>")`. */
 export function copyPartsIn(code: string): string[] {
-  return Array.from(code.matchAll(/__villageCopyLoad\("([A-Za-z0-9_-]{6,32})"\)/g), (m) => m[1]);
+  return Array.from(code.matchAll(/__villageCopyGet\("([A-Za-z0-9_-]{6,32})"\)/g), (m) => m[1]);
 }
 
 export interface RoutePreloadTable {

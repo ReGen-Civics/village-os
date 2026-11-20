@@ -110,7 +110,8 @@ export async function reportError(err: unknown, ctx: ErrorContext): Promise<Erro
   if (lastSeen.size > 500) lastSeen.clear();
 
   // The log always gets it, repeat or not — that is what a log is for.
-  console.error(`[error] ${ctx.where}: ${message}`, ctx.detail ?? {}, e?.stack ?? "");
+  // A constant format string: `where` and the message can carry text a browser sent (client crash reports), and a `%` in them must stay text.
+  console.error("[error] %s: %s", ctx.where, message, ctx.detail ?? {}, e?.stack ?? "");
   if (repeat) return { suppressed: true, admins: "not wired", webhook: "not configured" };
 
   const delivery: ErrorDelivery = { suppressed: false, admins: "not wired", webhook: "not configured" };

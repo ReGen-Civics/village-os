@@ -208,18 +208,24 @@ describe("/circles with nothing saved (a new village's starter words)", () => {
 });
 
 describe("/roles", () => {
-  it("says the Anchor Circle holds the whole village for now, and sends no one to build circles (Rye, 14 Nov 2026)", async () => {
+  it("says no single circle holds the whole village once there are two, and sends no one to build circles (Rye, 14 Nov 2026; the lead, 19 Nov 2026)", async () => {
     page(<Roles />);
     // The roles sit behind step one (the archetype pick) until "See all roles".
     await openAllRoles();
     await screen.findByRole("heading", { level: 3, name: "Water Keeper" });
 
-    expect(document.querySelector("[data-anchor-only]")?.textContent).toBe(
-      "For now the Anchor Circle holds the whole village: the founders and the anchor stewards. Other circles grow only if and when the work needs them.",
-    );
+    // Two live circles here: the one-circle line, named from the data, is not said (control: the case below).
+    expect(document.querySelector("[data-anchor-only]")).toBeNull();
     expect(document.body.textContent).not.toContain("General Coordinating Circle");
     expect(document.body.textContent).not.toContain("links back to");
     expect(document.body.textContent).not.toContain("the way a forest does");
     expect(screen.queryByRole("link", { name: /Explore Our Circles/ })).toBeNull();
+  });
+
+  it("names the one live circle as holding the whole village while it is the only one", async () => {
+    org = { ...org, circles: [org.circles[0]] };
+    page(<Roles />);
+    await openAllRoles();
+    await waitFor(() => expect(document.querySelector("[data-anchor-only]")?.textContent).toBe(`For now the ${org.circles[0].name} holds the whole village. Other circles grow only if and when the work needs them.`));
   });
 });

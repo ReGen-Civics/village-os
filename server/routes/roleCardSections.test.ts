@@ -176,6 +176,27 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     await setVar("org.public_people", null);
   });
 
+  it("saves dated deliverables and onboarding steps, refuses a bad date, and sends the words every card shares (the lead, 19 Nov 2026)", async () => {
+    const { id } = await seedRole();
+    holders = new Set(["holder-1"]);
+    const rows = [{ title: "Budget agreed", start: "2027-01-05", end: "2027-01-31", workstream: "Budget" }];
+    const bad = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { deliverables: [{ title: "x", start: "2027-02-30", end: "2027-03-01" }] } });
+    expect(bad.status).toBe(400);
+    const saved = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { deliverables: rows, onboarding: ["Meet the circle"] } });
+    expect(saved.status).toBe(200);
+    await setVar("org.role_card_rhythm", "Weekly: Monday team meeting\nEach moon: new moon recap");
+    await setVar("org.role_card_onboarding", "Village step");
+    const read = await call("GET", `/api/org/role-card/${id}`, null);
+    expect(read.json.sections.deliverables).toEqual(rows);
+    expect(read.json.sections.onboarding).toEqual(["Meet the circle"]);
+    expect(read.json.shared).toEqual({ lines: [], rhythm: ["Weekly: Monday team meeting", "Each moon: new moon recap"], onboarding: ["Village step"] });
+    // A later part leaves the deliverables as they were.
+    expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Calm"] } })).status).toBe(200);
+    expect((await call("GET", `/api/org/role-card/${id}`, null)).json.sections.deliverables).toEqual(rows);
+    await setVar("org.role_card_rhythm", null);
+    await setVar("org.role_card_onboarding", null);
+  });
+
   it("a part of the sections changes that part alone, and the pay sections stay as they were (Rye, 15 Nov 2026)", async () => {
     const { id } = await seedRole();
     holders = new Set(["holder-1"]);

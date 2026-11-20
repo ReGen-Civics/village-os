@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 270 open and 60 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 274 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 303 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 307 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-330 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 65 text, 9 longtext.
+334 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 46 boolean, 37 choice, 66 text, 12 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -60,7 +60,7 @@ Each dial also says WHEN a change lands. 303 of them as soon as it is saved, and
 | Village map | 12 | 9 | 3 |
 | The village's people | 23 | 22 | 1 |
 | Companions | 3 | 3 | 0 |
-| The founding team | 19 | 19 | 0 |
+| The founding team | 23 | 23 | 0 |
 | Events | 3 | 3 | 0 |
 | Forum | 1 | 1 | 0 |
 | Messages | 2 | 2 | 0 |
@@ -331,6 +331,10 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | What the first cycle looks like | `org.founding_first_cycle` | The founding team | longtext | `Your first cycle is one month. At its end, either side may choose to stop there, with thanks.` | the whole village |
 | The first conversations after joining | `org.founding_first_conversations` | The founding team | longtext | blank | the whole village |
 | A note when the application changes | `org.founding_updated_note` | The founding team | text | blank | the whole village |
+| Lines every role card shows under what the village needs | `org.role_card_shared` | The founding team | longtext | blank | the whole village |
+| The sessions every role attends | `org.role_card_rhythm` | The founding team | longtext | blank | the whole village |
+| When a role's first review happens | `org.role_card_first_review` | The founding team | text | blank | the whole village |
+| The first steps once someone is selected | `org.role_card_onboarding` | The founding team | longtext | blank | the whole village |
 | Other ways to join: the resident path tile | `org.other_ways_seeder_title` | The founding team | text | `Become a Founding Seeder` | the whole village |
 | Other ways to join: the line under the resident path tile | `org.other_ways_seeder_line` | The founding team | text | `Live here one day? Start on the resident path.` | the whole village |
 | Other ways to join: the gifts tile | `org.other_ways_gifts_title` | The founding team | text | `Offer your gifts` | the whole village |
@@ -4139,7 +4143,7 @@ Which roles give their holders a companion that speaks for the role. Write all f
 
 ## The founding team
 
-19 dials. 19 for the whole village.
+23 dials. 23 for the whole village.
 
 ### When a moon counts as far from what was agreed
 
@@ -4346,6 +4350,62 @@ Shown under the application's title while it is set, for example: We updated thi
 | --- | --- |
 | Key | `org.founding_updated_note` |
 | Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Lines every role card shows under what the village needs
+
+One per line, drawn as bullets above each role's own lines: where the village is, the circle every role answers to. A line written Label: words shows its label in bold. Empty, no lines.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_shared` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The sessions every role attends
+
+One per line, drawn first under Rhythm on every role card, before the role's own rhythm. Write each as Weekly: Monday team meeting, or Each moon: new moon recap and intentions, and the lines group by what comes before the colon. Empty, no lines.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_rhythm` |
+| Type | longtext, free text, several lines, shown to members as plain words |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### When a role's first review happens
+
+Read after First review on every role card, for example: at the first new moon celebration. Empty: each card says its own number of days.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_first_review` |
+| Type | text, free text, one line |
+| Default | blank |
+| Range | no bounds are set |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### The first steps once someone is selected
+
+One per line, shown in the Once you're selected tab of every role card. A role that writes its own steps shows those in their place. Empty, no tab on a card without its own.
+
+| Fact | Value |
+| --- | --- |
+| Key | `org.role_card_onboarding` |
+| Type | longtext, free text, several lines, shown to members as plain words |
 | Default | blank |
 | Range | no bounds are set |
 | Who may change it | the whole village |

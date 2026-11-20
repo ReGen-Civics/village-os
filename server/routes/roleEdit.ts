@@ -31,6 +31,8 @@
  * accept, and only SAVE writes. A file is held in memory and dropped
  * (server/routes/roleCardImport.ts `wordsOf`).
  */
+import { roleCardSharedFrom } from "../../shared/roleCardShared";
+import { registerRoleWaitlistRoutes } from "./roleWaitlist";
 import type { Express } from "express";
 import type { Pool } from "mysql2/promise";
 import type { PublishDeps } from "../lib/orgDraftDecide";
@@ -92,6 +94,8 @@ const fold = (s: string) => s.normalize("NFKC").replace(/\s+/g, " ").trim().toLo
 
 export function registerRoleEditRoutes(app: Express, g: Gate): void {
   const BASE = "/api/org/role-edit";
+  // The coming-soon waitlist (0414, shared/roleWaitlist.ts), beside the role card's own reads.
+  registerRoleWaitlistRoutes(app, g);
 
   const door = async (req: any): Promise<{ userId: string; door: PublishDoor | null } | null> => {
     const user = await g.authedUser(req);
@@ -228,6 +232,8 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
       lastEdited: await lastEditedOf(pool, role.id, { peopleShown: !!user || boolVar("org.public_people") }),
       showPayRanges: boolVar("org.show_pay_ranges"),
       villagePay: villagePay(),
+      // The words every card shares (shared/roleCardShared.ts), said once in the village's settings.
+      shared: roleCardSharedFrom((k) => stringVar(k)),
       mayEdit: editor,
     });
   });

@@ -504,6 +504,7 @@ describe.skipIf(!configured)("an erasure that stops part way", () => {
       "guest-places-after-tombstone",
       "comms",
       "needs-after-tombstone",
+      "role-waitlist-after-tombstone",
       "journal-after-tombstone",
       "invites-after-tombstone",
       "hidden-map-after-tombstone",

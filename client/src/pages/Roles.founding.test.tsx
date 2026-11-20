@@ -238,9 +238,11 @@ describe("Join the founding team", () => {
     expect(card.textContent).not.toMatch(/AI support/);
     expect(card.textContent).toContain("Heron");
     // Everything the editor holds: the words under the editor's own headings.
-    for (const h of ["Why it matters", "What I look after", "What I can decide on my own", "What you can count on me for", "What I do regularly", "Bring me", "Not mine to hold", "Holding this role well"]) {
+    // The lead, 19 Nov 2026: "What {village} needs from you", Deliverables, Rhythm, and what goes to the circle for consent.
+    for (const h of [/^What .+ needs from you$/, "What I look after", "What I can decide on my own", "What you can count on me for", "Rhythm", "Bring me", "Goes to the Anchor Circle", "Holding this role well"]) {
       expect(within(card).getByRole("heading", { name: h })).toBeTruthy();
     }
+    expect(within(card).queryByRole("heading", { name: "Why it matters" })).toBeNull();
     const pay = within(card).getByTestId("pay-shape");
     expect(within(pay).getByTestId("pay-ceiling").textContent).toBe("Listed price: $9,000 a month for the full role*");
     expect(within(pay).getByTestId("pay-split").textContent).toBe("Default split: 40% cash, 55% Contribution tokens, 5% Credits. To be decided in the onboarding process.");
@@ -270,9 +272,11 @@ describe("Join the founding team", () => {
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     fireEvent.click(within(section).getByRole("button", { name: /Lead Finance Steward/ }));
-    await waitFor(() => expect(section.textContent).toContain(RANGE_NOTE));
     // The band, one line under the listed price, with the price and the cap kept as they are.
-    const pay = within(section).getByTestId("pay-shape");
+    const pay = await within(section).findByTestId("pay-shape");
+    await within(pay).findByTestId("pay-band");
+    // Said once (the lead, 19 Nov 2026): the pay piece says it, so "What it pays" under How you're chosen does not repeat it.
+    expect(within(section).queryByTestId("public-pay")).toBeNull();
     await within(pay).findByTestId("value-callout");
     const lines = Array.from(pay.querySelectorAll("[data-testid]")).map((el) => el.getAttribute("data-testid"));
     // No cap line (lead, 17 Nov 2026): the listed price is the high end the card shows.
@@ -586,6 +590,25 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
 });
 
 describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by default, formation on request)", () => {
+  it("puts the coming-soon roles under the open roles and above the roles held now, each with its waitlist, and never in opening next (the lead, 19 Nov 2026)", async () => {
+    org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
+    org.roles.push(seat("garden", "Garden Steward", { comingSoon: true }));
+    renderRoles();
+    const section = await screen.findByRole("region", { name: "Join the founding team" });
+    const sheet = await within(section).findByTestId("team-sheet");
+    const soon = await within(sheet).findByText("Hear when a role opens");
+    const held = within(sheet).getAllByText("Holding it now")[0];
+    const firstOpen = within(sheet).getAllByText("Open role")[0];
+    // Document order: open roles, then coming soon, then held.
+    expect(firstOpen.compareDocumentPosition(soon) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(soon.compareDocumentPosition(held) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const card = document.getElementById("role-garden") as HTMLElement;
+    expect(card.textContent).toContain("This role is not open yet, and the card may change before it opens.");
+    expect(card.querySelector('[data-waitlist-open="garden"]')).toBeTruthy();
+    // Said once: not again in "More roles, opening next".
+    expect(document.querySelector('[data-opening-next] [data-role-row="garden"]')).toBeNull();
+  });
+
   it("opens on the team sheet: the open roles, then the circle's filled roles as Role (FirstName)", async () => {
     org.roles.push(seat("ops", "Human Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }] }));
     renderRoles();

@@ -23,6 +23,7 @@ import { DOUGHNUT, DOUGHNUT_VIEWBOX, TAU, outerLabelPlacement } from "@/lib/doug
 import { SNAPSHOT_METRICS, snapshotTileLabel } from "@shared/healthMetrics";
 import { Activity, CheckCircle2, Circle, Leaf, Moon, Sprout, Users } from "lucide-react";
 import { ExampleChip, ExamplesBanner } from "@/components/ExamplesBanner";
+import { BrowserCrashesCard } from "@/components/health/BrowserCrashesCard";
 
 const headers = (): Record<string, string> => {
   const t = authToken();
@@ -90,6 +91,9 @@ export default function VillageHealth() {
         <div className="container max-w-3xl space-y-6">
           {/* The doughnut: the social foundation inside, the land's ledger
               outside, the safe and just space between. */}
+          {/* Admins only: crash screens visitors saw (draws nothing for anyone else). */}
+          <BrowserCrashesCard />
+
           {data?.doughnut && <DoughnutCard doughnut={data.doughnut} />}
 
           {/* Season goals overlay */}

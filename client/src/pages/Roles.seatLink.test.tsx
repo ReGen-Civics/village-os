@@ -56,6 +56,15 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 
 import Roles from "./Roles";
 
+/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
+const powerCard = () =>
+  waitFor(() => {
+    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
+    if (!el) throw new Error("no card yet");
+    return el;
+  });
+
+
 class NoopIntersectionObserver {
   observe() {}
   unobserve() {}
@@ -169,7 +178,7 @@ describe("a link to one seat on /roles", () => {
     expect(seed.getAttribute("aria-expanded")).toBe("true");
     // Known positive for the closed state: the neighbour stays shut.
     expect((await header("Water Keeper")).getAttribute("aria-expanded")).toBe("false");
-    expect(card()?.getAttribute("aria-labelledby")).toBe(seed.id);
+    expect((await powerCard()).getAttribute("aria-labelledby")).toBe(seed.id);
 
     await waitFor(() => expect(document.activeElement).toBe(seed));
     expect(scrolled).toHaveBeenCalledTimes(1);
@@ -201,7 +210,7 @@ describe("a link to one seat on /roles", () => {
     // writes its seat, and the line goes.
     fireEvent.click(seed);
     expect(seed.getAttribute("aria-expanded")).toBe("true");
-    expect(card()).toBeTruthy();
+    expect(await powerCard()).toBeTruthy();
     expect(window.location.search).toBe("?seat=seed-keeper");
     expect(screen.queryByText(MISSING)).toBeNull();
   });

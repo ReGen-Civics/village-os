@@ -165,7 +165,7 @@ export const PARAMETER_WORDS = {
   where: `Where it is worked is one of: ${WHERE_WORKED.join(", ")}.`,
   date: "Write the date as year-month-day, like 2027-01-15.",
   days: "Write whole days, like 90.",
-  url: "The booking link is a web address that starts with https://.",
+  url: "The booking link is a web address that starts with https://, or the word whatsapp.",
   criteria: `Selection criteria: ${LIMITS_PARAMETERS.criteriaMin} to ${LIMITS_PARAMETERS.criteriaMax} lines.`,
   interviewMinutes: `Each interview is ${LIMITS_PARAMETERS.minutesMin} to ${LIMITS_PARAMETERS.minutesMax} minutes.`,
   interviewersTooMany: `At most ${LIMITS_PARAMETERS.interviewersMax} interviewers.`,
@@ -312,6 +312,8 @@ export function readParameter(key: ParameterKey, raw: unknown, isRole: (id: stri
       if (raw === null || raw === undefined || raw === "") return ok(null);
       if (typeof raw !== "string") return no(PARAMETER_WORDS.url);
       const t = raw.trim();
+      // The word "whatsapp" alone: the card says the conversation happens on WhatsApp, with no number (shared/cardBooking.ts).
+      if (t.toLowerCase() === "whatsapp") return ok("whatsapp");
       if (t.length > LIMITS_PARAMETERS.urlChars || !/^https:\/\/[^\s/$.?#][^\s]*$/i.test(t)) return no(PARAMETER_WORDS.url);
       try {
         new URL(t);
@@ -415,7 +417,7 @@ export const PARAMETER_CARD_FIELDS: readonly ParameterCardSpec[] = [
   { key: "conversations", heading: "Interviewers", list: true, oneLine: false, aliases: ["interview order"], limit: `In order, one per line: Role title | minutes | final approval (optional). Up to ${LIMITS_PARAMETERS.interviewersMax}.` },
   { key: "conversationMode", heading: "Conversations held", list: false, oneLine: true, aliases: ["conversation mode"], limit: "Block (one sitting, back to back) or separate (one at a time, on different days)." },
   { key: "accessBundle", heading: "Access bundle", list: true, oneLine: false, aliases: [], limit: `Up to ${LIMITS_PARAMETERS.bundleItems} lines: the tools and places the role is given.` },
-  { key: "bookingUrl", heading: "Booking link", list: false, oneLine: true, aliases: [], limit: "A web address that starts with https://." },
+  { key: "bookingUrl", heading: "Booking link", list: false, oneLine: true, aliases: [], limit: "A web address that starts with https://, a wa.me link, or the word whatsapp for a conversation on WhatsApp with no number shown." },
   { key: "pay", heading: "Pay on offer", list: true, oneLine: false, aliases: ["pay"], limit: "One line, like Range 1000 to 1500 USD per month, or Fixed 1200 USD per month, Honorary, In kind, Deferred, None. A Note: line may follow." },
 ];
 

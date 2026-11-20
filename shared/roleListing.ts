@@ -53,7 +53,7 @@ export type RoleVisibility = "open" | "comingSoon" | "futureVenture" | "unlisted
 
 export const COMING_SOON_WORDS = {
   badge: "Coming soon",
-  note: "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.",
+  note: "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.",
   leadBuilds: "Roles this steward will build",
   ventureBadge: "Future venture",
   ventures: "Future ventures",

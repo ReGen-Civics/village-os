@@ -3154,6 +3154,40 @@ export const VARIABLES: VariableDef[] = [
     type: "text",
     default: "",
   },
+  // Words every role card shares (the lead, Anchor session of 19 Nov 2026): said once here, drawn on each card,
+  // so no card repeats them in its own words. Empty: nothing is drawn.
+  {
+    key: "org.role_card_shared",
+    category: "The founding team",
+    label: "Lines every role card shows under what the village needs",
+    description: "One per line, drawn as bullets above each role's own lines: where the village is, the circle every role answers to. A line written Label: words shows its label in bold. Empty, no lines.",
+    type: "longtext",
+    default: "",
+  },
+  {
+    key: "org.role_card_rhythm",
+    category: "The founding team",
+    label: "The sessions every role attends",
+    description: "One per line, drawn first under Rhythm on every role card, before the role's own rhythm. Write each as Weekly: Monday team meeting, or Each moon: new moon recap and intentions, and the lines group by what comes before the colon. Empty, no lines.",
+    type: "longtext",
+    default: "",
+  },
+  {
+    key: "org.role_card_first_review",
+    category: "The founding team",
+    label: "When a role's first review happens",
+    description: "Read after First review on every role card, for example: at the first new moon celebration. Empty: each card says its own number of days.",
+    type: "text",
+    default: "",
+  },
+  {
+    key: "org.role_card_onboarding",
+    category: "The founding team",
+    label: "The first steps once someone is selected",
+    description: "One per line, shown in the Once you're selected tab of every role card. A role that writes its own steps shows those in their place. Empty, no tab on a card without its own.",
+    type: "longtext",
+    default: "",
+  },
   // "Other ways to join" on the Roles page: the resident path and the gifts tile. shared/otherWays.ts
   // holds the same keys and defaults, and shared/otherWays.test.ts holds the two equal.
   // The resident path tile goes to the way to stay close (org.stay_close_link), or /resident while that is empty.
