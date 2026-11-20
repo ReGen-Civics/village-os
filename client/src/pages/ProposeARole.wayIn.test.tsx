@@ -56,7 +56,7 @@ afterEach(() => {
 
 describe("a coming-soon role: the waitlist first, and an early application", () => {
   it("offers Apply early after the waitlist; pressing it opens the form with the lead's words and reads the kept draft back unchanged", async () => {
-    const kept = JSON.stringify({ savedAt: new Date().toISOString(), step: 1, reached: 1, knowUs: [], why: "Kept from before" });
+    const kept = JSON.stringify({ savedAt: new Date().toISOString(), step: 0, reached: 1, knowUs: [], why: "Kept from before" });
     window.localStorage.setItem(draftKey("r-gate", ""), kept);
     window.history.pushState({}, "", "/propose-a-role?role=r-gate");
     serve();

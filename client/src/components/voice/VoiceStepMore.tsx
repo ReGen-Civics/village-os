@@ -277,7 +277,7 @@ function TranscribeTake({ index, state, onChange, link }: { index: number; state
 }
 
 /** One answer's clip: the AI line before the first recording, then its words written down by themselves. */
-function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepClipProps) {
+function TranscribeClip({ field, clip, answer, setClipWords, link, aiLine = true }: VoiceStepClipProps) {
   const { t } = useLingui();
   const blob = clip?.blob;
   // The answer as it stands when the offer is pressed, never as it stood when the words came back.
@@ -304,7 +304,8 @@ function TranscribeClip({ field, clip, answer, setClipWords, link }: VoiceStepCl
     return note;
   }, "clip");
   if (!w.on) return null;
-  if (!clip) return <AutoSwitch compact />;
+  // Said once (idea 16): only the clip the page names shows the AI line and its switch.
+  if (!clip) return aiLine ? <AutoSwitch compact /> : null;
   return (
     <div className="grid gap-1" data-voice-clip-transcribe={field}>
       {w.showButton && <WriteDownButton again={!!clip.written} busy={w.busy} press={w.press} />}
@@ -328,6 +329,8 @@ export interface VoiceStepClipProps {
   /** Keep the written-down words with the clip, when it is still the same recording. */
   setClipWords: (blob: Blob, words: string) => void;
   link?: string;
+  /** Whether this clip shows the AI line and its switch before its first recording (VoiceClips.tsx `aiLineAt`). */
+  aiLine?: boolean;
 }
 
 export type VoiceStepMoreProps =

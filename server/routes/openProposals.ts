@@ -853,7 +853,9 @@ export function register(app: Express, deps: Deps): void {
     const byId = new Map(roles.map((r) => [r.id, r.name]));
     const roleNames = proposal.roles.map((r) => byId.get(r.roleId) ?? "").filter(Boolean);
     // A mail door that throws is a send that did not go: the application is kept all the same.
-    const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
+    // The days the village gives itself to first reply (org.applicant_reply_days): the letter and the "sent" page both say them (idea 18).
+    const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
+    const sent = await postEmail(confirmationEmail(letters, { id, name, email, roleNames, lang: locale, term: t.term, replyDays }, token, `open-proposal:${id}:confirm`)).catch((): PostResult => ({ status: "failed", messageId: null }));
     if (!WENT.has(sent.status)) {
       if (keepsWhenUnsent(sent)) return keepUnsent(res, { id, email, token, status: sent.status });
       // The address itself is refused (suppressed, malformed, expired): nobody can confirm it, so nothing is kept.
@@ -862,8 +864,7 @@ export function register(app: Express, deps: Deps): void {
       if (fileDir) await removeProposalFiles(fileDir, id);
       return res.status(503).json({ error: OPEN_WORDS.notSent });
     }
-    // The days the village gives itself to first reply: the "sent" page dates its next steps with it (the firefly path).
-    const replyDays = await replyDaysFor(pool, proposal.roles.map((r) => r.roleId));
+    // The same days dated the "sent" page's next steps (the firefly path).
     res.json({ sent: true, email, message: OPEN_WORDS.sent(email), replyDays, afterFounding: replyDays === null });
   }
 

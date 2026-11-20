@@ -52,8 +52,9 @@ export const GOLD_RULE = "border-t border-notice/40";
  */
 export function StepMark({ labels, now, reached, onGo }: { labels: readonly string[]; now: number; reached: number; onGo: (i: number) => void }) {
   const { t } = useLingui();
+  const count = labels.length;
   return (
-    <nav aria-label={t({ message: "The six steps of your application", context: "founding application steps" })} data-step-mark="">
+    <nav aria-label={t({ message: `The ${count} steps of your application`, context: "founding application steps" })} data-step-mark="">
       <ol className="relative grid grid-cols-6 gap-1">
         <span aria-hidden="true" className={`absolute inset-x-[8%] top-[1.375rem] ${GOLD_RULE}`} />
         {labels.map((label, i) => {
@@ -216,18 +217,8 @@ export function ValueItems({
       <p className="text-sm leading-relaxed text-muted-foreground" data-value-pay-follows="">
         {t({ message: "Goals guide the work, and pay follows what you deliver. If a month ends far from what we agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms.", context: "founding application value" })}
       </p>
-      {goals.length > 0 ? (
-        <div className={`${QUIET} grid gap-2`} data-season-goals="">
-          <p className={EYEBROW}>{t({ message: "This season's goals", context: "founding application value" })}</p>
-          <ul className="grid gap-1 text-sm text-foreground">
-            {goals.map((g) => (
-              <li key={g.id} className="break-words">
-                {g.text}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : (
+      {/* The season's goals are offered once, in each item's own choice below (idea 16): no list above it as well. */}
+      {goals.length === 0 && (
         <p className={`${QUIET} text-sm text-foreground`} data-no-season-goals="">
           {t({ message: "The village has not set its goals for this season yet. You can still apply: say in each item what it brings.", context: "founding application value" })}
         </p>
@@ -335,40 +326,28 @@ export function CompensationShape({ setup, splits = [] }: { setup: FoundingSetup
   );
 }
 
-/** Step 5's facts: what the first cycle looks like, and the first conversations once chosen. */
+/**
+ * Step 5's facts: the first conversation, the first cycle, and the village's first conversations, as one short list
+ * with no headings of their own (idea 16: the Steward path already names these steps).
+ */
 export function FirstDayFacts({ setup, firstConversation = null }: { setup: FoundingSetup; firstConversation?: string | null }) {
   const { t } = useLingui();
+  const items = [
+    // The first conversation of the role's own list (conversations[0]). Its booking link comes with the invitation and
+    // on the status page, so nobody books before we invite them (role journey L6).
+    ...(firstConversation ? [{ key: "booking", text: t({ message: `First, a conversation with ${firstConversation}. Once we invite you, you book it through the link in your invitation, or we write with times.`, context: "founding application first day" }) }] : []),
+    ...(setup.firstCycle ? [{ key: "cycle", text: setup.firstCycle }] : []),
+    ...setup.firstConversations.map((c) => ({ key: `talk:${c}`, text: c })),
+  ];
+  if (items.length === 0) return null;
   return (
-    <div className="grid gap-5">
-      {/* The first conversation of the role's own list (conversations[0]). Its booking link comes with the
-          invitation and on the status page, so nobody books before we invite them (role journey L6). */}
-      {firstConversation && (
-        <div className="grid gap-2" data-first-booking="">
-          <p className={EYEBROW}>{t({ message: "Your first conversation", context: "founding application first day" })}</p>
-          <p className="text-base leading-relaxed text-foreground">
-            {t({ message: `With ${firstConversation}. Once we invite you, you book it at a time you choose, through the booking link in your invitation, or we'll write to you with times.`, context: "founding application first day" })}
-          </p>
-        </div>
-      )}
-      {setup.firstCycle && (
-        <div className="grid gap-2" data-first-cycle="">
-          <p className={EYEBROW}>{t({ message: "Your first cycle", context: "founding application first day" })}</p>
-          <p className="whitespace-pre-line text-base leading-relaxed text-foreground">{setup.firstCycle}</p>
-        </div>
-      )}
-      {setup.firstConversations.length > 0 && (
-        <div className="grid gap-2" data-first-conversations="">
-          <p className={EYEBROW}>{t({ message: "Your first conversations", context: "founding application first day" })}</p>
-          <ul className="grid gap-2">
-            {setup.firstConversations.map((c) => (
-              <li key={c} className={`${QUIET} text-sm text-foreground`}>
-                {c}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
+    <ul className="grid gap-2" data-first-day="">
+      {items.map((x) => (
+        <li key={x.key} className={`${QUIET} whitespace-pre-line text-base leading-relaxed text-foreground`} data-first-booking={x.key === "booking" ? "" : undefined} data-first-cycle={x.key === "cycle" ? "" : undefined} data-first-conversations={x.key.startsWith("talk:") ? "" : undefined}>
+          {x.text}
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -422,8 +401,9 @@ export function OtherRole({ onChoose }: { onChoose: () => void }) {
  */
 export function StepTrail({ labels, now, reached, onGo }: { labels: readonly string[]; now: number; reached: number; onGo: (i: number) => void }) {
   const { t } = useLingui();
+  const count = labels.length;
   return (
-    <nav aria-label={t({ message: "The six steps of your application", context: "founding application steps" })} data-step-trail="">
+    <nav aria-label={t({ message: `The ${count} steps of your application`, context: "founding application steps" })} data-step-trail="">
       <ol className="grid">
         {labels.map((label, i) => {
           const here = i === now;
@@ -591,16 +571,32 @@ export function ProblemsList<P extends { field: string | null; message: string }
   );
 }
 
-/** The role beside the step on a desk: its circle, name, aim, the commitment it asks, and a check that always happens. */
-export function RoleBeside({ role, pct }: { role: { circle: string; name: string; aim: string | null; alwaysChecked?: boolean }; pct: number | null | undefined }) {
+/**
+ * The role beside the step on a desk: its circle and name, and, open on The terms (idea 16, said once), its aim, the
+ * commitment it asks and a check that always happens. On every other step they fold under "About the role".
+ */
+export function RoleBeside({ role, pct, open = true }: { role: { circle: string; name: string; aim: string | null; alwaysChecked?: boolean }; pct: number | null | undefined; open?: boolean }) {
   const { t } = useLingui();
+  const facts = (
+    <>
+      {role.aim && <p className="text-sm leading-relaxed text-muted-foreground">{role.aim}</p>}
+      {typeof pct === "number" && <p className={`${GOLD_RULE} pt-3 text-sm text-foreground`}>{t({ message: `The role asks ${pct}% of your commitment`, context: "founding application beside" })}</p>}
+      {role.alwaysChecked && <p className="text-sm text-foreground">{t({ message: "A background check happens for this role whatever the references say.", context: "open proposal role" })}</p>}
+    </>
+  );
+  const any = !!role.aim || typeof pct === "number" || !!role.alwaysChecked;
   return (
     <div className={`${CARD} grid gap-3`} data-role-beside="">
       <p className={EYEBROW}>{role.circle}</p>
       <p className="font-display text-2xl leading-tight text-card-foreground">{role.name}</p>
-      {role.aim && <p className="text-sm leading-relaxed text-muted-foreground">{role.aim}</p>}
-      {typeof pct === "number" && <p className={`${GOLD_RULE} pt-3 text-sm text-foreground`}>{t({ message: `The role asks ${pct}% of your commitment`, context: "founding application beside" })}</p>}
-      {role.alwaysChecked && <p className="text-sm text-foreground">{t({ message: "A background check happens for this role whatever the references say.", context: "open proposal role" })}</p>}
+      {open || !any ? (
+        facts
+      ) : (
+        <details data-role-beside-folded="">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-notice">{t({ message: "About the role", context: "founding application beside" })}</summary>
+          <div className="grid gap-3 pb-1">{facts}</div>
+        </details>
+      )}
     </div>
   );
 }

@@ -174,7 +174,7 @@ export function VoiceInvite({ value, onChange, drafting }: { value: VoiceState; 
         </p>
         {/* Voice is encouraged, never required (Rye, 14 Nov 2026), so a person who won't record is told so before they choose (steelman QA, 15 Nov 2026). */}
         <p className="text-sm leading-relaxed text-muted-foreground" data-voice-optional="">
-          {t({ message: "Recording is optional. Typed answers are read with the same care and count just the same.", context: "voice note" })}
+          {t({ message: "Recording is optional. Typed answers count just the same.", context: "voice note" })}
         </p>
       </div>
 

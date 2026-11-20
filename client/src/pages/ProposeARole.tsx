@@ -79,7 +79,7 @@ import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication
 import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
-import { LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
+import { APPLY_MINUTES, LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import StoneBar from "@/components/fireflyPath/StoneBar";
 import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
@@ -88,6 +88,7 @@ import { ABOUT_PANES, AboutPanes, CompensationShape, NotOpenYet, ProblemsList, R
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
 import { useApplyWords } from "@/components/fireflyPath/applyWords";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
+import { ReviewPromises } from "@/components/fireflyPath/ReviewPromises";
 import { carryAsDraft, readCarry, toCarry, writeCarry, type ApplyCarry } from "@/components/fireflyPath/applyCarry";
 import { RestoredNote } from "@/components/fireflyPath/RestoredNote";
 import { RememberOnDevice } from "@/components/fireflyPath/RememberOnDevice";
@@ -724,26 +725,23 @@ export default function ProposeARole() {
         {backDoor}
         <p className={EYEBROW}>{role.circle}</p>
         <h1 className="mt-2 break-words font-display text-4xl leading-tight text-foreground sm:text-5xl">{t({ message: `Apply: ${role.name}`, context: "founding application title" })}</h1>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          {me
-            ? t({ message: "Six steps. Your name and email come from your account.", context: "founding application lede" })
-            : t({ message: "Six steps, and no account needed.", context: "founding application lede" })}
-        </p>
+        {/* The real count, from the steps themselves, and the time (idea 7); with the notes below, said once, on the first step. */}
+        {stone === 0 && <p className="mt-4 text-base leading-relaxed text-muted-foreground" data-apply-lede="">{t({ message: `${stepCount} steps. About ${APPLY_MINUTES} minutes. You can answer by voice.`, context: "founding application lede" })} {me ? t({ message: "Your name and email come from your account.", context: "founding application lede" }) : t({ message: "No account needed.", context: "founding application lede" })}</p>}
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
             the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
         {/* Coming soon or a future venture (16 Nov 2026): its own note says the later start, so the founding-team note steps aside. */}
-        {role.comingSoon ? <p className={`mt-4 ${TILE} text-sm text-foreground`} data-early-application=""><EarlyWords /></p> : role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
+        {stone > 0 ? null : role.comingSoon ? <p className={`mt-4 ${TILE} text-sm text-foreground`} data-early-application=""><EarlyWords /></p> : role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
         {setup.updatedNote && (
           <p className="mt-2 text-sm text-foreground" data-updated-note="">
             {setup.updatedNote}
           </p>
         )}
-        <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} />
-        <LimitsAtTop className="mt-3" />
+        <RememberOnDevice on={remember} onChange={setRemember} onForgotten={() => setRestored(false)} brief={stone > 0} />
+        {stone === 0 && <LimitsAtTop className="mt-3" />}
         {restored && <RestoredNote kind={restored} />}
-        {form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
-        <button type="button" onClick={() => setTalk(true)} className="ml-4 min-h-11 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" data-start-conversation-door="">{t({ message: "Short on time? Start a conversation", context: "founding application: the short way in" })}</button>
+        {stone === 0 && form.roles.length > 1 && <OtherRole onChoose={() => choose(null)} />}
+        {stone === 0 && <button type="button" onClick={() => setTalk(true)} className="ml-4 min-h-11 text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring" data-start-conversation-door="">{t({ message: "Short on time? Start a conversation", context: "founding application: the short way in" })}</button>}
       </header>
 
       {!form.season ? (
@@ -754,7 +752,7 @@ export default function ProposeARole() {
           <aside aria-label={t({ message: "Your progress", context: "founding application, the steps beside" })} className="hidden lg:sticky lg:top-24 lg:block" data-step-trail-beside="">
             <StepTrail labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
           </aside>
-          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips} link={link || undefined}>
+          <VoiceClipsProvider voice={voice} setVoice={setVoice} limits={form.clips} link={link || undefined} aiLineAt={voice.skipped ? "why" : null}>
           <form
             ref={formRef}
             onSubmit={submit}
@@ -949,12 +947,7 @@ export default function ProposeARole() {
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />
               </div>
-              <div className="grid gap-1 text-sm text-muted-foreground">
-                <p data-after-approval="">{t({ message: "We'll write to this address with every reply. If we invite you to join, you'll get an email with a button to create your profile.", context: "founding application review" })}</p>
-                <p data-kept-for="">{t({ message: `If you don't confirm within ${OPEN_CONFIRM_HOURS} hours, we delete what you sent. If we say no, or say yes and you never make your account, we remove your name and email ${OPEN_ANONYMISE_DAYS} days later.`, context: "founding application review" })}</p>
-                {/* The same words as OPEN_AI_DRAFTS, which the confirmation email carries (Rye, 9 Nov 2026). */}
-                <p data-ai-drafts="">{t`An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing.`}</p>
-              </div>
+              <ReviewPromises />
             </section>
 
             {/* The honeypot. Named `hp` so no autofill heuristic fills it; see ReserveHome.tsx. */}
@@ -968,7 +961,7 @@ export default function ProposeARole() {
 
           {/* A desk has the width: the role stays beside the step. */}
           <aside aria-label={t({ message: "The role", context: "founding application, the role beside" })} className="hidden lg:sticky lg:top-24 lg:grid lg:gap-4">
-            <RoleBeside role={role} pct={pct} />
+            <RoleBeside role={role} pct={pct} open={stone === STONES.indexOf("terms")} />
             {/* The rewards open once, on The terms where the split is set; folded to their heading on every other step (the roles lane, 19 Nov 2026). */}
             <RewardsBeside setup={setup} splits={ownSplits} collapsed={stone !== STONES.indexOf("terms")} />
           </aside>

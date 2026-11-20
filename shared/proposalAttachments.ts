@@ -68,7 +68,7 @@ export interface ProposalFile {
 
 export const ATTACHMENT_WORDS = {
   linksHeading: "Links to your work (optional)",
-  linksNote: `Up to ${PROPOSAL_LINKS_MAX} links, each starting with https://. We never open them for you: only the people who decide your proposal see them.`,
+  linksNote: `Up to ${PROPOSAL_LINKS_MAX} links, each starting with https://. We never open them for you.`,
   filesHeading: "Files (optional)",
   filesNote: `Up to ${PROPOSAL_FILES_MAX} files: PDF, Word (.docx), PNG or JPG, ${PROPOSAL_FILE_MAX_BYTES / 1024 / 1024} MB each.`,
   /** The data promise, in one line on the form. */

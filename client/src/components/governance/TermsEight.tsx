@@ -3,8 +3,8 @@
  *
  * Term, Clocks, Rhythm, Allowance, Bonus, Goals, Scoreboard, Ending. The role card holds a
  * suggested wording per setting; the candidate marks each "I accept" or "let's talk", with an
- * optional note. A setting the role has not written reads "We'll set this together." and asks
- * for no answer. Clocks also carries the candidate's commitment: a percentage of their energy
+ * optional note. The settings the role has not written are named once, in one line ("We'll set these
+ * together: ..."; idea 16), and ask for no answer. Clocks also carries the candidate's commitment: a percentage of their energy
  * and attention, 0 to 100 in steps of ten, with no default. It is a planning signal, never hours.
  *
  * Drawn in the profile's look (docs/DESIGN_RULE.md): panels and tiles on the semantic tokens,
@@ -104,6 +104,14 @@ export default function TermsEight({
     ending: t({ message: "Ending", context: "terms setting" }),
   };
   const several = roles.length > 1;
+  /** What each role wrote for one setting, and the commitment it asks under Time. */
+  const linesOf = (k: TermKey) =>
+    roles
+      .map((r) => ({ role: r, text: r.words?.[k]?.trim() ?? "", commitment: k === "clocks" ? (r.commitmentPct ?? null) : null }))
+      .filter((l) => l.text || l.commitment !== null);
+  /** The settings nobody has written: one line, "We'll set these together: ...", where eight blocks once said it each. */
+  const together = TERM_KEYS.filter((k) => linesOf(k).length === 0);
+  const togetherNames = together.map((k) => labels[k]).join(", ");
   const setAnswer = (k: TermKey, next: { choice: "accept" | "talk"; note: string } | undefined) => {
     const answers = { ...value.answers };
     if (next) answers[k] = next;
@@ -122,10 +130,10 @@ export default function TermsEight({
           commitment beneath. The radios stay radios, each laid over its half of the control. */}
       <div className="grid" data-terms-rows="">
       {TERM_KEYS.map((k) => {
-        const lines = roles
-          .map((r) => ({ role: r, text: r.words?.[k]?.trim() ?? "", commitment: k === "clocks" ? (r.commitmentPct ?? null) : null }))
-          .filter((l) => l.text || l.commitment !== null);
+        const lines = linesOf(k);
         const written = lines.length > 0;
+        // A setting no role has written is named once, in the line under the rows (idea 16); Time keeps its row for the commitment.
+        if (!written && k !== "clocks") return null;
         const answer = value.answers[k];
         const name = `${idPrefix}-${k}`;
         const half = (choice: "accept" | "talk", words: string) => (
@@ -154,9 +162,7 @@ export default function TermsEight({
                 ))}
               </div>
             ) : (
-              <p className="text-foreground sm:col-span-2" data-set-together="">
-                {t`We'll set this together.`}
-              </p>
+              <span className="sm:col-span-2" />
             )}
             {written && (
               <div className="flex gap-1 rounded-lg border border-border p-1 sm:w-48" role="radiogroup" aria-label={labels[k]}>
@@ -187,6 +193,13 @@ export default function TermsEight({
         );
       })}
       </div>
+      {together.length > 0 && (
+        <p className="border-t border-border pt-4 text-foreground" data-set-together={together.join(" ")}>
+          {together.length === 1
+            ? t({ message: `We'll set this together: ${togetherNames}.`, context: "terms settings no role has written, in one line" })
+            : t({ message: `We'll set these together: ${togetherNames}.`, context: "terms settings no role has written, in one line" })}
+        </p>
+      )}
       {problem && (
         <p role="alert" className="text-sm font-medium text-destructive">
           {problem}

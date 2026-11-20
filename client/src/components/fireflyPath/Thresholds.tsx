@@ -150,6 +150,21 @@ function WhileYouWait() {
   );
 }
 
+/**
+ * WHEN WE REPLY (the lead, 20 Nov 2026, idea 18): "We reply within N days.", N from the village's own
+ * `org.applicant_reply_days` as the server sent it (server/lib/foundingFirst.ts replyDaysFor), never typed here.
+ * Nothing when the server sent none: a role after the founding team says its own wait.
+ */
+export function ReplyPromise({ days }: { days: number | null }) {
+  const { t } = useLingui();
+  if (!days) return null;
+  return (
+    <p className="font-semibold text-foreground" data-reply-promise={days}>
+      {days === 1 ? t({ message: "We reply within 1 day.", context: "founding application, when we reply" }) : t({ message: `We reply within ${days} days.`, context: "founding application, when we reply" })}
+    </p>
+  );
+}
+
 /** The link in the confirmation email: a threshold, where you and the village meet. */
 export function ConfirmProposal() {
   const { t } = useLingui();
@@ -212,6 +227,7 @@ export function ConfirmProposal() {
           </div>
           <ConfirmedHeading title={t({ message: "Confirmed", context: "open proposal confirm" })} />
           <p className={`${LEDE} mx-auto lg:mx-0`}>{t({ message: "Your application is with us now. We read every word, and we write to you by email.", context: "founding application confirm" })}</p>
+          <ReplyPromise days={said.replyDays ?? null} />
           <ol className="grid gap-2 text-left text-sm text-foreground" data-dated-steps="">
             {said.steps?.length
               ? said.steps.map((step) => (
@@ -280,6 +296,7 @@ function KeptThreshold({ sent, roles, onAnother }: { sent: SentNote; roles: Comp
           </div>
           <ConfirmedHeading title={t({ message: "We have your application", context: "open proposal kept" })} />
           <p className={LEDE}>{sent.message}</p>
+          <ReplyPromise days={sent.replyDays} />
           <LazyStateNote role={sent} />
           {sent.statusPath && (
             <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 flex flex-wrap items-center gap-3 lg:static">
@@ -331,6 +348,7 @@ function CheckEmailThreshold({ sent, roles, onFixAddress, onAnother }: { sent: S
           </div>
           <ConfirmedHeading title={t({ message: "Check your email", context: "open proposal sent" })} />
           <p className={LEDE}>{sent.message}</p>
+          <ReplyPromise days={sent.replyDays} />
           <LazyStateNote role={sent} />
           {sent.afterFounding && !sent.comingSoon && !sent.futureVenture && (
             <p className="text-sm text-foreground" data-after-founding="">

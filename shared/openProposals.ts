@@ -563,7 +563,11 @@ export function stepsAsLines(steps: readonly StepAfterSubmit[]): string {
  * The email that asks the address to confirm. Nothing else reaches anybody until it is answered. `when` is already in the reader's language.
  * `kind: "application"` (the form for a listed role) says application; a proposal for a new role keeps its own words.
  */
-export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean }): { subject: string; text: string } {
+/**
+ * `replyDays` (the lead, 20 Nov 2026, idea 18): when given, the letter says when we reply, from the village's own
+ * `org.applicant_reply_days` (null: the founding team comes first, said in words). Never a typed number.
+ */
+export function confirmLetter(i: { firstName: string | null; village: string; roleNames: readonly string[]; link: string; when?: string; lang?: ApplicantLanguage; kind?: "application" | "proposal"; kept?: boolean; replyDays?: number | null }): { subject: string; text: string } {
   const w = wordsIn(i.lang);
   const a = i.kind === "application" ? APPLY_EMAIL_WORDS[isApplicantLanguage(i.lang) ? i.lang : "en"] : null;
   const roles = w.list(i.roleNames) || w.aRole;
@@ -579,6 +583,7 @@ export function confirmLetter(i: { firstName: string | null; village: string; ro
       "",
       a && i.kept ? a.keptValidFor(OPEN_CONFIRM_HOURS) : w.confirm.validFor(OPEN_CONFIRM_HOURS),
       "",
+      ...(i.replyDays !== undefined ? [w.replyPromise(i.replyDays), ""] : []),
       w.confirm.aiDrafts,
       "",
     ].join("\n"),

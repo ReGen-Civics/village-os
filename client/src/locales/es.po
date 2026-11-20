@@ -24406,3 +24406,134 @@ msgstr "Empezó como una conversación: invítale a la propuesta completa desde 
 msgctxt "start a conversation: the link placeholder"
 msgid "https://"
 msgstr "https://"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application lede"
+msgid "{stepCount} steps. About {APPLY_MINUTES} minutes. You can answer by voice."
+msgstr "{stepCount} pasos. Unos {APPLY_MINUTES} minutos. Puedes responder con la voz."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application lede"
+msgid "Your name and email come from your account."
+msgstr "Tu nombre y tu correo vienen de tu cuenta."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application lede"
+msgid "No account needed."
+msgstr "No necesitas una cuenta."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application steps"
+msgid "The {count} steps of your application"
+msgstr "Los {count} pasos de tu postulación"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application beside"
+msgid "About the role"
+msgstr "Sobre el rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms settings no role has written, in one line"
+msgid "We'll set this together: {togetherNames}."
+msgstr "Lo definiremos juntos: {togetherNames}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/governance/TermsEight.tsx
+msgctxt "terms settings no role has written, in one line"
+msgid "We'll set these together: {togetherNames}."
+msgstr "Los definiremos juntos: {togetherNames}."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application first day"
+msgid "First, a conversation with {firstConversation}. Once we invite you, you book it through the link in your invitation, or we write with times."
+msgstr "Primero, una conversación con {firstConversation}. Cuando te invitemos, la reservas con el enlace de tu invitación, o te escribimos con horarios."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ReviewPromises.tsx
+msgctxt "founding application review, in short"
+msgid "We write to this address with every reply."
+msgstr "Te escribimos a esta dirección con cada respuesta."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ReviewPromises.tsx
+msgctxt "founding application review, in short"
+msgid "If you don't confirm within {OPEN_CONFIRM_HOURS} hours, we delete what you sent."
+msgstr "Si no confirmas en {OPEN_CONFIRM_HOURS} horas, borramos lo que enviaste."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ReviewPromises.tsx
+msgctxt "founding application review, in short"
+msgid "After a no, or a yes with no account made, your name and email go after {OPEN_ANONYMISE_DAYS} days."
+msgstr "Tras un no, o un sí sin cuenta creada, tu nombre y tu correo se borran a los {OPEN_ANONYMISE_DAYS} días."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ReviewPromises.tsx
+msgctxt "founding application review, the full wording"
+msgid "More"
+msgstr "Más"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "founding application, when we reply"
+msgid "We reply within 1 day."
+msgstr "Respondemos en un plazo de 1 día."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "founding application, when we reply"
+msgid "We reply within {days} days."
+msgstr "Respondemos en un plazo de {days} días."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application intro"
+msgid "Before you apply, come and meet us."
+msgstr "Antes de postularte, ven a conocernos."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application intro"
+msgid "The value you would bring in your first months, item by item."
+msgstr "El valor que aportarías en tus primeros meses, punto por punto."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application intro"
+msgid "A starting point we agree together."
+msgstr "Un punto de partida que acordamos juntos."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/voice/VoiceInvite.tsx
+msgctxt "voice note"
+msgid "Recording is optional. Typed answers count just the same."
+msgstr "Grabar es opcional. Las respuestas escritas cuentan igual."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "voice invite"
+msgid "If you like, talk to us for a few minutes: who you are, why this role, and what you would bring. We turn what you say into answers you can edit."
+msgstr "Si quieres, háblanos unos minutos: quién eres, por qué este rol y qué aportarías. Convertimos lo que dices en respuestas que puedes editar."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgid "Up to {PROPOSAL_LINKS_MAX} links, each starting with https://. We never open them for you."
+msgstr "Hasta {PROPOSAL_LINKS_MAX} enlaces, cada uno empezando por https://. Nunca los abrimos por ti."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "Up to {max} roles in one application, in any circle, each with its own commitment, price and agreement. The prices add up: two roles at 50% are rewarded like one whole role."
+msgstr "Hasta {max} roles en una postulación, en cualquier círculo, cada uno con su propio compromiso, precio y acuerdo. Los precios se suman: dos roles al 50% se recompensan como un rol completo."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/RoleDraft.tsx
+msgctxt "role draft steps"
+msgid "Your progress through the {0} steps"
+msgstr "Tu avance en los {0} pasos"
