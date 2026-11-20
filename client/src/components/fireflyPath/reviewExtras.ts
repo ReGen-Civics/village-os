@@ -92,3 +92,21 @@ export function reviewExtras(
   }
   return out;
 }
+
+/**
+ * THE RECORDINGS ON REVIEW (applicant QA, 20 Nov 2026): recordings left without their tick were dropped at Send with
+ * nothing said on Review & submit, so minutes of talking went unsent. The line says whether they go, and its Change
+ * leads back to the tick on About you. Nothing is ticked for them. No recordings: no line.
+ */
+export function recordingsReview(i18n: I18n, v: { step: number; recordings: number; consent: boolean }): ReviewExtra[] {
+  const n = v.recordings;
+  if (n <= 0) return [];
+  const line = v.consent
+    ? n === 1
+      ? i18n._(msg({ message: "1 recording, sent with your application", context: "founding application review" }))
+      : i18n._(msg({ message: `${n} recordings, sent with your application`, context: "founding application review" }))
+    : n === 1
+      ? i18n._(msg({ message: "1 recording, not sent. Tick the box under it to send it.", context: "founding application review" }))
+      : i18n._(msg({ message: `${n} recordings, not sent. Tick the box under them to send them.`, context: "founding application review" }));
+  return [{ step: v.step, label: i18n._(msg({ message: "Your recordings", context: "founding application review" })), line }];
+}

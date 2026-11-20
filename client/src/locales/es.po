@@ -66,6 +66,48 @@ msgid "Currency"
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "Your recordings"
+msgstr "Tus grabaciones"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, sent with your application"
+msgstr "1 grabación, enviada con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, sent with your application"
+msgstr "{n} grabaciones, enviadas con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, not sent. Tick the box under it to send it."
+msgstr "1 grabación, sin enviar. Marca la casilla debajo para enviarla."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, not sent. Tick the box under them to send them."
+msgstr "{n} grabaciones, sin enviar. Marca la casilla debajo para enviarlas."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments: a file over the size limit"
+msgid "Too big"
+msgstr "Demasiado grande"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: a coming-soon role"
+msgid "Not open yet. Choosing it makes this an early application."
+msgstr "Aún no está abierto. Elegirlo hace de esta una solicitud temprana."
+
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application, a coming-soon role"
 msgid "Join its waitlist to hear when it opens."
@@ -18469,10 +18511,11 @@ msgctxt "role listing panel heading"
 msgid "Listed roles"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
-msgid "Without the tick, your recordings stay on this device and are not sent."
-msgstr "Sin la marca, tus grabaciones se quedan en este dispositivo y no se envían."
+msgid "Without the tick, your recordings are not sent. They stay on this page until you close it."
+msgstr "Sin la marca, tus grabaciones no se envían. Se quedan en esta página hasta que la cierres."
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook block page, lines for the group's answer"

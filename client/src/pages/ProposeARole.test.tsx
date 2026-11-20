@@ -910,6 +910,10 @@ describe("what the form kept from the Firefly Path", () => {
     sendNow();
     expect((await screen.findByRole("alert")).textContent).toContain(OPEN_WORDS.tooMany);
     expect(stoneNow()).toBe("review");
+    // It names no answer, so it is words, never a link that leads nowhere (applicant QA, 20 Nov 2026).
+    const list = document.querySelector("[data-problems]") as HTMLElement;
+    expect(list.querySelector("[data-problem-plain]")?.textContent).toBe(OPEN_WORDS.tooMany);
+    expect(list.querySelector("li button")).toBeNull();
     expect((screen.getByLabelText(OPEN_WORDS.nameLabel) as HTMLInputElement).value).toBe("Rowan");
   });
 

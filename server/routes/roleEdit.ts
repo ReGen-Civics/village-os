@@ -63,6 +63,7 @@ import {
 import { canonicalJson } from "../../shared/canonicalJson";
 import type { PaySettings } from "../../shared/seatSettings";
 import crypto from "node:crypto";
+import { callerIp } from "../lib/clientIp";
 import { boolVar, stringVar } from "../lib/variables";
 import { villageCircles } from "../repos/roleProposals";
 import { isShown } from "../../shared/roleListing";
@@ -157,7 +158,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
   };
 
   app.get("/api/org/founding-team", async (req, res) => {
-    const key = (await g.authedUser(req))?.id ?? req.ip ?? "anon";
+    const key = (await g.authedUser(req))?.id ?? callerIp(req);
     if (await g.overLimit(`founding-team:${String(key)}`, READS, WINDOW_MS)) return res.status(429).json({ error: "too_many_asks" });
     const on = boolVar("org.founding_team");
     const roles = on ? await listOrgRoles(g.getPool()) : [];
@@ -208,7 +209,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
 
   app.get("/api/org/role-card/:id", async (req, res) => {
     const user = await g.authedUser(req);
-    const key = user?.id ?? req.ip ?? "anon";
+    const key = user?.id ?? callerIp(req);
     if (await g.overLimit(`role-card:${String(key)}`, READS, WINDOW_MS)) return res.status(429).json({ error: "too_many_asks" });
     const roles = await listOrgRoles(g.getPool());
     const role = roles.find((r) => r.id === String(req.params.id ?? ""));
@@ -240,7 +241,7 @@ export function registerRoleEditRoutes(app: Express, g: Gate): void {
 
   app.get(`${BASE}/access`, async (req, res) => {
     // Read by every card to decide whether to draw a button, so anybody may ask; the answer names no one.
-    const key = (await g.authedUser(req))?.id ?? req.ip ?? "anon";
+    const key = (await g.authedUser(req))?.id ?? callerIp(req);
     if (await g.overLimit(`role-edit-access:${String(key)}`, READS, WINDOW_MS)) return res.status(429).json({ error: "too_many_asks" });
     const who = await door(req);
     res.set("Cache-Control", "no-store").json({ door: who?.door ?? null });

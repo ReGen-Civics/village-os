@@ -15,6 +15,7 @@ import type { Pool } from "mysql2/promise";
 import { readWaitlistSignUp, WAITLIST_LIMITS, type WaitlistRow } from "../../shared/roleWaitlist";
 import { addWaitlistSignUp, listWaitlist, removeWaitlistRow } from "../repos/roleWaitlist";
 import { listOrgRoles } from "../lib/orgChart";
+import { callerIp } from "../lib/clientIp";
 
 export interface WaitlistGate {
   authedUser(req: any): Promise<any | null>;
@@ -26,7 +27,7 @@ export interface WaitlistGate {
 export function registerRoleWaitlistRoutes(app: Express, g: WaitlistGate): void {
   app.post("/api/roles/waitlist", async (req, res) => {
     res.set("Cache-Control", "no-store");
-    if (await g.overLimit(`role-waitlist:${String(req.ip ?? "anon")}`, WAITLIST_LIMITS.perWindow, WAITLIST_LIMITS.windowMs)) return res.status(429).json({ error: "too_many_asks" });
+    if (await g.overLimit(`role-waitlist:${callerIp(req)}`, WAITLIST_LIMITS.perWindow, WAITLIST_LIMITS.windowMs)) return res.status(429).json({ error: "too_many_asks" });
     const roles = await listOrgRoles(g.getPool());
     const soon = new Set(roles.filter((r) => r.active !== false && !r.isExample && r.comingSoon === true && r.futureVenture !== true).map((r) => r.id));
     const read = readWaitlistSignUp(req.body, (id) => soon.has(id));

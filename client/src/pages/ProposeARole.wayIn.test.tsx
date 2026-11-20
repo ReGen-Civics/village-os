@@ -117,6 +117,23 @@ describe("start a conversation (idea 14)", () => {
     expect(posted[0].body.card).toBeUndefined();
   });
 
+  it("says a problem under the field it names, where focus goes, and marks a role not open yet (applicant QA, 20 Nov 2026)", async () => {
+    window.history.pushState({}, "", "/propose-a-role?role=r-host&way=talk");
+    serve();
+    render(<ProposeARole />);
+    await screen.findByRole("heading", { level: 1, name: "Start a conversation" });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+    const name = screen.getByLabelText("Your name");
+    const line = document.querySelector('[data-talk-problem="name"]') as HTMLElement;
+    expect(document.activeElement).toBe(name);
+    // Beside the box, under its label: the box's own parent holds the line.
+    expect(name.parentElement!.contains(line)).toBe(true);
+    expect(name.getAttribute("aria-describedby")).toBe(line.id);
+    // The coming-soon role is offered, and said to be not open yet; an open one is not marked (control).
+    expect(document.querySelector('[data-talk-role-soon="r-gate"]')?.textContent).toBe("Not open yet. Choosing it makes this an early application.");
+    expect(document.querySelector('[data-talk-role-soon="r-host"]')).toBeNull();
+  });
+
   it("the apply form offers the short way, and the short way leads back to the full form", async () => {
     window.history.pushState({}, "", "/propose-a-role?role=r-host");
     serve();

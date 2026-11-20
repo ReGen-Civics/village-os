@@ -564,9 +564,15 @@ export function ProblemsList<P extends { field: string | null; message: string }
           const where = labels[stoneOfField(p.field)];
           return (
             <li key={`${p.field}-${i}`}>
+              {/* A refusal that names no answer (a busy connection, the hour's limit) is said as words, never as a link
+                  that leads nowhere (applicant QA, 20 Nov 2026). */}
+              {!p.field ? (
+                <span className="block py-2" data-problem-plain="">{applyWordT(p.message)}</span>
+              ) : (
               <button type="button" onClick={() => onShow(p)} className="min-h-11 text-left underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring">
                 {stoneOfField(p.field) !== stone ? `${where}: ${applyWordT(p.message)}` : applyWordT(p.message)}
               </button>
+              )}
             </li>
           );
         })}
