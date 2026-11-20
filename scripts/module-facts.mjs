@@ -136,7 +136,7 @@ function unionStrings(sourceFile, aliasName) {
 
 /**
  * Every job's steps in one workflow, as (name, command) pairs. In ci.yml that is
- * `verify`, the `test` shards and `tests-ran-once` together, so a step two jobs
+ * `verify`, the `test` shards, `tests-ran-once` and `browser-smoke` together, so a step jobs
  * share (Install, Build) is listed once per job.
  *
  * Deliberately a targeted line scan and not a YAML dependency: this repository
