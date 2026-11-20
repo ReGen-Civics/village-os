@@ -101,3 +101,46 @@ export function splitGates<T extends Deliverable & { role?: string }>(rows: read
   const isGate = (r: T) => !!r.milestone && !!r.role && (roles.get(key(r))?.size ?? 0) >= 2;
   return { rows: rows.filter((r) => !isGate(r)), gates: rows.filter(isGate) };
 }
+
+/** A label placed above the timeline's track, in pixels from the track's left edge. */
+export interface PlacedLabel {
+  /** The label box's left edge and width; the width is cut to the room there is, and the label truncates. */
+  left: number;
+  width: number;
+  /** Which side of its line the label sits: after it ("start"), or before it when it would run off the end. */
+  side: "start" | "end";
+  /** The row it sits on, from 0 at the top. */
+  row: number;
+}
+
+/**
+ * THE TIMELINE'S LABELS, KEPT APART AND INSIDE THE CHART (screenshot check of 1.3.38): each label starts at its line
+ * and reads to the right, or ends at its line when it would run past the chart's right edge, and a label with no
+ * room either way is cut to the wider side (the full name stays in the gate list under the chart). Labels that
+ * would touch go down a row, so no two overlap. `at` is a fraction of the track, `width` the label's own width.
+ */
+export function placeLabels(items: ReadonlyArray<{ at: number; width: number }>, track: number, gap = 8): { labels: PlacedLabel[]; rows: number } {
+  const rows: Array<Array<[number, number]>> = [];
+  const labels = items.map(({ at, width }) => {
+    const x = Math.min(track, Math.max(0, at * track));
+    let w = Math.max(0, Math.min(width, track));
+    let side: PlacedLabel["side"] = "start";
+    if (x + w > track) {
+      if (x - w >= 0) side = "end";
+      else if (track - x >= x) w = track - x;
+      else {
+        side = "end";
+        w = x;
+      }
+    }
+    const left = side === "start" ? x : x - w;
+    let row = rows.findIndex((r) => r.every(([a, b]) => left >= b + gap || left + w + gap <= a));
+    if (row < 0) {
+      row = rows.length;
+      rows.push([]);
+    }
+    rows[row].push([left, left + w]);
+    return { left, width: w, side, row };
+  });
+  return { labels, rows: rows.length };
+}

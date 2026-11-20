@@ -21,6 +21,9 @@
  *
  * A LINK TO A PIECE OPENS ITS TAB: `#rewards` or `#piece-rewards` (a piece's key) and `#you` (a tab's key) open
  * the tab that holds it, on arrival and when the hash changes, and bring that piece's heading into view.
+ *
+ * THE RAIL SAYS IT SCROLLS (screenshot check of 1.3.38): on a phone only two or three of the five tabs fit, so the
+ * rail fades at whichever edge has more tabs past it, with a chevron, and the fade goes once the rail reaches that end.
  */
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { ChevronLeft, ChevronRight, Rows3, type LucideIcon } from "lucide-react";
@@ -82,6 +85,12 @@ export function tabForHash(groups: readonly Group[], hash: string): number {
 
 const hashNow = () => (typeof window === "undefined" ? "" : window.location.hash);
 
+/** Which ends of a sideways rail have more past them: a pixel of slack for a rail scrolled by fractions. */
+export function railEdges(scrollLeft: number, clientWidth: number, scrollWidth: number): { before: boolean; after: boolean } {
+  if (scrollWidth <= clientWidth + 1) return { before: false, after: false };
+  return { before: scrollLeft > 1, after: scrollLeft + clientWidth < scrollWidth - 1 };
+}
+
 export default function RolePieces({ pieces, tabs, level, after, marks, initial = 0, initialAll = false }: { pieces: RolePiece[]; tabs?: readonly PieceTab[]; level: Level; after?: (key: string) => ReactNode; marks?: (key: string) => number; initial?: number; initialAll?: boolean }) {
   const { t } = useLingui();
   const base = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -99,6 +108,7 @@ export default function RolePieces({ pieces, tabs, level, after, marks, initial 
   const target = useRef<string | null>(linked >= 0 ? hashNow().replace(/^#(piece-)?/, "") : null);
   const headings = useRef<Record<string, HTMLElement | null>>({});
   const rail = useRef<HTMLUListElement | null>(null);
+  const [edges, setEdges] = useState({ before: false, after: false });
   const H = HEADING[level];
 
   useEffect(() => {
@@ -152,6 +162,24 @@ export default function RolePieces({ pieces, tabs, level, after, marks, initial 
     ul.scrollLeft = here.offsetLeft - (ul.clientWidth - here.offsetWidth) / 2;
   }, [at, all]);
 
+  // The fades follow the rail: on scroll, and when the card's width changes.
+  useEffect(() => {
+    const ul = rail.current;
+    if (!ul) return;
+    const read = () => {
+      const e = railEdges(ul.scrollLeft, ul.clientWidth, ul.scrollWidth);
+      setEdges((o) => (o.before === e.before && o.after === e.after ? o : e));
+    };
+    read();
+    ul.addEventListener("scroll", read, { passive: true });
+    const ro = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(read);
+    ro?.observe(ul);
+    return () => {
+      ul.removeEventListener("scroll", read);
+      ro?.disconnect();
+    };
+  }, [all, shape]);
+
   if (groups.length === 0) return null;
   const i = Math.min(at, groups.length - 1);
   const go = (n: number) => {
@@ -180,7 +208,7 @@ export default function RolePieces({ pieces, tabs, level, after, marks, initial 
           From sm up it wraps as it always did. The DOM order is the same at every width, so the tab order is too. */}
       <div className="flex items-center gap-2 max-sm:sticky max-sm:top-24 max-sm:z-10 max-sm:-mx-5 max-sm:border-b max-sm:border-border max-sm:bg-card max-sm:px-5 max-sm:py-2 sm:flex-wrap" data-piece-rail="">
         {!all && (
-          <nav aria-label={t({ message: "Pieces of this role", context: "role card piece rail" })} className="min-w-0 flex-1 sm:contents">
+          <nav aria-label={t({ message: "Pieces of this role", context: "role card piece rail" })} className="relative min-w-0 flex-1 sm:contents">
             <ul ref={rail} className="relative flex gap-1.5 overflow-x-auto overscroll-x-contain sm:flex-wrap sm:overflow-visible" data-piece-scroll="">
               {groups.map((g, k) => {
                 const Icon = g.icon;
@@ -209,6 +237,16 @@ export default function RolePieces({ pieces, tabs, level, after, marks, initial 
                 );
               })}
             </ul>
+            {edges.before && (
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex w-10 items-center justify-start bg-gradient-to-r from-card to-transparent text-muted-foreground sm:hidden" aria-hidden="true" data-rail-fade="before">
+                <ChevronLeft className="size-4" />
+              </span>
+            )}
+            {edges.after && (
+              <span className="pointer-events-none absolute inset-y-0 right-0 flex w-10 items-center justify-end bg-gradient-to-l from-card to-transparent text-muted-foreground sm:hidden" aria-hidden="true" data-rail-fade="after">
+                <ChevronRight className="size-4" />
+              </span>
+            )}
           </nav>
         )}
         <button

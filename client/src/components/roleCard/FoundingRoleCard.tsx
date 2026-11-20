@@ -23,7 +23,7 @@ import { splitDomain, splitLine } from "@shared/rolePieces";
 import { paidRoleLine, trackWords } from "./cardWordsT";
 import { EYEBROW, HINT } from "@/components/journey/look";
 import ArtImage from "@/components/roleDraft/ArtImage";
-import RoleCardParams from "@/components/power/RoleCardParams";
+import RoleCardParams, { roleCardParamsShown } from "@/components/power/RoleCardParams";
 import RootsSlot from "./RootsSlot";
 import RolePieces, { type PieceTab, type RolePiece } from "./RolePieces";
 import { NO_SHARED, onboardingFor, type RoleCardShared } from "@shared/roleCardShared";
@@ -336,13 +336,21 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
     });
   }
   if (p.pay) pieces.push({ key: "rewards", tab: t({ message: "Rewards", context: "founding card piece, short" }), icon: Coins, title: SECTION_WORDS.payShape, body: p.pay });
+  // Never an empty panel (screenshot check of 1.3.38): a role with no steps or goals written says so in one line.
+  const chosenShown = roleCardParamsShown(chosenSeat);
   pieces.push({
     key: "chosen",
     tab: t({ message: "How you're chosen", context: "founding card piece, short" }),
     icon: Sprout,
     title: t({ message: "How you're chosen", context: "founding card piece heading" }),
-    sub: t({ message: "The goals it moves and the conversations on the way in", context: "founding card piece, under the heading" }),
-    body: <RoleCardParams seat={chosenSeat} />,
+    sub: chosenShown ? t({ message: "The goals it moves and the conversations on the way in", context: "founding card piece, under the heading" }) : undefined,
+    body: chosenShown ? (
+      <RoleCardParams seat={chosenSeat} />
+    ) : (
+      <p className="leading-relaxed text-card-foreground" data-testid="chosen-empty">
+        {t({ message: "The steps in are shared in the first conversation.", context: "founding card: how you're chosen, when the role names no steps yet" })}
+      </p>
+    ),
   });
   // What the role proposes and its circle consents to (the lead, 19 Nov 2026), named by the circle.
   const goesToHeading = p.circleName

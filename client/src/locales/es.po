@@ -24939,3 +24939,9 @@ msgstr "Hasta {max} roles en una postulación, en cualquier círculo, cada uno c
 msgctxt "role draft steps"
 msgid "Your progress through the {0} steps"
 msgstr "Tu avance en los {0} pasos"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card: how you're chosen, when the role names no steps yet"
+msgid "The steps in are shared in the first conversation."
+msgstr "Los pasos para entrar se comparten en la primera conversación."

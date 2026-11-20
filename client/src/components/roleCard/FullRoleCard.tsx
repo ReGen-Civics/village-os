@@ -30,7 +30,7 @@
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
-import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -55,6 +55,7 @@ import EditRoleButton from "@/components/roleEdit/EditRoleButton";
 import FoundingRoleCard from "./FoundingRoleCard";
 import RootsSlot from "./RootsSlot";
 import { useWide } from "./useWide";
+import { useApplyBarStuck } from "./useApplyBarStuck";
 import { readRoleCard, type RoleCardAnswer } from "./roleCardApi";
 import { overlaySeat, overlaySections } from "@shared/contentTranslationOverlay";
 import { useLocale } from "@/i18n/LocaleProvider";
@@ -260,6 +261,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const [waitOpen, setWaitOpen] = useState(false);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
+  const barRef = useRef<HTMLDivElement | null>(null);
 
   // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
@@ -441,10 +443,15 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // bar while the card is read. It is the card's last child, so it is reached last by the keyboard, after everything it
   // sits over, and its own slot at the end of the card means the last lines scroll clear of it. On a desktop the act
   // sits in the summary (founding) or the side column (directory).
+  // Opaque, and riding the screen only once the goal line is clear above it (screenshot check of 1.3.38,
+  // useApplyBarStuck.ts): before that it waits in its slot at the card's end, so the first screen shows the goal whole.
+  const barStuck = useApplyBarStuck(barRef, !wide && !!act);
   const phoneBar = !wide && act && (
     <div
-      className={`sticky bottom-[var(--tabbar-h,0px)] z-20 border-t border-notice/40 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/85 ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
+      ref={barRef}
+      className={`${barStuck ? "sticky bottom-[var(--tabbar-h,0px)] z-20" : "relative"} border-t border-notice/40 bg-card ${founding ? "px-5 py-3" : "-mx-4 mt-6 px-4 py-3 sm:-mx-6 sm:px-6"}`}
       data-phone-apply-bar=""
+      data-stuck={barStuck ? "" : undefined}
     >
       {act}
     </div>
