@@ -11,7 +11,9 @@ import {
   CLIPS_CEILING,
   FILE_MAX_BYTES,
   FILES_MAX,
-  OPEN_UPLOAD_BYTES_IN_FLIGHT,
+  CLIPS_DEFAULT,
+  HOST_BODY_UPLOAD_MS,
+  OPEN_UPLOAD_DISK_RESERVE_BYTES,
   PROVIDER_UPLOAD_MAX_BYTES,
   RECORDING_BYTES_PER_SECOND,
   SPEECH_CHARS_PER_MINUTE,
@@ -84,11 +86,31 @@ describe("the upload's sizes", () => {
   });
 
   it("the whole post holds every part at its cap, for the village's clip count, and the server can read the largest", () => {
-    for (const clips of [0, 12, CLIPS_CEILING]) {
+    for (const clips of [0, CLIPS_DEFAULT, CLIPS_CEILING]) {
       expect(uploadTotalMax(clips)).toBe(FILES_MAX * FILE_MAX_BYTES + TAKES_MAX * TAKE_MAX_BYTES + clips * CLIP_MAX_BYTES + UPLOAD_ENVELOPE_BYTES);
     }
     expect(uploadTotalMax(999)).toBe(uploadTotalMax(CLIPS_CEILING));
-    expect(uploadTotalMax(CLIPS_CEILING)).toBeLessThanOrEqual(OPEN_UPLOAD_BYTES_IN_FLIGHT);
+    // On disk, never in memory: the reserve kept free on the volume is a figure of its own, not a sum of posts.
+    expect(OPEN_UPLOAD_DISK_RESERVE_BYTES).toBeGreaterThan(0);
+  });
+
+  it("the counts doubled (the lead, 19 Nov 2026): six files, six takes, 24 clips by default and 48 at the ceiling", () => {
+    expect([FILES_MAX, TAKES_MAX, CLIPS_DEFAULT, CLIPS_CEILING]).toEqual([6, 6, 24, 48]);
+  });
+
+  it("the village's clip setting defaults to the platform's default and stops at its ceiling", async () => {
+    const { VARIABLES_BY_KEY } = await import("./gameVariables");
+    const clips = VARIABLES_BY_KEY["org.voice_clips_max"];
+    expect(clips.default).toBe(String(CLIPS_DEFAULT));
+    expect(clips.max).toBe(CLIPS_CEILING);
+  });
+
+  it("every part, sent on its own, arrives inside the host's five minutes on a 1 Mbit/s line", () => {
+    const seconds = (bytes: number) => (bytes * 8) / 1_000_000;
+    expect(HOST_BODY_UPLOAD_MS).toBe(5 * 60_000);
+    for (const part of [FILE_MAX_BYTES, TAKE_MAX_BYTES, CLIP_MAX_BYTES]) expect(seconds(part + 64 * 1024) * 1000).toBeLessThan(HOST_BODY_UPLOAD_MS);
+    // The whole application in one request could never arrive inside it there, which is why the form sends parts.
+    expect(seconds(uploadTotalMax(CLIPS_DEFAULT)) * 1000).toBeGreaterThan(HOST_BODY_UPLOAD_MS);
   });
 });
 

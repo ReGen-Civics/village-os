@@ -193,8 +193,12 @@ export async function transcriptionSettings(pool: Pool, env: NodeJS.ProcessEnv =
 
 /* ── One recording, written down ────────────────────────────────────────── */
 
-export interface TranscribeInput {
-  bytes: Buffer;
+/**
+ * One recording: its bytes in memory (a stored note read back), or the file an upload streamed it into
+ * (server/lib/uploadDisk.ts, 19 Nov 2026). This server's own Whisper reads the file where it lies; a provider's
+ * request reads it at the moment of the call (the pinned dialer sends a byte body), for that call only.
+ */
+export type TranscribeInput = ({ bytes: Buffer; path?: undefined } | { path: string; bytes?: undefined }) & {
   kind: VoiceNoteKind;
   /** The page's language, "es-CR" or "en": only its first part is used. */
   lang?: string;
@@ -251,10 +255,11 @@ export async function transcribeWithHttp(input: TranscribeInput, provider: { def
   const doFetch: TranscribeFetch = fetchImpl ?? ((url, init) => guardedFetch(url, init as RequestInit));
   const hint = provider.def.sendsLanguage ? languageHint(input.lang) : null;
   const fields: Record<string, string> = { model: provider.def.model, ...(provider.def.id === "groq" ? { response_format: "json" } : {}), ...(hint ? { language: hint } : {}) };
-  const { body, contentType } = multipartBody(fields, { name: `take.${input.kind}`, type: VOICE_NOTE_TYPES[input.kind], bytes: input.bytes });
   const timeout = AbortSignal.timeout(TRANSCRIBE_TIMEOUT_MS);
   const signal = input.signal ? AbortSignal.any([timeout, input.signal]) : timeout;
   try {
+    const bytes = input.bytes ?? (await fs.promises.readFile(input.path));
+    const { body, contentType } = multipartBody(fields, { name: `take.${input.kind}`, type: VOICE_NOTE_TYPES[input.kind], bytes });
     const res = await doFetch(provider.def.url, {
       method: "POST",
       headers: { Authorization: `Bearer ${provider.key}`, "Content-Type": contentType, Accept: "application/json" },
@@ -375,7 +380,8 @@ export async function transcribeLocally(input: TranscribeInput, local: LocalWhis
     const source = path.join(scratch, `in.${input.kind}`);
     const wav = path.join(scratch, "in.wav");
     const out = path.join(scratch, "out");
-    await fs.promises.writeFile(source, input.bytes);
+    if (input.bytes) await fs.promises.writeFile(source, input.bytes);
+    else await fs.promises.copyFile(input.path, source);
     const started = Date.now();
     const decoded = await run(
       ffmpegBinary(),

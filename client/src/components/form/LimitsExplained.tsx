@@ -10,7 +10,7 @@
  * Every number comes from shared/applyLimits.ts, so the words can never say one limit while the form holds another.
  */
 import { useLingui } from "@lingui/react/macro";
-import { APPLY_TEXT, FILE_MAX_BYTES, TAKE_MAX_BYTES, TAKE_MAX_SECONDS, VOICE_BOX_FLOOR, halfMinutes, minutesOfTalk } from "@shared/applyLimits";
+import { APPLY_TEXT, FILE_MAX_BYTES, FILES_MAX, TAKE_MAX_BYTES, TAKE_MAX_SECONDS, TAKES_MAX, VOICE_BOX_FLOOR, halfMinutes, minutesOfTalk } from "@shared/applyLimits";
 import { useNumber } from "./LimitSigns";
 
 /** Megabytes as the rest of the form says them (shared/proposalAttachments.ts: 1024 x 1024 bytes). */
@@ -40,11 +40,11 @@ export default function LimitsExplained({ max, voice = true }: { max?: number; v
       </li>
       <li>
         <span className="font-semibold text-foreground">{t({ message: "Uploads:", context: "how the limits work" })}</span>{" "}
-        {t({ message: `A file such as a CV can be up to ${fileMb} MB, and one recording up to ${takeMb} MB.`, context: "how the limits work" })}
+        {t({ message: `Up to ${FILES_MAX} files, such as a CV, each up to ${fileMb} MB, and up to ${TAKES_MAX} recordings, each up to ${takeMb} MB.`, context: "how the limits work" })}
       </li>
       <li>
         <span className="font-semibold text-foreground">{t({ message: "Sending:", context: "how the limits work" })}</span>{" "}
-        {t({ message: "With recordings or files, a send can take several minutes on a slow connection. Keep this page open until it says it is sent. Your answers stay on this page while it sends, and on this device too when you have chosen to remember them.", context: "how the limits work" })}
+        {t({ message: "With recordings or files, a send can take several minutes on a slow connection: each file and recording goes on its own, one after another. Keep this page open until it says it is sent. Your answers stay on this page while it sends, and on this device too when you have chosen to remember them.", context: "how the limits work" })}
       </li>
     </ul>
   );

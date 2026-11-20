@@ -55,8 +55,12 @@
 import crypto from "node:crypto";
 import type { Express, Request, Response } from "express";
 import multer from "multer";
-import { PROPOSAL_JSON_MAX_BYTES, OPEN_UPLOAD_BYTES_IN_FLIGHT, OPEN_UPLOADS_AT_ONCE as UPLOADS_AT_ONCE, uploadTotalMax, uploadWindowMs } from "../../shared/applyLimits";
+import { serverCapacity } from "../lib/serverCapacity";
+import { VOICE_TRANSCRIBE_AT_ONCE } from "../../shared/voiceTranscribe";
+import { CLIP_MAX_BYTES, CLIPS_CEILING, CLIPS_DEFAULT, FILE_MAX_BYTES, FILES_MAX, HOST_BODY_UPLOAD_MS, OPEN_UPLOAD_DISK_RESERVE_BYTES, TAKE_MAX_BYTES, TAKES_MAX, OPEN_UPLOADS_AT_ONCE as UPLOADS_AT_ONCE, PART_KEPT_MS, PART_UPLOADS_HOURLY, PROPOSAL_JSON_MAX_BYTES, uploadTotalMax, uploadWindowMs } from "../../shared/applyLimits";
 import { liftRequestTimeout } from "../lib/uploadWindow";
+import { incomingDir, removeTempsWhenDone, roomFor, streamToDisk, sweepIncoming, type DiskFile } from "../lib/uploadDisk";
+import { isPartKind, partIdsOf, removeParts, resolveParts, stagePart } from "../lib/uploadParts";
 import { watchApplyFailures } from "../lib/applyFailureLog";
 import type { Pool } from "mysql2/promise";
 
@@ -173,6 +177,8 @@ type Deps = Pick<
   founding?: () => FoundingSetup;
   /** "Write down my words": a suite hands in its own provider switch and call (openProposalVoiceTranscribe.ts). */
   voiceTranscribe?: Pick<VoiceTranscribeDeps, "enabled" | "transcribe" | "providers">;
+  /** Bytes free on the volume uploads stream to; a suite hands in its own to fill the disk (server/lib/uploadDisk.ts). */
+  freeBytes?: (dir: string) => Promise<number | null>;
 };
 
 /** The admin's switch for the public link (sheet 19i: on unless switched off). */
@@ -195,14 +201,18 @@ const OPEN_TRIES_HOURLY = 60;
 const OPEN_UPLOAD_TRIES_HOURLY = 30;
 /**
  * THE WHOLE POST, AND HOW MUCH AT ONCE (security sweep, 14 Nov 2026; sizes raised by the ops request of 19 Nov
- * 2026). Each part is capped by multer, and their sum is capped too, because every byte is held in memory until
- * the post is judged. The sum is worked from the parts themselves (shared/applyLimits.ts `uploadTotalMax`): every
- * file, take and clip at its own cap for the village's own clip count, plus the envelope, so a post that keeps
- * every per-part cap always fits it. A post with no length, or a longer one, is refused before a byte is read.
+ * 2026, counts doubled by the lead the same day). Each part is capped by multer, and their sum is capped too. The
+ * sum is worked from the parts themselves (shared/applyLimits.ts `uploadTotalMax`): every file, take and clip at its
+ * own cap for the village's own clip count, plus the envelope, so a post that keeps every per-part cap always fits
+ * it. A post with no length, or a longer one, is refused before a byte is read.
  *
- * What the server holds at once is capped in bytes (OPEN_UPLOAD_BYTES_IN_FLIGHT, each post counted by its
- * Content-Length as it starts) as well as in posts (OPEN_UPLOADS_AT_ONCE), so larger caps never mean more memory
- * than the server was sized for.
+ * Every part streams to a private folder on the data volume as it arrives (server/lib/uploadDisk.ts), so a post
+ * costs disk, never its size in memory. What the server reads at once is capped in posts (OPEN_UPLOADS_AT_ONCE)
+ * and by room on the volume: each post's Content-Length, every upload already arriving, and
+ * OPEN_UPLOAD_DISK_RESERVE_BYTES left free. Short of either, the post is refused as busy before a byte is read.
+ *
+ * The form sends each part ahead in a request of its own (POST /api/open-proposals/parts, the host's five-minute
+ * body limit) and the application after, naming them; one post carrying everything still works.
  */
 export { OPEN_UPLOADS_AT_ONCE } from "../../shared/applyLimits";
 /** The whole post at the platform's default clip count: what a village that never changed it accepts. */
@@ -475,7 +485,7 @@ export function register(app: Express, deps: Deps): void {
   // "Draft my answers from what I said" (Rye, 14 Nov 2026): the same door, roles and season goals as the form.
   registerVoiceDraft(app, { door, offered, seasonGoals: async () => target((await settings()).term)?.goals.map((g) => g.text) ?? [], limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, villageName: projectName });
   // "Write down my words" (the lead, 17 Nov 2026): one take to the village's transcription service, behind the same door and caps of its own.
-  registerVoiceTranscribe(app, { door, limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, providers: () => providersNow(getPool()), ...(deps.voiceTranscribe ?? {}) });
+  registerVoiceTranscribe(app, { door, limitState: (key, max, windowMs) => limitState(getPool(), key, max, windowMs), authedUser, clientIp, ipBucket, providers: () => providersNow(getPool()), incoming: incomingDir(deps.proposalFileDir), ...(deps.voiceTranscribe ?? {}) });
 
   app.get("/api/open-proposals/form", async (req, res) => {
     const d = await door(req.query.link);
@@ -498,15 +508,19 @@ export function register(app: Express, deps: Deps): void {
 
   /*
    * FILES COME AS multipart/form-data: the proposal as JSON in one field,
-   * `proposal`, up to three files in `files` and up to three recordings in
-   * `voice` (shared/voiceNotes.ts). Held in memory, capped by size and count
-   * before a byte reaches disk, and checked by their own first bytes
-   * (shared/proposalAttachments.ts). A plain JSON post still works.
+   * `proposal`, files in `files`, recordings in `voice` and clips in `clips`
+   * (shared/voiceNotes.ts), or as parts sent ahead and named in `parts`.
+   * Streamed to a private folder as they arrive, capped by size and count,
+   * and checked by their own first bytes (shared/proposalAttachments.ts).
+   * A plain JSON post still works.
    */
+  const incoming = incomingDir(deps.proposalFileDir);
+  // Whatever a crash left half-written, or a part no application took, goes after its time.
+  void sweepIncoming(incoming, PART_KEPT_MS).catch(() => 0);
   // Clips are capped at the village's own count (org.voice_clips_max), read for each post, never at the platform ceiling.
   const uploadFor = (clipsMax: number, clipCap = Math.max(1, Math.min(VOICE_CLIPS_CEILING, clipsMax))) =>
     multer({
-      storage: multer.memoryStorage(),
+      storage: streamToDisk(incoming),
       defParamCharset: "utf8",
       limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: PROPOSAL_FILES_MAX + VOICE_NOTES_MAX + clipCap, fields: 1, fieldSize: PROPOSAL_JSON_MAX_BYTES },
     }).fields([
@@ -517,6 +531,115 @@ export function register(app: Express, deps: Deps): void {
     ]);
   let uploadsReading = 0;
   let bytesReading = 0;
+  /**
+   * Take a place for an upload of `length` bytes: a free place among OPEN_UPLOADS_AT_ONCE, and room for it on the
+   * volume. Returns false (the caller answers busy) or true, holding the place until the answer goes or the
+   * connection closes, and removing every file the upload wrote at the same moment.
+   */
+  const takePlace = async (req: Request, res: Response, length: number): Promise<boolean> => {
+    if (uploadsReading >= UPLOADS_AT_ONCE) return false;
+    // Counted before the disk is asked, so two posts arriving together never both take the last room.
+    uploadsReading += 1;
+    bytesReading += length;
+    let released = false;
+    const release = () => {
+      if (!released) {
+        uploadsReading -= 1;
+        bytesReading -= length;
+      }
+      released = true;
+    };
+    res.on("finish", release);
+    res.on("close", release);
+    removeTempsWhenDone(req, res);
+    if (!(await roomFor(incoming, length, bytesReading - length, OPEN_UPLOAD_DISK_RESERVE_BYTES, deps.freeBytes))) {
+      release();
+      return false;
+    }
+    return true;
+  };
+
+  /*
+   * WHAT THIS SERVER CAN HOLD (the lead, 19 Nov 2026), for the people who keep the village and for their agent through
+   * the connector's admin_request: memory (the container's cgroup limit, the machine's total, this process's RSS),
+   * room on the volume uploads stream to, and the upload caps in force. Read only; behind the one gate, never public.
+   */
+  app.get("/api/admin/server-capacity", async (req, res) => {
+    if (!(await guardCapability(req, res, "operator.recover"))) return;
+    res.setHeader("Cache-Control", "no-store");
+    const clipsVillage = clipLimits().max;
+    const now = await serverCapacity(incoming);
+    res.json({
+      ...now,
+      uploads: {
+        filesMax: FILES_MAX,
+        fileMaxBytes: FILE_MAX_BYTES,
+        takesMax: TAKES_MAX,
+        takeMaxBytes: TAKE_MAX_BYTES,
+        clipsDefault: CLIPS_DEFAULT,
+        clipsCeiling: CLIPS_CEILING,
+        clipsVillage,
+        clipMaxBytes: CLIP_MAX_BYTES,
+        applicationMaxBytes: uploadTotalMax(clipsVillage),
+        applicationCeilingBytes: uploadTotalMax(CLIPS_CEILING),
+        partMaxBytes: Math.max(FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES),
+        uploadsAtOnce: UPLOADS_AT_ONCE,
+        uploadsReadingNow: uploadsReading,
+        bytesArrivingNow: bytesReading,
+        diskReserveBytes: OPEN_UPLOAD_DISK_RESERVE_BYTES,
+        hostBodyUploadMs: HOST_BODY_UPLOAD_MS,
+        transcriptionsAtOnce: VOICE_TRANSCRIBE_AT_ONCE,
+        storage: "disk",
+      },
+    });
+  });
+
+  /*
+   * ONE PART, SENT AHEAD (the host's five-minute limit on a request body, shared/applyLimits.ts HOST_BODY_UPLOAD_MS).
+   * multipart: `kind` (files, voice or clips) and `link` first, then the file in `part`. The part is checked by its
+   * own bytes as the application would check it, kept under a random id, and the id goes back to the page.
+   */
+  app.post("/api/open-proposals/parts", async (req, res) => {
+    if (!req.is("multipart/form-data")) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
+    if (await overLimit(`open-proposal:part:ip:${ipBucket(clientIp(req))}`, PART_UPLOADS_HOURLY, 60 * 60_000)) return res.status(429).json({ error: OPEN_WORDS.tooManyTries });
+    const length = Number(req.headers["content-length"] ?? NaN);
+    const largest = Math.max(FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES) + 64 * 1024;
+    if (!Number.isFinite(length) || length > largest) {
+      res.setHeader("Connection", "close");
+      return res.status(Number.isFinite(length) ? 413 : 411).json({ error: ATTACHMENT_WORDS.fileTooBig, field: "files" });
+    }
+    if (!deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
+    if (!(await takePlace(req, res, length))) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
+    liftRequestTimeout(req, uploadWindowMs(length));
+    multer({
+      storage: streamToDisk(incoming),
+      defParamCharset: "utf8",
+      limits: { fileSize: Math.max(PROPOSAL_FILE_MAX_BYTES, VOICE_NOTE_MAX_BYTES), files: 1, fields: 2, fieldSize: 4096, parts: 3 },
+    }).single("part")(req, res, async (err: any) => {
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      const kind = body.kind;
+      const field = kind === "voice" || kind === "clips" ? "voice" : "files";
+      if (err) {
+        const code = String(err?.code ?? "");
+        const big = code === "LIMIT_FILE_SIZE";
+        const error = field === "voice" ? (big ? VOICE_WORDS.tooBig : VOICE_WORDS.wrongType) : big ? ATTACHMENT_WORDS.fileTooBig : ATTACHMENT_WORDS.fileUnreadable;
+        return void res.status(big ? 413 : 400).json({ error, field });
+      }
+      try {
+        if (!(await door(body.link)).open) return void res.status(403).json({ error: OPEN_WORDS.closed });
+        const file = (req as Request & { file?: DiskFile }).file;
+        if (!isPartKind(kind) || !file) return void res.status(400).json({ error: field === "voice" ? VOICE_WORDS.wrongType : ATTACHMENT_WORDS.fileUnreadable, field });
+        const one = [{ originalname: file.originalname, path: file.path, size: file.size }];
+        const checked = kind === "files" ? await checkProposalFiles(one) : kind === "voice" ? await checkVoiceNotes(one) : await checkVoiceClips(one);
+        if (!checked.ok) return void res.status(checked.error === ATTACHMENT_WORDS.fileTooBig || checked.error === VOICE_WORDS.tooBig ? 413 : 400).json({ error: checked.error, field });
+        const id = await stagePart(incoming, file, kind);
+        res.json({ id, size: file.size });
+      } catch (e) {
+        console.error("[open-proposals] a part was not kept", e);
+        if (!res.headersSent) res.status(500).json({ error: OPEN_WORDS.notSent });
+      }
+    });
+  });
 
   app.post("/api/open-proposals", async (req, res) => {
     if (!req.is("multipart/form-data")) return intake(req, res, req.body ?? {}, []);
@@ -530,20 +653,8 @@ export function register(app: Express, deps: Deps): void {
       res.setHeader("Connection", "close");
       return res.status(Number.isFinite(length) ? 413 : 411).json({ error: ATTACHMENT_WORDS.uploadTooBig, field: "files" });
     }
-    if (uploadsReading >= UPLOADS_AT_ONCE || bytesReading + length > OPEN_UPLOAD_BYTES_IN_FLIGHT) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
-    uploadsReading += 1;
-    bytesReading += length;
-    let released = false;
-    const release = () => {
-      if (!released) {
-        uploadsReading -= 1;
-        bytesReading -= length;
-      }
-      released = true;
-    };
-    // Held until the answer is sent (or the connection drops), so the buffers are counted while they are in memory.
-    res.on("finish", release);
-    res.on("close", release);
+    // Held until the answer is sent (or the connection drops); the files it wrote go at the same moment.
+    if (!(await takePlace(req, res, length))) return res.status(503).json({ error: ATTACHMENT_WORDS.uploadBusy });
     // Its own time to arrive on a slow line, past Node's five minutes, for this post only (server/lib/uploadWindow.ts).
     liftRequestTimeout(req, uploadWindowMs(length));
     uploadFor(clipsMax)(req, res, (err: any) => {
@@ -561,10 +672,12 @@ export function register(app: Express, deps: Deps): void {
       } catch {
         return void res.status(400).json({ error: OPEN_WORDS.notSent });
       }
-      const sent = (req as Request & { files?: Record<string, Express.Multer.File[] | undefined> }).files ?? {};
-      const files = (sent.files ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
-      const voiceNotes = (sent.voice ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
-      const clips = (sent.clips ?? []).map((f) => ({ originalname: f.originalname, buffer: f.buffer }));
+      // On disk, never in memory: each part is read from its file by the checks and copied into the proposal's folder.
+      const sent = (req as Request & { files?: Record<string, DiskFile[] | undefined> }).files ?? {};
+      const onDisk = (list: DiskFile[] | undefined): UploadedFile[] => (list ?? []).map((f) => ({ originalname: f.originalname, path: f.path, size: f.size }));
+      const files = onDisk(sent.files);
+      const voiceNotes = onDisk(sent.voice);
+      const clips = onDisk(sent.clips);
       void intake(req, res, body && typeof body === "object" ? (body as Record<string, any>) : {}, files, voiceNotes, clips).catch((e) => {
         console.error("[open-proposals] a proposal with files was not taken", e);
         if (!res.headersSent) res.status(500).json({ error: OPEN_WORDS.notSent });
@@ -572,9 +685,17 @@ export function register(app: Express, deps: Deps): void {
     });
   });
 
-  async function intake(req: Request, res: Response, body: Record<string, any>, files: UploadedFile[], voiceNotes: UploadedFile[] = [], clips: UploadedFile[] = []) {
+  async function intake(req: Request, res: Response, body: Record<string, any>, sentFiles: UploadedFile[], sentVoice: UploadedFile[] = [], sentClips: UploadedFile[] = []) {
     // Honeypot: a hidden field only a bot fills. Pretend it went, keep nothing.
     if (body.hp) return res.json({ sent: true });
+    // Parts sent ahead (POST /api/open-proposals/parts), named by id, join whatever came in this post.
+    const partIds = partIdsOf(body.parts);
+    const named = partIds.files.length + partIds.voice.length + partIds.clips.length;
+    const staged = named ? await resolveParts(incoming, partIds) : { files: [], voice: [], clips: [] };
+    if (!staged) return res.status(400).json({ error: ATTACHMENT_WORDS.uploadGone, field: partIds.files.length ? "files" : "voice" });
+    const files = [...sentFiles, ...staged.files];
+    const voiceNotes = [...sentVoice, ...staged.voice];
+    const clips = [...sentClips, ...staged.clips];
     // Two buckets per connection. This one counts every try, refused or not, and is generous: it only stops a flood.
     // The strict five an hour is counted below, once the proposal has been judged and would be accepted, so a person
     // who meets three honest mistakes is never locked out for them (audit B1).
@@ -653,16 +774,16 @@ export function register(app: Express, deps: Deps): void {
     const rolesKept = several ? picked.map((r, i) => (splits[i] ? { ...r, paySplit: splits[i] as Kept } : r)) : picked;
     // The files, every one checked before any is kept (Rye, 10 Nov 2026).
     if (files.length && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "files" });
-    const checked = checkProposalFiles(files);
+    const checked = await checkProposalFiles(files);
     // A part over its own size is 413, as multer answers one over the post's own cap (the parts' caps differ, so multer's is the largest).
     if (!checked.ok) return res.status(checked.error === ATTACHMENT_WORDS.fileTooBig ? 413 : 400).json({ error: checked.error, field: "files" });
     // The voice note, only with the applicant's tick, every recording checked by its own bytes (Rye, 14 Nov 2026).
     const voice = parseSentVoice(body.voice, voiceNotes.length, clips.length, clipLimits());
     if (!voice.ok) return res.status(400).json({ error: voice.error, field: "voice" });
     if ((voiceNotes.length || clips.length) && !deps.proposalFileDir) return res.status(400).json({ error: ATTACHMENT_WORDS.fileUnreadable, field: "voice" });
-    const heardOk = checkVoiceNotes(voiceNotes);
+    const heardOk = await checkVoiceNotes(voiceNotes);
     if (!heardOk.ok) return res.status(heardOk.error === VOICE_WORDS.tooBig ? 413 : 400).json({ error: heardOk.error, field: "voice" });
-    const clipsOk = checkVoiceClips(clips);
+    const clipsOk = await checkVoiceClips(clips);
     if (!clipsOk.ok) return res.status(clipsOk.error === VOICE_WORDS.tooBig ? 413 : 400).json({ error: clipsOk.error, field: "voice" });
     const { name, email } = parsed.value;
     // The term is the village's, set here and never taken from the form.
@@ -708,6 +829,8 @@ export function register(app: Express, deps: Deps): void {
       const clipped = voice.value?.clips && clips.length && fileDir ? await writeVoiceClips(fileDir, id, clips, voice.value.clips) : [];
       const spoken = voice.value ? { voice: { consent: true as const, notes: heard, transcript: voice.value.transcript, ...(clipped.length ? { clips: clipped } : {}) } } : {};
       await store.insertOpenProposal(pool, { id, name: name.slice(0, OPEN_NAME_MAX), email, emailKey, targetSeasonId: season.id, body: { ...proposal, ...(kept.length ? { files: kept } : {}), ...spoken }, confirmHash: hashOf(token), linkId: d.linkId, now: now() });
+      // Kept in the proposal's own folder now: the parts sent ahead have done their work.
+      if (named) await removeParts(incoming, partIds).catch(() => undefined);
     } catch (e) {
       if (fileDir) await removeProposalFiles(fileDir, id);
       throw e;
@@ -1028,6 +1151,8 @@ export function register(app: Express, deps: Deps): void {
       return comeAndPlayFor(getPool(), { ...look, name: village || look.name }, { audience: "public", lang, skip: ["quests"] });
     };
     const tidied = await tidyOpenProposals(getPool(), now(), deps.proposalFileDir, { postEmail, projectName, siteUrl: site, onboardingRole: () => stringVar("org.onboarding_role"), footer });
+    // Parts no application took, and anything an upload left behind, after their time (server/lib/uploadDisk.ts).
+    await sweepIncoming(incoming, PART_KEPT_MS).catch(() => 0);
     // The kept applications' confirmation emails, tried again (server/lib/openProposalKept.ts).
     const again = await retryOwedConfirmations({ ...letters, getPool, postEmail }, now());
     return again.tried ? `${tidied}, ${again.went} of ${again.tried} owed confirmation emails sent` : tidied;

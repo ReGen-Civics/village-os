@@ -79,8 +79,12 @@ export function voiceSent(v: VoiceState): boolean {
  * The application's post. With files or ticked recordings it goes as multipart
  * (the proposal as JSON in `proposal`, files in `files`, recordings in `voice`);
  * otherwise as JSON. Without the tick, no recording and no transcript is sent.
+ *
+ * With `staged`, the files and recordings were sent ahead as parts
+ * (components/openProposal/sendParts.ts) and the post only names them, so it
+ * carries no bytes of its own.
  */
-export function applicationRequest(proposal: Record<string, unknown>, files: readonly File[], voice: VoiceState): RequestInit {
+export function applicationRequest(proposal: Record<string, unknown>, files: readonly File[], voice: VoiceState, staged?: { files: string[]; voice: string[]; clips: string[] }): RequestInit {
   const sent = voiceSent(voice);
   const clips = sent ? Object.entries(voice.clips) : [];
   const body = sent
@@ -95,6 +99,13 @@ export function applicationRequest(proposal: Record<string, unknown>, files: rea
         },
       }
     : proposal;
+  if (staged) {
+    const named = JSON.stringify({ ...body, parts: staged });
+    if (new Blob([named]).size <= JSON_BODY_MAX_BYTES) return { method: "POST", headers: { "Content-Type": "application/json" }, body: named };
+    const one = new FormData();
+    one.append("proposal", named);
+    return { method: "POST", body: one };
+  }
   const takes = sent ? voice.takes : [];
   const json = JSON.stringify(body);
   // A long application with nothing attached still goes whole: past the server's ordinary JSON limit it goes as the

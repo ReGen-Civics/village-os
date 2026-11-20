@@ -2524,6 +2524,11 @@ msgctxt "founding application refusal"
 msgid "We're receiving a lot of uploads right now. Please try again in a minute."
 msgstr "Estamos recibiendo muchos archivos ahora mismo. Inténtalo de nuevo en un minuto."
 
+#: client/src/components/fireflyPath/applyWordsT.ts
+msgctxt "founding application refusal"
+msgid "Something you attached did not reach us whole. Please send again."
+msgstr "Algo que adjuntaste no nos llegó completo. Envíalo de nuevo, por favor."
+
 #. placeholder {0}: i + 1
 #: client/src/components/proposals/ProposalEditor.tsx
 msgctxt "proposed changes"
@@ -19345,8 +19350,8 @@ msgstr ""
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
-msgid "Send up to 3 recordings."
-msgstr "Envía hasta 3 grabaciones."
+msgid "Send up to {VOICE_NOTES_MAX} recordings."
+msgstr "Envía hasta {VOICE_NOTES_MAX} grabaciones."
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -23739,13 +23744,13 @@ msgstr "Puedes grabar hasta {take} minutos cada vez. Un temporizador muestra el 
 
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
-msgid "A file such as a CV can be up to {fileMb} MB, and one recording up to {takeMb} MB."
-msgstr "Un archivo como un CV puede ocupar hasta {fileMb} MB, y una grabación hasta {takeMb} MB."
+msgid "Up to {FILES_MAX} files, such as a CV, each up to {fileMb} MB, and up to {TAKES_MAX} recordings, each up to {takeMb} MB."
+msgstr "Hasta {FILES_MAX} archivos, como un CV, de hasta {fileMb} MB cada uno, y hasta {TAKES_MAX} grabaciones, de hasta {takeMb} MB cada una."
 
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
-msgid "With recordings or files, a send can take several minutes on a slow connection. Keep this page open until it says it is sent. Your answers stay on this page while it sends, and on this device too when you have chosen to remember them."
-msgstr "Con grabaciones o archivos, un envío puede tardar varios minutos en una conexión lenta. Mantén esta página abierta hasta que diga que se envió. Tus respuestas se quedan en esta página mientras se envía, y también en este dispositivo si elegiste recordarlas."
+msgid "With recordings or files, a send can take several minutes on a slow connection: each file and recording goes on its own, one after another. Keep this page open until it says it is sent. Your answers stay on this page while it sends, and on this device too when you have chosen to remember them."
+msgstr "Con grabaciones o archivos, un envío puede tardar varios minutos en una conexión lenta: cada archivo y cada grabación va por separado, uno tras otro. Mantén esta página abierta hasta que diga que se envió. Tus respuestas se quedan en esta página mientras se envía, y también en este dispositivo si elegiste recordarlas."
 
 #: client/src/components/voice/VoiceInvite.tsx
 msgctxt "voice note timer"
