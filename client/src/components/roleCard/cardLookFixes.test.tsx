@@ -60,7 +60,13 @@ describe("the phone's Apply, visible from the start (the lead, after 1.3.38)", (
     // A 664px screen, a 64px tab bar and a 130px bar: the bar's top would be at 470.
     // The act on the first screen, under the goal: no bar.
     expect(applyBarShows({ top: 380, bottom: 500 }, 664, 64, 130)).toBe(false);
-    // Still below where the bar would sit (the card is low on the screen): the bar shows.
+    // The card low on the screen, its goal not yet on it (the screen ends at 600, above the tab bar): the bar shows,
+    // over what comes before the goal.
+    expect(applyBarShows({ top: 700, bottom: 820 }, 664, 64, 130, 0, 610)).toBe(true);
+    // The goal on the screen, even under the bar line, and the act not yet: the bar waits, so it never covers the goal.
+    expect(applyBarShows({ top: 590, bottom: 710 }, 664, 64, 130, 0, 500)).toBe(false);
+    expect(applyBarShows({ top: 520, bottom: 640 }, 664, 64, 130, 0, 420)).toBe(false);
+    // A card with no goal line reads the act's own top.
     expect(applyBarShows({ top: 520, bottom: 640 }, 664, 64, 130)).toBe(true);
     // Scrolled past above, or under a 60px sticky header: the bar shows.
     expect(applyBarShows({ top: -200, bottom: -80 }, 664, 64, 130)).toBe(true);

@@ -2,22 +2,26 @@
  * THE PHONE'S APPLY, VISIBLE FROM THE START (the lead, 20 Nov 2026, after 1.3.38). On a phone the act is drawn in
  * the card's flow, right under the goal of "the role in one minute", so the first screen shows the goal whole and
  * Apply beneath it. The bar along the phone's foot shows only while that act is off the screen: scrolled past above,
- * or still below where the bar would sit. Exactly one Apply is in view at a time, and the bar never covers the goal,
- * because the goal sits above the act in the flow: while the act is below the bar line, so is everything after it,
- * and once the act has scrolled past, so has the goal.
+ * or, with the card still low on the screen, before the goal line comes onto the screen. At most one Apply is in view
+ * at a time, and the bar never covers the goal: once the act has scrolled past, so has the goal above it, and below,
+ * the bar gives way as soon as the goal comes onto the screen.
  *
  * 1.3.38 made the bar wait until the goal scrolled clear above it, so Apply was off the first screen. This replaces it.
  */
 import { useEffect, useState, type RefObject } from "react";
 
 /**
- * Whether the bar shows: the in-flow act has scrolled past the top (its bottom at or above `topInset`, the sticky
- * header's foot), or its top is below the line where the bar's top would be. Null rects (nothing laid out): no bar.
+ * Whether the bar shows. Above: the in-flow act has scrolled past the top (its bottom at or above `topInset`, the
+ * sticky header's foot). Below: the goal line is not yet on the screen, so the bar covers only what comes before it; a
+ * card with no goal line reads whether the act is still under the bar line. In between (the goal on the screen, the
+ * act not yet) the bar waits: the goal is never covered, and Apply comes into view with a little more scroll. Null
+ * rects (nothing laid out): no bar.
  */
-export function applyBarShows(act: { top: number; bottom: number } | null, viewport: number, tabbar: number, bar: number, topInset = 0): boolean {
+export function applyBarShows(act: { top: number; bottom: number } | null, viewport: number, tabbar: number, bar: number, topInset = 0, goalTop: number | null = null): boolean {
   if (!act) return false;
   if (act.bottom <= topInset) return true;
-  return act.top > viewport - tabbar - bar;
+  // The goal not yet on the screen at all: nothing the bar could cover. No goal line: the act still under the bar line.
+  return goalTop !== null ? goalTop >= viewport - tabbar : act.top >= viewport - tabbar - bar;
 }
 
 /** The phone tab bar's height in pixels. `--tabbar-h` is a calc() with the safe area in it, so the browser resolves it. */
@@ -42,12 +46,19 @@ function topInsetPx(): number {
   return inset;
 }
 
+/** The card's goal line (or its one-minute box, when it writes no goal), which the bar must never cover. */
+function goalOf(act: HTMLElement): HTMLElement | null {
+  const card = act.closest<HTMLElement>("[data-full-role-card]");
+  return card?.querySelector<HTMLElement>("[data-one-minute-goal]") ?? card?.querySelector<HTMLElement>("[data-role-one-minute]") ?? null;
+}
+
 function measure(act: HTMLElement): boolean {
   const r = act.getBoundingClientRect();
   // Not laid out (a test's document, or a hidden card): the act in the flow stands, and there is no bar.
   if (r.width === 0 && r.height === 0) return false;
   // The bar holds the same act with its padding, so the act's own height plus the bar's padding is the bar's height.
-  return applyBarShows({ top: r.top, bottom: r.bottom }, window.innerHeight, tabbarPx(act), act.offsetHeight + 24, topInsetPx());
+  const goal = goalOf(act);
+  return applyBarShows({ top: r.top, bottom: r.bottom }, window.innerHeight, tabbarPx(act), act.offsetHeight + 24, topInsetPx(), goal ? goal.getBoundingClientRect().top : null);
 }
 
 /** Whether the phone's bar shows, read from the in-flow act (`act`), on every scroll, resize and render. */
