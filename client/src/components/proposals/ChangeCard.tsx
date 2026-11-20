@@ -24,6 +24,7 @@ import { agendaLines, faceOf, fieldChanges, flagsOf, goalLines, type ChangeFace,
 import { fieldDiffs, valueAt } from "@shared/proposedChanges";
 import type { PutBackBlock } from "@shared/proposalPutBack";
 import type { ConflictWith, StaleBy } from "@shared/proposalConflicts";
+import CodeChip from "./CodeChip";
 import { EventCard, FieldDiffs, RowsDiff } from "./Diff";
 import { FACE_ICON, FLAG_ICON } from "./faces";
 import { Field, asText, nodePaths } from "./ProposalEditor";
@@ -128,14 +129,15 @@ function WhereLine({ where, targetLabel: given }: { where?: Where; targetLabel: 
   );
 }
 
-function Head({ face, summary, targetLabel, where, flags, aside }: { face: ChangeFace; summary: string; targetLabel: string; where?: Where; flags: ChangeFlag[]; aside?: ReactNode }) {
+function Head({ face, summary, targetLabel, where, flags, aside, code }: { face: ChangeFace; summary: string; targetLabel: string; where?: Where; flags: ChangeFlag[]; aside?: ReactNode; code?: string | null }) {
   const { i18n } = useLingui();
   return (
-    <div className="flex min-w-0 items-start gap-3">
+    <div className="relative flex min-w-0 items-start gap-3">
+      {code && <CodeChip code={code} className="absolute -top-1 right-0" />}
       <FaceTile face={face} />
       <div className="min-w-0 flex-1 space-y-1.5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-notice" data-testid="change-kind">{faceWords(i18n, face)}</p>
-        <h3 className="break-words font-display text-xl leading-snug text-card-foreground">{summary}</h3>
+        <p className={`text-xs font-semibold uppercase tracking-widest text-notice ${code ? "pr-24" : ""}`} data-testid="change-kind">{faceWords(i18n, face)}</p>
+        <h3 className={`break-words font-display text-xl leading-snug text-card-foreground ${code ? "sm:pr-24" : ""}`}>{summary}</h3>
         <WhereLine where={where} targetLabel={targetLabel} />
         <Flags flags={flags} />
         {aside}
@@ -250,6 +252,8 @@ export interface ChangeCardProps {
   /** The other waiting changes that write what this one writes. */
   conflicts?: readonly ConflictWith[];
   change: Proposal;
+  /** The search on the page names this card: it is ringed. */
+  found?: boolean;
   body: Record<string, unknown>;
   zone: string;
   problems: Problem[];
@@ -262,7 +266,7 @@ export interface ChangeCardProps {
   onDiscard: () => void;
 }
 
-export default function ChangeCard({ change: c, conflicts = [], body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
+export default function ChangeCard({ change: c, found = false, conflicts = [], body, zone, problems, saved, busy, checkedPage, onCheckedPage, onEdit, onAccept, onDiscard }: ChangeCardProps) {
   const { t } = useLingui();
   const [editing, setEditing] = useState(false);
   // Accepting a change that a later waiting one also writes asks once, on the card. It never blocks.
@@ -283,8 +287,9 @@ export default function ChangeCard({ change: c, conflicts = [], body, zone, prob
   const editorId = `edit-${c.id}`;
 
   return (
-    <article className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5" data-proposal={c.id} data-testid={`proposal-${c.id}`} aria-label={c.summary}>
+    <article className={`min-w-0 space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5 ${found ? "border-notice ring-2 ring-notice" : "border-border"}`} data-proposal={c.id} data-code={c.code ?? undefined} data-found={found ? "true" : undefined} id={`proposal-${c.id}`} data-testid={`proposal-${c.id}`} aria-label={c.summary}>
       <Head
+        code={c.code}
         face={face}
         summary={c.summary}
         targetLabel={c.targetLabel}
@@ -460,7 +465,7 @@ function PutBack({ d, onPutBack }: { d: Decided; onPutBack?: (d: Decided) => Pro
 }
 
 /** A decided change, in the history. */
-export function DecidedCard({ d, zone, onPutBack }: { d: Decided; zone: string; onPutBack?: (d: Decided) => Promise<string | null> }) {
+export function DecidedCard({ d, zone, onPutBack, found = false }: { d: Decided; zone: string; found?: boolean; onPutBack?: (d: Decided) => Promise<string | null> }) {
   const { i18n } = useLingui();
   const route = d.route ?? { method: "PUT", path: "" };
   const kind = d.kind ?? "setting";
@@ -472,8 +477,9 @@ export function DecidedCard({ d, zone, onPutBack }: { d: Decided; zone: string; 
   const when = dayWords(d.at, zone, i18n.locale);
   const editedFields = took && accepted ? fieldDiffs(proposed, accepted).length : 0;
   return (
-    <article className="min-w-0 space-y-4 rounded-2xl border border-border/60 bg-card p-4 shadow-sm sm:p-5" data-testid={`decided-${d.id}`} aria-label={d.summary}>
+    <article className={`min-w-0 space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5 ${found ? "border-notice ring-2 ring-notice" : "border-border/60"}`} id={`decided-${d.id}`} data-code={d.code ?? undefined} data-found={found ? "true" : undefined} data-testid={`decided-${d.id}`} aria-label={d.summary}>
       <Head
+        code={d.code}
         face={face}
         summary={d.summary}
         targetLabel={d.targetLabel}

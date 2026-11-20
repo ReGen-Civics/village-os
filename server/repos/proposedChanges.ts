@@ -10,11 +10,13 @@
  */
 import { randomBytes } from "node:crypto";
 import type { Pool, RowDataPacket } from "mysql2/promise";
-import type { ProposalKind, ProposalStatus } from "../../shared/proposedChanges";
+import { batchCodeOf, changeCodeOf, type ProposalKind, type ProposalStatus } from "../../shared/proposedChanges";
 import type { KeptBefore } from "../../shared/proposalPutBack";
 
 export interface StoredBatch {
   id: string;
+  /** The short code, B-27 (0416); null on a batch filed before the code existed and not yet numbered. */
+  code: string | null;
   title: string;
   proposedBy: string;
   proposedByKind: "agent" | "person";
@@ -23,6 +25,8 @@ export interface StoredBatch {
 
 export interface StoredChange {
   id: string;
+  /** The short code, B-27.2 (0416): its batch's code and its place in the batch. */
+  code: string | null;
   batchId: string;
   position: number;
   kind: ProposalKind;
@@ -65,6 +69,7 @@ const json = <T>(v: unknown, fallback: T): T => {
 function toChange(r: RowDataPacket): StoredChange {
   return {
     id: String(r.id),
+    code: r.code === null || r.code === undefined ? null : String(r.code),
     batchId: String(r.batch_id),
     position: Number(r.position ?? 0),
     kind: String(r.kind) as ProposalKind,
@@ -104,17 +109,78 @@ function keptBefore(v: unknown): KeptBefore {
   }
 }
 
+function toBatch(r: RowDataPacket): StoredBatch {
+  return {
+    id: String(r.id),
+    code: r.code === null || r.code === undefined ? null : String(r.code),
+    title: String(r.title),
+    proposedBy: String(r.proposed_by),
+    proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent",
+    createdAt: iso(r.created_at) ?? "",
+  };
+}
+
 const newId = (prefix: string) => `${prefix}_${randomBytes(9).toString("hex")}`;
 
 export async function batchById(pool: Pool, id: string): Promise<StoredBatch | null> {
   const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM `proposed_change_batches` WHERE `id` = ?", [id]);
-  const r = rows[0];
-  return r ? { id: String(r.id), title: String(r.title), proposedBy: String(r.proposed_by), proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent", createdAt: iso(r.created_at) ?? "" } : null;
+  return rows[0] ? toBatch(rows[0]) : null;
+}
+
+/** One writer at a time takes the next batch number, so two filings never share a code. */
+const CODE_LOCK = "village_proposal_codes";
+
+async function withCodeLock<T>(pool: Pool, run: () => Promise<T>): Promise<T> {
+  const conn = await pool.getConnection();
+  try {
+    const [got] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, 10) AS ok", [CODE_LOCK]);
+    if (Number(got[0]?.ok ?? 0) !== 1) throw new Error("The proposal codes are being numbered by another request. Try again.");
+    try {
+      return await run();
+    } finally {
+      await conn.query("SELECT RELEASE_LOCK(?)", [CODE_LOCK]).catch(() => undefined);
+    }
+  } finally {
+    conn.release();
+  }
+}
+
+async function nextBatchNo(pool: Pool): Promise<number> {
+  const [rows] = await pool.query<RowDataPacket[]>("SELECT COALESCE(MAX(`code_no`), 0) + 1 AS n FROM `proposed_change_batches`");
+  return Number(rows[0]?.n ?? 1);
+}
+
+/**
+ * THE BACKFILL (0416): number every batch that has no code, in filing order (created_at, then id), and give every
+ * change its batch's code and its place. Idempotent by its WHERE: a row that has a code is never touched, so a second
+ * call, or two at once, changes nothing. Batches filed by the previous release during a rolling deploy come out the
+ * same way on the next call. Cheap when there is nothing to do: two counts on tables of a few hundred rows.
+ */
+export async function ensureCodes(pool: Pool): Promise<void> {
+  const [lone] = await pool.query<RowDataPacket[]>(
+    "SELECT (SELECT COUNT(*) FROM `proposed_change_batches` WHERE `code_no` IS NULL) AS b, (SELECT COUNT(*) FROM `proposed_changes` c JOIN `proposed_change_batches` b ON b.`id` = c.`batch_id` WHERE c.`code` IS NULL AND b.`code` IS NOT NULL) AS c",
+  );
+  if (Number(lone[0]?.b ?? 0) === 0 && Number(lone[0]?.c ?? 0) === 0) return;
+  await withCodeLock(pool, async () => {
+    const [todo] = await pool.query<RowDataPacket[]>("SELECT `id` FROM `proposed_change_batches` WHERE `code_no` IS NULL ORDER BY `created_at`, `id`");
+    let n = todo.length ? await nextBatchNo(pool) : 0;
+    for (const r of todo) {
+      await pool.query("UPDATE `proposed_change_batches` SET `code_no` = ?, `code` = ? WHERE `id` = ? AND `code_no` IS NULL", [n, batchCodeOf(n), String(r.id)]);
+      n++;
+    }
+    await pool.query(
+      "UPDATE `proposed_changes` c JOIN `proposed_change_batches` b ON b.`id` = c.`batch_id` SET c.`code` = CONCAT(b.`code`, '.', c.`position` + 1) WHERE c.`code` IS NULL AND b.`code` IS NOT NULL",
+    );
+  });
 }
 
 export async function addBatch(pool: Pool, b: { title: string; proposedBy: string; proposedByKind: "agent" | "person" }): Promise<string> {
+  await ensureCodes(pool);
   const id = newId("pcb");
-  await pool.query("INSERT INTO `proposed_change_batches` (`id`, `title`, `proposed_by`, `proposed_by_kind`) VALUES (?,?,?,?)", [id, b.title.slice(0, 200), b.proposedBy, b.proposedByKind]);
+  await withCodeLock(pool, async () => {
+    const n = await nextBatchNo(pool);
+    await pool.query("INSERT INTO `proposed_change_batches` (`id`, `title`, `proposed_by`, `proposed_by_kind`, `code_no`, `code`) VALUES (?,?,?,?,?,?)", [id, b.title.slice(0, 200), b.proposedBy, b.proposedByKind, n, batchCodeOf(n)]);
+  });
   return id;
 }
 
@@ -128,9 +194,11 @@ export async function addChange(
   c: { batchId: string; position: number; kind: ProposalKind; target: Record<string, unknown>; targetLabel: string; routeMethod: string; routePath: string; summary: string; body: Record<string, unknown>; proposedBy: string; proposedByKind: "agent" | "person"; reverts?: string | null },
 ): Promise<string> {
   const id = newId("pc");
+  const batch = await batchById(pool, c.batchId);
+  const code = batch?.code ? changeCodeOf(batch.code, c.position) : null;
   await pool.query(
-    "INSERT INTO `proposed_changes` (`id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`, `reverts_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-    [id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind, c.reverts ?? null],
+    "INSERT INTO `proposed_changes` (`code`, `id`, `batch_id`, `position`, `kind`, `target_json`, `target_label`, `route_method`, `route_path`, `summary`, `body_json`, `proposed_by`, `proposed_by_kind`, `reverts_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+    [code, id, c.batchId, c.position, c.kind, JSON.stringify(c.target), c.targetLabel.slice(0, 200), c.routeMethod, c.routePath.slice(0, 400), c.summary.slice(0, 400), JSON.stringify(c.body), c.proposedBy, c.proposedByKind, c.reverts ?? null],
   );
   return id;
 }
@@ -151,7 +219,7 @@ export async function listOpen(pool: Pool): Promise<{ batches: StoredBatch[]; ch
   if (!ids.length) return { batches: [], changes };
   const [b] = await pool.query<RowDataPacket[]>(`SELECT * FROM \`proposed_change_batches\` WHERE \`id\` IN (${ids.map(() => "?").join(",")}) ORDER BY \`created_at\``, ids);
   return {
-    batches: b.map((r) => ({ id: String(r.id), title: String(r.title), proposedBy: String(r.proposed_by), proposedByKind: r.proposed_by_kind === "person" ? "person" : "agent", createdAt: iso(r.created_at) ?? "" })),
+    batches: b.map(toBatch),
     changes,
   };
 }

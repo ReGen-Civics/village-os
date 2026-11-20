@@ -29,6 +29,7 @@
  * says why in one plain line (shared/proposalPutBack.ts).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { scrollBehavior } from "@/components/natural/scrollBehavior";
 import { Link } from "wouter";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import Layout from "@/components/Layout";
@@ -37,6 +38,7 @@ import { useOptionalAuth } from "@/contexts/AuthContext";
 import { CARD, EYEBROW, FIELD, H1, HINT, LABEL, LEDE, LINK, WORLD } from "@/components/journey/look";
 import { CHANGE_FACES, faceOf, type ChangeFace } from "@shared/proposalReview";
 import { conflictCounts, oldestFirst, waitingConflicts } from "@shared/proposalConflicts";
+import { matchesFind, normalizeCode } from "@shared/proposedChanges";
 import BatchCard, { HistoryBatch } from "@/components/proposals/BatchCard";
 import ChangeCard, { DecidedCard, faceWords } from "@/components/proposals/ChangeCard";
 import { setAt } from "@/components/proposals/ProposalEditor";
@@ -73,6 +75,8 @@ export default function ProposedChanges() {
   const [kind, setKind] = useState<ChangeFace | "">("");
   const [page, setPage] = useState("");
   const [who, setWho] = useState("");
+  // A code (B-27 or B-27.2) or an old long id: only what it names is shown, ringed, and scrolled to.
+  const [find, setFind] = useState("");
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const load = useCallback(async () => {
@@ -206,8 +210,9 @@ export default function ProposedChanges() {
   const pagesHere = useMemo(() => Array.from(new Set([...changes, ...decided].map((c) => c.where?.label ?? "").filter(Boolean))).sort(), [changes, decided]);
   const whoHere = useMemo(() => Array.from(new Set([...batches.map((b) => b.by), ...decided.map((d) => d.proposedBy ?? "")].filter(Boolean))).sort(), [batches, decided]);
 
-  const keep = (c: { kind?: Proposal["kind"]; route?: { method: string; path: string }; where?: { label: string } }, by: string) =>
-    (!kind || faceOf(c.kind ?? "setting", c.route ?? { method: "PUT", path: "" }) === kind) && (!page || c.where?.label === page) && (!who || by === who);
+  const named = (c: { id: string; code?: string | null; batchId?: string; batchCode?: string | null }) => matchesFind(find, c);
+  const keep = (c: { id: string; code?: string | null; batchId?: string; batchCode?: string | null; kind?: Proposal["kind"]; route?: { method: string; path: string }; where?: { label: string } }, by: string) =>
+    named(c) && (!kind || faceOf(c.kind ?? "setting", c.route ?? { method: "PUT", path: "" }) === kind) && (!page || c.where?.label === page) && (!who || by === who);
 
   // Waiting first, OLDEST first (the lead, 17 Nov 2026): batches by when they were proposed, and the changes in each
   // the same way, so accepting down the page accepts in the order things were proposed.
@@ -215,10 +220,10 @@ export default function ProposedChanges() {
     () =>
       [...batches]
         .sort((a, b) => oldestFirst(a, b))
-        .map((b) => ({ batch: b, items: changes.filter((c) => c.batchId === b.id && keep(c, b.by)).sort(oldestFirst) }))
+        .map((b) => ({ batch: b, items: changes.filter((c) => c.batchId === b.id && keep({ ...c, batchCode: c.batchCode ?? b.code }, b.by)).sort(oldestFirst) }))
         .filter((g) => g.items.length > 0),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [batches, changes, kind, page, who],
+    [batches, changes, kind, page, who, find],
   );
 
   // The history, by batch, the batch decided most recently first.
@@ -231,7 +236,7 @@ export default function ProposedChanges() {
     }
     return Array.from(groups.entries()).map(([key, items]) => ({ key, items }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decided, kind, page, who]);
+  }, [decided, kind, page, who, find]);
 
   // Which waiting changes write the same thing, read on what would be accepted (the reader's edits included), across
   // every batch and whatever the filters hide.
@@ -243,11 +248,35 @@ export default function ProposedChanges() {
 
   // The oldest waiting batch opens by itself; the rest fold until asked.
   const firstWaiting = waiting[0]?.batch.id;
-  const isOpen = (id: string) => open[id] ?? id === firstWaiting;
+  // A search opens the batches it finds, so the card it names is in view.
+  const searching = find.trim() !== "";
+  const isOpen = (id: string) => open[id] ?? (searching || id === firstWaiting);
+
+  // Which cards the search names exactly: one change when it gives a change code or a long id, else the batch.
+  const foundChange = useMemo(() => {
+    const q = find.trim();
+    if (!q) return new Set<string>();
+    const code = normalizeCode(q);
+    if (code && !code.includes(".")) return new Set<string>();
+    return new Set([...changes, ...decided].filter((c) => (code ? c.code === code : c.id.toLowerCase() === q.toLowerCase())).map((c) => c.id));
+  }, [find, changes, decided]);
+  const foundBatch = useMemo(() => {
+    const q = find.trim();
+    if (!q || foundChange.size) return new Set<string>();
+    const code = normalizeCode(q);
+    return new Set([...batches.map((b) => ({ id: b.id, code: b.code })), ...decided.map((d) => ({ id: d.batchId ?? "", code: d.batchCode }))].filter((b) => b.id && (code ? b.code === code : b.id.toLowerCase() === q.toLowerCase())).map((b) => b.id));
+  }, [find, batches, decided, foundChange]);
+  // Scroll to the first card the search names, once the cards have drawn.
+  const firstFound = Array.from(foundChange)[0] ?? Array.from(foundBatch)[0] ?? "";
+  useEffect(() => {
+    if (!firstFound) return;
+    const el = document.getElementById(`proposal-${firstFound}`) ?? document.getElementById(`decided-${firstFound}`) ?? document.getElementById(`batch-card-${firstFound}`);
+    el?.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
+  }, [firstFound, state, open]);
 
   const showWaiting = status !== "decided";
   const showDecided = status !== "waiting";
-  const filtered = !!(kind || page || who);
+  const filtered = !!(kind || page || who || searching);
 
   return (
     <Layout>
@@ -285,6 +314,23 @@ export default function ProposedChanges() {
 
           {state === "ok" && (changes.length > 0 || decided.length > 0) && (
             <section aria-label={t({ message: "Filter the changes", context: "proposed changes" })} className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm sm:grid-cols-4" data-testid="filters">
+              <label className="col-span-2 flex min-w-0 flex-col gap-1 sm:col-span-4">
+                <span className={LABEL}>
+                  <Trans context="proposed changes: filter">Find a code</Trans>
+                </span>
+                <input
+                  type="search"
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  spellCheck={false}
+                  className={`${FIELD} min-h-11 tabular-nums tracking-wide`}
+                  value={find}
+                  onChange={(e) => setFind(e.target.value)}
+                  placeholder={t({ message: "B-27 or B-27.2, or an older long id", context: "proposed changes: filter" })}
+                  data-testid="filter-find"
+                />
+              </label>
               <label className="flex min-w-0 flex-col gap-1">
                 <span className={LABEL}>
                   <Trans context="proposed changes: filter">Show</Trans>
@@ -424,11 +470,13 @@ export default function ProposedChanges() {
                   busy={busy}
                   onAcceptAll={() => void accept(items)}
                   onDiscardAll={() => void discard(items)}
+                  found={foundBatch.has(batch.id)}
                   laterConflicts={items.filter((c) => (conflicts[c.id] ?? []).some((o) => o.later)).length}
                   renderChange={(c) => (
                     <ChangeCard
                       key={c.id}
                       change={c}
+                      found={foundChange.has(c.id)}
                       conflicts={conflicts[c.id] ?? []}
                       body={edits[c.id] ?? c.body}
                       zone={zone}
@@ -466,11 +514,13 @@ export default function ProposedChanges() {
                 <HistoryBatch
                   key={key}
                   title={items[0]?.batchTitle ?? ""}
+                  code={items[0]?.batchCode}
+                  found={foundBatch.has(key)}
                   by={items[0]?.proposedBy}
                   byKind={items[0]?.proposedByKind}
                   items={items}
                   zone={zone}
-                  renderDecided={(d) => <DecidedCard key={d.id} d={d} zone={zone} onPutBack={putBack} />}
+                  renderDecided={(d) => <DecidedCard key={d.id} d={d} zone={zone} onPutBack={putBack} found={foundChange.has(d.id)} />}
                 />
               ))}
             </section>

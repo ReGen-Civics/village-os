@@ -13,6 +13,7 @@ import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
 import { faceOf, type ChangeFace } from "@shared/proposalReview";
 import { ByWho, FaceTile, dayWords, faceWords } from "./ChangeCard";
+import CodeChip from "./CodeChip";
 import type { Batch, Decided, Proposal } from "./reviewTypes";
 
 function joinWords(words: string[], locale: string): string {
@@ -71,9 +72,11 @@ export interface BatchCardProps {
   renderChange: (c: Proposal) => ReactNode;
   /** How many of its changes a later waiting change also writes; the batch's one question says so. */
   laterConflicts?: number;
+  /** The search on the page names this batch: it is ringed. */
+  found?: boolean;
 }
 
-export default function BatchCard({ batch, items, zone, expanded, onToggle, busy, onAcceptAll, onDiscardAll, renderChange, laterConflicts = 0 }: BatchCardProps) {
+export default function BatchCard({ batch, items, zone, expanded, onToggle, busy, onAcceptAll, onDiscardAll, renderChange, laterConflicts = 0, found = false }: BatchCardProps) {
   const { i18n, t } = useLingui();
   const [confirming, setConfirming] = useState<Confirming>(null);
   const yes = useRef<HTMLButtonElement>(null);
@@ -89,14 +92,15 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
   const waitsOnCheck = items.some((c) => c.status === "unknown");
 
   return (
-    <article className="sheet-night overflow-clip rounded-2xl border border-notice/40 bg-card shadow-sm" aria-labelledby={headingId} data-testid={`batch-${batch.id}`}>
+    <article className={`sheet-night overflow-clip rounded-2xl border bg-card shadow-sm ${found ? "border-notice ring-2 ring-notice" : "border-notice/40"}`} aria-labelledby={headingId} id={`batch-card-${batch.id}`} data-code={batch.code ?? undefined} data-found={found ? "true" : undefined} data-testid={`batch-${batch.id}`}>
       <div className="@container">
         <div className="grid @4xl:grid-cols-[19rem_minmax(0,1fr)]">
-          <header className="min-w-0 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
+          <header className="relative min-w-0 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
+            <CodeChip code={batch.code} className="absolute right-3 top-3 z-10" />
             {/* On a wide card the batch and its two acts stay in view while its changes are read. */}
             <div className="flex min-w-0 flex-col gap-4 @4xl:sticky @4xl:top-28">
             <div className="space-y-2">
-              <p className={EYEBROW}>
+              <p className={`${EYEBROW} ${batch.code ? "pr-20" : ""}`}>
                 <Trans context="proposed changes: a batch">Waiting for you</Trans>
               </p>
               <h2 id={headingId} className="break-words font-display text-2xl leading-tight text-card-foreground @md:text-3xl">
@@ -194,6 +198,7 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
                           <span className="min-w-0 flex-1">
                             <span className="block break-words font-semibold text-card-foreground">{c.summary}</span>
                             <span className="block text-sm text-muted-foreground">
+                              {c.code ? <span className="tabular-nums font-semibold tracking-wide text-card-foreground">{c.code} · </span> : null}
                               {faceWords(i18n, face)}
                               {c.where ? ` · ${c.where.label}` : ""}
                               {c.status === "failed" ? (
@@ -219,15 +224,16 @@ export default function BatchCard({ batch, items, zone, expanded, onToggle, busy
 }
 
 /** A batch in the history: its decided changes, newest first. */
-export function HistoryBatch({ title, by, byKind, items, zone, renderDecided }: { title: string; by?: string; byKind?: "agent" | "person"; items: Decided[]; zone: string; renderDecided: (d: Decided) => ReactNode }) {
+export function HistoryBatch({ title, code, found = false, by, byKind, items, zone, renderDecided }: { title: string; code?: string | null; found?: boolean; by?: string; byKind?: "agent" | "person"; items: Decided[]; zone: string; renderDecided: (d: Decided) => ReactNode }) {
   const { i18n } = useLingui();
   const took = items.filter((d) => d.status === "accepted").length;
   const kinds = kindsOf(items.map((d) => ({ kind: d.kind ?? "setting", route: d.route ?? { method: "PUT", path: "" } })));
   return (
-    <article className="sheet-night overflow-hidden rounded-2xl border border-border bg-card shadow-sm" data-testid="history-batch">
+    <article className={`sheet-night overflow-hidden rounded-2xl border bg-card shadow-sm ${found ? "border-notice ring-2 ring-notice" : "border-border"}`} data-code={code ?? undefined} data-found={found ? "true" : undefined} data-testid="history-batch">
       <div className="@container">
         <div className="grid @4xl:grid-cols-[19rem_minmax(0,1fr)]">
-          <header className="flex min-w-0 flex-col gap-3 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
+          <header className="relative flex min-w-0 flex-col gap-3 border-b border-border bg-muted/40 p-5 @lg:p-6 @4xl:border-b-0 @4xl:border-r">
+            <CodeChip code={code} className="absolute right-3 top-3 z-10" />
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               <Trans context="proposed changes: a batch">Decided</Trans>
             </p>

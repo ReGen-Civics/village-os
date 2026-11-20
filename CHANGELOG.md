@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.36 (2026-11-20)
+
+### What changed for your village
+
+- **Role cards read cleanly.** Where a role is held is said on one line. The last conversation in a role's path is called "the final conversation". The pay split has one heading. A card opens at the part you clicked, and on a phone the card's tabs sit in one row.
+- **Short codes on the review page.** Every waiting proposal shows a short code in its corner: `B-27` is a batch and `B-27.2` the second change in it. Tap it to copy. A code is given when the proposal is filed and never changes or comes back. Older proposals are numbered in the order they were filed. A "Find a code" box opens the batch, rings the card and scrolls to it. Agents that propose changes get the codes back and cite them, and only a person accepts a change, as before.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+Yes, by adding only. Migration 0416 adds three empty columns for the codes, and the codes for older proposals are filled in the first time the review page or the agents' queue is read. The previous release ignores the new columns, so going back is safe.
+
+---
+
 ## 1.3.35 (2026-11-20)
 
 ### What changed for your village

@@ -108,9 +108,9 @@ describe("kind seat_terms: words only", () => {
 describe("the queue an agent reads", () => {
   const change = { id: "c-1", batchId: "b-1", kind: "variable" as const, summary: "Reply within ten days.", proposedBy: "u-lead", proposedByKind: "agent" as const };
 
-  it("carries batch, id, kind, sentence, state and whether the reader filed it, and nothing else", () => {
+  it("carries batch, id, code, kind, sentence, state and whether the reader filed it, and nothing else", () => {
     const item = queueItemOf({ ...change, status: "proposed", body: { value: "10" }, decidedBy: "u-x" } as any, "u-lead");
-    expect(item).toEqual({ id: "c-1", batchId: "b-1", kind: "variable", summary: "Reply within ten days.", state: "waiting", stuck: false, yours: true });
+    expect(item).toEqual({ id: "c-1", batchId: "b-1", code: null, kind: "variable", summary: "Reply within ten days.", state: "waiting", stuck: false, yours: true });
   });
 
   it("reads three states, and what did not land still waits on a person", () => {

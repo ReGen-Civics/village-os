@@ -487,3 +487,63 @@ describe("conflicts", () => {
     expect(within(batch).getByTestId("batch-confirm-conflict").textContent).toBe("A later change also edits one of these.");
   });
 });
+
+describe("short codes (20 Nov 2026)", () => {
+  const coded = [
+    { ...ROLE, code: "B-1.1", batchCode: "B-1" },
+    { ...PAGE, code: "B-1.2", batchCode: "B-1" },
+    { ...DIAL, code: "B-2.1", batchCode: "B-2" },
+  ];
+  const serve = () => {
+    BATCHES_SERVED = [
+      { ...BATCHES[0], code: "B-1" },
+      { ...BATCHES[1], code: "B-2" },
+    ];
+    stub({ changes: coded, decided: [{ ...DECIDED[0], code: "B-0.1", batchCode: "B-0" }] });
+  };
+
+  it("shows a batch's code and each change's code in the card's corner, and the summary stays the title", async () => {
+    serve();
+    render(<ProposedChanges />);
+    const first = await screen.findByTestId("batch-pcb_1");
+    expect(within(first).getAllByTestId("code-chip").map((c) => c.textContent)).toEqual(["B-1", "B-1.1", "B-1.2"]);
+    expect(within(within(first).getByTestId("proposal-pc_role")).getByRole("heading", { name: "Give the card a clearer aim." })).toBeTruthy();
+    // A folded batch lists its changes with their codes.
+    expect(within(screen.getByTestId("batch-pcb_2")).getByTestId("row-pc_dial").textContent).toContain("B-2.1");
+    // The history carries them too.
+    expect(within(screen.getByTestId("history-batch")).getAllByTestId("code-chip").map((c) => c.textContent)).toEqual(["B-0", "B-0.1"]);
+  });
+
+  it("copies the code when it is tapped", async () => {
+    serve();
+    const writeText = vi.fn(async () => undefined);
+    vi.stubGlobal("navigator", { ...navigator, clipboard: { writeText } });
+    render(<ProposedChanges />);
+    const card = await screen.findByTestId("proposal-pc_role");
+    fireEvent.click(within(card).getByTestId("code-chip"));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("B-1.1"));
+    await waitFor(() => expect(within(card).getByRole("status").textContent).toBe("Copied"));
+  });
+
+  it("finds a change by its code and rings it, a batch by its code, and a change by its old long id", async () => {
+    serve();
+    render(<ProposedChanges />);
+    await screen.findByTestId("batch-pcb_1");
+    const find = screen.getByTestId("filter-find");
+    fireEvent.change(find, { target: { value: "b-1.2" } });
+    expect(screen.getByTestId("proposal-pc_page").getAttribute("data-found")).toBe("true");
+    expect(screen.queryByTestId("proposal-pc_role")).toBeNull();
+    expect(screen.queryByTestId("batch-pcb_2")).toBeNull();
+    fireEvent.change(find, { target: { value: "B-2" } });
+    expect(screen.getByTestId("batch-pcb_2").getAttribute("data-found")).toBe("true");
+    expect(screen.getByTestId("proposal-pc_dial")).toBeTruthy();
+    expect(screen.queryByTestId("batch-pcb_1")).toBeNull();
+    fireEvent.change(find, { target: { value: "pc_role" } });
+    expect(screen.getByTestId("proposal-pc_role").getAttribute("data-found")).toBe("true");
+    expect(screen.queryByTestId("proposal-pc_page")).toBeNull();
+    fireEvent.change(find, { target: { value: "B-9" } });
+    expect(screen.getByText("Nothing waiting matches these filters.")).toBeTruthy();
+    fireEvent.change(find, { target: { value: "" } });
+    expect(screen.getByTestId("batch-pcb_2")).toBeTruthy();
+  });
+});
