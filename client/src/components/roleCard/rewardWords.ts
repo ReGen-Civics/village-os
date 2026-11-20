@@ -172,3 +172,15 @@ export function commitmentRowWords(i18n: I18n, min: number | null | undefined): 
     : i18n._(msg({ message: "Full commitment (100%)", context: "role card fact: a role offered whole" }));
 }
 
+/**
+ * A role's commitment in one line, from its own fields: the range words for a role that can be shared, the
+ * percent for a whole one, else the words it was written with. "The role in one minute", the card's seat column
+ * and the /roles index card all read this one line, so none of them can say it differently.
+ */
+export function commitmentLine(i18n: I18n, seat: Record<string, any> | null | undefined): string {
+  const card = seat?.card && typeof seat.card === "object" ? seat.card : {};
+  if (typeof card.commitmentMin === "number") return commitmentRowWords(i18n, card.commitmentMin);
+  if (Number.isInteger(card.commitmentPct)) return `${card.commitmentPct}%`;
+  return typeof seat?.timeCommitment === "string" ? seat.timeCommitment.trim() : "";
+}
+

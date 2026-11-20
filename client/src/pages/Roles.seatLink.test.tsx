@@ -1,30 +1,21 @@
 // @vitest-environment jsdom
 /**
- * /roles?seat=<id>: ONE SEAT'S CARD AS A LINK.
+ * /roles?seat=<id> AND ONE ROLE'S LINK.
  *
- * The page kept its open row in local state alone, so no address opened one
- * seat and a steward recruiting for a seat had nothing to send. Six promises:
+ * A steward recruiting for a role sends its link. Until the /roles index (20 Nov 2026) the link opened that row
+ * on /roles; now every role has its own page, `/roles/<slug>`, and the old links land there. Four promises:
  *
- *   1. A LINK OPENS ITS SEAT. The row expands, its header is scrolled to
- *      (instantly, under reduced motion) and takes focus.
- *   2. A LINK TO A SEAT THE PAGE NO LONGER LISTS SAYS SO in one line, with the
- *      seats still listed below it. Never a blank. The address drops `?seat=`
- *      and keeps everything else, so the bar names what is open.
- *   3. THE ADDRESS IS THE LINK TO WHAT IS OPEN. Opening and closing a row
- *      replaces the URL and adds no history entry.
- *   4. "Copy link" writes the absolute link inside the click. Where the
- *      clipboard refuses or is missing, a read-only field holds the link,
- *      selected.
- *   5. EVERY NAME CARRIES THE SEAT. The control sits outside the card's
- *      `aria-labelledby`, so its accessible name, the field's and the line it
- *      says each name the seat; a fixed "this seat" read the same under every
- *      row. The visible "Copy link" opens the accessible name.
- *   6. A DEMONSTRATION SEAT OFFERS NO LINK. Nobody is recruited for one.
+ *   1. AN OLD LINK LANDS ON THE ROLE'S PAGE, replacing the entry, so Back still leaves in one press.
+ *   2. A LINK TO A ROLE THE PAGE NO LONGER LISTS SAYS SO in one line, with the roles still listed below it.
+ *      The address drops `?seat=` and keeps everything else.
+ *   3. "Copy link" on the role's page writes the absolute link inside the click. Where the clipboard refuses or
+ *      is missing, a read-only field holds the link, selected. Its every name carries the role.
+ *   4. A DEMONSTRATION SEAT HAS NO PAGE AND NO LINK. Nobody is recruited for one.
  *
  * Every absence has a known-positive control beside it.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 
@@ -55,15 +46,9 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 }));
 
 import Roles from "./Roles";
+import RoleShare from "./RoleShare";
 import { roleForSlug } from "@shared/roleSlug";
 
-/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
-const powerCard = () =>
-  waitFor(() => {
-    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
-    if (!el) throw new Error("no card yet");
-    return el;
-  });
 
 
 class NoopIntersectionObserver {
@@ -157,115 +142,48 @@ afterEach(() => {
 });
 
 function renderRoles() {
-  const view = render(
+  return render(
     <Router>
       <Roles />
     </Router>,
   );
-  // The roles sit behind step one (the archetype pick); a linked seat opens them already.
-  const seeAll = screen.queryByRole("button", { name: "See all roles" });
-  if (seeAll) fireEvent.click(seeAll);
-  return view;
 }
+function renderRole(slug: string) {
+  window.history.replaceState(null, "", `/roles/${slug}`);
+  return render(
+    <Router>
+      <RoleShare />
+    </Router>,
+  );
+}
+const card = () => document.querySelector("[data-full-role-card]") as HTMLElement | null;
 
-const header = async (name: string) => (await screen.findByRole("heading", { level: 3, name })).closest("button")!;
-const card = () => document.querySelector("article[data-power-card]") as HTMLElement | null;
-
-describe("a link to one seat on /roles", () => {
-  it("opens that seat, scrolls its header into view without smooth motion, and gives the header focus", async () => {
-    window.history.replaceState(null, "", "/roles?seat=seed-keeper");
+describe("an old link to one role", () => {
+  it("lands on the role's own page, replacing the entry", async () => {
+    window.history.replaceState(null, "", "/roles?seat=seed-keeper&from=letter");
+    const before = window.history.length;
     renderRoles();
-    const seed = await header("Seed Keeper");
-    expect(seed.getAttribute("aria-expanded")).toBe("true");
-    // Known positive for the closed state: the neighbour stays shut.
-    expect((await header("Water Keeper")).getAttribute("aria-expanded")).toBe("false");
-    expect((await powerCard()).getAttribute("aria-labelledby")).toBe(seed.id);
-
-    await waitFor(() => expect(document.activeElement).toBe(seed));
-    expect(scrolled).toHaveBeenCalledTimes(1);
-    expect(scrolled.mock.contexts[0]).toBe(seed);
-    expect(scrolled).toHaveBeenCalledWith({ behavior: "instant", block: "start" });
-    // The address still names the open seat. The miss line is absent; the
-    // next test is its known positive.
-    expect(window.location.search).toBe("?seat=seed-keeper");
-    expect(screen.queryByText(MISSING)).toBeNull();
+    await waitFor(() => expect(window.location.pathname).toBe("/roles/seed-keeper"));
+    expect(window.history.length).toBe(before);
   });
 
-  it("says a seat the page no longer lists is gone, in one line, with every seat still listed", async () => {
-    window.history.replaceState(null, "", "/roles?seat=old-seat");
+  it("says a role the page no longer lists is gone, in one line, with every role still listed, dropping only ?seat=", async () => {
+    window.history.replaceState(null, "", "/roles?seat=retired-seat&from=letter#top");
     renderRoles();
-    const line = await screen.findByText(MISSING);
-    // In the page's polite region, which is there from the first paint.
-    expect(line.closest('[role="status"]')).toBeTruthy();
-    // Never a blank: both seats are listed, both shut, no card drawn, nothing scrolled to.
-    const water = await header("Water Keeper");
-    const seed = await header("Seed Keeper");
-    expect([water, seed].map((b) => b.getAttribute("aria-expanded"))).toEqual(["false", "false"]);
-    expect(card()).toBeNull();
-    expect(scrolled).not.toHaveBeenCalled();
-    // The address drops the seat it could not open, so the bar names what is open.
+    expect(await screen.findByText(MISSING)).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 3, name: "Seed Keeper" })).toBeTruthy();
     expect(window.location.pathname).toBe("/roles");
-    expect(window.location.search).toBe("");
-
-    // Known positive for every absence above: opening a row draws its card,
-    // writes its seat, and the line goes.
-    fireEvent.click(seed);
-    expect(seed.getAttribute("aria-expanded")).toBe("true");
-    expect(await powerCard()).toBeTruthy();
-    expect(window.location.search).toBe("?seat=seed-keeper");
-    expect(screen.queryByText(MISSING)).toBeNull();
-  });
-
-  it("drops only the seat a miss names from the address, keeping the rest and adding no history entry", async () => {
-    window.history.replaceState(null, "", "/roles?from=newsletter&seat=old-seat");
-    const entries = window.history.length;
-    const view = renderRoles();
-    await screen.findByText(MISSING);
-    expect(window.location.pathname).toBe("/roles");
-    expect(window.location.search).toBe("?from=newsletter");
-    expect(window.history.length).toBe(entries);
-
-    // Known positive: the same address naming a seat the page lists keeps
-    // `?seat=`, so what cleared it above was the miss.
-    view.unmount();
-    window.history.replaceState(null, "", "/roles?from=newsletter&seat=seed-keeper");
-    renderRoles();
-    expect((await header("Seed Keeper")).getAttribute("aria-expanded")).toBe("true");
-    expect(window.location.search).toBe("?from=newsletter&seat=seed-keeper");
-    expect(screen.queryByText(MISSING)).toBeNull();
-  });
-
-  it("keeps the open seat in the address, replacing the entry and never pushing one", async () => {
-    window.history.replaceState(null, "", "/roles?from=newsletter");
-    renderRoles();
-    const seed = await header("Seed Keeper");
-    const water = await header("Water Keeper");
-    const entries = window.history.length;
-
-    fireEvent.click(seed);
-    expect(window.location.search).toBe("?from=newsletter&seat=seed-keeper");
-    fireEvent.click(water);
-    expect(window.location.search).toBe("?from=newsletter&seat=water-keeper");
-    expect(water.getAttribute("aria-expanded")).toBe("true");
-    // Closing the open row takes the seat out; the two writes above are its positive.
-    fireEvent.click(water);
-    expect(water.getAttribute("aria-expanded")).toBe("false");
-    expect(window.location.search).toBe("?from=newsletter");
-    expect(window.location.pathname).toBe("/roles");
-    // Back is not polluted: three writes, no new entry.
-    expect(window.history.length).toBe(entries);
-    // Known positive for the instrument: a push does add an entry here.
-    window.history.pushState(null, "", "/roles");
-    expect(window.history.length).toBe(entries + 1);
+    expect(window.location.search).toBe("?from=letter");
+    // Control: a link that names a listed role says nothing of the kind.
+    expect(screen.getAllByText(MISSING)).toHaveLength(1);
   });
 });
 
-describe("copying a seat's link", () => {
-  it("writes the absolute link inside the click, says so politely, and the link opens that seat", async () => {
+describe("copying a role's link", () => {
+  it("writes the absolute link inside the click, says so politely, and the link opens that role", async () => {
     const writeText = vi.fn(async (_s: string) => undefined);
     setClipboard({ writeText });
-    const view = renderRoles();
-    fireEvent.click(await header("Seed Keeper"));
+    const view = renderRole("seed-keeper");
     const control = await screen.findByRole("button", { name: COPY("Seed Keeper") });
     // Below the card, outside it.
     expect(card()).toBeTruthy();
@@ -277,21 +195,14 @@ describe("copying a seat's link", () => {
     const copied = writeText.mock.calls[0][0];
     // The role's own page (the lead, 20 Nov 2026), which a messaging app previews with the role.
     expect(copied).toBe(`${window.location.origin}/roles/seed-keeper`);
-    expect(new URL(copied).origin).toBe(window.location.origin);
 
-    // The line names the seat it copied.
+    // The line names the role it copied.
     const said = await screen.findByText(COPIED("Seed Keeper"));
     expect(said.closest('[role="status"]')).toBeTruthy();
-    // No fallback field after a copy that worked; the next test is its positive.
     expect(screen.queryByRole("textbox", { name: FIELD("Seed Keeper") })).toBeNull();
 
-    // The link it copied names that seat: its own page reads the address back to it (shared/roleSlug.ts).
     view.unmount();
     expect(roleForSlug(new URL(copied).pathname.replace(/^\/roles\//, ""), org.roles)?.id).toBe("seed-keeper");
-    // The old link still opens the row (control).
-    window.history.replaceState(null, "", "/roles?seat=seed-keeper");
-    renderRoles();
-    expect((await header("Seed Keeper")).getAttribute("aria-expanded")).toBe("true");
   });
 
   it("selects the link in a read-only field when the clipboard refuses", async () => {
@@ -299,10 +210,8 @@ describe("copying a seat's link", () => {
       throw new DOMException("Write permission denied.", "NotAllowedError");
     });
     setClipboard({ writeText });
-    renderRoles();
-    fireEvent.click(await header("Water Keeper"));
+    renderRole("water-keeper");
     const control = await screen.findByRole("button", { name: COPY("Water Keeper") });
-    // No field before a copy is tried; the field below is its positive.
     expect(screen.queryByRole("textbox", { name: FIELD("Water Keeper") })).toBeNull();
 
     fireEvent.click(control);
@@ -314,15 +223,12 @@ describe("copying a seat's link", () => {
     await waitFor(() => expect(document.activeElement).toBe(field));
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, link.length]);
     expect(screen.getByText(/Copying did not work here/).closest('[role="status"]')).toBeTruthy();
-    // It does not claim a copy; the test above is the positive for this line.
     expect(screen.queryByText(/copied\.$/)).toBeNull();
   });
 
   it("selects the link in the field when the browser has no clipboard at all", async () => {
     setClipboard(undefined);
-    renderRoles();
-    fireEvent.click(await header("Seed Keeper"));
-    // Known positive: the control is there to press.
+    renderRole("seed-keeper");
     fireEvent.click(await screen.findByRole("button", { name: COPY("Seed Keeper") }));
     const field = (await screen.findByRole("textbox", { name: FIELD("Seed Keeper") })) as HTMLInputElement;
     expect(field.value).toBe(`${window.location.origin}/roles/seed-keeper`);
@@ -330,45 +236,27 @@ describe("copying a seat's link", () => {
     expect([field.selectionStart, field.selectionEnd]).toEqual([0, field.value.length]);
   });
 
-  it("names its own seat in the control, so a different seat's row does not answer to it", async () => {
+  it("names its own role in the control, and the page has one", async () => {
     setClipboard({ writeText: vi.fn(async (_s: string) => undefined) });
-    renderRoles();
-    fireEvent.click(await header("Seed Keeper"));
+    renderRole("seed-keeper");
     const seed = await screen.findByRole("button", { name: COPY("Seed Keeper") });
-    // The visible words open the accessible name, so a reader who says what
-    // they see ("Copy link") reaches the control.
     expect(seed.textContent).toBe("Copy link");
     expect(seed.getAttribute("aria-label")).toBe(COPY("Seed Keeper"));
-    // One copy control on the page, and it is this seat's.
     expect(screen.getAllByRole("button", { name: ANY_COPY })).toEqual([seed]);
     expect(screen.queryByRole("button", { name: COPY("Water Keeper") })).toBeNull();
-
-    // The control: open the other row. A copy control is on the page again,
-    // and it answers to its own seat's name and not to Seed Keeper's.
-    fireEvent.click(await header("Water Keeper"));
-    const water = await screen.findByRole("button", { name: COPY("Water Keeper") });
-    await waitFor(() => expect(screen.getAllByRole("button", { name: ANY_COPY })).toEqual([water]));
-    expect(screen.queryByRole("button", { name: COPY("Seed Keeper") })).toBeNull();
   });
 
-  it("offers no link on a demonstration seat, which nobody is recruited for", async () => {
-    org = {
-      ...ORG,
-      roles: [...ORG.roles, { ...seat("demo-steward", "Demo Steward", "open"), isExample: true }],
-    };
+  it("offers no page and no link for a demonstration seat, which nobody is recruited for", async () => {
+    org = { ...ORG, roles: [...ORG.roles, { ...seat("demo-steward", "Demo Steward", "open"), isExample: true }] };
     setClipboard({ writeText: vi.fn(async (_s: string) => undefined) });
-    renderRoles();
-    const demo = await header("Demo Steward");
-    fireEvent.click(demo);
-    // The row is open and its card is drawn, so the absent control below is
-    // not a shut row.
-    expect(demo.getAttribute("aria-expanded")).toBe("true");
-    expect(card()?.getAttribute("aria-labelledby")).toBe(demo.id);
+    renderRole("demo-steward");
+    await waitFor(() => expect(document.querySelector("[data-role-page-missing]")).toBeTruthy());
     expect(screen.queryByRole("button", { name: ANY_COPY })).toBeNull();
-    expect(screen.queryByRole("button", { name: COPY("Demo Steward") })).toBeNull();
-
-    // Known positive: a real seat on the same page carries its link.
-    fireEvent.click(await header("Seed Keeper"));
-    expect(await screen.findByRole("button", { name: COPY("Seed Keeper") })).toBeTruthy();
+    // Nor a card on the index (control: a real seat has one).
+    cleanup();
+    window.history.replaceState(null, "", "/roles");
+    renderRoles();
+    expect(await screen.findByRole("heading", { level: 3, name: "Seed Keeper" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { level: 3, name: "Demo Steward" })).toBeNull();
   });
 });

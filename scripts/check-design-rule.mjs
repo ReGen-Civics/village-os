@@ -102,6 +102,9 @@ const PAGES = [
 const JOURNEY = [
   ...PAGES,
   "client/src/components/journey/look.ts",
+  // The /roles index's card and its coming-soon group (20 Nov 2026): born inside the rule.
+  "client/src/components/roleCard/RoleIndexCard.tsx",
+  "client/src/components/roleCard/ComingSoonRoles.tsx",
   "client/src/components/journey/Trail.tsx",
   "client/src/components/journey/Leaf.tsx",
   "client/src/components/calendar/MoonSpiral.tsx",

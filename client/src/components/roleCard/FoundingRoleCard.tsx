@@ -13,7 +13,7 @@
  * under "How you're chosen" leave them out.
  */
 import { lazy, Suspense, type ReactNode } from "react";
-import { BadgeCheck, CalendarDays, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
+import { BadgeCheck, CalendarDays, Clock, Coins, Compass, DoorOpen, Globe2, Handshake, KeyRound, Layers, Map, MapPin, ShieldCheck, Sprout, UserRound, Users } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
@@ -173,8 +173,12 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   // Read from the params, which carry the card's own words for where (sections.where) when it has them.
   const rows = roleCardView(p.params ?? seat).rows;
   const row = (id: string) => rows.find((r) => r.id === id)?.lines.join(", ") ?? "";
-  // The commitment and where are said once, in the one-minute summary at the top of the pieces (the lead, 20 Nov 2026).
-  const facts: Array<{ icon: LucideIcon; label: string; value: string }> = [
+  // Commitment and where come back as tiles beside track and languages (the Amora operations role, 20 Nov 2026,
+  // reversing 1.3.38's "said once" on purpose): the seat column had two tiles and empty space under them. Each tile
+  // reads the very line "The role in one minute" draws, so there is one source and nothing to keep twice.
+  const facts: Array<{ icon: LucideIcon; label: string; value: string; panel?: boolean }> = [
+    { panel: true, icon: Clock, label: t({ message: "Commitment", context: "role in one minute: a fact" }), value: p.oneMinute.commitment },
+    { panel: true, icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: p.oneMinute.where },
     { icon: Layers, label: t({ message: "Track", context: "founding card fact" }), value: row("track") ? trackWords(i18n, row("track")) : "" },
     { icon: Globe2, label: t({ message: "Languages", context: "founding card fact" }), value: row("languages") },
   ].filter((f) => f.value);
@@ -404,6 +408,25 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
     });
   }
 
+  // Track, languages, commitment and where, in one place: the seat column on a desktop, under the one-minute panel on a phone.
+  // On a phone the tiles sit right under the panel, whose own tiles already say commitment and where, so only track
+  // and languages are added there: the same line twice on one screen reads as a mistake.
+  const shownFacts = p.wide ? facts : facts.filter((f) => !f.panel);
+  const factTiles =
+    shownFacts.length > 0 ? (
+      <dl className="grid grid-cols-2 gap-2" data-testid="card-facts">
+        {shownFacts.map((f) => (
+          <div key={f.label} className={`min-w-0 rounded-xl px-3 py-2.5 ${p.wide ? "bg-card" : "bg-muted/50"}`}>
+            <dt className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
+              <f.icon className="size-3.5 text-notice" aria-hidden="true" />
+              {f.label}
+            </dt>
+            <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+    ) : null;
+
   return (
     // Laid out by the CARD's width, never the screen's (container queries): the same card sits across
     // the page on /roles, in an application's narrow column and on a decider's page.
@@ -427,19 +450,9 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             {p.sections?.paid && <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>}
           </div>
         </div>
-        {facts.length > 0 && (
-          <dl className="grid grid-cols-2 gap-2" data-testid="card-facts">
-            {facts.map((f) => (
-              <div key={f.label} className="min-w-0 rounded-xl bg-card px-3 py-2.5">
-                <dt className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-                  <f.icon className="size-3.5 text-notice" aria-hidden="true" />
-                  {f.label}
-                </dt>
-                <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
+        {/* On a desktop the tiles sit in the seat column. On a phone they follow the one-minute panel and its Apply,
+            so the Apply is on the first screen (the lead, 20 Nov 2026: Apply "visible from the start"). */}
+        {p.wide && factTiles}
       </header>
       <div className="flex min-w-0 flex-col gap-6 p-5 @lg:p-7">
         {/* The role in one minute, then the tabs for depth (the lead, 20 Nov 2026). On a desktop the act sits in it. */}
@@ -456,6 +469,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             ) : null
           }
         />
+        {!p.wide && factTiles}
         <RolePieces pieces={pieces} tabs={tabs} level={lifted ? 3 : 4} after={p.after} initialAll={p.allPieces} marks={p.marks} />
       </div>
     </div>

@@ -1,6 +1,6 @@
 /**
  * THE ROSTER (Rye, 17 Nov 2026, approved mockup https://claude.ai/artifact/FACiWjD7FWeNuDGKxFA6bM): the roles
- * held now, one card per person, for both of FoundingLineup's views. Loaded after the page's first view,
+ * held now, one card per person, on the /roles index's "Holding it now". Loaded after the page's first view,
  * because it sits below the open roles. Grouping and order live in ./roster.ts.
  */
 import { ArrowRight, Bot, UserRound } from "lucide-react";
@@ -8,7 +8,19 @@ import { Link } from "wouter";
 import { useLingui } from "@lingui/react/macro";
 import { applyHrefForRole } from "./FullRoleCard";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
-import type { FilledRole, LineupView } from "./FoundingLineup";
+
+/** The two ways a roster is drawn: cards in a grid ("sheet"), or crests in a row ("formation"). */
+export type LineupView = "sheet" | "formation";
+
+/** A role of the founding circle that someone holds. */
+export interface FilledRole {
+  id: string;
+  name: string;
+  /** Holders' names as the village shows them to this reader; empty when it shows none. */
+  holders: string[];
+  /** Still recruiting (the lead, 17 Nov 2026): the roster keeps it as held and offers Apply beside it. */
+  recruiting?: boolean;
+}
 import { rosterOf, type RosterEntry } from "./roster";
 
 /** The Seed of Life as quiet line work behind a roster card's crest. */
@@ -93,7 +105,7 @@ function RosterCard({ entry, team, variant }: { entry: RosterEntry; team: string
   );
 }
 
-/** The cards, in a list FoundingLineup lays out: "filled-roles" on the team sheet, "formation-roster" in the formation. */
+/** The cards, in a list the page lays out: "filled-roles" on the team sheet, "formation-roster" in the formation. */
 export default function RosterList({ filled, team, variant, className }: { filled: FilledRole[]; team: string | null; variant: LineupView; className: string }) {
   // One card per person, every role they hold listed; alphabetical, so the order says nothing.
   const roster = rosterOf(filled);

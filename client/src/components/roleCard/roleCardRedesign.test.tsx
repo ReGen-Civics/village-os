@@ -43,7 +43,7 @@ const seat = () => ({
   notMine: ["Changing the pay bands"],
   responsibilities: ["Weekly: reconcile the accounts"],
   signsStretched: "Late reports",
-  card: { commitmentPct: 60, conversations: [] },
+  card: { commitmentPct: 60, conversations: [], track: "contractor" },
 });
 
 let answer: Record<string, unknown>;
@@ -87,8 +87,24 @@ describe("the role in one minute", () => {
     expect(summary.querySelector('[data-one-minute-fact="commitment"]')?.textContent).toContain("60%");
     expect(summary.querySelector('[data-one-minute-fact="price"]')?.textContent).toContain("$9,000 a moon for the full role");
     expect(summary.querySelector('[data-one-minute-fact="where"]')?.textContent).toContain("On the land");
-    // Said once: the seat column no longer repeats the commitment or where.
-    expect((el.querySelector("header") as HTMLElement).textContent).not.toContain("60%");
+    // jsdom is narrow, so this is the phone: the card's other tiles follow the panel and its Apply, outside the seat
+    // column, and leave commitment and where to the panel right above them (one line, said once per screen).
+    const facts = el.querySelector('[data-testid="card-facts"]') as HTMLElement;
+    expect(facts.textContent).toContain("Paid contractor");
+    expect((el.querySelector("header") as HTMLElement).contains(facts)).toBe(false);
+    expect(summary.compareDocumentPosition(facts) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(facts.textContent).not.toContain("Commitment");
+    expect(facts.textContent).not.toContain("Where");
+  });
+
+  it("on a desktop the seat column draws commitment and where as tiles, from the panel's own lines, once (the operations role, 20 Nov 2026)", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+    const el = await card();
+    const facts = el.querySelectorAll('[data-testid="card-facts"]');
+    expect(facts).toHaveLength(1);
+    expect((el.querySelector("header") as HTMLElement).contains(facts[0])).toBe(true);
+    expect(facts[0].textContent).toContain("Commitment60%");
+    expect(facts[0].textContent).toContain("WhereOn the land");
   });
 
   it("puts a phone's Apply under the goal, once, with the bar along the foot kept as the card's last child", async () => {
