@@ -138,22 +138,6 @@ export default function FoundingTeam({
     </div>
   );
 
-  // On the team sheet the card opens under its own row, so the reader stays where they clicked (QA F7). The formation
-  // has no rows to open under, and a sheet with nothing open has no card, so both keep the slot below the lineup.
-  const inlineCard = view === "sheet" && current !== null;
-  const cardSlot = (
-    <div id={`${headingId}-card`} tabIndex={-1} className="scroll-mt-24 focus:outline-none" data-founding-card-slot="">
-      {current ? (
-        <>
-          <FullRoleCard key={String(current.seat.id)} seat={current.seat} circleName={current.circleName} sections={current.sections} villagePay={villagePay} register="founding" lifted={lead} />
-          {onOpenBuilt && <LeadBuilds leadName={String(current.seat.name ?? "")} roles={builds[String(current.seat.id)] ?? []} onOpen={onOpenBuilt} />}
-        </>
-      ) : wide ? (
-        <p className="rounded-2xl border border-dashed border-notice/40 p-8 text-muted-foreground">{t({ message: "Choose a role to read it in full.", context: "founding team, no role open" })}</p>
-      ) : null}
-    </div>
-  );
-
   return (
     <section aria-labelledby={headingId} className={`relative mx-auto max-w-6xl ${lead ? "mb-10 sm:mb-16" : "mb-16"}`} data-founding-team="">
       <div className={`relative overflow-hidden ${lead ? "border-b py-4 sm:border-t sm:py-14" : "border-y py-10 sm:py-14"} border-notice/40`}>
