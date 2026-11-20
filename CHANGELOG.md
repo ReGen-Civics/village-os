@@ -40,6 +40,24 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.33 (2026-11-19)
+
+### What changed for your village
+
+- **Role cards read as cards.** Lists show as bullets with the label before a colon in bold. "Why it matters" becomes "What {village} needs from you", with the village's shared lines first and then the role's own. "Not mine to hold" reads "Goes to the {circle}". "Bring me" sits beside what the role decides. The pay band, what it pays and "Value in equals value out." each appear once.
+- **Dated deliverables, as a timeline.** A role can carry up to 12 dated deliverables (`sections.deliverables`), drawn as a timeline chart with a text list beside it; the founding team gets one combined chart. A card with no dated rows reads as before.
+- **One shared rhythm, written once.** Four new village settings hold text every card shares: the shared lines (`org.role_card_shared`), the weekly and moon rhythm everyone attends (`org.role_card_rhythm`), the default onboarding steps (`org.role_card_onboarding`) and when the first review happens (`org.role_card_first_review`). Each card shows the shared rhythm first, then its own.
+- **"Once you're selected"**, a new tab after "Holding it well", lists the onboarding steps (the village default, or the role's own).
+- **Where the role is held, in the village's words** (`sections.where`), in place of the fixed on the land or remote label.
+- **How to book each conversation** shows on the public card, from the interviewing role's own booking setting, which may now be a WhatsApp link or simply the word "whatsapp".
+- **Coming-soon roles have a waitlist.** On the roles page they now sit under the open roles, each saying it is not open yet and may change, with a "Notify me" form: email, an optional WhatsApp number and which roles interest the person. Sign-ups are kept privately, readable only by admins, removed when a member is erased, and nothing is sent from them. The one-circle introduction shows only while the village has a single live circle.
+
+### What you must do
+
+Nothing is required. Fill the four new settings and the role cards' new sections when you are ready; until then cards read as before. One migration (0414) adds the waitlist table; it applies by itself at boot.
+
+---
+
 ## 1.3.32 (2026-11-19)
 
 ### What changed for your village

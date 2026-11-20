@@ -51,7 +51,7 @@ const sorted = (o: object) => Object.keys(o).sort();
 
 const PUBLIC_CARD_KEYS = [
   "complete", "missing", "written", "of", "gated", "track", "villageGoals", "selectionCriteria", "conversations", "conversationMode", "firstConversation",
-  "whereWorked", "languages", "reviewAfterDays", "publicPay", "alwaysChecked", "commitmentPct",
+  "whereWorked", "languages", "reviewAfterDays", "firstReview", "publicPay", "alwaysChecked", "commitmentPct",
   // 0374: who may hold it, public at every tier like the rest of the card.
   "heldBy", "agentMayHold",
   // 0383: whether the role needs its whole commitment, public like the percent beside it.
@@ -166,5 +166,15 @@ describe("the card's parameters", () => {
     expect(gateOf(role()).gate.complete).toBe(true);
     const gatedSeat = projectSeat(incomplete, held, VISITOR, { ...ctx, cardGate: true });
     expect((gatedSeat.card as any).gated).toBe(true);
+  });
+
+  it("names how each conversation is booked from the interviewing role's own setting, never the role's own link field", () => {
+    const booking = new Map<string, string | null>([["human-ops", "https://cal.example.org/ops"], ["visionary", "whatsapp"]]);
+    const c = projectSeat(role(), held, VISITOR, { ...ctx, roleBooking: booking }).card as Record<string, any>;
+    expect(c.conversations.map((s: any) => s.booking)).toEqual([{ kind: "link", url: "https://cal.example.org/ops" }, { kind: "note" }]);
+    expect(c).not.toHaveProperty("bookingUrl");
+    // Control: with no setting on the interviewing roles, no step carries a booking.
+    const none = projectSeat(role(), held, VISITOR, { ...ctx, roleBooking: new Map() }).card as Record<string, any>;
+    expect(none.conversations.some((s: any) => "booking" in s)).toBe(false);
   });
 });

@@ -14,7 +14,7 @@
  * role's card opens below, piece by piece. A phone opens on the team alone,
  * one thing at a time; a desktop opens on the first role's card.
  */
-import { useId, useState, type ReactNode } from "react";
+import { lazy, Suspense, useId, useState, type ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
@@ -23,6 +23,9 @@ import FoundingLineup, { type FilledRole, type LineupView } from "./FoundingLine
 import FullRoleCard from "./FullRoleCard";
 import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
 import { useWide } from "./useWide";
+
+// The team's deliverables on one timeline (the lead, 19 Nov 2026), loaded only once two roles have dated ones.
+const DeliverablesGantt = lazy(() => import("./DeliverablesGantt"));
 
 /** The Seed of Life as quiet line work: structure, never ornament that moves. */
 function SeedLines({ className = "" }: { className?: string }) {
@@ -69,6 +72,7 @@ export default function FoundingTeam({
   builds = {},
   onOpenBuilt,
   orgPreview = null,
+  comingSoon = null,
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -86,6 +90,8 @@ export default function FoundingTeam({
   onOpenBuilt?: (id: string) => void;
   /** The org chart beside the roles held now (Rye, 16 Nov 2026): one link into /circles. */
   orgPreview?: ReactNode;
+  /** The coming-soon roles and their waitlist, drawn by the lineup under the open roles (the lead, 19 Nov 2026). */
+  comingSoon?: ReactNode;
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -107,6 +113,10 @@ export default function FoundingTeam({
   const shown = open === null ? (wide ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
   if (roles.length === 0) return null;
   const current = roles.find((r) => String(r.seat.id) === shown) ?? null;
+  // Every open founding role's dated deliverables, each row named by its role.
+  const withDates = roles.filter((r) => (r.sections?.deliverables?.length ?? 0) > 0);
+  const teamRows = withDates.length >= 2 ? withDates.flatMap((r) => (r.sections?.deliverables ?? []).map((d) => ({ ...d, role: String(r.seat.name ?? "") }))) : [];
+  const teamTitle = t({ message: "The team's deliverables", context: "founding team: every open role's dated outcomes on one timeline" });
 
   return (
     <section aria-labelledby={headingId} className={`relative mx-auto max-w-6xl ${lead ? "mb-10 sm:mb-16" : "mb-16"}`} data-founding-team="">
@@ -137,6 +147,7 @@ export default function FoundingTeam({
           roles={roles}
           filled={filled}
           orgPreview={orgPreview}
+          comingSoon={comingSoon}
           fill={fill}
           view={view}
           onView={setView}
@@ -168,6 +179,14 @@ export default function FoundingTeam({
             <p className="rounded-2xl border border-dashed border-notice/40 p-8 text-muted-foreground">{t({ message: "Choose a role to read it in full.", context: "founding team, no role open" })}</p>
           ) : null}
         </div>
+        {teamRows.length > 0 && (
+          <section aria-label={teamTitle} className="sheet-night rounded-2xl border border-notice/40 bg-card p-5 shadow-sm sm:p-7" data-team-deliverables="">
+            <p className="mb-4 font-display text-2xl text-card-foreground">{teamTitle}</p>
+            <Suspense fallback={null}>
+              <DeliverablesGantt rows={teamRows} label={teamTitle} />
+            </Suspense>
+          </section>
+        )}
       </div>
     </section>
   );

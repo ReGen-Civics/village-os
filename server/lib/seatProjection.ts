@@ -155,6 +155,8 @@ export interface SeatProjectionCtx {
   listing?: ListingViewer;
   /** Role names by id, so a card can name its interviewing roles. `projectSeats` fills it from the roles it is handed. */
   roleNames?: ReadonlyMap<string, string>;
+  /** Each role's own booking setting by id, so a card can say how each conversation is booked. `projectSeats` fills it. */
+  roleBooking?: ReadonlyMap<string, string | null>;
   /** The village setting that holds Apply back until a card is complete (org.apply_needs_complete_card). */
   cardGate?: boolean;
   /** The village settings the card quotes: who holds first conversations, who consents paid roles. */
@@ -481,7 +483,7 @@ export function projectSeat(
     // agent's name, which stays off every public surface (PUBLIC_AGENT_NAME above).
     ...(held.length > 0 && held.every((h) => h.isAgent) ? { heldByAgent: true } : {}),
     state: seatState(role, held, ctx.now),
-    card: roleCard(role, held.length, seatState(role, held, ctx.now), tier, { roleNames: ctx.roleNames, gated: ctx.cardGate, words: ctx.cardWords }),
+    card: roleCard(role, held.length, seatState(role, held, ctx.now), tier, { roleNames: ctx.roleNames, roleBooking: ctx.roleBooking, gated: ctx.cardGate, words: ctx.cardWords }),
     holderCount: held.length,
     isExample: role.isExample,
     ...(tier.structure ? seatStructure(role, held, ctx.now) : {}),
@@ -513,6 +515,10 @@ export function projectSeats(
     bySeat.set(a.orgRoleId, list);
   }
   const viewer: ListingViewer = ctx.listing ?? { seesUnlisted: false };
-  const named: SeatProjectionCtx = ctx.roleNames ? ctx : { ...ctx, roleNames: new Map(roles.map((r) => [r.id, r.name])) };
+  const named: SeatProjectionCtx = {
+    ...ctx,
+    roleNames: ctx.roleNames ?? new Map(roles.map((r) => [r.id, r.name])),
+    roleBooking: ctx.roleBooking ?? new Map(roles.map((r) => [r.id, r.bookingUrl ?? null])),
+  };
   return roles.filter((r) => r.active && visibleTo(r, viewer)).map((r) => projectSeat(r, bySeat.get(r.id) ?? [], tier, named));
 }

@@ -10,7 +10,7 @@
  *   - CONTROL: a holder row with no handle (below the member tier) gets no link.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within, waitFor } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
 import { ROLE_ANCHOR } from "@shared/playerCard";
@@ -38,6 +38,15 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 }));
 
 import Roles from "./Roles";
+
+/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
+const powerCard = () =>
+  waitFor(() => {
+    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
+    if (!el) throw new Error("no card yet");
+    return el;
+  });
+
 
 class NoopIntersectionObserver {
   observe() {}
@@ -121,6 +130,7 @@ afterEach(() => {
 const open = async (name: string) => {
   const btn = (await screen.findByRole("heading", { level: 3, name })).closest("button")!;
   fireEvent.click(btn);
+  await powerCard();
 };
 
 describe("See their card on /roles", () => {

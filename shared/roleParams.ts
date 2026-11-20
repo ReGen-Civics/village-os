@@ -231,6 +231,8 @@ function parseBooking(raw: unknown): Parsed<string | null> {
   if (typeof raw !== "string") return bad("The booking link is a web address.");
   const s = raw.trim();
   if (!s) return ok(null);
+  // "whatsapp" alone: the conversation happens on WhatsApp, with no number on the page (shared/cardBooking.ts).
+  if (s.toLowerCase() === "whatsapp") return ok("whatsapp");
   if (s.length > 300) return bad("The booking link is at most 300 characters.");
   let url: URL;
   try {

@@ -96,6 +96,8 @@ export interface FoundingLineupProps {
   cardId: string;
   /** The org chart beside the roster (Rye, 16 Nov 2026): a picture in picture of /circles, one link into it. */
   orgPreview?: ReactNode;
+  /** The coming-soon roles and their waitlist (the lead, 19 Nov 2026): under the open roles, above the roles held now. */
+  comingSoon?: ReactNode;
 }
 
 /**
@@ -119,7 +121,7 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
   );
 }
 
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null }: FoundingLineupProps) {
   const { t } = useLingui();
   const circle = roles[0]?.circleName ?? null;
 
@@ -208,6 +210,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               );
             })}
           </ul>
+          {comingSoon}
           {filled.length > 0 && (
             <>
               <p className="mt-3 text-xs font-bold uppercase tracking-widest text-notice">{t({ message: "Holding it now", context: "team sheet group: the roles held now" })}</p>
@@ -258,6 +261,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               );
             })}
           </ul>
+          {comingSoon && <div className="relative mx-auto mt-10 max-w-3xl text-left">{comingSoon}</div>}
           {filled.length > 0 && (
             <>
               <p className="relative mb-5 mt-10 flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">

@@ -10,6 +10,17 @@
  */
 import { Trans, useLingui } from "@lingui/react/macro";
 import { roleCardView } from "@shared/roleCardView";
+import { lazy, Suspense } from "react";
+import type { CardBooking } from "@shared/cardBooking";
+
+// How each conversation is booked (the lead, 19 Nov 2026), loaded only by a card whose conversations carry a booking.
+const CardBookingLink = lazy(() => import("./CardBookingLink"));
+const book = (b: CardBooking | null | undefined) =>
+  b && (
+    <Suspense fallback={null}>
+      <CardBookingLink b={b} />
+    </Suspense>
+  );
 
 export default function RoleCardParams({ seat }: { seat: Record<string, any> }) {
   const { t } = useLingui();
@@ -31,11 +42,17 @@ export default function RoleCardParams({ seat }: { seat: Record<string, any> }) 
               <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{r.label}</dt>
               <dd>
                 {r.lines.length === 1 ? (
-                  r.lines[0]
+                  <>
+                    {r.lines[0]}
+                    {book(r.bookings?.[0])}
+                  </>
                 ) : (
                   <ul className="space-y-0.5">
                     {r.lines.map((l, i) => (
-                      <li key={i}>{l}</li>
+                      <li key={i}>
+                        {l}
+                        {book(r.bookings?.[i])}
+                      </li>
                     ))}
                   </ul>
                 )}
