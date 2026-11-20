@@ -41,11 +41,20 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
   const [seen, setSeen] = useState<Set<number>>(() => new Set([at]));
   const moved = useRef(false);
   const headings = useRef<Array<HTMLElement | null>>([]);
+  const rail = useRef<HTMLUListElement | null>(null);
   const H = HEADING[level];
 
   useEffect(() => {
     if (!moved.current || all) return;
     headings.current[at]?.focus();
+  }, [at, all]);
+
+  // The open tab stays in sight on a phone, where the rail scrolls sideways. Only the rail moves, never the page.
+  useEffect(() => {
+    const ul = rail.current;
+    const here = ul?.querySelector<HTMLElement>("[aria-current]");
+    if (!ul || !here || ul.scrollWidth <= ul.clientWidth) return;
+    ul.scrollLeft = here.offsetLeft - (ul.clientWidth - here.offsetWidth) / 2;
   }, [at, all]);
 
   if (pieces.length === 0) return null;
@@ -71,21 +80,23 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
 
   return (
     <div className="flex min-w-0 flex-col gap-5" onKeyDown={onKey} data-role-pieces="">
-      <div className="flex flex-wrap items-center gap-2">
+      {/* On a phone the rail is one row that scrolls sideways and stays under the site header while the card is read (QA F8).
+          From sm up it wraps as it always did. The DOM order is the same at every width, so the tab order is too. */}
+      <div className="flex items-center gap-2 max-sm:sticky max-sm:top-24 max-sm:z-10 max-sm:-mx-5 max-sm:border-b max-sm:border-border max-sm:bg-card max-sm:px-5 max-sm:py-2 sm:flex-wrap" data-piece-rail="">
         {!all && (
-          <nav aria-label={t({ message: "Pieces of this role", context: "role card piece rail" })} className="contents">
-            <ul className="flex flex-wrap gap-1.5">
+          <nav aria-label={t({ message: "Pieces of this role", context: "role card piece rail" })} className="min-w-0 flex-1 sm:contents">
+            <ul ref={rail} className="relative flex gap-1.5 overflow-x-auto overscroll-x-contain sm:flex-wrap sm:overflow-visible" data-piece-scroll="">
               {pieces.map((p, k) => {
                 const Icon = p.icon;
                 const here = k === i;
                 return (
-                  <li key={p.key}>
+                  <li key={p.key} className="shrink-0">
                     <button
                       type="button"
                       onClick={() => go(k)}
                       aria-current={here ? "step" : undefined}
                       aria-controls={`${base}-${p.key}`}
-                      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice text-background" : seen.has(k) ? "border-border text-card-foreground hover:border-notice/60" : "border-border/60 text-muted-foreground hover:border-notice/60"}`}
+                      className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${here ? "border-notice bg-notice text-background" : seen.has(k) ? "border-border text-card-foreground hover:border-notice/60" : "border-border/60 text-muted-foreground hover:border-notice/60"}`}
                       data-piece-tab={p.key}
                     >
                       <Icon className="size-4" aria-hidden="true" />
@@ -107,10 +118,10 @@ export default function RolePieces({ pieces, level, after, marks, initial = 0, i
           type="button"
           onClick={() => setAll((a) => !a)}
           aria-pressed={all}
-          className="ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1 text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 py-1 sm:ml-auto text-sm text-muted-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <Rows3 className="size-4" aria-hidden="true" />
-          {all ? t({ message: "One piece at a time", context: "role card: back to the stepped view" }) : t({ message: "Show every piece", context: "role card: open every piece at once" })}
+          <span className="max-sm:sr-only">{all ? t({ message: "One piece at a time", context: "role card: back to the stepped view" }) : t({ message: "Show every piece", context: "role card: open every piece at once" })}</span>
         </button>
       </div>
 

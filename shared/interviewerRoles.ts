@@ -162,7 +162,7 @@ export function interviewTotalWords(steps: readonly InterviewStep[]): string {
   return minutesWords(total);
 }
 
-/** One line per conversation, in order: "1. Some Role, 60 minutes". The final approval says so. */
+/** One line per conversation, in order: "1. Some Role, 60 minutes". The last conversation says so. */
 export function interviewLines(steps: ReadonlyArray<InterviewStep & { roleName?: string | null }>): string[] {
-  return steps.map((s, i) => `${i + 1}. ${s.roleName ?? "An interviewer"}, ${minutesWords(s.minutes)}${s.final ? ", final approval" : ""}`);
+  return steps.map((s, i) => `${i + 1}. ${s.roleName ?? "An interviewer"}, ${minutesWords(s.minutes)}${s.final ? ", the final conversation" : ""}`);
 }

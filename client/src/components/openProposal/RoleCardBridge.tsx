@@ -584,7 +584,7 @@ export function NextForRoles({
                   return (
                     <li key={n}>
                       {i.finalApproval
-                        ? t({ message: `${minutes} minutes with ${who}, the final approval`, context: "open proposal conversations" })
+                        ? t({ message: `${minutes} minutes with ${who}, the final conversation`, context: "open proposal conversations" })
                         : t({ message: `${minutes} minutes with ${who}`, context: "open proposal conversations" })}
                     </li>
                   );

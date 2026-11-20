@@ -58,10 +58,8 @@ export default function SplitControl({
 
   return (
     <fieldset className="grid gap-3 rounded-xl border border-border bg-muted p-4" data-split-control="">
-      <legend className="sr-only">{t({ message: "How your total is split", context: "split control legend" })}</legend>
-      <p className={LABEL} aria-hidden="true">
-        {t({ message: "How your total is split", context: "split control heading" })}
-      </p>
+      {/* The legend is the one heading, drawn as the label: a screen reader and the eye meet it once (QA F6). */}
+      <legend className={`${LABEL} px-0`}>{t({ message: "How your total is split", context: "split control legend" })}</legend>
       <p className="text-sm text-foreground" data-split-editable="">
         {hasAmounts
           ? t({ message: "You can change this split for your proposal. Type a percent or an amount.", context: "split control: it is editable" })

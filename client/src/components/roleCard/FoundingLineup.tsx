@@ -20,7 +20,7 @@
  * implies hiring or building a circle: "we're aiming to stay lean with the roles and lean more into
  * quests and other ways to co-create".
  */
-import { lazy, Suspense, type ReactNode } from "react";
+import { Fragment, lazy, Suspense, type ReactNode } from "react";
 import { ArrowRight, LayoutList, Sprout, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
@@ -98,6 +98,8 @@ export interface FoundingLineupProps {
   orgPreview?: ReactNode;
   /** The coming-soon roles and their waitlist (the lead, 19 Nov 2026): under the open roles, above the roles held now. */
   comingSoon?: ReactNode;
+  /** The open card's slot. On the team sheet it opens under its own row, so the reader stays where they clicked. */
+  cardSlot?: ReactNode;
 }
 
 /**
@@ -121,7 +123,7 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
   );
 }
 
-export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null }: FoundingLineupProps) {
+export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null }: FoundingLineupProps) {
   const { t } = useLingui();
   const circle = roles[0]?.circleName ?? null;
 
@@ -175,10 +177,14 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
             {roles.map((r) => {
               const id = String(r.seat.id);
               const here = shown === id;
-              const where = roleCardView(r.seat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
+              // The card's own words for where (sections.where) win over the fixed label, as on the opened card.
+              const whereWords = r.sections?.where?.trim();
+              const tileSeat = whereWords ? { ...r.seat, card: { ...(r.seat.card ?? {}), whereText: whereWords } } : r.seat;
+              const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
               const facts = [r.circleName, typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null, where].filter((x): x is string => !!x);
               return (
-                <li key={id} className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-2xl border p-3 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 ${here ? "border-notice bg-notice/10" : "border-notice/50 bg-card"}`}>
+                <Fragment key={id}>
+                <li className={`grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-3 rounded-2xl border p-3 sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:gap-4 ${here ? "border-notice bg-notice/10" : "border-notice/50 bg-card"}`}>
                   <ArtImage portrait src={artOf(r.seat)} className="relative size-14 rounded-xl border border-notice/40 sm:size-[4.5rem]" imgClassName="object-top" />
                   <div className="min-w-0">
                     <OpenPill />
@@ -207,6 +213,8 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </button>
                 </li>
+                {here && cardSlot && <li className="list-none" data-card-inline="">{cardSlot}</li>}
+                </Fragment>
               );
             })}
           </ul>

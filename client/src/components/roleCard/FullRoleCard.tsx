@@ -394,7 +394,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       <article
         aria-labelledby={labelledBy}
         aria-label={labelledBy ? undefined : String(seat?.name ?? "")}
-        className="sheet-night overflow-hidden rounded-2xl border border-notice/40 bg-card shadow-sm"
+        className="sheet-night overflow-clip rounded-2xl border border-notice/40 bg-card shadow-sm"
         data-full-role-card={id}
         data-register={register}
       >

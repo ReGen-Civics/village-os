@@ -26,7 +26,7 @@ describe("the ordered conversations", () => {
     expect(conversationMinutes(ORDER)).toBe(120);
     const lines = interviewLines(ORDER.map((s, i) => ({ ...s, roleName: NAMES[i] })));
     expect(lines[0]).toBe("1. Human Operations & Onboarding Lead Steward, 60 minutes");
-    expect(lines[3]).toBe("4. Visionary Channel, 20 minutes, final approval");
+    expect(lines[3]).toBe("4. Visionary Channel, 20 minutes, the final conversation");
   });
   it("reads a bare list of role ids as twenty minutes each, and a stored string", () => {
     expect(parseInterviewSteps(["a", "b"])).toEqual({ ok: true, value: [{ roleId: "a", minutes: 20 }, { roleId: "b", minutes: 20 }] });

@@ -31,7 +31,7 @@ describe("roleCardView", () => {
       "First conversation: Human Operations & Onboarding Lead Steward",
       "1. Human Operations & Onboarding Lead Steward, 60 minutes",
       "2. Technical Operations Steward, 20 minutes",
-      "3. Visionary Channel, 20 minutes, final approval",
+      "3. Visionary Channel, 20 minutes, the final conversation",
       "100 minutes of conversations in all",
       "Paid roles are consented by Anchor Circle",
     ]);
