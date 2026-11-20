@@ -76,6 +76,7 @@ what, where, what breaks without it.
 | `HYPHA_LISTENER_*` | (2026-09-02) Fifteen variables for a village running its OWN Base listener process (`server/lib/hypha/selfHostedListener.ts`) instead of the shared ReGen hub. **The web process imports none of them**, so setting them changes nothing until that second process is started. Required: `CONTRACT_ADDRESS`, `RPC_URL`, `WEBHOOK_URL`, `WEBHOOK_SECRET`, `START_BLOCK` on a first run, and at least one of `PASSED_TOPIC0`/`FAILED_TOPIC0`. Optional: `AGREEMENT_ID_TOPIC_INDEX` (0-3), `SPACE_ID`, `CONFIRMATIONS`, `POLL_INTERVAL_MS`, `MAX_ATTEMPTS`, `DATA_DIR`, `CHECKPOINT_PATH`, `DEADLETTER_PATH`. | The listener refuses to start and names the first missing one. The shared hub path (`GOVERNANCE_HUB_SECRET`) is unaffected |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | The two halves of the Google sign-in OAuth client (`server/lib/oauthGoogle.ts`). The fallback for the two **Google sign-in** slots under Admin, Integrations (readiness R171), which a founder without the host can set and which beat these variables, with no restart. The callback address is still the host's: `FRONTEND_URL` plus `/api/auth/google/callback`, or `GOOGLE_REDIRECT_URI`. Steps: `docs/GOOGLE_SIGN_IN.md`. | No Google button; `/api/auth/methods` names the half that is missing. Email and password keep working |
 | `GOOGLE_TOKEN_ENDPOINT` | (dev/CI only) Points the Google token exchange at a local stand-in. Enforced: a value that is not an http loopback address is logged and ignored, and the real Google endpoint is used. | Google is used, which is correct in production |
+| `SMOKE_TEST_TOKEN` | (2026-11-19, staging only) Lets the release browser smoke (`scripts/browser-smoke.mjs`) finish the apply flow. An application counts as a TEST only when this is set (16+ characters), the request's `x-village-smoke-test` header carries the same value, AND the address ends in `@smoke.example.invalid` (`server/lib/smokeTest.ts`). A TEST application is judged like any other, then written and removed at once: no cap spent, no email, never on a reviewer's list. Set it on a staging deploy and give the same value to the smoke as its own `SMOKE_TEST_TOKEN`. Leave it unset on a live village. | Unset is correct for a live village: the header is ignored and there is no test door at all. On staging, the smoke's apply step is skipped, or fails with `--require-apply` |
 | `TEST_DATABASE_URL` | (dev/CI only, local .env) scratch-schema MySQL for DB-backed tests. The harness creates a uniquely-named `village_test_*` schema per provision and drops it after; never point it at the app schema. It also keeps a `village_tpl_*` TEMPLATE schema, migrated once and cloned per suite, swept after 24 hours — so the account needs CREATE/DROP DATABASE rights and will show two families of scratch schema. `pnpm measure:provisioning` prints what that costs. | DB suites skip AND an unfiltered run fails; `ALLOW_NO_TEST_DB=1` accepts the smaller suite |
 
 ## Account recovery
@@ -963,6 +964,23 @@ pricing, stocking → health regen + sparse-data honesty → automation
 ingestion + the honest 503 without an API key → exit enumeration → the
 command centre → and finishes by asserting per-token conservation. Every
 line should be a ✓.
+
+**In real browsers (Chromium, and WebKit with an iPhone profile), a release
+check you can run against any deploy:**
+
+```bash
+npm i -g playwright@1.63.0 && npx playwright install --with-deps chromium webkit
+SMOKE_TEST_TOKEN='<the staging server's SMOKE_TEST_TOKEN>' \
+  node scripts/browser-smoke.mjs --base-url https://staging.example --require-webkit --require-apply
+```
+
+It renders every key signed-out page and fails on an uncaught page error,
+the crash screen, a crash report, a blank page or an HTTP error, then sends
+one TEST application through the apply flow (see `SMOKE_TEST_TOKEN` above).
+Exit 0 is clean, 1 a page or the apply flow failed, 2 bad usage or the URL
+did not answer, 3 Playwright or a required browser is missing. The script is
+also in the published image at `/app/scripts/browser-smoke.mjs`. CI runs the
+same check against its own build with `npx tsx scripts/browser-smoke-local.mjs`.
 
 **The loop, by hand:** `/health` → ok, and its `build` reads
 `<label>-<git sha>` — the SHA is stamped at build time, so if it does not

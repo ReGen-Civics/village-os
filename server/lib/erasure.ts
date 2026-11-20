@@ -159,6 +159,7 @@
  * an account that does not exist with some traces outstanding. Neither is
  * silent any more.
  */
+import { forgetWaitlistOf } from "../repos/roleWaitlist";
 import { forgetAgeBand } from "../repos/questSafety";
 import { blankConfigListField } from "../repos/appConfigDocs";
 import { OMBUDS_ASKS_KEY } from "./conflictAgreement";
@@ -1101,6 +1102,20 @@ function sweepSteps(pool: Pool, target: any, actorId: string | null, deps: Erasu
       name: "needs-after-tombstone",
       run: async () => {
         await forgetMemberNeeds(pool, target.id);
+      },
+    },
+    {
+      /*
+       * The coming-soon waitlist (0414): the member's sign-ups, by account and
+       * by their real address, deleted. AFTER THE TOMBSTONE, for the reason the
+       * needs step gives: the sign-up route writes for anybody, and a signed-in
+       * member's row carries their id until the tombstone ends their sessions.
+       * `target` carries the real address here on every run (see "comms").
+       */
+      name: "role-waitlist-after-tombstone",
+      run: async () => {
+        const email = String(target.email ?? "");
+        await forgetWaitlistOf(pool, { userId: target.id, emailKeys: email && !isTombstone({ email }) ? [emailKeyOf(email)] : [] });
       },
     },
     {
@@ -2488,6 +2503,8 @@ export const BACKFILL_BY_ID: ReadonlySet<string> = new Set([
 export const BACKFILL_LEAVES_OUT: Readonly<Record<string, string>> = {
   "alignment-names-after-tombstone":
     "it finds the member in other people's words by the name and handle the tombstone took, and a finished record holds neither",
+  "role-waitlist-after-tombstone":
+    "its table is new in migration 0414, so no member whose erasure finished before it can have signed up there",
   "sera-answers-after-tombstone":
     "its two tables are new in the a_sera_difference_is_answered migration, so no member whose erasure finished before them can have answered there",
   audit: "the sweep wrote its line when it finished, and a second would say the erasure happened twice",

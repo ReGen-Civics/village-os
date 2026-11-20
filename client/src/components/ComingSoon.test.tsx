@@ -13,7 +13,7 @@ import { mayApply } from "./roleCard/FullRoleCard";
 import LeadBuilds from "./roleCard/LeadBuilds";
 import { RoleChoice } from "./fireflyPath/ApplySteps";
 
-const NOTE = "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.";
+const NOTE = "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.";
 const APPLY = <a href="/apply">Apply</a>;
 const seat = (over: Record<string, unknown> = {}) => ({ id: "r-weaver", name: "Community Weaver", state: "open", termsOffer: null, card: {}, ...over });
 

@@ -26,11 +26,11 @@ export function ComingSoonChip({ role, className = "" }: { role: Flagged; classN
   );
 }
 
-/** Rye's words, said wherever a coming-soon role can be applied for. */
+/** The roles lane's approved words (19 Nov 2026), said wherever a coming-soon role is shown: it leads to the waitlist. */
 export function useComingSoonNote(): string {
   const { t } = useLingui();
   return t({
-    message: "We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.",
+    message: "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.",
     context: "note on a coming-soon role: the card, the application form and its confirmation",
   });
 }

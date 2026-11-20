@@ -56,9 +56,17 @@ import { useLocale } from "@/i18n/LocaleProvider";
 import { MachineTranslationMark } from "@/i18n/machineTranslation";
 import { withFocusLine } from "./focusLine";
 import { shownCommitment } from "@shared/focusLine";
+import { rangeMin } from "@shared/commitmentRange";
 import { MoonText } from "@/components/MoonWord";
 import { ShareLabel, TokenText, shareLabelFor, useShareNames } from "@/components/ContributionWord";
 import { useVillageName } from "@/hooks/useVillageName";
+import { NO_SHARED, onboardingFor } from "@shared/roleCardShared";
+import { LabelledBullets } from "./FoundingRoleCard";
+
+// The directory card's deliverables, shared rhythm and onboarding steps load with the card's lists, off the first view.
+// The waitlist form on a coming-soon card, loaded on open.
+const WaitlistForm = lazy(() => import("./WaitlistForm"));
+const GameCardExtras = lazy(() => import("./CardLists").then((m) => ({ default: m.GameCardExtras })));
 
 // The slider and the split load when a card draws them, off the first view of /roles and /propose-a-role (route-first-view.json).
 const CardCommitment = lazy(() => import("./CardCommitment"));
@@ -124,14 +132,8 @@ function Block({ heading, register, children, testId, lifted = false }: { headin
 }
 
 function Lines({ lines }: { lines: string[] }) {
-  if (lines.length === 1) return <p className="leading-relaxed">{lines[0]}</p>;
-  return (
-    <ul className="list-disc space-y-1 pl-5 leading-relaxed marker:text-notice">
-      {lines.map((l, i) => (
-        <li key={i}>{l}</li>
-      ))}
-    </ul>
-  );
+  if (lines.length === 1 && !/^[^:]{1,60}: \S/.test(lines[0])) return <p className="leading-relaxed">{lines[0]}</p>;
+  return <LabelledBullets lines={lines} />;
 }
 
 export interface FullRoleCardProps {
@@ -182,6 +184,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   }, [id, locale]);
 
   const village = useVillageName("The village");
+  // Mid-sentence, before the config lands: "What the village needs from you".
+  const villageInSentence = useVillageName();
   // The card in the reader's language where it has been translated (Rye, 15 Nov 2026), English elsewhere.
   const translation = answer?.translation && answer.translation.locale === locale ? answer.translation : null;
   const seat = overlaySeat(givenSeat, translation);
@@ -198,16 +202,22 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
   // keeps it hidden, and the card drops it again here so an older payload can never draw one.
   const showsRange = answer?.showPayRanges === true;
-  const params = showsRange || !seat?.card?.publicPay ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
+  const ranged = showsRange || !seat?.card?.publicPay ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
+  // Where, in the card's own words (sections.where), in place of the listing's land or remote label.
+  const params = read?.where ? { ...ranged, card: { ...(ranged.card ?? {}), whereText: read.where } } : ranged;
   const founding = register === "founding";
   const words: Array<{ key: string; heading: string; lines: string[] }> = [
-    { key: "whyItMatters", heading: t({ message: "Why it matters", context: "full role card heading" }), lines: asLines(seat.whyItMatters) },
+    // "What {village} needs from you" (the lead, 19 Nov 2026): goals and deadlines, one bullet per line.
+    { key: "whyItMatters", heading: t({ message: `What ${villageInSentence} needs from you`, context: "full role card heading" }), lines: [...(answer?.shared?.lines ?? []), ...asLines(seat.whyItMatters)].flatMap((l) => l.split(/\r?\n/)).map((l) => l.replace(/^\s*(?:[-*•]|\d{1,2}[.)])\s+/, "").trim()).filter(Boolean) },
     { key: "domain", heading: W.decide, lines: asLines(seat.domain) },
     { key: "authorities", heading: W.authorities, lines: asLines(seat.authorities) },
     { key: "accountabilities", heading: W.countOnMe, lines: asLines(seat.accountabilities) },
     { key: "responsibilities", heading: W.responsibilities, lines: asLines(seat.responsibilities) },
   ].filter((w) => w.lines.length > 0);
   const bringMe = asLines(seat.bringMe);
+  // Bring me beside what the role decides and delivers (the lead, 19 Nov 2026): after the accountabilities, or last.
+  const bringBlock = bringMe.length ? [{ key: "bringMe", heading: W.bringMe, lines: bringMe }] : [];
+  const gameWords = words.some((w) => w.key === "accountabilities") ? words.flatMap((w) => (w.key === "accountabilities" ? [w, ...bringBlock] : [w])) : [...words, ...bringBlock];
   const notMine = asLines(seat.notMine);
   const holding = [
     { key: "signsStretched", heading: W.signsStretched, text: asText(seat.signsStretched) },
@@ -229,10 +239,26 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const apply = !noAct && mayApply(seat);
   // The commitment slider and the split (the lead, 17 Nov 2026): what the reader chooses rides the Apply link.
   const [choiceLink, setChoiceLink] = useState("");
+  const [waitOpen, setWaitOpen] = useState(false);
   const last = answer?.lastEdited ?? null;
   const wide = useWide();
 
-  const act = apply ? (
+  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
+  const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
+  const act = soon ? (
+    <div className="flex flex-col gap-3" data-card-waitlist={id}>
+      <StateNote role={seat} />
+      {waitOpen ? (
+        <Suspense fallback={null}>
+          <WaitlistForm roles={[{ id, name: String(seat?.name ?? "") }]} chosen={id} />
+        </Suspense>
+      ) : (
+        <button type="button" className={`w-full ${BTN_PRIMARY}`} onClick={() => setWaitOpen(true)}>
+          {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
+        </button>
+      )}
+    </div>
+  ) : apply ? (
     <>
       {/* Coming soon or a future venture (16 Nov 2026): applied for now, with the state's note. */}
       <StateNote role={seat} className="mb-3" />
@@ -254,9 +280,15 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // A role that can be shared (Rye, 14 Nov 2026, shared/roleRewardWords.ts): the full band, the range one person may
   // propose, and the proposal setting the pay. The figure is still the card's own ceiling.
   // Each share as its own amount when the card, or the village for a card that follows it, says so (`cardPay` reads which).
-  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, pay?.note ?? "", pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen, shareNames) : null;
+  // The callout says "Value in equals value out." beside the price, so a note that says it too drops that sentence (said once).
+  const noteOnce = (pay?.note ?? "").replace(/(^|\s)value in equals value out\.?/i, " ").trim();
+  const reward = sections?.payCeiling ? rewardWords(i18n, sections.payCeiling, seat?.card?.commitmentMin ?? null, noteOnce, pay?.shape ?? [], pay?.shares ?? [], sliderPct ?? commitmentChosen, shareNames) : null;
   // The band under the listed price, only while the village shows pay ranges (`showsRange`, as above).
-  const band = bandWords(i18n, seat?.card?.publicPay, showsRange);
+  // Said once (the lead, 19 Nov 2026): where the card offers its commitment slider, the slider says the band at the
+  // reader's own share (CommitmentPicker), so the band line under the listed price is drawn only where there is none.
+  const slider = !noAct && rangeMin(seat?.card?.commitmentMin ?? null) < 100;
+  const band = slider ? null : bandWords(i18n, seat?.card?.publicPay, showsRange);
+  const shared = answer?.shared ?? NO_SHARED;
   const payBlock = pay ? (
     <div className="flex flex-col gap-3" data-testid="pay-shape">
       {reward ? (
@@ -323,7 +355,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {reward && <p className="border-t border-border pt-3 text-xs leading-relaxed text-muted-foreground" data-testid="pay-footnote"><TokenText text={reward.footnote} plain={(x: string) => <MoonText text={x} />} /></p>}
       {/* One footnote (copy sweep, 15 Nov 2026; steelman, 15 Nov): with a listed price, the note (the card's own, else
           the village's) is the footnote's fine print, so it is not drawn again here. */}
-      {pay.note && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note"><TokenText text={pay.note} /></p>}
+      {noteOnce && !reward && <p className={`${reward ? "" : "border-t border-border pt-3 "}text-xs leading-relaxed text-muted-foreground`} data-testid="pay-note"><TokenText text={noteOnce} /></p>}
     </div>
   ) : null;
 
@@ -392,6 +424,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           after={after}
           allPieces={allPieces}
           marks={marks}
+          shared={shared}
         />
         {!wide && act && <div className="sticky bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-20 px-5 pb-5">{act}</div>}
         {footer}
@@ -454,11 +487,16 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
               )}
             </section>
           )}
-          {words.map((w) => (
+          {gameWords.map((w) => (
             <Block key={w.key} heading={w.heading} register={register} lifted={lifted} testId={`words-${w.key}`}>
               <Lines lines={w.lines} />
             </Block>
           ))}
+          {((sections?.deliverables?.length ?? 0) > 0 || shared.rhythm.length > 0) && (
+            <Suspense fallback={null}>
+              <GameCardExtras part="top" deliverables={sections?.deliverables ?? []} rhythm={shared.rhythm} onboarding={[]} block={(heading, testId, body) => <Block heading={heading} register={register} lifted={lifted} testId={testId}>{body}</Block>} />
+            </Suspense>
+          )}
           {sections && sections.idealBackground.length > 0 && (
             <Block heading={SECTION_WORDS.idealBackground} register={register} lifted={lifted} testId="ideal-background">
               <Lines lines={sections.idealBackground} />
@@ -482,11 +520,6 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
               </div>
             </Block>
           )}
-          {bringMe.length > 0 && (
-            <Block heading={W.bringMe} register={register} lifted={lifted} testId="words-bringMe">
-              <Lines lines={bringMe} />
-            </Block>
-          )}
           {holding.length > 0 && (
             <Block heading={W.holdingWell} register={register} lifted={lifted} testId="holding-well">
               <dl className="grid gap-3 sm:grid-cols-3">
@@ -500,9 +533,14 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
             </Block>
           )}
           {notMine.length > 0 && (
-            <Block heading={W.notMine} register={register} lifted={lifted} testId="words-notMine">
+            <Block heading={circleName ? t({ message: `Goes to the ${circleName}`, context: "role card: what goes to the circle for consent" }) : t({ message: "Goes to the circle", context: "role card: what goes to the circle for consent" })} register={register} lifted={lifted} testId="words-notMine">
               <Lines lines={notMine} />
             </Block>
+          )}
+          {onboardingFor(sections?.onboarding, shared).length > 0 && (
+            <Suspense fallback={null}>
+              <GameCardExtras part="end" deliverables={[]} rhythm={[]} onboarding={onboardingFor(sections?.onboarding, shared)} block={(heading, testId, body) => <Block heading={heading} register={register} lifted={lifted} testId={testId}>{body}</Block>} />
+            </Suspense>
           )}
         </div>
         <div className="lg:sticky lg:top-28 lg:self-start">{side}</div>

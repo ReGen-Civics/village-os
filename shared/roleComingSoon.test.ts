@@ -74,7 +74,7 @@ describe("the listing rule with coming soon", () => {
   });
 
   it("carries Rye's note word for word", () => {
-    expect(COMING_SOON_WORDS.note).toBe("We're focused on our three lead hires first. You're welcome to apply now; interviews for this role may take a little while to start.");
+    expect(COMING_SOON_WORDS.note).toBe("This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does.");
   });
 });
 

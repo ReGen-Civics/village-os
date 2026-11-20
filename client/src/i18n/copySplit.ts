@@ -17,12 +17,27 @@
  *    runtime drains. The first paint never waits on a fetch, and those bytes
  *    simply stay where they were.
  *  - Every other chunk gets one statement before any of its code:
- *    `await globalThis.__villageCopyLoad("<part>")`. The part is a JSON file in
- *    dist/i18n/parts/en, outside dist/public, served by the i18n catalog route
- *    (server/routes/i18n.ts). A lazy page's dynamic import therefore resolves only
- *    once its words are registered, the Suspense fallback the page already has
- *    covers the wait, and no text is ever drawn missing. route-preload.js
- *    fetches the part beside the chunk, so the wait is the chunk's own.
+ *    `globalThis.__villageCopyGet("<part>")`, a plain synchronous read. The
+ *    part is a JSON file in dist/i18n/parts/en, outside dist/public, served by
+ *    the i18n catalog route (server/routes/i18n.ts). It is fetched BEFORE the
+ *    chunk is imported: every lazy import goes through Vite's preload helper,
+ *    the helper's dependency list names each chunk's part beside its file
+ *    (`assets/Page-x.js~<part>`, see partsBesideFiles), and the helper waits
+ *    for those parts before it imports (wrapPreloadHelper). The Suspense
+ *    fallback the page already has covers the wait, no text is ever drawn
+ *    missing, and route-preload.js fetches the part beside the chunk, so the
+ *    wait is the chunk's own.
+ *
+ * NO TOP-LEVEL AWAIT IN A LAZY CHUNK (crash guard, 19 Nov 2026). This used to
+ * be `await globalThis.__villageCopyLoad("<part>")` at the top of the chunk.
+ * A module with a top-level await stays "evaluating" while it waits, and iOS
+ * Safari can hand a SECOND importer of such a module its namespace before the
+ * module's top-level `let`s exist. Release 1.3.27 fixed one crash of that
+ * shape on /propose-a-role (voiceStepMoreLazy.ts); moving the wait in front of
+ * the import removes the whole class, because no lazy chunk waits on anything
+ * while it evaluates. scripts/check-lazy-chunk-tla.mjs holds the built output
+ * to it in CI. If a part was somehow not loaded, the read throws a named error,
+ * the import fails like a missing chunk, and the error boundary reports it.
  *
  * English stays the fallback under every language: client/src/i18n/i18n.ts
  * keeps every part it loaded and merges it beneath the active catalog.
@@ -217,9 +232,73 @@ export function renderChunkCopy(
   const body: PartBody = { messages: messages ?? {}, texts: literals.texts };
   const part = partName(body);
   collector.parts.set(part, body);
-  const load = `await globalThis.__villageCopyLoad(${JSON.stringify(part)})`;
+  const load = `globalThis.${COPY_GET}(${JSON.stringify(part)})`;
   return literals.alias ? `const ${literals.alias}=${load};\n${literals.code}` : `${load};\n${code}`;
 }
+
+/** The synchronous read every lazy chunk with moved copy starts with (i18n.ts defines it). */
+export const COPY_GET = "__villageCopyGet";
+
+/** The part a built chunk reads, off its code, or null when it reads none. */
+export function copyPartRead(code: string): string | null {
+  return /__villageCopyGet\("([A-Za-z0-9_-]{6,32})"\)/.exec(code)?.[1] ?? null;
+}
+
+/**
+ * THE PARTS RIDE IN VITE'S DEPENDENCY LIST. For one lazy import, `deps` is
+ * every chunk file the target needs that the importer has not loaded. Each one
+ * that reads a part comes back as `file~part`, and `target` is added when Vite
+ * left it out (it does when the target imports nothing; pass null when the
+ * importer already loaded the target statically), so the helper knows
+ * every part to fetch before the import. `~` never appears in an emitted file
+ * name ([name]-[hash], base64url), so the split is unambiguous.
+ */
+export function partsBesideFiles(target: string | null, deps: readonly string[], partOf: (file: string) => string | null): string[] {
+  const out = deps.map((d) => {
+    const part = partOf(d);
+    return part ? `${d}~${part}` : d;
+  });
+  const own = target === null ? null : partOf(target);
+  if (target !== null && own && !deps.includes(target)) out.push(`${target}~${own}`);
+  return out;
+}
+
+/** The id Vite gives its preload helper module. */
+export const PRELOAD_HELPER_ID = "\0vite/preload-helper.js";
+const HELPER_EXPORT = "export const __vitePreload = ";
+
+/**
+ * Vite's preload helper, taught the `file~part` entries: it strips the part
+ * off for the link it adds, starts fetching every part at once, and calls the
+ * import only after they have all arrived. A failed part rejects the import
+ * through the helper's own error path, so `vite:preloadError` fires and
+ * staleChunk.ts reloads once, exactly as for a missing chunk. Throws when the
+ * helper's shape changed, so a Vite upgrade cannot silently drop the wait.
+ */
+export function wrapPreloadHelper(code: string): string {
+  if (code.split(HELPER_EXPORT).length !== 2) {
+    throw new Error("copySplit: Vite's preload helper changed shape, so lazy chunks would run before their copy arrives. Update wrapPreloadHelper.");
+  }
+  return (
+    code.replace(HELPER_EXPORT, "const __villagePreloadFiles = ") +
+    `;\nexport const __vitePreload = function (baseModule, deps, importerUrl) {
+  const parts = [];
+  const files = deps && deps.map((d) => {
+    const at = d.indexOf("~");
+    if (at < 0) return d;
+    parts.push(d.slice(at + 1));
+    return d.slice(0, at);
+  });
+  if (parts.length === 0) return __villagePreloadFiles(baseModule, files, importerUrl);
+  const words = globalThis.${COPY_READY}(parts);
+  words.catch(() => {});
+  return __villagePreloadFiles(() => words.then(baseModule), files, importerUrl);
+};\n`
+  );
+}
+
+/** What the wrapped helper calls with the parts of one import (i18n.ts defines it). */
+export const COPY_READY = "__villageCopyReady";
 
 /** Write each part as `{ messages, texts }`, after clearing what an earlier build left. */
 export function writeCopyParts(collector: CopyCollector, dir: string): void {
@@ -240,6 +319,9 @@ export function splitLongCopy(collector: CopyCollector, partsDir: string): Plugi
   return {
     name: "village-split-long-copy",
     apply: "build",
+    transform(code, id) {
+      return id === PRELOAD_HELPER_ID ? { code: wrapPreloadHelper(code), map: null } : null;
+    },
     renderChunk(code, chunk, _options, meta) {
       const all = meta.chunks as unknown as Record<string, ChunkShape>;
       if (bootOf !== meta.chunks) {

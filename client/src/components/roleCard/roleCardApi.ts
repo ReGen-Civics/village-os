@@ -10,6 +10,7 @@ import { NO_VILLAGE_PAY, readSections, villagePayFrom, type RoleCardSections, ty
 import { DEFAULT_OTHER_WAYS, otherWaysOf, type OtherWays } from "@shared/otherWays";
 import type { FilledTeamRole } from "@shared/foundingTeam";
 import type { RoleFill } from "@shared/commitmentRange";
+import { readRoleCardShared, type RoleCardShared } from "@shared/roleCardShared";
 
 export interface FoundingTeamAnswer {
   on: boolean;
@@ -43,6 +44,8 @@ export interface RoleCardAnswer {
   mayEdit: boolean;
   /** The card in the reader's language where it is translated (only when the card asked in one). */
   translation: RoleCardTranslationWire | null;
+  /** The words every card shares (shared/roleCardShared.ts). */
+  shared: RoleCardShared;
 }
 
 const OFF: FoundingTeamAnswer = { on: false, roleIds: [], names: {}, sections: {}, showPayRanges: false, villagePay: NO_VILLAGE_PAY, otherWays: DEFAULT_OTHER_WAYS, team: [], fill: {} };
@@ -121,6 +124,7 @@ export async function readRoleCard(roleId: string, locale: string | null = null)
       villagePay: payOf(d?.villagePay),
       mayEdit: d?.mayEdit === true,
       translation: readRoleCardTranslation(d?.translation),
+      shared: readRoleCardShared(d?.shared),
     };
   } catch {
     return null;
