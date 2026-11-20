@@ -59,3 +59,31 @@ export async function forgetWaitlistOf(db: Db, who: { userId?: string | null; em
   const keys = (who.emailKeys ?? []).filter(Boolean);
   if (keys.length) await db.query("DELETE FROM role_waitlist WHERE email_key IN (?)", [keys]);
 }
+
+/** Every sign-up that names this role, newest first. */
+export async function waitlistForRole(db: Db, roleId: string, limit = 2000): Promise<StoredWaitlistRow[]> {
+  return (await listWaitlist(db, limit)).filter((r) => r.roleIds.includes(roleId));
+}
+
+/** One sign-up by its id, or null. */
+export async function waitlistRowById(db: Db, id: string): Promise<StoredWaitlistRow | null> {
+  const [rows] = await db.query<RowDataPacket[]>("SELECT id, email_key, whatsapp, role_ids, user_id, created_at FROM role_waitlist WHERE id = ? LIMIT 1", [id]);
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    id: String(r.id),
+    emailKey: String(r.email_key),
+    whatsapp: r.whatsapp == null ? null : String(r.whatsapp),
+    roleIds: idsOf(r.role_ids),
+    userId: r.user_id == null ? null : String(r.user_id),
+    createdAt: new Date(r.created_at).toISOString(),
+  };
+}
+
+/** Every sign-up from the address this sign-up came from, deleted: the one-click removal in a letter. Answers how many went. */
+export async function removeWaitlistAddressOf(db: Db, id: string): Promise<number> {
+  const row = await waitlistRowById(db, id);
+  if (!row) return 0;
+  const [res]: any = await db.query("DELETE FROM role_waitlist WHERE email_key = ?", [row.emailKey]);
+  return Number(res?.affectedRows ?? 0);
+}

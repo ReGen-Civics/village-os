@@ -68,7 +68,7 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
           ))}
         </fieldset>
       )}
-      <p className={HINT}>{t({ message: "We use these details only to tell you when the role opens. You can ask us to remove them.", context: "coming-soon waitlist: what the details are for" })}</p>
+      <p className={HINT}>{t({ message: "We use these details only to tell you when the role opens. Every letter has a link that takes you off the waitlist, and you can ask us to remove them at any time.", context: "coming-soon waitlist: what the details are for" })}</p>
       {problem && (
         <p role="alert" className="text-sm text-destructive">
           {problem}
