@@ -244,6 +244,35 @@ export function variableNever(def: { key: string; withheld?: true; movedToSecret
 
 export const PROPOSAL_LIMITS = { items: 40, summary: 400, title: 160, bodyBytes: 200_000 } as const;
 
+/**
+ * THE SHORT CODE (the lead, 20 Nov 2026: "I want simpler hashes and for them to be on the corner of the card so I can
+ * actually follow suggestions"). A batch is B-<n>, n counting the village's batches in filing order; a change is
+ * B-<n>.<m>, m its place in its batch from 1. Given at filing and never changed. The long ids stay the keys.
+ */
+export const batchCodeOf = (n: number): string => `B-${n}`;
+export const changeCodeOf = (batchCode: string, position: number): string => `${batchCode}.${position + 1}`;
+
+/** "b27", "B 27", "b-27.2" and "B-27.2" read as a code; anything else is null. Returns it in its shown form. */
+export function normalizeCode(raw: string): string | null {
+  const m = /^b[\s-]*(\d{1,6})(?:\s*\.\s*(\d{1,4}))?$/i.exec(raw.trim());
+  if (!m) return null;
+  return m[2] ? `B-${Number(m[1])}.${Number(m[2])}` : `B-${Number(m[1])}`;
+}
+
+/**
+ * Whether a change answers a search: a change code (B-27.2), a batch code (every change in B-27), a long change id or
+ * a long batch id (an id of six characters or more may be given in part, from its start).
+ */
+export function matchesFind(raw: string, c: { id: string; code?: string | null; batchId?: string | null; batchCode?: string | null }): boolean {
+  const q = raw.trim();
+  if (!q) return true;
+  const code = normalizeCode(q);
+  if (code) return c.code === code || c.batchCode === code;
+  const lower = q.toLowerCase();
+  const same = (id: string | null | undefined) => !!id && (id.toLowerCase() === lower || (lower.length >= 6 && id.toLowerCase().startsWith(lower)));
+  return same(c.id) || same(c.batchId);
+}
+
 export interface ProposalInput {
   kind: ProposalKind;
   target: Record<string, unknown>;

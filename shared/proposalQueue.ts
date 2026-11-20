@@ -12,6 +12,8 @@ export type QueueState = "waiting" | "accepted" | "discarded";
 
 export interface QueueItem {
   id: string;
+  /** The short code, such as B-27.2, as the review page shows it; null on a change not yet numbered. */
+  code: string | null;
   batchId: string;
   kind: ProposalKind;
   summary: string;
@@ -30,11 +32,12 @@ export function queueStateOf(status: ProposalStatus | "applying"): QueueState {
 }
 
 export function queueItemOf(
-  c: { id: string; batchId: string; kind: ProposalKind; summary: string; status: ProposalStatus | "applying"; proposedBy: string; proposedByKind: "agent" | "person" },
+  c: { id: string; code?: string | null; batchId: string; kind: ProposalKind; summary: string; status: ProposalStatus | "applying"; proposedBy: string; proposedByKind: "agent" | "person" },
   readerId: string,
 ): QueueItem {
   return {
     id: c.id,
+    code: c.code ?? null,
     batchId: c.batchId,
     kind: c.kind,
     summary: c.summary,
@@ -45,7 +48,7 @@ export function queueItemOf(
 }
 
 export const QUEUE_WORDS = {
-  note: "Each change: its batch, its id, its kind, its one sentence and its state (waiting, accepted or discarded). yours marks what you filed through the connector; you may put those aside while they wait. Accepting is a person's act on the review page.",
+  note: "Each change: its batch (with its code, such as B-27), its id, its code (such as B-27.2, the same code the review page shows on the card), its kind, its one sentence and its state (waiting, accepted or discarded). yours marks what you filed through the connector; you may put those aside while they wait. Accepting is a person's act on the review page.",
   termsNote: "Each role's suggested wording for each setting, the commitment it asks, and the names of the settings its offer sets. Amounts, currencies and pay shapes are never read here: a person reads them in Admin, Roles.",
   notYours: "Only a change you filed through the connector, while it waits, can be put aside here. A person puts aside the others on the review page.",
 } as const;

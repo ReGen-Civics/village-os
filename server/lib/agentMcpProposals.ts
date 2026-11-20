@@ -15,7 +15,7 @@
  * own route, which checks the filer in the same statement that discards.
  */
 import type { ToolDef, RouteAnswer } from "./agentMcp";
-import { ALIAS_WORDS, KIND_ALIAS_NAMES, KIND_WORDS, PROPOSAL_KINDS, PROPOSAL_LIMITS } from "../../shared/proposedChanges";
+import { ALIAS_WORDS, KIND_ALIAS_NAMES, KIND_WORDS, PROPOSAL_KINDS, PROPOSAL_LIMITS, normalizeCode } from "../../shared/proposedChanges";
 import { CONTENT_DOCUMENTS, vocabularySlotsLine } from "../../shared/contentDocuments";
 
 const refusal = (what: string, a: RouteAnswer) => {
@@ -36,7 +36,7 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
     description:
       `Puts one change, or a whole batch, in front of a person on the village's review page (/admin/proposals). Nothing changes live: the person reads each change beside what is live now, edits the words, and accepts or discards them there; accepting runs each change through its own admin route as that person. Covers every setting an admin can change. Send batch (a short title, such as Phase A content) and items, up to ${PROPOSAL_LIMITS.items}, each {kind, target, body, summary}. summary is one plain sentence a non-technical person understands. Kinds: ${KINDS_LINE} ` +
       `${DOCS_LINE} ` +
-      "Any admin write route not listed is kind setting with target {method, path}; a setting that names a listed route is read as that kind. Each item is checked by its route's own validator when proposed, and the batch is refused whole, with a reason per item, when any is broken. Never proposable: secrets and integration keys, erasure, agent accounts and tokens, powers, capability grants and badges, moving value (payments, payouts, invoices, ledger, treasury, mint, settlement), seating or unseating a person, and sending letters or email. Read read_proposal_lessons first, and read_proposal_queue to see what already waits.",
+      "Any admin write route not listed is kind setting with target {method, path}; a setting that names a listed route is read as that kind. Each item is checked by its route's own validator when proposed, and the batch is refused whole, with a reason per item, when any is broken. Never proposable: secrets and integration keys, erasure, agent accounts and tokens, powers, capability grants and badges, moving value (payments, payouts, invoices, ledger, treasury, mint, settlement), seating or unseating a person, and sending letters or email. The answer carries batchCode (such as B-27), the id of each item and its code (such as B-27.2): these are the codes the review page shows in the corner of each card, so cite them with the summary, such as B-27.2 Investor page, when you tell the person which to accept. Read read_proposal_lessons first, and read_proposal_queue to see what already waits.",
     inputSchema: {
       type: "object",
       properties: {
@@ -94,7 +94,7 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
     kind: "read",
     title: "Read the review queue",
     description:
-      "Answers what waits on the review page and what was decided lately, by batch: each change's id, kind, one sentence and state (waiting, accepted or discarded), stuck when it did not land and a person looks at it, and yours when you filed it through the connector. Never a body, what is live, or who decided. Read it before proposing, so you do not file a change twice, and after, to confirm what became of yours.",
+      "Answers what waits on the review page and what was decided lately, by batch: each change's id, short code (such as B-27.2, as the review page shows it, with the batch's code, such as B-27), kind, one sentence and state (waiting, accepted or discarded), stuck when it did not land and a person looks at it, and yours when you filed it through the connector. Never a body, what is live, or who decided. Read it before proposing, so you do not file a change twice, and after, to confirm what became of yours.",
     inputSchema: { type: "object", properties: { decided: { type: "number", description: "How many recent decisions to include, up to 100. 40 when left out." } }, additionalProperties: false },
     routes: ["GET /api/admin/proposals/queue"],
     async run(args, ctx) {
@@ -110,11 +110,11 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
     destructive: true,
     title: "Put aside proposals you filed",
     description:
-      "Puts aside changes you filed through the connector that still wait, such as a draft a newer proposal replaces. Only yours (read_proposal_queue marks them), and only while they wait; it never accepts anything, and a person puts aside the others on the review page. The first call writes nothing and answers which of the ids would be put aside, with a confirmToken; call again with the same ids and the token.",
+      "Puts aside changes you filed through the connector that still wait, named by id or by short code, such as a draft a newer proposal replaces. Only yours (read_proposal_queue marks them), and only while they wait; it never accepts anything, and a person puts aside the others on the review page. The first call writes nothing and answers which of the ids would be put aside, with a confirmToken; call again with the same ids and the token.",
     inputSchema: {
       type: "object",
       properties: {
-        ids: { type: "array", maxItems: 100, items: { type: "string" }, description: "The change ids to put aside." },
+        ids: { type: "array", maxItems: 100, items: { type: "string" }, description: "The change ids to put aside, or their short codes (B-27.2). A batch code (B-27) names every change of yours that still waits in it." },
         confirmToken: { type: "string", description: "From the first call. Leave it out to see what would be put aside." },
       },
       required: ["ids"],
@@ -122,20 +122,34 @@ export const PROPOSAL_TOOLS: readonly ToolDef[] = [
     },
     routes: ["GET /api/admin/proposals/queue", "POST /api/admin/proposals/discard-mine"],
     async run(args, ctx) {
-      const ids = Array.isArray(args.ids) ? Array.from(new Set(args.ids.filter((x): x is string => typeof x === "string" && !!x.trim()).map((x) => x.trim().slice(0, 60)))).sort().slice(0, 100) : [];
-      if (!ids.length) return { ok: false, error: "Name the changes to put aside: ids, from read_proposal_queue." };
+      const named = Array.isArray(args.ids) ? Array.from(new Set(args.ids.filter((x): x is string => typeof x === "string" && !!x.trim()).map((x) => x.trim().slice(0, 60)))).sort().slice(0, 100) : [];
+      if (!named.length) return { ok: false, error: "Name the changes to put aside: ids or codes, from read_proposal_queue." };
       // What would be put aside, read fresh at both calls, so the token covers exactly the changes the member saw.
       const q = await ctx.dispatch("GET", "/api/admin/proposals/queue?decided=100");
       if (q.status !== 200) return refusal("The queue could not be read", q);
-      const all = ((q.body as { batches?: Array<{ items?: Array<Record<string, unknown>> }> })?.batches ?? []).flatMap((b) => b.items ?? []);
+      const queued: Array<Record<string, unknown>> = ((q.body as { batches?: Array<{ code?: string | null; items?: Array<Record<string, unknown>> }> })?.batches ?? []).flatMap((b) => (b.items ?? []).map((i) => ({ ...i, batchCode: b.code ?? null })));
+      // A code names its change; a batch code names every change in the batch. The long id still works.
+      const all = queued;
+      const ids = Array.from(
+        new Set(
+          named.flatMap((x) => {
+            const code = normalizeCode(x);
+            if (!code) return [x];
+            const hit = queued.filter((i) => i.code === code || (!code.includes(".") && i.batchCode === code));
+            return hit.length ? hit.map((i) => String(i.id)) : [x];
+          }),
+        ),
+      )
+        .sort()
+        .slice(0, 100);
       const items = ids.map((id) => {
         const c = all.find((x) => x.id === id);
         const can = !!c && c.yours === true && c.state === "waiting" && c.stuck !== true;
-        return { id, summary: typeof c?.summary === "string" ? c.summary : null, willPutAside: can };
+        return { id, code: typeof c?.code === "string" ? c.code : null, summary: typeof c?.summary === "string" ? c.summary : null, willPutAside: can };
       });
       const going = items.filter((i) => i.willPutAside);
       if (!going.length) return { ok: false, error: "None of these is yours and waiting, so nothing would be put aside. A person puts aside the others on the review page.", detail: { items } };
-      const echo = { putAside: going.map((i) => ({ id: i.id, summary: i.summary })) };
+      const echo = { putAside: going.map((i) => ({ id: i.id, code: i.code, summary: i.summary })) };
       if (args.confirmToken === undefined) {
         const { token, expiresAt } = ctx.mintConfirm("discard_my_proposals", echo);
         return {
