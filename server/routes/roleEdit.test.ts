@@ -262,6 +262,20 @@ describe.skipIf(!configured)("Edit this role", () => {
       expect(r.json.fields).toContain("Selection criteria");
     });
 
+    it("lists a coming soon card with only its aim and domain, in one save that sets both", async () => {
+      const { id } = await seedRole();
+      const live = await liveParameterKeys(pool);
+      if (!live.includes("listed") || !live.includes("comingSoon")) return;
+      expect((await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { listed: false } })).status).toBe(200);
+      const r = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { parameters: { listed: true, comingSoon: true } });
+      expect(r.status).toBe(200);
+      expect((await row(id)).coming_soon).toBe(1);
+      // The editor says the card lacks nothing to stay as it is, and still names what it lacks to open.
+      const editor = await call("GET", `/api/org/role-edit/${id}`, "holder-1");
+      expect(editor.json.lacksToList).toEqual([]);
+      expect(editor.json.lacksToOpen).toContain("Selection criteria");
+    });
+
     it("writes the listing details, the ordered conversations and the mode, and puts them back", async () => {
       const { id } = await seedRole();
       const live = await liveParameterKeys(pool);
