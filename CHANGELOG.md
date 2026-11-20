@@ -40,6 +40,23 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.39 (2026-11-20)
+
+### What changed for your village
+
+- **Compare proposals side by side.** A new admin section, Compare Proposals, lists every role application and quest idea waiting for a decision, grouped by circle. Tick up to four from one circle and read them in columns: who, the role, how it came in, commitment, aim, what they would deliver, their terms and dates, with a link to each full proposal. On a phone the columns become cards you swipe.
+- **A split helper for taking on several people for one role.** Mark who you consider qualified, and the helper shows where their deliverables overlap, what only one person offered, what nobody offered yet, and whether their commitments add up to what the role needs. It suggests ways to share the work so no piece is held twice, and every piece can be moved by hand. It works by plain written rules, reads deliverables and commitments only, and never chooses, ranks or scores anyone. Each row opens that person's proposal with the suggested commitment typed into the counter-offer, and nothing changes until a person saves it there.
+
+### What you must do
+
+Nothing. To seat more people on a role than it has places, raise its number of places in the Org Chart first.
+
+### Does it touch your data
+
+No. There is no migration, and the new section only reads.
+
+---
+
 ## 1.3.38 (2026-11-20)
 
 ### What changed for your village
