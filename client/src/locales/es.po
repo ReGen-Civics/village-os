@@ -66,6 +66,48 @@ msgid "Currency"
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "Your recordings"
+msgstr "Tus grabaciones"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, sent with your application"
+msgstr "1 grabación, enviada con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, sent with your application"
+msgstr "{n} grabaciones, enviadas con tu solicitud"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "1 recording, not sent. Tick the box under it to send it."
+msgstr "1 grabación, sin enviar. Marca la casilla debajo para enviarla."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/reviewExtras.ts
+msgctxt "founding application review"
+msgid "{n} recordings, not sent. Tick the box under them to send them."
+msgstr "{n} grabaciones, sin enviar. Marca la casilla debajo para enviarlas."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/openProposal/ProposalAttachments.tsx
+msgctxt "open proposal attachments: a file over the size limit"
+msgid "Too big"
+msgstr "Demasiado grande"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/StartConversation.tsx
+msgctxt "start a conversation: a coming-soon role"
+msgid "Not open yet. Choosing it makes this an early application."
+msgstr "Aún no está abierto. Elegirlo hace de esta una solicitud temprana."
+
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application, a coming-soon role"
 msgid "Join its waitlist to hear when it opens."
@@ -1089,10 +1131,11 @@ msgstr "Silencio: activado"
 msgid "That is the most a proposal holds: {cap}."
 msgstr "Es lo máximo que admite una propuesta: {cap}."
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review"
 msgid "Your split"
-msgstr ""
+msgstr "Tu reparto"
 
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
@@ -1443,10 +1486,11 @@ msgctxt "open proposal side by side"
 msgid "(done when {doneWhen})"
 msgstr "(lista cuando {doneWhen})"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "full role card heading"
 msgid "What {villageInSentence} needs from you"
-msgstr ""
+msgstr "Lo que {villageInSentence} necesita de ti"
 
 #: client/src/pages/ApplicationStatus.tsx
 msgid "We are waiting for your answer."
@@ -1900,10 +1944,11 @@ msgctxt "open proposal review, the button's full name"
 msgid "Change {label}"
 msgstr "Cambiar {label}"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join: the game's door"
 msgid "Explore the game"
-msgstr ""
+msgstr "Explorar el juego"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
@@ -3519,10 +3564,11 @@ msgctxt "circle hearth, what we tend"
 msgid "What we tend"
 msgstr "Lo que cuidamos"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application terms"
 msgid "Partial rewards while you build to your full commitment. We agree the steps together."
-msgstr ""
+msgstr "Recompensas parciales mientras llegas a tu compromiso completo. Acordamos los pasos juntos."
 
 #: client/src/pages/rites/RitesHub.tsx
 msgctxt "rites"
@@ -3604,10 +3650,11 @@ msgctxt "connector setup panel, step two"
 msgid "Paste this address and save it."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/RememberOnDevice.tsx
 msgctxt "founding application, remember on this device"
 msgid "Forget my answers on this device"
-msgstr ""
+msgstr "Olvidar mis respuestas en este dispositivo"
 
 #: client/src/components/review/SeraCompare.tsx
 msgid "Struck words are only here. Underlined words are only in {theirsTitle}."
@@ -5399,10 +5446,11 @@ msgctxt "fallback when adopting or declining a canvas suggestion is refused"
 msgid "Nothing was decided."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/OrgPreview.tsx
 msgctxt "roles page: the link into /circles on a phone"
 msgid "See the org chart"
-msgstr ""
+msgstr "Ver el organigrama"
 
 #: client/src/components/priorities/PlaceInLine.tsx
 msgctxt "an ask's place in line, when the holder expects to pick it up"
@@ -7208,10 +7256,11 @@ msgstr "Postular a este rol"
 msgid "Roles carrying on into the next moon"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: it is editable"
 msgid "You can change this split for your proposal. Type a percent or an amount."
-msgstr ""
+msgstr "Puedes cambiar este reparto para tu propuesta. Escribe un porcentaje o un monto."
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Where the words and the settings part"
@@ -7248,10 +7297,11 @@ msgctxt "agent proposal"
 msgid "Why this agent"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: it is editable, percents only"
 msgid "You can change this split for your proposal. Type a percent for each share."
-msgstr ""
+msgstr "Puedes cambiar este reparto para tu propuesta. Escribe un porcentaje para cada parte."
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Ideas other villages keep, added only if you tap one:"
@@ -7262,10 +7312,11 @@ msgctxt "save bar"
 msgid "Saved"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/cardWordsT.ts
 msgctxt "role card, under the title"
 msgid "This role is rewarded"
-msgstr ""
+msgstr "Este rol es recompensado"
 
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Close the agreement's frames"
@@ -7651,10 +7702,11 @@ msgctxt "companion welcome"
 msgid "A name…"
 msgstr "Un nombre…"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ReviewPromises.tsx
 msgctxt "founding application review"
 msgid "We'll write to this address with every reply. If we invite you to join, you'll get an email with a button to create your profile."
-msgstr ""
+msgstr "Te escribiremos a esta dirección con cada respuesta. Si te invitamos a unirte, recibirás un correo con un botón para crear tu perfil."
 
 #: client/src/components/companionWelcome/LensSheet.tsx
 msgctxt "companion welcome"
@@ -7761,10 +7813,11 @@ msgctxt "thanks wall: what a thanks becomes"
 msgid "Every thanks here also carries <0>{0}</0> to the person it names."
 msgstr "Cada gracias aquí también lleva <0>{0}</0> a la persona que nombra."
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: how the shares rebalance"
 msgid "When you change one share, the others move with it in proportion, so the split still adds up to 100% and to your total."
-msgstr ""
+msgstr "Cuando cambias una parte, las demás se mueven en proporción, así el reparto sigue sumando 100% y tu total."
 
 #: client/src/pages/StructureReview.tsx
 msgid "It moves into {theirCircle}."
@@ -7916,10 +7969,11 @@ msgctxt "approved writes"
 msgid "No approved writes yet."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, roles added to one application"
 msgid "Add another role"
-msgstr ""
+msgstr "Agregar otro rol"
 
 #. placeholder {0}: VOICE_NOTE_MAX_SECONDS / 60
 #. placeholder {1}: voiceLength(VOICE_NOTE_MAX_SECONDS)
@@ -9712,10 +9766,11 @@ msgctxt "proposed changes"
 msgid "None waiting"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, roles added to one application"
 msgid "More than one role"
-msgstr ""
+msgstr "Más de un rol"
 
 #: client/src/components/openProposal/AboutYou.tsx
 msgctxt "about you"
@@ -10242,10 +10297,11 @@ msgctxt "pricing desk"
 msgid "Written"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/ComingSoonRoles.tsx
 msgctxt "roles page: the coming-soon roles and their waitlist"
 msgid "Hear when a role opens"
-msgstr ""
+msgstr "Entérate cuando abra un rol"
 
 #: client/src/components/power/SeatAction.tsx
 #~ msgctxt "role card button, signed out"
@@ -11467,10 +11523,11 @@ msgctxt "role card rewards: the pay band under the listed price, no period"
 msgid "Band: {min} to {max} in total comp"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application value"
 msgid "These items become your first moon's contract: three to five things you'll deliver, each with how we'll know it's done."
-msgstr ""
+msgstr "Estos puntos se vuelven el contrato de tu primera luna: de tres a cinco cosas que entregarás, cada una con cómo sabremos que está hecha."
 
 #: client/src/components/canvas/DecisionMatrixRows.tsx
 msgctxt "a button that opens a new matrix row"
@@ -11548,10 +11605,11 @@ msgctxt "button that checks a pasted season file"
 msgid "Check the file"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/RememberOnDevice.tsx
 msgctxt "founding application, remember on this device"
 msgid "Remember my answers on this device"
-msgstr ""
+msgstr "Recordar mis respuestas en este dispositivo"
 
 #: client/src/components/today/WeekStrip.tsx
 msgctxt "week strip, an empty day"
@@ -11607,12 +11665,13 @@ msgctxt "notebook document action"
 msgid "Delete this document"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: dayWords(r.start, locale)
 #. placeholder {1}: dayWords(r.end, locale)
 #: client/src/components/roleCard/DeliverablesGantt.tsx
 msgctxt "deliverables timeline: a deliverable's dates"
 msgid "{0} to {1}"
-msgstr ""
+msgstr "{0} a {1}"
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
@@ -12724,11 +12783,12 @@ msgctxt "notebook row, who shared it"
 msgid ", from {0}"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: label(s.label)
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: a share's percent field"
 msgid "{0}, percent of the total"
-msgstr ""
+msgstr "{0}, porcentaje del total"
 
 #: client/src/components/admin/MenuPanel.tsx
 msgctxt "admin menu: the save button"
@@ -13804,7 +13864,7 @@ msgstr "{0}% ofrecido"
 #: client/src/components/fireflyPath/reviewExtras.ts
 msgctxt "founding application review, one of several roles"
 msgid "Your split: {0}"
-msgstr ""
+msgstr "Tu reparto: {0}"
 
 #: client/src/pages/HiddenMap.tsx
 msgid "The rest of the map is secret."
@@ -13998,12 +14058,13 @@ msgctxt "role editor: who can hold a role"
 msgid "A person"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: names.equity
 #. placeholder {1}: names.credits
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "founding application compensation, with the village's token names"
 msgid "How your pay is split between cash, {0} and {1}. Your price is set above, by your proposal."
-msgstr ""
+msgstr "Cómo se reparte tu pago entre efectivo, {0} y {1}. Tu precio se fija arriba, con tu propuesta."
 
 #: client/src/components/roleDraft/DraftCarry.tsx
 msgctxt "role draft carry"
@@ -15186,10 +15247,11 @@ msgctxt "founding team section, hiring first"
 msgid "See the roles opening next"
 msgstr "Ver los roles que abren después"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/ComingSoonRoles.tsx
 msgctxt "roles page: the coming-soon roles and their waitlist"
 msgid "Leave your details and we will write when a role you like opens."
-msgstr ""
+msgstr "Deja tus datos y te escribiremos cuando abra un rol que te guste."
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
@@ -16145,13 +16207,14 @@ msgstr ""
 #~ msgid "No arrival from {agent} waits in the structure review right now."
 #~ msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: counts.circleName
 #. placeholder {1}: counts.held
 #. placeholder {2}: counts.open
 #: client/src/components/roleCard/OrgChartTile.tsx
 msgctxt "roles page org chart link, read aloud"
 msgid "Open the circles. {0}: {1} held, {2} open."
-msgstr ""
+msgstr "Abrir los círculos. {0}: {1} ocupados, {2} abiertos."
 
 #: client/src/components/review/SeraDifferences.tsx
 msgctxt "sera changes"
@@ -17044,11 +17107,12 @@ msgctxt "drafted letters"
 msgid "Send"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #. placeholder {0}: label(s.label)
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control: a share's amount field"
 msgid "{0}, amount in {currency}"
-msgstr ""
+msgstr "{0}, monto en {currency}"
 
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper, unnamed guide"
@@ -17519,10 +17583,11 @@ msgctxt "open a notebook document"
 msgid "Open {0}"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/ComingSoon.tsx
 msgctxt "note on a coming-soon role: the card, the application form and its confirmation"
 msgid "This role is not open yet, and the card may change before it opens. Leave your details and we will write to you when it does."
-msgstr ""
+msgstr "Este rol aún no está abierto, y la tarjeta puede cambiar antes de que abra. Deja tus datos y te escribiremos cuando abra."
 
 #: client/src/pages/Events.tsx
 msgctxt "calendar page lede"
@@ -17836,10 +17901,11 @@ msgstr ""
 msgid "The economy conserves: every token sums to zero, no drift, no illegal negatives."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/RememberOnDevice.tsx
 msgctxt "founding application, remember on this device"
 msgid "Only this browser keeps them, so you can come back later. Nothing reaches us until you send."
-msgstr ""
+msgstr "Solo este navegador las guarda, para que puedas volver después. Nada nos llega hasta que envíes."
 
 #: client/src/pages/Quests.tsx
 msgctxt "empty quest board: clears the circle and difficulty filters"
@@ -17931,10 +17997,11 @@ msgstr ""
 msgid "Nothing here with these filters"
 msgstr "Nada aquí con estos filtros"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/OrgChartTile.tsx
 msgctxt "roles page org chart: the link into /circles"
 msgid "Open the circles"
-msgstr ""
+msgstr "Abrir los círculos"
 
 #: client/src/components/TimeZoneField.tsx
 msgctxt "time zone field"
@@ -18070,10 +18137,11 @@ msgctxt "circle hearth, a stone"
 msgid "{0}, held"
 msgstr "{0}, ocupado"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/SplitControl.tsx
 msgctxt "split control legend"
 msgid "How your total is split"
-msgstr ""
+msgstr "Cómo se reparte tu total"
 
 #: client/src/components/valuation/PricingDesk.tsx
 msgctxt "pricing desk"
@@ -18221,10 +18289,11 @@ msgctxt "org chart heading"
 msgid "Circles"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join: the game's door"
 msgid "Choose the root you grow from, see this season's goals, and pick the roles you play."
-msgstr ""
+msgstr "Elige la raíz de la que creces, mira las metas de esta temporada y escoge los roles que juegas."
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading of the review feed"
@@ -18868,10 +18937,11 @@ msgctxt "companion welcome"
 msgid "{0}, added"
 msgstr "{0}, añadido"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/OrgChartTile.tsx
 msgctxt "roles page org chart tile heading"
 msgid "The org chart"
-msgstr ""
+msgstr "El organigrama"
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -18908,10 +18978,11 @@ msgctxt "role listing panel heading"
 msgid "Listed roles"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice invite"
-msgid "Without the tick, your recordings stay on this device and are not sent."
-msgstr "Sin la marca, tus grabaciones se quedan en este dispositivo y no se envían."
+msgid "Without the tick, your recordings are not sent. They stay on this page until you close it."
+msgstr "Sin la marca, tus grabaciones no se envían. Se quedan en esta página hasta que la cierres."
 
 #: client/src/components/canvas/CanvasWorkbookSheet.tsx
 msgctxt "workbook block page, lines for the group's answer"
@@ -19190,12 +19261,13 @@ msgctxt "hidden map settings"
 msgid "Loading"
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/ComingSoonRoles.tsx
 #: client/src/components/roleCard/FullRoleCard.tsx
 #: client/src/components/roleCard/WaitlistForm.tsx
 msgctxt "coming-soon waitlist: the button"
 msgid "Notify me"
-msgstr ""
+msgstr "Avísame"
 
 #: client/src/components/review/SeraBulk.tsx
 msgctxt "sera answers"
@@ -22404,10 +22476,11 @@ msgctxt "price ask: the suggested price"
 msgid "Suggested: {0}, from your commitment of {pct}%."
 msgstr "Sugerido: {0}, según tu compromiso del {pct}%."
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/components/roleCard/ShapeTheRole.tsx
 msgctxt "shape the role lede"
 msgid "Read the role piece by piece. On any piece, say what you'd change, what's missing, or how you'd deliver it. It travels with your application."
-msgstr ""
+msgstr "Lee el rol pieza por pieza. En cualquier pieza, di qué cambiarías, qué falta o cómo lo harías. Viaja con tu solicitud."
 
 #: client/src/components/admin/RoleDiscoverTab.tsx
 msgctxt "role discover admin"
@@ -24241,10 +24314,11 @@ msgctxt "site header"
 msgid "Skip to content"
 msgstr "Ir al contenido"
 
+# needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
 msgctxt "roles page, other ways to join"
 msgid "Propose is for a role we don't list. Tell us the role you see, and the village decides."
-msgstr ""
+msgstr "Proponer es para un rol que no listamos. Cuéntanos el rol que ves, y la aldea decide."
 
 #. placeholder {0}: r.scopeLine
 #: client/src/components/companionWelcome/CompanionWelcome.tsx

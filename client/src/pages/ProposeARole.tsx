@@ -82,7 +82,7 @@ import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type P
 import { APPLY_MINUTES, LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import StoneBar from "@/components/fireflyPath/StoneBar";
-import { reviewExtras } from "@/components/fireflyPath/reviewExtras";
+import { recordingsReview, reviewExtras } from "@/components/fireflyPath/reviewExtras";
 import { applyWordT, notSentWords } from "@/components/fireflyPath/applyWordsT";
 import { ABOUT_PANES, AboutPanes, CompensationShape, NotOpenYet, ProblemsList, ReviewLines, RoleBeside, FirstDayFacts, GOLD_RULE, KnowUsStep, OpensLaterNote, OtherRole, RewardsBeside, RoleChoice, StepMark, StepTrail, ValueItems, aboutPaneOf } from "@/components/fireflyPath/ApplySteps";
 import { draftKey, fromDraft, toDraft } from "@/components/fireflyPath/applyDraft";
@@ -702,6 +702,9 @@ export default function ProposeARole() {
     [4, startDay ? t({ message: `Earliest start: ${startDay}`, context: "founding application review" }) : t({ message: "No start date given", context: "founding application review" })],
   ];
 
+  // The recordings on Review & submit: whether they go (reviewExtras.ts recordingsReview).
+  const voiceReview = recordingsReview(i18n, { step: STONES.indexOf("about"), recordings: voice.takes.length + Object.keys(voice.clips).length, consent: voice.consent });
+
   const panel = (i: number) => ({
     hidden: stone !== i,
     "data-stone": STONES[i],
@@ -942,7 +945,7 @@ export default function ProposeARole() {
             {/* STEP 6: review & submit. Everything read back, the agreements, then send. */}
             <section {...panel(5)}>
               {heading(5)}
-              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null, roles: reviewRoles })} />
+              <ReviewLines review={review} labels={labels} onChange={(i) => goTo(i)} extras={[...reviewExtras(i18n, { termsStep: STONES.indexOf("terms"), valueStep: STONES.indexOf("value"), ceiling: role?.payCeiling, pct: commitment, ask: termsStep.payAsk, notes: pieceSuggestions, split: termsStep.paySplitView ?? null, roles: reviewRoles }), ...voiceReview]} />
               <div data-agreements="" className="scroll-mt-24">
                 <SeasonServes goals={form.goals} serves={{}} onServes={() => {}} showGoals={false} agreed={agreed} onAgreed={setAgreed} membership={<MembershipAtApplication signedIn={!!me} choice={membership} onChoice={setMembership} refreshKey={letterRead} />} />
                 <Beside id="propose-problem-agreed" message={problemOn("agreed") ?? problemOn("membership")} />

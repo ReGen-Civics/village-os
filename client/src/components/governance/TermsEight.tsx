@@ -229,7 +229,6 @@ export function CommitmentFor({ idPrefix, role, roles, value, onChange, named = 
       <label htmlFor={`${idPrefix}-commitment`} className="text-sm font-semibold text-foreground">
         {named && role ? t({ message: `Your commitment: ${role.name}`, context: "terms commitment, one of several roles" }) : t({ message: "Your commitment", context: "terms commitment" })}
       </label>
-      <p className={`${HINT} mt-1`}>{t`How much of your energy and attention this role gets in a week. 100% is full commitment, and you manage your own workload.`}</p>
       <select
         id={`${idPrefix}-commitment`}
         value={value.commitmentPct === null ? "" : String(value.commitmentPct)}
@@ -244,6 +243,7 @@ export function CommitmentFor({ idPrefix, role, roles, value, onChange, named = 
           </option>
         ))}
       </select>
+      {/* One hint, said once (the lead, 20 Nov 2026): the line the lead named, which a second hint used to repeat. */}
       <p className={`${HINT} mt-2`} data-commitment-hint="">
         {t`This is about energy and attention, never hours. You can change it later.`}
       </p>

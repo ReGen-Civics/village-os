@@ -241,7 +241,7 @@ export const VOICE_WORDS = {
   heardHint: "Your browser's speech service turns what you say into text as you talk: Google's in Chrome, Apple's in Safari. Fix anything it got wrong.",
   consent: "Keep my voice recordings with my application. The people who decide it and the village's admins will listen to them.",
   kept: "Only the people who decide your application and the village's admins hear them. We delete them with your application, and at the latest 90 days after we decide.",
-  notKept: "Without the tick, your recordings stay on this device and are not sent.",
+  notKept: "Without the tick, your recordings are not sent. They stay on this page until you close it.",
   // Clips beside answers.
   clipRecord: "Record this answer",
   clipStop: "Stop",

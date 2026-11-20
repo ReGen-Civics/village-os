@@ -127,6 +127,9 @@ export default function StartConversation({
   };
 
   const on = (field: string) => (problem?.field === field ? { "aria-invalid": true as const, "aria-describedby": "talk-problem" } : {});
+  // The problem is said under the field it names, where focus goes (applicant QA, 20 Nov 2026): said once by the
+  // Send button, it sat a screen below a phone's focused box, and the person saw an empty box and no reason.
+  const at = (field: string) => (problem?.field === field ? problemLine : null);
   const problemLine = problem && (
     <p id="talk-problem" role="alert" className="border-l-4 border-notice pl-3 text-sm font-medium text-foreground" data-talk-problem={problem.field ?? ""}>
       {applyWordT(problem.message)}
@@ -149,19 +152,23 @@ export default function StartConversation({
           <div>
             <label htmlFor="talk-name" className={`mb-2 block ${LABEL}`}>{t({ message: "Your name", context: "open proposal field" })}</label>
             <input id="talk-name" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} className={`${FIELD} py-3`} {...on("name")} />
+            {at("name")}
           </div>
           <div>
             <label htmlFor="talk-email" className={`mb-2 block ${LABEL}`}>{t({ message: "Your email", context: "open proposal field" })}</label>
             <input id="talk-email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={`${FIELD} py-3`} {...on("email")} />
+            {at("email")}
           </div>
         </div>
         <div>
           <label htmlFor="talk-work" className={`mb-2 block ${LABEL}`}>{t({ message: "A link to your work (optional)", context: "start a conversation" })}</label>
           <input id="talk-work" type="url" inputMode="url" placeholder={t({ message: "https://", context: "start a conversation: the link placeholder" })} value={work} onChange={(e) => setWork(e.target.value)} className={`${FIELD} py-3`} {...on("work")} />
+          {at("work")}
         </div>
         <div>
           <label htmlFor="talk-why" className={`mb-2 block ${LABEL}`}>{t({ message: "Why you, and why this role, in a few lines", context: "start a conversation" })}</label>
           <GrowingField id="talk-why" minRows={3} limit={CONVERSATION_WHY_MAX} value={why} onChange={setWhy} className={`${FIELD} py-3`} {...on("why")} />
+          {at("why")}
         </div>
         <fieldset className="grid gap-2" {...(problem?.field === "roles" ? { "aria-describedby": "talk-problem" } : {})}>
           <legend id="talk-roles" tabIndex={-1} className={`mb-1 ${LABEL}`}>
@@ -172,15 +179,22 @@ export default function StartConversation({
               <input type="checkbox" className="size-5 shrink-0 accent-notice" checked={picked.includes(r.id)} onChange={() => toggle(r.id)} data-talk-role={r.id} />
               <span className="min-w-0 break-words text-foreground">
                 {r.name} <span className="text-sm text-muted-foreground">{r.circle}</span>
+                {/* A role not open yet is said as such (applicant QA, 20 Nov 2026), as the full form says it. */}
+                {r.comingSoon && (
+                  <span className="block text-sm text-muted-foreground" data-talk-role-soon={r.id}>
+                    {t({ message: "Not open yet. Choosing it makes this an early application.", context: "start a conversation: a coming-soon role" })}
+                  </span>
+                )}
               </span>
             </label>
           ))}
+          {at("roles")}
         </fieldset>
         {/* The honeypot, as the full form has it. */}
         <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", top: 0 }}>
           <input type="text" name="hp" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
         </div>
-        {problemLine}
+        {problem && !["name", "email", "work", "why", "roles"].includes(problem.field ?? "") && problemLine}
         <div className="grid gap-1 text-sm text-muted-foreground" data-talk-kept="">
           <p>{t({ message: `If you don't confirm within ${OPEN_CONFIRM_HOURS} hours, we delete what you sent. If we say no, or say yes and you never make your account, we remove your name and email ${OPEN_ANONYMISE_DAYS} days later.`, context: "founding application review" })}</p>
           <p>{t`An AI may help draft our replies to you; a person always reads and sends them, and no AI takes part in choosing.`}</p>
