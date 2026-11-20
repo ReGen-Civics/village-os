@@ -141,6 +141,13 @@ export function AttachmentFields({
                   <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                   <span className="truncate">{f.name}</span>
                   <span className="shrink-0 text-muted-foreground">{fileSizeWords(f.size)}</span>
+                  {/* Which file is over (applicant QA, 20 Nov 2026): the line under the list named no file, and a too-big
+                      file kept its row and its place among the six. */}
+                  {f.size > PROPOSAL_FILE_MAX_BYTES && (
+                    <span className="shrink-0 font-semibold text-destructive" data-file-too-big={i}>
+                      {t({ message: "Too big", context: "open proposal attachments: a file over the size limit" })}
+                    </span>
+                  )}
                 </span>
                 <button type="button" className={SMALL_BUTTON} onClick={() => onFiles(files.filter((_, k) => k !== i))}>
                   <X className="h-4 w-4" aria-hidden="true" />

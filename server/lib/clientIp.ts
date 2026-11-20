@@ -133,3 +133,16 @@ export function deriveClientIp(
   // we expect; the leftmost is then the least-bad answer available.
   return chain[Math.max(0, chain.length - config.hops)];
 }
+
+let envConfig: ClientIpConfig | null = null;
+/**
+ * The caller's address for a route module that has no `clientIp` handed to it, by the same rule and the same
+ * environment as server/index.ts. Express's own `req.ip` is never it: the app does not set "trust proxy", so behind
+ * the platform's edge `req.ip` is the edge's address, and a limit keyed on it is one bucket for every visitor
+ * (applicant QA, 20 Nov 2026: the coming-soon waitlist's five sign-ups an hour, and the role card's reads, were
+ * shared by the whole village).
+ */
+export function callerIp(req: { headers: Record<string, string | string[] | undefined>; socket?: { remoteAddress?: string | null } }): string {
+  envConfig ??= clientIpConfigFromEnv();
+  return deriveClientIp(req.headers["x-forwarded-for"], req.socket?.remoteAddress ?? null, envConfig);
+}

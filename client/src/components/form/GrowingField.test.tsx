@@ -8,11 +8,18 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { EDIT_FIELDS } from "@/components/roleProposal/roleWords";
 import StepWords from "@/components/roleProposal/StepWords";
 import { CARD_WORDS } from "@shared/playerCardWords";
-import GrowingField from "./GrowingField";
+import GrowingField, { growHeight } from "./GrowingField";
 
 const LONG = "This role exists while the garden needs a keeper through the guest season and the quiet months after.";
 
 describe("a sentence field grows", () => {
+  it("grows to its content plus its own borders, so the last line is never clipped (applicant QA, 20 Nov 2026)", () => {
+    // A 1px border each side: 264px of content in a box whose borders take 2px.
+    expect(growHeight(264, 46, 44)).toBe(266);
+    // No border (control).
+    expect(growHeight(264, 44, 44)).toBe(264);
+  });
+
   it("is a wrapping textarea, at least 44px tall", () => {
     render(<GrowingField aria-label="While" value={LONG} onChange={() => {}} />);
     const box = screen.getByLabelText("While");

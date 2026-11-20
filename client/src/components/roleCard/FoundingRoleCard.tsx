@@ -143,6 +143,8 @@ export interface FoundingRoleCardProps {
   shared?: RoleCardShared;
   /** "The role in one minute" (RoleOneMinute.tsx), less the act and the heading level, which the card sets. */
   oneMinute: Omit<OneMinuteProps, "act" | "as">;
+  /** A phone's act in the flow, under the goal (FullRoleCard); null on a desktop. */
+  phoneAct?: ReactNode;
 }
 
 /** The five tabs (the lead, 20 Nov 2026; the roles lane's idea 2), each naming the pieces it opens. */
@@ -444,6 +446,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         <RoleOneMinute
           {...p.oneMinute}
           as={lifted ? "h3" : "h4"}
+          phoneAct={p.phoneAct ?? null}
           act={
             p.wide && p.act ? (
               <>

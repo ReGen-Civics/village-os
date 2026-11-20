@@ -91,6 +91,7 @@ import * as repo from "../repos/companions";
 import { portraitsForMember } from "../repos/characterPortraits";
 import { MEMBER_BATCH_PREFIX, openIdeas, withIdeaLock } from "../repos/questProposals";
 import { PROPOSE_QUEST_MODULE } from "../../shared/questIdeas";
+import { callerIp } from "../lib/clientIp";
 import {
   COMPANION_PROVIDERS,
   MAX_CHAT_MESSAGE,
@@ -524,7 +525,7 @@ export function register(app: Express, deps: Deps): void {
       system,
       messages: history.map((m) => ({ role: m.speaker === "member" ? ("user" as const) : ("assistant" as const), content: m.body })),
       model: DEFAULT_ASSISTANT_MODEL,
-      clientIp: String(req.ip ?? ""),
+      clientIp: callerIp(req),
       burstKey: `companion:${uid}`,
       userId: uid,
       memberKey: line?.memberKey ?? null,

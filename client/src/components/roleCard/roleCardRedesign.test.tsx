@@ -91,13 +91,18 @@ describe("the role in one minute", () => {
     expect((el.querySelector("header") as HTMLElement).textContent).not.toContain("60%");
   });
 
-  it("puts Apply in a bar along a phone's foot, once, as the card's last child", async () => {
+  it("puts a phone's Apply under the goal, once, with the bar along the foot kept as the card's last child", async () => {
     const el = await card();
-    // jsdom is narrow, so this is the phone: no act in the summary, one in the bar.
+    // jsdom is narrow, so this is the phone: no desktop act in the summary, the act in the flow under the goal.
     expect(el.querySelector("[data-one-minute-act]")).toBeNull();
+    const summary = el.querySelector("[data-role-one-minute]") as HTMLElement;
+    const inflow = summary.querySelector("[data-phone-act]") as HTMLElement;
+    expect(inflow).toBeTruthy();
+    // Right after the goal line, ahead of the next deliverables.
+    expect(summary.querySelector("[data-one-minute-goal]")!.nextElementSibling).toBe(inflow);
     const bar = el.querySelector("[data-phone-apply-bar]") as HTMLElement;
     expect(bar.className).toContain("sticky");
-    expect(within(bar).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
+    expect(bar.hidden).toBe(true);
     expect(within(el).getAllByRole("link", { name: /Apply for this role/ })).toHaveLength(1);
     expect(el.lastElementChild).toBe(bar);
   });

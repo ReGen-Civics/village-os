@@ -49,5 +49,6 @@ export default function TermsSplit({ idPrefix, role, value, onChange }: { idPref
 
   if (!split) return null;
   const c = role.ceiling ?? null;
-  return <SplitControl idPrefix={idPrefix} split={split.shown} offered={split.offered} onChange={(paySplit) => onChange({ ...value, paySplit })} currency={c?.currency ?? null} per={c?.per ?? null} pct={value.commitmentPct} />;
+  // The terms step draws the split without its explainer (the lead, 20 Nov 2026: fewer words on The terms).
+  return <SplitControl idPrefix={idPrefix} split={split.shown} offered={split.offered} onChange={(paySplit) => onChange({ ...value, paySplit })} currency={c?.currency ?? null} per={c?.per ?? null} pct={value.commitmentPct} explain={false} />;
 }

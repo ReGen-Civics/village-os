@@ -92,6 +92,22 @@ afterEach(() => {
 });
 
 describe("several roles in one application (the lead, 17 Nov 2026)", () => {
+  it("FEWER WORDS ON THE TERMS (the lead, 20 Nov 2026): one commitment hint and the split with no explainer; the agreement lines stay", async () => {
+    await fillToTerms("/propose-a-role?role=r-host");
+    const terms = (await waitFor(() => document.querySelector("[data-terms-section]") as HTMLElement)) as HTMLElement;
+    fireEvent.change(within(terms).getByLabelText("Your commitment"), { target: { value: "50" } });
+    await waitFor(() => expect(terms.querySelector("[data-split-control]")).toBeTruthy());
+    // The split explainer is gone from the terms step, and only one commitment hint is left: the line the lead named.
+    expect(terms.querySelector("[data-split-explainer]")).toBeNull();
+    expect(terms.textContent).not.toContain("the others move with it in proportion");
+    expect(terms.textContent).not.toContain("How much of your energy and attention");
+    expect(terms.querySelectorAll("[data-commitment-hint]")).toHaveLength(1);
+    expect(terms.textContent).toContain("This is about energy and attention, never hours. You can change it later.");
+    // Every agreement line keeps its words.
+    expect(terms.textContent).toContain("Nothing is final until we agree together.");
+    expect(document.querySelector("[data-ramp-up]")?.textContent).toContain("We agree the steps together.");
+  });
+
   it("adds a role from another circle on The terms, with its own commitment, shows the total, and sends each role's terms", async () => {
     await fillToTerms("/propose-a-role?role=r-gate");
     const add = (await screen.findByLabelText("Add another role")) as HTMLSelectElement;
