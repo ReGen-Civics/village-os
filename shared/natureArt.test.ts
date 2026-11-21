@@ -45,6 +45,27 @@ describe("assignNatureArt", () => {
     expect(Object.values(out).filter((s) => s === taken)).toHaveLength(1);
   });
 
+  it("gives the shown roles distinct paintings first when there are more roles than paintings", () => {
+    const many = Array.from({ length: 79 }, (_, i) => `role-${String(i).padStart(2, "0")}`);
+    // The shown roles sit among hidden ones in the id order, the way listed roles do in a real village.
+    const shown = many.filter((_, i) => i % 3 === 0);
+    const out = assignNatureArt(many, {}, shown);
+    expect(new Set(shown.map((id) => out[id])).size).toBe(shown.length);
+    // Without the shown set the same roles collide: the control for the case above.
+    const plain = assignNatureArt(many, {});
+    expect(new Set(shown.map((id) => plain[id])).size).toBeLessThan(shown.length);
+    expect(assignNatureArt([...many].reverse(), {}, [...shown].reverse())).toEqual(out);
+  });
+
+  it("keeps an admin's choice for a hidden role, and the 47 shown roles share none", () => {
+    const many = Array.from({ length: 79 }, (_, i) => `r${i}`);
+    const shown = many.slice(10, 57);
+    const out = assignNatureArt(many, { r70: "jaguar" }, shown);
+    expect(out.r70).toBe("jaguar");
+    expect(new Set(shown.map((id) => out[id])).size).toBe(47);
+    expect(shown.some((id) => out[id] === "jaguar")).toBe(false);
+  });
+
   it("ignores a choice that is not a painting", () => {
     expect(isNatureSlug(assignNatureArt(["a"], { a: "unicorn" }).a)).toBe(true);
   });

@@ -147,10 +147,14 @@ export default function DeliverablesGantt({ rows, label }: { rows: GanttRow[]; l
           <span className="min-w-0 text-sm leading-snug text-card-foreground">{b.title}</span>
           <button
             type="button"
-            className="relative h-7 w-full rounded-lg bg-muted text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="relative h-7 w-full rounded-lg bg-muted text-left max-sm:h-11 pointer-coarse:h-11 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             aria-label={tip}
             aria-expanded={isOpen}
-            onClick={() => setOpened((o) => (o === k ? null : k))}
+            onClick={() => {
+              // A tap toggles: focus (or a mouse over the bar) shows its tip too, so a second tap clears both, or the tip stays.
+              setOpened((o) => (o === k ? null : k));
+              setHovered(null);
+            }}
             onPointerEnter={(e) => e.pointerType === "mouse" && setHovered(k)}
             onPointerLeave={(e) => e.pointerType === "mouse" && setHovered(null)}
             onFocus={() => setHovered(k)}
@@ -307,7 +311,7 @@ export default function DeliverablesGantt({ rows, label }: { rows: GanttRow[]; l
         </ul>
       )}
       <details className="rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm" data-testid="deliverables-list">
-        <summary className="cursor-pointer font-semibold text-card-foreground">{t({ message: "Dates as a list", context: "deliverables timeline: the text version" })}</summary>
+        <summary className="-my-2 cursor-pointer py-3 font-semibold text-card-foreground">{t({ message: "Dates as a list", context: "deliverables timeline: the text version" })}</summary>
         <ul className="mt-2 space-y-1.5">
           {layout.gates.map((g) => (
             <li key={`gate-${g.day}`} className="leading-snug text-card-foreground">

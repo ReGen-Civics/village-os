@@ -62,6 +62,21 @@ describe("three roles, one timeline", () => {
     expect(container.querySelector('[data-gantt-tip="0"]')).toBeNull();
   });
 
+  // A real tap or click FOCUSES the bar first, and focus shows the tip too (live QA, 21 Nov 2026: on a phone and on a
+  // desktop the second tap left the tip open, because the bar kept focus, and the mouse kept the hover).
+  it("closes on a second tap while the bar keeps focus and the mouse stays over it", () => {
+    const { container } = render(<DeliverablesGantt rows={rows} label="3 roles, one timeline" />);
+    const bar = container.querySelector('[data-gantt-bar="0"]') as HTMLElement;
+    fireEvent.pointerEnter(bar, { pointerType: "mouse" });
+    fireEvent.focus(bar);
+    fireEvent.click(bar);
+    expect(bar.getAttribute("aria-expanded")).toBe("true");
+    expect(container.querySelector('[data-gantt-tip="0"]')).not.toBeNull();
+    fireEvent.click(bar);
+    expect(bar.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector('[data-gantt-tip="0"]')).toBeNull();
+  });
+
   it("keeps the text list, the gate in it once with its roles, and the feeds line", () => {
     const { container } = render(<DeliverablesGantt rows={rows} label="3 roles, one timeline" />);
     const list = within(container.querySelector('[data-testid="deliverables-list"]') as HTMLElement);

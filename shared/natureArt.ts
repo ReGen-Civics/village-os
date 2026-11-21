@@ -112,11 +112,17 @@ function hash(s: string): number {
  * Every role's painting. A role an admin chose for keeps that painting; every other role draws one from its
  * id, stepping past paintings already taken so no two roles share one while the library has paintings left.
  * Roles are visited in id order, so the answer depends only on the roles and the choices, never on a page.
+ *
+ * `shownFirst` names the roles a visitor can see (listed and active). They draw before every other role, so
+ * a hidden or rested role never takes a painting a shown one needed (live QA, 21 Nov 2026: 79 roles for 48
+ * paintings put the same painting on several cards on /roles).
  */
-export function assignNatureArt(roleIds: readonly string[], chosen: Readonly<Record<string, string>>): Record<string, string> {
+export function assignNatureArt(roleIds: readonly string[], chosen: Readonly<Record<string, string>>, shownFirst: Iterable<string> = []): Record<string, string> {
   const out: Record<string, string> = {};
   const taken = new Set<string>();
-  const ids = Array.from(new Set(roleIds)).sort();
+  const all = Array.from(new Set(roleIds)).sort();
+  const first = new Set(shownFirst);
+  const ids = [...all.filter((id) => first.has(id)), ...all.filter((id) => !first.has(id))];
   for (const id of ids) {
     const pick = chosen[id];
     if (isNatureSlug(pick)) {
