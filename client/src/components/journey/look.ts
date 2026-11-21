@@ -92,5 +92,8 @@ export const FIELD =
 /** A field's label. */
 export const LABEL = "text-sm font-semibold text-foreground";
 
+/** A tick box: 24px so it reads at a glance; the label row around it is the 44px tap target (live QA, 21 Nov 2026). */
+export const TICK = "size-6 shrink-0 cursor-pointer accent-notice";
+
 /** A number or icon set in a gold ring (the profile's stat tiles: paths walked, badges). */
 export const RING = "inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-notice text-notice";

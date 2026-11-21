@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import GrowingField from "@/components/form/GrowingField";
-import { BTN_PRIMARY, CARD, EYEBROW, FIELD, HINT, LABEL, LINK } from "@/components/journey/look";
+import { BTN_PRIMARY, CARD, EYEBROW, FIELD, HINT, LABEL, LINK, TICK } from "@/components/journey/look";
 import { CONVERSATION_WHY_MAX, OPEN_ANONYMISE_DAYS, OPEN_APPLY_ROLES, OPEN_CONFIRM_HOURS, OPEN_WORDS } from "@shared/openProposals";
 import { addressProblem } from "@shared/comms/address";
 import { applyWordT, notSentWords } from "./applyWordsT";
@@ -176,7 +176,7 @@ export default function StartConversation({
           </legend>
           {offered.map((r) => (
             <label key={r.id} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-border/60 px-4 py-2">
-              <input type="checkbox" className="size-5 shrink-0 accent-notice" checked={picked.includes(r.id)} onChange={() => toggle(r.id)} data-talk-role={r.id} />
+              <input type="checkbox" className={TICK} checked={picked.includes(r.id)} onChange={() => toggle(r.id)} data-talk-role={r.id} />
               <span className="min-w-0 break-words text-foreground">
                 {r.name} <span className="text-sm text-muted-foreground">{r.circle}</span>
                 {/* A role not open yet is said as such (applicant QA, 20 Nov 2026), as the full form says it. */}

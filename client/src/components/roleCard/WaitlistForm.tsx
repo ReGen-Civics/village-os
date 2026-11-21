@@ -8,7 +8,7 @@
 import { useId, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
-import { BTN_PRIMARY, FIELD, HINT, LABEL } from "@/components/journey/look";
+import { BTN_PRIMARY, FIELD, HINT, LABEL, TICK } from "@/components/journey/look";
 
 export interface WaitlistRole {
   id: string;
@@ -66,14 +66,14 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
           <legend className={LABEL}>{t({ message: "Which roles interest you", context: "coming-soon waitlist field" })}</legend>
           {roles.map((r) => (
             <label key={r.id} className="flex min-h-11 items-center gap-2 text-card-foreground" htmlFor={`${base}-${r.id}`}>
-              <input id={`${base}-${r.id}`} type="checkbox" className="size-5 accent-notice" checked={picked.includes(r.id)} onChange={(e) => setPicked((p) => (e.target.checked ? [...p, r.id] : p.filter((x) => x !== r.id)))} />
+              <input id={`${base}-${r.id}`} type="checkbox" className={TICK} checked={picked.includes(r.id)} onChange={(e) => setPicked((p) => (e.target.checked ? [...p, r.id] : p.filter((x) => x !== r.id)))} />
               {r.name}
             </label>
           ))}
         </fieldset>
       )}
       <label className="flex min-h-11 items-start gap-2 text-card-foreground" htmlFor={`${base}-consent`}>
-        <input id={`${base}-consent`} type="checkbox" className="mt-1 size-5 accent-notice" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        <input id={`${base}-consent`} type="checkbox" className={`mt-0.5 ${TICK}`} checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         <span>{t({ message: "Yes, write to me about this role and other ways into the village. One click takes me off.", context: "coming-soon waitlist: the consent tick" })}</span>
       </label>
       <p className={HINT}>{t({ message: "We use these details only for this waitlist, and you can ask us to remove them at any time. Every letter has a link that takes you off.", context: "coming-soon waitlist: what the details are for" })}</p>

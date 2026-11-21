@@ -254,7 +254,7 @@ export default function Visit() {
                     required
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
+                    className="min-h-11 w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
                   />
                 </div>
                 <div>
@@ -266,7 +266,7 @@ export default function Visit() {
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
+                    className="min-h-11 w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep"
                   />
                 </div>
               </div>
@@ -277,7 +277,7 @@ export default function Visit() {
                   id="visit-type"
                   value={form.visitType}
                   onChange={(e) => setForm({ ...form, visitType: e.target.value })}
-                  className="w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep bg-white"
+                  className="min-h-11 w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep bg-white"
                 >
                   <option value="">Choose one</option>
                   {visitTypes.map((v) => (
@@ -294,7 +294,7 @@ export default function Visit() {
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep resize-y"
+                  className="min-h-11 w-full px-3 py-2 border border-stone-200 rounded-lg outline-none focus:border-teal-deep resize-y"
                 />
                 </VoiceArea>
               </div>

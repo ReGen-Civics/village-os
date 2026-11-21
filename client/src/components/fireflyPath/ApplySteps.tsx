@@ -26,7 +26,7 @@ import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
-import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TILE } from "@/components/journey/look";
+import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TICK, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
 import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
@@ -165,7 +165,7 @@ export function KnowUsStep({ ways, note, ticked, onChange, links }: { ways: read
               <input
                 id={`know-us-${i}`}
                 type="checkbox"
-                className="size-5 shrink-0 accent-notice"
+                className={TICK}
                 checked={ticked.includes(w)}
                 onChange={() => onChange(ticked.includes(w) ? ticked.filter((x) => x !== w) : [...ticked, w])}
               />

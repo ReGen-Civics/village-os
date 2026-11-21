@@ -8,6 +8,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import ComingSoonRoles from "./ComingSoonRoles";
 
+vi.mock("@/lib/natureArt", () => ({ useRoleArt: () => (id: string | null | undefined) => (id ? `/images/nature/${id}.webp` : null) }));
+
 const ROLES = [{ id: "garden", name: "Garden Steward", aim: "Grow food" }, { id: "kitchen", name: "Kitchen Steward" }];
 
 afterEach(() => {
@@ -64,5 +66,20 @@ describe("the coming-soon roles", () => {
     fireEvent.click(screen.getByRole("button", { name: "Notify me" }));
     await waitFor(() => expect(document.querySelector("[data-waitlist-done]")?.textContent).toBe("Thank you. Your details are saved. We will write when the role opens."));
     expect(JSON.parse(String((fetchMock.mock.calls[0] as any)[1].body)).consent).toBe(true);
+  });
+
+  it("trades the full-height painting strip for a 3:4 portrait beside the name once the waitlist opens", async () => {
+    render(<ComingSoonRoles roles={ROLES} />);
+    const kitchen = document.getElementById("role-kitchen") as HTMLElement;
+    const strip = kitchen.querySelector("[data-role-art]") as HTMLImageElement;
+    expect(strip.className).toContain("absolute inset-0");
+    fireEvent.click(kitchen.querySelector('[data-waitlist-open="kitchen"]') as HTMLElement);
+    await waitFor(() => expect(kitchen.querySelector("[data-waitlist-form]")).toBeTruthy());
+    const art = kitchen.querySelectorAll("[data-role-art]");
+    expect(art).toHaveLength(1);
+    expect(art[0]!.className).toContain("aspect-[3/4]");
+    expect(art[0]!.className).not.toContain("absolute");
+    // The closed panel beside it keeps its strip.
+    expect((document.getElementById("role-garden") as HTMLElement).querySelector("[data-role-art]")!.className).toContain("absolute inset-0");
   });
 });
