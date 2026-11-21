@@ -323,6 +323,7 @@ import { register as registerStockAvatarRoutes, STOCK_AVATAR_DIR, STOCK_ART_SUBD
 import { register as registerStockArtRoutes } from "./routes/stockArt";
 import { register as registerBrandSoundRoutes } from "./routes/brandSounds";
 import { register as registerModuleArtRoutes, MODULE_ART_DIR } from "./routes/moduleArt";
+import { register as registerNatureArtRoutes, NATURE_ART_DIR } from "./routes/natureArt";
 import { register as registerArchetypeAdminRoutes } from "./routes/archetypes";
 import { register as registerPowerAffinityRoutes, powersForClass, withPowerAffinity } from "./routes/powerAffinity";
 import { register as registerWalletRoutes } from "./routes/wallet";
@@ -25755,6 +25756,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   app.use("/assets", express.static(ASSETS_DIR, { maxAge: "1y", immutable: true }));
   registerStockAvatarRoutes(app, { dir: path.resolve(__dirname, "..", STOCK_AVATAR_DIR), overrideDir: path.join(UPLOADS_DIR, STOCK_ART_SUBDIR) });
   registerModuleArtRoutes(app, { dir: path.resolve(__dirname, "..", MODULE_ART_DIR) });
+  registerNatureArtRoutes(app, { dir: path.resolve(__dirname, "..", NATURE_ART_DIR), isAdmin, guardCapability, overLimit, getPool });
   /*
    * `/index.html` is the shell's file name, not a page. express.static below
    * handed out the raw file (no theme, no share card, no language) with a 200,

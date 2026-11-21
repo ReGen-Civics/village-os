@@ -37,6 +37,7 @@
  * every check that door carries runs. This file never writes a ledger row, an
  * RSVP or a message itself.
  */
+import { natureArtUrl } from "../../shared/natureArt";
 import { parsePersona } from "../../shared/companionPersona";
 import { createHash, randomUUID } from "crypto";
 import type { Pool } from "mysql2/promise";
@@ -551,6 +552,7 @@ export async function armyView(
       look: parseLook(c.look) ?? defaultLook(i),
       lookUrl: (() => {
         const l = parseLook(c.look);
+        if (l?.source === "nature" && l.art) return natureArtUrl(l.art);
         return l && l.source !== "choose" && l.portraitKey ? portraitUrl(l.portraitKey) : null;
       })(),
       persona: parsePersona(c.persona),

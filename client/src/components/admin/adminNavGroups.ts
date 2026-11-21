@@ -17,7 +17,7 @@
  * around them did.
  */
 import type { LucideIcon } from "lucide-react";
-import { Activity, AlertTriangle, BarChart3, Calendar, Circle, Coins, Compass, FileText, GraduationCap, Handshake, HardDrive, Heart, HelpCircle, Home, Inbox, KeyRound, LogOut, Mail, MapPin, MessageSquare, Moon, Scale, Sparkles, ToggleLeft, TrendingUp, Users, Users2 } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Calendar, Circle, Coins, Compass, FileText, GraduationCap, Handshake, HardDrive, Heart, HelpCircle, Home, Inbox, KeyRound, LogOut, Mail, MapPin, MessageSquare, Moon, Palette, Scale, Sparkles, ToggleLeft, TrendingUp, Users, Users2 } from "lucide-react";
 import type { TabBadge } from "@/lib/adminNav";
 import { CONTENT_SECTIONS } from "./contentSections";
 
@@ -73,6 +73,7 @@ export function navGroups(setupComplete: boolean): NavGroup[] {
         // Proposals side by side (the lead, 20 Nov 2026): beside the chart, because it is about who could hold its roles.
         { key: "compare", label: "Compare Proposals", icon: Scale },
         { key: "role-discover", label: "Role discovery", icon: Compass },
+        { key: "art-library", label: "Art library", icon: Palette },
         { key: "handover", label: "The Handover", icon: KeyRound },
         { key: "governance-weights", label: "Voting Weights", icon: Scale },
       ],

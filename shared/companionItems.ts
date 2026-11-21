@@ -27,6 +27,7 @@
  */
 
 import type { Persona } from "./companionPersona";
+import { isNatureSlug } from "./natureArt";
 
 export const COMPANION_SCOPES = ["personal", "role", "quest", "project"] as const;
 export type CompanionScope = (typeof COMPANION_SCOPES)[number];
@@ -434,20 +435,22 @@ export type PetKind = (typeof PET_KINDS)[number];
 export const PET_TINTS = ["gold", "leaf", "rose", "lilac"] as const;
 export type PetTint = (typeof PET_TINTS)[number];
 
-export const LOOK_SOURCES = ["choose", "forge", "upload"] as const;
+export const LOOK_SOURCES = ["choose", "forge", "upload", "nature"] as const;
 export type LookSource = (typeof LOOK_SOURCES)[number];
 
 /**
  * A companion's look. `choose` is a pet from the set above. `forge` and
  * `upload` point at one of the member's own portraits by its path key, made
  * in the portrait studio (forge spends a grant, upload costs nothing), so
- * there is no second image store.
+ * there is no second image store. `nature` is one of the village's painted animals and plants
+ * (shared/natureArt.ts; Rye, 20 Nov 2026), by its slug.
  */
 export interface CompanionLook {
   source: LookSource;
   pet?: PetKind;
   tint?: PetTint;
   portraitKey?: string;
+  art?: string;
 }
 
 /** The default look for a companion, varied by where it sits in the army. */
@@ -475,6 +478,7 @@ export function parseLook(v: unknown): CompanionLook | null {
     if (!(PET_TINTS as readonly string[]).includes(String(r.tint))) return null;
     return { source, pet: r.pet as PetKind, tint: r.tint as PetTint };
   }
+  if (source === "nature") return isNatureSlug(r.art) ? { source, art: r.art } : null;
   if (typeof r.portraitKey !== "string" || !/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(r.portraitKey)) return null;
   return { source, portraitKey: r.portraitKey };
 }

@@ -26,6 +26,7 @@ import {
   type CompanionView,
 } from "@shared/companionItems";
 import CompanionPet, { PetDrawing } from "./CompanionPet";
+import { NATURE_ART, natureArtUrl } from "@shared/natureArt";
 import { BTN_GOLD, BTN_LINE, H2, KICKER, LINK, PANEL, RAISED } from "./dashUi";
 
 const API = "/api/me/companions";
@@ -548,12 +549,12 @@ interface StudioPortrait {
 function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => void; onSaved: () => Promise<void> }) {
   const [name, setName] = useState(c.name);
   const [look, setLook] = useState<CompanionLook>(c.look);
-  const [tab, setTab] = useState<"choose" | "forge" | "upload">(c.look.source);
+  const [tab, setTab] = useState<"choose" | "forge" | "upload" | "nature">(c.look.source);
   const [portraits, setPortraits] = useState<StudioPortrait[] | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (tab === "choose" || portraits) return;
+    if (tab === "choose" || tab === "nature" || portraits) return;
     void send("/api/me/portraits", "GET").then((r) => setPortraits(r.ok ? ((r.json?.portraits ?? []) as StudioPortrait[]).filter((p) => p.url) : []));
   }, [tab, portraits]);
   useEffect(() => {
@@ -569,7 +570,7 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
     await onSaved();
     onClose();
   };
-  const chosenUrl = look.source !== "choose" ? (portraits?.find((p) => p.archetypeKey === look.portraitKey)?.url ?? c.lookUrl) : null;
+  const chosenUrl = look.source === "forge" || look.source === "upload" ? (portraits?.find((p) => p.archetypeKey === look.portraitKey)?.url ?? c.lookUrl) : null;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-background/80 p-4 pb-28 sm:items-center sm:pb-4">
@@ -598,8 +599,8 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
             className="min-h-11 w-[220px] rounded-xl border border-dash-edge bg-card px-3 text-center font-display text-[22px] font-semibold text-foreground"
           />
         </div>
-        <div role="tablist" aria-label="How to get a look" className="grid grid-cols-3 gap-1.5 rounded-[14px] border border-dash-edge bg-card p-1">
-          {(["choose", "forge", "upload"] as const).map((t) => (
+        <div role="tablist" aria-label="How to get a look" className="grid grid-cols-4 gap-1.5 rounded-[14px] border border-dash-edge bg-card p-1">
+          {(["choose", "nature", "forge", "upload"] as const).map((t) => (
             <button
               key={t}
               type="button"
@@ -608,11 +609,30 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
               onClick={() => setTab(t)}
               className={`min-h-11 rounded-[10px] ${tab === t ? "bg-dash-gold font-semibold text-dash-gold-ink" : "bg-transparent text-foreground"}`}
             >
-              {t === "choose" ? "Choose" : t === "forge" ? "Forge" : "Upload"}
+              {t === "choose" ? "Choose" : t === "nature" ? "Painted" : t === "forge" ? "Forge" : "Upload"}
             </button>
           ))}
         </div>
-        {tab === "choose" ? (
+        {tab === "nature" ? (
+          <div className="grid max-h-[320px] grid-cols-4 gap-2 overflow-y-auto pr-1" data-nature-looks="">
+            {NATURE_ART.map((art) => {
+              const on = look.source === "nature" && look.art === art.slug;
+              return (
+                <button
+                  key={art.slug}
+                  type="button"
+                  aria-label={`${art.name} (${art.es})`}
+                  title={art.name}
+                  aria-pressed={on}
+                  onClick={() => setLook({ source: "nature", art: art.slug })}
+                  className={`flex min-h-[76px] items-center justify-center rounded-2xl p-1 ${on ? "border-2 border-dash-gold bg-dash-next" : "border border-dash-edge bg-dash-raised"}`}
+                >
+                  <img src={natureArtUrl(art.slug)} alt="" loading="lazy" className="h-14 w-14 rounded-full object-cover" />
+                </button>
+              );
+            })}
+          </div>
+        ) : tab === "choose" ? (
           <div className="grid grid-cols-4 gap-2">
             {PET_KINDS.flatMap((kind, i) =>
               PET_TINTS.map((_, j) => PET_TINTS[(i + j) % PET_TINTS.length]).map((tint) => {

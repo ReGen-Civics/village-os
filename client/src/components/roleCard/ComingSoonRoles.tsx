@@ -15,6 +15,7 @@ import { BTN_SECONDARY, EYEBROW } from "@/components/journey/look";
 import { ComingSoonNote } from "@/components/ComingSoon";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { GROUP_H2 } from "./groupLook";
+import { useRoleArt } from "@/lib/natureArt";
 
 const WaitlistForm = lazy(() => import("./WaitlistForm"));
 
@@ -35,6 +36,7 @@ function hashed(roles: SoonRole[]): string | null {
 export default function ComingSoonRoles({ roles, className = "" }: { roles: SoonRole[]; className?: string }) {
   const { t } = useLingui();
   const [open, setOpen] = useState<string | null>(() => hashed(roles));
+  const artFor = useRoleArt();
   useEffect(() => {
     const follow = () => {
       const id = hashed(roles);
@@ -65,7 +67,12 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
       {/* One framed panel per role, with room between them (the lead, 21 Nov 2026). */}
       <ul className="mt-2 grid gap-5">
         {roles.map((r) => (
-          <li key={r.id} id={roleAnchor(r.id)} className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-5" data-coming-soon-role={r.id}>
+          <li key={r.id} id={roleAnchor(r.id)} className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm" data-coming-soon-role={r.id}>
+            <div className="grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)]">
+            <div className="relative min-h-full border-r border-notice/30 bg-muted/40" aria-hidden="true">
+              {artFor(r.id) && <img src={artFor(r.id) ?? undefined} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" data-role-art="" />}
+            </div>
+            <div className="min-w-0 p-4 sm:p-5">
             {r.circleName && <p className={EYEBROW}>{r.circleName}</p>}
             <p className="font-display text-xl leading-snug text-card-foreground">{r.name}</p>
             {r.aim && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{r.aim}</p>}
@@ -86,6 +93,8 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
             <a href={`/propose-a-role?role=${encodeURIComponent(r.id)}&early=1`} className="mt-1 inline-flex min-h-11 items-center text-sm font-medium text-notice underline underline-offset-2 hover:text-foreground" data-apply-early={r.id}>
               {t({ message: `Apply early for ${r.name}`, context: "founding application, add a coming-soon role as an early application" })}
             </a>
+            </div>
+            </div>
           </li>
         ))}
       </ul>

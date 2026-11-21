@@ -33,6 +33,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowRight, Bird, Cat, Dog, Feather, Fish, PawPrint, Rabbit, Snail, Squirrel, Turtle } from "lucide-react";
+import { companionArtUrl } from "@/lib/natureArt";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { HeldByAgentLine, StateNote } from "@/components/ComingSoon";
 import { CARD_WORDS as W } from "@shared/playerCardWords";
@@ -116,8 +117,10 @@ const ANIMALS: Array<[RegExp, typeof Bird]> = [
   [/feather/i, Feather],
 ];
 
-/** The companion's animal as a drawing: the named animal where there is one, a paw print otherwise. */
+/** The companion's animal: its painting from the nature library when the name is one (Rye, 20 Nov 2026), else a drawing. */
 function AnimalIcon({ name }: { name: string }) {
+  const painted = companionArtUrl(name);
+  if (painted) return <img src={painted} alt="" loading="lazy" decoding="async" className="size-full object-cover" data-companion-art="" />;
   const Icon = ANIMALS.find(([re]) => re.test(name))?.[1] ?? PawPrint;
   return <Icon className="size-6 text-notice" aria-hidden="true" />;
 }
@@ -429,7 +432,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       <section data-testid="ai-support">
         <CompanionH className={founding ? "mb-2 text-xs font-semibold uppercase tracking-widest text-notice" : "font-display text-lg font-bold text-card-foreground"}><TipText text={SECTION_WORDS.aiSupport} /></CompanionH>
         <div className="mt-2 flex items-start gap-3 text-card-foreground">
-          <span className="grid size-11 shrink-0 place-items-center rounded-full border border-notice/50">
+          <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-notice/50">
             <AnimalIcon name={sections.aiCompanion} />
           </span>
           <div>
@@ -617,7 +620,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           {sections && (sections.aiSupport || sections.aiCompanion) && (
             <Block heading={SECTION_WORDS.aiSupport} register={register} lifted={lifted} testId="ai-support">
               <div className="flex items-start gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full border border-notice/50">
+                <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border border-notice/50">
                   <AnimalIcon name={sections.aiCompanion} />
                 </span>
                 <div>

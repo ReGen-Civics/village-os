@@ -39,6 +39,7 @@ import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
 import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
+import RoleRowArt from "@/components/roleCard/RoleRowArt";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
@@ -192,9 +193,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={`w-10 h-10 ${swatch.bg} rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5`}>
-              <Icon className={`w-5 h-5 ${swatch.ink}`} />
-            </div>
+            <RoleRowArt roleId={role.id} Icon={Icon} swatch={swatch} />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>

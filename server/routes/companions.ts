@@ -403,8 +403,8 @@ export function register(app: Express, deps: Deps): void {
     }
     if (b.look !== undefined) {
       const look = parseLook(b.look);
-      if (!look) return res.status(400).json({ error: "Choose a pet, or one of your own portraits." });
-      if (look.source !== "choose") {
+      if (!look) return res.status(400).json({ error: "Choose a pet, a painted animal or plant, or one of your own portraits." });
+      if (look.source === "forge" || look.source === "upload") {
         const mine = await portraitsForMember(getPool(), String(user.id));
         if (!mine.some((p) => p.archetypeKey === look.portraitKey && p.fileName)) {
           return res.status(400).json({ error: "Make that portrait in the portrait studio first, then choose it here." });

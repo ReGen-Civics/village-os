@@ -33,6 +33,7 @@ import type { RoleFill } from "@shared/commitmentRange";
 import { fillLine } from "./cardWordsT";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
+import { useRoleArt } from "@/lib/natureArt";
 import { domainsHeld } from "@shared/rolePieces";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import ArtImage from "@/components/roleDraft/ArtImage";
@@ -45,7 +46,7 @@ export type { FilledRole, LineupView };
 const RosterList = lazy(() => import("./RosterCards"));
 
 const archetypesOf = (seat: Record<string, any>): string[] => (Array.isArray(seat?.archetypes) ? seat.archetypes.map(String) : []);
-const artOf = (seat: Record<string, any>) => roleArtFor({ archetypes: archetypesOf(seat), raw: seat });
+const characterArtOf = (seat: Record<string, any>) => roleArtFor({ archetypes: archetypesOf(seat), raw: seat });
 
 /** The domains a role holds, from its own domain words. */
 const domainsOf = (seat: Record<string, any>): string[] => domainsHeld(typeof seat?.domain === "string" ? seat.domain : "");
@@ -152,6 +153,8 @@ function FillMeter({ f, center = false }: { f: RoleFill; center?: boolean }) {
 }
 
 export default function FoundingLineup({ roles, filled, fill = {}, view, onView, shown, onOpen, cardId, orgPreview = null, comingSoon = null, cardSlot = null, heading = null, toBeAdded = {}, onOpenAdded, sheetRoster = true }: FoundingLineupProps) {
+  const roleArt = useRoleArt();
+  const artOf = (seat: Record<string, any>) => roleArt(seat?.id) ?? characterArtOf(seat);
   const { t } = useLingui();
   const circle = roles[0]?.circleName ?? null;
 

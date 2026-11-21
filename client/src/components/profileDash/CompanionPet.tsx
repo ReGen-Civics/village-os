@@ -5,6 +5,7 @@
  * Every colour is a dashboard token, so a village that re-tints the sheet
  * re-tints the pets with it (index.css, the `dash-*` set).
  */
+import { natureArtUrl } from "@shared/natureArt";
 import type { CompanionLook, PetKind, PetTint } from "@shared/companionItems";
 
 const TINT: Record<PetTint, string> = {
@@ -73,8 +74,9 @@ export function PetDrawing({ kind, tint, size }: { kind: PetKind; tint: PetTint;
 
 /** A companion's look at a size: its portrait when it has one, its pet otherwise. */
 export default function CompanionPet({ look, url, size }: { look: CompanionLook; url?: string | null; size: number }) {
-  if (look.source !== "choose" && url) {
-    return <img src={url} alt="" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />;
+  const painted = look.source === "nature" && look.art ? natureArtUrl(look.art) : null;
+  if (painted || (look.source !== "choose" && url)) {
+    return <img src={painted ?? url ?? ""} alt="" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />;
   }
   return <PetDrawing kind={look.pet ?? "horns"} tint={look.tint ?? "gold"} size={size} />;
 }
