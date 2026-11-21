@@ -10803,6 +10803,11 @@ msgstr "All protocols"
 #~ msgid "Open this circle's card"
 #~ msgstr "Open this circle's card"
 
+#: client/src/lib/payTbdWords.ts
+msgctxt "pay on offer: paid, the amount still to be set"
+msgid "Pay to be determined"
+msgstr "Pay to be determined"
+
 #: client/src/components/governance/TermsEight.tsx
 #~ msgctxt "terms: the pay ask"
 #~ msgid "A monthly amount"
