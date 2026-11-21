@@ -40,6 +40,14 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.48 (2026-11-21)
+
+### What changed for your village
+
+- **No two roles a visitor can see share a painting.** The roles on /roles now choose their paintings before unlisted and rested roles, so each shown card has its own. A painting an admin picked in the Art library still wins.
+- **The timeline's bars close on a second tap.** Tapping or clicking a bar on the founding roles' timeline opens its dates; tapping it again closes them, on a phone and on a desktop.
+- **The timeline is easier to tap on a phone.** Its bars and its "Dates as a list" line are a full finger's height on a touch screen.
+
 ## 1.3.47 (2026-11-21)
 
 ### What changed for your village
