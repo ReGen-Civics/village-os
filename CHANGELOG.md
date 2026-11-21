@@ -40,6 +40,12 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.46 (2026-11-21)
+
+### What changed for your village
+
+- **The founding roles' shared timeline sits right under the founding roles**, folded. Open it to see every role's dated deliverables on one timeline.
+
 ## 1.3.45 (2026-11-21)
 
 ### What changed for your village
