@@ -26,6 +26,7 @@ import Figure from "@/components/sheet/Figure";
 import { Gloss, GlossChip } from "@/components/sheet/GlossChip";
 import SeatGlyph from "./SeatGlyph";
 import SeatRoster from "./SeatRoster";
+import { useRoleArt } from "@/lib/natureArt";
 
 /** Which gloss on this card is open; from `useGlossGroup` in the card root. */
 export interface CardGloss {
@@ -130,6 +131,12 @@ const NAME_SCALE: Record<SeatSheetView["nameScale"], string> = {
 /** The art: the class picture, or the sigil when there is none or it will not load. */
 function ArtWindowPicture({ view }: { view: SeatSheetView }) {
   const [brokenSrc, setBrokenSrc] = useState<string | null>(null);
+  // The role's painting comes first, as on the founding card and the rows (Rye, 20 Nov 2026: every role card, upcoming
+  // role and venture card shows one); an expanded venture still drew its character (live QA, 21 Nov 2026).
+  const painted = useRoleArt()(view.id);
+  if (painted && brokenSrc !== painted) {
+    return <img src={painted} alt="" onError={() => setBrokenSrc(painted)} decoding="async" className="absolute inset-0 h-full w-full object-cover" data-role-art="" />;
+  }
   const p = view.portrait;
   if (p.kind === "class" && brokenSrc !== p.src) {
     // The stock drawings are painted to their edges (cropped at the source,

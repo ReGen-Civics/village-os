@@ -33,6 +33,12 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
   prefersReducedMotion: () => motionPref.reduced,
 }));
 
+const painting = vi.hoisted(() => ({ on: false }));
+vi.mock("@/lib/natureArt", () => ({ useRoleArt: () => (id: string | null | undefined) => (painting.on && id ? `/images/nature/jaguar.webp` : null) }));
+afterEach(() => {
+  painting.on = false;
+});
+
 const asked: string[] = [];
 beforeEach(() => {
   asked.length = 0;
@@ -236,6 +242,18 @@ describe("the empty seat, the way every fork starts", () => {
     const img = document.querySelector("img")!;
     expect(img.getAttribute("alt")).toBe("Stock art for The Architect, a class suggested for this role");
     expect(img.getAttribute("src")).toMatch(/^\/images\/avatars\/researching-[fm]-(olive|deep|light)\.webp$/);
+  });
+
+  it("shows the role's painting in the art window, over the class picture (an expanded venture, live QA 21 Nov 2026)", () => {
+    painting.on = true;
+    show(SAMPLE);
+    const imgs = document.querySelectorAll("img");
+    expect(imgs).toHaveLength(1);
+    expect(imgs[0]!.getAttribute("src")).toBe("/images/nature/jaguar.webp");
+    expect(imgs[0]!.hasAttribute("data-role-art")).toBe(true);
+    // A painting that will not load falls back to the class picture.
+    fireEvent.error(imgs[0]!);
+    expect(document.querySelector("img")!.getAttribute("src")).toMatch(/^\/images\/avatars\//);
   });
 
   it("draws the sigil when the picture will not load", () => {
