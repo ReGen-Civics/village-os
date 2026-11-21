@@ -73,7 +73,7 @@
  * `cash.pay` holder fills them in.
  */
 import { canonicalJson } from "./canonicalJson";
-import { looksLikePaymentDetails, moneyWords, type SeatSettings } from "./seatSettings";
+import { looksLikePaymentDetails, moneyWords, type PayKind, type SeatSettings } from "./seatSettings";
 import type { CycleBounds } from "./cycleClock";
 import { splitForRoles, type RoleSplitShare } from "./commitment";
 import { payForTime, ROLE_PAY_CAP_PCT } from "./rolePayMath";
@@ -1732,7 +1732,7 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
     const base = { applicationId: t.applicationId, firstSeatId: t.firstSeatId, roleIds: [...t.roleIds], roleNames: [...t.roleNames], daysInMoon: moon.days, daysHeld: Math.min(t.daysHeld, moon.days), approvedItemIds: [] as string[], cashOwedId: null, held: false };
     const pay = t.settings?.pay;
     if (pay && pay.kind !== "fixed" && pay.kind !== "range") {
-      out.push({ ...base, key: t.applicationId, kind: "pay", basis: "listed", listedAs: pay.kind, currency: null, termsMinor: null, per: null, range: null, proposedMinor: null, finalMinor: null, amountMinor: null, basisLine: LISTED_WORDS[pay.kind] ?? LISTED_WORDS.none });
+      out.push({ ...base, key: t.applicationId, kind: "pay", basis: "listed", listedAs: pay.kind, currency: null, termsMinor: null, per: null, range: null, proposedMinor: null, finalMinor: null, amountMinor: null, basisLine: LISTED_WORDS[pay.kind as keyof typeof LISTED_WORDS] ?? LISTED_WORDS.none });
     } else if (pay && pay.currency && pay.kind === "fixed" && Number.isInteger(pay.amountMinor) && (pay.amountMinor as number) > 0) {
       const per = pay.per ?? "moon";
       const amount = pay.amountMinor as number;
@@ -1758,11 +1758,13 @@ export function linesFromTerms(terms: readonly TermsInForce[], moon: Pick<MoonDa
   return out;
 }
 
-const LISTED_WORDS: Record<string, string> = {
+const LISTED_WORDS: Record<Exclude<PayKind, "fixed" | "range">, string> = {
   none: "No cash",
   honorary: "Honorary, no cash",
   "in-kind": "In kind, no cash",
   deferred: "Deferred, no cash",
+  // Pay to be determined records no amount, so its line carries none until the terms are written with one.
+  tbd: "Pay to be determined, no cash yet",
 };
 
 /** A line that carries money: an amount above zero in a currency. */

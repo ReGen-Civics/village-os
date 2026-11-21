@@ -7,6 +7,12 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: es\n"
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/lib/payTbdWords.ts
+msgctxt "pay on offer: paid, the amount still to be set"
+msgid "Pay to be determined"
+msgstr "Pago por definir"
+
 #: client/src/pages/StructureReview.tsx
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""

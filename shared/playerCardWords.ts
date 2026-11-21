@@ -260,6 +260,7 @@ export const PAY_WORDS: Record<PayKind, string> = {
   honorary: "Honorary",
   "in-kind": "Paid in kind",
   deferred: "Deferred pay",
+  tbd: "Pay to be determined",
 };
 
 export const ALLOWANCE_WORDS: Record<"none" | "flat" | "reimbursed", string> = {

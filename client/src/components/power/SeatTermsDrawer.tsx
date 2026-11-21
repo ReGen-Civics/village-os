@@ -38,7 +38,8 @@ import {
   Wallet,
   type LucideIcon,
 } from "lucide-react";
-import { NOT_SET, settingsWords, type SeatSettings, type SettingsGroup, type SettingsRow } from "@shared/seatSettings";
+import { NOT_SET, PAY_TBD_WORDS, settingsWords, type SeatSettings, type SettingsGroup, type SettingsRow } from "@shared/seatSettings";
+import { payHeadlineIn } from "@/lib/payTbdWords";
 import { withAgreedWords } from "@shared/termsWords";
 import { isCustomised, presetFor, type SeatPreset } from "@shared/seatPresets";
 import { OFFER_WORDS } from "@shared/seatTermsOffer";
@@ -233,7 +234,10 @@ export default function SeatTermsDrawer({
 
   // The words agreed for each setting count as set (verify report B4): a row the parties wrote
   // in their own words is agreed, so it never reads "We'll fill this together" beside them.
-  const rows = settings ? withAgreedWords(settingsWords(settings), settings.words, settings.clocks?.commitmentPct, NOT_SET) : [];
+  // Pay to be determined is said in the reader's language (client/src/lib/payTbdWords.ts); every other headline as written.
+  const rows = (settings ? withAgreedWords(settingsWords(settings), settings.words, settings.clocks?.commitmentPct, NOT_SET) : []).map((r) =>
+    r.group === "pay" ? { ...r, headline: payHeadlineIn(r.headline, PAY_TBD_WORDS) } : r,
+  );
   const set = rows.filter((r) => r.set);
   const unset = rows.filter((r) => !r.set);
 

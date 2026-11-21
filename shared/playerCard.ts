@@ -1136,7 +1136,7 @@ function agreementRows(s: SeatSettings, input: PlayerCardInput): AgreementRow[] 
   // Money last and small. Words only: no figure is ever typed here.
   if (s.pay) {
     const per = s.pay.per ? ` ${PER_WORDS[s.pay.per]}` : "";
-    rows.push({ label: W.pay, lines: [`${PAY_WORDS[s.pay.kind]}${s.pay.kind === "none" ? "" : per}`, MONEY_LINE], small: true });
+    rows.push({ label: W.pay, lines: [`${PAY_WORDS[s.pay.kind]}${s.pay.kind === "none" || s.pay.kind === "tbd" ? "" : per}`, MONEY_LINE], small: true });
   }
   if (s.allowance) {
     const per = s.allowance.per && s.allowance.kind === "flat" ? ` ${PER_WORDS[s.allowance.per]}` : "";

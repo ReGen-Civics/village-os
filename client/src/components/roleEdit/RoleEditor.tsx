@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { ROLE_CARD_FIELDS } from "@shared/roleCardText";
 import { CONVERSATION_MODES, interviewMinutesTotal, TRACKS, TRACK_WORDS, WHERE_WORKED, type Interviewer } from "@shared/roleParameters";
 import { PAY_KINDS, type PaySettings } from "@shared/seatSettings";
+import { payTbdLine } from "@/lib/payTbdWords";
 import type { HeldBy } from "@shared/agentHolders";
 import type { WordValue } from "@shared/roleProposals";
 import { columnsOfVisibility, visibilityOf, type RoleVisibility } from "@shared/roleListing";
@@ -172,7 +173,7 @@ function Frame({ changed, posted, label, children }: { changed: boolean; posted?
 const AREA = `${INPUT} min-h-[96px] resize-y`;
 
 export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: string; onClose: () => void; onSaved?: () => void }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [open, setOpen] = useState<EditorOpen | null>(null);
   const [base, setBase] = useState<EditorState | null>(null);
   const [form, setForm] = useState<Form | null>(null);
@@ -504,9 +505,9 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
           <h3 id="re-pay" className="font-display text-lg"><Trans context="role editor">Pay on offer</Trans></h3>
           <Frame label={t({ message: "The pay group of the terms", context: "role editor" })} changed={!same(form.pay, start.pay)} posted={start.pay ? JSON.stringify(start.pay) : ""}>
             <div className="grid gap-2 sm:grid-cols-2">
-              <select className={INPUT} value={pay?.kind ?? ""} aria-label={t({ message: "Kind of pay", context: "role editor" })} onChange={(e) => (e.target.value ? setPay({ kind: e.target.value as PaySettings["kind"] }) : set("pay", null))}>
+              <select className={INPUT} value={pay?.kind ?? ""} aria-label={t({ message: "Kind of pay", context: "role editor" })} onChange={(e) => (e.target.value === "tbd" ? setPay({ kind: "tbd", amountMinor: undefined, minMinor: undefined, maxMinor: undefined }) : e.target.value ? setPay({ kind: e.target.value as PaySettings["kind"] }) : set("pay", null))}>
                 <option value="">{t({ message: "No pay on offer", context: "role editor" })}</option>
-                {PAY_KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
+                {PAY_KINDS.map((k) => <option key={k} value={k}>{k === "tbd" ? payTbdLine(i18n) : k}</option>)}
               </select>
               <input className={INPUT} value={pay?.currency ?? ""} maxLength={3} aria-label={t({ message: "Currency", context: "role editor" })} onChange={(e) => setPay({ currency: e.target.value.toUpperCase() || undefined })} />
               {pay?.kind === "range" ? (
@@ -514,7 +515,7 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
                   <input className={INPUT} inputMode="decimal" value={money(pay.minMinor)} aria-label={t({ message: "Lowest amount", context: "role editor" })} onChange={(e) => setPay({ minMinor: minor(e.target.value) })} />
                   <input className={INPUT} inputMode="decimal" value={money(pay.maxMinor)} aria-label={t({ message: "Highest amount", context: "role editor" })} onChange={(e) => setPay({ maxMinor: minor(e.target.value) })} />
                 </>
-              ) : pay && pay.kind !== "none" && pay.kind !== "honorary" ? (
+              ) : pay && pay.kind !== "none" && pay.kind !== "honorary" && pay.kind !== "tbd" ? (
                 <input className={INPUT} inputMode="decimal" value={money(pay.amountMinor)} aria-label={t({ message: "Amount", context: "role editor" })} onChange={(e) => setPay({ amountMinor: minor(e.target.value) })} />
               ) : null}
               <select className={INPUT} value={pay?.per ?? ""} aria-label={t({ message: "Per", context: "role editor" })} onChange={(e) => setPay({ per: (e.target.value || undefined) as PaySettings["per"] })}>

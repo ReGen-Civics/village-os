@@ -45,6 +45,14 @@ describe("RoleCardParams", () => {
     expect(guardedAction(done, <span>raise</span>)).not.toBeNull();
   });
 
+  it("says Pay to be determined, with no figure, for a role whose pay is to be determined (the lead, 20 Nov 2026)", () => {
+    render(<RoleCardParams seat={{ id: "r", card: { ...card, publicPay: { kind: "tbd", note: "Set when the budget is reset" } } }} />);
+    const pay = screen.getByTestId("public-pay").textContent ?? "";
+    expect(pay).toContain("Pay to be determined");
+    expect(pay).toContain("Set when the budget is reset");
+    expect(pay).not.toMatch(/\d/);
+  });
+
   it("reaches a visitor with the block and no terms drawer", () => {
     expect(termsSlotFor({ id: "r", card })).toBeTruthy();
     expect(termsSlotFor({ id: "r" })).toBeUndefined();
