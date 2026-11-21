@@ -24345,14 +24345,9 @@ msgid "Propose a role for this moon without an account"
 msgstr "Propón un rol para esta luna sin una cuenta"
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "role card tab: decides, bring me, rhythm, holding it well"
-msgid "How we work"
-msgstr "Cómo trabajamos"
-
-#: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "role card tab: decides, bring me, rhythm, holding it well"
-msgid "How we co-create"
-msgstr "Cómo co-creamos"
+#~ msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+#~ msgid "How we work"
+#~ msgstr "Cómo trabajamos"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "The approval of AI agents could not be read. Reload to try again."
@@ -25915,6 +25910,11 @@ msgstr ""
 msgctxt "limit notice, read aloud"
 msgid "This answer is over its limit. Trim it to send."
 msgstr "Esta respuesta pasa del límite. Recórtala para enviar."
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+msgid "How we co-create"
+msgstr "Cómo co-creamos"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgctxt "close the open document"

@@ -24072,9 +24072,9 @@ msgid "Propose a role for this moon without an account"
 msgstr "Propose a role for this moon without an account"
 
 #: client/src/components/roleCard/FoundingRoleCard.tsx
-msgctxt "role card tab: decides, bring me, rhythm, holding it well"
-msgid "How we work"
-msgstr "How we work"
+#~ msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+#~ msgid "How we work"
+#~ msgstr "How we work"
 
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "The approval of AI agents could not be read. Reload to try again."
@@ -25615,6 +25615,11 @@ msgstr "Waiting on a person"
 msgctxt "limit notice, read aloud"
 msgid "This answer is over its limit. Trim it to send."
 msgstr "This answer is over its limit. Trim it to send."
+
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+msgid "How we co-create"
+msgstr "How we co-create"
 
 #: client/src/components/notebook/NotebookDocument.tsx
 msgctxt "close the open document"
