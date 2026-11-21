@@ -534,7 +534,7 @@ export default function ResidentJourney() {
             {duesLink && (
               <JourneyLink
                 action={duesLink.action}
-                className="inline-flex items-center gap-2 text-notice font-medium hover:gap-3 transition-all"
+                className="inline-flex min-h-11 items-center gap-2 text-notice font-medium hover:gap-3 transition-all"
               >
                 {duesLink.label}
                 <ArrowRight className="w-4 h-4" />

@@ -582,7 +582,7 @@ export default function InvestorJourney() {
                               <JourneyLink
                                 action={action.action}
                                 onForm={openForm}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-full text-sm font-medium hover:bg-teal-deep-dark transition-colors"
+                                className="inline-flex min-h-11 items-center gap-2 px-4 py-2 bg-teal-deep text-white rounded-full text-sm font-medium hover:bg-teal-deep-dark transition-colors"
                               >
                                 {action.label}
                                 {leavesSite(action.action) ? <ExternalLink className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
