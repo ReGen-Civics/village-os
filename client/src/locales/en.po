@@ -2494,7 +2494,7 @@ msgctxt "economics view heading"
 msgid "Module health"
 msgstr "Module health"
 
-#: client/src/pages/Roles.tsx
+#: client/src/components/roleCard/FoldedTeamTimeline.tsx
 msgctxt "founding team timeline: how to read it"
 msgid "Tap a bar for its dates. The dotted lines are the gates the roles share."
 msgstr "Tap a bar for its dates. The dotted lines are the gates the roles share."
