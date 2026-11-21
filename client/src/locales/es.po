@@ -21066,11 +21066,11 @@ msgctxt "approval inbox"
 msgid "Put back"
 msgstr ""
 
-# needs-native-review: new words, 20 Nov 2026
-#: client/src/components/roleCard/RoleIndexCard.tsx
-msgctxt "roles index card: the coming-soon roles this steward will build"
-msgid "Will grow into:"
-msgstr "Dará lugar a:"
+# needs-native-review: new words, 21 Nov 2026
+#: client/src/components/roleCard/FoundingLineup.tsx
+msgctxt "under a lead role: the coming-soon roles of the circles it leads"
+msgid "Roles to be added:"
+msgstr "Roles por añadir:"
 
 #: client/src/components/seasonPlans/RoleCarryOn.tsx
 msgctxt "moon renewal action"

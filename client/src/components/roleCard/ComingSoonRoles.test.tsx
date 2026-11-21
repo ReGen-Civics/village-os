@@ -1,16 +1,14 @@
 // @vitest-environment jsdom
 /**
  * "Hear when a role opens" (the lead, 19 Nov 2026): each coming-soon card has its anchor and the approved notice,
- * "Join the waitlist" opens the form, and `#waitlist-<id>` opens that role's form on arrival.
+ * "Join the waitlist" opens the form, and `#waitlist-<id>` opens that role's form on arrival. Since 21 Nov 2026 the
+ * group is "Upcoming roles", the third on /roles, each card its own framed panel.
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import ComingSoonRoles from "./ComingSoonRoles";
 
-const ROLES = [
-  { id: "garden", name: "Garden Steward", seat: { id: "garden", name: "Garden Steward", aim: "Grow food", comingSoon: true, state: "forming" }, path: "/roles/garden-steward" },
-  { id: "kitchen", name: "Kitchen Steward", seat: { id: "kitchen", name: "Kitchen Steward", comingSoon: true, state: "forming" }, path: "/roles/kitchen-steward" },
-];
+const ROLES = [{ id: "garden", name: "Garden Steward", aim: "Grow food" }, { id: "kitchen", name: "Kitchen Steward" }];
 
 afterEach(() => {
   cleanup();
@@ -19,16 +17,18 @@ afterEach(() => {
 });
 
 describe("the coming-soon roles", () => {
-  it("draws each card with its anchor, the notice once above them, and opens the form on Join the waitlist", async () => {
+  it("draws each card with its anchor and the notice, in its own frame, and opens the form on Join the waitlist", async () => {
     render(<ComingSoonRoles roles={ROLES} />);
-    expect(screen.getByRole("heading", { name: "Upcoming roles (2)" })).toBeTruthy();
-    // The approved notice is said once for the group, above the cards (20 Nov 2026: one card per role).
-    expect(document.querySelectorAll("[data-coming-soon-note]").length).toBe(1);
-    expect(document.querySelector("[data-coming-soon-note]")?.textContent).toContain("This role is not open yet, and the card may change before it opens.");
-    expect(document.getElementById("role-garden")?.getAttribute("data-role-card")).toBe("garden");
-    expect(document.getElementById("role-garden")?.querySelector('[data-apply-early="garden"]')?.getAttribute("href")).toBe("/propose-a-role?role=garden&early=1");
-    expect(document.querySelector("[data-waitlist-form]")).toBeNull();
+    expect(screen.getByRole("heading", { level: 2, name: "Upcoming roles (2)" })).toBeTruthy();
+    const garden = document.getElementById("role-garden") as HTMLElement;
+    expect(garden.textContent).toContain("This role is not open yet, and the card may change before it opens.");
+    // One framed panel per role (the lead, 21 Nov 2026).
+    expect(garden.className).toContain("rounded-2xl");
+    expect(garden.className).toContain("border");
+    expect(garden.className).toContain("shadow-sm");
+    expect(garden.querySelector('[data-apply-early="garden"]')?.getAttribute("href")).toBe("/propose-a-role?role=garden&early=1");
     expect(within(document.getElementById("role-kitchen") as HTMLElement).getByRole("button", { name: "Join the waitlist: Kitchen Steward" })).toBeTruthy();
+    expect(document.querySelector("[data-waitlist-form]")).toBeNull();
     fireEvent.click(document.querySelector('[data-waitlist-open="kitchen"]') as HTMLElement);
     await waitFor(() => expect(document.querySelector("[data-waitlist-form]")).toBeTruthy());
     expect((screen.getByLabelText("Kitchen Steward") as HTMLInputElement).checked).toBe(true);

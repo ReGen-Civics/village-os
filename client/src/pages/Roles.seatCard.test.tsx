@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
 /**
- * /roles: THE ROW HEADER AND THE ROLE CARD UNDER IT. Since the /roles index (20 Nov 2026) the header is the
- * index card's badge, and what an opened row showed is on the role's own page, `/roles/<slug>`. The raised hand
- * (promise 3 below) went with the inline row: it stays on the map's seat card (MapSeatCard, /circles).
+ * /roles: THE ROW HEADER AND THE ROLE CARD UNDER IT.
  *
  * Nothing rendered this page in a test before. Three promises are held here:
  *
@@ -19,9 +17,11 @@
  * Every absence has a known-positive control beside it.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { Router } from "wouter";
 import type { ReactNode } from "react";
+import { seatSheet } from "@shared/roleSheet";
+import { fromMapSeat } from "@shared/roleSheetInputs";
 
 const session = vi.hoisted(() => ({ token: null as string | null, user: null as null | { id: string; role?: string } }));
 const catalog = vi.hoisted(() => ({ modules: [] as Array<{ id: string; name: string; lifecycle: string }> }));
@@ -52,6 +52,13 @@ vi.mock("@/components/natural/useReducedMotion", () => ({
 import Roles from "./Roles";
 import RoleShare from "./RoleShare";
 
+/** The opened row's body loads lazily (off the first view of /roles), so a test waits for its card. */
+const powerCard = () =>
+  waitFor(() => {
+    const el = document.querySelector("article[data-power-card]") as HTMLElement | null;
+    if (!el) throw new Error("no card yet");
+    return el;
+  });
 
 
 class NoopIntersectionObserver {
@@ -151,13 +158,18 @@ afterEach(() => {
 });
 
 function renderRoles() {
-  return render(
+  const view = render(
     <Router>
       <Roles />
     </Router>,
   );
+  // The roles sit behind step one (the archetype pick); a linked seat opens them already.
+  const seeAll = screen.queryByRole("button", { name: "See all roles" });
+  if (seeAll) fireEvent.click(seeAll);
+  return view;
 }
-/** A role's whole record lives on its own page since the /roles index (20 Nov 2026). */
+
+/** A role's own page, `/roles/<slug>`, its share link (1.3.42, kept). */
 function renderRole(id: string) {
   window.history.replaceState(null, "", `/roles/${id}`);
   return render(
@@ -167,23 +179,22 @@ function renderRole(id: string) {
   );
 }
 
-const indexCard = async (name: string) => (await screen.findByRole("heading", { level: 3, name })).closest("[data-role-card]") as HTMLElement;
+const header = async (name: string) => (await screen.findByRole("heading", { level: 3, name })).closest("button")!;
 
-describe("the /roles card's badge", () => {
+describe("the /roles row header", () => {
   it("says a seat whose term reached its date is ready to be re-chosen, never an open role", async () => {
     renderRoles();
-    const expired = await indexCard("Water Keeper");
-    expect(expired.querySelector("[data-role-card-badge]")?.textContent).toBe("Ready to be re-chosen");
-    // Known positive: the neighbour's card draws its own state the same way.
-    expect((await indexCard("Seed Keeper")).querySelector("[data-role-card-badge]")?.textContent).toBe("Partly held");
+    const expired = await header("Water Keeper");
+    expect(within(expired).getByText("Ready to be re-chosen")).toBeTruthy();
+    // Known positive: the neighbour's header draws its own state the same way.
+    expect(within(await header("Seed Keeper")).getByText("Partly held")).toBeTruthy();
     expect(screen.queryByText(/Open Role/)).toBeNull();
-    // Nothing opens inline: the card is a link to the role's page.
-    expect(expired.querySelector("[aria-expanded]")).toBeNull();
+    expect(expired.getAttribute("aria-expanded")).toBe("false");
   });
 });
 
 describe("an agent on /roles", () => {
-  it("never shows the vendor's name an agent's member row carries", async () => {
+  it("reads An agent in the row header, as the card under it does, and never the vendor's name its member row carries", async () => {
     const VENDOR = "Fieldnotes Assistant";
     const withAgent = {
       ...ORG.roles[1],
@@ -192,8 +203,7 @@ describe("an agent on /roles", () => {
         { userId: null, name: VENDOR, kind: "documented", focus: null, lapsed: false, isAgent: true, note: null },
       ],
       holderCount: 2,
-      state: "partial",
-      seats: 3,
+      state: "filled",
     };
     vi.stubGlobal(
       "fetch",
@@ -203,10 +213,122 @@ describe("an agent on /roles", () => {
       }),
     );
     renderRoles();
-    await indexCard("Seed Keeper");
+    const row = await header("Seed Keeper");
     // Control: the vendor's name is in what the route served.
     expect(JSON.stringify(withAgent)).toContain(VENDOR);
+    expect(row.textContent).toContain("Ines, An agent");
+    fireEvent.click(row);
+    const card = await powerCard();
+    expect(within(card).getByText("An agent")).toBeTruthy();
     expect(document.body.textContent).not.toContain(VENDOR);
+  });
+});
+
+describe("an opened /roles row", () => {
+  it("shows the role card, named by its header, with the history, the needs and the vendor drawer below it", async () => {
+    catalog.modules = [MAP_ON, VENDOR_ON];
+    renderRoles();
+    const row = await header("Water Keeper");
+    // Closed: no card yet. The control is the open state below.
+    expect(document.querySelector("article[data-power-card]")).toBeNull();
+    fireEvent.click(row);
+    expect(row.getAttribute("aria-expanded")).toBe("true");
+
+    const card = await powerCard();
+    expect(card).toBeTruthy();
+    expect(card.getAttribute("aria-labelledby")).toBe(row.id);
+    // Embedded: the header already names the seat and says its state, so the
+    // card draws neither a second heading nor the badge.
+    expect(within(card).queryByRole("heading", { level: 3 })).toBeNull();
+    expect(within(card).queryByText("Ready to be re-chosen")).toBeNull();
+    expect(card.querySelector('svg[viewBox="-10 -10 20 20"]')).toBeNull();
+    // The card's own content: the roster, the holder ready to be re-chosen, the line that says so.
+    expect(within(card).getByText("Holding it now")).toBeTruthy();
+    expect(within(card).getByText("Mara")).toBeTruthy();
+    expect(within(card).getByText("Everyone in this role is ready to be re-chosen.")).toBeTruthy();
+
+    await waitFor(() => expect(asked.some((a) => a.url === "/api/org/roles/water-keeper/history")).toBe(true));
+    expect(asked.some((a) => a.url === "/api/org/roles/water-keeper/needs")).toBe(true);
+    // #391's drawer still sits under the card, outside it, in the service's own name.
+    const vendor = await screen.findByRole("button", { name: "See what Fieldnotes holds" });
+    expect(card.contains(vendor)).toBe(false);
+  });
+});
+
+describe("the door a /roles card opens", () => {
+  it("offers a raised hand while the map module is on, and posts it to the map's own route", async () => {
+    renderRoles();
+    fireEvent.click(await header("Seed Keeper"));
+    const raise = await screen.findByRole("button", { name: "Apply for this role: Seed Keeper" });
+    fireEvent.click(raise);
+    fireEvent.click(await screen.findByRole("button", { name: "Send my application" }));
+    await waitFor(() =>
+      expect(asked.find((a) => a.method === "POST")?.url).toBe("/api/map/roles/seed-keeper/raise-hand"),
+    );
+    // Said twice on purpose: on the line under the door, and once in the card's polite live region.
+    expect(await screen.findAllByText("Application sent. The founding team will be in touch.")).toHaveLength(2);
+  });
+
+  it("never offers the contact relay, even on a full seat whose holder the map would offer it for", async () => {
+    const full = { ...ORG.roles[1], seats: 1, state: "filled" };
+    // Known positive first: the same row, read the way the MAP reads it, does
+    // offer to reach Ines. So the absence below is this page's rule and not
+    // a fixture with nobody reachable in it.
+    const mapView = seatSheet(
+      fromMapSeat({ ...full, description: full.aim }, { circles: ORG.circles, viewer: { viewPeople: true } }, { signedIn: true }),
+      { now: new Date(), season: null, classNames: null },
+    );
+    expect(mapView.action).toMatchObject({ kind: "contact", contactName: "Ines" });
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const body = String(url) === "/api/org" ? { ...ORG, roles: [full] } : [];
+        return { ok: true, status: 200, json: async () => body };
+      }),
+    );
+    renderRoles();
+    fireEvent.click(await header("Seed Keeper"));
+    const card = await powerCard();
+    expect(within(card).getByText("Ines")).toBeTruthy();
+    expect(within(card).queryByRole("button", { name: /^Contact/ })).toBeNull();
+    expect(within(card).queryByRole("button", { name: /Apply for this role/ })).toBeNull();
+    // Nor the map's note about a holder the map cannot reach yet.
+    expect(within(card).queryByText("Held, and not reachable through the map yet.")).toBeNull();
+  });
+
+  it("offers no hand while the map module is off for this reader", async () => {
+    catalog.modules = [];
+    renderRoles();
+    fireEvent.click(await header("Seed Keeper"));
+    const card = await powerCard();
+    // The card itself rendered (known positive), and it has no door.
+    expect(within(card).getByText("Holding it now")).toBeTruthy();
+    expect(within(card).queryByRole("button", { name: /Apply for this role/ })).toBeNull();
+    expect(within(card).queryByRole("link", { name: /Sign in to apply for this role/ })).toBeNull();
+  });
+
+  it("asks a signed-out reader to sign in first, back to this page", async () => {
+    session.token = null;
+    session.user = null;
+    // A stranger's catalog lists the map only while it is public.
+    catalog.modules = [{ ...MAP_ON, lifecycle: "public" }];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: unknown) => {
+        const u = String(url);
+        const body =
+          u === "/api/org"
+            ? { ...ORG, people: { visible: false, membersOnly: false, signedIn: false }, roles: ORG.roles.map((r) => ({ ...r, holders: [] })) }
+            : [];
+        return { ok: true, status: 200, json: async () => body };
+      }),
+    );
+    renderRoles();
+    fireEvent.click(await header("Seed Keeper"));
+    const link = await screen.findByRole("link", { name: /Sign in to apply for this role/ });
+    expect(link.getAttribute("href")).toMatch(/^\/login\?next=/);
+    expect(screen.queryByRole("button", { name: /Apply for this role/ })).toBeNull();
   });
 });
 

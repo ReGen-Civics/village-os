@@ -252,11 +252,17 @@ describe("copying a role's link", () => {
     renderRole("demo-steward");
     await waitFor(() => expect(document.querySelector("[data-role-page-missing]")).toBeTruthy());
     expect(screen.queryByRole("button", { name: ANY_COPY })).toBeNull();
-    // Nor a card on the index (control: a real seat has one).
+    // Nor a link in its opened row on /roles (control: a real seat's row carries one).
     cleanup();
     window.history.replaceState(null, "", "/roles");
     renderRoles();
-    expect(await screen.findByRole("heading", { level: 3, name: "Seed Keeper" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { level: 3, name: "Demo Steward" })).toBeNull();
+    fireEvent.click(await screen.findByRole("button", { name: "See all roles" }));
+    const demo = (await screen.findByRole("heading", { level: 3, name: "Demo Steward" })).closest("button") as HTMLElement;
+    fireEvent.click(demo);
+    expect(demo.getAttribute("aria-expanded")).toBe("true");
+    await waitFor(() => expect(document.querySelector("[data-full-role-card], [data-seat-card]") ?? document.querySelector('[aria-labelledby="' + demo.id + '"]')).toBeTruthy());
+    expect(screen.queryByRole("button", { name: ANY_COPY })).toBeNull();
+    fireEvent.click((await screen.findByRole("heading", { level: 3, name: "Seed Keeper" })).closest("button") as HTMLElement);
+    expect(await screen.findByRole("button", { name: COPY("Seed Keeper") })).toBeTruthy();
   });
 });
