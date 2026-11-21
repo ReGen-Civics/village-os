@@ -40,6 +40,12 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.49 (2026-11-21)
+
+### What changed for your village
+
+- **Upcoming roles and open ventures get their own painting too.** 1.3.48 let the listed roles choose first, which left out the coming-soon roles and ventures a visitor also sees on /roles, so two of them could still share a painting. Every role on /roles now chooses before the hidden ones.
+
 ## 1.3.48 (2026-11-21)
 
 ### What changed for your village

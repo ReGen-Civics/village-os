@@ -11,6 +11,7 @@
  *
  * Pure: no pool, no clock, no Node builtins.
  */
+import { isShown } from "./roleListing";
 
 export const NATURE_ART_URL = "/images/nature";
 
@@ -109,12 +110,21 @@ function hash(s: string): number {
 }
 
 /**
+ * The roles a visitor sees on /roles: active, and listed, coming soon or a future venture (isShown, the same
+ * test /api/org puts a visitor's roles through). A coming-soon role or a venture is often unlisted, so
+ * `listed` alone left them out (live QA on 1.3.48: two shown roles still shared a painting).
+ */
+export function shownRoleIds(roles: ReadonlyArray<{ id: string; active?: boolean; listed?: boolean | null; comingSoon?: boolean | null; futureVenture?: boolean | null }>): string[] {
+  return roles.filter((r) => r.active !== false && isShown(r)).map((r) => r.id);
+}
+
+/**
  * Every role's painting. A role an admin chose for keeps that painting; every other role draws one from its
  * id, stepping past paintings already taken so no two roles share one while the library has paintings left.
  * Roles are visited in id order, so the answer depends only on the roles and the choices, never on a page.
  *
- * `shownFirst` names the roles a visitor can see (listed and active). They draw before every other role, so
- * a hidden or rested role never takes a painting a shown one needed (live QA, 21 Nov 2026: 79 roles for 48
+ * `shownFirst` names the roles a visitor can see (shownRoleIds). They draw before every other role, so a
+ * hidden or rested role never takes a painting a shown one needed (live QA, 21 Nov 2026: 79 roles for 48
  * paintings put the same painting on several cards on /roles).
  */
 export function assignNatureArt(roleIds: readonly string[], chosen: Readonly<Record<string, string>>, shownFirst: Iterable<string> = []): Record<string, string> {

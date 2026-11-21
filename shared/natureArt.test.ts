@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { NATURE_ART, assignNatureArt, companionArt, isNatureSlug, natureArtUrl, readChosenArt } from "./natureArt";
+import { NATURE_ART, assignNatureArt, companionArt, isNatureSlug, natureArtUrl, readChosenArt, shownRoleIds } from "./natureArt";
 import { parseLook } from "./companionItems";
 
 const DIR = path.join(__dirname, "..", "server", "assets", "nature");
@@ -64,6 +64,17 @@ describe("assignNatureArt", () => {
     expect(out.r70).toBe("jaguar");
     expect(new Set(shown.map((id) => out[id])).size).toBe(47);
     expect(shown.some((id) => out[id] === "jaguar")).toBe(false);
+  });
+
+  it("counts an unlisted coming-soon role and an unlisted venture as shown, and leaves out hidden and rested roles", () => {
+    const roles = [
+      { id: "open", active: true, listed: null },
+      { id: "soon", active: true, listed: false, comingSoon: true },
+      { id: "venture", active: true, listed: false, futureVenture: true },
+      { id: "hidden", active: true, listed: false },
+      { id: "rested", active: false, listed: true },
+    ];
+    expect(shownRoleIds(roles)).toEqual(["open", "soon", "venture"]);
   });
 
   it("ignores a choice that is not a painting", () => {
