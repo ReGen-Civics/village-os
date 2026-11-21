@@ -229,6 +229,43 @@ export function applyBoxProblems(m) {
  * ignored the tab bar passed it. It tries the roles the apply form offers, by id (/roles/<id> is a role's address too,
  * shared/roleSlug.ts), and measures the first one whose page offers Apply.
  */
+/**
+ * Measure the first Apply a reader can press, inside the page: its box, the screen, and what the browser hits at its
+ * centre and corners. `scope` is a selector to look inside (one role's card on /roles), or null for the whole page
+ * scrolled to the top (a role's own page).
+ */
+function measureApply(page, scope = null) {
+  return page.evaluate((scope) => {
+    if (scope === null) window.scrollTo(0, 0);
+    const root = scope ? document.querySelector(scope) : document;
+    if (!root) return null;
+    const el = Array.from(root.querySelectorAll("[data-apply-role]")).find((e) => !e.closest("[inert]") && !e.closest("[hidden]") && e.getClientRects().length > 0);
+    if (!el) return null;
+    const b = el.getBoundingClientRect();
+    const name = (n) => (n ? `<${n.tagName.toLowerCase()}${n.id ? `#${n.id}` : ""}${n.getAttribute("class") ? ` class="${String(n.getAttribute("class")).slice(0, 80)}"` : ""}>` : "");
+    const r = (x) => Math.round(x);
+    // The centre, and each corner two pixels in: a tab bar over the button's lower edge leaves the centre clear.
+    const points = [
+      ["centre", b.left + b.width / 2, b.top + b.height / 2],
+      ["top left", b.left + 2, b.top + 2],
+      ["top right", b.right - 2, b.top + 2],
+      ["bottom left", b.left + 2, b.bottom - 2],
+      ["bottom right", b.right - 2, b.bottom - 2],
+    ];
+    let covered = false;
+    let hit = "";
+    for (const [where, x, y] of points) {
+      const n = document.elementFromPoint(x, y);
+      if (n && (n === el || el.contains(n))) continue;
+      covered = true;
+      const bar = n?.closest("nav, [role=navigation]");
+      hit = `${name(n) || "nothing"}${bar && bar !== n ? ` inside ${name(bar)}${bar.getAttribute("aria-label") ? ` "${bar.getAttribute("aria-label")}"` : ""}` : ""} at its ${where}`;
+      break;
+    }
+    return { top: r(b.top), bottom: r(b.bottom), left: r(b.left), right: r(b.right), vw: window.innerWidth, vh: window.innerHeight, covered, hit, inBar: !!el.closest("[data-phone-apply-bar]") };
+  }, scope);
+}
+
 async function checkRoleApply(context, opts) {
   const { page, problems, ms } = await checkPage(context, `${opts.baseUrl}/roles`, opts.timeoutMs);
   try {
@@ -246,33 +283,7 @@ async function checkRoleApply(context, opts) {
       // The card's words arrive after it mounts, and the bar decides on the next frame.
       await page.waitForLoadState("networkidle", { timeout: Math.min(15000, opts.timeoutMs) }).catch(() => {});
       await page.waitForTimeout(750);
-      const m = await page.evaluate(() => {
-        window.scrollTo(0, 0);
-        const el = Array.from(document.querySelectorAll("[data-apply-role]")).find((e) => !e.closest("[inert]") && !e.closest("[hidden]") && e.getClientRects().length > 0);
-        if (!el) return null;
-        const b = el.getBoundingClientRect();
-        const name = (n) => (n ? `<${n.tagName.toLowerCase()}${n.id ? `#${n.id}` : ""}${n.getAttribute("class") ? ` class="${String(n.getAttribute("class")).slice(0, 80)}"` : ""}>` : "");
-        const r = (x) => Math.round(x);
-        // The centre, and each corner two pixels in: a tab bar over the button's lower edge leaves the centre clear.
-        const points = [
-          ["centre", b.left + b.width / 2, b.top + b.height / 2],
-          ["top left", b.left + 2, b.top + 2],
-          ["top right", b.right - 2, b.top + 2],
-          ["bottom left", b.left + 2, b.bottom - 2],
-          ["bottom right", b.right - 2, b.bottom - 2],
-        ];
-        let covered = false;
-        let hit = "";
-        for (const [where, x, y] of points) {
-          const n = document.elementFromPoint(x, y);
-          if (n && (n === el || el.contains(n))) continue;
-          covered = true;
-          const bar = n?.closest("nav, [role=navigation]");
-          hit = `${name(n) || "nothing"}${bar && bar !== n ? ` inside ${name(bar)}${bar.getAttribute("aria-label") ? ` "${bar.getAttribute("aria-label")}"` : ""}` : ""} at its ${where}`;
-          break;
-        }
-        return { top: r(b.top), bottom: r(b.bottom), left: r(b.left), right: r(b.right), vw: window.innerWidth, vh: window.innerHeight, covered, hit, inBar: !!el.closest("[data-phone-apply-bar]") };
-      });
+      const m = await measureApply(page);
       const bad = [...problems, ...applyBoxProblems(m)];
       if (bad.length) return { status: "failed", detail: `${route}: ${bad.join("; ")}`, box: m, ms };
       return { status: "passed", detail: `${route}: Apply whole at ${m.top} to ${m.bottom} of ${m.vh}, nothing over it`, box: m, ms };
@@ -280,6 +291,36 @@ async function checkRoleApply(context, opts) {
     return { status: "failed", detail: `none of ${ids.length} role page(s) drew an Apply (${ids.join(", ")})`, ms };
   } catch (e) {
     return { status: "failed", detail: `the role page did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}`, ms };
+  } finally {
+    await page.close();
+  }
+}
+
+/**
+ * /roles itself on a phone (the lead, 21 Nov 2026: the full role cards are back on /roles). The first founding role's
+ * "Read the card" opens its full card inside its own frame and brings it into view; that card's Apply must then be
+ * whole on the screen with nothing over it, as on the role's own page.
+ */
+async function checkRolesListApply(context, opts) {
+  const { page, problems, ms } = await checkPage(context, `${opts.baseUrl}/roles`, opts.timeoutMs);
+  try {
+    if (problems.length) return { status: "failed", detail: `the roles page: ${problems.join("; ")}`, ms };
+    const open = page.locator("[data-founding-role]").first();
+    if ((await open.count()) === 0) return { status: "skipped", detail: "the village features no founding role on /roles", ms };
+    const id = await open.getAttribute("data-founding-role");
+    await open.click();
+    const scope = `[data-role-frame="${id}"] [data-full-role-card]`;
+    const shown = await page.waitForSelector(`${scope} [data-apply-role]`, { state: "visible", timeout: Math.min(15000, opts.timeoutMs) }).then(() => true, () => false);
+    if (!shown) return { status: "failed", detail: `/roles: the card opened from "${id}" drew no Apply inside its frame`, ms };
+    // The page scrolls the opened card into view; let that and the bar's next frame settle.
+    await page.waitForLoadState("networkidle", { timeout: Math.min(15000, opts.timeoutMs) }).catch(() => {});
+    await page.waitForTimeout(1200);
+    const m = await measureApply(page, scope);
+    const bad = [...problems, ...applyBoxProblems(m)];
+    if (bad.length) return { status: "failed", detail: `/roles, ${id}: ${bad.join("; ")}`, box: m, ms };
+    return { status: "passed", detail: `/roles, ${id}: Apply whole at ${m.top} to ${m.bottom} of ${m.vh} in its opened card, nothing over it`, box: m, ms };
+  } catch (e) {
+    return { status: "failed", detail: `/roles did not open a card: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}`, ms };
   } finally {
     await page.close();
   }
@@ -373,6 +414,13 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       results.rolePage.push({ engine, device: PHONE, ...r });
       if (r.status === "failed") failed = true;
       log(`role page Apply (${engine}, ${PHONE}): ${r.status === "passed" ? "ok" : r.status.toUpperCase()}, ${r.detail}`);
+      // The same Apply inside a card opened on /roles. A village with no founding team skips it, never fails it.
+      const listContext = await browser.newContext(phone);
+      const l = await checkRolesListApply(listContext, opts);
+      await listContext.close();
+      results.rolePage.push({ engine, device: PHONE, page: "/roles", ...l });
+      if (l.status === "failed") failed = true;
+      log(`/roles card Apply (${engine}, ${PHONE}): ${l.status === "passed" ? "ok" : l.status.toUpperCase()}, ${l.detail}`);
     }
     await browser.close();
   }

@@ -1,0 +1,261 @@
+// @vitest-environment jsdom
+/**
+ * /roles AS APPROVED IN 1.3.41, WITH THE TWO CHANGES THE LEAD ASKED FOR (21 Nov 2026).
+ *
+ *   1. FULL CARDS: the founding team's roles open their full card (the one-minute summary, the founding sections)
+ *      on /roles itself, as 1.3.41 drew them; nothing sends the reader away to read a role.
+ *   2. THE ORDER: "Open roles", then "Open ventures", then "Upcoming roles", then the roles held now.
+ *   3. ONE FRAME PER ROLE: each role is its own bordered panel, its card opening inside it, the roles a lead will add
+ *      inside it too ("Roles to be added:"), so a reader always knows which role they are in.
+ *   4. OLD LINKS (`?seat=`, `?role=`, `#<id>`, `#role-<id>`, `#<slug>`) land on the role's own page, its share link;
+ *      `#waitlist-<id>` still opens that coming-soon role's waitlist here.
+ */
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { Router } from "wouter";
+import type { ReactNode } from "react";
+
+vi.mock("@/components/Layout", () => ({ default: ({ children }: { children: ReactNode }) => <>{children}</> }));
+vi.mock("@/components/SeatClaimCard", () => ({ default: () => null }));
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: () => ({ user: null, token: null, loading: false }),
+  useIsAdmin: () => false,
+  useOptionalAuth: () => ({ user: null }),
+}));
+vi.mock("@/modules/ModuleProvider", () => ({ useModule: () => undefined, useModuleOn: () => false }));
+vi.mock("@/components/natural/useReducedMotion", () => ({ useReducedMotion: () => true, prefersReducedMotion: () => true }));
+
+import Roles, { roleForOldLink } from "./Roles";
+
+class NoopIntersectionObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+  takeRecords() {
+    return [];
+  }
+}
+
+const seat = (id: string, name: string, over: Record<string, unknown> = {}) => ({
+  id,
+  name,
+  circleId: "anchor",
+  aim: `Hold all things ${name.toLowerCase()}.`,
+  domain: "The whole domain",
+  accountabilities: ["Keep it true"],
+  seats: 1,
+  holderCount: 0,
+  state: "open",
+  recruiting: true,
+  archetypes: [],
+  isExample: false,
+  holders: [],
+  timeCommitment: "Full time",
+  card: { complete: true, missing: [], written: 11, of: 11, gated: false, whereWorked: "both", commitmentPct: 100 },
+  ...over,
+});
+
+const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanion: "", paid: false, payShape: [], payNote: "", payCeiling: null, paySplitNote: "" };
+
+let org: any;
+let founding: any;
+
+/** A desktop: the founding team opens on its first role's card. */
+const wide = () => vi.stubGlobal("matchMedia", (q: string) => ({ matches: q.includes("min-width"), media: q, addEventListener: () => {}, removeEventListener: () => {} }));
+
+beforeEach(() => {
+  window.history.replaceState(null, "", "/roles");
+  try {
+    window.localStorage.clear();
+  } catch {
+    // nothing kept
+  }
+  vi.stubGlobal("IntersectionObserver", NoopIntersectionObserver);
+  Element.prototype.scrollIntoView = vi.fn();
+  org = {
+    people: { visible: true, membersOnly: false, signedIn: false },
+    circles: [
+      { id: "anchor", name: "Anchor Circle", purpose: "", status: "active" },
+      { id: "money", name: "Money Circle", purpose: "", status: "active", leadRoleId: "finance" },
+    ],
+    roles: [
+      seat("finance", "Lead Finance Steward"),
+      seat("land", "Land Steward"),
+      seat("cook", "Village Cook"),
+      seat("dev", "Development Steward", { circleId: "money", comingSoon: true, state: "forming" }),
+      seat("perma", "Permaculture Steward", { circleId: "money", comingSoon: true, state: "forming" }),
+      seat("guest", "Guest House Venture Steward", { futureVenture: true, state: "forming" }),
+      seat("ops", "Operations Steward", { state: "filled", holderCount: 1, holders: [{ name: "Rye Ashby" }], recruiting: false }),
+    ],
+  };
+  founding = {
+    on: true,
+    roleIds: ["finance", "land"],
+    sections: { finance: SECTIONS, land: SECTIONS },
+    showPayRanges: false,
+    villagePay: { shape: [], atRisk: "", note: "" },
+    fill: {},
+  };
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: unknown) => {
+      const u = String(url);
+      const reply = (body: unknown, status = 200) => ({ ok: status < 300, status, json: async () => body });
+      if (u === "/api/org") return reply(org);
+      if (u === "/api/org/founding-team") return reply(founding);
+      if (u === "/api/season") return reply({ current: null });
+      return reply({}, 404);
+    }),
+  );
+});
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  window.history.replaceState(null, "", "/");
+});
+
+const renderRoles = (at = "/roles") => {
+  window.history.replaceState(null, "", at);
+  return render(
+    <Router>
+      <Roles />
+    </Router>,
+  );
+};
+const frame = (id: string) => document.querySelector(`[data-role-frame="${id}"]`) as HTMLElement;
+
+describe("the full role cards, back on /roles", () => {
+  it("opens the first founding role's full card on a desktop, inside its own frame, with the one-minute summary and the founding sections", async () => {
+    wide();
+    renderRoles();
+    await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
+    const card = await waitFor(() => {
+      const el = frame("finance")?.querySelector('[data-full-role-card="finance"]') as HTMLElement | null;
+      if (!el) throw new Error("no card yet");
+      return el;
+    });
+    expect(card.querySelector("[data-role-one-minute]")).toBeTruthy();
+    expect(within(card).getByText("The role in one minute")).toBeTruthy();
+    // The other role is a row in its own frame, closed, and holds no card.
+    expect(frame("land").querySelector("[data-full-role-card]")).toBeNull();
+    // Nothing on /roles sends the reader away to read a role.
+    expect(document.querySelector("[data-role-card]")).toBeNull();
+    expect(document.querySelector("[data-read-role]")).toBeNull();
+  });
+
+  it("moves the card into the frame of the role a reader opens, and nowhere else", async () => {
+    wide();
+    renderRoles();
+    await waitFor(() => expect(frame("finance")?.querySelector('[data-full-role-card="finance"]')).toBeTruthy());
+    fireEvent.click(frame("land").querySelector('[data-founding-role="land"]') as HTMLElement);
+    await waitFor(() => expect(frame("land").querySelector('[data-full-role-card="land"]')).toBeTruthy());
+    expect(frame("finance").querySelector("[data-full-role-card]")).toBeNull();
+    expect(document.querySelectorAll("[data-full-role-card]")).toHaveLength(1);
+  });
+
+  it("keeps the roles a lead will build inside that lead's frame, never between two roles", async () => {
+    wide();
+    renderRoles();
+    const builds = await waitFor(() => {
+      const el = document.querySelector("[data-lead-builds]") as HTMLElement | null;
+      if (!el) throw new Error("not yet");
+      return el;
+    });
+    expect(frame("finance").contains(builds)).toBe(true);
+  });
+});
+
+describe("the groups, in the order the lead asked for", () => {
+  it("Open roles, Open ventures, Upcoming roles, then the roles held now, each heading once", async () => {
+    renderRoles();
+    const open = await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const ventures = screen.getByRole("heading", { level: 2, name: "Open ventures (1)" });
+    const soon = screen.getByRole("heading", { level: 2, name: "Upcoming roles (2)" });
+    const held = await screen.findByRole("heading", { level: 2, name: "Holding it now" });
+    const order = [open, ventures, soon, held];
+    for (let i = 1; i < order.length; i++) expect(order[i - 1].compareDocumentPosition(order[i]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The founding roles come first under Open roles, then the role opening next.
+    expect(within(screen.getByRole("region", { name: "More roles, opening next" })).getByRole("heading", { level: 3, name: "Village Cook" })).toBeTruthy();
+    // Each role once: the venture and the coming-soon roles are not rows of the open group.
+    expect(document.querySelector('[data-opening-next] [data-role-row="guest"]')).toBeNull();
+    expect(document.querySelector('[data-opening-next] [data-role-row="dev"]')).toBeNull();
+    expect(document.querySelector('[data-future-ventures] [data-role-row="guest"]')).toBeTruthy();
+  });
+
+  it("keeps the page's outline whole: one h1 and no heading skips a level (axe heading-order)", async () => {
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    const levels = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((h) => Number(h.tagName[1]));
+    for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1]).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("one frame per role", () => {
+  it("frames every founding role, every opening-next and venture row, and every coming-soon role on its own, with room between them", async () => {
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    expect(Array.from(document.querySelectorAll("[data-role-frame]")).map((f) => f.getAttribute("data-role-frame"))).toEqual(["finance", "land"]);
+    for (const f of Array.from(document.querySelectorAll<HTMLElement>("[data-role-frame]"))) {
+      for (const c of ["rounded-2xl", "shadow-sm"]) expect(f.className).toContain(c);
+    }
+    const cookRow = document.querySelector('[data-role-row="cook"] > button') as HTMLElement;
+    for (const c of ["rounded-2xl", "border", "shadow-sm"]) expect(cookRow.className).toContain(c);
+    expect((document.querySelector('[data-role-row="cook"]') as HTMLElement).parentElement!.className).toContain("space-y-5");
+    const dev = document.getElementById("role-dev") as HTMLElement;
+    for (const c of ["rounded-2xl", "border", "shadow-sm"]) expect(dev.className).toContain(c);
+  });
+
+  it("names a lead role's coming-soon roles in its row, Roles to be added, and opens that role's waitlist on a press", async () => {
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const line = frame("finance").querySelector("[data-roles-to-be-added]") as HTMLElement;
+    expect(line.textContent).toBe("Roles to be added: Development Steward · Permaculture Steward");
+    expect(frame("land").querySelector("[data-roles-to-be-added]")).toBeNull();
+    expect(document.body.textContent).not.toContain("Will grow into");
+    fireEvent.click(line.querySelector('[data-role-to-be-added="perma"]') as HTMLElement);
+    expect(window.location.hash).toBe("#waitlist-perma");
+    await waitFor(() => expect(document.getElementById("role-perma")?.querySelector("[data-waitlist-form]")).toBeTruthy());
+  });
+
+  it("keeps a coming-soon role's Join the waitlist and Apply early, and the empty ventures line when none is flagged", async () => {
+    org.roles = org.roles.filter((r: any) => r.id !== "guest");
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open ventures (0)" });
+    expect(document.querySelector("[data-ventures-none]")?.textContent).toContain("No venture is open yet.");
+    const dev = document.getElementById("role-dev") as HTMLElement;
+    expect(within(dev).getByRole("button", { name: "Join the waitlist: Development Steward" })).toBeTruthy();
+    expect(dev.querySelector('[data-apply-early="dev"]')?.getAttribute("href")).toBe("/propose-a-role?role=dev&early=1");
+  });
+});
+
+describe("old links to one role", () => {
+  const lands = async (at: string, path: string) => {
+    renderRoles(at);
+    await waitFor(() => expect(window.location.pathname).toBe(path));
+    cleanup();
+  };
+  it("?seat=, ?role=, #<id>, #role-<id> and #<slug> each land on the role's own page", async () => {
+    await lands("/roles?seat=cook", "/roles/village-cook");
+    await lands("/roles?role=finance", "/roles/lead-finance-steward");
+    await lands("/roles#cook", "/roles/village-cook");
+    await lands("/roles#role-guest", "/roles/guest-house-venture-steward");
+    await lands("/roles#land-steward", "/roles/land-steward");
+  });
+
+  it("#waitlist-<id> stays here and opens that coming-soon role's waitlist (control: not a redirect)", async () => {
+    renderRoles("/roles#waitlist-perma");
+    await waitFor(() => expect(document.getElementById("role-perma")?.querySelector("[data-waitlist-form]")).toBeTruthy());
+    expect(window.location.pathname).toBe("/roles");
+    expect(document.getElementById("role-dev")?.querySelector("[data-waitlist-form]")).toBeNull();
+  });
+
+  it("reads an old link without a page: the same rule as a pure function", () => {
+    const roles = [{ id: "cook", path: "/roles/village-cook" }];
+    expect(roleForOldLink({ seat: "cook", hash: null }, roles)?.path).toBe("/roles/village-cook");
+    expect(roleForOldLink({ seat: null, hash: "village-cook" }, roles)?.path).toBe("/roles/village-cook");
+    expect(roleForOldLink({ seat: null, hash: "waitlist-cook" }, roles)).toBeNull();
+    expect(roleForOldLink({ seat: null, hash: "opening-next" }, roles)).toBeNull();
+    expect(roleForOldLink({ seat: "gone", hash: null }, roles)).toBeNull();
+  });
+});

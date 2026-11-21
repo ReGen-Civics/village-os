@@ -1,23 +1,23 @@
 // @vitest-environment jsdom
 /**
- * QA FAULTS ON THE ROLE CARDS (production 1.3.34): the index card says the card's own words for where (the team
- * sheet's tile, until the /roles index replaced it on 20 Nov 2026), the split is named once, and the piece rail is
- * one scrolling row on a phone. (F7, the opened card under its own row, went with the inline card: nothing opens
- * on /roles now, and Roles.index.test.tsx holds that.)
+ * QA FAULTS ON THE ROLE CARDS (production 1.3.34): the team sheet's tile says the card's own words for where, the
+ * opened card sits under its own row, the split is named once, and the piece rail is one scrolling row on a phone.
  * jsdom has no layout, so the rail is held by its class contract and its tab order.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, within } from "@testing-library/react";
-import RoleIndexCard from "./RoleIndexCard";
+import FoundingTeam, { type FoundingRole } from "./FoundingTeam";
 import RolePieces from "./RolePieces";
 import { Sprout } from "lucide-react";
 import { offeredSplit } from "@shared/proposalSplit";
 import SplitControl from "./SplitControl";
 
-const seat = (id: string, name: string) => ({ id, name, aim: "An aim.", state: "open", archetypes: [], card: { whereWorked: "both" } });
-const cardOf = (id: string, name: string, where?: string) => (
-  <RoleIndexCard seat={seat(id, name)} path={`/roles/${id}`} circleName="Anchor Circle" kind="open" whereWords={where ?? null} />
-);
+const SECTIONS = { idealBackground: [], qualities: [], aiSupport: "", aiCompanion: "", paid: false, payShape: [], payNote: "", payCeiling: null, paySplitNote: "" };
+const role = (id: string, name: string, where?: string): FoundingRole => ({
+  seat: { id, name, aim: "An aim.", state: "open", archetypes: [], card: { whereWorked: "both" } },
+  circleName: "Anchor Circle",
+  sections: { ...SECTIONS, ...(where ? { where } : {}) } as FoundingRole["sections"],
+});
 
 beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })));
@@ -28,18 +28,53 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("the index card", () => {
-  it("F2: a card says the card's own words for where, and the fixed label only when the card has none", () => {
-    const { container } = render(
-      <ul>
-        {cardOf("a", "Role A", "Near the coast (preferred) or remote (possible)")}
-        {cardOf("b", "Role B")}
-      </ul>,
-    );
-    const tiles = Array.from(container.querySelectorAll("[data-role-card]"));
+describe("the team sheet", () => {
+  it("F2: a tile says the card's own words for where, and the fixed label only when the card has none", () => {
+    const { container } = render(<FoundingTeam roles={[role("a", "Role A", "Near the coast (preferred) or remote (possible)"), role("b", "Role B")]} />);
+    const tiles = Array.from(container.querySelectorAll('[data-testid="team-sheet"] > ul > li')).filter((li) => li.querySelector("[data-founding-role]"));
     expect(tiles[0].textContent).toContain("Near the coast (preferred) or remote (possible)");
     expect(tiles[0].textContent).not.toContain("On the land or remote");
     expect(tiles[1].textContent).toContain("On the land or remote");
+  });
+
+  it("F7: the opened card sits right under its own row, inside that role's own frame (the lead, 21 Nov 2026)", () => {
+    const { container } = render(<FoundingTeam roles={[role("a", "Role A"), role("b", "Role B")]} />);
+    fireEvent.click(container.querySelector('[data-founding-role="b"]')!);
+    const slot = container.querySelector("[data-founding-card-slot]")!;
+    const frame = container.querySelector('[data-founding-role="b"]')!.closest("[data-role-frame]")!;
+    expect(frame.getAttribute("data-role-frame")).toBe("b");
+    expect(frame.contains(slot)).toBe(true);
+    // The row comes first in the frame, then the card.
+    expect(container.querySelector('[data-founding-role="b"]')!.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Never in another role's frame.
+    expect(container.querySelector('[data-role-frame="a"]')!.contains(slot)).toBe(false);
+    expect(container.querySelectorAll("[data-founding-card-slot]").length).toBe(1);
+    // The card moves with the choice: opening A puts it in A's frame.
+    fireEvent.click(container.querySelector('[data-founding-role="a"]')!);
+    expect(container.querySelector('[data-role-frame="a"]')!.contains(container.querySelector("[data-founding-card-slot]"))).toBe(true);
+  });
+
+  it("frames each role as its own panel, with a wide gap between them, and marks the open one", () => {
+    const { container } = render(<FoundingTeam roles={[role("a", "Role A"), role("b", "Role B")]} />);
+    fireEvent.click(container.querySelector('[data-founding-role="a"]')!);
+    const frames = Array.from(container.querySelectorAll<HTMLElement>("[data-role-frame]"));
+    expect(frames.map((f) => f.getAttribute("data-role-frame"))).toEqual(["a", "b"]);
+    for (const f of frames) for (const c of ["rounded-2xl", "border-2", "shadow-sm", "bg-card"]) expect(f.className).toContain(c);
+    expect(frames[0].parentElement!.className).toContain("gap-8");
+    // The open role's frame is the full gold; the others are softer (control).
+    expect(frames[0].className).toMatch(/(^|\s)border-notice(\s|$)/);
+    expect(frames[1].className).toContain("border-notice/50");
+  });
+
+  it("says a lead role's coming-soon roles in one line, Roles to be added, each one press away", () => {
+    const onOpen = vi.fn();
+    const { container } = render(<FoundingTeam roles={[role("a", "Role A"), role("b", "Role B")]} toBeAdded={{ a: [{ id: "dev", name: "Development Steward" }, { id: "perma", name: "Permaculture Steward" }] }} onOpenBuilt={onOpen} />);
+    const line = container.querySelector('[data-role-frame="a"] [data-roles-to-be-added]') as HTMLElement;
+    expect(line.textContent).toBe("Roles to be added: Development Steward · Permaculture Steward");
+    fireEvent.click(line.querySelector('[data-role-to-be-added="perma"]')!);
+    expect(onOpen).toHaveBeenCalledWith("perma");
+    // A role that leads no circle has no line (control).
+    expect(container.querySelector('[data-role-frame="b"] [data-roles-to-be-added]')).toBeNull();
   });
 });
 
