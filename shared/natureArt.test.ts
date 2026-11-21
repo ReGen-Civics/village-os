@@ -20,6 +20,8 @@ describe("the nature art library", () => {
 
   it("names its URL under /images/nature", () => {
     expect(natureArtUrl("jaguar")).toBe("/images/nature/jaguar.webp");
+    // A repainted file carries its revision, so a day-long cache cannot keep the old painting (audit, 21 Nov 2026).
+    expect(natureArtUrl("great-green-macaw")).toBe("/images/nature/great-green-macaw.webp?v=2");
   });
 });
 

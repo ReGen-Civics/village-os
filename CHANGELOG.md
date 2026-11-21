@@ -40,6 +40,22 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.50 (2026-11-21)
+
+### What changed for your village
+
+- **Nine paintings repainted.** An audit of all 48 found a great green macaw with three wings, a hammerhead with one eye and its mouth on the side of its head, leafcutter ants with leaves floating over their backs, cacao pods hanging from twig tips, coffee cherries on stalks, a tree fern with a twisted trunk, guanacaste pods drawn as beans, a mangrove with roots under the water, and a basilisk with a doubtful leg. Each is repainted in the same style, and browsers fetch the new file at once.
+- **An open waitlist keeps its painting in shape.** Opening "Join the waitlist" on an upcoming role used to stretch its painting into a tall sliver down the side of the form. The painting now sits beside the role's name as a portrait, and the form takes the full width.
+- **Easier to tap on a phone.** The tick boxes on the role application, the waitlist and the love letter are larger, with a full finger's height of row around each. The "mark as done" circles on the investor and prosperity journeys, "Forgot your password?", "How we create together", the goal links on the home page and the visit form's fields are all a full finger's height.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No.
+
 ## 1.3.49 (2026-11-21)
 
 ### What changed for your village

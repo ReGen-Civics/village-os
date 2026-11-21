@@ -94,9 +94,28 @@ export function natureArt(slug: string | null | undefined): NatureArt | null {
   return slug ? (BY_SLUG.get(slug) ?? null) : null;
 }
 
+/**
+ * Paintings repainted after they first shipped, and how many times. The files are served for a day under one URL
+ * (and Cloudflare keeps them that long), so a repaint carries `?v=` and readers fetch the new file at once.
+ * Audit, 21 Nov 2026: a macaw with three wings, a one-eyed hammerhead, ants with floating leaves, cacao pods on the
+ * twig tips, and five more that were wrong for their species.
+ */
+const REPAINTED: Readonly<Record<string, number>> = {
+  "great-green-macaw": 2,
+  "hammerhead-shark": 2,
+  "leafcutter-ants": 2,
+  "emerald-basilisk": 2,
+  "guanacaste-tree": 2,
+  "cacao-tree": 2,
+  "coffee-plant": 2,
+  "tree-fern": 2,
+  "red-mangrove": 2,
+};
+
 /** A painting's public URL. */
 export function natureArtUrl(slug: string): string {
-  return `${NATURE_ART_URL}/${encodeURIComponent(slug)}.webp`;
+  const rev = REPAINTED[slug];
+  return `${NATURE_ART_URL}/${encodeURIComponent(slug)}.webp${rev ? `?v=${rev}` : ""}`;
 }
 
 /** FNV-1a, so a role's painting is the same on every server and every reload. */
