@@ -40,6 +40,14 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.47 (2026-11-21)
+
+### What changed for your village
+
+- **Every role card has a painted animal or plant of Costa Rica.** 48 paintings in the style of the character cards: the founding cards, the roles opening next, the open ventures and every upcoming role show one, and no two roles share one.
+- **An Art library in Admin** (Who runs this village) shows all 48 and which role uses each, and lets you pick a different painting for any role.
+- **Companions can be painted.** A member can choose any of the 48 as their companion's look, and a role card's Digital Companion named after one of the animals shows its painting.
+
 ## 1.3.46 (2026-11-21)
 
 ### What changed for your village
