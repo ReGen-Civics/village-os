@@ -38,6 +38,7 @@ import { waitlistHash } from "@shared/roleWaitlist";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
+import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
@@ -66,7 +67,6 @@ const SeatAction = lazy(() => import("@/components/power/SeatAction"));
 const SeatLinkCopy = lazy(() => import("@/components/roleCard/SeatLinkCopy"));
 // The roles held now and the team's timeline sit below the groups, so they load after the first view.
 const RosterList = lazy(() => import("@/components/roleCard/RosterCards"));
-const DeliverablesGantt = lazy(() => import("@/components/roleCard/DeliverablesGantt"));
 
 interface RoleEntry {
   id: string;
@@ -549,22 +549,7 @@ export default function Roles() {
   const withDates = featuredVisible.filter((f) => (f.sections?.deliverables?.length ?? 0) > 0);
   const teamRows = withDates.length >= 2 ? withDates.flatMap((f) => (f.sections?.deliverables ?? []).map((d) => ({ ...d, role: String(f.seat.name ?? "") }))) : [];
   const teamTitle = t({ message: `${withDates.length} roles, one timeline`, context: "founding team: every open role's dated outcomes on one timeline" });
-  // The timeline sits right under the founding roles, folded until opened (the lead, 21 Nov 2026).
-  const teamTimeline =
-    teamRows.length > 0 ? (
-      <details className="group sheet-night rounded-2xl border border-notice/40 bg-card shadow-sm" data-team-deliverables="">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 p-5 font-display text-2xl text-card-foreground focus-visible:outline-2 focus-visible:outline-ring sm:p-7">
-          <ChevronDown className="size-5 shrink-0 text-notice transition-transform group-open:rotate-180" aria-hidden="true" />
-          {teamTitle}
-        </summary>
-        <div className="px-5 pb-5 sm:px-7 sm:pb-7">
-          <p className="mb-4 text-sm text-muted-foreground">{t({ message: "Tap a bar for its dates. The dotted lines are the gates the roles share.", context: "founding team timeline: how to read it" })}</p>
-          <Suspense fallback={null}>
-            <DeliverablesGantt rows={teamRows} label={teamTitle} />
-          </Suspense>
-        </div>
-      </details>
-    ) : null;
+  const teamTimeline = teamRows.length > 0 ? <FoldedTeamTimeline rows={teamRows} title={teamTitle} /> : null;
   const roleCount = (n: number) => <span className="text-lg font-normal text-muted-foreground">({n})</span>;
   // The first group's heading, over the founding team's roles and the roles opening next.
   const openHeading = (
