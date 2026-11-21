@@ -389,7 +389,7 @@ export default function ProsperityJourney() {
                             {action && (
                               <JourneyLink
                                 action={action.action}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white rounded-full text-sm font-medium hover:bg-amber-800 transition"
+                                className="inline-flex min-h-11 items-center gap-2 px-4 py-2 bg-gold text-white rounded-full text-sm font-medium hover:bg-amber-800 transition"
                               >
                                 {action.label}
                                 {leavesSite(action.action) ? <ExternalLink className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}

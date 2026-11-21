@@ -40,6 +40,20 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.51 (2026-11-21)
+
+### What changed for your village
+
+- **The last small tap targets are a full finger's height.** The "Remember my answers on this device" tick box on the role application now has a tap area as large as its words, the "Join Community Call" buttons on the investor and prosperity journeys are 44px tall, and so is "How we create together" on the resident journey.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No.
+
 ## 1.3.50 (2026-11-21)
 
 ### What changed for your village

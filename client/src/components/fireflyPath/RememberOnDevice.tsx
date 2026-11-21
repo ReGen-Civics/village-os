@@ -28,7 +28,10 @@ export function RememberOnDevice({ on, onChange, onForgotten, brief = false }: {
   return (
     <div className={`${TILE} mt-3 grid gap-2`} data-remember-on-device={on ? "on" : "off"}>
       <div className="flex min-h-11 items-start gap-3">
-        <input id="propose-remember" type="checkbox" aria-describedby="propose-remember-hint propose-remember-shared" className={TICK} checked={on} onChange={(e) => (e.target.checked ? tick() : forget())} />
+        {/* The box sits in a 44px label of its own, so a thumb finds it as easily as the words beside it (live QA, 1.3.50). */}
+        <label htmlFor="propose-remember" className="-m-2.5 flex shrink-0 cursor-pointer p-2.5">
+          <input id="propose-remember" type="checkbox" aria-describedby="propose-remember-hint propose-remember-shared" className={TICK} checked={on} onChange={(e) => (e.target.checked ? tick() : forget())} />
+        </label>
         <div className="grid gap-1">
           <label htmlFor="propose-remember" className="cursor-pointer font-semibold text-foreground">{t({ message: "Remember my answers on this device", context: "founding application, remember on this device" })}</label>
           <p id="propose-remember-hint" hidden={brief} className={HINT}>{t({ message: "Only this browser keeps them, so you can come back later. Nothing reaches us until you send.", context: "founding application, remember on this device" })}</p>
