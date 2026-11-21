@@ -934,6 +934,12 @@ msgctxt "sera answers"
 msgid "Withdrawn, and the village's vote on it ended. Each change waits in the list again."
 msgstr ""
 
+#. placeholder {0}: natureArt(slug)?.name ?? slug
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: the automatic choice"
+msgid "Automatic ({0})"
+msgstr ""
+
 #: client/src/components/LookPanel.tsx
 msgid "FAILING. A colour you set does not read on its partner; see the pairs marked fail"
 msgstr ""
@@ -2240,6 +2246,11 @@ msgctxt "companion welcome"
 msgid "Hear again"
 msgstr "Escuchar de nuevo"
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: the paintings section"
+msgid "The library"
+msgstr ""
+
 #: client/src/pages/ProposeQuest.tsx
 msgctxt "voice field label: propose quest description"
 msgid "Your quest"
@@ -2354,6 +2365,12 @@ msgstr ""
 #: client/src/components/journey/TestRun.tsx
 msgctxt "test run card heading"
 msgid "Test run"
+msgstr ""
+
+#. placeholder {0}: NATURE_ART.length
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: what it is"
+msgid "{0} painted animals and plants of Costa Rica. Every role card, upcoming role and venture card shows one. A role you leave on automatic keeps the painting it was given, and no two roles share one. Members can also pick any of them as their companion's look, and a role card's Digital Companion named after one of these animals shows its painting."
 msgstr ""
 
 #: client/src/components/modules/SuggestDial.tsx
@@ -8730,6 +8747,11 @@ msgctxt "proposed changes"
 msgid "Nothing waiting matches these filters."
 msgstr ""
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: choice cleared"
+msgid "Back to the automatic painting"
+msgstr ""
+
 #: client/src/components/modules/BuilderJourney.tsx
 msgctxt "module library, copy the agent text"
 msgid "Copy for your agent"
@@ -8974,6 +8996,11 @@ msgstr ""
 #: client/src/components/admin/SigningKeyCard.tsx
 msgctxt "signing key"
 msgid "Withdraw the request"
+msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: a painting chosen"
+msgid "Saved: {named}"
 msgstr ""
 
 #: client/src/components/review/SeraBulk.tsx
@@ -9287,6 +9314,11 @@ msgstr ""
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "That is not JSON the platform can read: {problem}"
+msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: load failed"
+msgid "The art library did not load."
 msgstr ""
 
 #: client/src/components/profile/HandoffRespondRow.tsx
@@ -10337,6 +10369,11 @@ msgstr "Compromiso"
 msgctxt "character count under a box"
 msgid "You have reached the {maxText} character limit."
 msgstr "Llegaste al límite de {maxText} caracteres."
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: a painting no role uses"
+msgid "Not on a role yet"
+msgstr ""
 
 #: client/src/components/BookingLinkField.tsx
 msgctxt "booking link field"
@@ -11635,6 +11672,11 @@ msgstr ""
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Not aligned with the membership letter"
 msgstr "No se alineó con la carta de membresía"
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: loading"
+msgid "Reading the roles."
+msgstr ""
 
 #: client/src/components/roleCard/rewardWords.ts
 #~ msgctxt "role card rewards: the proposal sets the pay"
@@ -13385,6 +13427,11 @@ msgstr ""
 
 #: client/src/components/notebook/NotebookExport.tsx
 msgid "Built. Save the files to this device:"
+msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: the roles section"
+msgid "Each role's painting"
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -15968,6 +16015,11 @@ msgstr "Negociarlo en la primera llamada si se elige"
 msgid "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
 msgstr ""
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Animals"
+msgstr ""
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application lede"
@@ -17093,6 +17145,12 @@ msgctxt "sera answers"
 msgid "Keep ours for {n}"
 msgstr ""
 
+#. placeholder {0}: data!.names[id]
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: the picker's label"
+msgid "Painting for {0}"
+msgstr ""
+
 #: client/src/components/roleEdit/RoleEditor.tsx
 msgctxt "role editor"
 msgid "Moving a role keeps its history, its holders and its applications. A coming-soon role shows under its new circle's steward."
@@ -18193,6 +18251,11 @@ msgstr ""
 
 #: client/src/components/journey/EconomicsView.tsx
 msgid "The economy conserves: every token sums to zero, no drift, no illegal negatives."
+msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin tab heading"
+msgid "Art library"
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
@@ -20928,6 +20991,11 @@ msgstr ""
 #~ msgid "Remove {rn} from your draft"
 #~ msgstr ""
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "All"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar legend"
 msgid "something else on"
@@ -21008,6 +21076,11 @@ msgstr "Una decisión se aprueba por consentimiento cuando nadie en el círculo 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "What the whole village is working toward this season"
 #~ msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Plants"
+msgstr ""
 
 #: client/src/components/canvas/CanvasSeason.tsx
 msgid "The blocks below are in canvas order. Take the stored season off below, or load a season file in its place."
@@ -22020,6 +22093,11 @@ msgstr ""
 msgctxt "thanks wall eyebrow"
 msgid "Thanks between us"
 msgstr "Gracias entre nosotros"
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: save failed"
+msgid "That painting did not save."
+msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
@@ -23617,6 +23695,11 @@ msgstr "el propio Whisper de la aldea"
 msgctxt "pay board"
 msgid "The village has not launched yet. Approved token pay issues to each account at launch."
 msgstr "La aldea aún no se ha lanzado. El pago en tokens aprobado se emite a cada cuenta en el lanzamiento."
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library: filter"
+msgid "Show"
+msgstr ""
 
 #. placeholder {0}: plantings.toLowerCase()
 #: client/src/pages/HiddenMap.tsx
