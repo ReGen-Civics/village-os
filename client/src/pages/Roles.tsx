@@ -738,7 +738,7 @@ export default function Roles() {
                 </section>
               )}
               {/* 2. OPEN VENTURES: a row the village flagged `futureVenture` (0399). With none, the group says so. */}
-              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
+              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
                 <p className={EYEBROW}>{t({ message: "Build with us", context: "roles page, the open ventures' eyebrow" })}</p>
                 <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1 mb-2`}>
                   {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
@@ -747,9 +747,10 @@ export default function Roles() {
                   {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
                 </p>
                 {ventures.length > 0 ? (
-                  <div className={ROWS}>
+                  <div className="grid items-start gap-4 lg:grid-cols-2" data-ventures-grid="">
+                    {/* Two columns on a desktop (the lead, 21 Nov 2026); an opened venture takes the full width. */}
                     {ventures.map((role, i) => (
-                      <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} />
+                      <div key={role.id} className={expandedRole === role.id ? "lg:col-span-2" : undefined}><RoleCard role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} /></div>
                     ))}
                   </div>
                 ) : (
