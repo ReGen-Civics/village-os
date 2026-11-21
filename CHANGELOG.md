@@ -40,6 +40,17 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.45 (2026-11-21)
+
+### What changed for your village
+
+- **/roles shows the full role cards again**, as the village approved them in 1.3.41, with the role in one minute and every founding section. They now come in order: Open roles, then Open ventures, then Upcoming roles. Each role sits in its own clear frame, so you always know which card you are reading. The compact index cards from 1.3.42 are gone.
+- **A lead role lists "Roles to be added:"**, the roles still to come under it. Each one opens its waitlist.
+- **What stays:**
+  - On a phone, Apply sits right under the role's name, clear of the tab bar.
+  - Coming-soon roles offer "Join the waitlist" and "Apply early".
+  - Each role keeps its own share page at /roles/<role>, and old role links still find it.
+
 ## 1.3.44 (2026-11-21)
 
 ### What changed for your village
