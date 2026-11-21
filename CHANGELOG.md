@@ -40,6 +40,12 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.44 (2026-11-21)
+
+### What changed for your village
+
+- **"Pay to be determined" is a kind of pay on offer.** A paid role can open for applications while its pay is still being set, and its card reads "Pay to be determined". It records no amount: no invoice line, total, contract price or payout reads a figure from it. Choosing it in the editor clears any typed amount.
+
 ## 1.3.43 (2026-11-20)
 
 ### What changed for your village
