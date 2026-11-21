@@ -12,6 +12,7 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { roleCardView } from "@shared/roleCardView";
 import { lazy, Suspense } from "react";
 import type { CardBooking } from "@shared/cardBooking";
+import { payTbdLine } from "@/lib/payTbdWords";
 
 // How each conversation is booked (the lead, 19 Nov 2026), loaded only by a card whose conversations carry a booking.
 const CardBookingLink = lazy(() => import("./CardBookingLink"));
@@ -29,7 +30,7 @@ export function roleCardParamsShown(seat: Record<string, any>): boolean {
 }
 
 export default function RoleCardParams({ seat }: { seat: Record<string, any> }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const view = roleCardView(seat);
   const readsTerms = "termsOffer" in seat;
   const showPay = !!view.pay && !readsTerms;
@@ -70,7 +71,7 @@ export default function RoleCardParams({ seat }: { seat: Record<string, any> }) 
       {showPay && view.pay && (
         <div data-testid="public-pay">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"><Trans context="full role card: the pay range heading">What it pays</Trans></p>
-          <p className="font-medium text-foreground">{view.pay.headline}</p>
+          <p className="font-medium text-foreground">{seat?.card?.publicPay?.kind === "tbd" ? payTbdLine(i18n) : view.pay.headline}</p>
           {view.pay.lines.map((l, i) => (
             <p key={i} className="text-muted-foreground">{l}</p>
           ))}

@@ -122,8 +122,18 @@ export interface RhythmSettings {
   tz?: string;
 }
 
-export const PAY_KINDS = ["none", "fixed", "range", "honorary", "in-kind", "deferred"] as const;
+/**
+ * `tbd`: paid, with the amount still to be set (the lead, 20 Nov 2026: "Leave the pay for both of these 'to be
+ * determined'"). It records no amount, so nothing that sums, invoices or pays money ever reads a figure from it:
+ * End of Moon lists it as no cash yet (`linesFromTerms`, shared/moonRecap.ts) and adoption writes the contract's
+ * price from the card's own band, never from this group (shared/contractPrice.ts).
+ */
+export const PAY_KINDS = ["none", "fixed", "range", "honorary", "in-kind", "deferred", "tbd"] as const;
 export type PayKind = (typeof PAY_KINDS)[number];
+/** The kinds a paid track may list on offer (`listingProblems`, server/lib/roleEdit.ts): an amount, a range, or to be determined. */
+export const PAY_ON_OFFER_KINDS: readonly PayKind[] = ["fixed", "range", "tbd"];
+/** The pay headline for `tbd`, in English. The client says it in the reader's language (client/src/lib/payTbdWords.ts). */
+export const PAY_TBD_WORDS = "Pay to be determined";
 export const MONEY_PER = ["month", "moon"] as const;
 export interface PaySettings {
   kind: PayKind;
@@ -561,6 +571,9 @@ function readMoney(
   if ((kind === "none" || kind === "honorary") && carriesAmount) {
     r.refuse(`${group}.amountMinor`, "An unpaid or honorary role records no amount.");
   }
+  if (kind === "tbd" && carriesAmount) {
+    r.refuse(`${group}.amountMinor`, "Pay to be determined records no amount yet. Pick fixed or a range once it is set.");
+  }
   if (kind === "range" && out.amountMinor !== undefined) {
     r.refuse("pay.amountMinor", "A range records its lowest and highest amounts.");
   }
@@ -909,6 +922,9 @@ function payWords(p: PaySettings, locale: string): Pick<SettingsRow, "headline" 
       break;
     case "deferred":
       headline = p.amountMinor === undefined ? "Deferred" : `${amount(p.amountMinor)}${per}, deferred`;
+      break;
+    case "tbd":
+      headline = PAY_TBD_WORDS;
       break;
     default:
       // Mid-edit, before a kind is picked. Parsed settings never reach here.
