@@ -418,7 +418,7 @@ export const PARAMETER_CARD_FIELDS: readonly ParameterCardSpec[] = [
   { key: "conversationMode", heading: "Conversations held", list: false, oneLine: true, aliases: ["conversation mode"], limit: "Block (one sitting, back to back) or separate (one at a time, on different days)." },
   { key: "accessBundle", heading: "Access bundle", list: true, oneLine: false, aliases: [], limit: `Up to ${LIMITS_PARAMETERS.bundleItems} lines: the tools and places the role is given.` },
   { key: "bookingUrl", heading: "Booking link", list: false, oneLine: true, aliases: [], limit: "A web address that starts with https://, a wa.me link, or the word whatsapp for a conversation on WhatsApp with no number shown." },
-  { key: "pay", heading: "Pay on offer", list: true, oneLine: false, aliases: ["pay"], limit: "One line, like Range 1000 to 1500 USD per month, or Fixed 1200 USD per month, Honorary, In kind, Deferred, None. A Note: line may follow." },
+  { key: "pay", heading: "Pay on offer", list: true, oneLine: false, aliases: ["pay"], limit: "One line, like Range 1000 to 1500 USD per month, or Fixed 1200 USD per month, Honorary, In kind, Deferred, To be determined, None. A Note: line may follow." },
 ];
 
 const KIND_WORDS: Record<string, PaySettings["kind"]> = {
@@ -429,6 +429,8 @@ const KIND_WORDS: Record<string, PaySettings["kind"]> = {
   "in kind": "in-kind",
   "in-kind": "in-kind",
   deferred: "deferred",
+  "to be determined": "tbd",
+  tbd: "tbd",
 };
 
 const wholeUnits = (s: string): number | null => {
@@ -452,9 +454,9 @@ export function payFromLines(rawLines: readonly string[]): Read<PaySettings | nu
     note = inline[1].trim();
     head = head.slice(0, inline.index).trim();
   }
-  const m = /^(none|fixed|range|honorary|in[ -]kind|deferred)\b\s*(.*)$/i.exec(head);
-  if (!m) return no("Start the pay line with None, Fixed, Range, Honorary, In kind or Deferred.");
-  const kind = KIND_WORDS[m[1].toLowerCase().replace(/\s+/, " ")];
+  const m = /^(none|fixed|range|honorary|in[ -]kind|deferred|to\s+be\s+determined|tbd)\b\s*(.*)$/i.exec(head);
+  if (!m) return no("Start the pay line with None, Fixed, Range, Honorary, In kind, Deferred or To be determined.");
+  const kind = KIND_WORDS[m[1].toLowerCase().replace(/\s+/g, " ")];
   const rest = m[2].replace(/[.]$/, "").trim();
   const out: Record<string, unknown> = { kind };
   if (note) out.note = note;
@@ -478,7 +480,7 @@ export function payFromLines(rawLines: readonly string[]): Read<PaySettings | nu
 export function payToLines(pay: PaySettings | null | undefined): string[] {
   if (!pay) return [];
   const units = (n: number) => (n % 100 === 0 ? String(n / 100) : (n / 100).toFixed(2));
-  const kindWord = pay.kind === "in-kind" ? "In kind" : pay.kind.charAt(0).toUpperCase() + pay.kind.slice(1);
+  const kindWord = pay.kind === "in-kind" ? "In kind" : pay.kind === "tbd" ? "To be determined" : pay.kind.charAt(0).toUpperCase() + pay.kind.slice(1);
   const bits: string[] = [kindWord];
   if (pay.kind === "range" && pay.minMinor !== undefined && pay.maxMinor !== undefined) bits.push(`${units(pay.minMinor)} to ${units(pay.maxMinor)}`);
   else if (pay.amountMinor !== undefined) bits.push(units(pay.amountMinor));

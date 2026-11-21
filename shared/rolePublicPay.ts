@@ -28,9 +28,13 @@ export function publicPayOf(settings: SeatSettings | null | undefined): PublicPa
   return typeof out.kind === "string" ? (out as unknown as PublicPay) : null;
 }
 
-/** Whether the pay group states an amount or a range, which a paid role needs on offer. */
+/**
+ * Whether the pay group states what a paid role needs on offer: an amount, a range, or that the pay is to be
+ * determined (the lead, 20 Nov 2026). `tbd` passes the card's gate and states no figure, so it feeds no amount.
+ */
 export function payStatesRange(pay: PublicPay | null | undefined): boolean {
   if (!pay) return false;
+  if (pay.kind === "tbd") return true;
   if (pay.kind === "fixed") return pay.amountMinor !== undefined;
   if (pay.kind === "range") return pay.minMinor !== undefined && pay.maxMinor !== undefined;
   return false;

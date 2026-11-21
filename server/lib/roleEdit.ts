@@ -40,7 +40,7 @@ import { ROLE_CARD_FIELDS } from "../../shared/roleCardText";
 import { ROLE_CCOS_COLUMNS } from "../../shared/roleCcos";
 import { ROLE_HANDOVER_COLUMNS } from "../../shared/roleHandover";
 import { readTermsOffer } from "../../shared/seatTermsOffer";
-import type { PaySettings, SeatSettings } from "../../shared/seatSettings";
+import { PAY_ON_OFFER_KINDS, type PaySettings, type SeatSettings } from "../../shared/seatSettings";
 import {
   PARAMETER_CARD_FIELDS,
   PARAMETER_COLUMNS,
@@ -190,8 +190,9 @@ export function listingProblems(state: Pick<EditorState, "words" | "parameters" 
   if (!(p.villageGoals && p.villageGoals.length)) missing.push("Village goals this role serves");
   if (!(p.selectionCriteria && p.selectionCriteria.length >= 3)) missing.push("Selection criteria");
   if (!(p.conversations && p.conversations.length)) missing.push("Interviewers");
-  // Every paid track asks for pay on offer, as the card's gate does (shared/roleTracks.ts, guide v2).
-  if (p.track && PAID_TRACKS.includes(p.track as Track) && !(state.pay && (state.pay.kind === "fixed" || state.pay.kind === "range"))) missing.push("Pay on offer");
+  // Every paid track asks for pay on offer, as the card's gate does (shared/roleTracks.ts, guide v2). Pay to be
+  // determined counts as on offer (the lead, 20 Nov 2026): the role is paid, and its amount is set later.
+  if (p.track && PAID_TRACKS.includes(p.track as Track) && !(state.pay && PAY_ON_OFFER_KINDS.includes(state.pay.kind))) missing.push("Pay on offer");
   return missing;
 }
 

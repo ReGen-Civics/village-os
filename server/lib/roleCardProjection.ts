@@ -18,7 +18,7 @@ import { PAID_TRACKS, readTrack, trackOf } from "../../shared/roleTracks";
 import { invitesApplications, isListed } from "../../shared/roleListing";
 import { conversationModeOf } from "../../shared/interviewerRoles";
 import { roleCardGate } from "../../shared/roleParams";
-import { payStatesRange, publicPayOf } from "../../shared/rolePublicPay";
+import { payStatesRange, publicPayOf, type PublicPay } from "../../shared/rolePublicPay";
 import { publicTermsOf, readTermsOffer } from "../../shared/seatTermsOffer";
 import type { OrgRole } from "./orgChart";
 import { mayHold, readHeldBy } from "../../shared/agentHolders";
@@ -28,6 +28,11 @@ import { cardBookingOf } from "../../shared/cardBooking";
 export interface RoleCardTier {
   terms: boolean;
   editing: boolean;
+}
+
+/** A to-be-determined pay group as a visitor reads it: the kind and the note, and never a currency, figure or period. */
+function tbdOnly(pay: PublicPay): PublicPay {
+  return { kind: "tbd", ...(pay.note ? { note: pay.note } : {}) };
 }
 
 function isPaid(role: OrgRole, payKind: string | undefined, defaultTrack?: string | null): boolean {
@@ -126,7 +131,8 @@ export function roleCard(
     agentMayHold: mayHold(role.heldBy, "agent"),
     firstConversation: opts.words?.firstConversationRole ?? null,
     ...(isPaid(role, pay?.kind, opts.words?.defaultTrack) && opts.words?.paidConsentCircle ? { consentCircle: opts.words.paidConsentCircle } : {}),
-    ...(pay && open && isListed(role) && (opts.words?.showPayRanges ?? boolVar("org.show_pay_ranges")) ? { publicPay: pay } : {}),
+    // Pay to be determined states no figure, so it is said on an open listed card whether or not the village shows ranges.
+    ...(pay && open && isListed(role) && (pay.kind === "tbd" || (opts.words?.showPayRanges ?? boolVar("org.show_pay_ranges"))) ? { publicPay: pay.kind === "tbd" ? tbdOnly(pay) : pay } : {}),
     ...(tier.terms ? { budgetLine: role.budgetLine ?? null, fundedFrom: role.fundedFrom ?? null } : {}),
     ...(tier.editing ? { accessBundle: role.accessBundle ?? null, bookingUrl: role.bookingUrl ?? null } : {}),
   };

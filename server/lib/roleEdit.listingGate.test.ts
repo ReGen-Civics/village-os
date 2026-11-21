@@ -34,6 +34,16 @@ describe("listingProblems", () => {
     expect(paid).toContain("Pay on offer");
   });
 
+  it("lists an open contractor card whose pay is to be determined (the lead, 20 Nov 2026)", () => {
+    const open = { aim: "Build.", domain: "The site.", accountabilities: ["Safety"], timeCommitment: "Full time" };
+    const params = { track: "contractor", villageGoals: ["Homes"], selectionCriteria: ["a", "b", "c"], conversations: [{ roleId: "s", minutes: 30 }] };
+    expect(listingProblems(card(open, params, { kind: "tbd" }))).toEqual([]);
+    expect(listingProblems(card(open, { ...params, track: "employee" }, { kind: "tbd" }))).toEqual([]);
+    // Control: the same card with an unpaid kind still lacks pay on offer.
+    expect(listingProblems(card(open, params, { kind: "honorary" }))).toEqual(["Pay on offer"]);
+    expect(listingProblems(card(open, params, null))).toEqual(["Pay on offer"]);
+  });
+
   it("asks a coming soon card for everything when asked what it lacks to open", () => {
     expect(listingProblems(card({ aim: "Keep the books.", domain: "The ledger." }, { comingSoon: true }), { asOpen: true })).toEqual(FULL_OPEN.slice(2));
   });

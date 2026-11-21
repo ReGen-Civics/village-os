@@ -45,6 +45,7 @@ import { goalOf, nextDeliverables } from "@shared/roleOneMinute";
 import { CardTipsProvider, TipText, useCardTips } from "./CardTips";
 import RoleOneMinute from "./RoleOneMinute";
 import { bandWords } from "./payBandWords";
+import { payTbdLine } from "@/lib/payTbdWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
 import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
@@ -222,7 +223,9 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   // RANGES STAY HIDDEN whatever the role data holds: the server leaves the range out while the village
   // keeps it hidden, and the card drops it again here so an older payload can never draw one.
   const showsRange = answer?.showPayRanges === true;
-  const ranged = showsRange || !seat?.card?.publicPay ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
+  // Pay to be determined states no range, so it stays whatever the village's switch (the lead, 20 Nov 2026).
+  const payTbd = seat?.card?.publicPay?.kind === "tbd";
+  const ranged = showsRange || !seat?.card?.publicPay || payTbd ? seat : { ...seat, card: { ...seat.card, publicPay: undefined } };
   // Where, in the card's own words (sections.where), in place of the listing's land or remote label.
   const params = read?.where ? { ...ranged, card: { ...(ranged.card ?? {}), whereText: read.where } } : ranged;
   const founding = register === "founding";
@@ -342,6 +345,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         <MoonText text={perPeriod(i18n, moneyWords(ceiling.amount, ceiling.currency, i18n.locale), ceiling.per)} />{" "}
         <span className="font-normal text-muted-foreground">{t({ message: "for the full role", context: "role in one minute: after the price" })}</span>
       </>
+    ) : founding && payTbd ? (
+      payTbdLine(i18n)
     ) : null,
     where: roleCardView(params).rows.find((r) => r.id === "where")?.lines.join(", ") ?? "",
   };
@@ -359,6 +364,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </>
       ) : (
         <>
+          {/* No listed price and the terms say the pay is to be determined: said in its place, with no figure. */}
+          {payTbd && !pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-tbd">{payTbdLine(i18n)}</p>}
           {pay.ceiling && <p className="font-display text-3xl leading-snug text-notice" data-testid="pay-ceiling"><TokenText text={pay.ceiling} /></p>}
           {band && <p className="leading-relaxed text-card-foreground" data-testid="pay-band"><MoonText text={band} /></p>}
           <Suspense fallback={null}>

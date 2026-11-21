@@ -48,6 +48,7 @@ const WORDS: Record<string, string> = {
   honorary: "Honorary",
   "in-kind": "In kind",
   deferred: "Deferred",
+  tbd: "To be determined",
   flat: "Flat amount",
   reimbursed: "Costs reimbursed",
   equity: "Equity, in words",
@@ -295,7 +296,14 @@ function MoneyFields({ group, g, set, openLabel }: { group: "pay" | "allowance";
   const amountKinds = group === "pay" ? ["fixed", "in-kind", "deferred"] : ["flat"];
   return (
     <>
-      <Choice label="Kind" value={g.kind} options={kinds} blank={openLabel} onChange={(v) => set(put(g, "kind", v))} />
+      <Choice
+        label="Kind"
+        value={g.kind}
+        options={kinds}
+        blank={openLabel}
+        // Pay to be determined records no amount, so choosing it clears any figure already typed.
+        onChange={(v) => set(v === "tbd" ? put(put(put(put(g, "kind", v), "amountMinor", undefined), "minMinor", undefined), "maxMinor", undefined) : put(g, "kind", v))}
+      />
       <Words
         label="Currency code"
         max={3}
@@ -310,7 +318,7 @@ function MoneyFields({ group, g, set, openLabel }: { group: "pay" | "allowance";
           <Amount label="Highest" minor={g.maxMinor} currency={g.currency} onChange={(v) => set(put(g, "maxMinor", v))} />
         </>
       )}
-      {kind !== "none" && kind !== "honorary" && kind !== "reimbursed" && (
+      {kind !== "none" && kind !== "honorary" && kind !== "reimbursed" && kind !== "tbd" && (
         <Choice label="Each" value={g.per} options={MONEY_PER} blank={openLabel} onChange={(v) => set(put(g, "per", v))} />
       )}
       <Words label="Note" area max={LIMITS.noteChars} value={g.note} onChange={(v) => set(put(g, "note", v))} />
