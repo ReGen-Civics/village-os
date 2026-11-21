@@ -501,7 +501,7 @@ export default function InvestorJourney() {
                             e.stopPropagation();
                             progress.toggle(step);
                           }}
-                          className="flex-shrink-0 mt-1"
+                          className="flex-shrink-0 -mx-2.5 -mt-1.5 -mb-2.5 inline-flex size-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <m.div
                             whileHover={{ scale: 1.1 }}

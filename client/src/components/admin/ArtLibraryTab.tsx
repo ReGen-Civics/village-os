@@ -75,7 +75,7 @@ export default function ArtLibraryTab({ password }: { password: string }) {
             const auto = !data!.chosen[id];
             return (
               <li key={id} className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3 shadow-sm" data-art-role={id}>
-                <img src={natureArtUrl(slug)} alt="" loading="lazy" className="aspect-[3/4] w-14 shrink-0 rounded-xl border border-notice/40 object-cover" />
+                <img src={natureArtUrl(slug, "sm")} alt="" loading="lazy" className="aspect-[3/4] w-14 shrink-0 rounded-xl border border-notice/40 object-cover" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold text-card-foreground">{data!.names[id]}</p>
                   <label className="sr-only" htmlFor={`art-${id}`}>{t({ message: `Painting for ${data!.names[id]}`, context: "admin art library: the picker's label" })}</label>
@@ -113,7 +113,7 @@ export default function ArtLibraryTab({ password }: { password: string }) {
           {shown.map((a) => (
             <li key={a.slug} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm" data-art-slug={a.slug}>
               <a href={natureArtUrl(a.slug)} target="_blank" rel="noreferrer" className="block">
-                <img src={natureArtUrl(a.slug)} alt={a.name} loading="lazy" className="aspect-[3/4] w-full object-cover" />
+                <img src={natureArtUrl(a.slug, "sm")} alt={a.name} loading="lazy" className="aspect-[3/4] w-full object-cover" />
               </a>
               <div className="p-3">
                 <p className="font-semibold leading-tight text-card-foreground">{a.name}</p>

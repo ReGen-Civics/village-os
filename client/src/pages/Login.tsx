@@ -164,7 +164,7 @@ export default function Login() {
               </m.button>
 
               <p className="text-center">
-                <a href="/forgot-password" className="text-sm text-teal-deep hover:underline">
+                <a href="/forgot-password" className="inline-flex min-h-11 items-center text-sm text-teal-deep hover:underline">
                   Forgot your password?
                 </a>
               </p>

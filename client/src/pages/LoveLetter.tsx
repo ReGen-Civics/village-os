@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { BTN_PRIMARY, WORLD } from "@/components/journey/look";
+import { BTN_PRIMARY, TICK, WORLD } from "@/components/journey/look";
 import { m, AnimatePresence } from "framer-motion";
 import { Heart, CheckCircle2, ArrowRight, Users, Home, TrendingUp, Sparkles, Send } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -674,7 +674,7 @@ export default function LoveLetter() {
                     type="checkbox"
                     checked={form.goodNeighbor}
                     onChange={e => setForm(p => ({ ...p, goodNeighbor: e.target.checked }))}
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 accent-notice"
+                    className={TICK}
                   />
                   <span className="text-sm text-muted-foreground">
                     I have read and agree to the{" "}
@@ -696,7 +696,7 @@ export default function LoveLetter() {
                     type="checkbox"
                     checked={form.commitmentAck}
                     onChange={e => setForm(p => ({ ...p, commitmentAck: e.target.checked }))}
-                    className="mt-0.5 h-5 w-5 flex-shrink-0 accent-notice"
+                    className={TICK}
                   />
                   <span className="text-sm text-muted-foreground min-w-0 break-words">
                     {words.fields.ackLabel} <span className="text-destructive">*</span>

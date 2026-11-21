@@ -12,6 +12,7 @@
  * Pure: no pool, no clock, no Node builtins.
  */
 import { isShown } from "./roleListing";
+import { NATURE_ART_FILES } from "./natureArtFiles";
 
 export const NATURE_ART_URL = "/images/nature";
 
@@ -94,9 +95,18 @@ export function natureArt(slug: string | null | undefined): NatureArt | null {
   return slug ? (BY_SLUG.get(slug) ?? null) : null;
 }
 
-/** A painting's public URL. */
-export function natureArtUrl(slug: string): string {
-  return `${NATURE_ART_URL}/${encodeURIComponent(slug)}.webp`;
+export type NatureArtSize = "full" | "sm";
+
+/**
+ * A painting's public URL: the 720x960 file, or with "sm" the 360x480 copy for a thumbnail or a strip a few
+ * centimetres wide. The file's fingerprint rides along as `?v=` (shared/natureArtFiles.ts, written by
+ * scripts/nature-art-sizes.mjs), so a repainted file has a new address the moment it ships and the server can let
+ * readers keep each one for a year. Until 21 Nov 2026 a hand-kept list did this, and a repaint nobody added to it
+ * kept showing the old picture for a day.
+ */
+export function natureArtUrl(slug: string, size: NatureArtSize = "full"): string {
+  const v = NATURE_ART_FILES[slug]?.[size];
+  return `${NATURE_ART_URL}/${size === "sm" ? "sm/" : ""}${encodeURIComponent(slug)}.webp${v ? `?v=${v}` : ""}`;
 }
 
 /** FNV-1a, so a role's painting is the same on every server and every reload. */

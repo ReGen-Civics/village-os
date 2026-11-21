@@ -283,7 +283,7 @@ export default function Layout({ children }: LayoutProps) {
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className="text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+                  className="inline-flex min-h-6 items-center text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
                 >
                   {entry.label}
                 </Link>
@@ -951,7 +951,7 @@ function NavDropdown({
         aria-expanded={open}
         aria-haspopup="true"
         aria-controls={menuId}
-        className="flex items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
+        className="flex min-h-6 items-center gap-1 text-white hover:underline transition-colors text-sm whitespace-nowrap rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-teal-deep"
       >
         {group.label}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />

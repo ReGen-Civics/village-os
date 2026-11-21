@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { gameFetch } from "@/lib/gameApi";
-import { companionArt, natureArtUrl } from "@shared/natureArt";
+import { companionArt, natureArtUrl, type NatureArtSize } from "@shared/natureArt";
 
 type RoleArtMap = Record<string, string>;
 
@@ -16,7 +16,9 @@ const listeners = new Set<(m: RoleArtMap) => void>();
 function load(): Promise<RoleArtMap> {
   if (cache) return Promise.resolve(cache);
   if (!pending) {
-    pending = gameFetch("/api/art/nature")
+    // A throw before the request (no fetch at all) is "no painting" too, so a card never blanks its page.
+    pending = Promise.resolve()
+      .then(() => gameFetch("/api/art/nature"))
       .then((r) => (r.ok ? r.json() : { roles: {} }))
       .then((j) => (j && typeof j.roles === "object" && j.roles ? (j.roles as RoleArtMap) : {}))
       .catch(() => ({}))
@@ -36,8 +38,11 @@ export function refreshRoleArt(next?: RoleArtMap): void {
   if (next) listeners.forEach((l) => l(next));
 }
 
-/** The painting URL for a role id, or null while loading or for a role the server does not know. */
-export function useRoleArt(): (roleId: string | null | undefined) => string | null {
+/**
+ * The painting URL for a role id, or null while loading or for a role the server does not know. Pass "sm" where the
+ * painting shows a few centimetres wide (a thumbnail, a strip): the half-size copy is about a third of the bytes.
+ */
+export function useRoleArt(size: NatureArtSize = "full"): (roleId: string | null | undefined) => string | null {
   const [map, setMap] = useState<RoleArtMap | null>(cache);
   useEffect(() => {
     let live = true;
@@ -51,7 +56,7 @@ export function useRoleArt(): (roleId: string | null | undefined) => string | nu
   }, []);
   return (roleId) => {
     const slug = roleId && map ? map[roleId] : null;
-    return slug ? natureArtUrl(slug) : null;
+    return slug ? natureArtUrl(slug, size) : null;
   };
 }
 

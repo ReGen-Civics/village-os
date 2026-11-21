@@ -81,7 +81,7 @@ export default function RootLine({ quiet, pending = null }: { quiet: (path: stri
         >
           <span className="mr-2 text-xs font-semibold uppercase tracking-widest text-notice">{eyebrow}</span>
           {path.step.href ? (
-            <Link href={path.step.href} className="font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">
+            <Link href={path.step.href} className="inline-flex min-h-6 items-center font-medium text-foreground underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring">
               {said.step}
             </Link>
           ) : (

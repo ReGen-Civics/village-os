@@ -6,7 +6,7 @@
  */
 import { flushSync } from "react-dom";
 import { useLingui } from "@lingui/react/macro";
-import { HINT, LINK, TILE } from "@/components/journey/look";
+import { HINT, LINK, TICK, TILE } from "@/components/journey/look";
 import { forgetApplyAnswers, keepRememberChoice } from "./applyRemember";
 
 /** `brief` after the first step (idea 16): the box and its name stay, the two lines under it were said on the first step. */
@@ -28,7 +28,7 @@ export function RememberOnDevice({ on, onChange, onForgotten, brief = false }: {
   return (
     <div className={`${TILE} mt-3 grid gap-2`} data-remember-on-device={on ? "on" : "off"}>
       <div className="flex min-h-11 items-start gap-3">
-        <input id="propose-remember" type="checkbox" aria-describedby="propose-remember-hint propose-remember-shared" className="mt-0.5 size-5 shrink-0 cursor-pointer accent-notice" checked={on} onChange={(e) => (e.target.checked ? tick() : forget())} />
+        <input id="propose-remember" type="checkbox" aria-describedby="propose-remember-hint propose-remember-shared" className={TICK} checked={on} onChange={(e) => (e.target.checked ? tick() : forget())} />
         <div className="grid gap-1">
           <label htmlFor="propose-remember" className="cursor-pointer font-semibold text-foreground">{t({ message: "Remember my answers on this device", context: "founding application, remember on this device" })}</label>
           <p id="propose-remember-hint" hidden={brief} className={HINT}>{t({ message: "Only this browser keeps them, so you can come back later. Nothing reaches us until you send.", context: "founding application, remember on this device" })}</p>

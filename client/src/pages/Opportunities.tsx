@@ -217,7 +217,7 @@ export default function Opportunities() {
                 // >= 4.5 for every seed and contrast is symmetric - and measures
                 // 8.15:1 on this band under the neutral default. Same fix, and
                 // the same reasoning, as the Register path pills.
-                className="inline-flex items-center gap-2 text-teal-deep font-medium hover:gap-3 transition-all"
+                className="inline-flex min-h-11 items-center gap-2 text-teal-deep font-medium hover:gap-3 transition-all"
               >
                 How we create together
                 <ArrowRight className="w-4 h-4" />

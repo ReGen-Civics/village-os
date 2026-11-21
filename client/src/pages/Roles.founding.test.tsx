@@ -525,7 +525,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const visible = () => Array.from(card.querySelectorAll<HTMLElement>("[data-piece]")).filter((el) => !el.hidden).map((el) => el.dataset.piece);
     // Five tabs (the lead, 20 Nov 2026): The role opens Purpose and Looks after together.
     const tabs = Array.from(card.querySelectorAll<HTMLElement>("[data-piece-tab]")).map((b) => b.textContent);
-    expect(tabs).toEqual(["The role", "Deliverables", "How we work", "You and rewards", "The path in"]);
+    expect(tabs).toEqual(["The role", "Deliverables", "How we co-create", "You and rewards", "The path in"]);
     expect(visible()).toEqual(["purpose", "domain"]);
     fireEvent.click(within(card).getByRole("button", { name: /Next: Deliverables/ }));
     expect(visible()).toEqual(["accountabilities"]);

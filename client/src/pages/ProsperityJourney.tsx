@@ -315,7 +315,7 @@ export default function ProsperityJourney() {
                             e.stopPropagation();
                             progress.toggle(step);
                           }}
-                          className="flex-shrink-0 mt-0.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          className="flex-shrink-0 -mx-2.5 -mt-2 -mb-2.5 inline-flex size-11 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                         >
                           <m.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
                             {isCompleted ? (

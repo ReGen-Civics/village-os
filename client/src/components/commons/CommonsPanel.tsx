@@ -74,7 +74,7 @@ export function GoalWords({ goal, count }: { goal: SeasonGoalView; count: number
         <Link
           href={goalWorkHref(goal.goalId)}
           onClick={(e) => e.stopPropagation()}
-          className="text-base leading-snug text-card-foreground underline decoration-border underline-offset-4 hover:text-notice hover:decoration-notice"
+          className="-my-[11px] inline-block py-[11px] text-base leading-snug text-card-foreground underline decoration-border underline-offset-4 hover:text-notice hover:decoration-notice"
         >
           {text}
         </Link>
