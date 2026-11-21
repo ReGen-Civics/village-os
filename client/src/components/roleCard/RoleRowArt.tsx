@@ -7,7 +7,7 @@ import { useState, type ComponentType } from "react";
 import { useRoleArt } from "@/lib/natureArt";
 
 export default function RoleRowArt({ roleId, Icon, swatch }: { roleId: string; Icon: ComponentType<{ className?: string }>; swatch: { bg: string; ink: string } }) {
-  const src = useRoleArt()(roleId);
+  const src = useRoleArt("sm")(roleId);
   const [failed, setFailed] = useState(false);
   if (src && !failed) {
     return (

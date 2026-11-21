@@ -24349,6 +24349,11 @@ msgctxt "role card tab: decides, bring me, rhythm, holding it well"
 msgid "How we work"
 msgstr "Cómo trabajamos"
 
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: decides, bring me, rhythm, holding it well"
+msgid "How we co-create"
+msgstr "Cómo co-creamos"
+
 #: client/src/components/admin/AiAgentsApprovalPanel.tsx
 msgid "The approval of AI agents could not be read. Reload to try again."
 msgstr ""

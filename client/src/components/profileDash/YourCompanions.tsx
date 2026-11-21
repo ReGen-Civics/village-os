@@ -627,7 +627,7 @@ function LookEditor({ c, onClose, onSaved }: { c: CompanionView; onClose: () => 
                   onClick={() => setLook({ source: "nature", art: art.slug })}
                   className={`flex min-h-[76px] items-center justify-center rounded-2xl p-1 ${on ? "border-2 border-dash-gold bg-dash-next" : "border border-dash-edge bg-dash-raised"}`}
                 >
-                  <img src={natureArtUrl(art.slug)} alt="" loading="lazy" className="h-14 w-14 rounded-full object-cover" />
+                  <img src={natureArtUrl(art.slug, "sm")} alt="" loading="lazy" className="h-14 w-14 rounded-full object-cover" />
                 </button>
               );
             })}

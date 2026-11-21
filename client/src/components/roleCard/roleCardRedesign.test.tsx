@@ -130,8 +130,8 @@ describe("the role in one minute", () => {
 describe("five tabs, not eleven", () => {
   it("holds every piece under five tabs, in order", async () => {
     const el = await card();
-    expect(Array.from(el.querySelectorAll("[data-piece-tab]")).map((b) => b.textContent)).toEqual(["The role", "Deliverables", "How we work", "You and rewards", "The path in"]);
-    fireEvent.click(within(el).getByRole("button", { name: /How we work/ }));
+    expect(Array.from(el.querySelectorAll("[data-piece-tab]")).map((b) => b.textContent)).toEqual(["The role", "Deliverables", "How we co-create", "You and rewards", "The path in"]);
+    fireEvent.click(within(el).getByRole("button", { name: /How we co-create/ }));
     expect(visible(el)).toEqual(["authorities", "bringMe", "responsibilities", "holding"]);
     fireEvent.click(within(el).getByRole("button", { name: /The path in/ }));
     expect(visible(el)).toEqual(["chosen", "onboarding"]);

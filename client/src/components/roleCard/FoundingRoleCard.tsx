@@ -154,7 +154,7 @@ function useTabs(): PieceTab[] {
   return [
     { key: "role", tab: t({ message: "The role", context: "role card tab: purpose and what it looks after" }), icon: Compass, pieces: ["purpose", "domain"] },
     { key: "deliverables", tab: t({ message: "Deliverables", context: "role card: the dated outcomes" }), icon: Handshake, pieces: ["accountabilities"] },
-    { key: "work", tab: t({ message: "How we work", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: Users, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
+    { key: "work", tab: t({ message: "How we co-create", context: "role card tab: decides, bring me, rhythm, holding it well" }), icon: Users, pieces: ["authorities", "bringMe", "responsibilities", "holding"] },
     { key: "you", tab: t({ message: "You and rewards", context: "role card tab: who we hope for and the rewards" }), icon: Coins, pieces: ["who", "rewards"] },
     { key: "path", tab: t({ message: "The path in", context: "role card tab: how you're chosen and once you're selected" }), icon: DoorOpen, pieces: ["chosen", "onboarding"] },
   ];

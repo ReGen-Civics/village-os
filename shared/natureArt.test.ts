@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { NATURE_ART_FILES } from "./natureArtFiles";
 import { NATURE_ART, assignNatureArt, companionArt, isNatureSlug, natureArtUrl, readChosenArt, shownRoleIds } from "./natureArt";
 import { parseLook } from "./companionItems";
 
@@ -18,10 +19,10 @@ describe("the nature art library", () => {
     for (const a of NATURE_ART) expect(fs.statSync(path.join(DIR, `${a.slug}.webp`)).size).toBeLessThan(120 * 1024);
   });
 
-  it("names its URL under /images/nature", () => {
-    expect(natureArtUrl("jaguar")).toBe("/images/nature/jaguar.webp");
-    // A repainted file carries its revision, so a day-long cache cannot keep the old painting (audit, 21 Nov 2026).
-    expect(natureArtUrl("great-green-macaw")).toBe("/images/nature/great-green-macaw.webp?v=2");
+  it("names its URL under /images/nature, with the file's fingerprint so a repaint gets a new address", () => {
+    expect(natureArtUrl("jaguar")).toBe(`/images/nature/jaguar.webp?v=${NATURE_ART_FILES.jaguar!.full}`);
+    expect(natureArtUrl("jaguar", "sm")).toBe(`/images/nature/sm/jaguar.webp?v=${NATURE_ART_FILES.jaguar!.sm}`);
+    expect(natureArtUrl("not-a-painting")).toBe("/images/nature/not-a-painting.webp");
   });
 });
 

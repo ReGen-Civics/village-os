@@ -48,6 +48,10 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 - **An expanded venture shows its painting.** Opening a venture on /roles showed the full role card with its character drawing. The card now shows the role's painting, the same one as its row, and falls back to the character only if the painting cannot load.
 - **An open waitlist keeps its painting in shape.** Opening "Join the waitlist" on an upcoming role used to stretch its painting into a tall sliver down the side of the form. The painting now sits beside the role's name as a portrait, and the form takes the full width.
 - **Easier to tap on a phone.** The tick boxes on the role application, the waitlist and the love letter are larger, with a full finger's height of row around each. The "mark as done" circles on the investor and prosperity journeys, "Forgot your password?", "How we create together", the goal links on the home page and the visit form's fields are all a full finger's height.
+- **Upcoming roles sit two to a row on a wide screen**, like the ventures, and a role with its waitlist open takes the whole row. "Apply early" is now a button beside "Join the waitlist".
+- **The role card's "How we work" tab is now "How we co-create".**
+- **Paintings load faster and update themselves.** Thumbnails and strips load a half-size copy of their painting, about a third of the bytes. Every painting's address now carries a fingerprint of its file, so a repainted painting reaches every reader the moment it ships, and browsers can keep each one for a year. `node scripts/nature-art-sizes.mjs` makes the copies and the fingerprints after any painting changes, and a test fails until it is run.
+- **Desktop menus are easier to hit.** The top menu's items and the "your next step" link are at least 24px tall.
 
 ### What you must do
 

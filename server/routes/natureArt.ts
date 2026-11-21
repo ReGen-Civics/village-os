@@ -3,6 +3,7 @@
  * every role card, upcoming role and venture card shows, and which painting each role has.
  *
  *   GET  /images/nature/<slug>.webp          the paintings (server/assets/nature, like moduleArt.ts)
+ *   GET  /images/nature/sm/<slug>.webp       their half-size copies (scripts/nature-art-sizes.mjs)
  *   GET  /api/art/nature                     the library and every role's painting, for any reader
  *   GET  /api/admin/art/nature               the same with each role's name and whether an admin chose it
  *   PUT  /api/admin/art/nature/roles/:roleId { slug } chooses a painting; { slug: null } goes back to automatic
@@ -22,6 +23,7 @@ import { NATURE_ART, NATURE_ART_URL, assignNatureArt, isNatureSlug, readChosenAr
 export const NATURE_ART_DIR = path.join("server", "assets", "nature");
 export const NATURE_ART_DOC = "role-nature-art";
 const MAX_AGE_SECONDS = 86400;
+const YEAR_SECONDS = 31536000;
 const READS = 120;
 const WINDOW_MS = 60_000;
 
@@ -44,7 +46,13 @@ export async function roleArt(pool: Pool): Promise<{ roles: Record<string, strin
 export function register(app: Express, deps: Deps): void {
   const { isAdmin, guardCapability, overLimit, getPool } = deps;
   if (!fs.existsSync(deps.dir)) console.warn(`[nature-art] ${deps.dir} is missing, so role cards will draw their fallback art`);
-  app.use(NATURE_ART_URL, express.static(deps.dir, { index: false, redirect: false, dotfiles: "ignore", maxAge: MAX_AGE_SECONDS * 1000 }));
+  // A URL carrying the file's fingerprint (`?v=`, natureArtUrl) names one exact file, so a reader may keep it for a year;
+  // a bare URL keeps the day, because the file behind it can be repainted.
+  app.use(NATURE_ART_URL, (req, res, next) => {
+    res.set("Cache-Control", typeof req.query.v === "string" && /^[0-9a-f]{6,16}$/.test(req.query.v) ? `public, max-age=${YEAR_SECONDS}, immutable` : `public, max-age=${MAX_AGE_SECONDS}`);
+    next();
+  });
+  app.use(NATURE_ART_URL, express.static(deps.dir, { index: false, redirect: false, dotfiles: "ignore", cacheControl: false }));
 
   app.get("/api/art/nature", async (req, res) => {
     if (await overLimit(`nature-art:${req.ip ?? "anon"}`, READS, WINDOW_MS)) return res.status(429).json({ error: "too_many_asks" });

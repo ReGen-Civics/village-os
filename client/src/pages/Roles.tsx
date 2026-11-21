@@ -762,7 +762,7 @@ export default function Roles() {
               </section>
               {/* 3. UPCOMING ROLES: the coming-soon roles, each with its waitlist and Apply early. */}
               {soonRoles.length > 0 && (
-                <div className="mx-auto mb-14 max-w-4xl">
+                <div className="mx-auto mb-14 max-w-4xl lg:max-w-6xl">
                   <ComingSoonRoles roles={soonRoles} className={GROUP_BREAK} />
                 </div>
               )}
