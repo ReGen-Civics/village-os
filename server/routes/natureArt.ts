@@ -17,6 +17,7 @@ import type { Pool } from "mysql2/promise";
 import type { AppDeps } from "../lib/appDeps";
 import { dbDocument } from "../repos/store-db";
 import { listOrgRoles } from "../lib/orgChart";
+import { isListed } from "../../shared/roleListing";
 import { NATURE_ART, NATURE_ART_URL, assignNatureArt, isNatureSlug, readChosenArt } from "../../shared/natureArt";
 
 export const NATURE_ART_DIR = path.join("server", "assets", "nature");
@@ -38,7 +39,9 @@ export async function roleArt(pool: Pool): Promise<{ roles: Record<string, strin
   const all = (await listOrgRoles(pool)).filter((r) => !r.isExample);
   const chosen = await chosenArt(pool);
   const names = Object.fromEntries(all.map((r) => [r.id, String(r.name ?? r.id)]));
-  return { roles: assignNatureArt(all.map((r) => r.id), chosen), chosen, names };
+  // The roles a visitor can see draw first, so they never share a painting while the library has one left.
+  const shown = all.filter((r) => isListed(r) && r.active !== false).map((r) => r.id);
+  return { roles: assignNatureArt(all.map((r) => r.id), chosen, shown), chosen, names };
 }
 
 export function register(app: Express, deps: Deps): void {
