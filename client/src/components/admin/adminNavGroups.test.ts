@@ -109,7 +109,7 @@ describe("navGroups", () => {
   const ORDER: Array<[string, string[]]> = [
     ["Today", ["home"]],
     ["Start here", ["setup"]],
-    ["Who runs this village", ["players", "game-roles", "org-chart", "compare", "role-discover", "handover", "governance-weights"]],
+    ["Who runs this village", ["players", "game-roles", "org-chart", "compare", "role-discover", "art-library", "handover", "governance-weights"]],
     // `money` is a CONTENT_SECTIONS entry the economics branch adds (Money &
     // Value Claims, the editor behind `client/src/lib/moneyClaims.ts`), so it
     // rides in with the other three rather than being placed here.
@@ -170,6 +170,8 @@ describe("navGroups", () => {
     // what the rail carried at the time.
     const addedSince = [
       "failures",
+      // The art library, 2026-11-20: the painted animals and plants on every role card.
+      "art-library",
       // Village Comms, 2026-10-02.
       "comms-overview", "comms-journeys", "comms-words", "comms-people", "comms-letters", "comms-sent", "comms-settings",
       // Pages, 2026-10-22: every word the public pages say, edited from the page specs.

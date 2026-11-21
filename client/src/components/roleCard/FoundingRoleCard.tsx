@@ -19,6 +19,7 @@ import { CARD_WORDS as W } from "@shared/playerCardWords";
 import { SECTION_WORDS, type RoleCardSections } from "@shared/roleCardSections";
 import { roleCardView } from "@shared/roleCardView";
 import { roleArtFor } from "@shared/roleDraft";
+import { useRoleArt } from "@/lib/natureArt";
 import { splitDomain, splitLine } from "@shared/rolePieces";
 import { paidRoleLine, trackWords } from "./cardWordsT";
 import { EYEBROW, HINT } from "@/components/journey/look";
@@ -166,7 +167,8 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
   const Title = lifted ? "h2" : "h3";
   const SubH = lifted ? "h4" : "h5";
   const roots = Array.isArray(seat.archetypes) ? seat.archetypes.map(String) : [];
-  const art = roleArtFor({ archetypes: roots, raw: seat });
+  // The role's painted animal or plant (Rye, 20 Nov 2026), else its character art.
+  const art = useRoleArt()(seat.id) ?? roleArtFor({ archetypes: roots, raw: seat });
   const open = seat.state !== "filled";
 
   // The four quick facts, from the same view model every card host reads.

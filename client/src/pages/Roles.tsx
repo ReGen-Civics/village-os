@@ -39,6 +39,7 @@ import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
 import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
+import RoleRowArt from "@/components/roleCard/RoleRowArt";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
@@ -192,9 +193,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
-            <div className={`w-10 h-10 ${swatch.bg} rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5`}>
-              <Icon className={`w-5 h-5 ${swatch.ink}`} />
-            </div>
+            <RoleRowArt roleId={role.id} Icon={Icon} swatch={swatch} />
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-0.5">
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>
@@ -739,7 +738,7 @@ export default function Roles() {
                 </section>
               )}
               {/* 2. OPEN VENTURES: a row the village flagged `futureVenture` (0399). With none, the group says so. */}
-              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
+              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
                 <p className={EYEBROW}>{t({ message: "Build with us", context: "roles page, the open ventures' eyebrow" })}</p>
                 <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1 mb-2`}>
                   {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
@@ -748,9 +747,10 @@ export default function Roles() {
                   {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
                 </p>
                 {ventures.length > 0 ? (
-                  <div className={ROWS}>
+                  <div className="grid items-start gap-4 lg:grid-cols-2" data-ventures-grid="">
+                    {/* Two columns on a desktop (the lead, 21 Nov 2026); an opened venture takes the full width. */}
                     {ventures.map((role, i) => (
-                      <RoleCard key={role.id} role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} />
+                      <div key={role.id} className={expandedRole === role.id ? "lg:col-span-2" : undefined}><RoleCard role={role} expanded={expandedRole === role.id} onToggle={() => toggle(role.id)} index={i} canTagNeeds={canTagNeeds} sheet={sheet} /></div>
                     ))}
                   </div>
                 ) : (

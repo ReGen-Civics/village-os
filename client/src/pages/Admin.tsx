@@ -62,6 +62,7 @@ const BudgetsTab = lazy(() => import("@/components/admin/BudgetsTab"));
 // Compare proposals side by side (the lead, 20 Nov 2026), lazy so the first page never pays for it.
 const CompareTab = lazy(() => import("@/components/admin/CompareTab"));
 const RoleDiscoverTab = lazy(() => import("@/components/admin/RoleDiscoverTab"));
+const ArtLibraryTab = lazy(() => import("@/components/admin/ArtLibraryTab"));
 import { TIER_PILL } from "@shared/moduleCatalog";
 import { adminNavRailClass, filterNavByModules, TAB_MODULE, type TabBadge } from "@/lib/adminNav";
 import { AdminGoLive } from "@/components/modules/GoLiveCard";
@@ -8003,6 +8004,7 @@ export default function Admin() {
           {activeTab === "org-chart" && <OrgChartTab password={password} />}
           {activeTab === "compare" && <Suspense fallback={null}><CompareTab password={password} /></Suspense>}
           {activeTab === "role-discover" && <Suspense fallback={null}><RoleDiscoverTab password={password} /></Suspense>}
+          {activeTab === "art-library" && <Suspense fallback={null}><ArtLibraryTab password={password} /></Suspense>}
           {activeTab === "pricing-desk" && <Suspense fallback={null}><PricingDeskTab password={password} /></Suspense>}
           {activeTab === "budgets" && <Suspense fallback={null}><BudgetsTab password={password} /></Suspense>}
           {activeTab === "governance-weights" && <VotingWeightsPanel password={password} />}
