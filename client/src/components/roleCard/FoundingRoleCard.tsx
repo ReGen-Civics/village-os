@@ -143,7 +143,7 @@ export interface FoundingRoleCardProps {
   shared?: RoleCardShared;
   /** "The role in one minute" (RoleOneMinute.tsx), less the act and the heading level, which the card sets. */
   oneMinute: Omit<OneMinuteProps, "act" | "as">;
-  /** A phone's act in the flow, under the goal (FullRoleCard); null on a desktop. */
+  /** A phone's act in the flow, right after the title block (FullRoleCard); null on a desktop. */
   phoneAct?: ReactNode;
 }
 
@@ -418,7 +418,7 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         {shownFacts.map((f) => (
           <div key={f.label} className={`min-w-0 rounded-xl px-3 py-2.5 ${p.wide ? "bg-card" : "bg-muted/50"}`}>
             <dt className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
-              <f.icon className="size-3.5 text-notice" aria-hidden="true" />
+              <f.icon className="size-3.5 shrink-0 text-notice" aria-hidden="true" />
               {f.label}
             </dt>
             <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-card-foreground">{f.value}</dd>
@@ -450,7 +450,10 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
             {p.sections?.paid && <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>}
           </div>
         </div>
-        {/* On a desktop the tiles sit in the seat column. On a phone they follow the one-minute panel and its Apply,
+        {/* A phone's Apply comes right after the title, above the one-minute panel, so its whole button is on the
+            first screen above the tab bar (the lead, 20 Nov 2026: Apply "visible and usable on the first phone screen"). */}
+        {!p.wide && p.phoneAct}
+        {/* On a desktop the tiles sit in the seat column. On a phone they follow the one-minute panel, after the Apply,
             so the Apply is on the first screen (the lead, 20 Nov 2026: Apply "visible from the start"). */}
         {p.wide && factTiles}
       </header>
@@ -459,7 +462,6 @@ export default function FoundingRoleCard(p: FoundingRoleCardProps) {
         <RoleOneMinute
           {...p.oneMinute}
           as={lifted ? "h3" : "h4"}
-          phoneAct={p.phoneAct ?? null}
           act={
             p.wide && p.act ? (
               <>

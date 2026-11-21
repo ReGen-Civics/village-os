@@ -3,8 +3,8 @@
  *
  * Above the ticks: a warm push (most people have not done these yet, and that
  * is fine), a fork for someone completely new (the Steward path first) or
- * already sure (carry on), and one act per way: watch the last recording,
- * join the next call, book a land tour, come to the next potluck. The links
+ * already sure (carry on), and one act per way: watch the last webinar recording,
+ * join the next webinar call, book a land tour, come to the next potluck. The links
  * come from shared/knowUsLinks.ts; an act with no link is not drawn.
  *
  * Every link opens in a new tab, so the application's draft stays where it is.
@@ -15,15 +15,16 @@ import type { KnowUsLinks, KnowUsNext } from "@shared/knowUsLinks";
 
 const ACT = "inline-flex min-h-11 items-center gap-2 font-medium text-notice underline underline-offset-2 hover:text-foreground";
 
+/** The day and the clock time, in the viewer's own zone and words (the browser converts it). */
 function when(next: KnowUsNext, locale: string): string {
   const d = new Date(next.startsAt);
   const day = d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" });
   const time = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
-  return next.place ? `${day}, ${time} · ${next.place}` : `${day}, ${time}`;
+  return `${day}, ${time}`;
 }
 
 function Act({ href, label, next }: { href: string | null; label: string; next?: KnowUsNext | null }) {
-  const { i18n } = useLingui();
+  const { t, i18n } = useLingui();
   if (!href) return null;
   return (
     <li>
@@ -31,7 +32,14 @@ function Act({ href, label, next }: { href: string | null; label: string; next?:
         {label}
         <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
       </a>
-      {next && <span className="block text-sm text-muted-foreground">{when(next, i18n.locale || "en")}</span>}
+      {next && (
+        <span className="block text-sm text-muted-foreground" data-know-us-when="">
+          {when(next, i18n.locale || "en")}{" "}
+          {/* The time is already converted to the viewer's zone; the note says so, for someone reading from abroad (the lead, 20 Nov 2026). */}
+          <span className="rounded-full border border-border px-2 py-0.5 text-xs" data-your-time="">{t({ message: "your time", context: "founding application know us: a time already converted to the viewer's own zone" })}</span>
+          {next.place ? ` · ${next.place}` : null}
+        </span>
+      )}
     </li>
   );
 }
@@ -40,8 +48,8 @@ export function KnowUsWays({ links }: { links: KnowUsLinks | undefined }) {
   const { t } = useLingui();
   if (!links) return null;
   const acts = [
-    { key: "recording", href: links.recording, label: t({ message: "Watch the last recording", context: "founding application know us act" }), next: null },
-    { key: "call", href: links.call.href, label: t({ message: "Join the next call", context: "founding application know us act" }), next: links.call.next },
+    { key: "recording", href: links.recording, label: t({ message: "Watch the last webinar recording", context: "founding application know us act" }), next: null },
+    { key: "call", href: links.call.href, label: t({ message: "Join the next webinar call", context: "founding application know us act" }), next: links.call.next },
     { key: "tour", href: links.tour.href, label: t({ message: "Book a land tour", context: "founding application know us act" }), next: links.tour.next },
     { key: "potluck", href: links.potluck.href, label: t({ message: "Come to the next potluck", context: "founding application know us act" }), next: links.potluck.next },
   ].filter((a) => a.href);
@@ -49,7 +57,7 @@ export function KnowUsWays({ links }: { links: KnowUsLinks | undefined }) {
     <div className="grid gap-4" data-know-us-ways="">
       <p className="text-base leading-relaxed text-foreground">
         {t({ message: "Most people haven't done these yet, and that's fine.", context: "founding application know us push" })}{" "}
-        {links.recording ? t({ message: "Watching the last recording is the easiest first step.", context: "founding application know us push" }) : null}
+        {links.recording ? t({ message: "Watching the last webinar recording is the easiest first step.", context: "founding application know us push" }) : null}
       </p>
       {acts.length > 0 && (
         <ul className="grid gap-2" data-know-us-acts="">

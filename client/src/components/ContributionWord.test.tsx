@@ -44,7 +44,7 @@ describe("the contribution token's name", () => {
   it("opens the at-risk tip on focus, names it as its description, and Escape closes it", () => {
     const { container } = inI18n(<ContributionWord short />);
     const w = words(container)[0];
-    expect(w.textContent).toBe("Harbour");
+    expect(w.textContent).toBe("Harbour tokens");
     fireEvent.focus(w);
     const tip = screen.getByRole("tooltip");
     expect(tip.textContent).toBe(TIP);
@@ -84,9 +84,14 @@ describe("the credits token's name", () => {
 
 describe("a passage with the token names", () => {
   it("tips every mention of the contribution token, full or short, and the first of the credits token", () => {
-    const { container } = inI18n(<TokenText text="Harbour Tokens and Village Credits. More Harbour, more Village Credits." />);
-    expect(container.textContent).toBe("Harbour Tokens and Village Credits. More Harbour, more Village Credits.");
-    expect(words(container).map((w) => w.textContent)).toEqual(["Harbour Tokens", "Village Credits", "Harbour"]);
+    const { container } = inI18n(<TokenText text="Harbour Tokens and Village Credits. More Harbour tokens, more Village Credits." />);
+    expect(container.textContent).toBe("Harbour Tokens and Village Credits. More Harbour tokens, more Village Credits.");
+    expect(words(container).map((w) => w.textContent)).toEqual(["Harbour Tokens", "Village Credits", "Harbour tokens"]);
+  });
+
+  it("leaves the village's bare name alone: near Harbour is a place, never a token (the lead, 20 Nov 2026)", () => {
+    const { container } = inI18n(<TokenText text="Near Harbour preferred, remote possible." />);
+    expect(container.querySelector(".tip-word")).toBeNull();
   });
 
   it("comes back as is without a name, and hands the rest to `plain`", () => {
@@ -97,11 +102,13 @@ describe("a passage with the token names", () => {
 });
 
 describe("a share's label as a reader sees it", () => {
-  const names = { equity: "Harbour Tokens", equityShort: "Harbour", credits: "Village Credits" };
+  const names = { equity: "Harbour Tokens", equityShort: "Harbour tokens", credits: "Village Credits" };
   it("shows the contribution share by the short name, whatever the stored label says", () => {
-    expect(shareLabelFor("Equity", names)).toBe("Harbour");
-    expect(shareLabelFor("earned equity", names)).toBe("Harbour");
-    expect(shareLabelFor("Harbour Tokens", names)).toBe("Harbour");
+    expect(shareLabelFor("Equity", names)).toBe("Harbour tokens");
+    expect(shareLabelFor("earned equity", names)).toBe("Harbour tokens");
+    expect(shareLabelFor("Harbour Tokens", names)).toBe("Harbour tokens");
+    // A share the village labelled with its bare word still reads as the token, said as tokens.
+    expect(shareLabelFor("Harbour", names)).toBe("Harbour tokens");
     expect(shareLabelFor("Credits", names)).toBe("Village Credits");
     expect(shareLabelFor("Village credits", names)).toBe("Village Credits");
     expect(shareLabelFor("Cash", names)).toBe("Cash");
@@ -117,7 +124,7 @@ describe("a share's label as a reader sees it", () => {
         <ShareLabel label="Cash" />
       </>,
     );
-    expect(container.textContent).toBe("HarbourVillage CreditsCash");
-    expect(words(container).map((w) => w.textContent)).toEqual(["Harbour", "Village Credits"]);
+    expect(container.textContent).toBe("Harbour tokensVillage CreditsCash");
+    expect(words(container).map((w) => w.textContent)).toEqual(["Harbour tokens", "Village Credits"]);
   });
 });

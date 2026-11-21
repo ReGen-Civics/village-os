@@ -11,7 +11,7 @@
  * (server/testkit/fakeResend.ts), and boots the BUILT dist/index.js with
  * SMOKE_TEST_TOKEN set. It then sets the village up the way the pilot runs,
  * just enough for the apply flow (a founder, a season, this moon's proposals,
- * one circle and one role), runs scripts/browser-smoke.mjs against it with
+ * one circle and one role with a card as full as a founding role's), runs scripts/browser-smoke.mjs against it with
  * --require-apply, and finally fails if the fake provider received a single
  * email while the smoke ran: a TEST application must never be mailed.
  *
@@ -82,6 +82,33 @@ async function seed() {
     await call("PUT", `/api/admin/org/roles/${role.json.id}`, { name: "Gate Keeper", circleId: "anchor", seats: 1, aim: "The gate opens at dawn.", accountabilities: ["Open the gate", "Close it at dusk"] }, F),
     "role words",
   );
+  // A card as full as a real founding role's (the lead, after 1.3.42): a goal line, three dated deliverables, the
+  // commitment, where and a paid line, featured on the founding team. On the thin card above the phone's Apply sat
+  // well clear of the tab bar whatever the layout, so the role page check could not tell 1.3.42's hidden Apply apart.
+  const day = (n) => civil(now + n * DAY);
+  must(
+    await call(
+      "POST",
+      `/api/org/role-edit/${role.json.id}`,
+      {
+        words: { aim: "The gate opens at dawn.", whyItMatters: "Goal: every neighbour finds the gate open at dawn and closed at dusk, every day of the season", accountabilities: ["Open the gate", "Close it at dusk"] },
+        parameters: { commitmentPct: 60 },
+        sections: {
+          paid: true,
+          where: "On the land, with some work from home",
+          deliverables: [
+            { title: "The gate's hours agreed with the circle", start: day(5), end: day(30) },
+            { title: "A new latch fitted and tested", start: day(31), end: day(31), milestone: true },
+            { title: "A season of gate logs shared", start: day(32), end: day(90) },
+          ],
+        },
+      },
+      F,
+    ),
+    "role card",
+  );
+  must(await call("PUT", "/api/admin/variables/org.founding_team", { value: true }, F), "founding team on");
+  must(await call("PUT", "/api/admin/variables/org.founding_team_roles", { value: role.json.id }, F), "founding team role");
 }
 
 async function run() {

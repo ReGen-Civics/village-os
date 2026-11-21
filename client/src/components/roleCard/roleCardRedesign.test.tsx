@@ -107,15 +107,18 @@ describe("the role in one minute", () => {
     expect(facts[0].textContent).toContain("WhereOn the land");
   });
 
-  it("puts a phone's Apply under the goal, once, with the bar along the foot kept as the card's last child", async () => {
+  it("puts a phone's Apply right after the title, above the one-minute panel, once, with the bar along the foot kept as the card's last child", async () => {
     const el = await card();
-    // jsdom is narrow, so this is the phone: no desktop act in the summary, the act in the flow under the goal.
+    // jsdom is narrow, so this is the phone: no desktop act in the summary, the act in the flow after the title.
     expect(el.querySelector("[data-one-minute-act]")).toBeNull();
     const summary = el.querySelector("[data-role-one-minute]") as HTMLElement;
-    const inflow = summary.querySelector("[data-phone-act]") as HTMLElement;
+    expect(summary.querySelector("[data-phone-act]")).toBeNull();
+    const inflow = el.querySelector("[data-phone-act]") as HTMLElement;
     expect(inflow).toBeTruthy();
-    // Right after the goal line, ahead of the next deliverables.
-    expect(summary.querySelector("[data-one-minute-goal]")!.nextElementSibling).toBe(inflow);
+    // After the role's name, ahead of the panel and its goal (the lead, after 1.3.42).
+    const title = within(el).getByRole("heading", { name: "Lead Finance Steward" });
+    expect(title.compareDocumentPosition(inflow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(inflow.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const bar = el.querySelector("[data-phone-apply-bar]") as HTMLElement;
     expect(bar.className).toContain("sticky");
     expect(bar.hidden).toBe(true);

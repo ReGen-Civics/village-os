@@ -13,7 +13,7 @@ import { spawn } from "node:child_process";
 import http from "node:http";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { DEFAULT_ROUTES, longAnswer, parseArgs } from "./browser-smoke.mjs";
+import { DEFAULT_ROUTES, applyBoxProblems, longAnswer, parseArgs } from "./browser-smoke.mjs";
 
 const SMOKE = path.resolve(import.meta.dirname, "browser-smoke.mjs");
 let checks = 0;
@@ -31,6 +31,16 @@ const d = parseArgs([], {});
 expect("defaults to both engines, every key route and a 7500-character why", d.browsers.join() === "chromium,webkit" && d.routes === DEFAULT_ROUTES && d.whyChars === 7500 && DEFAULT_ROUTES.includes("/propose-a-role"), JSON.stringify(d));
 const a = longAnswer(7500);
 expect("the long answer is exactly as long as asked and reads like a person", a.length === 7500 && /María/.test(a) && a.split(". ").length > 40);
+
+// The role page's Apply on a phone (the lead, after 1.3.42): whole on the screen AND nothing over it.
+const clear = { top: 300, bottom: 348, left: 20, right: 370, vw: 390, vh: 664, covered: false, hit: "<a>", inBar: false };
+expect("a whole, uncovered Apply passes", applyBoxProblems(clear).length === 0, JSON.stringify(applyBoxProblems(clear)));
+// 1.3.42 exactly: top edge at 606, inside the 664 screen, under the tab bar. The box alone passes; the hit test does not.
+const under = applyBoxProblems({ ...clear, top: 606, bottom: 654, covered: true, hit: "<nav>" });
+expect("the 1.3.42 Apply under the tab bar fails as covered", under.length === 1 && /covers the Apply/.test(under[0]) && /<nav>/.test(under[0]), JSON.stringify(under));
+expect("an Apply cut off at the foot fails", /not whole/.test(applyBoxProblems({ ...clear, top: 640, bottom: 688 }).join()));
+expect("an Apply that is only the bar along the foot fails", /bar along the foot/.test(applyBoxProblems({ ...clear, inBar: true }).join()));
+expect("no Apply fails", /no Apply/.test(applyBoxProblems(null).join()));
 
 /** Async on purpose: the fixture site below is served from this same process, so a blocking spawn would starve it. */
 function run(args, env = {}) {
@@ -56,6 +66,7 @@ function serve(pages) {
     if (url.pathname === "/api/client-crash") return res.writeHead(204).end();
     const body = pages[url.pathname];
     if (body === undefined) return res.writeHead(404).end("nope");
+    if (typeof body === "object") return res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(body));
     res.writeHead(200, { "content-type": "text/html" }).end(`<!doctype html><html><body><div id="root"></div>${body}</body></html>`);
   });
   return new Promise((resolve) => server.listen(0, "127.0.0.1", () => resolve({ server, base: `http://127.0.0.1:${server.address().port}` })));
@@ -96,6 +107,21 @@ if (havePlaywright) {
     const r = await run([...base, "--routes", route]);
     expect(`${route} fails (1) and says why`, r.status === 1 && words.test(r.out), r.out);
   }
+  // A role page whose Apply's lower edge sits under a fixed tab bar fails, though its centre is clear; the same page with the Apply clear of it passes.
+  const roleSite = (applyTop) =>
+    serve({
+      "/roles": `<script>document.getElementById("root").innerHTML = "<h1>Roles</h1>";</script>`,
+      "/api/open-proposals/form": { open: true, roles: [{ id: "gate" }] },
+      "/roles/gate": `<meta name="viewport" content="width=device-width, initial-scale=1"><style>body{margin:0}</style><script>document.getElementById("root").innerHTML = '<a href="/apply" data-apply-role="gate" style="position:absolute;top:${applyTop}px;left:20px;width:350px;height:48px;display:block">Apply for this role</a><nav style="position:fixed;bottom:0;left:0;right:0;height:100px;background:#000"></nav>';</script>`,
+    });
+  const covered = await roleSite(560);
+  const hidden = await run(["--base-url", covered.base, "--browsers", "chromium", "--routes", "/roles"]);
+  expect("a role page whose Apply is under the tab bar fails (1) and says what covers it", hidden.status === 1 && /role page Apply \(chromium, iPhone 13\): FAILED.*covers the Apply.*<nav>/.test(hidden.out), hidden.out);
+  covered.server.close();
+  const uncovered = await roleSite(300);
+  const shown = await run(["--base-url", uncovered.base, "--browsers", "chromium", "--routes", "/roles"]);
+  expect("a role page whose Apply is clear of the tab bar passes (0)", shown.status === 0 && /role page Apply \(chromium, iPhone 13\): ok/.test(shown.out), shown.out);
+  uncovered.server.close();
   const noToken = await run(["--base-url", site.base, "--browsers", "chromium", "--routes", "/good", "--require-apply"], { SMOKE_TEST_TOKEN: "" });
   expect("--require-apply without a token fails", noToken.status === 1 && /SMOKE_TEST_TOKEN is not set/.test(noToken.out), noToken.out);
 }

@@ -105,7 +105,7 @@ import { resolveSeatTerm } from "../../shared/seatTerms";
 import { payLineProblem, rolePayRules } from "../lib/workPay";
 import { defaultDisplayCurrency } from "../../shared/money";
 import { readWorkValueInput, type TokenAmount } from "../../shared/workValue";
-import { ROLE_CCOS_COLUMNS, ROLE_CCOS_FIELDS } from "../../shared/roleCcos";
+import { CCOS_WORDS_REFUSAL, carriesCcosWords, carriesHandoverWords, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 import { planListOnly } from "../../shared/roleListing";
 import { carriesRoleParams, parseRoleParams } from "../../shared/roleParams";
 import { applyListOnly, readListingRecords, undoListOnly } from "../repos/roleListingRecords";
@@ -135,42 +135,17 @@ type Deps = Pick<
   liveHoldersOf(capability: string): Promise<string[]>;
 };
 
-/**
- * The role's handover words (0268, #534) change by consent, through an org
- * chart draft (`update_seat`), never through the admin edit. These routes
- * used to answer 200 and drop them, and a field accepted and dropped is worse
- * than one refused, so they are refused by name.
- */
-export const HANDOVER_WORD_KEYS = ["bringMe", "notMine", "runbook", "bring_me", "not_mine"] as const;
 /** Said when a new role stands and its value did not save: the role is made, and the value is set again on its card. */
 export const NEW_ROLE_VALUE_NOT_SAVED = "The role was created, but saving what it is worth failed: set it again on the role's card.";
 /** Said when a new role stands and did not join the season's pattern. */
 export const NEW_ROLE_PATTERN_NOT_SAVED = "The role was created, but adding it to this season's pattern failed: add it on the Season page.";
 
-export const HANDOVER_WORDS_REFUSAL =
-  "Bring me, Not mine to hold and the runbook change by consent: propose them through an org chart draft.";
-
-/** Whether this admin body carries any of the role's handover words. */
-export function carriesHandoverWords(body: unknown): boolean {
-  if (!body || typeof body !== "object") return false;
-  return HANDOVER_WORD_KEYS.some((k) => Object.prototype.hasOwnProperty.call(body, k));
-}
-
-/**
- * The role's CCOS words (0274) change the same way, by consent through a
- * draft, so the admin edit refuses them by name too, in either spelling.
- * The recruitment pack's own `authority` note is a different, admin-only
- * field and stays writable here.
+/*
+ * The role's handover words (0268, #534) and CCOS words (0274) change by consent, through an org chart draft, so
+ * these routes refuse them by name. The lists and sentences live in shared/roleConsentWords.ts, which the proposal
+ * check reads too, so a proposal that would be refused here is refused when it is filed.
  */
-export const CCOS_WORD_KEYS: readonly string[] = [...ROLE_CCOS_FIELDS, ...ROLE_CCOS_FIELDS.map((f) => ROLE_CCOS_COLUMNS[f])];
-export const CCOS_WORDS_REFUSAL =
-  "These role words change by consent: this role exists while, what it can decide on its own, what it does regularly, holding it well, and its time. Propose them through an org chart draft.";
-
-/** Whether this admin body carries any of the role's CCOS words. */
-export function carriesCcosWords(body: unknown): boolean {
-  if (!body || typeof body !== "object") return false;
-  return CCOS_WORD_KEYS.some((k) => Object.prototype.hasOwnProperty.call(body, k));
-}
+export { CCOS_WORD_KEYS, CCOS_WORDS_REFUSAL, carriesCcosWords, carriesHandoverWords, HANDOVER_WORD_KEYS, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
 
 export function register(app: Express, deps: Deps): void {
   const {

@@ -25,8 +25,8 @@
  * founding role: larger display type, more space, gold rules. `game` is the
  * directory's. Both use the night world's semantic tokens only.
  *
- * Phone and desktop: one column on a phone with the act at the end of the
- * card; from lg, the role's words on the left and a sticky column on the right
+ * Phone and desktop: one column on a phone with the act right after the title
+ * block, so it is whole above the tab bar on the first screen; from lg, the role's words on the left and a sticky column on the right
  * holding the pay shape, the details and the act, so the act stays beside what
  * a reader is reading.
  */
@@ -268,7 +268,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
   const wide = useWide();
   const inflowRef = useRef<HTMLDivElement | null>(null);
 
-  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Notify me", never Apply.
+  // A coming-soon role leads to its waitlist (the lead, 19 Nov 2026): the notice and "Join the waitlist", never Apply.
   const soon = !noAct && seat?.comingSoon === true && seat?.futureVenture !== true && seat?.state !== "filled";
   const act = soon ? (
     <div className="flex flex-col gap-3" data-card-waitlist={id}>
@@ -280,7 +280,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
         </Suspense>
       ) : (
         <button type="button" className={`w-full ${BTN_PRIMARY}`} onClick={() => setWaitOpen(true)}>
-          {t({ message: "Notify me", context: "coming-soon waitlist: the button" })}
+          {t({ message: "Join the waitlist", context: "coming-soon waitlist: the button" })}
         </button>
       )}
       {!wide && <StateNote role={seat} />}
@@ -296,7 +296,8 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {wide && <StateNote role={seat} className="mb-3" />}
       <Fireflies block>
         <Link href={applyHrefForRole(id, choiceLink)} className={`w-full ${BTN_PRIMARY}`} data-apply-role={id}>
-          <Trans context="full role card: the one act">Apply for this role</Trans>
+          {/* A venture is brought, not only applied for (the lead, 20 Nov 2026); the same apply flow either way. */}
+          {seat?.futureVenture === true ? t({ message: "Bring your venture", context: "full role card: the one act, on a venture" }) : <Trans context="full role card: the one act">Apply for this role</Trans>}
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
       </Fireflies>
@@ -448,17 +449,18 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
     </footer>
   );
 
-  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11), VISIBLE FROM THE START (the lead, after 1.3.38):
-  // on a phone the act sits in the flow right under the goal of "the role in one minute", so the first screen shows the
-  // goal whole and Apply beneath it. The bar along the phone's foot shows only while that act is off the screen
-  // (useApplyBarStuck.ts), so one Apply is in view at a time and the bar never covers the goal. The bar is opaque and
+  // A PHONE'S THUMB (the lead, 20 Nov 2026; the roles lane's idea 11), VISIBLE FROM THE START (the lead, after 1.3.38),
+  // AND USABLE (the lead, after 1.3.42): on a phone the act sits in the flow right after the title block, above "the role
+  // in one minute", so its whole button is on the first screen above the tab bar. Under the goal, on a 390x664 iPhone, its
+  // top edge sat at 606, behind the tab bar. The bar along the phone's foot shows only while that act is off the screen
+  // (useApplyBarStuck.ts), so one Apply is in view at a time. The bar is opaque and
   // the card's last child, so the keyboard reaches it last and its own slot lets the card's last lines scroll clear.
   // While the bar shows, the act in the flow is off the screen and inert, so the act is offered once. On a desktop the
   // act sits in the summary (founding) or the side column (directory).
   // An open waitlist form stays in the flow alone: a form never rides the screen, and is never drawn twice.
   const barShows = useApplyBarStuck(inflowRef, !wide && !!act && !(soon && waitOpen));
   const phoneAct = !wide && act ? (
-    <div ref={inflowRef} className="mt-4" data-phone-act="" inert={barShows || undefined}>
+    <div ref={inflowRef} className={founding ? undefined : "mt-4"} data-phone-act="" inert={barShows || undefined}>
       {act}
     </div>
   ) : null;
@@ -565,11 +567,13 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
           <p className="font-semibold text-notice" data-testid="paid-role-line">{paidRoleLine(i18n)}</p>
         )}
       </header>
+      {/* A phone's Apply, right after the title, above the one-minute panel (the lead, after 1.3.42). */}
+      {phoneAct}
 
       <div className={`mt-5 grid gap-6 ${founding ? "lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-10" : "lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8"}`}>
         <div className="flex min-w-0 flex-col gap-5 break-words">
           {/* The role in one minute (the lead, 20 Nov 2026). The price and the act stay in the side column here. */}
-          <RoleOneMinute {...oneMinute} as={H4} act={null} phoneAct={phoneAct} />
+          <RoleOneMinute {...oneMinute} as={H4} act={null} />
           {aim && (
             <section className="rounded-xl border-l-4 border-notice bg-muted px-4 py-3" data-testid="purpose">
               <H4 className={EYEBROW}>{W.purpose}</H4>

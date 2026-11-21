@@ -261,8 +261,9 @@ describe("getting the room ready from the start card", () => {
       expect((screen.getByLabelText(SESSION_LIST_COPY.titleLabel) as HTMLTextAreaElement).value).toMatch(/^Garden circle, /);
       expect((screen.getByLabelText(SESSION_COPY.circleLabel) as HTMLSelectElement).value).toBe("garden");
       expect((screen.getByLabelText(SESSION_COPY.durationLabel) as HTMLInputElement).value).toBe("45");
-    });
-    await waitFor(() => expect((screen.getByRole("checkbox", { name: /Shed roof/ }) as HTMLInputElement).checked).toBe(true));
+    }, { timeout: 5000 });
+    // The waiting items arrive last; one second (waitFor's default) ran out under shard load on #1495 (20 Nov 2026).
+    await waitFor(() => expect((screen.getByRole("checkbox", { name: /Shed roof/ }) as HTMLInputElement).checked).toBe(true), { timeout: 5000 });
     // The item for no circle is offered, and left for the person to choose.
     expect((screen.getByRole("checkbox", { name: /Picnic/ }) as HTMLInputElement).checked).toBe(false);
     expect(calls.filter((c) => c.method !== "GET")).toEqual([]);

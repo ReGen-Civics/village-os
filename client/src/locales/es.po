@@ -11,6 +11,150 @@ msgstr ""
 msgid "{source}'s wording replaces ours wherever {source} sent some, and the rest stays ours."
 msgstr ""
 
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "coming-soon waitlist: the button"
+msgid "Join the waitlist"
+msgstr "Únete a la lista de espera"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, the open roles' eyebrow"
+msgid "Join the team"
+msgstr "Únete al equipo"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "team sheet group"
+msgid "Open roles"
+msgstr "Roles abiertos"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, the open ventures' eyebrow"
+msgid "Build with us"
+msgstr "Construye con nosotros"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, ventures to build and run, applied for with a pitch"
+msgid "Open ventures"
+msgstr "Emprendimientos abiertos"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, open ventures"
+msgid "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision."
+msgstr "Partes de la aldea que invitamos a construir y sostener. Trae tu emprendimiento: postula para sostener una y comparte tu visión."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open venture"
+msgid "No venture is open yet. When the village opens one, it shows here."
+msgstr "Todavía no hay ningún emprendimiento abierto. Cuando la aldea abra uno, aparecerá aquí."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open venture: propose one as a new role"
+msgid "Have one in mind? Propose it."
+msgstr "¿Tienes uno en mente? Propónlo."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "roles page, the roles opening after the lead hires"
+msgid "Upcoming roles"
+msgstr "Próximos roles"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: apply to build and run this venture"
+msgid "Bring your venture"
+msgstr "Trae tu emprendimiento"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/FullRoleCard.tsx
+msgctxt "full role card: the one act, on a venture"
+msgid "Bring your venture"
+msgstr "Trae tu emprendimiento"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/ProposeARole.tsx
+msgctxt "founding application terms"
+msgid "For when you want a higher commitment and would like to start lower, so the change goes well for you and the work. For example, half time the first month and full time the second. Rewards follow the steps, and we agree them together."
+msgstr "Para cuando quieres un compromiso mayor y prefieres empezar con menos, para que el cambio vaya bien para ti y para el trabajo. Por ejemplo, medio tiempo el primer mes y tiempo completo el segundo. Las recompensas siguen esos pasos, y los acordamos juntos."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application step"
+msgid "Your first moon"
+msgstr "Tu primera luna"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyBackup.ts
+msgctxt "application backup file"
+msgid "Your first moon"
+msgstr "Tu primera luna"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/applyWords.ts
+msgctxt "founding application intro"
+msgid "What your first moon with us would look like, step by step, and when you could begin."
+msgstr "Cómo sería tu primera luna con nosotros, paso a paso, y cuándo podrías empezar."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application first moon: a step"
+msgid "In your first moon, you and the circle reshape your deliverables timeline together."
+msgstr "En tu primera luna, tú y el círculo dan nueva forma juntos al calendario de tus entregables."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/KnowUsWays.tsx
+msgctxt "founding application know us act"
+msgid "Watch the last webinar recording"
+msgstr "Mira la grabación del último webinar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/KnowUsWays.tsx
+msgctxt "founding application know us act"
+msgid "Join the next webinar call"
+msgstr "Únete al próximo webinar"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/KnowUsWays.tsx
+msgctxt "founding application know us push"
+msgid "Watching the last webinar recording is the easiest first step."
+msgstr "Ver la grabación del último webinar es el primer paso más fácil."
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/fireflyPath/KnowUsWays.tsx
+msgctxt "founding application know us: a time already converted to the viewer's own zone"
+msgid "your time"
+msgstr "tu hora"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: open this role's own page"
+msgid "Read the role"
+msgstr "Leer el rol"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: apply for this role"
+msgid "Apply"
+msgstr "Postular"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/components/roleCard/RoleIndexCard.tsx
+msgctxt "roles index card: the coming-soon roles this steward will build"
+msgid "Will grow into:"
+msgstr "Dará lugar a:"
+
+# needs-native-review: new words, 20 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, no open role"
+msgid "No role is open right now."
+msgstr "Ahora mismo no hay ningún rol abierto."
+
 #: client/src/components/admin/AgentFullAccessPanel.tsx
 msgid "Full access is on for that role's agent."
 msgstr "El acceso total está activo para el agente de ese rol."
@@ -11923,8 +12067,8 @@ msgstr "Por qué cambió. La persona lo lee y puede responder."
 
 #: client/src/components/ComingSoon.tsx
 msgctxt "badge on a role offered as a venture to build and run, applied for with a pitch"
-msgid "Future venture"
-msgstr ""
+msgid "Open venture"
+msgstr "Emprendimiento abierto"
 
 #: client/src/components/myMoon/InvoicesDesk.tsx
 msgctxt "invoice desk"

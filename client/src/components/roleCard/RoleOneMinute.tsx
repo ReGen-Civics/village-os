@@ -8,9 +8,8 @@
  * is left out of the box under "The role".
  *
  * Laid out by the card's width (container queries), so it reads the same in the founding card, a directory row
- * and an application's narrow column. On a phone `act` is null and the act comes as `phoneAct`, drawn right under
- * the goal so the first screen shows both (the lead, 20 Nov 2026); the bar along the phone's foot shows only while
- * it is off the screen (FullRoleCard, useApplyBarStuck.ts), so the act is in view once.
+ * and an application's narrow column. On a phone `act` is null: the card draws its act right after the title, above
+ * this panel, so the whole button is on the first screen above the tab bar (the lead, after 1.3.42; FullRoleCard).
  */
 import type { ReactNode } from "react";
 import { CalendarCheck, Clock, Coins, Flag, MapPin } from "lucide-react";
@@ -40,11 +39,9 @@ export interface OneMinuteProps {
   act: ReactNode;
   /** The heading level under the card's title. */
   as: "h3" | "h4";
-  /** A phone's act, drawn right under the goal (the lead, 20 Nov 2026). */
-  phoneAct?: ReactNode;
 }
 
-export default function RoleOneMinute({ goal, next, commitment, price, where, act, as: H, phoneAct = null }: OneMinuteProps) {
+export default function RoleOneMinute({ goal, next, commitment, price, where, act, as: H }: OneMinuteProps) {
   const { t, i18n } = useLingui();
   const locale = i18n.locale || "en";
   const facts: Array<{ key: string; icon: typeof Clock; label: string; value: ReactNode }> = [
@@ -52,7 +49,7 @@ export default function RoleOneMinute({ goal, next, commitment, price, where, ac
     { key: "price", icon: Coins, label: t({ message: "Price", context: "role in one minute: a fact" }), value: price },
     { key: "where", icon: MapPin, label: t({ message: "Where", context: "role in one minute: a fact" }), value: where },
   ].filter((f) => !!f.value);
-  if (!goal && !next.length && !facts.length && !act && !phoneAct) return null;
+  if (!goal && !next.length && !facts.length && !act) return null;
   return (
     <section className="@container rounded-2xl border border-notice/40 bg-muted/50 p-4 shadow-sm @md:p-5" data-role-one-minute="">
       <H className={EYEBROW}>{t({ message: "The role in one minute", context: "role card: the summary at the top" })}</H>
@@ -65,7 +62,6 @@ export default function RoleOneMinute({ goal, next, commitment, price, where, ac
           </span>
         </p>
       )}
-      {phoneAct}
       {next.length > 0 && (
         <div className="mt-4">
           <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Next deliverables", context: "role in one minute: the next three dated outcomes" })}</p>

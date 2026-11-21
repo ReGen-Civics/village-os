@@ -12,6 +12,9 @@
  *    profile, the engine iOS Safari runs), failing on any uncaught page error,
  *    the app's crash screen, a crash report sent to /api/client-crash, a
  *    document status of 400 or more, or a page that drew nothing at all;
+ *  - a role's own page on an iPhone 13 in each engine: its Apply whole on the
+ *    first screen, and the element at its centre and corners the button
+ *    itself, so the phone's tab bar is not over it;
  *  - the apply flow: /propose-a-role rendered, its form read, and an
  *    application sent from inside the page with a realistic long answer,
  *    flagged as a TEST so the server judges it fully and then mails nobody and
@@ -201,6 +204,87 @@ async function checkApply(context, opts, engine) {
   return { ...outcome, ms };
 }
 
+/** The phone the role page's Apply is measured on: 390x664 of page under Safari's own chrome, as the lead's iPhone 13. */
+export const PHONE = "iPhone 13";
+
+/**
+ * Where a role page's Apply sits, read inside the page: its box, the screen, and what the browser would hit at the
+ * button's centre and at each of its corners. `elementFromPoint` is the honest test for "nothing covers it": the
+ * phone's fixed tab bar, a sticky bar or a toast over the button is what it returns, where the box alone says "on the
+ * screen".
+ */
+export function applyBoxProblems(m) {
+  if (!m) return ["no Apply was drawn"];
+  const out = [];
+  const box = `top ${m.top}, bottom ${m.bottom}, left ${m.left}, right ${m.right} in a ${m.vw}x${m.vh} screen`;
+  if (m.top < 0 || m.left < 0 || m.bottom > m.vh || m.right > m.vw) out.push(`the Apply is not whole on the first screen (${box})`);
+  if (m.covered) out.push(`something covers the Apply: ${m.hit || "nothing at all"} (${box})`);
+  if (m.inBar) out.push("the Apply on the first screen is the bar along the foot, so the act in the flow is off the first screen");
+  return out;
+}
+
+/**
+ * A role's own page on a phone (the lead, after 1.3.42): Apply whole on the first screen and nothing over it. 1.3.42
+ * drew it under the one-minute goal with its top edge at 606 of 664, behind the tab bar, and a box check alone that
+ * ignored the tab bar passed it. It tries the roles the apply form offers, by id (/roles/<id> is a role's address too,
+ * shared/roleSlug.ts), and measures the first one whose page offers Apply.
+ */
+async function checkRoleApply(context, opts) {
+  const { page, problems, ms } = await checkPage(context, `${opts.baseUrl}/roles`, opts.timeoutMs);
+  try {
+    if (problems.length) return { status: "failed", detail: `the roles page: ${problems.join("; ")}`, ms };
+    const ids = await page.evaluate(async () => {
+      const form = await fetch("/api/open-proposals/form").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      return (Array.isArray(form?.roles) ? form.roles : []).map((r) => (r && typeof r.id === "string" ? r.id : "")).filter(Boolean).slice(0, 4);
+    });
+    if (!ids.length) return { status: "skipped", detail: "the village offers no role to apply for", ms };
+    for (const id of ids) {
+      const route = `/roles/${encodeURIComponent(id)}`;
+      await page.goto(`${opts.baseUrl}${route}`, { waitUntil: "load", timeout: opts.timeoutMs });
+      const shown = await page.waitForSelector("[data-apply-role]", { state: "visible", timeout: Math.min(15000, opts.timeoutMs) }).then(() => true, () => false);
+      if (!shown) continue;
+      // The card's words arrive after it mounts, and the bar decides on the next frame.
+      await page.waitForLoadState("networkidle", { timeout: Math.min(15000, opts.timeoutMs) }).catch(() => {});
+      await page.waitForTimeout(750);
+      const m = await page.evaluate(() => {
+        window.scrollTo(0, 0);
+        const el = Array.from(document.querySelectorAll("[data-apply-role]")).find((e) => !e.closest("[inert]") && !e.closest("[hidden]") && e.getClientRects().length > 0);
+        if (!el) return null;
+        const b = el.getBoundingClientRect();
+        const name = (n) => (n ? `<${n.tagName.toLowerCase()}${n.id ? `#${n.id}` : ""}${n.getAttribute("class") ? ` class="${String(n.getAttribute("class")).slice(0, 80)}"` : ""}>` : "");
+        const r = (x) => Math.round(x);
+        // The centre, and each corner two pixels in: a tab bar over the button's lower edge leaves the centre clear.
+        const points = [
+          ["centre", b.left + b.width / 2, b.top + b.height / 2],
+          ["top left", b.left + 2, b.top + 2],
+          ["top right", b.right - 2, b.top + 2],
+          ["bottom left", b.left + 2, b.bottom - 2],
+          ["bottom right", b.right - 2, b.bottom - 2],
+        ];
+        let covered = false;
+        let hit = "";
+        for (const [where, x, y] of points) {
+          const n = document.elementFromPoint(x, y);
+          if (n && (n === el || el.contains(n))) continue;
+          covered = true;
+          const bar = n?.closest("nav, [role=navigation]");
+          hit = `${name(n) || "nothing"}${bar && bar !== n ? ` inside ${name(bar)}${bar.getAttribute("aria-label") ? ` "${bar.getAttribute("aria-label")}"` : ""}` : ""} at its ${where}`;
+          break;
+        }
+        return { top: r(b.top), bottom: r(b.bottom), left: r(b.left), right: r(b.right), vw: window.innerWidth, vh: window.innerHeight, covered, hit, inBar: !!el.closest("[data-phone-apply-bar]") };
+      });
+      const bad = [...problems, ...applyBoxProblems(m)];
+      if (bad.length) return { status: "failed", detail: `${route}: ${bad.join("; ")}`, box: m, ms };
+      return { status: "passed", detail: `${route}: Apply whole at ${m.top} to ${m.bottom} of ${m.vh}, nothing over it`, box: m, ms };
+    }
+    return { status: "failed", detail: `none of ${ids.length} role page(s) drew an Apply (${ids.join(", ")})`, ms };
+  } catch (e) {
+    return { status: "failed", detail: `the role page did not load: ${String(e?.message ?? e).split("\n")[0].slice(0, 300)}`, ms };
+  } finally {
+    await page.close();
+  }
+}
+
 export async function main(argv = process.argv.slice(2), env = process.env) {
   const opts = parseArgs(argv, env);
   const log = (s) => console.log(`browser-smoke: ${s}`);
@@ -221,7 +305,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
     return EXIT.missing;
   }
 
-  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], apply: [] };
+  const results = { baseUrl: opts.baseUrl, startedAt: new Date().toISOString(), engines: [], pages: [], apply: [], rolePage: [] };
   let failed = false;
   let ran = 0;
   for (const engine of opts.browsers) {
@@ -279,6 +363,17 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
       if (a.status === "failed") failed = true;
       log(`apply (${engine}): ${a.status === "passed" ? "ok" : a.status.toUpperCase()}, ${a.detail}`);
     }
+    if (!opts.skipApply) {
+      // In this engine on the phone either way, so WebKit and Chromium each measure the same 390x664 screen.
+      const { defaultBrowserType: _ignored, ...phone } = pw.devices[PHONE] ?? {};
+      const context = await browser.newContext(phone);
+      const r = await checkRoleApply(context, opts);
+      await context.close();
+      if (r.status === "skipped" && opts.requireApply) r.status = "failed";
+      results.rolePage.push({ engine, device: PHONE, ...r });
+      if (r.status === "failed") failed = true;
+      log(`role page Apply (${engine}, ${PHONE}): ${r.status === "passed" ? "ok" : r.status.toUpperCase()}, ${r.detail}`);
+    }
     await browser.close();
   }
   if (ran === 0) {
@@ -289,7 +384,7 @@ export async function main(argv = process.argv.slice(2), env = process.env) {
   results.finishedAt = new Date().toISOString();
   writeJson(opts.json, results);
   const bad = results.pages.filter((p) => !p.ok).length;
-  log(`${results.pages.length - bad} of ${results.pages.length} page renders clean; apply: ${results.apply.map((a) => `${a.engine} ${a.status}`).join(", ") || "not run"}.`);
+  log(`${results.pages.length - bad} of ${results.pages.length} page renders clean; apply: ${results.apply.map((a) => `${a.engine} ${a.status}`).join(", ") || "not run"}; role page Apply: ${results.rolePage.map((a) => `${a.engine} ${a.status}`).join(", ") || "not run"}.`);
   return failed ? EXIT.failed : EXIT.ok;
 }
 

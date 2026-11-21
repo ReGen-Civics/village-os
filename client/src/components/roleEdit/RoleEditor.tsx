@@ -310,8 +310,8 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
                 <option value="unlisted">{t({ message: "Unlisted: hidden from the public, kept here", context: "role editor: role visibility" })}</option>
               </select>
               <p className="text-sm text-muted-foreground"><Trans context="role editor">A role someone holds shows as held, with no Apply, whatever this says.</Trans></p>
-              {open.lacksToList.length > 0 && visibilityOf(form) === "open" && !start.listed && (
-                <p className="text-sm text-muted-foreground"><Trans context="role editor">Still to write before it can be listed:</Trans> {open.lacksToList.join(", ")}.</p>
+              {(open.lacksToOpen ?? open.lacksToList).length > 0 && visibilityOf(form) === "open" && !start.listed && (
+                <p className="text-sm text-muted-foreground"><Trans context="role editor">Still to write before it can be listed:</Trans> {(open.lacksToOpen ?? open.lacksToList).join(", ")}.</p>
               )}
             </Frame>
           )}

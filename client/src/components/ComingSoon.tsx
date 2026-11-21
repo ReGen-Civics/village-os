@@ -18,7 +18,7 @@ export function ComingSoonChip({ role, className = "" }: { role: Flagged; classN
   return (
     <span className={`text-xs px-2 py-0.5 rounded-full font-medium bg-secondary text-secondary-foreground border border-border ${className}`} data-testid="coming-soon-chip">
       {role.futureVenture === true ? (
-        <Trans context="badge on a role offered as a venture to build and run, applied for with a pitch">Future venture</Trans>
+        <Trans context="badge on a role offered as a venture to build and run, applied for with a pitch">Open venture</Trans>
       ) : (
         <Trans context="badge on a role whose interviews start after the lead hires">Coming soon</Trans>
       )}

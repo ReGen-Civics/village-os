@@ -51,7 +51,9 @@ import { allVariables } from "./variables";
 import { moduleConfig, storedLifecycle } from "./modules";
 import { characterTagsFrom, createRoleProblem, listOrgRoles, newRoleIdOf, type OrgRole } from "./orgChart";
 import { ROLE_WORD_FIELDS } from "./roleProposals";
-import { editorState, labelOf } from "./roleEdit";
+import { editorState, labelOf, listingProblems, mergedForListing, notReadyToList } from "./roleEdit";
+import { CCOS_WORDS_REFUSAL, carriesCcosWords, carriesHandoverWords, HANDOVER_WORDS_REFUSAL } from "../../shared/roleConsentWords";
+import type { PaySettings } from "../../shared/seatSettings";
 import { listArchetypeRows } from "../repos/archetypes";
 import { villageCircles } from "../repos/roleProposals";
 import { villageId } from "./economy";
@@ -117,9 +119,12 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       const extra = Object.keys(b).filter((k) => !ROLE_CARD_KEYS.includes(k));
       if (extra.length) return bad(`A role card change carries words, parameters, pay, archetypes, sections or circleId. Not: ${extra.slice(0, 6).join(", ")}.`, extra[0]);
       if (!Object.keys(b).length) return bad("Say what to change on the card.");
+      // What the change would lay over the card, read as the save reads it, for the listing gate below.
+      const changes: Record<string, unknown> = {};
       if (b.words !== undefined) {
         const read = parseRoleWords(b.words, "words", ROLE_WORD_FIELDS, role as unknown as Record<string, unknown>);
         if (!read.ok) return bad(read.error, read.field);
+        for (const [k, v] of Object.entries((read.value ?? {}) as Record<string, unknown>)) changes[k] = v === null && ROLE_WORD_FIELDS.lists.has(k) ? [] : v;
       }
       if (b.parameters !== undefined) {
         const params = obj(b.parameters);
@@ -129,6 +134,7 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
           if (!(PARAMETER_KEYS as readonly string[]).includes(k)) return bad("That is not a detail a role card holds.", `parameters.${k}`);
           const r = readParameter(k as ParameterKey, v, (rid) => roleIds.has(rid));
           if (!r.ok) return bad(r.problem, `parameters.${k}`);
+          changes[k] = r.value;
         }
       }
       // The circle the role moves to (Rye, 16 Nov 2026): a circle this village has.
@@ -136,9 +142,11 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         const to = typeof b.circleId === "string" ? b.circleId.trim() : "";
         if (!to || !(await villageCircles(deps.pool)).some((c) => c.id === to)) return bad("There is no circle by that id.", "circleId");
       }
+      let pay: PaySettings | null | undefined;
       if (b.pay !== undefined) {
         const r = readPayGroup(b.pay);
         if (!r.ok) return bad(r.problem, "pay");
+        pay = r.value;
       }
       if (b.archetypes !== undefined) {
         const cast = (await listArchetypeRows(deps.pool, villageId())).map((a) => a.key);
@@ -149,6 +157,16 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         const live = (await editorState(deps.pool, role)).sections;
         const r = readSections(mergeOnto(live, b.sections));
         if (!r.ok) return bad(r.problem, r.field);
+      }
+      // Listing it: the save's own gate (`listingProblems`), against the card as the change would leave it, so a card
+      // that would be refused on accept is refused here with the same sentence (20 Nov 2026). The save asks only when
+      // `listed` turns on, so a role already listed is not judged here either.
+      if (changes.listed === true) {
+        const state = await editorState(deps.pool, role);
+        if (state.parameters.listed !== true && state.parameterKeys.includes("listed")) {
+          const lacking = listingProblems(mergedForListing(state, changes, pay === undefined ? state.pay : pay));
+          if (lacking.length) return bad(notReadyToList(lacking), "parameters.listed");
+        }
       }
       return ok(`${role.name} card`);
     }
@@ -261,6 +279,9 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
       // A new role: the same checks the route runs before its INSERT (`createRoleProblem`), so an unknown circle or
       // a taken id is refused when it is filed, and again in the dry run before it is accepted.
       if (route.method === "POST" && route.path.replace(/\/+$/, "") === NEW_ROLE_ROUTE) {
+        // The handover and CCOS words change by consent, and the route refuses them first, in these words.
+        if (carriesHandoverWords(b)) return bad(HANDOVER_WORDS_REFUSAL);
+        if (carriesCcosWords(b)) return bad(CCOS_WORDS_REFUSAL);
         const problem = await createRoleProblem(deps.pool, b);
         if (problem) return bad(problem.error, problem.field);
       }

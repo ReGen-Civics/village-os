@@ -13,7 +13,7 @@
  * draft board) applies for the first one the village still offers.
  *
  * SIX STEPS, "Step N of 6": Get to know us, About you, Your value, The terms,
- * Your first day, Review & submit. The Firefly Path's mechanics are kept
+ * Your first moon, Review & submit. The Firefly Path's mechanics are kept
  * (game feel wave 2): every step stays drawn and only the one you are on
  * shows, so Back loses nothing; every check runs in one place
  * (`findProblems`): Continue judges the step you are on, and Send reviews the
@@ -79,6 +79,7 @@ import { foundingSetupOf, type FoundingSetup } from "@shared/foundingApplication
 import TermsEight, { draftTerms, EMPTY_TERMS_STEP, splitBody, splitOfDraft, withCardChoice, type TermsStepValue } from "@/components/governance/TermsEight";
 import { judgeTermsStep, writtenKeys, type TermsWords } from "@shared/termsWords";
 import { Practicalities, SeasonServes, browserTimeZone, goalsToFirstMoon, type Practical } from "@/components/openProposal/RoleCardBridge";
+import { MoonText } from "@/components/MoonWord";
 import { APPLY_MINUTES, LAST_STONE, STONES, enterWalksOn, onStone, orderByStone, ownsKeys, stoneOfField, swipeStep } from "@/components/fireflyPath/stones";
 import { Notice, SentThreshold, prefersStill, type SentNote } from "@/components/fireflyPath/Thresholds";
 import StoneBar from "@/components/fireflyPath/StoneBar";
@@ -417,7 +418,8 @@ export default function ProposeARole() {
     if (mine.length > 0) {
       setProblems(mine);
       if (onAbout) setPane(aboutPaneOf(mine[0].field));
-      setAimAt((a) => ({ n: (a?.n ?? 0) + 1, target: mine[0].target ?? "#propose-problems" }));
+      // The list of what is missing stands just above Continue; the cursor goes to it, so the press is answered in place.
+      setAimAt((a) => ({ n: (a?.n ?? 0) + 1, target: "#propose-problems" }));
       return;
     }
     if (onAbout && pane < ABOUT_PANES - 1) {
@@ -716,9 +718,9 @@ export default function ProposeARole() {
       <h2 id={`stone-${i}-h`} tabIndex={-1} className="font-display text-3xl leading-tight text-card-foreground outline-none sm:text-4xl">
         <span className={`block ${EYEBROW}`}>{t({ message: `Step ${stepNumber} of ${stepCount}`, context: "founding application steps" })}</span>
         <span className="sr-only"> · </span>
-        {labels[i]}
+        <MoonText text={labels[i]} />
       </h2>
-      <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{intro[i]}</p>
+      <p className="max-w-2xl text-base leading-relaxed text-muted-foreground"><MoonText text={intro[i]} /></p>
     </div>
   );
   const pct = role.terms?.commitmentPct;
@@ -731,7 +733,7 @@ export default function ProposeARole() {
         {/* The real count, from the steps themselves, and the time (idea 7); with the notes below, said once, on the first step. */}
         {stone === 0 && <p className="mt-4 text-base leading-relaxed text-muted-foreground" data-apply-lede="">{t({ message: `${stepCount} steps. About ${APPLY_MINUTES} minutes. You can answer by voice.`, context: "founding application lede" })} {me ? t({ message: "Your name and email come from your account.", context: "founding application lede" }) : t({ message: "No account needed.", context: "founding application lede" })}</p>}
         {/* The cycle's dates are not named here (QA2-05): a founding role's first cycle is one paid month from
-            the day it starts, said on the Your first day step, and an internal moon has no plain meaning here. */}
+            the day it starts, said on the Your first moon step, and an internal moon has no plain meaning here. */}
         {/* Coming soon or a future venture (16 Nov 2026): its own note says the later start, so the founding-team note steps aside. */}
         {stone > 0 ? null : role.comingSoon ? <p className={`mt-4 ${TILE} text-sm text-foreground`} data-early-application=""><EarlyWords /></p> : role.futureVenture ? <LazyStateNote role={role} className={`mt-4 ${TILE}`} /> : <OpensLaterNote show={role.opensLater} />}
         {/* The village's note when the application changes (QA2-14, org.founding_updated_note): empty, no note. */}
@@ -774,7 +776,7 @@ export default function ProposeARole() {
               <StepMark labels={labels} now={stone} reached={reached} onGo={(i) => goTo(i)} />
             </div>
 
-            <ProblemsList problems={problems} labels={labels} stone={stone} onShow={show} />
+            {stone === LAST_STONE && <ProblemsList problems={problems} labels={labels} stone={stone} onShow={show} />}
             {failure && (
               <Suspense fallback={null}>
                 <SafetyNet
@@ -925,7 +927,7 @@ export default function ProposeARole() {
                 <input id="propose-ramp" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-notice" checked={rampUp} onChange={(e) => setRampUp(e.target.checked)} aria-describedby="propose-ramp-hint" />
                 <span className="grid gap-1">
                   <label htmlFor="propose-ramp" className="cursor-pointer font-semibold text-foreground">{t({ message: "I would like a ramp-up", context: "founding application terms" })}</label>
-                  <span id="propose-ramp-hint" className={HINT}>{t({ message: "Partial rewards while you build to your full commitment. We agree the steps together.", context: "founding application terms" })}</span>
+                  <span id="propose-ramp-hint" className={HINT}>{t({ message: "For when you want a higher commitment and would like to start lower, so the change goes well for you and the work. For example, half time the first month and full time the second. Rewards follow the steps, and we agree them together.", context: "founding application terms" })}</span>
                 </span>
               </div>
               {/* On a desk the rewards stand in the rail beside every step (D-06). */}
@@ -959,7 +961,8 @@ export default function ProposeARole() {
               <input type="text" name="hp" tabIndex={-1} autoComplete="off" value={hp} onChange={(e) => setHp(e.target.value)} />
             </div>
 
-            <StoneBar keyboard={keyboard} stone={stone} last={LAST_STONE} nextName={nextName} sending={sending} onBack={back} onNext={next} />
+            {stone < LAST_STONE && <ProblemsList atButton problems={problems} labels={labels} stone={stone} onShow={show} />}
+            <StoneBar close={stone < LAST_STONE && problems.length > 0} keyboard={keyboard} stone={stone} last={LAST_STONE} nextName={nextName} sending={sending} onBack={back} onNext={next} />
           </form>
           </VoiceClipsProvider>
 
