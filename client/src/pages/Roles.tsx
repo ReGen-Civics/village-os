@@ -38,6 +38,7 @@ import { waitlistHash } from "@shared/roleWaitlist";
 import { useMyCommitment } from "@/lib/useMyCommitment";
 import { rolesWithinReach } from "@shared/commitment";
 import { Trans, useLingui } from "@lingui/react/macro";
+import FoldedTeamTimeline from "@/components/roleCard/FoldedTeamTimeline";
 import { isSeatState, type SeatStateWord, type SheetContext } from "@shared/roleSheet";
 import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@shared/roleSheetInputs";
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
@@ -66,7 +67,6 @@ const SeatAction = lazy(() => import("@/components/power/SeatAction"));
 const SeatLinkCopy = lazy(() => import("@/components/roleCard/SeatLinkCopy"));
 // The roles held now and the team's timeline sit below the groups, so they load after the first view.
 const RosterList = lazy(() => import("@/components/roleCard/RosterCards"));
-const DeliverablesGantt = lazy(() => import("@/components/roleCard/DeliverablesGantt"));
 
 interface RoleEntry {
   id: string;
@@ -549,6 +549,7 @@ export default function Roles() {
   const withDates = featuredVisible.filter((f) => (f.sections?.deliverables?.length ?? 0) > 0);
   const teamRows = withDates.length >= 2 ? withDates.flatMap((f) => (f.sections?.deliverables ?? []).map((d) => ({ ...d, role: String(f.seat.name ?? "") }))) : [];
   const teamTitle = t({ message: `${withDates.length} roles, one timeline`, context: "founding team: every open role's dated outcomes on one timeline" });
+  const teamTimeline = teamRows.length > 0 ? <FoldedTeamTimeline rows={teamRows} title={teamTitle} /> : null;
   const roleCount = (n: number) => <span className="text-lg font-normal text-muted-foreground">({n})</span>;
   // The first group's heading, over the founding team's roles and the roles opening next.
   const openHeading = (
@@ -709,7 +710,7 @@ export default function Roles() {
             <>
               {featuredHidden.length > 0 && beyondLine}
               {/* 1. OPEN ROLES: the founding team's full cards, each role in its own frame, then the roles opening next. */}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} comingSoon={teamTimeline} />}
               {featuredVisible.length === 0 && openingNext.length > 0 && <div className="mx-auto mb-6 max-w-4xl">{openHeading}</div>}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
@@ -764,16 +765,6 @@ export default function Roles() {
                 <div className="mx-auto mb-14 max-w-4xl">
                   <ComingSoonRoles roles={soonRoles} className={GROUP_BREAK} />
                 </div>
-              )}
-              {/* The founding roles' deliverables on one timeline, below the groups (the lead, 19 and 20 Nov 2026). */}
-              {teamRows.length > 0 && (
-                <section aria-label={teamTitle} className="sheet-night mx-auto mb-14 max-w-6xl rounded-2xl border border-notice/40 bg-card p-5 shadow-sm sm:p-7" data-team-deliverables="">
-                  <p className="font-display text-2xl text-card-foreground">{teamTitle}</p>
-                  <p className="mb-4 mt-1 text-sm text-muted-foreground">{t({ message: "Tap a bar for its dates. The dotted lines are the gates the roles share.", context: "founding team timeline: how to read it" })}</p>
-                  <Suspense fallback={null}>
-                    <DeliverablesGantt rows={teamRows} label={teamTitle} />
-                  </Suspense>
-                </section>
               )}
               {/* The roles held now, as the team sheet drew them, with the org chart (Rye, 16 and 17 Nov 2026). */}
               {lineupView === "sheet" && featuredVisible.length > 0 && teamFilled.length > 0 && (

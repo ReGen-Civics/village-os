@@ -197,11 +197,13 @@ check("the governance generator is idempotent: two runs write the same bytes", (
 
 // 5: the workflow.
 const wf = fs.readFileSync(path.join(ROOT, ".github", "workflows", "generated-docs.yml"), "utf8");
-check("the workflow runs on main, needs no secret, names no repository, and is where strict is set", () => {
+check("the workflow runs on main, needs no secret but its deploy key, names no repository, and is where strict is set", () => {
   assert.match(wf, /branches: \["main"\]/);
   assert.match(wf, /contents: write/);
   assert.match(wf, /GENERATED_DOCS_MODE: strict/);
-  assert.doesNotMatch(wf, /secrets\./);
+  // The one secret is the deploy key that lets the bot push to the protected main (1.3.40, DOCS_DEPLOY_KEY in
+  // docs/FORK_RUNBOOK.md). Any other secret is still refused.
+  assert.deepEqual(wf.match(/secrets\.[A-Z0-9_]+/g) ?? [], ["secrets.DOCS_DEPLOY_KEY"]);
   assert.doesNotMatch(wf, /Rieki777|village-os|railway/i);
   for (const g of ["governance", "economics", "token", "variables", "modules", "capabilities"]) {
     assert.match(wf, new RegExp(`generate-${g}-doc`));
