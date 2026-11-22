@@ -64,19 +64,20 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
       <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground" data-early-words="">
         <EarlyWords />
       </p>
-      {/* One framed panel per role, with room between them, two to a row on a wide screen like the ventures (the lead, 21 Nov 2026). */}
-      <ul className="mt-2 grid items-start gap-5 lg:grid-cols-2" data-soon-grid="">
+      {/* One framed panel per role, with room between them, two to a row on a wide screen like the ventures, and the two in a
+          row the same height with their buttons along the bottom (the lead, 21 Nov 2026). */}
+      <ul className="mt-2 grid gap-5 lg:grid-cols-2" data-soon-grid="">
         {roles.map((r) => (
           <li key={r.id} id={roleAnchor(r.id)} className={`scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card shadow-sm ${open === r.id ? "lg:col-span-2" : ""}`} data-coming-soon-role={r.id}>
             {/* With the waitlist open the panel grows tall, and a full-height strip stretched the painting into a sliver
                 (live QA, 21 Nov 2026). Open, the painting sits beside the name at its own 3:4 and the form takes the width. */}
-            <div className={open === r.id ? "grid" : "grid grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)]"}>
+            <div className={open === r.id ? "grid h-full" : "grid h-full grid-cols-[6rem_minmax(0,1fr)] sm:grid-cols-[9rem_minmax(0,1fr)]"}>
             {open !== r.id && (
               <div className="relative min-h-full border-r border-notice/30 bg-muted/40" aria-hidden="true">
                 {artFor(r.id) && <img src={artFor(r.id) ?? undefined} alt="" loading="lazy" decoding="async" className="absolute inset-0 size-full object-cover" data-role-art="" />}
               </div>
             )}
-            <div className="min-w-0 p-4 sm:p-5">
+            <div className="flex min-w-0 flex-col p-4 sm:p-5">
             <div className="flex items-start gap-4">
             {open === r.id && artFor(r.id) && (
               <img src={artFor(r.id) ?? undefined} alt="" aria-hidden="true" decoding="async" className="aspect-[3/4] w-20 shrink-0 rounded-xl border border-notice/30 object-cover sm:w-28" data-role-art="" />
@@ -97,7 +98,7 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
             )}
             {/* The waitlist and the early way side by side, both buttons (the lead, 20 and 21 Nov 2026): the words once,
                 above the list, and an Apply early button per role. */}
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-auto flex flex-wrap gap-2 pt-3">
               {open !== r.id && (
                 <button type="button" className={BTN_SECONDARY} onClick={() => setOpen(r.id)} aria-expanded={false} data-waitlist-open={r.id}>
                   {t({ message: "Join the waitlist", context: "coming-soon waitlist: the button" })}
@@ -105,7 +106,8 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
                 </button>
               )}
               <a href={`/propose-a-role?role=${encodeURIComponent(r.id)}&early=1`} className={BTN_NOTICE} data-apply-early={r.id}>
-                {t({ message: `Apply early for ${r.name}`, context: "founding application, add a coming-soon role as an early application" })}
+                {t({ message: "Apply early", context: "coming-soon role card: the button, the role is named on the card" })}
+                <span className="sr-only">{`: ${r.name}`}</span>
               </a>
             </div>
             </div>

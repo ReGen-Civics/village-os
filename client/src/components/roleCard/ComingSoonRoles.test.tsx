@@ -29,6 +29,14 @@ describe("the coming-soon roles", () => {
     expect(garden.className).toContain("border");
     expect(garden.className).toContain("shadow-sm");
     expect(garden.querySelector('[data-apply-early="garden"]')?.getAttribute("href")).toBe("/propose-a-role?role=garden&early=1");
+    // "Apply early" alone on the button, the role is on the card; a screen reader still hears which role (the lead, 21 Nov 2026).
+    const early = garden.querySelector('[data-apply-early="garden"]') as HTMLElement;
+    expect(early.textContent).toBe("Apply early: Garden Steward");
+    expect(early.querySelector(".sr-only")?.textContent).toBe(": Garden Steward");
+    expect(within(garden).getByRole("link", { name: "Apply early: Garden Steward" })).toBe(early);
+    // The two cards in a row stretch to one height, with their buttons along the bottom.
+    expect(document.querySelector("[data-soon-grid]")?.className).not.toContain("items-start");
+    expect(early.parentElement?.className).toContain("mt-auto");
     expect(within(document.getElementById("role-kitchen") as HTMLElement).getByRole("button", { name: "Join the waitlist: Kitchen Steward" })).toBeTruthy();
     expect(document.querySelector("[data-waitlist-form]")).toBeNull();
     fireEvent.click(document.querySelector('[data-waitlist-open="kitchen"]') as HTMLElement);
