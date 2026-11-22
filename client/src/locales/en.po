@@ -3020,7 +3020,6 @@ msgstr "{0} answers for the service."
 #. placeholder {0}: role.name
 #: client/src/components/fireflyPath/ApplySteps.tsx
 #: client/src/components/fireflyPath/MoreRoles.tsx
-#: client/src/components/roleCard/ComingSoonRoles.tsx
 #: client/src/components/roleCard/FullRoleCard.tsx
 msgctxt "founding application, add a coming-soon role as an early application"
 msgid "Apply early for {0}"
@@ -19619,6 +19618,11 @@ msgstr "Goal: {quest}"
 #~ msgctxt "open proposal card field"
 #~ msgid "Quest {n} for {roleName}"
 #~ msgstr "Quest {n} for {roleName}"
+
+#: client/src/components/roleCard/ComingSoonRoles.tsx
+msgctxt "coming-soon role card: the button, the role is named on the card"
+msgid "Apply early"
+msgstr "Apply early"
 
 #. placeholder {0}: n(left)
 #: client/src/components/form/LimitSigns.tsx
