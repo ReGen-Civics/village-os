@@ -6,7 +6,7 @@
  * offer at their commitment and their split at the price in force (shared/proposalSplit.ts `formSplit`), and writes
  * what it shows back as `paySplitView`, which the application sends and Review & submit reads.
  */
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { moneyWords } from "@shared/roleRewardWords";
 import { formSplit, splitChanged, withAmounts } from "@shared/proposalSplit";
@@ -35,7 +35,10 @@ export default function TermsSplit({ idPrefix, role, value, onChange }: { idPref
   const view = split ? { shown: split.shown, changed, line } : null;
   const viewKey = JSON.stringify(view);
 
-  useEffect(() => {
+  // A LAYOUT effect, so it runs inside the commit and is never still pending when the next keystroke arrives. As a
+  // passive effect on a busy machine it could run after a person typed a share, and its write, built from the `value`
+  // of the render before, put the old split back over theirs (CI, 21 Nov 2026: a typed Credits share read 0%).
+  useLayoutEffect(() => {
     // The link's split first, once: it fits this role's shape or it is dropped.
     if (value.splitQuery !== undefined) {
       const pcts = splitFromQuery(`?split=${encodeURIComponent(value.splitQuery)}`, shape);

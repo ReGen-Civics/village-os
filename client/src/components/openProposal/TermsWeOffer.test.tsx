@@ -48,7 +48,9 @@ describe("the counter-offer keeps what was typed", () => {
     fireEvent.click(Array.from(inBar).find((b) => b.textContent === "Save") as HTMLButtonElement);
     await waitFor(() => expect(saved).toHaveBeenCalled());
     expect(posted[0]).toMatchObject({ expectedRevision: 1, words: { ending: "Two moons' notice." } });
-    expect(unsavedCount()).toBe(0);
+    // The panel clears its edits, then calls onSaved; the save bar lets go of the change on the render after, so wait
+    // for it (CI, 21 Nov 2026: read in the same tick as onSaved it was still 1 on a busy runner).
+    await waitFor(() => expect(unsavedCount()).toBe(0));
   });
 
   it("counters each role's commitment and price on its own, and posts them with the revision (the lead, 18 Nov 2026)", async () => {

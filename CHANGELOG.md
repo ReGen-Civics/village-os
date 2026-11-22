@@ -40,6 +40,21 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.52 (2026-11-21)
+
+### What changed for your village
+
+- **Upcoming role cards line up.** The two cards in a row on /roles are the same height, with their buttons along the bottom, and the early button now reads "Apply early": the role is already named on the card. A screen reader still hears which role it is.
+- **A split you type on the application is kept.** On a slow device, a share typed into the split right after the page settled could jump back to the village's split. It now stays as typed.
+
+### What you must do
+
+Nothing.
+
+### Does it touch your data
+
+No.
+
 ## 1.3.51 (2026-11-21)
 
 ### What changed for your village
