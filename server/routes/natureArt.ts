@@ -1,5 +1,5 @@
 /**
- * THE NATURE ART LIBRARY (shared/natureArt.ts; Rye, 20 Nov 2026): the 48 painted animals and plants
+ * THE NATURE ART LIBRARY (shared/natureArt.ts; Rye, 20 Nov 2026): the painted animals and plants
  * every role card, upcoming role and venture card shows, and which painting each role has.
  *
  *   GET  /images/nature/<slug>.webp          the paintings (server/assets/nature, like moduleArt.ts)
@@ -70,7 +70,7 @@ export function register(app: Express, deps: Deps): void {
     if (!(await guardCapability(req, res, "story.tell"))) return;
     const roleId = String(req.params.roleId ?? "");
     const slug = (req.body ?? {}).slug;
-    if (slug !== null && !isNatureSlug(slug)) return res.status(400).json({ error: "Name one of the 48 paintings, or null to go back to automatic." });
+    if (slug !== null && !isNatureSlug(slug)) return res.status(400).json({ error: `Name one of the ${NATURE_ART.length} paintings, or null to go back to automatic.` });
     const pool = getPool();
     const { names } = await roleArt(pool);
     if (!names[roleId]) return res.status(404).json({ error: "There is no role by that id." });

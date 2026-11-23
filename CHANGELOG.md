@@ -59,6 +59,14 @@ Nothing. To show a deadline, add an apply-by date in the role editor.
 
 No. The apply-by date is stored with the card's other sections.
 
+## 1.3.54 (2026-11-23)
+
+### What changed for your village
+
+- **35 more paintings in the art library, of the south Pacific coast around Dominical.** The animals seen at and around the land, and more ocean life: the white-tailed deer, peccary, tamandua, armadillo, tayra, jaguarundi, spider monkey and spectacled caiman; the fiery-billed aracari, yellow-throated toucan, spectacled owl, king vulture, Montezuma oropendola, orange-collared manakin, turquoise cotinga, Baird's trogon, boat-billed heron, ringed kingfisher, frigatebird and brown pelican; bottlenose and spotted dolphins, green and hawksbill turtles, manta and spotted eagle rays, roosterfish, parrotfish, octopus, Sally lightfoot crab, a sea star and the yellow-bellied sea snake; and the gumbo limbo and hot lips plants. The library holds 83.
+- **The Art library filter shows Land, Birds, Ocean and Plants.**
+- **A Digital Companion named "heron" or "caiman" now shows the boat-billed heron or the spectacled caiman**, and "owl", "dolphin", "ray", "crab" and the other new animals each find their painting.
+
 ## 1.3.53 (2026-11-23)
 
 ### What changed for your village

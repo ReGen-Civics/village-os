@@ -13240,6 +13240,11 @@ msgctxt "role draft"
 msgid "Loading the open roles…"
 msgstr "Cargando los roles abiertos…"
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Ocean"
+msgstr ""
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
 msgid "B-27 or B-27.2, or an older long id"
@@ -16249,9 +16254,9 @@ msgid "{differ, plural, one {Voice and one member, one vote disagree on # quest.
 msgstr ""
 
 #: client/src/components/admin/ArtLibraryTab.tsx
-msgctxt "admin art library filter"
-msgid "Animals"
-msgstr ""
+#~ msgctxt "admin art library filter"
+#~ msgid "Animals"
+#~ msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/ProposeARole.tsx
@@ -16622,6 +16627,11 @@ msgstr ""
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes"
 msgid "I checked its page, and this change is not there yet"
+msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Land"
 msgstr ""
 
 #: client/src/components/proposals/ChangeCard.tsx
@@ -24873,6 +24883,11 @@ msgstr ""
 #: client/src/components/governance/GoalsList.tsx
 #~ msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
 #~ msgstr ""
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Birds"
+msgstr ""
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
