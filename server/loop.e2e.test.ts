@@ -1934,6 +1934,16 @@ describe.skipIf(!DB_CONFIGURED)("the coordination loop, end to end", () => {
     expect(real.json.notify.emailsOff).toBe(true);
     expect((await api("GET", "/api/profile/prefs", undefined, peerToken)).json.notify.emailsOff).toBe(true);
 
+    // The operations-report email (opsEmail): daily until chosen, a choice
+    // of off saves and reads back, and junk degrades to the default.
+    expect(real.json.notify.opsEmail).toBe("daily");
+    const ops = await api("PUT", "/api/profile/prefs", { notify: { opsEmail: "off" } }, peerToken);
+    expect(ops.status).toBe(200);
+    expect(ops.json.notify.opsEmail).toBe("off");
+    expect((await api("GET", "/api/profile/prefs", undefined, peerToken)).json.notify.opsEmail).toBe("off");
+    const opsJunk = await api("PUT", "/api/profile/prefs", { notify: { opsEmail: "hourly" } }, peerToken);
+    expect(opsJunk.json.notify.opsEmail).toBe("daily");
+
     // The display currency: written and echoed by the PUT, and READABLE from
     // the GET. It was absent from the GET's payload, so a client reading its
     // own choice from this route got undefined and could not tell that from

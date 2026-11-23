@@ -25395,7 +25395,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerPulseRoutes(app, { getPool });
   registerTreasuryRoutes(app, { authedUser, mayAct, guardCapability, members, tokens: () => allTokens(), mintCap: () => numberVar("ledger.admin_mint_cycle_cap") });
   registerPlayersRoutes(app, {
-    isAdmin, members, claimsRepo, computeStage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext,
+    isAdmin, authedUser, members, claimsRepo, computeStage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext,
     adminGroupsFor: (id: string) => adminGroupsOf(id, loadRoles() as any, loadPowerHoldings(), new Date(), holdingHasLapsed).map((g) => g.name),
     trainingCompletions: (ids: readonly string[]) => completionsForMany(getPool(), ids),
     paidByVillage: (ids: readonly string[]) => paidByVillageMany(getPool(), ids, contributionTokens()),

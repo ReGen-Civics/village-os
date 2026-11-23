@@ -40,6 +40,28 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.54 (2026-11-23)
+
+### What changed for your village
+
+- **35 more paintings in the art library, of the south Pacific coast around Dominical.** The animals seen at and around the land, and more ocean life: the white-tailed deer, peccary, tamandua, armadillo, tayra, jaguarundi, spider monkey and spectacled caiman; the fiery-billed aracari, yellow-throated toucan, spectacled owl, king vulture, Montezuma oropendola, orange-collared manakin, turquoise cotinga, Baird's trogon, boat-billed heron, ringed kingfisher, frigatebird and brown pelican; bottlenose and spotted dolphins, green and hawksbill turtles, manta and spotted eagle rays, roosterfish, parrotfish, octopus, Sally lightfoot crab, a sea star and the yellow-bellied sea snake; and the gumbo limbo and hot lips plants. The library holds 83.
+- **The Art library filter shows Land, Birds, Ocean and Plants.**
+- **A Digital Companion named "heron" or "caiman" now shows the boat-billed heron or the spectacled caiman**, and "owl", "dolphin", "ray", "crab" and the other new animals each find their painting.
+
+## 1.3.53 (2026-11-23)
+
+### What changed for your village
+
+- **The daily failures email can be switched off, one person at a time.** Admins and founders each have an "Operations reports" row in their notification settings, and an admin can switch it off for another admin or founder in Admin, Players ("Ops report email"). Only the daily list of actions that did not go through stops; the bell notice still arrives, and payment and security alerts still come straight away.
+
+### What you must do
+
+Nothing. Everybody keeps the daily email until they or an admin switch it off.
+
+### Does it touch your data
+
+No. The setting lives with each member's other email preferences.
+
 ## 1.3.52 (2026-11-21)
 
 ### What changed for your village

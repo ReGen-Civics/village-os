@@ -8,9 +8,9 @@ import { parseLook } from "./companionItems";
 const DIR = path.join(__dirname, "..", "server", "assets", "nature");
 
 describe("the nature art library", () => {
-  it("holds 48 paintings, each with a file, and every file is in the library", () => {
-    expect(NATURE_ART).toHaveLength(48);
-    expect(new Set(NATURE_ART.map((a) => a.slug)).size).toBe(48);
+  it("holds 83 paintings, each with a file, and every file is in the library", () => {
+    expect(NATURE_ART).toHaveLength(83);
+    expect(new Set(NATURE_ART.map((a) => a.slug)).size).toBe(NATURE_ART.length);
     const files = fs.readdirSync(DIR).filter((f) => f.endsWith(".webp")).map((f) => f.replace(/\.webp$/, "")).sort();
     expect(files).toEqual(NATURE_ART.map((a) => a.slug).sort());
   });
@@ -49,7 +49,8 @@ describe("assignNatureArt", () => {
   });
 
   it("gives the shown roles distinct paintings first when there are more roles than paintings", () => {
-    const many = Array.from({ length: 79 }, (_, i) => `role-${String(i).padStart(2, "0")}`);
+    // More roles than paintings, whatever size the library grows to.
+    const many = Array.from({ length: NATURE_ART.length + 31 }, (_, i) => `role-${String(i).padStart(3, "0")}`);
     // The shown roles sit among hidden ones in the id order, the way listed roles do in a real village.
     const shown = many.filter((_, i) => i % 3 === 0);
     const out = assignNatureArt(many, {}, shown);
@@ -86,13 +87,28 @@ describe("assignNatureArt", () => {
 });
 
 describe("companionArt", () => {
+  it("gives every companion word to one painting only", () => {
+    const owner = new Map<string, string>();
+    for (const art of NATURE_ART) for (const w of art.words) {
+      expect(owner.get(w), `"${w}" is on ${owner.get(w)} and ${art.slug}`).toBeUndefined();
+      owner.set(w, art.slug);
+    }
+  });
+
   it("finds the painting a companion's name points at, longest name first", () => {
     expect(companionArt("Sloth")?.slug).toBe("three-toed-sloth");
     expect(companionArt("a quiet hummingbird")?.slug).toBe("violet-sabrewing");
     expect(companionArt("Great green macaw")?.slug).toBe("great-green-macaw");
     expect(companionArt("Macaw")?.slug).toBe("scarlet-macaw");
     expect(companionArt("Tucán")?.slug).toBe("keel-billed-toucan");
-    expect(companionArt("Owls")).toBeNull();
+    expect(companionArt("Owls")?.slug).toBe("spectacled-owl");
+    expect(companionArt("Green sea turtle")?.slug).toBe("green-sea-turtle");
+    expect(companionArt("Sea turtle")?.slug).toBe("leatherback-turtle");
+    expect(companionArt("Heron")?.slug).toBe("boat-billed-heron");
+    expect(companionArt("Caiman")?.slug).toBe("spectacled-caiman");
+    expect(companionArt("Sea snake")?.slug).toBe("yellow-bellied-sea-snake");
+    expect(companionArt("Spotted dolphin")?.slug).toBe("spotted-dolphin");
+    expect(companionArt("Unicorns")).toBeNull();
     expect(companionArt("")).toBeNull();
   });
 });
