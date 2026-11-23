@@ -40,6 +40,46 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.56 (2026-11-23)
+
+### What changed for your village
+
+- **Role cards say what they pay up front.** The status pill on an open role says its kind: "Open paid role" on a paid track, "Open role" otherwise. Under the name, the pay split shows as a thin bar with a one-line legend ("60% cash · 40% tokens · 0% credits, not in use yet"), from the village's stored split or the card's own. Cash and tokens show only above 0%; credits always show. No amount until the card is opened. Volunteer roles say "Volunteer role".
+- **A new look for the closed role card.** On a phone the role's painting is a 4:3 band across the top; on a wider screen it fills the card's left edge, full height, as the Upcoming roles cards do. The role's name is a heading. Related roles are chips that wrap.
+- **An apply-by date.** A role can carry a last day to apply, shown on the front of its card on its own gold tile ("Apply by Mon 30 Nov") until that day passes, with circle, commitment and place on one line beside their signs. Set it in the role editor.
+- **"Compensation" for role pay.** The card, the application's pay step and the counter-offer screens say compensation where they said price, and "This is a paid role", "How compensation works" and "You and compensation" where they said rewards. "Rewarded" is kept for quests. Housing, events and services keep "price".
+- **"Related roles this role will onboard"** replaces "Roles to be added".
+- **Upcoming roles that will be paid say "Upcoming paid role"** in their pill.
+- **A card cannot state a different split by hand.** Saving card words that name a pay split different from the stored one is refused, with the stored split named, so the card and the pay never disagree.
+- **Four ways to build the village.** Join the team, Start a venture, Become a partner and Propose a quest, as compact tiles at the top of /roles, as cards on the home page and at the end of /roles, and as a short list beside the application's roles and after an application or a waitlist sign-up. On /roles, Join the team and Start a venture scroll down to the founding team and the open ventures and move focus to their headings; everywhere else they link to `/roles#founding-team` and `/roles#open-ventures`. In the application the quest route reads "Offer a one-off piece of work".
+- **Become a partner** (`/partner`): a form for someone who already runs a project or business, with no account needed. On send it lists every problem at once, each linked to its field, and moves focus to the first one. It goes to the holders of the role named in the new `org.partnerships_role` setting, else the business inbox in the email settings.
+- **One reply promise.** The four ways say when you hear back once under the group, from the same setting as the application's thank-you page, `org.applicant_reply_days`, so the two numbers can never disagree.
+- **Open ventures** are explained in one sentence with a "Start a venture" button. Ventures open now come first with an outlined gold "Open now" pill; the others read "Accepting proposals".
+- **The footer's Work with us** goes to the four ways at the top of /roles, beside a Become a partner link.
+
+### What you must do
+
+Nothing. To show a deadline, add an apply-by date in the role editor. To send partner proposals to a role, paste its id into `org.partnerships_role` (Admin, settings).
+
+### Does it touch your data
+
+No. The apply-by date is stored with the card's other sections.
+
+## 1.3.55 (2026-11-23)
+
+### What changed for your village
+
+- **A venture can hold its own credits (switched off).** A venture on the village's chart can have its own account for Amora credits. Members can pay a venture with credits, and the people seated in the venture's role see its balance and history on their profile. An admin opens accounts in Admin, Tokens, Venture accounts. Nothing appears until an admin turns on `ledger.org_accounts_open`, and a gathering's seat fees go to its venture only when `ledger.org_service_routing` is also on. A venture's own operator cannot pay their own venture.
+- **A rehearsal of the credits loop.** `scripts/rehearse-credits-loop.mjs` walks issuance to a venture's balance on a scratch or staging village, and refuses to run without the village's name typed to confirm.
+
+### What you must do
+
+Nothing. Both dials ship off.
+
+### Does it touch your data
+
+Yes, by adding only. Two new tables, `org_accounts` and `org_account_services`, are created; no existing table changes and neither table holds a balance. Going back to 1.3.54 leaves them unused.
+
 ## 1.3.54 (2026-11-23)
 
 ### What changed for your village

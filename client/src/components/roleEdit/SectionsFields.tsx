@@ -38,6 +38,8 @@ export interface SectionsForm {
   onboarding: string;
   /** Where the role is worked, in the card's own words. */
   where: string;
+  /** The last day to apply, YYYY-MM-DD, or empty. */
+  applyBy: string;
 }
 
 export function sectionsFormOf(s: RoleCardSections | undefined | null): SectionsForm {
@@ -59,6 +61,7 @@ export function sectionsFormOf(s: RoleCardSections | undefined | null): Sections
     deliverables: (v.deliverables ?? []).map(deliverableLine).join("\n"),
     onboarding: (v.onboarding ?? []).join("\n"),
     where: v.where ?? "",
+    applyBy: v.applyBy ?? "",
   };
 }
 
@@ -84,6 +87,7 @@ export function sectionsOf(f: SectionsForm): Record<string, unknown> {
     deliverables: ((r) => (r.ok ? r.value : f.deliverables))(deliverablesFromText(f.deliverables)),
     onboarding: lines(f.onboarding),
     where: f.where.trim(),
+    applyBy: f.applyBy.trim(),
   };
 }
 
@@ -130,6 +134,9 @@ export default function SectionsFields({ value, start, onChange }: { value: Sect
       </Field>
       <Field label={SECTION_WORDS.where} changed={!same("where")}>
         <input className={INPUT} value={value.where} maxLength={SECTION_LIMITS.whereChars} onChange={(e) => set("where", e.target.value)} aria-label={SECTION_WORDS.where} data-editor-where="" />
+      </Field>
+      <Field label={SECTION_WORDS.applyBy} changed={!same("applyBy")}>
+        <input type="date" className={INPUT} value={value.applyBy} onChange={(e) => set("applyBy", e.target.value)} aria-label={SECTION_WORDS.applyBy} data-editor-apply-by="" />
       </Field>
       <Field label={SECTION_WORDS.onboarding} changed={!same("onboarding")}>
         <p className={LEDE}>{t({ message: "The first steps once someone is chosen, one per line. Empty: the village's own steps show.", context: "role editor: how to write the onboarding steps" })}</p>

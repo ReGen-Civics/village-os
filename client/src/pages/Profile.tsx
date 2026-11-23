@@ -10,6 +10,7 @@ import ProfileHero from "@/components/ProfileHero";
 import OnchainCard from "@/components/OnchainCard";
 import WalletCard from "@/components/WalletCard";
 import SendTokensCard from "@/components/SendTokensCard";
+import VentureAccountsCard from "@/components/VentureAccountsCard";
 import RedemptionPanel from "@/components/RedemptionPanel";
 import CashOwedPanel from "@/components/CashOwedPanel";
 import TimeZoneField from "@/components/TimeZoneField";
@@ -909,6 +910,7 @@ export default function Profile() {
               <div id="send-tokens" className="scroll-mt-28">
                 <SendTokensCard />
               </div>
+              <VentureAccountsCard /> {/* 0419: the ventures this member runs; nothing until the village opens venture accounts */}
               {user && redemptionModule && (
                 <div id="redeem" className="scroll-mt-28">
                   <RedemptionPanel />

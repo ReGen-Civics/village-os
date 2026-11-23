@@ -26,6 +26,7 @@
  * registry. Keeping the winner buried mid-monolith is how the losers survived.
  */
 import TokenJobsPanel from "./TokenJobsPanel";
+import OrgAccountsPanel from "./OrgAccountsPanel";
 import MintDesk from "./MintDesk";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -236,6 +237,7 @@ export default function TokensTab({ password, lifecycles }: { password: string; 
       </div>
       <VillageTokensWordField password={password} />
       <TokenJobsPanel password={password} />
+      <OrgAccountsPanel password={password} />
       {loading ? <div className="text-center py-12 text-gray-400">Loading...</div> : (
         <div className="space-y-6">
           <div className="border border-gray-200 rounded-xl overflow-hidden">

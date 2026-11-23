@@ -37,6 +37,7 @@ const WHAT_THEY_SENT: Record<string, string> = {
   "comms-change": "your proposed change to the village's email",
   "work-with-us": "your proposal to work together",
   "quest-proposal": "the quest you proposed",
+  partner: "your proposal to partner with the village",
   "visit-inquiry": "your request to visit",
   "membership-508": "your membership request",
   "membership-request": "your request to join",

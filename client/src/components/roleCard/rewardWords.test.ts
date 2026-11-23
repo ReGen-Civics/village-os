@@ -36,7 +36,7 @@ describe("the headline, one figure or each share as its own amount (founding tea
     { label: "Equity", pct: 60 },
   ];
   it("keeps today's listed price when no split is asked", () => {
-    expect(rewardWords(i18n, BAND, 30, "", SHAPE).headline).toBe("Listed price: $9,000 a month for the full role*");
+    expect(rewardWords(i18n, BAND, 30, "", SHAPE).headline).toBe("Listed compensation: $9,000 a month for the full role*");
   });
   it("names each share's amount from the ceiling when the card splits it", () => {
     const w = rewardWords(i18n, BAND, 30, "", SHAPE, ceilingShares(BAND, SHAPE));
@@ -75,7 +75,7 @@ describe("the pay band under the listed price", () => {
   it("keeps the listed price and says no 120% cap (lead, 17 Nov 2026)", () => {
     for (const min of [100, 30]) {
       const w = rewardWords(i18n, BAND, min);
-      expect(w.headline).toBe("Listed price: $9,000 a month for the full role*");
+      expect(w.headline).toBe("Listed compensation: $9,000 a month for the full role*");
       expect("cap" in w).toBe(false);
       const all = Object.values(w).filter(Boolean).join(" ");
       expect(all).not.toContain("Proposals up to");
