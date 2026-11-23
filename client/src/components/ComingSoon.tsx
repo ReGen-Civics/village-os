@@ -10,6 +10,7 @@
  * confirmation. It also draws the line for a role only an agent holds.
  */
 import { Trans, useLingui } from "@lingui/react/macro";
+import { ventureOpenNow } from "@shared/roleListing";
 
 type Flagged = { comingSoon?: boolean | null; futureVenture?: boolean | null; heldByAgent?: boolean | null } | null | undefined;
 
@@ -21,6 +22,29 @@ export function ComingSoonChip({ role, className = "" }: { role: Flagged; classN
         <Trans context="badge on a role offered as a venture to build and run, applied for with a pitch">Open venture</Trans>
       ) : (
         <Trans context="badge on a role whose interviews start after the lead hires">Coming soon</Trans>
+      )}
+    </span>
+  );
+}
+
+/**
+ * A VENTURE'S BADGE ON THE ROLES PAGE (the lead, 23 Nov 2026): "Open now, high priority" for a venture whose door
+ * is open (`ventureOpenNow`, shared/roleListing.ts), "Accepting proposals" for every other one. Under the Open ventures heading it
+ * stands in for "Open venture", which that heading already says.
+ */
+export function VentureChip({ role, className = "" }: { role: { futureVenture?: boolean | null; recruiting?: boolean | null } | null | undefined; className?: string }) {
+  if (role?.futureVenture !== true) return null;
+  const now = ventureOpenNow(role);
+  return (
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium ${now ? "bg-notice text-background" : "bg-muted text-muted-foreground border border-border"} ${className}`}
+      data-testid="venture-chip"
+      data-open-now={now ? "" : undefined}
+    >
+      {now ? (
+        <Trans context="badge on a venture open now for pitches">Open now, high priority</Trans>
+      ) : (
+        <Trans context="badge on a venture taking proposals, not marked open now">Accepting proposals</Trans>
       )}
     </span>
   );

@@ -473,11 +473,13 @@ describe("design pass M1: the founding team leads the page", () => {
     const h1 = await screen.findByRole("heading", { level: 1, name: "Join the founding team" });
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     // Nothing of the game sits between the founding section and Other ways to join: the roles opening next, then
-    // the open ventures (the lead, 20 Nov 2026: the groups in order), and nothing else in this village.
+    // the open ventures (the lead, 20 Nov 2026: the groups in order), then "Don't see your gift in a role?" (the lead,
+    // 23 Nov 2026), and nothing else in this village.
     const after = h1.closest("[data-founding-team]")?.nextElementSibling;
     expect(after?.matches("[data-opening-next]")).toBe(true);
     expect(after?.nextElementSibling?.matches("[data-future-ventures]")).toBe(true);
-    expect(after?.nextElementSibling?.nextElementSibling?.matches("[data-other-ways]")).toBe(true);
+    expect(after?.nextElementSibling?.nextElementSibling?.matches("[data-your-gift]")).toBe(true);
+    expect(after?.nextElementSibling?.nextElementSibling?.nextElementSibling?.matches("[data-other-ways]")).toBe(true);
     const other = screen.getByRole("region", { name: "Other ways to join" });
     const header = await screen.findByRole("heading", { level: 2, name: "Roles and Circles" });
     expect(other.compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

@@ -415,8 +415,16 @@ describe("the six steps", () => {
       "Step 5: Your first moon",
       "Step 6: Review & submit",
     ]);
-    // Nothing of the game register on this page.
-    expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
+    // Nothing of the game register on this page, save the one door the lead asked for in the role process (23 Nov
+    // 2026): "Don't see your gift in a role? Consider these:", the other three ways to build.
+    const plain = document.body.cloneNode(true) as HTMLElement;
+    for (const d of Array.from(plain.querySelectorAll("[data-contributor-routes]"))) d.remove();
+    expect(plain.textContent).not.toMatch(/\bquest|stone|moss/i);
+    expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
+      ["venture", "/role-proposals/new"],
+      ["partner", "/partner"],
+      ["quest", "/propose-quest"],
+    ]);
     // Moon is the village's rhythm and is said here (the lead, 18 Nov 2026), and every moon wears its tip (MoonWord.tsx).
     // A step's name in the step mark, the trail beside or on Continue is a control's words, where a tip cannot sit: a control never
     // holds another. Every other moon wears it, the first moon step's heading and its line among them.

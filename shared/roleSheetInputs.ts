@@ -154,7 +154,8 @@ function sharedSeatFields(seat: any): Pick<
     state: isSeatState(seat?.state) ? seat.state : null,
     stateSource: has(seat, "stateSource") && (src === "declared" || src === "derived") ? src : undefined,
     criticality: has(seat, "criticality") && (crit === "high" || crit === "normal") ? crit : undefined,
-    recruiting: has(seat, "recruiting") ? bool(seat.recruiting) : undefined,
+    // A venture's open door reads "Open now" on its own badge, and its way in is a pitch: never a raised hand (23 Nov 2026).
+    recruiting: has(seat, "recruiting") ? bool(seat.recruiting) && seat?.futureVenture !== true : undefined,
     representsCircle: has(seat, "representsCircle") ? bool(seat.representsCircle) : undefined,
     howChosen: has(seat, "howChosen") ? str(seat.howChosen) : undefined,
     howChosenGloss: has(seat, "howChosenGloss") ? str(seat.howChosenGloss) : undefined,

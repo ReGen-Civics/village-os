@@ -22,7 +22,9 @@ const geneKeys = vi.hoisted(() => ({ on: false, mine: null as unknown }));
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({ user: session.user, token: session.user ? "t" : null, loading: false }),
 }));
-vi.mock("@/lib/gameApi", () => ({ gameFetch: (...args: unknown[]) => gameFetch(...args) }));
+vi.mock("@/lib/gameApi", () => ({ gameFetch: (...args: unknown[]) => gameFetch(...args), useGameConfig: () => null }));
+// The four ways to build ask which story pages this village serves (ContributorRoutes): none, here.
+vi.mock("@/lib/brochure", async (real) => ({ ...(await real<typeof import("@/lib/brochure")>()), useStoryPageShown: () => () => false }));
 // The real catalog rule: a module is present, with a lifecycle, only when on.
 vi.mock("@/modules/ModuleProvider", () => ({
   useModule: (id: string) => (session.modulesOn.has(id) ? { id, lifecycle: "members" } : undefined),
@@ -158,6 +160,9 @@ describe("StartHereCard: a member", () => {
     expect(within(card()).queryByRole("link", { name: /Propose a role/ })).toBeNull();
     // A member is never asked about their vouches.
     expect(gameFetch).not.toHaveBeenCalled();
+    // The other ways to build (the lead, 23 Nov 2026): a venture and a partnership, the quest and the role already doors here.
+    expect(Array.from(card().querySelectorAll("[data-route-door]")).map((a) => a.getAttribute("data-route-door"))).toEqual(["venture", "partner"]);
+    expect(link(/^Become a partner/)).toHaveAttribute("href", "/partner");
   });
 
   it("counts a stage an admin granted at Member or above as in, with no membership flag", () => {

@@ -171,6 +171,8 @@ export function openRolesFrom(org: unknown): DraftRole[] {
     if (!r || typeof r !== "object" || typeof r.id !== "string" || r.isExample) continue;
     // An unlisted role is never on the board, whoever is looking (role journey PR-A).
     if (unlistedValue(r.listed)) continue;
+    // A future venture is applied for with a pitch, never drafted, even with its door open ("Open now", 23 Nov 2026).
+    if (r.futureVenture === true) continue;
     const circleId = typeof r.circleId === "string" ? r.circleId : "";
     if (!circles.has(circleId)) continue;
     const seats = Math.max(0, Number(r.seats) || 0);

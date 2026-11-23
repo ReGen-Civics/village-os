@@ -2835,6 +2835,27 @@ export const VARIABLES: VariableDef[] = [
     unit: "days",
   },
   {
+    key: "org.contributor_reply_days",
+    category: "The village's people",
+    label: "Days we promise to answer someone who offers to build with us",
+    description:
+      "The four ways to build the village (join the team, start a venture, become a partner, propose a quest) each say the person hears back within this many days. It is a promise to the person, so set the number the people who answer can keep.",
+    type: "integer",
+    default: "14",
+    min: 1,
+    max: 60,
+    unit: "days",
+  },
+  {
+    key: "org.partnerships_role",
+    category: "The village's people",
+    label: "The role that answers partner proposals",
+    description:
+      "The role whose holders receive each proposal sent through Become a partner, by email: someone who already runs a project or business and would like to work with the village. Usually the role that holds partnerships. Paste the role id from the org chart. Leave it empty and partner proposals go to the business inbox in the email settings.",
+    type: "text",
+    default: "",
+  },
+  {
     key: "org.voice_clips_max",
     category: "The village's people",
     label: "Voice clips an applicant may record beside their answers",

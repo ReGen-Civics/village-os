@@ -68,7 +68,7 @@ async function answerJoinRequest(password: string, id: string, answer: "accept" 
  * membership-request is somebody with no invitation asking to join, from
  * RequestMembership.tsx (Rye, 2026-09-09: requests sit in admin for a team to talk to them).
  */
-export const FORM_TYPES = ["work-with-us", "quest-proposal", "visit-inquiry", "membership-508", "membership-request", "investor", "steward", "resident", "prosperity", "contact", "comms-change"] as const;
+export const FORM_TYPES = ["work-with-us", "quest-proposal", "partner", "visit-inquiry", "membership-508", "membership-request", "investor", "steward", "resident", "prosperity", "contact", "comms-change"] as const;
 
 export async function putSubmissionStatus(
   password: string,

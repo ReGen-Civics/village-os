@@ -23,6 +23,7 @@ import { perPeriod } from "@/components/roleCard/rewardWords";
 import { BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, LINK, TILE } from "@/components/journey/look";
 import { CommitmentFor, EMPTY_TERMS_STEP, type TermsRole, type TermsStepValue } from "@/components/governance/TermsEight";
 import { EarlyWords } from "./EarlyWords";
+import ContributorRoutes, { useGiftHeading } from "@/components/ContributorRoutes";
 
 /** A role the form offers, as this step reads it. */
 export interface MoreRolesRole extends TermsRole {
@@ -69,6 +70,7 @@ export default function MoreRoles({
   problemOf: (index: number) => string | null;
 }) {
   const { t, i18n } = useLingui();
+  const giftHeading = useGiftHeading();
   const byId = new Map(offered.map((r) => [r.id, r]));
   const chosen = new Set([first.id, ...extras.map((x) => x.roleId)]);
   // Open roles and held roles still recruiting; never a fully held role, a future venture, or a role not open yet.
@@ -173,6 +175,8 @@ export default function MoreRoles({
           </ul>
         </div>
       )}
+      {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build. */}
+      <ContributorRoutes variant="links" except={["team"]} heading={giftHeading} />
       {extras.length > 0 && (
         <p className={`${TILE} text-foreground`} data-roles-total="" aria-live="polite">
           {priceTotal !== null

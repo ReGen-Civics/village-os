@@ -12,7 +12,8 @@ import { anchorCircleId } from "@shared/circlePicker";
 import SeasonGoals from "@/components/roleDraft/SeasonGoals";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 import NotListedChip from "@/components/NotListedChip";
-import { ComingSoonChip, HeldByAgentLine } from "@/components/ComingSoon";
+import { ComingSoonChip, HeldByAgentLine, VentureChip } from "@/components/ComingSoon";
+import { FourWaysSection, GiftSection, StartVentureButton } from "@/components/ContributorRoutes";
 import Layout from "@/components/Layout";
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
@@ -45,7 +46,7 @@ import { fromOrgSeat, orgHolderName, seasonForSheet, seatHistoryShown } from "@s
 import FoundingTeam, { useLineupView, type FoundingRole } from "@/components/roleCard/FoundingTeam";
 import { orgChartOf } from "@/components/roleCard/orgChart";
 import type { BuiltRole } from "@/components/roleCard/LeadBuilds";
-import { heldButRecruiting, rolesLeadWillBuild } from "@shared/roleListing";
+import { heldButRecruiting, rolesLeadWillBuild, ventureOpenNow } from "@shared/roleListing";
 import FullRoleCard, { mayApply } from "@/components/roleCard/FullRoleCard";
 import { readFoundingTeam, type FoundingTeamAnswer } from "@/components/roleCard/roleCardApi";
 import { DEFAULT_OTHER_WAYS, OTHER_WAYS_DEFAULTS } from "@shared/otherWays";
@@ -199,7 +200,7 @@ function RoleCard({ role, expanded, onToggle, index, canTagNeeds, sheet }: RoleC
                 <h3 className="font-display text-lg font-bold text-foreground leading-tight">{role.name}</h3>
                 {/* A coming-soon role says so in place of its state, until someone holds it (Rye, 16 Nov 2026). */}
                 {(role.raw?.comingSoon === true || role.raw?.futureVenture === true) && role.status !== "filled" && role.status !== "partial" ? (
-                  <ComingSoonChip role={role.raw} />
+                  role.raw?.futureVenture === true ? <VentureChip role={role.raw} /> : <ComingSoonChip role={role.raw} />
                 ) : (
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge[role.status]}`}>
                     {stateWords[role.status]}
@@ -487,7 +488,8 @@ export default function Roles() {
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
   // Future ventures (the Operations Steward, 16 Nov 2026): their own section while the founding team leads, with no lead.
-  const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)) : [];
+  // The ventures open now come first, each in its own order (the lead, 23 Nov 2026: highlight the ones open now).
+  const ventures = leads ? (roles ?? []).filter((r) => r.raw?.futureVenture === true && !r.isExample && !featuredShown.has(r.id)).sort((a, b) => Number(ventureOpenNow(b.raw)) - Number(ventureOpenNow(a.raw))) : [];
   const ventureIds = new Set(ventures.map((r) => r.id));
   // Coming soon (the lead, 19 Nov 2026): directly under the open roles and above the roles held now, each with its
   // waitlist. Shown even while unlisted, as a coming-soon role always is (shared/roleListing.ts).
@@ -607,6 +609,8 @@ export default function Roles() {
 
   const otherWaysSection = (
     <>
+          {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build, at the end of the lists. */}
+          <GiftSection />
           {/* OTHER WAYS TO JOIN: clearly secondary to the founding team, and open from the start. */}
           <section aria-labelledby="other-ways" className={`mx-auto mb-14 max-w-4xl ${featured.length > 0 ? "border-t border-border pt-10" : ""}`} data-other-ways="">
             <h2 id="other-ways" className={`${H2} mb-2`}>{t({ message: "Other ways to join", context: "roles page, other ways to join" })}</h2>
@@ -705,6 +709,8 @@ export default function Roles() {
               </div>
             )}
           </div>
+          {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026), at the top; Join the team points at the open roles below. */}
+          <FourWaysSection hrefs={leads ? { team: "#open-now-heading" } : featured.length === 0 ? { team: "/roles/select" } : {}} />
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
@@ -743,9 +749,14 @@ export default function Roles() {
                 <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1 mb-2`}>
                   {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
                 </h2>
-                <p className="mb-6 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                {/* What a venture is, and the one door to pitch your own (the lead, 23 Nov 2026). */}
+                <p className="mb-2 max-w-2xl text-base leading-relaxed text-foreground" data-venture-explainer="">
+                  {t({ message: "A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role.", context: "roles page, open ventures: what a venture is" })}
+                </p>
+                <p className="mb-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
                   {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
                 </p>
+                <StartVentureButton />
                 {ventures.length > 0 ? (
                   <div className="grid items-start gap-4 lg:grid-cols-2" data-ventures-grid="">
                     {/* Two columns on a desktop (the lead, 21 Nov 2026); an opened venture takes the full width. */}

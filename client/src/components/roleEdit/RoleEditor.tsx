@@ -408,6 +408,10 @@ export default function RoleEditor({ roleId, onClose, onSaved }: { roleId: strin
               <input type="checkbox" className="size-5 accent-dash-gold" checked={form.recruiting} onChange={(e) => set("recruiting", e.target.checked)} />
               <span><Trans context="role editor">The door is open: this role is looking for someone</Trans></span>
             </label>
+            {/* A venture's door (the lead, 23 Nov 2026): open reads "Open now, high priority" and sorts first on the roles page. */}
+            {form.futureVenture && (
+              <p className="text-sm text-muted-foreground" data-venture-door=""><Trans context="role editor: the door on a future venture">On a venture, an open door shows it first on the roles page as Open now, high priority. Closed, it reads Accepting proposals.</Trans></p>
+            )}
           </Frame>
           {has("bookingUrl") && (
             <Frame label={t({ message: "Booking link", context: "role editor" })} changed={form.bookingUrl !== start.bookingUrl} posted={start.bookingUrl}>
