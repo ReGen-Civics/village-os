@@ -34,9 +34,25 @@ interface DetailBody {
 
 /** Every balance in one list of parts, in the village's own token names. Empty when nothing is held. */
 export function balanceParts(a: Pick<OrgAccountView, "balances" | "decimals" | "tokenNames">): string[] {
-  return Object.entries(a.balances)
+  return Object.entries(a.balances ?? {})
     .filter(([, v]) => Number(v) !== 0)
-    .map(([slug, v]) => `${formatTokenAmount(v, a.decimals[slug] ?? 0)} ${a.tokenNames[slug] ?? slug}`);
+    .map(([slug, v]) => `${formatTokenAmount(v, a.decimals?.[slug] ?? 0)} ${a.tokenNames?.[slug] ?? slug}`);
+}
+
+/**
+ * The list read, taken apart field by field. A body of any other shape (an
+ * older server, a stubbed fetch, a proxy page) reads as no accounts and both
+ * doors shut, so the panel draws its empty state instead of throwing inside
+ * the Tokens tab and taking the registry above it down too.
+ */
+export function listFrom(d: unknown): ListBody {
+  const o = d && typeof d === "object" && !Array.isArray(d) ? (d as Record<string, unknown>) : {};
+  return {
+    accounts: Array.isArray(o.accounts) ? (o.accounts as OrgAccountView[]) : [],
+    roles: Array.isArray(o.roles) ? (o.roles as ListBody["roles"]) : [],
+    open: o.open === true,
+    routing: o.routing === true,
+  };
 }
 
 /** The path comes first, so the admin-reach guard can read which route each call reaches. */
@@ -67,7 +83,7 @@ export default function OrgAccountsPanel({ password }: { password: string }) {
 
   const load = useCallback(async () => {
     try {
-      setList(await call("/admin/org-accounts", password, "GET"));
+      setList(listFrom(await call("/admin/org-accounts", password, "GET")));
       setError("");
     } catch (e) {
       setError(said(e, t`The accounts could not be read.`));
@@ -77,7 +93,15 @@ export default function OrgAccountsPanel({ password }: { password: string }) {
   const loadDetail = useCallback(
     async (id: string) => {
       try {
-        const d: DetailBody = await call(`/admin/org-accounts/${encodeURIComponent(id)}`, password, "GET");
+        const raw = await call(`/admin/org-accounts/${encodeURIComponent(id)}`, password, "GET");
+        if (!raw || typeof raw !== "object" || !raw.account) throw new Error("");
+        const d: DetailBody = {
+          account: raw.account,
+          history: Array.isArray(raw.history) ? raw.history : [],
+          services: Array.isArray(raw.services) ? raw.services : [],
+          operators: Array.isArray(raw.operators) ? raw.operators : [],
+          gatherings: Array.isArray(raw.gatherings) ? raw.gatherings : [],
+        };
         setDetail(d);
         setRename(d.account.label);
       } catch (e) {
