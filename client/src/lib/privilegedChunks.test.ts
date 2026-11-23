@@ -40,7 +40,8 @@ describe("privileged pages never ride a shared page group", () => {
     const config = fs.readFileSync(path.join(process.cwd(), "vite.config.ts"), "utf8");
     // The page rule that hands out smallpages, shopfront and midpages.
     expect(config).toMatch(/if \(SMALL_PAGE\.test\(id\)[^\n]*mayJoinSharedGroup\(id\)\) \{/);
-    // Both small-module group rules (smallGroupOf and the second candidate filter).
-    expect(config.match(/!SMALL_GROUP_NEVER\.test\(id\) &&\s*\n\s*mayJoinSharedGroup\(id\) &&/g)?.length).toBe(2);
+    // The three module group rules: smallGroupOf, the "keyset-" candidate filter, and lazyGroupPlan's `free`
+    // (the "lazy-" groups and every module that rides in a group).
+    expect(config.match(/!SMALL_GROUP_NEVER\.test\(id\) &&\s*\n\s*mayJoinSharedGroup\(id\) &&/g)?.length).toBe(3);
   });
 });
