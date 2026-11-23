@@ -12917,6 +12917,11 @@ msgctxt "role draft"
 msgid "Loading the open roles…"
 msgstr "Loading the open roles…"
 
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Ocean"
+msgstr "Ocean"
+
 #: client/src/pages/ProposedChanges.tsx
 msgctxt "proposed changes: filter"
 msgid "B-27 or B-27.2, or an older long id"
@@ -15843,9 +15848,9 @@ msgid "{differ, plural, one {Voice and one member, one vote disagree on # quest.
 msgstr "{differ, plural, one {Voice and one member, one vote disagree on # quest.} other {Voice and one member, one vote disagree on # quests.}}"
 
 #: client/src/components/admin/ArtLibraryTab.tsx
-msgctxt "admin art library filter"
-msgid "Animals"
-msgstr "Animals"
+#~ msgctxt "admin art library filter"
+#~ msgid "Animals"
+#~ msgstr "Animals"
 
 #: client/src/pages/ProposeARole.tsx
 msgctxt "founding application lede"
@@ -16204,6 +16209,11 @@ msgstr "The copy did not download"
 msgctxt "proposed changes"
 msgid "I checked its page, and this change is not there yet"
 msgstr "I checked its page, and this change is not there yet"
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Land"
+msgstr "Land"
 
 #: client/src/components/proposals/ChangeCard.tsx
 msgctxt "proposed changes: agenda item kind"
@@ -24310,6 +24320,11 @@ msgstr "The village has not set its goals for this season yet. You can still app
 #: client/src/components/governance/GoalsList.tsx
 #~ msgid "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
 #~ msgstr "Goals guide us, and we work toward them. This is an early-stage project, and what it needs can change mid-month, so we stay responsive and we're paid on what we truly accomplish. At each month's end we look at your progress on your goals and the other tasks you took on, including ones outside your roles. If that's far from what you agreed, your pay can change to match, up or down. The Treasurer proposes any change with a reason, you can reply, and nothing is paid until the Treasurer confirms."
+
+#: client/src/components/admin/ArtLibraryTab.tsx
+msgctxt "admin art library filter"
+msgid "Birds"
+msgstr "Birds"
 
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"

@@ -1,5 +1,6 @@
 /**
- * THE NATURE ART LIBRARY: 48 PAINTED ANIMALS AND PLANTS OF COSTA RICA (Rye, 20 Nov 2026).
+ * THE NATURE ART LIBRARY: PAINTED ANIMALS AND PLANTS OF COSTA RICA (Rye, 20 Nov 2026; 35 more of the south
+ * Pacific coast around Dominical, 23 Nov 2026, so NATURE_ART.length is the count, never a number in prose).
  *
  * "Change all the pictures and images for all the roles ... a suite of 48 different animal and plant
  * cards that are found in Costa Rica, using the same stylistic design as our profile and our character
@@ -18,6 +19,9 @@ export const NATURE_ART_URL = "/images/nature";
 
 export type NatureKind = "animal" | "plant";
 
+/** Where an animal lives, for the admin library's filter. Plants are their own group. */
+export type NatureGroup = "land" | "bird" | "ocean" | "plant";
+
 export interface NatureArt {
   /** The file name without .webp, and the id stored when an admin picks this painting. */
   slug: string;
@@ -26,21 +30,21 @@ export interface NatureArt {
   /** The name used in Costa Rica. */
   es: string;
   kind: NatureKind;
+  group: NatureGroup;
   /** Words a role card's Digital Companion may be named with that mean this painting, lower case. */
   words: readonly string[];
 }
 
-const a = (slug: string, name: string, es: string, words: string[]): NatureArt => ({ slug, name, es, kind: "animal", words });
-const p = (slug: string, name: string, es: string, words: string[]): NatureArt => ({ slug, name, es, kind: "plant", words });
+const a = (slug: string, name: string, es: string, words: string[], group: NatureGroup = "land"): NatureArt => ({ slug, name, es, kind: "animal", group, words });
+const b = (slug: string, name: string, es: string, words: string[]): NatureArt => a(slug, name, es, words, "bird");
+const o = (slug: string, name: string, es: string, words: string[]): NatureArt => a(slug, name, es, words, "ocean");
+const p = (slug: string, name: string, es: string, words: string[]): NatureArt => ({ slug, name, es, kind: "plant", group: "plant", words });
 
-/** The whole library, animals then plants. The order is the admin grid's and the auto-assignment's. */
+/** The whole library: land animals, birds, ocean, then plants. The order is the admin grid's and the auto-assignment's. */
 export const NATURE_ART: readonly NatureArt[] = [
-  a("scarlet-macaw", "Scarlet macaw", "Lapa roja", ["scarlet macaw", "macaw", "lapa roja", "lapa", "parrot"]),
   a("howler-monkey", "Mantled howler monkey", "Mono congo", ["howler monkey", "howler", "congo", "monkey"]),
   a("three-toed-sloth", "Three-toed sloth", "Perezoso de tres dedos", ["sloth", "perezoso"]),
   a("red-eyed-tree-frog", "Red-eyed tree frog", "Rana calzonuda", ["red-eyed tree frog", "tree frog", "frog", "rana"]),
-  a("resplendent-quetzal", "Resplendent quetzal", "Quetzal", ["quetzal"]),
-  a("keel-billed-toucan", "Keel-billed toucan", "Tucán pico iris", ["toucan", "tucán", "tucan"]),
   a("white-faced-capuchin", "White-faced capuchin", "Mono carablanca", ["capuchin", "carablanca"]),
   a("squirrel-monkey", "Squirrel monkey", "Mono tití", ["squirrel monkey", "tití", "titi"]),
   a("jaguar", "Jaguar", "Jaguar", ["jaguar"]),
@@ -50,21 +54,57 @@ export const NATURE_ART: readonly NatureArt[] = [
   a("blue-morpho", "Blue morpho butterfly", "Morpho azul", ["blue morpho", "morpho", "butterfly", "mariposa"]),
   a("strawberry-poison-dart-frog", "Strawberry poison dart frog", "Rana blue jeans", ["poison dart frog", "dart frog", "blue jeans"]),
   a("glass-frog", "Glass frog", "Rana de vidrio", ["glass frog"]),
-  a("leatherback-turtle", "Leatherback sea turtle", "Tortuga baula", ["leatherback", "baula", "sea turtle", "turtle", "tortuga"]),
-  a("olive-ridley-turtle", "Olive ridley sea turtle", "Tortuga lora", ["olive ridley", "tortuga lora"]),
-  a("humpback-whale", "Humpback whale", "Ballena jorobada", ["humpback", "whale", "ballena"]),
-  a("american-crocodile", "American crocodile", "Cocodrilo", ["crocodile", "cocodrilo", "croc", "caiman"]),
+  a("american-crocodile", "American crocodile", "Cocodrilo", ["crocodile", "cocodrilo", "croc"]),
   a("green-iguana", "Green iguana", "Iguana verde", ["iguana"]),
   a("emerald-basilisk", "Emerald basilisk", "Basilisco verde", ["basilisk", "basilisco", "lizard"]),
-  a("violet-sabrewing", "Violet sabrewing hummingbird", "Colibrí ala de sable", ["hummingbird", "colibrí", "colibri", "sabrewing"]),
-  a("great-green-macaw", "Great green macaw", "Lapa verde", ["great green macaw", "green macaw", "lapa verde"]),
-  a("roseate-spoonbill", "Roseate spoonbill", "Garza rosada", ["spoonbill", "garza", "heron", "flamingo"]),
   a("kinkajou", "Kinkajou", "Martilla", ["kinkajou", "martilla"]),
-  a("turquoise-browed-motmot", "Turquoise-browed motmot", "Momoto cejiceleste", ["motmot", "momoto"]),
-  a("clay-colored-thrush", "Clay-colored thrush", "Yigüirro", ["thrush", "yigüirro", "yiguirro", "songbird", "bird"]),
   a("leafcutter-ants", "Leafcutter ants", "Zompopas", ["leafcutter", "ant", "ants", "zompopa"]),
   a("eyelash-viper", "Eyelash viper", "Bocaracá", ["viper", "snake", "serpent", "bocaracá"]),
-  a("hammerhead-shark", "Scalloped hammerhead shark", "Tiburón martillo", ["hammerhead", "shark", "tiburón"]),
+  a("white-tailed-deer", "White-tailed deer", "Venado cola blanca", ["white-tailed deer", "deer", "venado"]),
+  a("collared-peccary", "Collared peccary", "Saíno", ["peccary", "saíno", "saino"]),
+  a("northern-tamandua", "Northern tamandua", "Oso hormiguero", ["tamandua", "anteater", "oso hormiguero"]),
+  a("nine-banded-armadillo", "Nine-banded armadillo", "Armadillo", ["armadillo"]),
+  a("tayra", "Tayra", "Tolomuco", ["tayra", "tolomuco"]),
+  a("jaguarundi", "Jaguarundi", "León breñero", ["jaguarundi", "breñero"]),
+  a("central-american-spider-monkey", "Central American spider monkey", "Mono araña", ["spider monkey", "mono araña"]),
+  a("spectacled-caiman", "Spectacled caiman", "Caimán", ["caiman", "caimán"]),
+  a("green-and-black-poison-frog", "Green-and-black poison frog", "Rana venenosa verde y negra", ["green and black poison frog", "poison frog"]),
+  b("scarlet-macaw", "Scarlet macaw", "Lapa roja", ["scarlet macaw", "macaw", "lapa roja", "lapa", "parrot"]),
+  b("resplendent-quetzal", "Resplendent quetzal", "Quetzal", ["quetzal"]),
+  b("keel-billed-toucan", "Keel-billed toucan", "Tucán pico iris", ["toucan", "tucán", "tucan"]),
+  b("violet-sabrewing", "Violet sabrewing hummingbird", "Colibrí ala de sable", ["hummingbird", "colibrí", "colibri", "sabrewing"]),
+  b("great-green-macaw", "Great green macaw", "Lapa verde", ["great green macaw", "green macaw", "lapa verde"]),
+  b("roseate-spoonbill", "Roseate spoonbill", "Garza rosada", ["spoonbill", "garza rosada", "flamingo"]),
+  b("turquoise-browed-motmot", "Turquoise-browed motmot", "Momoto cejiceleste", ["motmot", "momoto"]),
+  b("clay-colored-thrush", "Clay-colored thrush", "Yigüirro", ["thrush", "yigüirro", "yiguirro", "songbird", "bird"]),
+  b("fiery-billed-aracari", "Fiery-billed aracari", "Cusingo", ["aracari", "cusingo"]),
+  b("yellow-throated-toucan", "Yellow-throated toucan", "Dióstedé", ["yellow-throated toucan", "dióstedé", "diostede"]),
+  b("spectacled-owl", "Spectacled owl", "Búho de anteojos", ["owl", "búho", "buho"]),
+  b("king-vulture", "King vulture", "Zopilote rey", ["vulture", "zopilote"]),
+  b("montezuma-oropendola", "Montezuma oropendola", "Oropéndola", ["oropendola", "oropéndola"]),
+  b("orange-collared-manakin", "Orange-collared manakin", "Saltarín cuellinaranja", ["manakin", "saltarín"]),
+  b("magnificent-frigatebird", "Magnificent frigatebird", "Tijereta de mar", ["frigatebird", "tijereta"]),
+  b("brown-pelican", "Brown pelican", "Pelícano pardo", ["pelican", "pelícano"]),
+  b("turquoise-cotinga", "Turquoise cotinga", "Cotinga turquesa", ["cotinga"]),
+  b("bairds-trogon", "Baird's trogon", "Trogón vientrirrojo", ["trogon", "trogón"]),
+  b("boat-billed-heron", "Boat-billed heron", "Pico cuchara", ["boat-billed heron", "heron", "pico cuchara"]),
+  b("ringed-kingfisher", "Ringed kingfisher", "Martín pescador collarejo", ["kingfisher", "martín pescador"]),
+  o("leatherback-turtle", "Leatherback sea turtle", "Tortuga baula", ["leatherback", "baula", "sea turtle", "turtle", "tortuga"]),
+  o("olive-ridley-turtle", "Olive ridley sea turtle", "Tortuga lora", ["olive ridley", "tortuga lora"]),
+  o("humpback-whale", "Humpback whale", "Ballena jorobada", ["humpback", "whale", "ballena"]),
+  o("hammerhead-shark", "Scalloped hammerhead shark", "Tiburón martillo", ["hammerhead", "shark", "tiburón"]),
+  o("bottlenose-dolphin", "Bottlenose dolphin", "Delfín nariz de botella", ["dolphin", "delfín", "delfin", "bottlenose"]),
+  o("spotted-dolphin", "Pantropical spotted dolphin", "Delfín manchado", ["spotted dolphin", "delfín manchado"]),
+  o("green-sea-turtle", "Green sea turtle", "Tortuga verde", ["green sea turtle", "green turtle", "tortuga verde"]),
+  o("hawksbill-turtle", "Hawksbill sea turtle", "Tortuga carey", ["hawksbill", "carey"]),
+  o("manta-ray", "Giant manta ray", "Manta gigante", ["manta", "ray", "mantarraya"]),
+  o("spotted-eagle-ray", "Spotted eagle ray", "Raya águila", ["eagle ray", "raya águila"]),
+  o("roosterfish", "Roosterfish", "Pez gallo", ["roosterfish", "pez gallo"]),
+  o("parrotfish", "Parrotfish", "Pez loro", ["parrotfish", "pez loro"]),
+  o("octopus", "Octopus", "Pulpo", ["octopus", "pulpo"]),
+  o("sally-lightfoot-crab", "Sally lightfoot crab", "Cangrejo zapaya", ["crab", "cangrejo", "zapaya"]),
+  o("sea-star", "Sea star", "Estrella de mar", ["starfish", "sea star", "estrella de mar"]),
+  o("yellow-bellied-sea-snake", "Yellow-bellied sea snake", "Serpiente marina", ["sea snake", "serpiente marina"]),
   p("mango-tree", "Mango tree", "Árbol de mango", ["mango"]),
   p("guanacaste-tree", "Guanacaste tree", "Árbol de guanacaste", ["guanacaste"]),
   p("guaria-morada", "Guaria morada orchid", "Guaria morada", ["guaria", "orchid", "orquídea"]),
@@ -83,6 +123,8 @@ export const NATURE_ART: readonly NatureArt[] = [
   p("monstera", "Monstera", "Mano de tigre", ["monstera"]),
   p("tree-fern", "Tree fern", "Helecho arborescente", ["fern", "helecho"]),
   p("corteza-amarilla", "Golden trumpet tree", "Corteza amarilla", ["corteza amarilla", "trumpet tree"]),
+  p("gumbo-limbo", "Gumbo limbo", "Indio desnudo", ["gumbo limbo", "indio desnudo"]),
+  p("hot-lips", "Hot lips", "Labios de novia", ["hot lips", "labios de novia"]),
 ];
 
 const BY_SLUG = new Map(NATURE_ART.map((x) => [x.slug, x]));
