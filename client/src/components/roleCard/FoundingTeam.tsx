@@ -25,6 +25,7 @@ import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { RoleFill } from "@shared/commitmentRange";
 import FoundingLineup from "./FoundingLineup";
+import { shotLook } from "./FoundingRow";
 import type { FilledRole, LineupView } from "./RosterCards";
 import FullRoleCard from "./FullRoleCard";
 import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
@@ -139,7 +140,9 @@ export default function FoundingTeam({
   const view = givenView ?? ownView;
   const setView = onView ?? setOwnView;
   // `open` is null until a reader chooses, and "" once a phone reader closes the open row.
-  const shown = open === null ? (wide ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
+  // TEMPORARY (card look pass, phase 1): ?cardclosed=1 keeps every row closed on a wide screen for the screenshots.
+  const openFirst = wide && !shotLook().closed;
+  const shown = open === null ? (openFirst ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
   if (roles.length === 0) return null;
   const current = roles.find((r) => String(r.seat.id) === shown) ?? null;
 
