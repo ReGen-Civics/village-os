@@ -611,6 +611,12 @@ msgctxt "sera draft mark"
 msgid "Keep this"
 msgstr "Quedarme con esto"
 
+#. placeholder {0}: r.name
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "{0} (future venture)"
+msgstr ""
+
 #. placeholder {0}: Number(d?.started) || 0
 #: client/src/components/admin/OpenProposalsPanel.tsx
 msgctxt "admin open proposals"
@@ -1734,6 +1740,10 @@ msgctxt "week strip, the days as a group"
 msgid "The seven days"
 msgstr "Los siete días"
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Nobody is seated in the role yet."
+msgstr ""
+
 #: client/src/components/roleCard/CardLists.tsx
 #: client/src/components/roleCard/FoundingRoleCard.tsx
 msgctxt "role card: the onboarding steps"
@@ -1961,6 +1971,12 @@ msgstr ""
 msgctxt "open proposal review, the button's full name"
 msgid "Change {label}"
 msgstr "Cambiar {label}"
+
+#. placeholder {0}: h.withName
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "from {0}"
+msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/pages/Roles.tsx
@@ -2473,6 +2489,10 @@ msgstr "Hoy no se reúne ningún círculo."
 msgctxt "open work: say your percent"
 msgid "Say it"
 msgstr "Decirlo"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "A gathering with a seat fee"
+msgstr ""
 
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks send: an unknown failure"
@@ -3144,6 +3164,12 @@ msgctxt "change request note outcome"
 msgid "Taken in"
 msgstr ""
 
+#. placeholder {0}: h.withName
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "to {0}"
+msgstr ""
+
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "Yours to tick, as {keptFor}."
@@ -3372,6 +3398,12 @@ msgctxt "start a conversation"
 msgid "Why you, and why this role, in a few lines"
 msgstr "Por qué tú, y por qué este rol, en unas pocas líneas"
 
+#. placeholder {0}: h.withName
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "to {0}"
+msgstr ""
+
 #: client/src/components/budgets/budgetWords.ts
 msgctxt "budget line status"
 msgid "Closed"
@@ -3598,6 +3630,11 @@ msgstr ""
 msgctxt "role draft button"
 msgid "Full card"
 msgstr "Ficha completa"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Close"
+msgstr ""
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "voice clip beside an answer"
@@ -4920,6 +4957,10 @@ msgstr ""
 msgid "A copy takes two people: you ask, and a different member who may approve says yes. You can then download it once. It carries no names and no photos."
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "The name could not be saved."
+msgstr ""
+
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
 msgctxt "admin compare"
@@ -5352,6 +5393,10 @@ msgctxt "admin helper, proposal"
 msgid "Applied."
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Choose a gathering with a seat fee"
+msgstr ""
+
 #: client/src/components/form/LimitsExplained.tsx
 msgctxt "how the limits work"
 msgid "Uploads:"
@@ -5698,6 +5743,11 @@ msgctxt "sera answers"
 msgid "Taken again. The draft holds what it says now."
 msgstr ""
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Nothing held yet"
+msgstr ""
+
 #: client/src/components/fireflyPath/ApplySteps.tsx
 msgctxt "the keyboard key"
 msgid "Enter"
@@ -5870,6 +5920,12 @@ msgstr ""
 #: client/src/components/admin/ArchetypesPanel.tsx
 msgctxt "admin character classes: upload many stock portraits at once"
 msgid "Load a set"
+msgstr ""
+
+#. placeholder {0}: a.roleName
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Role: {0}"
 msgstr ""
 
 #: client/src/components/fireflyPath/limitProblems.ts
@@ -6274,6 +6330,11 @@ msgstr ""
 msgctxt "role card rewards: the one footnote"
 msgid "*At 100% commitment."
 msgstr "*Con un compromiso del 100%."
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Details"
+msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "heading on the change requests page"
@@ -7088,6 +7149,11 @@ msgstr "Cerrada"
 msgctxt "open work: the one card chosen for the reader"
 msgid "Fits you"
 msgstr "Para ti"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Nothing held yet"
+msgstr ""
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with my {pickCount} picks"
@@ -8961,6 +9027,11 @@ msgctxt "pricing desk"
 msgid "Waiting for a signer"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Loading..."
+msgstr ""
+
 #: client/src/components/admin/BudgetsTab.tsx
 msgctxt "admin budgets tab"
 msgid "What the village plans to pay in cash this moon, line by line, and what is left once the pay already promised is taken off. The pay engine reads the figure that is left."
@@ -8981,6 +9052,11 @@ msgstr "Aporte {n}"
 msgctxt "admin compare"
 msgid "Asks to ramp up over time"
 msgstr "Pide ir aumentando con el tiempo"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Turn it on"
+msgstr ""
 
 #: client/src/pages/Roles.tsx
 msgctxt "roles page"
@@ -9639,6 +9715,11 @@ msgctxt "treasury sync"
 msgid "Invoices, by source"
 msgstr ""
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "paid out"
+msgstr ""
+
 #: client/src/components/guide/GuideDataLine.tsx
 msgctxt "guide data line: no AI in selection"
 msgid "Nothing you type to a guide is used to choose people for roles."
@@ -9677,6 +9758,11 @@ msgstr ""
 
 #: client/src/pages/ChangeRequests.tsx
 msgid "Moved into a change request of its own."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Account opened"
 msgstr ""
 
 #: client/src/components/proposals/ChangeCard.tsx
@@ -10697,6 +10783,10 @@ msgctxt "sera answers"
 msgid "Undone. {n} wait in the list again."
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Members can pay venture accounts now."
+msgstr ""
+
 #: client/src/components/openProposal/RoleCardBridge.tsx
 msgid "Book your first conversation"
 msgstr "Agenda tu primera conversación"
@@ -10740,6 +10830,11 @@ msgstr "Enviar la linterna"
 msgctxt "pay board"
 msgid "Owed {owed}, sent {sent}"
 msgstr "Pendiente {owed}, enviado {sent}"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Name members read"
+msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
 msgctxt "admin protocols editor"
@@ -11230,6 +11325,10 @@ msgctxt "profile, set your top priority for this week"
 msgid "Set this week's"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "The account could not be opened."
+msgstr ""
+
 #: client/src/components/canvas/ConflictAgreementPublic.tsx
 msgid "Adopted on {adoptedDay} by the village's vote."
 msgstr ""
@@ -11257,6 +11356,10 @@ msgstr ""
 #. placeholder {0}: day(stored.adoptedAt)
 #: client/src/components/admin/ClosingPolicyEditor.tsx
 msgid "Adopted on {0}. Members read these words until new ones are adopted, so a change is saved by adopting it."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Members spend credits, and ventures redeem them. A venture's account holds what members pay it. The people seated in the venture's role see its balance and history. An account never closes and its credits never expire."
 msgstr ""
 
 #: client/src/components/proposals/Diff.tsx
@@ -11480,6 +11583,10 @@ msgstr ""
 msgctxt "next step box, start a crew for this quest"
 msgid "Start a crew and invite friends"
 msgstr "Forma una cuadrilla e invita a tus amistades"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Seat fees for a venture's own gatherings go to the venture."
+msgstr ""
 
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
@@ -11803,6 +11910,10 @@ msgstr "Idiomas en los que trabajas (opcional)"
 msgid "Step {n} of 4: {words}. Review ends {ends}"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Gatherings this venture runs"
+msgstr ""
+
 #: client/src/components/governance/GoalsList.tsx
 msgid "The season goal it serves (optional)"
 msgstr "La meta de la temporada a la que sirve (opcional)"
@@ -11816,6 +11927,10 @@ msgstr ""
 #: client/src/components/roleProposal/AgentProposalForm.tsx
 msgctxt "agent proposal"
 msgid "No role is open to an agent right now."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "The gathering could not be linked."
 msgstr ""
 
 #: client/src/components/profileDash/LevelUpMoment.tsx
@@ -12025,6 +12140,10 @@ msgstr ""
 
 #: client/src/components/priorities/RaisedAsksCard.tsx
 msgid "Taken. The holder has not said where it sits yet."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "No venture holds an account yet."
 msgstr ""
 
 #: client/src/components/admin/ProtocolsEditor.tsx
@@ -12402,6 +12521,10 @@ msgstr "Quién lo sostiene hoy"
 
 #: client/src/components/canvas/CanvasBlockFrames.tsx
 msgid "Nobody has read {name} yet."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "The accounts could not be read."
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
@@ -13015,6 +13138,11 @@ msgctxt "role editor history"
 msgid "put back"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Save name"
+msgstr ""
+
 #: client/src/pages/Events.tsx
 msgctxt "calendar view tab"
 msgid "Week"
@@ -13401,6 +13529,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "Counter-offer"
 msgstr "Contraoferta"
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Change"
+msgstr ""
+
 #: client/src/components/canvas/CanvasFrameAdopt.tsx
 msgid "Your note (needed to decline)"
 msgstr ""
@@ -13454,6 +13587,10 @@ msgstr "Grabaste {max} respuestas, el máximo que admite una solicitud. Quita un
 #: client/src/pages/rites/ComeAboard.tsx
 msgctxt "rites"
 msgid "or with your email"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Members cannot pay venture accounts yet. You can open accounts first."
 msgstr ""
 
 #: client/src/components/admin/ClosingPolicyEditor.tsx
@@ -13994,6 +14131,10 @@ msgstr "Círculo vinculado: {0}"
 #: client/src/components/fundingRounds/common.tsx
 msgctxt "funding round stage"
 msgid "Grow"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "The gathering could not be taken off."
 msgstr ""
 
 #: client/src/components/budgets/BudgetDesk.tsx
@@ -15248,6 +15389,11 @@ msgstr "Una pregunta sobre {name}"
 msgid "Until it is on, each small change waits for you in this list."
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Choose a role"
+msgstr ""
+
 #: client/src/components/governance/GoalsList.tsx
 msgctxt "proposal goals list"
 msgid "Move goal {n} down"
@@ -15625,6 +15771,11 @@ msgstr ""
 msgctxt "founding application step"
 msgid "About you"
 msgstr "Sobre ti"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "History"
+msgstr ""
 
 #: client/src/components/fireflyPath/applyWordsT.ts
 msgctxt "founding application refusal"
@@ -16883,6 +17034,10 @@ msgctxt "ai agents approval"
 msgid "Approval recorded"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "A gathering that has been removed"
+msgstr ""
+
 #. placeholder {0}: money(ownMinor)
 #. placeholder {1}: money(p.s.band.lowMinor)
 #. placeholder {2}: money(p.s.band.highMinor)
@@ -17215,6 +17370,11 @@ msgstr ""
 msgctxt "founding team: nobody holds this role yet"
 msgid "Open role"
 msgstr "Rol abierto"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "The role's name"
+msgstr ""
 
 #: client/src/components/openWork/QuestThreadPicker.tsx
 msgctxt "quest goal thread editor: button while saving"
@@ -17812,6 +17972,11 @@ msgctxt "pricing desk"
 msgid "Open the desk as its own page, for a Treasurer who is not an admin"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Link"
+msgstr ""
+
 #: client/src/components/canvas/DecisionMatrix.tsx
 msgid "For each kind of decision the canvas asks who approves it, who is asked first, who is told, and how it is made. For the decisions this platform runs, the answers are rules it already enforces, so it fills this half in itself."
 msgstr ""
@@ -18374,6 +18539,11 @@ msgstr "Una forma de repartir el trabajo"
 #~ msgid "Kept in this browser only. Nothing is sent until you apply."
 #~ msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Venture role"
+msgstr ""
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board status"
@@ -18826,6 +18996,10 @@ msgctxt "sera changes"
 msgid "Check first {nChecks}"
 msgstr ""
 
+#: client/src/components/VentureAccountsCard.tsx
+msgid "What members have paid each venture. Its credits never expire."
+msgstr ""
+
 #: client/src/components/hiddenMap/CaptureForm.tsx
 msgctxt "hidden map, logging a place"
 msgid "What went in"
@@ -18927,6 +19101,11 @@ msgstr ""
 msgctxt "founding application know us act"
 msgid "Book a land tour"
 msgstr "Reserva una visita al terreno"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Take off"
+msgstr ""
 
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
@@ -19361,6 +19540,11 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "1 role you picked is not open any more. Pick from the roles below."
 #~ msgstr "1 de los roles que elegiste ya no está abierto. Elige entre los roles de abajo."
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Open account"
+msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
 #: client/src/components/admin/CompareTab.tsx
@@ -20263,6 +20447,10 @@ msgctxt "admin helper, provider choice"
 msgid "Who answers"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "That account could not be read."
+msgstr ""
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "thanks wall: the currency tooltip"
 msgid "Each cycle every member receives an allowance to send. Sending is thanks for real contributions, never pay, and the wall keeps every word."
@@ -20431,6 +20619,12 @@ msgstr ""
 msgctxt "roles page: required roles beyond the reader's percent, one"
 msgid "1 role needs more time than you have right now."
 msgstr "1 rol necesita más tiempo del que tienes ahora."
+
+#. placeholder {0}: account.label
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "Payments for {0}"
+msgstr ""
 
 #: client/src/pages/Review.tsx
 msgctxt "review: eyebrow"
@@ -20766,6 +20960,10 @@ msgstr ""
 #: client/src/pages/Protocols.tsx
 msgctxt "protocols page"
 msgid "{waiting, plural, one {# change is waiting to send.} other {# changes are waiting to send.}}"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Seat fees go to the village treasury, including for a venture's gatherings."
 msgstr ""
 
 # needs-native-review: new words, 15 Nov 2026
@@ -21177,6 +21375,10 @@ msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgid "Adopt this new version"
+msgstr ""
+
+#: client/src/components/VentureAccountsCard.tsx
+msgid "The ventures you run"
 msgstr ""
 
 #: client/src/components/valuation/ValuationReceipt.tsx
@@ -21752,6 +21954,10 @@ msgstr ""
 msgid "See them at the bottom of this page."
 msgstr ""
 
+#: client/src/components/VentureAccountsCard.tsx
+msgid "The venture you run"
+msgstr ""
+
 #: client/src/components/roleCard/WaitlistAdmin.tsx
 msgctxt "roles page, admins only: the waitlist"
 msgid "Only admins see this. Nothing is sent unless a person writes a letter and presses send."
@@ -21831,6 +22037,10 @@ msgstr ""
 #: client/src/pages/HiddenMap.tsx
 msgctxt "hidden map page"
 msgid "Open"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Its role is gone from the org chart"
 msgstr ""
 
 #: client/src/components/fireflyPath/Thresholds.tsx
@@ -22080,6 +22290,12 @@ msgctxt "training chooser: the lessons heading"
 msgid "What the training holds"
 msgstr ""
 
+#. placeholder {0}: detail.operators.join(", ")
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Run by: {0}"
+msgstr ""
+
 #: client/src/pages/GratitudeWall.tsx
 msgctxt "empty thanks wall: door to the thank-you form"
 msgid "Carry a thanks"
@@ -22177,6 +22393,12 @@ msgstr ""
 msgctxt "founding application choose"
 msgid "Choose the role you are applying for. Each application is for one role."
 msgstr "Elige el rol al que postulas. Cada solicitud es para un solo rol."
+
+#. placeholder {0}: h.withName
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "from {0}"
+msgstr ""
 
 #: client/src/components/fireflyPath/limitProblems.ts
 msgctxt "founding application check, a box over its limit"
@@ -22889,6 +23111,10 @@ msgstr ""
 #: client/src/components/admin/AgentPathTree.tsx
 msgctxt "agent paths"
 msgid "Change {0} {1}"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "No gathering asks a seat fee yet."
 msgstr ""
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
@@ -23636,6 +23862,10 @@ msgctxt "decisions: your turn"
 msgid "Open the one that has waited longest"
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Name members read (optional)"
+msgstr ""
+
 #: client/src/pages/StewardJourney.tsx
 msgid "For stewards and admins: proposals waiting on you, and the tools behind the roles."
 msgstr "Para quienes cuidan y administran: las propuestas que te esperan y las herramientas detrás de los roles."
@@ -23652,6 +23882,11 @@ msgstr ""
 #: client/src/components/admin/AdminHelperPanel.tsx
 msgctxt "admin helper panel"
 msgid "Ask me how to do something in Admin, where a setting lives, or what a control does. If you want something changed, I will show you the change first and you decide."
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Venture accounts"
 msgstr ""
 
 # needs-native-review: new words, 20 Nov 2026
@@ -24207,6 +24442,11 @@ msgstr ""
 msgid "You can withdraw a pledge until choosing closes. Then it is firm and lowers what the pot pays. Nothing is collected yet."
 msgstr ""
 
+#: client/src/components/VentureAccountsCard.tsx
+msgctxt "profile ventures you run"
+msgid "received"
+msgstr ""
+
 #: client/src/pages/GratitudeWall.tsx
 msgid "No thanks on the wall yet"
 msgstr "Todavía no hay gracias en el muro"
@@ -24725,6 +24965,10 @@ msgstr ""
 #: client/src/pages/ProposeARole.tsx
 #~ msgid "What you bring to this role"
 #~ msgstr "Lo que traes a este rol"
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgid "Nothing has moved yet."
+msgstr ""
 
 #: client/src/components/fireflyPath/MoreRoles.tsx
 msgctxt "founding application, roles added to one application"
@@ -26083,6 +26327,11 @@ msgstr ""
 msgid "Your own figure was {0}."
 msgstr ""
 
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "None yet."
+msgstr ""
+
 #. placeholder {0}: offer.theirCommitment
 #: client/src/components/openProposal/TermsWeOffer.tsx
 msgctxt "reviewer's terms panel for a proposal"
@@ -26265,6 +26514,11 @@ msgstr ""
 #: client/src/pages/Approvals.tsx
 msgctxt "approval inbox"
 msgid "Waiting on a person"
+msgstr ""
+
+#: client/src/components/admin/OrgAccountsPanel.tsx
+msgctxt "admin venture accounts"
+msgid "Name saved"
 msgstr ""
 
 #: client/src/components/form/LimitSigns.tsx

@@ -524,6 +524,25 @@ export const VARIABLES: VariableDef[] = [
     unit: "tokens",
   },
   {
+    // 0419, credits lane 1: a venture holds its own credits (server/lib/orgAccounts.ts). Ships off.
+    key: "ledger.org_accounts_open",
+    category: "Ledger",
+    label: "Members can pay a venture's account",
+    description:
+      "When on, a member can send credits to the account of a venture the village has opened one for, and the people seated in that venture's role see what it holds and every payment in and out. Admins can open venture accounts and read them while this is off, so you can set one up before you switch the door on. A member who runs a venture cannot pay that venture with their own credits. Credits in a venture's account never expire.",
+    type: "boolean",
+    default: "false",
+  },
+  {
+    key: "ledger.org_service_routing",
+    category: "Ledger",
+    label: "A venture keeps the seat fees for its own gatherings",
+    description:
+      "When on, the seat fee for a gathering you have marked as run by a venture goes to that venture's account once the gathering is held. Off, or for any gathering no venture runs, the fee goes to the village treasury as it always has. A fee paid by somebody who runs that venture still goes to the treasury.",
+    type: "boolean",
+    default: "false",
+  },
+  {
     /*
      * THE UNSPENT-CAP BONUS, AND IT BELONGS TO THE CAP MODE ALONE.
      *

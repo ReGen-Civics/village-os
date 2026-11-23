@@ -159,6 +159,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `ord:<orderId>:leg1` | `server/index.ts`, `server/lib/exchange.ts` |
 | `ord:<orderId>:reversal-leg1` | `server/index.ts` |
 | `ord:sp-<Date.now()>-<Math.random().toString(36).slice(2, 6)>:leg1` | `server/routes/stays.ts` |
+| `org-send:<fromUserId>:<nonce>` | `server/lib/orgAccounts.ts` |
 | `pp:<purchaseId>:grant:evt_<id>` | `server/index.ts` |
 | `pp:<purchaseId>:grant:inv_<String(invoiceId)>` | `server/index.ts` |
 | `pp:<purchaseId>:grant:manual` | `server/index.ts` |
@@ -184,7 +185,7 @@ A key names an OCCURRENCE, never a thing, and `token_ledger.idempotency_key` is 
 | `xstock-<Date.now()>-<Math.random().toString(36).slice(2, 8)>` | `server/index.ts` |
 | `xstock:<slug>:<body>` | `server/index.ts` |
 
-54 distinct shapes across 61 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
+55 distinct shapes across 62 posting site(s), plus 9 site(s) that forward a key their caller decided (`mint()` and `mintStayCredits` hand on what they were given, and every caller of those is read above). A shape ending in a timestamp and a random suffix is a key the caller did not make idempotent: the admin mint and the exchange stocking route both fall back to one when no client nonce is sent, so a retried request there is a second posting rather than a no-op.
 <!-- generated:triggers end -->
 
 ---
@@ -2962,6 +2963,13 @@ and it posts through the very `postTransfer` call in `requestClaim` that claimin
 Voice does, one call site serving both lanes. So the table below has nineteen rows
 over the same nineteen sites, and the rule above is why that is not a contradiction.
 
+**0419 adds one PATH and one SITE**, so the table below has twenty rows over twenty
+sites: a member paying a venture's account (`sendToOrg`, server/lib/orgAccounts.ts).
+It is a plain `postTransfer` with no proof, so a member who does not hold the credits
+is refused, and it is not one of the five that can leave a member owing. The seat row
+gained a second destination and no new site: `settleFinishedSeats` still makes one
+call, and `seatFeeDestination` decides its `to`.
+
 **How to redo it, so the next lane gets the same answer.** `INSERT INTO
 token_ledger` appears at exactly two places in the tree, both inside
 `server/lib/ledger.ts`, so the posting set is closed by the call sites of the
@@ -2997,7 +3005,8 @@ Three notes on the method, each of which cost a lane a re-read:
 | Path | Posting | Source | Idempotency key | Sink |
 |---|---|---|---|---|
 | A night of a stay | `postNightsForStay`, `server/lib/stays.ts` | `stay_night` | `stay:<stayId>:night:<date>` | `spendSinkFor(token)`, so `sys:mint` for stay credits |
-| A seat at a gathering | `chargeForPlace`, `server/lib/eventSeats.ts` | `event_seat_fee` | `seat:<eventId>:<occurrenceKey>:<userId>:<seq>:pay` | `sys:event-escrow`, then `sys:treasury` when the gathering is held |
+| A seat at a gathering | `chargeForPlace`, `server/lib/eventSeats.ts` | `event_seat_fee` | `seat:<eventId>:<occurrenceKey>:<userId>:<seq>:pay` | `sys:event-escrow`, then `sys:treasury` when the gathering is held, or the venture's `org:<roleId>` when a venture runs it and `ledger.org_service_routing` is on (0419) |
+| Paying a venture (0419) | `sendToOrg`, `server/lib/orgAccounts.ts`, reached through `POST /api/wallet/send` with `toOrg` | `org_send` | `org-send:<userId>:<clientNonce>` | the venture's `org:<roleId>`, no sink at all |
 | A library loan deposit | `server/lib/library.ts` | `library_escrow` | `loan:<loanId>:escrow` | `sys:library-escrow`, then split between `sys:library-pool` and the member at settle |
 | Sending credits to another member | `POST /api/wallet/send` | `member_send` | `send:<userId>:<clientNonce>` | the other member, no sink at all |
 | Swapping one token for another | `executeSwap`, `server/lib/exchange.ts`, leg 1 of a pair | `exchange_swap` | `ord:<orderId>:leg1` | `sys:treasury` |
@@ -3101,6 +3110,35 @@ beside it. Stay credits genuinely retire into their own faucet, because that
 faucet's negative balance is the outstanding stay-credit supply and spending one
 genuinely reduces it. Everything else the function would route to `sys:treasury`
 is in practice routed by its own caller.
+
+### A venture holds its own credits (0419, credits lane 1)
+
+The lead's decision of 23 Nov 2026: members spend credits, and only ventures
+redeem them. So a venture has an account on the ledger, `org:<orgRoleId>`, kind
+`org`, faucet 0, tied to the venture's role in the org chart (`org_roles`). The
+people seated in that role, live and as members, are the people who run it;
+nothing keeps a second list of operators. The tables are `org_accounts` (one row
+per venture, for life) and `org_account_services` (which gatherings a venture
+runs). Neither holds a balance.
+
+- **Never negative, sum-zero, recomputed.** Faucet 0 and no `allowNegative`, so the
+  ledger's overdraft check refuses any posting out of it past what it holds. Every
+  movement in is one `postTransfer`, so conservation is untouched, and the balance
+  is `token_balances`, written only by the ledger's recompute.
+- **Two doors in, both off when a village is born.** A member pays it
+  (`ledger.org_accounts_open`), and a kept seat fee for a gathering it runs goes to
+  it instead of `sys:treasury` (`ledger.org_service_routing`). Nothing mints into a
+  venture account.
+- **A member who runs a venture cannot pay it**, and a seat fee they pay to their own
+  venture's gathering goes to the treasury. Members never cash out, and a venture
+  redeems, so moving your own credits into a venture you run would be cashing out
+  with one extra step. Raised as an open question for the lead.
+- **No door out yet.** Redemption by a venture is credits lane 2. Until it lands a
+  venture account only fills, and the seams it will read are `orgBalances`,
+  `orgBalance`, `orgsOperatedBy` and `operatesOrg` in server/lib/orgAccounts.ts.
+- **Contribution.** `org_send` does not count as the village paying anybody
+  (`server/lib/contributionPay.ts`): the payee is a venture and the payer bought
+  something.
 
 ### What is not a spend
 

@@ -22,21 +22,21 @@ There is no timestamp and no author line, on purpose. Both would change on every
 
 ## Who may change what
 
-Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 279 open and 60 founder:
+Every dial carries a RING, which is the platform's ceiling on who may move it. There are 2 of them, and today 281 open and 60 founder:
 
 - **open**, the whole village. Community-governable. These are the dials the village decides together, through the proposal loop. A founder can close one of these to their community; the platform ceiling says it may be open.
 - **founder**, the founder or an admin. Founder-held. Legal posture, infrastructure, privacy windows and abuse guards. They stay visible to everybody and they are never proposable. Nothing can open one of these to the village.
 
 The BOUNDS are constitutional in every case. Governance moves a value between the min and the max printed below; nothing here moves the min or the max. That is what keeps a vote from turning a dial into a different mechanism.
 
-Each dial also says WHEN a change lands. 312 of them as soon as it is saved, and 27 of them at the next cycle close.
+Each dial also says WHEN a change lands. 314 of them as soon as it is saved, and 27 of them at the next cycle close.
 
 - **instant**, as soon as it is saved. The new value is live immediately.
 - **cycle-close**, at the next cycle close. Changing one of these mid-cycle would move the basis a settlement is already being measured against, so the new value waits for the cycle to close. That gap is deliberate: it gives the village the window between a decision passing and the decision biting.
 
 ## At a glance
 
-339 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 47 boolean, 37 choice, 69 text, 13 longtext.
+341 dials in 41 categories. 172 carry a minimum and a maximum. By type: 135 integer, 19 decimal, 19 percentage, 49 boolean, 37 choice, 69 text, 13 longtext.
 
 | Category | Dials | the whole village | the founder or an admin |
 | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Each dial also says WHEN a change lands. 312 of them as soon as it is saved, and
 | Governance | 56 | 46 | 10 |
 | Village | 5 | 4 | 1 |
 | Gratitude | 11 | 11 | 0 |
-| Ledger | 19 | 11 | 8 |
+| Ledger | 21 | 13 | 8 |
 | The Mint | 7 | 6 | 1 |
 | Progression | 35 | 35 | 0 |
 | Quests | 3 | 3 | 0 |
@@ -170,6 +170,8 @@ The whole registry in one table, for finding a dial. Each one is written out in 
 | Hearts one member can tap for another per cycle | `feed.max_hearts_per_recipient_per_cycle` | Gratitude | integer | `5` | the whole village |
 | Issuance cap per lunar cycle | `ledger.admin_mint_cycle_cap` | Ledger | integer | `10000` | the whole village |
 | Second steward needed above | `ledger.admin_mint_cosign_over` | Ledger | integer | `100` | the whole village |
+| Members can pay a venture's account | `ledger.org_accounts_open` | Ledger | boolean | `false` | the whole village |
+| A venture keeps the seat fees for its own gatherings | `ledger.org_service_routing` | Ledger | boolean | `false` | the whole village |
 | Bonus for a circle that finished under its cap | `resources.circle_cap_bonus_pct` | Ledger | percentage | `10` | the whole village |
 | Hold the tokens while a redemption is open | `redemption.holds_on_propose` | Ledger | boolean | `true` | the founder or an admin |
 | Which tokens may be redeemed | `redemption.tokens` | Ledger | text | blank | the founder or an admin |
@@ -1670,7 +1672,7 @@ How many separate taps of appreciation one member can leave for another in a cyc
 
 ## Ledger
 
-19 dials. 11 for the whole village, 8 for the founder or an admin.
+21 dials. 13 for the whole village, 8 for the founder or an admin.
 
 ### Issuance cap per lunar cycle
 
@@ -1698,6 +1700,34 @@ A hand-mint larger than this waits for a SECOND steward to agree before any toke
 | Default | `100` |
 | Range | 0 to 10000000 |
 | Counted in | tokens |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### Members can pay a venture's account
+
+When on, a member can send credits to the account of a venture the village has opened one for, and the people seated in that venture's role see what it holds and every payment in and out. Admins can open venture accounts and read them while this is off, so you can set one up before you switch the door on. A member who runs a venture cannot pay that venture with their own credits. Credits in a venture's account never expire.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ledger.org_accounts_open` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
+| Who may change it | the whole village |
+| A change takes effect | as soon as it is saved |
+| What it costs to change | a routine vote |
+
+### A venture keeps the seat fees for its own gatherings
+
+When on, the seat fee for a gathering you have marked as run by a venture goes to that venture's account once the gathering is held. Off, or for any gathering no venture runs, the fee goes to the village treasury as it always has. A fee paid by somebody who runs that venture still goes to the treasury.
+
+| Fact | Value |
+| --- | --- |
+| Key | `ledger.org_service_routing` |
+| Type | boolean, on or off |
+| Default | `false` |
+| Range | on or off |
 | Who may change it | the whole village |
 | A change takes effect | as soon as it is saved |
 | What it costs to change | a routine vote |

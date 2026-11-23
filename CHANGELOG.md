@@ -65,6 +65,21 @@ Nothing. To show a deadline, add an apply-by date in the role editor. To send pa
 
 No. The apply-by date is stored with the card's other sections.
 
+## 1.3.55 (2026-11-23)
+
+### What changed for your village
+
+- **A venture can hold its own credits (switched off).** A venture on the village's chart can have its own account for Amora credits. Members can pay a venture with credits, and the people seated in the venture's role see its balance and history on their profile. An admin opens accounts in Admin, Tokens, Venture accounts. Nothing appears until an admin turns on `ledger.org_accounts_open`, and a gathering's seat fees go to its venture only when `ledger.org_service_routing` is also on. A venture's own operator cannot pay their own venture.
+- **A rehearsal of the credits loop.** `scripts/rehearse-credits-loop.mjs` walks issuance to a venture's balance on a scratch or staging village, and refuses to run without the village's name typed to confirm.
+
+### What you must do
+
+Nothing. Both dials ship off.
+
+### Does it touch your data
+
+Yes, by adding only. Two new tables, `org_accounts` and `org_account_services`, are created; no existing table changes and neither table holds a balance. Going back to 1.3.54 leaves them unused.
+
 ## 1.3.54 (2026-11-23)
 
 ### What changed for your village

@@ -120,6 +120,7 @@ import { matchOnEvent } from "./lib/seraPersonMatch";
 import { register as registerPulseRoutes } from "./routes/pulse";
 import { register as registerPlayersRoutes } from "./routes/players";
 import { register as registerTreasuryRoutes } from "./routes/treasury";
+import { register as registerOrgAccountRoutes } from "./routes/orgAccounts";
 import { register as registerGroupAdminRoutes } from "./routes/groupAdmin";
 import { villagePowerRows } from "./lib/villagePowers";
 import { GUIDANCE_WORDS, POWER_FAMILIES } from "../shared/powerBoard";
@@ -14821,12 +14822,14 @@ Send an empty drafts array when you are still listening. A role payload is {name
    * below zero, and rolls the whole thing back. Only faucets go negative, and a
    * member is not a faucet.
    */
+  const orgSend = registerOrgAccountRoutes(app, { getPool, authedUser, guardCapability, adminActor, members, notify, orgRoles: () => listOrgRoles(getPool()) }); // 0419: a venture's credit account (server/routes/orgAccounts.ts); the send below hands a payment that names a venture to it
   app.post("/api/wallet/send", async (req, res) => {
     const user = await authedUser(req);
     if (!user) return res.status(401).json({ error: "auth_required", message: "Sign in first" });
     if (await overLimit(`wallet-send:${user.id}`, 30, 24 * 60 * 60 * 1000)) {
       return res.status(429).json({ error: "That is a lot of sending for one day. Pick it up tomorrow" });
     }
+    if (String(req.body?.toOrg ?? "").trim()) return orgSend(req, res, user); // a venture is the recipient (0419): same sign-in and the same daily limit, then its own rules
     const { to, toEmail, tokenType, amount, note } = req.body ?? {};
 
     const slug = String(tokenType ?? "").trim();
