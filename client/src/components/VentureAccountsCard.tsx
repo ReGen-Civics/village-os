@@ -12,6 +12,7 @@
  * so this card only reads.
  */
 import { useEffect, useState } from "react";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Store } from "lucide-react";
 import { authToken } from "@/lib/gameApi";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +32,7 @@ const headers = (): Record<string, string> => {
 
 export default function VentureAccountsCard() {
   const { user } = useAuth();
+  const { t } = useLingui();
   const [mine, setMine] = useState<Mine[]>([]);
 
   useEffect(() => {
@@ -51,9 +53,11 @@ export default function VentureAccountsCard() {
     <section aria-labelledby="ventures-h" className={CARD}>
       <h2 id="ventures-h" className={`${H2} flex items-center gap-2`}>
         <Store className="h-5 w-5 text-notice" aria-hidden="true" />
-        {mine.length === 1 ? "The venture you run" : "The ventures you run"}
+        {mine.length === 1 ? t`The venture you run` : t`The ventures you run`}
       </h2>
-      <p className={`${HINT} mt-1`}>What members have paid each venture. Its credits never expire.</p>
+      <p className={`${HINT} mt-1`}>
+        <Trans>What members have paid each venture. Its credits never expire.</Trans>
+      </p>
       <div className="mt-4 flex flex-col gap-4">
         {mine.map(({ account, history }) => {
           const held = Object.entries(account.balances).filter(([, v]) => Number(v) !== 0);
@@ -65,10 +69,10 @@ export default function VentureAccountsCard() {
                   ? held
                       .map(([slug, v]) => `${formatTokenGrouped(v, account.decimals[slug] ?? 0)} ${account.tokenNames[slug] ?? slug}`)
                       .join(", ")
-                  : "Nothing held yet"}
+                  : t({ message: "Nothing held yet", context: "profile ventures you run" })}
               </p>
               {history.length > 0 && (
-                <ul className="mt-3 flex flex-col gap-2" aria-label={`Payments for ${account.label}`}>
+                <ul className="mt-3 flex flex-col gap-2" aria-label={t({ message: `Payments for ${account.label}`, context: "profile ventures you run" })}>
                   {history.slice(0, 10).map((h) => (
                     <li key={h.id} className={`${QUIET} flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm`}>
                       <span className={h.amount < 0 ? "font-semibold text-destructive" : "font-semibold text-open"}>
@@ -76,7 +80,7 @@ export default function VentureAccountsCard() {
                         {formatTokenGrouped(Math.abs(h.amount), h.decimals)} {h.tokenName}
                       </span>
                       <span className="order-last min-w-0 basis-full text-foreground sm:order-none sm:basis-0 sm:flex-1">
-                        {h.withName ? `${h.amount < 0 ? "to" : "from"} ${h.withName}` : h.amount < 0 ? "paid out" : "received"}
+                        {h.withName ? (h.amount < 0 ? t({ message: `to ${h.withName}`, context: "profile ventures you run" }) : t({ message: `from ${h.withName}`, context: "profile ventures you run" })) : h.amount < 0 ? t({ message: "paid out", context: "profile ventures you run" }) : t({ message: "received", context: "profile ventures you run" })}
                         {h.description ? `: ${h.description}` : ""}
                       </span>
                       <time className="ml-auto text-xs text-muted-foreground" dateTime={h.at}>
