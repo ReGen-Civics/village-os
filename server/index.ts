@@ -290,6 +290,7 @@ import { register as registerRoleTensionRoutes } from "./routes/roleTensions";
 import { register as registerDryRunRoutes } from "./routes/dryRun";
 import { register as registerGroundsRoutes } from "./routes/grounds";
 import { register as registerRedemptionRoutes } from "./routes/redemption";
+import { register as registerPayRoutes } from "./routes/pay";
 import { register as registerCashOwedRoutes } from "./routes/cashOwed";
 import { register as registerMemberTimeZoneRoutes } from "./routes/memberTimeZone"; // role journey L6
 import { register as registerBudgetRoutes } from "./routes/budgets";
@@ -14829,7 +14830,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
     const refusal = sendRefusal(slug);
     if (refusal) return res.status(400).json({ error: refusal });
 
-    const n = Math.trunc(Number(amount) || 0); // ALREADY MINOR: `SendTokensCard.tsx` converts with `toMinorUnits` beside the input that shows the scale, so a `toLedgerUnits` here would post ten thousand times what was typed
+    const n = Math.trunc(Number(amount) || 0); // ALREADY MINOR: the pay page (client/src/pages/Pay.tsx) converts with `amountToMinor` (shared/payLink.ts) beside the pad that shows the scale, so a `toLedgerUnits` here would post ten thousand times what was typed
     if (n <= 0) return res.status(400).json({ error: "How much are you sending?" });
 
     /*
@@ -17910,6 +17911,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
   registerRewardMomentRoutes(app, { authedUser, getPool, overLimit });
   registerSeasonSummaryRoutes(app, { authedUser, getPool, seasonState }); // idea 4: a member's season summed up (server/routes/seasonSummary.ts)
   registerRedemptionRoutes(app, { authedUser, getPool, guardCapability, members, notify, openRedemptionBallot: (id: string) => openRedemptionVote(id), overLimit, projectCurrency: () => mergedConfig().project.fiatCurrency, redemptionKeyHolders: () => liveHoldersOf("redemption.confirm") });
+  registerPayRoutes(app, { authedUser, getPool, members, overLimit, projectCurrency: () => String(mergedConfig().project.fiatCurrency ?? "") }); // the send and receive page's reads; sending stays on /api/wallet/send (server/routes/pay.ts)
   registerClosingPolicyRoutes(app, { isAdmin, adminActor, getPool, exitPolicy: exitPolicyRepo, ballot: { authedUser, capabilityCtx, notify, weightModeNow, buildElectorate, addActivity } });
 
   // â”€â”€ Project Settings (village dues + other editable numbers) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

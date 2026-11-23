@@ -274,9 +274,9 @@ export default function TreasuryPanel({
                     Redeem
                   </a>
                 ) : null}
-                <a href="#send-tokens" className={BTN_QUIET}>
+                <Link href="/pay" className={BTN_QUIET}>
                   Send
-                </a>
+                </Link>
               </>
             }
           />

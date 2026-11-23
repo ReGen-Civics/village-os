@@ -258,6 +258,7 @@ const YourPath = lazyPage(() => import("./pages/YourPath")); // the whole path, 
 const Feed = lazyPage(() => import("./pages/Feed"));
 const Stay = lazyPage(() => import("./pages/Stay"));
 const Wallet = lazyPage(() => import("./pages/Wallet"));
+const Pay = lazyPage(() => import("./pages/Pay"));
 const Badges = lazyPage(() => import("./pages/Badges"));
 const Powers = lazyPage(() => import("./pages/Powers"));
 // The Treasurer's pricing desk (quest re-price Q3, 2026-11-09).
@@ -370,6 +371,7 @@ function Router() {
       <Route path="/stay" component={Stay} />
       <Route path="/tokens" component={Wallet} />
       <Route path="/wallet" component={Wallet} />
+      <Route path="/pay" component={Pay} />
       <Route path="/badges" component={Badges} />
       <Route path="/powers" component={Powers} />
       <Route path="/pricing" component={PricingDeskPage} />

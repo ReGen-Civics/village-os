@@ -26124,3 +26124,465 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Your credits did not load. Try again in a moment."
+msgstr "Tus créditos no cargaron. Inténtalo de nuevo en un momento."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That link did not open. Ask them to share it again."
+msgstr "Ese enlace no se abrió. Pídele que lo comparta de nuevo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "The search did not answer. Try again in a moment."
+msgstr "La búsqueda no respondió. Inténtalo de nuevo en un momento."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That payment did not go through."
+msgstr "Ese pago no se completó."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "That did not reach the village. Press send again: it will only go once."
+msgstr "Eso no llegó a la aldea. Vuelve a enviar: solo se hará una vez."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Credits"
+msgstr "Créditos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page title"
+msgid "Pay and receive"
+msgstr "Pagar y recibir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page, balance line"
+msgid "You hold"
+msgstr "Tienes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Pay someone here for a jar of honey, a haircut, an afternoon of help."
+msgstr "Paga a alguien de aquí por un frasco de miel, un corte de pelo, una tarde de ayuda."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Sign in to pay and receive credits."
+msgstr "Inicia sesión para pagar y recibir créditos."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page, link"
+msgid "Sign in"
+msgstr "Iniciar sesión"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Loading your credits"
+msgstr "Cargando tus créditos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "This village has not opened sending credits between people yet."
+msgstr "Esta aldea todavía no ha abierto el envío de créditos entre personas."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Pay or receive"
+msgstr "Pagar o recibir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page tab"
+msgid "Pay"
+msgstr "Pagar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page tab"
+msgid "Receive"
+msgstr "Recibir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Pay.tsx
+msgctxt "pay page"
+msgid "Which credits"
+msgstr "Qué créditos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, who a payment goes to"
+msgid "Member"
+msgstr "Miembro"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, who a payment goes to"
+msgid "Venture"
+msgstr "Emprendimiento"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, an amount converted into the reader's currency"
+msgid "about {aboutText}"
+msgstr "unos {aboutText}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search results heading"
+msgid "Members"
+msgstr "Miembros"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search results heading"
+msgid "Ventures"
+msgstr "Emprendimientos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Paid lately"
+msgstr "Pagos recientes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Who are you paying?"
+msgstr "¿A quién le pagas?"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search field"
+msgid "@handle or name"
+msgstr "@usuario o nombre"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, search"
+msgid "Nobody by that name or handle. Ask for their link or code."
+msgstr "Nadie con ese nombre o usuario. Pídele su enlace o código."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Scan a code or open a link"
+msgstr "Escanear un código o abrir un enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button: choose somebody else"
+msgid "Change"
+msgstr "Cambiar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "No amount yet"
+msgstr "Todavía sin monto"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad"
+msgid "That is more than you hold. You hold {heldText} {tokenName}."
+msgstr "Eso es más de lo que tienes. Tienes {heldText} {tokenName}."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad"
+msgid "You hold {heldText} {tokenName}."
+msgstr "Tienes {heldText} {tokenName}."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "Amount pad"
+msgstr "Teclado del monto"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad key"
+msgid "Delete the last digit"
+msgstr "Borrar el último dígito"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, amount pad key"
+msgid "Decimal point"
+msgstr "Punto decimal"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page"
+msgid "What it is for (optional)"
+msgstr "Para qué es (opcional)"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, note field example"
+msgid "Two jars of honey"
+msgstr "Dos frascos de miel"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button: go to the check step"
+msgid "Review"
+msgstr "Revisar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Check before you send"
+msgstr "Revisa antes de enviar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "What it is for"
+msgstr "Para qué es"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, check step"
+msgid "Left after this"
+msgstr "Te queda después"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Back"
+msgstr "Atrás"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button while sending"
+msgid "Sending"
+msgstr "Enviando"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Send {amountText} {tokenName} to {name}"
+msgstr "Enviar {amountText} {tokenName} a {name}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Sent"
+msgstr "Enviado"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Paid to {toName}"
+msgstr "Pagado a {toName}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "Amount"
+msgstr "Monto"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "What it is for"
+msgstr "Para qué es"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "You hold now"
+msgstr "Ahora tienes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, receipt"
+msgid "On the village ledger, {dateText}. Both of you can see it in your history."
+msgstr "En el registro de la aldea, {dateText}. Las dos personas pueden verlo en su historial."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PaySteps.tsx
+msgctxt "pay page, button"
+msgid "Pay someone else"
+msgstr "Pagar a otra persona"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Link copied."
+msgstr "Enlace copiado."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Copying was blocked. Select the link above and copy it."
+msgstr "No se pudo copiar. Selecciona el enlace de arriba y cópialo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Pay me in credits"
+msgstr "Págame en créditos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Receive"
+msgstr "Recibir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Your code"
+msgstr "Tu código"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Choose a handle on your profile and your code appears here."
+msgstr "Elige un usuario en tu perfil y tu código aparecerá aquí."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "A code that opens a payment to @{handle}"
+msgstr "Un código que abre un pago a @{handle}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive, the amount asked"
+msgid "Asking for {amount} {tokenName}"
+msgstr "Pides {amount} {tokenName}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Amount, if you like"
+msgstr "Monto, si quieres"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "What it is for"
+msgstr "Para qué es"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Share link"
+msgstr "Compartir enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Copy"
+msgstr "Copiar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, button"
+msgid "Copy link"
+msgstr "Copiar enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ReceivePanel.tsx
+msgctxt "pay page, receive"
+msgid "Anyone here who opens it pays you straight into your credits."
+msgstr "Quien lo abra aquí te paga directo a tus créditos."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, scanning a code"
+msgid "The camera did not open. Paste their link below."
+msgstr "La cámara no se abrió. Pega su enlace abajo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, opening a link"
+msgid "That is not a request link. Ask them to share it again."
+msgstr "Ese no es un enlace de cobro. Pídele que lo comparta de nuevo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Scan their code"
+msgstr "Escanear su código"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, scanning a code"
+msgid "Point your phone's camera at their code. It opens this page with their name filled in."
+msgstr "Apunta la cámara de tu teléfono a su código. Abre esta página con su nombre ya puesto."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, opening a link"
+msgid "Or paste their link"
+msgstr "O pega su enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, example request link in the paste field"
+msgid "https://…/pay?to=@name"
+msgstr "https://…/pay?to=@nombre"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Open link"
+msgstr "Abrir enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/ScanLink.tsx
+msgctxt "pay page, button"
+msgid "Close"
+msgstr "Cerrar"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Send and receive credits"
+msgstr "Enviar y recibir créditos"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Pay someone for a jar of honey, a haircut, an afternoon of help. You hold {heldText} {tokenName}."
+msgstr "Paga a alguien por un frasco de miel, un corte de pelo, una tarde de ayuda. Tienes {heldText} {tokenName}."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Pay someone"
+msgstr "Pagar a alguien"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/pay/PayDoor.tsx
+msgctxt "profile, door to the pay page"
+msgid "Your code"
+msgstr "Tu código"

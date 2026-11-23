@@ -26,6 +26,13 @@ export const ALLOWED_NEW_DEPENDENCIES = [
   { name: "@lingui/vite-plugin", version: "6.12.0", section: "devDependencies", purpose: "i18n build: the macro transform in vite and vitest", date: "2026-11-06" },
   { name: "@lingui/format-po", version: "6.12.0", section: "devDependencies", purpose: "i18n build: reading and writing the PO catalogs", date: "2026-11-06" },
   { name: "@lingui/message-utils", version: "6.12.0", section: "devDependencies", purpose: "i18n build: compiling English at build time, message ids in tests", date: "2026-11-06" },
+  // The send and receive page's request-link QR code, credits lane 3 brief
+  // (23 Nov 2026: "a QR library must be small or lazy-loaded"). No install
+  // scripts and no dependencies of its own; pnpm audit --prod shows no
+  // advisory. Only `lean-qr/nano` (about 4 KB) is imported, inside the lazy
+  // /pay chunk; the scanner side uses the browser's BarcodeDetector and ships
+  // no decoder. Pending the coordinator's confirmation in the pull request.
+  { name: "lean-qr", version: "2.7.4", section: "dependencies", purpose: "QR codes for request links on the /pay page (encoder only, lazy route chunk)", date: "2026-11-23" },
 ];
 
 const SECTIONS = ["dependencies", "devDependencies"];

@@ -163,6 +163,22 @@ export async function accountEntryRows(pool: Pool, accountId: string): Promise<R
   return rows;
 }
 
+/**
+ * The accounts one account has sent to or received from by a member send
+ * (`source = 'member_send'`, `POST /api/wallet/send`), most recent first, one
+ * row each. The send page's row of recent people (server/routes/pay.ts) reads
+ * it, so the people offered are only ever the asker's own counterparts.
+ */
+export async function recentSendCounterpartRows(pool: Pool, accountId: string, limit: number): Promise<RowDataPacket[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    "SELECT CASE WHEN from_account = ? THEN to_account ELSE from_account END AS counter_account, MAX(at) AS last_at " +
+      "FROM token_ledger WHERE source = 'member_send' AND (from_account = ? OR to_account = ?) " +
+      "GROUP BY counter_account ORDER BY last_at DESC LIMIT ?",
+    [accountId, accountId, accountId, Math.max(1, Math.trunc(limit))],
+  );
+  return rows;
+}
+
 /** One account's quest-consent credits in one token, per `source_ref`. */
 export async function questConsentCreditRows(pool: Pool, accountId: string, tokenType: string): Promise<RowDataPacket[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
