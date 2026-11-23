@@ -541,6 +541,11 @@ describe("the one action a seat offers", () => {
     expect(act(FULL).kind).toBe("unreachable");
   });
 
+  it("never raises a hand on a venture open now: its door reads Open now, and its way in is a pitch (23 Nov 2026)", () => {
+    expect(act({ ...FULL, recruiting: true, futureVenture: true }).kind).toBe("unreachable");
+    expect(sheet(fromMap({ ...FULL, recruiting: true, futureVenture: true }, true, true)).chips.recruiting).toBe(false);
+  });
+
   it("invites a hand on a seat the village declared Open over places that are all seated", () => {
     // The raise-hand route checks no vacancy, so an Open badge with no door is a wall.
     const declaredOpen = { ...FULL, state: "open", stateSource: "declared" };

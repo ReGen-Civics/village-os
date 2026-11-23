@@ -191,6 +191,62 @@ describe("the groups, in the order the lead asked for", () => {
   });
 });
 
+describe("open ventures: what a venture is, the pitch, and the ones open now first (the lead, 23 Nov 2026)", () => {
+  it("says what a venture is, offers Start a venture, and draws the venture open now first with its badge", async () => {
+    org.roles = org.roles.map((r: any) => (r.id === "guest" ? { ...r, recruiting: false } : r));
+    org.roles.push(seat("cafe", "Cafe Venture", { futureVenture: true, recruiting: true, state: "forming" }));
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open ventures (2)" });
+    const group = document.querySelector("[data-future-ventures]") as HTMLElement;
+    expect(group.querySelector("[data-venture-explainer]")?.textContent).toBe("A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role.");
+    const pitch = within(group).getByRole("link", { name: "Start a venture" });
+    expect(["/work-with-us", "/role-proposals/new"]).toContain(pitch.getAttribute("href"));
+    // The venture open now comes first, though it was listed last; the other reads Accepting proposals.
+    const rows = Array.from(group.querySelectorAll("[data-role-row]")).map((r) => r.getAttribute("data-role-row"));
+    expect(rows).toEqual(["cafe", "guest"]);
+    const chips = Array.from(group.querySelectorAll('[data-testid="venture-chip"]')).map((c) => c.textContent);
+    expect(chips).toEqual(["Open now, high priority", "Accepting proposals"]);
+  });
+
+  it("CONTROL: with no venture open now, the list keeps its order and none reads Open now", async () => {
+    org.roles = org.roles.map((r: any) => (r.id === "guest" ? { ...r, recruiting: false } : r));
+    org.roles.push(seat("cafe", "Cafe Venture", { futureVenture: true, recruiting: false, state: "forming" }));
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open ventures (2)" });
+    const group = document.querySelector("[data-future-ventures]") as HTMLElement;
+    expect(Array.from(group.querySelectorAll("[data-role-row]")).map((r) => r.getAttribute("data-role-row"))).toEqual(["guest", "cafe"]);
+    expect(group.querySelector("[data-open-now]")).toBeNull();
+  });
+
+  it("opens with the four ways to build as compact tiles, largest commitment first, Join the team pointing at the open roles", async () => {
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const four = screen.getByRole("region", { name: /^Four ways to build/ });
+    expect(four.querySelector("[data-contributor-routes]")?.getAttribute("data-contributor-routes")).toBe("tiles");
+    const doors = Array.from(four.querySelectorAll("[data-route-door]"));
+    expect(doors.map((a) => a.textContent)).toEqual([
+      "Join the teamA role on the team, with its own terms.",
+      "Start a ventureYour own business on the land.",
+      "Become a partnerYour project, with the village.",
+      "Propose a questA one-off piece of work, rewarded.",
+    ]);
+    expect(doors.map((a) => a.getAttribute("href"))).toEqual(["#open-now-heading", "/role-proposals/new", "/partner", "/propose-quest"]);
+    // The first view stays the founding team's (the lead, 23 Nov 2026): no bring, get back or reply days up here.
+    expect(four.querySelectorAll("dt, [data-route-promise]")).toHaveLength(0);
+    // At the top: before the open roles.
+    expect(four.compareDocumentPosition(screen.getByRole("heading", { level: 2, name: "Open roles (3)" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it("ends the lists with Don't see your gift in a role?, offering the other three", async () => {
+    renderRoles();
+    await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
+    const gift = screen.getByRole("region", { name: "Don't see your gift in a role? Consider these:" });
+    expect(Array.from(gift.querySelectorAll("[data-route-door]")).map((a) => a.textContent)).toEqual(["Start a venture", "Become a partner", "Propose a quest"]);
+    expect(within(gift).getByRole("link", { name: "Propose a quest" }).getAttribute("href")).toBe("/propose-quest");
+    expect(gift.textContent).toContain("A one-off piece of value, rewarded when the work is accepted.");
+  });
+});
+
 describe("one frame per role", () => {
   it("frames every founding role, every opening-next and venture row, and every coming-soon role on its own, with room between them", async () => {
     renderRoles();

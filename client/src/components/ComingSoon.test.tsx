@@ -7,7 +7,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { ComingSoonChip, ComingSoonNote, HeldByAgentLine } from "./ComingSoon";
+import { ComingSoonChip, ComingSoonNote, HeldByAgentLine, VentureChip } from "./ComingSoon";
 import { applyHrefFor, guardedAction } from "./power/SeatTermsSlot";
 import { mayApply } from "./roleCard/FullRoleCard";
 import LeadBuilds from "./roleCard/LeadBuilds";
@@ -62,6 +62,21 @@ describe("a future venture and an agent-held role on the card", () => {
     expect(note.textContent).toMatch(/A first financial picture/);
     render(<ComingSoonChip role={{ futureVenture: true }} />);
     expect(screen.getByText("Open venture")).toBeTruthy();
+  });
+
+  it("reads Open now, high priority on a venture with its door open, and Accepting proposals on every other (the lead, 23 Nov 2026)", () => {
+    const { rerender } = render(<VentureChip role={{ futureVenture: true, recruiting: true }} />);
+    expect(screen.getByTestId("venture-chip").textContent).toBe("Open now, high priority");
+    rerender(<VentureChip role={{ futureVenture: true, recruiting: false }} />);
+    expect(screen.getByTestId("venture-chip").textContent).toBe("Accepting proposals");
+    // CONTROL: an open door on a role that is not a venture draws no venture badge.
+    rerender(<VentureChip role={{ recruiting: true }} />);
+    expect(screen.queryByTestId("venture-chip")).toBeNull();
+  });
+
+  it("keeps the pitch Apply on a venture open now: its open door never turns it into a raised hand", () => {
+    expect(applyHrefFor(seat({ futureVenture: true, recruiting: true, state: "forming" }))).toMatch(/r-weaver/);
+    expect(mayApply(seat({ futureVenture: true, recruiting: true, state: "forming" }))).toBe(true);
   });
 
   it("says an agent holds it, never by name; a person-held role says nothing", () => {

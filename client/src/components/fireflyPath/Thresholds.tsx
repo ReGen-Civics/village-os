@@ -13,6 +13,7 @@
  * Kept apart from pages/ProposeARole.tsx so the form stays one reading
  * (scripts/check-file-lines.mjs); the page re-exports ConfirmProposal.
  */
+import ContributorRoutes from "@/components/ContributorRoutes";
 import type { ComponentProps } from "react";
 import { LazyStateNote } from "@/components/ComingSoonLazy";
 import { useEffect, useRef, useState } from "react";
@@ -129,6 +130,7 @@ function WhileYouWait() {
     ["/love-letter", t({ message: "Read the Love Letter slowly", context: "while you wait" }), t({ message: "How we live together", context: "while you wait" })],
   ];
   return (
+    <>
     <nav aria-labelledby="wait-doors-h" className={`${CARD} grid gap-3`} data-wait-doors="">
       <h2 id="wait-doors-h" className={EYEBROW}>
         {t({ message: "While you wait", context: "founding application wait" })}
@@ -147,6 +149,11 @@ function WhileYouWait() {
         ))}
       </ul>
     </nav>
+    {/* While you wait, you can also (the lead, 23 Nov 2026): the other three ways to build. */}
+    <nav aria-labelledby="wait-routes-h" className={`${CARD} grid gap-3`} data-wait-routes="">
+      <ContributorRoutes variant="links" register="founding" except={["team"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingId="wait-routes-h" headingAs="h2" />
+    </nav>
+    </>
   );
 }
 

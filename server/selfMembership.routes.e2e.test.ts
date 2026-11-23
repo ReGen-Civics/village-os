@@ -439,6 +439,17 @@ describe.skipIf(!DB_CONFIGURED)("a submitted form cannot name its own type", () 
     expect(await submissionsOfType("board-of-directors")).toEqual([]);
   });
 
+  it("takes a partner proposal from someone with no account, as its own type (the lead, 23 Nov 2026)", async () => {
+    await forgetTheRateWindow();
+    const sent = await call("POST", "/api/forms/submit", {
+      token: null,
+      body: { type: "partner", data: { name: "Ana Lima", email: "ana@example.org", project: "River Kitchen", link: "", serves: ["village"], offer: "Meals", wish: "A kitchen day" } },
+    });
+    expect(sent.status, JSON.stringify(sent.json)).toBe(200);
+    const rows = await submissionsOfType("partner");
+    expect(rows.map((r) => [r.type, r.status, r.user_id ?? null])).toEqual([["partner", "new", null]]);
+  });
+
   it("refuses the types only the village's own routes are allowed to write", async () => {
     await forgetTheRateWindow();
     // `role-application` is written by raise-hand and `investor-doc-request`

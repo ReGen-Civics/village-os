@@ -48,6 +48,13 @@ describe("openRolesFrom", () => {
     expect(half).toMatchObject({ timeCommitment: null, aim: null, openPlaces: 1, seats: 2 });
   });
 
+  it("never drafts a future venture, even one open now with its door open (23 Nov 2026)", () => {
+    const venture = { id: "cafe", name: "Cafe", circleId: "land", seats: 1, holderCount: 0, state: "forming", recruiting: true, futureVenture: true };
+    expect(openRolesFrom({ ...ORG, roles: [...ORG.roles, venture] }).map((r) => r.id)).not.toContain("cafe");
+    // Control: the same open door on a role that is not a venture is drafted.
+    expect(openRolesFrom({ ...ORG, roles: [...ORG.roles, { ...venture, futureVenture: false }] }).map((r) => r.id)).toContain("cafe");
+  });
+
   it("answers an empty list for a chart it cannot read", () => {
     expect(openRolesFrom(null)).toEqual([]);
     expect(openRolesFrom({ roles: "nope" })).toEqual([]);

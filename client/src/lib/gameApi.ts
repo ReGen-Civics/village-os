@@ -74,6 +74,8 @@ export function altOr(value: string | undefined, fallback: string): string {
 export interface PublicGameConfig {
   /** The village's default language, dial `village.default_locale` (spec i18n US3). */
   defaultLocale?: string;
+  /** The days each of the four ways in promises an answer within (org.contributor_reply_days, shared/contributorRoutes.ts). */
+  contributorReplyDays?: number;
   project: {
     name: string;
     tagline: string;

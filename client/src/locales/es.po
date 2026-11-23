@@ -26466,3 +26466,381 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ComingSoon.tsx
+msgctxt "badge on a venture open now for pitches"
+msgid "Open now, high priority"
+msgstr "Abierto ahora, alta prioridad"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ComingSoon.tsx
+msgctxt "badge on a venture taking proposals, not marked open now"
+msgid "Accepting proposals"
+msgstr "Recibiendo propuestas"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Roles.tsx
+msgctxt "roles page, open ventures: what a venture is"
+msgid "A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role."
+msgstr "Un emprendimiento es un negocio que construyes y diriges en la tierra junto a la aldea. Ganas con lo que construyes; es aparte de un rol remunerado."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleEdit/RoleEditor.tsx
+msgctxt "role editor: the door on a future venture"
+msgid "On a venture, an open door shows it first on the roles page as Open now, high priority. Closed, it reads Accepting proposals."
+msgstr "En un emprendimiento, la puerta abierta lo muestra primero en la página de roles como Abierto ahora, alta prioridad. Cerrada, dice Recibiendo propuestas."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role"
+msgid "Join the team"
+msgstr "Únete al equipo"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role, in one line"
+msgid "Hold a role on the team, with its own accountabilities and terms."
+msgstr "Ocupa un rol en el equipo, con sus propias responsabilidades y condiciones."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role, what you bring"
+msgid "Your time and skills, held in one role."
+msgstr "Tu tiempo y tus habilidades, en un rol."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role, what you get back"
+msgid "The rewards the role's terms set out, agreed together."
+msgstr "Las recompensas que fijan las condiciones del rol, acordadas juntos."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a venture"
+msgid "Start a venture"
+msgstr "Inicia un emprendimiento"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a venture, in one line"
+msgid "Build and own a business on the land. The village shares in it through a lease or a profit share."
+msgstr "Construye un negocio propio en la tierra. La aldea participa mediante un arrendamiento o un reparto de ganancias."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a venture, what you bring"
+msgid "Your business, your experience and what you invest in it."
+msgstr "Tu negocio, tu experiencia y lo que inviertes en él."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a venture, what you get back"
+msgid "A business of your own, on the land, with the village beside you."
+msgstr "Un negocio propio, en la tierra, con la aldea a tu lado."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership"
+msgid "Become a partner"
+msgstr "Hazte aliado"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, in one line"
+msgid "You already run a project or business and want to help build the community, build the village, or help it thrive."
+msgstr "Ya diriges un proyecto o negocio y quieres ayudar a construir la comunidad, construir la aldea o ayudarla a prosperar."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, what you bring"
+msgid "Your project or business, and what you offer the village."
+msgstr "Tu proyecto o negocio, y lo que ofreces a la aldea."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, what you get back"
+msgid "A partnership shaped together, with no role on the team and no lease."
+msgstr "Una alianza que formamos juntos, sin un rol en el equipo y sin arrendamiento."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest"
+msgid "Propose a quest"
+msgstr "Propón una misión"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, in one line"
+msgid "A one-off piece of value, rewarded when the work is accepted."
+msgstr "Un aporte puntual de valor, recompensado cuando se acepta el trabajo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, what you bring"
+msgid "One piece of work you want to do."
+msgstr "Un trabajo que quieres hacer."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, what you get back"
+msgid "A reward when the work is accepted."
+msgstr "Una recompensa cuando se acepta el trabajo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the other three, beside a role"
+msgid "Don't see your gift in a role? Consider these:"
+msgstr "¿No ves tu don en un rol? Considera estas opciones:"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the heading, with the village's name"
+msgid "Four ways to build {name}"
+msgstr "Cuatro formas de construir {name}"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the heading, before the village has a name"
+msgid "Four ways to build the village"
+msgstr "Cuatro formas de construir la aldea"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: when you hear back"
+msgid "You'll hear within 1 day."
+msgstr "Te responderemos en 1 día."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: when you hear back"
+msgid "You'll hear within {days} days."
+msgstr "Te responderemos en {days} días."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the label before what you bring"
+msgid "You bring"
+msgstr "Tú aportas"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: the label before what you get back"
+msgid "You get back"
+msgstr "Recibes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after an application or a waitlist sign-up: the other ways to build"
+msgid "While you wait, you can also"
+msgstr "Mientras esperas, también puedes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Quests.tsx
+msgctxt "empty quest board: the other ways to build"
+msgid "Other ways to build the village"
+msgstr "Otras formas de construir la aldea"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: what the partnership serves"
+msgid "Building the community"
+msgstr "Construir la comunidad"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: what the partnership serves"
+msgid "Building the village"
+msgstr "Construir la aldea"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: what the partnership serves"
+msgid "Helping the village thrive"
+msgstr "Ayudar a que la aldea prospere"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Add your name."
+msgstr "Escribe tu nombre."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Add an email address we can write to."
+msgstr "Escribe un correo al que podamos escribirte."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Add the name of your project or business."
+msgstr "Escribe el nombre de tu proyecto o negocio."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "The link starts with https:// and has no spaces."
+msgstr "El enlace empieza con https:// y no lleva espacios."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Choose at least one thing the partnership serves."
+msgstr "Elige al menos una cosa a la que sirva la alianza."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Say what you offer."
+msgstr "Cuenta qué ofreces."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: a field to fix"
+msgid "Say what you would like from the village."
+msgstr "Cuenta qué te gustaría de la aldea."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: sending failed"
+msgid "That didn't send. Try again in a few minutes."
+msgstr "No se envió. Inténtalo de nuevo en unos minutos."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: sent"
+msgid "Your proposal is with us"
+msgstr "Tu propuesta está con nosotros"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: sent"
+msgid "The people who hold partnerships read every proposal. We write to the email you gave."
+msgstr "Quienes se ocupan de las alianzas leen cada propuesta. Te escribimos al correo que nos diste."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: an optional field"
+msgid "(optional)"
+msgstr "(opcional)"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: eyebrow"
+msgid "Four ways to build"
+msgstr "Cuatro formas de construir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "No account needed."
+msgstr "No necesitas una cuenta."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "Your name"
+msgstr "Tu nombre"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "Your email"
+msgstr "Tu correo"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "Your project or business"
+msgstr "Tu proyecto o negocio"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "A link to it"
+msgstr "Un enlace"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "A website or a page about your work, starting with https://"
+msgstr "Un sitio web o una página sobre tu trabajo, que empiece con https://"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: the serves question"
+msgid "What would the partnership serve?"
+msgstr "¿A qué serviría la alianza?"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: the serves question"
+msgid "Choose one or more."
+msgstr "Elige una o más."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "What you offer"
+msgstr "Lo que ofreces"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "What you would like from the village"
+msgstr "Lo que te gustaría de la aldea"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "Sending…"
+msgstr "Enviando…"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "Send your proposal"
+msgstr "Envía tu propuesta"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form"
+msgid "See the other ways to build"
+msgstr "Ver las otras formas de construir"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, on the application page and its thank-you pages"
+msgid "Offer a one-off contribution"
+msgstr "Ofrece un aporte puntual"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role, a compact tile"
+msgid "A role on the team, with its own terms."
+msgstr "Un rol en el equipo, con sus propias condiciones."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a venture, a compact tile"
+msgid "Your own business on the land."
+msgstr "Tu propio negocio en la tierra."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, a compact tile"
+msgid "Your project, with the village."
+msgstr "Tu proyecto, con la aldea."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, a compact tile"
+msgid "A one-off piece of work, rewarded."
+msgstr "Un trabajo puntual, recompensado."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, nonprofits"
+msgid "Local nonprofits can partner with the village too, including to share in its profits."
+msgstr "Las organizaciones sin fines de lucro locales también pueden aliarse con la aldea, incluso para participar en sus ganancias."
