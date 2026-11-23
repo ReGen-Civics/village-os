@@ -2,15 +2,18 @@
  * FOUR WAYS TO BUILD THE VILLAGE (the lead, 23 Nov 2026), largest commitment first, with the same verbs wherever
  * they are offered: Join the team, Start a venture, Become a partner, Propose a quest (shared/contributorRoutes.ts).
  *
- * Each says, in one line, what it is; what you bring; what you get back; and when you hear from us, in the
- * village's own number of days (`org.contributor_reply_days`, served on /api/game/config). Drawn at the top of the
+ * Each says, in one line, what it is; what you bring; and what you get back. When you hear from us is said ONCE under
+ * the group (the lead, 23 Nov 2026), in the village's one reply promise, `org.applicant_reply_days` (served on
+ * /api/game/config as `applicantReplyDays`), the same number the application's thank-you page says. Drawn at the top of the
  * roles page, at the end of its lists and in the application's role picker ("Don't see your gift in a role?",
  * the other three), on the home page under the hero, on the pages after an application or a waitlist sign-up, from
  * the footer's "Work with us", on the empty quest board and on a member's Start here card.
  *
- * Where each goes: a role on the roles page; a venture to the village's general proposal form, /work-with-us,
- * which asks for "an idea, an offering, or a venture" (a village that switched that page off gets the member's door
- * for a new role, /role-proposals/new); a partnership to /partner; a quest to /propose-quest.
+ * Where each goes (the lead, 23 Nov 2026): a role to the founding team on the roles page, `/roles#founding-team`; a
+ * venture to the open ventures there, `/roles#open-ventures` (on /roles itself both scroll down the page and focus the
+ * section's heading, client/src/lib/sectionAnchor.ts); a partnership to /partner; a quest to /propose-quest. The Open
+ * ventures group's own button pitches a venture on the village's general proposal form, /work-with-us (a village that
+ * switched that page off gets the member's door for a new role, /role-proposals/new).
  */
 import { Link } from "wouter";
 import { ArrowRight } from "lucide-react";
@@ -19,11 +22,17 @@ import { useGameConfig } from "@/lib/gameApi";
 import { useStoryPageShown } from "@/lib/brochure";
 import { BTN_NOTICE, BTN_PRIMARY, DOOR, EYEBROW, HINT, LABEL, TILE } from "@/components/journey/look";
 import { replyDaysOf, routesExcept, type ContributorRoute } from "@shared/contributorRoutes";
+import { goToSection, ROLES_SECTIONS, samePageHash } from "@/lib/sectionAnchor";
 
 export const VENTURE_PITCH_FORM = "/work-with-us";
 export const VENTURE_PITCH_FALLBACK = "/role-proposals/new";
-/** Each route's own page. Written as doors (`href:`) so the route-reachability guard counts them. */
-const ROUTE_DOORS: Record<Exclude<ContributorRoute, "venture">, { href: string }> = { team: { href: "/roles" }, partner: { href: "/partner" }, quest: { href: "/propose-quest" } };
+/** Each route's own place. Written as doors (`href:`) so the route-reachability guard counts them. */
+const ROUTE_DOORS: Record<ContributorRoute, { href: string }> = {
+  team: { href: `/roles#${ROLES_SECTIONS.team}` },
+  venture: { href: `/roles#${ROLES_SECTIONS.venture}` },
+  partner: { href: "/partner" },
+  quest: { href: "/propose-quest" },
+};
 
 /** Where a venture is started on this village. */
 export function useVentureHref(): string {
@@ -31,9 +40,16 @@ export function useVentureHref(): string {
   return shown(VENTURE_PITCH_FORM) ? VENTURE_PITCH_FORM : VENTURE_PITCH_FALLBACK;
 }
 
-/** The village's answer-by promise, in days. */
+/** The village's one answer-by promise, in days (`org.applicant_reply_days`). */
 export function useReplyDays(): number {
-  return replyDaysOf(useGameConfig()?.contributorReplyDays);
+  return replyDaysOf(useGameConfig()?.applicantReplyDays);
+}
+
+/** "You'll hear within 7 days.", in the village's own days. */
+export function useReplyPromise(): string {
+  const { t } = useLingui();
+  const days = useReplyDays();
+  return days === 1 ? t({ message: "You'll hear within 1 day.", context: "four ways to build: when you hear back" }) : t({ message: `You'll hear within ${days} days.`, context: "four ways to build: when you hear back" });
 }
 
 interface RouteWords {
@@ -49,18 +65,20 @@ interface RouteWords {
 
 /**
  * `founding`: on the application page and its thank-you pages, which keep to the founding register (no game
- * words), the quest route is "Offer a one-off contribution", with the same link (the lead, 23 Nov 2026).
+ * words), the quest route is "Offer a one-off piece of work", with the same link (the lead, 23 Nov 2026; never
+ * "contribution", which a reader can take for the contribution token).
  */
 export function useRouteWords(register: "plain" | "founding" = "plain"): Record<ContributorRoute, RouteWords> {
   const { t } = useLingui();
-  const questVerb = register === "founding" ? t({ message: "Offer a one-off contribution", context: "four ways to build: a quest, on the application page and its thank-you pages" }) : t({ message: "Propose a quest", context: "four ways to build: a quest" });
+  const questVerb = register === "founding" ? t({ message: "Offer a one-off piece of work", context: "four ways to build: a quest, on the application page and its thank-you pages" }) : t({ message: "Propose a quest", context: "four ways to build: a quest" });
   return {
     team: {
       verb: t({ message: "Join the team", context: "four ways to build: a role" }),
       line: t({ message: "Hold a role on the team, with its own accountabilities and terms.", context: "four ways to build: a role, in one line" }),
       short: t({ message: "A role on the team, with its own terms.", context: "four ways to build: a role, a compact tile" }),
       bring: t({ message: "Your time and skills, held in one role.", context: "four ways to build: a role, what you bring" }),
-      back: t({ message: "The rewards the role's terms set out, agreed together.", context: "four ways to build: a role, what you get back" }),
+      // Compensation for a role's pay; "rewarded" is said of quests only (the lead, 23 Nov 2026).
+      back: t({ message: "The compensation the role's terms set out, agreed together.", context: "four ways to build: a role, what you get back" }),
     },
     venture: {
       verb: t({ message: "Start a venture", context: "four ways to build: a venture" }),
@@ -72,7 +90,7 @@ export function useRouteWords(register: "plain" | "founding" = "plain"): Record<
     partner: {
       verb: t({ message: "Become a partner", context: "four ways to build: a partnership" }),
       line: t({ message: "You already run a project or business and want to help build the community, build the village, or help it thrive.", context: "four ways to build: a partnership, in one line" }),
-      short: t({ message: "Your project, with the village.", context: "four ways to build: a partnership, a compact tile" }),
+      short: t({ message: "Partner with us, thrive together.", context: "four ways to build: a partnership, a compact tile" }),
       // The lead, 23 Nov 2026: what was the nonprofit partner venture is now a partnership.
       note: t({ message: "Local nonprofits can partner with the village too, including to share in its profits.", context: "four ways to build: a partnership, nonprofits" }),
       bring: t({ message: "Your project or business, and what you offer the village.", context: "four ways to build: a partnership, what you bring" }),
@@ -110,6 +128,7 @@ export default function ContributorRoutes({
   hrefs = {},
   register = "plain",
   className = "",
+  promise: sayPromise = true,
 }: {
   /**
    * `cards`: one card each, side by side on a desktop. `links`: a quiet list, for inside a form or beside a page.
@@ -124,20 +143,31 @@ export default function ContributorRoutes({
   /** A page that holds one of the routes itself points its card there (the roles page's open roles). */
   hrefs?: Partial<Record<ContributorRoute, string>>;
   className?: string;
+  /** Say the reply promise under the group. A page that already makes its own promise leaves it out (said once). */
+  promise?: boolean;
 }) {
   const { t } = useLingui();
   const words = useRouteWords(register);
-  const venture = useVentureHref();
   const days = useReplyDays();
-  const promise = days === 1 ? t({ message: "You'll hear within 1 day.", context: "four ways to build: when you hear back" }) : t({ message: `You'll hear within ${days} days.`, context: "four ways to build: when you hear back" });
+  const promise = useReplyPromise();
   const routes = routesExcept(except);
-  const hrefOf = (r: ContributorRoute) => hrefs[r] ?? (r === "venture" ? venture : ROUTE_DOORS[r].href);
+  const hrefOf = (r: ContributorRoute) => hrefs[r] ?? ROUTE_DOORS[r].href;
   const Heading = headingAs;
   const go = (r: ContributorRoute, cls: string, children: React.ReactNode) => {
     const href = hrefOf(r);
-    // An anchor on this same page is a plain link: the router would treat it as a new page.
-    return href.startsWith("#") ? (
-      <a href={href} className={cls} data-route-door={r}>{children}</a>
+    // A section on this same page scrolls there and focuses its heading; the router would treat it as a new page.
+    const hash = samePageHash(href);
+    return hash ? (
+      <a
+        href={`#${hash}`}
+        className={cls}
+        data-route-door={r}
+        onClick={(e) => {
+          if (goToSection(hash)) e.preventDefault();
+        }}
+      >
+        {children}
+      </a>
     ) : (
       <Link href={href} className={cls} data-route-door={r}>{children}</Link>
     );
@@ -154,9 +184,10 @@ export default function ContributorRoutes({
                 r,
                 "group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
                 <>
-                  <span className="flex items-center justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
+                  {/* The arrow sits on the verb's first line when a long verb wraps (QA, 23 Nov 2026). */}
+                  <span className="flex items-start justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
                     {words[r].verb}
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground group-hover:text-notice" aria-hidden="true" />
+                    <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground group-hover:text-notice sm:mt-1" aria-hidden="true" />
                   </span>
                   <span className="text-xs leading-snug text-muted-foreground">{words[r].short}</span>
                 </>,
@@ -189,7 +220,7 @@ export default function ContributorRoutes({
             </li>
           ))}
         </ul>
-        <p className={HINT}>{promise}</p>
+        {sayPromise ? <p className={HINT} data-route-promise={days}>{promise}</p> : null}
       </div>
     );
   }
@@ -217,7 +248,6 @@ export default function ContributorRoutes({
                 <dd className="text-muted-foreground">{words[r].back}</dd>
               </div>
             </dl>
-            <p className="text-sm font-semibold text-notice" data-route-promise={days}>{promise}</p>
             <div className="mt-auto pt-1">
               {go(
                 r,
@@ -231,6 +261,8 @@ export default function ContributorRoutes({
           </li>
         ))}
       </ul>
+      {/* The reply promise once, under the group (the lead, 23 Nov 2026), never on every card. */}
+      {sayPromise ? <p className="mt-4 text-sm font-semibold text-notice" data-route-promise={days}>{promise}</p> : null}
     </div>
   );
 }
@@ -246,11 +278,11 @@ export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorR
 }
 
 /** "Don't see your gift in a role? Consider these:", the other three, at the end of the roles page's lists. */
-export function GiftSection() {
+export function GiftSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string>> }) {
   const heading = useGiftHeading();
   return (
     <section aria-labelledby="your-gift" className="mx-auto mb-14 max-w-4xl lg:max-w-6xl" data-your-gift="">
-      <ContributorRoutes except={["team"]} heading={heading} headingId="your-gift" />
+      <ContributorRoutes except={["team"]} heading={heading} headingId="your-gift" hrefs={hrefs} />
     </section>
   );
 }

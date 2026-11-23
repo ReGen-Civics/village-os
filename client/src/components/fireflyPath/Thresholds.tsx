@@ -130,7 +130,6 @@ function WhileYouWait() {
     ["/love-letter", t({ message: "Read the Love Letter slowly", context: "while you wait" }), t({ message: "How we live together", context: "while you wait" })],
   ];
   return (
-    <>
     <nav aria-labelledby="wait-doors-h" className={`${CARD} grid gap-3`} data-wait-doors="">
       <h2 id="wait-doors-h" className={EYEBROW}>
         {t({ message: "While you wait", context: "founding application wait" })}
@@ -148,12 +147,12 @@ function WhileYouWait() {
           </li>
         ))}
       </ul>
+      {/* The other three ways to build, in the same panel (QA, 23 Nov 2026: one "While you wait", never two). No second
+          reply promise: the page already says when we reply, from the same village number (ReplyPromise). */}
+      <div className="mt-2 border-t border-border pt-4" data-wait-routes="">
+        <ContributorRoutes variant="links" register="founding" except={["team"]} promise={false} heading={t({ message: "You can also", context: "after an application: the other ways to build, under While you wait" })} headingAs="h3" />
+      </div>
     </nav>
-    {/* While you wait, you can also (the lead, 23 Nov 2026): the other three ways to build. */}
-    <nav aria-labelledby="wait-routes-h" className={`${CARD} grid gap-3`} data-wait-routes="">
-      <ContributorRoutes variant="links" register="founding" except={["team"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingId="wait-routes-h" headingAs="h2" />
-    </nav>
-    </>
   );
 }
 

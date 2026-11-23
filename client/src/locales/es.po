@@ -26859,3 +26859,99 @@ msgstr "Un trabajo puntual, recompensado."
 msgctxt "four ways to build: a partnership, nonprofits"
 msgid "Local nonprofits can partner with the village too, including to share in its profits."
 msgstr "Las organizaciones sin fines de lucro locales también pueden aliarse con la aldea, incluso para participar en sus ganancias."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/lineupParts.tsx
+msgctxt "role card status pill: an open role on a paid track"
+msgid "Open paid role"
+msgstr "Rol remunerado abierto"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/lineupParts.tsx
+msgctxt "role card status pill: an upcoming role that will be paid"
+msgid "Upcoming paid role"
+msgstr "Próximo rol remunerado"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/PaySplitMini.tsx
+msgctxt "role card front: after a 0% credits share in the pay split"
+msgid ", not in use yet"
+msgstr ", aún sin uso"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ComingSoon.tsx
+msgctxt "badge on a venture open now for pitches, an outlined pill"
+msgid "Open now"
+msgstr "Abierto ahora"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a quest, on the application page and its thank-you pages"
+msgid "Offer a one-off piece of work"
+msgstr "Ofrece un trabajo puntual"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a role, what you get back"
+msgid "The compensation the role's terms set out, agreed together."
+msgstr "La compensación que fijan los términos del rol, acordada en conjunto."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/ContributorRoutes.tsx
+msgctxt "four ways to build: a partnership, a compact tile"
+msgid "Partner with us, thrive together."
+msgstr "Asóciate con nosotros y prosperemos juntos."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: the problems found on send"
+msgid "One thing to fix before you send:"
+msgstr "Una cosa por corregir antes de enviar:"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/pages/Partner.tsx
+msgctxt "partner form: the problems found on send"
+msgid "{0} things to fix before you send:"
+msgstr "{0} cosas por corregir antes de enviar:"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/fireflyPath/Thresholds.tsx
+msgctxt "after an application: the other ways to build, under While you wait"
+msgid "You can also"
+msgstr "También puedes"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/cardWordsT.ts
+msgctxt "role card, under the title"
+msgid "This is a paid role"
+msgstr "Este es un rol remunerado"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "role card tab: who we hope for and the compensation"
+msgid "You and compensation"
+msgstr "Tú y la compensación"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/FoundingRoleCard.tsx
+msgctxt "founding card piece, short"
+msgid "Compensation"
+msgstr "Compensación"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/fireflyPath/ApplySteps.tsx
+msgctxt "founding application compensation"
+msgid "How compensation works"
+msgstr "Cómo funciona la compensación"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/fireflyPath/MoreRoles.tsx
+msgctxt "founding application, roles added to one application"
+msgid "Up to {max} roles in one application, in any circle, each with its own commitment, compensation and agreement. The amounts add up: two roles at 50% are compensated like one whole role."
+msgstr "Hasta {max} roles en una postulación, en cualquier círculo, cada uno con su propio compromiso, compensación y acuerdo. Los montos se suman: dos roles al 50% se compensan como un rol completo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/FoundingTeam.tsx
+msgctxt "founding team section lede"
+msgid "We're forming the founding roles who will hold critical domains from foundation building through to completion."
+msgstr "Estamos formando los roles fundadores que sostendrán los dominios esenciales, desde la construcción de los cimientos hasta el final."

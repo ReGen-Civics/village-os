@@ -155,7 +155,8 @@ describe("Join the founding team", () => {
     // Each concept once: the directory leaves the featured roles out.
     fireEvent.click(screen.getByRole("button", { name: "See all roles" }));
     await screen.findByRole("heading", { level: 3, name: "Village Cook" });
-    expect(screen.queryByRole("heading", { level: 3, name: "Lead Finance Steward" })).toBeNull();
+    // The founding row names it as its own h3 (a screen reader moves role to role); the directory never repeats it.
+    expect(screen.queryAllByRole("heading", { level: 3, name: "Lead Finance Steward" }).filter((h) => !section.contains(h))).toHaveLength(0);
   });
 
   it("hiring first (Rye, 14 Nov 2026): says the founding roles come first, and puts every other open role right under them as opening next, once", async () => {
@@ -230,7 +231,7 @@ describe("Join the founding team", () => {
     await waitFor(() => expect(within(card).getByTestId("last-edited").textContent).toBe("Last edited by Mara on 11 November 2026"));
     // Piece by piece (Rye, 14 Nov): every piece is in the page, and one button opens them all.
     fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
-    expect(within(card).getByTestId("paid-role-line").textContent).toBe("This role is rewarded");
+    expect(within(card).getByTestId("paid-role-line").textContent).toBe("This is a paid role");
     expect(within(card).getByRole("heading", { name: "Ideal background" })).toBeTruthy();
     expect(within(card).getByRole("heading", { name: "Qualities we're looking for" })).toBeTruthy();
     // QA2-09: "Digital Companion" (capitalised) replaces the AI wording.
@@ -355,9 +356,9 @@ describe("QA2-16: each concept once on the founding card", () => {
       return el;
     });
   };
-  it("says paid once: the circle alone in the eyebrow, then This role is rewarded", async () => {
+  it("says paid once: the circle alone in the eyebrow, then This is a paid role", async () => {
     const card = await open();
-    await waitFor(() => expect(within(card).getByTestId("paid-role-line").textContent).toBe("This role is rewarded"));
+    await waitFor(() => expect(within(card).getByTestId("paid-role-line").textContent).toBe("This is a paid role"));
     expect(card.textContent).not.toMatch(/Paid role/);
     expect(card.querySelector("header p")?.textContent).toBe("Anchor Circle");
   });
@@ -527,23 +528,23 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
     const visible = () => Array.from(card.querySelectorAll<HTMLElement>("[data-piece]")).filter((el) => !el.hidden).map((el) => el.dataset.piece);
     // Five tabs (the lead, 20 Nov 2026): The role opens Purpose and Looks after together.
     const tabs = Array.from(card.querySelectorAll<HTMLElement>("[data-piece-tab]")).map((b) => b.textContent);
-    expect(tabs).toEqual(["The role", "Deliverables", "How we co-create", "You and rewards", "The path in"]);
+    expect(tabs).toEqual(["The role", "Deliverables", "How we co-create", "You and compensation", "The path in"]);
     expect(visible()).toEqual(["purpose", "domain"]);
     fireEvent.click(within(card).getByRole("button", { name: /Next: Deliverables/ }));
     expect(visible()).toEqual(["accountabilities"]);
     fireEvent.click(within(card).getByRole("button", { name: "Back" }));
     expect(visible()).toEqual(["purpose", "domain"]);
-    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and compensation/ }));
     expect(visible()).toEqual(["who", "rewards"]);
     fireEvent.click(within(card).getByRole("button", { name: "Show every piece" }));
     expect(visible().length).toBeGreaterThan(5);
   });
   it("holds the ceiling, the shares in the editable split and the split line in the rewards piece", async () => {
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and compensation/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
-    expect(within(piece).getByRole("heading", { name: "How rewards work" })).toBeTruthy();
+    expect(within(piece).getByRole("heading", { name: "How compensation works" })).toBeTruthy();
     // The editable split reads the shares; no tiles beside it (the lead, 18 Nov 2026).
     expect(within(piece).queryByTestId("pay-tiles")).toBeNull();
     await waitFor(() => expect(Array.from(piece.querySelectorAll<HTMLInputElement>("[data-split-pct]")).map((i) => `${i.getAttribute("data-split-pct")}${i.value}%`)).toEqual(["cash40%", "equity55%", "village credits5%"]));
@@ -552,7 +553,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
   it("a role that can be shared says the range, that the proposal sets the pay, the pay at 50%, and the footnote (Rye, 14 Nov 2026)", async () => {
     org.roles[0] = seat("finance", "Lead Finance Steward", { card: { ...seat("x", "x").card, commitmentMin: 30, commitmentTarget: 100 } });
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and compensation/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling").textContent).toBe("Listed compensation: $9,000 a month for the full role*"));
     expect(within(piece).getByTestId("pay-range-words").textContent).toBe("Take on all of it, or part of it: we're open to proposals from 30% to 100%. One person can hold the whole role, or a few people can share it.");
@@ -578,7 +579,7 @@ describe("the founding card, piece by piece (Rye, 14 Nov 2026; replaces the D-03
   });
   it("a role offered whole says nothing about sharing (control)", async () => {
     const card = await open();
-    fireEvent.click(within(card).getByRole("button", { name: /You and rewards/ }));
+    fireEvent.click(within(card).getByRole("button", { name: /You and compensation/ }));
     const piece = card.querySelector('[data-piece="rewards"]') as HTMLElement;
     await waitFor(() => expect(within(piece).getByTestId("pay-ceiling")).toBeTruthy());
     expect(within(piece).queryByTestId("pay-range-words")).toBeNull();
@@ -609,7 +610,7 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     renderRoles();
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const sheet = await within(section).findByTestId("team-sheet");
-    const firstOpen = within(sheet).getAllByText("Open role")[0];
+    const firstOpen = within(sheet).getAllByText(/^Open (paid )?role$/)[0];
     const open = within(section).getByRole("heading", { level: 2, name: /^Open roles/ });
     const ventures = screen.getByRole("heading", { level: 2, name: /^Open ventures/ });
     const soon = await screen.findByRole("heading", { level: 2, name: "Upcoming roles (1)" });
@@ -634,7 +635,8 @@ describe("the founding team as positions (Rye, 14 Nov 2026: team sheet by defaul
     const section = await screen.findByRole("region", { name: "Join the founding team" });
     const sheet = await within(section).findByTestId("team-sheet");
     expect(within(section).getByRole("button", { name: "Team sheet" }).getAttribute("aria-pressed")).toBe("true");
-    expect(within(sheet).getAllByText("Open role")).toHaveLength(2);
+    // Each open role's pill says its kind (the lead, 23 Nov 2026).
+    expect(within(sheet).getAllByText(/^Open (paid )?role$/)).toHaveLength(2);
     // The roster (Rye, 17 Nov 2026): one card per person, the first name first and the role as the position.
     await waitFor(() => expect(screen.getByTestId("filled-roles").querySelector('[data-roster-person="p:Rye"]')?.textContent).toContain("Human Operations Steward"));
     // Positions, never players: no rating, score or rank anywhere in the team view.

@@ -119,6 +119,11 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(notYet.textContent).toContain("Not open yet.");
     const wait = notYet.querySelector('[data-waitlist-role="r-bees"]') as HTMLAnchorElement;
     expect(wait.textContent).toBe("Join the waitlist for Bee Keeper");
+    // Buttons, never underlined links (the lead, 23 Nov 2026), 44px tall like the Upcoming roles cards' buttons.
+    for (const b of [wait, notYet.querySelector('[data-apply-early="r-bees"]') as HTMLElement]) {
+      expect(b.className).toContain("min-h-11");
+      expect(b.className).not.toContain("underline");
+    }
     expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-bees");
     fireEvent.change(add, { target: { value: "r-host" } });
     fireEvent.change(await screen.findByLabelText("Your commitment: Gate Keeper"), { target: { value: "50" } });

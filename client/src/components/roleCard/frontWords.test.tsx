@@ -1,15 +1,15 @@
 // @vitest-environment jsdom
 /**
- * THE CLOSED CARD'S FRONT (the lead, 23 Nov 2026): the role's kind and pay mix with no amount, the last day to
- * apply, and "Paid role" on an upcoming role. Unit checks of the words, then the team sheet and the upcoming
- * cards drawing them.
+ * THE CLOSED CARD'S FRONT (the lead, 23 Nov 2026): the status pill says the kind, the pay split is a mini bar with a
+ * one-line legend and no amount (credits always, 0% said as not in use yet), the last day to apply on its gold tile,
+ * and "Upcoming paid role" on an upcoming role. Unit checks of the words, then the team sheet and the upcoming cards.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setupI18n } from "@lingui/core";
 import { cleanup, render } from "@testing-library/react";
 import { DEFAULT_SHARE_NAMES, type ShareNames } from "@shared/contributionToken";
 import { readApplyBy, readSections } from "@shared/roleCardSections";
-import { applyByWords, frontKind, frontKindLine, payMixWords, soonIsPaid } from "./frontWords";
+import { applyByWords, frontKind, payMixParts, payMixWords, pillKind, soonIsPaid, volunteerLine } from "./frontWords";
 import FoundingTeam, { type FoundingRole } from "./FoundingTeam";
 import ComingSoonRoles from "./ComingSoonRoles";
 
@@ -41,11 +41,20 @@ describe("the front's words", () => {
     expect(payMixWords(i18n, [], NAMES)).toBe("Compensation in cash and tokens");
   });
 
-  it("puts the kind and the mix in one line", () => {
-    expect(frontKindLine(i18n, "paid", [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }], NAMES)).toBe("Open paid role · 60% cash, 40% Harbour tokens");
-    expect(frontKindLine(i18n, "paid", [], NAMES)).toBe("Open paid role · Compensation in cash and tokens");
-    expect(frontKindLine(i18n, "volunteer", [{ label: "Cash", pct: 60 }], NAMES)).toBe("Volunteer role");
-    expect(frontKindLine(i18n, null, [{ label: "Cash", pct: 60 }], NAMES)).toBeNull();
+  it("gives the pill its kind: Open paid role for a paid track, Open role for the rest; Volunteer role is said once", () => {
+    expect(pillKind("paid")).toBe("openPaid");
+    expect(pillKind("volunteer")).toBe("open");
+    expect(pillKind(null)).toBe("open");
+    expect(volunteerLine(i18n, "volunteer")).toBe("Volunteer role");
+    expect(volunteerLine(i18n, "paid")).toBeNull();
+  });
+
+  it("keeps the credits share at 0% only when asked, for the mini split", () => {
+    const shape = [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }, { label: "Credits", pct: 0 }];
+    expect(payMixParts(i18n, shape, NAMES).map((p) => p.part)).toEqual(["cash", "equity"]);
+    expect(payMixParts(i18n, shape, NAMES, { withCredits: true }).map((p) => [p.part, p.pct])).toEqual([["cash", 60], ["equity", 40], ["credits", 0]]);
+    // CONTROL: a 0% cash share never shows, with or without the credits.
+    expect(payMixParts(i18n, [{ label: "Cash", pct: 0 }, { label: "Equity", pct: 100 }], NAMES, { withCredits: true }).map((p) => p.part)).toEqual(["equity", "credits"]);
   });
 
   it("says the last day to apply until it has passed", () => {
@@ -95,7 +104,7 @@ describe("the team sheet's front", () => {
     vi.unstubAllGlobals();
   });
 
-  it("draws the kind and pay mix, from the card's shape or the village's, and the apply-by chip", () => {
+  it("draws the pill's kind, the mini split from the card's shape or the village's, and the apply-by tile", () => {
     const roles: FoundingRole[] = [
       { seat: { id: "a", name: "Role A", state: "open", archetypes: [], card: { track: "contractor" } }, circleName: "Anchor Circle", sections: { ...SECTIONS, payShape: [{ label: "Cash", pct: 60 }, { label: "Equity", pct: 40 }], applyBy: "2026-11-30" } },
       { seat: { id: "b", name: "Role B", state: "open", archetypes: [], card: { track: "contractor" } }, circleName: "Anchor Circle", sections: { ...SECTIONS } },
@@ -103,21 +112,31 @@ describe("the team sheet's front", () => {
     ];
     const { container } = render(<FoundingTeam roles={roles} villagePay={{ shape: [{ label: "Cash", pct: 100 }], atRisk: "", note: "" }} />);
     const frame = (id: string) => container.querySelector(`[data-role-frame="${id}"]`) as HTMLElement;
-    expect(frame("a").querySelector("[data-front-kind]")?.textContent).toBe("Open paid role · 60% cash, 40% Contribution tokens");
+    const segments = (id: string) => Array.from(frame(id).querySelectorAll("[data-pay-segment]")).map((s) => [s.getAttribute("data-pay-segment"), (s as HTMLElement).style.width]);
+    expect(frame("a").querySelector("[data-status-pill]")?.textContent).toBe("Open paid role");
+    expect(frame("a").querySelector("[data-pay-split-words]")?.textContent).toBe("60% cash·40% Contribution tokens·0% Credits, not in use yet");
+    // A segment only above 0%: the credits share is said, never drawn, at 0%.
+    expect(segments("a")).toEqual([["cash", "60%"], ["equity", "40%"]]);
+    expect(frame("a").querySelector('[data-pay-share-zero="credits"]')).toBeTruthy();
     expect(frame("a").querySelector("[data-front-apply-by]")?.textContent).toBe("Apply by Mon 30 Nov");
-    expect(frame("b").querySelector("[data-front-kind]")?.textContent).toBe("Open paid role · 100% cash");
+    expect(frame("b").querySelector("[data-status-pill]")?.textContent).toBe("Open paid role");
+    expect(segments("b")).toEqual([["cash", "100%"]]);
     expect(frame("b").querySelector("[data-front-apply-by]")).toBeNull();
+    expect(frame("c").querySelector("[data-status-pill]")?.textContent).toBe("Open role");
     expect(frame("c").querySelector("[data-front-kind]")?.textContent).toBe("Volunteer role");
-    // No amount on the front.
-    expect(frame("a").querySelector("[data-front-kind]")?.textContent).not.toMatch(/\$/);
+    expect(frame("c").querySelector("[data-pay-split-mini]")).toBeNull();
+    // The old "Open paid role ·" line is gone, and no amount shows on the front.
+    expect(container.textContent).not.toContain("Open paid role ·");
+    expect(frame("a").textContent).not.toMatch(/\$/);
   });
 });
 
 describe("the upcoming roles", () => {
   afterEach(() => cleanup());
-  it("say Paid role, with no amount, on a role that will be paid", () => {
+  it("say Upcoming paid role in their pill, with no amount, on a role that will be paid", () => {
     render(<ComingSoonRoles roles={[{ id: "garden", name: "Garden Steward", paid: true }, { id: "kitchen", name: "Kitchen Steward", paid: false }]} />);
-    expect(document.getElementById("role-garden")?.querySelector("[data-soon-paid]")?.textContent).toBe("Paid role");
+    expect(document.getElementById("role-garden")?.querySelector("[data-soon-paid]")?.textContent).toBe("Upcoming paid role");
+    expect(document.getElementById("role-garden")?.querySelector('[data-status-pill="upcomingPaid"]')).toBeTruthy();
     expect(document.getElementById("role-kitchen")?.querySelector("[data-soon-paid]")).toBeNull();
   });
 });

@@ -204,7 +204,7 @@ describe.skipIf(!configured)("the founding sections and the founding team", () =
     // A section line, and a word field, each naming 70/30 against the village's 60/40.
     const line = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { sections: { qualities: ["Paid 70% cash, 30% tokens"] } });
     expect(line.status).toBe(400);
-    expect(line.json.error).toBe('Qualities we\'re looking for says "70% cash", but this card\'s split is 60% cash, 40% equity, 0% credits. Change the words to match, or change the split under How rewards work.');
+    expect(line.json.error).toBe('Qualities we\'re looking for says "70% cash", but this card\'s split is 60% cash, 40% equity, 0% credits. Change the words to match, or change the split under How compensation works.');
     const words = await call("POST", `/api/org/role-edit/${id}`, "holder-1", { words: { aim: "Rewarded 70/30 in cash and tokens." } });
     expect(words.status).toBe(400);
     expect(words.json.error).toContain('says "70/30"');

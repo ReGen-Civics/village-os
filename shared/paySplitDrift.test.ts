@@ -47,6 +47,6 @@ describe("a split the shape does not pay", () => {
   it("says the words, where they are and the stored split", () => {
     const d = at("Paid 70% cash.")!;
     expect(storedSplitWords(SHAPE)).toBe("60% Cash, 40% Equity, 0% Credits");
-    expect(splitDriftProblem(d, SHAPE, "Aim")).toBe('Aim says "70% cash", but this card\'s split is 60% Cash, 40% Equity, 0% Credits. Change the words to match, or change the split under How rewards work.');
+    expect(splitDriftProblem(d, SHAPE, "Aim")).toBe('Aim says "70% cash", but this card\'s split is 60% Cash, 40% Equity, 0% Credits. Change the words to match, or change the split under How compensation works.');
   });
 });

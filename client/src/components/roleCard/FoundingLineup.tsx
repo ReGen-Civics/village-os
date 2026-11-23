@@ -30,7 +30,7 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { LayoutList, Target } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import type { RoleFill } from "@shared/commitmentRange";
-import { applyByWords, frontKind, frontKindLine } from "./frontWords";
+import { applyByWords, frontKind, pillKind, volunteerLine } from "./frontWords";
 import { cardPay, NO_VILLAGE_PAY, type VillagePay } from "@shared/roleCardSections";
 import { useShareNames } from "@/components/ContributionWord";
 import { roleCardView } from "@shared/roleCardView";
@@ -40,7 +40,7 @@ import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import ArtImage from "@/components/roleDraft/ArtImage";
 import type { FoundingRole } from "./FoundingTeam";
 import { Domains, FillMeter, OpenPill } from "./lineupParts";
-import FoundingRow, { shotLook } from "./FoundingRow";
+import FoundingRow from "./FoundingRow";
 import type { FilledRole, LineupView } from "./RosterCards";
 
 export type { FilledRole, LineupView };
@@ -86,7 +86,6 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
   const { t, i18n } = useLingui();
   const shareNames = useShareNames();
   const circle = roles[0]?.circleName ?? null;
-  const shot = shotLook();
 
   const toggle = (
     <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={t({ message: "How to show the team", context: "founding team view switch" })}>
@@ -145,8 +144,8 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
               const whereWords = r.sections?.where?.trim();
               const tileSeat = whereWords ? { ...r.seat, card: { ...(r.seat.card ?? {}), whereText: whereWords } } : r.seat;
               const where = roleCardView(tileSeat).rows.find((row) => row.id === "where")?.lines[0] ?? null;
-              // The front's kind and pay mix, never an amount, and the last day to apply (the lead, 23 Nov 2026).
-              const kindLine = frontKindLine(i18n, frontKind(r.seat, r.sections), cardPay(r.sections, villagePay ?? NO_VILLAGE_PAY)?.shape ?? [], shareNames);
+              // The front's kind (its pill) and pay split, never an amount, and the last day to apply (the lead, 23 Nov 2026).
+              const kind = frontKind(r.seat, r.sections);
               const applyBy = applyByWords(i18n, r.sections?.applyBy);
               return (
                 <FoundingRow
@@ -155,7 +154,10 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                   name={String(r.seat.name ?? "")}
                   aim={typeof r.seat.aim === "string" && r.seat.aim ? r.seat.aim : null}
                   art={artOf(r.seat)}
-                  kindLine={kindLine}
+                  kind={kind}
+                  payShape={cardPay(r.sections, villagePay ?? NO_VILLAGE_PAY)?.shape ?? []}
+                  shareNames={shareNames}
+                  volunteer={volunteerLine(i18n, kind)}
                   applyBy={applyBy}
                   circle={r.circleName}
                   commitment={typeof r.seat.timeCommitment === "string" ? r.seat.timeCommitment : null}
@@ -168,8 +170,6 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                   cardSlot={cardSlot}
                   onOpen={() => onOpen(id)}
                   cardId={cardId}
-                  look={shot.look}
-                  polish={shot.polish}
                 />
               );
             })}
@@ -214,7 +214,7 @@ export default function FoundingLineup({ roles, filled, fill = {}, view, onView,
                     <span className={`relative rounded-full bg-gradient-to-br from-notice/40 via-notice to-notice/40 p-[3px] shadow-[0_0_28px] shadow-notice/40 motion-safe:transition-transform motion-safe:group-hover:-translate-y-1 ${here ? "outline-2 outline-offset-4 outline-notice" : ""}`}>
                       <ArtImage portrait src={artOf(r.seat)} className="relative size-24 rounded-full" imgClassName="object-top" />
                       <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
-                        <OpenPill />
+                        <OpenPill kind={pillKind(frontKind(r.seat, r.sections))} />
                       </span>
                     </span>
                     <span className="mt-2 font-semibold leading-snug text-card-foreground">{String(r.seat.name ?? "")}</span>

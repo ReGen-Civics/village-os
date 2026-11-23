@@ -9,7 +9,6 @@
  * the apply flow's picker can send a person straight here (shared/roleWaitlist.ts).
  */
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Coins } from "lucide-react";
 import { useLingui } from "@lingui/react/macro";
 import { roleAnchor, waitlistHash } from "@shared/roleWaitlist";
 import { BTN_NOTICE, BTN_SECONDARY, EYEBROW } from "@/components/journey/look";
@@ -17,6 +16,7 @@ import { ComingSoonNote } from "@/components/ComingSoon";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { GROUP_H2 } from "./groupLook";
 import { useRoleArt } from "@/lib/natureArt";
+import { OpenPill } from "./lineupParts";
 
 const WaitlistForm = lazy(() => import("./WaitlistForm"));
 
@@ -25,7 +25,7 @@ export interface SoonRole {
   name: string;
   aim?: string | null;
   circleName?: string | null;
-  /** Said as "Paid role", with no amount: every upcoming role will be paid (the lead, 23 Nov 2026). */
+  /** Its pill says "Upcoming paid role", with no amount: every upcoming role will be paid (the lead, 23 Nov 2026). */
   paid?: boolean;
 }
 
@@ -89,10 +89,10 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
             {r.circleName && <p className={EYEBROW}>{r.circleName}</p>}
             <p className="font-display text-xl leading-snug text-card-foreground">{r.name}</p>
             {r.aim && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{r.aim}</p>}
+            {/* The status pill says the kind, as an open role's does (the lead, 23 Nov 2026). */}
             {r.paid && (
-              <p className="mt-2 inline-flex items-center gap-1 rounded-full border border-notice/50 px-2.5 py-0.5 text-xs font-semibold text-notice" data-soon-paid="">
-                <Coins className="size-3" aria-hidden="true" />
-                {t({ message: "Paid role", context: "upcoming role card: the role will be paid, no amount" })}
+              <p className="mt-2" data-soon-paid="">
+                <OpenPill kind="upcomingPaid" />
               </p>
             )}
             </div>

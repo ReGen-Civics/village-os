@@ -25,7 +25,6 @@ import type { RoleCardSections, VillagePay } from "@shared/roleCardSections";
 import { seedOfLifeCentres, fx } from "@/components/journey/nature";
 import type { RoleFill } from "@shared/commitmentRange";
 import FoundingLineup from "./FoundingLineup";
-import { shotLook } from "./FoundingRow";
 import type { FilledRole, LineupView } from "./RosterCards";
 import FullRoleCard from "./FullRoleCard";
 import LeadBuilds, { type BuiltRole } from "./LeadBuilds";
@@ -100,6 +99,7 @@ export default function FoundingTeam({
   heading = null,
   toBeAdded = {},
   sheetRoster = true,
+  anchorId,
 }: {
   roles: FoundingRole[];
   initialOpen?: string | null;
@@ -128,6 +128,11 @@ export default function FoundingTeam({
   toBeAdded?: Record<string, ReadonlyArray<{ id: string; name: string }>>;
   /** Whether the team sheet draws the roles held now; the /roles page draws them below its other groups. */
   sheetRoster?: boolean;
+  /**
+   * The section's stable id on its page, `founding-team` on /roles (the lead, 23 Nov 2026): "Join the team" scrolls
+   * here and moves focus to the heading (client/src/lib/sectionAnchor.ts).
+   */
+  anchorId?: string;
 }) {
   const { t } = useLingui();
   const headingId = `${useId().replace(/[^a-zA-Z0-9]/g, "")}-founding`;
@@ -140,8 +145,7 @@ export default function FoundingTeam({
   const view = givenView ?? ownView;
   const setView = onView ?? setOwnView;
   // `open` is null until a reader chooses, and "" once a phone reader closes the open row.
-  // TEMPORARY (card look pass, phase 1): ?cardclosed=1 keeps every row closed on a wide screen for the screenshots.
-  const openFirst = wide && !shotLook().closed;
+  const openFirst = wide;
   const shown = open === null ? (openFirst ? String(roles[0]?.seat?.id ?? "") || null : null) : open || null;
   if (roles.length === 0) return null;
   const current = roles.find((r) => String(r.seat.id) === shown) ?? null;
@@ -163,15 +167,15 @@ export default function FoundingTeam({
   );
 
   return (
-    <section aria-labelledby={headingId} className={`relative mx-auto max-w-6xl ${lead ? "mb-10 sm:mb-16" : "mb-16"}`} data-founding-team="">
+    <section id={anchorId} aria-labelledby={headingId} className={`relative mx-auto max-w-6xl scroll-mt-24 ${lead ? "mb-10 sm:mb-16" : "mb-16"}`} data-founding-team="">
       <div className={`relative overflow-hidden ${lead ? "border-b py-4 sm:border-t sm:py-14" : "border-y py-10 sm:py-14"} border-notice/40`}>
         <SeedLines className="absolute -right-10 -top-10 size-64 opacity-20 sm:size-80" />
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-notice">{t({ message: "Founding team", context: "founding team section eyebrow" })}</p>
-        <Heading id={headingId} className="mt-3 font-display text-4xl leading-tight text-foreground sm:text-6xl">
+        <Heading id={headingId} tabIndex={anchorId ? -1 : undefined} data-section-focus={anchorId ? "" : undefined} className="mt-3 font-display text-4xl leading-tight text-foreground outline-none sm:text-6xl">
           {t({ message: "Join the founding team", context: "founding team section heading" })}
         </Heading>
         <p className={`${lead ? "mt-3" : "mt-5"} max-w-2xl text-lg leading-relaxed text-muted-foreground sm:mt-5 sm:text-xl`}>
-          {t({ message: "We are forming the founding team: the people who will hold each domain of the village, from the foundation through to completion.", context: "founding team section lede" })}
+          {t({ message: "We're forming the founding roles who will hold critical domains from foundation building through to completion.", context: "founding team section lede" })}
         </p>
         {/* Hiring the founding team first (Rye, 14 Nov 2026): one line, so a visitor sharing the link sees there is more to come. */}
         <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground" data-hiring-first="">

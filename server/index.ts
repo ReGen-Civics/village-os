@@ -18231,7 +18231,7 @@ Send an empty drafts array when you are still listening. A role payload is {name
       menu: menuDocOf((contentRepo.get() as Record<string, unknown> | null)?.[MENU_SECTION]), // the village's own menu and phone tabs: gap G5, shared/menuDoc.ts
       vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]), // the village's own nouns: gap G4, shared/vocabulary.ts
       noticeBlurbs: noticeBlurbsFor(noticeWordsOf((contentRepo.get() as Record<string, unknown> | null)?.[NOTICE_SECTION]), pageVarsFrom({ ...m, vocabulary: vocabularyOf((contentRepo.get() as Record<string, unknown> | null)?.[VOCAB_SECTION]) } as any)), // gap G6: each kind's description in the village's words, filled
-      contributorReplyDays: numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE), // the four ways in: the days each promises an answer within (shared/contributorRoutes.ts)
+      applicantReplyDays: numberVar(CONTRIBUTOR_REPLY_DAYS_VARIABLE), // the village's one reply promise, said by the application and the four ways in (shared/contributorRoutes.ts)
       defaultLocale: String(stringVar("village.default_locale")), // the language a visitor gets when the browser names none we offer (spec i18n US3)
     });
   });

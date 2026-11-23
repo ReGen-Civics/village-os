@@ -64,11 +64,17 @@ describe("a future venture and an agent-held role on the card", () => {
     expect(screen.getByText("Open venture")).toBeTruthy();
   });
 
-  it("reads Open now, high priority on a venture with its door open, and Accepting proposals on every other (the lead, 23 Nov 2026)", () => {
+  it("reads Open now as an outlined gold pill on a venture with its door open, and Accepting proposals muted on every other (the lead, 23 Nov 2026)", () => {
     const { rerender } = render(<VentureChip role={{ futureVenture: true, recruiting: true }} />);
-    expect(screen.getByTestId("venture-chip").textContent).toBe("Open now, high priority");
+    const open = screen.getByTestId("venture-chip");
+    expect(open.textContent).toBe("Open now");
+    // Outlined in the true gold, never a filled button look, and no priority words.
+    expect(open.className).toMatch(/\bborder-dash-gold\b/);
+    expect(open.className).not.toMatch(/\bbg-notice\b/);
+    expect(open.textContent).not.toMatch(/priority/i);
     rerender(<VentureChip role={{ futureVenture: true, recruiting: false }} />);
     expect(screen.getByTestId("venture-chip").textContent).toBe("Accepting proposals");
+    expect(screen.getByTestId("venture-chip").className).toMatch(/text-muted-foreground/);
     // CONTROL: an open door on a role that is not a venture draws no venture badge.
     rerender(<VentureChip role={{ recruiting: true }} />);
     expect(screen.queryByTestId("venture-chip")).toBeNull();

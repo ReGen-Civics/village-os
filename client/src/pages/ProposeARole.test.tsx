@@ -416,11 +416,11 @@ describe("the six steps", () => {
       "Step 6: Review & submit",
     ]);
     // Nothing of the game register on this page, the routes beside a role among it: there the quest route is "Offer a
-    // one-off contribution", with the same link (the lead, 23 Nov 2026).
+    // one-off piece of work", with the same link (the lead, 23 Nov 2026).
     expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
-    expect(document.querySelector('[data-more-roles] [data-route-door="quest"]')?.textContent).toMatch(/^Offer a one-off contribution/);
+    expect(document.querySelector('[data-more-roles] [data-route-door="quest"]')?.textContent).toMatch(/^Offer a one-off piece of work/);
     expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
-      ["venture", "/role-proposals/new"],
+      ["venture", "/roles#open-ventures"],
       ["partner", "/partner"],
       ["quest", "/propose-quest"],
     ]);
@@ -1047,8 +1047,13 @@ describe("the sent threshold", () => {
     expect(steps.querySelectorAll("li")).toHaveLength(2);
     expect(steps.textContent).toMatch(/Open the link in that email by /);
     expect(steps.textContent).toMatch(/Our review: we read every application, and write to you by /);
-    const doors = within(document.querySelector("[data-wait-doors]") as HTMLElement).getAllByRole("link").map((a) => a.getAttribute("href"));
+    const panel = document.querySelector("[data-wait-doors]") as HTMLElement;
+    const doors = within(panel).getAllByRole("link").filter((a) => !a.closest("[data-wait-routes]")).map((a) => a.getAttribute("href"));
     expect(doors).toEqual(["/roles", "/love-letter"]);
+    // One "While you wait" panel, the other ways to build inside it (QA, 23 Nov 2026), with no second reply promise.
+    expect(document.querySelectorAll("[data-wait-doors]")).toHaveLength(1);
+    expect(Array.from(panel.querySelectorAll("[data-wait-routes] [data-route-door]")).map((a) => a.getAttribute("data-route-door"))).toEqual(["venture", "partner", "quest"]);
+    expect(document.querySelector("[data-route-promise]")).toBeNull();
     expect(document.querySelector('[data-threshold="sent"] [data-met="false"]')).toBeTruthy();
   });
 
@@ -1073,6 +1078,12 @@ describe("the sent threshold", () => {
     const wait = document.querySelector('[data-role-not-open] [data-waitlist-role="r-gate"]') as HTMLAnchorElement;
     expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-gate");
     expect(wait.textContent).toContain("Join the waitlist for Gate Keeper");
+    // Buttons, as on the Upcoming roles cards (the lead, 23 Nov 2026): the waitlist edged, Apply early in the accent, 44px.
+    expect(wait.className).toContain("min-h-11");
+    expect(wait.className).not.toContain("underline");
+    const early = document.querySelector('[data-role-not-open] [data-apply-early="r-gate"]') as HTMLElement;
+    expect(early.className).toContain("border-notice/70");
+    expect(early.className).toContain("min-h-11");
     // No form, and the draft this device kept is exactly as it was.
     expect(document.querySelector("[data-open-proposal]")).toBeNull();
     expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBe(kept);
@@ -1265,7 +1276,7 @@ describe("design G2: the desk and the panes", () => {
     await applyFor();
     const rail = document.querySelector("[data-rewards-beside]") as HTMLElement;
     expect(rail.closest("aside")).toBe(document.querySelector("[data-role-beside]")?.closest("aside"));
-    expect(rail.textContent).toContain("How rewards work");
+    expect(rail.textContent).toContain("How compensation works");
     // No fixed tiles beside the split they edit (production check of 1.3.24): the village's default in one line.
     expect(rail.querySelectorAll("dd")).toHaveLength(0);
     expect(rail.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");

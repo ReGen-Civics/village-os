@@ -26,7 +26,7 @@ import type { ReactNode } from "react";
 import { useLingui } from "@lingui/react/macro";
 export { OpensLaterNote } from "./OpensLaterNote";
 import { ArrowRight, Check, Plus, X } from "lucide-react";
-import { BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TICK, TILE } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_SECONDARY, CARD, DOOR, EYEBROW, FIELD, HINT, LABEL, QUIET, TICK, TILE } from "@/components/journey/look";
 import { LAST_STONE, stoneOfField } from "./stones";
 import { applyWordT } from "./applyWordsT";
 import { DraftMark } from "@/components/proposalDrafts/AskSera";
@@ -383,13 +383,14 @@ export function NotOpenYet({ role, onEarly, children }: { role: { id: string; na
       <p className="text-base leading-relaxed text-foreground">
         {t({ message: "Join its waitlist to hear when it opens.", context: "founding application, a coming-soon role" })}
       </p>
-      <a href={waitlistHref(role.id)} className={`${DOOR} justify-self-start`} data-waitlist-role={role.id}>
+      {/* A button, as on the Upcoming roles cards (the lead, 23 Nov 2026): the waitlist edged, Apply early in the accent. */}
+      <a href={waitlistHref(role.id)} className={`${BTN_SECONDARY} justify-self-start`} data-waitlist-role={role.id}>
         {t({ message: `Join the waitlist for ${role.name}`, context: "founding application, a coming-soon role's waitlist" })}
         <ArrowRight className="size-4" aria-hidden="true" />
       </a>
       <div className={`${GOLD_RULE} grid gap-3 pt-4`} data-early-offer="">
         <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
-        <button type="button" onClick={onEarly} className={`${BTN_SECONDARY} justify-self-start`} data-apply-early={role.id}>
+        <button type="button" onClick={onEarly} className={`${BTN_NOTICE} justify-self-start`} data-apply-early={role.id}>
           {t({ message: `Apply early for ${role.name}`, context: "founding application, add a coming-soon role as an early application" })}
         </button>
       </div>
@@ -527,7 +528,7 @@ function OwnSplits({ setup, splits }: { setup: FoundingSetup; splits: ReadonlyAr
  */
 export function RewardsBeside({ setup, splits = [], collapsed = false }: { setup: FoundingSetup; splits?: ReadonlyArray<{ name: string; line: string }>; collapsed?: boolean }) {
   const { t } = useLingui();
-  const heading = t({ message: "How rewards work", context: "founding application compensation" });
+  const heading = t({ message: "How compensation works", context: "founding application compensation" });
   const body = (
     <>
       <OwnSplits setup={setup} splits={splits} />

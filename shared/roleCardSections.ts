@@ -12,7 +12,7 @@
  *   aiSupport         "Digital Companion": one or two sentences on the companion that
  *                     saves the role time
  *   aiCompanion       the companion's animal, one or two words ("Heron")
- *   paid              true draws "This role is rewarded" at the top of the card
+ *   paid              true draws "This is a paid role" at the top of the card (compensation words for a role, 23 Nov 2026)
  *   payShape          the SHAPE of the pay, never an amount: each share a label
  *                     and a percent ("Cash 40", "Equity 55", "Credits 5")
  *   payNote           the line under the shape (indicative, under review)
@@ -131,8 +131,8 @@ export const SECTION_WORDS = {
   where: "Where, in the card's own words",
   applyBy: "Apply by (the last day to apply)",
   aiCompanionLabel: "Companion",
-  paid: "This role is rewarded",
-  payShape: "How rewards work",
+  paid: "This is a paid role",
+  payShape: "How compensation works",
   editorHeading: "Who we hope for, and how pay works",
   editorLede: "Shown on the full card to everyone. We're transparent about all compensation and how value in (contributions) equals value out (rewards).",
   paidToggle: "Say on the card that this is a paid role",
@@ -276,7 +276,7 @@ function choice<T extends string>(raw: unknown, allowed: readonly T[]): { ok: tr
 /** The pay shape: shares with a name and a whole percent, adding to no more than 100. */
 export function readPayShape(raw: unknown): { ok: true; value: PayShare[] } | { ok: false; problem: string } {
   if (raw === null || raw === undefined) return { ok: true, value: [] };
-  if (!Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.notAList("How rewards work") };
+  if (!Array.isArray(raw)) return { ok: false, problem: SECTION_PROBLEMS.notAList("How compensation works") };
   if (raw.length > SECTION_LIMITS.shares) return { ok: false, problem: SECTION_PROBLEMS.tooManyShares };
   const out: PayShare[] = [];
   for (const item of raw) {

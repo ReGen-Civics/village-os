@@ -13,7 +13,8 @@ import SeasonGoals from "@/components/roleDraft/SeasonGoals";
 import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, LINK, RING, TILE, WORLD } from "@/components/journey/look";
 import NotListedChip from "@/components/NotListedChip";
 import { ComingSoonChip, HeldByAgentLine, VentureChip } from "@/components/ComingSoon";
-import { FourWaysSection, GiftSection, StartVentureButton } from "@/components/ContributorRoutes";
+import { FourWaysSection, GiftSection, StartVentureButton, useVentureHref } from "@/components/ContributorRoutes";
+import { goToSection, ROLES_PAGE_ANCHORS, ROLES_SECTIONS } from "@/lib/sectionAnchor";
 import Layout from "@/components/Layout";
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
@@ -141,7 +142,8 @@ function oldLink(): { seat: string | null; hash: string | null } {
 export function roleForOldLink(link: { seat: string | null; hash: string | null }, roles: ReadonlyArray<{ id: string; path: string }>): { id: string; path: string } | null {
   if (link.seat) return roles.find((r) => r.id === link.seat) ?? null;
   const h = link.hash;
-  if (!h || h.startsWith("waitlist-")) return null;
+  // A waitlist hash and the page's own sections (#founding-team, #open-ventures...) are anchors on this page, never a role.
+  if (!h || h.startsWith("waitlist-") || ROLES_PAGE_ANCHORS.has(h)) return null;
   const id = h.startsWith("role-") ? h.slice(5) : h;
   return roles.find((r) => r.id === id || r.id === h || r.path === `/roles/${h}`) ?? null;
 }
@@ -485,6 +487,25 @@ export default function Roles() {
   const HeroHeading = leads ? "h2" : "h1";
   // The header waits for both reads, so it never draws on top and then jumps below the founding team.
   const heroShown = founding !== null && (!founding.on || roles !== null || failed);
+  // Join the team and Start a venture land on this page's founding team and open ventures while the founding team
+  // leads; with none leading neither section is drawn, so they go to the role board and the venture form instead.
+  const ventureHref = useVentureHref();
+  const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
+  // Arriving on /roles#founding-team or /roles#open-ventures (from the home page, a thank-you page or the footer): once
+  // the section is drawn, scroll to it and focus its heading, as a press on this page does (client/src/lib/sectionAnchor.ts).
+  const landed = useRef(false);
+  useEffect(() => {
+    if (landed.current || !heroShown) return;
+    const h = decodeURIComponent(window.location.hash.replace(/^#/, ""));
+    if (h !== ROLES_SECTIONS.team && h !== ROLES_SECTIONS.venture) {
+      landed.current = true;
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      if (goToSection(h, { push: false })) landed.current = true;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [heroShown, leads, roles]);
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
@@ -612,7 +633,7 @@ export default function Roles() {
   const otherWaysSection = (
     <>
           {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build, at the end of the lists. */}
-          <GiftSection />
+          <GiftSection hrefs={elsewhere} />
           {/* OTHER WAYS TO JOIN: clearly secondary to the founding team, and open from the start. */}
           <section aria-labelledby="other-ways" className={`mx-auto mb-14 max-w-4xl ${featured.length > 0 ? "border-t border-border pt-10" : ""}`} data-other-ways="">
             <h2 id="other-ways" className={`${H2} mb-2`}>{t({ message: "Other ways to join", context: "roles page, other ways to join" })}</h2>
@@ -711,13 +732,15 @@ export default function Roles() {
               </div>
             )}
           </div>
-          {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026), at the top; Join the team points at the open roles below. */}
-          <FourWaysSection hrefs={leads ? { team: "#open-now-heading" } : featured.length === 0 ? { team: "/roles/select" } : {}} />
+          {/* FOUR WAYS TO BUILD (the lead, 23 Nov 2026), at the top. Join the team scrolls down to the founding team and Start a
+              venture to the open ventures, on this page; with no founding team leading, neither section is drawn, so they go to
+              the role board and the venture form. */}
+          <FourWaysSection hrefs={elsewhere} />
           {leads && (
             <>
               {featuredHidden.length > 0 && beyondLine}
               {/* 1. OPEN ROLES: the founding team's full cards, each role in its own frame, then the roles opening next. */}
-              {featuredVisible.length > 0 && <FoundingTeam lead roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} comingSoon={teamTimeline} />}
+              {featuredVisible.length > 0 && <FoundingTeam lead anchorId={ROLES_SECTIONS.team} roles={featuredVisible} villagePay={founding?.villagePay ?? null} filled={teamFilled} orgPreview={orgPreview} fill={founding?.fill ?? {}} laterCount={openingNext.length} builds={builds} onOpenBuilt={openBuilt} view={lineupView} onView={setLineupView} heading={openHeading} toBeAdded={toBeAdded} sheetRoster={false} comingSoon={teamTimeline} />}
               {featuredVisible.length === 0 && openingNext.length > 0 && <div className="mx-auto mb-6 max-w-4xl">{openHeading}</div>}
               {openingNext.length > 0 && (
                 <section id="opening-next" aria-labelledby="opening-next-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24" data-opening-next={openingNext.length}>
@@ -746,17 +769,14 @@ export default function Roles() {
                 </section>
               )}
               {/* 2. OPEN VENTURES: a row the village flagged `futureVenture` (0399). With none, the group says so. */}
-              <section id="future-ventures" aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
+              <section id={ROLES_SECTIONS.venture} aria-labelledby="future-ventures-heading" className={`mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl ${GROUP_BREAK}`} data-future-ventures={ventures.length}>
                 <p className={EYEBROW}>{t({ message: "Build with us", context: "roles page, the open ventures' eyebrow" })}</p>
-                <h2 id="future-ventures-heading" className={`${GROUP_H2} mt-1 mb-2`}>
+                <h2 id="future-ventures-heading" tabIndex={-1} data-section-focus="" className={`${GROUP_H2} mt-1 mb-2 outline-none`}>
                   {t({ message: "Open ventures", context: "roles page, ventures to build and run, applied for with a pitch" })} {roleCount(ventures.length)}
                 </h2>
                 {/* What a venture is, and the one door to pitch your own (the lead, 23 Nov 2026). */}
-                <p className="mb-2 max-w-2xl text-base leading-relaxed text-foreground" data-venture-explainer="">
+                <p className="mb-4 max-w-2xl text-base leading-relaxed text-foreground" data-venture-explainer="">
                   {t({ message: "A venture is a business you build and run on the land with the village. You earn from what you build; it is separate from a paid role.", context: "roles page, open ventures: what a venture is" })}
-                </p>
-                <p className="mb-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  {t({ message: "Pieces of the village we're inviting people to build and run. Bring your venture: apply to hold one, and pitch your vision.", context: "roles page, open ventures" })}
                 </p>
                 <StartVentureButton />
                 {ventures.length > 0 ? (

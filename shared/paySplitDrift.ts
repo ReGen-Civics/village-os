@@ -97,7 +97,7 @@ export function storedSplitWords(shape: readonly PayShare[]): string {
 
 /** The refusal: the words, where they are, and the split the card pays. */
 export function splitDriftProblem(d: SplitDrift, shape: readonly PayShare[], fieldLabel: string): string {
-  return `${fieldLabel} says "${d.said}", but this card's split is ${storedSplitWords(shape)}. Change the words to match, or change the split under How rewards work.`;
+  return `${fieldLabel} says "${d.said}", but this card's split is ${storedSplitWords(shape)}. Change the words to match, or change the split under How compensation works.`;
 }
 
 /** Every line of a word field's value, a string or a list of them. */

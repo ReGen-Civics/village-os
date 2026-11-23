@@ -2827,25 +2827,14 @@ export const VARIABLES: VariableDef[] = [
     category: "The village's people",
     label: "Days we promise to reply to a role proposal",
     description:
-      "The number of days the applicant's status page says we reply within. It is a promise to the person, so set the number the people who reply can keep. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.",
+      "The number of days the applicant's status page and thank-you page say we reply within, and the one promise under the four ways to build the village (join the team, start a venture, become a partner, propose a quest). It is a promise to the person, so set the number the people who reply can keep. The reminder to the role that sends first replies runs on its own clock (3 business days) and is not changed by this.",
     type: "integer",
     default: "7",
     min: 1,
     max: 60,
     unit: "days",
   },
-  {
-    key: "org.contributor_reply_days",
-    category: "The village's people",
-    label: "Days we promise to answer someone who offers to build with us",
-    description:
-      "The four ways to build the village (join the team, start a venture, become a partner, propose a quest) each say the person hears back within this many days. It is a promise to the person, so set the number the people who answer can keep.",
-    type: "integer",
-    default: "14",
-    min: 1,
-    max: 60,
-    unit: "days",
-  },
+
   {
     key: "org.partnerships_role",
     category: "The village's people",
@@ -3050,9 +3039,9 @@ export const VARIABLES: VariableDef[] = [
   {
     key: "org.pay_shape",
     category: "The founding team",
-    label: "How rewards work, on every role card",
+    label: "How compensation works, on every role card",
     description:
-      "The shape of the pay every role card shows under \"How rewards work\", as shares of the whole, never an amount: write each share's name and percent, separated by commas, like Cash 60, Equity 40, Credits 0. The shares add up to 100 or less, and a share at 0 still shows, as 0%. A role whose card writes its own shares shows those instead. Empty, cards show no pay shape.",
+      "The shape of the pay every role card shows under \"How compensation works\", as shares of the whole, never an amount: write each share's name and percent, separated by commas, like Cash 60, Equity 40, Credits 0. The shares add up to 100 or less, and a share at 0 still shows, as 0%. A role whose card writes its own shares shows those instead. Empty, cards show no pay shape.",
     type: "text",
     default: "",
   },

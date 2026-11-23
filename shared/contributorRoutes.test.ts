@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONTRIBUTOR_ROUTES, partnerProblem, replyDaysOf, routesExcept, type PartnerProposal } from "./contributorRoutes";
+import { CONTRIBUTOR_REPLY_DAYS_VARIABLE, CONTRIBUTOR_ROUTES, partnerProblem, partnerProblems, replyDaysOf, routesExcept, type PartnerProposal } from "./contributorRoutes";
 
 describe("the four ways to build (the lead, 23 Nov 2026)", () => {
   it("runs largest commitment first, and leaves out only what the caller names", () => {
@@ -8,10 +8,11 @@ describe("the four ways to build (the lead, 23 Nov 2026)", () => {
     expect(routesExcept()).toEqual(["team", "venture", "partner", "quest"]);
   });
 
-  it("promises the village's own days, 1 to 60, and 14 for anything else", () => {
-    expect(replyDaysOf(7)).toBe(7);
+  it("promises the village's one reply number, 1 to 60, and its default 7 for anything else", () => {
+    expect(CONTRIBUTOR_REPLY_DAYS_VARIABLE).toBe("org.applicant_reply_days");
+    expect(replyDaysOf(9)).toBe(9);
     expect(replyDaysOf("21")).toBe(21);
-    for (const bad of [undefined, null, 0, 61, 2.5, "", "soon"]) expect(replyDaysOf(bad)).toBe(14);
+    for (const bad of [undefined, null, 0, 61, 2.5, "", "soon"]) expect(replyDaysOf(bad)).toBe(7);
   });
 });
 
@@ -30,5 +31,9 @@ describe("a partner proposal", () => {
     expect(partnerProblem({ ...ok, serves: ["money" as never] })).toBe("serves");
     expect(partnerProblem({ ...ok, offer: "" })).toBe("offer");
     expect(partnerProblem({ ...ok, wish: "" })).toBe("wish");
+  });
+  it("lists every thing to fix, in the form's order", () => {
+    expect(partnerProblems(ok)).toEqual([]);
+    expect(partnerProblems({ ...ok, email: "ana", serves: [], wish: " " })).toEqual(["email", "serves", "wish"]);
   });
 });

@@ -13,9 +13,13 @@
 export const CONTRIBUTOR_ROUTES = ["team", "venture", "partner", "quest"] as const;
 export type ContributorRoute = (typeof CONTRIBUTOR_ROUTES)[number];
 
-/** The days each route promises an answer within, as a village variable (default 14). */
-export const CONTRIBUTOR_REPLY_DAYS_VARIABLE = "org.contributor_reply_days";
-export const CONTRIBUTOR_REPLY_DAYS_DEFAULT = 14;
+/**
+ * ONE REPLY PROMISE (the lead, 23 Nov 2026): the four ways say the same number of days as the application's thank-you
+ * page, from the village variable that already held it, `org.applicant_reply_days` (default 7). A second variable for
+ * the four ways (14 days) was dropped before it shipped, so the two promises can never disagree on one screen.
+ */
+export const CONTRIBUTOR_REPLY_DAYS_VARIABLE = "org.applicant_reply_days";
+export const CONTRIBUTOR_REPLY_DAYS_DEFAULT = 7;
 
 /** A promise the page can keep: a whole number of days from 1 to 60, else the default. */
 export function replyDaysOf(raw: unknown): number {
@@ -63,14 +67,23 @@ export type PartnerProblem = "name" | "email" | "project" | "link" | "serves" | 
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/**
+ * Every thing missing or wrong in a partner proposal, in the form's order; [] when it can be sent. The form lists them
+ * all at once, each linked to its field (QA, 23 Nov 2026), so nobody fixes one and meets the next.
+ */
+export function partnerProblems(p: PartnerProposal): PartnerProblem[] {
+  const out: PartnerProblem[] = [];
+  if (!p.name.trim() || p.name.length > PARTNER_LIMITS.name) out.push("name");
+  if (!EMAIL.test(p.email.trim()) || p.email.length > PARTNER_LIMITS.email) out.push("email");
+  if (!p.project.trim() || p.project.length > PARTNER_LIMITS.project) out.push("project");
+  if (p.link.trim() && (!/^https?:\/\/\S+$/i.test(p.link.trim()) || p.link.length > PARTNER_LIMITS.link)) out.push("link");
+  if (p.serves.length === 0 || p.serves.some((s) => !PARTNER_SERVES.includes(s))) out.push("serves");
+  if (!p.offer.trim() || p.offer.length > PARTNER_LIMITS.prose) out.push("offer");
+  if (!p.wish.trim() || p.wish.length > PARTNER_LIMITS.prose) out.push("wish");
+  return out;
+}
+
 /** The first thing missing or wrong in a partner proposal, or null when it can be sent. */
 export function partnerProblem(p: PartnerProposal): PartnerProblem | null {
-  if (!p.name.trim() || p.name.length > PARTNER_LIMITS.name) return "name";
-  if (!EMAIL.test(p.email.trim()) || p.email.length > PARTNER_LIMITS.email) return "email";
-  if (!p.project.trim() || p.project.length > PARTNER_LIMITS.project) return "project";
-  if (p.link.trim() && (!/^https?:\/\/\S+$/i.test(p.link.trim()) || p.link.length > PARTNER_LIMITS.link)) return "link";
-  if (p.serves.length === 0 || p.serves.some((s) => !PARTNER_SERVES.includes(s))) return "serves";
-  if (!p.offer.trim() || p.offer.length > PARTNER_LIMITS.prose) return "offer";
-  if (!p.wish.trim() || p.wish.length > PARTNER_LIMITS.prose) return "wish";
-  return null;
+  return partnerProblems(p)[0] ?? null;
 }
