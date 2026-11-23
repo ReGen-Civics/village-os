@@ -2479,6 +2479,12 @@ msgctxt "role card tooltip: Digital Companion"
 msgid "The AI assistant that works beside the person in this role. It drafts, remembers and prepares; the person decides."
 msgstr "El asistente de IA que trabaja junto a la persona en este rol. Redacta, recuerda y prepara; la persona decide."
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: off"
+msgstr "Correo del informe de operaciones: desactivado"
+
 #: client/src/components/yourList/ReasonSheet.tsx
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -5090,6 +5096,12 @@ msgstr ""
 msgctxt "button that adds a practice that keeps tensions small"
 msgid "Add a practice"
 msgstr ""
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "Daily digest"
+msgstr "Resumen diario"
 
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
@@ -10034,6 +10046,12 @@ msgctxt "calendar turnings"
 msgid "New moon, the next moon opens"
 msgstr "Luna nueva, se abre la próxima luna"
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: what the operations report is"
+msgid "The daily list of actions that did not go through."
+msgstr "La lista diaria de acciones que no se completaron."
+
 #: client/src/components/power/CardBookingLink.tsx
 msgctxt "role card: book a conversation on WhatsApp"
 msgid "Message on WhatsApp"
@@ -10202,6 +10220,12 @@ msgstr ""
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "The village switched these quests to the other count."
 msgstr ""
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "In-app only"
+msgstr "Solo en la app"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note kind"
@@ -12389,6 +12413,12 @@ msgstr "Roles por añadir:"
 msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr ""
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
 
 #: client/src/components/budgets/BudgetDesk.tsx
 #: client/src/components/budgets/BudgetEditor.tsx
@@ -14712,6 +14742,12 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "I accept"
 msgstr "Acepto"
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: daily"
+msgstr "Correo del informe de operaciones: diario"
+
 #: client/src/components/roleCard/PieceSuggestionsReview.tsx
 msgctxt "open proposal: suggestions lede"
 msgid "Their own words, beside each piece of the role card they are about. Nothing here is scored or summarised."
@@ -14846,6 +14882,12 @@ msgstr "No lo sé"
 msgctxt "button that removes a practice"
 msgid "Remove this practice"
 msgstr ""
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email"
+msgstr "Correo del informe de operaciones"
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Anything you want the stewards to know (optional)"
@@ -22691,6 +22733,12 @@ msgctxt "hidden map page"
 msgid "{0} vouched"
 msgstr ""
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: the daily failed-actions report email, admins and founders only"
+msgid "Operations reports"
+msgstr "Informes de operaciones"
+
 #: client/src/pages/rites/ComeAboard.tsx
 msgctxt "rites"
 msgid "Ask to join"
@@ -24958,6 +25006,12 @@ msgstr "Asignación"
 msgid "Apply for these roles"
 msgstr "Postúlate a estos roles"
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is daily for this member"
+msgstr "El correo del informe de operaciones es diario para este miembro"
+
 # needs-native-review: new words, 15 Nov 2026
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -25329,6 +25383,12 @@ msgstr "Guardamos tus respuestas de la última vez. Las referencias, los archivo
 #~ msgctxt "open proposal companion"
 #~ msgid "Start with the role that calls you. Pick up to three, and tell us what you bring to each if you like."
 #~ msgstr "Empieza por el rol que te llama. Elige hasta tres y, si quieres, cuéntanos lo que traes a cada uno."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is off for this member"
+msgstr "El correo del informe de operaciones está desactivado para este miembro"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "when a practice happens"
@@ -26124,63 +26184,3 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/NotifyPrefsPanel.tsx
-msgctxt "notification settings: the daily failed-actions report email, admins and founders only"
-msgid "Operations reports"
-msgstr "Informes de operaciones"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/NotifyPrefsPanel.tsx
-msgctxt "notification settings: what the operations report is"
-msgid "The daily list of actions that did not go through."
-msgstr "La lista diaria de acciones que no se completaron."
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/NotifyPrefsPanel.tsx
-msgctxt "notification settings: email cadence option"
-msgid "Daily digest"
-msgstr "Resumen diario"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/NotifyPrefsPanel.tsx
-msgctxt "notification settings: email cadence option"
-msgid "In-app only"
-msgstr "Solo en la app"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email"
-msgid "That did not save. Try again."
-msgstr "No se guardó. Inténtalo de nuevo."
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email"
-msgid "Operations report email is off for this member"
-msgstr "El correo del informe de operaciones está desactivado para este miembro"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email"
-msgid "Operations report email is daily for this member"
-msgstr "El correo del informe de operaciones es diario para este miembro"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email"
-msgid "Operations report email"
-msgstr "Correo del informe de operaciones"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email option"
-msgid "Ops report email: daily"
-msgstr "Correo del informe de operaciones: diario"
-
-# needs-native-review: new words, 23 Nov 2026
-#: client/src/components/admin/OpsEmailSwitch.tsx
-msgctxt "admin ops report email option"
-msgid "Ops report email: off"
-msgstr "Correo del informe de operaciones: desactivado"

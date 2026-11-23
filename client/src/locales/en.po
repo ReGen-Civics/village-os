@@ -2447,6 +2447,11 @@ msgctxt "role card tooltip: Digital Companion"
 msgid "The AI assistant that works beside the person in this role. It drafts, remembers and prepares; the person decides."
 msgstr "The AI assistant that works beside the person in this role. It drafts, remembers and prepares; the person decides."
 
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: off"
+msgstr "Ops report email: off"
+
 #: client/src/components/yourList/ReasonSheet.tsx
 #: client/src/components/yourList/RoleHandoffs.tsx
 msgctxt "task handed to a role"
@@ -5032,6 +5037,11 @@ msgstr "Waitlist for coming-soon roles ({0})"
 msgctxt "button that adds a practice that keeps tensions small"
 msgid "Add a practice"
 msgstr "Add a practice"
+
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "Daily digest"
+msgstr "Daily digest"
 
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
@@ -9921,6 +9931,11 @@ msgctxt "calendar turnings"
 msgid "New moon, the next moon opens"
 msgstr "New moon, the next moon opens"
 
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: what the operations report is"
+msgid "The daily list of actions that did not go through."
+msgstr "The daily list of actions that did not go through."
+
 #: client/src/components/power/CardBookingLink.tsx
 msgctxt "role card: book a conversation on WhatsApp"
 msgid "Message on WhatsApp"
@@ -10087,6 +10102,11 @@ msgstr "Attaching..."
 #: client/src/components/fundingRounds/RoundParts.tsx
 msgid "The village switched these quests to the other count."
 msgstr "The village switched these quests to the other count."
+
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "In-app only"
+msgstr "In-app only"
 
 #: client/src/pages/ChangeRequests.tsx
 msgctxt "change request note kind"
@@ -12237,6 +12257,11 @@ msgstr "Roles to be added:"
 msgctxt "sera answers"
 msgid "Withdraw it and end the vote"
 msgstr "Withdraw it and end the vote"
+
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "That did not save. Try again."
+msgstr "That did not save. Try again."
 
 #: client/src/components/budgets/BudgetDesk.tsx
 #: client/src/components/budgets/BudgetEditor.tsx
@@ -14522,6 +14547,11 @@ msgctxt "reviewer's terms panel for a proposal"
 msgid "I accept"
 msgstr "I accept"
 
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: daily"
+msgstr "Ops report email: daily"
+
 #: client/src/components/roleCard/PieceSuggestionsReview.tsx
 msgctxt "open proposal: suggestions lede"
 msgid "Their own words, beside each piece of the role card they are about. Nothing here is scored or summarised."
@@ -14658,6 +14688,11 @@ msgstr "Not sure"
 msgctxt "button that removes a practice"
 msgid "Remove this practice"
 msgstr "Remove this practice"
+
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email"
+msgstr "Operations report email"
 
 #: client/src/pages/ExitPolicy.tsx
 msgid "Anything you want the stewards to know (optional)"
@@ -22437,6 +22472,11 @@ msgctxt "hidden map page"
 msgid "{0} vouched"
 msgstr "{0} vouched"
 
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: the daily failed-actions report email, admins and founders only"
+msgid "Operations reports"
+msgstr "Operations reports"
+
 #: client/src/pages/rites/ComeAboard.tsx
 msgctxt "rites"
 msgid "Ask to join"
@@ -24675,6 +24715,11 @@ msgstr "Allowance"
 msgid "Apply for these roles"
 msgstr "Apply for these roles"
 
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is daily for this member"
+msgstr "Operations report email is daily for this member"
+
 #: client/src/components/myMoon/PayBoard.tsx
 msgctxt "pay board"
 msgid "Pay by member"
@@ -25037,6 +25082,11 @@ msgstr "We kept your answers from last time. References, files and recordings ar
 #~ msgctxt "open proposal companion"
 #~ msgid "Start with the role that calls you. Pick up to three, and tell us what you bring to each if you like."
 #~ msgstr "Start with the role that calls you. Pick up to three, and tell us what you bring to each if you like."
+
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is off for this member"
+msgstr "Operations report email is off for this member"
 
 #: client/src/components/canvas/ConflictAgreementEditor.tsx
 msgctxt "when a practice happens"
