@@ -346,8 +346,11 @@ export const POWERS: readonly PowerEntry[] = [
   {
     capability: "operator.config",
     title: "The village's settings",
-    surface: "Settings, tools, training, the setup assistant, imported pages, drafts and closing a cycle",
+    surface: "Settings, tools, training, the setup assistant, imported pages, drafts, closing a cycle, and opening a venture's credit account",
     routes: [
+      "/api/admin/org-accounts",
+      "/api/admin/org-accounts/:orgRoleId",
+      "/api/admin/org-accounts/:orgRoleId/services",
       "/api/admin/tools",
       "/api/admin/tools/order",
       "/api/admin/tools/:id",

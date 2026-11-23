@@ -1,0 +1,224 @@
+/**
+ * THE CREDITS LOOP, ISSUANCE TO A VENTURE'S ACCOUNT, against the built server
+ * (the lead, 23 Nov 2026: "run and test the whole issuance-to-redemption
+ * process end to end").
+ *
+ *   1. A village token of kind credit, sendable between members.
+ *   2. Minted by hand to a member, inside the village's per-moon cap, and a
+ *      mint past that cap refused.
+ *   3. A venture role in the org chart, a member seated in it, and an account
+ *      opened for it by data, never by a constant.
+ *   4. The member pays the venture through the ordinary send; a retried tap
+ *      pays once; the person who runs the venture cannot pay it.
+ *   5. The person who runs it sees the balance and the payment; the admin
+ *      sees the same; the ledger still sums to zero.
+ *   6. STOPS AT THE SEAM credits lane 2 fills: the venture redeems, a Treasury
+ *      role confirms, inside the per-moon redemption cap. Marked `todo` below
+ *      so the suite says what it does not yet prove.
+ *
+ * `scripts/rehearse-credits-loop.mjs` drives the same steps over HTTP against
+ * a scratch or staging village, for an admin to run by hand.
+ *
+ * Boots the BUILT server: run `pnpm build` first. The cases run IN ORDER.
+ * Skips loudly without TEST_DATABASE_URL.
+ */
+import fs from "fs";
+import os from "os";
+import path from "path";
+import type { Pool } from "mysql2/promise";
+import { spawn, type ChildProcess } from "child_process";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { provisionTestDb, testDbConfigured, testPool, type TestDb, waitForPortFree } from "./db/testDb";
+import { waitForHealth } from "./db/e2eBoot";
+
+const DB_CONFIGURED = testDbConfigured();
+if (!DB_CONFIGURED) {
+  console.warn("[creditsLoop.e2e] TEST_DATABASE_URL not set - DB-backed tests SKIPPED.");
+}
+
+const DIST = path.resolve(process.cwd(), "dist/index.js");
+// Its window is checked by scripts/check-e2e-ports.mjs, never claimed by hand here.
+const PORT = 6670 + (process.pid % 9);
+const BASE = `http://localhost:${PORT}`;
+const ADMIN = "cl-admin";
+const PASSWORD = "CreditsLoop123!";
+const SLUG = "cl-credit";
+
+let child: ChildProcess | undefined;
+let testDb: TestDb | undefined;
+let dataDir = "";
+let pool: Pool;
+let founderToken = "";
+let roleId = "";
+/** One whole token in minor units, read off the wallet's own scale. */
+let UNIT = 0;
+const people = { payer: { token: "", id: "" }, runner: { token: "", id: "" } };
+const serverLogs: string[] = [];
+
+async function call(method: string, route: string, body?: unknown, token = founderToken): Promise<{ status: number; json: any; text: string }> {
+  const res = await fetch(BASE + route, { // module-review-ok: the test client dialling the built server on localhost, as every e2e suite does
+    method,
+    headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await res.text();
+  let json: any = null;
+  try { json = JSON.parse(text); } catch { /* non-JSON stays visible through text */ }
+  return { status: res.status, json, text };
+}
+
+async function register(name: string, slug: string): Promise<{ token: string; id: string }> {
+  const r = await call("POST", "/api/auth/register", { name, email: `${slug}-${PORT}@example.test`, password: PASSWORD, paths: ["resident"] }, "");
+  expect(r.status, `${name} must register: ${r.text}`).toBe(200);
+  return { token: String(r.json?.token ?? ""), id: String(r.json?.user?.id ?? "") };
+}
+
+async function dial(key: string, value: string): Promise<void> {
+  const r = await call("PUT", `/api/admin/variables/${key}`, { value });
+  expect(r.status, `${key} = ${value}: ${r.text}`).toBe(200);
+}
+
+async function held(token: string): Promise<number> {
+  const w = await call("GET", "/api/wallet", undefined, token);
+  return Number(w.json?.ledger?.[SLUG] ?? 0);
+}
+
+beforeAll(async () => {
+  if (!DB_CONFIGURED) return;
+  if (!fs.existsSync(DIST)) throw new Error(`${DIST} is missing. Run \`pnpm build\` before the credits loop test.`);
+  dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "village-cl-"));
+  testDb = await provisionTestDb();
+  pool = testPool(testDb, { connectionLimit: 4 }); // module-review-ok: the suite's own pool onto the scratch schema it provisioned
+  await waitForPortFree(PORT);
+  child = spawn(process.execPath, [DIST], {
+    env: {
+      ...process.env,
+      NODE_ENV: "production",
+      PORT: String(PORT),
+      SCHEDULER_ENABLED: "0",
+      DATA_DIR: dataDir,
+      DATABASE_URL: testDb.url,
+      ADMIN_PASSWORD: ADMIN,
+      AUTH_TOKEN_SECRET: "cl-token-secret", // module-review-ok: a fixture signing secret for a throwaway server on a scratch schema, same as every e2e suite
+      RESEND_API_KEY: "",
+      ANTHROPIC_API_KEY: "",
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  child.stdout?.on("data", (d) => serverLogs.push(String(d)));
+  child.stderr?.on("data", (d) => serverLogs.push(String(d)));
+  await waitForHealth({ base: BASE, logs: serverLogs, child });
+
+  const boot = await call("POST", "/api/admin/bootstrap", { password: ADMIN, email: `founder-${PORT}@example.test`, name: "Loop Founder" }, "");
+  const claim = decodeURIComponent(String(boot.json?.claimUrl ?? "").match(/token=([^&]+)/)?.[1] ?? "");
+  const setPw = await call("POST", "/api/auth/set-password", { token: claim, password: PASSWORD }, "");
+  founderToken = String(setPw.json?.token ?? "");
+  expect(founderToken, "the founder must hold a session").toBeTruthy();
+  people.payer = await register("Pat Payer", "cl-payer");
+  people.runner = await register("Rae Runner", "cl-runner");
+}, 300_000);
+
+afterAll(async () => {
+  if (child) {
+    const exited = new Promise<void>((resolve) => child!.once("exit", () => resolve()));
+    child.kill();
+    await exited;
+  }
+  await pool?.end();
+  await testDb?.drop();
+  if (dataDir) fs.rmSync(dataDir, { recursive: true, force: true });
+});
+
+describe.skipIf(!DB_CONFIGURED)("the credits loop, issuance to a venture's account", () => {
+  it("1. a credit token members may send, and the village's dials", async () => {
+    const made = await call("POST", "/api/admin/tokens", { slug: SLUG, name: "Loop Credit", kind: "credit", transferable: true });
+    expect(made.status, made.text).toBe(200);
+    // The issuance cap is the village's own (`ledger.admin_mint_cycle_cap`); once the Game has started only a vote moves it, so this reads it.
+    // Both venture dials ship off: the door is shut until the village opens it.
+    const shut = await call("GET", "/api/org-accounts", undefined, people.payer.token);
+    expect(shut.json).toEqual({ open: false, payees: [] });
+  });
+
+  it("2. mints inside the per-moon cap, and refuses past it", async () => {
+    const ok = await call("POST", `/api/admin/tokens/${SLUG}/mint`, { toUserId: people.payer.id, amount: 60, reason: "pay pool trial" });
+    expect(ok.status, ok.text).toBe(200);
+    UNIT = (await held(people.payer.token)) / 60;
+    expect(UNIT, "sixty whole tokens arrived").toBeGreaterThan(0);
+    const cap = Number(ok.json?.cap ?? 0);
+    expect(cap, "the mint answers the cap it counted against").toBeGreaterThan(60);
+    const over = await call("POST", `/api/admin/tokens/${SLUG}/mint`, { toUserId: people.payer.id, amount: cap, reason: "past the cap" });
+    expect(over.status, over.text).toBe(409);
+    expect(await held(people.payer.token)).toBe(60 * UNIT);
+  });
+
+  it("3. a venture role, someone seated in it, and an account opened for it", async () => {
+    const role = await call("POST", "/api/admin/org/roles", { name: "Trial Venture", circleId: null, aim: "Runs a small venture for the village", seats: 1 });
+    expect(role.status, role.text).toBe(200);
+    roleId = String(role.json?.id ?? "");
+    const seated = await call("POST", `/api/admin/org/roles/${roleId}/holders`, { userId: people.runner.id, holderKind: "member" });
+    expect(seated.status, seated.text).toBe(200);
+
+    const before = await call("GET", "/api/admin/org-accounts");
+    expect(before.status, before.text).toBe(200);
+    expect(before.json.roles.map((r: any) => r.id)).toContain(roleId);
+    expect(before.json.open).toBe(false);
+
+    const opened = await call("POST", "/api/admin/org-accounts", { orgRoleId: roleId, label: "Trial Venture account" });
+    expect(opened.status, opened.text).toBe(200);
+    expect(opened.json.account).toMatchObject({ orgRoleId: roleId, accountId: `org:${roleId}`, label: "Trial Venture account", balances: {} });
+    const twice = await call("POST", "/api/admin/org-accounts", { orgRoleId: roleId });
+    expect(twice.json.existed, "a second open finds the first").toBe(true);
+
+    // A member is refused the admin door.
+    const denied = await call("GET", "/api/admin/org-accounts", undefined, people.payer.token);
+    expect(denied.status).toBeGreaterThanOrEqual(401);
+  });
+
+  it("4. the member pays the venture through the ordinary send, once per tap", async () => {
+    const shut = await call("POST", "/api/wallet/send", { toOrg: roleId, tokenType: SLUG, amount: 5 * UNIT, clientNonce: "cl-shut" }, people.payer.token);
+    expect(shut.status, "the door is shut while the dial is off").toBe(403);
+
+    await dial("ledger.org_accounts_open", "true");
+    const payees = await call("GET", "/api/org-accounts", undefined, people.payer.token);
+    expect(payees.json.payees).toEqual([{ orgRoleId: roleId, label: "Trial Venture account" }]);
+    const runnersList = await call("GET", "/api/org-accounts", undefined, people.runner.token);
+    expect(runnersList.json.payees, "the person who runs it is not offered it").toEqual([]);
+
+    const paid = await call("POST", "/api/wallet/send", { toOrg: roleId, tokenType: SLUG, amount: 25 * UNIT, note: "lunch", clientNonce: "cl-tap-1" }, people.payer.token);
+    expect(paid.status, paid.text).toBe(200);
+    expect(paid.json).toMatchObject({ success: true, duplicate: false, to: "Trial Venture account", sent: 25 * UNIT });
+    const retry = await call("POST", "/api/wallet/send", { toOrg: roleId, tokenType: SLUG, amount: 25 * UNIT, note: "lunch", clientNonce: "cl-tap-1" }, people.payer.token);
+    expect(retry.json?.duplicate, "a retried tap pays once").toBe(true);
+    expect(await held(people.payer.token)).toBe(35 * UNIT);
+
+    await call("POST", `/api/admin/tokens/${SLUG}/mint`, { toUserId: people.runner.id, amount: 10, reason: "runner's own pay" });
+    const own = await call("POST", "/api/wallet/send", { toOrg: roleId, tokenType: SLUG, amount: 5 * UNIT, clientNonce: "cl-own" }, people.runner.token);
+    expect(own.status, "a member never moves their own credits into a venture they run").toBe(409);
+  });
+
+  it("5. the person who runs it sees the balance and the payment, and the ledger sums to zero", async () => {
+    const mine = await call("GET", "/api/org-accounts/mine", undefined, people.runner.token);
+    expect(mine.status, mine.text).toBe(200);
+    expect(mine.json.accounts).toHaveLength(1);
+    expect(mine.json.accounts[0].account.balances[SLUG]).toBe(25 * UNIT);
+    expect(mine.json.accounts[0].history[0]).toMatchObject({ amount: 25 * UNIT, source: "org_send", withName: "Pat Payer", description: "lunch" });
+    const payerSees = await call("GET", "/api/org-accounts/mine", undefined, people.payer.token);
+    expect(payerSees.json.accounts, "a member who runs nothing sees nothing").toEqual([]);
+
+    const detail = await call("GET", `/api/admin/org-accounts/${roleId}`);
+    expect(detail.status, detail.text).toBe(200);
+    expect(detail.json.operators).toEqual(["Rae Runner"]);
+    expect(detail.json.history).toHaveLength(1);
+
+    const [sums] = await pool.query<any[]>("SELECT token_type, SUM(balance) AS total FROM token_balances GROUP BY token_type"); // module-review-ok: a read of the scratch schema this suite provisioned
+    for (const s of sums) expect(Number(s.total), `sum-zero for ${s.token_type}`).toBe(0);
+    const [neg] = await pool.query<any[]>( // module-review-ok: a read of the scratch schema this suite provisioned
+      "SELECT b.account_id FROM token_balances b JOIN ledger_accounts a ON a.id = b.account_id WHERE a.faucet = 0 AND b.balance < 0",
+    );
+    expect(neg).toEqual([]);
+    const [acct] = await pool.query<any[]>("SELECT kind, faucet FROM ledger_accounts WHERE id = ?", [`org:${roleId}`]); // module-review-ok: a read of the scratch schema this suite provisioned
+    expect(acct[0]).toMatchObject({ kind: "org", faucet: 0 });
+  });
+
+  it.todo("6. SEAM for credits lane 2: the venture asks to redeem, a Treasury role confirms, inside the per-moon redemption cap, and the credits leave its account");
+});

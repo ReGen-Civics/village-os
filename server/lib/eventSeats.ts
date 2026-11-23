@@ -40,6 +40,9 @@
  *   take a place   mem:guest        → sys:event-escrow   (event_seat_fee)
  *   give it up     sys:event-escrow → mem:guest          (event_seat_refund)
  *   it happened    sys:event-escrow → sys:treasury       (event_seat_kept)
+ *                  or → org:<roleId>, the venture that runs the gathering,
+ *                  when `ledger.org_service_routing` is on (0419,
+ *                  `seatFeeDestination` in server/lib/orgAccounts.ts)
  *
  * `sys:event-escrow` is NOT a faucet, so it can only ever pay out what
  * somebody paid in. A refund that would drive it negative is refused by the
@@ -51,6 +54,7 @@ import { getCalendarRow, occurrenceOf, type CalendarRow } from "./calendar";
 import { fromLedgerUnits, toLedgerUnits } from "./economy";
 import { TREASURY, memberAccount, postTransfer, tokenDef } from "./ledger";
 import { EVENT_ESCROW } from "./spending";
+import { seatFeeDestination } from "./orgAccounts";
 import { villageTimezone } from "./villageReaders";
 
 export interface SeatPrice {
@@ -451,14 +455,16 @@ export async function settleFinishedSeats(
       "UPDATE event_seat_charges SET status = 'kept', settled_at = NOW() WHERE id = ? AND status = 'held'",
       [row.id],
     );
+    // A venture's own gathering keeps its fee in the venture's account, when the village has that dial on (0419).
+    const venture = await seatFeeDestination(pool, { eventId: row.eventId, payerUserId: row.userId });
     const r = await postTransfer(pool, {
       from: EVENT_ESCROW,
-      to: TREASURY,
+      to: venture?.accountId ?? TREASURY,
       tokenType: row.tokenType,
       amount: row.amount,
       source: "event_seat_kept",
       sourceRef: row.eventId,
-      description: "Seat fee, gathering held",
+      description: venture ? "Seat fee, gathering held, kept by the venture that ran it" : "Seat fee, gathering held",
       idempotencyKey: keysFor(row).keep,
     });
     if (r.ok && !r.duplicate && Number((claim as any)?.affectedRows ?? 0) > 0) {
