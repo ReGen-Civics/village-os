@@ -63,6 +63,8 @@ export type Player = {
   balance: number;
   stageGranted: string | null;
   stageComputed: string;
+  /** The operations report email (server/lib/notify.ts `opsEmail`), set on the card for admins and founders. */
+  opsEmail?: "daily" | "off";
 };
 
 /** Keyed by the union, so a fourth access level cannot render an empty pill. */

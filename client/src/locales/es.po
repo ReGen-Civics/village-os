@@ -26124,3 +26124,63 @@ msgstr ""
 msgctxt "roles page, other ways to join"
 msgid "Become a Founding Seeder"
 msgstr "Hazte Sembrador Fundador"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: the daily failed-actions report email, admins and founders only"
+msgid "Operations reports"
+msgstr "Informes de operaciones"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: what the operations report is"
+msgid "The daily list of actions that did not go through."
+msgstr "La lista diaria de acciones que no se completaron."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "Daily digest"
+msgstr "Resumen diario"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/NotifyPrefsPanel.tsx
+msgctxt "notification settings: email cadence option"
+msgid "In-app only"
+msgstr "Solo en la app"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "That did not save. Try again."
+msgstr "No se guardó. Inténtalo de nuevo."
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is off for this member"
+msgstr "El correo del informe de operaciones está desactivado para este miembro"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email is daily for this member"
+msgstr "El correo del informe de operaciones es diario para este miembro"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email"
+msgid "Operations report email"
+msgstr "Correo del informe de operaciones"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: daily"
+msgstr "Correo del informe de operaciones: diario"
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/admin/OpsEmailSwitch.tsx
+msgctxt "admin ops report email option"
+msgid "Ops report email: off"
+msgstr "Correo del informe de operaciones: desactivado"

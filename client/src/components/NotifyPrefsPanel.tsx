@@ -5,6 +5,7 @@
  */
 import GuideDataSection from "@/components/guide/GuideDataSection";
 import { useEffect, useRef, useState } from "react";
+import { useLingui } from "@lingui/react/macro";
 import { Link } from "wouter";
 import { Bell, Download, ShieldOff } from "lucide-react";
 import { formatMoney } from "@shared/money";
@@ -81,8 +82,15 @@ const LABELS: Record<string, string> = {
 };
 
 export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void }) {
+  const { t } = useLingui();
   const [prefs, setPrefs] = useState<any>(null);
   const [contactable, setContactable] = useState<boolean | null>(null);
+  /**
+   * Whether this member receives the operations reports at all. The daily
+   * failed-actions report goes to every admin and founder (`notifyAdmins` in
+   * server/index.ts), so the choice is offered to exactly them.
+   */
+  const [opsRecipient, setOpsRecipient] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [password, setPassword] = useState("");
@@ -159,7 +167,11 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
       .catch(() => {});
     fetch("/api/profile", { headers: headers() })
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (d) setContactable(d.contactable !== false); })
+      .then((d) => {
+        if (!d) return;
+        setContactable(d.contactable !== false);
+        setOpsRecipient(d.role === "admin" || d.role === "founder");
+      })
       .catch(() => {});
   }, []);
 
@@ -305,6 +317,29 @@ export default function NotifyPrefsPanel({ onDeleted }: { onDeleted?: () => void
                 {TASK_EMAIL_PREFS.map((v) => (
                   <option key={v} value={v}>{TASK_COPY.pref.options[v]}</option>
                 ))}
+              </select>
+            </div>
+          )}
+          {/* The daily failed-actions report (`opsEmail`). Email only: the bell
+              row lands either way, so the admin tab still shows what failed.
+              Offered to admins and founders, the only people it goes to. */}
+          {opsRecipient && (
+            <div className="flex items-center justify-between gap-3">
+              <label htmlFor="notify-opsEmail" className="text-sm text-muted-foreground">
+                {t({ message: "Operations reports", context: "notification settings: the daily failed-actions report email, admins and founders only" })}
+                <span className="block text-xs">
+                  {t({ message: "The daily list of actions that did not go through.", context: "notification settings: what the operations report is" })}
+                </span>
+              </label>
+              <select
+                id="notify-opsEmail"
+                value={prefs.opsEmail === "off" ? "off" : "daily"}
+                disabled={saving}
+                onChange={(e) => save({ opsEmail: e.target.value })}
+                className="text-xs border border-border rounded-lg px-2 py-1.5 bg-card"
+              >
+                <option value="daily">{t({ message: "Daily digest", context: "notification settings: email cadence option" })}</option>
+                <option value="off">{t({ message: "In-app only", context: "notification settings: email cadence option" })}</option>
               </select>
             </div>
           )}

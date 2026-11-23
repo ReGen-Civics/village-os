@@ -1,10 +1,11 @@
 /**
  * The admin roster: who is in the village, and what stage they are at.
  *
- * Two routes, lifted out of server/index.ts unchanged:
+ * Two routes, lifted out of server/index.ts unchanged, and one added beside them:
  *
- *   GET /api/admin/players            the roster, sorted by name
- *   PUT /api/admin/players/:id/stage  grant or clear a stage by hand
+ *   GET /api/admin/players                the roster, sorted by name
+ *   PUT /api/admin/players/:id/stage      grant or clear a stage by hand
+ *   PUT /api/admin/players/:id/ops-email  turn a member's operations report email off or back on
  *
  * WHAT STAYED BEHIND, and why that is safe. `DELETE /api/admin/players/:id`
  * sits immediately after these two in server/index.ts and is still there. It
@@ -37,10 +38,13 @@ import type { AppDeps } from "../lib/appDeps";
 import { sortMembersByName } from "../../shared/memberOrder";
 import { grantStage } from "../lib/stageGrant";
 import { roleHoldersNow } from "../repos/pathLadders";
+import { recordEvent } from "../lib/events";
+import { resolveNotifyPrefs } from "../lib/notify";
 
 type Deps = Pick<
   AppDeps,
   | "isAdmin"
+  | "authedUser"
   | "members"
   | "claimsRepo"
   | "computeStage"
@@ -57,7 +61,7 @@ type Deps = Pick<
 };
 
 export function register(app: Express, deps: Deps): void {
-  const { isAdmin, members, claimsRepo, computeStage, trainingCompletions, paidByVillage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext, adminGroupsFor } = deps;
+  const { isAdmin, authedUser, members, claimsRepo, computeStage, trainingCompletions, paidByVillage, hasMembership, stageOf, recordStageEvent, getPool, lapseContext, adminGroupsFor } = deps;
 
   // Players admin: list + stage grants
   app.get("/api/admin/players", async (req, res) => {
@@ -101,6 +105,8 @@ export function register(app: Express, deps: Deps): void {
         stageComputed: computeStage(u, consented.get(u.id) ?? 0, trained.get(String(u.id)) ?? [], paid.has(String(u.id)), holders.has(String(u.id))),
         membership: hasMembership(u),
         adminVia: adminGroupsFor(String(u.id)),
+        // The operations report email (server/lib/notify.ts, `opsEmail`), so the roster can show and change it.
+        opsEmail: resolveNotifyPrefs(u.prefs).opsEmail,
       }))
     );
   });
@@ -112,5 +118,39 @@ export function register(app: Express, deps: Deps): void {
     const out = await grantStage({ members, stageOf, recordStageEvent }, req.params.id, stageId, stageId ? "granted by an admin" : "grant removed");
     if (!out.ok) return res.status(out.status).json(out.body);
     res.json({ success: true, stageComputed: out.stageComputed });
+  });
+
+  /*
+   * THE OPERATIONS REPORT EMAIL, SET BY AN ADMIN FOR SOMEBODY ELSE.
+   *
+   * The daily failed-actions report goes to every admin and founder. A member
+   * whose seat is not operational can switch its email off on their own
+   * profile; this is the same preference, written by an admin, so it can stop
+   * today without that member signing in. It writes `prefs.notify.opsEmail`
+   * and nothing else: the bell row still lands, every other email preference
+   * is untouched, and no steward pin reads this key.
+   *
+   * The audit row names no one in its text. The member is the entity it is
+   * about, and the admin is its actor.
+   */
+  app.put("/api/admin/players/:id/ops-email", async (req, res) => {
+    if (!(await isAdmin(req))) return res.status(401).json({ error: "auth_required" });
+    const actor = await authedUser(req);
+    const value = (req.body as { opsEmail?: unknown } | undefined)?.opsEmail;
+    if (value !== "daily" && value !== "off") return res.status(400).json({ error: "opsEmail is daily or off." });
+    const userId = String(req.params.id ?? "").slice(0, 64);
+    const updated = await members.update(userId, (u: any) => {
+      u.prefs = { ...(u.prefs ?? {}), notify: { ...(u.prefs?.notify ?? {}), opsEmail: value } };
+    });
+    if (!updated) return res.status(404).json({ error: "Not found" });
+    await recordEvent(getPool(), {
+      kind: "audit",
+      text: value === "off" ? "turned a member's operations report email off" : "turned a member's operations report email back on",
+      actorUserId: actor?.id ? String(actor.id) : null,
+      entityType: "user",
+      entityRef: userId,
+      audience: "admin",
+    });
+    res.json({ userId, opsEmail: resolveNotifyPrefs(updated.prefs).opsEmail });
   });
 }
