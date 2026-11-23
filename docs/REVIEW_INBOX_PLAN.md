@@ -298,7 +298,7 @@ Each is an adapter into staging and its golden scenes; none changes the pipeline
 |---|---|
 | Meeting transcripts filling session forms | `agenda:<circle>:...`, task keys; the evidence quote is the transcript line |
 | Feedback relay | `observe:feedback:<id>`: triage, accept means taken up. Local only; the hub relay is unchanged |
-| Four contributor routes (partner, venture, quest, role) | `quest:new:...`, `role:new:...`, and the venture and partner keys `wt/ventures-pitch` defines; its storage and inbox tag are read, never duplicated |
+| Four contributor routes (partner, venture, quest, role) | Read from the admin Form Submissions that `POST /api/forms/submit` writes, no new table: partner by its tag (`source: "contributor_route"`, `route: "partner"`, `CONTRIBUTOR_SOURCE` in `shared/contributorRoutes.ts`), ventures by form type `work-with-us`, quests by `quest-proposal` (both untagged). Keys `contribute:partner:<id>`, `contribute:venture:<id>`, `quest:new:...`. Deciding defaults to the role in the village variable `org.partnerships_role`, through the one gate. A person's own submission is never merged with another person's; only an exact re-send by the same submitter is deduped. Per `wt/ventures-pitch` (PR #1510, not merged on 23 Nov), so re-checked when it lands |
 | AI companions | whatever they suggest, credited to the companion by role |
 | New Sera kinds | one line on its allowlist and a canonical-key rule |
 
@@ -335,7 +335,7 @@ Each is an adapter into staging and its golden scenes; none changes the pipeline
 6. **Bundle budgets.** The page stays a lazy route; read all three budgets on the pull_request run.
 7. **Golden fixtures come from real data.** Redacted before writing, reviewed before commit, or not
    used.
-8. **Shared storage with `wt/ventures-pitch`.** The contributor adapter waits for that lane.
+8. **Shared storage with `wt/ventures-pitch`.** The contributor adapter reads that lane's form submissions and tag (PR #1510) and waits for it to merge.
 
 ## Decisions still with the lead
 
