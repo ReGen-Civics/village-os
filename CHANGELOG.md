@@ -40,6 +40,25 @@ To word with Rye and the Legal session for the next release, left out of 1.3.0 o
 
 ---
 
+## 1.3.55 (2026-11-23)
+
+### What changed for your village
+
+- **Role cards say what they pay up front.** The front of an open role card reads "Open paid role" with the pay mix (for example "60% cash, 40% tokens"), taken from the village's stored split or the card's own. No amount until the card is opened. Volunteer roles say "Volunteer role".
+- **An apply-by date.** A role can carry a last day to apply, shown on the front of its card ("Apply by Mon 30 Nov") until that day passes. Set it in the role editor.
+- **"Compensation" for role pay.** The card, the application's pay step and the counter-offer screens say compensation where they said price. Housing, events and services keep "price".
+- **"Related roles this role will onboard"** replaces "Roles to be added".
+- **Upcoming roles show "Paid role"** when they will be paid.
+- **A card cannot state a different split by hand.** Saving card words that name a pay split different from the stored one is refused, with the stored split named, so the card and the pay never disagree.
+
+### What you must do
+
+Nothing. To show a deadline, add an apply-by date in the role editor.
+
+### Does it touch your data
+
+No. The apply-by date is stored with the card's other sections.
+
 ## 1.3.53 (2026-11-23)
 
 ### What changed for your village
