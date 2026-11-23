@@ -45,12 +45,8 @@ export default function PaySplitMini({ shape, names, className = "" }: { shape: 
       </span>
       <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-card-foreground" data-pay-split-words="">
         {parts.map((p, i) => (
+          // The middle dot trails its share, so a legend that wraps never starts a line with one.
           <span key={`${p.part}-${i}`} className="inline-flex items-center gap-1.5">
-            {i > 0 && (
-              <span className="text-muted-foreground" aria-hidden="true">
-                ·
-              </span>
-            )}
             {p.pct > 0 ? <span className={`size-2 shrink-0 rounded-full ${fillOf(p, i)}`} aria-hidden="true" /> : <span className="size-2 shrink-0 rounded-full border border-muted-foreground" aria-hidden="true" />}
             {p.pct > 0 ? (
               p.words
@@ -59,6 +55,11 @@ export default function PaySplitMini({ shape, names, className = "" }: { shape: 
               <span className="text-muted-foreground" data-pay-share-zero={p.part}>
                 <CreditsWord>{p.words}</CreditsWord>
                 {t({ message: ", not in use yet", context: "role card front: after a 0% credits share in the pay split" })}
+              </span>
+            )}
+            {i < parts.length - 1 && (
+              <span className="text-muted-foreground" aria-hidden="true">
+                ·
               </span>
             )}
           </span>

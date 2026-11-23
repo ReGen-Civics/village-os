@@ -14,7 +14,8 @@ import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, CARD, EYEBROW, H1, H2, LINK, RI
 import NotListedChip from "@/components/NotListedChip";
 import { ComingSoonChip, HeldByAgentLine, VentureChip } from "@/components/ComingSoon";
 import { FourWaysSection, GiftSection, StartVentureButton, useVentureHref } from "@/components/ContributorRoutes";
-import { goToSection, ROLES_PAGE_ANCHORS, ROLES_SECTIONS } from "@/lib/sectionAnchor";
+import { oldLink, roleForOldLink, ROLES_SECTIONS, useLandOnSection } from "@/lib/sectionAnchor";
+export { roleForOldLink };
 import Layout from "@/components/Layout";
 import { Link, useLocation } from "wouter";
 import { m, AnimatePresence } from "framer-motion";
@@ -128,24 +129,6 @@ function normalizeStatus(s: unknown): SeatStateWord {
   if (v.startsWith("part")) return "partial";
   if (v.startsWith("form")) return "forming";
   return "open";
-}
-
-/** What an old in-page link to one role named, read once on arrival: `?seat=`, `?role=`, or the hash. */
-function oldLink(): { seat: string | null; hash: string | null } {
-  if (typeof window === "undefined") return { seat: null, hash: null };
-  const q = new URLSearchParams(window.location.search);
-  const h = decodeURIComponent(window.location.hash.replace(/^#/, ""));
-  return { seat: q.get("seat") || q.get("role") || null, hash: h || null };
-}
-
-/** The role an old link names: by id for `?seat=`, by id, `role-<id>` or slug for a hash. */
-export function roleForOldLink(link: { seat: string | null; hash: string | null }, roles: ReadonlyArray<{ id: string; path: string }>): { id: string; path: string } | null {
-  if (link.seat) return roles.find((r) => r.id === link.seat) ?? null;
-  const h = link.hash;
-  // A waitlist hash and the page's own sections (#founding-team, #open-ventures...) are anchors on this page, never a role.
-  if (!h || h.startsWith("waitlist-") || ROLES_PAGE_ANCHORS.has(h)) return null;
-  const id = h.startsWith("role-") ? h.slice(5) : h;
-  return roles.find((r) => r.id === id || r.id === h || r.path === `/roles/${h}`) ?? null;
 }
 
 /** The gap between role rows: room enough that each row reads as its own panel (the lead, 21 Nov 2026). */
@@ -491,21 +474,8 @@ export default function Roles() {
   // leads; with none leading neither section is drawn, so they go to the role board and the venture form instead.
   const ventureHref = useVentureHref();
   const elsewhere = leads ? undefined : { team: "/roles/select", venture: ventureHref };
-  // Arriving on /roles#founding-team or /roles#open-ventures (from the home page, a thank-you page or the footer): once
-  // the section is drawn, scroll to it and focus its heading, as a press on this page does (client/src/lib/sectionAnchor.ts).
-  const landed = useRef(false);
-  useEffect(() => {
-    if (landed.current || !heroShown) return;
-    const h = decodeURIComponent(window.location.hash.replace(/^#/, ""));
-    if (h !== ROLES_SECTIONS.team && h !== ROLES_SECTIONS.venture) {
-      landed.current = true;
-      return;
-    }
-    const frame = requestAnimationFrame(() => {
-      if (goToSection(h, { push: false })) landed.current = true;
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [heroShown, leads, roles]);
+  // Arriving on /roles#founding-team or /roles#open-ventures lands on the section once it is drawn (sectionAnchor.ts).
+  useLandOnSection(heroShown, [leads, roles]);
   const featuredShown = new Set(featured.map((f) => String(f.seat.id)));
   // Hiring the founding team first (Rye, 14 Nov 2026): while it leads, every other listed role that is
   // still open sits right under it as "opening next", applied for now and answered once the team is in.
