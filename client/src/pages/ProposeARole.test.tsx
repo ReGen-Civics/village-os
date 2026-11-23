@@ -415,11 +415,10 @@ describe("the six steps", () => {
       "Step 5: Your first moon",
       "Step 6: Review & submit",
     ]);
-    // Nothing of the game register on this page, save the one door the lead asked for in the role process (23 Nov
-    // 2026): "Don't see your gift in a role? Consider these:", the other three ways to build.
-    const plain = document.body.cloneNode(true) as HTMLElement;
-    for (const d of Array.from(plain.querySelectorAll("[data-contributor-routes]"))) d.remove();
-    expect(plain.textContent).not.toMatch(/\bquest|stone|moss/i);
+    // Nothing of the game register on this page, the routes beside a role among it: there the quest route is "Offer a
+    // one-off contribution", with the same link (the lead, 23 Nov 2026).
+    expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
+    expect(document.querySelector('[data-more-roles] [data-route-door="quest"]')?.textContent).toMatch(/^Offer a one-off contribution/);
     expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
       ["venture", "/role-proposals/new"],
       ["partner", "/partner"],

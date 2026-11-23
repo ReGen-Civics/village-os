@@ -42,6 +42,7 @@ describe("the partner form", () => {
     render(<Partner />);
     expect(screen.getByRole("heading", { level: 1, name: "Become a partner" })).toBeTruthy();
     expect(screen.getByText("No account needed.")).toBeTruthy();
+    expect(screen.getByText("Local nonprofits can partner with the village too, including to share in its profits.")).toBeTruthy();
     expect(document.querySelector("[data-route-promise]")?.textContent).toBe("You'll hear within 9 days.");
   });
 

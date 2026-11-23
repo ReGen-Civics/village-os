@@ -64,6 +64,34 @@ describe("the four cards", () => {
   });
 });
 
+describe("the compact tiles, the application's register and the nonprofit line", () => {
+  it("draws the tiles with the verb and a few words only, no promise", () => {
+    render(<ContributorRoutes variant="tiles" />);
+    expect(Array.from(document.querySelectorAll("[data-route-door]")).map((a) => a.textContent)).toEqual([
+      "Join the teamA role on the team, with its own terms.",
+      "Start a ventureYour own business on the land.",
+      "Become a partnerYour project, with the village.",
+      "Propose a questA one-off piece of work, rewarded.",
+    ]);
+    expect(document.querySelector("[data-route-promise], dt")).toBeNull();
+  });
+
+  it("calls the quest route a one-off contribution in the founding register, with the same link", () => {
+    render(<ContributorRoutes variant="links" register="founding" except={["team"]} />);
+    const quest = document.querySelector('[data-route-door="quest"]') as HTMLElement;
+    expect(quest.textContent).toMatch(/^Offer a one-off contribution/);
+    expect(quest.getAttribute("href")).toBe("/propose-quest");
+    expect(document.body.textContent).not.toMatch(/\bquest/i);
+  });
+
+  it("says on the partner card that local nonprofits can partner, profits included", () => {
+    render(<ContributorRoutes />);
+    const notes = Array.from(document.querySelectorAll("[data-route-note]"));
+    expect(notes.map((n) => n.closest("[data-route]")?.getAttribute("data-route"))).toEqual(["partner"]);
+    expect(notes[0].textContent).toBe("Local nonprofits can partner with the village too, including to share in its profits.");
+  });
+});
+
 describe("the other three, beside a role", () => {
   it("leaves out the one named, as a quiet list with one promise, and keeps a same-page anchor a plain link", () => {
     render(<ContributorRoutes variant="links" except={["team"]} heading="Don't see your gift in a role? Consider these:" />);

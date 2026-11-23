@@ -151,7 +151,7 @@ function WhileYouWait() {
     </nav>
     {/* While you wait, you can also (the lead, 23 Nov 2026): the other three ways to build. */}
     <nav aria-labelledby="wait-routes-h" className={`${CARD} grid gap-3`} data-wait-routes="">
-      <ContributorRoutes variant="links" except={["team"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingId="wait-routes-h" headingAs="h2" />
+      <ContributorRoutes variant="links" register="founding" except={["team"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} headingId="wait-routes-h" headingAs="h2" />
     </nav>
     </>
   );

@@ -176,7 +176,7 @@ export default function MoreRoles({
         </div>
       )}
       {/* Don't see your gift in a role? (the lead, 23 Nov 2026): the other three ways to build. */}
-      <ContributorRoutes variant="links" except={["team"]} heading={giftHeading} />
+      <ContributorRoutes variant="links" register="founding" except={["team"]} heading={giftHeading} />
       {extras.length > 0 && (
         <p className={`${TILE} text-foreground`} data-roles-total="" aria-live="polite">
           {priceTotal !== null

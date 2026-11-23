@@ -39,34 +39,49 @@ export function useReplyDays(): number {
 interface RouteWords {
   verb: string;
   line: string;
+  /** The few words a compact tile carries (the top of /roles). */
+  short: string;
   bring: string;
   back: string;
+  /** A sentence more, said on the full card only. */
+  note?: string;
 }
 
-export function useRouteWords(): Record<ContributorRoute, RouteWords> {
+/**
+ * `founding`: on the application page and its thank-you pages, which keep to the founding register (no game
+ * words), the quest route is "Offer a one-off contribution", with the same link (the lead, 23 Nov 2026).
+ */
+export function useRouteWords(register: "plain" | "founding" = "plain"): Record<ContributorRoute, RouteWords> {
   const { t } = useLingui();
+  const questVerb = register === "founding" ? t({ message: "Offer a one-off contribution", context: "four ways to build: a quest, on the application page and its thank-you pages" }) : t({ message: "Propose a quest", context: "four ways to build: a quest" });
   return {
     team: {
       verb: t({ message: "Join the team", context: "four ways to build: a role" }),
       line: t({ message: "Hold a role on the team, with its own accountabilities and terms.", context: "four ways to build: a role, in one line" }),
+      short: t({ message: "A role on the team, with its own terms.", context: "four ways to build: a role, a compact tile" }),
       bring: t({ message: "Your time and skills, held in one role.", context: "four ways to build: a role, what you bring" }),
       back: t({ message: "The rewards the role's terms set out, agreed together.", context: "four ways to build: a role, what you get back" }),
     },
     venture: {
       verb: t({ message: "Start a venture", context: "four ways to build: a venture" }),
       line: t({ message: "Build and own a business on the land. The village shares in it through a lease or a profit share.", context: "four ways to build: a venture, in one line" }),
+      short: t({ message: "Your own business on the land.", context: "four ways to build: a venture, a compact tile" }),
       bring: t({ message: "Your business, your experience and what you invest in it.", context: "four ways to build: a venture, what you bring" }),
       back: t({ message: "A business of your own, on the land, with the village beside you.", context: "four ways to build: a venture, what you get back" }),
     },
     partner: {
       verb: t({ message: "Become a partner", context: "four ways to build: a partnership" }),
       line: t({ message: "You already run a project or business and want to help build the community, build the village, or help it thrive.", context: "four ways to build: a partnership, in one line" }),
+      short: t({ message: "Your project, with the village.", context: "four ways to build: a partnership, a compact tile" }),
+      // The lead, 23 Nov 2026: what was the nonprofit partner venture is now a partnership.
+      note: t({ message: "Local nonprofits can partner with the village too, including to share in its profits.", context: "four ways to build: a partnership, nonprofits" }),
       bring: t({ message: "Your project or business, and what you offer the village.", context: "four ways to build: a partnership, what you bring" }),
       back: t({ message: "A partnership shaped together, with no role on the team and no lease.", context: "four ways to build: a partnership, what you get back" }),
     },
     quest: {
-      verb: t({ message: "Propose a quest", context: "four ways to build: a quest" }),
+      verb: questVerb,
       line: t({ message: "A one-off piece of value, rewarded when the work is accepted.", context: "four ways to build: a quest, in one line" }),
+      short: t({ message: "A one-off piece of work, rewarded.", context: "four ways to build: a quest, a compact tile" }),
       bring: t({ message: "One piece of work you want to do.", context: "four ways to build: a quest, what you bring" }),
       back: t({ message: "A reward when the work is accepted.", context: "four ways to build: a quest, what you get back" }),
     },
@@ -93,10 +108,15 @@ export default function ContributorRoutes({
   headingId,
   headingAs = variant === "cards" ? "h2" : "p",
   hrefs = {},
+  register = "plain",
   className = "",
 }: {
-  /** `cards`: one card each, side by side on a desktop. `links`: a quiet list, for inside a form or beside a page. */
-  variant?: "cards" | "links";
+  /**
+   * `cards`: one card each, side by side on a desktop. `links`: a quiet list, for inside a form or beside a page.
+   * `tiles`: the verb and a few words each, two by two on a phone and one row on a desktop (the top of /roles).
+   */
+  variant?: "cards" | "links" | "tiles";
+  register?: "plain" | "founding";
   except?: ContributorRoute[];
   heading?: string | null;
   headingId?: string;
@@ -106,7 +126,7 @@ export default function ContributorRoutes({
   className?: string;
 }) {
   const { t } = useLingui();
-  const words = useRouteWords();
+  const words = useRouteWords(register);
   const venture = useVentureHref();
   const days = useReplyDays();
   const promise = days === 1 ? t({ message: "You'll hear within 1 day.", context: "four ways to build: when you hear back" }) : t({ message: `You'll hear within ${days} days.`, context: "four ways to build: when you hear back" });
@@ -122,6 +142,31 @@ export default function ContributorRoutes({
       <Link href={href} className={cls} data-route-door={r}>{children}</Link>
     );
   };
+
+  if (variant === "tiles") {
+    return (
+      <div className={className} data-contributor-routes="tiles">
+        {heading ? <Heading id={headingId} className="mb-2 font-display text-lg leading-tight text-foreground sm:mb-3 sm:text-2xl">{heading}</Heading> : null}
+        <ul className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+          {routes.map((r) => (
+            <li key={r} className="min-w-0" data-route={r}>
+              {go(
+                r,
+                "group flex h-full min-h-11 flex-col gap-0.5 rounded-xl border border-border bg-muted px-3 py-2 hover:border-notice focus-visible:outline-2 focus-visible:outline-ring sm:gap-1 sm:p-3",
+                <>
+                  <span className="flex items-center justify-between gap-1 text-sm font-semibold text-foreground sm:text-base">
+                    {words[r].verb}
+                    <ArrowRight className="size-4 shrink-0 text-muted-foreground group-hover:text-notice" aria-hidden="true" />
+                  </span>
+                  <span className="text-xs leading-snug text-muted-foreground">{words[r].short}</span>
+                </>,
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
   if (variant === "links") {
     return (
@@ -161,6 +206,7 @@ export default function ContributorRoutes({
             {/* The verb first, so a phone reader scanning four tall cards sees which is which. */}
             <Title className="font-display text-xl leading-tight text-foreground">{words[r].verb}</Title>
             <p className="text-base leading-relaxed text-foreground">{words[r].line}</p>
+            {words[r].note ? <p className="text-sm leading-relaxed text-foreground" data-route-note="">{words[r].note}</p> : null}
             <dl className="grid gap-2 text-sm">
               <div>
                 <dt className="font-semibold text-foreground">{t({ message: "You bring", context: "four ways to build: the label before what you bring" })}</dt>
@@ -193,8 +239,8 @@ export default function ContributorRoutes({
 export function FourWaysSection({ hrefs }: { hrefs?: Partial<Record<ContributorRoute, string>> }) {
   const heading = useFourWaysHeading();
   return (
-    <section id="four-ways" aria-labelledby="four-ways-heading" className="mx-auto mb-14 max-w-4xl scroll-mt-24 lg:max-w-6xl" data-four-ways="">
-      <ContributorRoutes heading={heading} headingId="four-ways-heading" headingAs="p" hrefs={hrefs} />
+    <section id="four-ways" aria-labelledby="four-ways-heading" className="mx-auto mb-6 max-w-4xl scroll-mt-24 sm:mb-8 lg:max-w-6xl" data-four-ways="">
+      <ContributorRoutes variant="tiles" heading={heading} headingId="four-ways-heading" headingAs="p" hrefs={hrefs} />
     </section>
   );
 }

@@ -105,6 +105,7 @@ export default function Partner() {
             <p className={EYEBROW}>{t({ message: "Four ways to build", context: "partner form: eyebrow" })}</p>
             <h1 className={H1}>{words.verb}</h1>
             <p className={LEDE}>{words.line}</p>
+            {words.note ? <p className="text-base leading-relaxed text-foreground" data-route-note="">{words.note}</p> : null}
             <dl className="grid gap-2 text-sm sm:grid-cols-2">
               <div>
                 <dt className="font-semibold text-foreground">{t({ message: "You bring", context: "four ways to build: the label before what you bring" })}</dt>

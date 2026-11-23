@@ -218,16 +218,21 @@ describe("open ventures: what a venture is, the pitch, and the ones open now fir
     expect(group.querySelector("[data-open-now]")).toBeNull();
   });
 
-  it("opens with the four ways to build, largest commitment first, Join the team pointing at the open roles", async () => {
+  it("opens with the four ways to build as compact tiles, largest commitment first, Join the team pointing at the open roles", async () => {
     renderRoles();
     await screen.findByRole("heading", { level: 2, name: "Open roles (3)" });
     const four = screen.getByRole("region", { name: /^Four ways to build/ });
+    expect(four.querySelector("[data-contributor-routes]")?.getAttribute("data-contributor-routes")).toBe("tiles");
     const doors = Array.from(four.querySelectorAll("[data-route-door]"));
-    expect(doors.map((a) => a.textContent)).toEqual(["Join the team", "Start a venture", "Become a partner", "Propose a quest"]);
+    expect(doors.map((a) => a.textContent)).toEqual([
+      "Join the teamA role on the team, with its own terms.",
+      "Start a ventureYour own business on the land.",
+      "Become a partnerYour project, with the village.",
+      "Propose a questA one-off piece of work, rewarded.",
+    ]);
     expect(doors.map((a) => a.getAttribute("href"))).toEqual(["#open-now-heading", "/role-proposals/new", "/partner", "/propose-quest"]);
-    // Each says what you bring, what you get back, and when you hear: the village's days, 14 by default.
-    expect(four.querySelectorAll("dt")).toHaveLength(8);
-    expect(Array.from(four.querySelectorAll("[data-route-promise]")).map((p) => p.textContent)).toEqual(Array(4).fill("You'll hear within 14 days."));
+    // The first view stays the founding team's (the lead, 23 Nov 2026): no bring, get back or reply days up here.
+    expect(four.querySelectorAll("dt, [data-route-promise]")).toHaveLength(0);
     // At the top: before the open roles.
     expect(four.compareDocumentPosition(screen.getByRole("heading", { level: 2, name: "Open roles (3)" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
