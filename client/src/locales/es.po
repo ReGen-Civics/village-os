@@ -9130,6 +9130,12 @@ msgctxt "role card rewards explainer: how the price is set"
 msgid "Each role's price comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from {lowPct}% to {highPct}% of that price, in total comp. Proposals can go up to {capPct}%, and the figure for that will show once the team agrees it."
 msgstr ""
 
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: how the price is set"
+msgid "Each role's compensation comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from {lowPct}% to {highPct}% of that figure, in total comp. Proposals can go up to {capPct}%, and the figure for that will show once the team agrees it."
+msgstr "La compensación de cada rol viene de un motor de valoración regenerativa que estamos probando en beta y mejorando con el equipo. Pondera el alcance del rol y lo que le pide a una persona. El pago se sitúa en una banda del {lowPct}% al {highPct}% de esa cifra, en compensación total. Las propuestas pueden llegar hasta el {capPct}%, y esa cifra se mostrará cuando el equipo la acuerde."
+
 #: client/src/pages/ExitPolicy.tsx
 msgid "Your message reached {reached, plural, one {# person} other {# people}} holding the {intakeRoleLabel}. They read it in their notifications here. Your words were not emailed."
 msgstr ""
@@ -17281,6 +17287,12 @@ msgstr "Este navegador no escribe tus palabras mientras hablas. Tu grabación se
 msgctxt "role card rewards explainer: heading"
 msgid "How the price is set"
 msgstr ""
+
+# needs-native-review: new words, 23 Nov 2026
+#: client/src/components/roleCard/valueExplainerWords.ts
+msgctxt "role card rewards explainer: heading"
+msgid "How compensation is set"
+msgstr "Cómo se fija la compensación"
 
 #: client/src/pages/RoleDraft.tsx
 #~ msgid "Propose with my pick"

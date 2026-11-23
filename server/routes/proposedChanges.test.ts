@@ -224,6 +224,22 @@ describe.skipIf(!configured)("proposed changes, on a real schema", () => {
     expect(fine.status).toBe(200);
   });
 
+  it("an agent proposes a role card's last day to apply: a real date files and is sent on accept, a date that does not exist is refused by name (the lead, 23 Nov 2026)", async () => {
+    await q("DELETE FROM org_roles WHERE id = 'rc-apply-by'");
+    await q("INSERT INTO org_roles (id, name, aim, seats, active) VALUES ('rc-apply-by', 'Well Keeper', 'Keep the well.', 1, 1)");
+    const item = (applyBy: string) => ({ kind: "role_card", target: { roleId: "rc-apply-by" }, body: { sections: { applyBy } }, summary: "Set the last day to apply." });
+    const bad = await call("POST", "/api/admin/proposals", { batch: "Apply by", items: [item("2026-11-31")] }, AGENT.id);
+    expect(bad.status).toBe(400);
+    expect(bad.body.refused[0].field).toBe("sections.applyBy");
+    const good = await call("POST", "/api/admin/proposals", { batch: "Apply by", items: [item("2026-11-30")] }, AGENT.id);
+    expect(good.status).toBe(200);
+    const id = good.body.ids[0];
+    hits.length = 0;
+    expect((await call("POST", "/api/admin/proposals/accept", { items: [{ id }] })).body.results).toEqual([{ id, ok: true }]);
+    const sent = hits.find((h) => h.method === "POST" && h.path === "/api/org/role-edit/rc-apply-by");
+    expect(sent?.body.sections.applyBy).toBe("2026-11-30");
+  });
+
   it("FILING MIRRORS ACCEPT: listing a card that would fail the listing gate is refused when filed; coming soon needs only its aim and domain", async () => {
     await q("DELETE FROM org_roles WHERE id IN ('rc-list', 'rc-soon')");
     await q("INSERT INTO org_roles (id, name, aim, seats, active, listed) VALUES ('rc-list', 'Seed Keeper', 'Keep the seeds.', 1, 1, 0)");
