@@ -94,6 +94,8 @@ export const LEDGER_SOURCE_PAYS_A_CONTRIBUTION: Readonly<Record<string, boolean>
   circle_treasury_dormant: false,
   // Between members, and recognition.
   member_send: false,
+  // A member paying a venture's credit account (0419, server/lib/orgAccounts.ts). A purchase, and the payee is a venture, never a person.
+  org_send: false,
   gratitude_received: false,
   heart_received: false,
   // Voice on its way to Hypha, or waning.
