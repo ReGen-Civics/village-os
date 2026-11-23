@@ -1,5 +1,5 @@
 /**
- * THE ART LIBRARY, in Admin (Rye, 20 Nov 2026): the 48 painted animals and plants (shared/natureArt.ts),
+ * THE ART LIBRARY, in Admin (Rye, 20 Nov 2026): the painted animals and plants (shared/natureArt.ts),
  * which role shows each one, and a picker per role. A role nobody chose for keeps the painting drawn
  * from its id, so every card has art with nothing saved here. The same paintings are a looks set for
  * members' companions and stand for the role cards' Digital Companions by name.
@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useLingui } from "@lingui/react/macro";
 import { API_BASE, authHeaders, refusal } from "./adminApi";
-import { NATURE_ART, natureArt, natureArtUrl, type NatureKind } from "@shared/natureArt";
+import { NATURE_ART, natureArt, natureArtUrl, type NatureGroup } from "@shared/natureArt";
 import { refreshRoleArt } from "@/lib/natureArt";
 
 type Payload = { roles: Record<string, string>; chosen: Record<string, string>; names: Record<string, string> };
@@ -17,7 +17,7 @@ export default function ArtLibraryTab({ password }: { password: string }) {
   const { t } = useLingui();
   const [data, setData] = useState<Payload | null>(null);
   const [error, setError] = useState("");
-  const [kind, setKind] = useState<NatureKind | "all">("all");
+  const [kind, setKind] = useState<NatureGroup | "all">("all");
   const [saving, setSaving] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function ArtLibraryTab({ password }: { password: string }) {
     toast.success(slug ? t({ message: `Saved: ${named}`, context: "admin art library: a painting chosen" }) : t({ message: "Back to the automatic painting", context: "admin art library: choice cleared" }));
   };
 
-  const shown = NATURE_ART.filter((a) => kind === "all" || a.kind === kind);
+  const shown = NATURE_ART.filter((a) => kind === "all" || a.group === kind);
   const roleIds = data ? Object.keys(data.names).sort((a, b) => (data.names[a] ?? a).localeCompare(data.names[b] ?? b)) : [];
 
   return (
@@ -101,10 +101,10 @@ export default function ArtLibraryTab({ password }: { password: string }) {
       <section aria-labelledby="art-all-h" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 id="art-all-h" className="font-display text-xl font-bold text-foreground">{t({ message: "The library", context: "admin art library: the paintings section" })}</h3>
-          <div role="group" aria-label={t({ message: "Show", context: "admin art library: filter" })} className="flex gap-1 rounded-full border border-border bg-card p-1">
-            {(["all", "animal", "plant"] as const).map((k) => (
+          <div role="group" aria-label={t({ message: "Show", context: "admin art library: filter" })} className="flex flex-wrap gap-1 rounded-full border border-border bg-card p-1">
+            {(["all", "land", "bird", "ocean", "plant"] as const).map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={`min-h-11 rounded-full px-4 text-sm ${kind === k ? "bg-foreground text-background" : "text-foreground"}`}>
-                {k === "all" ? t({ message: "All", context: "admin art library filter" }) : k === "animal" ? t({ message: "Animals", context: "admin art library filter" }) : t({ message: "Plants", context: "admin art library filter" })}
+                {k === "all" ? t({ message: "All", context: "admin art library filter" }) : k === "land" ? t({ message: "Land", context: "admin art library filter" }) : k === "bird" ? t({ message: "Birds", context: "admin art library filter" }) : k === "ocean" ? t({ message: "Ocean", context: "admin art library filter" }) : t({ message: "Plants", context: "admin art library filter" })}
               </button>
             ))}
           </div>
