@@ -41,10 +41,10 @@ export function valueExplainerWords(
     parts: [
       {
         key: "price",
-        heading: i18n._(msg({ message: "How the price is set", context: "role card rewards explainer: heading" })),
+        heading: i18n._(msg({ message: "How compensation is set", context: "role card rewards explainer: heading" })),
         text: i18n._(
           msg({
-            message: `Each role's price comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from ${lowPct}% to ${highPct}% of that price, in total comp. Proposals can go up to ${capPct}%, and the figure for that will show once the team agrees it.`,
+            message: `Each role's compensation comes from a regenerative valuation engine we're beta testing and improving with the team. It weighs the role's scope and what it asks of a person. Pay sits in a band from ${lowPct}% to ${highPct}% of that figure, in total comp. Proposals can go up to ${capPct}%, and the figure for that will show once the team agrees it.`,
             context: "role card rewards explainer: how the price is set",
           }),
         ),

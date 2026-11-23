@@ -29,8 +29,9 @@ describe("the value callout on the Rewards piece", () => {
     const panel = screen.getByTestId("value-explainer");
     expect(control.getAttribute("aria-controls")).toBe(panel.id);
     expect(Array.from(panel.querySelectorAll("[data-explainer-part]")).map((e) => e.getAttribute("data-explainer-part"))).toEqual(["price", "agreement", "aim"]);
-    expect(panel.textContent).toContain("How the price is set");
-    expect(panel.textContent).toContain("Pay sits in a band from 80% to 100% of that price, in total comp. Proposals can go up to 120%, and the figure for that will show once the team agrees it.");
+    expect(panel.textContent).toContain("How compensation is set");
+    expect(panel.textContent).toContain("Each role's compensation comes from a regenerative valuation engine");
+    expect(panel.textContent).toContain("Pay sits in a band from 80% to 100% of that figure, in total comp. Proposals can go up to 120%, and the figure for that will show once the team agrees it.");
     // A percent only: no money amount anywhere in the explainer.
     expect(panel.textContent).not.toMatch(/\$\s?\d/);
     expect(panel.textContent).toContain("Each moon you recap what you delivered, and pay follows what you deliver.");
@@ -59,7 +60,7 @@ describe("the value callout on the Rewards piece", () => {
   it("names the band from the figures it is given (hardcoded 80 to 100 for now)", () => {
     const i18n = setupI18n({ locale: "en", messages: { en: {} } });
     expect(EXPLAINER_BAND).toEqual({ lowPct: 80, highPct: 100 });
-    expect(valueExplainerWords(i18n, { lowPct: 90, highPct: 110 }).parts[0].text).toContain("a band from 90% to 110% of that price");
+    expect(valueExplainerWords(i18n, { lowPct: 90, highPct: 110 }).parts[0].text).toContain("a band from 90% to 110% of that figure");
     expect(ROLE_PAY_CAP_PCT).toBe(120);
     expect(valueExplainerWords(i18n, EXPLAINER_BAND, 130).parts[0].text).toContain("Proposals can go up to 130%");
   });

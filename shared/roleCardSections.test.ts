@@ -177,9 +177,9 @@ describe("the two pay lines (lead, 11 Nov evening)", () => {
 });
 
 describe("the rewards heading (the lead's wording, batch 158)", () => {
-  it("reads \"How rewards work\" on the card, the rail and the editor, and its problem names it the same way", () => {
-    expect(SECTION_WORDS.payShape).toBe("How rewards work");
+  it("reads \"How compensation works\" on the card, the rail and the editor, and its problem names it the same way", () => {
+    expect(SECTION_WORDS.payShape).toBe("How compensation works");
     const bad = readPayShape("not a list" as unknown);
-    expect(JSON.stringify(bad)).toMatch(/How rewards work/);
+    expect(JSON.stringify(bad)).toMatch(/How compensation works/);
   });
 });

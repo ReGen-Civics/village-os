@@ -9,6 +9,7 @@ import { useId, useState } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { gameFetch } from "@/lib/gameApi";
 import { BTN_PRIMARY, FIELD, HINT, LABEL, TICK } from "@/components/journey/look";
+import ContributorRoutes from "@/components/ContributorRoutes";
 
 export interface WaitlistRole {
   id: string;
@@ -28,11 +29,15 @@ export default function WaitlistForm({ roles, chosen }: { roles: WaitlistRole[];
 
   if (state === "done") {
     return (
-      <p role="status" className="rounded-xl border border-notice/50 bg-muted px-4 py-3 text-card-foreground" data-waitlist-done="">
-        {consent
-          ? t({ message: "Thank you. Your details are saved. We will write when the role opens.", context: "coming-soon waitlist: after signing up" })
-          : t({ message: "Thank you. Your details are saved. We will not write to you unless you tick the box next time.", context: "coming-soon waitlist: after signing up without the tick" })}
-      </p>
+      <div className="grid gap-4">
+        <p role="status" className="rounded-xl border border-notice/50 bg-muted px-4 py-3 text-card-foreground" data-waitlist-done="">
+          {consent
+            ? t({ message: "Thank you. Your details are saved. We will write when the role opens.", context: "coming-soon waitlist: after signing up" })
+            : t({ message: "Thank you. Your details are saved. We will not write to you unless you tick the box next time.", context: "coming-soon waitlist: after signing up without the tick" })}
+        </p>
+        {/* While you wait, you can also (the lead, 23 Nov 2026): the other three ways to build. */}
+        <ContributorRoutes variant="links" except={["team"]} heading={t({ message: "While you wait, you can also", context: "after an application or a waitlist sign-up: the other ways to build" })} />
+      </div>
     );
   }
 

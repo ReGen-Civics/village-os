@@ -66,6 +66,7 @@ import { storedCommitmentPct } from "../../shared/commitment";
 import { storedCommitmentMin, storedCommitmentTarget } from "../../shared/commitmentRange";
 import { readSections, SECTION_WORDS, type RoleCardSections } from "../../shared/roleCardSections";
 import { saveSections, sectionsFor } from "./roleCardSections";
+import { splitDriftRefusal } from "./roleSplitDrift";
 
 export const EDIT_WORDS = {
   noRole: "There is no role by that id.",
@@ -348,6 +349,14 @@ export async function saveRoleEdit(deps: SaveDeps, roleId: string, userId: strin
   }
 
   if (!Object.keys(payload).length && tags === null && sections === null) return bad(EDIT_WORDS.nothing);
+
+  // A split said by hand that the card, as this save leaves it, does not pay (roleSplitDrift.ts): refused, naming it.
+  const wordsChanged = Object.fromEntries(Object.entries(payload).filter(([k]) => WORD_KEYS.includes(k)));
+  if (Object.keys(wordsChanged).length || sections !== null) {
+    const heldSections = (await sectionsFor(pool, roleId)).sections;
+    const drift = splitDriftRefusal(role, wordsChanged, heldSections, sections ?? heldSections);
+    if (drift) return bad(drift.error, 400, [drift.field]);
+  }
 
   // A role is listed only once its card passes the gate.
   if (payload.listed === true) {

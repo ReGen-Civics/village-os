@@ -16,6 +16,7 @@ import { ComingSoonNote } from "@/components/ComingSoon";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { GROUP_H2 } from "./groupLook";
 import { useRoleArt } from "@/lib/natureArt";
+import { OpenPill } from "./lineupParts";
 
 const WaitlistForm = lazy(() => import("./WaitlistForm"));
 
@@ -24,6 +25,8 @@ export interface SoonRole {
   name: string;
   aim?: string | null;
   circleName?: string | null;
+  /** Its pill says "Upcoming paid role", with no amount: every upcoming role will be paid (the lead, 23 Nov 2026). */
+  paid?: boolean;
 }
 
 /** The role a `#waitlist-<id>` hash names, when it is one of these. */
@@ -86,6 +89,12 @@ export default function ComingSoonRoles({ roles, className = "" }: { roles: Soon
             {r.circleName && <p className={EYEBROW}>{r.circleName}</p>}
             <p className="font-display text-xl leading-snug text-card-foreground">{r.name}</p>
             {r.aim && <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{r.aim}</p>}
+            {/* The status pill says the kind, as an open role's does (the lead, 23 Nov 2026). */}
+            {r.paid && (
+              <p className="mt-2" data-soon-paid="">
+                <OpenPill kind="upcomingPaid" />
+              </p>
+            )}
             </div>
             </div>
             <ComingSoonNote className="mt-2" />

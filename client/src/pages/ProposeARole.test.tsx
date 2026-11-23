@@ -267,17 +267,17 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     expect(Array.from(pick.options).map((o) => o.value).filter(Boolean)).toEqual(["30", "40", "50", "60", "70", "80", "90", "100"]);
     await completeAll();
     expect(document.querySelector("[data-suggested-price]")?.textContent).toBe("Suggested: $6,500 a month, from your commitment of 50%.");
-    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You'll take the suggested price.");
+    expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You'll take the suggested compensation.");
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
     // Use this price says why it is off while no amount is written (applicant journey QA).
-    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.click(within(dialog).getByLabelText("Propose my own compensation"));
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "" } });
-    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
-    expect(dialog.querySelector("[data-price-needs-amount]")?.textContent).toBe("Enter a price above $0.");
+    expect((within(dialog).getByText("Use this amount") as HTMLButtonElement).disabled).toBe(true);
+    expect(dialog.querySelector("[data-price-needs-amount]")?.textContent).toBe("Enter an amount above $0.");
     fireEvent.click(within(dialog).getByLabelText("Negotiate on the first call if chosen"));
     expect(dialog.querySelector("[data-price-needs-amount]")).toBeNull();
-    fireEvent.click(within(dialog).getByText("Use this price"));
+    fireEvent.click(within(dialog).getByText("Use this amount"));
     sendNow();
     expect(await screen.findByRole("heading", { name: "Check your email" })).toBeTruthy();
     expect(posted[0].body.payAsk).toEqual({ kind: "negotiate" });
@@ -299,26 +299,26 @@ describe("a role that can be shared (Rye, 14 Nov 2026)", () => {
     fireEvent.click(within(bar).getByText("Add to my application"));
     fireEvent.click(document.querySelector("[data-adjust-price]") as HTMLElement);
     const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.click(within(dialog).getByLabelText("Propose my own compensation"));
     // The cap (120% of the $6,500 suggestion at 50%, $7,800) is enforced and never shown (lead, 17 Nov 2026).
     expect(dialog.querySelector("[data-price-popup-cap]")).toBeNull();
     expect(dialog.textContent).not.toContain("Proposals up to");
     expect(dialog.textContent).not.toContain("$7,800");
     // Past the cap: the popup refuses it in plain words, with no figure, and will not save it.
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "7801" } });
-    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's more than a proposal can ask for this role at your commitment. Choose a lower price, or negotiate on the first call.");
-    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
+    expect(dialog.querySelector("[data-price-over-cap]")?.textContent).toBe("That's more than a proposal can ask for this role at your commitment. Choose a lower amount, or negotiate on the first call.");
+    expect((within(dialog).getByText("Use this amount") as HTMLButtonElement).disabled).toBe(true);
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "15000" } });
     expect(dialog.querySelector("[data-price-over-cap]")?.textContent).not.toContain("$");
     expect(dialog.querySelector("[data-price-above-band]")).toBeNull();
-    expect((within(dialog).getByText("Use this price") as HTMLButtonElement).disabled).toBe(true);
+    expect((within(dialog).getByText("Use this amount") as HTMLButtonElement).disabled).toBe(true);
     // At the cap: taken.
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "7800" } });
     expect(dialog.querySelector("[data-price-over-cap]")).toBeNull();
-    expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+20% on the suggested price");
-    expect(dialog.querySelector("[data-price-nudge]")?.textContent).toBe("You suggested 1 change to the role. If it changes the work, say how it changes the price.");
-    fireEvent.change(within(dialog).getByLabelText("Why this price (optional)"), { target: { value: "The quarterly legal review adds work." } });
-    fireEvent.click(within(dialog).getByText("Use this price"));
+    expect(dialog.querySelector("[data-price-diff]")?.textContent).toBe("+20% on the suggested compensation");
+    expect(dialog.querySelector("[data-price-nudge]")?.textContent).toBe("You suggested 1 change to the role. If it changes the work, say how it changes the compensation.");
+    fireEvent.change(within(dialog).getByLabelText("Why this compensation (optional)"), { target: { value: "The quarterly legal review adds work." } });
+    fireEvent.click(within(dialog).getByText("Use this amount"));
     expect(document.querySelector("[data-price-summary]")?.textContent).toBe("You propose $7,800 a month (+20% on the suggestion).");
     expect(document.querySelector("[data-price-cap]")).toBeNull();
     expect((document.querySelector("[data-price-ask]") as HTMLElement).textContent).not.toContain("Proposals up to");
@@ -415,8 +415,15 @@ describe("the six steps", () => {
       "Step 5: Your first moon",
       "Step 6: Review & submit",
     ]);
-    // Nothing of the game register on this page.
+    // Nothing of the game register on this page, the routes beside a role among it: there the quest route is "Offer a
+    // one-off piece of work", with the same link (the lead, 23 Nov 2026).
     expect(document.body.textContent).not.toMatch(/\bquest|stone|moss/i);
+    expect(document.querySelector('[data-more-roles] [data-route-door="quest"]')?.textContent).toMatch(/^Offer a one-off piece of work/);
+    expect(Array.from(document.querySelectorAll("[data-more-roles] [data-route-door]")).map((a) => [a.getAttribute("data-route-door"), a.getAttribute("href")])).toEqual([
+      ["venture", "/roles#open-ventures"],
+      ["partner", "/partner"],
+      ["quest", "/propose-quest"],
+    ]);
     // Moon is the village's rhythm and is said here (the lead, 18 Nov 2026), and every moon wears its tip (MoonWord.tsx).
     // A step's name in the step mark, the trail beside or on Continue is a control's words, where a tip cannot sit: a control never
     // holds another. Every other moon wears it, the first moon step's heading and its line among them.
@@ -676,15 +683,15 @@ describe("the six steps", () => {
     walk();
     const review = document.querySelector("[data-review]") as HTMLElement;
     const price = review.querySelector('[data-review-row^="x3"]') as HTMLElement;
-    expect(price.textContent).toContain("Your price");
-    expect(price.textContent).toContain("The suggested price, $6,500 a month");
+    expect(price.textContent).toContain("Your compensation");
+    expect(price.textContent).toContain("The suggested compensation, $6,500 a month");
     // No cap amount on the applicant's own review (lead, 17 Nov 2026): 120% of $6,500 is $7,800.
     expect(review.textContent).not.toContain("Proposals up to");
     expect(review.textContent).not.toContain("$7,800");
     const notes = review.querySelector('[data-review-row^="x2"]') as HTMLElement;
     expect(notes.textContent).toContain("Your notes on the role (1)");
     expect(notes.textContent).toContain("A legal review each quarter.");
-    fireEvent.click(within(review).getByRole("button", { name: "Change Your price" }));
+    fireEvent.click(within(review).getByRole("button", { name: "Change Your compensation" }));
     expect(stoneNow()).toBe("terms");
     // Closing the price popup puts focus back on the button that opened it (a11y sweep P1-4), never the page's body.
     const adjust = document.querySelector("[data-adjust-price]") as HTMLElement;
@@ -1040,8 +1047,13 @@ describe("the sent threshold", () => {
     expect(steps.querySelectorAll("li")).toHaveLength(2);
     expect(steps.textContent).toMatch(/Open the link in that email by /);
     expect(steps.textContent).toMatch(/Our review: we read every application, and write to you by /);
-    const doors = within(document.querySelector("[data-wait-doors]") as HTMLElement).getAllByRole("link").map((a) => a.getAttribute("href"));
+    const panel = document.querySelector("[data-wait-doors]") as HTMLElement;
+    const doors = within(panel).getAllByRole("link").filter((a) => !a.closest("[data-wait-routes]")).map((a) => a.getAttribute("href"));
     expect(doors).toEqual(["/roles", "/love-letter"]);
+    // One "While you wait" panel, the other ways to build inside it (QA, 23 Nov 2026), with no second reply promise.
+    expect(document.querySelectorAll("[data-wait-doors]")).toHaveLength(1);
+    expect(Array.from(panel.querySelectorAll("[data-wait-routes] [data-route-door]")).map((a) => a.getAttribute("data-route-door"))).toEqual(["venture", "partner", "quest"]);
+    expect(document.querySelector("[data-route-promise]")).toBeNull();
     expect(document.querySelector('[data-threshold="sent"] [data-met="false"]')).toBeTruthy();
   });
 
@@ -1066,6 +1078,12 @@ describe("the sent threshold", () => {
     const wait = document.querySelector('[data-role-not-open] [data-waitlist-role="r-gate"]') as HTMLAnchorElement;
     expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-gate");
     expect(wait.textContent).toContain("Join the waitlist for Gate Keeper");
+    // Buttons, as on the Upcoming roles cards (the lead, 23 Nov 2026): the waitlist edged, Apply early in the accent, 44px.
+    expect(wait.className).toContain("min-h-11");
+    expect(wait.className).not.toContain("underline");
+    const early = document.querySelector('[data-role-not-open] [data-apply-early="r-gate"]') as HTMLElement;
+    expect(early.className).toContain("border-notice/70");
+    expect(early.className).toContain("min-h-11");
     // No form, and the draft this device kept is exactly as it was.
     expect(document.querySelector("[data-open-proposal]")).toBeNull();
     expect(window.localStorage.getItem(draftKey("r-gate", ""))).toBe(kept);
@@ -1258,7 +1276,7 @@ describe("design G2: the desk and the panes", () => {
     await applyFor();
     const rail = document.querySelector("[data-rewards-beside]") as HTMLElement;
     expect(rail.closest("aside")).toBe(document.querySelector("[data-role-beside]")?.closest("aside"));
-    expect(rail.textContent).toContain("How rewards work");
+    expect(rail.textContent).toContain("How compensation works");
     // No fixed tiles beside the split they edit (production check of 1.3.24): the village's default in one line.
     expect(rail.querySelectorAll("dd")).toHaveLength(0);
     expect(rail.querySelector("[data-split-line]")?.textContent).toBe("Default split 40/55/5. You can change it in The terms.");

@@ -70,7 +70,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
           </div>
         )}
         <div>
-          <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their price", context: "open proposal: the pay ask" })}</dt>
+          <dt className="text-sm font-semibold text-muted-foreground">{t({ message: "Their compensation ask", context: "open proposal: the pay ask" })}</dt>
           <dd className="mt-0.5 text-foreground" data-pay-ask-shown="">
             {askWords ??
               (data.ask?.kind === "amount" ? priced(data.ask.monthly, data.roles.find((r) => r.full)?.full?.currency ?? "USD", askPeriod(data.ask)) : "")}
@@ -79,7 +79,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
       </dl>}
       {!perRole && data.ask?.why && (
         <div data-price-why="">
-          <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Why this price", context: "open proposal: the pay ask" })}</p>
+          <p className="text-sm font-semibold text-muted-foreground">{t({ message: "Why this compensation", context: "open proposal: the pay ask" })}</p>
           <p className="mt-0.5 whitespace-pre-wrap break-words text-foreground">{data.ask.why}</p>
         </div>
       )}
@@ -116,13 +116,13 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
               {own && (
                 <p data-role-pay-ask="">
                   {!own.ask
-                    ? t({ message: "No price ask for this role.", context: "open proposal: one role's price ask" })
+                    ? t({ message: "No compensation ask for this role.", context: "open proposal: one role's price ask" })
                     : own.ask.kind === "negotiate"
                       ? t({ message: "Negotiate on the first call if chosen.", context: "open proposal: one role's price ask" })
-                      : t({ message: `Their price: ${priced(own.ask.monthly, r.full?.currency ?? "USD", askPeriod(own.ask))}.`, context: "open proposal: one role's price ask" })}
+                      : t({ message: `Their compensation ask: ${priced(own.ask.monthly, r.full?.currency ?? "USD", askPeriod(own.ask))}.`, context: "open proposal: one role's price ask" })}
                 </p>
               )}
-              {own?.ask?.why && <p className="whitespace-pre-wrap break-words" data-price-why="">{t({ message: `Why this price: ${own.ask.why}`, context: "open proposal: one role's price ask" })}</p>}
+              {own?.ask?.why && <p className="whitespace-pre-wrap break-words" data-price-why="">{t({ message: `Why this compensation: ${own.ask.why}`, context: "open proposal: one role's price ask" })}</p>}
               {r.full && r.atCommitment !== null && (
                 <p data-commitment-ceiling="">
                   {t({ message: `At ${rolePct}%, the role pays up to ${priced(r.atCommitment, r.full.currency, r.full.per)} (the full role: ${money(r.full.amount, r.full.currency)}).`, context: "open proposal: the ceiling at their commitment" })}
@@ -142,7 +142,7 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
               })()}
               {typeof r.counteredPrice === "number" && r.full && (
                 <p data-role-countered-price="">
-                  {t({ message: `Our counter-offer on the price: ${priced(r.counteredPrice, r.full.currency, r.full.per)}.`, context: "open proposal: one role's countered price" })}
+                  {t({ message: `Our counter-offer on compensation: ${priced(r.counteredPrice, r.full.currency, r.full.per)}.`, context: "open proposal: one role's countered price" })}
                 </p>
               )}
               <p data-commitment-coverage="">
@@ -159,10 +159,10 @@ export default function CommitmentReview({ data, roles }: { data: CommitmentRevi
       </ul>
       {perRole && (
         <p className="text-sm text-foreground" data-roles-total="">
-          {t({ message: `Across ${data.roles.length} roles: ${data.roles.reduce((n, r) => n + (r.own?.pct ?? 0), 0)}% commitment in all. Each role is its own agreement, and the prices add up.`, context: "open proposal: the total across roles" })}
+          {t({ message: `Across ${data.roles.length} roles: ${data.roles.reduce((n, r) => n + (r.own?.pct ?? 0), 0)}% commitment in all. Each role is its own agreement, and the amounts add up.`, context: "open proposal: the total across roles" })}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">{t({ message: "The contract sets the pay. As a contractor they may propose more or less than the suggested price.", context: "open proposal: commitment footnote" })}</p>
+      <p className="text-xs text-muted-foreground">{t({ message: "The contract sets the pay. As a contractor they may propose more or less than the suggested compensation.", context: "open proposal: commitment footnote" })}</p>
     </section>
   );
 }

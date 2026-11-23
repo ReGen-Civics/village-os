@@ -45,7 +45,8 @@ import { pageContentProblem, pageSpecForSection } from "../../shared/pageContent
 import { readVillageDoc } from "../../shared/onboardingPath";
 import { parseRoleWords } from "../../shared/roleProposals";
 import { PARAMETER_KEYS, readParameter, readPayGroup, type ParameterKey } from "../../shared/roleParameters";
-import { readSections } from "../../shared/roleCardSections";
+import { readSections, type RoleCardSections } from "../../shared/roleCardSections";
+import { splitDriftRefusal } from "./roleSplitDrift";
 import { isListed } from "../../shared/roleListing";
 import { allVariables } from "./variables";
 import { moduleConfig, storedLifecycle } from "./modules";
@@ -153,10 +154,19 @@ export async function checkProposal(deps: KindDeps, p: ProposalInput): Promise<C
         const r = characterTagsFrom(b.archetypes, cast);
         if (!r.ok) return bad(r.error, "archetypes");
       }
+      let nextSections: RoleCardSections | null = null;
       if (b.sections !== undefined) {
         const live = (await editorState(deps.pool, role)).sections;
         const r = readSections(mergeOnto(live, b.sections));
         if (!r.ok) return bad(r.problem, r.field);
+        nextSections = r.value;
+      }
+      // A split said by hand that the card would not pay, refused here as the save refuses it (roleSplitDrift.ts).
+      const wordsChanged = Object.fromEntries(Object.entries(changes).filter(([k]) => ROLE_WORD_FIELDS.fields.includes(k)));
+      if (Object.keys(wordsChanged).length || nextSections) {
+        const held = (await editorState(deps.pool, role)).sections;
+        const drift = splitDriftRefusal(role, wordsChanged, held, nextSections ?? held);
+        if (drift) return bad(drift.error, drift.field);
       }
       // Listing it: the save's own gate (`listingProblems`), against the card as the change would leave it, so a card
       // that would be refused on accept is refused here with the same sentence (20 Nov 2026). The save asks only when

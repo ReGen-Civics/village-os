@@ -49,7 +49,7 @@ import { bandWords } from "./payBandWords";
 import { payTbdLine } from "@/lib/payTbdWords";
 import { paidRoleLine } from "./cardWordsT";
 import { civilDayWords } from "@shared/seasonPlans";
-import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
+import { BTN_NOTICE, BTN_PRIMARY, BTN_SECONDARY, EYEBROW, HINT } from "@/components/journey/look";
 import { EarlyWords } from "@/components/fireflyPath/EarlyWords";
 import { Fireflies } from "@/components/journey/nature";
 import RoleCardParams from "@/components/power/RoleCardParams";
@@ -292,7 +292,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       {!wide && <StateNote role={seat} />}
       {/* The waitlist stays first; a strong fit may apply early (the lead, 20 Nov 2026). */}
       <p className="text-sm leading-relaxed text-muted-foreground"><EarlyWords /></p>
-      <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_SECONDARY}`} data-apply-early={id}>
+      <Link href={`${applyHrefForRole(id)}&early=1`} className={`w-full ${BTN_NOTICE}`} data-apply-early={id}>
         {t({ message: `Apply early for ${String(seat?.name ?? "")}`, context: "founding application, add a coming-soon role as an early application" })}
       </Link>
     </div>
@@ -567,7 +567,7 @@ export default function FullRoleCard({ seat: givenSeat, circleName = null, regis
       data-register={register}
     >
       <header className="flex flex-col gap-2">
-        {/* "Paid" is said once, by "This role is rewarded" under the title (QA2-16). */}
+        {/* "Paid" is said once, by "This is a paid role" under the title (QA2-16). */}
         {circleName && <p className={EYEBROW}>{circleName}</p>}
         {showTitle && <H3 className={founding ? "font-display text-3xl leading-tight text-card-foreground sm:text-4xl" : "font-display text-2xl text-card-foreground"}>{String(seat?.name ?? "")}</H3>}
         {machine && <MachineTranslationMark />}

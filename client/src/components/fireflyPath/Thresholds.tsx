@@ -13,6 +13,7 @@
  * Kept apart from pages/ProposeARole.tsx so the form stays one reading
  * (scripts/check-file-lines.mjs); the page re-exports ConfirmProposal.
  */
+import ContributorRoutes from "@/components/ContributorRoutes";
 import type { ComponentProps } from "react";
 import { LazyStateNote } from "@/components/ComingSoonLazy";
 import { useEffect, useRef, useState } from "react";
@@ -146,6 +147,11 @@ function WhileYouWait() {
           </li>
         ))}
       </ul>
+      {/* The other three ways to build, in the same panel (QA, 23 Nov 2026: one "While you wait", never two). No second
+          reply promise: the page already says when we reply, from the same village number (ReplyPromise). */}
+      <div className="mt-2 border-t border-border pt-4" data-wait-routes="">
+        <ContributorRoutes variant="links" register="founding" except={["team"]} promise={false} heading={t({ message: "You can also", context: "after an application: the other ways to build, under While you wait" })} headingAs="h3" />
+      </div>
     </nav>
   );
 }

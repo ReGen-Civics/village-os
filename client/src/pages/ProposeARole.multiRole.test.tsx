@@ -119,6 +119,11 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     expect(notYet.textContent).toContain("Not open yet.");
     const wait = notYet.querySelector('[data-waitlist-role="r-bees"]') as HTMLAnchorElement;
     expect(wait.textContent).toBe("Join the waitlist for Bee Keeper");
+    // Buttons, never underlined links (the lead, 23 Nov 2026), 44px tall like the Upcoming roles cards' buttons.
+    for (const b of [wait, notYet.querySelector('[data-apply-early="r-bees"]') as HTMLElement]) {
+      expect(b.className).toContain("min-h-11");
+      expect(b.className).not.toContain("underline");
+    }
     expect(wait.getAttribute("href")).toBe("/roles#waitlist-r-bees");
     fireEvent.change(add, { target: { value: "r-host" } });
     fireEvent.change(await screen.findByLabelText("Your commitment: Gate Keeper"), { target: { value: "50" } });
@@ -131,15 +136,15 @@ describe("several roles in one application (the lead, 17 Nov 2026)", () => {
     // The added role's own price: their amount, through the same popup the first role has.
     fireEvent.click(document.querySelector('[data-more-role="1"] [data-adjust-price]') as HTMLElement);
     const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByLabelText("Propose my own price"));
+    fireEvent.click(within(dialog).getByLabelText("Propose my own compensation"));
     fireEvent.change(dialog.querySelector("[data-price-amount]") as HTMLInputElement, { target: { value: "1500" } });
-    fireEvent.click(within(dialog).getByText("Use this price"));
+    fireEvent.click(within(dialog).getByText("Use this amount"));
     await waitFor(() => expect(document.querySelector('[data-more-role="1"] [data-split-control], [data-more-role="1"] [data-split]')).toBeTruthy());
     // REVIEW & SUBMIT (production check of 1.3.24): each role's price and split, and the prices added together.
     const review = () => Array.from(document.querySelectorAll("[data-review-row]")).map((r) => r.textContent ?? "");
     await waitFor(() => expect(review().some((l) => l.includes("Your split: Welcome Host"))).toBe(true));
-    expect(review().some((l) => l.includes("Your price: Gate Keeper") && /\$3,000/.test(l))).toBe(true);
-    expect(review().some((l) => l.includes("Your price: Welcome Host") && /\$1,500/.test(l))).toBe(true);
+    expect(review().some((l) => l.includes("Your compensation: Gate Keeper") && /\$3,000/.test(l))).toBe(true);
+    expect(review().some((l) => l.includes("Your compensation: Welcome Host") && /\$1,500/.test(l))).toBe(true);
     expect(review().some((l) => l.includes("Across your roles") && /\$4,500 a (month|moon) together/.test(l))).toBe(true);
     await agreeAndSend();
     await screen.findByRole("heading", { name: "Check your email" });

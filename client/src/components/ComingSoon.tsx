@@ -10,6 +10,7 @@
  * confirmation. It also draws the line for a role only an agent holds.
  */
 import { Trans, useLingui } from "@lingui/react/macro";
+import { ventureOpenNow } from "@shared/roleListing";
 
 type Flagged = { comingSoon?: boolean | null; futureVenture?: boolean | null; heldByAgent?: boolean | null } | null | undefined;
 
@@ -21,6 +22,32 @@ export function ComingSoonChip({ role, className = "" }: { role: Flagged; classN
         <Trans context="badge on a role offered as a venture to build and run, applied for with a pitch">Open venture</Trans>
       ) : (
         <Trans context="badge on a role whose interviews start after the lead hires">Coming soon</Trans>
+      )}
+    </span>
+  );
+}
+
+/**
+ * A VENTURE'S BADGE ON THE ROLES PAGE (the lead, 23 Nov 2026): an outlined gold "Open now" pill, with its dot, for a
+ * venture whose door is open (`ventureOpenNow`, shared/roleListing.ts), and a quiet outlined "Accepting proposals" for
+ * every other one. Outlined so neither reads as a button, and in the village's true gold (the dash gold), never the
+ * `notice` accent a village may tint the colour of its buttons. No priority words: nothing urgent is put in front of
+ * a visitor. Under the Open ventures heading it stands in for "Open venture", which that heading already says.
+ */
+export function VentureChip({ role, className = "" }: { role: { futureVenture?: boolean | null; recruiting?: boolean | null } | null | undefined; className?: string }) {
+  if (role?.futureVenture !== true) return null;
+  const now = ventureOpenNow(role);
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-xs font-semibold ${now ? "border-dash-gold text-dash-gold-lit" : "border-border text-muted-foreground"} ${className}`}
+      data-testid="venture-chip"
+      data-open-now={now ? "" : undefined}
+    >
+      {now && <span className="size-1.5 rounded-full bg-dash-gold-lit" aria-hidden="true" />}
+      {now ? (
+        <Trans context="badge on a venture open now for pitches, an outlined pill">Open now</Trans>
+      ) : (
+        <Trans context="badge on a venture taking proposals, not marked open now">Accepting proposals</Trans>
       )}
     </span>
   );

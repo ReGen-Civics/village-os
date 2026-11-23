@@ -231,6 +231,7 @@ describe("getting the room ready from the start card", () => {
     canBringAgain: false,
   });
 
+  // The two 5s waits can together pass vitest's own 5s test timeout under shard load: main run 45261378535 failed at 5083ms (23 Nov 2026).
   it("fills the title, the circle, the length and the circle's waiting items, and sends nothing", async () => {
     answers["GET /api/sessions"] = () =>
       json({
@@ -267,7 +268,7 @@ describe("getting the room ready from the start card", () => {
     // The item for no circle is offered, and left for the person to choose.
     expect((screen.getByRole("checkbox", { name: /Picnic/ }) as HTMLInputElement).checked).toBe(false);
     expect(calls.filter((c) => c.method !== "GET")).toEqual([]);
-  });
+  }, 15000);
   it("keeps the meeting's own length when Get the room ready is pressed before the village default has settled", async () => {
     /*
      * The village's usual length was applied by an effect that ran in a later passive
