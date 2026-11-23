@@ -26,7 +26,7 @@ import { chosenDisplayCurrency, useDisplayRates } from "@/lib/workPay";
 import { formatDate } from "@/i18n/format";
 import { getFormattingLocale } from "@/i18n/i18n";
 import { BreathingLoader } from "@/components/natural";
-import { CARD, CHIP, CHIP_SOFT, EYEBROW, H1, HINT, LEDE, LINK, WORLD } from "@/components/journey/look";
+import { CARD, CARD_FEATURED, CHIP, CHIP_SOFT, EYEBROW, H1, HINT, LEDE, LINK, WORLD } from "@/components/journey/look";
 import { parsePayLink, type Payee, type PayRequest } from "@shared/payLink";
 import { AmountLine, AmountStep, ConfirmStep, ReceiptStep, WhoStep, type MoneyContext, type PayReceipt } from "@/components/pay/PaySteps";
 import ReceivePanel from "@/components/pay/ReceivePanel";
@@ -250,7 +250,8 @@ export default function Pay() {
     <Layout>
       <div className={`${WORLD} py-6 sm:py-12`}>
         <div className="mx-auto max-w-6xl space-y-6 px-4">
-          <header className="space-y-2">
+          {/* On a phone, once somebody is chosen the heading folds away so the pad and its next act share one screen. */}
+          <header className={step === "who" ? "space-y-2" : "sr-only lg:not-sr-only lg:space-y-2"}>
             <p className={EYEBROW}>{t({ context: "pay page", message: "Credits" })}</p>
             <h1 className={H1}>{t({ context: "pay page title", message: "Pay and receive" })}</h1>
             {token ? (
@@ -293,7 +294,7 @@ export default function Pay() {
                 {tabButton("receive", t({ context: "pay page tab", message: "Receive" }))}
               </div>
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start">
-                <section aria-labelledby="pay-h" className={`${CARD} ${tab === "pay" ? "" : "hidden lg:block"}`}>
+                <section aria-labelledby="pay-h" className={`${step === "confirm" ? CARD_FEATURED : CARD} ${tab === "pay" ? "" : "hidden lg:block"}`}>
                   <h2 id="pay-h" className="sr-only">
                     {t({ context: "pay page tab", message: "Pay" })}
                   </h2>

@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { useLingui } from "@lingui/react/macro";
 import { ArrowLeft, Delete, ScanLine } from "lucide-react";
 import { PAY_NOTE_MAX, PAYEE_KINDS, type Payee, type PayeeKind } from "@shared/payLink";
-import { BTN_PRIMARY, BTN_SECONDARY, CARD_FEATURED, EYEBROW, FIELD, HINT, LABEL, QUIET, RING, STATEMENT, TILE } from "@/components/journey/look";
+import { BTN_PRIMARY, BTN_SECONDARY, EYEBROW, FIELD, HINT, LABEL, QUIET, RING, STATEMENT, TILE } from "@/components/journey/look";
 import { amountProblem, creditsWords, initialsOf, moneyBeside, type PayToken } from "./payMoney";
 
 /** What a money figure needs to be drawn. */
@@ -48,7 +48,7 @@ export function AmountLine({ minor, token, money, big = false }: { minor: number
   const name = token.name;
   const aboutText = beside?.text ?? "";
   return (
-    <span className="block">
+    <span className={big ? "block" : undefined}>
       <span className={big ? "block font-display text-5xl leading-none text-card-foreground sm:text-6xl" : "font-semibold text-card-foreground"}>
         {credits}
       </span>
@@ -226,13 +226,13 @@ export function AmountStep({
   }, [onKey, onNext, problem]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       <PayingStrip payee={payee} onChange={onChangePayee} />
-      <div className="py-2 text-center" aria-live="polite">
+      <div className="text-center sm:py-2" aria-live="polite">
         <AmountLine minor={minor} token={token} money={money} big />
         {typed === "" && <span className="sr-only">{t({ context: "pay page", message: "No amount yet" })}</span>}
       </div>
-      <p className={`text-center ${problem === "too_much" ? "font-semibold text-destructive" : HINT}`}>
+      <p className={`-mt-2 text-center sm:mt-0 ${problem === "too_much" ? "font-semibold text-destructive" : HINT}`}>
         {problem === "too_much"
           ? t({ context: "pay page, amount pad", message: `That is more than you hold. You hold ${heldText} ${tokenName}.` })
           : t({ context: "pay page, amount pad", message: `You hold ${heldText} ${tokenName}.` })}
@@ -244,7 +244,7 @@ export function AmountStep({
             type="button"
             onClick={() => onKey(k)}
             disabled={k === "." && token.decimals === 0}
-            className="jw-btn flex min-h-14 items-center justify-center rounded-xl border border-border bg-muted font-display text-2xl text-foreground hover:border-notice disabled:opacity-30"
+            className="jw-btn flex min-h-12 items-center sm:min-h-14 justify-center rounded-xl border border-border bg-muted text-2xl font-semibold tabular-nums text-foreground hover:border-notice disabled:opacity-30"
             aria-label={k === "back" ? t({ context: "pay page, amount pad key", message: "Delete the last digit" }) : k === "." ? t({ context: "pay page, amount pad key", message: "Decimal point" }) : k}
           >
             {k === "back" ? <Delete className="h-6 w-6" aria-hidden="true" /> : k}
@@ -261,7 +261,8 @@ export function AmountStep({
           placeholder={t({ context: "pay page, note field example", message: "Two jars of honey" })}
         />
       </label>
-      <div className="sticky bottom-3 z-10 sm:static">
+      {/* Above the phone's tab bar (`--tabbar-h`, 0 from 768 px), the way the joining path's sticky acts sit. */}
+      <div className="sticky bottom-[calc(var(--tabbar-h)+0.75rem)] z-10 lg:static">
         <button type="button" className={`${BTN_PRIMARY} w-full shadow-sm`} disabled={!!problem} onClick={onNext}>
           {t({ context: "pay page, button: go to the check step", message: "Review" })}
         </button>
@@ -298,7 +299,7 @@ export function ConfirmStep({
   const tokenName = token.name;
   const name = payee.name;
   return (
-    <div className={`${CARD_FEATURED} space-y-5`}>
+    <div className="space-y-5">
       <p className={EYEBROW}>{t({ context: "pay page, check step", message: "Check before you send" })}</p>
       <div className="flex items-center gap-3">
         <PayeeMark payee={payee} size="lg" />
